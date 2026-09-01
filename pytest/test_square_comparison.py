@@ -45,8 +45,10 @@ torch = pytest.importorskip("torch")
 import config.square_config as cfg
 import gpr_bem_kdiff
 import gpr_bem_mod
+import gpr_bem_qbx
 import gpr_bem_ref
 from gprmax_ref import cache_io as gprmax_cache_io
+from qbx_comparison_support import run_qbx_metrics
 
 SOLVERS = (("gpr_bem_ref", gpr_bem_ref), ("gpr_bem_mod", gpr_bem_mod))
 
@@ -178,10 +180,10 @@ def _kdiff_metrics() -> dict:
     an actual SDF-gradient discontinuity, not just rapidly-varying curvature
     the way the star's lobes are. This now passes ``sdf_fn`` so the diagonal
     fit uses exact autograd curvature (``_sdf_curvature``) instead of the
-    neighbour-turning-angle estimate -- removes one source of error, but not
-    the missing off-diagonal near-neighbour log correction for T (see
-    docs/validation_change_log.md), so this still is not expected to be a
-    clean win -- printed for visibility.
+    neighbour-turning-angle estimate. The later QBX investigation did not
+    identify the missing off-diagonal near-neighbour log correction as a
+    sufficient next fix; see docs/qbx_closure.md. This frozen baseline is
+    printed for visibility.
     """
 
     def phi(points):
@@ -220,6 +222,114 @@ def _kdiff_metrics() -> dict:
         metrics["residual"][frequency_hz] = float(forward.linear_system_relative_residual)
         metrics["condition_number"][frequency_hz] = float(np.linalg.cond(forward.system.system_matrix[0]))
     return metrics
+
+
+def _square_parameterization(t: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """CCW, constant-speed parameterization starting at the bottom-left."""
+
+    phase = np.mod(np.asarray(t, dtype=float), 2.0 * np.pi) * (2.0 / np.pi)
+    side = np.floor(phase).astype(int)
+    local = phase - side
+    points = np.empty((phase.size, 2), dtype=float)
+    tangents = np.zeros_like(points)
+    speed = 4.0 * HALF_SIDE / np.pi
+    masks = [side == index for index in range(4)]
+    points[masks[0]] = np.column_stack(
+        (CENTER[0] - HALF_SIDE + 2.0 * HALF_SIDE * local[masks[0]], np.full(np.count_nonzero(masks[0]), CENTER[1] - HALF_SIDE))
+    )
+    tangents[masks[0], 0] = speed
+    points[masks[1]] = np.column_stack(
+        (np.full(np.count_nonzero(masks[1]), CENTER[0] + HALF_SIDE), CENTER[1] - HALF_SIDE + 2.0 * HALF_SIDE * local[masks[1]])
+    )
+    tangents[masks[1], 1] = speed
+    points[masks[2]] = np.column_stack(
+        (CENTER[0] + HALF_SIDE - 2.0 * HALF_SIDE * local[masks[2]], np.full(np.count_nonzero(masks[2]), CENTER[1] + HALF_SIDE))
+    )
+    tangents[masks[2], 0] = -speed
+    points[masks[3]] = np.column_stack(
+        (np.full(np.count_nonzero(masks[3]), CENTER[0] - HALF_SIDE), CENTER[1] + HALF_SIDE - 2.0 * HALF_SIDE * local[masks[3]])
+    )
+    tangents[masks[3], 1] = -speed
+    return points, tangents
+
+
+def _square_target_parameters(points: np.ndarray) -> np.ndarray:
+    rel = np.asarray(points, dtype=float) - np.asarray(CENTER, dtype=float)[None, :]
+    distances = np.column_stack(
+        (np.abs(rel[:, 1] + HALF_SIDE), np.abs(rel[:, 0] - HALF_SIDE), np.abs(rel[:, 1] - HALF_SIDE), np.abs(rel[:, 0] + HALF_SIDE))
+    )
+    side = np.argmin(distances, axis=1)
+    phase = np.empty(points.shape[0], dtype=float)
+    phase[side == 0] = (rel[side == 0, 0] + HALF_SIDE) / (2.0 * HALF_SIDE)
+    phase[side == 1] = 1.0 + (rel[side == 1, 1] + HALF_SIDE) / (2.0 * HALF_SIDE)
+    phase[side == 2] = 2.0 + (HALF_SIDE - rel[side == 2, 0]) / (2.0 * HALF_SIDE)
+    phase[side == 3] = 3.0 + (HALF_SIDE - rel[side == 3, 1]) / (2.0 * HALF_SIDE)
+    return np.mod(0.5 * np.pi * phase, 2.0 * np.pi)
+
+
+def _qbx_rows() -> dict[str, dict]:
+    def phi(points):
+        return gpr_bem_kdiff.rectangle_signed_distance(
+            points, center=CENTER, half_extents=(HALF_SIDE, HALF_SIDE)
+        )
+
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", message="compress_implicit_boundary_band")
+        band = gpr_bem_kdiff.build_implicit_boundary_band(
+            phi, BOUNDS, grid_shape=GRID, dtype=torch.float64
+        )
+        boundary = gpr_bem_kdiff.compress_implicit_boundary_band(band)
+    target_t = _square_target_parameters(boundary.points.detach().cpu().numpy())
+    strategies = {
+        "gpr_bem_qbx": (
+            gpr_bem_qbx.FullRowQBX(
+                source=gpr_bem_qbx.SameNodeSources(), source_workers=8, allow_invalid_clearance=True
+            ),
+            "qbx_1x",
+        ),
+        "qbx_fourier8": (
+            gpr_bem_qbx.FullRowQBX(
+                source_workers=8,
+                allow_invalid_clearance=True,
+                source=gpr_bem_qbx.ParameterizedFourierSources(
+                    parameterization=_square_parameterization,
+                    oversampling_factor=8,
+                    target_parameters=target_t,
+                )
+            ),
+            "qbx_f8",
+        ),
+        "qbx_sdfraw8": (
+            gpr_bem_qbx.FullRowQBX(
+                source_workers=8,
+                allow_invalid_clearance=True,
+                source=gpr_bem_qbx.RawSDFBandSources(
+                    grid_refinement_factor=8,
+                    base_grid_shape=GRID,
+                )
+            ),
+            "qbx_s8",
+        ),
+    }
+    sources, receivers = _ring_scan()
+    exterior = gpr_bem_kdiff.Material(epsr=cfg.SAND_EPSR, sigma=cfg.SAND_SIGMA)
+    interior = gpr_bem_kdiff.Material(epsr=cfg.PLASTIC_EPSR, sigma=cfg.PLASTIC_SIGMA)
+    return {
+        name: run_qbx_metrics(
+            boundary=boundary,
+            sources=sources,
+            receivers=receivers,
+            frequencies_hz=FREQUENCIES_HZ,
+            exterior=exterior,
+            interior=interior,
+            eps0=cfg.EPS0,
+            mu0=cfg.MU0,
+            t_assembly=strategy,
+            discretization=discretization,
+            sdf_fn=phi,
+        )
+        for name, (strategy, discretization) in strategies.items()
+    }
 
 
 def _gprmax_result() -> dict | None:
@@ -311,9 +421,11 @@ def _display_discretization(metrics: dict) -> str:
 
 
 @pytest.fixture(scope="module")
-def comparison_results() -> dict[str, dict]:
+def comparison_results(include_qbx_archive) -> dict[str, dict]:
     results = {name: _run_solver(name, solver) for name, solver in SOLVERS}
     results["gpr_bem_kdiff"] = _kdiff_metrics()
+    if include_qbx_archive:
+        results.update(_qbx_rows())
     return results
 
 
@@ -384,9 +496,8 @@ def test_square_gprmax_cross_check(comparison_results, gprmax_result) -> None:
 
 def test_square_kdiff_real_boundary(comparison_results, gprmax_result) -> None:
     """``gpr_bem_kdiff`` vs gprMax, index-0 pair only (printed, no gate --
-    corners are the hardest case for the local-curvature diagonal treatment
-    and the off-diagonal correction is still missing; see
-    docs/validation_change_log.md)."""
+    corners are outside the smooth local-curvature treatment and this
+    compressed-cloud route is frozen; see docs/qbx_closure.md)."""
 
     if gprmax_result is None:
         pytest.skip(

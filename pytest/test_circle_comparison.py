@@ -64,9 +64,12 @@ torch = pytest.importorskip("torch")
 import config.circle_config as cfg
 import gpr_bem_kdiff
 import gpr_bem_mod
+import gpr_bem_qbx
 import gpr_bem_ref
 from gprmax_ref import cache_io as gprmax_cache_io
 from kernel_diff_ref import solve_transmission_on_circle
+from nystrom_ref import circle_parameterization
+from qbx_comparison_support import run_qbx_metrics
 
 SOLVERS = (("gpr_bem_ref", gpr_bem_ref), ("gpr_bem_mod", gpr_bem_mod))
 
@@ -220,12 +223,11 @@ def _kdiff_metrics(perfect_sampling: bool) -> dict:
     quadrature, on the real ``compress_implicit_boundary_band`` boundary (or
     the perfect one, same as ref/mod, when ``--perfect-sampling`` is set).
 
-    Known limitation (measured, not assumed -- see
-    ``docs/validation_change_log.md``, "gpr_bem_kdiff v1 built and measured"):
-    the off-diagonal near-neighbour log-singular correction for the
-    hypersingular block is not yet implemented, only the diagonal is. Accuracy
-    lands roughly at `gpr_bem_mod`'s level at low/mid frequency and breaks
-    down at 8 GHz -- printed for visibility, not gated there.
+    Known limitation: the off-diagonal near-neighbour log-singular correction
+    for the hypersingular block is not implemented. Later QBX probes showed
+    that treating it as the next isolated fix did not remove the
+    compressed-target floor; see ``docs/qbx_closure.md``. This frozen baseline
+    is printed for visibility and is not gated at 8 GHz.
     """
 
     if perfect_sampling:
@@ -276,6 +278,91 @@ def _kdiff_metrics(perfect_sampling: bool) -> dict:
         metrics["residual"][frequency_hz] = float(forward.linear_system_relative_residual)
         metrics["condition_number"][frequency_hz] = float(np.linalg.cond(forward.system.system_matrix[0]))
     return metrics
+
+
+def _qbx_rows(perfect_sampling: bool) -> dict[str, dict]:
+    """Plain full-row QBX, then the two requested 8x source variants."""
+
+    def phi(points):
+        return gpr_bem_kdiff.circle_signed_distance(points, center=CENTER, radius=RADIUS)
+
+    if perfect_sampling:
+        boundary = gpr_bem_kdiff.perfect_circle_boundary_samples(
+            center=CENTER, radius=RADIUS, num_samples=168, bounds=BOUNDS, dtype=torch.float64,
+        )
+    else:
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", message="compress_implicit_boundary_band")
+            band = gpr_bem_kdiff.build_implicit_boundary_band(
+                phi, BOUNDS, grid_shape=GRID, dtype=torch.float64
+            )
+            boundary = gpr_bem_kdiff.compress_implicit_boundary_band(band)
+
+    points = boundary.points.detach().cpu().numpy()
+    target_t = np.mod(np.arctan2(points[:, 1] - CENTER[1], points[:, 0] - CENTER[0]), 2.0 * np.pi)
+    parameterization = circle_parameterization(CENTER, RADIUS)
+    strategies = {
+        "gpr_bem_qbx": (
+            gpr_bem_qbx.FullRowQBX(
+                source=gpr_bem_qbx.SameNodeSources(), source_workers=8, allow_invalid_clearance=True
+            ),
+            "qbx_1x",
+        ),
+        "qbx_fourier8": (
+            gpr_bem_qbx.FullRowQBX(
+                source_workers=8,
+                allow_invalid_clearance=True,
+                source=gpr_bem_qbx.ParameterizedFourierSources(
+                    parameterization=parameterization,
+                    oversampling_factor=8,
+                    target_parameters=target_t,
+                )
+            ),
+            "qbx_f8",
+        ),
+        "qbx_sdfraw8": (
+            gpr_bem_qbx.FullRowQBX(
+                source_workers=8,
+                allow_invalid_clearance=True,
+                source=gpr_bem_qbx.RawSDFBandSources(
+                    grid_refinement_factor=8,
+                    base_grid_shape=GRID,
+                )
+            ),
+            "qbx_s8",
+        ),
+    }
+    sources, receivers = _ring_scan()
+    exterior = gpr_bem_kdiff.Material(epsr=cfg.SAND_EPSR, sigma=cfg.SAND_SIGMA)
+    interior = gpr_bem_kdiff.Material(epsr=cfg.PLASTIC_EPSR, sigma=cfg.PLASTIC_SIGMA)
+
+    def reference(_frequency_hz, forward):
+        return gpr_bem_ref.penetrable_cylinder_scattered_field(
+            receivers,
+            sources,
+            k_exterior=forward.system.k_exterior,
+            k_interior=forward.system.k_interior,
+            radius=RADIUS,
+            center=CENTER,
+        )
+
+    return {
+        name: run_qbx_metrics(
+            boundary=boundary,
+            sources=sources,
+            receivers=receivers,
+            frequencies_hz=FREQUENCIES_HZ,
+            exterior=exterior,
+            interior=interior,
+            eps0=cfg.EPS0,
+            mu0=cfg.MU0,
+            t_assembly=strategy,
+            discretization=discretization,
+            sdf_fn=phi,
+            reference_field=reference,
+        )
+        for name, (strategy, discretization) in strategies.items()
+    }
 
 
 def _kernel_diff_metrics(num_samples: int) -> dict:
@@ -454,9 +541,11 @@ def perfect_sampling(request) -> bool:
 
 
 @pytest.fixture(scope="module")
-def comparison_results(perfect_sampling) -> dict[str, dict]:
+def comparison_results(perfect_sampling, include_qbx_archive) -> dict[str, dict]:
     results = {name: _run_solver(name, solver, perfect_sampling=perfect_sampling) for name, solver in SOLVERS}
     results["gpr_bem_kdiff"] = _kdiff_metrics(perfect_sampling)
+    if include_qbx_archive:
+        results.update(_qbx_rows(perfect_sampling))
     results["kernel_diff*"] = _kernel_diff_metrics(results["gpr_bem_mod"]["num_samples"])
     gprmax_metrics = _gprmax_metrics()
     if gprmax_metrics is not None:
@@ -528,11 +617,10 @@ def test_modified_solver_improves_circle_scattering_accuracy(comparison_results,
 # Generous relative to the measured ~1e-8 floor (see
 # docs/validation_change_log.md): this checks the kernel-differenced quadrature
 # has no gross regression, not that it stays at its current precision.
-# Loose, and only at the validation frequencies: gpr_bem_kdiff's off-diagonal
-# near-neighbour log correction for the hypersingular block is not built yet
-# (see docs/validation_change_log.md, "gpr_bem_kdiff v1 built and measured"),
-# so this checks for no gross regression, not for matching kernel_diff_ref's
-# accuracy. Measured on the real compressed boundary: 2.6e-4 / 3.1e-3 / 1.3e-2
+# Loose, and only at the validation frequencies: this frozen compressed-cloud
+# baseline checks for no gross regression, not for matching kernel_diff_ref's
+# accuracy; see docs/qbx_closure.md. Measured on the real compressed boundary:
+# 2.6e-4 / 3.1e-3 / 1.3e-2
 # at 0.5/1.5/2.5 GHz, roughly gpr_bem_mod's own order of magnitude; 8 GHz was
 # 1.7 (170%) and is intentionally not gated below.
 KDIFF_MAX_RELATIVE_ERROR = {0.5e9: 0.01, 1.5e9: 0.02, 2.5e9: 0.05}

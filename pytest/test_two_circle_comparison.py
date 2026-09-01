@@ -31,8 +31,11 @@ torch = pytest.importorskip("torch")
 import config.two_circle_config as cfg
 import gpr_bem_kdiff
 import gpr_bem_mod
+import gpr_bem_qbx
 import gpr_bem_ref
 from gprmax_ref import cache_io as gprmax_cache_io
+from nystrom_ref import circle_parameterization
+from qbx_comparison_support import run_qbx_metrics
 
 SOLVERS = (("gpr_bem_ref", gpr_bem_ref), ("gpr_bem_mod", gpr_bem_mod))
 
@@ -214,6 +217,92 @@ def _kdiff_metrics() -> dict:
     return metrics
 
 
+def _qbx_rows() -> dict[str, dict]:
+    phi = _phi_factory(gpr_bem_kdiff)
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", message="compress_implicit_boundary_band")
+        band = gpr_bem_kdiff.build_implicit_boundary_band(
+            phi, BOUNDS, grid_shape=GRID, dtype=torch.float64
+        )
+        boundary = gpr_bem_kdiff.compress_implicit_boundary_band(band)
+
+    points = boundary.points.detach().cpu().numpy()
+    radial_residuals = np.column_stack(
+        [np.abs(np.linalg.norm(points - center[None, :], axis=1) - radius) for center, radius in zip(CENTERS, RADII)]
+    )
+    component_labels = np.argmin(radial_residuals, axis=1)
+    components = []
+    for component_index, (center, radius) in enumerate(zip(CENTERS, RADII)):
+        indices = np.flatnonzero(component_labels == component_index)
+        relative = points[indices] - center[None, :]
+        target_t = np.mod(np.arctan2(relative[:, 1], relative[:, 0]), 2.0 * np.pi)
+        components.append(
+            gpr_bem_qbx.FourierComponent(
+                parameterization=circle_parameterization(tuple(center), float(radius)),
+                target_indices=indices,
+                target_parameters=target_t,
+            )
+        )
+    strategies = {
+        "gpr_bem_qbx": (
+            gpr_bem_qbx.FullRowQBX(
+                source=gpr_bem_qbx.SameNodeSources(), source_workers=8, allow_invalid_clearance=True
+            ),
+            "qbx_1x",
+        ),
+        "qbx_fourier8": (
+            gpr_bem_qbx.FullRowQBX(
+                source_workers=8,
+                allow_invalid_clearance=True,
+                source=gpr_bem_qbx.ComponentParameterizedFourierSources(
+                    components=tuple(components),
+                    oversampling_factor=8,
+                )
+            ),
+            "qbx_f8",
+        ),
+        "qbx_sdfraw8": (
+            gpr_bem_qbx.FullRowQBX(
+                source_workers=8,
+                allow_invalid_clearance=True,
+                source=gpr_bem_qbx.RawSDFBandSources(
+                    grid_refinement_factor=8,
+                    base_grid_shape=GRID,
+                )
+            ),
+            "qbx_s8",
+        ),
+    }
+    sources, receivers = _ring_scan()
+    exterior = gpr_bem_kdiff.Material(epsr=cfg.SAND_EPSR, sigma=cfg.SAND_SIGMA)
+    interior = gpr_bem_kdiff.Material(epsr=cfg.PLASTIC_EPSR, sigma=cfg.PLASTIC_SIGMA)
+    rows = {
+        name: run_qbx_metrics(
+            boundary=boundary,
+            sources=sources,
+            receivers=receivers,
+            frequencies_hz=FREQUENCIES_HZ,
+            exterior=exterior,
+            interior=interior,
+            eps0=cfg.EPS0,
+            mu0=cfg.MU0,
+            t_assembly=strategy,
+            discretization=discretization,
+            sdf_fn=phi,
+        )
+        for name, (strategy, discretization) in strategies.items()
+    }
+    # This case alone carries the delta-to-mod consistency diagnostic, because
+    # nystrom_ref is single-component only and cannot act as an oracle here.
+    # _attach_mod_deltas fills these in place and expects the key to exist, the
+    # same way _run_solver and _kdiff_metrics pre-seed it above.  It stays local
+    # to this file so the shared QBX helper keeps one metrics schema across all
+    # five cases.
+    for metrics in rows.values():
+        metrics["relative_delta_to_mod"] = {f: float("nan") for f in FREQUENCIES_HZ}
+    return rows
+
+
 def _gprmax_target_parameters() -> dict[str, list[list[float]] | list[float]]:
     relative_centers = CENTERS - np.asarray(CENTER, dtype=float)[None, :]
     return {
@@ -319,9 +408,11 @@ def _display_discretization(metrics: dict) -> str:
 
 
 @pytest.fixture(scope="module")
-def comparison_results() -> dict[str, dict]:
+def comparison_results(include_qbx_archive) -> dict[str, dict]:
     results = {name: _run_solver(name, solver) for name, solver in SOLVERS}
     results["gpr_bem_kdiff"] = _kdiff_metrics()
+    if include_qbx_archive:
+        results.update(_qbx_rows())
     _attach_mod_deltas(results)
     return results
 

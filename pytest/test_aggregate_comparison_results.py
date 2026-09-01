@@ -12,6 +12,8 @@ files and writes it under ``pytest/results/<case>/``:
 Run with::
 
     python -m pytest pytest/test_aggregate_comparison_results.py -s -q
+
+Add ``--include-qbx-archive`` only to reproduce the closed, slow QBX rows.
 """
 
 from __future__ import annotations
@@ -40,6 +42,7 @@ import matplotlib.pyplot as plt
 HERE = Path(__file__).resolve().parent
 RESULTS_ROOT = HERE / "results"
 AGGREGATE_METRICS_FILE = RESULTS_ROOT / "aggregate_metrics.md"
+ARCHIVED_QBX_ROWS = frozenset({"gpr_bem_qbx", "qbx_fourier8", "qbx_sdfraw8"})
 
 
 def _load_case_module(case: str) -> ModuleType:
@@ -54,9 +57,11 @@ def _load_case_module(case: str) -> ModuleType:
     return module
 
 
-def _circle_results(module: ModuleType) -> dict[str, dict]:
+def _circle_results(module: ModuleType, include_qbx_archive: bool) -> dict[str, dict]:
     results = {name: module._run_solver(name, solver, perfect_sampling=False) for name, solver in module.SOLVERS}
     results["gpr_bem_kdiff"] = module._kdiff_metrics(False)
+    if include_qbx_archive:
+        results.update(module._qbx_rows(False))
     results["kernel_diff*"] = module._kernel_diff_metrics(results["gpr_bem_mod"]["num_samples"])
     gprmax = module._gprmax_metrics()
     if gprmax is not None:
@@ -64,20 +69,24 @@ def _circle_results(module: ModuleType) -> dict[str, dict]:
     return results
 
 
-def _ellipse_results(module: ModuleType) -> dict[str, dict]:
+def _ellipse_results(module: ModuleType, include_qbx_archive: bool) -> dict[str, dict]:
     nystrom = module._nystrom_baseline()
     results = {name: module._run_solver(name, solver, nystrom) for name, solver in module.SOLVERS}
     results["gpr_bem_kdiff"] = module._kdiff_metrics(nystrom)
+    if include_qbx_archive:
+        results.update(module._qbx_rows(nystrom))
     gprmax = module._gprmax_metrics(nystrom)
     if gprmax is not None:
         results["gprmax"] = gprmax
     return results
 
 
-def _star_results(module: ModuleType) -> dict[str, dict]:
+def _star_results(module: ModuleType, include_qbx_archive: bool) -> dict[str, dict]:
     nystrom = module._nystrom_baseline()
     results = {name: module._run_solver(name, solver, nystrom) for name, solver in module.SOLVERS}
     results["gpr_bem_kdiff"] = module._kdiff_metrics(nystrom)
+    if include_qbx_archive:
+        results.update(module._qbx_rows(nystrom))
     gprmax = module._gprmax_metrics(nystrom)
     if gprmax is not None:
         results["gprmax"] = gprmax
@@ -109,9 +118,11 @@ def _synthetic_gprmax_timing_row(module: ModuleType, gprmax: dict) -> dict:
     }
 
 
-def _square_results(module: ModuleType) -> dict[str, dict]:
+def _square_results(module: ModuleType, include_qbx_archive: bool) -> dict[str, dict]:
     results = {name: module._run_solver(name, solver) for name, solver in module.SOLVERS}
     results["gpr_bem_kdiff"] = module._kdiff_metrics()
+    if include_qbx_archive:
+        results.update(module._qbx_rows())
     gprmax = module._gprmax_result()
     if gprmax is not None:
         module._attach_gprmax_errors(results, gprmax)
@@ -119,9 +130,11 @@ def _square_results(module: ModuleType) -> dict[str, dict]:
     return results
 
 
-def _two_circle_results(module: ModuleType) -> dict[str, dict]:
+def _two_circle_results(module: ModuleType, include_qbx_archive: bool) -> dict[str, dict]:
     results = {name: module._run_solver(name, solver) for name, solver in module.SOLVERS}
     results["gpr_bem_kdiff"] = module._kdiff_metrics()
+    if include_qbx_archive:
+        results.update(module._qbx_rows())
     gprmax = module._gprmax_result()
     if gprmax is not None:
         module._attach_gprmax_errors(results, gprmax)
@@ -353,7 +366,8 @@ def _minimum_errors_by_frequency(results: dict[str, dict], frequencies: list[flo
     for frequency in frequencies:
         values = [
             float(metrics.get("relative_error", {}).get(frequency, float("nan")))
-            for metrics in results.values()
+            for name, metrics in results.items()
+            if name not in ARCHIVED_QBX_ROWS
         ]
         finite = [value for value in values if np.isfinite(value)]
         minima[frequency] = min(finite) if finite else float("nan")
@@ -488,12 +502,12 @@ def _set_plot_limits(ax, *point_sets: np.ndarray) -> None:
     ax.set_ylim(midpoint[1] - half_width, midpoint[1] + half_width)
 
 
-def _export_case(case: str) -> dict[str, Any]:
+def _export_case(case: str, include_qbx_archive: bool) -> dict[str, Any]:
     module = _load_case_module(case)
     case_dir = RESULTS_ROOT / case
     case_dir.mkdir(parents=True, exist_ok=True)
 
-    results = CASE_BUILDERS[case](module)
+    results = CASE_BUILDERS[case](module, include_qbx_archive)
     boundary = _boundary_for_case(case, module)
     table = module._format_table(results)
     markdown_table = _format_markdown_metrics_table(module, results)
@@ -521,8 +535,9 @@ def _format_wallclock_summary(exports: list[dict[str, Any]]) -> str:
 
     Coverage is deliberately part of each row label: BEM timings cover all 24
     Tx/Rx pairs, while the cached gprMax timing covers one representative pair.
-    The ratio row is therefore a raw measured-time comparison, not an
-    equal-work normalization.
+    No cross-coverage ratio is emitted because that would not be an equal-work
+    normalization; circle symmetry makes even a simple 24x extrapolation
+    invalid for that case.
     """
 
     case_order = [str(export["case"]) for export in exports]
@@ -536,16 +551,6 @@ def _format_wallclock_summary(exports: list[dict[str, Any]]) -> str:
     aligns = ["---"] + ["---:"] * len(case_order)
     lines = ["| " + " | ".join(headers) + " |", "| " + " | ".join(aligns) + " |"]
 
-    fastest_bem_by_case: dict[str, float] = {}
-    gprmax_by_case: dict[str, float] = {}
-    for export in exports:
-        case = str(export["case"])
-        for name, seconds in export["elapsed_seconds"].items():
-            if name == "gprmax":
-                gprmax_by_case[case] = seconds
-            elif seconds < fastest_bem_by_case.get(case, float("inf")):
-                fastest_bem_by_case[case] = seconds
-
     for solver_name in solver_order:
         coverage = "1 pair" if solver_name == "gprmax" else "24 pairs"
         row = [_markdown_escape(f"{solver_name} ({coverage})")]
@@ -554,13 +559,6 @@ def _format_wallclock_summary(exports: list[dict[str, Any]]) -> str:
             row.append(f"{seconds:.2f}" if seconds is not None else "--")
         lines.append("| " + " | ".join(row) + " |")
 
-    ratio_row = ["*gprMax 1-pair / fastest BEM 24-pair*"]
-    for case in case_order:
-        if case in gprmax_by_case and case in fastest_bem_by_case and fastest_bem_by_case[case] > 0:
-            ratio_row.append(f"*{gprmax_by_case[case] / fastest_bem_by_case[case]:.0f}x*")
-        else:
-            ratio_row.append("*n/a*")
-    lines.append("| " + " | ".join(ratio_row) + " |")
     return "\n".join(lines)
 
 
@@ -570,14 +568,20 @@ def _write_aggregate_metrics_file(exports: list[dict[str, Any]]) -> None:
         "",
         "This file is regenerated by `pytest/test_aggregate_comparison_results.py`.",
         "",
+        "QBX rows are emitted only with `--include-qbx-archive`. They are archived "
+        "diagnostics, not production candidates. Their "
+        "accuracy is mixed, every stored oversampled row has invalid QBX clearance, "
+        "and their measured cost is substantially above `gpr_bem_mod`/`gpr_bem_kdiff`. "
+        "See `docs/qbx_closure.md` for the decision, qualifications, and reopening "
+        "criteria.",
+        "",
         "## Wall-Clock Comparison",
         "",
         "Raw measured seconds for one full six-frequency sweep on each shape. "
         "BEM rows cover the full 24-pair ring in each solve; the cached gprMax "
-        "row covers one representative Tx/Rx pair and would require separate "
-        "simulations for the other pairs. The ratio row intentionally compares "
-        "those measured totals and is therefore conservative for BEM, not an "
-        "equal-work normalization. See "
+        "row covers one representative Tx/Rx pair. These unequal-coverage raw "
+        "timings are reported without a ratio and must not be interpreted as an "
+        "equal-work speedup. See "
         "`docs/gprmax_reference_study.md` for how the gprMax number is measured "
         "(a genuinely single-frequency `contsine` FDTD run per frequency, not a "
         "broadband pulse) and `docs/validation_change_log.md` for the "
@@ -585,6 +589,23 @@ def _write_aggregate_metrics_file(exports: list[dict[str, Any]]) -> None:
         "comparable with.",
         "",
         _format_wallclock_summary(exports),
+        "",
+        "## QBX row definitions and status",
+        "",
+        "`gpr_bem_qbx` is the plain same-node full-row operator (1x sources, identity "
+        "prolongation). `qbx_fourier8` uses exactly eight analytic source nodes per "
+        "target with Fourier-collocation prolongation; disconnected curves are treated "
+        "component by component. `qbx_sdfraw8` means an 8x-refined Cartesian SDF grid, "
+        "not exactly 8N sources: the retained raw narrow band can contain many source "
+        "points per target.",
+        "",
+        "These QBX rows are archived experimental diagnostics. `metrics.json` records the actual "
+        "source ratio, Fourier collocation condition, constant-prolongation error, and "
+        "QBX clearance counts for every frequency. A finite solve does not override an "
+        "invalid clearance count; such a row must not be presented as a convergent QBX "
+        "result until its expansion geometry is made admissible. Accuracy is mixed rather "
+        "than uniformly worse, but no row supplies a robust, admissible accuracy/runtime "
+        "improvement; see `docs/qbx_closure.md`.",
         "",
     ]
     for export in exports:
@@ -601,7 +622,7 @@ def _write_aggregate_metrics_file(exports: list[dict[str, Any]]) -> None:
                 "",
                 f"Data folder: `{case_dir.relative_to(HERE)}`",
                 "",
-                "Lowest finite value in each error column is bolded.",
+                "Lowest finite value among non-archived rows in each error column is bolded.",
                 "",
                 str(export["markdown_table"]),
                 "",
@@ -610,10 +631,10 @@ def _write_aggregate_metrics_file(exports: list[dict[str, Any]]) -> None:
     AGGREGATE_METRICS_FILE.write_text("\n".join(lines))
 
 
-def test_aggregate_comparison_results() -> None:
+def test_aggregate_comparison_results(include_qbx_archive) -> None:
     exports = []
     for case in CASE_BUILDERS:
-        export = _export_case(case)
+        export = _export_case(case, include_qbx_archive)
         exports.append(export)
         print(f"{case}: wrote {export['case_dir'].relative_to(HERE)}")
     _write_aggregate_metrics_file(exports)
@@ -639,7 +660,8 @@ def test_aggregate_comparison_results() -> None:
     assert "**" in aggregate_text
     assert "gprmax (1 pair)" in aggregate_text
     assert "gpr_bem_kdiff (24 pairs)" in aggregate_text
-    assert "not an equal-work normalization" in aggregate_text
+    assert "must not be interpreted as an equal-work speedup" in aggregate_text
+    assert "gprMax 1-pair / fastest BEM" not in aggregate_text
 
     for case in ("square", "two_circle"):
         table_text = (RESULTS_ROOT / case / "table.txt").read_text().lower()

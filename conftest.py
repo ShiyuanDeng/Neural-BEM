@@ -24,6 +24,8 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
+import pytest
+
 sys.path.insert(0, str(Path(__file__).resolve().parent / "solvers"))
 
 import solver_select
@@ -49,6 +51,15 @@ def pytest_addoption(parser):
             "to isolate how much error node irregularity is responsible for."
         ),
     )
+    parser.addoption(
+        "--include-qbx-archive",
+        action="store_true",
+        default=False,
+        help=(
+            "Run the archived, slow QBX comparison rows. These diagnostics may "
+            "explicitly allow invalid expansion clearance and are not production gates."
+        ),
+    )
 
 
 def pytest_configure(config):
@@ -58,3 +69,10 @@ def pytest_configure(config):
 def pytest_report_header(config):
     package = solver_select.SOLVER_NAMES[config.getoption("--solver")]
     return f"solver: {package}  ({solver_select.SOLVERS_DIR / package})"
+
+
+@pytest.fixture(scope="session")
+def include_qbx_archive(request) -> bool:
+    """Whether explicitly archived QBX comparison rows should be reproduced."""
+
+    return bool(request.config.getoption("--include-qbx-archive"))

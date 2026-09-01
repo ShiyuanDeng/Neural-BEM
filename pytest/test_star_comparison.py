@@ -30,9 +30,11 @@ torch = pytest.importorskip("torch")
 import config.star_config as cfg
 import gpr_bem_kdiff
 import gpr_bem_mod
+import gpr_bem_qbx
 import gpr_bem_ref
 from gprmax_ref import cache_io as gprmax_cache_io
 from nystrom_ref import build_curve, solve_transmission, star_parameterization
+from qbx_comparison_support import run_qbx_metrics
 
 SOLVERS = (("gpr_bem_ref", gpr_bem_ref), ("gpr_bem_mod", gpr_bem_mod))
 
@@ -244,6 +246,72 @@ def _kdiff_metrics(nystrom: dict) -> dict:
     return metrics
 
 
+def _qbx_rows(nystrom: dict) -> dict[str, dict]:
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", message="compress_implicit_boundary_band")
+        band = gpr_bem_kdiff.build_implicit_boundary_band(
+            _star_level_set, BOUNDS, grid_shape=GRID, dtype=torch.float64
+        )
+        boundary = gpr_bem_kdiff.compress_implicit_boundary_band(band)
+
+    points = boundary.points.detach().cpu().numpy()
+    target_t = np.mod(
+        np.arctan2(points[:, 1] - CENTER[1], points[:, 0] - CENTER[0]),
+        2.0 * np.pi,
+    )
+    strategies = {
+        "gpr_bem_qbx": (
+            gpr_bem_qbx.FullRowQBX(
+                source=gpr_bem_qbx.SameNodeSources(), source_workers=8, allow_invalid_clearance=True
+            ),
+            "qbx_1x",
+        ),
+        "qbx_fourier8": (
+            gpr_bem_qbx.FullRowQBX(
+                source_workers=8,
+                allow_invalid_clearance=True,
+                source=gpr_bem_qbx.ParameterizedFourierSources(
+                    parameterization=star_parameterization(CENTER, MEAN_RADIUS, AMPLITUDE, LOBES),
+                    oversampling_factor=8,
+                    target_parameters=target_t,
+                )
+            ),
+            "qbx_f8",
+        ),
+        "qbx_sdfraw8": (
+            gpr_bem_qbx.FullRowQBX(
+                source_workers=8,
+                allow_invalid_clearance=True,
+                source=gpr_bem_qbx.RawSDFBandSources(
+                    grid_refinement_factor=8,
+                    base_grid_shape=GRID,
+                )
+            ),
+            "qbx_s8",
+        ),
+    }
+    sources, receivers = _ring_scan()
+    exterior = gpr_bem_kdiff.Material(epsr=cfg.SAND_EPSR, sigma=cfg.SAND_SIGMA)
+    interior = gpr_bem_kdiff.Material(epsr=cfg.PLASTIC_EPSR, sigma=cfg.PLASTIC_SIGMA)
+    return {
+        name: run_qbx_metrics(
+            boundary=boundary,
+            sources=sources,
+            receivers=receivers,
+            frequencies_hz=FREQUENCIES_HZ,
+            exterior=exterior,
+            interior=interior,
+            eps0=cfg.EPS0,
+            mu0=cfg.MU0,
+            t_assembly=strategy,
+            discretization=discretization,
+            sdf_fn=_star_level_set,
+            reference_field=nystrom["scattered"],
+        )
+        for name, (strategy, discretization) in strategies.items()
+    }
+
+
 def _gprmax_target_parameters() -> dict[str, float | int]:
     return {"mean_radius": MEAN_RADIUS, "amplitude": AMPLITUDE, "lobes": LOBES}
 
@@ -341,9 +409,11 @@ def nystrom_baseline() -> dict:
 
 
 @pytest.fixture(scope="module")
-def comparison_results(nystrom_baseline) -> dict[str, dict]:
+def comparison_results(nystrom_baseline, include_qbx_archive) -> dict[str, dict]:
     results = {name: _run_solver(name, solver, nystrom_baseline) for name, solver in SOLVERS}
     results["gpr_bem_kdiff"] = _kdiff_metrics(nystrom_baseline)
+    if include_qbx_archive:
+        results.update(_qbx_rows(nystrom_baseline))
     gprmax = _gprmax_metrics(nystrom_baseline)
     if gprmax is not None:
         results["gprmax"] = gprmax

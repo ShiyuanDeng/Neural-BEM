@@ -4,6 +4,8 @@ This directory now keeps only the Neural-SDF/IBIM mainline tests.
 
 - `test_neural_sdf.py`: SIREN SDF utilities, contour extraction, and surrogate losses.
 - `test_ibim_geometry.py`: implicit-boundary sampling, compression, and quadrature geometry.
+- `artefacts/test_kdiff_t_assembly.py`: T-strategy isolation, legacy parity,
+  full-row QBX source modes, and system-quadrant invariance.
 - `test_ibim_tmz_forward.py`: implicit-boundary layer-potential and operator assembly.
 - `test_ibim_tmz_system.py`: implicit TMz forward system assembly and CPU/GPU consistency.
 - `test_ibim_tmz_adjoint.py`: IBIM adjoint contexts and leading-order shape gradients.
@@ -30,14 +32,24 @@ This directory now keeps only the Neural-SDF/IBIM mainline tests.
   `geometry.png` files under `pytest/results/<case>/`, plus a combined
   `pytest/results/aggregate_metrics.md` report that states each case baseline.
 
-All five comparison files also carry a `gpr_bem_kdiff` row -- a third solver
-*package* (`solvers/gpr_bem_kdiff/`), kernel-differenced quadrature assembled
-directly on the real (or, for the circle under `--perfect-sampling`, perfect)
-boundary, no finite trace offset. Its off-diagonal near-neighbour log
-correction for the hypersingular block isn't built yet, so it's gated loosely
-on the circle only; on ellipse/star/two-circle it's printed for visibility, not
-gated.
-See `docs/validation_change_log.md` for what's measured and why.
+All five comparison files carry a `gpr_bem_kdiff` row plus three assemblies
+that use its identical solve path and replace only the hypersingular `T` block
+when `--include-qbx-archive` is supplied:
+
+- `gpr_bem_qbx`: same-node, no-oversampling full-row QBX;
+- `qbx_fourier8`: 8x analytic Fourier sources (component-wise for two circles);
+- `qbx_sdfraw8`: raw band from an 8x-refined SDF grid with IDW prolongation.
+
+The last label describes grid refinement, not an exactly 8N source count; the
+actual ratio and QBX clearance diagnostics are stored in each `metrics.json`.
+These rows are experimental and are not accuracy-gated. `gpr_bem_kdiff`
+itself is kernel-differenced quadrature assembled directly on the real (or,
+for the circle under `--perfect-sampling`, perfect) boundary with no finite
+trace offset.
+They are retained as closeout evidence, not as candidate production solvers.
+One regenerated five-shape pass over all three QBX rows took about 24.7
+minutes, so they are omitted by default. See `docs/qbx_closure.md` for the decision and
+`docs/validation_change_log.md` for the chronological experiments.
 
 ## Choosing a solver
 
@@ -72,6 +84,10 @@ python -m pytest pytest/test_ellipse_comparison.py -s -q
 python -m pytest pytest/test_star_comparison.py -s -q
 python -m pytest pytest/test_two_circle_comparison.py -s -q
 python -m pytest pytest/test_aggregate_comparison_results.py -s -q
+
+# Explicitly reproduce the archived QBX rows (slow; not a production gate):
+python -m pytest pytest/test_aggregate_comparison_results.py \
+  --include-qbx-archive -s -q
 ```
 
 `test_circle_comparison.py` also accepts `--perfect-sampling`, a diagnostic
