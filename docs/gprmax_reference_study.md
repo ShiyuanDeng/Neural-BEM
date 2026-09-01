@@ -299,8 +299,11 @@ one row per solver, including gprMax. The generated file is the canonical
 source for the measured values because BEM timings vary from run to run.
 Coverage is shown explicitly there: every BEM row covers the full 24-pair
 ring, whereas the cached gprMax row covers one representative Tx/Rx pair per
-frequency. Its ratio row compares those raw measured totals and is therefore
-conservative for BEM; it is not presented as an equal-work normalization.
+frequency. The report intentionally emits no ratio between those unequal
+workloads. In particular, rotational symmetry makes the one-pair circle cache
+representative of the ring, while full nonsymmetric 24-pair gprMax workloads
+have not been measured. The raw timing rows must not be read as an equal-work
+speedup claim.
 
 Per-frequency, harmonic mode's cost is roughly flat across the sweep (cell
 size and time window both scale with wavelength, so iteration count is

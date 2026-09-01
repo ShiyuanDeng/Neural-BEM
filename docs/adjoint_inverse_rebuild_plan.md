@@ -16,12 +16,14 @@ This plan covers bringing `solvers/gpr_bem_mod/ibim_tmz_adjoint.py` and
 "Muller formulation and analytic normal-derivative kernels").
 
 **`gpr_bem_kdiff` is explicitly out of scope.** It has no `ibim_tmz_adjoint.py`
-or `ibim_inverse.py` at all, and per `docs/ibim_error_mitigation_literature_codex.md`
-§0, building an adjoint against a forward operator that is itself still
-missing a load-bearing correction (the off-diagonal log-singular term for
-`T` — see `docs/validation_change_log.md`, "`gpr_bem_qbx` built and measured")
-is the exact trap that section warns against. If `kdiff` is later finalized,
-this plan should be re-run against it, not extended to cover it now.
+or `ibim_inverse.py`. The later QBX/kdiff investigation showed that treating a
+missing off-diagonal log correction as the next load-bearing fix was too
+narrow: near-band QBX did not change the fields materially, and full-row QBX
+did not produce a robust, admissible improvement on the compressed target
+cloud. `gpr_bem_kdiff` is now frozen as an experimental baseline; see
+[`qbx_closure.md`](qbx_closure.md). If an ordered-boundary solver is later
+promoted, derive its adjoint from its complete accepted discretization rather
+than extending this plan piecemeal.
 
 This is "forward finalized" in the sense Phase H of the codex requires:
 Müller formulation chosen, circle validation automatic, `analytic_extrapolated`

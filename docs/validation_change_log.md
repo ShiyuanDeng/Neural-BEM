@@ -1,5 +1,12 @@
 # Validation Change Log
 
+> Current disposition (2026-09-01): the compressed-cloud QBX/kdiff
+> investigation is closed as an active production direction. See
+> [`qbx_closure.md`](qbx_closure.md) for the evidence, limitations, retained
+> artifacts, and ordered-boundary Kress/Nyström handoff. Earlier “next steps”
+> below are preserved as chronological research history and are not current
+> implementation instructions.
+
 2026-08-21
 
 ## Scope
@@ -1186,7 +1193,7 @@ the same conclusion: correcting only the diagonal, while leaving T's
 near-diagonal-but-not-at-it log behaviour uncorrected, is not sufficient to
 recover `kernel_diff_ref`'s ~1e-8 to 1e-13 result. That correction is
 necessary, not an optional refinement -- contrary to the hope stated in the
-"Current near-term target" section of Phase E.
+"Historical near-term target" section of Phase E.
 
 ### Reading, without digging into why yet
 
@@ -1309,7 +1316,8 @@ A fourth solver package, `solvers/gpr_bem_qbx/`, forked from `gpr_bem_kdiff`
 byte-identical, only the formulation files diverge). Only
 `ibim_tmz_forward.py` changed relative to `gpr_bem_kdiff`, plus one new file:
 
-- `qbx_kernels.py` -- the QBX construction. Graf's addition theorem gives a
+- `qbx_kernels.py` (now archived as `scratchpad/qbx_legacy_near_band.py`) --
+  the historical QBX construction. Graf's addition theorem gives a
   local cylindrical-harmonic expansion of the kernel about an off-curve
   expansion center, truncated at a finite order; the single-layer block is
   that expansion directly, the other three come from differentiating it once
@@ -1342,8 +1350,10 @@ wrong, and both were caught by direct measurement rather than by inspection:
   separation instead of the true, generically nonzero, curvature-dependent
   limit -- not a convergence problem fixable by more terms, a genuine
   degeneracy. No radius fixes this, so the diagonal keeps `gpr_bem_kdiff`'s
-  own already-validated `_diagonal_terms` unchanged; QBX is only ever applied
-  to genuinely distinct neighbour nodes.
+  legacy `_diagonal_terms` unchanged. Its underlying limit machinery was
+  validated on an exact circle; the fitted per-node approximation on irregular
+  noncircular/corner geometry remains a separate limitation. QBX is only ever
+  applied to genuinely distinct neighbour nodes.
 - **Radius vs. spacing**: for a fixed source at arc-distance `s` from the
   target, `|y-c|/|x-c| - 1 ~ s^2 / (2 r^2)` -- so *increasing* `r` at fixed
   `s` pushes the nearest neighbour's distance ratio *closer* to 1 (slower
@@ -1351,8 +1361,8 @@ wrong, and both were caught by direct measurement rather than by inspection:
   sits at distance-ratio ~1.06 and does not converge even at 40 expansion
   terms (~1 correct digit). At `r ~ 0.5h` (smaller than the spacing) the same
   neighbour sits at ratio ~2.2 and converges to 6+ digits by order 20,
-  matching the closed-form `_difference_kernels` result on well-separated
-  pairs to the same precision. Shipped defaults:
+  matching the closed-form `_difference_kernels` result on the tested
+  well-separated pair to the same precision. Shipped defaults:
   `radius_spacing_factor=0.5`, `radius_curvature_factor=0.2` (upper bound
   from local radius of curvature, unchanged reasoning from `gpr_bem_kdiff`'s
   own radius clipping), `expansion_order=20`, `band_factor=8`.
@@ -1400,20 +1410,15 @@ relative (max over all four blocks), against matrix entries of order
 The hypothesis that motivated this build -- that `gpr_bem_kdiff`'s missing
 off-diagonal-but-nearby log-singular correction for T explains its gap
 against `gpr_bem_mod` on ellipse/star -- is not supported by this
-measurement. QBX is verified correct (matches the closed-form kernel to
-1e-13 on well-separated pairs) and verified to actually execute on the near-
-diagonal band, and it moves those specific matrix entries by less than 1e-8
-relative. That is far too small to account for the multi-percent-to-tens-of-
-percent relative-error gap observed against `gpr_bem_mod`. Conclusion: at
-the resolutions tested (N ~ 120-170), plain Nystrom quadrature is already
-accurate near (not at) the diagonal, and whatever causes `gpr_bem_kdiff` to
-trail `gpr_bem_mod` on curved shapes is something QBX in this scope does not
-touch -- most likely the local-osculating-circle diagonal fit itself
-(`_diagonal_terms`, shared unchanged by both `gpr_bem_kdiff` and
-`gpr_bem_qbx`), not yet isolated. Not tested here: the square/corner case --
-expected, not yet measured, to fail the same way `gpr_bem_kdiff` does, since
-both size their local geometry (diagonal fit and QBX expansion radius alike)
-from the same neighbour-curvature estimate that is meaningless at a corner.
+measurement. The tested row algebra matches one separated circle pair and the
+near-band path genuinely executes. Same-node QBX converges back to the same
+pointwise distinct-node kernels and leaves the solve unchanged. This rules out
+pointwise evaluation error in those replaced entries as the dominant cause at
+the tested resolutions. It does **not** establish the accuracy of the
+underlying near-singular quadrature or isolate the local diagonal as the
+remaining cause. Those questions required the later operator-level and
+source/target probes recorded below. The square/corner case was not tested in
+this particular near-band experiment.
 
 ## Revised QBX diagonal/T-operator probe: bounded diagonals help locally, T-QBX needs source oversampling
 
@@ -1585,8 +1590,9 @@ This shows the expected useful window: source oversampling lowers the
 coefficient quadrature error, but simply increasing `P` eventually makes the
 result worse.
 
-At `rho/h=1.0`, `P=16`, `8x` source oversampling, the T-action probe is
-excellent across all requested shapes/frequencies:
+At `rho/h=1.0`, `P=16`, `8x` source oversampling, this ideal ordered
+analytic-curve T-action probe is excellent on the tested shapes over
+0.5--2.5 GHz:
 
 | shape | 0.5 GHz | 1.5 GHz | 2.5 GHz |
 |---|---:|---:|---:|
@@ -1621,8 +1627,9 @@ A 1x source control on the same parameterized circle is much worse:
 | parameterized `T_QBX` solve | 1x | 2.5999e-3 |
 | parameterized `T_QBX` solve | 8x | 5.2186e-11 |
 
-That pins the issue to source quadrature, not the target-side derivative
-formula or Muller signs.
+Within this structured circle control, the 1x-to-8x change isolates coefficient
+quadrature rather than the target-side derivative formula or Müller signs. It
+does not pin the production compressed-cloud forward gap to source quadrature.
 
 ### Current reading
 
@@ -1633,18 +1640,23 @@ The revised diagnosis is now sharper:
 2. Those bounded diagonals alone do not explain the remaining curved-shape
    forward error.
 3. `T` must be treated as an operator, not as a finite pointwise diagonal.
-4. Operator-level `T_QBX` is accurate only when the coefficient quadrature is
-   oversampled.
+4. At the tested node counts/radius/order, operator-level `T_QBX` is accurate
+   only after coefficient-quadrature oversampling.
 5. A same-`N` dense matrix replacement for `T` is a dead end. It fails the
    circle negative control.
-6. A parameterized, globally ordered solve with Fourier density prolongation
-   validates the mathematical `T_QBX` construction very strongly.
-7. The production blocker is no longer the Graf/T derivative convention. The
-   blocker is building a validated oversampled-source quadrature and density
-   prolongation for the real compressed IBIM boundary without relying on a
-   global curve parameterization.
+6. A parameterized, globally ordered smooth-curve solve with Fourier density
+   prolongation strongly validates the mathematical `T_QBX` construction over
+   the tested 0.5--2.5 GHz range.
+7. The Graf/T derivative convention is not the immediate blocker. The later
+   probes below test whether source geometry/transfer alone can bridge this
+   result to the compressed targets.
 
-### Next steps
+### Historical next steps (now superseded)
+
+These source-side follow-ups were the next experiments at this point in the
+chronology. They were superseded by the five-shape full-row results and the
+decision in [`qbx_closure.md`](qbx_closure.md); do not continue them as the
+current forward-solver plan.
 
 Do not move the current same-source `EXP_T_OPERATOR_QBX` into production.
 
@@ -1854,7 +1866,10 @@ geometry and Fourier density prolongation.  This raw SDF-band experiment
 replaces the geometry part reasonably well after re-projection, but not the
 density prolongation part.
 
-### Next steps
+### Historical next step (completed by the following probe)
+
+This proposed ordered-transfer diagnostic was carried out in the “Perfect
+boundary knowledge” entry below. It did not remove the ellipse/star floor.
 
 The next diagnostic should replace IDW with a tangential/ordered interpolation
 for smooth single-component compressed boundaries:
@@ -1927,20 +1942,246 @@ per frequency, because a BEM
 factorization handles every Tx/Rx pair as an extra right-hand-side column
 almost for free.
 
-gprMax cannot do that: a different Tx/Rx pair is a different simulation, so
-matching the BEM rows' 24-pair coverage would need roughly 24 separate runs
-per frequency, not one. Extrapolating (not measured) gprMax's circle 0.5 GHz
-cost to 24 pairs: `24 * 35.45 s ~ 850 s`. The operator-level `T_QBX`
-diagnostic's slowest measured configuration -- circle, 8x source
-oversampling, one 0.5 GHz forward solve covering all 24 ring pairs in one
-factorization, from the "ideal source oversampling" timing table above --
-took 39.2 s. That is the fair comparison this section set out to make: on the
-numbers measured so far, the QBX diagnostic is roughly **20x faster** than a
-24-pair-equivalent gprMax run at the same frequency, not the ~5x estimated
-earlier from an extrapolated (not measured) broadband-FDTD number. It answers
-the original "we can't be slower than that" question: on this evidence, it is
-not, and the earlier extrapolation from a single broadband pair understated
-the actual FDTD-vs-BEM cost gap once symmetry stops covering every pair. The
-QBX diagnostic is also unoptimized scratchpad code (dense Python-loop matrix
-assembly), while gprMax is a mature, compiled solver -- a further reason not
-to read this as a tight margin.
+For a nonsymmetric shape, a different Tx/Rx pair requires a different gprMax
+simulation, so matching the BEM rows' 24-pair coverage would require more work
+than the cached one-pair row. That full workload was not measured. The circle
+is an important exception: rotational symmetry makes its one cached pair
+representative of the whole ring, so multiplying the circle timing by 24 is
+not a fair equal-work normalization. The earlier `24 * 35.45 s` extrapolation
+and resulting “QBX is roughly 20x faster” statement are therefore withdrawn.
+The aggregate report retains only raw measured totals with coverage labels; it
+does not establish an equal-work gprMax/QBX speed ratio. The QBX closeout
+instead compares QBX with `mod` and `kdiff`, whose BEM workloads are identical;
+see [`qbx_closure.md`](qbx_closure.md).
+
+## "Perfect boundary knowledge" prolongation probe: does ordering fix ellipse?
+
+Date: 2026-09-01
+
+### Motivation
+
+The previous entry ("Raw SDF-band source oversampling for operator-level
+`T_QBX`") isolated two separate things needed for the raw-source `T_QBX`
+diagnostic to work: (1) target/source geometry both on the SDF zero set, and
+(2) a density prolongation from compressed targets to oversampled sources
+better than local Euclidean IDW. With reprojection fixed, circle and star
+improved with source oversampling but ellipse got *worse* (5.73e-3 @4x,
+5.72e-3 @8x, vs the `gpr_bem_kdiff` baseline 4.32e-3). The stated next step
+was: replace IDW with an ordered/smooth density prolongation, keeping
+everything else the same, and see whether that alone fixes ellipse.
+
+### What was added
+
+`scratchpad/qbx_diagonal_probe.py` gained a second, opt-in "condition B" mode
+for the existing `--ibim-source-t-solve` probe: `--ibim-perfect-prolongation`.
+It keeps the real compressed IBIM boundary as the unknown/target grid (same
+`S/D/Kp` blocks, same target reprojection, same solve/evaluation code as
+condition A), but replaces exactly the source construction and density
+prolongation:
+
+- **Parameter recovery**: each (reprojected) compressed target point's curve
+  parameter `t` is recovered analytically, reusing the closed-form inversions
+  already in the script (`_point_parameter`/`_point_parameters` --
+  `arctan2` for circle/star, the semi-axis-scaled `arctan2` for the ellipse).
+  Since targets are reprojected onto the SDF zero set first, these points sit
+  exactly on the analytic curve, so this closed-form inversion *is* the
+  closest-point parameter, not merely a proxy for it.
+- **Sources**: built directly from `nystrom_ref`'s
+  `circle_parameterization`/`ellipse_parameterization`/`star_parameterization`
+  via `build_curve`, uniform in `t`, at `source_factor * num_target` nodes
+  (new helper `_analytic_oversampled_source_samples`). These points/normals
+  are exact by construction -- no SDF band sampling, no reprojection, no
+  possible geometric error.
+- **Prolongation**: a new `_periodic_spline_prolongation_matrix` builds a
+  periodic cubic spline through the target samples sorted by their recovered
+  `t` (with a wrap-around knot to close the period) and evaluates it at the
+  source `t` values. Because cubic-spline interpolation is linear in the
+  sample values for fixed knots/query points, the whole map is produced as
+  one matrix (by spline-interpolating a permutation/one-hot matrix instead of
+  looping columns), so it drops into the same
+  `_qbx_operator_t_matrix_with_source_prolongation` assembly condition A
+  already used.
+
+No production solver code was touched; both conditions live only in the
+scratchpad script.
+
+### Measured: 0.5 GHz, `P=16`, `rho/h=0.5`, both target and (for condition A)
+### source reprojection onto the SDF zero set
+
+Baselines rerun to confirm current values (not just taken from the log):
+
+| shape | gpr_bem_mod | gpr_bem_kdiff |
+|---|---:|---:|
+| circle | 3.2409e-04 | 2.6157e-04 |
+| ellipse | 3.1849e-03 | 4.3220e-03 |
+| star | 4.1089e-03 | 1.0854e-02 |
+
+Condition A (IDW prolongation, "no parameterisation knowledge") and condition
+B (analytic parameterization + periodic-spline prolongation, "perfect
+boundary knowledge"), relative scattered-field error vs Mie (circle) or
+`nystrom_ref` N=512 (ellipse/star):
+
+| shape | cond | 1x | 2x | 4x | 8x |
+|---|---|---:|---:|---:|---:|
+| circle | A (IDW) | 4.6139e-04 | 4.9080e-04 | 2.2044e-04 | 1.9594e-04 |
+| circle | B (perfect) | 8.3239e-04 | 4.3238e-04 | 3.1486e-04 | 2.6977e-04 |
+| ellipse | A (IDW) | 6.5904e-03 | 5.8334e-03 | 5.7300e-03 | 5.7247e-03 |
+| ellipse | B (perfect) | 5.7154e-03 | 5.3440e-03 | 5.3627e-03 | 5.3529e-03 |
+| star | A (IDW) | 6.5767e-03 | 6.3190e-03 | 7.0832e-03 | 7.6924e-03 |
+| star | B (perfect) | 7.8519e-03 | 7.1531e-03 | 7.2674e-03 | 7.2695e-03 |
+
+The 4x/8x condition-A entries reproduce the previous log's numbers exactly
+(circle 2.2044e-4/1.9594e-4, ellipse 5.7300e-3/5.7247e-3, star
+7.0832e-3/7.6924e-3); 1x/2x are new data points, run for the first time here.
+No gross clearance violation was reported: `clear=1.000` for most runs and
+`0.996-0.997` for star at higher condition-A factors. Equality/tolerance-level
+`bad` pairs remain, however, so strict QBX admissibility was not established.
+
+### Reading: the density-prolongation hypothesis is only partly confirmed
+
+- **Circle**: condition B converges cleanly and monotonically with source
+  count (8.32e-4 -> 4.32e-4 -> 3.15e-4 -> 2.70e-4), unlike condition A, which
+  has a non-monotonic blip at 2x (4.61e-4 -> 4.91e-4) before improving. That
+  monotonic trend is itself useful evidence that the analytic source geometry
+  and spline prolongation are behaving as intended. But condition B's
+  absolute error is *worse* than condition A at every matched factor, and at
+  8x it lands close to but still slightly above the `gpr_bem_kdiff` baseline
+  (2.70e-4 vs 2.62e-4) rather than clearly beating it the way condition A did
+  (1.96e-4).
+- **Ellipse**: condition B is a real but modest improvement over condition A
+  (~5.35e-3 vs ~5.73-5.83e-3, roughly 7-9% lower), but it does **not** fix
+  ellipse. Error is flat from 2x onward and never approaches, let alone beats,
+  the `gpr_bem_kdiff` baseline (4.32e-3). Both conditions plateau at a level
+  worse than the plain kdiff solve.
+- **Star**: condition B (7.85e-3 -> 7.15e-3 -> 7.27e-3 -> 7.27e-3) plateaus in
+  the same range as condition A's better values (6.32-7.08e-3), with no clear
+  win either way, and neither condition shows monotonic improvement with
+  oversampling past 2x.
+
+**Answer to the motivating question: no**, replacing IDW with an
+ordered/smooth prolongation over an exact analytic source curve does not, by
+itself, fix ellipse while preserving the circle/star gains from condition A.
+It only slightly narrows ellipse's gap and leaves the qualitative picture
+unchanged: ellipse and star both plateau well before the geometric-oversampling
+benefit seen on the circle. Condition B removes analytic source-geometry error
+and replaces the original IDW map with one periodic-spline transfer. It
+therefore rules out raw source count or that original IDW construction as the
+whole explanation, not density transfer in general. The remaining floor may
+come from the fixed compressed-target geometry/weights, unchanged direct
+`S/D/Kp` blocks, QBX T evaluation, residual transfer error, or an interaction
+among them. This experiment does not uniquely isolate a target-side cause.
+
+### Historical next steps (superseded by closeout)
+
+These were possible target-side isolation experiments, not production tasks.
+The decision in [`qbx_closure.md`](qbx_closure.md) stops further tuning on the
+compressed cloud and moves the forward path to ordered-boundary Kress/Nyström.
+
+- Rerun this probe with target reprojection but a *finer* target grid (larger
+  `N`) to see whether the ellipse/star plateaus fall when the compressed
+  target discretization itself is refined, isolating whether the floor is a
+  target-side or `T`-operator-side effect.
+- Directly compare condition B's own `T`-operator action error (not just the
+  full forward-solve error) against the reference `T_diff`, the way the
+  earlier `_run_ibim_source_t_action_probe` did for condition A, to see
+  whether the operator itself is still the bottleneck for ellipse/star once
+  prolongation is no longer a suspect.
+- Consider whether the periodic cubic spline (C2, but not exactly matching
+  the truncated-Fourier prolongation used by the fully parameterized
+  diagnostic) is itself under-resolving the higher-curvature-variation
+  regions of the ellipse/star target sampling, and try a Fourier-based
+  prolongation on the analytically recovered (but non-uniformly spaced)
+  target parameters as a direct comparison.
+
+## Shared T-assembly isolation and archived full-row QBX experiment
+
+Date: 2026-09-01
+
+The kdiff solve now has one explicit numerical variation point.  Its existing
+direct S/D/K' matrices are assembled once in
+`gpr_bem_kdiff.build_kdiff_operator_blocks`; a `TAssembler` supplies only
+`dT = T_exterior - T_interior`, and `ibim_tmz_system` remains solely
+responsible for placing `-dT` in the Muller system's lower-left quadrant.
+Calling the solve without `t_assembly`, or with `LegacyLocalT()`, reproduces
+the previous kdiff assembly exactly.
+
+`gpr_bem_qbx` is no longer a duplicated solver package.  It exports
+`FullRowQBX` plus explicit source configurations and is passed to the public
+`gpr_bem_kdiff` solve:
+
+- `SameNodeSources`: the plain no-oversampling full-row control, with identity
+  density prolongation;
+- `ParameterizedFourierSources`: analytic periodic source geometry with a
+  configurable source factor and Fourier-collocation density prolongation;
+- `ComponentParameterizedFourierSources`: the same construction applied
+  independently to each disconnected curve;
+- `RawSDFBandSources`: configurable Cartesian grid refinement, raw IBIM-band
+  source quadrature, optional source reprojection, and IDW prolongation.
+
+All assemble the same operator form,
+`T = T_rect(compressed targets, oversampled sources) @ P`, in source chunks.
+They do not move the compressed targets and cannot modify S/D/K'.  The old
+near-band QBX solver copy was removed; its results remain recorded above and
+reproducible from Git history.  The scratchpad retains the low-level QBX row
+diagnostics but no longer presents that obsolete solver as a live comparison
+row.
+
+Focused contract validation checks:
+
+- implicit default kdiff and explicit `LegacyLocalT()` are exactly equal;
+- parameterized and raw-band full-row QBX leave S/D/K' byte-identical;
+- only the Muller system's lower-left quadrant changes with T strategy;
+- both prolongations reproduce a constant density to roundoff;
+- the recorded parameterized 8x/order-16 circle diagnostic gives a maximum
+  T-action error of `3.94e-9` over constant and first/second sine/cosine modes
+  at N=64 against the independent `nystrom_ref` Kress matrix. The current
+  executable regression is weaker: N=32, one cosine mode, and `<1e-6`.
+
+Raw SDF-band QBX remains experimental. Invalid clearance now raises by default;
+archived comparisons must opt in with `allow_invalid_clearance=True`, which
+does not make their results admissible. The mixed ellipse/star results in the
+preceding entries still apply; this refactor makes those experiments isolated
+and reproducible but does not promote IDW prolongation as a validated default.
+
+### Five-shape comparison rows and aggregate export
+
+With the explicit `--include-qbx-archive` flag, the circle, ellipse, star,
+square, and two-circle comparison pipelines add three QBX rows: same-node
+`gpr_bem_qbx`, `qbx_fourier8`, and `qbx_sdfraw8`. The two-circle Fourier row
+uses independent component prolongations. The default comparison path omits
+them. The flagged aggregate exporter writes all three rows, their scattered
+fields, timings, and complete per-frequency `t_assembly` reports.
+
+The `8` labels have deliberately different meanings. Fourier uses exactly
+`M=8N`; raw SDF uses an 8x-refined Cartesian grid and retains the complete
+narrow band, giving actual source ratios of roughly 33x--80x in this run.
+All solves and residuals are finite, but the diagnostics also expose why the
+rows remain experimental: oversampled source sets have nonzero invalid QBX
+clearance counts, and nonuniform Fourier collocation is poorly conditioned on
+the ellipse (`1.78e6`) and star (`3.09e4`). These measurements are retained,
+not interpreted as evidence of convergent QBX.
+
+## QBX/kdiff production-direction closeout
+
+Date: 2026-09-01
+
+The five-shape comparison, ideal ordered-geometry controls, source-transfer
+probes, clearance reports, and timings have now been consolidated in
+[`docs/qbx_closure.md`](qbx_closure.md).
+
+The result is deliberately narrower than “QBX does not work.” QBX T is highly
+accurate on ordered, coherently parameterized smooth curves. On the real
+compressed target cloud, however, same-node QBX is underresolved and every
+oversampled stored row has invalid clearance. Accuracy is mixed rather than
+uniformly worse, but no realization gives a robust, admissible improvement,
+and the measured five-shape totals are about 30x, 54x, and 289x the kdiff time
+for same-node, Fourier-source, and raw-SDF-source QBX respectively.
+
+Therefore:
+
+- `gpr_bem_kdiff` is frozen as a fast compressed-cloud experimental baseline;
+- full-row QBX is retained only behind the isolated `TAssembler` seam;
+- no further radius/order/IDW tuning is planned on the compressed cloud;
+- `gpr_bem_mod` remains the operational inverse/adjoint-capable baseline; and
+- forward-accuracy work moves to ordered SDF contour extraction followed by a
+  coherent, component-wise Kress/Nyström discretization of all Müller blocks.

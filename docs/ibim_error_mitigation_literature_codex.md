@@ -41,6 +41,13 @@ Current status, to avoid a recurring ambiguity:
 > derived for the lifted closest-point volume integral - is background and a
 > possible future fallback, not the near-term implementation path.
 
+> **Disposition update, 2026-09-01:** the compressed-boundary kdiff/QBX route
+> described as the near-term plan in historical sections below has now been
+> measured and closed as an active production direction. See
+> [`qbx_closure.md`](qbx_closure.md). The next production candidate keeps the
+> SDF but extracts ordered components and applies a coherent Kress/Nyström
+> discretization. True Cartesian volume IBIM remains a separate fallback.
+
 ---
 
 # 0. Important constraints for Codex
@@ -314,6 +321,17 @@ radius used (expansion radius below local node spacing, capped by local
 radius of curvature) is exactly the kind of "numerical quadrature parameter
 with a demonstrated convergence theory" the acceptance criteria below ask
 for, not a tuned physical offset.
+
+**Closure update, 2026-09-01:** later full-row experiments sharpened this
+result. QBX T reaches approximately `1e-9`--`1e-7` action error on coherently
+ordered analytic curves, so the mathematics is retained. On compressed IBIM
+targets, however, same-node QBX is underresolved, every stored oversampled row
+has invalid expansion clearance, Fourier transfer is ill-conditioned on the
+ellipse/star, and exact source-side geometry plus one ordered-transfer
+construction still leaves a forward-error plateau. The local-circle diagonal
+is therefore not established as the sole or leading remaining cause, and
+further QBX/source tuning on this cloud is not the current plan. The complete
+evidence and limitations are in [`qbx_closure.md`](qbx_closure.md).
 
 ---
 
@@ -1168,7 +1186,12 @@ only provides the approximate boundary points, normals, and weights. The
 operator assembly uses those compressed boundary samples directly as both
 quadrature nodes and collocation/trace nodes.
 
-### Current near-term target
+### Historical near-term target (completed and closed)
+
+The following was the 2026-08-26 plan. It produced `gpr_bem_kdiff` and the QBX
+follow-ups; the measured outcome is now closed in
+[`qbx_closure.md`](qbx_closure.md). It is retained to explain the experiment,
+not to direct current work.
 
 Build a third solver package, `solvers/gpr_bem_kdiff/`, forked from
 `gpr_bem_mod`.
@@ -1189,7 +1212,7 @@ intended change is how the boundary integral operators are assembled:
   curvature field, or global arclength ordering unless measurement shows that
   the simpler local correction fails.
 
-The reason this is now the plan is the 2026-08-26 `kernel_diff_ref` result:
+The reason this became the plan was the 2026-08-26 `kernel_diff_ref` result:
 on a perfect circle, the same kernel-differenced Muller construction hosted on
 `ImplicitBoundarySamples2D` reaches ~1e-8 to 1e-13 relative error against the
 Mie series at 0.5-8 GHz, with no trace offset and no lifted volume
@@ -1352,10 +1375,13 @@ The final production route should ideally preserve:
 - no mandatory remeshing each inverse iteration;
 - differentiability or a tractable adjoint.
 
-That is why the near-term path keeps the SDF-derived boundary extraction and
-only changes the surface-cloud operator quadrature. A literature-accurate
-volume-IBIM route remains a future option if the compressed-boundary route
-cannot meet the accuracy target.
+The current path keeps the SDF as the geometry and optimization variable, but
+changes the discretization consumed by the forward solver: extract ordered
+zero-level components before compression, fit solver-grade periodic curves,
+and assemble Kress/Nyström quadrature on those curves. Extraction/remeshing can
+remain frozen within each forward/adjoint/backward step and be repeated after
+an outer SDF update; differentiating through marching squares is not required.
+A literature-accurate volume-IBIM route remains a distinct future option.
 
 ---
 
@@ -1363,7 +1389,8 @@ cannot meet the accuracy target.
 
 Do not prioritize:
 
-1. arclength resampling of the current compressed cloud;
+1. topology-blind arclength resampling of the already compressed cloud
+   (extract ordered components before compression instead);
 2. retuning `offset_distance`;
 3. changing `band_half_width` alone;
 4. float32/float64 changes as the main cure;
@@ -1390,24 +1417,33 @@ Already completed or superseded, per `validation_change_log.md`:
 - [x] Add the perfect-circle sampling diagnostic.
 - [x] Add `kernel_diff_ref` for perfect-circle, no-offset, kernel-differenced
   quadrature on `ImplicitBoundarySamples2D`.
+- [x] Build and measure `gpr_bem_kdiff` on the real compressed boundary.
+- [x] Test near-band and full-row QBX, ordered analytic sources, raw SDF-band
+  sources, and ordered density transfer.
+- [x] Close compressed-cloud QBX/kdiff as an active production direction; see
+  [`qbx_closure.md`](qbx_closure.md).
 
 Current next work:
 
-- [ ] Build `solvers/gpr_bem_kdiff/` as a fork of `gpr_bem_mod`.
-- [ ] Assemble Muller exterior-minus-interior kernels directly on the real
-  compressed boundary cloud.
-- [ ] Implement the diagonal/self-term correction using local nearest-neighbor
-  data already stored in `ImplicitBoundarySamples2D`.
-- [ ] Validate against the circle, then ellipse/star with `nystrom_ref`, then
-  square.
-- [ ] Compare current `gpr_bem_mod` vs explicit Nyström vs `gpr_bem_kdiff`.
-- [ ] Diagnose 8 GHz using the no-offset `gpr_bem_kdiff` results.
+- [ ] Harden the existing ordered zero-level contour extraction: reject open
+  contours, preserve stable component identity/orientation/phase, diagnose
+  topology changes, and reproject nodes to `phi=0`.
+- [ ] Fit one smooth periodic evaluator per smooth component and derive points,
+  tangents, speeds, normals, curvature, and weights consistently from it.
+- [ ] Build a production-candidate Nyström backend, independent of
+  `nystrom_ref`, with analytically differenced Müller kernels and
+  component-wise Kress quadrature for all four blocks.
+- [ ] Independently refine extraction-grid and Nyström-node resolution on
+  circle, ellipse, star, and disconnected smooth components.
+- [ ] Derive and finite-difference-check the adjoint only after that forward
+  discretization passes its accuracy gates.
 
 Future/fallback only:
 
-- [ ] If compressed-boundary kernel differencing fails, then read/revisit
-  Kublik 2013, Chen & Tsai 2017, and Izzo et al. 2022/2023 for a true
-  volume-IBIM prototype.
+- [ ] Add a piecewise-smooth panel backend with graded corner quadrature; do
+  not silently smooth exact squares in the global periodic path.
+- [ ] Read/revisit Kublik 2013, Chen & Tsai 2017, and Izzo et al. 2022/2023 for
+  a true volume-IBIM prototype if an ordered-surface route is unsuitable.
 - [ ] In that future prototype, allow normal-line/coincident projected points
   where mathematically required by the lifted singular quadrature.
 
@@ -1417,8 +1453,10 @@ Blocked until forward finalization:
 - [ ] Validate new gradients by directional finite differences.
 - [ ] Rerun the inverse pipeline.
 
-Until the forward solver is finalized, the last three items are intentionally blocked.
-Do not treat failing `mod` adjoint or inverse tests as the next implementation target.
+Until the ordered-boundary forward solver is accepted, its new adjoint and
+inverse integration are intentionally blocked. Existing `gpr_bem_mod`
+inverse/adjoint work may continue as the operational baseline, but it is not
+evidence that a future Nyström derivative is correct.
 
 ---
 
@@ -1513,7 +1551,7 @@ The near-term architecture is **not**
 
 It is also **not yet** a literature-accurate volume IBIM implementation.
 
-The current plan is
+The historical compressed-cloud plan was
 
 \[
 \boxed{
@@ -1527,21 +1565,34 @@ The current plan is
 
 with a high-order explicit Nyström solver retained as an independent reference.
 
-The highest-priority investigation is therefore:
+That investigation produced `gpr_bem_kdiff` and the QBX diagnostics and is now
+closed for production use. The current plan as of 2026-09-01 is
 
-1. **prototype `gpr_bem_kdiff`, a no-offset compressed-boundary solver that
-   uses analytically differenced Muller kernels on the estimated boundary
-   points.**
+\[
+\boxed{
+\text{neural SDF}
++
+\text{ordered, component-aware zero-level curves}
++
+\text{coherent Kress/Nyström Müller quadrature}
+}
+\]
 
-The literature volume-IBIM path remains valuable, but as a future fallback if
-the compressed-boundary kernel-differenced route cannot handle irregular clouds
-or corners.
+The highest-priority implementation is therefore:
+
+1. **promote the existing ordered contour extraction into solver-grade smooth
+   curve geometry, then build a production-candidate Nyström backend while
+   retaining `nystrom_ref` as an independent oracle.**
+
+The literature volume-IBIM path remains valuable as a distinct fallback. It
+must not be conflated with the repository's projected/compressed surface-cloud
+quadrature.
 
 The 2 GHz spike should be handled at the metric level, while the 8 GHz issue should remain explicitly open until the formulation and quadrature controls are in place.
 
 ---
 
-# 12. Verdicts, confidence, and implementation plan
+# 12. Historical verdicts, confidence, and implementation plan
 
 Added 2026-08-24. This section records a judgement on each open issue: how important
 it is, how confident I am that it can be implemented, and how confident I am that
@@ -1556,12 +1607,17 @@ package, not a literature volume-IBIM prototype. True volume IBIM is fallback
 work if that compressed-boundary route fails.
 
 The historical first set of changes happened in `solvers/gpr_bem_mod/`.
-`solvers/gpr_bem_ref/` is frozen as the control. The current planned work should
-happen in a new `solvers/gpr_bem_kdiff/` package so the no-offset
-compressed-boundary experiment can be compared against both `ref` and `mod`.
-The current comparison files are `pytest/test_circle_comparison.py`,
+`solvers/gpr_bem_ref/` is frozen as the control. The subsequently completed
+work happened in `solvers/gpr_bem_kdiff/` so the no-offset compressed-boundary
+experiment could be compared against both `ref` and `mod`. The comparison
+files are `pytest/test_circle_comparison.py`,
 `pytest/test_ellipse_comparison.py`, `pytest/test_star_comparison.py`, and
 `pytest/test_square_comparison.py`.
+
+Status update, 2026-09-01: the compressed-boundary kdiff/QBX investigation is
+closed. The remainder of this section is retained to explain historical
+decisions and confidence estimates; it is not the current task order. See
+[`qbx_closure.md`](qbx_closure.md).
 
 ## 12.1 Summary table
 
@@ -1647,19 +1703,21 @@ quadrature or by the differencing. If it is the differencing, the accuracy valle
 > Müller the valley moves inward by 8–16x for every scheme, and the `d >> h` / `d << λ`
 > bind of §1.1 does loosen substantially — but the credit goes to §4, not to §4b.
 
-### Issue 2 — the stand-off trace. Importance: high, current next.
+### Issue 2 — the stand-off trace. Historical outcome: measured and closed.
 
 The dominant measured error, and the one that needs a genuine redesign rather
 than more offset tuning.
 
-The redesign is now deliberately **not** "implement corrected trapezoidal
-volume IBIM end to end." The next target is the narrower
-`gpr_bem_kdiff` prototype: keep the SDF-derived compressed boundary cloud, form
-the exterior-minus-interior Muller kernels analytically, and evaluate them
-directly on that cloud with a local self-term correction.
+The first redesign deliberately did **not** implement corrected trapezoidal
+volume IBIM end to end. It built the narrower `gpr_bem_kdiff` prototype on the
+SDF-derived compressed boundary cloud, formed exterior-minus-interior Müller
+kernels analytically, and used a local self-term correction. That experiment
+was fast but did not remove the noncircular/high-frequency accuracy floor.
+Near-band and full-row QBX follow-ups likewise did not produce a robust,
+admissible improvement; see [`qbx_closure.md`](qbx_closure.md).
 
-The true volume-IBIM route remains research-grade fallback work. It should not
-be described as the current implementation plan.
+The true volume-IBIM route remains research-grade fallback work. The current
+implementation target is ordered SDF contours plus Kress/Nyström.
 
 ### Issue 7 — non-circular reference. Importance: high, done for smooth analytic shapes.
 
@@ -1686,22 +1744,23 @@ discretization is final. This includes not "just fixing the failing mod adjoint 
 that test is failing because the adjoint differentiates the old forward operator, and
 the new forward operator is still under forward-only evaluation.
 
-## 12.3 Recommended order
+## 12.3 Current recommended order (updated 2026-09-01)
 
-1. **Completed controls** — metric floor, direct solve, Muller formulation,
-   analytic `K'`/`T`, Nystrom, gprMax, perfect sampling, and `kernel_diff_ref`
-   are already recorded in `validation_change_log.md`.
-2. **Issue 2, compressed-boundary version** — build `gpr_bem_kdiff` directly on
-   `compress_implicit_boundary_band` output. This is not volume IBIM.
-3. **Issue 6** — diagnose 8 GHz using the no-offset `gpr_bem_kdiff` result.
-4. **Issue 3 / true volume IBIM fallback** — only if the compressed-boundary
-   route fails, revisit Kublik/Chen-Tsai/Izzo-Runborg-Tsai and prototype lifted
-   narrow-band quadrature.
-5. **Issue 8** — adjoint/inverse, blocked until the forward solver is finalized.
+1. **Completed controls** — metric floor, direct solve, Müller formulation,
+   analytic `K'`/`T`, Nyström, gprMax, perfect sampling, `kernel_diff_ref`,
+   kdiff, and QBX are recorded in `validation_change_log.md`.
+2. **Ordered geometry** — harden zero-level component extraction, projection,
+   orientation, stable component identity, and periodic curve fitting.
+3. **Coherent forward solver** — assemble all four analytically differenced
+   Müller blocks using per-component Kress/Nyström quadrature and validate it
+   independently against `nystrom_ref`.
+4. **Adjoint** — derive the complete geometry derivative only after the new
+   forward path passes circle/ellipse/star/multicomponent refinement gates.
+5. **Corner/panel or true volume-IBIM fallback** — pursue separately if the
+   smooth ordered path cannot cover the required geometry.
 
-The next change is item 2 above: `gpr_bem_kdiff`. Do not start the fallback
-volume-IBIM route or the adjoint/inverse route unless the compressed-boundary
-experiment has first been measured and found insufficient.
+The next change is item 2 above, not another kdiff diagonal or QBX parameter
+sweep.
 
 ## 12.4 Historical "done" criteria for completed steps
 
