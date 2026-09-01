@@ -1,0 +1,51 @@
+# Python bytecode and test/tool caches
+__pycache__/
+*.py[cod]
+*.so
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Local environments and editor state
+.venv/
+venv/
+env/
+.env
+.env.*
+.idea/
+.vscode/
+*.swp
+*~
+
+# Packaging and build products
+build/
+dist/
+*.egg-info/
+
+# Large root-level FDTD arrays and generated forward-run binaries/figures.
+# Lightweight JSON/Markdown validation summaries under results/ remain tracked.
+/*.npy
+/results/**/*.npz
+/results/**/*.png
+
+# Generated scratch diagnostics; keep the scripts themselves tracked.
+/scratchpad/*.csv
+
+# Keep literature citations/links in Git, not redistributed article PDFs.
+/references/*.pdf
+
+# Large third-party source trees. Project-owned wrappers in solvers/ remain tracked.
+/bembel/
+/bempp-cl/
+/gprMax/
+/ngbem/
+/scuff-em/
+/bem_gradients/
+/layered_Green_function/
+
+# Aggregate comparisons are deliberately small, reviewable project results.
+# Keep the complete bundle visible in Git/GitHub, including PNG and NPZ files.
+!pytest/results/
+!pytest/results/**
