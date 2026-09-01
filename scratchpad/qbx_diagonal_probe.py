@@ -20,6 +20,7 @@ from typing import Callable
 
 import numpy as np
 import torch
+from scipy.interpolate import CubicSpline
 from scipy.spatial import cKDTree
 from scipy.special import hankel1, jv
 from scipy.signal import resample
@@ -36,10 +37,9 @@ import config.ellipse_config as ellipse_cfg  # noqa: E402
 import config.star_config as star_cfg  # noqa: E402
 import gpr_bem_kdiff  # noqa: E402
 import gpr_bem_mod  # noqa: E402
-import gpr_bem_qbx  # noqa: E402
 import gpr_bem_ref  # noqa: E402
 import gpr_bem_kdiff.ibim_tmz_forward as kdiff_forward  # noqa: E402
-from gpr_bem_qbx.qbx_kernels import QbxSettings, _qbx_diff_row  # noqa: E402
+from qbx_legacy_near_band import QbxSettings, _qbx_diff_row  # noqa: E402
 import nystrom_ref.nystrom_tmz as nystrom_tmz  # noqa: E402
 from nystrom_ref import (  # noqa: E402
     build_curve,
@@ -68,7 +68,6 @@ BLOCK_LABELS = {
 SOLVE_NAMES = (
     "gpr_bem_mod",
     "gpr_bem_kdiff",
-    "current_gpr_bem_qbx",
     "EXP_BOUNDED_DIAG_QBX",
     "EXP_T_OPERATOR_QBX",
     "EXP_ALL_DIAG_FIX",
@@ -806,6 +805,130 @@ def _solve_ibim_source_t_qbx_variant(
     )
 
 
+def _solve_ibim_perfect_prolongation_t_qbx_variant(
+    case: ProbeCase,
+    sources: np.ndarray,
+    receivers: np.ndarray,
+    frequency_hz: float,
+    settings: QbxSettings,
+    source_factor: int,
+    *,
+    reproject_targets: bool,
+    bounded_diagonal_qbx: bool,
+    source_chunk_size: int,
+) -> tuple[np.ndarray, float, float, int, int, float, int, float]:
+    """Condition B: "perfect boundary knowledge" raw-source T-QBX solve.
+
+    Keeps the real compressed IBIM boundary as the unknown/target grid (same
+    as ``_solve_ibim_source_t_qbx_variant``), but:
+
+    - recovers each target's curve parameter ``t`` analytically instead of by
+      an unordered index or Euclidean IDW neighbourhood;
+    - builds the oversampled sources directly from the analytic
+      parameterization (exact by construction, no SDF band/reprojection
+      needed for the sources);
+    - prolongs the compressed-target Neumann density to the oversampled
+      sources by periodic cubic-spline interpolation in ``t`` instead of
+      local inverse-distance weighting.
+
+    Everything else (S/D/Kp on the target grid, T assembly, the Muller
+    solve, and the scattered-field evaluation) is identical to condition A.
+    """
+
+    angular_frequency = 2.0 * np.pi * frequency_hz
+    exterior, interior = _materials(gpr_bem_kdiff, case.cfg)
+    k_ext = complex(exterior.wavenumber(angular_frequency, case.cfg.EPS0, case.cfg.MU0))
+    k_int = complex(interior.wavenumber(angular_frequency, case.cfg.EPS0, case.cfg.MU0))
+
+    boundary = case.build_boundary(gpr_bem_kdiff)
+    points, normals, weights = kdiff_forward.boundary_points_normals_weights(boundary)
+    sdf_fn = _case_sdf_for_sampling(case) if reproject_targets else case.sdf_for_kdiff
+    if reproject_targets:
+        points, normals = _reproject_points_and_normals(case, points)
+    target_t = _point_parameters(case, points)
+
+    source_points, source_normals, source_weights, source_t, source_count = (
+        _analytic_oversampled_source_samples(case, source_factor, points.shape[0])
+    )
+
+    _, _, expansion_radius, _ = _expansion_geometry(points, normals, weights, settings, sdf_fn)
+    min_ratio, _min_margin, bad_count = _qbx_target_source_clearance(
+        points,
+        normals,
+        source_points,
+        expansion_radius,
+        None,
+    )
+    prolongation = _periodic_spline_prolongation_matrix(target_t, source_t)
+
+    blocks = _build_direct_blocks_from_arrays(
+        points,
+        normals,
+        weights,
+        k_ext,
+        k_int,
+        settings,
+        sdf_fn,
+        bounded_diagonal_qbx=bounded_diagonal_qbx,
+    )
+    blocks["hyper"] = _qbx_operator_t_matrix_with_source_prolongation(
+        points,
+        normals,
+        source_points,
+        source_normals,
+        source_weights,
+        prolongation,
+        k_ext,
+        k_int,
+        expansion_radius,
+        settings.expansion_order,
+        source_chunk_size,
+    )
+
+    num_nodes = points.shape[0]
+    identity = np.eye(num_nodes, dtype=complex)
+    matrix = np.block(
+        [
+            [identity - blocks["double"], blocks["single"]],
+            [-blocks["hyper"], identity + blocks["adjoint"]],
+        ]
+    )
+    dirichlet_incident, neumann_incident = gpr_bem_kdiff.ibim_incident_trace_on_boundary(
+        points,
+        normals,
+        sources,
+        angular_frequency,
+        1.0,
+        exterior=exterior,
+        eps0=case.cfg.EPS0,
+        mu0=case.cfg.MU0,
+    )
+    rhs = np.concatenate((dirichlet_incident, neumann_incident), axis=1).T
+    solution = np.linalg.solve(matrix, rhs)
+    residual = float(np.linalg.norm(matrix @ solution - rhs) / np.linalg.norm(rhs))
+
+    dirichlet_total = solution[:num_nodes].T
+    neumann_total = solution[num_nodes:].T
+    displacement = receivers[:, None, :] - points[None, :, :]
+    distance = np.linalg.norm(displacement, axis=2)
+    projection = np.einsum("mnd,nd->mn", displacement, normals) / distance
+    green = 0.25j * hankel1(0, k_ext * distance)
+    green_normal = 0.25j * k_ext * hankel1(1, k_ext * distance) * projection
+    single_receiver = (green * neumann_total * weights[None, :]).sum(axis=-1)
+    double_receiver = (green_normal * dirichlet_total * weights[None, :]).sum(axis=-1)
+    scattered = double_receiver - single_receiver
+    return (
+        np.asarray(scattered, dtype=complex),
+        residual,
+        float(np.linalg.cond(matrix)),
+        num_nodes,
+        source_count,
+        min_ratio,
+        bad_count,
+        float(np.max(np.abs(blocks["hyper"]))),
+    )
+
+
 def _run_package_solver(
     name: str,
     solver: object,
@@ -857,7 +980,6 @@ def _run_solve_table(cases: list[ProbeCase], frequencies_hz: np.ndarray, setting
         boundaries = {
             "gpr_bem_mod": case.build_boundary(gpr_bem_mod),
             "gpr_bem_kdiff": case.build_boundary(gpr_bem_kdiff),
-            "current_gpr_bem_qbx": case.build_boundary(gpr_bem_qbx),
             "EXP_BOUNDED_DIAG_QBX": case.build_boundary(gpr_bem_kdiff),
             "EXP_T_OPERATOR_QBX": case.build_boundary(gpr_bem_kdiff),
             "EXP_ALL_DIAG_FIX": case.build_boundary(gpr_bem_kdiff),
@@ -920,9 +1042,7 @@ def _run_solve_table(cases: list[ProbeCase], frequencies_hz: np.ndarray, setting
                         name, gpr_bem_kdiff, boundaries[name], sources, receivers, float(frequency_hz), case
                     )
                 else:
-                    scattered, residual, condition_number, num_samples = _run_package_solver(
-                        name, gpr_bem_qbx, boundaries[name], sources, receivers, float(frequency_hz), case
-                    )
+                    raise AssertionError(f"Unhandled diagnostic solver {name!r}.")
                 rows[name][float(frequency_hz)] = SolverMetric(
                     error=_relative_error(scattered, reference[float(frequency_hz)]),
                     residual=residual,
@@ -963,13 +1083,19 @@ def _run_ibim_source_t_solve_probe(
     idw_neighbours: int,
     idw_power: float,
     source_chunk_size: int,
+    perfect_prolongation: bool = False,
 ) -> None:
     print("\nForward solve with compressed IBIM targets and raw SDF-band T-QBX sources")
     print("  S/D/Kp are direct kdiff blocks on the target grid")
-    print("  T is full-row operator-level QBX over raw SDF-band sources, composed with local IDW density prolongation")
+    if perfect_prolongation:
+        print("  CONDITION B: 'perfect boundary knowledge' -- sources are built exactly on the analytic")
+        print("  parameterization (no SDF band/reprojection needed) and the target density is prolonged to")
+        print("  sources by periodic cubic-spline interpolation in the analytically recovered curve parameter t")
+    else:
+        print("  CONDITION A: T is full-row operator-level QBX over raw SDF-band sources, composed with local IDW density prolongation")
     if reproject_targets:
         print("  target points/normals are reprojected to the SDF zero set")
-    if reproject_sources:
+    if reproject_sources and not perfect_prolongation:
         print("  raw source points/normals are reprojected once more to the SDF zero set")
     if bounded_diagonal_qbx:
         print("  S/D/Kp diagonals use bounded QBX self replacements")
@@ -995,25 +1121,40 @@ def _run_ibim_source_t_solve_probe(
             max_t = 0.0
             started = time.perf_counter()
             for frequency_hz in frequencies_hz:
-                scattered, residual, condition_number, num_nodes, source_count, min_ratio, bad_count, max_t = (
-                    _solve_ibim_source_t_qbx_variant(
-                        case,
-                        sources,
-                        receivers,
-                        float(frequency_hz),
-                        settings,
-                        factor,
-                        delta_cells=delta_cells,
-                        band_cells=band_cells,
-                        strict_weights=strict_weights,
-                        reproject_targets=reproject_targets,
-                        reproject_sources=reproject_sources,
-                        bounded_diagonal_qbx=bounded_diagonal_qbx,
-                        idw_neighbours=idw_neighbours,
-                        idw_power=idw_power,
-                        source_chunk_size=source_chunk_size,
+                if perfect_prolongation:
+                    scattered, residual, condition_number, num_nodes, source_count, min_ratio, bad_count, max_t = (
+                        _solve_ibim_perfect_prolongation_t_qbx_variant(
+                            case,
+                            sources,
+                            receivers,
+                            float(frequency_hz),
+                            settings,
+                            factor,
+                            reproject_targets=reproject_targets,
+                            bounded_diagonal_qbx=bounded_diagonal_qbx,
+                            source_chunk_size=source_chunk_size,
+                        )
                     )
-                )
+                else:
+                    scattered, residual, condition_number, num_nodes, source_count, min_ratio, bad_count, max_t = (
+                        _solve_ibim_source_t_qbx_variant(
+                            case,
+                            sources,
+                            receivers,
+                            float(frequency_hz),
+                            settings,
+                            factor,
+                            delta_cells=delta_cells,
+                            band_cells=band_cells,
+                            strict_weights=strict_weights,
+                            reproject_targets=reproject_targets,
+                            reproject_sources=reproject_sources,
+                            bounded_diagonal_qbx=bounded_diagonal_qbx,
+                            idw_neighbours=idw_neighbours,
+                            idw_power=idw_power,
+                            source_chunk_size=source_chunk_size,
+                        )
+                    )
                 errors.append(_relative_error(scattered, reference[float(frequency_hz)]))
                 residuals.append(residual)
                 condition_numbers.append(condition_number)
@@ -1385,6 +1526,69 @@ def _idw_prolongation_matrix(
     rows = np.repeat(np.arange(source_points.shape[0])[:, None], k, axis=1)
     np.add.at(prolongation, (rows.reshape(-1), indices.reshape(-1)), weights.reshape(-1))
     return prolongation
+
+
+def _periodic_spline_prolongation_matrix(target_t: np.ndarray, source_t: np.ndarray) -> np.ndarray:
+    """Linear prolongation from ``target_t``-ordered samples to ``source_t``.
+
+    Builds a periodic cubic spline through the (sorted) target parameter
+    values and evaluates it at the source parameter values.  Because cubic
+    spline interpolation is linear in the sample values for fixed knot/query
+    locations, the whole map can be produced as one matrix by handing
+    ``CubicSpline`` a batch of one-hot "density" columns (one per target
+    node) instead of looping over columns by hand.
+    """
+
+    target_t = np.asarray(target_t, dtype=float)
+    source_t = np.asarray(source_t, dtype=float)
+    num_target = int(target_t.shape[0])
+
+    order = np.argsort(target_t)
+    t_sorted = target_t[order].copy()
+    # Guard against coincident/near-coincident parameter values, which would
+    # violate CubicSpline's strict monotonicity requirement.  Real boundary
+    # samples should not collide, but nudge defensively rather than crash.
+    eps = 1.0e-12
+    for i in range(1, num_target):
+        if t_sorted[i] <= t_sorted[i - 1]:
+            t_sorted[i] = t_sorted[i - 1] + eps
+
+    one_hot_sorted = np.zeros((num_target, num_target), dtype=float)
+    one_hot_sorted[np.arange(num_target), order] = 1.0
+
+    t_ext = np.concatenate([t_sorted, [t_sorted[0] + TWO_PI]])
+    y_ext = np.concatenate([one_hot_sorted, one_hot_sorted[0:1, :]], axis=0)
+    spline = CubicSpline(t_ext, y_ext, axis=0, bc_type="periodic")
+
+    source_wrapped = t_sorted[0] + np.mod(source_t - t_sorted[0], TWO_PI)
+    return np.asarray(spline(source_wrapped), dtype=float)
+
+
+def _analytic_oversampled_source_samples(
+    case: ProbeCase,
+    source_factor: int,
+    num_target: int,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, int]:
+    """Exact-by-construction oversampled sources from the analytic parameterization.
+
+    Uniform in the curve parameter ``t`` (matching ``build_curve``'s
+    convention), at ``source_factor * num_target`` nodes.  Points/normals sit
+    exactly on the analytic curve, so no SDF reprojection is needed or
+    possible to improve upon.
+    """
+
+    source_count = int(source_factor) * int(num_target)
+    if source_count % 2 != 0:
+        source_count += 1
+    source_curve = build_curve(_case_parameterization(case), source_count, f"{case.name}_analytic_source")
+    source_weights = source_curve.speeds * (TWO_PI / source_curve.num_nodes)
+    return (
+        source_curve.points,
+        source_curve.normals,
+        source_weights,
+        source_curve.t,
+        source_curve.num_nodes,
+    )
 
 
 def _operator_action_error(candidate: np.ndarray, reference: np.ndarray, density: np.ndarray) -> float:
@@ -2090,6 +2294,17 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--ibim-source-chunk-size", type=int, default=256)
     parser.add_argument("--ibim-source-bounded-diag-qbx", action="store_true")
     parser.add_argument(
+        "--ibim-perfect-prolongation",
+        action="store_true",
+        help=(
+            "For --ibim-source-t-solve only: condition B, 'perfect boundary knowledge'. "
+            "Recovers each compressed target's curve parameter t analytically, builds the "
+            "oversampled sources directly from the analytic parameterization (exact, no SDF "
+            "reprojection needed), and prolongs the density by periodic cubic-spline "
+            "interpolation in t instead of local IDW."
+        ),
+    )
+    parser.add_argument(
         "--parameterized-t-solve",
         action="store_true",
         help="Also run a parameterized diagnostic solve with oversampled T-QBX and Fourier density interpolation.",
@@ -2180,6 +2395,7 @@ def main() -> None:
             idw_neighbours=int(args.ibim_idw_neighbours),
             idw_power=float(args.ibim_idw_power),
             source_chunk_size=int(args.ibim_source_chunk_size),
+            perfect_prolongation=bool(args.ibim_perfect_prolongation),
         )
     if not args.skip_solves:
         _run_solve_table(cases, frequencies_hz, settings)

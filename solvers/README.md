@@ -1,12 +1,22 @@
 # Solvers
 
-Two copies of the BEM solver package, so a formulation change can be developed
-and measured against the original without either one moving underneath the other.
+The repository keeps a frozen/reference BEM pair plus isolated experimental
+operator assemblies.  Ref/mod remain separate packages; kdiff/QBX share one
+solve path and vary only the hypersingular Muller difference block.
 
 | Package | Role |
 |---|---|
 | `gpr_bem_ref/` | The original. **Frozen** — treat it as the control. |
 | `gpr_bem_mod/` | The working copy. Convention/formulation changes go here. |
+| `gpr_bem_kdiff/` | Frozen experimental compressed-cloud baseline and isolated T-assembly seam. |
+| `gpr_bem_qbx/` | Archived full-row QBX T strategies; diagnostics, not a production solver. |
+
+The measured QBX/kdiff production-direction investigation is closed. See
+[`docs/qbx_closure.md`](../docs/qbx_closure.md) for the timing and accuracy
+data, the important accuracy qualification, admissibility failures, retained
+artifacts, and reopening criteria. `gpr_bem_mod` remains the operational
+inverse/adjoint-capable solver while ordered-boundary Kress/Nyström work is
+developed separately.
 
 They start byte-identical. `diff -rq --exclude=__pycache__ gpr_bem_ref gpr_bem_mod`
 shows exactly what you have changed.
@@ -78,3 +88,49 @@ Not part of the `ref`/`mod` pair, and not selected by `--solver`:
 | `nystrom_ref/` | Standalone explicit-boundary Nystrom oracle (`docs/nystrom_reference_study.md`). Deliberately shares no numerics with `gpr_bem_*`. |
 | `kernel_diff_ref/` | Diagnostic: hosts `nystrom_ref`'s kernel-differenced quadrature against IBIM's own boundary object (`ImplicitBoundarySamples2D`), circle-only, perfect-sampling-only. Not an oracle -- see its module docstring and `docs/validation_change_log.md`. |
 | `gprmax_ref/` | Cache-driven wrapper around an out-of-process FDTD run (`docs/gprmax_reference_study.md`). |
+
+## Selecting experimental T assembly in the kdiff solve
+
+This interface exists to reproduce controlled operator experiments. It is not
+a production solver-selection path. In particular, a finite QBX result with
+invalid clearance is not a validated result.
+
+The default and explicit legacy calls are equivalent:
+
+```python
+gpr_bem_kdiff.solve_ibim_tmz_total_field_batch(...)
+gpr_bem_kdiff.solve_ibim_tmz_total_field_batch(
+    ...,
+    t_assembly=gpr_bem_kdiff.LegacyLocalT(),
+)
+```
+
+Full-row QBX uses the same solve function.  Only the T strategy changes:
+
+```python
+from gpr_bem_qbx import FullRowQBX, ParameterizedFourierSources
+
+gpr_bem_kdiff.solve_ibim_tmz_total_field_batch(
+    ...,
+    t_assembly=FullRowQBX(
+        source=ParameterizedFourierSources(
+            parameterization=curve,
+            oversampling_factor=8,
+            target_parameters=target_t,  # optional for uniform ordered targets
+        ),
+        expansion_order=16,
+    ),
+)
+```
+
+Select `SameNodeSources()` for the plain no-oversampling full-row operator.
+For disconnected analytic curves, use `ComponentParameterizedFourierSources`
+with one `FourierComponent` per curve so Fourier prolongation cannot couple
+unrelated components. For raw SDF-band sources, select `RawSDFBandSources` and
+pass `sdf_fn` to the same solve call. Its `grid_refinement_factor=8` refines
+the Cartesian grid; it does not promise exactly 8N retained band sources.
+
+The resulting `system.t_assembly_report` records the source count, actual
+source ratio, prolongation error, Fourier conditioning where applicable,
+clearance, parameters, cache state, and T assembly time. Nonzero invalid
+clearance counts make a row diagnostic rather than a validated QBX result.

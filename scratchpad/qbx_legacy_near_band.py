@@ -1,9 +1,15 @@
-"""Quadrature-by-expansion (QBX) evaluation of the near-diagonal Muller kernel band.
+"""Scratchpad-only legacy near-band QBX row formulas retained for diagnostics.
+
+The active archived full-row T diagnostic lives in ``full_row_t.py``. This
+module stays independent because ``scratchpad/qbx_diagonal_probe.py`` uses its
+four-block row evaluator to reproduce the historical near-band experiment.
+See ``docs/qbx_closure.md``; this is not a production API.
 
 Klockner, Barnett, Greengard, O'Neil, *Quadrature by expansion: A new method
 for the evaluation of layer potentials*, J. Comput. Phys. 252 (2013),
-332-349. See ``ibim_tmz_forward.py``'s module docstring for why this exists,
-and for why the exact diagonal is deliberately *not* handled here.
+332-349. See ``gpr_bem_kdiff.ibim_tmz_forward`` and
+``docs/qbx_closure.md`` for why this exists and why the exact diagonal is
+deliberately *not* handled here.
 
 Construction
 ------------
@@ -59,7 +65,7 @@ reflects this measurement, not the naive guess.
 This is also *why* the exact diagonal is out of scope here regardless of how
 ``r`` is chosen: for the source node coincident with the target, ``s = 0``
 identically, so the ratio is exactly 1 for *any* ``r`` -- there is no radius
-that fixes it. See ``ibim_tmz_forward.py``'s module docstring.
+that fixes it. See ``gpr_bem_kdiff.ibim_tmz_forward``'s module docstring.
 """
 
 from __future__ import annotations
@@ -71,7 +77,7 @@ import numpy as np
 import torch
 from scipy.special import hankel1, jv
 
-from .ibim_tmz_forward import _local_frames, _local_radius, _sdf_curvature
+from gpr_bem_kdiff.ibim_tmz_forward import _local_frames, _local_radius, _sdf_curvature
 
 __all__ = ["QbxSettings", "apply_qbx_band_correction"]
 
@@ -233,7 +239,7 @@ def apply_qbx_band_correction(
     ``matrices`` must already hold the plain differenced-kernel entries
     everywhere, diagonal included (the diagonal is read by nothing here and
     left exactly as the caller set it -- see
-    ``ibim_tmz_forward.build_kdiff_operator_blocks``, which fills it from
+    ``gpr_bem_kdiff.ibim_tmz_forward.build_kdiff_operator_blocks``, which fills it from
     ``_diagonal_terms`` first). Returns the same dict and, for visibility,
     each node's band size (how many *other* source columns were
     QBX-corrected).

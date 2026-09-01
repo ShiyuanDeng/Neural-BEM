@@ -61,6 +61,7 @@ from .scan_paths import RectangularLoopScan2D, build_rectangular_bistatic_scan, 
 from .signal_processing import bscan_from_frequency_response, inverse_frequency_transform_matrix, trapz_weights
 from .validation import bscan_error_metrics, frequency_response_error_metrics
 from .waveforms import gprmax_gaussian_spectrum, gprmax_gaussian_time_signal
+from .t_assembly import LegacyLocalT, TAssembler, TAssemblyContext, TAssemblyReport, TAssemblyResult
 
 __all__ = [
     "ImplicitBoundaryBand2D",
@@ -69,8 +70,13 @@ __all__ = [
     "ImplicitTMzFrequencySystem",
     "ImplicitTMzMultiFrequencyForwardResult",
     "KdiffOperatorBlocks",
+    "LegacyLocalT",
     "Material",
     "RectangularLoopScan2D",
+    "TAssembler",
+    "TAssemblyContext",
+    "TAssemblyReport",
+    "TAssemblyResult",
     "boundary_points_normals_weights",
     "build_ibim_tmz_frequency_system",
     "build_implicit_boundary_band",

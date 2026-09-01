@@ -20,8 +20,10 @@ see ``_difference_kernels``), then evaluated directly node-to-node with no
 offset. S, D, K' are bounded there; T keeps only the leading O(kd)-free
 logarithmic singularity, and *this version does not correct that
 off-diagonal-but-nearby log behaviour* -- it uses plain quadrature there,
-same as everywhere else. That is a known, flagged limitation (see the module
-docstring's closing note), not an oversight.
+same as everywhere else. Later near-band and full-row QBX experiments showed
+that treating this omission as the next isolated fix does not remove the
+compressed-target accuracy floor. This implementation is therefore a frozen
+experimental baseline; see ``docs/qbx_closure.md``.
 
 The diagonal (node i against itself) cannot use plain evaluation at all --
 even the differenced kernels are singular or indeterminate exactly at r=0.
@@ -33,16 +35,16 @@ its two nearest neighbours, one on each side (found by projecting onto the
 local tangent, not by assuming any global ordering) -- then treat node i as
 if it sat on its own local osculating circle, with as many "effective
 neighbours" as its own local spacing implies. That local circle is fed
-through the exact same Richardson-extrapolated diagonal-limit machinery
-``kernel_diff_ref`` already validated (bit-for-bit against
-``nystrom_ref``) -- the only change is that the circle is fit per node from
-real neighbours instead of being one known global shape.
+through the same Richardson-extrapolated diagonal-limit machinery that
+``kernel_diff_ref`` validated on an exact circle. Fitting a different local
+circle per irregular noncircular node is an additional, unvalidated geometry
+approximation; it is not covered by the exact-circle control.
 
-Known limitation, to be measured, not assumed away: the off-diagonal
-log-singular behaviour of T near (but not at) the diagonal has no correction
-in this version. If validation against ``nystrom_ref`` on the real compressed
-ellipse/star boundary shows a floor from this, that is the next thing to fix
--- see ``docs/ibim_error_mitigation_literature_codex.md`` Phase E/F.
+Known limitation: the off-diagonal log-singular behaviour of T near (but not
+at) the diagonal has no correction in this version. Validation and subsequent
+QBX probes did not establish that correction as the dominant remaining error.
+Do not continue tuning this compressed-cloud path without reopening the gates
+in ``docs/qbx_closure.md``.
 """
 
 from __future__ import annotations
@@ -55,6 +57,7 @@ import torch
 from scipy.special import hankel1, jv
 
 from .ibim_geometry import ImplicitBoundaryBand2D, ImplicitBoundarySamples2D
+from .t_assembly import TAssembler, TAssemblyContext, TAssemblyReport, resolve_t_assembler
 
 TWO_PI = 2.0 * np.pi
 
@@ -369,6 +372,7 @@ class KdiffOperatorBlocks:
     adjoint_double_layer_matrix: np.ndarray
     hypersingular_matrix: np.ndarray
     num_boundary_samples: int
+    t_assembly_report: TAssemblyReport | None = None
 
 
 def boundary_points_normals_weights(
@@ -398,18 +402,17 @@ def build_kdiff_operator_blocks(
     k_exterior: complex,
     k_interior: complex,
     sdf_fn: Callable[[torch.Tensor], torch.Tensor] | None = None,
+    t_assembly: TAssembler | None = None,
 ) -> KdiffOperatorBlocks:
-    """Assemble the four Muller difference blocks directly on the real boundary.
+    """Assemble the Muller difference blocks directly on the real boundary.
 
-    Off-diagonal: the differenced kernel evaluated between the two given
-    nodes, weighted by the target node's own quadrature weight -- plain
-    Nystrom quadrature, no offset, no correction for the log-singular block
-    near (not at) the diagonal (see module docstring).
+    S/D/K' are the frozen regular-block path: direct differenced kernels,
+    weighted by the source-node quadrature weights, with the existing bounded
+    diagonal treatment. ``t_assembly`` supplies only dT; omitting it selects
+    ``LegacyLocalT`` and reproduces the pre-isolation implementation.
 
-    Diagonal: ``_diagonal_terms``, the local-osculating-circle Richardson
-    limit. ``sdf_fn``, if given, replaces that fit's neighbour-estimated
-    curvature with the exact autograd curvature from ``_sdf_curvature`` --
-    optional for now (see ``_sdf_curvature``'s docstring).
+    ``sdf_fn``, if given, supplies exact autograd curvature to strategies that
+    need it; otherwise the existing neighbour estimate is available.
     """
 
     points, normals, weights = boundary_points_normals_weights(boundary)
@@ -422,15 +425,41 @@ def build_kdiff_operator_blocks(
     diagonal = _diagonal_terms(points, normals, weights, k_exterior, k_interior, sdf_fn=sdf_fn)
 
     matrices: dict[str, np.ndarray] = {}
-    for key in _BLOCKS:
+    for key in ("single", "double", "adjoint"):
         matrix = kernels[key] * weights[None, :]
         np.fill_diagonal(matrix, diagonal[key])
         matrices[key] = matrix
+
+    assembler = resolve_t_assembler(t_assembly)
+    t_result = assembler.assemble(
+        TAssemblyContext(
+            points=points,
+            normals=normals,
+            weights=weights,
+            k_exterior=k_exterior,
+            k_interior=k_interior,
+            direct_kernel=kernels["hyper"],
+            legacy_diagonal=diagonal["hyper"],
+            merge_distance=float(boundary.merge_distance),
+            bounds=boundary.bounds,
+            level=float(boundary.level),
+            sdf_fn=sdf_fn,
+        )
+    )
+    hypersingular = np.asarray(t_result.matrix, dtype=complex)
+    expected_shape = (num_nodes, num_nodes)
+    if hypersingular.shape != expected_shape:
+        raise ValueError(
+            f"T assembler {assembler.name!r} returned shape {hypersingular.shape}; expected {expected_shape}."
+        )
+    if not np.all(np.isfinite(hypersingular)):
+        raise ValueError(f"T assembler {assembler.name!r} returned non-finite entries.")
 
     return KdiffOperatorBlocks(
         single_layer_matrix=matrices["single"],
         double_layer_matrix=matrices["double"],
         adjoint_double_layer_matrix=matrices["adjoint"],
-        hypersingular_matrix=matrices["hyper"],
+        hypersingular_matrix=hypersingular,
         num_boundary_samples=num_nodes,
+        t_assembly_report=t_result.report,
     )

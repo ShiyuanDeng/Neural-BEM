@@ -28,6 +28,7 @@ from scipy.special import hankel1
 from .ibim_geometry import ImplicitBoundaryBand2D, ImplicitBoundarySamples2D
 from .ibim_tmz_forward import boundary_points_normals_weights, build_kdiff_operator_blocks
 from .materials import Material
+from .t_assembly import TAssembler, TAssemblyReport
 
 __all__ = [
     "ImplicitTMzForwardResult",
@@ -52,6 +53,7 @@ class ImplicitTMzFrequencySystem:
     boundary_weights: np.ndarray
     formulation: str = "muller"
     normal_derivative_scheme: str = "kernel_diff"
+    t_assembly_report: TAssemblyReport | None = None
 
 
 def build_ibim_tmz_frequency_system(
@@ -63,12 +65,12 @@ def build_ibim_tmz_frequency_system(
     eps0: float,
     mu0: float,
     sdf_fn: Callable[[torch.Tensor], torch.Tensor] | None = None,
+    t_assembly: TAssembler | None = None,
 ) -> ImplicitTMzFrequencySystem:
     """Assemble the kernel-differenced Muller system directly on the real boundary.
 
-    ``sdf_fn``, if given, is forwarded to ``build_kdiff_operator_blocks`` to
-    replace the diagonal fit's neighbour-estimated curvature with the exact
-    autograd curvature -- optional for now, see ``ibim_tmz_forward._sdf_curvature``.
+    ``t_assembly`` changes only dT; S/D/K' and the Muller composition are
+    shared. ``sdf_fn`` is forwarded for assemblers that need SDF geometry.
     """
 
     points, normals, weights = boundary_points_normals_weights(boundary)
@@ -76,7 +78,9 @@ def build_ibim_tmz_frequency_system(
     k_exterior = complex(exterior.wavenumber(angular_frequency_value, eps0, mu0))
     k_interior = complex(interior.wavenumber(angular_frequency_value, eps0, mu0))
 
-    blocks = build_kdiff_operator_blocks(boundary, k_exterior, k_interior, sdf_fn=sdf_fn)
+    blocks = build_kdiff_operator_blocks(
+        boundary, k_exterior, k_interior, sdf_fn=sdf_fn, t_assembly=t_assembly
+    )
     num_nodes = blocks.num_boundary_samples
     identity = np.eye(num_nodes, dtype=complex)
     # Muller: identity survives, every block is exterior-minus-interior --
@@ -101,6 +105,7 @@ def build_ibim_tmz_frequency_system(
         boundary_points=points,
         boundary_normals=normals,
         boundary_weights=weights,
+        t_assembly_report=blocks.t_assembly_report,
     )
 
 
@@ -161,6 +166,7 @@ def solve_ibim_tmz_total_field_batch(
     eps0: float,
     mu0: float,
     sdf_fn: Callable[[torch.Tensor], torch.Tensor] | None = None,
+    t_assembly: TAssembler | None = None,
 ) -> ImplicitTMzForwardResult:
     """Solve the kernel-differenced Muller system and evaluate at receivers.
 
@@ -174,7 +180,14 @@ def solve_ibim_tmz_total_field_batch(
         raise ValueError("receiver_points must have the same shape as source_points.")
 
     system = build_ibim_tmz_frequency_system(
-        boundary, angular_frequency, exterior=exterior, interior=interior, eps0=eps0, mu0=mu0, sdf_fn=sdf_fn
+        boundary,
+        angular_frequency,
+        exterior=exterior,
+        interior=interior,
+        eps0=eps0,
+        mu0=mu0,
+        sdf_fn=sdf_fn,
+        t_assembly=t_assembly,
     )
     dirichlet_incident, neumann_incident = ibim_incident_trace_on_boundary(
         system.boundary_points,
@@ -249,12 +262,18 @@ def solve_ibim_tmz_frequency_response(
     eps0: float,
     mu0: float,
     sdf_fn: Callable[[torch.Tensor], torch.Tensor] | None = None,
+    t_assembly: TAssembler | None = None,
 ) -> ImplicitTMzMultiFrequencyForwardResult:
     frequency_array = np.atleast_1d(np.asarray(angular_frequencies, dtype=float))
     forwards = tuple(
         solve_ibim_tmz_total_field_batch(
             boundary, source_points, receiver_points, float(f), source_strength,
-            exterior=exterior, interior=interior, eps0=eps0, mu0=mu0, sdf_fn=sdf_fn,
+            exterior=exterior,
+            interior=interior,
+            eps0=eps0,
+            mu0=mu0,
+            sdf_fn=sdf_fn,
+            t_assembly=t_assembly,
         )
         for f in frequency_array
     )

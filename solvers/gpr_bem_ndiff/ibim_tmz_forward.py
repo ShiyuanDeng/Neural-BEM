@@ -6,12 +6,12 @@ Geometry/SDF files are byte-identical all the way back. Only
 
 What this is
 ------------
-``gpr_bem_kdiff`` / ``gpr_bem_qbx`` handle the exact-diagonal singularity of
-the differenced Muller kernels with a per-node local-osculating-circle
-Richardson limit (``_diagonal_terms`` below, kept for reference but NOT called
-here). ``docs/validation_change_log.md`` records that fit as the leading
-remaining suspect for those solvers trailing ``gpr_bem_mod`` on curved
-targets.
+The historical ``gpr_bem_kdiff``/near-band-QBX copies handled the
+exact-diagonal singularity of the differenced Müller kernels with a per-node
+local-osculating-circle Richardson limit (``_diagonal_terms`` below, kept for
+reference but NOT called here). Later source-side and full-row QBX probes did
+not isolate that fit as the leading remaining cause. The compressed-cloud
+route is now frozen; see ``docs/qbx_closure.md``.
 
 This module tests the alternative the user proposed: drop the osculating-circle
 diagonal entirely and recover every operator entry the ``gpr_bem_mod`` way --
