@@ -1,8 +1,14 @@
 # IBIM shape-derivative derivation (Müller formulation, `gpr_bem_mod`)
 
-*Phase 0 of `docs/adjoint_inverse_rebuild_plan.md`. Written 2026-08-27, before
-any adjoint code is touched, per that plan's rule not to start Phase 1 until
-this exists in reviewable form.*
+> **Status: active `gpr_bem_mod` mathematical reference.** This derivation
+> applies to the compressed-cloud Müller/`analytic_extrapolated` path. It does
+> not define the future ordered Kress/Nyström adjoint; that must be derived from
+> the accepted new discretization. See
+> [`current_architecture.md`](current_architecture.md).
+
+*Phase 0 of `docs/legacy/adjoint_inverse_rebuild_plan.md`, written 2026-08-27
+before the corresponding adjoint implementation and retained as its reviewable
+derivation.*
 
 ---
 
@@ -16,7 +22,7 @@ Müller formulation entirely, and its §9.1 explicitly claims the Jacobian
 term `J_a` is *not yet implemented* in the quadrature weight. That claim is
 now false — `ibim_geometry.py:207-208` already computes
 `jacobian = 1.0 - signed_offset * curvature` and folds it into
-`strict_quadrature_weights` (`:215`). Per `docs/adjoint_inverse_rebuild_plan.md`
+`strict_quadrature_weights` (`:215`). Per `docs/legacy/adjoint_inverse_rebuild_plan.md`
 §4, nothing in the old file should be trusted without re-checking against
 current code; this document does that re-check explicitly section by section.
 
@@ -192,7 +198,7 @@ critical fact, absent from the old derivation entirely: **this is evaluated
 for every `(i, j)` pair, not only the diagonal.** There is no separate
 "near-diagonal" or "singular" code path in `gpr_bem_mod` — the global
 stand-off `d` is what keeps every entry finite, exactly as
-`forward_solver_validation.md` §6.1 describes. `d` itself is
+`legacy/forward_solver_validation.md` §6.1 describes. `d` itself is
 `_default_trace_offset_distance(band)` (`:991-998`) — for a compressed
 `ImplicitBoundarySamples2D`, `2.0 * band.merge_distance` before the
 `MULLER_OFFSET_SCALE` rescale applied in `ibim_tmz_system.py:131-132`. `d` is
@@ -253,7 +259,7 @@ finite difference of potentials), differentiating it is just the same linear
 combination applied to the derivative of each term — the extrapolation
 commutes with `∂/∂alpha` trivially, since it's linear in the (differentiated)
 kernel evaluations and the coefficients `(3,-3,1)` don't depend on `alpha`.
-**This resolves open question 3 of `docs/adjoint_inverse_rebuild_plan.md`
+**This resolves open question 3 of `docs/legacy/adjoint_inverse_rebuild_plan.md`
 §14**: yes, `∂/∂p [extrapolate(f(d), f(2d), f(3d))] = extrapolate(∂f/∂p(d), ...)`
 exactly, because extrapolation here is a fixed linear functional of the
 sample values, not a nonlinear function of them. (Had the scheme been
@@ -335,7 +341,7 @@ negated — `build_implicit_hypersingular_boundary_matrix` returns
 `-trace.average_normal_derivative`, `:838`):** kernel depends on both `n_i`
 and `n_j`. All four §4 terms apply, plus both normal-motion terms, plus the
 extrapolation combination as in `K'`. This is, as both the old file and the
-literature codex (`docs/ibim_error_mitigation_literature_codex.md` §4.3)
+literature codex (`docs/legacy/ibim_error_mitigation_literature_codex.md` §4.3)
 already flagged, the heaviest block — not because of extra singularity
 structure here (the `analytic_extrapolated` scheme already handles that
 part), but because it has the most terms in its own product rule. **Do not
@@ -500,7 +506,7 @@ quadrature weight`), because `ibim_shape_gradient_surrogate_loss` applies
 quadrature exactly once. The current adjoint artefact suite covers
 single-frequency, multi-frequency, B-scan, density, and surrogate-radius
 checks (`pytest/artefacts/test_ibim_tmz_adjoint.py --solver=mod`, 15/15
-passing; see `docs/adjoint_inverse_rebuild_plan.md` §7b-§7c). Map onto code
+passing; see `docs/legacy/adjoint_inverse_rebuild_plan.md` §7b-§7c). Map onto code
 as:
 - `Ȧ_alpha`: §5+§6, contracted against `mu`, not built as an explicit matrix
   (§5's `T`-block recommendation, but applies to all four blocks for the same
@@ -619,7 +625,7 @@ already-verified mixed-Hessian function —
 
 With this, every §5 term for all four blocks (S, D, K', T) is now covered by
 a verified closed-form kernel. See
-`docs/adjoint_inverse_rebuild_plan.md` §7a for the full block-assembly
+`docs/legacy/adjoint_inverse_rebuild_plan.md` §7a for the full block-assembly
 verification this enabled (`Ȧq`, both rows, clean).
 
 ## 11. Coding order for Phase 1-3

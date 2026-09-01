@@ -185,7 +185,7 @@ def _kdiff_metrics(nystrom: dict) -> dict:
     """``gpr_bem_kdiff`` on the real compressed ellipse boundary, vs Nystrom.
 
     Validation-order step 2 (circle done; ellipse/star next, per
-    ``docs/ibim_error_mitigation_literature_codex.md`` Phase E and
+    ``docs/legacy/ibim_error_mitigation_literature_codex.md`` Phase E and
     ``docs/validation_change_log.md``). No perfect-sampling mode for a
     non-circular shape, so this always uses the real boundary. Known
     limitation carried over from the circle case: no off-diagonal

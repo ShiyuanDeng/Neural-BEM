@@ -17,7 +17,7 @@ convention that already separates ``gpr_bem_ref``/``gpr_bem_mod``.
 
 Forward only. No ``ibim_tmz_adjoint`` or ``ibim_inverse`` here -- porting the
 adjoint is explicitly out of scope until this forward formulation itself is
-validated (see ``docs/ibim_error_mitigation_literature_codex.md`` Section 0
+validated (see ``docs/legacy/ibim_error_mitigation_literature_codex.md`` Section 0
 and Issue 8), and this one is not validated yet.
 
 See ``docs/validation_change_log.md`` ("Plan: kernel-differenced quadrature

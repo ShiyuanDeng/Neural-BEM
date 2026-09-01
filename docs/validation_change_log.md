@@ -1,11 +1,12 @@
 # Validation Change Log
 
-> Current disposition (2026-09-01): the compressed-cloud QBX/kdiff
-> investigation is closed as an active production direction. See
-> [`qbx_closure.md`](qbx_closure.md) for the evidence, limitations, retained
-> artifacts, and ordered-boundary Kress/Nyström handoff. Earlier “next steps”
-> below are preserved as chronological research history and are not current
-> implementation instructions.
+> **Status: append-only experimental history.** For present behavior see
+> [`current_architecture.md`](current_architecture.md); for active work see
+> [`ordered_boundary_nystrom_plan.md`](ordered_boundary_nystrom_plan.md).
+> The compressed-cloud QBX/kdiff investigation closed on 2026-09-01; its
+> evidence and qualifications are in [`qbx_closure.md`](qbx_closure.md).
+> Earlier “current” interpretations and “next steps” below are chronological
+> history, not current instructions.
 
 2026-08-21
 
@@ -66,7 +67,7 @@ old trace-offset mistake.
 The same test also makes the limitation explicit: the present assembly is not a
 high-accuracy singular quadrature. The residual error is consistent with the
 offset-based trace approximation and irregular compressed boundary samples
-described in `docs/forward_solver_validation.md`.
+described in `docs/legacy/forward_solver_validation.md`.
 
 ## Follow-up implementation pass
 
@@ -180,8 +181,8 @@ from the old `A^2 q = A b` route, but it does not fix the dominant discretizatio
 error. The late/scattered B-scan remains far less accurate than the full B-scan
 appearance suggests, because the full record is dominated by the analytic direct
 wave. The remaining error still points at the finite-offset trace and singular
-quadrature problem described in `docs/forward_solver_validation.md` and
-`docs/ibim_error_mitigation_literature_codex.md`.
+quadrature problem described in `docs/legacy/forward_solver_validation.md` and
+`docs/legacy/ibim_error_mitigation_literature_codex.md`.
 
 ---
 
@@ -242,7 +243,7 @@ plumbing check.
 **Conditioning.** `cond(A)` falls from `1.5e11` to `1.7e4`, seven orders of magnitude.
 That is the structural confirmation that the Muller derivation is right: a second-kind
 condition number does not appear by accident, and it settles open question 3 of
-`forward_solver_validation.md`.
+`docs/legacy/forward_solver_validation.md`.
 
 **Analytic kernels alone do not help.** Under the first-kind formulation they are
 worse than the finite difference at all three frequencies. The prediction in §4b that
@@ -270,7 +271,7 @@ Muller + analytic extrapolated, varying the stand-off:
 This is the measurement §4b said would be the most valuable output, and it answers the
 question it posed -- but not the way §4b guessed. Under the old formulation the
 accuracy valley sat at `d = 2 md` and error exploded below `1 md`, which
-`forward_solver_validation.md` §6.1 attributed to near-singular quadrature and §4b
+`docs/legacy/forward_solver_validation.md` §6.1 attributed to near-singular quadrature and §4b
 attributed to the finite differencing dividing quadrature noise by `d`.
 
 **Both explanations are wrong, and the measurement below refutes §4b's.**
@@ -305,7 +306,7 @@ sharpens the near-singular kernels and pushes `cond(A)` up further with nothing 
 regularise it. Muller's surviving `I` on the diagonal is what bounds the spectrum, which
 is the same fact that shows up as `cond(A)` falling from 1.5e11 to 1.7e4.
 
-*The methodological lesson*, which is the same one `forward_solver_validation.md` §10
+*The methodological lesson*, which is the same one `docs/legacy/forward_solver_validation.md` §10
 records: the plausible-sounding mechanism was wrong again, and it was wrong in the same
 direction -- an alarming-looking local numerical detail (a noisy stencil) was blamed for
 an error that actually came from a structural choice one level up. §4b was written from
@@ -379,7 +380,7 @@ scheme-dependent -- `finite_difference` bottoms out near 0.125 md and `analytic`
 0.0625 md -- so a caller overriding `normal_derivative_scheme` should override
 `offset_distance` too.
 
-The 10-15% error floor that `forward_solver_validation.md` §2 called structural, and
+The 10-15% error floor that `docs/legacy/forward_solver_validation.md` §2 called structural, and
 §7 estimated would need ~8000 nodes to reach 1% at 2.5 GHz, is now below 1% at the
 same 272 nodes.
 
@@ -518,7 +519,7 @@ because in each case the leading term is k-independent: `ln r` in `dS`, `1/r` in
 `dD` and `dK'`, `1/r^2` in `dT`. What survives is **bounded** in three blocks and
 **`O(ln r)`** in the hypersingular one. A single log rule covers the whole
 system: no Maue/Gunter regularisation, no finite-part integrals. This is variant
-(D) of `ibim_error_mitigation_literature_codex.md` §4b.4, scoped there and never
+(D) of `docs/legacy/ibim_error_mitigation_literature_codex.md` §4b.4, scoped there and never
 built.
 
 The plan's Phase 2 had the ranking backwards -- it expected `S`, `D`, `K'` to
@@ -681,7 +682,7 @@ message pointing at `run_case.py`, rather than failing the suite.
 
 ### Purpose
 
-A reusable version of the isolation experiment from `forward_solver_validation.md`
+A reusable version of the isolation experiment from `docs/legacy/forward_solver_validation.md`
 §7 and the "not done" jitter proposal in `nystrom_reference_study.md`: swap the
 real compressed IBIM boundary for exact uniform-arclength circle nodes, at the
 same N, and see how much `gpr_bem_mod`'s error moves. Everything downstream
@@ -846,7 +847,7 @@ matter more as the wavelength shrinks -- not investigated further.
 Read-only: no code changed. Follows up on the "not investigated further"
 close of the previous entry. Full detail, including the ka/resonance/
 condition-number tables and the T-matrix feasibility estimate, is in
-`docs/square_target_oracle_options.md`; this is the pointer.
+`docs/legacy/square_target_oracle_options.md`; this is the pointer.
 
 `gpr_bem_ref` being bad on both shapes traces to the same known first-kind
 BIE + finite-difference normal-derivative issue, not a square-specific
@@ -946,7 +947,7 @@ setup.
 
 ### Purpose
 
-Issue 2 in `docs/ibim_error_mitigation_literature_codex.md` -- the finite
+Issue 2 in `docs/legacy/ibim_error_mitigation_literature_codex.md` -- the finite
 trace offset (`E ~ O(kd)`) -- is the current forward solver's structural
 accuracy ceiling. `nystrom_ref` already proved the fix (difference the
 exterior/interior kernels analytically before any quadrature, so every Muller
@@ -1101,7 +1102,7 @@ required anywhere.
 
 ### This supersedes the earlier volume-IBIM reading of Phase E
 
-An earlier version of `docs/ibim_error_mitigation_literature_codex.md` implied
+An earlier version of `docs/legacy/ibim_error_mitigation_literature_codex.md` implied
 that Issue 2 should move next to a lifted-volume narrow-band formulation
 rather than the compressed cloud. That instruction has now been replaced. The
 active plan works directly from the compressed cloud because the tubular
@@ -1298,7 +1299,7 @@ compressed-cloud route covers it.
 
 ### Motivation
 
-`docs/ibim_error_mitigation_literature_codex.md` Section 1.3 named Quadrature
+`docs/legacy/ibim_error_mitigation_literature_codex.md` Section 1.3 named Quadrature
 by Expansion (Klockner, Barnett, Greengard, O'Neil, 2013) as "a serious
 alternative to the current stand-off method," but explicitly deferred it
 until a validated high-order reference existed -- `nystrom_ref` now fills

@@ -1,5 +1,10 @@
 # Solvers
 
+For the end-to-end geometry, forward, adjoint, and inverse pipelines, see
+[`docs/current_architecture.md`](../docs/current_architecture.md). The active
+ordered-boundary work is tracked only in
+[`docs/ordered_boundary_nystrom_plan.md`](../docs/ordered_boundary_nystrom_plan.md).
+
 The repository keeps a frozen/reference BEM pair plus isolated experimental
 operator assemblies.  Ref/mod remain separate packages; kdiff/QBX share one
 solve path and vary only the hypersingular Muller difference block.
@@ -7,9 +12,10 @@ solve path and vary only the hypersingular Muller difference block.
 | Package | Role |
 |---|---|
 | `gpr_bem_ref/` | The original. **Frozen** — treat it as the control. |
-| `gpr_bem_mod/` | The working copy. Convention/formulation changes go here. |
+| `gpr_bem_mod/` | Operational forward/adjoint/inverse baseline. Maintained changes go here. |
 | `gpr_bem_kdiff/` | Frozen experimental compressed-cloud baseline and isolated T-assembly seam. |
 | `gpr_bem_qbx/` | Archived full-row QBX T strategies; diagnostics, not a production solver. |
+| `gpr_bem_ndiff/` | Archived/unsupported normal-offset experiment; unvalidated and not selector-wired. |
 
 The measured QBX/kdiff production-direction investigation is closed. See
 [`docs/qbx_closure.md`](../docs/qbx_closure.md) for the timing and accuracy
@@ -35,6 +41,10 @@ into `sys.modules` (submodules included, so class identity is preserved and the
 `isinstance` checks inside the solver keep working).
 
 ## Running against one or the other
+
+`gpr_bem_mod` is operational but is not the selector default. An omitted flag
+runs frozen `gpr_bem_ref`; maintained forward/adjoint/inverse commands must use
+`--solver=mod` explicitly.
 
 Tests — the files in `pytest/` are unmodified and run against either:
 

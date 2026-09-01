@@ -218,7 +218,7 @@ def build_ibim_tmz_frequency_system(
 def adjoint_system_matrix(system: ImplicitTMzFrequencySystem):
     """Return ``A^H`` for the dual solve ``A^H mu = C^H psi``.
 
-    Phase 2 of ``docs/adjoint_inverse_rebuild_plan.md``. Deliberately the
+    Phase 2 of ``docs/legacy/adjoint_inverse_rebuild_plan.md``. Deliberately the
     conjugate transpose of the already-assembled dense ``system.system_matrix``
     -- not a from-scratch block reconstruction. ``docs/ibim_shape_derivative.md``
     S7 describes what the block-swap *should* look like (``single_layer`` and

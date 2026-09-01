@@ -1,4 +1,12 @@
-# IBIM Forward Solver Error Mitigation — Literature Review + Codex Implementation Instructions
+# IBIM Forward Solver Error Mitigation — Literature Review and Historical Implementation Record
+
+> **Status: historical research and planning record.** This document contains
+> several generations of superseded “current” plans and Codex instructions.
+> Preserve them as reasoning history; do not execute them as the current
+> roadmap. See [`../current_architecture.md`](../current_architecture.md) for
+> present behavior and
+> [`../ordered_boundary_nystrom_plan.md`](../ordered_boundary_nystrom_plan.md)
+> for the only live forward-solver plan.
 
 ## Purpose
 
@@ -44,7 +52,7 @@ Current status, to avoid a recurring ambiguity:
 > **Disposition update, 2026-09-01:** the compressed-boundary kdiff/QBX route
 > described as the near-term plan in historical sections below has now been
 > measured and closed as an active production direction. See
-> [`qbx_closure.md`](qbx_closure.md). The next production candidate keeps the
+> [`qbx_closure.md`](../qbx_closure.md). The next production candidate keeps the
 > SDF but extracts ordered components and applies a coherent Kress/Nyström
 > discretization. True Cartesian volume IBIM remains a separate fallback.
 
@@ -331,7 +339,7 @@ ellipse/star, and exact source-side geometry plus one ordered-transfer
 construction still leaves a forward-error plateau. The local-circle diagonal
 is therefore not established as the sole or leading remaining cause, and
 further QBX/source tuning on this cloud is not the current plan. The complete
-evidence and limitations are in [`qbx_closure.md`](qbx_closure.md).
+evidence and limitations are in [`qbx_closure.md`](../qbx_closure.md).
 
 ---
 
@@ -1190,7 +1198,7 @@ quadrature nodes and collocation/trace nodes.
 
 The following was the 2026-08-26 plan. It produced `gpr_bem_kdiff` and the QBX
 follow-ups; the measured outcome is now closed in
-[`qbx_closure.md`](qbx_closure.md). It is retained to explain the experiment,
+[`qbx_closure.md`](../qbx_closure.md). It is retained to explain the experiment,
 not to direct current work.
 
 Build a third solver package, `solvers/gpr_bem_kdiff/`, forked from
@@ -1421,7 +1429,7 @@ Already completed or superseded, per `validation_change_log.md`:
 - [x] Test near-band and full-row QBX, ordered analytic sources, raw SDF-band
   sources, and ordered density transfer.
 - [x] Close compressed-cloud QBX/kdiff as an active production direction; see
-  [`qbx_closure.md`](qbx_closure.md).
+  [`qbx_closure.md`](../qbx_closure.md).
 
 Current next work:
 
@@ -1617,7 +1625,7 @@ files are `pytest/test_circle_comparison.py`,
 Status update, 2026-09-01: the compressed-boundary kdiff/QBX investigation is
 closed. The remainder of this section is retained to explain historical
 decisions and confidence estimates; it is not the current task order. See
-[`qbx_closure.md`](qbx_closure.md).
+[`qbx_closure.md`](../qbx_closure.md).
 
 ## 12.1 Summary table
 
@@ -1714,7 +1722,7 @@ SDF-derived compressed boundary cloud, formed exterior-minus-interior Müller
 kernels analytically, and used a local self-term correction. That experiment
 was fast but did not remove the noncircular/high-frequency accuracy floor.
 Near-band and full-row QBX follow-ups likewise did not produce a robust,
-admissible improvement; see [`qbx_closure.md`](qbx_closure.md).
+admissible improvement; see [`qbx_closure.md`](../qbx_closure.md).
 
 The true volume-IBIM route remains research-grade fallback work. The current
 implementation target is ordered SDF contours plus Kress/Nyström.

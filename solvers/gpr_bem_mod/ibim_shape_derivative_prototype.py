@@ -1,7 +1,7 @@
 """Shape-derivative helpers for ``d/dalpha[A(theta) q]``.
 
 This module started as the Phase 3-4 verification prototype described in
-``docs/adjoint_inverse_rebuild_plan.md``. The verified Muller system-action
+``docs/legacy/adjoint_inverse_rebuild_plan.md``. The verified Muller system-action
 contraction is now reused by ``ibim_tmz_adjoint.py`` for frozen-geometry
 point-directional gradients; the scalar-loss helper at the bottom remains a
 diagnostic, not production inverse plumbing.

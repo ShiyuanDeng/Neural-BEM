@@ -655,7 +655,7 @@ def test_circle_kernel_diff_perfect_sampling(comparison_results) -> None:
     circle boundary.
 
     This isolates the trace/quadrature redesign itself (Issue 2 in
-    ``docs/ibim_error_mitigation_literature_codex.md``) from the still-open
+    ``docs/legacy/ibim_error_mitigation_literature_codex.md``) from the still-open
     irregular-node problem: same formulation, same N, same frequencies as
     ``gpr_bem_mod``, but with no finite trace offset anywhere. If this stays
     far more accurate than ``gpr_bem_mod`` at every frequency including the

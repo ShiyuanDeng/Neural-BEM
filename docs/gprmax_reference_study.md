@@ -1,5 +1,10 @@
 # gprMax Cross-Check — an Independent Method, Not Another BIE
 
+> **Status: active independent physics cross-check, not a precision oracle.**
+> Current cache generation defaults to one harmonic `contsine` run per
+> frequency. Lookup prefers harmonic entries, then scaled-Ricker entries, then
+> the legacy broadband sweep.
+
 2026-08-25
 
 ## Why this exists
@@ -26,12 +31,13 @@ flip, a units mistake, a wrong material -- not to out-measure Nystrom.
 
 ## Design decisions
 
-**One run covers the whole ring.** The circle target is rotationally
+**One Tx/Rx geometry represents the whole circle ring.** The circle target is rotationally
 symmetric and the 24-pair ring scan in `test_circle_comparison.py` is that
 one representative pair rotated around the center, so every pair has the
 identical scattered field. Confirmed with the Mie series, not assumed: all 24
-values agree to `7e-17` absolute. One gprMax run (background + target) stands
-in for the whole comparison test.
+values agree to `7e-17` absolute. At each frequency, one gprMax
+background+target pair therefore stands in for all ring angles. Non-circular
+targets use that pair only as the index-0 check.
 
 **Update, 2026-08-25: `build_scene.py`/`run_case.py`/`cache_io.py` were
 generalised to `target_shape`/`target_size` (radius for a circle, half-side
@@ -58,18 +64,18 @@ cache key. There is still only one simulated Tx/Rx pair, so
 external baseline for the index-0 ring pair only, and full-ring behavior is
 covered by self-convergence plus the recorded deltas to `gpr_bem_mod`.
 
-**Update, 2026-08-27: gprMax cache generation now defaults to one run per
-frequency with frequency-scaled grid spacing and a centered Ricker pulse.** The
+**Historical update, 2026-08-27; superseded as the default on 2026-09-01:**
+gprMax cache generation changed to one run per frequency with
+frequency-scaled grid spacing and a centered Ricker pulse. The
 old design used one broadband pulse centered at 1.5 GHz and one fixed 1 mm grid
 for the whole 0.5-8 GHz sweep. That was fine for the gated low-frequency
 cross-check, but it made 6/8 GHz weak twice over: fewer cells per wavelength and
-little source energy far from the pulse center. `run_case.py` now defaults to
-`--frequency-mode scaled`: each requested frequency gets its own background +
+little source energy far from the pulse center. At that date, `run_case.py`
+defaulted to `--frequency-mode scaled`: each requested frequency got its own background +
 target pair, its Ricker center is set to that frequency, and `dx` is
 `min(1 mm, lambda_sand / 30)` by default. The legacy one-blob sweep remains
-available as `--frequency-mode sweep`. The pytest-side loader first looks for a
-complete set of per-frequency scaled cache entries and falls back to the legacy
-fixed-sweep blob if the scaled entries have not been generated yet.
+available as `--frequency-mode sweep`. The current harmonic default and lookup
+order are documented in the 2026-09-01 update below.
 
 **A background-only run calibrates out everything gprMax-specific.** Rather
 than deriving gprMax's Hertzian-dipole current normalisation, cell-size

@@ -1,8 +1,12 @@
 # QBX/kdiff investigation closure
 
-Status: **closed for the current compressed-IBIM boundary representation**
+Status: **closed decision record for the current compressed-IBIM boundary representation**
 
 Date: 2026-09-01
+
+Current pipeline: [`current_architecture.md`](current_architecture.md). Living
+next-step checklist:
+[`ordered_boundary_nystrom_plan.md`](ordered_boundary_nystrom_plan.md).
 
 ## Decision
 
@@ -246,6 +250,10 @@ clearance before assembling the matrix. The opt-in records a negative result;
 it does not waive QBX admissibility.
 
 ## Next path: ordered SDF boundary to Kress/Nyström
+
+This section records the handoff rationale at closure. The living sequence,
+scope, and acceptance gates are maintained only in
+[`ordered_boundary_nystrom_plan.md`](ordered_boundary_nystrom_plan.md).
 
 The next production candidate is:
 

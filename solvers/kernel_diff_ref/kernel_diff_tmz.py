@@ -14,7 +14,7 @@ Circle only, and only under exact uniform-arclength sampling
 proves out the kernel-differencing half of the idea while borrowing the
 other half (an analytic circle parameterization, needed only for the
 diagonal self-term limit) from knowing the answer in advance. See
-``docs/ibim_error_mitigation_literature_codex.md`` Phase E and
+``docs/legacy/ibim_error_mitigation_literature_codex.md`` Phase E and
 ``docs/validation_change_log.md`` for why the diagonal limit is the piece
 that still needs work before this generalizes to a real (irregular,
 SDF-derived) narrow-band boundary: Kress' log-singular correction assumes an

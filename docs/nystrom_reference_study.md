@@ -1,5 +1,10 @@
 # Nyström Reference Solver — Convergence Study
 
+> **Status: active validation reference, not production code.** Its current
+> role is the independent smooth-boundary precision oracle for both
+> `gpr_bem_mod` diagnostics and the ordered-boundary backend under development.
+> Keep its numerical implementation independent of production code.
+
 2026-08-25
 
 ## What this is
@@ -8,10 +13,11 @@ A standalone explicit-boundary Nyström solver for the 2D TMz transmission
 problem, living in `solvers/nystrom_ref/`. It is an **oracle**, not a production
 solver: forward only, no SDF, no adjoint, no inverse, not differentiable.
 
-It exists to answer one question — *how accurate should this BIE be on a smooth
-shape when geometry and quadrature are not the limiting factors?* — and thereby
-to bound whether the corrected volumetric IBIM redesign (issue 2) is worth
-attempting.
+It answers one durable question — *how accurate should this BIE be on a smooth
+shape when geometry and quadrature are not the limiting factors?* Its original
+motivation was to assess a volumetric-IBIM redesign; its current role is to
+judge the ordered-boundary Kress/Nyström candidate without sharing production
+numerics.
 
 It is a **sibling** of `gpr_bem_ref` / `gpr_bem_mod`, not a module inside either.
 Two reasons. An oracle that imports the machinery it judges shares its bugs. And
@@ -49,7 +55,7 @@ So the hypersingular block is the only one with any singularity left, and it is
 merely logarithmic. One Kress/Kussmaul-Martensen log rule handles the entire
 system. No Maue/Günter regularisation, no finite-part integrals.
 
-This is variant (D) of `ibim_error_mitigation_literature_codex.md` §4b.4, which
+This is variant (D) of `legacy/ibim_error_mitigation_literature_codex.md` §4b.4, which
 was scoped and never built. The differences must be formed **symbolically** —
 subtracting two assembled `O(1/r^2)` matrices is exactly the cancellation §4.3
 warns against.
@@ -156,20 +162,15 @@ independently validate that formulation**. That question is already answered by
 the conditioning collapse and the three-scheme control in
 `validation_change_log.md`; this solver isolates quadrature and geometry only.
 
-It also does not yet answer the question that actually decides issue 2. "Nyström
-beats IBIM by five orders of magnitude" was close to a foregone conclusion —
-spectral quadrature on an exact parameterisation against a low-order stand-off
-approximation. The informative question is how much of the IBIM's residual error
-is *bad quadrature* versus *bad node distribution*, since the IBIM's nodes come
-from a compressed level-set band with irregular spacing and no amount of
-singular-quadrature work fixes irregularity. The cheap experiment is to jitter
-the uniform-`t` nodes here to match the IBIM's measured spacing statistics and
-see how much accuracy survives. That is not done.
+It also does not validate SDF contour extraction, periodic fitting, component
+identity, or multicomponent assembly. Production-candidate tests must separate
+exact injected curves from SDF-extracted curves so geometry error is not
+mistaken for operator error. The current oracle is single-component.
 
 ## Files
 
 - `solvers/nystrom_ref/nystrom_tmz.py` — geometry, kernels, quadrature, assembly,
   evaluation.
 - `solvers/nystrom_ref/__init__.py` — public surface.
-- `pytest/test_nystrom_reference.py` — 11 tests, 14 s. Thresholds are loose by
+- `pytest/artefacts/test_nystrom_reference.py` — 11 tests, 14 s. Thresholds are loose by
   five or more orders of magnitude; this study is not rerun in the suite.

@@ -1,6 +1,6 @@
 """Kernel-identity checks for the Phase 1 shape-derivative building blocks.
 
-Per ``docs/adjoint_inverse_rebuild_plan.md`` Phase 1 and
+Per ``docs/legacy/adjoint_inverse_rebuild_plan.md`` Phase 1 and
 ``docs/ibim_shape_derivative.md`` S11 item 2: these new kernels must be
 checked against central differences of the already-trusted forward potential
 functions *before* anything in ``ibim_tmz_adjoint.py`` is wired to depend on

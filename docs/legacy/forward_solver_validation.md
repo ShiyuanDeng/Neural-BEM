@@ -1,5 +1,12 @@
 # IBIM forward solver: validation, a bug, and an assessment
 
+> **Status: historical snapshot (2026-08-21).** “Current,” “next,” and
+> repository-state claims below describe the project on that date. They are
+> preserved as evidence, not current implementation guidance. See
+> [`../current_architecture.md`](../current_architecture.md) for the live
+> pipeline and [`../validation_change_log.md`](../validation_change_log.md)
+> for subsequent measurements.
+
 *2026-08-21 — validation of the rectangular-loop forward case against an exact reference solution, the parameter bug it uncovered, a decomposition of the residual error, and notes on the repository as a whole.*
 
 ---
