@@ -1,8 +1,10 @@
 # Solvers
 
 For the end-to-end geometry, forward, adjoint, and inverse pipelines, see
-[`docs/current_architecture.md`](../docs/current_architecture.md). The active
-ordered-boundary work is tracked only in
+[`docs/current_architecture.md`](../docs/current_architecture.md). The
+implemented low-dimensional inverse is described in
+[`docs/solver_neutral_inverse.md`](../docs/solver_neutral_inverse.md); remaining
+ordered-boundary work is tracked in
 [`docs/ordered_boundary_nystrom_plan.md`](../docs/ordered_boundary_nystrom_plan.md).
 
 The repository keeps a frozen/reference BEM pair plus isolated experimental
@@ -19,14 +21,16 @@ solve path and vary only the hypersingular Muller difference block.
 | `gpr_bem_ndiff/` | Archived/unsupported normal-offset experiment; unvalidated and not selector-wired. |
 | `ordered_boundary/` | Solver-neutral continuous producers plus immutable ordered BIE nodes and diagnostics. |
 | `periodic_kress/` | Shared canonical periodic logarithmic product weights; no geometry or physics ownership. |
-| `sdf_to_ordered_boundary/` | Opt-in SDF-to-smooth-periodic-boundary A/B/C comparison; reuses `ordered_boundary` outputs and is not selector- or solver-wired. |
+| `sdf_to_ordered_boundary/` | Shared SDF extraction/Method-B fitting used by `sdf_inverse`, plus the opt-in A/B/C geometry study. |
+| `sdf_inverse/` | Common single-component implicit extraction, MOD/Kress dispatch, and bounded low-dimensional parameter-FD inverse. |
 
 The measured QBX/kdiff production-direction investigation is closed. See
 [`docs/qbx_closure.md`](../docs/qbx_closure.md) for the timing and accuracy
 data, the important accuracy qualification, admissibility failures, retained
 artifacts, and reopening criteria. `gpr_bem_mod` remains the operational
-inverse/adjoint-capable solver while ordered-boundary Kress/Nyström work is
-developed separately.
+neural-adjoint solver. Kress is also available through the direct-import
+`sdf_inverse` comparison, but that path uses a numerical parameter Jacobian
+and does not add a Kress adjoint.
 
 They start byte-identical. `diff -rq --exclude=__pycache__ gpr_bem_ref gpr_bem_mod`
 shows exactly what you have changed.
@@ -39,16 +43,17 @@ costs nothing — the packages use only relative imports internally (`from
 .ibim_geometry import ...`) and never `import gpr_bem`, so the top-level directory
 name is free.
 
-Everything that consumes a solver still writes `from gpr_bem import ...`.
-`solver_select.py` decides which package that name resolves to, by aliasing it
-into `sys.modules` (submodules included, so class identity is preserved and the
-`isinstance` checks inside the solver keep working).
+Selector-backed code writes `from gpr_bem import ...`. `solver_select.py`
+decides which package that name resolves to, by aliasing it into `sys.modules`
+(submodules included, so class identity is preserved and the `isinstance`
+checks inside the solver keep working). Direct comparison code imports named
+peer packages instead; it does not mutate selector behavior.
 
 ## Running against one or the other
 
 `gpr_bem_mod` is operational but is not the selector default. An omitted flag
-runs frozen `gpr_bem_ref`; maintained forward/adjoint/inverse commands must use
-`--solver=mod` explicitly.
+runs frozen `gpr_bem_ref`; selector-backed maintained
+forward/adjoint/inverse commands must use `--solver=mod` explicitly.
 
 Selector-backed tests live in `pytest/gpr_bem_shared/` and run unchanged
 against either solver. The full `pytest/` tree also contains package-specific,
@@ -72,6 +77,23 @@ python run_ibim_rectangular_scan_forward.py --solver=mod
 python run_ibim_circle_inverse_bscan.py --solver=mod
 python run_ibim_geometry_demo.py --solver=mod
 ```
+
+The solver-neutral implicit-initialization driver is separate from that selector. It
+extracts and fits one `PeriodicCurve2D`, passes the same nodes and arc weights
+to MOD through an adapter or directly to Kress, and applies an identical
+bounded parameter finite-difference inverse to both:
+
+```bash
+OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
+NUMEXPR_NUM_THREADS=1 PYTHONPATH=solvers \
+/home/drdeng/miniconda3/envs/EMNerf/bin/python \
+  run_sdf_inverse_comparison.py
+```
+
+Its observations come from the analytic circle Mie series. The checked result
+and limitations are in
+[`results/inverse_solver_comparison/README.md`](../results/inverse_solver_comparison/README.md)
+and [`docs/solver_neutral_inverse.md`](../docs/solver_neutral_inverse.md).
 
 Notebook — `notebooks/_build_notebook.py` reads the `SOLVER` environment variable
 (default `ref`) and prints which package it resolved.
@@ -106,9 +128,10 @@ The checked, skimmed same-SDF error/runtime snapshot is
 Do not read the adjacent `pytest/ordered_boundary/` or
 `pytest/sdf_to_ordered_boundary/` measurements as solver errors. They test the
 geometry contract, SDF fidelity, and one manufactured scalar Kress action; they
-do not assemble or solve the physical BIE. Solver field/operator errors belong
-to `pytest/gpr_bem_kress/` and `pytest/solver_comparisons/`, with result
-bundles under `results/ordered_boundary_nystrom/` and
+do not assemble or solve the physical BIE. Solver field/operator and inverse
+errors belong to `pytest/gpr_bem_kress/`, `pytest/sdf_inverse/`, and
+`pytest/solver_comparisons/`, with result bundles under
+`results/ordered_boundary_nystrom/`, `results/inverse_solver_comparison/`, and
 `results/solver_comparisons/`, respectively.
 
 ## Other solver packages under here
@@ -122,8 +145,9 @@ Not part of the `ref`/`mod` pair, and not selected by `--solver`:
 | `gprmax_ref/` | Cache-driven wrapper around an out-of-process FDTD run (`docs/gprmax_reference_study.md`). |
 | `ordered_boundary/` | Shared NumPy-only node boundary, with separate exact/Fourier parameterization producers, for future Kress, kernel-difference, QBX, panel, or other BIE backends. |
 | `periodic_kress/` | Universal full-log periodic weights reused by the scalar proxy and ordered Müller candidate. |
-| `sdf_to_ordered_boundary/` | Shared marching/projection front end, spline/Fourier/SDF-refined producers, common metrics, and isolated study orchestration (`docs/sdf_boundary_parameterization_implementation.md`). |
+| `sdf_to_ordered_boundary/` | Shared marching/projection front end, spline/Fourier/SDF-refined producers, common metrics, and study orchestration; Method B is also reused by `sdf_inverse` (`docs/sdf_boundary_parameterization_implementation.md`). |
 | `gpr_bem_kress/` | Experimental dense all-block Kress/Müller solver accepting exactly one immutable `PeriodicCurve2D`; owns its package-local `Material`, explicit receiver operator, system, and forward results; direct import only. |
+| `sdf_inverse/` | Common Method-B geometry, legacy-MOD adapter, paired MOD/Kress prediction, circle/ellipse/random-feature implicit controls, and bounded parameter-FD Levenberg--Marquardt loop. |
 
 ## Selecting experimental T assembly in the kdiff solve
 

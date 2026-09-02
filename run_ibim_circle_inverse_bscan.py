@@ -45,6 +45,7 @@ from gpr_bem.ibim_inverse import (
     compute_bscan_quality_metrics,
     run_ibim_bscan_inverse,
 )
+from gpr_bem_mod.ibim_inverse import resolve_ibim_assembly_backend
 from gpr_bem.waveforms import gprmax_gaussian_spectrum
 
 TRUTH_CACHE_NAME = "rectangular_loop_truth.npz"
@@ -725,12 +726,17 @@ def main() -> None:
         scan_position_stride=position_stride,
     )
     model = SirenSDF2D(hidden_features=64, hidden_layers=2)
-    min_boundary_samples = max(48, int(0.75 * max(config.grid_shape)))
 
     exterior = Material(epsr=cfg.SAND_EPSR, sigma=cfg.SAND_SIGMA)
     interior = Material(epsr=cfg.PLASTIC_EPSR, sigma=cfg.PLASTIC_SIGMA)
     device = torch.device(config.device)
-    backend = "cupy" if device.type == "cuda" and torch.cuda.is_available() else "numpy"
+    backend = resolve_ibim_assembly_backend(device)
+    if device.type == "cuda" and backend == "numpy":
+        print(
+            "PyTorch is using CUDA, but CuPy could not be imported; "
+            "BEM assembly and solves will use NumPy on CPU.",
+            flush=True,
+        )
 
     truth = _load_or_build_truth(
         output_dir=output_dir,
@@ -809,7 +815,6 @@ def main() -> None:
                 frequency_window=frequency_window_full[freq_indices],
                 initial_circle_center=(cfg.TARGET_CENTER_X, cfg.TARGET_CENTER_Y),
                 initial_circle_radius=cfg.TARGET_RADIUS * 1.02,
-                min_boundary_samples=min_boundary_samples,
                 progress_callback=_progress_callback,
                 progress_label=stage_label,
             )
@@ -937,6 +942,10 @@ def main() -> None:
         timing_shape_gradient_time=np.asarray([it.timing["shape_gradient_time_s"] for it in all_iterations], dtype=float),
         timing_regularization_time=np.asarray([it.timing["regularization_time_s"] for it in all_iterations], dtype=float),
         timing_update_time=np.asarray([it.timing["nn_update_time_s"] for it in all_iterations], dtype=float),
+        shape_gradient_methods=np.asarray(
+            [getattr(it, "shape_gradient_method", "legacy_implicit") for it in all_iterations],
+            dtype="U32",
+        ),
     )
     print(
         f"relative_error_all={quality_metrics['relative_error_all']:.4e} "

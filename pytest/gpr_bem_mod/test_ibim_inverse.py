@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import ast
+import inspect
 import math
 from dataclasses import replace
+from pathlib import Path
 from types import SimpleNamespace
 
 import numpy as np
@@ -113,13 +116,13 @@ def _truth_case():
         dtype=torch.float64,
     )
     exterior, interior = _materials()
-    angular_frequencies = 2.0 * np.pi * np.array([1.0e9], dtype=float)
+    angular_frequencies = 2.0 * np.pi * np.array([0.8e9, 1.2e9], dtype=float)
     source_points = np.array([[0.22, cfg.ANTENNA_Y]], dtype=float)
     receiver_points = source_points + np.array([cfg.TX_RX_OFFSET, 0.0], dtype=float)
-    source_strength = 1.0 + 0.0j
-    time_vector = np.array([2.0e-9], dtype=float)
-    frequency_window = np.array([1.0], dtype=float)
-    observed_bscan = np.zeros((time_vector.size, receiver_points.shape[0]), dtype=float)
+    source_strength = np.array([1.0e-6 + 0.0j, 0.8e-6 + 0.1e-6j], dtype=np.complex128)
+    time_vector = np.linspace(0.0, 6.0e-9, 16, dtype=float)
+    frequency_window = np.ones(angular_frequencies.size, dtype=float)
+    observed_bscan = np.zeros((receiver_points.shape[0], time_vector.size), dtype=float)
     return boundary, exterior, interior, angular_frequencies, source_points, receiver_points, source_strength, time_vector, frequency_window, observed_bscan, offset_distance
 
 
@@ -188,6 +191,7 @@ def test_ibim_leading_order_normal_shape_gradient_dimension_matches_boundary_sam
     assert math.isfinite(iteration.bscan_loss)
     assert iteration.timing is not None
     assert "shape_gradient_time_s" in iteration.timing
+    assert iteration.shape_gradient_method == "leading_order"
 
 
 def test_single_circle_benchmark_config_and_stage_schedule_are_consistent() -> None:
@@ -200,6 +204,83 @@ def test_single_circle_benchmark_config_and_stage_schedule_are_consistent() -> N
     assert config.num_inverse_steps == sum(stage_steps for _freqs, stage_steps, _lr in schedule)
     assert config.time_gate_start == pytest.approx(2.0e-9)
     assert config.scan_position_stride == 4
+    assert config.shape_gradient_fallback == "error"
+
+
+def test_canonical_driver_keywords_match_mod_inverse_api() -> None:
+    driver_path = Path(__file__).resolve().parents[2] / "run_ibim_circle_inverse_bscan.py"
+    driver_tree = ast.parse(driver_path.read_text(encoding="utf-8"))
+    calls = [
+        node
+        for node in ast.walk(driver_tree)
+        if isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Name)
+        and node.func.id == "run_ibim_bscan_inverse"
+    ]
+    assert len(calls) == 1
+    accepted_keywords = set(inspect.signature(run_ibim_bscan_inverse).parameters)
+    passed_keywords = {keyword.arg for keyword in calls[0].keywords if keyword.arg is not None}
+    assert passed_keywords <= accepted_keywords
+
+
+def test_ibim_assembly_backend_requires_both_torch_cuda_and_cupy(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(torch.cuda, "is_available", lambda: True)
+    monkeypatch.setattr(ibim_inverse_module.importlib, "import_module", lambda name: SimpleNamespace())
+    assert ibim_inverse_module.resolve_ibim_assembly_backend("cuda") == "cupy"
+    assert ibim_inverse_module.resolve_ibim_assembly_backend("cpu") == "numpy"
+
+    def _missing_cupy(_name: str):
+        raise ImportError("cupy is unavailable")
+
+    monkeypatch.setattr(ibim_inverse_module.importlib, "import_module", _missing_cupy)
+    assert ibim_inverse_module.resolve_ibim_assembly_backend("cuda") == "numpy"
+
+
+def test_shape_gradient_fallback_is_explicit_and_preserves_failure_chain() -> None:
+    primary_error = RuntimeError("adjoint failed")
+    fallback_error = ValueError("finite difference failed")
+    fallback_calls = 0
+
+    def _primary():
+        raise primary_error
+
+    def _fallback():
+        nonlocal fallback_calls
+        fallback_calls += 1
+        return np.array([3.0], dtype=float)
+
+    with pytest.raises(RuntimeError, match="adjoint failed") as error_info:
+        ibim_inverse_module._evaluate_shape_gradient_with_fallback(
+            _primary,
+            _fallback,
+            policy="error",
+        )
+    assert error_info.value is primary_error
+    assert fallback_calls == 0
+
+    gradient, method = ibim_inverse_module._evaluate_shape_gradient_with_fallback(
+        _primary,
+        _fallback,
+        policy="finite_difference",
+    )
+    np.testing.assert_array_equal(gradient, np.array([3.0]))
+    assert method == "finite_difference"
+    assert fallback_calls == 1
+
+    def _failed_fallback():
+        raise fallback_error
+
+    with pytest.raises(RuntimeError, match="both failed") as chained_info:
+        ibim_inverse_module._evaluate_shape_gradient_with_fallback(
+            _primary,
+            _failed_fallback,
+            policy="finite_difference",
+        )
+    assert chained_info.value.__cause__ is fallback_error
+    assert fallback_error.__context__ is primary_error
+
+    with pytest.raises(ValueError, match="shape_gradient_fallback"):
+        replace(_config(), shape_gradient_fallback="silent")
 
 
 def test_boundary_density_guard_and_quality_metrics_are_finite() -> None:
@@ -376,7 +457,7 @@ def test_run_ibim_bscan_inverse_returns_expected_iteration_fields(monkeypatch: p
     assert progress_calls == [(1, 1, "single-circle benchmark")]
 
 
-def test_ibim_inverse_two_step_single_frequency_benchmark_does_not_blow_up_loss() -> None:
+def test_ibim_inverse_two_step_two_frequency_smoke_keeps_nonzero_loss_finite() -> None:
     (
         _boundary,
         exterior,
@@ -412,4 +493,9 @@ def test_ibim_inverse_two_step_single_frequency_benchmark_does_not_blow_up_loss(
     )
     losses = [iteration.bscan_loss for iteration in result.iterations]
     assert all(math.isfinite(loss) for loss in losses)
+    assert all(loss > 0.0 for loss in losses)
+    assert all(
+        np.linalg.norm(iteration.adjoint_result.frequency_response_dual) > 0.0
+        for iteration in result.iterations
+    )
     assert losses[-1] <= 3.0 * losses[0] + 1.0e-6

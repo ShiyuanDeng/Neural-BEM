@@ -580,6 +580,40 @@ def _canonicalize_counterclockwise_polygon(points: Array, config: FrontendConfig
     return np.array(values, dtype=np.float64, copy=True)
 
 
+def _remove_consecutive_marching_squares_duplicates(
+    points: Array,
+    *,
+    relative_tolerance: float,
+) -> Array:
+    """Remove only adjacent near-duplicates emitted at exact grid zeros.
+
+    ``skimage.measure.find_contours`` may repeat a grid vertex when the level
+    set is exactly zero there.  Those zero-length steps carry no contour
+    information and otherwise make a valid closed curve fail polygon
+    validation.  Non-adjacent duplicates remain untouched so genuine contour
+    degeneracies are still rejected by :func:`polygon_diagnostics`.
+    """
+
+    values = np.asarray(points, dtype=np.float64)
+    if values.ndim != 2 or values.shape[1] != 2 or values.shape[0] < 3:
+        raise PolygonValidationError("Extracted contour has invalid point coordinates.")
+    extent = np.ptp(values, axis=0)
+    scale = max(float(np.linalg.norm(extent)), np.finfo(np.float64).tiny)
+    tolerance = float(relative_tolerance) * scale
+    kept = [values[0]]
+    for point in values[1:]:
+        if float(np.linalg.norm(point - kept[-1])) > tolerance:
+            kept.append(point)
+    if len(kept) > 1 and float(np.linalg.norm(kept[-1] - kept[0])) <= tolerance:
+        kept.pop()
+    if len(kept) < 3:
+        raise PolygonValidationError(
+            "Extracted contour has fewer than three vertices after removing "
+            "consecutive marching-squares duplicates."
+        )
+    return np.asarray(kept, dtype=np.float64)
+
+
 def _physical_contours(
     grid: CartesianGridSample,
     config: FrontendConfig,
@@ -618,6 +652,10 @@ def _physical_contours(
         x = np.interp(columns, np.arange(grid.x_coordinates.size), grid.x_coordinates)
         y = np.interp(rows, np.arange(grid.y_coordinates.size), grid.y_coordinates)
         physical = np.column_stack((x, y))
+        physical = _remove_consecutive_marching_squares_duplicates(
+            physical,
+            relative_tolerance=config.intersection_relative_tolerance,
+        )
         tolerance = config.resolved_boundary_tolerance
         (xmin, ymin), (xmax, ymax) = config.bounds
         if bool(

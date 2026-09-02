@@ -10,7 +10,8 @@ details; each fact should have one canonical document below.
 | Document | Status | Owns |
 |---|---|---|
 | [`current_architecture.md`](current_architecture.md) | Living, normative | What the repository does today: scope, pipelines, defaults, solver roles, validation, and limitations |
-| [`ordered_boundary_nystrom_plan.md`](ordered_boundary_nystrom_plan.md) | Living plan | The only active implementation sequence for the next forward backend |
+| [`solver_neutral_inverse.md`](solver_neutral_inverse.md) | Implemented baseline | Common ordered geometry, MOD/Kress numerical inverse, reproduction command, measured recovery, and scalability limits |
+| [`ordered_boundary_nystrom_plan.md`](ordered_boundary_nystrom_plan.md) | Living plan | Remaining ordered-boundary/Kress implementation sequence and acceptance gates |
 | [`validation_change_log.md`](validation_change_log.md) | Append-only history | What changed, what was run, what was measured, and what decision followed |
 | [`qbx_closure.md`](qbx_closure.md) | Closed decision record | Why compressed-cloud QBX/kdiff stopped, retained artifacts, qualifications, and reopening criteria |
 
@@ -23,10 +24,11 @@ past experiment, the dated validation entry and stored artifacts win.
 | Document | Role |
 |---|---|
 | [`ibim_shape_derivative.md`](ibim_shape_derivative.md) | Mathematics and code mapping for the current `gpr_bem_mod` shape derivative |
+| [`solver_neutral_inverse.md`](solver_neutral_inverse.md) | Audited low-dimensional implicit-initialization inverse using one Method-B curve and either MOD or Kress |
 | [`nystrom_reference_study.md`](nystrom_reference_study.md) | Independent smooth-boundary forward precision oracle |
 | [`sdf_boundary_parameterization_implementation.md`](sdf_boundary_parameterization_implementation.md) | Implemented isolated SDF-to-smooth-boundary A/B/C experiment, architecture verdict, commands, and measured convergence |
 | [`neural_sdf_to_kress_implementation_guide.md`](neural_sdf_to_kress_implementation_guide.md) | Authoritative scope and numerical protocol for that experiment |
-| [`muller_blocks_implementation_guide.md`](muller_blocks_implementation_guide.md) | Authoritative scope, numerical protocol, and acceptance ladder for the next ordered forward backend |
+| [`muller_blocks_implementation_guide.md`](muller_blocks_implementation_guide.md) | Scope, numerical protocol, and acceptance ladder used for the ordered forward backend |
 | [`gpr_bem_kress_implementation.md`](gpr_bem_kress_implementation.md) | Experimental sibling-solver record: architecture, exact conventions, Kress split, forward/receiver APIs, future adjoint seam, and limitations |
 | [`deep-research-report.md`](deep-research-report.md) | Design background and literature review; not blanket implementation scope |
 | [`gprmax_reference_study.md`](gprmax_reference_study.md) | Independent cached FDTD physics cross-check |
@@ -35,6 +37,7 @@ past experiment, the dated validation entry and stored artifacts win.
 | [`../results/sdf_boundary_parameterization/study-20260902/metrics.csv`](../results/sdf_boundary_parameterization/study-20260902/metrics.csv) | Full SDF-boundary grid/sample/bandwidth study; geometry metrics, not solver errors |
 | [`../results/ordered_boundary_nystrom/README.md`](../results/ordered_boundary_nystrom/README.md) | Skimmed physical Müller block/trace/receiver error and runtime evidence for exact and frozen Method-B curves |
 | [`../results/solver_comparisons/legacy/qbx-closeout-20260901/aggregate_metrics.md`](../results/solver_comparisons/legacy/qbx-closeout-20260901/aggregate_metrics.md) | Dated five-shape solver-error evidence and archived QBX closeout rows |
+| [`../results/inverse_solver_comparison/README.md`](../results/inverse_solver_comparison/README.md) | Checked MOD/Kress recovery from circle, ellipse, and random-feature implicit initializations against analytic Mie data |
 | [`../solvers/README.md`](../solvers/README.md) | Package selection and experiment reproduction |
 | [`../pytest/README.md`](../pytest/README.md) | Test layout, gates, and evidence commands |
 

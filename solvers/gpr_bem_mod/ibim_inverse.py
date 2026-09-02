@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import importlib
 from dataclasses import dataclass, replace
 from time import perf_counter
 from typing import Callable
@@ -45,6 +46,7 @@ __all__ = [
     "compute_bscan_quality_metrics",
     "compute_boundary_geometry_metrics",
     "initialize_sdf_with_circle",
+    "resolve_ibim_assembly_backend",
     "run_ibim_bscan_inverse",
     "run_ibim_single_circle_bscan_inverse",
 ]
@@ -52,6 +54,14 @@ __all__ = [
 
 _IBIMInitializer = Callable[[SirenSDF2D, "IBIMInverseConfig"], np.ndarray]
 _IBIMProgressCallback = Callable[[int, int, str, dict[str, float]], None]
+_SHAPE_GRADIENT_FALLBACKS = frozenset({"error", "finite_difference"})
+
+
+def _validate_shape_gradient_fallback(value: str) -> str:
+    if value not in _SHAPE_GRADIENT_FALLBACKS:
+        choices = ", ".join(sorted(_SHAPE_GRADIENT_FALLBACKS))
+        raise ValueError(f"shape_gradient_fallback must be one of: {choices}.")
+    return value
 
 
 @dataclass(frozen=True)
@@ -85,6 +95,10 @@ class IBIMInverseConfig:
     seed: int = 0
     reinitialize_model: bool = True
     complex_precision: str = "complex128"
+    shape_gradient_fallback: str = "error"
+
+    def __post_init__(self) -> None:
+        _validate_shape_gradient_fallback(self.shape_gradient_fallback)
 
 
 @dataclass(frozen=True)
@@ -109,6 +123,7 @@ class IBIMInverseIteration:
     adjoint_result: ImplicitTMzBscanAdjointResult
     frequency_losses: np.ndarray | None = None
     timing: dict[str, float] | None = None
+    shape_gradient_method: str = "leading_order"
 
 
 @dataclass(frozen=True)
@@ -288,8 +303,21 @@ def compute_bscan_quality_metrics(
     }
 
 
-def _initialize_cuda_runtime(device: torch.device) -> None:
-    """Force a current CUDA context before any torch/cupy backward pass."""
+def resolve_ibim_assembly_backend(device: str | torch.device) -> str:
+    """Select CuPy only when both Torch CUDA and the CuPy package are available."""
+
+    resolved_device = torch.device(device)
+    if resolved_device.type != "cuda" or not torch.cuda.is_available():
+        return "numpy"
+    try:
+        importlib.import_module("cupy")
+    except Exception:
+        return "numpy"
+    return "cupy"
+
+
+def _initialize_cuda_runtime(device: torch.device, *, backend: str) -> None:
+    """Force a current CUDA context before any Torch/CuPy backward pass."""
 
     if device.type != "cuda" or not torch.cuda.is_available():
         return
@@ -297,12 +325,32 @@ def _initialize_cuda_runtime(device: torch.device) -> None:
     torch.cuda.set_device(index)
     torch.cuda.init()
     torch.zeros(1, device=device)
-    try:
-        import cupy
-
+    if backend == "cupy":
+        cupy = importlib.import_module("cupy")
         cupy.cuda.Device(index).use()
-    except Exception:
-        pass
+
+
+def _evaluate_shape_gradient_with_fallback(
+    primary: Callable[[], np.ndarray],
+    finite_difference: Callable[[], np.ndarray],
+    *,
+    policy: str,
+) -> tuple[np.ndarray, str]:
+    """Evaluate the adjoint gradient, optionally using the explicit debug fallback."""
+
+    fallback_policy = _validate_shape_gradient_fallback(policy)
+    try:
+        return primary(), "leading_order"
+    except Exception as primary_error:
+        if fallback_policy == "error":
+            raise
+        try:
+            return finite_difference(), "finite_difference"
+        except Exception as fallback_error:
+            raise RuntimeError(
+                "The leading-order shape gradient and the requested finite-difference "
+                f"fallback both failed; the original error was {primary_error!r}."
+            ) from fallback_error
 
 
 def _clone_boundary_with_points(
@@ -530,8 +578,8 @@ def run_ibim_single_circle_bscan_inverse(
     observed_bscan_array = np.asarray(observed_bscan, dtype=float)
     time_vector_array = np.asarray(time_vector, dtype=float)
     device = torch.device(config.device)
-    backend = "cupy" if device.type == "cuda" and torch.cuda.is_available() else "numpy"
-    _initialize_cuda_runtime(device)
+    backend = resolve_ibim_assembly_backend(device)
+    _initialize_cuda_runtime(device, backend=backend)
 
     torch.manual_seed(int(config.seed))
     np.random.seed(int(config.seed))
@@ -604,15 +652,13 @@ def run_ibim_single_circle_bscan_inverse(
         )
         adjoint_context_time = perf_counter() - adjoint_context_start
         shape_gradient_start = perf_counter()
-        try:
-            shape_gradient = ibim_bscan_leading_order_normal_shape_gradient(
+        shape_gradient, shape_gradient_method = _evaluate_shape_gradient_with_fallback(
+            lambda: ibim_bscan_leading_order_normal_shape_gradient(
                 adjoint_result,
                 boundary,
                 use_strict_quadrature=config.use_strict_quadrature,
-            )
-            shape_gradient_method = "leading_order"
-        except Exception:
-            shape_gradient = _estimate_bscan_shape_gradient_finite_difference(
+            ),
+            lambda: _estimate_bscan_shape_gradient_finite_difference(
                 boundary,
                 source_points=source_points_array,
                 receiver_points=receiver_points_array,
@@ -633,8 +679,9 @@ def run_ibim_single_circle_bscan_inverse(
                 normal_derivative_scheme=config.normal_derivative_scheme,
                 backend=backend,
                 complex_precision=config.complex_precision,
-            )
-            shape_gradient_method = "finite_difference"
+            ),
+            policy=config.shape_gradient_fallback,
+        )
         shape_gradient_time = perf_counter() - shape_gradient_start
 
         optimizer_start = perf_counter()
@@ -711,6 +758,7 @@ def run_ibim_single_circle_bscan_inverse(
                 adjoint_result=adjoint_result,
                 frequency_losses=frequency_losses,
                 timing=iteration_timing,
+                shape_gradient_method=shape_gradient_method,
             )
         )
         if progress_callback is not None:

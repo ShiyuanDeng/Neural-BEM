@@ -2724,3 +2724,257 @@ geometry, system, incident field, and receiver map plus a finite-difference
 gradient check. Existing gprMax caches remain an independent pair-0 physics
 cross-check, not a full-ring precision oracle and not literally the Torch-SDF
 branch.
+
+2026-09-02
+
+## Add an audited solver-neutral wrong-SDF inverse
+
+### Hypothesis
+
+The accepted Kress forward peer should not be rebuilt to answer the first
+inverse question. If both forward solvers consume the same ordered boundary
+and the optimizer treats each as the same black box, a deliberately wrong,
+low-dimensional SDF should converge against independent analytic data. The
+result should expose forward-discretization bias rather than confounding it
+with different geometry extraction, truth generation, objectives, or
+optimizers.
+
+### Audit
+
+The existing neural B-scan inverse was MOD-only and was not a reliable
+MOD/Kress comparison surface. Four concrete defects were found:
+
+- `run_ibim_circle_inverse_bscan.py` passed an unsupported
+  `min_boundary_samples` keyword to `run_ibim_bscan_inverse`;
+- a CUDA Torch device selected the CuPy BEM backend without first establishing
+  that CuPy was importable;
+- a broad `except Exception` silently replaced any leading-order adjoint
+  failure with a sparse boundary finite difference; and
+- its smoke fixture used one frequency, whose trapezoidal integration weight
+  is zero, so the nominal B-scan loss and adjoint dual were degenerate.
+
+A short random-SIREN warm start also did not provide a safe comparison input:
+it produced multiple zero contours rather than the one regular closed
+component required by Kress. In addition, a full numerical Jacobian over a
+large network would require at least two complete forward evaluations per
+parameter. The comparison was therefore scoped to a wrong three-parameter
+circle SDF, leaving scalable neural differentiation as a separate milestone.
+
+### Change
+
+Added `solvers/sdf_inverse/` with four explicit seams:
+
+- a negative-inside `CircleSDF2D` and bounded Torch parameter controller;
+- common `TorchImplicitField2D` extraction, single-component validation,
+  Method-B Fourier fitting, arc-length redistribution, and even-node
+  `PeriodicCurve2D` construction;
+- paired forward dispatch that passes the curve directly to Kress or copies
+  exactly its points, normals, and arc weights into a MOD
+  `ImplicitBoundarySamples2D`; and
+- a normalized complex scattered-field objective with a bounded central-FD
+  Jacobian, damped Gauss--Newton/Levenberg--Marquardt updates, backtracking,
+  evaluation caching, and accepted-iterate records.
+
+Kress evaluates its native full source-by-receiver matrices and the adapter
+selects their paired diagonal. MOD uses strict quadrature, direct Müller,
+analytic-extrapolated normal derivatives, NumPy, and complex128. Neither
+branch silently changes formulation or backend. The SDF-to-curve seam remains
+outside autograd, so the parameter finite differences include contour
+extraction, fitting, and remeshing.
+
+Added `run_sdf_inverse_comparison.py`. Its truth is the analytic
+penetrable-cylinder Mie series from `gpr_bem_ref`, not either forward solver.
+The default case starts at center `(0.48, 0.52) m`, radius `0.065 m`, targets
+`(0.50, 0.50) m`, radius `0.050 m`, fits 12 paired observations at
+0.25/0.5 GHz, and reserves 1/1.5/2.5 GHz for holdout. Both solvers receive the
+same 64-node Method-B curve, `129 x 129` extraction grid, and six-iteration
+inverse cap. The geometry box was widened to
+`((0.30, 0.30), (0.70, 0.70)) m`, which contains every permitted
+center/radius trial with at least `0.01 m` clearance. A
+second control evaluates each solver on the shared fitted boundary from the
+exact target SDF, isolating forward error from recovered-parameter error.
+
+The marching-squares front end was also hardened for contours that pass
+exactly through grid nodes. Consecutive near-duplicate vertices emitted around
+an exact grid zero are removed before polygon validation. Non-adjacent
+duplicates remain untouched and are rejected, preserving the guard against
+genuine self-touching or degenerate geometry.
+
+Artifact writes now default to a UTC-timestamped directory. An explicitly
+named nonempty output directory is refused unless `--overwrite` is supplied;
+that option removes only this driver's known artifact names. Acceptance now
+also requires each optimizer to reach a declared convergence condition. The
+recorded maximum system residual covers every uncached finite-difference and
+line-search forward, including rejected trials, plus the initial, final, and
+true-target-boundary controls.
+
+The legacy MOD inverse was repaired rather than silently superseded. The
+unsupported keyword was removed; backend resolution requires both Torch CUDA
+and importable CuPy; `shape_gradient_fallback` defaults to `error` and permits
+the sparse finite difference only when explicitly set to
+`finite_difference`; and each iteration records the method used. The smoke
+fixture now uses two frequencies and requires a finite nonzero loss and dual.
+
+### Validation
+
+The checked inverse was reproduced with:
+
+```bash
+OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
+NUMEXPR_NUM_THREADS=1 PYTHONPATH=solvers \
+/home/drdeng/miniconda3/envs/EMNerf/bin/python \
+  run_sdf_inverse_comparison.py \
+  --output-dir results/inverse_solver_comparison/wrong-circle-mie-20260902 \
+  --overwrite
+```
+
+Both branches used 42 forward evaluations. MOD reduced training relative L2
+from `9.737e-1` to `2.713e-3`, a `1.226e5x` loss drop, and recovered the center
+to below `0.0001 mm` with `0.0568 mm` radius error. Its inverse holdout relative
+L2 was `7.0438e-2`; on the true-target fitted boundary its holdout error was
+`7.3024e-2`. It met the relative-step tolerance after five accepted updates
+in about `7.5 s`.
+
+Kress reduced training relative L2 from `9.741e-1` to `8.648e-11`, a
+`1.294e20x` loss drop, and recovered center and radius to below the displayed
+precision (`8.008e-10 mm` radius error). Its inverse holdout relative L2 was
+`3.810e-10`; on the identical true-target fitted boundary it was `8.195e-14`.
+It met the loss tolerance after five accepted updates in about `4.5 s`.
+
+Accepted losses were monotone, both parameter-error gates passed, maximum
+linear-system relative residuals were below `1e-10`, each solver passed the
+declared `0.15` holdout ceiling, Kress passed its `1e-6` accuracy gate, and
+Kress beat MOD on both recovered and true-target boundaries. Both optimizer-
+convergence gates passed, and the MOD/Kress initial- and true-target-boundary
+parity deltas were exactly zero. All gates passed.
+For the same 42 inverse evaluations, the measured end-to-end MOD/Kress wall
+ratio was `1.67x`; this includes repeated geometry extraction and fitting and
+is not an isolated BIE assembly benchmark.
+The complete configuration, provenance, trajectories, responses, geometry,
+plot, and exact values are checked under
+[`results/inverse_solver_comparison/wrong-circle-mie-20260902/`](../results/inverse_solver_comparison/wrong-circle-mie-20260902/).
+
+The new module suite was run with:
+
+```bash
+OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
+NUMEXPR_NUM_THREADS=1 PYTHONPATH=solvers \
+/home/drdeng/miniconda3/envs/EMNerf/bin/python -m pytest -q \
+  pytest/sdf_inverse
+```
+
+It passed all 7 cases in 3.71 s. Together with the nine MOD legacy-inverse
+tests, the current tree contains 16 focused inverse cases. The complete
+first-party suite was then run as:
+
+```bash
+OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
+NUMEXPR_NUM_THREADS=1 PYTHONPATH=solvers \
+/home/drdeng/miniconda3/envs/EMNerf/bin/python -m pytest \
+  pytest/ -q
+```
+
+It passed `264 passed, 2 skipped` with 300 warnings in 172.09 s (173.57 s
+process wall time). The two skips are the expected CuPy-dependent checks. A
+repository-root-wide discovery is not the first-party suite: it also collects
+vendored optional projects whose dependencies are not installed, so those
+unrelated collection errors are not reported as inverse failures.
+
+### Decision
+
+Accept the shared ordered-boundary parameter-FD path as the working inverse
+comparison baseline. Kress materially outperforms MOD on this smooth circle,
+including a control where the geometry is identical, and should be the
+preferred forward backend for the next smooth single-component inverse work.
+
+This is not selector promotion and not a Kress adjoint. `gpr_bem_kress`
+remains direct-import, forward-only, CPU/NumPy, lossless/nonmagnetic, and
+single-component. A random SIREN first needs a topology-valid initialization;
+a scalable inverse then needs derivatives of the actual weighted Kress
+blocks, incident field, receiver map, points, normals, speeds, source
+Jacobians, and diagonal split, accepted against this numerical baseline.
+
+2026-09-02
+
+## Extend the inverse to non-circular and neural implicit initializations
+
+### Hypothesis
+
+The solver-neutral seam should depend on a regular zero contour, not on exact
+signed-distance values or a circular initial family. A rotated non-distance
+ellipse and a bounded random-feature neural implicit should therefore converge
+to the same analytic target. A completely unconstrained random network should
+instead fail explicitly if it does not supply one valid closed component.
+
+### Change
+
+Added two low-dimensional Torch models and controller builders:
+
+- `EllipseLevelSet2D` returns the dimensionless quadratic
+  `(x'/a)^2 + (y'/b)^2 - 1`, with trainable center and semi-axes and a fixed
+  rotation; and
+- `RadialRandomFeatureImplicit2D` uses fixed seeded tanh direction features
+  with trainable center, base radius, and four output weights. Its bounded
+  radial envelope guarantees one positive star-shaped contour throughout all
+  finite-difference and line-search trials.
+
+`run_sdf_inverse_comparison.py --initial-model` now selects `circle`,
+`ellipse`, or `random_features`; `--loss-tolerance` exposes the recorded
+optimizer stop threshold. Model state, fixed random features, raw bounds, and
+initial physical parameters are persisted. Generic geometry diagnostics now
+include `|F| / ||grad F||`, because raw `|F|` changes under harmless implicit-
+field rescaling and is not a comparable non-SDF geometry error.
+
+The acceptance set adds final circle-boundary error plus explicit
+non-circular/non-distance initialization gates. Tests cover controller
+round-trips, deterministic random features, both new models through MOD and
+Kress, and a seeded unconstrained MLP that is rejected during contour
+validation before a forward solve.
+
+### Validation
+
+The rotated ellipse run used semi-axes `0.072/0.038 m`, rotation `0.4 rad`, and
+passed all `25/25` gates. MOD reduced training relative L2 from `9.272e-1` to
+`2.713e-3`, with `7.044e-2` holdout error and `5.684e-5 m` maximum circle
+error. Kress reduced it from `9.283e-1` to `7.115e-10`, with `3.225e-9`
+holdout error and `3.412e-11 m` maximum circle error.
+
+The seeded random-feature neural implicit had `0.00751 m` initial radial span
+and passed all `25/25` gates. MOD reduced training relative L2 from `9.298e-1`
+to `2.713e-3`, with `7.044e-2` holdout error and `5.684e-5 m` maximum circle
+error. Kress reduced it from `9.298e-1` to `3.696e-10`, with `3.645e-9`
+holdout error and `5.003e-11 m` maximum circle error. Both branches used 190
+forward evaluations; the end-to-end times were `31.67 s` for MOD and `17.45 s`
+for Kress.
+
+The combined focused inverse command passed `24 passed` in 25.36 s:
+
+```bash
+OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
+NUMEXPR_NUM_THREADS=1 PYTHONPATH=solvers \
+/home/drdeng/miniconda3/envs/EMNerf/bin/python -m pytest -q \
+  pytest/sdf_inverse/test_solver_neutral_inverse.py \
+  pytest/gpr_bem_mod/test_ibim_inverse.py
+```
+
+The complete current first-party suite then passed `272 passed, 2 skipped`
+with 300 warnings in 193.15 s (194.92 s process wall time):
+
+```bash
+OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
+NUMEXPR_NUM_THREADS=1 PYTHONPATH=solvers \
+/home/drdeng/miniconda3/envs/EMNerf/bin/python -m pytest pytest/ -q
+```
+
+Both skips were the expected CuPy-unavailable checks; there were no failures.
+
+All three checked bundles, commands, metrics, and limitations are indexed at
+[`results/inverse_solver_comparison/README.md`](../results/inverse_solver_comparison/README.md).
+
+### Decision
+
+Accept both non-SDF cases as inverse-pipeline evidence. The zero-contour
+contract is now demonstrated independently of signed-distance magnitude and
+of a circular initial parameterization. The random-feature case remains a
+topology-constrained small neural model, not evidence that arbitrary SIREN
+initialization or full-network finite differences are safe or scalable.

@@ -15,16 +15,19 @@ under [`../results/`](../results/); `pytest/` contains no result bundles.
 | `nystrom_ref/` | Independent smooth-boundary forward oracle | Yes |
 | `ordered_boundary/` | Continuous and node-owned geometry contracts | **No** |
 | [`sdf_to_ordered_boundary/`](sdf_to_ordered_boundary/) | Implicit-field extraction, A/B/C fits, geometry metrics, artifacts, and scalar Kress proxy | **No** |
+| [`sdf_inverse/`](sdf_inverse/) | Common ordered geometry, paired MOD/Kress prediction, fixed complex objective, and implicit-initialization recovery | **Yes** |
 | [`solver_comparisons/`](solver_comparisons/) | Circle, ellipse, square, star, and two-circle solver comparisons | **Yes** |
 
-The distinction in the last three rows is deliberate. The ordered-boundary
-and SDF-to-boundary suites stop before any Helmholtz/Müller operator assembly,
-linear solve, boundary density, or receiver/scattered field. Their “errors”
+The distinction among the geometry, inverse, and comparison rows is
+deliberate. The ordered-boundary and SDF-to-boundary suites stop before any
+Helmholtz/Müller operator assembly, linear solve, boundary density, or
+receiver/scattered field. Their “errors”
 are implicit zero-set residuals, geometric discrepancies, parameterization
 diagnostics, or errors in one manufactured scalar logarithmic integral. The
 dedicated cross-solver error tables and checked field-result bundles live in
-`solver_comparisons/`; other solver-owned unit suites also test their own
-systems and fields.
+`solver_comparisons/`; `sdf_inverse/` instead executes both physical forwards
+inside one common numerical inverse, and other solver-owned unit suites test
+their own systems and fields.
 
 ## Selector-backed IBIM tests
 
@@ -44,6 +47,22 @@ MOD-only tests import `gpr_bem_mod` directly and need no selector flag:
 ```bash
 python -m pytest pytest/gpr_bem_mod -q
 ```
+
+The final first-party validation command is deliberately scoped to this
+directory:
+
+```bash
+OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
+NUMEXPR_NUM_THREADS=1 PYTHONPATH=solvers \
+/home/drdeng/miniconda3/envs/EMNerf/bin/python -m pytest \
+  pytest/ -q
+```
+
+It passed `272 passed, 2 skipped` in 193.15 s (194.92 s process wall time) on
+2026-09-02; the skips are the expected CuPy-dependent checks. Running
+discovery at the repository root also
+collects vendored optional projects whose dependencies are not installed, so
+their unrelated collection errors are outside the first-party suite.
 
 ## Geometry and parameterization tests
 
@@ -95,6 +114,43 @@ kress-scalar-proxy-20260902/frozen_curves \
   --output-dir results/sdf_boundary_parameterization/kress-scalar-proxy-NEW \
   --timing-repeats 9
 ```
+
+## Solver-neutral inverse tests
+
+The focused inverse suite checks that a single-frequency complex residual is
+not erased, adjacent marching-squares duplicates at exact grid zeros are
+handled safely, nonempty artifact directories require explicit overwrite,
+both solvers receive the same ordered nodes and arc weights, both forwards
+agree with analytic Mie data at their declared tolerances, large finite-
+difference parameter sets are rejected, and a wrong circle converges under a
+monotone fixed objective for both MOD and Kress. It also sends a rotated
+quadratic ellipse and a seeded random-feature neural implicit through both
+forward branches, verifies their non-circular/non-distance initial fields,
+and confirms that an unconstrained random MLP with no valid closed contour is
+rejected before a forward solve:
+
+```bash
+OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
+NUMEXPR_NUM_THREADS=1 PYTHONPATH=solvers \
+/home/drdeng/miniconda3/envs/EMNerf/bin/python -m pytest -q \
+  pytest/sdf_inverse
+```
+
+That suite contributes 15 test cases and passed in 21.90 s. Together with the
+nine legacy MOD inverse tests, the combined command covers 24 focused
+cases:
+
+```bash
+PYTHONPATH=solvers \
+/home/drdeng/miniconda3/envs/EMNerf/bin/python -m pytest -q \
+  pytest/sdf_inverse pytest/gpr_bem_mod/test_ibim_inverse.py
+```
+
+The corresponding end-to-end evidence is
+[`../results/inverse_solver_comparison/README.md`](../results/inverse_solver_comparison/README.md).
+See [`../docs/solver_neutral_inverse.md`](../docs/solver_neutral_inverse.md)
+for the exact scope: this is a low-dimensional parameter-FD comparison, not a
+Kress adjoint or a scalable random-network inverse.
 
 ## Solver comparisons
 

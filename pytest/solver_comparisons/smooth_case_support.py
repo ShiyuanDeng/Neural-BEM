@@ -374,6 +374,18 @@ def comparison_error_scope_label(name: str, metrics: dict[str, Any]) -> str:
     scope = str(metrics.get("error_scope", ""))
     if pair_count == 1 or scope.startswith("index-0") or name == "gprmax":
         return "pair-0"
+    if pair_count is None:
+        # Older diagnostic rows predate the explicit scope metadata.  Their
+        # stored scattered vectors still identify how many paired fields enter
+        # the reported L2, so use that evidence instead of crashing the table
+        # formatter or inventing a one-pair label.
+        scattered = metrics.get("scattered", {})
+        if isinstance(scattered, Mapping) and scattered:
+            first_field = np.asarray(next(iter(scattered.values())))
+            if first_field.ndim == 1 and first_field.size > 0:
+                pair_count = int(first_field.size)
+    if pair_count is None:
+        return "scope?"
     return f"L2/{int(pair_count)}"
 
 
