@@ -449,3 +449,20 @@ The artifact-only notebook was executed against the full study and loaded all 16
 ```
 
 The only emitted warnings were Matplotlib/PyParsing deprecations from the pinned environment; they did not originate in the geometry implementation.
+
+## Subsequent isolated logarithmic-product proxy
+
+A later, explicitly requested follow-up applies a scalar Kress logarithmic
+product rule to frozen coefficient-owning A/B/C outputs. It remains a
+non-production scratchpad diagnostic and does not change this package's scope
+or connect any fitted curve to an active solver. It reports the smooth,
+geometry-dependent remainder error separately from the full manufactured
+action error. Runtime is likewise split: converter rows each include their
+identical shared front end and must not be summed, while action time means
+dense `N x N` proxy-matrix formation and application, not an FFT, BIE
+assembly, or solver time. The skimmed error/runtime table and its checked
+`frozen_curves/` reproduction inputs are in
+[`pytest/results/ordered_nystrom/sdf-boundary-kress-proxy-20260902/summary.md`](../pytest/results/ordered_nystrom/sdf-boundary-kress-proxy-20260902/summary.md),
+and its rationale, independent-reference construction, gates, and limitations
+are recorded in
+[`validation_change_log.md`](validation_change_log.md#frozen-sdf-boundaries-isolated-scalar-kress-proxy).

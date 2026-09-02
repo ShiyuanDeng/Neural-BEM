@@ -37,6 +37,10 @@ This directory now keeps only the Neural-SDF/IBIM mainline tests.
   `test_sdf_boundary_notebook.py`, and `test_sdf_boundary_isolation.py`:
   common metrics/artifacts, controlled sweeps, artifact-only analysis, and
   proof that the experiment is not imported by active solver pipelines.
+- `test_sdf_boundary_kress_proxy.py`: independent circle identities, the
+  scalar logarithmic product rule, an independently integrated smooth
+  remainder, spline/Fourier convergence behavior, even-node enforcement, and
+  static isolation of the scratchpad probe from every solver implementation.
 - `test_circle_comparison.py`: runs **both** solver packages side by side, plus
   gprMax, on a circle target and prints a one-row-per-solver metrics table
   against the Mie series. Also carries a `kernel_diff*` row (`solvers/kernel_diff_ref/`),
@@ -115,6 +119,47 @@ python -m pytest pytest/test_aggregate_comparison_results.py -s -q
 python -m pytest pytest/test_aggregate_comparison_results.py \
   --include-qbx-archive -s -q
 ```
+
+## Isolated SDF-boundary Kress proxy
+
+The active fast check is:
+
+```bash
+PYTHONPATH=solvers python -m pytest -q \
+  pytest/test_sdf_boundary_kress_proxy.py
+```
+
+The checked evidence is
+[`results/ordered_nystrom/sdf-boundary-kress-proxy-20260902/summary.md`](results/ordered_nystrom/sdf-boundary-kress-proxy-20260902/summary.md).
+It reports the smooth, geometry-dependent `q`-remainder error separately from
+the error in the complete manufactured logarithmic action. This prevents the
+known canonical convolution from masking differences between the frozen curve
+representations. It also separates the earlier one-time SDF-to-curve runtime
+from the runtime of one full-grid scalar logarithmic proxy action.
+
+The checked source manifest and metrics plus the compact `frozen_curves/`
+bundles make the recorded sweep reproducible without the full study's ignored
+curve directory. Choose a new empty output directory:
+
+```bash
+OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
+python scratchpad/sdf_boundary_kress_proxy.py \
+  --artifact-root results/sdf_boundary_parameterization/study-20260902 \
+  --curve-root pytest/results/ordered_nystrom/\
+sdf-boundary-kress-proxy-20260902/frozen_curves \
+  --output-dir results/sdf_boundary_parameterization/kress-proxy-NEW \
+  --timing-repeats 9
+```
+
+This is a scalar manufactured diagnostic, not a Müller assembly or solver
+row. It reconstructs the authoritative spline/Fourier coefficients once and
+never refits a curve while changing the declared even-node ladder. Its action
+timing includes dense `N x N` matrix formation and application; it is not the
+cost of an FFT implementation, a four-block BIE assembly, or a solve. Each
+reported converter time independently includes the same shared marching-
+squares/projection front end, so converter times from A/B/C rows must not be
+summed. Pass/fail is determined by the configured gates recorded with the
+generated evidence.
 
 `test_circle_comparison.py` also accepts `--perfect-sampling`, a diagnostic
 toggle that swaps the real compressed boundary for exact uniform-arclength

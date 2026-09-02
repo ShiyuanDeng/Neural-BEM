@@ -2283,3 +2283,129 @@ method, own read-only node arrays, and preserve component-local and flattened
 indexing. The focused compatibility run, including the independent Nyström
 oracle and existing IBIM geometry tests, passes 44 tests; its four warnings are
 the pre-existing intentional IBIM merge-distance warnings.
+
+## Frozen SDF boundaries: isolated scalar Kress proxy
+
+Date: 2026-09-02
+
+### Hypothesis
+
+The coefficient-owning curves returned by the isolated SDF comparison should
+support the logarithmic Kress split on uniform even node grids without being
+refitted as the node count changes. Fourier Methods B and accepted C should
+show spectral product-rule convergence. Method A should remain usable but
+eventually expose the algebraic convergence implied by a globally C2,
+piecewise-cubic curve.
+
+This test must keep geometry error separate from quadrature error. A product
+rule can converge to high accuracy on an under-resolved approximation of the
+zero set.
+
+### Change
+
+Added [`scratchpad/sdf_boundary_kress_proxy.py`](../scratchpad/sdf_boundary_kress_proxy.py),
+an explicitly non-production scalar diagnostic. It evaluates
+
+\[
+\int_0^{2\pi}\log|\gamma(t)-\gamma(s)|\rho(s)|\gamma'(s)|\,ds
+\]
+
+with the standard periodic logarithmic product weights. It uses the required
+factor one half for the canonical `log(4 sin^2((t-s)/2))` weights and the
+removable diagonal value `log|gamma'(t)|`.
+
+The manufactured choice makes `rho(s)|gamma'(s)|` a non-bandlimited Poisson
+kernel with `a=0.75` and phase `0.37`. The canonical logarithmic convolution is
+known analytically. On non-circular curves, the reference evaluates the smooth
+geometric `q` remainder with composite Gauss-Legendre orders 24 and 40; the two
+orders must agree before the reference is accepted. Thus the reference does
+not reuse a finer instance of the Kress rule being tested.
+
+The benchmark records two errors rather than collapsing them. The **smooth
+remainder error** measures the geometry-dependent `q` term and is the useful
+A/B/C representation comparison. The **full manufactured-action error** adds
+the analytically known canonical convolution and remains the end-to-end scalar
+identity check. Reporting both is necessary because the canonical term can
+dominate the full error and conceal a curve-dependent remainder trend.
+
+The frozen-curve sweep reconstructs native `spline_knots` /
+`spline_coefficients` or Fourier cosine/sine coefficients from the existing
+full-study artifacts. It verifies exact reconstruction, then discretizes the
+same continuous curve at N=32 through 2048. It neither reruns marching squares
+nor refits at a new N. Selected C rows are successful refinements; fallback C
+rows are not repeated because their saved coefficients are bit-identical to B.
+
+Added [`pytest/test_sdf_boundary_kress_proxy.py`](../pytest/test_sdf_boundary_kress_proxy.py)
+for independent circle sine/cosine identities including the special Nyquist
+term, the non-bandlimited analytic circle control, the independent smooth-
+remainder reference, spline asymptotics, even-N rejection, and a static ban on
+imports from solver implementations.
+
+No `solvers/` package, solver selector, forward/adjoint/inverse entry point, or
+current architecture behavior changed.
+
+### Validation
+
+Fast executable checks:
+
+```bash
+PYTHONPATH=solvers OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 \
+MKL_NUM_THREADS=1 \
+/home/drdeng/miniconda3/envs/EMNerf/bin/python -m pytest -q \
+  pytest/test_sdf_boundary_kress_proxy.py
+```
+
+The checked compact coefficient inputs make the frozen coefficient benchmark
+self-contained. `--artifact-root` supplies the tracked study manifest and
+metrics; `--curve-root` supplies the checked authoritative arrays selected for
+this diagnostic:
+
+```bash
+OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
+/home/drdeng/miniconda3/envs/EMNerf/bin/python \
+  scratchpad/sdf_boundary_kress_proxy.py \
+  --artifact-root results/sdf_boundary_parameterization/study-20260902 \
+  --curve-root pytest/results/ordered_nystrom/\
+sdf-boundary-kress-proxy-20260902/frozen_curves \
+  --output-dir pytest/results/ordered_nystrom/\
+sdf-boundary-kress-proxy-REPRO \
+  --timing-repeats 9
+```
+
+The canonical skimmed error/runtime table and complete JSON/CSV records are in
+[`pytest/results/ordered_nystrom/sdf-boundary-kress-proxy-20260902/summary.md`](../pytest/results/ordered_nystrom/sdf-boundary-kress-proxy-20260902/summary.md).
+
+The generated summary is the authoritative readable error/runtime table. It
+shows smooth-remainder and full-action errors side by side and labels values
+that are limited by reference agreement instead of presenting them as precise
+roundoff measurements. It also records the outcome of the declared,
+configured gates and the agreement of the two composite-Gauss reference
+orders.
+
+Runtime columns have deliberately narrow meanings. A proxy-action timing is
+one dense `N x N` matrix formation and application on the recorded CPU/thread
+configuration. It is neither an FFT application time nor a four-block BIE
+assembly or solve. A converter timing is copied from the earlier A/B/C study
+and includes that row's shared marching-squares, contour-validation,
+resampling, and Newton-projection front end. Because that shared front-end cost
+is charged independently to every row, converter times must not be summed
+across methods.
+
+Geometry fidelity and product-rule convergence remain separate. A frozen
+Fourier curve may integrate its own smooth remainder to the reference floor
+while still approximating the original zero set poorly; the geometry residual
+columns must therefore be read alongside the remainder-error columns.
+
+### Decision
+
+Subject to the generated summary's configured gates, retain **Method B with
+adaptively increased bandwidth** as the preferred parameterization candidate.
+The scalar test asks whether accepted C demonstrates a remainder-convergence
+advantage commensurate with its extra conversion work; it does not infer that
+advantage from the geometry plot or from the shared canonical convolution.
+Method A remains the finite-smoothness control rather than the preferred
+high-order Kress curve.
+
+This does not complete Phase 3 of the ordered-boundary plan: no Müller kernel
+block, singular diagonal formula, linear system, scattered field, or solver
+integration was tested here.
