@@ -69,6 +69,15 @@ the exact target with the shared training loss below. Only accepted iterates
 are stored, so the animation is a step sequence; the frames between them are
 labelled visual interpolation and change no reported number.
 
+In all four cases the initial family contains the target exactly -- the star
+family at the right five parameters, the ellipse family at equal semi-axes,
+the random-feature family at zero output weights. These bundles measure
+whether the pipeline drives an implicit field onto a representable target and
+how forward-solver error biases the recovered parameters; they are not
+evidence about shape discovery or model misspecification. See the scope
+section of
+[`docs/solver_neutral_inverse.md`](../../docs/solver_neutral_inverse.md).
+
 Every checked bundle passes all of its acceptance gates: 25 for each circle
 case and 30 for the star, which adds lobe-depth, lobe-phase, and
 oracle-self-convergence gates. The two non-SDF circle cases additionally gate

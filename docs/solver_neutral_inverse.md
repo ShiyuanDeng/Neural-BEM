@@ -333,6 +333,21 @@ the accuracy guarantees of the new circle-parameter comparison.
 
 ## Scope and limitations
 
+- **Every checked case has zero model error: the initial family contains the
+  target exactly.** The star family reproduces the target star at the right
+  five parameters; the ellipse family reproduces the circle at equal
+  semi-axes; the random-feature family reproduces it at zero output weights.
+  The star's lobe count and functional form are given by construction, and its
+  rotation bound is narrower than half the symmetry period, so the search
+  cannot even reach a wrong lobe basin. These runs therefore measure whether
+  the extraction/fit/remesh/forward chain can drive an implicit field onto a
+  representable target, and how much forward-solver error biases the recovered
+  parameters. They are not evidence about shape discovery, non-uniqueness,
+  local minima, or model misspecification, because a bounded low-dimensional
+  search containing the exact answer removes most of that difficulty. The
+  next credible step for this baseline is a case whose family cannot represent
+  the target, which also needs gates written against the best achievable
+  approximation rather than against the truth.
 - The star result covers a smooth radial graph with a fixed, known lobe count.
   The lobe count is structure, not a control: an integer cannot be recovered
   by continuous finite differences, and a fractional one would not close the
