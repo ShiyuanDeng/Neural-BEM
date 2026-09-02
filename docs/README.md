@@ -1,6 +1,6 @@
 # Documentation map
 
-Last reconciled: 2026-09-01.
+Last reconciled: 2026-09-02.
 
 This page is the navigation entry point. It does not own implementation
 details; each fact should have one canonical document below.
@@ -24,6 +24,9 @@ past experiment, the dated validation entry and stored artifacts win.
 |---|---|
 | [`ibim_shape_derivative.md`](ibim_shape_derivative.md) | Mathematics and code mapping for the current `gpr_bem_mod` shape derivative |
 | [`nystrom_reference_study.md`](nystrom_reference_study.md) | Independent smooth-boundary forward precision oracle |
+| [`sdf_boundary_parameterization_implementation.md`](sdf_boundary_parameterization_implementation.md) | Implemented isolated SDF-to-smooth-boundary A/B/C experiment, architecture verdict, commands, and measured convergence |
+| [`neural_sdf_to_kress_implementation_guide.md`](neural_sdf_to_kress_implementation_guide.md) | Authoritative scope and numerical protocol for that experiment |
+| [`deep-research-report.md`](deep-research-report.md) | Design background and literature review; not blanket implementation scope |
 | [`gprmax_reference_study.md`](gprmax_reference_study.md) | Independent cached FDTD physics cross-check |
 | [`../pytest/results/aggregate_metrics.md`](../pytest/results/aggregate_metrics.md) | Generated five-shape numerical evidence |
 | [`../solvers/README.md`](../solvers/README.md) | Package selection and experiment reproduction |

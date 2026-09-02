@@ -24,6 +24,19 @@ This directory now keeps only the Neural-SDF/IBIM mainline tests.
 - `artefacts/test_scan_paths.py`: Tx/Rx scan-path construction.
 - `test_ibim_shape_derivative_kernels.py`: current Müller shape-kernel
   directional checks.
+- `test_ordered_periodic_curve.py`: separate analytic/Fourier continuous
+  producers and immutable node-based periodic curves, node jets, derived
+  differential geometry, provenance, and resolution-independent validation.
+- `test_ordered_boundary.py`: node-owned component IDs/slices and flattened BIE views,
+  topology/clearance diagnostics, rejection cases, JSON reports, and static
+  dependency isolation for the ordered geometry package.
+- `test_sdf_boundary_frontend.py`, `test_sdf_boundary_methods_ab.py`, and
+  `test_sdf_boundary_method_c.py`: the isolated shared SDF front end and the
+  three smooth-boundary methods, including guarded checkpoint/fallback behavior.
+- `test_sdf_boundary_metrics.py`, `test_sdf_boundary_experiment.py`,
+  `test_sdf_boundary_notebook.py`, and `test_sdf_boundary_isolation.py`:
+  common metrics/artifacts, controlled sweeps, artifact-only analysis, and
+  proof that the experiment is not imported by active solver pipelines.
 - `test_circle_comparison.py`: runs **both** solver packages side by side, plus
   gprMax, on a circle target and prints a one-row-per-solver metrics table
   against the Mie series. Also carries a `kernel_diff*` row (`solvers/kernel_diff_ref/`),

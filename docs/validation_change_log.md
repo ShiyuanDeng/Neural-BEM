@@ -2186,3 +2186,100 @@ Therefore:
 - `gpr_bem_mod` remains the operational inverse/adjoint-capable baseline; and
 - forward-accuracy work moves to ordered SDF contour extraction followed by a
   coherent, component-wise Kress/Nyström discretization of all Müller blocks.
+
+## Solver-neutral ordered smooth-boundary foundation
+
+Date: 2026-09-02
+
+### Hypothesis
+
+Exact smooth geometry should be represented once, independently of MOD,
+kdiff, Kress, QBX, or future SDF extraction. A forward solver should consume a
+continuous component evaluator and component-aware samples rather than infer
+order, normals, curvature, or density-transfer coordinates from the compressed
+IBIM cloud.
+
+### Change
+
+Added `solvers/ordered_boundary/`, a NumPy-only package containing:
+
+- `PeriodicCurve2D`, with stable component ID, arbitrary off-node periodic
+  evaluation of `x/x'/x''` and optional `x'''`, explicit reversal and phase
+  shift, and quadrature-independent uniform sampling;
+- immutable `PeriodicCurveSamples2D`, deriving speed, tangent, CCW outward
+  normal, curvature, and `h|x'|` arc-length weights from the evaluator;
+- `OrderedBoundary2D` and `OrderedBoundarySamples2D`, retaining component-local
+  grids alongside flattened arrays, slices, offsets, node owners, and local
+  indices;
+- exact circle, rotated ellipse, rotated radial-star, and real Fourier-series
+  producers; and
+- scale-aware reports for closure/derivative consistency, regularity,
+  orientation, sampled self-intersection, component intersection, containment,
+  and clearance, with JSON-safe provenance and phase diagnostics.
+
+The package owns no SDF extraction, Torch code, material semantics, singular
+quadrature, Kress pair weights, Maue regularisation, or MOD `merge_distance`.
+Odd node counts are valid geometry; a future Kress consumer can request an
+even count explicitly.
+
+### Validation
+
+```text
+/home/drdeng/miniconda3/envs/EMNerf/bin/pytest \
+  pytest/test_ordered_periodic_curve.py pytest/test_ordered_boundary.py -q
+-> 22 passed in 1.09 s
+```
+
+The tests cover analytic geometry and independent oracle agreement,
+non-arclength parametrization, Fourier input ownership, optional third
+derivatives, rigid rotation, odd/even restriction separation, immutable
+derived fields, multicomponent flattening, strict JSON serialization,
+clearance/nesting/intersection policies, a smooth lemniscate, a double-covered
+circle, a zero-speed cusp, open/nonperiodic input, and a static ban on imports
+from solver/oracle packages.
+
+### Decision
+
+Accept this as the common explicit-boundary starting point. Keep future SDF
+projection/fitting as a producer of `PeriodicCurve2D`, and keep every
+forward-method quadrature/regularisation in a solver adapter. No production
+forward path or default changes in this entry.
+
+## Ordered-boundary node ownership correction
+
+Date: 2026-09-02
+
+### Issue
+
+The first API used `PeriodicCurve2D` for a continuous evaluator and appended
+`Samples2D` to the actual node geometry. That was backwards for its intended
+role parallel to `ImplicitBoundarySamples2D`: the BIE starting point must be
+unambiguously node-owned and serializable.
+
+### Change
+
+- `PeriodicCurve2D` now owns one immutable uniform periodic node grid: the
+  parameters, positions, first/second/optional-third derivatives, and derived
+  speed, tangent, outward normal, curvature, and ordinary arc-length weights.
+- `OrderedBoundary2D` now owns and flattens those node components directly. It
+  has no `.sample()` method and no hidden evaluator.
+- Off-node evaluation and resolution changes moved to explicitly separate
+  `PeriodicParameterization2D` and `OrderedBoundaryParameterization2D`
+  producers. Their transition to BIE nodes is named `.discretize(...)`.
+- The generic `quadrature_weights` name became `arc_length_weights` so it
+  cannot be mistaken for Kress target-source product weights.
+- Continuous geometry diagnostics are correspondingly named
+  `validate_periodic_parameterization` and
+  `validate_ordered_parameterization`.
+
+This is an API clarification only. It does not add an SDF extractor, Kress
+weights, a hypersingular regularization, or a forward-solver connection.
+
+### Validation
+
+The 23 ordered-geometry tests now assert that `PeriodicCurve2D` and
+`OrderedBoundary2D` are explicit node types, have no evaluator/evaluation
+method, own read-only node arrays, and preserve component-local and flattened
+indexing. The focused compatibility run, including the independent Nyström
+oracle and existing IBIM geometry tests, passes 44 tests; its four warnings are
+the pre-existing intentional IBIM merge-distance warnings.

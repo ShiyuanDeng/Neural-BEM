@@ -16,6 +16,8 @@ solve path and vary only the hypersingular Muller difference block.
 | `gpr_bem_kdiff/` | Frozen experimental compressed-cloud baseline and isolated T-assembly seam. |
 | `gpr_bem_qbx/` | Archived full-row QBX T strategies; diagnostics, not a production solver. |
 | `gpr_bem_ndiff/` | Archived/unsupported normal-offset experiment; unvalidated and not selector-wired. |
+| `ordered_boundary/` | Solver-neutral continuous producers plus immutable ordered BIE nodes and diagnostics; no forward assembler yet. |
+| `sdf_to_ordered_boundary/` | Opt-in SDF-to-smooth-periodic-boundary A/B/C comparison; reuses `ordered_boundary` outputs and is not selector- or solver-wired. |
 
 The measured QBX/kdiff production-direction investigation is closed. See
 [`docs/qbx_closure.md`](../docs/qbx_closure.md) for the timing and accuracy
@@ -98,6 +100,8 @@ Not part of the `ref`/`mod` pair, and not selected by `--solver`:
 | `nystrom_ref/` | Standalone explicit-boundary Nystrom oracle (`docs/nystrom_reference_study.md`). Deliberately shares no numerics with `gpr_bem_*`. |
 | `kernel_diff_ref/` | Diagnostic: hosts `nystrom_ref`'s kernel-differenced quadrature against IBIM's own boundary object (`ImplicitBoundarySamples2D`), circle-only, perfect-sampling-only. Not an oracle -- see its module docstring and `docs/validation_change_log.md`. |
 | `gprmax_ref/` | Cache-driven wrapper around an out-of-process FDTD run (`docs/gprmax_reference_study.md`). |
+| `ordered_boundary/` | Shared NumPy-only node boundary, with separate exact/Fourier parameterization producers, for future Kress, kernel-difference, QBX, panel, or other BIE backends. |
+| `sdf_to_ordered_boundary/` | Shared marching/projection front end, spline/Fourier/SDF-refined producers, common metrics, and isolated study orchestration (`docs/sdf_boundary_parameterization_implementation.md`). |
 
 ## Selecting experimental T assembly in the kdiff solve
 

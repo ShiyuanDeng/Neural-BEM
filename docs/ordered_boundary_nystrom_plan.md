@@ -7,6 +7,14 @@
 > [`current_architecture.md`](current_architecture.md) only when behavior is
 > actually live.
 
+> **Progress, 2026-09-02:** the solver-neutral continuous-producer and explicit
+> node geometry contracts plus exact circle/ellipse/star and Fourier producers
+> now live in `solvers/ordered_boundary/`. `PeriodicCurve2D` and
+> `OrderedBoundary2D` are node-owned BIE inputs; off-node evaluation is confined
+> to separately named `*Parameterization2D` producers. This is a foundation
+> slice for Phases 1--3, not completion of SDF extraction/fitting or a forward
+> assembler.
+
 ## Objective
 
 Keep the neural/analytic SDF as the geometry and optimization variable, but
@@ -48,8 +56,10 @@ the existing 2-D TMz homogeneous full-space problem.
 
 ## Candidate isolation
 
-Prefer a contained candidate subpackage such as
-`solvers/gpr_bem_mod/ordered_nystrom/` over another cloned `gpr_bem_*` stack.
+Keep reusable geometry in the NumPy-only sibling package
+`solvers/ordered_boundary/`. Prefer a contained numerical candidate subpackage
+such as `solvers/gpr_bem_mod/ordered_nystrom/` over another cloned `gpr_bem_*`
+stack.
 Keep it out of `gpr_bem_mod.__init__`, normal drivers, and
 `solver_select.SOLVER_NAMES` until forward promotion. During development it is
 direct-import and opt-in only.
@@ -59,14 +69,21 @@ The candidate must not import numerical implementations from `nystrom_ref`,
 boundary. Shared physical configuration and material constants are allowed;
 oracle and archived solver numerics are not.
 
-The intended eventual public surface is small:
+The intended eventual public surface is small and distinguishes producers from
+solver-owned nodes:
 
-- `PeriodicCurve2D` and `OrderedBoundary2D`;
+- `PeriodicParameterization2D` and `OrderedBoundaryParameterization2D` for
+  exact/fitted continuous geometry;
+- node-based `PeriodicCurve2D` and `OrderedBoundary2D` for BIE assembly;
 - an `OrderedBoundaryReport` with topology/geometry diagnostics;
 - `extract_ordered_boundary(...)`;
 - `build_ordered_tmz_frequency_system(...)`;
 - `solve_ordered_tmz_total_field_batch(...)`; and
 - `solve_ordered_tmz_frequency_response(...)`.
+
+The geometry package owns only the first two types and diagnostics. It does not
+own Kress weights or enforce even node counts; those are discretisation
+requirements of the future numerical candidate.
 
 ## Target geometry contract
 
@@ -76,11 +93,12 @@ components. Each component needs:
 - stable component identity for an outer inverse iteration;
 - deterministic orientation and cyclic phase;
 - periodic parameter nodes `t_j` with no duplicated endpoint;
-- a smooth evaluator for `x(t)`, `x'(t)`, and `x''(t)` at arbitrary parameter
-  values;
-- derived speed, unit tangent, outward normal, curvature, and arc-length
-  quadrature weights;
-- source grid/resampling support local to that component; and
+- node arrays for `x(t_j)`, `x'(t_j)`, `x''(t_j)`, and optional `x'''(t_j)`;
+- derived speed, unit tangent, outward normal, curvature, and ordinary
+  arc-length weights at those nodes;
+- a separate fitted/analytic parameterization for off-node evaluation and
+  local resolution changes, never a hidden second geometry inside the node
+  object; and
 - diagnostics for closure, orientation, minimum speed, self-intersection,
   inter-component clearance, projection residual, and fit residual.
 

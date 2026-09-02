@@ -1,6 +1,6 @@
 # Current architecture
 
-> **Status: living source of truth.** Last reconciled 2026-09-01. Update this
+> **Status: living source of truth.** Last reconciled 2026-09-02. Update this
 > document whenever a live pipeline, default, solver role, or known limitation
 > changes.
 
@@ -32,6 +32,7 @@ This page owns present-tense behavior. The
 | `solvers/gpr_bem_qbx/` | Archived full-row QBX `T` diagnostics invoked through kdiff | Not selectable |
 | `solvers/gpr_bem_ndiff/` | Unvalidated normal-offset experiment; archived/unsupported | Not selectable |
 | `solvers/nystrom_ref/` | Numerically independent, smooth single-component, forward-only precision oracle | Direct import only |
+| `solvers/ordered_boundary/` | Solver-neutral exact/Fourier smooth-component geometry foundation; not yet connected to a forward solver | Direct import only |
 | `solvers/kernel_diff_ref/` | Circle/perfect-sampling kernel-difference diagnostic; not an oracle | Direct import only |
 | `solvers/gprmax_ref/` | Cached independent FDTD cross-check | Direct tools/tests only |
 
@@ -71,6 +72,24 @@ that extract ordered zero-level polygons and can build a multi-surface
 `BoundaryMesh2D`. Those APIs are scaffolding. The active forward quadrature
 does not consume them, and the piecewise-linear mesh/averaged mesh normals are
 not solver-grade Kress geometry.
+
+### Explicit ordered geometry foundation
+
+`solvers/ordered_boundary/` provides an independent NumPy-only, node-based
+geometry contract for exact or already-fitted smooth curves. Continuous
+`PeriodicParameterization2D` producers retain off-node evaluators for `x`,
+`x'`, `x''`, and optional `x'''`. Explicit `.discretize(...)` produces
+`PeriodicCurve2D` node components and the flattened `OrderedBoundary2D` BIE
+input. The node objects own positions, derivatives, speed, unit tangent, CCW
+outward normal, curvature, ordinary arc-length weights, component-local
+parameters, slices, and node ownership; they contain no hidden evaluator.
+
+This package is not part of the active MOD forward path and does not yet
+implement SDF contour extraction or a BIE operator. It deliberately contains
+no Kress pairwise weights, hypersingular regularisation, materials, Torch, or
+legacy `merge_distance` adapter. Kress, kernel-difference, QBX, panel, and
+other solvers may build different discretisations from the same continuous
+geometry. See [`../solvers/ordered_boundary/README.md`](../solvers/ordered_boundary/README.md).
 
 ## Current forward pipeline
 
@@ -204,6 +223,11 @@ backend. The live milestones and gates are in
 [`ordered_boundary_nystrom_plan.md`](ordered_boundary_nystrom_plan.md); the
 architectural reason for leaving QBX/kdiff is in
 [`qbx_closure.md`](qbx_closure.md).
+
+The continuous/sampled geometry contract and exact analytic/Fourier producers
+in the middle of that transition now exist. Ordered extraction, periodic
+fitting from SDF contours, and coherent Kress/Nyström operator assembly remain
+future steps; no current forward default changed.
 
 ## Canonical commands
 

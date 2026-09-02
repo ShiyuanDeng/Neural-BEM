@@ -1,0 +1,282 @@
+{
+  "active_solver_pipeline_modified": false,
+  "frontend_count": 18,
+  "metrics_csv": "results/sdf_boundary_parameterization/study-20260902/metrics.csv",
+  "metrics_json": "results/sdf_boundary_parameterization/study-20260902/metrics.json",
+  "plots_enabled": true,
+  "profile": {
+    "bandwidths": [
+      4,
+      8,
+      16,
+      32
+    ],
+    "grid_shapes": [
+      [
+        65,
+        65
+      ],
+      [
+        129,
+        129
+      ],
+      [
+        257,
+        257
+      ]
+    ],
+    "method_a": {
+      "arclength": {
+        "dense_resolution": 4096,
+        "refit_sample_count": null,
+        "validation_resolution": 2048
+      },
+      "validation": {
+        "allow_nested_components": false,
+        "closure_absolute_tolerance": 1e-12,
+        "closure_relative_tolerance": 1e-10,
+        "derivative_relative_tolerance": 0.02,
+        "intersection_relative_tolerance": 1e-12,
+        "minimum_area_relative": 1e-12,
+        "minimum_intercomponent_clearance": 0.0,
+        "minimum_speed_relative": 1e-10,
+        "num_samples_per_component": 1024,
+        "require_counterclockwise": true
+      }
+    },
+    "method_b_template": {
+      "arclength": {
+        "dense_resolution": 4096,
+        "refit_sample_count": null,
+        "validation_resolution": 2048
+      },
+      "bandwidth": 4,
+      "least_squares_rcond": null,
+      "validation": {
+        "allow_nested_components": false,
+        "closure_absolute_tolerance": 1e-12,
+        "closure_relative_tolerance": 1e-10,
+        "derivative_relative_tolerance": 0.0001,
+        "intersection_relative_tolerance": 1e-12,
+        "minimum_area_relative": 1e-12,
+        "minimum_intercomponent_clearance": 0.0,
+        "minimum_speed_relative": 1e-10,
+        "num_samples_per_component": 1024,
+        "require_counterclockwise": true
+      }
+    },
+    "method_c": {
+      "adam_beta1": 0.9,
+      "adam_beta2": 0.999,
+      "adam_epsilon": 1e-08,
+      "arc_length": {
+        "dense_resolution": 4096,
+        "refit_sample_count": null,
+        "validation_resolution": 2048
+      },
+      "checkpoint_interval": 10,
+      "dense_sample_count": 256,
+      "final_stage": {
+        "iterations": 20,
+        "name": "final_correction",
+        "relative_learning_rate": 0.0002,
+        "weights": {
+          "anchor": 0.0,
+          "fidelity": 1.0,
+          "normal": 0.0,
+          "regularity": 0.01,
+          "self_distance": 0.0,
+          "spectral": 1e-08,
+          "speed": 0.0
+        }
+      },
+      "gradient_epsilon": 1e-12,
+      "maximum_anchor_rms_ratio": 0.25,
+      "maximum_gradient_norm": 100.0,
+      "maximum_relative_area_change": 0.05,
+      "maximum_relative_perimeter_change": 0.05,
+      "maximum_residual_degradation": 0.001,
+      "maximum_speed_ratio_degradation": 0.1,
+      "minimum_speed_to_mean": 0.001,
+      "normalized_fidelity": null,
+      "regularity_softplus_beta": 12.0,
+      "self_distance_floor_ratio": 0.0,
+      "self_neighbour_width": 4,
+      "spectral_order": 2,
+      "speed_floor_ratio": 0.2,
+      "stages": [
+        {
+          "iterations": 60,
+          "name": "attach",
+          "relative_learning_rate": 0.002,
+          "weights": {
+            "anchor": 0.05,
+            "fidelity": 1.0,
+            "normal": 0.0,
+            "regularity": 0.0,
+            "self_distance": 0.0,
+            "spectral": 1e-08,
+            "speed": 0.0
+          }
+        },
+        {
+          "iterations": 40,
+          "name": "regularize",
+          "relative_learning_rate": 0.0008,
+          "weights": {
+            "anchor": 0.01,
+            "fidelity": 1.0,
+            "normal": 0.0,
+            "regularity": 0.05,
+            "self_distance": 0.0,
+            "spectral": 1e-08,
+            "speed": 0.01
+          }
+        }
+      ],
+      "validation_sample_count": 1024
+    },
+    "metrics": {
+      "center_fft_coordinates": true,
+      "dense_resolution": 2048,
+      "fft_resolution": 2048,
+      "fft_tail_start_mode": 16,
+      "gradient_epsilon": 1e-14,
+      "intersection_relative_tolerance": 1e-12,
+      "kress_offsets": [
+        0.19634954084936207,
+        0.09817477042468103,
+        0.04908738521234052,
+        0.02454369260617026
+      ],
+      "kress_resolution": 256,
+      "kress_sample_counts": [
+        64,
+        128,
+        256,
+        512,
+        1024
+      ],
+      "nonlocal_exclusion_fraction": 0.02,
+      "reference_resolution": 8192,
+      "topology_resolution": 512
+    },
+    "name": "study",
+    "projected_sample_counts": [
+      128,
+      256
+    ],
+    "projection": {
+      "denominator_epsilon": 1e-30,
+      "gradient_tolerance": 1e-12,
+      "max_iterations": 20,
+      "max_step_grid_fraction": 0.75,
+      "raise_on_failure": true,
+      "residual_tolerance": 1e-11
+    },
+    "second_resample_and_project": true
+  },
+  "run_count": 162,
+  "schema_version": 1,
+  "shapes": [
+    {
+      "bounds": [
+        [
+          -0.9,
+          -1.1
+        ],
+        [
+          1.15,
+          0.95
+        ]
+      ],
+      "description": "Exact Euclidean signed-distance circle.",
+      "field_name": "analytic_circle_sdf",
+      "is_signed_distance": true,
+      "name": "circle",
+      "parameters": {
+        "center": [
+          0.12,
+          -0.08
+        ],
+        "radius": 0.72
+      },
+      "sign_convention": "negative_inside",
+      "winding_test_points": [
+        [
+          0.12,
+          -0.08
+        ]
+      ]
+    },
+    {
+      "bounds": [
+        [
+          -1.35,
+          -1.15
+        ],
+        [
+          1.2,
+          1.25
+        ]
+      ],
+      "description": "Rotated ellipse represented by a generic level-set field.",
+      "field_name": "analytic_rotated_ellipse_level_set",
+      "is_signed_distance": false,
+      "name": "rotated_ellipse",
+      "parameters": {
+        "center": [
+          -0.08,
+          0.06
+        ],
+        "rotation": 0.37,
+        "semi_major": 0.92,
+        "semi_minor": 0.51
+      },
+      "sign_convention": "negative_inside",
+      "winding_test_points": [
+        [
+          -0.08,
+          0.06
+        ]
+      ]
+    },
+    {
+      "bounds": [
+        [
+          -1.05,
+          -1.1
+        ],
+        [
+          1.2,
+          1.18
+        ]
+      ],
+      "description": "Smooth five-mode radial-Fourier star level set.",
+      "field_name": "analytic_radial_fourier_star",
+      "is_signed_distance": false,
+      "name": "radial_fourier_star",
+      "parameters": {
+        "amplitude": 0.18,
+        "center": [
+          0.08,
+          0.04
+        ],
+        "lobes": 5,
+        "mean_radius": 0.72,
+        "rotation": 0.21
+      },
+      "sign_convention": "negative_inside",
+      "winding_test_points": [
+        [
+          0.08,
+          0.04
+        ]
+      ]
+    }
+  ],
+  "status_counts": {
+    "fallback": 44,
+    "success": 118
+  }
+}
