@@ -27,7 +27,7 @@ past experiment, the dated validation entry and stored artifacts win.
 | [`sdf_boundary_parameterization_implementation.md`](sdf_boundary_parameterization_implementation.md) | Implemented isolated SDF-to-smooth-boundary A/B/C experiment, architecture verdict, commands, and measured convergence |
 | [`neural_sdf_to_kress_implementation_guide.md`](neural_sdf_to_kress_implementation_guide.md) | Authoritative scope and numerical protocol for that experiment |
 | [`muller_blocks_implementation_guide.md`](muller_blocks_implementation_guide.md) | Authoritative scope, numerical protocol, and acceptance ladder for the next ordered forward backend |
-| [`ordered_nystrom_implementation.md`](ordered_nystrom_implementation.md) | Experimental implementation record: architecture, exact conventions, Kress split, APIs, limitations, and integration verdict |
+| [`gpr_bem_kress_implementation.md`](gpr_bem_kress_implementation.md) | Experimental sibling-solver record: architecture, exact conventions, Kress split, forward/receiver APIs, future adjoint seam, and limitations |
 | [`deep-research-report.md`](deep-research-report.md) | Design background and literature review; not blanket implementation scope |
 | [`gprmax_reference_study.md`](gprmax_reference_study.md) | Independent cached FDTD physics cross-check |
 | [`../results/sdf_boundary_parameterization/smoke-20260902/metrics.csv`](../results/sdf_boundary_parameterization/smoke-20260902/metrics.csv) | Checked smoke evidence for geometry/parameterization only; not solver errors |

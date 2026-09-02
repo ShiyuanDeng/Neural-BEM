@@ -2498,7 +2498,8 @@ numerical kernel tests.
 No selector, normal forward driver, adjoint, inverse, SDF converter, or
 `gpr_bem_mod.__init__` export was changed. Architecture, convention derivation,
 diagonal formulas, API, limitations, and the integration verdict are recorded
-in [`ordered_nystrom_implementation.md`](ordered_nystrom_implementation.md).
+in the implementation record now located at
+[`gpr_bem_kress_implementation.md`](gpr_bem_kress_implementation.md).
 
 ### Validation
 
@@ -2567,3 +2568,159 @@ self-convergence, separate exterior/interior transmission residuals,
 noncircular block/reciprocity checks, solver-level geometry-bandwidth sweeps,
 lossy-physics reconciliation, and equal-work comparisons against the current
 operational baseline.
+
+2026-09-02
+
+## Promote the ordered implementation to a peer package boundary
+
+### Hypothesis
+
+The Kress/Nyström implementation is a parallel forward solver, not a MOD
+assembly option. Moving it to a sibling package and making its receiver map
+explicit should remove accidental MOD/Torch coupling while retaining the
+complete forward state required for a later adjoint.
+
+### Change
+
+Moved the live implementation from the nested experimental location to
+`solvers/gpr_bem_kress/` and renamed its public records and entry points around
+the solver identity: `KressSolveConfig`, `KressTMzFrequencySystem`,
+`KressTMzForwardResult`, `KressTMzMultiFrequencyForwardResult`,
+`build_kress_tmz_frequency_system`, `solve_kress_tmz_total_field_batch`, and
+`solve_kress_tmz_frequency_response`.
+
+The peer owns a small package-local `Material` value rather than importing
+`gpr_bem_mod` for class identity. Its geometry input remains exactly one
+immutable `PeriodicCurve2D`; SDF extraction, Method-B fitting, scan
+orchestration, and neural coupling remain outside the solver package.
+
+Added `ExteriorReceiverOperator`, which stores the fully weighted
+single-/double-layer rows and the actual state map
+
+```text
+C = [D, -S],        q = [u_D, u_N]^T,        u_sc = C q.
+```
+
+The forward result retains that operator together with the literal unsquared
+system `A`, right-hand side, state, and traces. This records—but does not yet
+implement—the future discrete-adjoint boundary
+`A^H lambda = C^H psi`. The eventual shape derivative must differentiate the
+accepted weighted Kress assembly and must distinguish a nodal directional
+derivative from an unweighted shape-gradient density so arc-length weights are
+not applied twice.
+
+The package remains absent from `solver_select` and all operational MOD
+forward/adjoint/inverse drivers. Tests now live under the matching
+`pytest/gpr_bem_kress/` directory. Historical entries and stored manifests
+above retain the paths and hashes that existed when their measurements were
+made.
+
+### Validation
+
+The peer-package regression command was:
+
+```bash
+/home/drdeng/miniconda3/envs/EMNerf/bin/python -m pytest \
+  pytest/gpr_bem_kress -q
+```
+
+It passed all 41 tests in 0.40 s. The suite includes the prior block, system,
+trace, and Mie-field checks plus isolation/API and explicit receiver-operator
+checks. This verifies the package move and forward algebra; it is not an
+adjoint gradient check.
+
+The new comparison contract uses the same callable SDF for independent MOD
+compression and Method-B-to-`PeriodicCurve2D` Kress extraction on circle,
+ellipse, and star. Kress' full source-by-receiver matrix is reduced explicitly
+to the 24 paired diagonal entries for comparison. Existing gprMax caches cover
+only pair index 0, so they provide one-pair relative error at each frequency
+and must not be presented as full-ring coverage. Quantitative results and
+commands for that comparison are intentionally deferred to a separate entry
+after its targeted tests settle.
+
+### Decision
+
+Accept `gpr_bem_kress` as the clean experimental peer-package boundary and
+remove the nested MOD ownership. Keep it direct-import only and forward-only.
+Do not begin inverse wiring merely because `C^H` is now available: the
+system/incident/receiver shape derivatives and finite-difference adjoint gates
+remain mandatory.
+
+2026-09-02
+
+## Add same-SDF receiver-field acceptance for the Kress peer
+
+### Hypothesis
+
+If the package boundary is correct, the Kress solver should run beside MOD on
+the existing smooth ACC scenes, beginning from the identical implicit-field
+callable and being judged by the same receiver-field oracle rather than by
+geometry proxies or linear residual alone.
+
+### Change
+
+Added a shared comparison adapter under `pytest/solver_comparisons/`. Circle,
+ellipse, and star now branch one `161 x 161` Torch field into independent MOD
+compression and Method-B (`M=256`, `K=48`) extraction, followed by a Kress
+curve with `N=128`. The Kress full source/receiver matrix is reduced explicitly
+to the paired diagonal. Tables now label 24-pair L2 and one-pair gprMax coverage
+separately, record preprocessing/forward/end-to-end time, and never rank those
+unlike coverages together. The aggregate exporter also stores the ordered
+curve artifact beside the MOD cloud for each supported smooth case.
+
+The machine-readable schema now separates `error_pair_count` from the actual
+receiver workload (`num_sources`, `num_receivers`, internal matrix shape,
+reported field shape, and selection). Each scene JSON records its target,
+bounds, grid, materials, constants, full Tx/Rx coordinates, oracle, and Kress
+component/config identity. Cache validation compares Tx/Rx offsets relative to
+the target because gprMax translates the same homogeneous scene into a compact
+FDTD domain; comparing unrelated absolute origins would reject a valid cache.
+
+For future adjoint replay, forward snapshots now retain typed solve/assembly
+configs and material values. ACC pairing remains outside the general receiver
+operator and is specified as `y=P(Cq+u_inc)`: a future context must apply
+`P^H` before `C^H`. A pair vector passed directly to `apply_adjoint` means one
+RHS and would be the wrong layout. The shape-adjoint plan also now requires a
+coupled curve-jet direction and defers multicomponent gradient tests until a
+multicomponent Kress forward solver exists.
+
+### Validation
+
+The three receiver gates and two cache-coordinate contract tests passed in
+30.72 s. Across 0.5/1.5/2.5/4/6/8 GHz,
+Kress full-ring error ranges from `3.56e-11` to `1.17e-8` on the circle,
+`1.38e-12` to `2.48e-8` on the ellipse, and `5.19e-6` to `7.49e-3` on the star.
+It beats MOD at every measured cell. A separate table run passed all three
+cases in 30.69 s. The final audited aggregate exporter passed in 42.52 s
+(43.93 s process wall time) and measured Kress six-frequency forward sweeps of
+0.29--0.37 s plus 0.58--0.68 s of boundary preprocessing. The full tables,
+exact command, scope qualifications, and MOD, Kress, and gprMax pair-0 values
+are frozen in
+[`results/solver_comparisons/kress-peer-20260902/summary.md`](../results/solver_comparisons/kress-peer-20260902/summary.md).
+
+The final reporting audit made those gates and workloads executable rather
+than implicit: Kress must remain below its declared threshold and beat MOD at
+all six frequencies, kdiff is identified as a direct 24-pair receiver
+contraction instead of a `24 x 24` materialization, and unavailable JSON
+metrics serialize as strict `null` rather than non-standard `NaN`. Cached
+gprMax wall time covers two executions per frequency (target and matched
+background), or 12 executions for the six-frequency table.
+
+After the final package/config/cache-contract changes, the complete
+MOD-selected suite passed `254 passed, 2 skipped` in 179.31 s. The frozen-ref
+shared suite separately passed `41 passed, 2 skipped` in 14.65 s, and the
+direct Kress package suite passed all 41 tests in 0.34 s (1.57 s process wall
+time). The reported warnings were existing adaptive-compression notices and
+Matplotlib/Pyparsing
+deprecations.
+
+### Decision
+
+Prefer Kress for further smooth single-component forward work. This is a
+forward acceptance result, not promotion into the selector or inverse loop.
+The star frequency trend still requires bandwidth/node refinement evidence,
+and a Kress adjoint still requires derivatives of the actual weighted
+geometry, system, incident field, and receiver map plus a finite-difference
+gradient check. Existing gprMax caches remain an independent pair-0 physics
+cross-check, not a full-ring precision oracle and not literally the Torch-SDF
+branch.

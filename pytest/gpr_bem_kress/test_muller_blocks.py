@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 from scipy.special import h1vp, hankel1, jv, jvp
 
-from gpr_bem_mod.ordered_nystrom import (
+from gpr_bem_kress import (
     MullerAssemblyConfig,
     PROJECT_MULLER_CONVENTION,
     build_muller_difference_blocks,

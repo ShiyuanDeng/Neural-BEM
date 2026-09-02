@@ -7,11 +7,13 @@ import pytest
 from scipy.special import h1vp, hankel1, jv, jvp
 
 import config.circle_config as cfg
-import gpr_bem_mod
-from gpr_bem_mod.ordered_nystrom import (
-    OrderedSolveConfig,
+import gpr_bem_ref
+from gpr_bem_kress import (
+    ExteriorReceiverOperator,
+    KressSolveConfig,
+    Material,
     evaluate_exterior_representation,
-    solve_ordered_tmz_total_field_batch,
+    solve_kress_tmz_total_field_batch,
 )
 from ordered_boundary import circle
 
@@ -40,12 +42,12 @@ def _ring_scan(num_pairs: int = 4) -> tuple[np.ndarray, np.ndarray]:
 @pytest.fixture(scope="module")
 def physical_cases():
     sources, receivers = _ring_scan()
-    exterior = gpr_bem_mod.Material(epsr=cfg.SAND_EPSR, sigma=cfg.SAND_SIGMA)
-    interior = gpr_bem_mod.Material(
+    exterior = Material(epsr=cfg.SAND_EPSR, sigma=cfg.SAND_SIGMA)
+    interior = Material(
         epsr=cfg.PLASTIC_EPSR,
         sigma=cfg.PLASTIC_SIGMA,
     )
-    solve_config = OrderedSolveConfig(compute_condition_number=False)
+    solve_config = KressSolveConfig(compute_condition_number=False)
     cases = {}
     for frequency_hz, num_nodes in CASE_SPECS:
         curve = circle(
@@ -53,7 +55,7 @@ def physical_cases():
             RADIUS,
             component_id=f"mie-circle-{num_nodes}",
         ).discretize(num_nodes, require_even=True)
-        forward = solve_ordered_tmz_total_field_batch(
+        forward = solve_kress_tmz_total_field_batch(
             curve,
             sources,
             receivers,
@@ -64,7 +66,15 @@ def physical_cases():
             mu0=cfg.MU0,
             config=solve_config,
         )
-        exact = gpr_bem_mod.penetrable_cylinder_scattered_field(
+        assert forward.solve_config is solve_config
+        assert forward.system.assembly_config is solve_config.assembly
+        assert forward.system.difference_blocks.config is solve_config.assembly
+        assert forward.exterior_material is exterior
+        assert forward.interior_material is interior
+        assert forward.eps0 == cfg.EPS0
+        assert forward.mu0 == cfg.MU0
+        assert forward.receiver_operator.geometry is forward.system.geometry
+        exact = gpr_bem_ref.penetrable_cylinder_scattered_field(
             receivers,
             sources,
             k_exterior=forward.system.k_exterior,
@@ -83,12 +93,12 @@ def _exact_line_source_boundary_traces(forward, source_index: int) -> tuple[np.n
     source_angle = float(np.arctan2(source_delta[1], source_delta[0]))
     k_exterior = forward.system.k_exterior
     k_interior = forward.system.k_interior
-    modes = gpr_bem_mod.cylinder_series_mode_numbers(
+    modes = gpr_bem_ref.cylinder_series_mode_numbers(
         k_exterior,
         k_interior,
         RADIUS,
     )
-    ratio = gpr_bem_mod.penetrable_cylinder_scattering_coefficient_ratio(
+    ratio = gpr_bem_ref.penetrable_cylinder_scattering_coefficient_ratio(
         modes,
         k_exterior,
         k_interior,
@@ -160,15 +170,121 @@ def test_circle_boundary_traces_match_fourier_bessel_solution(
     assert neumann_error < 1.0e-6, (frequency_hz, neumann_error)
 
 
+def test_receiver_operator_is_the_forward_map_and_has_exact_complex_duality(
+    physical_cases,
+) -> None:
+    forward, _ = physical_cases[2.5e9]
+    receiver = forward.receiver_operator
+    expected_rows = np.concatenate(
+        (receiver.double_layer_rows, -receiver.single_layer_rows),
+        axis=1,
+    )
+    np.testing.assert_array_equal(receiver.state_rows, expected_rows)
+
+    mapped = receiver.apply_state(forward.solution)
+    np.testing.assert_allclose(
+        mapped,
+        forward.scattered_receiver,
+        rtol=2.0e-14,
+        atol=2.0e-14,
+    )
+
+    data_dual = np.vstack(
+        tuple(
+            np.linspace(0.3 + index, 1.1 + index, receiver.num_receivers)
+            + 1j
+            * np.linspace(-0.7 + 0.2 * index, 0.2 + 0.2 * index, receiver.num_receivers)
+            for index in range(forward.solution.shape[1])
+        )
+    )
+    state_dual = receiver.apply_adjoint(data_dual)
+    forward_inner_product = np.vdot(mapped, data_dual)
+    adjoint_inner_product = np.vdot(forward.solution, state_dual)
+    np.testing.assert_allclose(
+        forward_inner_product,
+        adjoint_inner_product,
+        rtol=2.0e-14,
+        atol=2.0e-14,
+    )
+
+    # This is the complete algebraic seam needed by a later adjoint: the
+    # tangent solve applies A^-1 before C, while the reverse path applies C^H
+    # before A^-H.  It intentionally does not claim a geometry derivative.
+    generator = np.random.default_rng(20260902)
+    rhs_perturbation = (
+        generator.normal(size=forward.right_hand_side.shape)
+        + 1j * generator.normal(size=forward.right_hand_side.shape)
+    )
+    state_perturbation = np.linalg.solve(
+        forward.system.system_matrix,
+        rhs_perturbation,
+    )
+    receiver_perturbation = receiver.apply_state(state_perturbation)
+    adjoint_state = np.linalg.solve(
+        forward.system.system_matrix.conjugate().T,
+        state_dual,
+    )
+    np.testing.assert_allclose(
+        np.vdot(receiver_perturbation, data_dual),
+        np.vdot(rhs_perturbation, adjoint_state),
+        rtol=5.0e-13,
+        atol=5.0e-13,
+    )
+    assert mapped.shape == forward.scattered_receiver.shape
+    assert state_dual.shape == forward.solution.shape
+    assert not mapped.flags.writeable
+    assert not state_dual.flags.writeable
+    for values in (
+        receiver.receiver_points,
+        receiver.single_layer_rows,
+        receiver.double_layer_rows,
+        receiver.state_rows,
+    ):
+        assert not values.flags.writeable
+
+
+def test_receiver_operator_derives_c_and_owns_immutable_row_copies() -> None:
+    curve = circle((0.0, 0.0), 0.2).discretize(16, require_even=True)
+    receivers = np.asarray(((0.5, 0.0), (0.0, 0.5)))
+    single = np.arange(32, dtype=np.float64).reshape(2, 16).astype(np.complex128)
+    double = (2.0 - 0.3j) * single
+    expected = np.concatenate((double, -single), axis=1)
+
+    operator = ExteriorReceiverOperator(
+        geometry=curve,
+        receiver_points=receivers,
+        k_exterior=3.0,
+        single_layer_rows=single,
+        double_layer_rows=double,
+        build_seconds=0.0,
+    )
+    single[:] = 0.0
+    double[:] = 0.0
+    np.testing.assert_array_equal(operator.state_rows, expected)
+    assert not operator.single_layer_rows.flags.writeable
+    assert not operator.double_layer_rows.flags.writeable
+    assert not operator.state_rows.flags.writeable
+
+    with pytest.raises(ValueError, match="single_layer_rows must have shape"):
+        ExteriorReceiverOperator(
+            geometry=curve,
+            receiver_points=receivers,
+            k_exterior=3.0,
+            single_layer_rows=np.zeros((1, 16)),
+            double_layer_rows=np.zeros((2, 16)),
+            build_seconds=0.0,
+        )
+
+
 def test_zero_contrast_reproduces_incident_traces_and_zero_scattering() -> None:
     sources, receivers = _ring_scan(num_pairs=2)
-    exterior = gpr_bem_mod.Material(epsr=cfg.SAND_EPSR, sigma=cfg.SAND_SIGMA)
+    exterior = Material(epsr=cfg.SAND_EPSR, sigma=cfg.SAND_SIGMA)
     curve = circle(
         tuple(CENTER),
         RADIUS,
         component_id="zero-contrast-forward",
     ).discretize(32, require_even=True)
-    forward = solve_ordered_tmz_total_field_batch(
+    forward = solve_kress_tmz_total_field_batch(
         curve,
         sources,
         receivers,
@@ -177,7 +293,7 @@ def test_zero_contrast_reproduces_incident_traces_and_zero_scattering() -> None:
         interior=exterior,
         eps0=cfg.EPS0,
         mu0=cfg.MU0,
-        config=OrderedSolveConfig(compute_condition_number=False),
+        config=KressSolveConfig(compute_condition_number=False),
     )
 
     np.testing.assert_allclose(

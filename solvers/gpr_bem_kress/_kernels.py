@@ -1,7 +1,7 @@
 """Cancellation-safe Helmholtz Müller difference kernels.
 
 The ordinary branch is the same kernel-level exterior-minus-interior algebra
-used by the maintained kdiff experiment.  The near branch evaluates the
+used by the frozen kdiff comparison experiment.  The near branch evaluates the
 difference Green function and its radial derivatives as one power-log series;
 it therefore never subtracts two ``O(r**-2)`` hypersingular values.
 """

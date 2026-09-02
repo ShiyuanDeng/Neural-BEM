@@ -1,14 +1,18 @@
-"""Resolve the bare name ``gpr_bem`` to one of the solver packages beside this file.
+"""Resolve the bare name ``gpr_bem`` to one of the selector-enabled packages.
 
-Two packages live here:
+Two IBIM packages participate in the existing driver/test alias:
 
     gpr_bem_ref/   the original, frozen
     gpr_bem_mod/   the convention-change copy
 
 They are named apart so both can be imported into one interpreter -- two packages
-called ``gpr_bem`` cannot. Everything that consumes a solver (the test suite, the
-driver scripts) still writes ``from gpr_bem import ...`` and lets this module
-decide which one that is.
+called ``gpr_bem`` cannot. Existing shared tests and operational drivers write
+``from gpr_bem import ...`` and let this module decide which IBIM implementation
+that means.
+
+``gpr_bem_kress`` is a third, direct-import sibling with a different geometry
+contract (``PeriodicCurve2D``).  It is intentionally absent from ``SOLVER_NAMES``
+until its forward and future adjoint pipelines satisfy their acceptance gates.
 """
 
 from __future__ import annotations

@@ -49,6 +49,7 @@ import gpr_bem_qbx
 import gpr_bem_ref
 from gprmax_ref import cache_io as gprmax_cache_io
 from archived_qbx.qbx_comparison_support import run_qbx_metrics
+from comparison_contract import validate_cached_pair0_coordinates
 
 SOLVERS = (("gpr_bem_ref", gpr_bem_ref), ("gpr_bem_mod", gpr_bem_mod))
 
@@ -351,6 +352,11 @@ def _gprmax_result() -> dict | None:
     cached = gprmax_cache_io.load_frequency_sweep(params)
     if cached is None:
         return None
+    sources, receivers = _ring_scan()
+    for entry in gprmax_cache_io.iter_frequency_results(cached):
+        validate_cached_pair0_coordinates(
+            entry, sources, receivers, scene_center=CENTER
+        )
     return cached
 
 

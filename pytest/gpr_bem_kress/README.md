@@ -1,7 +1,7 @@
-# Ordered Nyström solver tests
+# Kress/Nyström solver tests
 
-This directory tests the opt-in `gpr_bem_mod.ordered_nystrom` forward
-candidate. Unlike `pytest/ordered_boundary/` and
+This directory tests the sibling `gpr_bem_kress` forward solver. Unlike
+`pytest/ordered_boundary/` and
 `pytest/sdf_to_ordered_boundary/`, these tests assemble Helmholtz Müller
 operators, solve the coupled boundary system, and measure genuine
 operator/solver errors.
@@ -19,7 +19,7 @@ The fast suite covers:
 Run it with:
 
 ```bash
-PYTHONPATH=solvers python -m pytest -q pytest/ordered_nystrom
+PYTHONPATH=solvers python -m pytest -q pytest/gpr_bem_kress
 ```
 
 The tolerances are regression and correctness gates, not a claim that every

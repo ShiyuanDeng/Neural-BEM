@@ -13,13 +13,13 @@ solve path and vary only the hypersingular Muller difference block.
 |---|---|
 | `gpr_bem_ref/` | The original. **Frozen** — treat it as the control. |
 | `gpr_bem_mod/` | Operational forward/adjoint/inverse baseline. Maintained changes go here. |
+| `gpr_bem_kress/` | Experimental ordered `PeriodicCurve2D` Kress/Müller peer solver; direct import only. |
 | `gpr_bem_kdiff/` | Frozen experimental compressed-cloud baseline and isolated T-assembly seam. |
 | `gpr_bem_qbx/` | Archived full-row QBX T strategies; diagnostics, not a production solver. |
 | `gpr_bem_ndiff/` | Archived/unsupported normal-offset experiment; unvalidated and not selector-wired. |
 | `ordered_boundary/` | Solver-neutral continuous producers plus immutable ordered BIE nodes and diagnostics. |
 | `periodic_kress/` | Shared canonical periodic logarithmic product weights; no geometry or physics ownership. |
 | `sdf_to_ordered_boundary/` | Opt-in SDF-to-smooth-periodic-boundary A/B/C comparison; reuses `ordered_boundary` outputs and is not selector- or solver-wired. |
-| `gpr_bem_mod/ordered_nystrom/` | Opt-in single-component `PeriodicCurve2D` Müller/Kress forward candidate; deliberately not selector- or driver-wired. |
 
 The measured QBX/kdiff production-direction investigation is closed. See
 [`docs/qbx_closure.md`](../docs/qbx_closure.md) for the timing and accuracy
@@ -79,11 +79,13 @@ Notebook — `notebooks/_build_notebook.py` reads the `SOLVER` environment varia
 ## Comparing them
 
 The files under `pytest/solver_comparisons/` ignore the selection mechanism and
-import both packages directly, running them in one process on the same case and
-printing one row per solver. The circle file gates against the Mie series; the
-square file (a target with a real corner, and no closed-form oracle) gates
-against gprMax and self-convergence instead; the ellipse/star files gate
-against `nystrom_ref`, the standalone Nystrom oracle:
+import peer packages directly, running them in one process on the same case and
+printing one row per solver. Smooth circle, ellipse, and star comparisons give
+MOD and Kress independent discretizations of the same SDF and normalize Kress'
+full source-by-receiver response to the paired scan diagonal. The circle file
+gates against the Mie series; the square file (a target with a real corner, and
+no closed-form oracle) gates against gprMax and self-convergence instead; the
+ellipse/star files gate against `nystrom_ref`, the standalone Nystrom oracle:
 
 ```bash
 python -m pytest pytest/solver_comparisons/test_circle_comparison.py -s -q
@@ -92,13 +94,20 @@ python -m pytest pytest/solver_comparisons/test_ellipse_comparison.py -s -q
 python -m pytest pytest/solver_comparisons/test_star_comparison.py -s -q
 ```
 
-Those are the files to extend as you add metrics worth watching.
+Those are the files to extend as you add metrics worth watching. Existing
+gprMax caches contain only the index-0 Tx/Rx pair: their table value is a
+one-pair relative error at each frequency, whereas the BEM/Nyström rows report
+the full 24-pair receiver L2 at each frequency. Do not label the gprMax row as
+full-ring coverage.
+
+The checked, skimmed same-SDF error/runtime snapshot is
+[`results/solver_comparisons/kress-peer-20260902/summary.md`](../results/solver_comparisons/kress-peer-20260902/summary.md).
 
 Do not read the adjacent `pytest/ordered_boundary/` or
 `pytest/sdf_to_ordered_boundary/` measurements as solver errors. They test the
 geometry contract, SDF fidelity, and one manufactured scalar Kress action; they
 do not assemble or solve the physical BIE. Solver field/operator errors belong
-to `pytest/ordered_nystrom/` and `pytest/solver_comparisons/`, with result
+to `pytest/gpr_bem_kress/` and `pytest/solver_comparisons/`, with result
 bundles under `results/ordered_boundary_nystrom/` and
 `results/solver_comparisons/`, respectively.
 
@@ -114,7 +123,7 @@ Not part of the `ref`/`mod` pair, and not selected by `--solver`:
 | `ordered_boundary/` | Shared NumPy-only node boundary, with separate exact/Fourier parameterization producers, for future Kress, kernel-difference, QBX, panel, or other BIE backends. |
 | `periodic_kress/` | Universal full-log periodic weights reused by the scalar proxy and ordered Müller candidate. |
 | `sdf_to_ordered_boundary/` | Shared marching/projection front end, spline/Fourier/SDF-refined producers, common metrics, and isolated study orchestration (`docs/sdf_boundary_parameterization_implementation.md`). |
-| `gpr_bem_mod/ordered_nystrom/` | Experimental dense all-block Kress/Müller solve accepting exactly one immutable `PeriodicCurve2D`; direct import only. |
+| `gpr_bem_kress/` | Experimental dense all-block Kress/Müller solver accepting exactly one immutable `PeriodicCurve2D`; owns its package-local `Material`, explicit receiver operator, system, and forward results; direct import only. |
 
 ## Selecting experimental T assembly in the kdiff solve
 

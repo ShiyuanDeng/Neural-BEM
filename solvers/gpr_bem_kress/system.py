@@ -1,4 +1,4 @@
-"""Müller system composition for the opt-in ordered Nyström backend."""
+"""Müller system composition for the Kress/Nyström solver."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ import numpy as np
 
 from ordered_boundary import PeriodicCurve2D
 
-from ..materials import Material
+from .materials import Material
 from .conventions import PROJECT_MULLER_CONVENTION
 from .operators import (
     MullerAssemblyConfig,
@@ -31,7 +31,7 @@ def _positive_finite(value: float, *, name: str) -> float:
 
 def _validate_supported_materials(exterior: Material, interior: Material) -> None:
     if not isinstance(exterior, Material) or not isinstance(interior, Material):
-        raise TypeError("exterior and interior must be gpr_bem_mod.Material objects.")
+        raise TypeError("exterior and interior must be gpr_bem_kress.Material objects.")
     if not np.isclose(exterior.mur, 1.0, rtol=0.0, atol=1.0e-14) or not np.isclose(
         interior.mur,
         1.0,
@@ -52,13 +52,14 @@ def _validate_supported_materials(exterior: Material, interior: Material) -> Non
 
 
 @dataclass(frozen=True)
-class OrderedTMzFrequencySystem:
+class KressTMzFrequencySystem:
     """One directly solvable ``2N x 2N`` ordered Müller system."""
 
     geometry: PeriodicCurve2D
     angular_frequency: float | None
     k_exterior: complex
     k_interior: complex
+    assembly_config: MullerAssemblyConfig
     difference_blocks: MullerDifferenceBlocks
     system_matrix: np.ndarray
     condition_number: float
@@ -94,7 +95,7 @@ def build_muller_system(
     angular_frequency: float | None = None,
     config: MullerAssemblyConfig | None = None,
     compute_condition_number: bool = False,
-) -> OrderedTMzFrequencySystem:
+) -> KressTMzFrequencySystem:
     """Assemble the accepted ``[I-dK,dV;-dT,I+dKp]`` convention."""
 
     started = perf_counter()
@@ -153,11 +154,12 @@ def build_muller_system(
             "conventions": PROJECT_MULLER_CONVENTION.as_mapping(),
         }
     )
-    return OrderedTMzFrequencySystem(
+    return KressTMzFrequencySystem(
         geometry=curve,
         angular_frequency=frequency,
         k_exterior=blocks.k_exterior,
         k_interior=blocks.k_interior,
+        assembly_config=blocks.config,
         difference_blocks=blocks,
         system_matrix=matrix,
         condition_number=condition,
@@ -166,7 +168,7 @@ def build_muller_system(
     )
 
 
-def build_ordered_tmz_frequency_system(
+def build_kress_tmz_frequency_system(
     curve: PeriodicCurve2D,
     angular_frequency: float,
     *,
@@ -176,8 +178,8 @@ def build_ordered_tmz_frequency_system(
     mu0: float,
     config: MullerAssemblyConfig | None = None,
     compute_condition_number: bool = False,
-) -> OrderedTMzFrequencySystem:
-    """Build one nonmagnetic TMz system from repository material objects."""
+) -> KressTMzFrequencySystem:
+    """Build one nonmagnetic TMz system from package-owned material values."""
 
     _validate_supported_materials(exterior, interior)
     omega = _positive_finite(angular_frequency, name="angular_frequency")
@@ -196,7 +198,7 @@ def build_ordered_tmz_frequency_system(
 
 
 __all__ = [
-    "OrderedTMzFrequencySystem",
+    "KressTMzFrequencySystem",
+    "build_kress_tmz_frequency_system",
     "build_muller_system",
-    "build_ordered_tmz_frequency_system",
 ]

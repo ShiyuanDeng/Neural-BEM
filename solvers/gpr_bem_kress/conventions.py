@@ -1,4 +1,4 @@
-"""Frozen convention record for the opt-in ordered Nyström candidate."""
+"""Frozen convention record for the Kress/Nyström solver."""
 
 from __future__ import annotations
 

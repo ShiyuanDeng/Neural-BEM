@@ -3,7 +3,7 @@
 
 This opt-in driver accepts continuous analytic or frozen Fourier geometry,
 discretizes it as ``PeriodicCurve2D`` at every requested even node count, and
-calls only the explicit ``gpr_bem_mod.ordered_nystrom`` API. Circle fields are
+calls only the explicit ``gpr_bem_kress`` API. Circle fields are
 compared with the analytic Mie series; all other shapes use the independent
 high-resolution ``nystrom_ref`` implementation as a frozen numerical reference.
 
@@ -54,11 +54,12 @@ if str(SOLVERS_ROOT) not in sys.path:
     sys.path.insert(0, str(SOLVERS_ROOT))
 
 import config.circle_config as physical_config  # noqa: E402
-import gpr_bem_mod  # noqa: E402
-from gpr_bem_mod.ordered_nystrom import (  # noqa: E402
+import gpr_bem_kress  # noqa: E402
+import gpr_bem_ref  # noqa: E402
+from gpr_bem_kress import (  # noqa: E402
+    KressSolveConfig,
     MullerAssemblyConfig,
-    OrderedSolveConfig,
-    solve_ordered_tmz_total_field_batch,
+    solve_kress_tmz_total_field_batch,
 )
 from nystrom_ref import build_curve as build_reference_curve  # noqa: E402
 from nystrom_ref import solve_transmission as solve_reference_transmission  # noqa: E402
@@ -214,7 +215,7 @@ def _safe_run_id(value: str) -> str:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
-            "Validate the isolated PeriodicCurve2D Müller/Kress candidate on "
+            "Validate the direct-import PeriodicCurve2D Müller/Kress solver on "
             "circle, ellipse, and smooth-star curves."
         )
     )
@@ -271,7 +272,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--timing-repeats",
         type=_positive_integer,
         default=1,
-        help="Repeat each candidate solve and report median timings (default: 1).",
+        help="Repeat each Kress solve and report median timings (default: 1).",
     )
     parser.add_argument("--target-chunk-size", type=_positive_integer, default=64)
     parser.add_argument("--near-argument", type=_positive_float, default=0.75)
@@ -532,12 +533,12 @@ def _analytic_circle_traces(
 ) -> tuple[np.ndarray, np.ndarray]:
     """Return exact total traces from the penetrable-cylinder Mie series."""
 
-    modes = gpr_bem_mod.cylinder_series_mode_numbers(
+    modes = gpr_bem_ref.cylinder_series_mode_numbers(
         k_exterior,
         k_interior,
         RADIUS,
     )
-    ratio = gpr_bem_mod.penetrable_cylinder_scattering_coefficient_ratio(
+    ratio = gpr_bem_ref.penetrable_cylinder_scattering_coefficient_ratio(
         modes,
         k_exterior,
         k_interior,
@@ -572,8 +573,8 @@ def _compute_reference(
     sources: np.ndarray,
     receivers: np.ndarray,
     reference_nodes: int,
-    exterior: gpr_bem_mod.Material,
-    interior: gpr_bem_mod.Material,
+    exterior: gpr_bem_kress.Material,
+    interior: gpr_bem_kress.Material,
 ) -> ReferenceResult:
     angular_frequency = TWO_PI * frequency_hz
     k_exterior = complex(
@@ -596,7 +597,7 @@ def _compute_reference(
         num_receivers = receivers.shape[0]
         paired_sources = np.repeat(sources, num_receivers, axis=0)
         paired_receivers = np.tile(receivers, (num_sources, 1))
-        field = gpr_bem_mod.penetrable_cylinder_scattered_field(
+        field = gpr_bem_ref.penetrable_cylinder_scattered_field(
             paired_receivers,
             paired_sources,
             k_exterior=k_exterior,
@@ -733,13 +734,13 @@ def _candidate_row(
     reference_norm_floor: float,
     sources: np.ndarray,
     receivers: np.ndarray,
-    exterior: gpr_bem_mod.Material,
-    interior: gpr_bem_mod.Material,
+    exterior: gpr_bem_kress.Material,
+    interior: gpr_bem_kress.Material,
     assembly_config: MullerAssemblyConfig,
     timing_repeats: int,
 ) -> tuple[dict[str, Any], np.ndarray]:
     curve = case.parameterization.discretize(num_nodes, require_even=True)
-    solve_config = OrderedSolveConfig(
+    solve_config = KressSolveConfig(
         assembly=assembly_config,
         compute_condition_number=False,
     )
@@ -760,7 +761,7 @@ def _candidate_row(
     forward = None
     for _ in range(timing_repeats):
         measured_started = perf_counter()
-        forward = solve_ordered_tmz_total_field_batch(
+        forward = solve_kress_tmz_total_field_batch(
             curve,
             sources,
             receivers,
@@ -1318,12 +1319,12 @@ def _source_hashes() -> dict[str, str]:
         Path(__file__).resolve(),
         REPOSITORY_ROOT / "config" / "base_config.py",
         REPOSITORY_ROOT / "config" / "circle_config.py",
-        SOLVERS_ROOT / "gpr_bem_mod" / "__init__.py",
-        SOLVERS_ROOT / "gpr_bem_mod" / "materials.py",
-        SOLVERS_ROOT / "gpr_bem_mod" / "cylinder_reference.py",
+        SOLVERS_ROOT / "gpr_bem_ref" / "__init__.py",
+        SOLVERS_ROOT / "gpr_bem_ref" / "materials.py",
+        SOLVERS_ROOT / "gpr_bem_ref" / "cylinder_reference.py",
     ]
     for package in (
-        SOLVERS_ROOT / "gpr_bem_mod" / "ordered_nystrom",
+        SOLVERS_ROOT / "gpr_bem_kress",
         SOLVERS_ROOT / "ordered_boundary",
         SOLVERS_ROOT / "periodic_kress",
         SOLVERS_ROOT / "nystrom_ref",
@@ -1412,11 +1413,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     except FileExistsError:
         parser.error(f"output directory already exists: {output_directory}")
 
-    exterior = gpr_bem_mod.Material(
+    exterior = gpr_bem_kress.Material(
         epsr=physical_config.SAND_EPSR,
         sigma=physical_config.SAND_SIGMA,
     )
-    interior = gpr_bem_mod.Material(
+    interior = gpr_bem_kress.Material(
         epsr=physical_config.PLASTIC_EPSR,
         sigma=physical_config.PLASTIC_SIGMA,
     )

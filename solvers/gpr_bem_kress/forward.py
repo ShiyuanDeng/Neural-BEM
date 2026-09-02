@@ -12,11 +12,11 @@ from scipy.special import hankel1
 
 from ordered_boundary import PeriodicCurve2D
 
-from ..materials import Material
+from .materials import Material
 from ._kernels import validate_wavenumber
 from .geometry import PeriodicCurveAdapter, adapt_periodic_curve
 from .operators import MullerAssemblyConfig
-from .system import OrderedTMzFrequencySystem, build_ordered_tmz_frequency_system
+from .system import KressTMzFrequencySystem, build_kress_tmz_frequency_system
 
 
 def _readonly(values: np.ndarray, *, dtype) -> np.ndarray:
@@ -120,7 +120,7 @@ def _validate_exterior_points(
 
 
 @dataclass(frozen=True)
-class OrderedSolveConfig:
+class KressSolveConfig:
     """Controls that belong to the direct solve and off-surface evaluation."""
 
     assembly: MullerAssemblyConfig = field(default_factory=MullerAssemblyConfig)
@@ -156,6 +156,154 @@ class ExteriorRepresentationResult:
     evaluation_seconds: float
 
 
+@dataclass(frozen=True)
+class ExteriorReceiverOperator:
+    """Weighted off-surface measurement operator for one curve and frequency.
+
+    ``state_rows`` is the explicit matrix ``C = [D, -S]`` for the state order
+    ``[u_D, u_N]``.  Forward evaluation uses ``C @ q`` and a future discrete
+    adjoint can use the exact conjugate transpose ``C.conj().T`` without
+    rebuilding receiver kernels or duplicating weight conventions.
+    """
+
+    geometry: PeriodicCurve2D
+    receiver_points: np.ndarray
+    k_exterior: complex
+    single_layer_rows: np.ndarray
+    double_layer_rows: np.ndarray
+    build_seconds: float
+    state_rows: np.ndarray = field(init=False)
+    minimum_receiver_distance: float = field(init=False)
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.geometry, PeriodicCurve2D):
+            raise TypeError("geometry must be an ordered_boundary.PeriodicCurve2D object.")
+        receivers = _points(self.receiver_points, name="receiver_points")
+        minimum_distance = _validate_exterior_points(
+            receivers,
+            self.geometry,
+            name="receiver_points",
+            minimum_clearance=0.0,
+        )
+        expected_shape = (receivers.shape[0], self.geometry.num_nodes)
+        single = np.asarray(self.single_layer_rows, dtype=np.complex128)
+        double = np.asarray(self.double_layer_rows, dtype=np.complex128)
+        if single.shape != expected_shape:
+            raise ValueError(
+                f"single_layer_rows must have shape {expected_shape}."
+            )
+        if double.shape != expected_shape:
+            raise ValueError(
+                f"double_layer_rows must have shape {expected_shape}."
+            )
+        if not np.all(np.isfinite(single)) or not np.all(np.isfinite(double)):
+            raise ValueError("receiver operator rows must contain only finite values.")
+        wave = validate_wavenumber(self.k_exterior, name="k_exterior")
+        if isinstance(self.build_seconds, (bool, np.bool_)):
+            raise TypeError("build_seconds must be a real number, not bool.")
+        elapsed = float(self.build_seconds)
+        if not np.isfinite(elapsed) or elapsed < 0.0:
+            raise ValueError("build_seconds must be finite and non-negative.")
+
+        readonly_single = _readonly(single, dtype=np.complex128)
+        readonly_double = _readonly(double, dtype=np.complex128)
+        object.__setattr__(self, "receiver_points", _readonly(receivers, dtype=np.float64))
+        object.__setattr__(self, "k_exterior", wave)
+        object.__setattr__(self, "single_layer_rows", readonly_single)
+        object.__setattr__(self, "double_layer_rows", readonly_double)
+        object.__setattr__(
+            self,
+            "state_rows",
+            _readonly(
+                np.concatenate((readonly_double, -readonly_single), axis=1),
+                dtype=np.complex128,
+            ),
+        )
+        object.__setattr__(self, "minimum_receiver_distance", minimum_distance)
+        object.__setattr__(self, "build_seconds", elapsed)
+
+    @property
+    def num_nodes(self) -> int:
+        return self.geometry.num_nodes
+
+    @property
+    def num_receivers(self) -> int:
+        return int(self.receiver_points.shape[0])
+
+    def apply_state(self, state) -> np.ndarray:
+        """Map a ``(2N, num_rhs)`` state to ``(num_rhs, num_receivers)``."""
+
+        values = np.asarray(state, dtype=np.complex128)
+        if values.ndim == 1:
+            values = values[:, None]
+        expected_rows = 2 * self.num_nodes
+        if values.ndim != 2 or values.shape[0] != expected_rows:
+            raise ValueError(
+                f"state must have shape ({expected_rows}, num_rhs)."
+            )
+        if values.shape[1] == 0 or not np.all(np.isfinite(values)):
+            raise ValueError("state must contain finite values and at least one RHS.")
+        return _readonly(
+            (self.state_rows @ values).T,
+            dtype=np.complex128,
+        )
+
+    def apply_adjoint(self, receiver_dual) -> np.ndarray:
+        """Apply ``C^H`` to duals shaped ``(num_rhs, num_receivers)``."""
+
+        values = np.asarray(receiver_dual, dtype=np.complex128)
+        if values.ndim == 1:
+            values = values[None, :]
+        if (
+            values.ndim != 2
+            or values.shape[0] == 0
+            or values.shape[1] != self.num_receivers
+        ):
+            raise ValueError(
+                "receiver_dual must have shape (num_rhs, num_receivers)."
+            )
+        if not np.all(np.isfinite(values)):
+            raise ValueError("receiver_dual must contain only finite values.")
+        return _readonly(
+            self.state_rows.conj().T @ values.T,
+            dtype=np.complex128,
+        )
+
+    def evaluate(
+        self,
+        dirichlet_trace,
+        neumann_trace,
+    ) -> ExteriorRepresentationResult:
+        """Apply the stored rows to one or more unweighted boundary traces."""
+
+        started = perf_counter()
+        dirichlet = _trace_matrix(
+            dirichlet_trace,
+            self.num_nodes,
+            name="dirichlet_trace",
+        )
+        neumann = _trace_matrix(
+            neumann_trace,
+            self.num_nodes,
+            name="neumann_trace",
+        )
+        if dirichlet.shape != neumann.shape:
+            raise ValueError(
+                "dirichlet_trace and neumann_trace must have the same shape."
+            )
+        single = (self.single_layer_rows @ neumann.T).T
+        double = (self.double_layer_rows @ dirichlet.T).T
+        state = np.concatenate((dirichlet, neumann), axis=1).T
+        scattered = self.apply_state(state)
+        return ExteriorRepresentationResult(
+            single_layer=_readonly(single, dtype=np.complex128),
+            double_layer=_readonly(double, dtype=np.complex128),
+            scattered=_readonly(scattered, dtype=np.complex128),
+            minimum_receiver_distance=self.minimum_receiver_distance,
+            evaluation_seconds=float(perf_counter() - started),
+        )
+
+
 def _incident_trace_from_adapter(
     adapter: PeriodicCurveAdapter,
     sources: np.ndarray,
@@ -181,7 +329,7 @@ def _incident_trace_from_adapter(
     )
 
 
-def ordered_incident_trace_on_boundary(
+def kress_incident_trace_on_boundary(
     curve: PeriodicCurve2D,
     source_points,
     k_exterior: complex,
@@ -200,38 +348,64 @@ def ordered_incident_trace_on_boundary(
     return _incident_trace_from_adapter(adapter, sources, strengths, wave)
 
 
-def _evaluate_exterior_representation_from_adapter(
+def _build_exterior_receiver_operator_from_adapter(
     adapter: PeriodicCurveAdapter,
     receivers: np.ndarray,
-    dirichlet: np.ndarray,
-    neumann: np.ndarray,
     wave: complex,
     *,
-    minimum_receiver_distance: float,
-) -> ExteriorRepresentationResult:
-    started = perf_counter()
+    build_started: float | None = None,
+) -> ExteriorReceiverOperator:
+    started = perf_counter() if build_started is None else build_started
     displacement = receivers[:, None, :] - adapter.points[None, :, :]
     distance = np.linalg.norm(displacement, axis=-1)
     projection = np.einsum("rnd,nd->rn", displacement, adapter.normals) / distance
     green = 0.25j * hankel1(0, wave * distance)
     green_normal = 0.25j * wave * hankel1(1, wave * distance) * projection
-    single = np.einsum(
-        "rn,sn,n->sr", green, neumann, adapter.arc_length_weights, optimize=True
+    single_rows = green * adapter.arc_length_weights[None, :]
+    double_rows = green_normal * adapter.arc_length_weights[None, :]
+    operator = ExteriorReceiverOperator(
+        geometry=adapter.curve,
+        receiver_points=receivers,
+        k_exterior=wave,
+        single_layer_rows=single_rows,
+        double_layer_rows=double_rows,
+        build_seconds=0.0,
     )
-    double = np.einsum(
-        "rn,sn,n->sr",
-        green_normal,
-        dirichlet,
-        adapter.arc_length_weights,
-        optimize=True,
+    # The object is still private to this factory. Publish a timing that also
+    # includes its validation and immutable-copy construction.
+    object.__setattr__(operator, "build_seconds", float(perf_counter() - started))
+    return operator
+
+
+def build_exterior_receiver_operator(
+    curve: PeriodicCurve2D,
+    receiver_points,
+    k_exterior: complex,
+    *,
+    minimum_clearance: float = 0.0,
+) -> ExteriorReceiverOperator:
+    """Build the weighted ``C=[D,-S]`` rows for separated receivers."""
+
+    started = perf_counter()
+    adapter = adapt_periodic_curve(curve)
+    receivers = _points(receiver_points, name="receiver_points")
+    if isinstance(minimum_clearance, (bool, np.bool_)):
+        raise TypeError("minimum_clearance must be a real number, not bool.")
+    clearance = float(minimum_clearance)
+    if not np.isfinite(clearance) or clearance < 0.0:
+        raise ValueError("minimum_clearance must be finite and non-negative.")
+    _validate_exterior_points(
+        receivers,
+        curve,
+        name="receiver_points",
+        minimum_clearance=clearance,
     )
-    scattered = double - single
-    return ExteriorRepresentationResult(
-        single_layer=_readonly(single, dtype=np.complex128),
-        double_layer=_readonly(double, dtype=np.complex128),
-        scattered=_readonly(scattered, dtype=np.complex128),
-        minimum_receiver_distance=float(minimum_receiver_distance),
-        evaluation_seconds=float(perf_counter() - started),
+    wave = validate_wavenumber(k_exterior, name="k_exterior")
+    return _build_exterior_receiver_operator_from_adapter(
+        adapter,
+        receivers,
+        wave,
+        build_started=started,
     )
 
 
@@ -244,45 +418,35 @@ def evaluate_exterior_representation(
     *,
     minimum_clearance: float = 0.0,
 ) -> ExteriorRepresentationResult:
-    """Evaluate ``D u_D-S u_N`` at safely separated exterior receivers."""
+    """Build and apply ``D u_D-S u_N`` at separated exterior receivers."""
 
-    adapter = adapt_periodic_curve(curve)
-    receivers = _points(receiver_points, name="receiver_points")
-    dirichlet = _trace_matrix(
-        dirichlet_trace, adapter.num_nodes, name="dirichlet_trace"
-    )
-    neumann = _trace_matrix(
-        neumann_trace, adapter.num_nodes, name="neumann_trace"
-    )
-    if dirichlet.shape != neumann.shape:
-        raise ValueError("dirichlet_trace and neumann_trace must have the same shape.")
-    if isinstance(minimum_clearance, (bool, np.bool_)):
-        raise TypeError("minimum_clearance must be a real number, not bool.")
-    clearance = float(minimum_clearance)
-    if not np.isfinite(clearance) or clearance < 0.0:
-        raise ValueError("minimum_clearance must be finite and non-negative.")
-    minimum_distance = _validate_exterior_points(
-        receivers,
+    operator = build_exterior_receiver_operator(
         curve,
-        name="receiver_points",
-        minimum_clearance=clearance,
+        receiver_points,
+        k_exterior,
+        minimum_clearance=minimum_clearance,
     )
-    wave = validate_wavenumber(k_exterior, name="k_exterior")
-    return _evaluate_exterior_representation_from_adapter(
-        adapter,
-        receivers,
-        dirichlet,
-        neumann,
-        wave,
-        minimum_receiver_distance=minimum_distance,
+    result = operator.evaluate(dirichlet_trace, neumann_trace)
+    return ExteriorRepresentationResult(
+        single_layer=result.single_layer,
+        double_layer=result.double_layer,
+        scattered=result.scattered,
+        minimum_receiver_distance=result.minimum_receiver_distance,
+        evaluation_seconds=operator.build_seconds + result.evaluation_seconds,
     )
 
 
 @dataclass(frozen=True)
-class OrderedTMzForwardResult:
+class KressTMzForwardResult:
     """Auditable direct solution for all source/receiver combinations."""
 
-    system: OrderedTMzFrequencySystem
+    system: KressTMzFrequencySystem
+    solve_config: KressSolveConfig
+    exterior_material: Material
+    interior_material: Material
+    eps0: float
+    mu0: float
+    receiver_operator: ExteriorReceiverOperator
     source_points: np.ndarray
     receiver_points: np.ndarray
     source_strengths: np.ndarray
@@ -306,7 +470,7 @@ class OrderedTMzForwardResult:
     diagnostics: Mapping[str, object]
 
 
-def solve_ordered_tmz_total_field_batch(
+def solve_kress_tmz_total_field_batch(
     curve: PeriodicCurve2D,
     source_points,
     receiver_points,
@@ -317,8 +481,8 @@ def solve_ordered_tmz_total_field_batch(
     interior: Material,
     eps0: float,
     mu0: float,
-    config: OrderedSolveConfig | None = None,
-) -> OrderedTMzForwardResult:
+    config: KressSolveConfig | None = None,
+) -> KressTMzForwardResult:
     """Build and directly solve the ordered Müller system.
 
     Receiver arrays have shape ``(num_sources, num_receivers)``.  This is a
@@ -326,9 +490,9 @@ def solve_ordered_tmz_total_field_batch(
     """
 
     total_started = perf_counter()
-    settings = OrderedSolveConfig() if config is None else config
-    if not isinstance(settings, OrderedSolveConfig):
-        raise TypeError("config must be an OrderedSolveConfig object.")
+    settings = KressSolveConfig() if config is None else config
+    if not isinstance(settings, KressSolveConfig):
+        raise TypeError("config must be a KressSolveConfig object.")
     if not isinstance(curve, PeriodicCurve2D):
         raise TypeError("curve must be an ordered_boundary.PeriodicCurve2D object.")
     sources = _points(source_points, name="source_points")
@@ -343,7 +507,7 @@ def solve_ordered_tmz_total_field_batch(
         name="source_points",
         minimum_clearance=clearance,
     )
-    minimum_receiver_distance = _validate_exterior_points(
+    _validate_exterior_points(
         receivers,
         curve,
         name="receiver_points",
@@ -354,7 +518,7 @@ def solve_ordered_tmz_total_field_batch(
     )
     if np.any(source_receiver_distance <= 0.0):
         raise ValueError("source_points and receiver_points must be distinct.")
-    system = build_ordered_tmz_frequency_system(
+    system = build_kress_tmz_frequency_system(
         curve,
         angular_frequency,
         exterior=exterior,
@@ -399,22 +563,13 @@ def solve_ordered_tmz_total_field_batch(
     neumann_total = solution[count:].T
 
     receiver_started = perf_counter()
-    representation = _evaluate_exterior_representation_from_adapter(
+    receiver_operator = _build_exterior_receiver_operator_from_adapter(
         adapter,
         receivers,
-        dirichlet_total,
-        neumann_total,
         system.k_exterior,
-        minimum_receiver_distance=minimum_receiver_distance,
     )
-    leak = _evaluate_exterior_representation_from_adapter(
-        adapter,
-        receivers,
-        dirichlet_incident,
-        neumann_incident,
-        system.k_exterior,
-        minimum_receiver_distance=minimum_receiver_distance,
-    )
+    representation = receiver_operator.evaluate(dirichlet_total, neumann_total)
+    leak = receiver_operator.evaluate(dirichlet_incident, neumann_incident)
     incident_receiver = (
         strengths[:, None]
         * 0.25j
@@ -434,11 +589,18 @@ def solve_ordered_tmz_total_field_batch(
             "minimum_receiver_distance": representation.minimum_receiver_distance,
             "minimum_clearance_required": clearance,
             "receiver_quadrature": "ordinary_periodic_trapezoid",
+            "receiver_operator": "C=[D,-S]",
             "close_evaluation": False,
         }
     )
-    return OrderedTMzForwardResult(
+    return KressTMzForwardResult(
         system=system,
+        solve_config=settings,
+        exterior_material=exterior,
+        interior_material=interior,
+        eps0=float(eps0),
+        mu0=float(mu0),
+        receiver_operator=receiver_operator,
         source_points=_readonly(sources, dtype=np.float64),
         receiver_points=_readonly(receivers, dtype=np.float64),
         source_strengths=_readonly(strengths, dtype=np.complex128),
@@ -464,14 +626,14 @@ def solve_ordered_tmz_total_field_batch(
 
 
 @dataclass(frozen=True)
-class OrderedTMzMultiFrequencyForwardResult:
+class KressTMzMultiFrequencyForwardResult:
     angular_frequencies: np.ndarray
     total_frequency_response: np.ndarray
     scattered_frequency_response: np.ndarray
-    forwards: tuple[OrderedTMzForwardResult, ...]
+    forwards: tuple[KressTMzForwardResult, ...]
 
 
-def solve_ordered_tmz_frequency_response(
+def solve_kress_tmz_frequency_response(
     curve: PeriodicCurve2D,
     source_points,
     receiver_points,
@@ -482,8 +644,8 @@ def solve_ordered_tmz_frequency_response(
     interior: Material,
     eps0: float,
     mu0: float,
-    config: OrderedSolveConfig | None = None,
-) -> OrderedTMzMultiFrequencyForwardResult:
+    config: KressSolveConfig | None = None,
+) -> KressTMzMultiFrequencyForwardResult:
     """Solve independent frequencies with explicit source/frequency/receiver axes.
 
     Returned field arrays have shape ``(num_sources, num_frequencies,
@@ -504,7 +666,7 @@ def solve_ordered_tmz_frequency_response(
     if np.any(frequencies <= 0.0):
         raise ValueError("angular_frequencies must be positive.")
     forwards = tuple(
-        solve_ordered_tmz_total_field_batch(
+        solve_kress_tmz_total_field_batch(
             curve,
             source_points,
             receiver_points,
@@ -522,7 +684,7 @@ def solve_ordered_tmz_frequency_response(
     scattered = np.stack(
         [result.scattered_receiver for result in forwards], axis=1
     )
-    return OrderedTMzMultiFrequencyForwardResult(
+    return KressTMzMultiFrequencyForwardResult(
         angular_frequencies=_readonly(frequencies, dtype=np.float64),
         total_frequency_response=_readonly(total, dtype=np.complex128),
         scattered_frequency_response=_readonly(scattered, dtype=np.complex128),
@@ -531,12 +693,14 @@ def solve_ordered_tmz_frequency_response(
 
 
 __all__ = [
+    "ExteriorReceiverOperator",
     "ExteriorRepresentationResult",
-    "OrderedSolveConfig",
-    "OrderedTMzForwardResult",
-    "OrderedTMzMultiFrequencyForwardResult",
+    "KressSolveConfig",
+    "KressTMzForwardResult",
+    "KressTMzMultiFrequencyForwardResult",
+    "build_exterior_receiver_operator",
     "evaluate_exterior_representation",
-    "ordered_incident_trace_on_boundary",
-    "solve_ordered_tmz_frequency_response",
-    "solve_ordered_tmz_total_field_batch",
+    "kress_incident_trace_on_boundary",
+    "solve_kress_tmz_frequency_response",
+    "solve_kress_tmz_total_field_batch",
 ]

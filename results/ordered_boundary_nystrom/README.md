@@ -1,14 +1,14 @@
 # Ordered-boundary Nyström evidence
 
-These are solver/operator measurements from the isolated
-`gpr_bem_mod.ordered_nystrom` candidate. They are distinct from the geometry
+These are solver/operator measurements from the direct-import
+`gpr_bem_kress` sibling solver. They are distinct from the geometry
 and manufactured scalar-quadrature metrics under
 `results/sdf_boundary_parameterization/`.
 
 ## Skim first
 
 The table reports the worst largest-`N` value across the three frequencies in
-each checked run. Per-case times include the candidate forward call and a
+each checked run. Per-case times include the Kress forward call and a
 separately timed raw condition estimate; the whole-run wall time also includes
 the independent reference solves.
 
@@ -28,3 +28,19 @@ frequency sweep, reference self-convergence, explicit transmission residuals,
 lossy-convention validation (lossy material inputs are currently rejected),
 and production-pipeline integration remain open.
 No dense matrix, trace, or receiver array is persisted here.
+
+## Relation to the same-SDF solver comparison
+
+These stored tables validate Kress blocks and fields on exact or frozen
+curves; they are not the MOD/gprMax comparison table. The integration tests for
+smooth circle, ellipse, and star start the MOD and `gpr_bem_kress` branches
+from the same callable SDF, then independently build a compressed MOD cloud
+and a Method-B `PeriodicCurve2D`. Kress returns the full source-by-receiver
+matrix; the 24 paired scan values are its diagonal.
+
+The existing gprMax cache covers only Tx/Rx pair index 0. Consequently, its
+table entry is a one-pair relative error at each frequency, not a full-ring
+24-pair receiver L2. New
+same-scene comparison evidence belongs under `results/solver_comparisons/`,
+not in this implementation-convergence directory. The first checked snapshot
+is [`kress-peer-20260902/summary.md`](../solver_comparisons/kress-peer-20260902/summary.md).

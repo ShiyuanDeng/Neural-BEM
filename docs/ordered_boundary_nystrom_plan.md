@@ -17,14 +17,17 @@
 > metrics are not solver errors and do not complete the forward assembler.
 
 > **Forward-candidate progress, 2026-09-02:** an isolated, direct-import
-> `solvers/gpr_bem_mod/ordered_nystrom/` candidate now accepts one
+> `solvers/gpr_bem_kress/` peer solver now accepts one
 > `PeriodicCurve2D`, constructs cancellation-safe all-block Kress differences,
 > assembles the unsquared Müller system, and evaluates safely separated
-> receiver fields. It is not exported or selector-wired. Its architecture,
+> receiver fields through an explicit `ExteriorReceiverOperator` with
+> `C=[D,-S]`. It owns its material value type and does not import MOD. It is not
+> selector- or operational-driver-wired. Its architecture,
 > translated `T/W` sign convention, numerical split, and current limitations
 > are recorded in
-> [`ordered_nystrom_implementation.md`](ordered_nystrom_implementation.md).
-> Its solver-owned fast suite currently passes 38 tests, including
+> [`gpr_bem_kress_implementation.md`](gpr_bem_kress_implementation.md).
+> Its solver-owned fast suite currently passes 41 tests, including the
+> explicit receiver-operator contract as well as
 > block actions, zero contrast, analytic traces, and Mie fields through a
 > resolved 8 GHz case. Compact exact circle/ellipse/star and frozen Method-B
 > `N`-refinement/receiver/runtime sweeps are stored under
@@ -75,10 +78,10 @@ the existing 2-D TMz homogeneous full-space problem.
 ## Candidate isolation
 
 Keep reusable geometry in the NumPy-only sibling package
-`solvers/ordered_boundary/`. Prefer a contained numerical candidate subpackage
-such as `solvers/gpr_bem_mod/ordered_nystrom/` over another cloned `gpr_bem_*`
-stack.
-Keep it out of `gpr_bem_mod.__init__`, normal drivers, and
+`solvers/ordered_boundary/`. The numerical implementation is the focused
+`solvers/gpr_bem_kress/` peer package, not a nested MOD backend and not another
+copy of the complete legacy forward/adjoint/inverse stack. Keep it out of
+normal drivers and
 `solver_select.SOLVER_NAMES` until forward promotion. During development it is
 direct-import and opt-in only.
 
@@ -95,9 +98,10 @@ solver-owned nodes:
 - node-based `PeriodicCurve2D` and `OrderedBoundary2D` for BIE assembly;
 - an `OrderedBoundaryReport` with topology/geometry diagnostics;
 - `extract_ordered_boundary(...)`;
-- `build_ordered_tmz_frequency_system(...)`;
-- `solve_ordered_tmz_total_field_batch(...)`; and
-- `solve_ordered_tmz_frequency_response(...)`.
+- `build_kress_tmz_frequency_system(...)`;
+- `build_exterior_receiver_operator(...)` with explicit `C=[D,-S]`;
+- `solve_kress_tmz_total_field_batch(...)`; and
+- `solve_kress_tmz_frequency_response(...)`.
 
 The geometry package owns only the first two types and diagnostics. It does not
 own Kress weights or enforce even node counts; those are discretisation
@@ -258,7 +262,8 @@ Keep solver-only and end-to-end geometry tests separate.
    convergence; add an independent multicomponent oracle before claiming
    precision-oracle status.
 5. **gprMax:** retain as an independent gross-physics check, not the precision
-   threshold.
+   threshold. Existing caches cover only Tx/Rx pair index 0; report its
+   per-frequency relative error separately from the 24-pair BEM receiver L2.
 6. **Square:** verify explicit smooth-only rejection. Do not reinterpret a
    smoothed square as square validation.
 
@@ -292,11 +297,17 @@ Begin only after the forward backend is accepted and frozen enough to
 differentiate.
 
 1. Derive the discrete adjoint from the complete accepted matrix and receiver
-   map; do not port compressed-cloud directional code piecemeal.
+   map; use the literal forward matrices in `A^H lambda = C^H psi`, where the
+   forward-owned receiver operator already records `C=[D,-S]`. Do not port
+   compressed-cloud directional code piecemeal.
 2. Validate receiver duals and frozen-geometry directional derivatives against
-   finite differences on circle, ellipse, star, and a multicomponent case.
+   finite differences on circle, ellipse, and star. Add a multicomponent case
+   only after multicomponent Kress forward assembly is separately implemented
+   and accepted; it is outside the initial one-component contract.
 3. Convert the accepted boundary shape density to the existing
-   `shape_gradient_surrogate_loss` interface.
+   `shape_gradient_surrogate_loss` interface. Name and test whether every
+   quantity is a nodal directional derivative or an unweighted density so the
+   curve's arc-length weight is applied exactly once.
 4. Freeze ordered extraction and periodic fitting within each gradient
    evaluation; re-extract after the optimizer update.
 5. Make any finite-difference fallback explicit and opt-in rather than a broad
@@ -335,7 +346,7 @@ Every completed phase or rejected alternative should append one entry to
 
 Keep geometry-contract tests under `pytest/ordered_boundary/` and place the
 solver candidate's operator/system/field tests in the parallel
-`pytest/ordered_nystrom/` package. Store compact JSON/Markdown evidence under
+`pytest/gpr_bem_kress/` package. Store compact JSON/Markdown evidence under
 `results/ordered_boundary_nystrom/`; do not commit dense matrices.
 Geometry-only SDF and manufactured scalar-product-rule metrics remain under
 `results/sdf_boundary_parameterization/`; they do not satisfy the operator or

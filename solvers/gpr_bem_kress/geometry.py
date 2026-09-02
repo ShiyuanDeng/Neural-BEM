@@ -54,7 +54,7 @@ class PeriodicCurveAdapter:
             raise TypeError("curve must be an ordered_boundary.PeriodicCurve2D object.")
         count = self.curve.num_nodes
         if count < 8:
-            raise ValueError("The ordered Nyström candidate requires at least 8 nodes.")
+            raise ValueError("The ordered Kress solver requires at least 8 nodes.")
         if count % 2:
             raise ValueError("Kress product integration requires an even number of nodes.")
 
@@ -82,7 +82,7 @@ class PeriodicCurveAdapter:
         intersections = sampled_self_intersection_count(self.curve.points)
         if intersections:
             raise ValueError(
-                "The ordered Nyström candidate requires one simple component; "
+                "The ordered Kress solver requires one simple component; "
                 f"the sampled node polygon has {intersections} self-intersection(s)."
             )
 
@@ -123,7 +123,7 @@ class PeriodicCurveAdapter:
 
 
 def adapt_periodic_curve(curve: PeriodicCurve2D) -> PeriodicCurveAdapter:
-    """Validate and expose the sole geometry seam accepted by this backend."""
+    """Validate and expose the sole geometry seam accepted by this solver."""
 
     return PeriodicCurveAdapter(curve)
 

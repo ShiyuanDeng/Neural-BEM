@@ -1,28 +1,35 @@
-"""Isolation and public-contract tests for the opt-in solver candidate."""
+"""Isolation and public-contract tests for the direct-import Kress sibling."""
 
 from __future__ import annotations
 
 import ast
+import os
 from pathlib import Path
+import subprocess
+import sys
 
 import numpy as np
 import pytest
 
-import gpr_bem_mod
-import gpr_bem_mod.ordered_nystrom as ordered_nystrom
-from gpr_bem_mod.ordered_nystrom import (
+import gpr_bem_kress
+from gpr_bem_kress import (
+    Material,
     adapt_periodic_curve,
     build_muller_difference_blocks,
-    build_ordered_tmz_frequency_system,
+    build_kress_tmz_frequency_system,
 )
 from ordered_boundary import PeriodicCurve2D, circle, fourier_curve
 import solver_select
 
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
-CANDIDATE_ROOT = REPOSITORY_ROOT / "solvers" / "gpr_bem_mod" / "ordered_nystrom"
+SOLVERS_ROOT = REPOSITORY_ROOT / "solvers"
+KRESS_PACKAGE_ROOT = SOLVERS_ROOT / "gpr_bem_kress"
+OLD_NESTED_ROOT = SOLVERS_ROOT / "gpr_bem_mod" / "ordered_nystrom"
 KRESS_ROOT = REPOSITORY_ROOT / "solvers" / "periodic_kress"
 FORBIDDEN_NUMERICAL_PACKAGES = {
+    "gpr_bem_mod",
+    "gpr_bem_ref",
     "gpr_bem_kdiff",
     "gpr_bem_qbx",
     "kernel_diff_ref",
@@ -44,8 +51,8 @@ def _absolute_import_roots(path: Path) -> set[str]:
     return roots
 
 
-def test_candidate_does_not_depend_on_oracle_archived_or_sdf_numerics() -> None:
-    sources = sorted(CANDIDATE_ROOT.glob("*.py")) + sorted(KRESS_ROOT.glob("*.py"))
+def test_kress_does_not_depend_on_oracle_archived_or_sdf_numerics() -> None:
+    sources = sorted(KRESS_PACKAGE_ROOT.glob("*.py")) + sorted(KRESS_ROOT.glob("*.py"))
     assert sources
     findings = {
         str(path.relative_to(REPOSITORY_ROOT)): sorted(
@@ -57,10 +64,46 @@ def test_candidate_does_not_depend_on_oracle_archived_or_sdf_numerics() -> None:
     assert not findings, findings
 
 
-def test_candidate_remains_direct_import_only() -> None:
-    assert "ordered_nystrom" not in gpr_bem_mod.__all__
-    assert set(ordered_nystrom.__all__).isdisjoint(gpr_bem_mod.__all__)
-    assert all("ordered_nystrom" not in package for package in solver_select.SOLVER_NAMES.values())
+def test_clean_import_does_not_load_mod_ref_sdf_or_torch() -> None:
+    code = """
+import sys
+import gpr_bem_kress
+
+forbidden = {"gpr_bem_mod", "gpr_bem_ref", "sdf_to_ordered_boundary", "torch"}
+loaded = sorted(forbidden & {name.split(".", 1)[0] for name in sys.modules})
+if loaded:
+    raise SystemExit(f"forbidden packages loaded by gpr_bem_kress: {loaded}")
+"""
+    environment = os.environ.copy()
+    environment["PYTHONPATH"] = str(SOLVERS_ROOT)
+    completed = subprocess.run(
+        [sys.executable, "-c", code],
+        cwd=REPOSITORY_ROOT,
+        env=environment,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert completed.returncode == 0, completed.stderr or completed.stdout
+
+
+def test_kress_is_a_direct_import_sibling_not_a_mod_subpackage() -> None:
+    assert not OLD_NESTED_ROOT.exists()
+    assert "gpr_bem_kress" not in solver_select.SOLVER_NAMES.values()
+    expected_public_api = {
+        "KressSolveConfig",
+        "KressTMzForwardResult",
+        "KressTMzFrequencySystem",
+        "KressTMzMultiFrequencyForwardResult",
+        "Material",
+        "build_exterior_receiver_operator",
+        "build_kress_tmz_frequency_system",
+        "kress_incident_trace_on_boundary",
+        "solve_kress_tmz_frequency_response",
+        "solve_kress_tmz_total_field_batch",
+    }
+    assert expected_public_api <= set(gpr_bem_kress.__all__)
+    assert not any(name.startswith("OrderedTMz") for name in gpr_bem_kress.__all__)
 
 
 def test_adapter_preserves_the_node_owned_curve_and_weights() -> None:
@@ -82,6 +125,7 @@ def test_adapter_preserves_the_node_owned_curve_and_weights() -> None:
     np.testing.assert_array_equal(curve.points, point_snapshot)
     np.testing.assert_array_equal(curve.arc_length_weights, weight_snapshot)
     assert blocks.geometry is curve
+    assert blocks.config == gpr_bem_kress.MullerAssemblyConfig()
     assert blocks.diagnostics["source_jacobian_included"] is True
     assert blocks.diagnostics["parameter_step_included"] is True
     assert blocks.diagnostics["unknowns_are_weighted"] is False
@@ -137,10 +181,10 @@ def test_adapter_affinely_normalizes_a_nonstandard_period_without_changing_ds() 
 
 def test_high_level_material_api_rejects_magnetic_contrast() -> None:
     curve = circle((0.0, 0.0), 0.05).discretize(16, require_even=True)
-    exterior = gpr_bem_mod.Material(epsr=6.0)
-    magnetic_interior = gpr_bem_mod.Material(epsr=3.0, mur=1.2)
+    exterior = Material(epsr=6.0)
+    magnetic_interior = Material(epsr=3.0, mur=1.2)
     with pytest.raises(ValueError, match="nonmagnetic"):
-        build_ordered_tmz_frequency_system(
+        build_kress_tmz_frequency_system(
             curve,
             2.0 * np.pi * 1.0e9,
             exterior=exterior,
@@ -152,10 +196,10 @@ def test_high_level_material_api_rejects_magnetic_contrast() -> None:
 
 def test_high_level_material_api_rejects_unvalidated_lossy_convention() -> None:
     curve = circle((0.0, 0.0), 0.05).discretize(16, require_even=True)
-    exterior = gpr_bem_mod.Material(epsr=6.0)
-    lossy_interior = gpr_bem_mod.Material(epsr=3.0, sigma=0.01)
+    exterior = Material(epsr=6.0)
+    lossy_interior = Material(epsr=3.0, sigma=0.01)
     with pytest.raises(ValueError, match="lossless materials only"):
-        build_ordered_tmz_frequency_system(
+        build_kress_tmz_frequency_system(
             curve,
             2.0 * np.pi * 1.0e9,
             exterior=exterior,

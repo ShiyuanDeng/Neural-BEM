@@ -1,11 +1,10 @@
-# Ordered periodic Nyström/Müller implementation
+# `gpr_bem_kress` periodic Nyström/Müller implementation
 
-> **Status: experimental, opt-in implementation snapshot (2026-09-02).**
-> This records the implementation under
-> `solvers/gpr_bem_mod/ordered_nystrom/`; it is not an acceptance record.
-> The backend is deliberately absent from `gpr_bem_mod.__init__`, the normal
-> drivers, and `solver_select.SOLVER_NAMES` while its independent block and
-> field convergence evidence is established. The governing scope and gates
+> **Status: experimental, direct-import implementation snapshot (2026-09-02).**
+> This records the sibling solver package `solvers/gpr_bem_kress/`; it is not
+> an acceptance record. The package is deliberately absent from the normal
+> drivers and `solver_select.SOLVER_NAMES` while its independent block, field,
+> and same-scene comparison evidence is established. The governing scope and gates
 > remain in
 > [`muller_blocks_implementation_guide.md`](muller_blocks_implementation_guide.md)
 > and
@@ -25,11 +24,12 @@ vary solver node count N on one frozen gamma  -> operator/quadrature error
 vary grid resolution or fit bandwidth K      -> geometry representation error
 ```
 
-The contained `gpr_bem_mod.ordered_nystrom` package is therefore the right
-candidate shape. It shares the repository material object and audited physics
-conventions, but does not alter the current IBIM, kdiff, reference, adjoint, or
-inverse pipelines. It should remain opt-in until the acceptance ladder is
-complete.
+The implementation is therefore a peer solver, `gpr_bem_kress`, rather than a
+backend nested inside `gpr_bem_mod`. It owns a small package-local `Material`
+value type, uses the same audited physics values through explicit scene
+conversion, and does not import or alter the current IBIM, kdiff, reference,
+adjoint, or inverse pipelines. It should remain direct-import only until the
+acceptance ladder is complete.
 
 ## Architecture and ownership
 
@@ -66,7 +66,10 @@ PeriodicParameterization2D / an SDF method A, B, or C
                     |
             direct dense solve
                     v
-       u_sc = D_out u_D - S_out u_N
+ ExteriorReceiverOperator C = [D_out, -S_out]
+                    |
+                    v
+                 u_sc = C q
 ```
 
 The modules have deliberately narrow responsibilities:
@@ -75,12 +78,13 @@ The modules have deliberately narrow responsibilities:
 |---|---|
 | `solvers/ordered_boundary/` | Solver-neutral continuous producers and immutable node geometry. |
 | `solvers/periodic_kress/weights.py` | The universal product weights for the full canonical periodic logarithm; no geometry or Helmholtz knowledge. |
-| `ordered_nystrom/geometry.py` | Validate one `PeriodicCurve2D` and normalize only its parameter coordinate. |
-| `ordered_nystrom/_kernels.py` | Bare, combined exterior-minus-interior kernels and their `log(r)` coefficients. |
-| `ordered_nystrom/operators.py` | Closed diagonal limits, all-block Kress split, and fully weighted difference matrices. |
-| `ordered_nystrom/conventions.py` | Human- and machine-readable convention record. |
-| `ordered_nystrom/system.py` | Compose the visible four blocks and optionally estimate `cond(A)`. |
-| `ordered_nystrom/forward.py` | Incident traces, direct multi-right-hand-side solve, and separated exterior receiver evaluation. |
+| `gpr_bem_kress/materials.py` | Package-local material values; avoids importing another solver merely for type identity. |
+| `gpr_bem_kress/geometry.py` | Validate one `PeriodicCurve2D` and normalize only its parameter coordinate. |
+| `gpr_bem_kress/_kernels.py` | Bare, combined exterior-minus-interior kernels and their `log(r)` coefficients. |
+| `gpr_bem_kress/operators.py` | Closed diagonal limits, all-block Kress split, and fully weighted difference matrices. |
+| `gpr_bem_kress/conventions.py` | Human- and machine-readable convention record. |
+| `gpr_bem_kress/system.py` | Compose the visible four blocks and optionally estimate `cond(A)`. |
+| `gpr_bem_kress/forward.py` | Incident traces, explicit receiver operator, direct multi-right-hand-side solve, and separated exterior evaluation. |
 
 The guide preferred reuse of existing kernels where suitable. Directly
 importing the current implementations was not a clean seam:
@@ -93,7 +97,7 @@ importing the current implementations was not a clean seam:
 - `nystrom_ref` must remain an independent oracle rather than a production
   dependency.
 
-The candidate consequently keeps a small combined-kernel primitive. Its far
+The Kress solver consequently keeps a small combined-kernel primitive. Its far
 branch is the same audited Hankel-difference algebra as kdiff, while its near
 branch and closed periodic diagonals are specific missing primitives. It does
 not import numerical code from `nystrom_ref`, `gpr_bem_qbx`, or
@@ -102,7 +106,7 @@ not import numerical code from `nystrom_ref`, `gpr_bem_qbx`, or
 ## Frozen convention package
 
 The code-level record is `PROJECT_MULLER_CONVENTION` in
-`ordered_nystrom/conventions.py`. The following meanings must stay together;
+`gpr_bem_kress/conventions.py`. The following meanings must stay together;
 changing one sign in isolation creates a different system.
 
 ### Green function, time convention, and material scope
@@ -114,7 +118,7 @@ G_k(x,y)=\frac{i}{4}H_0^{(1)}(k|x-y|).
 \]
 
 The waveform transform in `gpr_bem_mod/waveforms.py` declares synthesis with
-`exp(-i omega t)`, and the outgoing spatial kernel is `H_0^(1)`. The candidate
+`exp(-i omega t)`, and the outgoing spatial kernel is `H_0^(1)`. The solver
 records that convention and obtains
 
 \[
@@ -122,7 +126,10 @@ k=\omega\sqrt{\mu_0\mu_r
   \left(\epsilon_0\epsilon_r-i\sigma/\omega\right)}
 \]
 
-from the existing `Material` class without changing it.
+from its package-local `gpr_bem_kress.Material`. That value type intentionally
+mirrors the other solver siblings but does not import one of them. A shared
+scene owns the physical scalar values and constructs the corresponding
+package-local material objects at each solver boundary.
 
 There is an unresolved repository-wide lossy-medium caveat: the
 `-i sigma/omega` material sign is normally paired with the opposite temporal
@@ -258,7 +265,7 @@ two competing formulations. The identity appears exactly once in `A11` and
 
 ## `PeriodicCurve2D` contract
 
-The backend accepts one `ordered_boundary.PeriodicCurve2D`, not an SDF,
+The solver accepts one `ordered_boundary.PeriodicCurve2D`, not an SDF,
 marching polygon, fit object, or callable evaluator. The input object owns:
 
 - a stable `component_id` and provenance;
@@ -409,10 +416,18 @@ The direct-import surface is:
 
 - `build_muller_difference_blocks(curve, k_exterior, k_interior, ...)`;
 - `build_muller_system(curve, k_exterior, k_interior, ...)`;
-- `build_ordered_tmz_frequency_system(curve, omega, exterior=..., interior=...,
+- `build_kress_tmz_frequency_system(curve, omega, exterior=..., interior=...,
   ...)`;
-- `solve_ordered_tmz_total_field_batch(...)`; and
-- `solve_ordered_tmz_frequency_response(...)`.
+- `build_exterior_receiver_operator(curve, receiver_points, k_exterior, ...)`;
+- `solve_kress_tmz_total_field_batch(...)`; and
+- `solve_kress_tmz_frequency_response(...)`.
+
+The public records use solver-specific names: `KressSolveConfig`,
+`KressTMzFrequencySystem`, `KressTMzForwardResult`, and
+`KressTMzMultiFrequencyForwardResult`. `gpr_bem_kress.Material` is a small
+package-local value type. Comparison orchestration constructs equivalent MOD
+and Kress material values from one scene specification; neither solver imports
+the other for class identity or physics helpers.
 
 The system is dense `complex128` NumPy and is solved as `A q = b`, never by
 squaring `A` or forming normal equations. Multiple sources are columns of one
@@ -423,12 +438,41 @@ axes.
 Sources and receivers must be outside the sampled polygon and farther from its
 line segments than a configurable multiple of the largest `ds` weight.
 Receiver evaluation uses ordinary periodic trapezoidal quadrature because this
-phase supports safely separated receivers only.
+phase supports safely separated receivers only. `ExteriorReceiverOperator`
+retains the fully weighted single- and double-layer rows and the explicit
+state matrix
+
+```text
+C = [D, -S],       q = [u_D, u_N]^T,       u_sc = C q.
+```
+
+The forward path applies those stored rows rather than rebuilding an implicit
+receiver convention. This is also the clean seam for a future discrete
+adjoint. For a full receiver-array dual `Psi`, solve
+`A^H lambda = C^H Psi` using the literal conjugate transposes of the matrices
+accepted by the forward solve. An ACC pair vector is different: if `P` selects
+the source/receiver diagonal, then `y=P(Cq+u_inc)` and the reverse path is
+`Psi=P^H psi`, where `P^H` scatters the pair dual onto that diagonal. Passing a
+24-vector directly to `apply_adjoint` means one RHS, not 24 paired RHSs. A
+future typed measurement/adjoint context must own and validate `P/P^H`. The
+solver does not yet implement a shape derivative or an adjoint pipeline.
 
 Immutable result objects retain the four difference blocks and four matrix
-views separately, resolved wavenumbers, traces, separated single- and
-double-layer receiver contributions, incident/scattered/total fields, and
-timings. Geometry is referenced rather than mutated.
+views separately, resolved wavenumbers, right-hand side, solved state, traces,
+the receiver operator, separated single- and double-layer contributions,
+incident/scattered/total fields, and timings. Geometry is referenced rather
+than mutated. Multiple sources are columns of `q`; receiver fields retain an
+explicit `(source, receiver)` cross product. Pairing for an ACC scan is an
+orchestration concern, not a hidden solver convention.
+
+The accepted forward snapshot retains the typed solve and assembly configs,
+material values, constants, `A`, `b`, `q`, and `C`. A future geometry tangent
+must still be defined as a coupled fixed-grid direction for `gamma` and its
+parameter derivatives, with `N`, ordering, phase, period, and origin frozen.
+Normals, speed, and weights must be differentiated from that direction rather
+than held fixed. Near/direct kernel branch decisions also need to be frozen or
+tested across their overlap before tight derivative finite differences are
+used as evidence.
 
 ## Diagnostics and metrics
 
@@ -467,7 +511,7 @@ tested first. For SDF methods, freeze each fitted `gamma` while increasing
 ### Validation snapshot: 2026-09-02
 
 The solver-owned fast tests are documented in
-[`pytest/ordered_nystrom/README.md`](../pytest/ordered_nystrom/README.md). They
+[`pytest/gpr_bem_kress/README.md`](../pytest/gpr_bem_kress/README.md). They
 cover isolation/API contracts, canonical Kress modes and the Nyquist term,
 near/direct overlap and small-separation stability, independent analytic
 circle actions for all four difference blocks, exact system signs, a
@@ -476,17 +520,18 @@ penetrable-cylinder Mie receiver fields at 0.5, 2.5, and 8 GHz (`N=128` at
 8 GHz). These are genuine operator/solve/field checks, unlike the upstream
 geometry and scalar Kress-proxy metrics.
 
-The exact local command
+The current peer-package regression command
 
 ```bash
-/usr/bin/time -f 'wall=%e maxrss_kb=%M' env PYTHONPATH=solvers \
-  /home/drdeng/miniconda3/envs/EMNerf/bin/python -m pytest -q \
-  pytest/ordered_nystrom
+/home/drdeng/miniconda3/envs/EMNerf/bin/python -m pytest -q \
+  pytest/gpr_bem_kress
 ```
 
-reported `38 passed in 0.27s`, `wall=1.60`, and `maxrss_kb=655712`. The RSS is
-the high-water mark of the entire Python test process, not isolated solver
-memory.
+reported `41 passed in 0.34s` (`1.57s` process wall time) after the sibling
+move, derived receiver matrix, and explicit receiver-operator addition. The
+earlier pre-move `/usr/bin/time` snapshot reported
+`38 passed in 0.27s`, `wall=1.60`, and `maxrss_kb=655712`; that RSS is the
+high-water mark of the entire Python test process, not isolated solver memory.
 
 The compact persisted evidence is indexed at
 [`results/ordered_boundary_nystrom/README.md`](../results/ordered_boundary_nystrom/README.md).
@@ -498,15 +543,23 @@ finest-input circle `K=4` and ellipse/star `K=32` curves, holds each continuous
 curve fixed while varying `N={128,256}`, and also passes all nine configured
 checks. Its worst `N=256` receiver/trace errors are `4.79e-9` and `3.56e-9`.
 At `N=256`, retained four-block-plus-system storage is exactly 8 MiB; the
-slowest timed analytic candidate cell, including a separate raw condition
+slowest timed analytic Kress cell, including a separate raw condition
 estimate, is about 325 ms on the recorded single-thread environment.
 
 These are genuine solver errors and useful convergence evidence, but not a
 Phase-4 closeout. The checked runs use three of the six declared frequencies;
 the noncircular oracle is frozen at `N=512` without a stored oracle
 self-convergence ladder; and explicit transmission residuals, lossy physics,
-bandwidth variation through the solver, baseline comparisons, and normal
-pipeline wiring remain open.
+grid/bandwidth convergence through the solver, full-ring FDTD evidence, and
+normal pipeline wiring remain open. The fixed-resolution same-SDF MOD/Kress
+comparison is recorded separately in
+[`results/solver_comparisons/kress-peer-20260902/summary.md`](../results/solver_comparisons/kress-peer-20260902/summary.md).
+That comparison's acceptance helper gates receiver L2 and superiority to MOD
+at all six reported frequencies, rather than enforcing only the original
+0.5/1.5/2.5 GHz subset. The machine-readable export uses strict JSON (`null`
+for unavailable metrics) and records the actual receiver work per solver:
+MOD/Kress materialize `24 x 24`, whereas the retained kdiff implementation
+contracts the 24 paired receiver fields directly.
 
 ## Scope, known hazards, and promotion gates
 
@@ -526,7 +579,7 @@ Deliberately absent:
 - corners and open boundaries;
 - GPU/FMM acceleration;
 - differentiation through geometry, assembly, or solve;
-- adjoint/inverse integration; and
+- shape differentiation and adjoint/inverse integration; and
 - normal-driver or solver-selector wiring.
 
 Known implementation hazards to keep visible during validation:
@@ -547,15 +600,26 @@ Known implementation hazards to keep visible during validation:
 - the reported raw 2-norm condition number mixes Dirichlet and Neumann units,
   changes under length-unit rescaling, and is diagnostic rather than a fair
   cross-geometry score;
-- importing the nested candidate still executes the eager
-  `gpr_bem_mod.__init__` and therefore loads Torch-dependent baseline modules,
-  even though candidate source files have no Torch/numerical-oracle imports;
-  and
+- the package-local `Material` mirrors the current solver-sibling convention;
+  a future shared scene layer must convert material values explicitly rather
+  than pass one solver's class into another;
+- the receiver operator makes the discrete `C^H` seam explicit, but no
+  factorization reuse, derivative of `A`, derivative of the incident trace, or
+  derivative of `C` exists yet; and
 - the lossy material-sign issue above remains unresolved.
 
 Before promotion, retain independent evidence for near/direct overlap, every
 circle Fourier-mode block action, manufactured transmission, zero contrast,
 Mie receiver fields across frequency, noncircular exact curves, and frozen
 Method-B SDF curves. Report assembly, condition-estimation, solve, and receiver
-costs separately. Only after those gates pass should this package be exported,
-registered as a solver choice, or considered for an adjoint/inverse path.
+costs separately. The first same-SDF comparisons now run in the existing smooth
+circle, ellipse, and star ACC scenes: one immutable scene feeds independent MOD
+compression and Method-B-to-`PeriodicCurve2D` extraction before receiver errors
+are compared. Current gprMax caches cover only the index-0 Tx/Rx pair,
+so their table value is a one-pair relative error at each frequency, not a
+24-pair spatial L2. Square and two-component scenes remain outside this
+solver's geometry contract.
+
+Only after those gates pass should this package be registered as a normal
+solver choice or considered for an adjoint/inverse path. Direct import as
+`gpr_bem_kress` does not by itself promote it into the operational pipeline.

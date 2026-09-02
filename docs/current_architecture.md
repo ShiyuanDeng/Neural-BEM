@@ -28,12 +28,12 @@ This page owns present-tense behavior. The
 |---|---|---|
 | `solvers/gpr_bem_ref/` | Frozen original and regression control | `--solver=ref`; also the default |
 | `solvers/gpr_bem_mod/` | Operational forward, adjoint, and inverse baseline | `--solver=mod` |
+| `solvers/gpr_bem_kress/` | Experimental ordered `PeriodicCurve2D` Kress/Müller peer forward solver | Direct import only |
 | `solvers/gpr_bem_kdiff/` | Frozen compressed-cloud forward experiment and retained `TAssembler` seam | Not selectable |
 | `solvers/gpr_bem_qbx/` | Archived full-row QBX `T` diagnostics invoked through kdiff | Not selectable |
 | `solvers/gpr_bem_ndiff/` | Unvalidated normal-offset experiment; archived/unsupported | Not selectable |
 | `solvers/nystrom_ref/` | Numerically independent, smooth single-component, forward-only precision oracle | Direct import only |
 | `solvers/ordered_boundary/` | Solver-neutral exact/Fourier smooth-component geometry foundation | Direct import only |
-| `solvers/gpr_bem_mod/ordered_nystrom/` | Experimental `PeriodicCurve2D` Müller/Kress forward candidate; isolated from operational drivers | Direct import only |
 | `solvers/kernel_diff_ref/` | Circle/perfect-sampling kernel-difference diagnostic; not an oracle | Direct import only |
 | `solvers/gprmax_ref/` | Cached independent FDTD cross-check | Direct tools/tests only |
 
@@ -88,8 +88,8 @@ parameters, slices, and node ownership; they contain no hidden evaluator.
 This package is not part of the active MOD forward path. The isolated sibling
 `solvers/sdf_to_ordered_boundary/` supplies the shared marching/projection
 front end and the A/B/C parameterization comparison, but no active solver
-imports it. The opt-in `gpr_bem_mod.ordered_nystrom` candidate now consumes a
-single `PeriodicCurve2D`; it does not consume the SDF or fitting state. The
+imports it. The direct-import peer `gpr_bem_kress` consumes a single
+`PeriodicCurve2D`; it does not consume the SDF or fitting state. The
 geometry package deliberately contains no Kress pairwise weights,
 hypersingular regularisation, materials, Torch, or legacy `merge_distance`
 adapter. Kress, kernel-difference, QBX, panel, and other solvers may build
@@ -133,6 +133,36 @@ Library defaults are:
 discretization-dependent trace-offset constant. It was fitted on a circle and
 must not be treated as a derived universal parameter.
 
+### Experimental Kress forward peer
+
+`solvers/gpr_bem_kress/` is a sibling solver rather than a MOD submodule. It
+owns cancellation-safe Müller kernels, all four Kress-discretized difference
+blocks, the unsquared dense system, a package-local `Material` value type, and
+forward result records. Its sole geometry input is an immutable, even-node
+`PeriodicCurve2D`.
+
+The receiver map is an explicit `ExteriorReceiverOperator`. For the state
+ordering `q=[u_D,u_N]^T`, it stores fully weighted rows
+
+```text
+C = [D, -S],                    u_sc = C q.
+```
+
+`KressTMzForwardResult` retains the actual system `A`, right-hand side, solved
+state, receiver operator, traces, and full `(source, receiver)` field arrays.
+That ownership leaves a clean future discrete-adjoint seam,
+`A^H lambda = C^H Psi`, without reconstructing either transpose by hand. For
+the paired ACC observation, `y=P(Cq+u_inc)`: the reverse map must first scatter
+the paired dual with `Psi=P^H psi` onto the diagonal of the full source/receiver
+array. Passing a pair vector directly to `C^H` has the wrong RHS semantics. No
+Kress shape derivative or adjoint is implemented yet. A future shape path
+must differentiate the actual weighted blocks—including points, normals,
+speed, source Jacobian, and diagonal split—and return an explicitly unweighted
+normal shape-gradient density so `ds` is applied exactly once by the separate
+SDF coupling layer. It also needs a coupled fixed-grid curve-direction type;
+perturbing positions while freezing derivative jets, normals, speed, or weights
+is not a legal geometry finite difference.
+
 ## Current adjoint and inverse pipeline
 
 ```text
@@ -167,6 +197,70 @@ gradient and falls back to an expensive finite-difference estimate. The method
 used is recorded per iteration, but the broad fallback can hide an adjoint-path
 defect and should be made explicit in future driver policy.
 
+This operational adjoint remains MOD-only. The presence of `C=[D,-S]` in
+`gpr_bem_kress` is a forward data-ownership contract for later work, not an
+adjoint implementation and not permission to route Kress into the inverse
+driver.
+
+## Same-scene forward comparison
+
+The smooth comparison cases use one case definition and one callable SDF for
+the two BEM branches, while allowing each numerical method to construct its
+own appropriate boundary representation:
+
+```text
++-----------------------------------------------------------------------+
+| pytest/solver_comparisons/test_{circle,ellipse,star}_comparison.py     |
+| one analytic scene: Torch level-set callable, bounds, media,           |
+| frequencies, _ring_scan() -> 24 Tx/Rx pairs                           |
++-------------------------+-------------------------+-------------------+
+                          | same callable           | same callable
+                          v                         v
++---------------------------------------+  +-----------------------------+
+| solvers/gpr_bem_mod/                  |  | solvers/sdf_to_ordered_     |
+| ibim_geometry.py                      |  | boundary/                   |
+| build_implicit_boundary_band()        |  | prepare_single_component()  |
+| -> compress_implicit_boundary_band()  |  | -> fit_method_b()           |
+| -> ImplicitBoundarySamples2D          |  | -> .discretize(N=128)       |
++-------------------+-------------------+  | -> PeriodicCurve2D          |
+                    |                      +---------------+-------------+
+                    v                                      |
++---------------------------------------+                  v
+| solvers/gpr_bem_mod/                  |  +-----------------------------+
+| solve_ibim_tmz_total_field_batch()    |  | solvers/gpr_bem_kress/      |
+| -> full 24 x 24 receiver work         |  | solve_kress_tmz_total_      |
+| -> paired 24-vector                   |  | field_batch()               |
++-------------------+-------------------+  | -> full 24 x 24 matrix      |
+                    |                      | -> explicit diagonal P      |
+                    |                      +---------------+-------------+
+                    |                                      |
+                    +------------------+-------------------+
+                                       v
+                    +--------------------------------------+
+                    | Mie / independent nystrom_ref oracle |
+                    | -> full-ring receiver L2 over 24     |
+                    +--------------------------------------+
+
+same analytic target/material/scan identity (not the Torch callable)
+                          |
+                          v
++-----------------------------------------------------------------------+
+| solvers/gprmax_ref/cache_io.py: load_frequency_sweep()                 |
+| translated procedural/voxel FDTD scene -> cached pair 0 only           |
++-------------------------+---------------------------------------------+
+                          v
+            pair-0-only cross-check; never ranked as L2/24
+```
+
+Thus “same SDF” means the MOD and Kress branches begin with the same implicit
+field but discretize it independently; sharing MOD's unordered cloud would
+invalidate the comparison. The existing gprMax cache was produced out of
+process from the matching procedural scene, not by consuming that Python SDF.
+It contains one Tx/Rx pair. MOD/Kress/Nyström can report full-ring relative L2
+over 24 paired receivers at each frequency, while gprMax supplies only the
+pair-0 relative error at each frequency. Those coverages must remain separate
+in tables and gates.
+
 ## Validation ladder
 
 Validation is deliberately layered:
@@ -174,7 +268,8 @@ Validation is deliberately layered:
 1. Shared kernel, operator, and system tests under `pytest/gpr_bem_shared/`,
    with MOD-only adjoint, inverse, and derivative-kernel checks under
    `pytest/gpr_bem_mod/` and retained kdiff checks under
-   `pytest/gpr_bem_kdiff/`.
+   `pytest/gpr_bem_kdiff/`. `pytest/gpr_bem_kress/` independently checks the
+   ordered blocks, system, explicit receiver operator, and physical fields.
 2. Circle fields against the analytic penetrable-cylinder Fourier–Bessel/Mie
    series.
 3. Smooth ellipse and star fields against the independent `nystrom_ref`
@@ -187,7 +282,8 @@ Validation is deliberately layered:
 6. The dated five-shape solver/QBX closeout report in
    [`../results/solver_comparisons/legacy/qbx-closeout-20260901/aggregate_metrics.md`](../results/solver_comparisons/legacy/qbx-closeout-20260901/aggregate_metrics.md).
 
-Ordinary comparisons include `ref`, `mod`, and the frozen kdiff baseline.
+Ordinary comparisons include `ref`, `mod`, and the frozen kdiff baseline; the
+smooth circle/ellipse/star rows also exercise Kress from the same SDF.
 Archived QBX rows require `--include-qbx-archive`, are not accuracy gates, and
 may explicitly reproduce invalid-clearance cases as historical evidence.
 
@@ -196,9 +292,9 @@ sit beside, not inside, this solver-validation ladder. Their SDF residual,
 speed, curvature, self-intersection, reference-contour, and scalar manufactured
 Kress-action measurements establish geometry/parameterization readiness. They
 are not BIE/PDE field, operator, or solve errors. The parallel
-`pytest/ordered_nystrom/` suite does assemble physical operators and solve
+`pytest/gpr_bem_kress/` suite does assemble physical operators and solve
 fields; broader baseline comparisons remain in `pytest/solver_comparisons/`
-and dated result bundles. The candidate's compact exact-curve and frozen
+and dated result bundles. The Kress sibling's compact exact-curve and frozen
 Method-B convergence/runtime evidence is indexed at
 [`../results/ordered_boundary_nystrom/README.md`](../results/ordered_boundary_nystrom/README.md).
 
@@ -219,6 +315,9 @@ Method-B convergence/runtime evidence is indexed at
   does not yet encode every solver/formulation choice.
 - The physical environment is homogeneous full-space, not layered ground.
 - `nystrom_ref` is forward-only and currently single-component.
+- `gpr_bem_kress` is forward-only, dense CPU/NumPy, lossless/nonmagnetic, and
+  currently accepts one smooth simple component with safely separated points.
+- Existing gprMax caches cover only pair index 0, not the full 24-pair scan.
 - QBX/kdiff are closed only for the compressed-cloud architecture; this is not
   a mathematical rejection of QBX on high-order panelized geometry.
 
@@ -244,10 +343,11 @@ architectural reason for leaving QBX/kdiff is in
 
 The continuous/sampled geometry contract, exact analytic/Fourier producers,
 and isolated ordered extraction plus A/B/C fitting from SDF contours now
-exist. A direct-import single-component candidate also assembles coherent
-all-block Kress differences, solves the unsquared Müller system, and evaluates
-separated receivers from `PeriodicCurve2D`. It remains experimental pending
-the full independent convergence ladder; no current forward default changed.
+exist. A direct-import sibling solver also assembles coherent all-block Kress
+differences, solves the unsquared Müller system, and evaluates separated
+receivers from `PeriodicCurve2D` through explicit `C=[D,-S]` rows. It remains
+experimental pending the full independent convergence ladder; no current
+forward, adjoint, inverse, or selector default changed.
 
 ## Canonical commands
 
@@ -273,8 +373,8 @@ python -m pytest \
   pytest/solver_comparisons/test_aggregate_comparison_results.py \
   --include-qbx-archive -s -q
 
-# Opt-in ordered-curve Müller candidate
-PYTHONPATH=solvers python -m pytest pytest/ordered_nystrom -q
+# Direct-import ordered-curve Müller peer
+PYTHONPATH=solvers python -m pytest pytest/gpr_bem_kress -q
 ```
 
 ## Code and document map
@@ -284,8 +384,8 @@ PYTHONPATH=solvers python -m pytest pytest/ordered_nystrom -q
 | Geometry band/compression | `solvers/gpr_bem_mod/ibim_geometry.py` |
 | Ordered contour scaffolding | `solvers/gpr_bem_mod/neural_sdf.py`, `geometry.py` |
 | Forward operators/system | `solvers/gpr_bem_mod/ibim_tmz_forward.py`, `ibim_tmz_system.py` |
-| Ordered-curve forward candidate | `solvers/gpr_bem_mod/ordered_nystrom/`, [`ordered_nystrom_implementation.md`](ordered_nystrom_implementation.md) |
-| Ordered-curve solver evidence | `pytest/ordered_nystrom/`, [`../results/ordered_boundary_nystrom/README.md`](../results/ordered_boundary_nystrom/README.md) |
+| Ordered-curve forward peer | `solvers/gpr_bem_kress/`, [`gpr_bem_kress_implementation.md`](gpr_bem_kress_implementation.md) |
+| Ordered-curve solver evidence | `pytest/gpr_bem_kress/`, [`../results/ordered_boundary_nystrom/README.md`](../results/ordered_boundary_nystrom/README.md) |
 | Adjoint/inverse | `solvers/gpr_bem_mod/ibim_tmz_adjoint.py`, `ibim_inverse.py` |
 | Current shape calculus | [`ibim_shape_derivative.md`](ibim_shape_derivative.md) |
 | Precision oracle | [`nystrom_reference_study.md`](nystrom_reference_study.md) |

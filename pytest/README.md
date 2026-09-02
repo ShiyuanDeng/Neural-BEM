@@ -9,12 +9,12 @@ under [`../results/`](../results/); `pytest/` contains no result bundles.
 |---|---|---:|
 | `gpr_bem_shared/` | Selector-backed tests shared by frozen `ref` and operational `mod` | Yes, in system/theory tests |
 | `gpr_bem_mod/` | MOD-only adjoint, inverse, and shape-derivative checks | Yes, except the kernel-identity test |
+| [`gpr_bem_kress/`](gpr_bem_kress/) | Direct-import `PeriodicCurve2D` Kress/Müller blocks, system, receiver operator, and field validation | **Yes** |
 | `gpr_bem_kdiff/` | Retained k-difference and archived QBX assembly seam | Operator/system checks |
 | `gprmax_ref/` | gprMax cache identity and scene policy | No |
 | `nystrom_ref/` | Independent smooth-boundary forward oracle | Yes |
 | `ordered_boundary/` | Continuous and node-owned geometry contracts | **No** |
 | [`sdf_to_ordered_boundary/`](sdf_to_ordered_boundary/) | Implicit-field extraction, A/B/C fits, geometry metrics, artifacts, and scalar Kress proxy | **No** |
-| [`ordered_nystrom/`](ordered_nystrom/) | Opt-in `PeriodicCurve2D` Müller blocks, system, and field validation | **Yes** |
 | [`solver_comparisons/`](solver_comparisons/) | Circle, ellipse, square, star, and two-circle solver comparisons | **Yes** |
 
 The distinction in the last three rows is deliberate. The ordered-boundary
@@ -69,15 +69,16 @@ for compatibility: the former is an implicit-field zero-set residual (not all
 fixtures are true distance fields), and the latter is only a removable-log
 diagonal consistency diagnostic.
 
-The ordered forward candidate has its own solver-error suite:
+The ordered Kress sibling has its own solver-error suite:
 
 ```bash
-PYTHONPATH=solvers python -m pytest -q pytest/ordered_nystrom
+PYTHONPATH=solvers python -m pytest -q pytest/gpr_bem_kress
 ```
 
-It tests physical block actions, the coupled system, boundary traces, and Mie
-receiver fields. It does not turn the adjacent geometry-only metrics into
-solver errors or register the candidate with the normal solver selector.
+It tests physical block actions, the coupled system, the explicit
+`ExteriorReceiverOperator` (`C=[D,-S]`), boundary traces, and Mie receiver
+fields. It does not turn the adjacent geometry-only metrics into solver errors
+or register `gpr_bem_kress` with the normal solver selector.
 The checked exact/noncircular and frozen Method-B convergence tables are
 indexed at
 [`../results/ordered_boundary_nystrom/README.md`](../results/ordered_boundary_nystrom/README.md).
@@ -113,6 +114,8 @@ The aggregate test writes current output to
 `results/solver_comparisons/current/`. The checked QBX-inclusive closeout is
 kept separately at
 [`../results/solver_comparisons/legacy/qbx-closeout-20260901/`](../results/solver_comparisons/legacy/qbx-closeout-20260901/).
+The compact checked MOD/Kress/gprMax result is
+[`kress-peer-20260902/summary.md`](../results/solver_comparisons/kress-peer-20260902/summary.md).
 Archived QBX rows are slow and opt-in:
 
 ```bash
@@ -120,6 +123,13 @@ python -m pytest \
   pytest/solver_comparisons/test_aggregate_comparison_results.py \
   --include-qbx-archive -s -q
 ```
+
+The smooth circle, ellipse, and star modules are also the same-SDF integration
+surface for `gpr_bem_kress`: the shared SDF is independently converted to a
+MOD compressed cloud and a Method-B `PeriodicCurve2D`, then both BEM outputs
+are compared on the same 24 paired receivers. Cached gprMax evidence remains
+one-pair only, so its relative error at each frequency must be reported as
+pair-0 coverage rather than presented as a full-ring norm.
 
 See [`../docs/current_architecture.md`](../docs/current_architecture.md) for
 live solver roles and [`../docs/qbx_closure.md`](../docs/qbx_closure.md) for

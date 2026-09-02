@@ -1,6 +1,6 @@
-"""Solver selection for ``pytest/gpr_bem_shared``.
+"""IBIM solver selection for ``pytest/gpr_bem_shared``.
 
-Two solver packages live side by side under ``solvers/``:
+Two interface-compatible IBIM packages participate in this alias:
 
     solvers/gpr_bem_ref/   the original, frozen
     solvers/gpr_bem_mod/   the convention-change copy
@@ -14,9 +14,12 @@ chosen by ``--solver`` (or the ``SOLVER`` environment variable):
     SOLVER=mod python -m pytest pytest/       # same
 
 The files in ``pytest/solver_comparisons/`` bypass this and import both
-packages directly under their real names, which is why they are named apart in
-the first place -- two packages called ``gpr_bem`` could not coexist in one
-interpreter. Geometry-only tests in ``pytest/ordered_boundary/`` and
+packages directly under their real names.  Smooth single-component comparisons
+also import the sibling ``gpr_bem_kress`` package directly after converting the
+shared SDF to its required ``PeriodicCurve2D`` geometry.  Kress is deliberately
+not selectable here because it does not implement the current IBIM driver
+interface or inverse/adjoint pipeline. Geometry-only tests in
+``pytest/ordered_boundary/`` and
 ``pytest/sdf_to_ordered_boundary/`` are also solver-independent; their metrics
 must not be interpreted as BIE/PDE solver errors. The alias is nevertheless
 made available globally before collection.

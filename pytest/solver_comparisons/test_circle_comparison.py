@@ -1,5 +1,4 @@
-"""Side-by-side comparison of the two solver packages, plus gprMax, on one
-circle scattering case.
+"""Side-by-side forward comparison, including Kress and gprMax, on one circle.
 
 See ``test_square_comparison.py`` for the parallel non-circular case -- it
 cannot reuse a Mie-series oracle (no closed form for a square cross-section),
@@ -9,6 +8,10 @@ easier job: a real oracle exists here.
 The two BEM packages are imported directly under their real names, so this runs
 them in a single process against the same geometry and the same analytic
 yardstick. It does not use the ``--solver`` alias from ``conftest.py``.
+
+``gpr_bem_kress`` is a sibling row. It receives a Method-B periodic curve made
+from the exact same ``_circle_level_set`` callable that feeds MOD's IBIM
+extraction, then reports the paired diagonal of its full receiver matrix.
 
 The case is the one from ``notebooks/_build_notebook.py``: the config's plastic
 cylinder in sand, a 161x161 narrow band compressed onto the level set, and a ring
@@ -55,6 +58,7 @@ from __future__ import annotations
 import math
 import time
 import warnings
+from functools import lru_cache
 
 import numpy as np
 import pytest
@@ -62,6 +66,7 @@ import pytest
 torch = pytest.importorskip("torch")
 
 import config.circle_config as cfg
+import gpr_bem_kress
 import gpr_bem_kdiff
 import gpr_bem_mod
 import gpr_bem_qbx
@@ -70,6 +75,15 @@ from gprmax_ref import cache_io as gprmax_cache_io
 from kernel_diff_ref import solve_transmission_on_circle
 from nystrom_ref import circle_parameterization
 from archived_qbx.qbx_comparison_support import run_qbx_metrics
+from comparison_contract import validate_cached_pair0_coordinates
+from smooth_case_support import (
+    attach_parallel_solver_discrepancies,
+    assert_kress_comparison_acceptance,
+    build_kress_geometry,
+    comparison_error_scope_label,
+    comparison_timing_cells,
+    run_kress_metrics,
+)
 
 SOLVERS = (("gpr_bem_ref", gpr_bem_ref), ("gpr_bem_mod", gpr_bem_mod))
 
@@ -113,6 +127,25 @@ def _ring_scan() -> tuple[np.ndarray, np.ndarray]:
     return sources, receivers
 
 
+def _circle_level_set(points: torch.Tensor) -> torch.Tensor:
+    """The one SDF callable shared by the IBIM and Kress branches."""
+
+    center = torch.tensor(CENTER, device=points.device, dtype=points.dtype)
+    return (torch.linalg.norm(points - center[None, :], dim=1) - RADIUS).reshape(-1, 1)
+
+
+def _reference_wavenumbers(frequency_hz: float) -> tuple[complex, complex]:
+    """Resolve oracle physics independently of every solver under test."""
+
+    angular_frequency = 2.0 * np.pi * frequency_hz
+    exterior = gpr_bem_ref.Material(epsr=cfg.SAND_EPSR, sigma=cfg.SAND_SIGMA)
+    interior = gpr_bem_ref.Material(epsr=cfg.PLASTIC_EPSR, sigma=cfg.PLASTIC_SIGMA)
+    return (
+        exterior.wavenumber(angular_frequency, cfg.EPS0, cfg.MU0),
+        interior.wavenumber(angular_frequency, cfg.EPS0, cfg.MU0),
+    )
+
+
 def _compressed_circle_boundary(solver):
     """Build the boundary with the solver's *own* geometry code.
 
@@ -121,13 +154,10 @@ def _compressed_circle_boundary(solver):
     is identical and deterministic, so this costs nothing in comparability.
     """
 
-    def phi(points):
-        return solver.circle_signed_distance(points, center=CENTER, radius=RADIUS)
-
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore", message="compress_implicit_boundary_band")
         band = solver.build_implicit_boundary_band(
-            phi, BOUNDS, grid_shape=GRID, dtype=torch.float64
+            _circle_level_set, BOUNDS, grid_shape=GRID, dtype=torch.float64
         )
         return solver.compress_implicit_boundary_band(band)
 
@@ -145,6 +175,7 @@ def _run_solver(name: str, solver, *, perfect_sampling: bool = False) -> dict:
     exterior = solver.Material(epsr=cfg.SAND_EPSR, sigma=cfg.SAND_SIGMA)
     interior = solver.Material(epsr=cfg.PLASTIC_EPSR, sigma=cfg.PLASTIC_SIGMA)
 
+    preprocessing_started = time.perf_counter()
     boundary = _compressed_circle_boundary(solver)
     if perfect_sampling:
         boundary = solver.perfect_circle_boundary_samples(
@@ -154,6 +185,7 @@ def _run_solver(name: str, solver, *, perfect_sampling: bool = False) -> dict:
             bounds=BOUNDS,
             dtype=torch.float64,
         )
+    preprocessing_seconds = time.perf_counter() - preprocessing_started
     requested_offset_distance = None if name == "gpr_bem_mod" else REF_OFFSET_SCALE * float(boundary.merge_distance)
 
     metrics = {
@@ -168,7 +200,20 @@ def _run_solver(name: str, solver, *, perfect_sampling: bool = False) -> dict:
         "condition_number": {},
         "residual": {},
         "scattered": {},
+        "index0_relative_error": {},
+        "pair_count": NUM_RING_PAIRS,
+        "error_pair_count": NUM_RING_PAIRS,
+        "num_sources": NUM_RING_PAIRS,
+        "num_receivers": NUM_RING_PAIRS,
+        "receiver_matrix_shape": (NUM_RING_PAIRS, NUM_RING_PAIRS),
+        "internal_receiver_matrix_shape": (NUM_RING_PAIRS, NUM_RING_PAIRS),
+        "reported_field_shape": (NUM_RING_PAIRS,),
+        "receiver_selection": "paired_diagonal",
+        "receiver_evaluation_scope": "full source-receiver matrix, paired diagonal retained",
+        "error_scope": f"full-ring relative L2 ({NUM_RING_PAIRS} paired fields)",
         "elapsed_seconds": 0.0,
+        "preprocessing_seconds": float(preprocessing_seconds),
+        "end_to_end_seconds": 0.0,
     }
 
     for frequency_hz in FREQUENCIES_HZ:
@@ -197,11 +242,14 @@ def _run_solver(name: str, solver, *, perfect_sampling: bool = False) -> dict:
             )
 
         # One yardstick for both solvers: the reference package's Mie series.
+        reference_k_exterior, reference_k_interior = _reference_wavenumbers(
+            frequency_hz
+        )
         exact = gpr_bem_ref.penetrable_cylinder_scattered_field(
             receivers,
             sources,
-            k_exterior=forward.system.k_exterior,
-            k_interior=forward.system.k_interior,
+            k_exterior=reference_k_exterior,
+            k_interior=reference_k_interior,
             radius=RADIUS,
             center=CENTER,
         )
@@ -210,12 +258,57 @@ def _run_solver(name: str, solver, *, perfect_sampling: bool = False) -> dict:
         metrics["relative_error"][frequency_hz] = float(
             np.linalg.norm(scattered - exact) / np.linalg.norm(exact)
         )
+        metrics["index0_relative_error"][frequency_hz] = float(
+            abs(scattered[0] - exact[0]) / abs(exact[0])
+        )
         metrics["residual"][frequency_hz] = float(forward.linear_system_relative_residual)
         metrics["condition_number"][frequency_hz] = float(
             np.linalg.cond(np.asarray(forward.system.system_matrix)[0])
         )
 
+    metrics["end_to_end_seconds"] = float(
+        metrics["preprocessing_seconds"] + metrics["elapsed_seconds"]
+    )
     return metrics
+
+
+@lru_cache(maxsize=1)
+def _kress_geometry():
+    return build_kress_geometry(
+        _circle_level_set,
+        bounds=BOUNDS,
+        grid_shape=GRID,
+        component_id="comparison-circle",
+    )
+
+
+def _kress_metrics() -> dict:
+    sources, receivers = _ring_scan()
+    exterior = gpr_bem_kress.Material(epsr=cfg.SAND_EPSR, sigma=cfg.SAND_SIGMA)
+    interior = gpr_bem_kress.Material(epsr=cfg.PLASTIC_EPSR, sigma=cfg.PLASTIC_SIGMA)
+
+    def reference(frequency_hz, _forward):
+        k_exterior, k_interior = _reference_wavenumbers(frequency_hz)
+        return gpr_bem_ref.penetrable_cylinder_scattered_field(
+            receivers,
+            sources,
+            k_exterior=k_exterior,
+            k_interior=k_interior,
+            radius=RADIUS,
+            center=CENTER,
+        )
+
+    return run_kress_metrics(
+        _kress_geometry(),
+        sources=sources,
+        receivers=receivers,
+        frequencies_hz=FREQUENCIES_HZ,
+        reference_field=reference,
+        exterior=exterior,
+        interior=interior,
+        eps0=cfg.EPS0,
+        mu0=cfg.MU0,
+    )
 
 
 def _kdiff_metrics(perfect_sampling: bool) -> dict:
@@ -458,9 +551,26 @@ def _gprmax_metrics() -> dict | None:
         "relative_error": {f: float("nan") for f in FREQUENCIES_HZ},
         "condition_number": {f: float("nan") for f in FREQUENCIES_HZ},
         "residual": {f: float("nan") for f in FREQUENCIES_HZ},
+        "scattered": {},
+        "index0_relative_error": {f: float("nan") for f in FREQUENCIES_HZ},
+        "pair_count": 1,
+        "error_pair_count": 1,
+        "num_sources": 1,
+        "num_receivers": 1,
+        "receiver_matrix_shape": (1, 1),
+        "internal_receiver_matrix_shape": (1, 1),
+        "reported_field_shape": (1,),
+        "receiver_selection": "single_pair",
+        "receiver_evaluation_scope": "one cached source-receiver pair",
+        "error_scope": "index-0 relative error (one cached FDTD pair)",
         "elapsed_seconds": gprmax_cache_io.wall_clock_seconds(cached),
+        "end_to_end_seconds": gprmax_cache_io.wall_clock_seconds(cached),
     }
+    scan_sources, scan_receivers = _ring_scan()
     for entry in gprmax_cache_io.iter_frequency_results(cached):
+        validate_cached_pair0_coordinates(
+            entry, scan_sources, scan_receivers, scene_center=CENTER
+        )
         frequency_hz = float(entry["frequency_hz"])
         tx = np.asarray(entry["tx"])[None, :]
         rx = np.asarray(entry["rx"])[None, :]
@@ -472,7 +582,10 @@ def _gprmax_metrics() -> dict | None:
             center=entry["target_center"],
         )[0]
         got = complex(entry["scattered_real"], entry["scattered_imag"])
-        metrics["relative_error"][frequency_hz] = float(abs(got - exact) / abs(exact))
+        error = float(abs(got - exact) / abs(exact))
+        metrics["relative_error"][frequency_hz] = error
+        metrics["index0_relative_error"][frequency_hz] = error
+        metrics["scattered"][frequency_hz] = np.asarray([got], dtype=np.complex128)
         metrics["condition_number"][frequency_hz] = float("nan")
         metrics["residual"][frequency_hz] = float("nan")
     return metrics
@@ -483,9 +596,9 @@ def _format_table(results: dict[str, dict]) -> str:
 
     ghz = [f"{f / 1e9:.1f}" for f in FREQUENCIES_HZ]
     header = (
-        f"{'solver':<14}{'N':>5}{'offset':>10} {'method':>7} {'disc':>7}"
+        f"{'solver':<14}{'N':>5}{'offset':>10} {'method':>7} {'disc':>7} {'scope':>7}"
         + "".join(f"{'err ' + g + 'GHz':>13}" for g in ghz)
-        + f"{'max resid':>12}{'time [s]':>10}"
+        + f"{'max resid':>12}{'prep [s]':>10}{'forward [s]':>12}{'total [s]':>10}"
     )
     lines = [header, "-" * len(header)]
     for name, metrics in results.items():
@@ -493,16 +606,22 @@ def _format_table(results: dict[str, dict]) -> str:
         offset = f"{metrics['offset_distance']:>10.5f}" if metrics["offset_distance"] is not None else f"{'--':>10}"
         row = f"{name:<14}{num_samples}{offset}"
         row += f" {_display_method(name, metrics):>7} {_display_discretization(metrics):>7}"
+        row += f" {comparison_error_scope_label(name, metrics):>7}"
         row += "".join(_format_error(metrics["relative_error"][f]) for f in FREQUENCIES_HZ)
         residuals = [r for r in metrics["residual"].values() if not math.isnan(r)]
         row += f"{max(residuals):>12.1e}" if residuals else f"{'n/a':>12}"
-        row += f"{metrics['elapsed_seconds']:>10.2f}"
+        prep, forward_time, total = comparison_timing_cells(name, metrics)
+        row += f"{prep:>10}{forward_time:>12}{total:>10}"
         lines.append(row)
     return "\n".join(lines)
 
 
 def _format_error(error: float) -> str:
-    return f"{error:>13.4f}" if not math.isnan(error) else f"{'n/a':>13}"
+    if math.isnan(error):
+        return f"{'n/a':>13}"
+    if error != 0.0 and abs(error) < 1.0e-3:
+        return f"{error:>13.2e}"
+    return f"{error:>13.4f}"
 
 
 def _display_method(name: str, metrics: dict) -> str:
@@ -526,6 +645,8 @@ def _display_discretization(metrics: dict) -> str:
         return "analy"
     if scheme == "analytic":
         return "analy"
+    if scheme == "periodic_kress":
+        return "kress"
     if scheme == "kernel_diff":
         return "kdiff"
     if scheme == "kdiff_local":
@@ -543,6 +664,8 @@ def perfect_sampling(request) -> bool:
 @pytest.fixture(scope="module")
 def comparison_results(perfect_sampling, include_qbx_archive) -> dict[str, dict]:
     results = {name: _run_solver(name, solver, perfect_sampling=perfect_sampling) for name, solver in SOLVERS}
+    if not perfect_sampling:
+        results["gpr_bem_kress"] = _kress_metrics()
     results["gpr_bem_kdiff"] = _kdiff_metrics(perfect_sampling)
     if include_qbx_archive:
         results.update(_qbx_rows(perfect_sampling))
@@ -550,7 +673,49 @@ def comparison_results(perfect_sampling, include_qbx_archive) -> dict[str, dict]
     gprmax_metrics = _gprmax_metrics()
     if gprmax_metrics is not None:
         results["gprmax"] = gprmax_metrics
+    attach_parallel_solver_discrepancies(results, FREQUENCIES_HZ)
     return results
+
+
+KRESS_MAX_RELATIVE_ERROR = {frequency: 1.0e-6 for frequency in FREQUENCIES_HZ}
+
+
+def test_circle_kress_same_sdf_receiver_accuracy(comparison_results, perfect_sampling) -> None:
+    """The sibling solver consumes Method B built from the exact IBIM SDF."""
+
+    if perfect_sampling:
+        pytest.skip("The Kress comparison is defined for the shared-SDF run only.")
+    kress = comparison_results["gpr_bem_kress"]
+    modified = comparison_results["gpr_bem_mod"]
+    gprmax = comparison_results.get("gprmax")
+    assert_kress_comparison_acceptance(
+        kress,
+        modified,
+        FREQUENCIES_HZ,
+        KRESS_MAX_RELATIVE_ERROR,
+    )
+
+    print("\nKress vs MOD on common full-ring and cached index-0 coverage")
+    for frequency_hz in FREQUENCIES_HZ:
+        error = kress["relative_error"][frequency_hz]
+        print(
+            f"  {frequency_hz / 1e9:>4.1f} GHz   "
+            f"Kress L2/24: {error:.3e}   MOD L2/24: "
+            f"{modified['relative_error'][frequency_hz]:.3e}"
+        )
+        if gprmax is not None:
+            print(
+                "             common pair-0: "
+                f"Kress {kress['index0_relative_error'][frequency_hz]:.3e}   "
+                f"MOD {modified['index0_relative_error'][frequency_hz]:.3e}   "
+                f"gprMax {gprmax['index0_relative_error'][frequency_hz]:.3e}"
+            )
+            print(
+                "             pair-0 discrepancy vs gprMax: "
+                f"Kress {kress['gprmax_index0_relative_discrepancy'][frequency_hz]:.3e}   "
+                f"MOD {modified['gprmax_index0_relative_discrepancy'][frequency_hz]:.3e}"
+            )
+    print()
 
 
 def test_circle_comparison_table(comparison_results, perfect_sampling) -> None:
@@ -575,8 +740,12 @@ def test_circle_comparison_table(comparison_results, perfect_sampling) -> None:
     )
     print(_format_table(comparison_results))
     print(
-        "\n  note: the time column is indicative only -- whichever solver runs first\n"
-        "        absorbs BLAS/import warm-up, so it is not a fair benchmark."
+        "\n  timing: prep is SDF-to-boundary work; forward is the six-frequency "
+        "forward-call workload, and total is their sum. MOD and Kress materialize the full "
+        "24x24 receiver matrix before selecting their 24 paired entries; Kress "
+        "also checks the incident-representation leak.\n"
+        "          gprMax exposes only cached end-to-end FDTD time for one pair. "
+        "All timings remain warm-up sensitive."
     )
     print()
 

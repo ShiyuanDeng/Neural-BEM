@@ -31,7 +31,7 @@ def _readonly_complex(values: np.ndarray) -> np.ndarray:
 
 @dataclass(frozen=True)
 class MullerAssemblyConfig:
-    """Numerical controls for the dense single-component candidate."""
+    """Numerical controls for the dense single-component solver."""
 
     near_argument: float = 0.75
     series_terms: int = 24
@@ -82,6 +82,7 @@ class MullerDifferenceBlocks:
 
     geometry: PeriodicCurve2D
     geometry_adapter: PeriodicCurveAdapter
+    config: MullerAssemblyConfig
     k_exterior: complex
     k_interior: complex
     delta_v: np.ndarray
@@ -510,6 +511,7 @@ def build_muller_difference_blocks(
     return MullerDifferenceBlocks(
         geometry=curve,
         geometry_adapter=adapter,
+        config=settings,
         k_exterior=exterior,
         k_interior=interior,
         delta_v=matrices["V"],

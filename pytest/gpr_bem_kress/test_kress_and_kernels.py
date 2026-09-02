@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from gpr_bem_mod.ordered_nystrom import (
+from gpr_bem_kress import (
     PairGeometry,
     evaluate_muller_kernel_differences,
 )
