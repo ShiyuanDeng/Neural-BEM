@@ -22,7 +22,7 @@ solve path and vary only the hypersingular Muller difference block.
 | `ordered_boundary/` | Solver-neutral continuous producers plus immutable ordered BIE nodes and diagnostics. |
 | `periodic_kress/` | Shared canonical periodic logarithmic product weights; no geometry or physics ownership. |
 | `sdf_to_ordered_boundary/` | Shared SDF extraction/Method-B fitting used by `sdf_inverse`, plus the opt-in A/B/C geometry study. |
-| `sdf_inverse/` | Common single-component implicit extraction, MOD/Kress dispatch, and bounded low-dimensional parameter-FD inverse. |
+| `sdf_inverse/` | Common single-component implicit extraction, MOD/Kress dispatch, analytic targets with their independent observation oracles, and bounded low-dimensional parameter-FD inverse. |
 
 The measured QBX/kdiff production-direction investigation is closed. See
 [`docs/qbx_closure.md`](../docs/qbx_closure.md) for the timing and accuracy
@@ -147,7 +147,7 @@ Not part of the `ref`/`mod` pair, and not selected by `--solver`:
 | `periodic_kress/` | Universal full-log periodic weights reused by the scalar proxy and ordered Müller candidate. |
 | `sdf_to_ordered_boundary/` | Shared marching/projection front end, spline/Fourier/SDF-refined producers, common metrics, and study orchestration; Method B is also reused by `sdf_inverse` (`docs/sdf_boundary_parameterization_implementation.md`). |
 | `gpr_bem_kress/` | Experimental dense all-block Kress/Müller solver accepting exactly one immutable `PeriodicCurve2D`; owns its package-local `Material`, explicit receiver operator, system, and forward results; direct import only. |
-| `sdf_inverse/` | Common Method-B geometry, legacy-MOD adapter, paired MOD/Kress prediction, circle/ellipse/random-feature implicit controls, and bounded parameter-FD Levenberg--Marquardt loop. |
+| `sdf_inverse/` | Common Method-B geometry, legacy-MOD adapter, paired MOD/Kress prediction, circle/ellipse/random-feature/star implicit controls, the analytic star target and its `nystrom_ref` observation seam, and bounded parameter-FD Levenberg--Marquardt loop. |
 
 ## Selecting experimental T assembly in the kdiff solve
 

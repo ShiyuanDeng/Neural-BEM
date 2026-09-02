@@ -28,11 +28,13 @@ explicit `ExteriorReceiverOperator` with `C=[D,-S]`. It owns a package-local
 `solver_select` and has no operator adjoint or shape derivative. It is now
 invoked directly by [`run_sdf_inverse_comparison.py`](run_sdf_inverse_comparison.py),
 which gives MOD and Kress the same Method-B curve and the same bounded
-parameter finite-difference inverse against analytic Mie data. It now covers
-a wrong circle SDF, a rotated non-SDF ellipse, and a topology-constrained
-seeded random-feature neural implicit; see
+parameter finite-difference inverse against independent observations. Against
+analytic Mie data it covers a wrong circle SDF, a rotated non-SDF ellipse, and
+a topology-constrained seeded random-feature neural implicit. A fourth case
+recovers the five-lobe star `r(t) = 0.05 (1 + 0.25 cos 5t)`, including its
+lobe depth and phase, from independent `nystrom_ref` observations; see
 [the inverse baseline](docs/solver_neutral_inverse.md),
-[the three-case results](results/inverse_solver_comparison/README.md),
+[the four-case results](results/inverse_solver_comparison/README.md),
 [its implementation record](docs/gpr_bem_kress_implementation.md), and
 the [same-SDF solver-error/runtime snapshot](results/solver_comparisons/kress-peer-20260902/summary.md).
 The smooth circle, ellipse, and star comparison cases are the integration
@@ -49,6 +51,10 @@ PYTHONPATH=solvers /home/drdeng/miniconda3/envs/EMNerf/bin/python \
   run_sdf_inverse_comparison.py
 PYTHONPATH=solvers /home/drdeng/miniconda3/envs/EMNerf/bin/python \
   run_sdf_inverse_comparison.py --initial-model ellipse --max-iterations 8
+PYTHONPATH=solvers /home/drdeng/miniconda3/envs/EMNerf/bin/python \
+  run_sdf_inverse_comparison.py --target star
+python run_sdf_inverse_contour_video.py \
+  results/inverse_solver_comparison/wrong-star-nystrom-20260903
 python -m pytest pytest/ --solver=mod -q
 ```
 
@@ -79,6 +85,7 @@ For selector-backed commands, omitting `--solver` runs the frozen
 | `docs/` | Current architecture, live plan, decisions, references, and history |
 | `scratchpad/` | Explicitly non-production diagnostic scripts and retained probes |
 | `run_ibim_*.py` | Forward, inverse, and geometry entry points |
-| `run_sdf_inverse_comparison.py` | Wrong-SDF inverse with a common objective and MOD/Kress forward dispatch |
+| `run_sdf_inverse_comparison.py` | Wrong-SDF inverse against a Mie circle or a Nystrom star, with a common objective and MOD/Kress forward dispatch |
+| `run_sdf_inverse_contour_video.py` | Optional post-processing: side-by-side MOD/Kress contour video from an existing inverse bundle |
 | `run_sdf_boundary_parameterization_comparison.py` | Opt-in, solver-isolated A/B/C boundary parameterization study |
 | `run_ordered_nystrom_validation.py` | Opt-in exact/frozen-curve `gpr_bem_kress` convergence and runtime study |

@@ -249,20 +249,38 @@ column norm and concatenates real and imaginary residuals. A bounded numerical
 Jacobian and common damping/backtracking policy make the comparison independent
 of either solver's derivative implementation. Checked initial models now cover
 a three-parameter exact circle SDF, a four-parameter rotated quadratic ellipse
-level set, and a seven-parameter seeded random-feature neural implicit. Every
-controller refuses unexpectedly large parameter sets. This is an auditable
-black-box inverse baseline, not a scalable full-network algorithm and not a
-Kress adjoint.
+level set, a seven-parameter seeded random-feature neural implicit, and a
+five-parameter radial star level set whose lobe depth and phase are controls.
+Every controller refuses unexpectedly large parameter sets. This is an
+auditable black-box inverse baseline, not a scalable full-network algorithm
+and not a Kress adjoint.
 
-[`run_sdf_inverse_comparison.py`](../run_sdf_inverse_comparison.py) uses exact
-Mie truth, fits at 0.25/0.5 GHz, and reports held-out 1/1.5/2.5 GHz performance
-for both forwards. `--initial-model` selects `circle`, `ellipse`, or
-`random_features`. Its default output path carries a UTC timestamp; an
-explicit nonempty path requires `--overwrite`, which removes only known
-driver artifacts. The default inverse cap is six iterations, and optimizer
-convergence is an acceptance gate. Its contract, measured result, and
-limitations are in
-[`solver_neutral_inverse.md`](solver_neutral_inverse.md).
+[`run_sdf_inverse_comparison.py`](../run_sdf_inverse_comparison.py) selects
+the analytic target with `--target`, and the target carries its own
+observation oracle, initializations, frequency bands, geometry resolutions,
+and shape gates:
+
+| `--target` | Truth | Train / holdout | Fit | Controls |
+|---|---|---|---|---|
+| `circle` | `gpr_bem_ref` analytic Mie series | 0.25, 0.5 / 1, 1.5, 2.5 GHz | bandwidth 10, 64 nodes | center, radius (plus ellipse and random-feature variants) |
+| `star` | `nystrom_ref` independent Nystrom solution of the exact curve | 0.5, 1.5 / 0.25, 1, 2.5 GHz | bandwidth 48, 128 nodes | center, mean radius, lobe amplitude, lobe rotation |
+
+The star's higher bandwidth is measured, not chosen: an arc-length Fourier
+curve represents a five-lobe star to `9.7e-4 m` at bandwidth 10 and `2.9e-5 m`
+at bandwidth 48, while refining the extraction grid at fixed bandwidth changes
+nothing. Its training band is likewise set by identifiability -- lobe phase is
+almost invisible below 1 GHz. `--initial-model` accepts only the selected
+target's own families. The star run additionally gates its observation oracle
+against a half-resolution solve of the same curve before any inverse begins.
+Default output paths carry a UTC timestamp; an explicit nonempty path requires
+`--overwrite`, which removes only known driver artifacts. Optimizer
+convergence is an acceptance gate. The contract, measured results, and
+limitations are in [`solver_neutral_inverse.md`](solver_neutral_inverse.md).
+
+[`run_sdf_inverse_contour_video.py`](../run_sdf_inverse_contour_video.py) is
+read-only post-processing over a finished bundle: it animates both solvers'
+stored accepted contours side by side against the exact target. It imports no
+solver and recomputes no physics.
 
 ## Same-scene forward comparison
 
@@ -348,7 +366,11 @@ Validation is deliberately layered:
    with fixed-objective monotonicity, parameter accuracy, held-out frequency
    error, and linear-residual gates for MOD and Kress. The exact-target-boundary
    control isolates each solver's holdout discretization floor from inverse
-   parameter error. The checked bundle is
+   parameter error. A fourth case recovers the five-lobe star, including its
+   lobe depth and phase, from independent `nystrom_ref` observations that are
+   themselves gated for self-convergence; there the shared Method-B
+   representation, not the forward solver, sets Kress' floor. The checked
+   bundles are
    [`../results/inverse_solver_comparison/README.md`](../results/inverse_solver_comparison/README.md).
 
 Ordinary comparisons include `ref`, `mod`, and the frozen kdiff baseline; the
@@ -364,7 +386,8 @@ are not BIE/PDE field, operator, or solve errors. The parallel
 `pytest/gpr_bem_kress/` suite does assemble physical operators and solve
 fields. `pytest/sdf_inverse/` additionally exercises the common ordered
 geometry, both paired forward adapters, the nondegenerate complex objective,
-and convergence from a wrong circle. Broader forward comparisons remain in
+convergence from a wrong circle, and the star target's oracle seam and
+lobe-parameter recovery. Broader forward comparisons remain in
 `pytest/solver_comparisons/` and dated result bundles. The Kress sibling's
 compact exact-curve and frozen
 Method-B convergence/runtime evidence is indexed at
@@ -479,7 +502,7 @@ PYTHONPATH=solvers python -m pytest -q \
 | Ordered-curve forward peer | `solvers/gpr_bem_kress/`, [`gpr_bem_kress_implementation.md`](gpr_bem_kress_implementation.md) |
 | Ordered-curve solver evidence | `pytest/gpr_bem_kress/`, [`../results/ordered_boundary_nystrom/README.md`](../results/ordered_boundary_nystrom/README.md) |
 | Legacy MOD neural adjoint/inverse | `solvers/gpr_bem_mod/ibim_tmz_adjoint.py`, `ibim_inverse.py` |
-| Solver-neutral parameter inverse | `solvers/sdf_inverse/`, [`solver_neutral_inverse.md`](solver_neutral_inverse.md), `run_sdf_inverse_comparison.py` |
+| Solver-neutral parameter inverse | `solvers/sdf_inverse/`, [`solver_neutral_inverse.md`](solver_neutral_inverse.md), `run_sdf_inverse_comparison.py`, `run_sdf_inverse_contour_video.py` |
 | Current shape calculus | [`ibim_shape_derivative.md`](ibim_shape_derivative.md) |
 | Precision oracle | [`nystrom_reference_study.md`](nystrom_reference_study.md) |
 | Independent FDTD check | [`gprmax_reference_study.md`](gprmax_reference_study.md) |

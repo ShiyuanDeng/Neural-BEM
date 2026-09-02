@@ -15,7 +15,7 @@ under [`../results/`](../results/); `pytest/` contains no result bundles.
 | `nystrom_ref/` | Independent smooth-boundary forward oracle | Yes |
 | `ordered_boundary/` | Continuous and node-owned geometry contracts | **No** |
 | [`sdf_to_ordered_boundary/`](sdf_to_ordered_boundary/) | Implicit-field extraction, A/B/C fits, geometry metrics, artifacts, and scalar Kress proxy | **No** |
-| [`sdf_inverse/`](sdf_inverse/) | Common ordered geometry, paired MOD/Kress prediction, fixed complex objective, and implicit-initialization recovery | **Yes** |
+| [`sdf_inverse/`](sdf_inverse/) | Common ordered geometry, paired MOD/Kress prediction, fixed complex objective, implicit-initialization recovery, and the star target's Nystrom observation seam | **Yes** |
 | [`solver_comparisons/`](solver_comparisons/) | Circle, ellipse, square, star, and two-circle solver comparisons | **Yes** |
 
 The distinction among the geometry, inverse, and comparison rows is
@@ -127,7 +127,16 @@ monotone fixed objective for both MOD and Kress. It also sends a rotated
 quadratic ellipse and a seeded random-feature neural implicit through both
 forward branches, verifies their non-circular/non-distance initial fields,
 and confirms that an unconstrained random MLP with no valid closed contour is
-rejected before a forward solve:
+rejected before a forward solve.
+
+[`test_star_target_inverse.py`](sdf_inverse/test_star_target_inverse.py) adds
+the lobed target: that the star level set, the oracle's parameterization, and
+the exact point-to-curve distance describe one curve; that the star's bounds
+reject an unidentifiable lobe phase; that the Nystrom observations are
+self-converged and exactly linear in the source strength; and that the same
+inverse recovers lobe depth and phase, which no circular target can exercise.
+The star's geometry resolutions there are deliberately cheaper than the
+driver's, so those are contract tests rather than accuracy evidence:
 
 ```bash
 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
@@ -136,8 +145,8 @@ NUMEXPR_NUM_THREADS=1 PYTHONPATH=solvers \
   pytest/sdf_inverse
 ```
 
-That suite contributes 15 test cases and passed in 21.90 s. Together with the
-nine legacy MOD inverse tests, the combined command covers 24 focused
+That suite contributes 24 test cases and passed in 37.36 s. Together with the
+nine legacy MOD inverse tests, the combined command covers 33 focused
 cases:
 
 ```bash

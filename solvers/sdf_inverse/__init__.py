@@ -21,11 +21,18 @@ from .models import (
     CircleSDF2D,
     EllipseLevelSet2D,
     RadialRandomFeatureImplicit2D,
+    StarLevelSet2D,
     TorchParameterController,
     build_circle_parameter_controller,
     build_ellipse_parameter_controller,
     build_radial_random_feature_parameter_controller,
+    build_star_parameter_controller,
     circle_parameter_controller,
+)
+from .nystrom_oracle import (
+    NystromObservations,
+    nystrom_paired_response,
+    nystrom_self_convergence,
 )
 from .optimization import (
     ComplexScatteredData,
@@ -35,12 +42,14 @@ from .optimization import (
     normalized_complex_residual,
     run_parameter_fd_inverse,
 )
+from .targets import StarShape
 
 __all__ = [
     "CircleSDF2D",
     "ComplexScatteredData",
     "EllipseLevelSet2D",
     "MaterialSpec",
+    "NystromObservations",
     "OrderedSDFGeometryBuild",
     "OrderedSDFGeometryConfig",
     "PairedForwardProblem",
@@ -49,13 +58,18 @@ __all__ = [
     "ParameterFDInverseResult",
     "ParameterFDIteration",
     "RadialRandomFeatureImplicit2D",
+    "StarLevelSet2D",
+    "StarShape",
     "TorchParameterController",
     "build_circle_parameter_controller",
     "build_ellipse_parameter_controller",
     "build_ordered_sdf_geometry",
     "build_radial_random_feature_parameter_controller",
+    "build_star_parameter_controller",
     "circle_parameter_controller",
     "normalized_complex_residual",
+    "nystrom_paired_response",
+    "nystrom_self_convergence",
     "ordered_curve_to_mod_boundary",
     "predict_paired_response",
     "run_parameter_fd_inverse",

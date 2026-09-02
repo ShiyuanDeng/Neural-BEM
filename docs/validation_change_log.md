@@ -2978,3 +2978,129 @@ contract is now demonstrated independently of signed-distance magnitude and
 of a circular initial parameterization. The random-feature case remains a
 topology-constrained small neural model, not evidence that arbitrary SIREN
 initialization or full-network finite differences are safe or scalable.
+
+
+2026-09-03
+
+## Lobed star target with independent Nystrom observations
+
+### Motivation
+
+Every checked inverse case recovered a circle, so the pipeline had never been
+asked to recover a shape parameter that a circle does not have. The circle
+also hid a question the geometry seam cannot answer for itself: how much of
+the achievable accuracy belongs to the forward solver and how much to the
+arc-length Fourier representation, which is exact for a circle at bandwidth
+one.
+
+### What was added
+
+`--target {circle,star}` selects the analytic target and its observation
+oracle. The target owns everything that changes with the shape -- truth
+generation, the exact implicit field for the true-boundary control, the exact
+point-to-curve distance, the initializations, both frequency bands, the
+extraction/fit resolutions, and the shape gates -- so the objective, optimizer,
+artifacts, and solver dispatch remain literally the same code. `--target
+circle` reproduces the previous behavior; the checked circle bundle re-ran
+bit-for-bit identical accepted trajectories after the change.
+
+- `solvers/sdf_inverse/models.py` gained `StarLevelSet2D`, a five-control
+  radial star `r(t) = R (1 + a cos(m (t - phi)))` evaluated through a Chebyshev
+  recurrence rather than `atan2`, so the field and its point gradient stay
+  finite at the extraction grid's center point. `build_star_parameter_controller`
+  refuses amplitude bounds containing zero, where the rotation is not
+  identifiable, and rotation bounds as wide as the `2 pi / m` symmetry period,
+  where one shape has several parameter vectors.
+- `solvers/sdf_inverse/targets.py` holds `StarShape`: the parameterization the
+  oracle integrates, the Torch field the extraction consumes, and an exact
+  point-to-curve distance by bracketed golden-section search. A test asserts
+  the parameterization equals `nystrom_ref.star_parameterization` bit for bit.
+- `solvers/sdf_inverse/nystrom_oracle.py` wraps `nystrom_ref` as an
+  observation source and adds the half-resolution self-convergence check that
+  the driver gates on before running any inverse.
+- `run_sdf_inverse_contour_video.py` renders an existing bundle's accepted
+  contour trajectories for both solvers side by side. It is read-only
+  post-processing: no solver import, no recomputed physics, and interpolated
+  frames are labelled as such.
+
+### Measurements behind the star configuration
+
+Three choices were measured rather than assumed.
+
+Frequency band. One central finite-difference step in the lobe rotation
+changes the field by `1.2e-5` at 0.25 GHz and `1.9e-2` at 1.5 GHz; the lobe
+amplitude behaves the same way. The star therefore trains at 0.5/1.5 GHz and
+holds out 0.25/1/2.5 GHz. The five-parameter Jacobian of the normalized
+residual has condition number `32` on that training pair.
+
+Fourier bandwidth. Truncating the exact star's own arc-length spectrum gives
+a maximum boundary error of `9.702e-4 m` at bandwidth 10, `2.035e-4` at 24,
+and `2.941e-5` at 48. Method B tracks that floor (`1.144e-3`, `2.466e-4`,
+`4.052e-5`). Refining the extraction grid from `129^2` to `385^2` at fixed
+bandwidth changed the fitted boundary error by less than one part in a
+thousand, and raising the projected-sample count from 64 to 512 changed it as
+little. The bandwidth is the limiter, so the star uses bandwidth 48 and 128
+nodes. A related finding: Method B's derivative-consistency validation needs
+roughly twenty `validation_resolution` samples per retained mode, far above
+the `2 * bandwidth + 2` minimum the config enforces; a bandwidth-24 star fit
+is rejected at 256 samples and accepted at 512. This is now documented in
+`OrderedSDFGeometryConfig`.
+
+Bounds. All 32 corners of the five-dimensional bound box extract to one valid
+closed component.
+
+### Validation
+
+The checked run is
+[`results/inverse_solver_comparison/wrong-star-nystrom-20260903/`](../results/inverse_solver_comparison/wrong-star-nystrom-20260903/),
+recovering `r(t) = 0.05 (1 + 0.25 cos 5t) m` at `(0.50, 0.50) m` from an
+initialization wrong in all five controls (`center = (0.48, 0.52) m`,
+`mean radius = 0.060 m`, `amplitude = 0.12`, `rotation = 0.25 rad`). All
+`30/30` gates passed, including the two new lobe gates and the oracle
+self-convergence gate.
+
+| Solver | Train relative L2 | Holdout | True-boundary holdout | Amplitude error | Rotation error | Evaluations | Time |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| MOD | `1.200 -> 3.021e-3` | `1.266e-2` | `1.260e-2` | `4.916e-4` | `7.842e-5 rad` | 132 | `116.98 s` |
+| Kress | `1.196 -> 5.881e-6` | `3.139e-5` | `4.824e-5` | `5.427e-6` | `1.352e-7 rad` | 121 | `74.00 s` |
+
+Both recovered the center to about `3e-9 m`. The observation oracle solved at
+512 versus 256 nodes agreed to `2.880e-10` with a `2.1e-14` linear-system
+residual.
+
+The focused inverse suite grew from 15 to 24 cases and passed in 37.36 s:
+
+```bash
+OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
+NUMEXPR_NUM_THREADS=1 PYTHONPATH=solvers \
+/home/drdeng/miniconda3/envs/EMNerf/bin/python -m pytest -q pytest/sdf_inverse
+```
+
+The complete first-party suite passed `281 passed, 2 skipped` with 300
+warnings in 216.92 s; both skips were the expected CuPy-unavailable checks.
+
+### Current interpretation
+
+The star moves the accuracy floor from the forward solver to the geometry.
+Kress' final training error equals its own error on the exact target's fitted
+boundary, so it converged to the shared bandwidth-48 representation rather
+than to its own quadrature; the Kress holdout gate is therefore `1e-3` here
+against `1e-6` for the circle. MOD remains limited by its own discretisation:
+its final holdout error is within half a percent of what it produces on the
+exact target's boundary. Both solvers absorbed a small part of the shared
+geometry error into their parameters, each ending slightly below its own
+true-boundary error, which is why that control is computed at all.
+
+Independence has a stated limit. `nystrom_ref` shares no numerics with either
+solver, but it and Kress are separate implementations of the same
+Nystrom/Muller formulation, so this comparison would expose a shared
+implementation error and not a shared formulation error. MOD's
+compressed-cloud discretisation has no such kinship.
+
+### Decision
+
+Accept the star as inverse evidence for lobe depth and phase recovery. It does
+not extend the pipeline to topology or lobe-count recovery: the lobe count is
+fixed structure, since an integer cannot be recovered by continuous finite
+differences. The next milestone is unchanged -- a Kress discrete adjoint whose
+directional derivatives are accepted against this low-dimensional baseline.

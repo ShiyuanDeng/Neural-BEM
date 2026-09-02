@@ -37,7 +37,7 @@ past experiment, the dated validation entry and stored artifacts win.
 | [`../results/sdf_boundary_parameterization/study-20260902/metrics.csv`](../results/sdf_boundary_parameterization/study-20260902/metrics.csv) | Full SDF-boundary grid/sample/bandwidth study; geometry metrics, not solver errors |
 | [`../results/ordered_boundary_nystrom/README.md`](../results/ordered_boundary_nystrom/README.md) | Skimmed physical Müller block/trace/receiver error and runtime evidence for exact and frozen Method-B curves |
 | [`../results/solver_comparisons/legacy/qbx-closeout-20260901/aggregate_metrics.md`](../results/solver_comparisons/legacy/qbx-closeout-20260901/aggregate_metrics.md) | Dated five-shape solver-error evidence and archived QBX closeout rows |
-| [`../results/inverse_solver_comparison/README.md`](../results/inverse_solver_comparison/README.md) | Checked MOD/Kress recovery from circle, ellipse, and random-feature implicit initializations against analytic Mie data |
+| [`../results/inverse_solver_comparison/README.md`](../results/inverse_solver_comparison/README.md) | Checked MOD/Kress recovery from circle, ellipse, and random-feature implicit initializations against analytic Mie data, plus five-lobe star recovery against independent Nystrom data |
 | [`../solvers/README.md`](../solvers/README.md) | Package selection and experiment reproduction |
 | [`../pytest/README.md`](../pytest/README.md) | Test layout, gates, and evidence commands |
 

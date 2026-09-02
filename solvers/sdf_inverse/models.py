@@ -30,6 +30,26 @@ def _real_floating_dtype(dtype: torch.dtype) -> torch.dtype:
     return dtype
 
 
+def _chebyshev_first_kind(values: torch.Tensor, order: int) -> torch.Tensor:
+    """Return ``T_n(values)``, so ``T_n(cos t) == cos(n t)`` exactly.
+
+    The recurrence is used instead of ``cos(n * atan2(dy, dx))`` because the
+    two-argument arctangent is undefined at the origin and its derivative is
+    discontinuous across the branch cut, while the extraction grid may contain
+    both the center and points on either side of the cut.
+    """
+
+    if order == 0:
+        return torch.ones_like(values)
+    if order == 1:
+        return values
+    previous = torch.ones_like(values)
+    current = values
+    for _ in range(2, order + 1):
+        previous, current = current, 2.0 * values * current - previous
+    return current
+
+
 class CircleSDF2D(nn.Module):
     """Trainable exact signed distance to one circle.
 
@@ -371,6 +391,165 @@ class RadialRandomFeatureImplicit2D(nn.Module):
             "fixed_feature_mean": self.feature_mean.detach().cpu().numpy(),
         }
 
+
+class StarLevelSet2D(nn.Module):
+    """Trainable smooth radial star level set with a controllable rotation.
+
+    The zero contour is the analytic star
+
+    ``r(theta) = mean_radius * (1 + amplitude * cos(lobes * (theta - rotation)))``
+
+    used by the forward comparison study, so a fitted contour can be compared
+    against an independent Nystrom solution of the same shape.  The returned
+    value is ``field_scale * (r - r(theta))``.  It carries the correct zero set
+    and negative-inside sign but is not a signed distance for a nonzero
+    amplitude, which is the point: the pipeline must not depend on distance
+    magnitudes.
+
+    ``lobes`` is fixed structure, not a control.  An integer lobe
+    count cannot be recovered by continuous finite differences, and a
+    non-integer one would break the ``cos(lobes * theta)`` periodicity that
+    keeps the contour closed.
+    """
+
+    claims_signed_distance = False
+
+    def __init__(
+        self,
+        *,
+        center: tuple[float, float] = (0.0, 0.0),
+        mean_radius: float = 1.0,
+        amplitude: float = 0.25,
+        lobes: int = 5,
+        rotation_radians: float = 0.0,
+        field_scale: float = 1.0,
+        dtype: torch.dtype = torch.float64,
+        device: torch.device | str | None = None,
+    ) -> None:
+        super().__init__()
+        resolved_dtype = _real_floating_dtype(dtype)
+        center_values = np.asarray(center, dtype=np.float64)
+        radius_value = float(mean_radius)
+        amplitude_value = float(amplitude)
+        rotation_value = float(rotation_radians)
+        scale_value = float(field_scale)
+        lobe_count = _positive_integer(lobes, name="lobes")
+        if center_values.shape != (2,) or not np.all(np.isfinite(center_values)):
+            raise ValueError("center must contain exactly two finite coordinates.")
+        if not math.isfinite(radius_value) or radius_value <= 0.0:
+            raise ValueError("mean_radius must be finite and positive.")
+        # abs(amplitude) < 1 keeps r(theta) strictly positive, which is what
+        # makes the radial graph a simple, regular, closed curve.
+        if not math.isfinite(amplitude_value) or abs(amplitude_value) >= 1.0:
+            raise ValueError("amplitude must be finite with abs(amplitude) < 1.")
+        if not math.isfinite(rotation_value):
+            raise ValueError("rotation_radians must be finite.")
+        if not math.isfinite(scale_value) or scale_value <= 0.0:
+            raise ValueError("field_scale must be finite and positive.")
+        if lobe_count < 2:
+            raise ValueError("lobes must be at least two.")
+
+        self.center = nn.Parameter(
+            torch.as_tensor(center_values, dtype=resolved_dtype, device=device)
+        )
+        self.log_mean_radius = nn.Parameter(
+            torch.tensor(math.log(radius_value), dtype=resolved_dtype, device=device)
+        )
+        self.amplitude = nn.Parameter(
+            torch.tensor(amplitude_value, dtype=resolved_dtype, device=device)
+        )
+        self.rotation = nn.Parameter(
+            torch.tensor(rotation_value, dtype=resolved_dtype, device=device)
+        )
+        self.lobe_count = lobe_count
+        self.field_scale = scale_value
+
+    @property
+    def mean_radius(self) -> torch.Tensor:
+        """Positive differentiable mean radius tensor."""
+
+        return torch.exp(self.log_mean_radius)
+
+    @property
+    def radius(self) -> torch.Tensor:
+        """Alias used by the shared trajectory schema; the star's mean radius."""
+
+        return self.mean_radius
+
+    def boundary_radius(self, angles: torch.Tensor) -> torch.Tensor:
+        """Evaluate ``r(theta)`` for inspection and tests."""
+
+        if not isinstance(angles, torch.Tensor):
+            raise TypeError("angles must be a torch.Tensor.")
+        shifted = self.lobe_count * (angles - self.rotation.to(dtype=angles.dtype))
+        return self.mean_radius.to(dtype=angles.dtype) * (
+            1.0 + self.amplitude.to(dtype=angles.dtype) * torch.cos(shifted)
+        )
+
+    def forward(self, points: torch.Tensor) -> torch.Tensor:
+        if not isinstance(points, torch.Tensor):
+            raise TypeError("points must be a torch.Tensor.")
+        if points.ndim != 2 or points.shape[1] != 2:
+            raise ValueError("points must have shape (num_points, 2).")
+        if not points.is_floating_point():
+            raise TypeError("points must have a floating-point dtype.")
+        if points.device != self.center.device:
+            raise ValueError(
+                "points and StarLevelSet2D parameters must be on the same device."
+            )
+        delta = points - self.center.to(dtype=points.dtype)[None, :]
+        rotation = self.rotation.to(dtype=points.dtype)
+        cosine = torch.cos(rotation)
+        sine = torch.sin(rotation)
+        # Rotating the sample by -rotation is equivalent to rotating the star
+        # by +rotation, and keeps the radius rotation-independent.
+        local_x = delta[:, 0] * cosine + delta[:, 1] * sine
+        # Both floors keep the field and its point gradient total.  The
+        # extraction grid can contain the exact center, where a bare norm has
+        # an undefined derivative and a bare polar direction is unbounded.
+        squared = torch.sum(delta * delta, dim=1)
+        radial_distance = torch.sqrt(squared + torch.finfo(points.dtype).tiny)
+        direction_floor = max(float(torch.finfo(points.dtype).eps), 1.0e-12)
+        cos_theta = local_x / torch.clamp(radial_distance, min=direction_floor)
+        cos_lobes_theta = _chebyshev_first_kind(cos_theta, self.lobe_count)
+        boundary_radius = self.mean_radius.to(dtype=points.dtype) * (
+            1.0 + self.amplitude.to(dtype=points.dtype) * cos_lobes_theta
+        )
+        return (self.field_scale * (radial_distance - boundary_radius))[:, None]
+
+    def physical_geometry(self) -> dict[str, float]:
+        center = self.center.detach().cpu().to(dtype=torch.float64).numpy()
+        return {
+            "center_x": float(center[0]),
+            "center_y": float(center[1]),
+            # "radius" is the shared trajectory column; for a star it is the
+            # mean radius, and "mean_radius" repeats it under its own name.
+            "radius": float(self.mean_radius.detach().cpu().to(dtype=torch.float64)),
+            "mean_radius": float(
+                self.mean_radius.detach().cpu().to(dtype=torch.float64)
+            ),
+            "amplitude": float(self.amplitude.detach().cpu().to(dtype=torch.float64)),
+            "rotation_radians": float(
+                self.rotation.detach().cpu().to(dtype=torch.float64)
+            ),
+            "lobes": float(self.lobe_count),
+        }
+
+    def initialization_metadata(self) -> dict[str, object]:
+        return {
+            "kind": "radial_star_level_set",
+            "claims_signed_distance": False,
+            "lobes": self.lobe_count,
+            "field_scale": self.field_scale,
+            "rotation_is_controlled": True,
+            "rotation_period_radians": 2.0 * math.pi / self.lobe_count,
+        }
+
+    @property
+    def geometry_dict(self) -> dict[str, float]:
+        """Property alias for user-facing inspection."""
+
+        return self.physical_geometry()
 
 @dataclass(frozen=True)
 class _ParameterLayout:
@@ -778,6 +957,83 @@ def build_radial_random_feature_parameter_controller(
     )
 
 
+def build_star_parameter_controller(
+    model: StarLevelSet2D,
+    *,
+    center_bounds: tuple[tuple[float, float], tuple[float, float]],
+    mean_radius_bounds: tuple[float, float],
+    amplitude_bounds: tuple[float, float],
+    rotation_bounds: tuple[float, float],
+    max_parameters: int = 5,
+) -> TorchParameterController:
+    """Bound the five star controls so every trial stays a valid single star.
+
+    ``amplitude_bounds`` must stay inside ``(-1, 1)`` for a positive radius,
+    and must exclude zero: an exactly circular star has no identifiable
+    rotation, which would make the finite-difference Jacobian rank deficient.
+    ``rotation_bounds`` must be narrower than the ``2 * pi / lobes`` symmetry
+    period, otherwise the same shape is reachable at several parameter
+    vectors and the recovered rotation is not a well-posed number to gate.
+    """
+
+    if not isinstance(model, StarLevelSet2D):
+        raise TypeError("model must be a StarLevelSet2D.")
+    center_values = np.asarray(center_bounds, dtype=np.float64)
+    radius_values = np.asarray(mean_radius_bounds, dtype=np.float64)
+    amplitude_values = np.asarray(amplitude_bounds, dtype=np.float64)
+    rotation_values = np.asarray(rotation_bounds, dtype=np.float64)
+    if center_values.shape != (2, 2) or not np.all(np.isfinite(center_values)):
+        raise ValueError(
+            "center_bounds must be ((x_lower, x_upper), (y_lower, y_upper))."
+        )
+    if np.any(center_values[:, 0] >= center_values[:, 1]):
+        raise ValueError("Each center lower bound must be less than its upper bound.")
+    if radius_values.shape != (2,) or not np.all(np.isfinite(radius_values)):
+        raise ValueError("mean_radius_bounds must contain two finite values.")
+    if radius_values[0] <= 0.0 or radius_values[0] >= radius_values[1]:
+        raise ValueError("mean_radius_bounds must be positive and strictly increasing.")
+    if amplitude_values.shape != (2,) or not np.all(np.isfinite(amplitude_values)):
+        raise ValueError("amplitude_bounds must contain two finite values.")
+    if amplitude_values[0] >= amplitude_values[1]:
+        raise ValueError("amplitude_bounds must be strictly increasing.")
+    if np.any(np.abs(amplitude_values) >= 1.0):
+        raise ValueError("amplitude_bounds must lie strictly inside (-1, 1).")
+    if amplitude_values[0] <= 0.0:
+        raise ValueError(
+            "amplitude_bounds must exclude zero so the star's rotation stays "
+            "identifiable throughout the inverse."
+        )
+    if rotation_values.shape != (2,) or not np.all(np.isfinite(rotation_values)):
+        raise ValueError("rotation_bounds must contain two finite values.")
+    if rotation_values[0] >= rotation_values[1]:
+        raise ValueError("rotation_bounds must be strictly increasing.")
+    symmetry_period = 2.0 * math.pi / model.lobe_count
+    if float(rotation_values[1] - rotation_values[0]) >= symmetry_period:
+        raise ValueError(
+            "rotation_bounds must span less than the star's "
+            f"{symmetry_period:.6f} rad symmetry period."
+        )
+    return TorchParameterController(
+        model,
+        lower_bounds=(
+            center_values[0, 0],
+            center_values[1, 0],
+            math.log(float(radius_values[0])),
+            float(amplitude_values[0]),
+            float(rotation_values[0]),
+        ),
+        upper_bounds=(
+            center_values[0, 1],
+            center_values[1, 1],
+            math.log(float(radius_values[1])),
+            float(amplitude_values[1]),
+            float(rotation_values[1]),
+        ),
+        names=("center_x", "center_y", "log_mean_radius", "amplitude", "rotation"),
+        max_parameters=max_parameters,
+    )
+
+
 circle_parameter_controller = build_circle_parameter_controller
 
 
@@ -785,9 +1041,11 @@ __all__ = [
     "CircleSDF2D",
     "EllipseLevelSet2D",
     "RadialRandomFeatureImplicit2D",
+    "StarLevelSet2D",
     "TorchParameterController",
     "build_circle_parameter_controller",
     "build_ellipse_parameter_controller",
     "build_radial_random_feature_parameter_controller",
+    "build_star_parameter_controller",
     "circle_parameter_controller",
 ]

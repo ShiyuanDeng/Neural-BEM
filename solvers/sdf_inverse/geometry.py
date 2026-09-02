@@ -86,6 +86,13 @@ class OrderedSDFGeometryConfig:
     ``(ny, nx)``.  Method B needs at least ``2 * bandwidth + 1`` projected
     samples.  The node grid additionally needs one spare point and an even
     count for Kress quadrature.
+
+    The ``2 * bandwidth + 2`` floors checked below are necessary, not
+    sufficient.  Method B's derivative-consistency validation compares the
+    fitted curve's third derivative against finite differences, which in
+    practice needs on the order of twenty ``validation_resolution`` samples
+    per retained Fourier mode; a bandwidth-24 star fit is rejected outright
+    at 256 samples and accepted at 512.
     """
 
     bounds: Bounds2D
