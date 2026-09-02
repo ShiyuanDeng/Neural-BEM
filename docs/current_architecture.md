@@ -32,7 +32,8 @@ This page owns present-tense behavior. The
 | `solvers/gpr_bem_qbx/` | Archived full-row QBX `T` diagnostics invoked through kdiff | Not selectable |
 | `solvers/gpr_bem_ndiff/` | Unvalidated normal-offset experiment; archived/unsupported | Not selectable |
 | `solvers/nystrom_ref/` | Numerically independent, smooth single-component, forward-only precision oracle | Direct import only |
-| `solvers/ordered_boundary/` | Solver-neutral exact/Fourier smooth-component geometry foundation; not yet connected to a forward solver | Direct import only |
+| `solvers/ordered_boundary/` | Solver-neutral exact/Fourier smooth-component geometry foundation | Direct import only |
+| `solvers/gpr_bem_mod/ordered_nystrom/` | Experimental `PeriodicCurve2D` Müller/Kress forward candidate; isolated from operational drivers | Direct import only |
 | `solvers/kernel_diff_ref/` | Circle/perfect-sampling kernel-difference diagnostic; not an oracle | Direct import only |
 | `solvers/gprmax_ref/` | Cached independent FDTD cross-check | Direct tools/tests only |
 
@@ -84,12 +85,16 @@ input. The node objects own positions, derivatives, speed, unit tangent, CCW
 outward normal, curvature, ordinary arc-length weights, component-local
 parameters, slices, and node ownership; they contain no hidden evaluator.
 
-This package is not part of the active MOD forward path and does not yet
-implement SDF contour extraction or a BIE operator. It deliberately contains
-no Kress pairwise weights, hypersingular regularisation, materials, Torch, or
-legacy `merge_distance` adapter. Kress, kernel-difference, QBX, panel, and
-other solvers may build different discretisations from the same continuous
-geometry. See [`../solvers/ordered_boundary/README.md`](../solvers/ordered_boundary/README.md).
+This package is not part of the active MOD forward path. The isolated sibling
+`solvers/sdf_to_ordered_boundary/` supplies the shared marching/projection
+front end and the A/B/C parameterization comparison, but no active solver
+imports it. The opt-in `gpr_bem_mod.ordered_nystrom` candidate now consumes a
+single `PeriodicCurve2D`; it does not consume the SDF or fitting state. The
+geometry package deliberately contains no Kress pairwise weights,
+hypersingular regularisation, materials, Torch, or legacy `merge_distance`
+adapter. Kress, kernel-difference, QBX, panel, and other solvers may build
+different discretisations from the same continuous geometry. See
+[`../solvers/ordered_boundary/README.md`](../solvers/ordered_boundary/README.md).
 
 ## Current forward pipeline
 
@@ -166,8 +171,10 @@ defect and should be made explicit in future driver policy.
 
 Validation is deliberately layered:
 
-1. Kernel, operator, system, and frozen-geometry derivative tests under
-   `pytest/artefacts/` and `pytest/test_ibim_shape_derivative_kernels.py`.
+1. Shared kernel, operator, and system tests under `pytest/gpr_bem_shared/`,
+   with MOD-only adjoint, inverse, and derivative-kernel checks under
+   `pytest/gpr_bem_mod/` and retained kdiff checks under
+   `pytest/gpr_bem_kdiff/`.
 2. Circle fields against the analytic penetrable-cylinder Fourier–Bessel/Mie
    series.
 3. Smooth ellipse and star fields against the independent `nystrom_ref`
@@ -177,12 +184,23 @@ Validation is deliberately layered:
    prefers harmonic `contsine`, then scaled-Ricker, then legacy sweep data.
 5. Square and two-circle checks using gprMax plus self-convergence; these have
    weaker oracle coverage than circle/ellipse/star.
-6. The five-shape aggregate report in
-   [`../pytest/results/aggregate_metrics.md`](../pytest/results/aggregate_metrics.md).
+6. The dated five-shape solver/QBX closeout report in
+   [`../results/solver_comparisons/legacy/qbx-closeout-20260901/aggregate_metrics.md`](../results/solver_comparisons/legacy/qbx-closeout-20260901/aggregate_metrics.md).
 
 Ordinary comparisons include `ref`, `mod`, and the frozen kdiff baseline.
 Archived QBX rows require `--include-qbx-archive`, are not accuracy gates, and
 may explicitly reproduce invalid-clearance cases as historical evidence.
+
+The tests in `pytest/ordered_boundary/` and `pytest/sdf_to_ordered_boundary/`
+sit beside, not inside, this solver-validation ladder. Their SDF residual,
+speed, curvature, self-intersection, reference-contour, and scalar manufactured
+Kress-action measurements establish geometry/parameterization readiness. They
+are not BIE/PDE field, operator, or solve errors. The parallel
+`pytest/ordered_nystrom/` suite does assemble physical operators and solve
+fields; broader baseline comparisons remain in `pytest/solver_comparisons/`
+and dated result bundles. The candidate's compact exact-curve and frozen
+Method-B convergence/runtime evidence is indexed at
+[`../results/ordered_boundary_nystrom/README.md`](../results/ordered_boundary_nystrom/README.md).
 
 ## Known limits
 
@@ -224,10 +242,12 @@ backend. The live milestones and gates are in
 architectural reason for leaving QBX/kdiff is in
 [`qbx_closure.md`](qbx_closure.md).
 
-The continuous/sampled geometry contract and exact analytic/Fourier producers
-in the middle of that transition now exist. Ordered extraction, periodic
-fitting from SDF contours, and coherent Kress/Nyström operator assembly remain
-future steps; no current forward default changed.
+The continuous/sampled geometry contract, exact analytic/Fourier producers,
+and isolated ordered extraction plus A/B/C fitting from SDF contours now
+exist. A direct-import single-component candidate also assembles coherent
+all-block Kress differences, solves the unsquared Müller system, and evaluates
+separated receivers from `PeriodicCurve2D`. It remains experimental pending
+the full independent convergence ladder; no current forward default changed.
 
 ## Canonical commands
 
@@ -241,18 +261,20 @@ python run_ibim_geometry_demo.py --solver=mod
 python -m pytest pytest/ --solver=mod -q
 
 # Current five-shape comparison evidence
+python -m pytest pytest/solver_comparisons/test_*_comparison.py -s -q
 python -m pytest \
-  pytest/test_circle_comparison.py \
-  pytest/test_ellipse_comparison.py \
-  pytest/test_star_comparison.py \
-  pytest/test_square_comparison.py \
-  pytest/test_two_circle_comparison.py -s -q
-python -m pytest pytest/test_aggregate_comparison_results.py -s -q
+  pytest/solver_comparisons/test_aggregate_comparison_results.py -s -q
 
 # Diagnostics, not production gates
-python -m pytest pytest/test_circle_comparison.py --perfect-sampling -s -q
-python -m pytest pytest/test_aggregate_comparison_results.py \
+python -m pytest \
+  pytest/solver_comparisons/test_circle_comparison.py \
+  --perfect-sampling -s -q
+python -m pytest \
+  pytest/solver_comparisons/test_aggregate_comparison_results.py \
   --include-qbx-archive -s -q
+
+# Opt-in ordered-curve Müller candidate
+PYTHONPATH=solvers python -m pytest pytest/ordered_nystrom -q
 ```
 
 ## Code and document map
@@ -262,9 +284,13 @@ python -m pytest pytest/test_aggregate_comparison_results.py \
 | Geometry band/compression | `solvers/gpr_bem_mod/ibim_geometry.py` |
 | Ordered contour scaffolding | `solvers/gpr_bem_mod/neural_sdf.py`, `geometry.py` |
 | Forward operators/system | `solvers/gpr_bem_mod/ibim_tmz_forward.py`, `ibim_tmz_system.py` |
+| Ordered-curve forward candidate | `solvers/gpr_bem_mod/ordered_nystrom/`, [`ordered_nystrom_implementation.md`](ordered_nystrom_implementation.md) |
+| Ordered-curve solver evidence | `pytest/ordered_nystrom/`, [`../results/ordered_boundary_nystrom/README.md`](../results/ordered_boundary_nystrom/README.md) |
 | Adjoint/inverse | `solvers/gpr_bem_mod/ibim_tmz_adjoint.py`, `ibim_inverse.py` |
 | Current shape calculus | [`ibim_shape_derivative.md`](ibim_shape_derivative.md) |
 | Precision oracle | [`nystrom_reference_study.md`](nystrom_reference_study.md) |
 | Independent FDTD check | [`gprmax_reference_study.md`](gprmax_reference_study.md) |
+| SDF-to-ordered-boundary geometry evidence | [`sdf_boundary_parameterization_implementation.md`](sdf_boundary_parameterization_implementation.md), `results/sdf_boundary_parameterization/` |
+| Solver comparison tests/evidence | `pytest/solver_comparisons/`, `results/solver_comparisons/` |
 | Numerical history | [`validation_change_log.md`](validation_change_log.md) |
 | Superseded plans | [`legacy/`](legacy/README.md) |

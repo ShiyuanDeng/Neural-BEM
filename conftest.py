@@ -1,22 +1,25 @@
-"""Solver selection for the shared test suite.
+"""Solver selection for ``pytest/gpr_bem_shared``.
 
 Two solver packages live side by side under ``solvers/``:
 
     solvers/gpr_bem_ref/   the original, frozen
     solvers/gpr_bem_mod/   the convention-change copy
 
-The test files in ``pytest/`` import the plain name ``gpr_bem``, so they run
-unchanged against either one. Which package that name resolves to is chosen by
-``--solver`` (or the ``SOLVER`` environment variable):
+The tests in ``pytest/gpr_bem_shared/`` import the plain name ``gpr_bem``, so
+they run unchanged against either one. Which package that name resolves to is
+chosen by ``--solver`` (or the ``SOLVER`` environment variable):
 
     python -m pytest pytest/                  # ref, the default
     python -m pytest pytest/ --solver=mod     # mod
     SOLVER=mod python -m pytest pytest/       # same
 
-``pytest/test_circle_comparison.py`` and ``pytest/test_square_comparison.py``
-bypass this and import both packages directly under their real names, which is
-why they are named apart in the first place -- two packages called ``gpr_bem``
-could not coexist in one interpreter.
+The files in ``pytest/solver_comparisons/`` bypass this and import both
+packages directly under their real names, which is why they are named apart in
+the first place -- two packages called ``gpr_bem`` could not coexist in one
+interpreter. Geometry-only tests in ``pytest/ordered_boundary/`` and
+``pytest/sdf_to_ordered_boundary/`` are also solver-independent; their metrics
+must not be interpreted as BIE/PDE solver errors. The alias is nevertheless
+made available globally before collection.
 """
 
 from __future__ import annotations
@@ -68,7 +71,10 @@ def pytest_configure(config):
 
 def pytest_report_header(config):
     package = solver_select.SOLVER_NAMES[config.getoption("--solver")]
-    return f"solver: {package}  ({solver_select.SOLVERS_DIR / package})"
+    return (
+        "gpr_bem alias for pytest/gpr_bem_shared: "
+        f"{package}  ({solver_select.SOLVERS_DIR / package})"
+    )
 
 
 @pytest.fixture(scope="session")

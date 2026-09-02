@@ -49,6 +49,7 @@ if str(SOLVERS_ROOT) not in sys.path:
     sys.path.insert(0, str(SOLVERS_ROOT))
 
 from ordered_boundary import PeriodicParameterization2D, circle  # noqa: E402
+from periodic_kress import kress_log_weights  # noqa: E402
 from sdf_to_ordered_boundary.representations import (  # noqa: E402
     FourierBoundary,
     PeriodicSplineBoundary,
@@ -59,6 +60,12 @@ Array = np.ndarray
 TWO_PI = 2.0 * np.pi
 DEFAULT_NODE_COUNTS = (32, 64, 128, 256, 512, 1024, 2048)
 DEFAULT_SHAPE_ORDER = ("circle", "rotated_ellipse", "radial_fourier_star")
+SCALAR_PROXY_MEASUREMENT_SCOPE = {
+    "measurement_scope": "manufactured_scalar_quadrature_proxy",
+    "contains_bie_assembly": False,
+    "contains_linear_solve": False,
+    "contains_solver_error_metrics": False,
+}
 
 
 @dataclass(frozen=True)
@@ -131,31 +138,6 @@ def _even_node_count(value: int, *, label: str = "num_nodes") -> int:
     if count < 4 or count % 2:
         raise ValueError(f"{label} must be an even integer at least 4.")
     return count
-
-
-def kress_log_weights(num_nodes: int) -> Array:
-    """Return weights for the full canonical ``log(4 sin^2/2)`` factor.
-
-    The returned vector is indexed by ``(target_index-source_index) % N``.
-    An FFT evaluates the standard finite cosine sum; this is algebraically the
-    same Kress/Kussmaul-Martensen formula used by the reference Nyström code,
-    but this independent probe shares no implementation with that solver.
-    """
-
-    count = _even_node_count(num_nodes)
-    half = count // 2
-    modes = np.arange(1, half, dtype=np.int64)
-    reciprocal_spectrum = np.zeros(count, dtype=np.complex128)
-    reciprocal_spectrum[modes] = 0.5 / modes
-    reciprocal_spectrum[count - modes] = 0.5 / modes
-    cosine_sum = np.fft.fft(reciprocal_spectrum).real
-    nyquist_cosine = np.where(np.arange(count) % 2 == 0, 1.0, -1.0)
-    weights = (
-        -(TWO_PI / half) * cosine_sum
-        - (np.pi / half**2) * nyquist_cosine
-    )
-    weights.setflags(write=False)
-    return weights
 
 
 def poisson_weighted_density(
@@ -772,6 +754,9 @@ def _markdown_summary(payload: dict[str, Any]) -> str:
         "validate Müller blocks, diagonal kernel formulas, a linear solve, or a "
         "production BIE pipeline.",
         "",
+        "**None of the errors below is a PDE solution, boundary-density, receiver-field, "
+        "or scattered-field error.**",
+        "",
         "## Configuration",
         "",
         f"- Source study: `{source['artifact_root']}` ({source['row_count']} rows)",
@@ -794,14 +779,14 @@ def _markdown_summary(payload: dict[str, Any]) -> str:
         ),
         (
             f"- Timing: warm-up plus median of `{config['timing_repeats']}` dense "
-            "full-grid matrix-formation/actions"
+            "scalar-proxy full-grid matrix-formation/actions"
         ),
         "",
         "## Analytic circle control",
         "",
         "The reference is closed form; no numerical reference quadrature is used.",
         "",
-        "| N | max abs error | mixed relative error | dense full action median |",
+        "| N | max abs error | mixed relative error | dense scalar-proxy action median |",
         "|---:|---:|---:|---:|",
     ]
     for row in circle_rows:
@@ -826,16 +811,18 @@ def _markdown_summary(payload: dict[str, Any]) -> str:
             "## Skimmed fitted-curve table",
             "",
             (
-                "The geometry column is the normalized maximum SDF residual from "
-                "the source study. The q-error column isolates the geometry-sensitive "
-                "smooth Kress remainder; `ref-limited` means the error is no larger "
-                "than the float64/reference-disagreement floor. Full error also includes "
-                "the common manufactured Poisson convolution."
+                "The zero-set column is the normalized maximum implicit-field residual "
+                "from the source study (a first-order distance proxy). The smooth "
+                "log-remainder column compares one manufactured scalar integral with "
+                "an independent Gauss reference; `ref-limited` means the error is no "
+                "larger than the float64/reference-disagreement floor. The scalar-action "
+                "error also includes the common manufactured Poisson convolution."
             ),
             "",
             (
-                "| Shape | Frozen curve | status | geometry error | q mixed-relative "
-                f"error, N={error_header} | full error N=256 | conversion | dense action "
+                "| Shape | Frozen curve | status | zero-set distance proxy | smooth "
+                f"log-remainder quadrature error, N={error_header} | manufactured "
+                "scalar-action error N=256 | conversion | dense scalar-proxy action "
                 f"ms, N={runtime_header} |"
             ),
             "|---|---|---|---:|---|---:|---:|---:|",
@@ -884,7 +871,7 @@ def _markdown_summary(payload: dict[str, Any]) -> str:
             "",
             "`conversion` is copied from the earlier study and includes the shared front "
             "end in every row; do not sum it across methods or read it as incremental fit "
-            "cost. `dense action` includes curve discretization, weight construction, "
+            "cost. `dense scalar-proxy action` includes curve discretization, weight construction, "
             "dense N×N smooth-remainder matrix formation, and one matrix-vector action. "
             "It is neither an FFT-only weight application nor a four-block BIE assembly/solve.",
             "",
@@ -911,7 +898,8 @@ def _markdown_summary(payload: dict[str, Any]) -> str:
             ),
             "",
             "The proxy makes the separation especially visible: a Fourier curve can "
-            "become reference/roundoff limited while still having appreciable SDF geometry "
+            "become reference/roundoff limited while still having appreciable implicit "
+            "zero-set geometry "
             "error. Quadrature convergence does not repair an under-resolved boundary.",
             "",
             "Current preference remains **Method B with adaptive bandwidth**. B and "
@@ -1223,13 +1211,13 @@ def run_benchmark(
                 ]
                 reduction_passed = all(pair_passes)
                 reduction_description = (
-                    "N=32→64→128 q-error ratios "
+                    "N=32→64→128 smooth-remainder error ratios "
                     + ", ".join(f"{ratio:.3e}" for ratio in ratios)
                     + " < 0.25 or reference limited"
                 )
             passed = full_value < 1.0e-11 and reduction_passed
             description = (
-                f"{curve_record['run_id']} full error at N={gate_n} is "
+                f"{curve_record['run_id']} manufactured scalar-action error at N={gate_n} is "
                 f"{full_value:.3e} < 1e-11; {reduction_description}"
             )
         else:
@@ -1250,7 +1238,7 @@ def run_benchmark(
             ]
             passed = value < 1.0e-8 and all(pair_passes)
             description = (
-                f"{curve_record['run_id']} spline q-error at N={largest_count} is "
+                f"{curve_record['run_id']} spline smooth-remainder error at N={largest_count} is "
                 f"{value:.3e} < 1e-8 and final ratios are "
                 + ", ".join(f"{ratio:.3f}" for ratio in ratios)
                 + " < 0.2 or reference limited"
@@ -1276,6 +1264,7 @@ def run_benchmark(
     payload = {
         "artifact_kind": "sdf_boundary_kress_proxy",
         "schema_version": 2,
+        **SCALAR_PROXY_MEASUREMENT_SCOPE,
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "scope": (
             "isolated scalar logarithmic Kress proxy; no BIE blocks, solve, or "
@@ -1329,6 +1318,7 @@ def run_benchmark(
     artifact_manifest = {
         "artifact_kind": "sdf_boundary_kress_proxy_manifest",
         "schema_version": 1,
+        **SCALAR_PROXY_MEASUREMENT_SCOPE,
         "generated_at_utc": payload["generated_at_utc"],
         "acceptance_passed": payload["acceptance"]["passed"],
         "source_study": payload["source_study"],
@@ -1346,7 +1336,7 @@ def run_benchmark(
 def _default_output_directory() -> Path:
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     return REPOSITORY_ROOT / "results" / "sdf_boundary_parameterization" / (
-        f"kress-proxy-{timestamp}"
+        f"kress-scalar-proxy-{timestamp}"
     )
 
 

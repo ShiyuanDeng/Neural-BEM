@@ -15,6 +15,7 @@ from .validation import (
     CurveGeometryReport,
     OrderedBoundaryReport,
     OrderedBoundaryValidationError,
+    sampled_self_intersection_count,
     validate_ordered_parameterization,
     validate_periodic_parameterization,
 )
@@ -35,6 +36,7 @@ __all__ = [
     "ellipse",
     "fourier_curve",
     "star",
+    "sampled_self_intersection_count",
     "validate_ordered_parameterization",
     "validate_periodic_parameterization",
 ]

@@ -2226,7 +2226,8 @@ even count explicitly.
 
 ```text
 /home/drdeng/miniconda3/envs/EMNerf/bin/pytest \
-  pytest/test_ordered_periodic_curve.py pytest/test_ordered_boundary.py -q
+  pytest/ordered_boundary/test_ordered_periodic_curve.py \
+  pytest/ordered_boundary/test_ordered_boundary.py -q
 -> 22 passed in 1.09 s
 ```
 
@@ -2335,7 +2336,7 @@ same continuous curve at N=32 through 2048. It neither reruns marching squares
 nor refits at a new N. Selected C rows are successful refinements; fallback C
 rows are not repeated because their saved coefficients are bit-identical to B.
 
-Added [`pytest/test_sdf_boundary_kress_proxy.py`](../pytest/test_sdf_boundary_kress_proxy.py)
+Added [`pytest/sdf_to_ordered_boundary/test_sdf_boundary_kress_proxy.py`](../pytest/sdf_to_ordered_boundary/test_sdf_boundary_kress_proxy.py)
 for independent circle sine/cosine identities including the special Nyquist
 term, the non-bandlimited analytic circle control, the independent smooth-
 remainder reference, spline asymptotics, even-N rejection, and a static ban on
@@ -2352,7 +2353,7 @@ Fast executable checks:
 PYTHONPATH=solvers OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 \
 MKL_NUM_THREADS=1 \
 /home/drdeng/miniconda3/envs/EMNerf/bin/python -m pytest -q \
-  pytest/test_sdf_boundary_kress_proxy.py
+  pytest/sdf_to_ordered_boundary/test_sdf_boundary_kress_proxy.py
 ```
 
 The checked compact coefficient inputs make the frozen coefficient benchmark
@@ -2365,15 +2366,15 @@ OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
 /home/drdeng/miniconda3/envs/EMNerf/bin/python \
   scratchpad/sdf_boundary_kress_proxy.py \
   --artifact-root results/sdf_boundary_parameterization/study-20260902 \
-  --curve-root pytest/results/ordered_nystrom/\
-sdf-boundary-kress-proxy-20260902/frozen_curves \
-  --output-dir pytest/results/ordered_nystrom/\
-sdf-boundary-kress-proxy-REPRO \
+  --curve-root results/sdf_boundary_parameterization/\
+kress-scalar-proxy-20260902/frozen_curves \
+  --output-dir results/sdf_boundary_parameterization/\
+kress-scalar-proxy-REPRO \
   --timing-repeats 9
 ```
 
 The canonical skimmed error/runtime table and complete JSON/CSV records are in
-[`pytest/results/ordered_nystrom/sdf-boundary-kress-proxy-20260902/summary.md`](../pytest/results/ordered_nystrom/sdf-boundary-kress-proxy-20260902/summary.md).
+[`results/sdf_boundary_parameterization/kress-scalar-proxy-20260902/summary.md`](../results/sdf_boundary_parameterization/kress-scalar-proxy-20260902/summary.md).
 
 The generated summary is the authoritative readable error/runtime table. It
 shows smooth-remainder and full-action errors side by side and labels values
@@ -2409,3 +2410,160 @@ high-order Kress curve.
 This does not complete Phase 3 of the ordered-boundary plan: no Müller kernel
 block, singular diagonal formula, linear system, scattered field, or solver
 integration was tested here.
+
+2026-09-02
+
+## Test and evidence organization
+
+The test suite was grouped by the implementation or validation boundary it
+exercises. Selector-backed IBIM tests now live in `pytest/gpr_bem_shared/`;
+MOD- and kdiff-specific checks in `pytest/gpr_bem_mod/` and
+`pytest/gpr_bem_kdiff/`; independent oracles in `pytest/gprmax_ref/` and
+`pytest/nystrom_ref/`; geometry contracts in `pytest/ordered_boundary/` and
+`pytest/sdf_to_ordered_boundary/`; and physical solver comparisons in
+`pytest/solver_comparisons/`. The archived QBX comparison helper is under
+`pytest/solver_comparisons/archived_qbx/`.
+
+Evidence was removed from the test tree. The SDF smoke run, full study, and
+manufactured scalar Kress proxy are now the three dated bundles under
+`results/sdf_boundary_parameterization/`. Their SDF residuals, speed,
+curvature, topology checks, and scalar action errors are geometry/quadrature-
+readiness measurements, not BIE/PDE solver errors. The dated five-shape bundle
+with actual field/solver errors and archived QBX rows is now
+`results/solver_comparisons/legacy/qbx-closeout-20260901/`. Historical QBX
+scratch drivers are under `scratchpad/legacy/qbx/`.
+
+Older historical entries may retain the paths that existed when those
+experiments were run; the immediately preceding active Kress entry was updated
+to use the current reproduction paths. For current reproduction, use the
+organized locations above and the commands in `pytest/README.md`; no numerical
+result or solver pipeline changed. Two tests that exercise APIs present only
+in the maintained MOD implementation (`test_ibim_tmz_adjoint.py` and
+`test_ibim_inverse.py`) now import `gpr_bem_mod` explicitly. They are no longer
+misleadingly collected as selector-shared tests under `--solver=ref`; the
+genuinely shared tests remain dual-run under `pytest/gpr_bem_shared/`.
+
+Validation after relocation collected 248 tests from `pytest/`. The
+non-comparison package run passed 224 tests with two optional-backend skips;
+the relocated `pytest/solver_comparisons/` run passed all 22 tests; and the
+shared suite against `--solver=mod` passed 41 tests with the same two optional
+skips. The warnings were the existing merge-distance and Matplotlib/PyParsing
+warnings, not collection or import failures.
+
+## Isolated `PeriodicCurve2D` Kress/Müller forward candidate
+
+Date: 2026-09-02
+
+### Hypothesis
+
+One frozen smooth `PeriodicCurve2D` should be a sufficient and clean geometry
+seam for cancellation-safe Müller differences. A coherent all-block periodic
+Kress discretization should recover analytic circle block actions, boundary
+traces, and receiver fields and should converge on exact noncircular and
+SDF-derived Fourier curves without importing extraction or fitting state into
+the solver.
+
+### Change
+
+Added the direct-import-only `solvers/gpr_bem_mod/ordered_nystrom/` candidate.
+Its adapter accepts one even, endpoint-free, counterclockwise, simple
+`PeriodicCurve2D`; preserves its points, node order, outward normals, and
+ordinary `ds` weights; and maps only the parameter coordinate to canonical
+`[0,2 pi)`. A content hash records geometry identity.
+
+The numerical layer forms `Delta V`, `Delta K`, `Delta Kp`, and `Delta T` as
+combined exterior-minus-interior kernels. It uses a cancellation-safe
+power-log near series, direct Hankel differences away from the diagonal,
+closed diagonal remainders, and one shared full-log periodic weight generator
+in `solvers/periodic_kress/`. Each completed block owns the source Jacobian and
+parameter step exactly once. Target-row chunking bounds temporary storage
+while retaining the four dense matrices.
+
+Under the audited repository convention, the directly solved system is
+
+```text
+[ I-DeltaK    DeltaV   ] [u_D] = [u_inc,D]
+[ -DeltaT   I+DeltaKp ] [u_N]   [u_inc,N]
+```
+
+The lower-left sign is equivalent to the maintained package's `+DeltaW`
+because that vocabulary defines `W=-T`. The forward result retains total
+traces, separated exterior single/double potentials, the full
+source-by-receiver field, linear residuals, overlap diagnostics, and separated
+timings. The high-level material route is explicitly lossless and nonmagnetic;
+conductive inputs are rejected until the repository phasor/conductivity sign
+is reconciled. The low-level complex-wavenumber API remains available for
+numerical kernel tests.
+
+No selector, normal forward driver, adjoint, inverse, SDF converter, or
+`gpr_bem_mod.__init__` export was changed. Architecture, convention derivation,
+diagonal formulas, API, limitations, and the integration verdict are recorded
+in [`ordered_nystrom_implementation.md`](ordered_nystrom_implementation.md).
+
+### Validation
+
+The solver-owned regression command was:
+
+```bash
+PYTHONPATH=solvers \
+/home/drdeng/miniconda3/envs/EMNerf/bin/python -m pytest -q \
+  pytest/ordered_nystrom
+```
+
+It passed 38 tests. Coverage includes isolation, geometry/weight ownership,
+canonical Kress modes including Nyquist, near/direct overlap, small-separation
+stability, analytic Fourier-Bessel actions of all four circle blocks, exact
+matrix signs and jumps, manufactured modal recovery, zero contrast, circle
+Mie traces/receiver fields through 8 GHz, receiver-clearance guards, and
+explicit magnetic/lossy rejection.
+
+The checked exact-curve evidence was generated with:
+
+```bash
+OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
+NUMEXPR_NUM_THREADS=1 PYTHONPATH=solvers \
+/home/drdeng/miniconda3/envs/EMNerf/bin/python \
+  run_ordered_nystrom_validation.py \
+  --preset quick --timing-repeats 3 --run-id quick-20260902
+```
+
+It produced 27 rows for exact circle, rotated ellipse, and smooth five-lobed
+star at `N={64,128,256}` and `{0.5,2.5,8}` GHz. All nine configured largest-`N`
+smoke checks pass. At `N=256`, the worst mixed receiver error is `1.22e-8`, the
+worst total-trace error is `1.11e-8`, and the largest ordinary system residual
+is below `4e-14`. The difficult star/8-GHz receiver error decreases from
+`5.55e-1` at `N=64` to `8.89e-5` at `N=128` and `1.22e-8` at `N=256`; a small
+algebraic residual alone would not have exposed the first two under-resolved
+solutions. Exact retained storage for four blocks plus the system is 8 MiB at
+`N=256`. The slowest median candidate cell, including the separately timed raw
+condition estimate, is 327 ms; the complete run took 16.04 s.
+
+The separate frozen-geometry command used the checked finest-input Method-B
+circle `K=4` and ellipse/star `K=32` coefficient bundles, `N={128,256}`, and an
+independent `nystrom_ref` oracle at `N=512`. It passed all nine configured
+largest-`N` checks. The worst `N=256` receiver and trace discrepancies are
+`4.79e-9` and `3.56e-9`; the slowest median candidate cell is 322 ms and the
+complete three-repeat run took 18.00 s.
+
+The readable tables, complete CSV/JSON records, commands, input provenance,
+environment, and current source/artifact hashes are indexed at
+[`results/ordered_boundary_nystrom/README.md`](../results/ordered_boundary_nystrom/README.md).
+No dense matrix, solution, trace, or receiver array is stored there. The raw
+condition number mixes Dirichlet and Neumann units and is diagnostic only.
+
+### Decision
+
+Keep one shared downstream solver accepting `PeriodicCurve2D`; do not fork a
+solver for parameterization Methods A, B, and C. Those remain upstream curve
+producers and should be compared by freezing each `gamma` before varying the
+Nyström node count. Method B with adaptive bandwidth remains the preferred
+upstream candidate because Method C has not demonstrated an operator benefit
+that offsets its nonlinear cost and fallback behavior.
+
+The new solver is accepted only as an isolated experimental candidate. It is
+not Phase-4-complete and is not ready for selector or inverse integration.
+Remaining gates include all six frequencies, reference-oracle
+self-convergence, separate exterior/interior transmission residuals,
+noncircular block/reciprocity checks, solver-level geometry-bandwidth sweeps,
+lossy-physics reconciliation, and equal-work comparisons against the current
+operational baseline.

@@ -288,23 +288,28 @@ The notebook reads `manifest.json`, `metrics.csv`/`metrics.json`, and curve bund
 
 ## Tests and commands
 
-Focused unit tests are organized by responsibility:
+Focused unit tests are organized under `pytest/sdf_to_ordered_boundary/`, with
+the independent geometry-contract tests beside them under
+`pytest/ordered_boundary/`. These tests stop at geometry/parameterization
+readiness. Their residual and discrepancy columns are not BIE/PDE solver
+errors; even the Kress proxy is a manufactured scalar product-rule action with
+no physical operator assembly or solve.
 
-- [`pytest/test_sdf_boundary_frontend.py`](../pytest/test_sdf_boundary_frontend.py): field contracts, analytic references, Torch optionality, field accounting, circle and generic ellipse extraction/projection, zero/multiple components, deliberately underresolved grids, open/bounding-box contours, step limiting, near-critical gradients, self-intersections, and cyclic resampling;
-- [`pytest/test_sdf_boundary_methods_ab.py`](../pytest/test_sdf_boundary_methods_ab.py): coefficient ownership, spline seam continuity, exact finite-Fourier recovery, circle recovery at `K=1`, arc-length speed improvement, underdetermined-fit rejection, and explicit rejection when a near-Nyquist fit creates a self-intersection from a simple input polygon;
-- [`pytest/test_sdf_boundary_method_c.py`](../pytest/test_sdf_boundary_method_c.py): exact Method-B initialization, generic ellipse and radial-star refinement, analytic coefficient gradients, normalized-field scale invariance, weighted valid-checkpoint selection and restoration, full optimizer history, component/area/perimeter diagnostics, and exception fallback;
-- [`pytest/test_sdf_boundary_metrics.py`](../pytest/test_sdf_boundary_metrics.py): exact-circle metrics, phase-independent set comparison, normalized residual scaling, self-intersection detection, frozen-curve $N/2N/4N$ readiness and perimeter convergence, strict artifact writers, and required plots; and
-- [`pytest/test_sdf_boundary_experiment.py`](../pytest/test_sdf_boundary_experiment.py): one-front-end fairness, coefficient/sample artifacts, primary metric columns, converter time/count accounting, CLI overrides, and non-empty-output protection;
-- [`pytest/test_sdf_boundary_notebook.py`](../pytest/test_sdf_boundary_notebook.py): valid artifact-only notebook structure and explicit grid/bandwidth/frozen-node/status analysis; and
-- [`pytest/test_sdf_boundary_isolation.py`](../pytest/test_sdf_boundary_isolation.py): import-direction isolation and adaptation of all three outputs to the existing continuous/even-node ordered-boundary contracts.
+- [`pytest/sdf_to_ordered_boundary/test_sdf_boundary_frontend.py`](../pytest/sdf_to_ordered_boundary/test_sdf_boundary_frontend.py): field contracts, analytic references, Torch optionality, field accounting, circle and generic ellipse extraction/projection, zero/multiple components, deliberately underresolved grids, open/bounding-box contours, step limiting, near-critical gradients, self-intersections, and cyclic resampling;
+- [`pytest/sdf_to_ordered_boundary/test_sdf_boundary_methods_ab.py`](../pytest/sdf_to_ordered_boundary/test_sdf_boundary_methods_ab.py): coefficient ownership, spline seam continuity, exact finite-Fourier recovery, circle recovery at `K=1`, arc-length speed improvement, underdetermined-fit rejection, and explicit rejection when a near-Nyquist fit creates a self-intersection from a simple input polygon;
+- [`pytest/sdf_to_ordered_boundary/test_sdf_boundary_method_c.py`](../pytest/sdf_to_ordered_boundary/test_sdf_boundary_method_c.py): exact Method-B initialization, generic ellipse and radial-star refinement, analytic coefficient gradients, normalized-field scale invariance, weighted valid-checkpoint selection and restoration, full optimizer history, component/area/perimeter diagnostics, and exception fallback;
+- [`pytest/sdf_to_ordered_boundary/test_sdf_boundary_metrics.py`](../pytest/sdf_to_ordered_boundary/test_sdf_boundary_metrics.py): exact-circle metrics, phase-independent set comparison, normalized residual scaling, self-intersection detection, frozen-curve $N/2N/4N$ readiness and perimeter convergence, strict artifact writers, and required plots;
+- [`pytest/sdf_to_ordered_boundary/test_sdf_boundary_experiment.py`](../pytest/sdf_to_ordered_boundary/test_sdf_boundary_experiment.py): one-front-end fairness, coefficient/sample artifacts, primary metric columns, converter time/count accounting, CLI overrides, and non-empty-output protection;
+- [`pytest/sdf_to_ordered_boundary/test_sdf_boundary_notebook.py`](../pytest/sdf_to_ordered_boundary/test_sdf_boundary_notebook.py): valid artifact-only notebook structure and explicit grid/bandwidth/frozen-node/status analysis;
+- [`pytest/sdf_to_ordered_boundary/test_sdf_boundary_isolation.py`](../pytest/sdf_to_ordered_boundary/test_sdf_boundary_isolation.py): import-direction isolation and adaptation of all three outputs to the existing continuous/even-node ordered-boundary contracts; and
+- [`pytest/sdf_to_ordered_boundary/test_sdf_boundary_kress_proxy.py`](../pytest/sdf_to_ordered_boundary/test_sdf_boundary_kress_proxy.py): analytic Fourier identities, independent reference checks, frozen-bundle replay, and explicit solver isolation for the scalar Kress proxy.
 
 The focused Python tests can be run with:
 
 ```bash
 PYTHONPATH=solvers python -m pytest -q \
-  pytest/test_sdf_boundary_*.py \
-  pytest/test_ordered_periodic_curve.py \
-  pytest/test_ordered_boundary.py
+  pytest/sdf_to_ordered_boundary \
+  pytest/ordered_boundary
 ```
 
 Generate a fresh smoke bundle in the driver's timestamped default directory with:
@@ -395,12 +400,12 @@ MPLCONFIGDIR=/tmp/neural_sdf_bem_smoke_mpl \
 /home/drdeng/miniconda3/envs/EMNerf/bin/python \
   run_sdf_boundary_parameterization_comparison.py \
   --profile smoke \
-  --output pytest/results/sdf_boundary_parameterization
+  --output results/sdf_boundary_parameterization/smoke-REPRO
 ```
 
 That explicit evidence target is now non-empty and is deliberately protected against accidental overwrite. Reproduce the smoke run with the timestamped-default command above or choose a new empty directory.
 
-It produced three shared front ends and 15 method rows: 14 `success`, one `fallback`, and zero hard failures. Every reported curve had positive minimum speed and zero sampled self-intersections. The strict artifacts are in [`pytest/results/sdf_boundary_parameterization/`](../pytest/results/sdf_boundary_parameterization/): [`manifest.json`](../pytest/results/sdf_boundary_parameterization/manifest.json), [`metrics.csv`](../pytest/results/sdf_boundary_parameterization/metrics.csv), [`metrics.json`](../pytest/results/sdf_boundary_parameterization/metrics.json), 15 native-coefficient/sample NPZ bundles, 15 run records, three front-end bundles, and 15 six-panel plots.
+It produced three shared front ends and 15 method rows: 14 `success`, one `fallback`, and zero hard failures. Every reported curve had positive minimum speed and zero sampled self-intersections. The strict artifacts are in [`results/sdf_boundary_parameterization/smoke-20260902/`](../results/sdf_boundary_parameterization/smoke-20260902/): [`manifest.json`](../results/sdf_boundary_parameterization/smoke-20260902/manifest.json), [`metrics.csv`](../results/sdf_boundary_parameterization/smoke-20260902/metrics.csv), [`metrics.json`](../results/sdf_boundary_parameterization/smoke-20260902/metrics.json), 15 native-coefficient/sample NPZ bundles, 15 run records, three front-end bundles, and 15 six-panel plots.
 
 The single fallback is Method C on the radial-Fourier star at $K=4$. Its final normalized maximum/RMS residual did not remain within the configured Method-B envelope, so the recorded C geometry is the valid Method-B fallback. This is the intended safety policy, not a missing row.
 
@@ -419,7 +424,7 @@ These rows expose trade-offs but do not establish a winner. The smoke profile ha
 
 ## Full grid, sample-count, bandwidth, and frozen-node study
 
-The full study used Cartesian grids $65^2$, $129^2$, and $257^2$; projected sample counts $M\in\{128,256\}$; Fourier bandwidths $K\in\{4,8,16,32\}$; and frozen-curve even node counts $N\in\{64,128,256,512,1024\}$. Its local artifacts are in [`results/sdf_boundary_parameterization/study-20260902/`](../results/sdf_boundary_parameterization/study-20260902/), including [`manifest.json`](../results/sdf_boundary_parameterization/study-20260902/manifest.json), [`metrics.csv`](../results/sdf_boundary_parameterization/study-20260902/metrics.csv), [`metrics.json`](../results/sdf_boundary_parameterization/study-20260902/metrics.json), 162 coefficient/sample bundles, 162 run records, 18 shared front-end bundles, and 162 six-panel plots. In accordance with the repository's existing `/results/**/*.npz` and `/results/**/*.png` policy, the full-study JSON/CSV evidence is versioned while its reproducible NPZ/PNG files remain local; the smaller checked smoke bundle under `pytest/results/` versions all formats.
+The full study used Cartesian grids $65^2$, $129^2$, and $257^2$; projected sample counts $M\in\{128,256\}$; Fourier bandwidths $K\in\{4,8,16,32\}$; and frozen-curve even node counts $N\in\{64,128,256,512,1024\}$. Its local artifacts are in [`results/sdf_boundary_parameterization/study-20260902/`](../results/sdf_boundary_parameterization/study-20260902/), including [`manifest.json`](../results/sdf_boundary_parameterization/study-20260902/manifest.json), [`metrics.csv`](../results/sdf_boundary_parameterization/study-20260902/metrics.csv), [`metrics.json`](../results/sdf_boundary_parameterization/study-20260902/metrics.json), 162 coefficient/sample bundles, 162 run records, 18 shared front-end bundles, and 162 six-panel plots. In accordance with the repository's existing `/results/**/*.npz` and `/results/**/*.png` policy, the full-study JSON/CSV evidence is versioned while its reproducible NPZ/PNG files remain local; the smaller checked smoke bundle under `results/sdf_boundary_parameterization/smoke-20260902/` versions all formats.
 
 The sweep produced 162 rows: all 18 Method-A rows and all 72 Method-B rows succeeded; Method C returned 28 accepted refinements and 44 guarded Method-B fallbacks; there were no hard failures. All returned curves had positive minimum speed and zero sampled self-intersections. Of the C fallbacks, 32 failed the max/RMS residual envelope and 12 failed the speed-ratio envelope.
 
@@ -462,7 +467,7 @@ identical shared front end and must not be summed, while action time means
 dense `N x N` proxy-matrix formation and application, not an FFT, BIE
 assembly, or solver time. The skimmed error/runtime table and its checked
 `frozen_curves/` reproduction inputs are in
-[`pytest/results/ordered_nystrom/sdf-boundary-kress-proxy-20260902/summary.md`](../pytest/results/ordered_nystrom/sdf-boundary-kress-proxy-20260902/summary.md),
+[`results/sdf_boundary_parameterization/kress-scalar-proxy-20260902/summary.md`](../results/sdf_boundary_parameterization/kress-scalar-proxy-20260902/summary.md),
 and its rationale, independent-reference construction, gates, and limitations
 are recorded in
 [`validation_change_log.md`](validation_change_log.md#frozen-sdf-boundaries-isolated-scalar-kress-proxy).

@@ -16,8 +16,10 @@ solve path and vary only the hypersingular Muller difference block.
 | `gpr_bem_kdiff/` | Frozen experimental compressed-cloud baseline and isolated T-assembly seam. |
 | `gpr_bem_qbx/` | Archived full-row QBX T strategies; diagnostics, not a production solver. |
 | `gpr_bem_ndiff/` | Archived/unsupported normal-offset experiment; unvalidated and not selector-wired. |
-| `ordered_boundary/` | Solver-neutral continuous producers plus immutable ordered BIE nodes and diagnostics; no forward assembler yet. |
+| `ordered_boundary/` | Solver-neutral continuous producers plus immutable ordered BIE nodes and diagnostics. |
+| `periodic_kress/` | Shared canonical periodic logarithmic product weights; no geometry or physics ownership. |
 | `sdf_to_ordered_boundary/` | Opt-in SDF-to-smooth-periodic-boundary A/B/C comparison; reuses `ordered_boundary` outputs and is not selector- or solver-wired. |
+| `gpr_bem_mod/ordered_nystrom/` | Opt-in single-component `PeriodicCurve2D` Müller/Kress forward candidate; deliberately not selector- or driver-wired. |
 
 The measured QBX/kdiff production-direction investigation is closed. See
 [`docs/qbx_closure.md`](../docs/qbx_closure.md) for the timing and accuracy
@@ -48,7 +50,9 @@ into `sys.modules` (submodules included, so class identity is preserved and the
 runs frozen `gpr_bem_ref`; maintained forward/adjoint/inverse commands must use
 `--solver=mod` explicitly.
 
-Tests — the files in `pytest/` are unmodified and run against either:
+Selector-backed tests live in `pytest/gpr_bem_shared/` and run unchanged
+against either solver. The full `pytest/` tree also contains package-specific,
+reference, geometry, and cross-solver groups:
 
 ```bash
 python -m pytest pytest/                   # ref, the default
@@ -56,7 +60,8 @@ python -m pytest pytest/ --solver=mod      # mod
 SOLVER=mod python -m pytest pytest/        # same
 ```
 
-The chosen package is printed in the pytest header, so a run is self-documenting.
+The alias made available to `gpr_bem_shared/` is printed in the pytest header.
+Tests under `gpr_bem_mod/` import that package explicitly and ignore the flag.
 
 Drivers — all three take the same flag, and the rectangular forward driver writes
 to a solver-specific output directory (`results/rectangular_loop_forward_{ref,mod}`)
@@ -73,23 +78,29 @@ Notebook — `notebooks/_build_notebook.py` reads the `SOLVER` environment varia
 
 ## Comparing them
 
-`pytest/test_circle_comparison.py`, `pytest/test_square_comparison.py`,
-`pytest/test_ellipse_comparison.py`, and `pytest/test_star_comparison.py`
-ignore the selection mechanism and import both packages directly, running them
-in one process on the same case and printing one row per solver. The circle
-file gates against the Mie series; the square file (a target with a real
-corner, and no closed-form oracle) gates against gprMax and self-convergence
-instead; the ellipse/star files gate against `nystrom_ref`, the standalone
-Nystrom oracle:
+The files under `pytest/solver_comparisons/` ignore the selection mechanism and
+import both packages directly, running them in one process on the same case and
+printing one row per solver. The circle file gates against the Mie series; the
+square file (a target with a real corner, and no closed-form oracle) gates
+against gprMax and self-convergence instead; the ellipse/star files gate
+against `nystrom_ref`, the standalone Nystrom oracle:
 
 ```bash
-python -m pytest pytest/test_circle_comparison.py -s -q
-python -m pytest pytest/test_square_comparison.py -s -q
-python -m pytest pytest/test_ellipse_comparison.py -s -q
-python -m pytest pytest/test_star_comparison.py -s -q
+python -m pytest pytest/solver_comparisons/test_circle_comparison.py -s -q
+python -m pytest pytest/solver_comparisons/test_square_comparison.py -s -q
+python -m pytest pytest/solver_comparisons/test_ellipse_comparison.py -s -q
+python -m pytest pytest/solver_comparisons/test_star_comparison.py -s -q
 ```
 
 Those are the files to extend as you add metrics worth watching.
+
+Do not read the adjacent `pytest/ordered_boundary/` or
+`pytest/sdf_to_ordered_boundary/` measurements as solver errors. They test the
+geometry contract, SDF fidelity, and one manufactured scalar Kress action; they
+do not assemble or solve the physical BIE. Solver field/operator errors belong
+to `pytest/ordered_nystrom/` and `pytest/solver_comparisons/`, with result
+bundles under `results/ordered_boundary_nystrom/` and
+`results/solver_comparisons/`, respectively.
 
 ## Other solver packages under here
 
@@ -101,7 +112,9 @@ Not part of the `ref`/`mod` pair, and not selected by `--solver`:
 | `kernel_diff_ref/` | Diagnostic: hosts `nystrom_ref`'s kernel-differenced quadrature against IBIM's own boundary object (`ImplicitBoundarySamples2D`), circle-only, perfect-sampling-only. Not an oracle -- see its module docstring and `docs/validation_change_log.md`. |
 | `gprmax_ref/` | Cache-driven wrapper around an out-of-process FDTD run (`docs/gprmax_reference_study.md`). |
 | `ordered_boundary/` | Shared NumPy-only node boundary, with separate exact/Fourier parameterization producers, for future Kress, kernel-difference, QBX, panel, or other BIE backends. |
+| `periodic_kress/` | Universal full-log periodic weights reused by the scalar proxy and ordered Müller candidate. |
 | `sdf_to_ordered_boundary/` | Shared marching/projection front end, spline/Fourier/SDF-refined producers, common metrics, and isolated study orchestration (`docs/sdf_boundary_parameterization_implementation.md`). |
+| `gpr_bem_mod/ordered_nystrom/` | Experimental dense all-block Kress/Müller solve accepting exactly one immutable `PeriodicCurve2D`; direct import only. |
 
 ## Selecting experimental T assembly in the kdiff solve
 

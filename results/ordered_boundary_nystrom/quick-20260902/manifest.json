@@ -1,0 +1,161 @@
+{
+  "artifacts": {
+    "metrics.csv": {
+      "bytes": 24477,
+      "sha256": "100ed091d8ce84377c29e805a29fa791e4162c88be809175fcd5b3ddb3deb28c"
+    },
+    "metrics.json": {
+      "bytes": 78703,
+      "sha256": "8bfcafff9d9596d4b03a0139ac52db86029d3ff60f14eb4623463bd388c3f21f"
+    },
+    "summary.md": {
+      "bytes": 5284,
+      "sha256": "3da2a6bb612db125d59f7151d39b8c4f7c17595d0287cfc881b4b3d91863178b"
+    }
+  },
+  "cases": [
+    {
+      "definition": "center=(0.5, 0.5), radius=0.050000000000000003 m",
+      "fourier_bandwidth": null,
+      "frozen_path": null,
+      "frozen_sha256": null,
+      "name": "circle",
+      "normalization_scale": null,
+      "original_center": null,
+      "original_mean_radius": null,
+      "reference_kind": "analytic_mie_series",
+      "source_kind": "analytic",
+      "target_mean_radius": null
+    },
+    {
+      "definition": "center=(0.5, 0.5), semi_axes=(0.069999999999999993, 0.035714285714285719) m, rotation=0.31 rad",
+      "fourier_bandwidth": null,
+      "frozen_path": null,
+      "frozen_sha256": null,
+      "name": "ellipse",
+      "normalization_scale": null,
+      "original_center": null,
+      "original_mean_radius": null,
+      "reference_kind": "independent_nystrom_ref_frozen_high_N",
+      "source_kind": "analytic",
+      "target_mean_radius": null
+    },
+    {
+      "definition": "center=(0.5, 0.5), mean_radius=0.050000000000000003 m, relative_amplitude=0.25, lobes=5, rotation=0.19 rad",
+      "fourier_bandwidth": null,
+      "frozen_path": null,
+      "frozen_sha256": null,
+      "name": "star",
+      "normalization_scale": null,
+      "original_center": null,
+      "original_mean_radius": null,
+      "reference_kind": "independent_nystrom_ref_frozen_high_N",
+      "source_kind": "analytic",
+      "target_mean_radius": null
+    }
+  ],
+  "command": "/home/drdeng/miniconda3/envs/EMNerf/bin/python run_ordered_nystrom_validation.py --preset quick --timing-repeats 3 --run-id quick-20260902",
+  "created_utc": "2026-09-02T14:12:20.042425+00:00",
+  "environment": {
+    "numpy": "2.0.2",
+    "platform": "Linux-5.15.0-139-generic-x86_64-with-glibc2.31",
+    "python": "3.9.25 (main, Nov  3 2025, 22:33:05) \n[GCC 11.2.0]",
+    "scipy": "1.13.1",
+    "thread_environment": {
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1"
+    }
+  },
+  "git": {
+    "commit": "9ef8948031434e90a83db0818f0f5b71d343adf5",
+    "dirty": true,
+    "status_entry_count": 184
+  },
+  "output_directory": "/home/drdeng/Neural_SDF_BEM_AD/results/ordered_boundary_nystrom/quick-20260902",
+  "physics": {
+    "eps0": 8.854187817e-12,
+    "exterior": {
+      "epsr": 6.0,
+      "mur": 1.0,
+      "sigma": 0.0
+    },
+    "interior": {
+      "epsr": 3.0,
+      "mur": 1.0,
+      "sigma": 0.0
+    },
+    "mu0": 1.2566370614359173e-06,
+    "receiver_ring_radius_m": 0.27,
+    "source_receiver_angular_offset_rad": 0.12,
+    "source_ring_radius_m": 0.27,
+    "source_strength": 1.0
+  },
+  "run_id": "quick-20260902",
+  "schema_version": 1,
+  "settings": {
+    "assembly": {
+      "near_argument": 0.75,
+      "series_terms": 24,
+      "target_chunk_size": 64
+    },
+    "frequencies_ghz": [
+      0.5,
+      2.5,
+      8.0
+    ],
+    "frozen_target_mean_radius_m": 0.05,
+    "gates": {
+      "circle_scaled_block_action_error": 1e-08,
+      "incident_representation_leak": 1e-10,
+      "linear_system_relative_residual": 1e-10,
+      "maximum_trace_relative_error_l2": 1e-06,
+      "mixed_floor_fraction": 0.05,
+      "near_direct_overlap": 2e-11,
+      "receiver_mixed_relative_error_l2": 1e-06
+    },
+    "nodes": [
+      64,
+      128,
+      256
+    ],
+    "num_pairs": 4,
+    "preset": "quick",
+    "reference_nodes": 512,
+    "timing_repeats": 3
+  },
+  "source_sha256": {
+    "config/base_config.py": "cabc68655b3cac46b610e3a5c544b85f30f67b8627320e562c66e8dbe2d3d1c7",
+    "config/circle_config.py": "d74f09b2376d2566a41ba194c362e35326942a51d2f1878fe11726bb35a315aa",
+    "run_ordered_nystrom_validation.py": "7171e1cecb7e0210033768b5782ebbbf1e49092379972ca89d00af03fdb3c8aa",
+    "solvers/gpr_bem_mod/__init__.py": "947da604ab3583fb79657f71110c373a5caf8cbadecbdbcae3dd30ca2c0fc611",
+    "solvers/gpr_bem_mod/cylinder_reference.py": "bf4568bee6020be124b71060aa38e37a1b1bce33d5c43752b9d41d7c6aec0046",
+    "solvers/gpr_bem_mod/materials.py": "3e7ec1f8bf22b708fa3023835cd8cbbe2cfd3933704681f3cbed8c3ec64f6347",
+    "solvers/gpr_bem_mod/ordered_nystrom/__init__.py": "722f96dc9506854beaeb7e4d3007c4e72b2f14f3c4864f3f6d1ba09d4e90e983",
+    "solvers/gpr_bem_mod/ordered_nystrom/_kernels.py": "bb442c936169217899c7798218df68de38f155c464e2ad7e11d56b9fcc5eca10",
+    "solvers/gpr_bem_mod/ordered_nystrom/conventions.py": "ffbc91ea277a24779b40c090e0aef80c68cad60922855dd2c63fbebf885101c3",
+    "solvers/gpr_bem_mod/ordered_nystrom/forward.py": "36a1b3994c3802321954682fa330a1b76ef893c8390fb0bef764d6cdcd2783ca",
+    "solvers/gpr_bem_mod/ordered_nystrom/geometry.py": "168d03bf0a7ca3dc430102ac256c7e0de0b11d0386aa62d13e30677c2a6a0271",
+    "solvers/gpr_bem_mod/ordered_nystrom/operators.py": "362f6bd5abfdb15aea5e1cb46193ac337bc9353141d092175a5011eb74957132",
+    "solvers/gpr_bem_mod/ordered_nystrom/system.py": "2053297e79736c0bd93819f9c2a9f9245487f1ac73fd9ac6b09bd29d6fc616cc",
+    "solvers/nystrom_ref/__init__.py": "2fb8a1337c024523c214f515057acc5a3bb6342b7255208d0cb6acfe761dade2",
+    "solvers/nystrom_ref/nystrom_tmz.py": "de5d9f4119e0bd62b97a64bf2deb437888986dae2846a3ea4a227c35fe21917e",
+    "solvers/ordered_boundary/__init__.py": "75a5dfaa90ab61b192396e9c8ab624b253d114690e212566cb8d1bd604c95ba4",
+    "solvers/ordered_boundary/_array_utils.py": "8f90ad86f63ad44ed1d7f9db4d655b6783a67d647c5a14fa0503fc551834a4f5",
+    "solvers/ordered_boundary/analytic.py": "7a499e0e9eb07710cfee0c5f0cdb5c770e42ded214785bfddf61272d3e353cb6",
+    "solvers/ordered_boundary/boundary.py": "8f9bd3afa0978076372d3228d9f904b0b0aa87f94e4142a538695d3d87f9dffc",
+    "solvers/ordered_boundary/boundary_parameterization.py": "3883e2232cf6f9b8a8e3a12e95052e6e2791b942ff8e8b6c3fc59419197c7a2c",
+    "solvers/ordered_boundary/curve.py": "bcc1a40b445b955f6701da11bca39d4a329874bdb3830476d51375f1e99f9ced",
+    "solvers/ordered_boundary/parameterization.py": "d71628ac3dce3ba8aaf262aad28607b29ea74ed65d58850342aaa3fb4db599c8",
+    "solvers/ordered_boundary/validation.py": "f65e8e50dc30c970e3752378ff507be714cbb452e449ccbf7cb35b588a316426",
+    "solvers/periodic_kress/__init__.py": "170aaa97498ae490d75b14159b583d50c0734b23b5cb62085bc65479ceb5f38f",
+    "solvers/periodic_kress/weights.py": "4b5b8cf2edd21793841c29a901c2ed304e0d46e5d30f1d078ac45ea9253e8726"
+  },
+  "storage_policy": {
+    "artifacts_are_scalar_tables_and_metadata_only": true,
+    "dense_matrices_persisted": false,
+    "receiver_arrays_persisted": false,
+    "solutions_persisted": false
+  }
+}

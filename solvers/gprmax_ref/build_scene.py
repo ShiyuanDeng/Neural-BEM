@@ -54,8 +54,8 @@ def build_geometry(
 
     The representative pair sits at angle 0 (Tx) and ``sep`` (Rx) on the
     standoff ring, ``sep = tx_rx_offset / standoff``, matching
-    ``pytest/test_circle_comparison.py`` and ``pytest/test_square_comparison.py``'s
-    ``_ring_scan``.
+    ``pytest/solver_comparisons/test_circle_comparison.py`` and
+    ``pytest/solver_comparisons/test_square_comparison.py``'s ``_ring_scan``.
     """
 
     if target_shape not in TARGET_SHAPES:

@@ -67,6 +67,17 @@ from .results import MethodResult
 
 _SAFE_NAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]*$")
 
+# Persist the scientific boundary of this experiment in every generated
+# manifest.  These booleans are intentionally redundant with the prose scope:
+# downstream readers can reject accidental use as solver-validation evidence
+# without guessing from metric names such as "residual" or "Kress".
+GEOMETRY_MEASUREMENT_SCOPE = {
+    "measurement_scope": "geometry_parameterization",
+    "contains_bie_assembly": False,
+    "contains_linear_solve": False,
+    "contains_solver_error_metrics": False,
+}
+
 
 def _positive_integer(value: Any, *, name: str, minimum: int) -> int:
     if isinstance(value, (bool, np.bool_)):
@@ -1159,6 +1170,7 @@ def run_comparison_experiment(
         output / "manifest.json",
         {
             "schema_version": 1,
+            **GEOMETRY_MEASUREMENT_SCOPE,
             "profile": settings.to_dict(),
             "shapes": [shape.to_dict() for shape in selected_shapes],
             "frontend_count": frontend_count,
@@ -1187,6 +1199,7 @@ __all__ = [
     "ComparisonProfile",
     "ComparisonShape",
     "ExperimentRunRecord",
+    "GEOMETRY_MEASUREMENT_SCOPE",
     "analytic_comparison_shapes",
     "comparison_profile",
     "run_comparison_experiment",

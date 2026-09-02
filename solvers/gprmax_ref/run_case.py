@@ -41,10 +41,11 @@ reference is meant to measure.
 
 Only one representative Tx/Rx pair is simulated. For the circle target, the
 shape is rotationally symmetric about its center and the ring scan in
-``pytest/test_circle_comparison.py`` is literally that pair rotated around
-the center, so every pair on the ring has the identical scattered field (this
-is confirmed to 1e-16 by the Fourier-Bessel series, not assumed). The square
-target only has 4-fold symmetry, so ``pytest/test_square_comparison.py``
+``pytest/solver_comparisons/test_circle_comparison.py`` is literally that pair
+rotated around the center, so every pair on the ring has the identical
+scattered field (this is confirmed to 1e-16 by the Fourier-Bessel series, not
+assumed). The square target only has 4-fold symmetry, so
+``pytest/solver_comparisons/test_square_comparison.py``
 compares this single pair against the matching index (angle 0) of its own
 ring scan only, not the whole ring. Ellipse, star, and two-circle targets use
 the same index-0 convention in their comparison tests.

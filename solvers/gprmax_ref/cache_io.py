@@ -7,7 +7,8 @@ import. So the FDTD run itself is a script invoked once by hand with the
 as plain JSON, keyed by a hash of every physical and numerical parameter that
 could change the answer. Reading the cache has no dependency on gprMax being
 installed at all, which is what lets
-``pytest/test_circle_comparison.py`` and ``pytest/test_square_comparison.py``
+``pytest/solver_comparisons/test_circle_comparison.py`` and
+``pytest/solver_comparisons/test_square_comparison.py``
 show a gprMax row without ever launching gprMax itself.
 
 The preferred high-frequency format is one cache entry per frequency, with

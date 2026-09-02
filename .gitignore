@@ -29,9 +29,10 @@ dist/
 /*.npy
 /results/**/*.npz
 /results/**/*.png
+/results/solver_comparisons/current/
 
 # Generated scratch diagnostics; keep the scripts themselves tracked.
-/scratchpad/*.csv
+/scratchpad/**/*.csv
 
 # Keep literature citations/links in Git, not redistributed article PDFs.
 /references/*.pdf
@@ -45,7 +46,11 @@ dist/
 /bem_gradients/
 /layered_Green_function/
 
-# Aggregate comparisons are deliberately small, reviewable project results.
-# Keep the complete bundle visible in Git/GitHub, including PNG and NPZ files.
-!pytest/results/
-!pytest/results/**
+# Checked validation bundles are deliberately small and reviewable.  Generated
+# studies still obey the broad /results/**/*.npz and *.png exclusions above;
+# only these named evidence snapshots retain their binary inputs/plots in Git.
+!/results/solver_comparisons/legacy/qbx-closeout-20260901/**/*.npz
+!/results/solver_comparisons/legacy/qbx-closeout-20260901/**/*.png
+!/results/sdf_boundary_parameterization/smoke-20260902/**/*.npz
+!/results/sdf_boundary_parameterization/smoke-20260902/**/*.png
+!/results/sdf_boundary_parameterization/kress-scalar-proxy-20260902/**/*.npz

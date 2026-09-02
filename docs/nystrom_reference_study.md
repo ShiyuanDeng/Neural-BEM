@@ -172,5 +172,6 @@ mistaken for operator error. The current oracle is single-component.
 - `solvers/nystrom_ref/nystrom_tmz.py` — geometry, kernels, quadrature, assembly,
   evaluation.
 - `solvers/nystrom_ref/__init__.py` — public surface.
-- `pytest/artefacts/test_nystrom_reference.py` — 11 tests, 14 s. Thresholds are loose by
-  five or more orders of magnitude; this study is not rerun in the suite.
+- `pytest/nystrom_ref/test_nystrom_reference.py` — 11 tests, 14 s. Thresholds
+  are loose by five or more orders of magnitude; this study is not rerun in
+  the suite.

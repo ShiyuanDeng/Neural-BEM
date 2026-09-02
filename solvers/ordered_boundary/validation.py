@@ -125,6 +125,37 @@ class OrderedBoundaryValidationError(ValueError):
         super().__init__("; ".join(report.issues) if report.issues else "Ordered boundary is invalid.")
 
 
+def sampled_self_intersection_count(
+    points: np.ndarray,
+    *,
+    relative_tolerance: float = 1.0e-12,
+) -> int:
+    """Count non-adjacent intersections in one endpoint-free closed polygon.
+
+    This sampled check is useful for node-owned curves that deliberately have
+    no continuous evaluator.  It is a topology guard, not a proof that an
+    unresolved curve is simple between its stored nodes.
+    """
+
+    values = np.asarray(points, dtype=np.float64)
+    if values.ndim != 2 or values.shape[1] != 2 or values.shape[0] < 3:
+        raise ValueError("points must have shape (num_points, 2) with at least 3 points.")
+    if not np.all(np.isfinite(values)):
+        raise ValueError("points must contain only finite values.")
+    tolerance = float(relative_tolerance)
+    if not np.isfinite(tolerance) or tolerance < 0.0:
+        raise ValueError("relative_tolerance must be finite and non-negative.")
+    scale = max(
+        float(np.linalg.norm(np.max(values, axis=0) - np.min(values, axis=0))),
+        np.finfo(float).tiny,
+    )
+    return _self_intersection_count(
+        values,
+        tolerance * scale**2,
+        tolerance * scale,
+    )
+
+
 def validate_periodic_parameterization(
     curve: PeriodicParameterization2D,
     config: BoundaryValidationConfig | None = None,
@@ -402,6 +433,24 @@ def _segment_intersection_matrix(
     first_end = np.roll(first_points, -1, axis=0)
     second_start = second_points
     second_end = np.roll(second_points, -1, axis=0)
+    return _segment_pair_intersection_matrix(
+        first_start,
+        first_end,
+        second_start,
+        second_end,
+        cross_tolerance,
+        length_tolerance,
+    )
+
+
+def _segment_pair_intersection_matrix(
+    first_start: np.ndarray,
+    first_end: np.ndarray,
+    second_start: np.ndarray,
+    second_end: np.ndarray,
+    cross_tolerance: float,
+    length_tolerance: float,
+) -> np.ndarray:
     first_delta = first_end - first_start
     second_delta = second_end - second_start
     o1 = cross2d(first_delta[:, None, :], second_start[None, :, :] - first_start[:, None, :])
@@ -448,15 +497,31 @@ def _self_intersection_count(
     cross_tolerance: float,
     length_tolerance: float,
 ) -> int:
-    intersections = _segment_intersection_matrix(points, points, cross_tolerance, length_tolerance)
     count = points.shape[0]
-    indices = np.arange(count)
-    adjacency = (
-        (indices[:, None] == indices[None, :])
-        | ((indices[:, None] - indices[None, :]) % count == 1)
-        | ((indices[None, :] - indices[:, None]) % count == 1)
-    )
-    return int(np.count_nonzero(np.triu(intersections & ~adjacency, k=1)))
+    starts = points
+    ends = np.roll(points, -1, axis=0)
+    second_indices = np.arange(count)[None, :]
+    intersections_found = 0
+    for first in range(0, count, 256):
+        past = min(first + 256, count)
+        first_indices = np.arange(first, past)[:, None]
+        intersections = _segment_pair_intersection_matrix(
+            starts[first:past],
+            ends[first:past],
+            starts,
+            ends,
+            cross_tolerance,
+            length_tolerance,
+        )
+        nonadjacent_upper = (
+            (second_indices > first_indices)
+            & ((second_indices - first_indices) % count != 1)
+            & ((first_indices - second_indices) % count != 1)
+        )
+        intersections_found += int(
+            np.count_nonzero(intersections & nonadjacent_upper)
+        )
+    return intersections_found
 
 
 def _polylines_intersect(

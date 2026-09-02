@@ -511,7 +511,7 @@ def implicit_single_layer_source_directional_derivative_potential_from_band(
 
     Verified against central differences of the raw Green's function; see
     ``docs/ibim_shape_derivative.md`` S4 and
-    ``pytest/test_ibim_shape_derivative_kernels.py``.
+    ``pytest/gpr_bem_mod/test_ibim_shape_derivative_kernels.py``.
     """
 
     resolved_backend = _resolve_backend(backend, complex_precision=complex_precision)
@@ -571,7 +571,7 @@ def implicit_greens_function_mixed_directional_hessian_potential_from_band(
 
     Verified against central differences of the raw Green's function; see
     ``docs/ibim_shape_derivative.md`` S4 and
-    ``pytest/test_ibim_shape_derivative_kernels.py``.
+    ``pytest/gpr_bem_mod/test_ibim_shape_derivative_kernels.py``.
     """
 
     resolved_backend = _resolve_backend(backend, complex_precision=complex_precision)
@@ -647,7 +647,7 @@ def implicit_greens_function_pure_target_hessian_potential_from_band(
     direction at receiver row i," only "a direction at boundary column j."
 
     Verified against central differences of the raw Green's function; see
-    ``pytest/test_ibim_shape_derivative_kernels.py``.
+    ``pytest/gpr_bem_mod/test_ibim_shape_derivative_kernels.py``.
     """
 
     resolved_backend = _resolve_backend(backend, complex_precision=complex_precision)
@@ -708,7 +708,7 @@ def implicit_greens_function_pure_source_hessian_potential_from_band(
     S5), e.g. ``source_direction_a = n_j``, ``source_direction_b = p_dot_j``.
 
     Verified against central differences of the raw Green's function; see
-    ``pytest/test_ibim_shape_derivative_kernels.py``.
+    ``pytest/gpr_bem_mod/test_ibim_shape_derivative_kernels.py``.
     """
 
     resolved_backend = _resolve_backend(backend, complex_precision=complex_precision)
@@ -803,7 +803,7 @@ def implicit_greens_function_third_derivative_two_target_one_source_potential_fr
 
     Verified against central differences of the raw Green's function; see
     ``docs/ibim_shape_derivative.md`` S11b and
-    ``pytest/test_ibim_shape_derivative_kernels.py``.
+    ``pytest/gpr_bem_mod/test_ibim_shape_derivative_kernels.py``.
     """
 
     resolved_backend = _resolve_backend(backend, complex_precision=complex_precision)
@@ -868,7 +868,7 @@ def implicit_greens_function_third_derivative_one_target_two_source_potential_fr
 
     Verified against central differences of the raw Green's function; see
     ``docs/ibim_shape_derivative.md`` S11b and
-    ``pytest/test_ibim_shape_derivative_kernels.py``.
+    ``pytest/gpr_bem_mod/test_ibim_shape_derivative_kernels.py``.
     """
 
     resolved_backend = _resolve_backend(backend, complex_precision=complex_precision)

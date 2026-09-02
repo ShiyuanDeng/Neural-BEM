@@ -50,7 +50,8 @@ values in selected cases, not a validated production method.
 
 Each number below is one measured complete sweep over six frequencies. Every
 BEM row covers the full 24-pair ring. Timings are summed across the five stored
-shape runs in `pytest/results/aggregate_metrics.md`.
+shape runs in
+`results/solver_comparisons/legacy/qbx-closeout-20260901/aggregate_metrics.md`.
 
 | Method | Five-shape total | Relative to `mod` | Relative to `kdiff` |
 |---|---:|---:|---:|
@@ -77,7 +78,9 @@ decision: the tested QBX implementations do not buy a dependable accuracy
 gain that could justify their measured cost. They must not be compared to the
 single-pair gprMax timings without accounting for different work coverage.
 
-Source: [`pytest/results/aggregate_metrics.md`](../pytest/results/aggregate_metrics.md).
+Source: [`results/solver_comparisons/legacy/qbx-closeout-20260901/aggregate_metrics.md`](../results/solver_comparisons/legacy/qbx-closeout-20260901/aggregate_metrics.md).
+This dated bundle contains the physical solver-field errors used for this
+decision; the separate SDF-boundary geometry and scalar-proxy metrics do not.
 
 ## Measured field accuracy
 
@@ -114,11 +117,11 @@ features are:
   prove that the discrete systems were solved accurately. They do not prove
   that the discretized operators or fields are accurate.
 
-Sources: the [circle](../pytest/results/aggregate_metrics.md#circle),
-[ellipse](../pytest/results/aggregate_metrics.md#ellipse),
-[square](../pytest/results/aggregate_metrics.md#square),
-[star](../pytest/results/aggregate_metrics.md#star), and
-[two-circle](../pytest/results/aggregate_metrics.md#two-circle) tables.
+Sources: the [circle](../results/solver_comparisons/legacy/qbx-closeout-20260901/aggregate_metrics.md#circle),
+[ellipse](../results/solver_comparisons/legacy/qbx-closeout-20260901/aggregate_metrics.md#ellipse),
+[square](../results/solver_comparisons/legacy/qbx-closeout-20260901/aggregate_metrics.md#square),
+[star](../results/solver_comparisons/legacy/qbx-closeout-20260901/aggregate_metrics.md#star), and
+[two-circle](../results/solver_comparisons/legacy/qbx-closeout-20260901/aggregate_metrics.md#two-circle) tables.
 
 ## QBX admissibility and transfer diagnostics
 
@@ -141,11 +144,11 @@ diagnostics, not evidence of an admissible convergent QBX method.
 
 The raw values and per-frequency `TAssemblyReport` objects are retained in:
 
-- [`circle/metrics.json`](../pytest/results/circle/metrics.json)
-- [`ellipse/metrics.json`](../pytest/results/ellipse/metrics.json)
-- [`square/metrics.json`](../pytest/results/square/metrics.json)
-- [`star/metrics.json`](../pytest/results/star/metrics.json)
-- [`two_circle/metrics.json`](../pytest/results/two_circle/metrics.json)
+- [`circle/metrics.json`](../results/solver_comparisons/legacy/qbx-closeout-20260901/circle/metrics.json)
+- [`ellipse/metrics.json`](../results/solver_comparisons/legacy/qbx-closeout-20260901/ellipse/metrics.json)
+- [`square/metrics.json`](../results/solver_comparisons/legacy/qbx-closeout-20260901/square/metrics.json)
+- [`star/metrics.json`](../results/solver_comparisons/legacy/qbx-closeout-20260901/star/metrics.json)
+- [`two_circle/metrics.json`](../results/solver_comparisons/legacy/qbx-closeout-20260901/two_circle/metrics.json)
 
 ## What QBX did validate
 
@@ -233,8 +236,9 @@ Retain:
   named controls, not defaults;
 - `TAssemblyReport` source-count, transfer, conditioning, clearance, and
   timing diagnostics;
-- `scratchpad/qbx_diagonal_probe.py`,
-  `scratchpad/qbx_legacy_near_band.py`, and the measured negative-result data;
+- `scratchpad/legacy/qbx/qbx_diagonal_probe.py`,
+  `scratchpad/legacy/qbx/qbx_legacy_near_band.py`, and the measured
+  negative-result data;
 - `gpr_bem_mod` as the current inverse/adjoint-capable operational baseline;
   and
 - `nystrom_ref` as an independent forward oracle.

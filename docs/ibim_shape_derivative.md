@@ -236,7 +236,7 @@ differentiate.
 sign of what's actually in the code. Caught before any Phase 1 code was
 written by transcribing the formula into a standalone scipy script and
 checking it against a central difference of `G` itself, rather than trusting
-the hand copy — see `pytest/test_ibim_shape_derivative_kernels.py` for the
+the hand copy — see `pytest/gpr_bem_mod/test_ibim_shape_derivative_kernels.py` for the
 in-repo version of that check. Left here as a concrete instance of exactly
 the failure mode §12 of the rebuild plan warns about — a small, easy-to-miss
 sign error in a derivation, not caught by re-reading it, only by computing
@@ -505,7 +505,7 @@ normal-gradient functions now return density (`node directional derivative /
 quadrature weight`), because `ibim_shape_gradient_surrogate_loss` applies
 quadrature exactly once. The current adjoint artefact suite covers
 single-frequency, multi-frequency, B-scan, density, and surrogate-radius
-checks (`pytest/artefacts/test_ibim_tmz_adjoint.py --solver=mod`, 15/15
+checks (`pytest/gpr_bem_mod/test_ibim_tmz_adjoint.py`, 15/15
 passing; see `docs/legacy/adjoint_inverse_rebuild_plan.md` §7b-§7c). Map onto code
 as:
 - `Ȧ_alpha`: §5+§6, contracted against `mu`, not built as an explicit matrix
@@ -555,8 +555,8 @@ Done: four new kernel functions in `ibim_tmz_forward.py`
 (`implicit_single_layer_potential_from_band`,
 `implicit_single_layer_normal_derivative_potential_from_band`), plus exact
 regression checks against the existing double-layer/hypersingular kernels as
-a special case — `pytest/test_ibim_shape_derivative_kernels.py`, 6/6
-passing, `python -m pytest pytest/test_ibim_shape_derivative_kernels.py
+a special case — `pytest/gpr_bem_mod/test_ibim_shape_derivative_kernels.py`, 6/6
+passing, `python -m pytest pytest/gpr_bem_mod/test_ibim_shape_derivative_kernels.py
 --solver=mod -q`.
 
 | Function | §4/§5 term it computes |
@@ -621,7 +621,7 @@ the two package functions built from it
 (`implicit_greens_function_third_derivative_two_target_one_source_potential_from_band`,
 `..._one_target_two_source_...`) against central differences of the
 already-verified mixed-Hessian function —
-`pytest/test_ibim_shape_derivative_kernels.py`, 8/8 passing.
+`pytest/gpr_bem_mod/test_ibim_shape_derivative_kernels.py`, 8/8 passing.
 
 With this, every §5 term for all four blocks (S, D, K', T) is now covered by
 a verified closed-form kernel. See

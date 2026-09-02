@@ -11,9 +11,27 @@
 > node geometry contracts plus exact circle/ellipse/star and Fourier producers
 > now live in `solvers/ordered_boundary/`. `PeriodicCurve2D` and
 > `OrderedBoundary2D` are node-owned BIE inputs; off-node evaluation is confined
-> to separately named `*Parameterization2D` producers. This is a foundation
-> slice for Phases 1--3, not completion of SDF extraction/fitting or a forward
-> assembler.
+> to separately named `*Parameterization2D` producers. The isolated sibling
+> `solvers/sdf_to_ordered_boundary/` now implements shared SDF extraction and
+> the A/B/C parameterization study. Its geometry and manufactured scalar Kress
+> metrics are not solver errors and do not complete the forward assembler.
+
+> **Forward-candidate progress, 2026-09-02:** an isolated, direct-import
+> `solvers/gpr_bem_mod/ordered_nystrom/` candidate now accepts one
+> `PeriodicCurve2D`, constructs cancellation-safe all-block Kress differences,
+> assembles the unsquared Müller system, and evaluates safely separated
+> receiver fields. It is not exported or selector-wired. Its architecture,
+> translated `T/W` sign convention, numerical split, and current limitations
+> are recorded in
+> [`ordered_nystrom_implementation.md`](ordered_nystrom_implementation.md).
+> Its solver-owned fast suite currently passes 38 tests, including
+> block actions, zero contrast, analytic traces, and Mie fields through a
+> resolved 8 GHz case. Compact exact circle/ellipse/star and frozen Method-B
+> `N`-refinement/receiver/runtime sweeps are stored under
+> [`results/ordered_boundary_nystrom/`](../results/ordered_boundary_nystrom/README.md).
+> Implementation and a fast regression pass are not acceptance: the Phase-3/4
+> transmission, lossy-convention, reference self-convergence, broader-frequency,
+> and production-comparison gates below still apply.
 
 ## Objective
 
@@ -315,8 +333,10 @@ Every completed phase or rejected alternative should append one entry to
 5. comparison to the predeclared gate; and
 6. decision: accept, revise, defer, or close.
 
-Candidate tests should live in clearly named active files such as
-`pytest/test_ordered_boundary.py`, `pytest/test_ordered_periodic_curve.py`,
-`pytest/test_ordered_nystrom_operators.py`, and
-`pytest/test_ordered_nystrom_forward.py`. Store compact JSON/Markdown evidence
-under `pytest/results/ordered_nystrom/`; do not commit dense matrices.
+Keep geometry-contract tests under `pytest/ordered_boundary/` and place the
+solver candidate's operator/system/field tests in the parallel
+`pytest/ordered_nystrom/` package. Store compact JSON/Markdown evidence under
+`results/ordered_boundary_nystrom/`; do not commit dense matrices.
+Geometry-only SDF and manufactured scalar-product-rule metrics remain under
+`results/sdf_boundary_parameterization/`; they do not satisfy the operator or
+field-error gates of this plan.
