@@ -2,7 +2,7 @@
 
 This folder tests the isolated implicit-field-to-smooth-curve conversion
 study. It is parallel to the package at
-[`../../solvers/sdf_to_ordered_boundary/`](../../solvers/sdf_to_ordered_boundary/),
+[`../../solvers/sdf_to_ordered_boundary/`](../../solvers/sdf_to_ordered_boundary),
 not part of `gpr_bem_mod`, `gpr_bem_kdiff`, or another forward solver.
 
 ## Measurement boundary
@@ -30,4 +30,4 @@ gradient-normalized form is a first-order distance proxy. The legacy
 of a production Kress solver.
 
 Actual solver-error comparisons are under
-[`../solver_comparisons/`](../solver_comparisons/).
+[`../solver_comparisons/`](../solver_comparisons).

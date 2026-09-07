@@ -1,7 +1,7 @@
 # Tests and validation
 
 Tests mirror the package or study they own. Generated evidence lives only
-under [`../results/`](../results/); `pytest/` contains no result bundles.
+under [`../results/`](../results); `pytest/` contains no result bundles.
 
 ## Layout
 
@@ -9,16 +9,16 @@ under [`../results/`](../results/); `pytest/` contains no result bundles.
 |---|---|---:|
 | `gpr_bem_shared/` | Selector-backed tests shared by frozen `ref` and operational `mod` | Yes, in system/theory tests |
 | `gpr_bem_mod/` | MOD-only adjoint, inverse, and shape-derivative checks | Yes, except the kernel-identity test |
-| [`gpr_bem_kress/`](gpr_bem_kress/) | Direct-import Kress/Müller blocks, systems, receivers, fields, and single-interface discrete JVP/objective-adjoint contracts | **Yes** |
-| [`multicylinder_ref/`](multicylinder_ref/) | Independent cylindrical-harmonic oracle for disjoint circular inclusions | **Yes** |
+| [`gpr_bem_kress/`](gpr_bem_kress) | Direct-import Kress/Müller blocks, systems, receivers, fields, and single-interface discrete JVP/objective-adjoint contracts | **Yes** |
+| [`multicylinder_ref/`](multicylinder_ref) | Independent cylindrical-harmonic oracle for disjoint circular inclusions | **Yes** |
 | `gpr_bem_kdiff/` | Retained k-difference and archived QBX assembly seam | Operator/system checks |
 | `gprmax_ref/` | gprMax cache identity and scene policy | No |
 | `nystrom_ref/` | Independent smooth-boundary forward oracle | Yes |
 | `ordered_boundary/` | Continuous and node-owned geometry contracts | **No** |
-| [`sdf_to_ordered_boundary/`](sdf_to_ordered_boundary/) | Implicit-field extraction, A/B/C fits, geometry metrics, artifacts, and scalar Kress proxy | **No** |
-| [`sdf_inverse/`](sdf_inverse/) | Common ordered geometry, paired MOD/Kress prediction, fixed complex objective, implicit-initialization recovery, the star target's Nystrom observation seam, and focused alternating-MLP contracts | **Yes** |
-| [`sdf_bem_multicomponent/`](sdf_bem_multicomponent/) | Automatic unknown-`M` extraction, readiness gates, direct boundary forwarding, ragged trajectories, and the one-to-two split | **Yes** |
-| [`solver_comparisons/`](solver_comparisons/) | Circle, ellipse, square, star, and two-circle solver comparisons | **Yes** |
+| [`sdf_to_ordered_boundary/`](sdf_to_ordered_boundary) | Implicit-field extraction, A/B/C fits, geometry metrics, artifacts, and scalar Kress proxy | **No** |
+| [`sdf_inverse/`](sdf_inverse) | Common ordered geometry, paired MOD/Kress prediction, fixed complex objective, implicit-initialization recovery, the star target's Nystrom observation seam, and focused alternating-MLP contracts | **Yes** |
+| [`sdf_bem_multicomponent/`](sdf_bem_multicomponent) | Automatic unknown-`M` extraction, readiness gates, direct boundary forwarding, ragged trajectories, and the one-to-two split | **Yes** |
+| [`solver_comparisons/`](solver_comparisons) | Circle, ellipse, square, star, and two-circle solver comparisons | **Yes** |
 
 The distinction among the geometry, inverse, and comparison rows is
 deliberate. The ordered-boundary and SDF-to-boundary suites stop before any
@@ -78,7 +78,7 @@ compatibility, no neural work during curve reconstruction, export rollback,
 distance/sign/refinement and solver-N independence, ordered-fit validity and
 fallbacks, and non-mutating evidence postprocessing. The C1/C2 physical-field
 study remains a separate opt-in driver, not a new meaning for historical A/B/C
-geometry metrics. See the [batch report](../docs/sdf_kress_first_batch_2026-09-05.md)
+geometry metrics. See the [batch report](../docs/reports/sdf_kress_first_batch_2026-09-05.md)
 and its validation entry for actual runs and failed experimental accuracy gates.
 
 Run the complete solver-independent boundary suite with:
@@ -90,11 +90,11 @@ PYTHONPATH=solvers python -m pytest -q \
 ```
 
 The checked A/B/C evidence is consolidated under
-[`../results/sdf_boundary_parameterization/`](../results/sdf_boundary_parameterization/):
+[`../results/sdf_boundary_parameterization/`](../results/validation/sdf_boundary_parameterization):
 
 - `smoke-20260902/`: small complete bundle with plots and native coefficients;
 - `study-20260902/`: full grid/sample/bandwidth study; and
-- [`kress-scalar-proxy-20260902/summary.md`](../results/sdf_boundary_parameterization/kress-scalar-proxy-20260902/summary.md): manufactured scalar log-product-rule convergence and runtime.
+- [`kress-scalar-proxy-20260902/summary.md`](../results/validation/sdf_boundary_parameterization/kress-scalar-proxy-20260902/summary.md): manufactured scalar log-product-rule convergence and runtime.
 
 Each manifest declares `contains_bie_assembly: false`,
 `contains_linear_solve: false`, and `contains_solver_error_metrics: false`.
@@ -114,7 +114,7 @@ It tests physical block actions, the coupled system, the explicit
 fields. It does not turn the adjacent geometry-only metrics into solver errors
 or register `gpr_bem_kress` with the normal solver selector.
 
-The 2026-09-06 [follow-up](../docs/sdf_kress_followup_2026-09-06.md) adds
+The 2026-09-06 [follow-up](../docs/reports/sdf_kress_followup_2026-09-06.md) adds
 `gpr_bem_kress/test_shape_derivative.py`,
 `sdf_inverse/test_cylinder_sensitivity_reference.py` and
 `solver_comparisons/test_kress_shape_derivative_driver.py`. They cover actual
@@ -154,7 +154,7 @@ PYTHONPATH=solvers python -m pytest -q \
 
 The checked exact/noncircular and frozen Method-B convergence tables are
 indexed at
-[`../results/ordered_boundary_nystrom/README.md`](../results/ordered_boundary_nystrom/README.md).
+[`../results/ordered_boundary_nystrom/README.md`](../results/validation/ordered_boundary_nystrom/README.md).
 
 Reproduce the scalar proxy from the checked compact coefficient bundles into
 a new empty directory:
@@ -199,9 +199,9 @@ NUMEXPR_NUM_THREADS=1 PYTHONPATH=solvers \
   pytest/sdf_inverse
 ```
 
-That suite contributes 24 test cases and passed in 37.36 s. Together with the
-nine legacy MOD inverse tests, the combined command covers 33 focused
-cases:
+The early recorded counts and timings are historical; current validation
+history is in the [dated log](../docs/reports/validation_change_log.md).
+The following command also includes the separate older MOD inverse contracts:
 
 ```bash
 PYTHONPATH=solvers \
@@ -209,9 +209,10 @@ PYTHONPATH=solvers \
   pytest/sdf_inverse pytest/gpr_bem_mod/test_ibim_inverse.py
 ```
 
-The corresponding end-to-end evidence is
-[`../results/inverse_solver_comparison/README.md`](../results/inverse_solver_comparison/README.md).
-See [`../docs/solver_neutral_inverse.md`](../docs/solver_neutral_inverse.md)
+The corresponding runs are indexed in the [results catalogue](../results/README.md).
+The active repair target is [strict MLP + Method B](../docs/pipelines/strict_mlp_method_b.md);
+existing parameter controls and radial policy tests do not certify that repair.
+See [`../docs/solver_neutral_inverse.md`](../docs/reports/inverse_development_through_2026-09-06.md)
 for the exact scope: this is a low-dimensional parameter-FD comparison, not a
 Kress adjoint or a scalable random-network inverse.
 
@@ -230,11 +231,11 @@ python -m pytest \
 ```
 
 The aggregate test writes current output to
-`results/solver_comparisons/current/`. The checked QBX-inclusive closeout is
+`results/validation/solver_comparisons/current/`. The checked QBX-inclusive closeout is
 kept separately at
-[`../results/solver_comparisons/legacy/qbx-closeout-20260901/`](../results/solver_comparisons/legacy/qbx-closeout-20260901/).
+[`../results/solver_comparisons/legacy/qbx-closeout-20260901/`](../results/legacy/solver_experiments/qbx-closeout-20260901).
 The compact checked MOD/Kress/gprMax result is
-[`kress-peer-20260902/summary.md`](../results/solver_comparisons/kress-peer-20260902/summary.md).
+[`kress-peer-20260902/summary.md`](../results/validation/solver_comparisons/kress-peer-20260902/summary.md).
 Archived QBX rows are slow and opt-in:
 
 ```bash
@@ -251,5 +252,5 @@ one-pair only, so its relative error at each frequency must be reported as
 pair-0 coverage rather than presented as a full-ring norm.
 
 See [`../docs/current_architecture.md`](../docs/current_architecture.md) for
-live solver roles and [`../docs/qbx_closure.md`](../docs/qbx_closure.md) for
+live solver roles and [`../docs/qbx_closure.md`](../docs/legacy/qbx_closure.md) for
 the archived QBX decision.

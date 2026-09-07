@@ -102,7 +102,7 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         help=(
             "Artifact directory. The default is a timestamped directory below "
-            "results/sdf_boundary_parameterization/."
+            "results/validation/sdf_boundary_parameterization/."
         ),
     )
     parser.add_argument(
@@ -164,6 +164,7 @@ def _default_output_directory(profile_name: str) -> Path:
     return (
         REPOSITORY_ROOT
         / "results"
+        / "validation"
         / "sdf_boundary_parameterization"
         / f"{profile_name}-{timestamp}"
     )

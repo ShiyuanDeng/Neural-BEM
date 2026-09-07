@@ -635,7 +635,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     args.solvers = tuple(dict.fromkeys(args.solvers))
     if args.output_dir is None:
         args.output_dir = (
-            Path("results/inverse_solver_comparison")
+            Path("results/inverse/method_b")
             / f"{args.initial_model}-to-{target.output_tag}-{run_tag}"
         )
     return args

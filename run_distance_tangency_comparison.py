@@ -43,7 +43,7 @@ from run_parameterization_aware_comparison import (
 )
 
 
-FROZEN_B = ROOT/"results/smooth_distance_supervision/task-b-circle-star-refined-20260905"
+FROZEN_B = ROOT/"results/representation/smooth_distance_supervision/task-b-circle-star-refined-20260905"
 GATES = {"geometry_m": 2e-4, "physical_maximum_relative_error": 1e-3,
          "physical_self_convergence": 1e-5, "oracle_self_convergence": 1e-6,
          "geometry_refinement_change_m": 2e-6, "maximum_system_condition": 1e8,

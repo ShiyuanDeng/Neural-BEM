@@ -3,7 +3,7 @@
 > **Status: deferred corner/oracle research record.** This work is not
 > rejected, but exact corners are outside the initial smooth
 > Kress/Nyström milestone. “Plan” language below is historical, not the active
-> task list. See [`../ordered_boundary_nystrom_plan.md`](../ordered_boundary_nystrom_plan.md)
+> task list. See [`../ordered_boundary_nystrom_plan.md`](ordered_boundary_nystrom_plan.md)
 > for the live scope.
 
 2026-08-26

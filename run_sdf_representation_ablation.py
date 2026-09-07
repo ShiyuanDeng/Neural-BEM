@@ -45,7 +45,7 @@ from sdf_inverse.optimization import ComplexScatteredData, normalized_complex_re
 
 
 POLICIES = ("legacy_strict", "curve_only", "export_only")
-SAVED = ROOT / "results/inverse_solver_comparison/mlp-radial-continuation-k5-ellipse-to-star-kress-20260904/metrics.json"
+SAVED = ROOT / "results/inverse/radial_fourier/mlp-radial-continuation-k5-ellipse-to-star-kress-20260904/metrics.json"
 
 
 def _jsonable(value):

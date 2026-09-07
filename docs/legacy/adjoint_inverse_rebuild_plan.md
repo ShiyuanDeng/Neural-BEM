@@ -3,8 +3,8 @@
 > **Status: implemented `gpr_bem_mod`-only record.** This began as a plan;
 > later sections record the implementation and validation that landed. It does
 > not specify the future ordered-boundary adjoint. See
-> [`../current_architecture.md`](../current_architecture.md) for the live
-> pipeline and [`../ordered_boundary_nystrom_plan.md`](../ordered_boundary_nystrom_plan.md)
+> [`../current_architecture.md`](../reports/architecture_snapshot_2026-09-06.md) for the live
+> pipeline and [`../ordered_boundary_nystrom_plan.md`](ordered_boundary_nystrom_plan.md)
 > for the new backend sequence.
 
 *Written initially as a plan on 2026-08-27 so the reasoning would remain on
@@ -28,7 +28,7 @@ missing off-diagonal log correction as the next load-bearing fix was too
 narrow: near-band QBX did not change the fields materially, and full-row QBX
 did not produce a robust, admissible improvement on the compressed target
 cloud. `gpr_bem_kdiff` is now frozen as an experimental baseline; see
-[`qbx_closure.md`](../qbx_closure.md). If an ordered-boundary solver is later
+[`qbx_closure.md`](qbx_closure.md). If an ordered-boundary solver is later
 promoted, derive its adjoint from its complete accepted discretization rather
 than extending this plan piecemeal.
 

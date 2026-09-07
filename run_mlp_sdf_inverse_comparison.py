@@ -703,7 +703,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         args.num_nodes = target.default_num_nodes
     if args.output_dir is None:
         tag = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-        args.output_dir = Path("results/inverse_solver_comparison") / f"mlp-{args.initial_shape}-to-{target.output_tag}-{tag}"
+        args.output_dir = Path("results/inverse/radial_fourier") / f"mlp-{args.initial_shape}-to-{target.output_tag}-{tag}"
     if args.num_pairs < 4:
         parser.error("--num-pairs must be at least 4")
     if args.num_nodes < 2 * target.bandwidth + 2 or args.num_nodes % 2:

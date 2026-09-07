@@ -682,7 +682,7 @@ def _parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--output-dir",
-        default="results/ibim_circle_inverse_rectangular_scan",
+        default="results/legacy/inverse/ibim/ibim_circle_inverse_rectangular_scan",
         help="Directory where figures, cached truth data, and npz artifacts will be written.",
     )
     parser.add_argument(

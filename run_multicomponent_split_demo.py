@@ -60,7 +60,7 @@ from sdf_bem_multicomponent.trajectory import (  # noqa: E402
 )
 
 
-DEFAULT_OUTPUT = REPOSITORY_ROOT / "results" / "multicomponent_split_demo"
+DEFAULT_OUTPUT = REPOSITORY_ROOT / "results" / "demos" / "multicomponent_split_demo"
 GENERATED_NAMES = (
     "split_trajectory.npz",
     "metrics.json",

@@ -24,5 +24,5 @@ PYTHONPATH=solvers python -m pytest -q pytest/gpr_bem_kress
 
 The tolerances are regression and correctness gates, not a claim that every
 supported geometry has been accepted. Longer grid, bandwidth, noncircular,
-and runtime sweeps belong under `results/ordered_boundary_nystrom/`; dense
+and runtime sweeps belong under `results/validation/ordered_boundary_nystrom/`; dense
 operator matrices should not be committed there.

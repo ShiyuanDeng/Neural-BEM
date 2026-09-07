@@ -64,7 +64,7 @@ def _plot_band(ax: plt.Axes, band, *, title: str, colorbar_label: str = "Quadrat
 
 
 def main() -> None:
-    output_dir = Path("results/ibim_geometry_demo")
+    output_dir = Path("results/demos/ibim_geometry_demo")
     output_dir.mkdir(parents=True, exist_ok=True)
 
     circle_center = (0.5, 0.5)

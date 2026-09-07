@@ -292,7 +292,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--output-root",
         type=Path,
-        default=REPOSITORY_ROOT / "results" / "ordered_boundary_nystrom",
+        default=REPOSITORY_ROOT / "results" / "validation" / "ordered_boundary_nystrom",
     )
     parser.add_argument(
         "--run-id",

@@ -52,4 +52,4 @@ python -m pytest \
 The `archived_qbx/` helper is used only with `--include-qbx-archive`. Those rows
 reproduce closed negative-result evidence and are not production candidates.
 The checked snapshot lives under
-[`../../results/solver_comparisons/legacy/qbx-closeout-20260901/`](../../results/solver_comparisons/legacy/qbx-closeout-20260901/).
+[`../../results/solver_comparisons/legacy/qbx-closeout-20260901/`](../../results/legacy/solver_experiments/qbx-closeout-20260901).

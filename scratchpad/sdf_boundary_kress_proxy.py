@@ -1335,7 +1335,7 @@ def run_benchmark(
 
 def _default_output_directory() -> Path:
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-    return REPOSITORY_ROOT / "results" / "sdf_boundary_parameterization" / (
+    return REPOSITORY_ROOT / "results" / "validation" / "sdf_boundary_parameterization" / (
         f"kress-scalar-proxy-{timestamp}"
     )
 
@@ -1352,6 +1352,7 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         default=REPOSITORY_ROOT
         / "results"
+        / "validation"
         / "sdf_boundary_parameterization"
         / "study-20260902",
         help="Completed SDF comparison artifact root containing manifest.json and metrics.json.",

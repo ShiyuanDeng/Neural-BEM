@@ -55,7 +55,7 @@ branch margins are diagnostics, not permission to cross a branch or validity
 threshold inside one derivative check. The second/third direction jets are
 validated when supplied but unused by the current cancelled operators.
 
-The [follow-up report](../../docs/sdf_kress_followup_2026-09-06.md) records
+The [follow-up report](../../docs/reports/sdf_kress_followup_2026-09-06.md) records
 independent Mie/Nyström, matched-material analytic, finite-difference and
 physical-refinement checks. This module does not differentiate extraction,
 change the production optimizer, implement multi-component derivatives, or

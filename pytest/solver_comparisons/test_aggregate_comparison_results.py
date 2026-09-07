@@ -1,7 +1,7 @@
 """Aggregate the five shape-comparison cases and export their results.
 
 This test computes the same comparison data used by the individual comparison
-files and writes current output under ``results/solver_comparisons/current/``:
+files and writes current output under ``results/validation/solver_comparisons/current/``:
 
 - ``geometry.png``: analytic target geometry plus the compressed IBIM samples.
 - ``geometry_samples.npz``: boundary points, normals, and quadrature weights.
@@ -43,7 +43,7 @@ import matplotlib.pyplot as plt
 
 HERE = Path(__file__).resolve().parent
 REPOSITORY_ROOT = HERE.parents[1]
-RESULTS_ROOT = REPOSITORY_ROOT / "results" / "solver_comparisons" / "current"
+RESULTS_ROOT = REPOSITORY_ROOT / "results" / "validation" / "solver_comparisons" / "current"
 AGGREGATE_METRICS_FILE = RESULTS_ROOT / "aggregate_metrics.md"
 ARCHIVED_QBX_ROWS = frozenset({"gpr_bem_qbx", "qbx_fourier8", "qbx_sdfraw8"})
 

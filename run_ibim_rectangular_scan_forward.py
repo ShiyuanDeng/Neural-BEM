@@ -806,7 +806,7 @@ def _parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--output-dir",
-        default=f"results/rectangular_loop_forward_{SELECTED_SOLVER}",
+        default=f"results/demos/rectangular_loop_forward_{SELECTED_SOLVER}",
         help="Directory where forward data and figures will be written.",
     )
     parser.add_argument(

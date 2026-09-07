@@ -9,7 +9,7 @@ recovers a wrong star.
 
 Runtime is kept low deliberately: the resolutions here are smaller than the
 driver's, so these are contract tests, not the accuracy evidence.  That lives
-in the checked ``results/inverse_solver_comparison`` bundles.
+in the checked ``results/inverse/method_b`` bundles.
 """
 
 from __future__ import annotations

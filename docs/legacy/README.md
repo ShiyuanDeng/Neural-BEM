@@ -1,21 +1,19 @@
-# Legacy documentation
+# Legacy plans and closed investigations
 
-These files are retained research records, not current implementation
-instructions. Words such as “current,” “next,” “open,” and “plan” describe the
-state at the date written unless a later dated update inside the same file says
-otherwise.
+These files retain earlier reasoning and implementation instructions. They
+are not the active task list. Method B itself is **not abandoned**: the
+current objective is to [repair strict MLP + Method B](../pipelines/strict_mlp_method_b.md).
+See the [current architecture](../current_architecture.md) for implemented scope.
 
-For present behavior, start with
-[`../current_architecture.md`](../current_architecture.md). For active work, use
-[`../ordered_boundary_nystrom_plan.md`](../ordered_boundary_nystrom_plan.md).
-
-| Document | Classification |
+| Record | Classification |
 |---|---|
-| [`forward_solver_validation.md`](forward_solver_validation.md) | Historical 2026-08-21 forward-solver assessment |
-| [`adjoint_inverse_rebuild_plan.md`](adjoint_inverse_rebuild_plan.md) | `gpr_bem_mod` plan that became an implementation record |
-| [`ibim_error_mitigation_literature_codex.md`](ibim_error_mitigation_literature_codex.md) | Literature review plus several superseded implementation roadmaps |
-| [`square_target_oracle_options.md`](square_target_oracle_options.md) | Deferred corner/oracle research stream |
+| [ordered_boundary_nystrom_plan.md](ordered_boundary_nystrom_plan.md) | Earlier ordered-forward roadmap; current inverse repair planning lives in the pipeline document |
+| [codex_sdf_kress_priorities_2026-09-05.md](codex_sdf_kress_priorities_2026-09-05.md) | Original task brief; subsequent work is recorded in dated reports |
+| [qbx_closure.md](qbx_closure.md) | Closed compressed-cloud QBX/kdiff decision |
+| [forward_solver_validation.md](forward_solver_validation.md) | Historical August forward-solver assessment |
+| [adjoint_inverse_rebuild_plan.md](adjoint_inverse_rebuild_plan.md) | MOD plan that became an implementation record |
+| [ibim_error_mitigation_literature_codex.md](ibim_error_mitigation_literature_codex.md) | Literature plus superseded roadmaps |
+| [square_target_oracle_options.md](square_target_oracle_options.md) | Deferred corner/oracle research |
 
-Moving a document here does not reject its findings. It prevents an old task
-list from competing with the live architecture and roadmap while Git preserves
-the complete history.
+Original dated commands remain historical commands. Use
+[reproduction](../reproduction.md) for runnable commands with organized output paths.
