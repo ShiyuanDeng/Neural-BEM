@@ -1,15 +1,20 @@
-# Inverse evidence
+# Two inverse pipelines
 
-The active research target is [strict MLP + Method B repair](../../docs/pipelines/strict_mlp_method_b.md).
-These directories classify actual measured implementations; a directory name
-does not certify completion of that repair.
+These directories distinguish the two shape representations to compare. They
+do not imply that a matched comparison has already been completed.
 
-| Directory | Geometry and role |
+| Directory | Shape owner and measured status |
 |---|---|
-| [method_b](method_b/README.md) | Small implicit-model recovery through full extraction and Method B |
-| [radial_fourier](radial_fourier/README.md) | Explicit radial shape, with strict/omitted/export MLP policies; diagnostic evidence |
-| [shape_material](shape_material/README.md) | Explicit radial K2 and one interior material; local and restart controls |
-| [neural_metric](neural_metric/comparison-20260906/README.md) | Frozen neural metrics acting on explicit geometry; no fitting during inversion |
+| [implicit_mlp](implicit_mlp/README.md) | Full neural weights; extraction/Method B and Kress adjoint. Current circle, ellipse-to-circle and star runs all FAIL recovery acceptance. Gradient checks pass; the recovery pipeline remains broken/unresolved. |
+| [radial_fourier](radial_fourier/README.md) | Explicit radial Fourier coefficients. Recorded canonical reconstruction works in the successful controls; MLP fitting/export failures are reported separately. Material and frozen-metric variants live inside this pipeline. |
 
-Historical MLP-feedback and normal-update runs are in [legacy](../legacy/README.md).
-Use the [catalogue](../README.md) for dates, scenes, outcomes and repair implications.
+The old `method_b` bundles are now
+[legacy known-shape-family parameter inverses](../legacy/known_shape_family_parameter_inverse/README.md).
+They optimize 3–7 parameters in supplied shape families, including a fixed
+five-lobe star; their clean videos do not demonstrate full-MLP shape recovery.
+The numerical target parameters are still inferred from observations.
+
+Historical neural-feedback and normal-update runs remain in [legacy](../legacy/README.md).
+Use the [catalogue](../README.md) for configurations and separate recovery and
+representation outcomes. A fair pipeline comparison requires matched data,
+initial geometry, resolution and declared work budgets.

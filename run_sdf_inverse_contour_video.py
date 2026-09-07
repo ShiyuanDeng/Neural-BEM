@@ -20,7 +20,7 @@ Usage:
 
     PYTHONPATH=solvers /home/drdeng/miniconda3/envs/EMNerf/bin/python \
       run_sdf_inverse_contour_video.py \
-        results/inverse/method_b/wrong-circle-mie-20260902
+        results/legacy/known_shape_family_parameter_inverse/wrong-circle-mie-20260902
 """
 
 from __future__ import annotations
@@ -40,8 +40,8 @@ REPOSITORY_ROOT = Path(__file__).resolve().parent
 DEFAULT_BUNDLE = (
     REPOSITORY_ROOT
     / "results"
-    / "inverse"
-    / "method_b"
+    / "legacy"
+    / "known_shape_family_parameter_inverse"
     / "wrong-circle-mie-20260902"
 )
 DEFAULT_SOLVERS = ("mod", "kress")

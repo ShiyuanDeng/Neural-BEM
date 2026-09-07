@@ -1,33 +1,28 @@
-# Reproduction and next experiments
+# Reproduction commands
 
-Prepared 2026-09-07. These commands were checked against the driver source;
-no tests, fitting runs, or inverse experiments were executed during the
-documentation cleanup. Run them from the repository root after reviewing
-the [result register](../results/README.md).
-
-The intended repair target is a **strict MLP + original Method B inverse**.
-The runnable commands below provide its controls and component diagnostics.
-They do not establish that this repaired pipeline exists or succeeds.
-The current alternating-MLP driver makes radial Fourier coefficients the
-authoritative shape state; its strict neural policy does not change that
-geometry choice.
+Updated 2026-09-07 for the implemented **Implicit MLP + Method B** Kress-adjoint
+inverse. Run these commands from the repository root after reviewing the
+[result register](../results/README.md). The
+[new validation report](reports/implicit_mlp_adjoint_2026-09-07.md) records the
+executed gradient tests and circle, ellipse-to-circle and star runs, including
+failed recovery gates for all three new 12-pair cases. Recovery remains
+unresolved. **Explicit Radial Fourier** owns radial coefficients and has
+separate reconstruction and MLP representation gates. Optional archived
+controls below do not constitute another active inverse pipeline.
 
 ## Choose evidence to refresh
 
-| Priority | Run | Question it answers |
+| Scope | Run | Question it answers |
 |---|---|---|
-| First | Focused regressions | Do the existing geometry, inverse, neural-policy, and derivative contracts still hold? |
-| First | Method B parameter inverse controls | Does extraction through Method B still recover the small known parameter families? |
-| First | Frozen Method B and parameter-aware studies | Which errors belong to the fitted geometry, parameter labels, or BEM resolution? |
-| When changing neural acceptance/fitting | Radial representation-policy comparison | What does strict fitting cost or reject for the existing radial shape state? |
-| When changing derivatives | Kress derivative audit | Are discrete geometry/material derivatives and independent refinement still consistent? |
-| Optional | Shape/material controls | Do the separate radial K2 material experiments retain their measured behavior? |
-| After implementation | Strict MLP + Method B recovery | Does the intended repaired inverse work? No runnable command is available yet. |
+| Current pipeline | [Implicit MLP + Method B](pipelines/implicit_mlp.md) | Are full neural gradients correct, actual-MLP steps decreasing, and independent recovery checks satisfied? |
+| Current pipeline | [Explicit Radial Fourier](pipelines/explicit_radial_fourier.md) | Does the explicit curve recover the data, and does its fitted MLP satisfy separate representation gates? |
+| Regression and derivative validation | Focused tests and Kress audits | Do geometry, update, rollback, and derivative contracts still hold? |
+| Conversion diagnostics | Frozen Method B studies and [Implicit MLP diagnostics](implicit_mlp_diagnostics.md#commands) | Which errors belong to extraction, conversion, Eikonal activation, or transfer? Diagnostic commands are available; the experiments have not been run. |
+| Radial variants | Representation policies and [shape/material controls](pipelines/explicit_radial_shape_material.md) | What changes when fitting policy, material unknowns, or continuation change? |
+| Optional archive | [Legacy known-shape-family controls](legacy/known_shape_family_controls.md) | Does Method B still recover the small prescribed families? |
 
-A folder move or a clearer label does not require a numerical rerun.
-Keep historical failed runs as evidence. Rerun a failed case only when a
-specific implementation change or controlled comparison can explain a new
-outcome. Do not rerun every archived September 3–4 MLP variant.
+Keep failed runs as evidence and write new measurements to fresh directories.
+Directory and documentation changes do not require numerical reruns.
 
 ## Shared shell setup
 
@@ -47,12 +42,12 @@ These are new runs against the current working tree. Original commands,
 commit identities, dirty-tree records, and measurements remain in the saved
 bundles. A current run is not a claim of byte-for-byte historical replay.
 
-## Focused existing regressions
+## Focused regressions
 
 This covers the Method B frontend, parameter-family inverse controls,
 current neural fitting/acceptance contracts, direct curve updates,
 representation policies, parameter-aware driver, and Kress derivative seam.
-Passing these tests does not validate the pending strict Method B repair.
+The neural adjoint has its additional focused tests in the next section.
 
 ```bash
 "${REPRO_PY[@]}" -m pytest -q \
@@ -73,12 +68,102 @@ Passing these tests does not validate the pending strict Method B repair.
   pytest/solver_comparisons/test_kress_shape_derivative_driver.py
 ```
 
-## Method B parameter inverse controls
+## Implicit MLP + Method B adjoint
+
+The named entry point uses a float64 SIREN (width 64, two hidden layers),
+Kress adjoint, direct neural updates and fresh extraction/Method-B/BEM for
+candidate acceptance. It defaults to 60 update attempts. Initial fitting and
+the separate exact-target representation control are diagnostics outside the
+inverse loop; no proposed curve is fitted during an adjoint update.
+
+```bash
+"${REPRO_PY[@]}" -m pytest -q \
+  pytest/gpr_bem_kress/test_geometry_pullback.py \
+  pytest/sdf_inverse/test_method_b_pullback.py \
+  pytest/sdf_inverse/test_implicit_adjoint.py \
+  pytest/sdf_inverse/test_implicit_adjoint_driver.py
+
+"${REPRO_PY[@]}" run_implicit_mlp_inverse.py \
+  --target circle --max-iterations 60 --num-pairs 12 --num-nodes 64 \
+  --output-dir "results/inverse/implicit_mlp/circle-${REPRO_STAMP}"
+
+"${REPRO_PY[@]}" run_implicit_mlp_inverse.py \
+  --target circle --initial-model siren_ellipse \
+  --max-iterations 60 --num-pairs 12 --num-nodes 64 \
+  --output-dir "results/inverse/implicit_mlp/ellipse-to-circle-${REPRO_STAMP}"
+
+"${REPRO_PY[@]}" run_implicit_mlp_inverse.py \
+  --target star --max-iterations 60 --num-pairs 12 --num-nodes 128 \
+  --output-dir "results/inverse/implicit_mlp/star-${REPRO_STAMP}"
+```
+
+These bounded experiments currently fail some recovery gates; a nonzero gate
+exit is expected. Artifacts are written before enforcement. The saved validation
+runs used `--no-gate` to finish as diagnostic jobs; that option does not alter
+optimization, gate values or the reported failure. These commands use the
+same declared 60-attempt budgets as the new 12-pair runs; none currently
+establishes successful recovery. Check
+`metrics.json`, `summary.md`, trajectories and the accepted `kress_model.pt`.
+Per-solver diagnostics count adjoint solves, actual forward evaluations,
+rejected trials and zero optimization FD probes/distillation steps.
+
+Use `run_explicit_radial_fourier_inverse.py` for the existing radial experiment.
+The old `run_mlp_sdf_inverse_comparison.py` name remains a compatibility entry
+point. In the shared comparison driver, Kress `siren_*` cases now default to
+adjoint; `--optimizer parameter_fd` explicitly selects the numerical reference.
+
+### Optional neural finite-difference reference
+
+This updates every SIREN weight through a numerical residual Jacobian. It is
+distinct from the archived known-shape-family controls. The small network
+keeps that reference bounded; its forward cost grows with its parameter count.
+
+```bash
+"${REPRO_PY[@]}" run_sdf_inverse_comparison.py \
+  --target circle --initial-model siren_circle --solvers kress \
+  --optimizer parameter_fd --mlp-hidden-features 32 --mlp-hidden-layers 0 \
+  --max-iterations 10 --num-pairs 12 --num-nodes 64 \
+  --output-dir "results/inverse/implicit_mlp/parameter-fd-reference-${REPRO_STAMP}"
+```
+
+The reference uses damped Gauss–Newton; the adjoint path uses Adam and Eikonal
+regularization. A flag switch therefore compares complete optimizer policies,
+not just derivative implementations. No matched FD-versus-adjoint neural
+recovery benchmark has been completed. Directional FD checks in the tests
+above validate gradients rather than reconstruction performance.
+
+## Explicit Radial Fourier
+
+This pipeline updates radial Fourier coefficients. Its MLP fits and audits
+the curve under the `legacy_strict` policy; it does not own the accepted
+physics geometry. Recorded canonical reconstruction success and neural
+representation failures are separate outcomes.
+
+```bash
+"${REPRO_PY[@]}" run_explicit_radial_fourier_inverse.py \
+  --target star --initial-shape ellipse --solvers kress \
+  --output-dir "results/inverse/radial_fourier/ellipse-to-star-${REPRO_STAMP}"
+```
+
+Use the representation-policy commands below to compare fitting and export
+policies. The [pipeline page](pipelines/explicit_radial_fourier.md) records
+the geometry ownership and continuation defaults.
+
+## Optional archive: Legacy known-shape-family controls
 
 These optimize a small implicit-field parameter vector using finite
 differences. Each candidate is extracted and fit through Method B before
-the paired MOD/Kress prediction. They are useful controls for the repaired
-pipeline, but do not optimize a general MLP.
+the paired MOD/Kress prediction. They test the conversion and forward path
+within prescribed shape families; they do not optimize a general MLP.
+
+The saved archive covers 3 circle, 4 ellipse, 5 star and 7 frozen-random-feature
+parameters. The [archive explanation](legacy/known_shape_family_controls.md)
+describes their scope. The star has five lobes fixed in advance; its center, mean radius,
+amplitude and rotation are recovered from measurements. Family knowledge is
+provided, not the correct values of the unknown parameters. These controls
+remain reproducible, but their outputs belong in
+`results/legacy/known_shape_family_parameter_inverse/`, outside the two active
+inverse pipelines.
 
 The first two commands use independent analytic Mie circle observations,
 starting from a wrong circle and a non-distance ellipse. The third uses
@@ -89,16 +174,18 @@ and acquisition coordinates are recorded by the driver.
 ```bash
 "${REPRO_PY[@]}" run_sdf_inverse_comparison.py \
   --target circle --initial-model circle --solvers mod kress \
-  --output-dir "results/inverse/method_b/circle-to-circle-${REPRO_STAMP}"
+  --optimizer parameter_fd \
+  --output-dir "results/legacy/known_shape_family_parameter_inverse/circle-to-circle-${REPRO_STAMP}"
 
 "${REPRO_PY[@]}" run_sdf_inverse_comparison.py \
   --target circle --initial-model ellipse --solvers mod kress \
-  --max-iterations 8 \
-  --output-dir "results/inverse/method_b/ellipse-to-circle-${REPRO_STAMP}"
+  --optimizer parameter_fd --max-iterations 8 \
+  --output-dir "results/legacy/known_shape_family_parameter_inverse/ellipse-to-circle-${REPRO_STAMP}"
 
 "${REPRO_PY[@]}" run_sdf_inverse_comparison.py \
   --target star --initial-model star --solvers mod kress \
-  --output-dir "results/inverse/method_b/star-to-star-${REPRO_STAMP}"
+  --optimizer parameter_fd \
+  --output-dir "results/legacy/known_shape_family_parameter_inverse/star-to-star-${REPRO_STAMP}"
 ```
 
 Read `summary.md` alongside `metrics.json`: compare recovered geometry,
@@ -146,12 +233,12 @@ field gates in `metrics.json`. A small fitting residual or successful
 optimizer exit alone is insufficient. Retain failed fits and unresolved
 refinement as part of the comparison.
 
-## Radial representation-policy diagnostics
+## Explicit Radial Fourier representation policies
 
 These compare `legacy_strict`, `curve_only`, and `export_only` on the
 current radial Fourier state. `legacy_strict` is the existing policy name;
-it means strict coupling to neural representation acceptance **within this
-radial experiment**, not original Method B geometry updates.
+it requires per-step neural fitting and representation acceptance within the
+radial experiment. The radial curve continues to own the geometry.
 
 Start with the short ellipse-to-circle control. Run the saved-star profile
 when a change warrants the longer comparison. The latter reads the recorded
@@ -170,15 +257,15 @@ pre-radial pipeline.
 
 Compare reconstruction and representation status separately. Inspect
 trajectory equality for curve-only versus export-only, actual neural work,
-extracted-curve drift, and held-out fields. A strict initialization failure
-is an informative result, not evidence that the inverse ran successfully.
+extracted-curve drift, and held-out fields. An initialization failure under
+`legacy_strict` means that policy's inverse did not run successfully.
 
 ## Kress derivative validation
 
 This checks the complete discrete geometry/material derivative, paired
 objective adjoint, independent references, and physical refinement. Its
-geometry inputs are explicit curves. It does not differentiate through MLP
-training, contour extraction, or a Method B refit.
+geometry inputs are explicit curves. This audit does not include the neural
+extraction/Method-B reverse; the neural pullback tests above check that chain.
 
 ```bash
 "${REPRO_PY[@]}" run_kress_shape_derivative_validation.py \
@@ -192,10 +279,10 @@ Read both `discrete_gate_passed` and `physical_gate_passed`, including
 per-case failed rows. A fixed-node derivative identity is distinct from
 convergence to the independent physical reference.
 
-## Optional radial shape/material controls
+## Optional Explicit Radial Fourier shape/material controls
 
 These retain their separate scope: fixed-circle or radial K2 shape with
-one unknown interior permittivity. They are not strict MLP + Method B
+one unknown interior permittivity. They are not Implicit MLP + Method B
 recovery experiments.
 
 ```bash
@@ -207,14 +294,14 @@ recovery experiments.
 
 "${REPRO_PY[@]}" run_material_inverse_comparison.py \
   --nodes 64 --audit-nodes 64 128 256 --max-evaluations 40 \
-  --output "results/inverse/shape_material/material_inverse/bounded-${REPRO_STAMP}"
+  --output "results/inverse/radial_fourier/shape_material/material_inverse/bounded-${REPRO_STAMP}"
 
 "${REPRO_PY[@]}" run_material_robustness_comparison.py \
-  --frozen-d results/inverse/shape_material/material_inverse/bounded-20260906 \
+  --frozen-d results/inverse/radial_fourier/shape_material/material_inverse/bounded-20260906 \
   --nodes 64 --audit-nodes 64 128 256 --oracle-nodes 128 256 512 1024 \
   --stage-max-evaluations 40 40 \
   --maximum-forward-solves 400 --maximum-direction-evaluations 2400 \
-  --output "results/inverse/shape_material/material_robustness/bounded-${REPRO_STAMP}"
+  --output "results/inverse/radial_fourier/shape_material/material_robustness/bounded-${REPRO_STAMP}"
 ```
 
 The robustness command deliberately reads the original frozen material
@@ -224,31 +311,21 @@ in another checkout, exact frozen-data replay is unavailable there until
 that artifact is restored. Do not silently substitute newly generated
 observations under the old run identity.
 
-## Strict MLP + Method B repair: commands pending
+## Interpreting the remaining failures
 
-There is currently no driver flag that makes
-`run_mlp_sdf_inverse_comparison.py` use original Method B as the evolving
-authoritative geometry. Selecting strict distillation, changing modal
-continuation, or increasing fitting budgets leaves its radial state in
-place. Do not label those runs as the repaired pipeline.
+[Implicit MLP diagnostics](implicit_mlp_diagnostics.md#commands) provide three
+component experiments for conversion, Eikonal activation, and one-update
+transfer. Their contract tests have run; the experiments themselves have not.
+They do not perform inverse recovery.
 
-Before supplying a runnable repair experiment, implement and expose the
-intended state transition explicitly, including which MLP/curve state is
-accepted, how Method B is reconstructed, and which geometry reaches BEM.
-Add tests for that transition and for failure/rollback behavior. The
-physical qualification should then proceed through:
+The current neural gradient and rollback tests verify the update contract.
+Physical qualification still requires accurate reconstructed geometry,
+re-extracted fields, and held-out measurements. Frozen-state conversion and
+BEM-resolution studies can separate these errors without changing the inverse
+state during an audit.
 
-1. Circle recovery, followed by ellipse-to-circle and ellipse-to-star
-   recovery, using fixed observations and recorded initialization.
-2. Separate extraction/fitting and BEM-resolution studies on frozen accepted
-   states, so a geometry error cannot be hidden by changing quadrature.
-3. Separate reconstruction success, strict neural representation acceptance,
-   re-extracted boundary/field agreement, and held-out data checks.
-4. A controlled comparison with retained radial results using matching data,
-   initialization conventions, resolution, and work accounting. Report
-   differences in shape space and initialization projection explicitly.
-
-The existing non-star-shaped frozen fitting case is useful for Method B's
-geometric scope. It is not yet evidence of non-star-shaped neural inverse
-recovery. Add such an inverse case only with an explicit supported target,
-observation source, and acceptance protocol.
+No matched comparison with Explicit Radial Fourier has been completed. Such a
+comparison must record matching observations, initialization conventions,
+resolution, and work accounting, as well as differences in available shapes.
+The existing non-star-shaped frozen fitting case demonstrates conversion
+scope, not non-star-shaped neural inverse recovery.

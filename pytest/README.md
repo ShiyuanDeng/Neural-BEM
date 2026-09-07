@@ -16,7 +16,7 @@ under [`../results/`](../results); `pytest/` contains no result bundles.
 | `nystrom_ref/` | Independent smooth-boundary forward oracle | Yes |
 | `ordered_boundary/` | Continuous and node-owned geometry contracts | **No** |
 | [`sdf_to_ordered_boundary/`](sdf_to_ordered_boundary) | Implicit-field extraction, A/B/C fits, geometry metrics, artifacts, and scalar Kress proxy | **No** |
-| [`sdf_inverse/`](sdf_inverse) | Common ordered geometry, paired MOD/Kress prediction, fixed complex objective, implicit-initialization recovery, the star target's Nystrom observation seam, and focused alternating-MLP contracts | **Yes** |
+| [`sdf_inverse/`](sdf_inverse) | Neural Kress-adjoint and Method-B reverse, actual-MLP acceptance/rollback, explicit radial policies, and legacy known-family parameter controls | **Yes** |
 | [`sdf_bem_multicomponent/`](sdf_bem_multicomponent) | Automatic unknown-`M` extraction, readiness gates, direct boundary forwarding, ragged trajectories, and the one-to-two split | **Yes** |
 | [`solver_comparisons/`](solver_comparisons) | Circle, ellipse, square, star, and two-circle solver comparisons | **Yes** |
 
@@ -169,9 +169,20 @@ kress-scalar-proxy-20260902/frozen_curves \
   --timing-repeats 9
 ```
 
-## Solver-neutral inverse tests
+## Inverse tests: neural adjoint, explicit radial and legacy controls
 
-The focused inverse suite checks that a single-frequency complex residual is
+The full `pytest/sdf_inverse` suite contains distinct contracts for both current
+pipelines and the archived controls. The neural tests include
+[`test_implicit_adjoint.py`](sdf_inverse/test_implicit_adjoint.py),
+[`test_method_b_pullback.py`](sdf_inverse/test_method_b_pullback.py) and
+[`test_implicit_adjoint_driver.py`](sdf_inverse/test_implicit_adjoint_driver.py).
+They check the actual weight-to-extraction-to-Method-B-to-BEM gradient,
+accepted-network loss decrease, rollback and CLI routing. The solver-side
+[`test_geometry_pullback.py`](gpr_bem_kress/test_geometry_pullback.py) checks
+the discrete Kress geometry reverse. Passing derivative tests is separate
+from successful reconstruction.
+
+The archived parameter-control tests check that a single-frequency complex residual is
 not erased, adjacent marching-squares duplicates at exact grid zeros are
 handled safely, nonempty artifact directories require explicit overwrite,
 both solvers receive the same ordered nodes and arc weights, both forwards
@@ -210,11 +221,12 @@ PYTHONPATH=solvers \
 ```
 
 The corresponding runs are indexed in the [results catalogue](../results/README.md).
-The active repair target is [strict MLP + Method B](../docs/pipelines/strict_mlp_method_b.md);
-existing parameter controls and radial policy tests do not certify that repair.
-See [`../docs/solver_neutral_inverse.md`](../docs/reports/inverse_development_through_2026-09-06.md)
-for the exact scope: this is a low-dimensional parameter-FD comparison, not a
-Kress adjoint or a scalable random-network inverse.
+The current pipeline guides are [Implicit MLP + Method B](../docs/pipelines/implicit_mlp.md)
+and [Explicit Radial Fourier](../docs/pipelines/explicit_radial_fourier.md).
+The [legacy known-shape-family controls](../docs/legacy/known_shape_family_controls.md)
+and [historical development record](../docs/reports/inverse_development_through_2026-09-06.md)
+describe the older small-parameter FD tests. Their successful recovery does
+not certify full-neural reconstruction.
 
 ## Solver comparisons
 

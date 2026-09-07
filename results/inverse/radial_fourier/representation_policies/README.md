@@ -1,8 +1,9 @@
-# Reconstruction / representation ablations
+# Explicit Radial Fourier: neural fitting and export policies
 
 These runs implement Task A of the 2026-09-05 brief. Historical measurements retain their original payloads; relocated runs are indexed
 in the [catalogue](../../../README.md). These radial policies inform
-[strict MLP + Method B repair](../../../../docs/pipelines/strict_mlp_method_b.md).
+[Implicit MLP + Method B](../../../../docs/pipelines/implicit_mlp.md), but every
+accepted reconstruction in this ablation remains an explicit radial curve.
 
 - [`saved-star-20260905/summary.md`](saved-star-20260905/summary.md): final
   saved-configuration comparison, with frozen-curve forward refinement,

@@ -1,7 +1,7 @@
 {
   "schema": "result-document-relocations-v1",
   "organized_on": "2026-09-07",
-  "research_direction": "Repair strict MLP-owned geometry plus Method B; other pipelines supply diagnostic evidence.",
+  "research_direction": "Compare implicit MLP/Method-B and explicit radial-Fourier inverse pipelines; archive known-shape-family parametric controls separately.",
   "moves": [
     {
       "old": "results/inverse_solver_comparison/README.md",
@@ -61,7 +61,7 @@
     },
     {
       "old": "results/inverse_solver_comparison/random-feature-implicit-mie-20260902",
-      "new": "results/inverse/method_b/random-feature-implicit-mie-20260902"
+      "new": "results/legacy/known_shape_family_parameter_inverse/random-feature-implicit-mie-20260902"
     },
     {
       "old": "results/inverse_solver_comparison/siren-circle-mie-20260903",
@@ -73,15 +73,15 @@
     },
     {
       "old": "results/inverse_solver_comparison/wrong-circle-mie-20260902",
-      "new": "results/inverse/method_b/wrong-circle-mie-20260902"
+      "new": "results/legacy/known_shape_family_parameter_inverse/wrong-circle-mie-20260902"
     },
     {
       "old": "results/inverse_solver_comparison/wrong-ellipse-mie-20260902",
-      "new": "results/inverse/method_b/wrong-ellipse-mie-20260902"
+      "new": "results/legacy/known_shape_family_parameter_inverse/wrong-ellipse-mie-20260902"
     },
     {
       "old": "results/inverse_solver_comparison/wrong-star-nystrom-20260903",
-      "new": "results/inverse/method_b/wrong-star-nystrom-20260903"
+      "new": "results/legacy/known_shape_family_parameter_inverse/wrong-star-nystrom-20260903"
     },
     {
       "old": "results/sdf_representation_ablation/README.md",
@@ -121,15 +121,15 @@
     },
     {
       "old": "results/material_inverse",
-      "new": "results/inverse/shape_material/material_inverse"
+      "new": "results/inverse/radial_fourier/shape_material/material_inverse"
     },
     {
       "old": "results/material_robustness",
-      "new": "results/inverse/shape_material/material_robustness"
+      "new": "results/inverse/radial_fourier/shape_material/material_robustness"
     },
     {
       "old": "results/neural_metric",
-      "new": "results/inverse/neural_metric"
+      "new": "results/inverse/radial_fourier/neural_metric"
     },
     {
       "old": "results/sdf_boundary_parameterization",
@@ -274,6 +274,34 @@
     {
       "old": "mlp-resolved-k5-ellipse-to-star-kress-20260904.log",
       "new": "results/legacy/inverse/normal_updates/mlp-resolved-k5-ellipse-to-star-kress-20260904/stdout.log"
+    },
+    {
+      "old": "results/inverse/method_b",
+      "new": "results/legacy/known_shape_family_parameter_inverse"
+    },
+    {
+      "old": "results/inverse/shape_material",
+      "new": "results/inverse/radial_fourier/shape_material"
+    },
+    {
+      "old": "results/inverse/neural_metric",
+      "new": "results/inverse/radial_fourier/neural_metric"
+    },
+    {
+      "old": "docs/pipelines/strict_mlp_method_b.md",
+      "new": "docs/pipelines/implicit_mlp.md"
+    },
+    {
+      "old": "docs/pipelines/radial_fourier.md",
+      "new": "docs/pipelines/explicit_radial_fourier.md"
+    },
+    {
+      "old": "docs/pipelines/shape_material.md",
+      "new": "docs/pipelines/explicit_radial_shape_material.md"
+    },
+    {
+      "old": "docs/method_b_failure_diagnostics.md",
+      "new": "docs/implicit_mlp_diagnostics.md"
     }
   ],
   "compatibility_aliases": [
@@ -282,5 +310,7 @@
       "target": "results/validation/sdf_boundary_parameterization",
       "reason": "Immutable recorded artifact paths and the existing user-edited notebook."
     }
-  ]
+  ],
+  "known_shape_family_reorganization_on": "2026-09-07",
+  "documentation_pipeline_names_updated_on": "2026-09-07"
 }

@@ -3,7 +3,8 @@
 These documents retain mathematical detail and numerical protocols. Their
 dated implementation status and proposed work should be read with the
 [current architecture](../current_architecture.md) and the
-[strict MLP + Method B repair plan](../pipelines/strict_mlp_method_b.md).
+[Implicit MLP + Method B](../pipelines/implicit_mlp.md) and
+[Explicit Radial Fourier](../pipelines/explicit_radial_fourier.md) pipeline pages.
 
 | Reference | Scope |
 |---|---|

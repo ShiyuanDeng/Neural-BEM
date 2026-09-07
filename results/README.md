@@ -1,18 +1,28 @@
 # Results and experiment catalogue
 
-The research target is **strict MLP-owned geometry → Method B → BEM**. Its reconstruction and representation failures are the problems to fix. Radial Fourier, optional export, analytic-derivative and material experiments provide controls and lessons for that work; their successes do not establish strict MLP/Method-B recovery. Start with the [strict pipeline guide](../docs/pipelines/strict_mlp_method_b.md).
+The two current inverse pipelines are [Implicit MLP + Method B](inverse/implicit_mlp/README.md) and [Explicit Radial Fourier](inverse/radial_fourier/README.md). **Implicit-MLP recovery remains broken/unresolved:** the adjoint gradient checks pass, but all three new 12-pair inverse runs fail recovery acceptance. **Explicit radial reconstruction works in the recorded successful controls**, with separate failures of neural fitting/export and some experimental variants. These folders define the comparison to make; their saved runs are not yet a matched benchmark.
 
-[catalog.csv](catalog.csv) contains **153 rows across 51 saved or empty run bundles**. Inverse runs have a row per solver, policy or declared arm; larger supporting sweeps explicitly identify their grouped scope. The catalogue records accepted geometry, derivative/optimizer, MLP role, target and initialization, observation setup, separate recovery/representation outcomes, date evidence, provenance, and each result's implication for the strict pipeline.
+The old `results/inverse/method_b` results are now [legacy known-shape-family parameter controls](legacy/known_shape_family_parameter_inverse/README.md). They estimate 3–7 unknowns within supplied circle/ellipse/five-lobe/radial-feature families. Their clean recovery videos are not full-MLP inverse evidence. Material and frozen-neural-metric studies now sit inside `inverse/radial_fourier` because they use explicit geometry.
+
+The next [Method B failure diagnostics](../docs/implicit_mlp_diagnostics.md)
+are implemented but not yet run: frozen conversion sweeps, controlled Eikonal
+activation, and one-update transfer with a zero-update control. Their new
+outputs belong under `validation/method_b_failure_diagnostics/`; add measured
+conclusions to this register only after reviewing the actual run artifacts.
+
+[catalog.csv](catalog.csv) contains **158 rows across 56 saved or empty run bundles**, including the three existing 12-pair neural runs indexed during this reorganization and the two initial adjoint diagnostics. The earlier exporter-failed partial attempt is recorded separately in the [adjoint validation index](validation/implicit_mlp_adjoint/README.md). Inverse runs have a row per solver, policy or declared arm; larger supporting sweeps explicitly identify their grouped scope. The catalogue records accepted geometry, derivative/optimizer, MLP role, target and initialization, observation setup, separate recovery/representation outcomes, date evidence, provenance, and each result's implication for the implicit MLP pipeline.
 
 ## Find the right evidence
 
 | Location | Evidence and use |
 |---|---|
-| [Method-B controls](inverse/method_b/) | Small implicit-parameter inverses rebuilt through Method B. Check extraction and forward accuracy with independent observations; these are not full MLP inverses. |
+| [Implicit MLP inverse](inverse/implicit_mlp/README.md) | Current circle, ellipse-to-circle and star neural-adjoint runs; all fail recovery acceptance. |
+| [Implicit MLP adjoint validation](validation/implicit_mlp_adjoint/) | Direct neural Kress-adjoint and Method-B reverse; gradient checks, circle/star updates and retained failed recovery gates. |
+| [Legacy known-shape-family controls](legacy/known_shape_family_parameter_inverse/) | Analytic/frozen-feature fields with 3–7 unknown parameters; Method B and parameter FD, both MOD and Kress. The family is supplied, numerical parameters are inferred; no full-MLP recovery. |
 | [Historical MLP feedback](legacy/inverse/mlp_feedback/) | MLP accepted state, modal probes, re-distance and Method-B re-solve: direct evidence for the pipeline to repair. Historical location preserves the implementation version, not a decision to abandon the approach. |
 | [Historical normal updates](legacy/inverse/normal_updates/) | Canonical ordered curves/local modal updates with MLP audits. Diagnose bad parameterizations, spectra, schedules and representation barriers. |
 | [Radial controls](inverse/radial_fourier/) | Explicit star-shaped radial coefficients, including strict/curve-only/export-only policies. `legacy_strict` here still owns a radial curve, not an MLP zero set. |
-| [Shape/material](inverse/shape_material/) and [neural metrics](inverse/neural_metric/) | Analytic-derivative radial variations. Study derivative quality, initialization basins, training-only selection and metric choices. |
+| [Shape/material](inverse/radial_fourier/shape_material/) and [neural metrics](inverse/radial_fourier/neural_metric/) | Analytic-derivative radial variations. Study derivative quality, initialization basins, training-only selection and metric choices. |
 | [Representation](representation/) and [validation](validation/) | Frozen MLP fits, Method-B conversion, quadrature, derivatives and forward checks. Isolate failing parts before another full inverse. |
 | [Legacy development](legacy/development/), [solver experiments](legacy/solver_experiments/) and [demos](demos/) | Superseded audit versions, QBX evidence, forward/geometry demonstrations. Demos and empty markers are not completed inverse results. |
 
@@ -20,19 +30,22 @@ The research target is **strict MLP-owned geometry → Method B → BEM**. Its r
 
 Dates are recorded UTC dates unless marked **label only**. Error definitions and acquisitions differ; inspect the linked artifact or the catalogue's metric-scope columns before comparing numbers.
 
-| Run / date | Scene and initialization | Actual pipeline | Measured takeaway | Implication for strict MLP + Method B |
+| Run / date | Scene and initialization | Actual pipeline | Measured takeaway | Implication for Implicit MLP + Method B |
 |---|---|---|---|---|
-| [Method-B circle controls](inverse/method_b/) · 2026-09-02 | Wrong circle, ellipse or random-feature field → 50 mm circle; Mie data | Implicit parameter FD → Method B → MOD/Kress | Kress holdout ≈`3.8e-10`–`3.6e-9`; each small model family contains the target. | Retain a working extraction/forward control; this does not establish general neural recovery. |
-| [Method-B star](inverse/method_b/wrong-star-nystrom-20260903/summary.md) · 2026-09-02 23:08 UTC | Wrong five-parameter star → five-lobe star; independent Nyström | Implicit parameter FD → Method B → MOD/Kress | Kress holdout `3.139e-5`; geometry bandwidth contributes the floor. | Measure extraction error as well as BEM refinement. Folder date is Sep 3 in London. |
+| [Current 12-pair implicit MLP runs](inverse/implicit_mlp/README.md) · 2026-09-07 | Wrong neural circle/ellipse → circle; wrong neural star → star | Full SIREN weights; Kress adjoint → Method-B reverse → Adam/backtracking | All three recovery gates FAIL; final holdout `0.06394`, `0.31864`, `0.78392`; boundary `1.038`, `6.450`, `26.833 mm`. | Current neural reconstruction needs repair despite validated gradients. These existing runs were indexed, not rerun, during the move. |
+| [Implicit MLP circle](validation/implicit_mlp_adjoint/circle-verified-20260907/summary.md) · 2026-09-07 | Wrong neural circle → 50 mm circle; independent Mie | Kress adjoint → Method-B reverse → neural weights | 41 updates, loss `0.921 → 3.09e-6`; holdout `0.07072`, contour `1.038 mm`; overall FAIL. | Direct neural updates work; low training loss still does not meet the representation-relative recovery gates. |
+| [Implicit MLP star](validation/implicit_mlp_adjoint/star-20260907/summary.md) · 2026-09-07 | Wrong neural star → five-lobe star; independent Nyström | Same direct neural adjoint; five-step budget | Loss drops 19.16%, holdout worsens `0.8914 → 1.1179`; overall FAIL. Full neural gradient audit agrees to `2.74e-8`. | Correct gradients and accepted training decrease do not establish star reconstruction. |
+| [Known-family circle controls](legacy/known_shape_family_parameter_inverse/) · 2026-09-02 | Wrong circle, ellipse or frozen radial-feature field → 50 mm circle; Mie data | 3/4/7 parameter FD → Method B → MOD/Kress | Kress holdout ≈`3.8e-10`–`3.6e-9`; supplied model family contains the exact target. | Legacy parametric recovery, not full-MLP shape discovery. |
+| [Known five-lobe family control](legacy/known_shape_family_parameter_inverse/wrong-star-nystrom-20260903/summary.md) · 2026-09-02 23:08 UTC | Five unknown star parameters; lobe count supplied from target configuration | 5 parameter FD → Method B → MOD/Kress | Kress holdout `3.139e-5`; geometry bandwidth contributes the floor. | Legacy recovery within a known star family; not discovering the number of lobes. Folder date is Sep 3 in London. |
 | [MLP ellipse → star](legacy/inverse/mlp_feedback/mlp-ellipse-to-star-nystrom-20260903/summary.md) · 2026-09-03 | Wrong ellipse → five-lobe star | MLP-owned geometry; modal FD, re-distance, Method-B re-solve | Kress train/holdout `0.1327`/`0.3400`; boundary error `7.369 mm`; no decreasing re-distanced step. | Isolate whether a promising data update survives fitting and extraction. This is progress, not certified recovery. |
 | [Resolved normal updates](legacy/inverse/normal_updates/mlp-resolved-k5-ellipse-to-star-kress-20260904/summary.md) · 2026-09-04 | Wrong ellipse → five-lobe star | Canonical Cartesian curve/local normal updates; MLP audit | Holdout `1.073`; boundary error `46.92 mm` despite faithful MLP tracking of the wrong curve. | Geometry search can fail independently of neural representation. |
 | [Radial milestone](inverse/radial_fourier/mlp-radial-continuation-k5-ellipse-to-star-kress-20260904/summary.md) · 2026-09-04 | Wrong ellipse → five-lobe star | Radial K5 FD continuation; mandatory MLP audit | Canonical holdout `1.339e-8`; boundary error `2.570e-10 m`; MLP drift `0.329 mm` misses the separate `0.2 mm` gate. | Use the recovered curve as a controlled neural-fit target; canonical success is not strict delivery. |
 | [Representation policies](inverse/radial_fourier/representation_policies/saved-star-20260905/summary.md) · 2026-09-05 | Identical ellipse/star data and initial radial coefficients | Radial FD; `legacy_strict`, `curve_only`, `export_only` | All share 44 updates and holdout `1.3393e-8`. End-to-end times `240.07`, `82.98`, `91.40 s`; strict and final-export representation both fail. | Quantify neural costs and separate outcomes. This does not remove the need to repair MLP-owned geometry. |
 | [Smooth-distance fits](representation/smooth_distance_supervision/task-b-circle-star-refined-20260905/README.md) · 2026-09-05 **label only** | Frozen 65 mm circle and five-lobe star; same MLP initialization, samples and 600-step budgets | Polygon vs continuous-distance labels; Method-B extraction audit | Smooth labels improve interfaces/fields; star drift remains `0.5345 mm`; all four strict redistance stopping gates fail. | Improve labels and independently audit extraction; smooth labels alone do not solve neural distance fidelity. |
 | [Derivative validation](validation/kress_shape_derivative/refined-audits-20260906/summary.md) · 2026-09-06 | Circle, ellipse, star, zero contrast; frozen directions | Complete Kress JVP/adjoint, FD and independent audits | `96/96` fixed-node checks and separate physical/refinement gate pass. | Reuse verified field derivatives, then verify the neural/Method-B map separately. |
-| [Material starts](inverse/shape_material/material_inverse/bounded-20260906/README.md) · 2026-09-06 | Circle; fixed geometry or joint radial K2/material; clean/1% noisy | Analytic Kress derivative + bounded TRF | Physical recovery passes `5/8`; high-permittivity starts retain failures. | Separate termination, stationarity and recovery; retain adverse starts. |
-| [Material robustness](inverse/shape_material/material_robustness/bounded-20260906/README.md) · 2026-09-06 | Circle and opposite-contrast noncircle; five clean/noisy cohorts | Radial K2/material; full band / continuation / multistart | Recovery `0/5`, `2/5`, `5/5`; bounded two-target study. | Test initialization/schedule effects with training-only selection and explicit budgets. |
-| [Frozen neural metrics](inverse/neural_metric/comparison-20260906/README.md) · 2026-09-06 | Wrong exact circle → circle/star | Explicit radial K5; identity/Sobolev/frozen neural metrics | Three neural seeds underperform explicit controls; all star arms hit the update budget. No MLP training/extraction in the inverse. | Require evidence for neural search benefits; resolved fields do not imply recovery. |
+| [Material starts](inverse/radial_fourier/shape_material/material_inverse/bounded-20260906/README.md) · 2026-09-06 | Circle; fixed geometry or joint radial K2/material; clean/1% noisy | Analytic Kress derivative + bounded TRF | Physical recovery passes `5/8`; high-permittivity starts retain failures. | Separate termination, stationarity and recovery; retain adverse starts. |
+| [Material robustness](inverse/radial_fourier/shape_material/material_robustness/bounded-20260906/README.md) · 2026-09-06 | Circle and opposite-contrast noncircle; five clean/noisy cohorts | Radial K2/material; full band / continuation / multistart | Recovery `0/5`, `2/5`, `5/5`; bounded two-target study. | Test initialization/schedule effects with training-only selection and explicit budgets. |
+| [Frozen neural metrics](inverse/radial_fourier/neural_metric/comparison-20260906/README.md) · 2026-09-06 | Wrong exact circle → circle/star | Explicit radial K5; identity/Sobolev/frozen neural metrics | Three neural seeds underperform explicit controls; all star arms hit the update budget. No MLP training/extraction in the inverse. | Require evidence for neural search benefits; resolved fields do not imply recovery. |
 
 ## Preservation, dates and reruns
 
@@ -40,11 +53,11 @@ Original measured JSON/CSV/arrays and commands are preserved. [relocations.json]
 
 Source revisions and hashes describe the measured code. Cleanup also updates driver input/output path literals, so current source hashes can differ without changing the recorded numerical conclusions. This index does not claim present-day source equality or a numerical rerun.
 
-`catalog_status` describes an evidence role, independently of `recovery_outcome` and `representation_outcome`. A `current_diagnostic` can fail; historical evidence can still guide repairs. The two empty-before-cleanup folders have navigation markers only. This organization claims no completed repaired strict-MLP run.
+`catalog_status` describes an evidence role, independently of `recovery_outcome` and `representation_outcome`. A `current_diagnostic` can fail; historical evidence can still guide repairs. The two empty-before-cleanup folders have navigation markers only. The new adjoint runs are completed diagnostics, with no claim that their failed recovery gates passed.
 
 The catalogue preserves `recorded_utc` and its `date_source`; a date inferred from a folder is not a verified UTC execution date. Filesystem modification times were not used. In particular, `mlp-joint-k6-...-20260903` records **2026-09-04 08:40 UTC**.
 
-Preserve the superseded short-export, early smooth-fit extraction and derivative-audit bundles: corrected replacements already exist. Post-measurement source changes for saved-star, derivatives and robustness are explained in the [historical reports](../docs/reports/); they do not justify rerunning every old experiment. New evidence should target strict MLP/Method-B data-step transfer, re-distance fidelity and extraction resolution, using radial/frozen-curve controls to locate failures. Follow the [strict pipeline guide](../docs/pipelines/strict_mlp_method_b.md) for repair scope and [reproduction commands](../docs/reproduction.md) for fresh output paths and executable reruns. This cleanup executes no experiments.
+Preserve the superseded short-export, early smooth-fit extraction and derivative-audit bundles: corrected replacements already exist. Post-measurement source changes for saved-star, derivatives and robustness are explained in the [historical reports](../docs/reports/); they do not justify rerunning every old experiment. New evidence should target neural-adjoint recovery, distance fidelity and extraction resolution, using radial/frozen-curve controls to locate failures. Follow the [pipeline guide](../docs/pipelines/implicit_mlp.md) and [reproduction commands](../docs/reproduction.md) for controlled comparisons and fresh output paths.
 
 ## Maintaining the catalogue
 
@@ -54,7 +67,10 @@ from recorded metadata and link its measured summary here when it changes a
 conclusion. Blank metric cells mean unavailable or unevaluated, never zero.
 Keep supporting sweeps explicitly grouped and use a fresh stable run ID.
 
-The [organization audit](organization_audit.json) records byte-preservation,
-path, syntax and catalogue checks. It records no numerical rerun. The old
+The historical [organization audit](organization_audit.json) records byte-preservation,
+path, syntax and the earlier 153-row catalogue checks. It records no numerical rerun
+and predates the five new adjoint rows. The
+[known-family relocation audit](known_shape_family_relocation_audit.json) records
+the later directory moves and payload-preservation checks, without a numerical rerun. The old
 geometry path is the sole compatibility alias; [relocations](relocations.json)
 explain it and all moves.

@@ -1,6 +1,7 @@
-> Historical record, classified 2026-09-07. Statements of current behavior or
-> next work below refer to their original date. The current research target is
-> [strict MLP + Method B repair](../pipelines/strict_mlp_method_b.md); see the
+> Historical record, classified 2026-09-07. Behavior and planned work below
+> refer to the original date. Current pipeline names are
+> [Implicit MLP + Method B](../pipelines/implicit_mlp.md) and
+> [Explicit Radial Fourier](../pipelines/explicit_radial_fourier.md). See the
 > [architecture](../current_architecture.md) and [results catalogue](../../results/README.md).
 
 # SDF / Kress priorities: first-batch implementation and evidence

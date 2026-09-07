@@ -1,0 +1,625 @@
+{
+  "acceptance_gates": {
+    "common_initial_boundary_identical": {
+      "passed": true,
+      "requirement": "<= 1e-14 m",
+      "value": 0.0
+    },
+    "common_target_boundary_identical": {
+      "passed": true,
+      "requirement": "<= 1e-14 m",
+      "value": 0.0
+    },
+    "kress_accepted_losses_monotone": {
+      "passed": true,
+      "requirement": true,
+      "value": true
+    },
+    "kress_amplitude_error": {
+      "passed": true,
+      "requirement": "<= 2e-2",
+      "value": 5.427199987084741e-06
+    },
+    "kress_center_error": {
+      "passed": true,
+      "requirement": "<= 5e-4 m",
+      "value": 2.9235013839290633e-09
+    },
+    "kress_final_boundary_error": {
+      "passed": true,
+      "requirement": "<= 1e-3 m",
+      "value": 3.868554363679945e-05
+    },
+    "kress_holdout_accuracy": {
+      "passed": true,
+      "requirement": "<= 1e-3",
+      "value": 3.139459457220169e-05
+    },
+    "kress_holdout_beats_mod": {
+      "passed": true,
+      "requirement": "Kress < MOD",
+      "value": {
+        "kress": 3.139459457220169e-05,
+        "mod": 0.012658149631161426
+      }
+    },
+    "kress_holdout_relative_l2": {
+      "passed": true,
+      "requirement": "<= 0.15",
+      "value": 3.139459457220169e-05
+    },
+    "kress_initial_field_non_distance": {
+      "passed": true,
+      "requirement": ">= 5e-2",
+      "value": 0.16842334916231927
+    },
+    "kress_initial_shape_non_circular": {
+      "passed": true,
+      "requirement": ">= 2e-3 m",
+      "value": 0.014394825709740343
+    },
+    "kress_linear_system_residual": {
+      "passed": true,
+      "requirement": "<= 1e-10",
+      "value": 8.195614476935756e-15
+    },
+    "kress_optimizer_converged": {
+      "passed": true,
+      "requirement": "converged stop condition",
+      "value": "relative_step_tolerance"
+    },
+    "kress_radius_error": {
+      "passed": true,
+      "requirement": "<= 1e-3 m",
+      "value": 9.462345088723234e-08
+    },
+    "kress_rotation_error": {
+      "passed": true,
+      "requirement": "<= 2e-2 rad",
+      "value": 1.3519614467670297e-07
+    },
+    "kress_target_geometry_holdout_beats_mod": {
+      "passed": true,
+      "requirement": "Kress < MOD on the identical true boundary",
+      "value": {
+        "kress": 4.824084396454547e-05,
+        "mod": 0.012603589276959136
+      }
+    },
+    "kress_training_loss_drop": {
+      "passed": true,
+      "requirement": ">= 100",
+      "value": 39315937592.09939
+    },
+    "mod_accepted_losses_monotone": {
+      "passed": true,
+      "requirement": true,
+      "value": true
+    },
+    "mod_amplitude_error": {
+      "passed": true,
+      "requirement": "<= 2e-2",
+      "value": 0.0004916382282703635
+    },
+    "mod_center_error": {
+      "passed": true,
+      "requirement": "<= 5e-4 m",
+      "value": 2.350677263767618e-09
+    },
+    "mod_final_boundary_error": {
+      "passed": true,
+      "requirement": "<= 1e-3 m",
+      "value": 6.658087787432502e-05
+    },
+    "mod_holdout_relative_l2": {
+      "passed": true,
+      "requirement": "<= 0.15",
+      "value": 0.012658149631161426
+    },
+    "mod_initial_field_non_distance": {
+      "passed": true,
+      "requirement": ">= 5e-2",
+      "value": 0.16842334916231927
+    },
+    "mod_initial_shape_non_circular": {
+      "passed": true,
+      "requirement": ">= 2e-3 m",
+      "value": 0.014394825709740343
+    },
+    "mod_linear_system_residual": {
+      "passed": true,
+      "requirement": "<= 1e-10",
+      "value": 9.32081993426543e-15
+    },
+    "mod_optimizer_converged": {
+      "passed": true,
+      "requirement": "converged stop condition",
+      "value": "loss_change_tolerance"
+    },
+    "mod_radius_error": {
+      "passed": true,
+      "requirement": "<= 1e-3 m",
+      "value": 4.561867717176038e-06
+    },
+    "mod_rotation_error": {
+      "passed": true,
+      "requirement": "<= 2e-2 rad",
+      "value": 7.842252158742032e-05
+    },
+    "mod_training_loss_drop": {
+      "passed": true,
+      "requirement": ">= 100",
+      "value": 151449.3306437254
+    },
+    "observation_oracle_self_convergence": {
+      "passed": true,
+      "requirement": "<= 1e-8",
+      "value": 2.879600833156596e-10
+    }
+  },
+  "acceptance_passed": true,
+  "benchmark": "star-implicit-to-star-from-independent-nystrom-data",
+  "comparison_controls": {
+    "maximum_initial_boundary_coordinate_delta_m": 0.0,
+    "maximum_target_boundary_coordinate_delta_m": 0.0
+  },
+  "comparison_summary": {
+    "final_holdout_error_ratio_mod_over_kress": 403.19519342892136,
+    "inverse_wall_time_ratio_mod_over_kress": 1.5807473290299936,
+    "target_geometry_holdout_error_ratio_mod_over_kress": 261.2638635887491
+  },
+  "experiment": {
+    "angular_frequencies_rad_s": [
+      3141592653.589793,
+      9424777960.769379,
+      1570796326.7948966,
+      6283185307.179586,
+      15707963267.948965
+    ],
+    "controlled_parameters": [
+      "center_x",
+      "center_y",
+      "log_mean_radius",
+      "amplitude",
+      "rotation"
+    ],
+    "exterior": {
+      "epsr": 6.0,
+      "mur": 1.0,
+      "sigma": 0.0
+    },
+    "forward_difference": "Only solver dispatch: MOD vs Kress",
+    "geometry_config": {
+      "arclength_dense_resolution": 2048,
+      "bandwidth": 48,
+      "bounds": [
+        [
+          0.3,
+          0.3
+        ],
+        [
+          0.7,
+          0.7
+        ]
+      ],
+      "grid_shape": [
+        257,
+        257
+      ],
+      "num_nodes": 128,
+      "projected_samples": 128,
+      "validation_resolution": 1024
+    },
+    "interior": {
+      "epsr": 3.0,
+      "mur": 1.0,
+      "sigma": 0.0
+    },
+    "inverse_config": {
+      "damping_decrease": 0.3,
+      "damping_increase": 10.0,
+      "finite_difference_steps": [
+        5e-05,
+        5e-05,
+        0.0004,
+        0.002,
+        0.002
+      ],
+      "gradient_tolerance": 1e-09,
+      "initial_damping": 0.001,
+      "loss_tolerance": 1e-12,
+      "max_backtracks": 8,
+      "max_damping_trials": 6,
+      "max_iterations": 14,
+      "max_parameters": 5,
+      "max_steps": [
+        0.01,
+        0.01,
+        0.1,
+        0.25,
+        0.25
+      ],
+      "relative_step_tolerance": 1e-09
+    },
+    "num_pairs": 12,
+    "observation_noise": "none",
+    "receiver_points_m": [
+      [
+        0.7940199733523725,
+        0.5596007992385184
+      ],
+      [
+        0.724828366523919,
+        0.6986257929025994
+      ],
+      [
+        0.5953941804497731,
+        0.7844291657624374
+      ],
+      [
+        0.44039920076148165,
+        0.7940199733523725
+      ],
+      [
+        0.30137420709740065,
+        0.724828366523919
+      ],
+      [
+        0.21557083423756257,
+        0.5953941804497732
+      ],
+      [
+        0.20598002664762755,
+        0.44039920076148165
+      ],
+      [
+        0.27517163347608087,
+        0.30137420709740065
+      ],
+      [
+        0.4046058195502268,
+        0.21557083423756257
+      ],
+      [
+        0.5596007992385184,
+        0.20598002664762755
+      ],
+      [
+        0.6986257929025992,
+        0.27517163347608076
+      ],
+      [
+        0.7844291657624374,
+        0.4046058195502268
+      ]
+    ],
+    "ring_standoff_m": 0.3,
+    "source_points_m": [
+      [
+        0.8,
+        0.5
+      ],
+      [
+        0.7598076211353316,
+        0.6499999999999999
+      ],
+      [
+        0.65,
+        0.7598076211353315
+      ],
+      [
+        0.5,
+        0.8
+      ],
+      [
+        0.3500000000000001,
+        0.7598076211353316
+      ],
+      [
+        0.2401923788646685,
+        0.6500000000000001
+      ],
+      [
+        0.2,
+        0.5
+      ],
+      [
+        0.24019237886466838,
+        0.3500000000000001
+      ],
+      [
+        0.34999999999999987,
+        0.2401923788646685
+      ],
+      [
+        0.49999999999999994,
+        0.2
+      ],
+      [
+        0.6499999999999998,
+        0.24019237886466832
+      ],
+      [
+        0.7598076211353315,
+        0.34999999999999987
+      ]
+    ],
+    "source_strength": "1e-6+0j at every frequency",
+    "tx_rx_offset_m": 0.06
+  },
+  "holdout_frequencies_ghz": [
+    0.25,
+    1.0,
+    2.5
+  ],
+  "initialization": {
+    "claims_signed_distance": false,
+    "field_scale": 1.0,
+    "kind": "radial_star_level_set",
+    "lobes": 5,
+    "physical_parameters": {
+      "amplitude": 0.12,
+      "center_x": 0.48,
+      "center_y": 0.52,
+      "lobes": 5.0,
+      "mean_radius": 0.06,
+      "radius": 0.06,
+      "rotation_radians": 0.25
+    },
+    "raw_lower_bounds": [
+      0.44,
+      0.44,
+      -3.506557897319982,
+      0.05,
+      -0.6
+    ],
+    "raw_parameter_names": [
+      "center_x",
+      "center_y",
+      "log_mean_radius",
+      "amplitude",
+      "rotation"
+    ],
+    "raw_parameter_vector": [
+      0.48,
+      0.52,
+      -2.8134107167600364,
+      0.12,
+      0.25
+    ],
+    "raw_upper_bounds": [
+      0.56,
+      0.56,
+      -2.5902671654458267,
+      0.35,
+      0.6
+    ],
+    "rotation_is_controlled": true,
+    "rotation_period_radians": 1.2566370614359172
+  },
+  "observation_oracle_diagnostics": {
+    "coarse": {
+      "maximum_incident_consistency": 4.01292598733481e-15,
+      "maximum_linear_system_relative_residual": 2.118350130579348e-14,
+      "num_nodes": 256,
+      "total_seconds": 1.141598361544311
+    },
+    "coarse_num_nodes": 256,
+    "fine": {
+      "maximum_incident_consistency": 3.1445579020907937e-15,
+      "maximum_linear_system_relative_residual": 2.120476831444174e-14,
+      "num_nodes": 512,
+      "total_seconds": 4.429393453523517
+    },
+    "maximum_relative_difference": 2.879600833156596e-10,
+    "num_nodes": 512,
+    "per_frequency_relative_difference": [
+      3.794705625394375e-13,
+      2.4017635785620994e-11,
+      1.6145361576647265e-12,
+      1.563870622307282e-11,
+      2.879600833156596e-10
+    ]
+  },
+  "provenance": {
+    "command": "run_sdf_inverse_comparison.py --target star --output-dir results/inverse_solver_comparison/wrong-star-nystrom-20260903 --overwrite",
+    "created_utc": "2026-09-02T23:08:09.088496+00:00",
+    "git": {
+      "branch": "feature/ordered-boundary-nystrom",
+      "commit": "64f0822af6711631758063c00deab5bb2735d721",
+      "working_tree_status_before_run": "M run_sdf_inverse_comparison.py\n M solvers/sdf_inverse/__init__.py\n M solvers/sdf_inverse/models.py\n?? results/inverse_solver_comparison/random-feature-implicit-mie-20260902/contour_evolution.mp4\n?? results/inverse_solver_comparison/wrong-circle-mie-20260902/contour_evolution.mp4\n?? results/inverse_solver_comparison/wrong-ellipse-mie-20260902/contour_evolution.mp4\n?? run_sdf_inverse_contour_video.py\n?? solvers/sdf_inverse/nystrom_oracle.py\n?? solvers/sdf_inverse/targets.py"
+    },
+    "matplotlib": "3.9.4",
+    "numpy": "2.0.2",
+    "platform": "Linux-5.15.0-139-generic-x86_64-with-glibc2.31",
+    "python": "3.9.25",
+    "scikit_image": "0.24.0",
+    "scipy": "1.13.1",
+    "thread_environment": {
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1"
+    },
+    "torch": "2.8.0+cu128"
+  },
+  "schema_version": 1,
+  "solvers": {
+    "kress": {
+      "accepted_losses_monotone": true,
+      "accepted_updates": 10,
+      "cache_hits": 22,
+      "converged": true,
+      "final_all_frequency_forward_seconds": 0.7188958348706365,
+      "final_amplitude_error": 5.427199987084741e-06,
+      "final_center_error_m": 2.9235013839290633e-09,
+      "final_geometry_maximum_normalized_residual_m": 3.902914619854487e-05,
+      "final_geometry_maximum_raw_field_residual": 3.902914619866027e-05,
+      "final_geometry_speed_ratio": 1.020135654187822,
+      "final_holdout_relative_l2": 3.139459457220169e-05,
+      "final_parameters": {
+        "amplitude": 0.2500054271999871,
+        "center_x": 0.5000000012754936,
+        "center_y": 0.4999999973694152,
+        "lobes": 5.0,
+        "mean_radius": 0.049999905376549116,
+        "radius": 0.049999905376549116,
+        "rotation_radians": -1.3519614467670297e-07
+      },
+      "final_radius_error_m": 9.462345088723234e-08,
+      "final_rotation_error_radians": 1.3519614467670297e-07,
+      "final_training_loss": 3.6891448707813336e-11,
+      "final_training_relative_l2": 5.880771954407011e-06,
+      "initial_all_frequency_forward_seconds": 0.8440000163391232,
+      "initial_claims_signed_distance": false,
+      "initial_geometry_maximum_normalized_residual_m": 1.7944385081065366e-07,
+      "initial_geometry_maximum_raw_field_residual": 1.7947995605005485e-07,
+      "initial_holdout_relative_l2": 0.9995728382556565,
+      "initial_maximum_field_gradient_norm": 1.1684233491623193,
+      "initial_maximum_node_to_exact_boundary_distance_m": 0.04308820539184257,
+      "initial_maximum_unit_gradient_deviation": 0.16842334916231927,
+      "initial_mean_node_to_exact_boundary_distance_m": 0.016860037498019165,
+      "initial_minimum_field_gradient_norm": 1.0000767239891217,
+      "initial_parameters": {
+        "amplitude": 0.12,
+        "center_x": 0.48,
+        "center_y": 0.52,
+        "lobes": 5.0,
+        "mean_radius": 0.06,
+        "radius": 0.06,
+        "rotation_radians": 0.25
+      },
+      "initial_radial_span_m": 0.014394825709740343,
+      "initial_training_loss": 1.4504218950785246,
+      "initial_training_relative_l2": 1.1955320327477328,
+      "inverse_forward_seconds": 73.97062652092427,
+      "inverse_wall_seconds": 74.00077153742313,
+      "maximum_linear_system_relative_residual": 8.195614476935756e-15,
+      "maximum_node_to_exact_boundary_distance_m": 3.868554363679945e-05,
+      "mean_node_to_exact_boundary_distance_m": 8.16931693635305e-06,
+      "per_frequency_final_relative_l2": {
+        "0.25_GHz": 1.074047636555927e-06,
+        "0.5_GHz": 2.119517326287192e-06,
+        "1.5_GHz": 8.324094168087904e-06,
+        "1_GHz": 1.658117183102302e-05,
+        "2.5_GHz": 8.771058428535508e-05
+      },
+      "per_frequency_initial_relative_l2": {
+        "0.25_GHz": 0.6644708961709076,
+        "0.5_GHz": 1.074183457633144,
+        "1.5_GHz": 1.3217313227370957,
+        "1_GHz": 1.5498534385702363,
+        "2.5_GHz": 1.354133422382746
+      },
+      "per_frequency_target_geometry_relative_l2": {
+        "0.25_GHz": 3.7178423117051914e-06,
+        "0.5_GHz": 5.8702604201364785e-06,
+        "1.5_GHz": 2.1106246101481873e-05,
+        "1_GHz": 1.7169461573029497e-05,
+        "2.5_GHz": 0.00013668934582865836
+      },
+      "stop_reason": "relative_step_tolerance",
+      "target_geometry_all_frequency_forward_seconds": 0.7063857400789857,
+      "target_geometry_all_frequency_relative_l2": 3.336941882456877e-05,
+      "target_geometry_holdout_relative_l2": 4.824084396454547e-05,
+      "total_forward_evaluations": 121,
+      "training_loss_drop_factor": 39315937592.09939
+    },
+    "mod": {
+      "accepted_losses_monotone": true,
+      "accepted_updates": 11,
+      "cache_hits": 24,
+      "converged": true,
+      "final_all_frequency_forward_seconds": 1.6757665928453207,
+      "final_amplitude_error": 0.0004916382282703635,
+      "final_center_error_m": 2.350677263767618e-09,
+      "final_geometry_maximum_normalized_residual_m": 3.857487453715567e-05,
+      "final_geometry_maximum_raw_field_residual": 3.8574896679390014e-05,
+      "final_geometry_speed_ratio": 1.0199208491398803,
+      "final_holdout_relative_l2": 0.012658149631161426,
+      "final_parameters": {
+        "amplitude": 0.24950836177172964,
+        "center_x": 0.5000000017650511,
+        "center_y": 0.49999999844749293,
+        "lobes": 5.0,
+        "mean_radius": 0.05000456186771718,
+        "radius": 0.05000456186771718,
+        "rotation_radians": 7.842252158742032e-05
+      },
+      "final_radius_error_m": 4.561867717176038e-06,
+      "final_rotation_error_radians": 7.842252158742032e-05,
+      "final_training_loss": 9.64550585689956e-06,
+      "final_training_relative_l2": 0.0030213143544253105,
+      "initial_all_frequency_forward_seconds": 1.8473093025386333,
+      "initial_claims_signed_distance": false,
+      "initial_geometry_maximum_normalized_residual_m": 1.7944385081065366e-07,
+      "initial_geometry_maximum_raw_field_residual": 1.7947995605005485e-07,
+      "initial_holdout_relative_l2": 0.9973596374626953,
+      "initial_maximum_field_gradient_norm": 1.1684233491623193,
+      "initial_maximum_node_to_exact_boundary_distance_m": 0.04308820539184257,
+      "initial_maximum_unit_gradient_deviation": 0.16842334916231927,
+      "initial_mean_node_to_exact_boundary_distance_m": 0.016860037498019165,
+      "initial_minimum_field_gradient_norm": 1.0000767239891217,
+      "initial_parameters": {
+        "amplitude": 0.12,
+        "center_x": 0.48,
+        "center_y": 0.52,
+        "lobes": 5.0,
+        "mean_radius": 0.06,
+        "radius": 0.06,
+        "rotation_radians": 0.25
+      },
+      "initial_radial_span_m": 0.014394825709740343,
+      "initial_training_loss": 1.4608054057475712,
+      "initial_training_relative_l2": 1.199636954737388,
+      "inverse_forward_seconds": 116.9462836291641,
+      "inverse_wall_seconds": 116.97652195394039,
+      "maximum_linear_system_relative_residual": 9.32081993426543e-15,
+      "maximum_node_to_exact_boundary_distance_m": 6.658087787432502e-05,
+      "mean_node_to_exact_boundary_distance_m": 1.3187838994284966e-05,
+      "per_frequency_final_relative_l2": {
+        "0.25_GHz": 0.003747287812754064,
+        "0.5_GHz": 0.0015445321091218586,
+        "1.5_GHz": 0.004111621611686891,
+        "1_GHz": 0.010209732492873345,
+        "2.5_GHz": 0.03278561812996394
+      },
+      "per_frequency_initial_relative_l2": {
+        "0.25_GHz": 0.6626307625519315,
+        "0.5_GHz": 1.0754121509205188,
+        "1.5_GHz": 1.328570478803306,
+        "1_GHz": 1.5476736902895358,
+        "2.5_GHz": 1.349799211014255
+      },
+      "per_frequency_target_geometry_relative_l2": {
+        "0.25_GHz": 0.003871940016052628,
+        "0.5_GHz": 0.0012571775364035882,
+        "1.5_GHz": 0.004590465018543903,
+        "1_GHz": 0.009769437936486115,
+        "2.5_GHz": 0.032750548016532696
+      },
+      "stop_reason": "loss_change_tolerance",
+      "target_geometry_all_frequency_forward_seconds": 1.314822488464415,
+      "target_geometry_all_frequency_relative_l2": 0.008559531057342898,
+      "target_geometry_holdout_relative_l2": 0.012603589276959136,
+      "total_forward_evaluations": 132,
+      "training_loss_drop_factor": 151449.3306437254
+    }
+  },
+  "target": {
+    "amplitude": 0.25,
+    "center_x_m": 0.5,
+    "center_y_m": 0.5,
+    "lobes": 5.0,
+    "maximum_radius_m": 0.0625,
+    "mean_radius_m": 0.05,
+    "minimum_radius_m": 0.037500000000000006,
+    "rotation_radians": 0.0
+  },
+  "target_shape": "star",
+  "train_frequencies_ghz": [
+    0.5,
+    1.5
+  ],
+  "truth_oracle": "nystrom_ref independent Nystrom/Muller solution of the exact star"
+}

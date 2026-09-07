@@ -4,10 +4,11 @@
 The observation data always come from an independent source -- the analytic
 penetrable-cylinder Mie series for the circle target, and the from-scratch
 ``nystrom_ref`` oracle for the five-lobe star target -- never from either
-solver under test.  Both inverse branches use the same Torch implicit field,
-ordered Method-B geometry, frequency-domain objective, bounded
-finite-difference Jacobian, and damped Gauss--Newton policy.  Only the forward
-solver changes.
+solver under test. The implicit field owns the geometry, and every candidate
+is re-extracted through Method B. Neural Kress runs use boundary adjoint
+sensitivities to update the network by default. Analytic controls and MOD use
+the parameter finite-difference reference optimizer; ``--optimizer
+parameter_fd`` also enables that reference for neural Kress runs.
 """
 
 from __future__ import annotations
@@ -75,6 +76,10 @@ from sdf_inverse import (  # noqa: E402
     run_parameter_fd_inverse,
 )
 from sdf_inverse.geometry import Bounds2D, build_ordered_sdf_geometry  # noqa: E402
+from sdf_inverse.implicit_adjoint import (  # noqa: E402
+    ImplicitMLPAdjointConfig,
+    run_implicit_mlp_adjoint_inverse,
+)
 
 
 DEFAULT_INITIAL_CENTER = (0.48, 0.52)
@@ -82,6 +87,7 @@ DEFAULT_INITIAL_RADIUS = 0.065
 DEFAULT_TRAIN_FREQUENCIES_GHZ = (0.25, 0.50)
 DEFAULT_HOLDOUT_FREQUENCIES_GHZ = (1.0, 1.5, 2.5)
 DEFAULT_SOLVERS = ("mod", "kress")
+OPTIMIZER_CHOICES = ("auto", "adjoint", "parameter_fd")
 DEFAULT_TARGET = "circle"
 TARGET_CHOICES = ("circle", "star")
 INITIAL_MODEL_CHOICES = (
@@ -119,9 +125,9 @@ DEFAULT_STAR_ORACLE_NODES = 512
 
 # Neural initializations.  The network is the repository's SIREN, warm started
 # onto the same wrong analytic shapes the parametric cases start from.  Its
-# width is bounded by the inverse, not by the architecture: parameter finite
-# differences cost 2 N + 1 forward solves per Jacobian, so 129 weights already
-# means 259 solves per iteration.  A 128-wide SIREN has 33,537.
+# small architecture retains the historical controls. Parameter finite
+# differences cost 2 N + 1 forward solves per Jacobian; neural Kress defaults
+# now use the adjoint and avoid that network-parameter scaling.
 DEFAULT_SIREN_HIDDEN_FEATURES = 32
 DEFAULT_SIREN_HIDDEN_LAYERS = 0
 # SIREN's omega_0 assumes inputs in [-1, 1]; 30 is tuned for wide networks and
@@ -140,6 +146,8 @@ GENERATED_ARTIFACT_NAMES = (
     "mod_responses.npz",
     "kress_trajectory.csv",
     "kress_responses.npz",
+    "mod_model.pt",
+    "kress_model.pt",
 )
 
 
@@ -530,13 +538,16 @@ def _comma_separated_floats(value: str) -> tuple[float, ...]:
     return result
 
 
-def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
+def _parse_args(
+    argv: Sequence[str] | None = None, *, implicit_defaults: bool = False
+) -> argparse.Namespace:
     run_tag = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     parser = argparse.ArgumentParser(
         description=(
             "Recover an analytic target from a deliberately wrong implicit "
-            "initialization using independent observations and the same "
-            "inverse with MOD and/or Kress."
+            "initialization using independent observations and Method B. "
+            "Neural Kress runs default to adjoint weight updates; MOD and "
+            "analytic controls use parameter finite differences."
         )
     )
     parser.add_argument(
@@ -552,8 +563,11 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         "--solvers",
         nargs="+",
         choices=DEFAULT_SOLVERS,
-        default=list(DEFAULT_SOLVERS),
-        help="Forward branches to run (default: mod kress).",
+        default=["kress"] if implicit_defaults else list(DEFAULT_SOLVERS),
+        help=(
+            "Forward branches to run (default: kress)."
+            if implicit_defaults else "Forward branches to run (default: mod kress)."
+        ),
     )
     parser.add_argument(
         "--initial-model",
@@ -562,8 +576,45 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         help=(
             "Implicit initialization: exact circle SDF, non-distance ellipse, "
             "topology-constrained random-feature neural field, or wrong star. "
-            "Defaults to the target's own family."
+            + ("Defaults to a SIREN fitted to the wrong initial target-family shape."
+               if implicit_defaults else "Defaults to the target's own family.")
         ),
+    )
+    parser.add_argument(
+        "--optimizer",
+        choices=OPTIMIZER_CHOICES,
+        default="adjoint" if implicit_defaults else "auto",
+        help=(
+            "auto: adjoint for siren_* with Kress, parameter_fd otherwise; "
+            "adjoint requires a siren_* initial model and --solvers kress; "
+            "parameter_fd explicitly selects the numerical reference."
+        ),
+    )
+    parser.add_argument(
+        "--learning-rate", type=float, default=1.0e-3,
+        help="Initial Adam step size for the adjoint optimizer.",
+    )
+    parser.add_argument(
+        "--eikonal-weight", type=float, default=0.01,
+        help="SDF gradient regularization during adjoint inverse updates.",
+    )
+    parser.add_argument(
+        "--mlp-hidden-features", type=int,
+        default=64 if implicit_defaults else DEFAULT_SIREN_HIDDEN_FEATURES,
+        help="SIREN width shared by the initialization and target-fit control.",
+    )
+    parser.add_argument(
+        "--mlp-hidden-layers", type=int,
+        default=2 if implicit_defaults else DEFAULT_SIREN_HIDDEN_LAYERS,
+        help="SIREN hidden-layer count shared by all neural controls.",
+    )
+    parser.add_argument(
+        "--mlp-pretrain-steps", type=int, default=DEFAULT_SIREN_PRETRAIN_STEPS,
+        help="Supervised initialization steps, before inverse weight updates.",
+    )
+    parser.add_argument(
+        "--max-backtracks", type=int, default=8,
+        help="Maximum line-search backtracks for the inverse optimizer.",
     )
     parser.add_argument(
         "--output-dir",
@@ -601,7 +652,9 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     args = parser.parse_args(argv)
     target = _build_target(args.target)
     if args.initial_model is None:
-        args.initial_model = target.default_initial_model
+        args.initial_model = (
+            f"siren_{args.target}" if implicit_defaults else target.default_initial_model
+        )
     if args.initial_model not in target.initial_model_choices:
         parser.error(
             f"--initial-model={args.initial_model} is not available for "
@@ -615,7 +668,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     if args.num_nodes is None:
         args.num_nodes = target.default_num_nodes
     if args.max_iterations is None:
-        args.max_iterations = target.default_max_iterations
+        args.max_iterations = 60 if implicit_defaults else target.default_max_iterations
     if args.num_pairs < 4:
         parser.error("--num-pairs must be at least 4")
     if args.num_nodes < 32 or args.num_nodes % 2:
@@ -629,13 +682,35 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         parser.error("--max-iterations must be positive")
     if not math.isfinite(args.loss_tolerance) or args.loss_tolerance <= 0.0:
         parser.error("--loss-tolerance must be finite and positive")
+    if not math.isfinite(args.learning_rate) or args.learning_rate <= 0.0:
+        parser.error("--learning-rate must be finite and positive")
+    if not math.isfinite(args.eikonal_weight) or args.eikonal_weight < 0.0:
+        parser.error("--eikonal-weight must be finite and non-negative")
+    if args.max_backtracks < 1:
+        parser.error("--max-backtracks must be positive")
+    if args.mlp_hidden_features < 1:
+        parser.error("--mlp-hidden-features must be positive")
+    if args.mlp_hidden_layers < 0:
+        parser.error("--mlp-hidden-layers must be non-negative")
+    if args.mlp_pretrain_steps < 1:
+        parser.error("--mlp-pretrain-steps must be positive")
     if set(args.train_ghz) & set(args.holdout_ghz):
         parser.error("training and holdout frequencies must be disjoint")
     # Preserve user order while preventing accidental duplicate work.
     args.solvers = tuple(dict.fromkeys(args.solvers))
+    try:
+        for solver in args.solvers:
+            _optimizer_for_solver(args.initial_model, solver, args.optimizer)
+    except ValueError as error:
+        parser.error(str(error))
     if args.output_dir is None:
+        output_root = (
+            Path("results/inverse/implicit_mlp")
+            if args.initial_model in SIREN_INITIAL_MODELS
+            else Path("results/legacy/known_shape_family_parameter_inverse")
+        )
         args.output_dir = (
-            Path("results/inverse/method_b")
+            output_root
             / f"{args.initial_model}-to-{target.output_tag}-{run_tag}"
         )
     return args
@@ -680,14 +755,17 @@ def _build_siren_field(
     target_field: torch.nn.Module,
     *,
     random_seed: int = DEFAULT_SIREN_SEED,
+    hidden_features: int = DEFAULT_SIREN_HIDDEN_FEATURES,
+    hidden_layers: int = DEFAULT_SIREN_HIDDEN_LAYERS,
+    pretrain_steps: int = DEFAULT_SIREN_PRETRAIN_STEPS,
 ) -> SirenImplicitField2D:
     """Warm start one SIREN onto an analytic field's zero set."""
 
     box = np.asarray(DEFAULT_GEOMETRY_BOUNDS, dtype=np.float64)
     model = SirenImplicitField2D(
         bounds=DEFAULT_GEOMETRY_BOUNDS,
-        hidden_features=DEFAULT_SIREN_HIDDEN_FEATURES,
-        hidden_layers=DEFAULT_SIREN_HIDDEN_LAYERS,
+        hidden_features=hidden_features,
+        hidden_layers=hidden_layers,
         omega_0=DEFAULT_SIREN_OMEGA_0,
         random_seed=random_seed,
         dtype=torch.float64,
@@ -700,7 +778,7 @@ def _build_siren_field(
             maximum_distance=float(np.linalg.norm(box[1] - box[0])),
         ),
         bounds=DEFAULT_GEOMETRY_BOUNDS,
-        steps=DEFAULT_SIREN_PRETRAIN_STEPS,
+        steps=pretrain_steps,
         eikonal_weight=DEFAULT_SIREN_EIKONAL_WEIGHT,
         random_seed=random_seed,
     )
@@ -769,6 +847,10 @@ def _fit_radial_star_parameters(
 
 def _build_initial_model(
     kind: str,
+    *,
+    hidden_features: int = DEFAULT_SIREN_HIDDEN_FEATURES,
+    hidden_layers: int = DEFAULT_SIREN_HIDDEN_LAYERS,
+    pretrain_steps: int = DEFAULT_SIREN_PRETRAIN_STEPS,
 ) -> tuple[torch.nn.Module, Any]:
     """Build one deterministic initialization and its bounded controller."""
 
@@ -836,7 +918,10 @@ def _build_initial_model(
         )
         return model, controller
     if kind in SIREN_INITIAL_MODELS:
-        model = _build_siren_field(_analytic_shape_for_siren(kind))
+        model = _build_siren_field(
+            _analytic_shape_for_siren(kind), hidden_features=hidden_features,
+            hidden_layers=hidden_layers, pretrain_steps=pretrain_steps,
+        )
         controller = build_siren_parameter_controller(
             model, weight_bound=DEFAULT_SIREN_WEIGHT_BOUND
         )
@@ -850,6 +935,7 @@ def _inverse_config_for_controller(
     max_iterations: int,
     loss_tolerance: float = 1.0e-12,
     infeasible_trial_policy: str = "error",
+    max_backtracks: int = 8,
 ) -> ParameterFDConfig:
     finite_difference_steps = []
     maximum_steps = []
@@ -877,12 +963,80 @@ def _inverse_config_for_controller(
         damping_increase=10.0,
         damping_decrease=0.3,
         max_damping_trials=6,
-        max_backtracks=8,
+        max_backtracks=max_backtracks,
         gradient_tolerance=1.0e-9,
         loss_tolerance=loss_tolerance,
         relative_step_tolerance=1.0e-9,
         max_parameters=controller.num_parameters,
         infeasible_trial_policy=infeasible_trial_policy,
+    )
+
+
+def _optimizer_for_solver(
+    initial_model: str, solver: str, optimizer: str = "auto"
+) -> str:
+    """Resolve derivative routing without substituting MOD's cloud adjoint."""
+    if optimizer not in OPTIMIZER_CHOICES:
+        raise ValueError(f"Unsupported optimizer: {optimizer!r}.")
+    if solver not in DEFAULT_SOLVERS:
+        raise ValueError(f"Unsupported solver: {solver!r}.")
+    supported_adjoint = initial_model in SIREN_INITIAL_MODELS and solver == "kress"
+    if optimizer == "adjoint" and not supported_adjoint:
+        raise ValueError(
+            "--optimizer adjoint requires a siren_* initial model and "
+            "--solvers kress. Use auto or parameter_fd for MOD or analytic controls."
+        )
+    if optimizer == "auto":
+        return "adjoint" if supported_adjoint else "parameter_fd"
+    return optimizer
+
+
+def _optimizer_config_for_solver(
+    args: argparse.Namespace, controller: Any, solver: str
+) -> ImplicitMLPAdjointConfig | ParameterFDConfig:
+    method = _optimizer_for_solver(args.initial_model, solver, args.optimizer)
+    if method == "adjoint":
+        return ImplicitMLPAdjointConfig(
+            max_iterations=args.max_iterations,
+            learning_rate=args.learning_rate,
+            loss_tolerance=args.loss_tolerance,
+            eikonal_weight=args.eikonal_weight,
+            max_backtracks=args.max_backtracks,
+        )
+    return _inverse_config_for_controller(
+        controller,
+        max_iterations=args.max_iterations,
+        loss_tolerance=args.loss_tolerance,
+        infeasible_trial_policy=(
+            "reject" if args.initial_model in SIREN_INITIAL_MODELS else "error"
+        ),
+        max_backtracks=args.max_backtracks,
+    )
+
+
+def _run_inverse(
+    model: Any,
+    controller: Any,
+    data: Any,
+    geometry_config: Any,
+    *,
+    solver: str,
+    method: str,
+    config: ImplicitMLPAdjointConfig | ParameterFDConfig,
+    progress_callback: Any = None,
+) -> Any:
+    if method == "adjoint":
+        if solver != "kress":
+            raise ValueError("The implicit neural adjoint requires Kress.")
+        return run_implicit_mlp_adjoint_inverse(
+            model, controller, data, geometry_config,
+            config=config, progress_callback=progress_callback,
+        )
+    if method != "parameter_fd":
+        raise ValueError(f"Unresolved optimizer method: {method!r}.")
+    return run_parameter_fd_inverse(
+        model, controller, data, geometry_config,
+        solver=solver, config=config, progress_callback=progress_callback,
     )
 
 
@@ -905,6 +1059,50 @@ def _prepare_output_directory(path: Path, *, overwrite: bool) -> None:
             artifact = resolved / name
             if artifact.is_file() or artifact.is_symlink():
                 artifact.unlink()
+
+
+def _write_neural_checkpoint(
+    path: Path,
+    model: SirenImplicitField2D,
+    *,
+    initial_model: str,
+    geometry_config: OrderedSDFGeometryConfig,
+    optimizer: str,
+    config: ImplicitMLPAdjointConfig | ParameterFDConfig,
+    result: Any,
+) -> None:
+    """Preserve the accepted network and the constructor needed to reload it."""
+    torch.save(
+        {
+            "schema_version": 1,
+            "model_class": "sdf_inverse.models.SirenImplicitField2D",
+            "state_dict": {
+                name: value.detach().cpu().clone()
+                for name, value in model.state_dict().items()
+            },
+            "constructor": {
+                "bounds": DEFAULT_GEOMETRY_BOUNDS,
+                "hidden_features": model.hidden_features,
+                "hidden_layers": model.hidden_layers,
+                "omega_0": model.omega_0,
+                "random_seed": model.random_seed,
+                "dtype": str(next(model.parameters()).dtype),
+            },
+            "initial_model": initial_model,
+            "initialization": _jsonable(model.initialization_metadata()),
+            "geometry_config": _jsonable(vars(geometry_config)),
+            "geometry_owner": "mlp_weights",
+            "optimizer": optimizer,
+            "optimizer_config": _jsonable(vars(config)),
+            "optimizer_diagnostics": _jsonable(getattr(result, "diagnostics", {})),
+            "accepted_iteration": result.iterations[-1].iteration,
+            "training_loss": result.iterations[-1].loss,
+            "accepted_geometry_points": torch.as_tensor(
+                np.array(result.iterations[-1].geometry_points, copy=True)
+            ),
+        },
+        path,
+    )
 
 
 def _ring_scan(
@@ -999,7 +1197,7 @@ def _field_gradient_metrics(
 
 
 def _jsonable(value: Any) -> Any:
-    if isinstance(value, dict):
+    if isinstance(value, Mapping):
         return {str(key): _jsonable(item) for key, item in value.items()}
     if isinstance(value, (tuple, list)):
         return [_jsonable(item) for item in value]
@@ -1049,10 +1247,14 @@ def _package_version(distribution: str) -> str:
         return "unavailable"
 
 
-def _write_trajectory(path: Path, result: Any) -> None:
+def _write_trajectory(
+    path: Path, result: Any, *, optimizer: str = "parameter_fd"
+) -> None:
     parameter_names = tuple(result.parameter_names)
     fieldnames = [
         "iteration",
+        "optimizer",
+        "gradient_evaluated",
         "loss",
         "relative_l2_error",
         "center_x_m",
@@ -1063,6 +1265,7 @@ def _write_trajectory(path: Path, result: Any) -> None:
         "maximum_system_residual",
         "iteration_seconds",
         "jacobian_seconds",
+        "gradient_seconds",
         "line_search_seconds",
     ]
     fieldnames.extend(f"raw_{name}" for name in parameter_names)
@@ -1079,6 +1282,8 @@ def _write_trajectory(path: Path, result: Any) -> None:
                 physical = _contour_shape_summary(iteration.geometry_points)
             row = {
                 "iteration": iteration.iteration,
+                "optimizer": optimizer,
+                "gradient_evaluated": getattr(iteration, "gradient_evaluated", True),
                 "loss": iteration.loss,
                 "relative_l2_error": iteration.relative_l2_error,
                 "center_x_m": physical["center_x"],
@@ -1087,9 +1292,10 @@ def _write_trajectory(path: Path, result: Any) -> None:
                 "damping": iteration.damping,
                 "evaluation_count": iteration.evaluation_count,
                 "maximum_system_residual": iteration.maximum_system_residual,
-                "iteration_seconds": iteration.timings["iteration_seconds"],
-                "jacobian_seconds": iteration.timings["jacobian_seconds"],
-                "line_search_seconds": iteration.timings["line_search_seconds"],
+                "iteration_seconds": iteration.timings.get("iteration_seconds"),
+                "jacobian_seconds": iteration.timings.get("jacobian_seconds", 0.0),
+                "gradient_seconds": iteration.timings.get("gradient_seconds"),
+                "line_search_seconds": iteration.timings.get("line_search_seconds"),
             }
             row.update(
                 {
@@ -1100,7 +1306,11 @@ def _write_trajectory(path: Path, result: Any) -> None:
             row.update(
                 {
                     f"gradient_{name}": value
-                    for name, value in zip(parameter_names, iteration.gradient)
+                    for name, value in zip(
+                        parameter_names,
+                        iteration.gradient if iteration.gradient is not None
+                        else [None] * len(parameter_names),
+                    )
                 }
             )
             row.update(
@@ -1326,12 +1536,40 @@ def _write_summary(
     target: InverseTarget,
 ) -> None:
     initialization = metrics["initialization"]
-    initial_values = ", ".join(
-        f"{name}={float(value):.6g}"
-        for name, value in initialization["physical_parameters"].items()
+    if initialization["kind"] == "siren_neural_implicit":
+        initial_values = (
+            f"{initialization['network_parameters']} trainable weights, "
+            f"width {initialization['hidden_features']}, "
+            f"{initialization['hidden_layers']} hidden layers"
+        )
+    else:
+        initial_values = ", ".join(
+            f"{name}={float(value):.6g}"
+            for name, value in initialization["physical_parameters"].items()
+        )
+    optimizer_methods = {
+        solver: row.get("optimizer", "parameter_fd")
+        for solver, row in solver_metrics.items()
+    }
+    optimizer_description = "; ".join(
+        f"{solver.upper()}: " + (
+            "Kress discrete adjoint → branch-local extraction/Method-B reverse "
+            "→ Adam weight update"
+            if method == "adjoint"
+            else "bounded parameter finite differences → damped Gauss–Newton"
+        )
+        for solver, method in optimizer_methods.items()
+    )
+    comparison_description = (
+        "The optimizer policy is shared across solvers."
+        if len(set(optimizer_methods.values())) == 1 and len(solver_metrics) > 1
+        else "The solver branches use different optimizer policies; their timings "
+        "compare complete pipelines."
+        if len(solver_metrics) > 1
+        else "One solver branch is evaluated."
     )
     lines = [
-        "# Solver-neutral implicit-initialization inverse comparison",
+        "# Implicit-field Method-B inverse comparison",
         "",
         (
             f"A `{initialization['kind']}` field initialized with `{initial_values}` "
@@ -1339,9 +1577,9 @@ def _write_summary(
         ),
         "",
         (
-            "MOD and Kress received the same ordered Method-B boundary at each "
-            "parameter evaluation and used the same bounded central-FD damped "
-            "Gauss--Newton inverse. Only the forward solver differed."
+            "Every candidate is evaluated from its own implicit field after "
+            "extraction and Method-B conversion. "
+            + optimizer_description + ". " + comparison_description
         ),
         "",
         "## Outcome",
@@ -1472,20 +1710,33 @@ def _write_summary(
             "## Scope",
             "",
             (
-                "This establishes an auditable low-dimensional inverse baseline for "
-                "smooth single-component Torch implicit fields. The field-to-curve "
-                "seam crosses "
-                "NumPy and is not autograd-differentiable. A large randomly initialized "
-                "SIREN therefore needs a topology-valid initialization and derivatives "
-                "of the actual Kress weighted operators before it is a scalable inverse."
+                "The accepted geometry belongs to the implicit model. Neural updates "
+                "propagate discrete Kress geometry sensitivities into network weights "
+                "through a differentiable, branch-local extraction and Method-B "
+                "conversion. Topology changes and interpolation branch switches are "
+                "not differentiated. Every candidate is re-extracted and evaluated "
+                "before acceptance. Parameter finite differences remain explicit "
+                "reference controls. These results concern smooth, topology-valid "
+                "single-component fields at the recorded conversion resolution."
             ),
         ]
     )
+    model_artifacts = [
+        f"[{row['model_checkpoint']}]({row['model_checkpoint']})"
+        for row in solver_metrics.values() if row.get("model_checkpoint")
+    ]
+    if model_artifacts:
+        lines.extend([
+            "", "Accepted neural weights, architecture and run metadata: "
+            + ", ".join(model_artifacts) + ".",
+        ])
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
-def main(argv: Sequence[str] | None = None) -> int:
-    args = _parse_args(argv)
+def main(
+    argv: Sequence[str] | None = None, *, implicit_defaults: bool = False
+) -> int:
+    args = _parse_args(argv, implicit_defaults=implicit_defaults)
     output_dir = args.output_dir
     if not output_dir.is_absolute():
         output_dir = REPOSITORY_ROOT / output_dir
@@ -1520,7 +1771,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
 
     geometry_config = target.geometry_config(args.num_nodes)
-    template_model, template_controller = _build_initial_model(args.initial_model)
+    neural_factory_options = {
+        "hidden_features": args.mlp_hidden_features,
+        "hidden_layers": args.mlp_hidden_layers,
+        "pretrain_steps": args.mlp_pretrain_steps,
+    }
+    template_model, template_controller = _build_initial_model(
+        args.initial_model, **neural_factory_options
+    )
 
     # A neural field's accuracy is capped by what that architecture can
     # represent at all, so the same network is also warm started directly onto
@@ -1533,7 +1791,9 @@ def main(argv: Sequence[str] | None = None) -> int:
             "[control] warm starting the same network onto the exact target",
             flush=True,
         )
-        representation_control_model = _build_siren_field(target.exact_model())
+        representation_control_model = _build_siren_field(
+            target.exact_model(), **neural_factory_options
+        )
         control_geometry = build_ordered_sdf_geometry(
             representation_control_model, geometry_config
         )
@@ -1557,16 +1817,14 @@ def main(argv: Sequence[str] | None = None) -> int:
             "from it",
             flush=True,
         )
-    inverse_config = _inverse_config_for_controller(
-        template_controller,
-        max_iterations=args.max_iterations,
-        loss_tolerance=args.loss_tolerance,
-        # A neural field's zero set can split part way through an otherwise
-        # reasonable step; a parametric field's bounds are chosen so it cannot.
-        infeasible_trial_policy=(
-            "reject" if args.initial_model in SIREN_INITIAL_MODELS else "error"
-        ),
-    )
+    optimizer_methods = {
+        solver: _optimizer_for_solver(args.initial_model, solver, args.optimizer)
+        for solver in args.solvers
+    }
+    inverse_configs = {
+        solver: _optimizer_config_for_solver(args, template_controller, solver)
+        for solver in args.solvers
+    }
     initialization_metadata_function = getattr(
         template_model, "initialization_metadata", None
     )
@@ -1598,11 +1856,15 @@ def main(argv: Sequence[str] | None = None) -> int:
     serializable_solver_metrics: dict[str, dict[str, Any]] = {}
 
     for solver in args.solvers:
+        optimizer_method = optimizer_methods[solver]
         print(
-            f"\n[{solver.upper()}] {args.initial_model} implicit recovery",
+            f"\n[{solver.upper()}] {args.initial_model} implicit recovery "
+            f"with {optimizer_method}",
             flush=True,
         )
-        model, controller = _build_initial_model(args.initial_model)
+        model, controller = _build_initial_model(
+            args.initial_model, **neural_factory_options
+        )
         if controller.names != template_controller.names or not np.array_equal(
             controller.parameter_vector(), initial_raw_parameters
         ):
@@ -1638,13 +1900,14 @@ def main(argv: Sequence[str] | None = None) -> int:
                 flush=True,
             )
 
-        inverse_result = run_parameter_fd_inverse(
+        inverse_result = _run_inverse(
             model,
             controller,
             training_data,
             geometry_config,
             solver=solver,
-            config=inverse_config,
+            method=optimizer_method,
+            config=inverse_configs[solver],
             progress_callback=progress,
         )
         final_all = predict_paired_response(
@@ -1733,6 +1996,27 @@ def main(argv: Sequence[str] | None = None) -> int:
             target_geometry_forward.scattered_response, all_truth
         )
         metrics = {
+            "optimizer": optimizer_method,
+            "optimizer_config": _jsonable(vars(inverse_configs[solver])),
+            "optimizer_diagnostics": _jsonable(
+                getattr(inverse_result, "diagnostics", {})
+            ),
+            "geometry_owner": "implicit_model_parameters",
+            "neural_update": (
+                "kress_boundary_adjoint_to_sdf_weights"
+                if optimizer_method == "adjoint"
+                else "parameter_finite_difference_gauss_newton"
+            ),
+            "model_checkpoint": (
+                f"{solver}_model.pt" if args.initial_model in SIREN_INITIAL_MODELS
+                else None
+            ),
+            "final_regularized_objective": getattr(
+                inverse_result.iterations[-1], "objective", None
+            ),
+            "final_eikonal_loss": getattr(
+                inverse_result.iterations[-1], "eikonal_loss", None
+            ),
             "initial_parameters": initial_physical_parameters,
             "initial_claims_signed_distance": bool(
                 initialization_metadata["claims_signed_distance"]
@@ -1831,9 +2115,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             ),
             "final_geometry_speed_ratio": final_all.geometry_build.speed_ratio,
             **representation_floor_metrics,
-            # Nothing re-imposes the Eikonal condition during the inverse, so
-            # the drift between these two numbers is the measurement that says
-            # whether a reprojection step would be needed.
+            # Measure field regularity separately from geometry/data accuracy;
+            # only the adjoint optimizer includes inverse Eikonal regularization.
             "final_maximum_unit_gradient_deviation": (
                 final_gradient_metrics["maximum_unit_gradient_deviation"]
             ),
@@ -1851,7 +2134,17 @@ def main(argv: Sequence[str] | None = None) -> int:
             "target_geometry_forward": target_geometry_forward,
         }
         serializable_solver_metrics[solver] = metrics
-        _write_trajectory(output_dir / f"{solver}_trajectory.csv", inverse_result)
+        if args.initial_model in SIREN_INITIAL_MODELS:
+            _write_neural_checkpoint(
+                output_dir / f"{solver}_model.pt", model,
+                initial_model=args.initial_model, geometry_config=geometry_config,
+                optimizer=optimizer_method, config=inverse_configs[solver],
+                result=inverse_result,
+            )
+        _write_trajectory(
+            output_dir / f"{solver}_trajectory.csv", inverse_result,
+            optimizer=optimizer_method,
+        )
         np.savez_compressed(
             output_dir / f"{solver}_responses.npz",
             frequencies_ghz=np.asarray(all_frequencies_ghz),
@@ -1906,6 +2199,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         comparison_controls = {
             "maximum_initial_boundary_coordinate_delta_m": initial_boundary_delta,
             "maximum_target_boundary_coordinate_delta_m": target_boundary_delta,
+            "same_optimizer": len(set(optimizer_methods.values())) == 1,
         }
         gates["common_initial_boundary_identical"] = {
             "passed": initial_boundary_delta <= 1.0e-14,
@@ -1946,7 +2240,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         }
     acceptance_passed = all(bool(gate["passed"]) for gate in gates.values())
     metrics_document = {
-        "schema_version": 1,
+        "schema_version": 2,
         "benchmark": target.benchmark(args.initial_model),
         "truth_oracle": target.truth_oracle,
         "train_frequencies_ghz": tuple(args.train_ghz),
@@ -1975,9 +2269,21 @@ def main(argv: Sequence[str] | None = None) -> int:
             "exterior": _jsonable(vars(all_problem.exterior)),
             "interior": _jsonable(vars(all_problem.interior)),
             "geometry_config": _jsonable(vars(geometry_config)),
-            "inverse_config": _jsonable(vars(inverse_config)),
+            "optimizer_request": args.optimizer,
+            "optimizer_by_solver": optimizer_methods,
+            "inverse_configs_by_solver": {
+                solver: _jsonable(vars(config))
+                for solver, config in inverse_configs.items()
+            },
             "controlled_parameters": template_controller.names,
-            "forward_difference": "Only solver dispatch: MOD vs Kress",
+            "forward_difference": "Solver dispatch: MOD vs Kress",
+            "comparison_scope": (
+                "Single solver pipeline"
+                if len(optimizer_methods) == 1
+                else "Matched optimizer; different forward solvers"
+                if len(set(optimizer_methods.values())) == 1
+                else "Different forward solvers and optimizer methods; see optimizer_by_solver"
+            ),
         },
         "comparison_controls": comparison_controls,
         "comparison_summary": comparison_summary,

@@ -1,6 +1,7 @@
-> Historical record, classified 2026-09-07. Statements of current behavior or
-> next work below refer to their original date. The current research target is
-> [strict MLP + Method B repair](../pipelines/strict_mlp_method_b.md); see the
+> Historical record, classified 2026-09-07. Behavior and planned work below
+> refer to the original date. Current pipeline names are
+> [Implicit MLP + Method B](../pipelines/implicit_mlp.md) and
+> [Explicit Radial Fourier](../pipelines/explicit_radial_fourier.md). See the
 > [architecture](../current_architecture.md) and [results catalogue](../../results/README.md).
 
 # Solver-neutral implicit inverse baseline
@@ -683,11 +684,11 @@ The default output directory includes a UTC timestamp, so ordinary runs do
 not overwrite one another. An explicitly named nonempty directory is refused
 unless `--overwrite` is supplied; that option removes only this driver's known
 artifact names. The checked dated bundle is
-[`results/inverse_solver_comparison/wrong-circle-mie-20260902/`](../../results/inverse/method_b/wrong-circle-mie-20260902).
+[`results/inverse_solver_comparison/wrong-circle-mie-20260902/`](../../results/legacy/known_shape_family_parameter_inverse/wrong-circle-mie-20260902).
 It contains the full configuration and provenance in `metrics.json`, accepted
 iterates in one trajectory CSV per solver, exact/initial/final responses and
 geometry trajectories in compressed NPZ files, a convergence plot, and a
-readable [`summary.md`](../../results/inverse/method_b/wrong-circle-mie-20260902/summary.md).
+readable [`summary.md`](../../results/legacy/known_shape_family_parameter_inverse/wrong-circle-mie-20260902/summary.md).
 The driver exits nonzero when an enabled acceptance gate fails unless
 `--no-gate` is supplied. Optimizer convergence is itself an acceptance gate,
 not merely the reported stop label.

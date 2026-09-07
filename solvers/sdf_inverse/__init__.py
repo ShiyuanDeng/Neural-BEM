@@ -81,6 +81,13 @@ from .optimization import (
     normalized_complex_residual,
     run_parameter_fd_inverse,
 )
+from .implicit_adjoint import (
+    ImplicitMLPAdjointConfig,
+    ImplicitMLPIteration,
+    ImplicitMLPInverseResult,
+    implicit_mlp_data_gradient,
+    run_implicit_mlp_adjoint_inverse,
+)
 from .targets import StarShape
 from .continuous_distance import (
     ContinuousDistanceRefinementError,
@@ -88,6 +95,11 @@ from .continuous_distance import (
 )
 
 __all__ = [
+    "ImplicitMLPAdjointConfig",
+    "ImplicitMLPIteration",
+    "ImplicitMLPInverseResult",
+    "implicit_mlp_data_gradient",
+    "run_implicit_mlp_adjoint_inverse",
     "AlternatingNeuralInverseConfig",
     "AlternatingNeuralInverseResult",
     "CircleSDF2D",

@@ -1,12 +1,13 @@
 # Historical and superseded evidence
 
-Archiving an implementation does not abandon its scientific question.
-**Strict MLP + Method B remains the pipeline to fix.** These records show
-where earlier implementations failed or were superseded, so the repair can
-be assessed against actual evidence.
+These records retain superseded implementations and known-shape-family controls.
+The current inverse pipelines are **Implicit MLP + Method B** and
+**Explicit Radial Fourier**. Their results and current recovery status are
+indexed under [inverse](../inverse/README.md).
 
 | Directory | Why it is historical |
 |---|---|
+| [known_shape_family_parameter_inverse](known_shape_family_parameter_inverse/README.md) | Former `results/inverse/method_b`: 3–7 shape parameters with supplied circle/ellipse/five-lobe/radial-feature families; not full-MLP recovery. Measurements and videos preserved. |
 | [inverse/mlp_feedback](inverse/mlp_feedback) | Earlier MLP-owned accepted geometry and modal/fitting feedback implementations |
 | [inverse/normal_updates](inverse/normal_updates) | Pre-radial canonical curves, local normal modes, continuation and remeshing diagnostics |
 | [inverse/siren_parameter_fd](inverse/siren_parameter_fd) | Small direct network-weight finite-difference experiment and one empty output folder |
@@ -22,4 +23,4 @@ that as the same historical algorithm. Current diagnostics and pending
 repair runs are separated in [reproduction](../../docs/reproduction.md).
 
 Use the [catalogue](../README.md) for exact pipeline variants, scenes, dates,
-limitations, and implications for [strict MLP + Method B](../../docs/pipelines/strict_mlp_method_b.md).
+limitations, and implications for [Implicit MLP + Method B](../../docs/pipelines/implicit_mlp.md).

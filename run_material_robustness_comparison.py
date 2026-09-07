@@ -41,7 +41,7 @@ from run_parameterization_aware_comparison import geometry_metrics
 from run_material_inverse_comparison import relative_error, snapshot
 
 
-FROZEN_D = ROOT/"results/inverse/shape_material/material_inverse/bounded-20260906"
+FROZEN_D = ROOT/"results/inverse/radial_fourier/shape_material/material_inverse/bounded-20260906"
 NONCIRCULAR_TRUTH = np.array([.052, .503, .497, .0025, -.0015, 8.4])
 NONCIRCULAR_TRUTH.setflags(write=False)
 GATES = {"oracle_self_convergence": 1e-8, "forward_self_convergence": 1e-5,

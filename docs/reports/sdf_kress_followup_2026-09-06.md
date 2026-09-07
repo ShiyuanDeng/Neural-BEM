@@ -1,6 +1,7 @@
-> Historical record, classified 2026-09-07. Statements of current behavior or
-> next work below refer to their original date. The current research target is
-> [strict MLP + Method B repair](../pipelines/strict_mlp_method_b.md); see the
+> Historical record, classified 2026-09-07. Behavior and planned work below
+> refer to the original date. Current pipeline names are
+> [Implicit MLP + Method B](../pipelines/implicit_mlp.md) and
+> [Explicit Radial Fourier](../pipelines/explicit_radial_fourier.md). See the
 > [architecture](../current_architecture.md) and [results catalogue](../../results/README.md).
 
 # SDF/Kress follow-up: derivatives, distance information, and inverse controls
@@ -235,7 +236,7 @@ zero-set optimization.
 
 ### Measured comparison
 
-The [ten-arm run](../../results/inverse/neural_metric/comparison-20260906/summary.md)
+The [ten-arm run](../../results/inverse/radial_fourier/neural_metric/comparison-20260906/summary.md)
 finished in **360.63 s**, with every final training/held-out numerical
 resolution check passing. The finest training/held-out field self-differences
 are at most `3.1e-14` / `4.1e-13`; the remaining errors are not unresolved BEM
@@ -304,7 +305,7 @@ or 3-D physics is introduced.
 
 ### Measured recovery and failed starts
 
-The [eight-arm material batch](../../results/inverse/shape_material/material_inverse/bounded-20260906/README.md)
+The [eight-arm material batch](../../results/inverse/radial_fourier/shape_material/material_inverse/bounded-20260906/README.md)
 finished in **73.55 s**. Five arms pass the predeclared physical-recovery gates.
 Fixed-geometry clean starts at `epsr=2` and 5 recover 3 within `2.1e-11`;
 the noisy fixed start 5 recovers `3.000807`, with clean held-out field error

@@ -1,17 +1,31 @@
 # Documentation map
 
-Reorganized 2026-09-07. **Strict MLP + Method B is the pipeline to repair.**
-Radial Fourier, fitting, material, and metric experiments supply evidence for
-that work; they do not replace the research objective.
+Updated 2026-09-07. The current inverse pipelines are **Implicit MLP + Method B**
+and **Explicit Radial Fourier**. The implicit adjoint gradient is validated,
+but all three new 12-pair recovery cases fail overall acceptance. Radial
+canonical recovery works on recorded cases; its MLP representation gates
+remain separate. These are not matched benchmark results.
 
 | Start here | Owns |
 |---|---|
 | [Current architecture](current_architecture.md) | Implemented capabilities, defaults, and agreed direction |
-| [Strict MLP + Method B](pipelines/strict_mlp_method_b.md) | Intended geometry ownership, existing controls, failure evidence, and repair gates |
-| [Radial Fourier and MLP policies](pipelines/radial_fourier.md) | Geometry ownership, fitting/export ablations, and frozen neural metrics |
-| [Shape/material experiments](pipelines/shape_material.md) | Derivative, material, continuation, and restart evidence |
-| [Results catalogue](../results/README.md) | Actual runs, scenes, dates, outcomes, provenance, and implications for the strict pipeline |
-| [Reproduction commands](reproduction.md) | User-run checks and diagnostics; pending repair experiments are distinguished |
+| [Implicit MLP + Method B](pipelines/implicit_mlp.md) | Neural adjoint implementation, geometry ownership, derivative checks, and remaining accuracy gates |
+| [Implicit MLP diagnostics](implicit_mlp_diagnostics.md) | Frozen conversion, controlled Eikonal activation, and one-update transfer; contract tests run, experiments not yet run |
+| [Explicit Radial Fourier](pipelines/explicit_radial_fourier.md) | Explicit curve ownership, fitting/export ablations, and frozen neural metrics |
+| [Explicit Radial Fourier shape/material experiments](pipelines/explicit_radial_shape_material.md) | Radial variant with an unknown interior permittivity; derivative, continuation, and restart evidence |
+| [Results catalogue](../results/README.md) | Actual runs, scenes, dates, outcomes, and provenance for both pipelines and their controls |
+| [Reproduction commands](reproduction.md) | Neural adjoint inverse, gradient checks and separate controls |
+| [Legacy known-shape-family controls](legacy/known_shape_family_controls.md) | Prescribed family parameter inverses and why they are distinct from full-MLP recovery |
+
+Active inverse results live under `results/inverse/implicit_mlp/` and
+`results/inverse/radial_fourier/`; the latter includes shape/material and
+frozen-metric experiments. The old Method-B controls are archived as
+[known-shape-family parameter inverses](../results/legacy/known_shape_family_parameter_inverse).
+These **Legacy known-shape-family controls** estimate 3, 4, 5 or 7 controls in
+prescribed families, not a full neural field. The neural `--optimizer
+parameter_fd` reference remains part of Implicit MLP + Method B; it updates
+network weights. Finite-difference derivative checks are a third use and do
+not establish a matched inverse benchmark.
 
 ## Detailed records
 

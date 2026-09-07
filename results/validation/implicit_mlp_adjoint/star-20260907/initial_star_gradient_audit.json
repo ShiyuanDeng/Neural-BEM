@@ -1,0 +1,75 @@
+{
+  "validation": "Actual pretrained initial star SIREN weight to reextracted Method-B Kress objective",
+  "architecture": {
+    "bounds": [
+      [
+        0.3,
+        0.3
+      ],
+      [
+        0.7,
+        0.7
+      ]
+    ],
+    "hidden_features": 32,
+    "hidden_layers": 1,
+    "omega_0": 10.0,
+    "random_seed": 0,
+    "dtype": "torch.float64",
+    "device": "cpu"
+  },
+  "parameter_count": 1185,
+  "training_frequencies_ghz": [
+    0.5,
+    1.5
+  ],
+  "initial_loss": 1.2751948514405944,
+  "diagnostics": {
+    "method": "kress_discrete_adjoint_method_b_reverse",
+    "adjoint_solve_count": 2,
+    "finite_difference_probes": 0,
+    "method_b_replay_maximum_error": 1.4337246667661674e-12,
+    "gradient_seconds": 0.39090149299954646
+  },
+  "finite_difference_validation_probes": 8,
+  "optimization_finite_difference_probes": 0,
+  "checks": [
+    {
+      "direction": "random_seed_17",
+      "step": 2e-06,
+      "adjoint": -0.7388121138762282,
+      "finite_difference": -0.7388121129325853,
+      "relative_error": 1.2772434612820052e-09,
+      "positive_loss": 1.2751933738336638,
+      "negative_loss": 1.2751963290821156
+    },
+    {
+      "direction": "random_seed_17",
+      "step": 1e-06,
+      "adjoint": -0.7388121138762282,
+      "finite_difference": -0.7388121114892954,
+      "relative_error": 3.2307711646115896e-09,
+      "positive_loss": 1.2751941126328254,
+      "negative_loss": 1.2751955902570484
+    },
+    {
+      "direction": "normalized_negative_adjoint",
+      "step": 2e-06,
+      "adjoint": -60.67635026230003,
+      "finite_difference": -60.67634860473792,
+      "relative_error": 2.7318091955813295e-08,
+      "positive_loss": 1.2750735018750856,
+      "negative_loss": 1.2753162072695046
+    },
+    {
+      "direction": "normalized_negative_adjoint",
+      "step": 1e-06,
+      "adjoint": -60.67635026230003,
+      "finite_difference": -60.676349843413746,
+      "relative_error": 6.90361707030074e-09,
+      "positive_loss": 1.2751341758737003,
+      "negative_loss": 1.275255528573387
+    }
+  ],
+  "passed": true
+}

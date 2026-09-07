@@ -4,9 +4,10 @@
 ``curve_only`` and ``export_only`` policies share exactly the canonical
 reconstruction loop without neural vetoes; export is a separate final step.
 
-The Kress solver does not yet expose a verified geometry adjoint, so applying
-finite differences to every weight of a useful MLP is not credible.  This
-module instead differentiates the measured residual in a small, smooth basis
+This explicit-curve control retains numerical derivatives. The separate
+``implicit_adjoint`` module now updates MLP weights through a discrete Kress
+adjoint and the actual Method-B conversion. This module differentiates the
+measured residual in a small, smooth basis
 of direct normal displacements of one canonical ordered contour.  An accepted
 contour is then distilled into the full MLP with signed-distance supervision
 and an Eikonal penalty.

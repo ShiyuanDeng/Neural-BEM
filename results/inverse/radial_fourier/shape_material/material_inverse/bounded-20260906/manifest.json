@@ -1,0 +1,578 @@
+{
+  "arms": [
+    {
+      "initial": [
+        0.05,
+        0.5,
+        0.5,
+        0.0,
+        0.0,
+        2.0
+      ],
+      "joint": false,
+      "name": "fixed_clean_eps2",
+      "noisy": false
+    },
+    {
+      "initial": [
+        0.05,
+        0.5,
+        0.5,
+        0.0,
+        0.0,
+        5.0
+      ],
+      "joint": false,
+      "name": "fixed_clean_eps5",
+      "noisy": false
+    },
+    {
+      "initial": [
+        0.05,
+        0.5,
+        0.5,
+        0.0,
+        0.0,
+        9.0
+      ],
+      "joint": false,
+      "name": "fixed_clean_eps9",
+      "noisy": false
+    },
+    {
+      "initial": [
+        0.05,
+        0.5,
+        0.5,
+        0.0,
+        0.0,
+        5.0
+      ],
+      "joint": false,
+      "name": "fixed_noisy_eps5",
+      "noisy": true
+    },
+    {
+      "initial": [
+        0.057,
+        0.494,
+        0.505,
+        0.002,
+        -0.001,
+        2.0
+      ],
+      "joint": true,
+      "name": "joint_clean_start1",
+      "noisy": false
+    },
+    {
+      "initial": [
+        0.057,
+        0.494,
+        0.505,
+        0.002,
+        -0.001,
+        2.0
+      ],
+      "joint": true,
+      "name": "joint_noisy_start1",
+      "noisy": true
+    },
+    {
+      "initial": [
+        0.043,
+        0.505,
+        0.495,
+        -0.002,
+        0.001,
+        9.0
+      ],
+      "joint": true,
+      "name": "joint_clean_start2",
+      "noisy": false
+    },
+    {
+      "initial": [
+        0.043,
+        0.505,
+        0.495,
+        -0.002,
+        0.001,
+        9.0
+      ],
+      "joint": true,
+      "name": "joint_noisy_start2",
+      "noisy": true
+    }
+  ],
+  "cache_policy": "one entry with full geometry/material/acquisition/frequency/constants/source calibration/numerical config/chart/observation identity",
+  "command": "/home/drdeng/miniconda3/envs/EMNerf/bin/python run_material_inverse_comparison.py --output results/material_inverse/bounded-20260906",
+  "configuration": {
+    "audit_nodes": [
+      64,
+      128,
+      256
+    ],
+    "max_evaluations": 40,
+    "nodes": 64,
+    "output": "results/material_inverse/bounded-20260906"
+  },
+  "created_utc": "2026-09-06T00:30:12.937550+00:00",
+  "data_policy": "independent immutable Mie data generated once before candidates; noisy/clean cohorts shared unchanged across starts; unseen-angle holdout never used by optimizer",
+  "gates": {
+    "clean_relative_field_error": 0.0001,
+    "forward_self_convergence": 1e-05,
+    "geometry_refinement_change_m": 2e-06,
+    "geometry_symmetric_distance_m": 0.0002,
+    "material_Mie_FD_self_agreement": 1e-05,
+    "material_absolute_error": 0.1,
+    "material_best_production_FD_relative_error": 1e-05,
+    "material_forward_error_to_Mie": 1e-06,
+    "material_jvp_relative_error_to_Mie_FD": 1e-05,
+    "mie_self_convergence": 1e-10,
+    "noisy_clean_holdout_relative_field_error": 0.02,
+    "stationarity_scaled_projected_gradient_inf": 1e-07
+  },
+  "geometry_policy": "global positive radial lower bound over declared box; coherent phase-fixed radial graph, no per-candidate refit; Cartesian bandwidth3",
+  "holdout_acquisition": {
+    "angular_frequencies": [
+      3141592653.589793,
+      9424777960.769379
+    ],
+    "eps0": 8.8541878128e-12,
+    "exterior": {
+      "epsr": 6.0,
+      "mur": 1.0,
+      "sigma": 0.0
+    },
+    "interior_template_not_candidate": {
+      "epsr": 3.0,
+      "mur": 1.0,
+      "sigma": 0.0
+    },
+    "mu0": 1.25663706212e-06,
+    "receiver_points": [
+      [
+        0.7353535307467745,
+        0.6586242990548595
+      ],
+      [
+        0.6337529477640735,
+        0.7549759062850303
+      ],
+      [
+        0.4944233241903081,
+        0.7898596297567344
+      ],
+      [
+        0.3486816596321423,
+        0.7465032050997681
+      ],
+      [
+        0.24462782312905956,
+        0.6289777384500089
+      ],
+      [
+        0.21952292325833617,
+        0.47831410463844354
+      ],
+      [
+        0.2709794056945135,
+        0.34564399299400345
+      ],
+      [
+        0.37361278457201874,
+        0.25906553586068526
+      ],
+      [
+        0.5051952990315147,
+        0.22996324241527238
+      ],
+      [
+        0.6416481094780557,
+        0.26924996072663454
+      ],
+      [
+        0.7444916593553725,
+        0.3765175530085936
+      ],
+      [
+        0.7778565352187095,
+        0.5214832806241324
+      ]
+    ],
+    "source_points": [
+      [
+        0.7772670369493089,
+        0.6145556206449537
+      ],
+      [
+        0.6828424873076633,
+        0.7378415960994775
+      ],
+      [
+        0.5394254408498315,
+        0.797398107952617
+      ],
+      [
+        0.38544437935504633,
+        0.7772670369493089
+      ],
+      [
+        0.2621584039005226,
+        0.6828424873076633
+      ],
+      [
+        0.20260189204738305,
+        0.5394254408498316
+      ],
+      [
+        0.22273296305069107,
+        0.38544437935504633
+      ],
+      [
+        0.3171575126923366,
+        0.2621584039005226
+      ],
+      [
+        0.46057455915016854,
+        0.202601892047383
+      ],
+      [
+        0.6145556206449535,
+        0.22273296305069096
+      ],
+      [
+        0.7378415960994774,
+        0.3171575126923366
+      ],
+      [
+        0.7973981079526169,
+        0.46057455915016826
+      ]
+    ],
+    "source_strengths_imag": [
+      2e-07,
+      -3.5e-07
+    ],
+    "source_strengths_real": [
+      1e-06,
+      8e-07
+    ]
+  },
+  "holdout_observations": {
+    "Mie_frequency_evaluations": 4,
+    "clean_sha256": "4681b9e8c24c889e4724a273e5dd3d950ca45e54948fe84c0ac76d83629e961b",
+    "identity": "independent_fixed_mode_Mie",
+    "maximum_per_frequency_refinement_difference": 0.0,
+    "modes": [
+      32,
+      64
+    ],
+    "noise": {
+      "complex_standard_deviation_per_frequency": [
+        5.800608125847921e-11,
+        3.220606006326724e-11
+      ],
+      "distribution": "independent circular complex Gaussian; real/imag sigma/sqrt(2)",
+      "fraction_of_per_frequency_pair_rms": 0.01,
+      "seed": 4216
+    },
+    "noisy_sha256": "4074f29ec8354e844e1ec6d13d1e10cb5ff89a363e50272598baf58f41fcbaf0",
+    "passed": true
+  },
+  "kress_solve_config": {
+    "assembly": {
+      "maximum_overlap_pairs": 256,
+      "measure_overlap": true,
+      "near_argument": 0.75,
+      "series_terms": 24,
+      "target_chunk_size": 64
+    },
+    "compute_condition_number": false,
+    "minimum_clearance_in_weights": 2.0
+  },
+  "observation_preparation_seconds": 0.009672379121184349,
+  "parameter_names": [
+    "mean_radius_m",
+    "center_x_m",
+    "center_y_m",
+    "radial_cos2_m",
+    "radial_sin2_m",
+    "interior_epsr"
+  ],
+  "parameter_origin": [
+    0.05,
+    0.5,
+    0.5,
+    0.0,
+    0.0,
+    6.0
+  ],
+  "parameter_scales": [
+    0.01,
+    0.01,
+    0.01,
+    0.005,
+    0.005,
+    2.0
+  ],
+  "physical_lower_bounds": [
+    0.035,
+    0.47,
+    0.47,
+    -0.004,
+    -0.004,
+    1.2
+  ],
+  "physical_upper_bounds": [
+    0.075,
+    0.53,
+    0.53,
+    0.004,
+    0.004,
+    12.0
+  ],
+  "provenance": {
+    "dirty_state": "M .gitignore\n M README.md\n M docs/README.md\n M docs/current_architecture.md\n M docs/ordered_boundary_nystrom_plan.md\n M docs/solver_neutral_inverse.md\n M docs/validation_change_log.md\n M pytest/README.md\n M pytest/ordered_boundary/test_ordered_boundary.py\n M pytest/ordered_boundary/test_ordered_periodic_curve.py\n M pytest/sdf_inverse/test_star_target_inverse.py\n M pytest/sdf_to_ordered_boundary/test_sdf_boundary_methods_ab.py\n M results/README.md\n M results/inverse_solver_comparison/README.md\n M run_sdf_inverse_comparison.py\n M run_sdf_inverse_contour_video.py\n M solvers/README.md\n M solvers/gpr_bem_kress/README.md\n M solvers/ordered_boundary/validation.py\n M solvers/sdf_inverse/__init__.py\n M solvers/sdf_inverse/forward.py\n M solvers/sdf_inverse/geometry.py\n M solvers/sdf_inverse/models.py\n M solvers/sdf_inverse/optimization.py\n M solvers/sdf_to_ordered_boundary/__init__.py\n M solvers/sdf_to_ordered_boundary/arclength.py\n M solvers/sdf_to_ordered_boundary/frontend.py\n M solvers/sdf_to_ordered_boundary/method_b.py\n M solvers/sdf_to_ordered_boundary/method_c.py\n?? docs/codex_sdf_kress_priorities_2026-09-05.md\n?? docs/inverse_pipeline_review_2026-09-05.md\n?? docs/sdf_kress_first_batch_2026-09-05.md\n?? docs/sdf_kress_followup_2026-09-06.md\n?? mlp-arclength-k5-ellipse-to-star-kress-20260904.log\n?? mlp-canonical-ellipse-to-star-kress-20260903.log\n?? mlp-fixed-ellipse-to-star-kress-20260903.log\n?? mlp-full-band-modes-ellipse-to-star-kress-20260903.log\n?? mlp-joint-k6-ellipse-to-star-kress-20260903.log\n?? mlp-radial-continuation-k5-ellipse-to-star-kress-20260904.log\n?? mlp-resolved-k5-ellipse-to-star-kress-20260904.log\n?? pytest/gpr_bem_kress/test_multicomponent.py\n?? pytest/gpr_bem_kress/test_shape_derivative.py\n?? pytest/multicylinder_ref/\n?? pytest/sdf_bem_multicomponent/\n?? pytest/sdf_inverse/test_continuous_distance.py\n?? pytest/sdf_inverse/test_contour_video.py\n?? pytest/sdf_inverse/test_curve_forward_seam.py\n?? pytest/sdf_inverse/test_cylinder_sensitivity_reference.py\n?? pytest/sdf_inverse/test_direct_curve_updates.py\n?? pytest/sdf_inverse/test_distillation_policy.py\n?? pytest/sdf_inverse/test_geometry_sign_contract.py\n?? pytest/sdf_inverse/test_material_inverse.py\n?? pytest/sdf_inverse/test_mlp_driver_contract.py\n?? pytest/sdf_inverse/test_mlp_experiment_snapshot.py\n?? pytest/sdf_inverse/test_neural_audit_regressions.py\n?? pytest/sdf_inverse/test_neural_inverse_convergence_diagnostics.py\n?? pytest/sdf_inverse/test_neural_metric.py\n?? pytest/sdf_inverse/test_neural_mlp_inverse.py\n?? pytest/sdf_inverse/test_neural_redistance_regressions.py\n?? pytest/sdf_inverse/test_parameter_fd_audit_regressions.py\n?? pytest/sdf_inverse/test_representation_ablation_driver.py\n?? pytest/sdf_inverse/test_smooth_redistance.py\n?? pytest/sdf_to_ordered_boundary/test_distance_tangency.py\n?? pytest/sdf_to_ordered_boundary/test_frontend_component_limit.py\n?? pytest/sdf_to_ordered_boundary/test_parameter_aware.py\n?? pytest/solver_comparisons/test_distance_tangency_driver.py\n?? pytest/solver_comparisons/test_kress_shape_derivative_driver.py\n?? pytest/solver_comparisons/test_material_inverse_driver.py\n?? pytest/solver_comparisons/test_parameterization_aware_driver.py\n?? results/distance_tangency/\n?? results/inverse_solver_comparison/mlp-arclength-k5-ellipse-to-star-kress-20260904/\n?? results/inverse_solver_comparison/mlp-canonical-ellipse-to-star-kress-20260903/\n?? results/inverse_solver_comparison/mlp-circle-to-circle-mie-20260903/\n?? results/inverse_solver_comparison/mlp-ellipse-to-circle-mie-20260903/\n?? results/inverse_solver_comparison/mlp-ellipse-to-circle-mode5-control-20260903/\n?? results/inverse_solver_comparison/mlp-ellipse-to-star-kress/\n?? results/inverse_solver_comparison/mlp-ellipse-to-star-nystrom-20260903/\n?? results/inverse_solver_comparison/mlp-fixed-ellipse-to-star-kress-20260903/\n?? results/inverse_solver_comparison/mlp-full-band-modes-ellipse-to-star-kress-20260903/\n?? results/inverse_solver_comparison/mlp-joint-k6-ellipse-to-star-kress-20260903/\n?? results/inverse_solver_comparison/mlp-radial-continuation-k5-ellipse-to-star-kress-20260904/\n?? results/inverse_solver_comparison/mlp-resolved-k5-ellipse-to-star-kress-20260904/\n?? results/inverse_solver_comparison/mlp-star-to-star-nystrom-20260903/\n?? results/inverse_solver_comparison/siren-circle-mie-20260903/\n?? results/kress_shape_derivative/\n?? results/multicomponent_split_demo/\n?? results/neural_metric/\n?? results/parameterization_aware/\n?? results/sdf_representation_ablation/\n?? results/smooth_distance_supervision/\n?? run_distance_tangency_comparison.py\n?? run_kress_shape_derivative_validation.py\n?? run_material_inverse_comparison.py\n?? run_mlp_sdf_inverse_comparison.py\n?? run_multicomponent_split_demo.py\n?? run_neural_metric_comparison.py\n?? run_parameterization_aware_comparison.py\n?? run_sdf_representation_ablation.py\n?? run_smooth_distance_supervision_comparison.py\n?? solvers/gpr_bem_kress/multicomponent.py\n?? solvers/gpr_bem_kress/shape_derivative.py\n?? solvers/multicylinder_ref/\n?? solvers/sdf_bem_multicomponent/\n?? solvers/sdf_inverse/continuous_distance.py\n?? solvers/sdf_inverse/curve_updates.py\n?? solvers/sdf_inverse/cylinder_sensitivity_reference.py\n?? solvers/sdf_inverse/material_inverse.py\n?? solvers/sdf_inverse/neural.py\n?? solvers/sdf_inverse/neural_metric.py\n?? solvers/sdf_inverse/neural_optimization.py\n?? solvers/sdf_to_ordered_boundary/distance_tangency.py\n?? solvers/sdf_to_ordered_boundary/parameter_aware.py",
+    "git_commit": "41420c2875d49f9ab8774f572c94b989d56fc309",
+    "numpy": "2.0.2",
+    "platform": "Linux-5.15.0-139-generic-x86_64-with-glibc2.31",
+    "python": "3.9.25 (main, Nov  3 2025, 22:33:05) \n[GCC 11.2.0]",
+    "scipy": "1.13.1",
+    "source_sha256": {
+      "docs/codex_sdf_kress_priorities_2026-09-05.md": "ea91c6f4cfb7bf5d355a3ed00e25f28c2a6ad9ac54844b9823b791fd561d2f2e",
+      "run_material_inverse_comparison.py": "4925d11bb250b6e89a20590ba4be1208d0c3eb92efea3d5f5038e5b95717234a",
+      "run_parameterization_aware_comparison.py": "1e08c24cefcda5a7b4cf0e8e997f268c3289620412afa902026625069bfb40f8",
+      "solvers/gpr_bem_kress/__init__.py": "2e42b910dd316eabd54a3e8d3a2bd67336b9e462a32969cb5f2e47be3dee8681",
+      "solvers/gpr_bem_kress/_kernels.py": "b8b7b6b8fb98b47f3838e45e7c18de265dc4a055b95c8869099b3a03b516ee46",
+      "solvers/gpr_bem_kress/conventions.py": "394ec22c5f750354b3a9d163ff5c72fe00423715da66ba6c53bafc5dcabe6799",
+      "solvers/gpr_bem_kress/forward.py": "84ec2de53a64ec987d7226e8bc3c23bb851f1e9a3aed85713db76a76e62916f6",
+      "solvers/gpr_bem_kress/geometry.py": "16df0292b6752422466a7fa0bdd9de10d18696d91a1533d90552e93797db2c45",
+      "solvers/gpr_bem_kress/materials.py": "2d573bae208b1b4a5e712eda41c8dad1e68f47b1e9644afb79c766a017d391a6",
+      "solvers/gpr_bem_kress/multicomponent.py": "c3256241578e10778378109d10c06c44cc55e5d47dcecfae541fef0e0e81bac4",
+      "solvers/gpr_bem_kress/operators.py": "d212790ce939a5c8b2acf3c4456fd5a0bd12a8201eaffefa8f2d672dfa93245a",
+      "solvers/gpr_bem_kress/shape_derivative.py": "b4e7ffb8ca8c273916f8c1a25d8e1438e9944643e4520856c6538496bc4711e1",
+      "solvers/gpr_bem_kress/system.py": "a9ea01d58680a4656f502aa166894aa816d6f8ce3fcafa4474b89c01453df4e0",
+      "solvers/gpr_bem_ref/__init__.py": "947da604ab3583fb79657f71110c373a5caf8cbadecbdbcae3dd30ca2c0fc611",
+      "solvers/gpr_bem_ref/backend.py": "8773ced08eb4605a3e603503c386af8d184817081653cc23302e59750eee0804",
+      "solvers/gpr_bem_ref/cupy_kernel_provider.py": "b60dc06fce312a036deef325e113b257652a92478aa7c0220b8f367d283c3ee6",
+      "solvers/gpr_bem_ref/cupy_kernel_sources.py": "1421fa9f550c1404edf20ec2ffa9ac81bc5c195e9fc59af1c945f7927e76bd9c",
+      "solvers/gpr_bem_ref/cylinder_reference.py": "bf4568bee6020be124b71060aa38e37a1b1bce33d5c43752b9d41d7c6aec0046",
+      "solvers/gpr_bem_ref/geometry.py": "a5f61908baa960e267958ccdc32b4cb2fa06f10f8d58eace654a13aa4a778493",
+      "solvers/gpr_bem_ref/ibim_geometry.py": "93220914cb8768265b6609b0f08435291f54b730978a6d0fc602b419fb92ffd8",
+      "solvers/gpr_bem_ref/ibim_inverse.py": "810f75889985fe714daa157f877e64d5eea5a596757cc3d02b18252a06f26b4d",
+      "solvers/gpr_bem_ref/ibim_tmz_adjoint.py": "4b807d9631f110ebbc857b22a99885552fdc5115873c30148f86ab2f6fb4c1e7",
+      "solvers/gpr_bem_ref/ibim_tmz_forward.py": "a2b5b99ca362b571958d13045be0fa421f0fc05c13720ca65ab55795b652517d",
+      "solvers/gpr_bem_ref/ibim_tmz_system.py": "a62433fc71e52e606f39d9791b573e9d66594024c9c0f2267466298f5e4f04f5",
+      "solvers/gpr_bem_ref/materials.py": "3e7ec1f8bf22b708fa3023835cd8cbbe2cfd3933704681f3cbed8c3ec64f6347",
+      "solvers/gpr_bem_ref/neural_sdf.py": "2a4104be4cb2dc75d01a172ff5c2884392725d340a17ba6648a107abde3fd77d",
+      "solvers/gpr_bem_ref/precision.py": "d965325b92ae9de140549d1014f365cd877c1f7da9090b826c68e1ccee0aeb40",
+      "solvers/gpr_bem_ref/scan_paths.py": "b02b7cdaf913a38ea77047d6d4def213de49f8e3720bc5a24e971767a1391177",
+      "solvers/gpr_bem_ref/signal_processing.py": "41a35c5070dfb1e582ed9ee535790a3c100b21afdc0a402844af3eb44ccc6aee",
+      "solvers/gpr_bem_ref/validation.py": "edc0ed04014ad5a20830b7d04134229179b64b0f340167db5017dfeda5615944",
+      "solvers/gpr_bem_ref/waveforms.py": "a71dfd3cf638a44e430b1d192012e6cf315bff776f5eeb427fcf94dcdfc0f593",
+      "solvers/ordered_boundary/__init__.py": "75a5dfaa90ab61b192396e9c8ab624b253d114690e212566cb8d1bd604c95ba4",
+      "solvers/ordered_boundary/_array_utils.py": "8f90ad86f63ad44ed1d7f9db4d655b6783a67d647c5a14fa0503fc551834a4f5",
+      "solvers/ordered_boundary/analytic.py": "7a499e0e9eb07710cfee0c5f0cdb5c770e42ded214785bfddf61272d3e353cb6",
+      "solvers/ordered_boundary/boundary.py": "8f9bd3afa0978076372d3228d9f904b0b0aa87f94e4142a538695d3d87f9dffc",
+      "solvers/ordered_boundary/boundary_parameterization.py": "3883e2232cf6f9b8a8e3a12e95052e6e2791b942ff8e8b6c3fc59419197c7a2c",
+      "solvers/ordered_boundary/curve.py": "bcc1a40b445b955f6701da11bca39d4a329874bdb3830476d51375f1e99f9ced",
+      "solvers/ordered_boundary/parameterization.py": "d71628ac3dce3ba8aaf262aad28607b29ea74ed65d58850342aaa3fb4db599c8",
+      "solvers/ordered_boundary/validation.py": "d16dc2ecccd7dcd9c733f8d7083e0b80480e3268312b6fb5f68f426ba3fb878d",
+      "solvers/periodic_kress/__init__.py": "170aaa97498ae490d75b14159b583d50c0734b23b5cb62085bc65479ceb5f38f",
+      "solvers/periodic_kress/weights.py": "4b5b8cf2edd21793841c29a901c2ed304e0d46e5d30f1d078ac45ea9253e8726",
+      "solvers/sdf_inverse/__init__.py": "d423c6589314610651aa6ffa0b7a815e4a042566d41ae7ba70d5c7a7284964ad",
+      "solvers/sdf_inverse/continuous_distance.py": "83be27c3ebe99bce6ec6fa7a1265eda4e0716a8099ef697f65c5995eb44e4126",
+      "solvers/sdf_inverse/curve_updates.py": "dc70b88f1f992d42cba37672f6ad8984a30bf42865fa5db992cb526a54855332",
+      "solvers/sdf_inverse/cylinder_sensitivity_reference.py": "6dd079a5ee5c97568202060b9c0e20370b0b4f2f1137bc06c78cc4e99cd0376c",
+      "solvers/sdf_inverse/forward.py": "aa17c3961ca3b40e42c867b66cd9ef3c8b070a8b13ad2123bd137169f7e0361c",
+      "solvers/sdf_inverse/geometry.py": "fe8574cec2f0342af0d5e1e6aeffe4f6edf653ea3812941d3b679b0e93342464",
+      "solvers/sdf_inverse/material_inverse.py": "7c9bf30357df33b825b9e60b7b83e180b2b332124f792c5b685cca1d5af101c5",
+      "solvers/sdf_inverse/models.py": "d8eeb9462d3c5a7c19c7ae030fdca26bdab5d96db284921548eb013302f08576",
+      "solvers/sdf_inverse/neural.py": "54d52df1a95ae8129b79f6a848a8cce5b7fbd0f7899f64a220791639ae81c58f",
+      "solvers/sdf_inverse/neural_metric.py": "251db668b26d5f7528e8856896c0769c23955d938ffc359139e0be2a2693fd7c",
+      "solvers/sdf_inverse/neural_optimization.py": "9638d6a678fa0cfa207087ff85bd0faf1dafc1d445dae9b3b95e1260b9f18eca",
+      "solvers/sdf_inverse/nystrom_oracle.py": "95c600404053c6b433b36997caf365e80c5cbec4118c5c80d70050eb8955c141",
+      "solvers/sdf_inverse/optimization.py": "364071848e4f6aff036a357794b27565ab5fb8be52dee6361c881779c168e688",
+      "solvers/sdf_inverse/targets.py": "07b3be3e8518c1c349e5c6f2cbd1344819760fdcf2d53732644a2e1270cbf377",
+      "solvers/sdf_to_ordered_boundary/__init__.py": "139c167269426011ef30177a414cd636aefa191a4bdadfc8fa1e6bb1480e445d",
+      "solvers/sdf_to_ordered_boundary/arclength.py": "762da5c4b8c4eee3dfc066388c521b304b61dfe4c3809463d87498880608c071",
+      "solvers/sdf_to_ordered_boundary/artifacts.py": "2a3549a7bbf7645bc7522a6466cd97e167ad9db9cc23ea88b355f11c3b12c986",
+      "solvers/sdf_to_ordered_boundary/distance_tangency.py": "e94413354fd3090c1af79ba2c6e9d3ff1cc26274a10c05702574aa35dd881ad4",
+      "solvers/sdf_to_ordered_boundary/experiment.py": "dd3bb0ba2b3237c5fbf2aa95d92ced965aa936ebe269b698b9c1bac02c8dd0e9",
+      "solvers/sdf_to_ordered_boundary/fields.py": "37768f030f62667748c9716ffbf80629a07cc4371c4b08514716c08bad6cebca",
+      "solvers/sdf_to_ordered_boundary/frontend.py": "6dd5e51824e253c77158a6b33f92e42f64ae094a1dad94ecdbc965677e68c0ea",
+      "solvers/sdf_to_ordered_boundary/method_a.py": "61d58105a1913c611a6c297462bf81355a0824b07e5f49b0623c06987cc92e07",
+      "solvers/sdf_to_ordered_boundary/method_b.py": "6bce78114c5e4a8e1e4436757e2466b1adcc9862da3ceed43876b4dc12f1db22",
+      "solvers/sdf_to_ordered_boundary/method_c.py": "1f758d282590b8c8356c373c20df767cb311d9913bcb9cb4fbfa73ebe8391cef",
+      "solvers/sdf_to_ordered_boundary/metrics.py": "efe6d1fef7f5450038f9f696f3def19abddf5c026602a0e4b0066a5bcb8e1954",
+      "solvers/sdf_to_ordered_boundary/parameter_aware.py": "c72e8abea00c583ca14851ad40ad7767057af1dce0c7ebb0fb5d72715bc89a92",
+      "solvers/sdf_to_ordered_boundary/representations.py": "db9457d39fabcd75fb29621b66945e24d3796ada4e7a1bb305a0d2dbd0330f93",
+      "solvers/sdf_to_ordered_boundary/results.py": "6fb6332fd390a7c5739708b832c859e56bab42daec63b10002ad9e0dc026ff1a"
+    },
+    "thread_caps": {
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1"
+    }
+  },
+  "scope": "Mie-circle target, fixed geometry or radial K2 jointly with one positive lossless interior epsr; known exterior and sources; no SDF/neural/material/topology defaults changed",
+  "train_acquisition": {
+    "angular_frequencies": [
+      3141592653.589793,
+      9424777960.769379
+    ],
+    "eps0": 8.8541878128e-12,
+    "exterior": {
+      "epsr": 6.0,
+      "mur": 1.0,
+      "sigma": 0.0
+    },
+    "interior_template_not_candidate": {
+      "epsr": 3.0,
+      "mur": 1.0,
+      "sigma": 0.0
+    },
+    "mu0": 1.25663706212e-06,
+    "receiver_points": [
+      [
+        0.7652878908251196,
+        0.5935412565733591
+      ],
+      [
+        0.690646354507927,
+        0.7132979258224983
+      ],
+      [
+        0.5672827862446571,
+        0.781300752858785
+      ],
+      [
+        0.4195992841227234,
+        0.7785440557436669
+      ],
+      [
+        0.28834230145693124,
+        0.6952175466080568
+      ],
+      [
+        0.2214034303380274,
+        0.5542802066239213
+      ],
+      [
+        0.23715724359078783,
+        0.4073209046999781
+      ],
+      [
+        0.31745780024046016,
+        0.2957691208715608
+      ],
+      [
+        0.43701392222619007,
+        0.2366632375632095
+      ],
+      [
+        0.5749010269413326,
+        0.24050932761034033
+      ],
+      [
+        0.6999861156961296,
+        0.3155474658819025
+      ],
+      [
+        0.7710678458804652,
+        0.44718664805763647
+      ]
+    ],
+    "source_points": [
+      [
+        0.7974685681144364,
+        0.5388902427859085
+      ],
+      [
+        0.7381702154215294,
+        0.6824142222691594
+      ],
+      [
+        0.615054345845277,
+        0.7770604582074379
+      ],
+      [
+        0.4611097572140916,
+        0.7974685681144364
+      ],
+      [
+        0.3175857777308406,
+        0.7381702154215294
+      ],
+      [
+        0.2229395417925622,
+        0.615054345845277
+      ],
+      [
+        0.2025314318855636,
+        0.4611097572140916
+      ],
+      [
+        0.2618297845784706,
+        0.3175857777308407
+      ],
+      [
+        0.38494565415472287,
+        0.22293954179256226
+      ],
+      [
+        0.5388902427859084,
+        0.2025314318855636
+      ],
+      [
+        0.6824142222691594,
+        0.2618297845784706
+      ],
+      [
+        0.7770604582074377,
+        0.3849456541547228
+      ]
+    ],
+    "source_strengths_imag": [
+      2e-07,
+      -3.5e-07
+    ],
+    "source_strengths_real": [
+      1e-06,
+      8e-07
+    ]
+  },
+  "train_observations": {
+    "Mie_frequency_evaluations": 4,
+    "clean_sha256": "80d797300a463189e577ab61c60e16893eed4482b24653ec7202df8e0c9e82ec",
+    "identity": "independent_fixed_mode_Mie",
+    "maximum_per_frequency_refinement_difference": 0.0,
+    "modes": [
+      32,
+      64
+    ],
+    "noise": {
+      "complex_standard_deviation_per_frequency": [
+        5.800608125847915e-11,
+        3.220606006326727e-11
+      ],
+      "distribution": "independent circular complex Gaussian; real/imag sigma/sqrt(2)",
+      "fraction_of_per_frequency_pair_rms": 0.01,
+      "seed": 4206
+    },
+    "noisy_sha256": "c695796d8b84038a7969ab8105088d9d8be4768ec190d417eb1a0025cf31ae16",
+    "passed": true
+  },
+  "truth_physical": [
+    0.05,
+    0.5,
+    0.5,
+    0.0,
+    0.0,
+    3.0
+  ],
+  "weighting": "real then imaginary paired residuals divided by immutable cohort-observation column norms; dimensionless declared parameter scales; no regularization"
+}

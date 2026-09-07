@@ -189,6 +189,9 @@ class PairedForwardResult:
     geometry_seconds: float
     forward_seconds: float
     total_seconds: float
+    # Opt-in retained production states for the discrete adjoint. Numerical
+    # Jacobian caches intentionally do not retain dense systems by default.
+    kress_states: tuple[Any, ...] = ()
 
     def __post_init__(self) -> None:
         if self.solver not in {"mod", "kress"}:
@@ -374,6 +377,7 @@ def _predict_paired_response_from_geometry(
     solver: str,
     geometry_seconds: float,
     total_started: float,
+    retain_kress_state: bool = False,
 ) -> PairedForwardResult:
     """Run one backend from a previously prepared ordered geometry build."""
 
@@ -381,6 +385,7 @@ def _predict_paired_response_from_geometry(
     scattered_by_frequency: list[np.ndarray] = []
     total_by_frequency: list[np.ndarray] = []
     residuals: list[float] = []
+    kress_states: list[Any] = []
     forward_started = perf_counter()
 
     if solver == "mod":
@@ -458,6 +463,8 @@ def _predict_paired_response_from_geometry(
                 mu0=problem.mu0,
                 config=solve_config,
             )
+            if retain_kress_state:
+                kress_states.append(forward)
             scattered_matrix = _validate_matrix_response(
                 forward.scattered_receiver,
                 name="Kress scattered_receiver",
@@ -488,6 +495,7 @@ def _predict_paired_response_from_geometry(
         geometry_seconds=geometry_seconds,
         forward_seconds=forward_seconds,
         total_seconds=float(perf_counter() - total_started),
+        kress_states=tuple(kress_states),
     )
 
 
@@ -527,6 +535,7 @@ def predict_paired_response(
     geometry_config: OrderedSDFGeometryConfig,
     *,
     solver: str,
+    retain_kress_state: bool = False,
 ) -> PairedForwardResult:
     """Build one ordered geometry and predict paired responses with MOD or Kress.
 
@@ -538,6 +547,8 @@ def predict_paired_response(
     """
 
     _validate_forward_request(problem, geometry_config, solver)
+    if retain_kress_state and solver != "kress":
+        raise ValueError("Retained Kress states require solver='kress'.")
 
     total_started = perf_counter()
     geometry_started = perf_counter()
@@ -549,6 +560,7 @@ def predict_paired_response(
         solver=solver,
         geometry_seconds=geometry_seconds,
         total_started=total_started,
+        retain_kress_state=retain_kress_state,
     )
 
 

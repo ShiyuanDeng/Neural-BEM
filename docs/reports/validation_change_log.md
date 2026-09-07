@@ -1,6 +1,7 @@
-> Historical record, classified 2026-09-07. Statements of current behavior or
-> next work below refer to their original date. The current research target is
-> [strict MLP + Method B repair](../pipelines/strict_mlp_method_b.md); see the
+> Historical record, classified 2026-09-07. Behavior and planned work below
+> refer to the original date. Current pipeline names are
+> [Implicit MLP + Method B](../pipelines/implicit_mlp.md) and
+> [Explicit Radial Fourier](../pipelines/explicit_radial_fourier.md). See the
 > [architecture](../current_architecture.md) and [results catalogue](../../results/README.md).
 
 # Validation Change Log
@@ -2857,7 +2858,7 @@ ratio was `1.67x`; this includes repeated geometry extraction and fitting and
 is not an isolated BIE assembly benchmark.
 The complete configuration, provenance, trajectories, responses, geometry,
 plot, and exact values are checked under
-[`results/inverse_solver_comparison/wrong-circle-mie-20260902/`](../../results/inverse/method_b/wrong-circle-mie-20260902).
+[`results/inverse_solver_comparison/wrong-circle-mie-20260902/`](../../results/legacy/known_shape_family_parameter_inverse/wrong-circle-mie-20260902).
 
 The new module suite was run with:
 
@@ -3057,7 +3058,7 @@ closed component.
 ### Validation
 
 The checked run is
-[`results/inverse_solver_comparison/wrong-star-nystrom-20260903/`](../../results/inverse/method_b/wrong-star-nystrom-20260903),
+[`results/inverse_solver_comparison/wrong-star-nystrom-20260903/`](../../results/legacy/known_shape_family_parameter_inverse/wrong-star-nystrom-20260903),
 recovering `r(t) = 0.05 (1 + 0.25 cos 5t) m` at `(0.50, 0.50) m` from an
 initialization wrong in all five controls (`center = (0.48, 0.52) m`,
 `mean radius = 0.060 m`, `amplitude = 0.12`, `rotation = 0.25 rad`). All
@@ -3892,7 +3893,7 @@ Circle identity/Sobolev meet the configured training-loss stop; their held-out
 errors remain nonzero. Neural circle arms and all star arms exhaust the
 accepted-step budget. Both explicit star controls make better training and
 held-out progress than every neural seed at the same 28 frequency-level
-forward calls. The full [summary](../../results/inverse/neural_metric/comparison-20260906/summary.md)
+forward calls. The full [summary](../../results/inverse/radial_fourier/neural_metric/comparison-20260906/summary.md)
 and dated follow-up separate those failures from numerical physics resolution.
 
 Sixteen focused tests passed in 1.36 s before timing. Peer review checked

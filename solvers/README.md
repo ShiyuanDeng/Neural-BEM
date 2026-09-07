@@ -1,9 +1,11 @@
 # Solvers and inverse implementations
 
-The current research objective is to [repair strict MLP + Method B](../docs/pipelines/strict_mlp_method_b.md).
-See the [architecture](../docs/current_architecture.md) for supported scope and
-[results catalogue](../results/README.md) for measured evidence. Radial shape,
-representation and material experiments supply diagnostics for that repair.
+The two current inverse pipelines are [Implicit MLP + Method B](../docs/pipelines/implicit_mlp.md)
+and [Explicit Radial Fourier](../docs/pipelines/explicit_radial_fourier.md).
+The neural adjoint gradient is validated, but current neural recovery fails its
+acceptance checks. Explicit radial reconstruction succeeds in recorded controls;
+neural fitting/export has separate outcomes. See the
+[architecture](../docs/current_architecture.md) and [results catalogue](../results/README.md).
 
 ## Package ownership
 
@@ -15,7 +17,7 @@ representation and material experiments supply diagnostics for that repair.
 | `ordered_boundary` | Continuous exact/Fourier producers and immutable ordered BIE node geometry |
 | `periodic_kress` | Shared periodic logarithmic product weights |
 | `sdf_to_ordered_boundary` | Extraction/projection, Methods A/B/C, and experimental conversion studies |
-| `sdf_inverse` | Implicit-parameter, direct-curve, neural representation, metric, and material experiments |
+| `sdf_inverse` | Neural Kress-adjoint inverse, Method-B reverse, explicit radial inverse, neural representation, and archived parameter controls |
 | `sdf_bem_multicomponent` | Automatic loop extraction, multi-Kress forward, and prescribed split demonstration |
 | `nystrom_ref` | Independent smooth-boundary forward oracle |
 | `multicylinder_ref` | Independent multiple-cylinder oracle |
@@ -52,28 +54,31 @@ These commands are for the user; no solver or test was run during cleanup.
 
 | Driver | Actual geometry ownership and derivative |
 |---|---|
-| `run_sdf_inverse_comparison.py` | Implicit-model parameters; extraction and Method B at every finite-difference evaluation |
-| `run_mlp_sdf_inverse_comparison.py` | Explicit radial state; finite differences and strict MLP fitting/audits |
+| `run_implicit_mlp_inverse.py` | Implicit MLP + Method B: direct neural-weight Kress-adjoint updates and actual re-extracted candidate acceptance |
+| `run_explicit_radial_fourier_inverse.py` | Explicit Radial Fourier: coefficient finite differences and neural fitting/audits according to policy |
+| `run_sdf_inverse_comparison.py` | Shared driver: Kress `siren_*` cases use adjoint by default; analytic/frozen-feature controls use parameter FD; explicit `--optimizer parameter_fd` retains the neural numerical reference |
 | `run_sdf_representation_ablation.py` | Explicit radial state; strict, curve-only and final-export policies |
 | `run_neural_metric_comparison.py` | Explicit radial state; Kress objective adjoint and frozen neural metrics |
 | `run_material_inverse_comparison.py` | Fixed or radial-K2 shape and one interior permittivity; analytic Kress derivatives |
 | `run_material_robustness_comparison.py` | Same shape/material model; training-only continuation and bounded restarts |
 
-The main MLP driver's `legacy_strict` policy does not reinstate MLP-owned
-accepted geometry. Method B remains in its initialization and representation
-audits. The strict repair needs an explicit accepted-state and physical
-objective contract; see [the repair plan](../docs/pipelines/strict_mlp_method_b.md).
+`run_mlp_sdf_inverse_comparison.py` remains the old compatibility name for
+Explicit Radial Fourier. Its `legacy_strict` policy governs neural fitting to
+the explicit curve. It never makes neural weights the accepted shape state.
 
-The complete discrete Kress derivative now exists, but implicit-parameter
-and radial comparison drivers retain their finite-difference Jacobians.
-Its fixed-correspondence derivative is not automatically the derivative of
-MLP weights through extraction, Method-B fitting, and remeshing.
+The implicit neural path combines the Kress geometry reverse with a
+branch-local reverse of extraction/Method B into all trainable weights.
+Connectivity changes are not differentiated. Archived
+[known-shape-family controls](../docs/legacy/known_shape_family_controls.md)
+use 3–7 parameters in supplied families and are distinct from full-network
+inversion. Their default outputs go to the legacy archive; full neural
+cases go to `results/inverse/implicit_mlp`.
 
 ## Detailed documentation and reproduction
 
 - [Runnable diagnostic commands](../docs/reproduction.md).
-- [Radial ownership and MLP policies](../docs/pipelines/radial_fourier.md).
-- [Shape/material and derivative controls](../docs/pipelines/shape_material.md).
+- [Radial ownership and MLP policies](../docs/pipelines/explicit_radial_fourier.md).
+- [Shape/material and derivative controls](../docs/pipelines/explicit_radial_shape_material.md).
 - [Geometry foundation](ordered_boundary/README.md) and [Kress implementation](gpr_bem_kress/README.md).
 - [Technical references](../docs/reference/README.md).
 - [Historical inverse development](../docs/reports/inverse_development_through_2026-09-06.md).

@@ -49,6 +49,13 @@ Explicit imports from `gpr_bem_kress.shape_derivative` provide
 differentiate the actual near-series/direct-kernel branches, analytic
 diagonals, normals, weights, incident traces and receiver map, with optional
 real positive-lossless material and complex source-strength directions.
+
+`gpr_bem_kress.geometry_pullback.build_kress_geometry_pullback` supplies the
+geometry reverse of that objective: one reverse pass per frequency returns
+already-weighted covectors on native positions and first derivatives. Compose
+both with a coherent curve/Method-B construction. These arrays are not normal
+velocities or an unweighted density, and require no extra arc factors. The
+implicit neural inverse uses this API to update weights directly.
 Native node correspondence, period, frequency, acquisition and topology stay
 fixed. Primal reassembly is checked against the retained forward arrays;
 branch margins are diagnostics, not permission to cross a branch or validity

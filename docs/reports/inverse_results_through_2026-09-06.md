@@ -1,6 +1,7 @@
-> Historical record, classified 2026-09-07. Statements of current behavior or
-> next work below refer to their original date. The current research target is
-> [strict MLP + Method B repair](../pipelines/strict_mlp_method_b.md); see the
+> Historical record, classified 2026-09-07. Behavior and planned work below
+> refer to the original date. Current pipeline names are
+> [Implicit MLP + Method B](../pipelines/implicit_mlp.md) and
+> [Explicit Radial Fourier](../pipelines/explicit_radial_fourier.md). See the
 > [architecture](../current_architecture.md) and [results catalogue](../../results/README.md).
 
 # Implicit-initialization inverse comparisons
@@ -35,7 +36,7 @@ Three cases recover the same analytic circle from independent Mie data, at
 
 ## Star target, independent Nystrom observations
 
-[`wrong-star-nystrom-20260903/`](../../results/inverse/method_b/wrong-star-nystrom-20260903) recovers the
+[`wrong-star-nystrom-20260903/`](../../results/legacy/known_shape_family_parameter_inverse/wrong-star-nystrom-20260903) recovers the
 five-lobe star `r(t) = 0.05 (1 + 0.25 cos 5t) m` at `(0.50, 0.50) m` -- the
 same shape the forward comparison study uses -- from `nystrom_ref` data, at
 0.5/1.5 GHz training and 0.25/1/2.5 GHz holdout frequencies. The

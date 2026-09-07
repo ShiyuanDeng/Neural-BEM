@@ -1,12 +1,16 @@
 # Dated reports
 
 These records preserve what was implemented, measured, and recommended at the
-time. Earlier recommendations to prefer explicit curves are historical; the
-current objective is to [repair strict MLP + Method B](../pipelines/strict_mlp_method_b.md).
-Measured radial outcomes inform that work rather than establish its success.
+time. Use [Implicit MLP + Method B](../pipelines/implicit_mlp.md) and
+[Explicit Radial Fourier](../pipelines/explicit_radial_fourier.md) for current
+names and behavior. Historical uses of “strict MLP” may refer to radial-curve
+fitting policies or earlier neural-feedback algorithms; check the shape owner
+before comparing results. Recorded commands and measurements retain their
+historical context.
 
 | Report | Scope |
 |---|---|
+| [implicit_mlp_adjoint_2026-09-07.md](implicit_mlp_adjoint_2026-09-07.md) | Direct neural Kress-adjoint implementation and gradient validation; bounded early runs and all three new 12-pair circle/ellipse/star cases fail recovery acceptance |
 | [architecture_snapshot_2026-09-06.md](architecture_snapshot_2026-09-06.md) | Detailed implementation snapshot before the documentation cleanup |
 | [inverse_development_through_2026-09-06.md](inverse_development_through_2026-09-06.md) | Chronological inverse implementation and corrective experiments |
 | [inverse_results_through_2026-09-06.md](inverse_results_through_2026-09-06.md) | Original inverse result tables and development narrative |
