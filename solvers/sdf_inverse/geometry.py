@@ -118,9 +118,17 @@ class OrderedSDFGeometryConfig:
     num_nodes: int = 64
     arclength_dense_resolution: int = 512
     validation_resolution: int = 256
+    # None preserves legacy geometry-only controls. Neural inverse drivers
+    # declare a physical conversion budget explicitly.
+    conversion_tolerance_m: float | None = None
 
     def __post_init__(self) -> None:
         bounds = _canonical_bounds(self.bounds)
+        if self.conversion_tolerance_m is not None:
+            tolerance = _finite_nonnegative(self.conversion_tolerance_m, name="conversion_tolerance_m")
+            if tolerance <= 0.0:
+                raise ValueError("conversion_tolerance_m must be positive or None.")
+            object.__setattr__(self, "conversion_tolerance_m", tolerance)
         try:
             grid_count = len(self.grid_shape)
         except TypeError as exc:
@@ -192,6 +200,9 @@ class OrderedSDFGeometryBuild:
     speed_ratio: float
     config: OrderedSDFGeometryConfig
 
+    maximum_conversion_error_m: float | None = None
+    conversion_refinement_change_m: float | None = None
+
     def __post_init__(self) -> None:
         if not isinstance(self.curve, PeriodicCurve2D):
             raise TypeError("curve must be an ordered_boundary.PeriodicCurve2D.")
@@ -211,6 +222,9 @@ class OrderedSDFGeometryBuild:
                 name,
                 _finite_nonnegative(getattr(self, name), name=name),
             )
+        for name in ("maximum_conversion_error_m", "conversion_refinement_change_m"):
+            if getattr(self, name) is not None:
+                object.__setattr__(self, name, _finite_nonnegative(getattr(self, name), name=name))
         speed_ratio = _finite_nonnegative(self.speed_ratio, name="speed_ratio")
         if speed_ratio < 1.0:
             raise ValueError("speed_ratio must be at least one.")
@@ -391,6 +405,12 @@ def build_ordered_sdf_geometry(
     if minimum_speed <= 0.0 or not np.isfinite(maximum_speed):
         raise ValueError("The ordered curve must have finite positive speed.")
 
+    conversion_error = conversion_change = None
+    if config.conversion_tolerance_m is not None:
+        conversion_error, conversion_change = _check_conversion_fidelity(
+            field, fit.parameterization, config,
+        )
+
     return OrderedSDFGeometryBuild(
         curve=curve,
         frontend_seconds=float(frontend_seconds),
@@ -404,7 +424,47 @@ def build_ordered_sdf_geometry(
         ),
         speed_ratio=maximum_speed / minimum_speed,
         config=config,
+        maximum_conversion_error_m=conversion_error,
+        conversion_refinement_change_m=conversion_change,
     )
+
+
+def _check_conversion_fidelity(field, parameterization, config):
+    """Check both directed polygonal set distances using independent extraction.
+
+    Audit density is independent of BEM nodes and production projected samples.
+    Refining both grid and sampling checks numerical agreement; it is not a
+    certificate of the continuous zero set. A failure rejects the candidate
+    before its BEM solve and does not silently alter the differentiated map.
+    """
+    from .neural_optimization import maximum_curve_set_distance
+
+    errors = []
+    base_count = max(512, 4 * config.bandwidth + 4)
+    base_grid = tuple(max(257, n) for n in config.grid_shape)
+    for factor in (1, 2):
+        count = factor * base_count
+        grid = tuple(factor * (n - 1) + 1 for n in base_grid)
+        try:
+            reference = prepare_single_component(field, FrontendConfig(
+                bounds=config.bounds, grid_shape=grid, projected_samples=count,
+                projection=ProjectionConfig(residual_tolerance=_projection_residual_tolerance(field.dtype)),
+            ))
+        except FrontendError as exc:
+            raise OrderedSDFGeometryError(f"Conversion audit could not resolve the raw zero set: {exc}") from exc
+        errors.append(maximum_curve_set_distance(
+            reference.projected_points, parameterization.discretize(count).points,
+        ))
+    change = abs(errors[1] - errors[0])
+    tolerance = config.conversion_tolerance_m
+    if change > 0.05 * tolerance or max(errors) > tolerance:
+        raise OrderedSDFGeometryError(
+            "Method-B conversion fidelity failed: raw/converted contour distance "
+            f"{max(errors):.6g} m, refinement change {change:.6g} m; "
+            f"limits {tolerance:.6g} m and {0.05 * tolerance:.6g} m. "
+            "Refine extraction, projected samples and Fourier bandwidth before accepting this field."
+        )
+    return max(errors), change
 
 
 def ordered_curve_to_mod_boundary(

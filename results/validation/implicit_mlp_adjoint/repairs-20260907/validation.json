@@ -1,0 +1,38 @@
+{
+  "commit": "cd58bbbf662fcd1cd958e0d55bd5844de2ed2677",
+  "final_source_sha256": {
+    "run_sdf_inverse_comparison.py": "10a81877cbf032ff5870ad95a2845663f009ace56cd49e58dd626e66b9e3e1ba",
+    "solvers/sdf_inverse/implicit_adjoint.py": "5ff7aa7ac7a065b8366af677ca3d65889b557e0159cd13a8e47e38993c53b959",
+    "solvers/sdf_inverse/models.py": "566d0a8bc2f997e8b79f139611d5972209fb083a9bb0fc5532e2c7cc0d841183",
+    "solvers/sdf_inverse/geometry.py": "288130d26c08827152cd11e7775e61d3d0bb6952abd1d90507ca4d507056f8a9",
+    "pytest/sdf_inverse/test_implicit_adjoint.py": "9698b7d551d7c7391320625e66183aa264fff3afb941f45feadd47046f18aa8a",
+    "pytest/sdf_inverse/test_implicit_adjoint_driver.py": "b2a3fcf4518f74e6248ebda2a8b98e36b2cbb53bd0ff895b2b4181e5a2006375",
+    "pytest/sdf_inverse/test_pretraining_and_conversion_repairs.py": "1068555a9f4ada4a2fd550da08159c8c54a65c798a9da64cb8a29ffe61418aae"
+  },
+  "tests": [
+    {
+      "command": "env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1 PYTHONPATH=solvers /home/drdeng/miniconda3/envs/EMNerf/bin/python -m pytest -q pytest/sdf_inverse pytest/gpr_bem_kress/test_shape_derivative.py pytest/gpr_bem_kress/test_geometry_pullback.py",
+      "passed": 377,
+      "warnings": 5,
+      "seconds": 66.67,
+      "scope": "Retained implementation before narrowing the default pretraining change to star only."
+    },
+    {
+      "command": "env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1 PYTHONPATH=solvers /home/drdeng/miniconda3/envs/EMNerf/bin/python -m pytest -q pytest/sdf_inverse/test_implicit_adjoint.py pytest/sdf_inverse/test_implicit_adjoint_driver.py pytest/sdf_inverse/test_pretraining_and_conversion_repairs.py",
+      "passed": 40,
+      "seconds": 11.45,
+      "scope": "Final default policy and retained optimizer, geometry and driver changes."
+    }
+  ],
+  "smoke": {
+    "directory": "star-smoke",
+    "command": "run_implicit_mlp_inverse.py --target star --max-iterations 2 --num-pairs 4 --no-gate --output-dir results/validation/implicit_mlp_adjoint/repairs-20260907/star-smoke",
+    "accepted_updates": 2,
+    "acceptance_passed": false
+  },
+  "excluded_experiments": {
+    "star_target_fit.pt": "Resolved-distance redesign: 3 zero contours; not adopted.",
+    "star_target_fit_with_offsets.pt": "Resolved-distance redesign with boundary/offset terms: 23 zero contours; not adopted.",
+    "ellipse_initial_fit.pt": "Zero-penalty ellipse pretraining: 5 zero contours; default kept at 0.1."
+  }
+}

@@ -13,6 +13,19 @@ validated adjoint gradients and accepted neural updates. See the
 and [active neural results](../../results/inverse/implicit_mlp). The current
 optimizer has not completed the intended reconstruction task.
 
+The subsequent [failure audit](../../results/validation/implicit_mlp_adjoint/failure-audit-20260907/README.md)
+identified a premature line-search stop, pretraining bias and conversion drift.
+The fixes below change current defaults; the saved recovery runs above retain
+their original settings and FAIL outcomes.
+
+The [reruns after those repairs](../../results/validation/implicit_mlp_adjoint/rerun-20260907/README.md)
+then showed that the **Method-B Fourier bandwidth**, not the optimizer, bounded
+both targets: the circle and star each stopped with their audited conversion
+error pinned to the fidelity budget. Raising it lets the circle accept all 60
+updates and end on its iteration budget rather than a stall. Overall recovery
+still FAILS on both targets, and the star's lobe amplitude and phase move away
+from the target while its training loss falls.
+
 ## How the field becomes a boundary
 
 The MLP is a map from a point in space to a scalar value: negative inside
@@ -30,6 +43,25 @@ from representing radius as a Fourier function of angle in
 Method B does not require a star-shaped object. Its current front end does
 require exactly one regular, simple, closed component inside the extraction
 domain. Increasing network capacity does not remove that geometry contract.
+Neural driver runs additionally require raw/converted contour agreement within
+`--conversion-tolerance-mm` (default `0.2`). The check independently extracts
+the raw contour at two refined grids and sample counts, and measures symmetric
+vertex-to-polygon distances. Their change must be within 5% of the budget.
+An unresolved or excessive discrepancy rejects a candidate before its BEM
+solve. This is a sampled numerical guard, not a continuous zero-set certificate;
+the conversion map and its adjoint replay are unchanged. API callers can opt
+in through `OrderedSDFGeometryConfig.conversion_tolerance_m`.
+
+The conversion resolution is what that guard actually constrains, and the
+bandwidth dominates it. Refining the extraction grid and projected samples at
+a fixed bandwidth changed the measured star error by under a micrometre, while
+raising the bandwidth from 48 to 96 reduced it from `0.1999 mm` to `0.0206 mm`;
+the circle behaves the same way between bandwidths 10 and 20. `--bandwidth`,
+`--grid-resolution` and `--projected-samples` set these per run and default to
+each target's own values. A bandwidth needs at least `2 * bandwidth + 2` nodes
+and projected samples to be sampled without aliasing, so raising it also raises
+BEM cost; invalid combinations are rejected by the parser. The shipped target
+defaults are unchanged.
 See [Method B](../../solvers/sdf_to_ordered_boundary/method_b.py),
 [shared extraction](../../solvers/sdf_inverse/geometry.py) and
 [forward interfaces](../../solvers/sdf_inverse/forward.py).
@@ -64,6 +96,9 @@ Backtracking checks the actual re-extracted MLP: boundary motion must stay
 within the configured step limit, data loss must decrease, and both the data
 loss and data-plus-Eikonal objective must satisfy their Armijo tests. Invalid
 geometry is rejected; rejected trials restore accepted weights.
+The steepest-descent fallback caps large gradients but does not amplify small
+ones to a fixed proposal length. Thus its trial size shrinks near a fitted
+solution instead of imposing the premature minimum-step stop found in the audit.
 Solver/derivative errors propagate without an FD fallback. Exact marching-grid vertex crossings have
 no unique branch derivative and are reported explicitly. Connectivity,
 phase choices and interpolation/projection branches remain discrete: the
@@ -78,6 +113,19 @@ defaults for reproducibility; its Kress `siren_*` cases now select adjoint
 updates automatically. `--optimizer parameter_fd` is the explicit numerical
 reference. Selecting MOD in that comparison still uses the parameter-FD
 control, not the separate compressed-cloud MOD neural adjoint.
+
+Pretraining regresses `F / ||grad F||`, which is exact for a circle's SDF but
+only approximates distance for ellipse/star level sets. The default pretraining
+Eikonal weight is now `0` for star proxies, avoiding the demonstrated conflict
+between that global regression target and a unit-gradient penalty. Circle
+and ellipse retain `0.1`: removing the ellipse penalty produced extra zero
+contours in validation. `--mlp-pretrain-eikonal-weight` overrides this
+choice for both the initialization and exact-target fitting control; `0.1`
+restores the historical penalty. Its actual value is saved in pretraining
+metadata. The inverse's independent `--eikonal-weight` still defaults to `0.01`.
+This improves the measured star interface but does not certify distance quality
+or general inverse recovery. The exact-target fit is a fitting control, not a
+theoretical representation floor.
 
 The following implementations must remain distinct:
 
@@ -144,6 +192,9 @@ Further qualification needs separate measurements of the following:
    nodes independently. Measure both directions of contour-set distance,
    normalized field residual, regularity, coherent curve derivatives and
    changes in forward prediction. Sampled checks are not continuous certificates.
+   The [reruns](../../results/validation/implicit_mlp_adjoint/rerun-20260907/README.md)
+   cover the bandwidth/grid/sample factors on two frozen checkpoints; arc-length
+   integration and BEM nodes remain unmeasured there.
 2. **Neural field quality.** Measure initial-shape fitting and exact-target
    fitting controls separately from inverse optimization. Distinguish MLP
    fitting error, extraction error and Method-B refitting error; record

@@ -1,0 +1,103 @@
+{
+  "created_utc": "2026-09-07T19:43:30.633512+00:00",
+  "scope": "same production star exact-target pretraining, network, seed, samples, optimizer, cosine schedule, 6000 updates; only Eikonal weight varies. Not an inverse run or shared-warm-up activation study.",
+  "arms": [
+    {
+      "eikonal_weight": 0.1,
+      "pretraining": {
+        "steps": 6000,
+        "final_data_rms_m": 0.00528314409009727,
+        "final_eikonal_residual": 0.0001260276440942848,
+        "initial_data_rms_m": 0.12200509908289786,
+        "seconds": 46.37339359700127
+      },
+      "method_b_maximum_node_to_target_m": 0.009181522951802551,
+      "method_b_normalized_field_residual_m": 6.086017604158555e-05,
+      "raw_zero_set": [
+        {
+          "grid": 257,
+          "samples": 512,
+          "maximum_raw_node_to_target_m": 0.00956069968465851,
+          "mean_raw_node_to_target_m": 0.0042311590201278525
+        },
+        {
+          "grid": 513,
+          "samples": 512,
+          "maximum_raw_node_to_target_m": 0.009560716670445498,
+          "mean_raw_node_to_target_m": 0.004231159778424608
+        },
+        {
+          "grid": 513,
+          "samples": 1024,
+          "maximum_raw_node_to_target_m": 0.009561158107332905,
+          "mean_raw_node_to_target_m": 0.004231221571325294
+        }
+      ],
+      "heldout_proxy_fit_rms_m": 0.005244810504452866,
+      "checkpoint": "star-pretraining-eikonal-0.1.pt",
+      "checkpoint_sha256": "7e98c17dabd3b5fbdc1bc7a26968cb73aea7e207bedff9879b3084fe9e07c92d"
+    },
+    {
+      "eikonal_weight": 0.0,
+      "pretraining": {
+        "steps": 6000,
+        "final_data_rms_m": 0.00042870642323368643,
+        "final_eikonal_residual": 0.0642351333642637,
+        "initial_data_rms_m": 0.12200509908289786,
+        "seconds": 43.25455242600583
+      },
+      "method_b_maximum_node_to_target_m": 0.0011508830570583892,
+      "method_b_normalized_field_residual_m": 8.178669805005274e-05,
+      "raw_zero_set": [
+        {
+          "grid": 257,
+          "samples": 512,
+          "maximum_raw_node_to_target_m": 0.0012002115987384805,
+          "mean_raw_node_to_target_m": 0.0002902739605702178
+        },
+        {
+          "grid": 513,
+          "samples": 512,
+          "maximum_raw_node_to_target_m": 0.0012002116351234598,
+          "mean_raw_node_to_target_m": 0.0002902741698246102
+        },
+        {
+          "grid": 513,
+          "samples": 1024,
+          "maximum_raw_node_to_target_m": 0.0012002125133471447,
+          "mean_raw_node_to_target_m": 0.00029029838416119193
+        }
+      ],
+      "heldout_proxy_fit_rms_m": 0.0005794838194833327,
+      "checkpoint": "star-pretraining-eikonal-0.0.pt",
+      "checkpoint_sha256": "9d9a37f863cef9afeacec319fcdbffea709b7220ed39d3fef2387e09a8e02b84"
+    }
+  ],
+  "supervision_eikonal_audit": [
+    {
+      "fd_step_m": 1e-06,
+      "eikonal_rms_global": 1.0911695403459112,
+      "eikonal_rms_within_2mm_proxy_band": 0.03683928668764877,
+      "global_gradient_norm_quantiles": [
+        0.06408685804731247,
+        0.9996495784382621,
+        1.0356517968051409,
+        1.182030855208119,
+        69.7495939850867
+      ]
+    },
+    {
+      "fd_step_m": 5e-07,
+      "eikonal_rms_global": 1.0911721225432072,
+      "eikonal_rms_within_2mm_proxy_band": 0.03683928690359107,
+      "global_gradient_norm_quantiles": [
+        0.06408684994424346,
+        0.9996495783738428,
+        1.0356517968091072,
+        1.1820308553265022,
+        69.7499518174255
+      ]
+    }
+  ],
+  "finished_utc": "2026-09-07T19:45:16.559903+00:00"
+}

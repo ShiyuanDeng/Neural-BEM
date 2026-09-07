@@ -126,6 +126,22 @@ do not overcome the failed reconstruction gates. Canonical radial recovery
 succeeds on recorded cases, but its neural representation gates are separate,
 and no matched implicit-versus-radial benchmark has been completed.
 
+## Superseding measurements
+
+The recovery outcomes above were later re-examined. The
+[failure audit](../../results/validation/implicit_mlp_adjoint/failure-audit-20260907/README.md)
+attributed them to a premature line-search stop, star pretraining bias and
+Method-B contour distortion; the
+[repairs](../../results/validation/implicit_mlp_adjoint/repairs-20260907/README.md)
+addressed each and added a conversion fidelity guard; the
+[reruns](../../results/validation/implicit_mlp_adjoint/rerun-20260907/README.md)
+then found that the Method-B Fourier bandwidth, not the optimizer, bounded both
+targets. With the bandwidth raised, the circle accepts all 60 updates and ends
+on its iteration budget at a refinement-converged conversion error, reaching the
+same accuracy the run below reports. Overall recovery still FAILS on both
+targets. The runs in this report retain their original settings and outcomes and
+are not restated by those later measurements.
+
 ## Comparison with the old implicit-MLP finite-difference inverse
 
 No matched FD-versus-adjoint recovery benchmark was run for this implementation.

@@ -1,0 +1,66 @@
+{
+  "circle_restart": {
+    "initial_loss": 2.6177094827112525e-06,
+    "final_loss": 2.440440845934185e-06,
+    "updates": 3,
+    "stop": "maximum_iterations",
+    "methods": [
+      "initial",
+      "adjoint_steepest_descent",
+      "adjoint_steepest_descent",
+      "adjoint_steepest_descent"
+    ],
+    "backtracks": [
+      0,
+      1,
+      1,
+      0
+    ],
+    "max_backtracks": 8
+  },
+  "saved_conversion_guards": [
+    {
+      "run": "circle-20260907T151516",
+      "status": "rejected",
+      "reason": "Method-B conversion fidelity failed: raw/converted contour distance 0.000266814 m, refinement change 1.02161e-07 m; limits 0.0002 m and 1e-05 m. Refine extraction, projected samples and Fourier bandwidth before accepting this field."
+    },
+    {
+      "run": "ellipse-to-circle-20260907T151516",
+      "status": "rejected",
+      "reason": "Method-B conversion fidelity failed: raw/converted contour distance 0.00182161 m, refinement change 6.53357e-05 m; limits 0.0002 m and 1e-05 m. Refine extraction, projected samples and Fourier bandwidth before accepting this field."
+    },
+    {
+      "run": "star-20260907T151516",
+      "status": "passed",
+      "conversion_error_m": 0.00017885711012622553
+    }
+  ],
+  "star_target_fit": {
+    "pretraining": {
+      "steps": 6000.0,
+      "initial_data_rms_m": 0.11374783464213303,
+      "final_data_rms_m": 0.0006701133665418132,
+      "final_eikonal_residual": 0.0013942129640167524,
+      "seconds": 47.718085193999286,
+      "supervision": {
+        "target": "resolved_continuous_signed_distance",
+        "sample_count": 8704,
+        "boundary_sample_count": 512,
+        "distance_length_scale_m": 0.19999999999999998,
+        "boundary_weight": 10.0,
+        "eikonal_weight": 0.1,
+        "distance_target_tolerance_m": 1e-08,
+        "distance_refinement_agreement_m": 1.6653345369377348e-16,
+        "distance_localization_samples": 256.0,
+        "distance_refinement_iterations": 40.0,
+        "distance_maximum_local_candidates": 5.0,
+        "distance_query_count": 8704.0,
+        "distance_localization_levels": 2.0,
+        "distance_target_seconds": 0.7611383920011576
+      }
+    },
+    "status": "Experimental resolved-distance redesign rejected; not adopted in production",
+    "failure": "Independent 513-grid extraction found 3 closed components; validation stopped."
+  },
+  "scope": "Circle restart and saved-conversion guards validate retained fixes. star_target_fit and star_with_offsets.json record rejected prototypes, not the final pretraining policy."
+}

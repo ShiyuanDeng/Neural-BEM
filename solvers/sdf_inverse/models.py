@@ -1184,6 +1184,7 @@ class PretrainingReport:
     final_eikonal_residual: float
     initial_data_rms_m: float
     seconds: float
+    eikonal_weight: float = 0.1
 
     def as_dict(self) -> dict[str, float]:
         return {
@@ -1192,6 +1193,7 @@ class PretrainingReport:
             "final_data_rms_m": self.final_data_rms_m,
             "final_eikonal_residual": self.final_eikonal_residual,
             "seconds": self.seconds,
+            "eikonal_weight": self.eikonal_weight,
         }
 
 
@@ -1211,8 +1213,8 @@ def pretrain_implicit_field(
     A randomly initialized network has no usable zero contour, so this is a
     precondition for the pipeline rather than an optimization convenience.
     The Eikonal penalty is the repository's own ``neural_sdf.eikonal_loss``
-    and is applied throughout training, which keeps ``|grad F|`` near one and
-    therefore keeps the field's magnitude interpretable as a distance.
+    and encourages ``|grad F|`` near one when its weight is nonzero. This is
+    a sampled regularizer, not a certificate of distance accuracy.
     """
 
     if not isinstance(model, nn.Module):
@@ -1273,6 +1275,7 @@ def pretrain_implicit_field(
         final_eikonal_residual=float(gradient_penalty.detach()),
         initial_data_rms_m=initial_rms,
         seconds=float(perf_counter() - started),
+        eikonal_weight=weight,
     )
 
 
@@ -1284,13 +1287,14 @@ def first_order_distance_supervisor(
 ) -> Callable[[torch.Tensor], torch.Tensor]:
     """Return ``F / ||grad F||`` of an analytic field, detached, for training.
 
-    The parametric models in this module are level sets, not distances, so
-    regressing their raw values while also penalizing ``|grad F| = 1`` would
-    set the two objectives against each other.  The first-order distance to
-    the same zero set is the consistent supervision signal: it is exact for a
-    true signed distance such as :class:`CircleSDF2D` and is the same
-    scale-aware quantity this pipeline already uses to report implicit
-    geometry residuals.
+    This legacy helper is exact for a true signed distance such as
+    :class:`CircleSDF2D`, but only a local distance approximation for other
+    fields. Its gradient need not have unit norm away from the interface;
+    combining whole-domain regression to it with a global Eikonal penalty
+    can bias the fitted zero set. The neural driver therefore defaults to
+    Eikonal-free pretraining for the validated star proxy. The ellipse retains
+    its previous penalty because removing it produced extra zero contours.
+    The inverse's separate Eikonal penalty is unchanged.
 
     Every field here is radial and therefore non-regular at its own center,
     where ``||grad F||`` collapses and the ratio is meaningless.  Two bounds

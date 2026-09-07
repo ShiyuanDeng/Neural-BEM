@@ -16,6 +16,7 @@ from __future__ import annotations
 import argparse
 import csv
 from datetime import datetime, timezone
+from dataclasses import replace
 import importlib.metadata
 import json
 import math
@@ -599,6 +600,25 @@ def _parse_args(
         help="SDF gradient regularization during adjoint inverse updates.",
     )
     parser.add_argument(
+        "--conversion-tolerance-mm", type=float, default=0.2,
+        help="Maximum audited raw/Method-B contour disagreement for neural fields, in mm.",
+    )
+    # Method-B conversion resolution. The 2026-09-07 reruns showed the
+    # bandwidth, not the grid or sample density, sets the achievable raw/
+    # converted agreement, so it must be reachable without editing a target.
+    parser.add_argument(
+        "--bandwidth", type=int, default=None,
+        help="Method-B arc-length Fourier bandwidth (default: the target's own value).",
+    )
+    parser.add_argument(
+        "--grid-resolution", type=int, default=None,
+        help="Square zero-set extraction grid resolution (default: the target's own value).",
+    )
+    parser.add_argument(
+        "--projected-samples", type=int, default=None,
+        help="Projected zero-set samples fitted by Method B (default: the target's own value).",
+    )
+    parser.add_argument(
         "--mlp-hidden-features", type=int,
         default=64 if implicit_defaults else DEFAULT_SIREN_HIDDEN_FEATURES,
         help="SIREN width shared by the initialization and target-fit control.",
@@ -611,6 +631,10 @@ def _parse_args(
     parser.add_argument(
         "--mlp-pretrain-steps", type=int, default=DEFAULT_SIREN_PRETRAIN_STEPS,
         help="Supervised initialization steps, before inverse weight updates.",
+    )
+    parser.add_argument(
+        "--mlp-pretrain-eikonal-weight", type=float, default=None,
+        help="Pretraining penalty override: defaults to 0 for the validated star proxy, 0.1 for circle/ellipse. Independent of --eikonal-weight.",
     )
     parser.add_argument(
         "--max-backtracks", type=int, default=8,
@@ -667,16 +691,31 @@ def _parse_args(
         args.holdout_ghz = target.default_holdout_ghz
     if args.num_nodes is None:
         args.num_nodes = target.default_num_nodes
+    if args.bandwidth is None:
+        args.bandwidth = int(target.bandwidth)
+    if args.grid_resolution is None:
+        args.grid_resolution = int(target.grid_shape[0])
+    if args.projected_samples is None:
+        args.projected_samples = int(target.projected_samples)
     if args.max_iterations is None:
         args.max_iterations = 60 if implicit_defaults else target.default_max_iterations
     if args.num_pairs < 4:
         parser.error("--num-pairs must be at least 4")
     if args.num_nodes < 32 or args.num_nodes % 2:
         parser.error("--num-nodes must be an even integer of at least 32")
-    if args.num_nodes < 2 * target.bandwidth + 2:
+    if args.bandwidth < 1:
+        parser.error("--bandwidth must be a positive integer")
+    if args.grid_resolution < 33 or not args.grid_resolution % 2:
+        parser.error("--grid-resolution must be an odd integer of at least 33")
+    if args.projected_samples < 2 * args.bandwidth + 2:
         parser.error(
-            f"--num-nodes must be at least {2 * target.bandwidth + 2} to sample "
-            f"the target's bandwidth-{target.bandwidth} Method-B curve"
+            f"--projected-samples must be at least {2 * args.bandwidth + 2} to fit "
+            f"a bandwidth-{args.bandwidth} Method-B curve without aliasing"
+        )
+    if args.num_nodes < 2 * args.bandwidth + 2:
+        parser.error(
+            f"--num-nodes must be at least {2 * args.bandwidth + 2} to sample "
+            f"the bandwidth-{args.bandwidth} Method-B curve"
         )
     if args.max_iterations < 1:
         parser.error("--max-iterations must be positive")
@@ -686,6 +725,8 @@ def _parse_args(
         parser.error("--learning-rate must be finite and positive")
     if not math.isfinite(args.eikonal_weight) or args.eikonal_weight < 0.0:
         parser.error("--eikonal-weight must be finite and non-negative")
+    if not math.isfinite(args.conversion_tolerance_mm) or args.conversion_tolerance_mm <= 0.0:
+        parser.error("--conversion-tolerance-mm must be finite and positive")
     if args.max_backtracks < 1:
         parser.error("--max-backtracks must be positive")
     if args.mlp_hidden_features < 1:
@@ -694,6 +735,10 @@ def _parse_args(
         parser.error("--mlp-hidden-layers must be non-negative")
     if args.mlp_pretrain_steps < 1:
         parser.error("--mlp-pretrain-steps must be positive")
+    if args.mlp_pretrain_eikonal_weight is not None and (
+        not math.isfinite(args.mlp_pretrain_eikonal_weight) or args.mlp_pretrain_eikonal_weight < 0.0
+    ):
+        parser.error("--mlp-pretrain-eikonal-weight must be finite and non-negative")
     if set(args.train_ghz) & set(args.holdout_ghz):
         parser.error("training and holdout frequencies must be disjoint")
     # Preserve user order while preventing accidental duplicate work.
@@ -758,10 +803,15 @@ def _build_siren_field(
     hidden_features: int = DEFAULT_SIREN_HIDDEN_FEATURES,
     hidden_layers: int = DEFAULT_SIREN_HIDDEN_LAYERS,
     pretrain_steps: int = DEFAULT_SIREN_PRETRAIN_STEPS,
+    pretrain_eikonal_weight: float | None = None,
 ) -> SirenImplicitField2D:
     """Warm start one SIREN onto an analytic field's zero set."""
 
     box = np.asarray(DEFAULT_GEOMETRY_BOUNDS, dtype=np.float64)
+    if pretrain_eikonal_weight is None:
+        # Only the star ablation established an improved, valid zero contour.
+        # Removing this penalty for the ellipse produced extra components.
+        pretrain_eikonal_weight = 0.0 if isinstance(target_field, StarLevelSet2D) else DEFAULT_SIREN_EIKONAL_WEIGHT
     model = SirenImplicitField2D(
         bounds=DEFAULT_GEOMETRY_BOUNDS,
         hidden_features=hidden_features,
@@ -779,7 +829,7 @@ def _build_siren_field(
         ),
         bounds=DEFAULT_GEOMETRY_BOUNDS,
         steps=pretrain_steps,
-        eikonal_weight=DEFAULT_SIREN_EIKONAL_WEIGHT,
+        eikonal_weight=pretrain_eikonal_weight,
         random_seed=random_seed,
     )
     model.pretraining_report = report
@@ -851,6 +901,7 @@ def _build_initial_model(
     hidden_features: int = DEFAULT_SIREN_HIDDEN_FEATURES,
     hidden_layers: int = DEFAULT_SIREN_HIDDEN_LAYERS,
     pretrain_steps: int = DEFAULT_SIREN_PRETRAIN_STEPS,
+    pretrain_eikonal_weight: float | None = None,
 ) -> tuple[torch.nn.Module, Any]:
     """Build one deterministic initialization and its bounded controller."""
 
@@ -921,6 +972,7 @@ def _build_initial_model(
         model = _build_siren_field(
             _analytic_shape_for_siren(kind), hidden_features=hidden_features,
             hidden_layers=hidden_layers, pretrain_steps=pretrain_steps,
+            pretrain_eikonal_weight=pretrain_eikonal_weight,
         )
         controller = build_siren_parameter_controller(
             model, weight_bound=DEFAULT_SIREN_WEIGHT_BOUND
@@ -1392,12 +1444,10 @@ def _acceptance_gates(
 ) -> dict[str, dict[str, Any]]:
     """Build the acceptance set for one run.
 
-    When ``representation_floor`` is supplied the initialization is a neural
-    field, whose accuracy is capped by what that network can represent at all.
-    Absolute shape thresholds calibrated for a three- to five-parameter
-    analytic model would then be measuring the representation rather than the
-    inverse, so the shape and accuracy gates become relative to the same
-    architecture fitted directly to the exact target.
+    When ``representation_floor`` is supplied, shape and accuracy gates are
+    relative to the same architecture and fitting procedure applied directly
+    to the exact target. The historical key names a measured fitting control,
+    not a theoretical lower bound on network representation error.
     """
 
     gates: dict[str, dict[str, Any]] = {}
@@ -1771,19 +1821,30 @@ def main(
         )
 
     geometry_config = target.geometry_config(args.num_nodes)
+    # A no-op unless --bandwidth/--grid-resolution/--projected-samples was given:
+    # each defaults to the target's own value during argument parsing.
+    geometry_config = replace(
+        geometry_config,
+        bandwidth=args.bandwidth,
+        grid_shape=(args.grid_resolution, args.grid_resolution),
+        projected_samples=args.projected_samples,
+    )
+    if args.initial_model in SIREN_INITIAL_MODELS:
+        geometry_config = replace(
+            geometry_config, conversion_tolerance_m=args.conversion_tolerance_mm * 1.0e-3,
+        )
     neural_factory_options = {
         "hidden_features": args.mlp_hidden_features,
         "hidden_layers": args.mlp_hidden_layers,
         "pretrain_steps": args.mlp_pretrain_steps,
+        "pretrain_eikonal_weight": args.mlp_pretrain_eikonal_weight,
     }
     template_model, template_controller = _build_initial_model(
         args.initial_model, **neural_factory_options
     )
 
-    # A neural field's accuracy is capped by what that architecture can
-    # represent at all, so the same network is also warm started directly onto
-    # the exact target.  That control is the floor every neural result is read
-    # against, exactly as the exact-target boundary is for the parametric runs.
+    # Measure the same fitting procedure on the known target. This is a
+    # representation control, not an intrinsic capacity floor of the network.
     representation_control_model: torch.nn.Module | None = None
     representation_floor: dict[str, Any] | None = None
     if args.initial_model in SIREN_INITIAL_MODELS:
@@ -2017,6 +2078,8 @@ def main(
             "final_eikonal_loss": getattr(
                 inverse_result.iterations[-1], "eikonal_loss", None
             ),
+            "final_conversion_error_m": final_all.geometry_build.maximum_conversion_error_m,
+            "final_conversion_refinement_change_m": final_all.geometry_build.conversion_refinement_change_m,
             "initial_parameters": initial_physical_parameters,
             "initial_claims_signed_distance": bool(
                 initialization_metadata["claims_signed_distance"]

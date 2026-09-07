@@ -341,7 +341,10 @@ def run_implicit_mlp_adjoint_inverse(
             adam_proposal = controller.project(controller.parameter_vector()) - accepted_parameters
             controller.assign(accepted_parameters)
             # Both directions are computed from the adjoint, never from FD.
-            steepest = -gradient * (config.learning_rate / max(float(np.max(np.abs(gradient))), 1.0e-30))
+            # Cap large gradients without amplifying small ones. Unit-normalizing
+            # every gradient imposes a minimum trial size after a finite number
+            # of backtracks and can report failure at a nonstationary point.
+            steepest = -gradient * (config.learning_rate / max(float(np.max(np.abs(gradient))), 1.0))
             steepest = controller.project(accepted_parameters + steepest) - accepted_parameters
             accepted = None
             current_curve = current.forward.geometry_build.curve.points

@@ -4,6 +4,7 @@ from dataclasses import replace
 
 import numpy as np
 import pytest
+from types import SimpleNamespace
 
 torch = pytest.importorskip("torch")
 
@@ -160,6 +161,38 @@ def test_finished_initial_state_does_not_require_another_geometry_derivative(mon
     assert result.diagnostics["adjoint_solve_count"] == 0
     assert result.final_iteration.gradient is None
     assert result.final_iteration.data_gradient is None
+
+
+def test_small_gradient_fallback_can_descend_after_adam_exhausts_backtracking(monkeypatch):
+    """A narrow quadratic reproduces the false minimum-step stop near a fit."""
+    import sdf_inverse.implicit_adjoint as module
+    model = torch.nn.Linear(1, 1, bias=False, dtype=torch.float64)
+    with torch.no_grad():
+        model.weight.fill_(1e-6)
+    controller = TorchParameterController(model, lower_bounds=-1, upper_bounds=1)
+    points = np.array([[0., 0.], [1., 0.], [0., 1.]])
+    def forward(*args, **kwargs):
+        x = float(model.weight.detach().item())
+        return SimpleNamespace(
+            scattered_response=np.array([[1.0 + 100.0*x]], dtype=complex),
+            geometry_build=SimpleNamespace(curve=SimpleNamespace(points=points)),
+            linear_system_relative_residuals=np.array([0.]), total_seconds=0.,
+        )
+    def derivative(*args, **kwargs):
+        return np.array([1e4 * model.weight.detach().item()]), {
+            "adjoint_solve_count": 1, "gradient_seconds": 0., "method_b_replay_maximum_error": 0.,
+        }
+    monkeypatch.setattr(module, "predict_paired_response", forward)
+    monkeypatch.setattr(module, "implicit_mlp_data_gradient", derivative)
+    monkeypatch.setattr(module, "_eikonal", lambda *a, **kw: torch.tensor(0.))
+    data = ComplexScatteredData(object(), np.ones((1, 1), dtype=complex))
+    result = run_implicit_mlp_adjoint_inverse(
+        model, controller, data, SimpleNamespace(bounds=((0., 0.), (1., 1.))),
+        config=ImplicitMLPAdjointConfig(max_iterations=1, eikonal_weight=0., max_backtracks=8),
+    )
+    assert len(result.iterations) == 2
+    assert result.final_iteration.step_method == "adjoint_steepest_descent"
+    assert result.final_iteration.loss < .1 * result.initial_iteration.loss
 
 
 @pytest.mark.parametrize("kwargs", ({"learning_rate": 0}, {"eikonal_weight": -1},
