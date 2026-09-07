@@ -1,0 +1,33 @@
+[initialization] random MLP -> wrong ellipse contour
+[initialization] redistance=distance_boundary_and_eikonal_tolerances/500, heldout=3.060 mm, boundary=0.252 mm, eikonal=9.618e-02, best_step=500
+[oracle] nystrom_ref independent Nystrom/Muller solution of the exact star
+[modes] ka_max=6.91 on the initial contour -> wave limit 9, 24-angle limit 11; using 5
+[continuation] stage 1: 0.5 GHz (20 iterations) -> stage 2: 0.5,1.5 GHz (20 iterations) -> stage 3: 0.5,1.5,2.5 GHz (40 iterations)
+
+[KRESS] alternating MLP inverse
+  stage 1/3 train=0.5 GHz modes=0..1 budget=20
+    KRESS iter=00 stage_iter=00 loss=7.0137e-01 rel=1.1844e+00 step=0.000 mm curve=0.000 mm projection=0.000 mm tail=11.712 mm/off tail_rejects=0 eikonal=9.797e-02 redistance=initialized/0
+    KRESS iter=01 stage_iter=01 loss=6.0493e-01 rel=1.0999e+00 step=3.992 mm curve=3.992 mm projection=0.152 mm tail=11.817 mm/off tail_rejects=0 eikonal=9.682e-02 redistance=distance_boundary_and_eikonal_tolerances/180
+    KRESS iter=02 stage_iter=02 loss=5.1560e-01 rel=1.0155e+00 step=3.989 mm curve=3.989 mm projection=0.191 mm tail=11.927 mm/off tail_rejects=0 eikonal=9.334e-02 redistance=distance_boundary_and_eikonal_tolerances/220
+    KRESS iter=03 stage_iter=03 loss=4.3370e-01 rel=9.3134e-01 step=3.994 mm curve=3.994 mm projection=0.247 mm tail=12.041 mm/off tail_rejects=0 eikonal=9.382e-02 redistance=distance_boundary_and_eikonal_tolerances/220
+    KRESS iter=04 stage_iter=04 loss=3.5965e-01 rel=8.4811e-01 step=3.984 mm curve=3.984 mm projection=0.300 mm tail=12.154 mm/off tail_rejects=0 eikonal=9.431e-02 redistance=distance_boundary_and_eikonal_tolerances/240
+    KRESS iter=05 stage_iter=05 loss=2.9281e-01 rel=7.6526e-01 step=3.990 mm curve=3.990 mm projection=0.368 mm tail=12.255 mm/off tail_rejects=0 eikonal=9.812e-02 redistance=distance_boundary_and_eikonal_tolerances/260
+    KRESS iter=06 stage_iter=06 loss=2.3236e-01 rel=6.8170e-01 step=3.995 mm curve=3.995 mm projection=0.493 mm tail=12.328 mm/off tail_rejects=0 eikonal=1.005e-01 redistance=distance_boundary_and_eikonal_tolerances/360
+    KRESS iter=07 stage_iter=07 loss=2.1735e-01 rel=6.5932e-01 step=0.996 mm curve=0.996 mm projection=0.445 mm tail=12.326 mm/off tail_rejects=0 eikonal=1.088e-01 redistance=distance_boundary_and_eikonal_tolerances/160
+    KRESS iter=08 stage_iter=08 loss=2.0984e-01 rel=6.4782e-01 step=0.499 mm curve=0.499 mm projection=0.491 mm tail=12.322 mm/off tail_rejects=0 eikonal=9.994e-02 redistance=distance_boundary_and_eikonal_tolerances/300
+    KRESS iter=09 stage_iter=09 loss=2.0608e-01 rel=6.4199e-01 step=0.250 mm curve=0.250 mm projection=0.471 mm tail=12.319 mm/off tail_rejects=0 eikonal=1.010e-01 redistance=distance_boundary_and_eikonal_tolerances/200
+    KRESS iter=10 stage_iter=10 loss=2.0420e-01 rel=6.3906e-01 step=0.124 mm curve=0.124 mm projection=0.485 mm tail=12.317 mm/off tail_rejects=0 eikonal=1.012e-01 redistance=distance_boundary_and_eikonal_tolerances/200
+    KRESS iter=11 stage_iter=11 loss=2.0047e-01 rel=6.3320e-01 step=0.249 mm curve=0.249 mm projection=0.453 mm tail=12.314 mm/off tail_rejects=0 eikonal=9.539e-02 redistance=distance_boundary_and_eikonal_tolerances/280
+    KRESS iter=12 stage_iter=12 loss=1.9949e-01 rel=6.3164e-01 step=0.067 mm curve=0.067 mm projection=0.458 mm tail=12.312 mm/off tail_rejects=0 eikonal=9.619e-02 redistance=distance_boundary_and_eikonal_tolerances/180
+  stage 1 stop=no_acceptable_mlp_distillation accepted=12
+  stage 2/3 train=0.5,1.5 GHz modes=0..3 budget=20
+    KRESS iter=13 stage_iter=00 loss=1.0098e+00 rel=9.8299e-01 step=0.000 mm curve=0.000 mm projection=0.458 mm tail=4.971 mm/off tail_rejects=0 eikonal=1.076e-01 redistance=initialized/0
+  stage 2 stop=no_acceptable_mlp_distillation accepted=0
+  stage 3/3 train=0.5,1.5,2.5 GHz modes=0..5 budget=40
+    KRESS iter=14 stage_iter=00 loss=2.2231e+00 rel=1.0416e+00 step=0.000 mm curve=0.000 mm projection=0.458 mm tail=2.371 mm/off tail_rejects=0 eikonal=7.630e-02 redistance=initialized/0
+    KRESS iter=15 stage_iter=01 loss=2.1919e+00 rel=1.0368e+00 step=0.460 mm curve=0.460 mm projection=0.472 mm tail=2.418 mm/off tail_rejects=0 eikonal=8.025e-02 redistance=distance_boundary_and_eikonal_tolerances/160
+    KRESS iter=16 stage_iter=02 loss=2.1904e+00 rel=1.0365e+00 step=0.021 mm curve=0.021 mm projection=0.498 mm tail=2.421 mm/off tail_rejects=0 eikonal=7.609e-02 redistance=distance_boundary_and_eikonal_tolerances/180
+    KRESS iter=17 stage_iter=03 loss=2.1571e+00 rel=1.0311e+00 step=0.482 mm curve=0.482 mm projection=0.497 mm tail=2.471 mm/off tail_rejects=0 eikonal=8.095e-02 redistance=distance_boundary_and_eikonal_tolerances/160
+  stage 3 stop=no_acceptable_mlp_distillation accepted=3
+
+Artifacts: /home/drdeng/Neural_SDF_BEM_AD/results/inverse_solver_comparison/mlp-canonical-ellipse-to-star-kress-20260903

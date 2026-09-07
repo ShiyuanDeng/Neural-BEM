@@ -24,6 +24,10 @@ RepresentationT = TypeVar("RepresentationT", bound=NativeBoundaryRepresentation)
 RefitFactory = Callable[[np.ndarray, np.ndarray], RepresentationT]
 
 
+class ArcLengthGeometryError(ValueError):
+    """A curve cannot support a regular monotone arc-length map."""
+
+
 @dataclass(frozen=True)
 class ArcLengthConfig:
     """Numerical resolutions for one arc-length inversion and native refit."""
@@ -86,15 +90,19 @@ def _integrated_arclength_map(
     evaluation = curve.evaluate(parameters, wrap=False)
     speeds = np.linalg.norm(evaluation.first_derivatives, axis=-1)
     if not np.all(np.isfinite(speeds)) or np.any(speeds <= 0.0):
-        raise ValueError("Arc-length reparameterization requires finite positive speed.")
+        raise ArcLengthGeometryError(
+            "Arc-length reparameterization requires finite positive speed."
+        )
     step = period / resolution
     increments = 0.5 * step * (speeds[:-1] + speeds[1:])
     cumulative = np.concatenate(([0.0], np.cumsum(increments)))
     perimeter = float(cumulative[-1])
     if not np.isfinite(perimeter) or perimeter <= 0.0:
-        raise ValueError("The numerically integrated perimeter must be finite and positive.")
+        raise ArcLengthGeometryError(
+            "The numerically integrated perimeter must be finite and positive."
+        )
     if np.any(np.diff(cumulative) <= 0.0):
-        raise ValueError("The sampled arc-length map is not strictly monotone.")
+        raise ArcLengthGeometryError("The sampled arc-length map is not strictly monotone.")
     return parameters, cumulative, perimeter, speeds
 
 
@@ -117,7 +125,7 @@ def _speed_summary(speeds: np.ndarray) -> tuple[float, float, float]:
     minimum = float(np.min(speeds))
     maximum = float(np.max(speeds))
     if minimum <= 0.0:
-        raise ValueError("Speed must remain positive.")
+        raise ArcLengthGeometryError("Speed must remain positive.")
     return minimum, maximum, maximum / minimum
 
 

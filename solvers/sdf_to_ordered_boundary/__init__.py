@@ -5,7 +5,7 @@ It is intentionally not imported by any active forward, adjoint, or inverse
 solver pipeline.
 """
 
-from .arclength import ArcLengthConfig, reparameterize_by_arclength
+from .arclength import ArcLengthConfig, ArcLengthGeometryError, reparameterize_by_arclength
 from .artifacts import (
     plot_boundary_diagnostics,
     plot_run_record,
@@ -35,6 +35,7 @@ from .fields import (
 from .frontend import (
     BoundaryTouchingContourError,
     ComponentCountError,
+    ComponentLimitError,
     ContourExtractionError,
     FrontendComponent,
     FrontendConfig,
@@ -84,6 +85,7 @@ from .results import (
 __all__ = [
     "ArcLengthConfig",
     "ArcLengthDiagnostics",
+    "ArcLengthGeometryError",
     "ArcLengthReparameterizationResult",
     "BoundaryMethodResult",
     "BoundaryMetricConfig",
@@ -92,6 +94,7 @@ __all__ = [
     "CallableImplicitField2D",
     "CircleSDF",
     "ComponentCountError",
+    "ComponentLimitError",
     "ComparisonExperimentResult",
     "ComparisonProfile",
     "ComparisonShape",

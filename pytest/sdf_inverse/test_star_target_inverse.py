@@ -29,13 +29,18 @@ from sdf_inverse.forward import (
     predict_paired_response,
 )
 from sdf_inverse.geometry import OrderedSDFGeometryConfig, build_ordered_sdf_geometry
-from sdf_inverse.models import StarLevelSet2D, build_star_parameter_controller
+from sdf_inverse.models import (
+    StarLevelSet2D,
+    build_siren_parameter_controller,
+    build_star_parameter_controller,
+)
 from sdf_inverse.nystrom_oracle import (
     nystrom_paired_response,
     nystrom_self_convergence,
 )
 from sdf_inverse.optimization import (
     ComplexScatteredData,
+    ParameterFDConfig,
     run_parameter_fd_inverse,
 )
 from sdf_inverse.targets import StarShape
@@ -47,6 +52,7 @@ from run_sdf_inverse_comparison import (
     CircleTarget,
     StarTarget,
     _build_initial_model,
+    _contour_shape_summary,
     _build_target,
     _inverse_config_for_controller,
     _parse_args,
@@ -456,6 +462,7 @@ def test_driver_targets_expose_consistent_defaults_and_gates() -> None:
         "final_amplitude_error",
         "final_rotation_error_radians",
     }
+    polyline = star.exact_boundary_polyline(256)
     errors = star.shape_errors(
         {
             "center_x": TARGET_CENTER[0],
@@ -463,12 +470,19 @@ def test_driver_targets_expose_consistent_defaults_and_gates() -> None:
             "radius": TARGET_MEAN_RADIUS,
             "amplitude": TARGET_AMPLITUDE,
             "rotation_radians": 0.0,
-        }
+        },
+        polyline,
     )
     assert set(errors) == gate_names
     assert max(errors.values()) == 0.0
 
-    polyline = star.exact_boundary_polyline(256)
+    # The same four numbers must also be recoverable from a contour alone,
+    # which is the only route open to a field with no shape parameters.
+    fitted = star.shape_errors({}, polyline)
+    assert set(fitted) == gate_names
+    assert max(fitted.values()) < 1.0e-6
+    assert star.shape_measurement_source({}) == "contour"
+
     assert polyline.shape == (256, 2)
     assert np.max(star.boundary_distances(polyline)) < 1.0e-12
 
@@ -505,3 +519,92 @@ def test_driver_arguments_follow_the_selected_target(tmp_path) -> None:
     # A star needs more nodes than a circle to sample its bandwidth-48 fit.
     with pytest.raises(SystemExit):
         _parse_args(["--target", "star", "--num-nodes", "64"])
+
+
+def test_infeasible_trials_are_rejected_only_when_the_policy_says_so(
+    star_problem: PairedForwardProblem,
+    star_observations: np.ndarray,
+    coarse_geometry_config: OrderedSDFGeometryConfig,
+    monkeypatch,
+) -> None:
+    """A neural field's zero set can split; a bounded parametric one cannot.
+
+    The default policy must keep propagating the geometry error, because for
+    the parametric models a lost contour means the bounds were chosen wrongly
+    and should not be silently absorbed.
+    """
+
+    from sdf_inverse import forward as forward_module
+    from sdf_inverse.geometry import OrderedSDFGeometryError
+    from sdf_inverse.optimization import _ObjectiveEvaluator
+
+    assert ParameterFDConfig().infeasible_trial_policy == "error"
+    assert ParameterFDConfig(
+        infeasible_trial_policy="reject"
+    ).infeasible_trial_policy == "reject"
+    with pytest.raises(ValueError, match="infeasible_trial_policy"):
+        ParameterFDConfig(infeasible_trial_policy="ignore")
+
+    def explode(*_args, **_kwargs):
+        raise OrderedSDFGeometryError("no admissible single zero contour")
+
+    monkeypatch.setattr(forward_module, "predict_paired_response", explode)
+    model, controller = _build_initial_model("star")
+    data = ComplexScatteredData(star_problem, star_observations)
+    parameters = controller.parameter_vector()
+
+    strict = _ObjectiveEvaluator(
+        model, controller, data, coarse_geometry_config, "kress"
+    )
+    with pytest.raises(OrderedSDFGeometryError):
+        strict.evaluate(parameters)
+
+    lenient = _ObjectiveEvaluator(
+        model,
+        controller,
+        data,
+        coarse_geometry_config,
+        "kress",
+        infeasible_trial_policy="reject",
+    )
+    evaluation = lenient.evaluate(parameters)
+    assert evaluation.feasible is False
+    assert evaluation.loss == float("inf")
+    assert evaluation.forward_result is None
+    assert lenient.infeasible_trial_count == 1
+    # An infinite objective can never beat an accepted one, so the ordinary
+    # line search rejects it without any special case.
+    assert not evaluation.loss < 1.0
+
+
+def test_neural_initialization_is_deterministic_and_topology_valid(
+    coarse_geometry_config: OrderedSDFGeometryConfig,
+) -> None:
+    """The warm start is a precondition, so it must be reproducible."""
+
+    first, first_controller = _build_initial_model("siren_circle")
+    second, _ = _build_initial_model("siren_circle")
+    np.testing.assert_array_equal(
+        first_controller.parameter_vector(),
+        build_siren_parameter_controller(second).parameter_vector(),
+    )
+    assert first.claims_signed_distance is False
+    assert first_controller.num_parameters == first.num_network_parameters
+
+    report = first.initialization_metadata()["pretraining"]
+    assert report["final_data_rms_m"] < 1.0e-2
+    assert report["final_data_rms_m"] < 0.1 * report["initial_data_rms_m"]
+
+    build = build_ordered_sdf_geometry(first, coarse_geometry_config)
+    points = np.asarray(build.curve.points)
+    # The Eikonal penalty is the only reason this field is distance-like.
+    probes = torch.tensor(points, dtype=torch.float64).requires_grad_(True)
+    gradients = torch.autograd.grad(first(probes).sum(), probes)[0]
+    norms = np.linalg.norm(gradients.detach().numpy(), axis=1)
+    assert np.max(np.abs(norms - 1.0)) < 0.25
+
+    # A neural field has no shape controls, so its geometry must be readable
+    # from the contour instead.
+    summary = _contour_shape_summary(points)
+    assert math.hypot(summary["center_x"] - 0.48, summary["center_y"] - 0.52) < 5.0e-3
+    assert abs(summary["radius"] - 0.065) < 5.0e-3

@@ -1,6 +1,6 @@
 # Current architecture
 
-> **Status: living source of truth.** Last reconciled 2026-09-02. Update this
+> **Status: living source of truth.** Last reconciled 2026-09-06. Update this
 > document whenever a live pipeline, default, solver role, or known limitation
 > changes.
 
@@ -18,6 +18,38 @@ operators on a compressed point cloud. The ordered path extracts and projects
 one zero contour, fits a smooth periodic curve, and applies the coherent
 Kress/Nyström Müller discretization to that curve.
 
+The 2026-09-05 inverse audit enforces the negative-inside material convention
+at the single- and multi-component geometry seams, validates an omitted MLP
+representation in strict mode when a canonical initial curve is supplied, and checks radial
+curve sampling against its own Cartesian bandwidth. Parameter-FD stopping
+does not treat missing derivatives or arbitrarily small rejected proposals
+as convergence. New MLP artifacts include a complete physical experiment
+snapshot. See the [dated review](inverse_pipeline_review_2026-09-05.md) for
+evidence, repairs, and proposed design work.
+
+The subsequent [A/B/C first batch](sdf_kress_first_batch_2026-09-05.md) adds
+explicit `curve_only` and final `export_only` distillation policies while
+retaining `legacy_strict` as the default. Reconstruction status and requested
+SDF delivery are separate; absent representation audits are null. Canonical
+validation remains mandatory. Smooth continuous-curve distance targets and
+ordered-label Cartesian Fourier fitting are opt-in; historical polygon targets
+and Method B are unchanged. The new parameterization study includes physical
+field comparisons, unlike the original isolated A/B/C geometry study.
+
+The [2026-09-06 follow-up](sdf_kress_followup_2026-09-06.md) adds an explicit-import
+single-interface Kress geometry/material JVP and paired-objective adjoint, plus
+an opt-in continuous-query distance/tangency fitting experiment. Separate
+drivers test frozen neural-feature metrics on the explicit radial chart and
+one unknown interior permittivity, with fixed geometry or joint radial-K2
+shape. They do not change production inverse defaults, Method-B fallback, or
+supported topology; multiple independent materials remain outside these tests.
+
+The subsequent [material robustness branch](material_robustness_2026-09-06.md)
+adds training-only continuation and bounded deterministic restarts to the
+same explicit K2 chart, not a new representation or physical model. Its
+common full-band selection, global work caps and separate stationarity/
+recovery reports remain opt-in.
+
 This page owns present-tense behavior. The
 [validation change log](validation_change_log.md) owns chronology, the
 [QBX closure](qbx_closure.md) owns that decision, and the
@@ -31,7 +63,7 @@ The implemented low-dimensional MOD/Kress inverse is specified in
 |---|---|---|
 | `solvers/gpr_bem_ref/` | Frozen original and regression control | `--solver=ref`; also the default |
 | `solvers/gpr_bem_mod/` | Operational compressed-cloud forward, neural adjoint, and legacy inverse baseline; also a peer forward in `sdf_inverse` | `--solver=mod` or direct import |
-| `solvers/gpr_bem_kress/` | Ordered `PeriodicCurve2D` Kress/Müller forward solver; used by the parameter-FD inverse but has no adjoint | Direct import only |
+| `solvers/gpr_bem_kress/` | Ordered Kress/Müller forward solver; opt-in single-interface discrete JVP/objective adjoint; existing inverses still use parameter FD | Direct import only |
 | `solvers/sdf_inverse/` | Common ordered geometry, paired MOD/Kress dispatch, and bounded low-dimensional numerical inverse | No selector; explicit `solver=` argument |
 | `solvers/gpr_bem_kdiff/` | Frozen compressed-cloud forward experiment and retained `TAssembler` seam | Not selectable |
 | `solvers/gpr_bem_qbx/` | Archived full-row QBX `T` diagnostics invoked through kdiff | Not selectable |
@@ -167,18 +199,23 @@ C = [D, -S],                    u_sc = C q.
 
 `KressTMzForwardResult` retains the actual system `A`, right-hand side, solved
 state, receiver operator, traces, and full `(source, receiver)` field arrays.
-That ownership leaves a clean future discrete-adjoint seam,
+That ownership supports the opt-in `shape_derivative` discrete-adjoint seam,
 `A^H lambda = C^H Psi`, without reconstructing either transpose by hand. For
 the paired ACC observation, `y=P(Cq+u_inc)`: the reverse map must first scatter
 the paired dual with `Psi=P^H psi` onto the diagonal of the full source/receiver
-array. Passing a pair vector directly to `C^H` has the wrong RHS semantics. No
-Kress shape derivative or adjoint is implemented yet. A future shape path
-must differentiate the actual weighted blocks—including points, normals,
-speed, source Jacobian, and diagonal split—and return an explicitly unweighted
-normal shape-gradient density so `ds` is applied exactly once by the separate
-SDF coupling layer. It also needs a coupled fixed-grid curve-direction type;
-perturbing positions while freezing derivative jets, normals, speed, or weights
-is not a legal geometry finite difference.
+array (or arbitrary selected entries); repeated selections accumulate.
+Passing a pair vector directly to `C^H` has the wrong RHS semantics.
+`linearize_kress_forward` differentiates the actual weighted blocks, source
+traces, receiver map and incident contribution. `KressDirection` supplies
+coherent native-grid position/derivative jets and optional material or source
+strength directions. Normals, speed, arc factors and diagonal splits move
+consistently; topology, period, acquisition and kernel branch stay fixed.
+`build_paired_objective_adjoint` returns a fixed real-stacked weighted data
+objective whose directional contraction is a real scalar, not an arbitrary
+normal shape-gradient density. Converting coefficient covectors into a
+normal function requires an explicit basis and mass matrix; no extra `ds`
+belongs on the covector. The dated follow-up separates fixed-node derivative
+correctness from independent-oracle and physical-refinement evidence.
 
 ## Current inverse pipelines
 
@@ -220,10 +257,9 @@ both available; otherwise it uses NumPy. The canonical driver no longer passes
 the unsupported `min_boundary_samples` keyword, and its smoke test uses two
 frequencies so trapezoidal frequency integration does not erase the objective.
 
-This adjoint remains MOD-only. The presence of `C=[D,-S]` in
-`gpr_bem_kress` is a forward data-ownership contract for later work, not an
-adjoint implementation and not permission to select Kress in this legacy
-driver.
+This legacy B-scan adjoint remains MOD-only. The new fixed-grid Kress
+frequency-domain objective adjoint is a separate direct-import experiment,
+not permission to select Kress in this legacy driver.
 
 ### Solver-neutral ordered-curve parameter inverse
 
@@ -277,10 +313,124 @@ Default output paths carry a UTC timestamp; an explicit nonempty path requires
 convergence is an acceptance gate. The contract, measured results, and
 limitations are in [`solver_neutral_inverse.md`](solver_neutral_inverse.md).
 
+The default strict experimental full-network path is
+[`run_mlp_sdf_inverse_comparison.py`](../run_mlp_sdf_inverse_comparison.py).
+Its accepted geometry is a validated `PeriodicCurve2D`; a geometrically
+initialized residual MLP is the trainable signed-distance representation of
+that contour, not a second geometry state. This established comparison path
+still takes black-box derivatives in a handful of radial Fourier
+coordinates rather than thousands of network weights. Finite-difference
+probes update and solve that authoritative star-shaped curve directly, without
+SDF extraction or repeated curve refitting. The basis size uses
+the smaller of the training-band `ceil(ka + ka**(1/3))` estimate and the paired
+scan's angular Nyquist limit. The default is cumulative low-to-high frequency
+continuation; `--joint-full-band` and progressive-mode continuation are
+explicit ablations.
+
+The modal step uses a damping floor, a `k**4` curvature prior, log-refined
+trust-region damping, and Armijo acceptance. Once a radial-state candidate has
+sufficient data decrease, the identical curve receives dense continuous
+validation. The probe BEM response remains its acceptance response because
+cheap and full validation generate bit-identical nodes. All MLP weights are
+then trained against its signed polygon distance plus zero/offset anchors and
+Eikonal loss.
+The MLP zero set is extracted once to audit topology and contour drift, but it
+neither replaces the canonical curve nor triggers another BEM solve.
+All inverse forward attempts are counted, every successful trial contributes
+to the reported worst linear-system residual, and BEM, curve-update,
+re-distancing, and selected-candidate audit timings are reported separately.
+Full-validation rejection, failed MLP fitting, representation extraction
+failure, and representation-drift rejection counters are separated rather
+than being folded into the infeasible-forward count. The representation drift
+limit is a `1.5 mm` acceptance safety cap; the independent `0.2 mm`
+geometry-convergence tolerance remains part of the convergence claim.
+Trajectory CSV and live progress also expose accepted backtracks, raw versus
+accepted predicted decrease, arc-refit RMS/maximum displacement, and speed
+ratio before/after refitting so parameterization collapse is observable online.
+The line search evaluates the configured number of reductions in addition to
+the un-backtracked trial. The new default of six reductions reaches `1/64`;
+the former five-reduction limit omitted the sixth reduction that the
+progressive-mode diagnostic showed was necessary to pass dense validation. A
+full accepted step earns lower damping, but a backtracked accept retains the
+damping that generated its direction instead of forcing the next iteration to
+reject and rebuild it. If the direct canonical step is stationary, repeated
+dense-validation failures stop as `geometry_limited_stationary`; without such
+failures, an unmet MLP audit stops as `representation_limited_stationary`.
+Neither diagnosis claims convergence or spends the remaining outer budget.
+This gives MOD and Kress the same curve/representation coupling without using
+the separate experimental Kress adjoint. The first canonical Kress diagnostic reduced
+inverse time from `948.326 s` to `288.945 s`, but its low-frequency-first
+schedule overshrank the mean radius. The following full-band progressive-mode
+run also did not converge: after 74 accepts its training relative L2 was
+`0.957988`, holdout had worsened to `1.075114`, and maximum boundary error had
+worsened to `48.442 mm`. The faithful MLP audit (`0.243 mm` drift and
+`0.002329` relative response discrepancy, with no MLP rejection) isolates the
+failure from neural representation drift. Progressive mode staging was not
+the only defect. The subsequent joint full-band `k<=6` diagnostic accepted 14
+updates, reduced loss `1.423242 -> 0.542048`, and improved train/holdout
+relative L2 `1.192384 -> 0.738845` / `1.053290 -> 0.935345`, but still stopped
+nonconverged as `representation_limited_stationary` while maximum boundary
+error changed only `42.031 -> 35.114 mm`. The final `k=5` vector was
+`(-0.420, -4.817) mm` instead of `(12.500, 0) mm`. Its
+minimum/mean parameter speed collapsed from about `1` to `0.003`, maximum
+absolute curvature reached about `3.03e6 1/m`, and 83 dense validations
+failed. Selected-update remeshing repaired that parameterization failure, but
+the later identifiable `k<=5`, 24-pair joint run still did not converge: 56
+accepted updates changed training/holdout relative L2
+`1.19325 -> 0.79976` / `1.13855 -> 1.07342`, while maximum boundary error
+worsened `42.22 -> 46.92 mm`. All 56 MLP fits and audits succeeded. Instead,
+the canonical curve ceased to be star-shaped and its radial tail above `k=5`
+grew from `0.723` to `6.258 mm` RMS. A local normal velocity therefore was
+not a global band-limited shape state. Independent direction probes also show
+the joint full-band initial step is target-misaligned, while 0.5 GHz/K3 is
+strongly aligned. The current radial-Fourier state and corrected
+K3/K5/K5 cumulative-frequency default address both defects. The completed
+post-fix bundle recovered the canonical target to `2.57e-10 m` maximum
+analytic boundary error, with train/holdout relative L2
+`1.07e-8` / `1.34e-8` and roundoff-only tail above K5. The result remains
+formally `representation_limited_stationary` because its extracted MLP contour
+is `0.329 mm` from the canonical curve, above the separate `0.2 mm`
+representation convergence gate.
+
 [`run_sdf_inverse_contour_video.py`](../run_sdf_inverse_contour_video.py) is
 read-only post-processing over a finished bundle: it animates both solvers'
-stored accepted contours side by side against the exact target. It imports no
-solver and recomputes no physics.
+stored contour trajectories, including labelled continuation-stage baselines,
+side by side against the exact target. It imports no solver and recomputes no
+physics.
+
+### Separate bounded derivative-based inverse experiments
+
+`run_neural_metric_comparison.py` uses the verified Kress objective adjoint
+with an authoritative K5 radial curve. Identity, one Sobolev smoother and
+three frozen initial neural-feature metrics share the same geometry, data,
+normal-step cap and accepted-objective policy. The zero-head geometric MLP
+initialization activates only 65/5,441 parameter derivatives, and there is no
+training or neural zero-set extraction during reconstruction. This is not an
+end-to-end neural inverse or evidence that true distance values are needed.
+
+`run_material_inverse_comparison.py` uses Kress JVP residual Jacobians to fit
+one positive lossless interior `epsr`, either on a fixed circle or jointly
+with five radial-K2 geometric controls. Observations, source calibration,
+exterior material and weighting are frozen; a candidate rebuilds its interior
+material and complete forward system. Explicit bounds, noise/held-out-angle
+tests and local scaled-Jacobian diagnostics distinguish numerical stopping
+from physical recovery. Its fixed-count single-interface material state is
+not a per-component multi-material model. Both modules require explicit
+imports; neither replaces the baseline MOD/Kress inverse implementation.
+See the [dated follow-up](sdf_kress_followup_2026-09-06.md) for bounded evidence
+and failed outcomes rather than inferring general convergence from this API.
+
+`sdf_inverse.robust_material_inverse` orchestrates that same material model
+with `full_band`, `continuation`, or `multistart` policies. The latter screens
+bound-derived starts while retaining both available material-contrast signs
+about the known background. Only full-band training evaluations can supply
+the returned candidate; low-band scores, target geometry and held-out data
+cannot select it. Global attempt caps include screening, failed work and
+selected-state derivative auditing. Search completion, stationarity and
+physical recovery have distinct meanings. The separate
+`run_material_robustness_comparison.py` freezes every training selection
+before post-selection geometry/holdout qualification; it does not promote
+these policies to a production default.
 
 ## Same-scene forward comparison
 
@@ -418,7 +568,12 @@ Method-B convergence/runtime evidence is indexed at
   parameter finite differences. It is capped at small parameter counts and is
   not practical for a full random SIREN. The checked neural case uses fixed
   seeded features and a bounded radial envelope; an unconstrained random field
-  may fail the required one-component topology before any solve starts.
+  may fail the required one-component topology before any solve starts. The
+  newer alternating MLP path avoids weight-wise differences by using a small
+  gauge-fixed radial-Fourier data step and geometry-anchored neural
+  re-distancing. Its fixed
+  wrong-circle skip is an initialization contract, and its topology checks are
+  finite-resolution diagnostics rather than a global proof.
 - Existing gprMax caches cover only pair index 0, not the full 24-pair scan.
 - QBX/kdiff are closed only for the compressed-cloud architecture; this is not
   a mathematical rejection of QBX on high-order panelized geometry.
@@ -448,11 +603,14 @@ The continuous/sampled geometry contract, exact analytic/Fourier producers,
 and ordered extraction plus A/B/C fitting from SDF contours exist. The
 direct-import sibling solver assembles coherent all-block Kress differences,
 solves the unsquared Müller system, and evaluates separated receivers from
-`PeriodicCurve2D` through explicit `C=[D,-S]` rows. Exact/noncircular,
-same-SDF receiver, and three implicit-initialization inverse cases now exercise
-this path.
-It remains outside the selector and has no operator adjoint, shape derivative,
-multicomponent support, or scalable neural inverse.
+`PeriodicCurve2D` through explicit `C=[D,-S]` rows. Its additive
+`gpr_bem_kress.multicomponent` path accepts an `OrderedBoundary2D`, discovers
+the component arity at runtime, and assembles the smooth cross-component
+blocks. Exact/noncircular, same-SDF receiver, independent multi-cylinder, and
+three implicit-initialization inverse cases exercise these paths. The sibling
+solver remains outside the selector. The opt-in derivative/objective-adjoint
+module covers one fixed interface only; multi-interface derivatives and a
+scalable topology-changing neural inverse are not implemented.
 
 ## Canonical commands
 
@@ -504,6 +662,7 @@ PYTHONPATH=solvers python -m pytest -q \
 | Legacy MOD neural adjoint/inverse | `solvers/gpr_bem_mod/ibim_tmz_adjoint.py`, `ibim_inverse.py` |
 | Solver-neutral parameter inverse | `solvers/sdf_inverse/`, [`solver_neutral_inverse.md`](solver_neutral_inverse.md), `run_sdf_inverse_comparison.py`, `run_sdf_inverse_contour_video.py` |
 | Current shape calculus | [`ibim_shape_derivative.md`](ibim_shape_derivative.md) |
+| Experimental discrete Kress calculus and bounded inverses | `solvers/gpr_bem_kress/shape_derivative.py`, [`sdf_kress_followup_2026-09-06.md`](sdf_kress_followup_2026-09-06.md) |
 | Precision oracle | [`nystrom_reference_study.md`](nystrom_reference_study.md) |
 | Independent FDTD check | [`gprmax_reference_study.md`](gprmax_reference_study.md) |
 | SDF-to-ordered-boundary geometry evidence | [`sdf_boundary_parameterization_implementation.md`](sdf_boundary_parameterization_implementation.md), `results/sdf_boundary_parameterization/` |

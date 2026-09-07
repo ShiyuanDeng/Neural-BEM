@@ -58,19 +58,23 @@ from sdf_inverse import (  # noqa: E402
     PairedForwardProblem,
     ParameterFDConfig,
     RadialRandomFeatureImplicit2D,
+    SirenImplicitField2D,
     StarLevelSet2D,
     StarShape,
     build_circle_parameter_controller,
     build_ellipse_parameter_controller,
     build_radial_random_feature_parameter_controller,
+    build_siren_parameter_controller,
     build_star_parameter_controller,
+    first_order_distance_supervisor,
     normalized_complex_residual,
+    pretrain_implicit_field,
     nystrom_paired_response,
     nystrom_self_convergence,
     predict_paired_response,
     run_parameter_fd_inverse,
 )
-from sdf_inverse.geometry import Bounds2D  # noqa: E402
+from sdf_inverse.geometry import Bounds2D, build_ordered_sdf_geometry  # noqa: E402
 
 
 DEFAULT_INITIAL_CENTER = (0.48, 0.52)
@@ -80,7 +84,15 @@ DEFAULT_HOLDOUT_FREQUENCIES_GHZ = (1.0, 1.5, 2.5)
 DEFAULT_SOLVERS = ("mod", "kress")
 DEFAULT_TARGET = "circle"
 TARGET_CHOICES = ("circle", "star")
-INITIAL_MODEL_CHOICES = ("circle", "ellipse", "random_features", "star")
+INITIAL_MODEL_CHOICES = (
+    "circle",
+    "ellipse",
+    "random_features",
+    "star",
+    "siren_circle",
+    "siren_ellipse",
+    "siren_star",
+)
 DEFAULT_CENTER_BOUNDS = ((0.40, 0.60), (0.40, 0.60))
 DEFAULT_RADIUS_BOUNDS = (0.025, 0.090)
 DEFAULT_GEOMETRY_BOUNDS = ((0.30, 0.30), (0.70, 0.70))
@@ -104,6 +116,22 @@ DEFAULT_STAR_ROTATION_BOUNDS = (-0.60, 0.60)
 DEFAULT_STAR_TRAIN_FREQUENCIES_GHZ = (0.50, 1.50)
 DEFAULT_STAR_HOLDOUT_FREQUENCIES_GHZ = (0.25, 1.0, 2.5)
 DEFAULT_STAR_ORACLE_NODES = 512
+
+# Neural initializations.  The network is the repository's SIREN, warm started
+# onto the same wrong analytic shapes the parametric cases start from.  Its
+# width is bounded by the inverse, not by the architecture: parameter finite
+# differences cost 2 N + 1 forward solves per Jacobian, so 129 weights already
+# means 259 solves per iteration.  A 128-wide SIREN has 33,537.
+DEFAULT_SIREN_HIDDEN_FEATURES = 32
+DEFAULT_SIREN_HIDDEN_LAYERS = 0
+# SIREN's omega_0 assumes inputs in [-1, 1]; 30 is tuned for wide networks and
+# leaves a small one unable to fit a smooth cone at all.
+DEFAULT_SIREN_OMEGA_0 = 10.0
+DEFAULT_SIREN_SEED = 0
+DEFAULT_SIREN_PRETRAIN_STEPS = 6000
+DEFAULT_SIREN_EIKONAL_WEIGHT = 0.1
+DEFAULT_SIREN_WEIGHT_BOUND = 5.0
+SIREN_INITIAL_MODELS = ("siren_circle", "siren_ellipse", "siren_star")
 GENERATED_ARTIFACT_NAMES = (
     "metrics.json",
     "summary.md",
@@ -170,13 +198,37 @@ class InverseTarget:
     def exact_boundary_polyline(self, num_samples: int = 1024) -> np.ndarray:
         raise NotImplementedError
 
-    def shape_errors(self, physical_parameters: Mapping[str, float]) -> dict[str, float]:
+    def shape_errors(
+        self,
+        physical_parameters: Mapping[str, float],
+        curve_points: np.ndarray,
+    ) -> dict[str, float]:
         raise NotImplementedError
 
     def shape_error_gates(self) -> tuple[tuple[str, float, str], ...]:
         """Return ``(metric_key, threshold, requirement)`` gate specifications."""
 
         raise NotImplementedError
+
+    @staticmethod
+    def shape_measurement_source(physical_parameters: Mapping[str, float]) -> str:
+        """Whether shape quantities come from controls or from the contour.
+
+        A parametric field carries its own center and size; a neural field
+        does not, so its shape is measured from the extracted zero set.
+        """
+
+        has_geometry = "center_x" in physical_parameters and "radius" in physical_parameters
+        return "parameters" if has_geometry else "contour"
+
+    def measured_shape(
+        self,
+        physical_parameters: Mapping[str, float],
+        curve_points: np.ndarray,
+    ) -> dict[str, float]:
+        if self.shape_measurement_source(physical_parameters) == "parameters":
+            return {str(k): float(v) for k, v in physical_parameters.items()}
+        return _contour_shape_summary(curve_points)
 
     def geometry_config(self, num_nodes: int) -> OrderedSDFGeometryConfig:
         return OrderedSDFGeometryConfig(
@@ -202,7 +254,13 @@ class CircleTarget(InverseTarget):
 
     name = "circle"
     truth_oracle = "gpr_bem_ref analytic penetrable-cylinder Mie series"
-    initial_model_choices = ("circle", "ellipse", "random_features")
+    initial_model_choices = (
+        "circle",
+        "ellipse",
+        "random_features",
+        "siren_circle",
+        "siren_ellipse",
+    )
     default_initial_model = "circle"
     default_train_ghz = DEFAULT_TRAIN_FREQUENCIES_GHZ
     default_holdout_ghz = DEFAULT_HOLDOUT_FREQUENCIES_GHZ
@@ -295,14 +353,19 @@ class CircleTarget(InverseTarget):
             )
         )
 
-    def shape_errors(self, physical_parameters: Mapping[str, float]) -> dict[str, float]:
+    def shape_errors(
+        self,
+        physical_parameters: Mapping[str, float],
+        curve_points: np.ndarray,
+    ) -> dict[str, float]:
+        measured = self.measured_shape(physical_parameters, curve_points)
         return {
             "final_center_error_m": math.hypot(
-                physical_parameters["center_x"] - self.center[0],
-                physical_parameters["center_y"] - self.center[1],
+                measured["center_x"] - self.center[0],
+                measured["center_y"] - self.center[1],
             ),
             "final_radius_error_m": abs(
-                physical_parameters["radius"] - self.reference_radius
+                measured["radius"] - self.reference_radius
             ),
         }
 
@@ -326,7 +389,7 @@ class StarTarget(InverseTarget):
 
     name = "star"
     truth_oracle = "nystrom_ref independent Nystrom/Muller solution of the exact star"
-    initial_model_choices = ("star",)
+    initial_model_choices = ("star", "siren_star")
     default_initial_model = "star"
     # The lobe amplitude and phase are nearly invisible below about 1 GHz for a
     # 0.05 m star in sand, so the training band is chosen where they are
@@ -403,21 +466,39 @@ class StarTarget(InverseTarget):
     def exact_boundary_polyline(self, num_samples: int = 1024) -> np.ndarray:
         return self.shape.sample_boundary(num_samples)
 
-    def shape_errors(self, physical_parameters: Mapping[str, float]) -> dict[str, float]:
+    def measured_shape(
+        self,
+        physical_parameters: Mapping[str, float],
+        curve_points: np.ndarray,
+    ) -> dict[str, float]:
+        if self.shape_measurement_source(physical_parameters) == "parameters":
+            return {str(k): float(v) for k, v in physical_parameters.items()}
+        return _fit_radial_star_parameters(curve_points, lobes=self.shape.lobes)
+
+    def shape_errors(
+        self,
+        physical_parameters: Mapping[str, float],
+        curve_points: np.ndarray,
+    ) -> dict[str, float]:
+        measured = self.measured_shape(physical_parameters, curve_points)
+        rotation_error = abs(
+            measured["rotation_radians"] - self.shape.rotation_radians
+        )
+        # A fitted phase is only defined modulo the star's own symmetry.
+        period = self.shape.symmetry_period_radians
+        rotation_error = min(rotation_error % period, period - rotation_error % period)
         return {
             "final_center_error_m": math.hypot(
-                physical_parameters["center_x"] - self.center[0],
-                physical_parameters["center_y"] - self.center[1],
+                measured["center_x"] - self.center[0],
+                measured["center_y"] - self.center[1],
             ),
             "final_radius_error_m": abs(
-                physical_parameters["radius"] - self.shape.mean_radius
+                measured["radius"] - self.shape.mean_radius
             ),
             "final_amplitude_error": abs(
-                physical_parameters["amplitude"] - self.shape.amplitude
+                measured["amplitude"] - self.shape.amplitude
             ),
-            "final_rotation_error_radians": abs(
-                physical_parameters["rotation_radians"] - self.shape.rotation_radians
-            ),
+            "final_rotation_error_radians": rotation_error,
         }
 
     def shape_error_gates(self) -> tuple[tuple[str, float, str], ...]:
@@ -560,6 +641,132 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     return args
 
 
+def _analytic_shape_for_siren(kind: str) -> torch.nn.Module:
+    """Return the analytic field a neural initialization is warm started onto.
+
+    Each neural case imitates exactly the wrong shape its parametric sibling
+    starts from, so the two differ only in representation.
+    """
+
+    if kind == "siren_circle":
+        return CircleSDF2D(
+            center=DEFAULT_INITIAL_CENTER,
+            radius=DEFAULT_INITIAL_RADIUS,
+            dtype=torch.float64,
+            device="cpu",
+        )
+    if kind == "siren_ellipse":
+        return EllipseLevelSet2D(
+            center=DEFAULT_INITIAL_CENTER,
+            semi_axes=(0.072, 0.038),
+            rotation_radians=0.4,
+            dtype=torch.float64,
+            device="cpu",
+        )
+    if kind == "siren_star":
+        return StarLevelSet2D(
+            center=DEFAULT_STAR_INITIAL_CENTER,
+            mean_radius=DEFAULT_STAR_INITIAL_MEAN_RADIUS,
+            amplitude=DEFAULT_STAR_INITIAL_AMPLITUDE,
+            lobes=int(star_config.TARGET_STAR_LOBES),
+            rotation_radians=DEFAULT_STAR_INITIAL_ROTATION,
+            dtype=torch.float64,
+            device="cpu",
+        )
+    raise ValueError(f"Unsupported neural initialization: {kind!r}.")
+
+
+def _build_siren_field(
+    target_field: torch.nn.Module,
+    *,
+    random_seed: int = DEFAULT_SIREN_SEED,
+) -> SirenImplicitField2D:
+    """Warm start one SIREN onto an analytic field's zero set."""
+
+    box = np.asarray(DEFAULT_GEOMETRY_BOUNDS, dtype=np.float64)
+    model = SirenImplicitField2D(
+        bounds=DEFAULT_GEOMETRY_BOUNDS,
+        hidden_features=DEFAULT_SIREN_HIDDEN_FEATURES,
+        hidden_layers=DEFAULT_SIREN_HIDDEN_LAYERS,
+        omega_0=DEFAULT_SIREN_OMEGA_0,
+        random_seed=random_seed,
+        dtype=torch.float64,
+        device="cpu",
+    )
+    report = pretrain_implicit_field(
+        model,
+        first_order_distance_supervisor(
+            target_field,
+            maximum_distance=float(np.linalg.norm(box[1] - box[0])),
+        ),
+        bounds=DEFAULT_GEOMETRY_BOUNDS,
+        steps=DEFAULT_SIREN_PRETRAIN_STEPS,
+        eikonal_weight=DEFAULT_SIREN_EIKONAL_WEIGHT,
+        random_seed=random_seed,
+    )
+    model.pretraining_report = report
+    return model
+
+
+def _contour_shape_summary(points: np.ndarray) -> dict[str, float]:
+    """Center and size of a contour, for fields with no geometric parameters.
+
+    A neural field has no center or radius to read off, so these are measured
+    from the extracted zero set: the node centroid, and the mean radius about
+    it.  Both are averages over the whole contour, so a representation's local
+    wobble largely cancels rather than being reported as a placement error.
+    """
+
+    nodes = np.asarray(points, dtype=np.float64)
+    if nodes.ndim != 2 or nodes.shape[1] != 2 or nodes.shape[0] < 3:
+        raise ValueError("points must have shape (num_nodes >= 3, 2).")
+    centroid = nodes.mean(axis=0)
+    radii = np.linalg.norm(nodes - centroid[None, :], axis=1)
+    return {
+        "center_x": float(centroid[0]),
+        "center_y": float(centroid[1]),
+        "radius": float(np.mean(radii)),
+    }
+
+
+def _fit_radial_star_parameters(
+    points: np.ndarray, *, lobes: int
+) -> dict[str, float]:
+    """Least-squares star parameters of a contour, however it was represented.
+
+    Writing ``r(theta) = c0 + c1 cos(m theta) + c2 sin(m theta)`` makes the fit
+    linear, and the amplitude and rotation follow from ``c1`` and ``c2``.  This
+    measures the same four numbers for a parametric star and for a neural
+    field, so the two representations can be compared on one scale.
+    """
+
+    summary = _contour_shape_summary(points)
+    centroid = np.asarray([summary["center_x"], summary["center_y"]])
+    offsets = np.asarray(points, dtype=np.float64) - centroid[None, :]
+    radii = np.linalg.norm(offsets, axis=1)
+    angles = np.arctan2(offsets[:, 1], offsets[:, 0])
+    design = np.column_stack(
+        (
+            np.ones_like(angles),
+            np.cos(lobes * angles),
+            np.sin(lobes * angles),
+        )
+    )
+    coefficients, *_ = np.linalg.lstsq(design, radii, rcond=None)
+    mean_radius = float(coefficients[0])
+    magnitude = float(math.hypot(coefficients[1], coefficients[2]))
+    return {
+        "center_x": summary["center_x"],
+        "center_y": summary["center_y"],
+        "radius": mean_radius,
+        "mean_radius": mean_radius,
+        "amplitude": magnitude / max(mean_radius, np.finfo(np.float64).tiny),
+        "rotation_radians": float(
+            math.atan2(coefficients[2], coefficients[1]) / lobes
+        ),
+    }
+
+
 def _build_initial_model(
     kind: str,
 ) -> tuple[torch.nn.Module, Any]:
@@ -628,6 +835,12 @@ def _build_initial_model(
             rotation_bounds=DEFAULT_STAR_ROTATION_BOUNDS,
         )
         return model, controller
+    if kind in SIREN_INITIAL_MODELS:
+        model = _build_siren_field(_analytic_shape_for_siren(kind))
+        controller = build_siren_parameter_controller(
+            model, weight_bound=DEFAULT_SIREN_WEIGHT_BOUND
+        )
+        return model, controller
     raise ValueError(f"Unsupported initial model: {kind!r}.")
 
 
@@ -636,6 +849,7 @@ def _inverse_config_for_controller(
     *,
     max_iterations: int,
     loss_tolerance: float = 1.0e-12,
+    infeasible_trial_policy: str = "error",
 ) -> ParameterFDConfig:
     finite_difference_steps = []
     maximum_steps = []
@@ -646,6 +860,12 @@ def _inverse_config_for_controller(
         elif name.startswith("log_"):
             finite_difference_steps.append(4.0e-4)
             maximum_steps.append(1.0e-1)
+        elif name.startswith("network."):
+            # A single SIREN weight moves the contour by 1e-5 to 2e-4 m at this
+            # step, which stays above MOD's forward error floor; the smaller
+            # physical-control step would leave many columns as pure noise.
+            finite_difference_steps.append(1.0e-2)
+            maximum_steps.append(2.5e-1)
         else:
             finite_difference_steps.append(2.0e-3)
             maximum_steps.append(2.5e-1)
@@ -662,6 +882,7 @@ def _inverse_config_for_controller(
         loss_tolerance=loss_tolerance,
         relative_step_tolerance=1.0e-9,
         max_parameters=controller.num_parameters,
+        infeasible_trial_policy=infeasible_trial_policy,
     )
 
 
@@ -851,13 +1072,18 @@ def _write_trajectory(path: Path, result: Any) -> None:
         writer = csv.DictWriter(stream, fieldnames=fieldnames, lineterminator="\n")
         writer.writeheader()
         for iteration in result.iterations:
+            physical = iteration.physical_parameters
+            if "center_x" not in physical or "radius" not in physical:
+                # A neural field has no center or radius control; report the
+                # same columns measured from that iterate's own contour.
+                physical = _contour_shape_summary(iteration.geometry_points)
             row = {
                 "iteration": iteration.iteration,
                 "loss": iteration.loss,
                 "relative_l2_error": iteration.relative_l2_error,
-                "center_x_m": iteration.physical_parameters["center_x"],
-                "center_y_m": iteration.physical_parameters["center_y"],
-                "radius_m": iteration.physical_parameters["radius"],
+                "center_x_m": physical["center_x"],
+                "center_y_m": physical["center_y"],
+                "radius_m": physical["radius"],
                 "damping": iteration.damping,
                 "evaluation_count": iteration.evaluation_count,
                 "maximum_system_residual": iteration.maximum_system_residual,
@@ -902,19 +1128,25 @@ def _write_plot(
         inverse = record["inverse_result"]
         iterations = np.asarray([item.iteration for item in inverse.iterations])
         relative = np.asarray([item.relative_l2_error for item in inverse.iterations])
+        # A neural iterate has no center or radius control, so the plotted
+        # geometry comes from that iterate's own contour instead.
+        summaries = [
+            item.physical_parameters
+            if "center_x" in item.physical_parameters
+            else _contour_shape_summary(item.geometry_points)
+            for item in inverse.iterations
+        ]
         center_errors_mm = 1.0e3 * np.asarray(
             [
                 math.hypot(
-                    item.physical_parameters["center_x"] - target.center[0],
-                    item.physical_parameters["center_y"] - target.center[1],
+                    summary["center_x"] - target.center[0],
+                    summary["center_y"] - target.center[1],
                 )
-                for item in inverse.iterations
+                for summary in summaries
             ]
         )
         radius_errors_mm = 1.0e3 * np.abs(
-            np.asarray(
-                [item.physical_parameters["radius"] for item in inverse.iterations]
-            )
+            np.asarray([summary["radius"] for summary in summaries])
             - target.reference_radius
         )
         axes[0].semilogy(iterations, relative, marker="o", label=solver.upper())
@@ -946,7 +1178,18 @@ def _acceptance_gates(
     solver_metrics: dict[str, dict[str, Any]],
     *,
     target: InverseTarget,
+    representation_floor: dict[str, Any] | None = None,
 ) -> dict[str, dict[str, Any]]:
+    """Build the acceptance set for one run.
+
+    When ``representation_floor`` is supplied the initialization is a neural
+    field, whose accuracy is capped by what that network can represent at all.
+    Absolute shape thresholds calibrated for a three- to five-parameter
+    analytic model would then be measuring the representation rather than the
+    inverse, so the shape and accuracy gates become relative to the same
+    architecture fitted directly to the exact target.
+    """
+
     gates: dict[str, dict[str, Any]] = {}
     for solver, metrics in solver_metrics.items():
         gates[f"{solver}_optimizer_converged"] = {
@@ -964,22 +1207,53 @@ def _acceptance_gates(
             "value": metrics["training_loss_drop_factor"],
             "requirement": ">= 100",
         }
-        for metric_key, threshold, requirement in target.shape_error_gates():
-            # "final_amplitude_error" gates as "<solver>_amplitude_error".
-            gate_name = metric_key.removeprefix("final_").removesuffix("_m")
-            gate_name = gate_name.removesuffix("_radians")
-            gates[f"{solver}_{gate_name}"] = {
-                "passed": metrics[metric_key] <= threshold,
-                "value": metrics[metric_key],
-                "requirement": requirement,
+        if representation_floor is None:
+            for metric_key, threshold, requirement in target.shape_error_gates():
+                # "final_amplitude_error" gates as "<solver>_amplitude_error".
+                gate_name = metric_key.removeprefix("final_").removesuffix("_m")
+                gate_name = gate_name.removesuffix("_radians")
+                gates[f"{solver}_{gate_name}"] = {
+                    "passed": metrics[metric_key] <= threshold,
+                    "value": metrics[metric_key],
+                    "requirement": requirement,
+                }
+        else:
+            floor_boundary = float(
+                representation_floor["maximum_node_to_exact_boundary_distance_m"]
+            )
+            final_boundary = metrics["maximum_node_to_exact_boundary_distance_m"]
+            initial_boundary = metrics[
+                "initial_maximum_node_to_exact_boundary_distance_m"
+            ]
+            gates[f"{solver}_boundary_error_within_representation"] = {
+                "passed": final_boundary <= 2.0 * floor_boundary,
+                "value": {"final": final_boundary, "floor": floor_boundary},
+                "requirement": "<= 2x the same network fitted to the exact target",
             }
-        gates[f"{solver}_final_boundary_error"] = {
-            "passed": (
-                metrics["maximum_node_to_exact_boundary_distance_m"] <= 1.0e-3
-            ),
-            "value": metrics["maximum_node_to_exact_boundary_distance_m"],
-            "requirement": "<= 1e-3 m",
-        }
+            gates[f"{solver}_boundary_error_improved"] = {
+                "passed": final_boundary <= 0.25 * initial_boundary,
+                "value": {"final": final_boundary, "initial": initial_boundary},
+                "requirement": "<= 0.25x the initial contour error",
+            }
+            floor_holdout = float(
+                representation_floor["holdout_relative_l2"][solver]
+            )
+            gates[f"{solver}_holdout_within_representation"] = {
+                "passed": metrics["final_holdout_relative_l2"] <= 2.0 * floor_holdout,
+                "value": {
+                    "final": metrics["final_holdout_relative_l2"],
+                    "floor": floor_holdout,
+                },
+                "requirement": "<= 2x the same network fitted to the exact target",
+            }
+        if representation_floor is None:
+            gates[f"{solver}_final_boundary_error"] = {
+                "passed": (
+                    metrics["maximum_node_to_exact_boundary_distance_m"] <= 1.0e-3
+                ),
+                "value": metrics["maximum_node_to_exact_boundary_distance_m"],
+                "requirement": "<= 1e-3 m",
+            }
         gates[f"{solver}_linear_system_residual"] = {
             "passed": metrics["maximum_linear_system_relative_residual"] <= 1.0e-10,
             "value": metrics["maximum_linear_system_relative_residual"],
@@ -990,7 +1264,19 @@ def _acceptance_gates(
             "value": metrics["final_holdout_relative_l2"],
             "requirement": "<= 0.15",
         }
-        if not bool(metrics["initial_claims_signed_distance"]):
+        if representation_floor is not None:
+            # The Eikonal penalty is the neural case's only claim to a
+            # distance-like field, so the warm start has to deliver one.  The
+            # drift over the inverse is reported beside it, because nothing
+            # re-imposes the constraint once the weights start moving.
+            gates[f"{solver}_warm_start_is_eikonal"] = {
+                "passed": (
+                    metrics["initial_maximum_unit_gradient_deviation"] <= 2.5e-1
+                ),
+                "value": metrics["initial_maximum_unit_gradient_deviation"],
+                "requirement": "<= 0.25",
+            }
+        elif not bool(metrics["initial_claims_signed_distance"]):
             gates[f"{solver}_initial_shape_non_circular"] = {
                 "passed": metrics["initial_radial_span_m"] >= 2.0e-3,
                 "value": metrics["initial_radial_span_m"],
@@ -1003,7 +1289,7 @@ def _acceptance_gates(
                 "value": metrics["initial_maximum_unit_gradient_deviation"],
                 "requirement": ">= 5e-2",
             }
-    if "kress" in solver_metrics:
+    if "kress" in solver_metrics and representation_floor is None:
         kress_error = solver_metrics["kress"]["final_holdout_relative_l2"]
         gates["kress_holdout_accuracy"] = {
             "passed": kress_error <= target.kress_holdout_accuracy_threshold,
@@ -1235,10 +1521,51 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     geometry_config = target.geometry_config(args.num_nodes)
     template_model, template_controller = _build_initial_model(args.initial_model)
+
+    # A neural field's accuracy is capped by what that architecture can
+    # represent at all, so the same network is also warm started directly onto
+    # the exact target.  That control is the floor every neural result is read
+    # against, exactly as the exact-target boundary is for the parametric runs.
+    representation_control_model: torch.nn.Module | None = None
+    representation_floor: dict[str, Any] | None = None
+    if args.initial_model in SIREN_INITIAL_MODELS:
+        print(
+            "[control] warm starting the same network onto the exact target",
+            flush=True,
+        )
+        representation_control_model = _build_siren_field(target.exact_model())
+        control_geometry = build_ordered_sdf_geometry(
+            representation_control_model, geometry_config
+        )
+        control_distances = target.boundary_distances(
+            np.asarray(control_geometry.curve.points)
+        )
+        representation_floor = {
+            "network": representation_control_model.initialization_metadata(),
+            "mean_node_to_exact_boundary_distance_m": float(
+                np.mean(control_distances)
+            ),
+            "maximum_node_to_exact_boundary_distance_m": float(
+                np.max(control_distances)
+            ),
+            "holdout_relative_l2": {},
+            "all_frequency_relative_l2": {},
+        }
+        print(
+            "[control] the same network fitted to the exact target lands "
+            f"{representation_floor['maximum_node_to_exact_boundary_distance_m']:.3e} m "
+            "from it",
+            flush=True,
+        )
     inverse_config = _inverse_config_for_controller(
         template_controller,
         max_iterations=args.max_iterations,
         loss_tolerance=args.loss_tolerance,
+        # A neural field's zero set can split part way through an otherwise
+        # reasonable step; a parametric field's bounds are chosen so it cannot.
+        infeasible_trial_policy=(
+            "reject" if args.initial_model in SIREN_INITIAL_MODELS else "error"
+        ),
     )
     initialization_metadata_function = getattr(
         template_model, "initialization_metadata", None
@@ -1288,9 +1615,21 @@ def main(argv: Sequence[str] | None = None) -> int:
         target_geometry_forward = predict_paired_response(
             target_model, all_problem, geometry_config, solver=solver
         )
+        representation_forward = (
+            None
+            if representation_control_model is None
+            else predict_paired_response(
+                representation_control_model,
+                all_problem,
+                geometry_config,
+                solver=solver,
+            )
+        )
 
         def progress(iteration: Any, *, _solver: str = solver) -> None:
             physical = iteration.physical_parameters
+            if "center_x" not in physical or "radius" not in physical:
+                physical = _contour_shape_summary(iteration.geometry_points)
             print(
                 f"  {_solver.upper()} iter={iteration.iteration:02d} "
                 f"loss={iteration.loss:.4e} rel={iteration.relative_l2_error:.4e} "
@@ -1336,8 +1675,30 @@ def main(argv: Sequence[str] | None = None) -> int:
             target_geometry_forward.scattered_response[:, holdout_columns],
             all_truth[:, holdout_columns],
         )
+        representation_floor_metrics: dict[str, float] = {}
+        if representation_forward is not None and representation_floor is not None:
+            _, floor_all_relative = _objective_metrics(
+                representation_forward.scattered_response, all_truth
+            )
+            _, floor_holdout_relative = _objective_metrics(
+                representation_forward.scattered_response[:, holdout_columns],
+                all_truth[:, holdout_columns],
+            )
+            representation_floor["holdout_relative_l2"][solver] = floor_holdout_relative
+            representation_floor["all_frequency_relative_l2"][solver] = floor_all_relative
+            representation_floor_metrics = {
+                "representation_floor_holdout_relative_l2": floor_holdout_relative,
+                "representation_floor_all_frequency_relative_l2": floor_all_relative,
+                "representation_floor_maximum_node_to_exact_boundary_distance_m": (
+                    representation_floor[
+                        "maximum_node_to_exact_boundary_distance_m"
+                    ]
+                ),
+            }
         final_physical = controller.physical_parameter_dict()
-        shape_errors = target.shape_errors(final_physical)
+        shape_errors = target.shape_errors(
+            final_physical, final_all.geometry_build.curve.points
+        )
         losses = np.asarray([item.loss for item in inverse_result.iterations])
         initial_curve_metrics = target.curve_distance_metrics(
             initial_all.geometry_build.curve.points
@@ -1345,13 +1706,22 @@ def main(argv: Sequence[str] | None = None) -> int:
         curve_metrics = target.curve_distance_metrics(
             final_all.geometry_build.curve.points
         )
+        initial_summary = (
+            initial_physical_parameters
+            if "center_x" in initial_physical_parameters
+            else _contour_shape_summary(initial_all.geometry_build.curve.points)
+        )
         initial_center = (
-            float(initial_physical_parameters["center_x"]),
-            float(initial_physical_parameters["center_y"]),
+            float(initial_summary["center_x"]),
+            float(initial_summary["center_y"]),
         )
         initial_gradient_metrics = _field_gradient_metrics(
             model=template_model,
             points=initial_all.geometry_build.curve.points,
+        )
+        final_gradient_metrics = _field_gradient_metrics(
+            model=model,
+            points=final_all.geometry_build.curve.points,
         )
         per_frequency_initial = _per_frequency_relative_error(
             initial_all.scattered_response, all_truth
@@ -1393,6 +1763,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                 initial_all.geometry_build.maximum_normalized_curve_residual
             ),
             "final_parameters": final_physical,
+            "shape_measurement_source": target.shape_measurement_source(
+                final_physical
+            ),
             **shape_errors,
             **curve_metrics,
             "initial_training_loss": initial_train_loss,
@@ -1429,6 +1802,10 @@ def main(argv: Sequence[str] | None = None) -> int:
             "stop_reason": inverse_result.stop_reason,
             "total_forward_evaluations": inverse_result.total_evaluation_count,
             "cache_hits": inverse_result.cache_hit_count,
+            "infeasible_trials": inverse_result.infeasible_trial_count,
+            "maximum_frozen_jacobian_columns": (
+                inverse_result.maximum_frozen_jacobian_columns
+            ),
             "inverse_forward_seconds": inverse_result.total_forward_seconds,
             "inverse_wall_seconds": inverse_result.total_seconds,
             "initial_all_frequency_forward_seconds": initial_all.total_seconds,
@@ -1453,6 +1830,19 @@ def main(argv: Sequence[str] | None = None) -> int:
                 final_all.geometry_build.maximum_normalized_curve_residual
             ),
             "final_geometry_speed_ratio": final_all.geometry_build.speed_ratio,
+            **representation_floor_metrics,
+            # Nothing re-imposes the Eikonal condition during the inverse, so
+            # the drift between these two numbers is the measurement that says
+            # whether a reprojection step would be needed.
+            "final_maximum_unit_gradient_deviation": (
+                final_gradient_metrics["maximum_unit_gradient_deviation"]
+            ),
+            "final_minimum_field_gradient_norm": (
+                final_gradient_metrics["minimum_field_gradient_norm"]
+            ),
+            "final_maximum_field_gradient_norm": (
+                final_gradient_metrics["maximum_field_gradient_norm"]
+            ),
         }
         solver_results[solver] = {
             "inverse_result": inverse_result,
@@ -1480,7 +1870,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             ),
         )
 
-    gates = _acceptance_gates(serializable_solver_metrics, target=target)
+    gates = _acceptance_gates(
+        serializable_solver_metrics,
+        target=target,
+        representation_floor=representation_floor,
+    )
     if oracle_diagnostics is not None:
         gates["observation_oracle_self_convergence"] = {
             "passed": oracle_diagnostics["maximum_relative_difference"] <= 1.0e-8,
@@ -1560,6 +1954,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "target_shape": target.name,
         "target": target.parameter_dict(),
         "observation_oracle_diagnostics": oracle_diagnostics,
+        "representation_floor": representation_floor,
         "initialization": {
             **initialization_metadata,
             "physical_parameters": initial_physical_parameters,

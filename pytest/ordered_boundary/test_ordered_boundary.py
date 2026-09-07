@@ -164,6 +164,18 @@ def test_smooth_self_intersection_and_double_cover_are_rejected() -> None:
         assert not report.valid
         assert report.self_intersection_count > 0
 
+    split_grid_report = validate_periodic_parameterization(
+        PeriodicParameterization2D("double-split-grid", double_circle),
+        BoundaryValidationConfig(
+            num_samples_per_component=128,
+            fourier_bandwidth=48,
+        ),
+    )
+    assert not split_grid_report.valid
+    assert split_grid_report.num_validation_nodes == 128
+    assert split_grid_report.num_derivative_validation_nodes == 2048
+    assert split_grid_report.self_intersection_count > 0
+
 
 def test_open_curve_and_zero_speed_cusp_are_rejected() -> None:
     def open_evaluator(t: np.ndarray):

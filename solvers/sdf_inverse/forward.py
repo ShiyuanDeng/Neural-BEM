@@ -7,10 +7,12 @@ from time import perf_counter
 from typing import Any
 
 import numpy as np
+from ordered_boundary import PeriodicCurve2D, sampled_self_intersection_count
 
 from .geometry import (
     OrderedSDFGeometryBuild,
     OrderedSDFGeometryConfig,
+    OrderedSDFGeometryError,
     build_ordered_sdf_geometry,
     ordered_curve_to_mod_boundary,
 )
@@ -300,22 +302,11 @@ def _validate_solver_residual(value: Any, *, solver: str) -> float:
     return residual
 
 
-def predict_paired_response(
-    model: Any,
+def _validate_forward_request(
     problem: PairedForwardProblem,
     geometry_config: OrderedSDFGeometryConfig,
-    *,
     solver: str,
-) -> PairedForwardResult:
-    """Build one ordered geometry and predict paired responses with MOD or Kress.
-
-    ``solver`` accepts exactly the lowercase labels ``"mod"`` and ``"kress"``.
-    Geometry extraction is performed once per call.  Kress computes its native
-    full source-by-receiver matrices and this seam selects only their paired
-    diagonals; MOD already returns paired vectors.  No backend or formulation
-    fallback is attempted.
-    """
-
+) -> None:
     if not isinstance(problem, PairedForwardProblem):
         raise TypeError("problem must be a PairedForwardProblem.")
     if not isinstance(geometry_config, OrderedSDFGeometryConfig):
@@ -323,11 +314,70 @@ def predict_paired_response(
     if not isinstance(solver, str) or solver not in {"mod", "kress"}:
         raise ValueError("solver must be exactly 'mod' or 'kress'.")
 
-    total_started = perf_counter()
-    geometry_started = perf_counter()
-    geometry_build = build_ordered_sdf_geometry(model, geometry_config)
-    geometry_seconds = float(perf_counter() - geometry_started)
 
+def _curve_geometry_build(
+    curve: PeriodicCurve2D,
+    config: OrderedSDFGeometryConfig,
+) -> OrderedSDFGeometryBuild:
+    """Wrap an already-discretized curve in the legacy geometry result shape.
+
+    The three SDF residual fields are zero because this path has no implicit
+    field to project or evaluate.  They must not be interpreted as an audit of
+    an MLP.  The speed ratio and total preprocessing time remain measurements
+    of the supplied ordered curve.
+    """
+
+    if not isinstance(curve, PeriodicCurve2D):
+        raise TypeError("curve must be an ordered_boundary.PeriodicCurve2D.")
+    started = perf_counter()
+    if curve.num_nodes != config.num_nodes:
+        raise ValueError(
+            "curve.num_nodes must equal geometry_config.num_nodes; "
+            f"received {curve.num_nodes} and {config.num_nodes}."
+        )
+
+    lower = np.asarray(config.bounds[0], dtype=np.float64)
+    upper = np.asarray(config.bounds[1], dtype=np.float64)
+    if np.any(curve.points <= lower[None, :]) or np.any(
+        curve.points >= upper[None, :]
+    ):
+        raise OrderedSDFGeometryError(
+            "The ordered curve must lie strictly inside geometry_config.bounds."
+        )
+    intersections = sampled_self_intersection_count(curve.points)
+    if intersections:
+        raise OrderedSDFGeometryError(
+            "The ordered curve must be a simple component; its sampled node "
+            f"polygon has {intersections} self-intersection(s)."
+        )
+
+    minimum_speed = float(np.min(curve.speeds))
+    maximum_speed = float(np.max(curve.speeds))
+    return OrderedSDFGeometryBuild(
+        curve=curve,
+        frontend_seconds=0.0,
+        fit_seconds=0.0,
+        discretize_seconds=0.0,
+        total_seconds=float(perf_counter() - started),
+        maximum_projected_sdf_residual=0.0,
+        maximum_curve_sdf_residual=0.0,
+        maximum_normalized_curve_residual=0.0,
+        speed_ratio=maximum_speed / minimum_speed,
+        config=config,
+    )
+
+
+def _predict_paired_response_from_geometry(
+    geometry_build: OrderedSDFGeometryBuild,
+    problem: PairedForwardProblem,
+    *,
+    solver: str,
+    geometry_seconds: float,
+    total_started: float,
+) -> PairedForwardResult:
+    """Run one backend from a previously prepared ordered geometry build."""
+
+    geometry_config = geometry_build.config
     scattered_by_frequency: list[np.ndarray] = []
     total_by_frequency: list[np.ndarray] = []
     residuals: list[float] = []
@@ -441,9 +491,71 @@ def predict_paired_response(
     )
 
 
+def predict_paired_curve_response(
+    curve: PeriodicCurve2D,
+    problem: PairedForwardProblem,
+    geometry_config: OrderedSDFGeometryConfig,
+    *,
+    solver: str,
+) -> PairedForwardResult:
+    """Predict paired responses directly from one ordered periodic curve.
+
+    Unlike :func:`predict_paired_response`, this seam never evaluates an SDF,
+    runs marching squares, projects a zero set, or performs a Method-B fit.
+    It is intended for inverse iterations that already own their canonical
+    ordered boundary.  The same solver, response, residual, and timing
+    validations used by the SDF entry point remain in force.
+    """
+
+    _validate_forward_request(problem, geometry_config, solver)
+    total_started = perf_counter()
+    geometry_started = perf_counter()
+    geometry_build = _curve_geometry_build(curve, geometry_config)
+    geometry_seconds = float(perf_counter() - geometry_started)
+    return _predict_paired_response_from_geometry(
+        geometry_build,
+        problem,
+        solver=solver,
+        geometry_seconds=geometry_seconds,
+        total_started=total_started,
+    )
+
+
+def predict_paired_response(
+    model: Any,
+    problem: PairedForwardProblem,
+    geometry_config: OrderedSDFGeometryConfig,
+    *,
+    solver: str,
+) -> PairedForwardResult:
+    """Build one ordered geometry and predict paired responses with MOD or Kress.
+
+    ``solver`` accepts exactly the lowercase labels ``"mod"`` and ``"kress"``.
+    Geometry extraction is performed once per call.  Kress computes its native
+    full source-by-receiver matrices and this seam selects only their paired
+    diagonals; MOD already returns paired vectors.  No backend or formulation
+    fallback is attempted.
+    """
+
+    _validate_forward_request(problem, geometry_config, solver)
+
+    total_started = perf_counter()
+    geometry_started = perf_counter()
+    geometry_build = build_ordered_sdf_geometry(model, geometry_config)
+    geometry_seconds = float(perf_counter() - geometry_started)
+    return _predict_paired_response_from_geometry(
+        geometry_build,
+        problem,
+        solver=solver,
+        geometry_seconds=geometry_seconds,
+        total_started=total_started,
+    )
+
+
 __all__ = [
     "MaterialSpec",
     "PairedForwardProblem",
     "PairedForwardResult",
+    "predict_paired_curve_response",
     "predict_paired_response",
 ]

@@ -15,9 +15,14 @@ from typing import Any, TYPE_CHECKING
 
 import numpy as np
 
-from ordered_boundary import BoundaryValidationConfig, PeriodicCurve2D
+from ordered_boundary import (
+    BoundaryValidationConfig,
+    OrderedBoundaryValidationError,
+    PeriodicCurve2D,
+)
 from sdf_to_ordered_boundary import (
     ArcLengthConfig,
+    ArcLengthGeometryError,
     FrontendConfig,
     MethodBConfig,
     ProjectionConfig,
@@ -25,12 +30,23 @@ from sdf_to_ordered_boundary import (
     fit_method_b,
     prepare_single_component,
 )
+from sdf_to_ordered_boundary.frontend import FrontendError
 
 if TYPE_CHECKING:
     from gpr_bem_mod import ImplicitBoundarySamples2D
 
 
 Bounds2D = tuple[tuple[float, float], tuple[float, float]]
+
+
+class OrderedSDFGeometryError(FrontendError):
+    """A trial implicit field has no solver-ready ordered zero contour.
+
+    This exception is deliberately narrower than ``ValueError`` or
+    ``RuntimeError``.  Inverse line searches may treat it as an infeasible
+    geometric trial without accidentally hiding programming or forward-solver
+    failures.
+    """
 
 
 def _canonical_bounds(bounds: Any) -> Bounds2D:
@@ -88,11 +104,11 @@ class OrderedSDFGeometryConfig:
     count for Kress quadrature.
 
     The ``2 * bandwidth + 2`` floors checked below are necessary, not
-    sufficient.  Method B's derivative-consistency validation compares the
-    fitted curve's third derivative against finite differences, which in
-    practice needs on the order of twenty ``validation_resolution`` samples
-    per retained Fourier mode; a bandwidth-24 star fit is rejected outright
-    at 256 samples and accepted at 512.
+    sufficient for numerical differentiation.  ``validation_resolution`` is
+    the topology/intersection grid; Method B now resolves its independent
+    derivative-consistency grid from the known Fourier bandwidth and
+    tolerance (the bandwidth-48 star uses 2048 derivative samples while its
+    topology grid remains at 1024).
     """
 
     bounds: Bounds2D
@@ -275,17 +291,22 @@ def build_ordered_sdf_geometry(
     )
 
     frontend_started = perf_counter()
-    frontend = prepare_single_component(
-        field,
-        FrontendConfig(
-            bounds=config.bounds,
-            grid_shape=config.grid_shape,
-            projected_samples=config.projected_samples,
-            projection=ProjectionConfig(
-                residual_tolerance=_projection_residual_tolerance(dtype)
+    try:
+        frontend = prepare_single_component(
+            field,
+            FrontendConfig(
+                bounds=config.bounds,
+                grid_shape=config.grid_shape,
+                projected_samples=config.projected_samples,
+                projection=ProjectionConfig(
+                    residual_tolerance=_projection_residual_tolerance(dtype)
+                ),
             ),
-        ),
-    )
+        )
+    except FrontendError as exc:
+        raise OrderedSDFGeometryError(
+            f"The implicit field has no admissible single zero contour: {exc}"
+        ) from exc
     frontend_seconds = perf_counter() - frontend_started
     component = frontend.single_component
     if not component.projection_passes:
@@ -306,17 +327,24 @@ def build_ordered_sdf_geometry(
         ),
     )
     fit_started = perf_counter()
-    fit = fit_method_b(
-        component,
-        config=method_config,
-        component_id=component_id,
-        source_identifier=source_identifier,
-        projection_residual=projection_residual,
-    )
+    try:
+        fit = fit_method_b(
+            component,
+            config=method_config,
+            component_id=component_id,
+            source_identifier=source_identifier,
+            projection_residual=projection_residual,
+        )
+    except (ArcLengthGeometryError, OrderedBoundaryValidationError) as exc:
+        raise OrderedSDFGeometryError(
+            f"Method B rejected the fitted zero contour: {exc}"
+        ) from exc
     fit_seconds = perf_counter() - fit_started
     if fit.status != "success":
         reason = fit.failure_reason or "no failure reason was supplied"
-        raise RuntimeError(f"Method B failed to fit the zero set: {reason}.")
+        raise OrderedSDFGeometryError(
+            f"Method B failed to fit the zero set: {reason}."
+        )
     if fit.parameterization is None:
         raise RuntimeError("Method B returned no periodic parameterization.")
 
@@ -349,6 +377,15 @@ def build_ordered_sdf_geometry(
     curve_gradient_norms = np.linalg.norm(curve_gradients, axis=1)
     if np.any(curve_gradient_norms <= np.finfo(np.float64).tiny):
         raise ValueError("The ordered zero contour must have nonzero field gradient.")
+    outward_alignment = np.einsum(
+        "ij,ij->i", curve_gradients / curve_gradient_norms[:, None], curve.normals
+    )
+    if np.any(outward_alignment <= 0.0):
+        raise OrderedSDFGeometryError(
+            "The fitted contour violates the negative_inside sign convention: "
+            "the field gradient must have a positive projection onto the "
+            "outward boundary normal."
+        )
     minimum_speed = float(np.min(curve.speeds))
     maximum_speed = float(np.max(curve.speeds))
     if minimum_speed <= 0.0 or not np.isfinite(maximum_speed):
@@ -416,6 +453,7 @@ def ordered_curve_to_mod_boundary(
 __all__ = [
     "OrderedSDFGeometryBuild",
     "OrderedSDFGeometryConfig",
+    "OrderedSDFGeometryError",
     "build_ordered_sdf_geometry",
     "ordered_curve_to_mod_boundary",
 ]

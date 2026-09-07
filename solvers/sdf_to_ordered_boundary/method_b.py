@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 import operator
 import time
 from typing import Protocol
@@ -57,6 +57,12 @@ class MethodBConfig:
         if not isinstance(self.validation, BoundaryValidationConfig):
             raise TypeError("validation must be BoundaryValidationConfig.")
 
+    @property
+    def resolved_validation(self) -> BoundaryValidationConfig:
+        """Validation with derivative sampling matched to this Fourier fit."""
+
+        return replace(self.validation, fourier_bandwidth=self.bandwidth)
+
 
 def fit_method_b_from_samples(
     parameters,
@@ -72,6 +78,7 @@ def fit_method_b_from_samples(
     settings = MethodBConfig() if config is None else config
     if not isinstance(settings, MethodBConfig):
         raise TypeError("config must be MethodBConfig.")
+    resolved_validation = settings.resolved_validation
     point_values = np.asarray(projected_points, dtype=np.float64)
     parameter_values = np.asarray(parameters, dtype=np.float64)
     start = time.perf_counter()
@@ -101,7 +108,7 @@ def fit_method_b_from_samples(
     initial_parameterization = initial.to_parameterization()
     initial_validation = validate_periodic_parameterization(
         initial_parameterization,
-        settings.validation,
+        resolved_validation,
         raise_on_error=True,
     )
 
@@ -151,7 +158,7 @@ def fit_method_b_from_samples(
     final_parameterization = final_representation.to_parameterization()
     final_validation = validate_periodic_parameterization(
         final_parameterization,
-        settings.validation,
+        resolved_validation,
         raise_on_error=True,
     )
     runtime = time.perf_counter() - start
@@ -175,7 +182,7 @@ def fit_method_b_from_samples(
                 "bandwidth": settings.bandwidth,
                 "least_squares_rcond": settings.least_squares_rcond,
                 "arclength": asdict(settings.arclength),
-                "validation": asdict(settings.validation),
+                "validation": asdict(resolved_validation),
             },
         },
     )

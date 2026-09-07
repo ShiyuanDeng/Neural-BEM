@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
+import math
 import operator
 
 import numpy as np
@@ -14,7 +15,15 @@ from .parameterization import PeriodicParameterization2D
 
 @dataclass(frozen=True)
 class BoundaryValidationConfig:
-    """Resolution and scale-relative tolerances for geometry diagnostics."""
+    """Resolution and scale-relative tolerances for geometry diagnostics.
+
+    ``num_samples_per_component`` remains the grid used for topology and
+    geometric summaries.  Derivative consistency is an independent numerical
+    differentiation audit and may use the denser
+    ``derivative_samples_per_component`` grid.  Supplying ``fourier_bandwidth``
+    raises only that derivative grid to a conservative bandlimit-aware power
+    of two; it does not make the quadratic intersection audit more expensive.
+    """
 
     num_samples_per_component: int = 512
     closure_relative_tolerance: float = 1.0e-10
@@ -26,6 +35,8 @@ class BoundaryValidationConfig:
     minimum_intercomponent_clearance: float = 0.0
     require_counterclockwise: bool = True
     allow_nested_components: bool = False
+    derivative_samples_per_component: int | None = None
+    fourier_bandwidth: int | None = None
 
     def __post_init__(self) -> None:
         if isinstance(self.num_samples_per_component, bool):
@@ -50,6 +61,57 @@ class BoundaryValidationConfig:
             if not np.isfinite(value) or value < 0.0:
                 raise ValueError(f"{name} must be finite and non-negative.")
             object.__setattr__(self, name, value)
+        derivative_count = self.derivative_samples_per_component
+        if derivative_count is None:
+            derivative_count = sample_count
+        elif isinstance(derivative_count, bool):
+            raise TypeError(
+                "derivative_samples_per_component must be an integer, not bool."
+            )
+        else:
+            try:
+                derivative_count = operator.index(derivative_count)
+            except TypeError as exc:
+                raise TypeError(
+                    "derivative_samples_per_component must be an integer."
+                ) from exc
+            if derivative_count < 16:
+                raise ValueError(
+                    "derivative_samples_per_component must be at least 16."
+                )
+        bandwidth = self.fourier_bandwidth
+        if bandwidth is not None:
+            if isinstance(bandwidth, bool):
+                raise TypeError("fourier_bandwidth must be an integer, not bool.")
+            try:
+                bandwidth = operator.index(bandwidth)
+            except TypeError as exc:
+                raise TypeError("fourier_bandwidth must be an integer.") from exc
+            if bandwidth < 1:
+                raise ValueError("fourier_bandwidth must be positive.")
+            # The fourth-order centred first-derivative stencil has leading
+            # relative error (k h)^4 / 30.  Thirty-two samples per retained
+            # mode puts that error below half the default 1e-4 tolerance.  For
+            # tighter tolerances, increase the samples-per-mode requirement;
+            # rounding the total up to a power of two provides margin and is
+            # efficient for the Fourier curves that motivate this policy.
+            tolerance = self.derivative_relative_tolerance
+            tolerance_samples_per_mode = 32
+            if tolerance > 0.0:
+                tolerance_samples_per_mode = max(
+                    tolerance_samples_per_mode,
+                    math.ceil(2.0 * math.pi / (15.0 * tolerance) ** 0.25),
+                )
+            required = tolerance_samples_per_mode * bandwidth
+            safe_fourier_count = 1 << (required - 1).bit_length()
+            derivative_count = max(derivative_count, safe_fourier_count)
+        derivative_count = max(derivative_count, sample_count)
+        object.__setattr__(
+            self,
+            "derivative_samples_per_component",
+            derivative_count,
+        )
+        object.__setattr__(self, "fourier_bandwidth", bandwidth)
         for name in ("require_counterclockwise", "allow_nested_components"):
             value = getattr(self, name)
             if not isinstance(value, (bool, np.bool_)):
@@ -88,6 +150,7 @@ class CurveGeometryReport:
     self_intersection_count: int
     bounding_box_min: tuple[float, float]
     bounding_box_max: tuple[float, float]
+    num_derivative_validation_nodes: int | None = None
 
     def to_dict(self) -> dict[str, object]:
         return asdict(self)
@@ -166,6 +229,7 @@ def validate_periodic_parameterization(
 
     settings = BoundaryValidationConfig() if config is None else config
     count = int(settings.num_samples_per_component)
+    derivative_count = int(settings.derivative_samples_per_component)
     step = curve.period / count
     parameters = curve.parameter_origin + step * np.arange(count, dtype=float)
     evaluation = curve.evaluate(parameters, wrap=False)
@@ -222,45 +286,70 @@ def validate_periodic_parameterization(
                 )
             )
         )
+    if derivative_count == count:
+        derivative_step = step
+        derivative_points = points
+        derivative_first = first_derivatives
+        derivative_second = second_derivatives
+        derivative_third = third_derivatives
+    else:
+        derivative_step = curve.period / derivative_count
+        derivative_parameters = (
+            curve.parameter_origin
+            + derivative_step * np.arange(derivative_count, dtype=float)
+        )
+        derivative_evaluation = curve.evaluate(
+            derivative_parameters,
+            wrap=False,
+        )
+        derivative_points = derivative_evaluation.points
+        derivative_first = derivative_evaluation.first_derivatives
+        derivative_second = derivative_evaluation.second_derivatives
+        derivative_third = derivative_evaluation.third_derivatives
     point_first = (
-        np.roll(points, 2, axis=0)
-        - 8.0 * np.roll(points, 1, axis=0)
-        + 8.0 * np.roll(points, -1, axis=0)
-        - np.roll(points, -2, axis=0)
-    ) / (12.0 * step)
+        np.roll(derivative_points, 2, axis=0)
+        - 8.0 * np.roll(derivative_points, 1, axis=0)
+        + 8.0 * np.roll(derivative_points, -1, axis=0)
+        - np.roll(derivative_points, -2, axis=0)
+    ) / (12.0 * derivative_step)
     point_second = (
-        -np.roll(points, 2, axis=0)
-        + 16.0 * np.roll(points, 1, axis=0)
-        - 30.0 * points
-        + 16.0 * np.roll(points, -1, axis=0)
-        - np.roll(points, -2, axis=0)
-    ) / (12.0 * step**2)
-    first_scale = max(float(np.max(speeds)), scale / curve.period)
+        -np.roll(derivative_points, 2, axis=0)
+        + 16.0 * np.roll(derivative_points, 1, axis=0)
+        - 30.0 * derivative_points
+        + 16.0 * np.roll(derivative_points, -1, axis=0)
+        - np.roll(derivative_points, -2, axis=0)
+    ) / (12.0 * derivative_step**2)
+    first_scale = max(
+        float(np.max(np.linalg.norm(derivative_first, axis=1))),
+        scale / curve.period,
+    )
     second_scale = max(
-        float(np.max(np.linalg.norm(second_derivatives, axis=1))),
+        float(np.max(np.linalg.norm(derivative_second, axis=1))),
         scale / curve.period**2,
     )
     first_consistency = float(
-        np.max(np.linalg.norm(point_first - first_derivatives, axis=1)) / first_scale
+        np.max(np.linalg.norm(point_first - derivative_first, axis=1)) / first_scale
     )
     second_consistency = float(
-        np.max(np.linalg.norm(point_second - second_derivatives, axis=1)) / second_scale
+        np.max(np.linalg.norm(point_second - derivative_second, axis=1))
+        / second_scale
     )
     third_consistency = None
     third_scale = None
-    if third_derivatives is not None:
+    if derivative_third is not None:
         second_first = (
-            np.roll(second_derivatives, 2, axis=0)
-            - 8.0 * np.roll(second_derivatives, 1, axis=0)
-            + 8.0 * np.roll(second_derivatives, -1, axis=0)
-            - np.roll(second_derivatives, -2, axis=0)
-        ) / (12.0 * step)
+            np.roll(derivative_second, 2, axis=0)
+            - 8.0 * np.roll(derivative_second, 1, axis=0)
+            + 8.0 * np.roll(derivative_second, -1, axis=0)
+            - np.roll(derivative_second, -2, axis=0)
+        ) / (12.0 * derivative_step)
         third_scale = max(
-            float(np.max(np.linalg.norm(third_derivatives, axis=1))),
+            float(np.max(np.linalg.norm(derivative_third, axis=1))),
             scale / curve.period**3,
         )
         third_consistency = float(
-            np.max(np.linalg.norm(second_first - third_derivatives, axis=1)) / third_scale
+            np.max(np.linalg.norm(second_first - derivative_third, axis=1))
+            / third_scale
         )
     cross_tolerance = settings.intersection_relative_tolerance * scale**2
     length_tolerance = settings.intersection_relative_tolerance * scale
@@ -315,6 +404,7 @@ def validate_periodic_parameterization(
         valid=not issues,
         issues=tuple(issues),
         num_validation_nodes=count,
+        num_derivative_validation_nodes=derivative_count,
         orientation=orientation,
         phase_anchor=tuple(float(value) for value in points[0]),
         parameter_origin=curve.parameter_origin,

@@ -1,0 +1,846 @@
+{
+  "accuracy_policy": {
+    "representation_tolerance_m": 0.0002,
+    "trajectory_coefficient_absolute_tolerance": 1e-13
+  },
+  "command": "/home/drdeng/miniconda3/envs/EMNerf/bin/python /home/drdeng/Neural_SDF_BEM_AD/run_sdf_representation_ablation.py --profile short --output-dir results/sdf_representation_ablation/short-20260905",
+  "common_preparation_seconds": 0.2462669862434268,
+  "comparisons": {
+    "curve_only_vs_export_only": {
+      "absolute_coefficient_tolerance": 1e-13,
+      "evaluated": true,
+      "maximum_coefficient_difference": 0.0,
+      "passed": true,
+      "shape_matches": true
+    },
+    "legacy_strict_vs_curve_only": {
+      "absolute_coefficient_tolerance": 1e-13,
+      "evaluated": true,
+      "maximum_coefficient_difference": 0.0,
+      "passed": true,
+      "shape_matches": true
+    }
+  },
+  "continuation_plan": [
+    {
+      "max_iterations": 1,
+      "stage": 1,
+      "train_frequencies_ghz": [
+        0.5
+      ]
+    },
+    {
+      "max_iterations": 3,
+      "stage": 2,
+      "train_frequencies_ghz": [
+        0.5,
+        1.5
+      ]
+    }
+  ],
+  "created_utc": "2026-09-05T14:38:46.273721+00:00",
+  "environment": {
+    "MKL_NUM_THREADS": "1",
+    "NUMEXPR_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "PYTHONPATH": "solvers"
+  },
+  "experiment": {
+    "angular_frequencies_rad_s": [
+      3141592653.589793,
+      9424777960.769379,
+      1570796326.7948966,
+      6283185307.179586
+    ],
+    "eps0_f_per_m": 8.854187817e-12,
+    "exterior": {
+      "epsr": 6.0,
+      "mur": 1.0,
+      "sigma": 0.0
+    },
+    "interior": {
+      "epsr": 3.0,
+      "mur": 1.0,
+      "sigma": 0.0
+    },
+    "measurement": "paired_complex_scattered_field",
+    "mu0_h_per_m": 1.2566370614359173e-06,
+    "num_pairs": 8,
+    "observation_noise": "none",
+    "receiver_points_m": [
+      [
+        0.7940199733523725,
+        0.5596007992385184
+      ],
+      [
+        0.6657593876560562,
+        0.7500476462674449
+      ],
+      [
+        0.44039920076148165,
+        0.7940199733523725
+      ],
+      [
+        0.2499523537325551,
+        0.6657593876560562
+      ],
+      [
+        0.20598002664762755,
+        0.44039920076148165
+      ],
+      [
+        0.33424061234394375,
+        0.2499523537325551
+      ],
+      [
+        0.5596007992385184,
+        0.20598002664762755
+      ],
+      [
+        0.7500476462674449,
+        0.33424061234394375
+      ]
+    ],
+    "source_points_m": [
+      [
+        0.8,
+        0.5
+      ],
+      [
+        0.7121320343559643,
+        0.7121320343559643
+      ],
+      [
+        0.5,
+        0.8
+      ],
+      [
+        0.2878679656440358,
+        0.7121320343559643
+      ],
+      [
+        0.2,
+        0.5
+      ],
+      [
+        0.2878679656440357,
+        0.2878679656440358
+      ],
+      [
+        0.49999999999999994,
+        0.2
+      ],
+      [
+        0.7121320343559642,
+        0.2878679656440357
+      ]
+    ],
+    "source_strengths": {
+      "imag": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "real": [
+        1e-06,
+        1e-06,
+        1e-06,
+        1e-06
+      ]
+    },
+    "target_parameters": {
+      "center_x_m": 0.5,
+      "center_y_m": 0.5,
+      "radius_m": 0.05
+    }
+  },
+  "geometry_config": {
+    "arclength_dense_resolution": 512,
+    "bandwidth": 10,
+    "bounds": [
+      [
+        0.3,
+        0.3
+      ],
+      [
+        0.7,
+        0.7
+      ]
+    ],
+    "grid_shape": [
+      129,
+      129
+    ],
+    "num_nodes": 64,
+    "projected_samples": 64,
+    "validation_resolution": 256
+  },
+  "initial_geometry": {
+    "extraction_calls": 1,
+    "field_audit_calls": 0,
+    "neural_training_calls": 0,
+    "neural_training_steps": 0,
+    "paired_forward_calls": 0,
+    "sdf_query_points": 17571,
+    "sdf_value_calls": 17,
+    "seconds": 0.19483781792223454,
+    "spatial_gradient_calls": 7
+  },
+  "initial_projection_rms_m": 0.0027871976340274702,
+  "initial_redistance_config": {
+    "boundary_max_tolerance_m": 0.0005,
+    "boundary_oversampling_factor": 4,
+    "boundary_weight": 200.0,
+    "bounds": [
+      [
+        0.3,
+        0.3
+      ],
+      [
+        0.7,
+        0.7
+      ]
+    ],
+    "box_boundary_weight": 5.0,
+    "check_interval": 20,
+    "distance_initial_samples": 256,
+    "distance_maximum_samples": 4096,
+    "distance_rms_tolerance_m": 0.005,
+    "distance_target": "legacy_polygon",
+    "distance_target_tolerance_m": 1e-06,
+    "eikonal_rms_tolerance": 0.1,
+    "eikonal_weight": 0.1,
+    "heldout_sample_count": 256,
+    "learning_rate": 0.002,
+    "max_steps": 1200,
+    "minimum_steps": 151,
+    "no_op_boundary_max_tolerance_m": 1e-06,
+    "normal_offset_m": 0.002,
+    "normal_offset_weight": 20.0,
+    "patience_checks": 15,
+    "sample_count": 512,
+    "seed": 1023,
+    "smooth_boundary_sample_count": 512,
+    "smooth_boundary_sampling": "continuous_curve",
+    "warmup_steps": 150
+  },
+  "initial_state": {
+    "center_m": [
+      0.48000000001468024,
+      0.5200000000069817
+    ],
+    "radius_cosine_coefficients_m": [
+      0.05089257613903792,
+      0.0,
+      0.011549256036395734,
+      9.13180494996302e-13
+    ],
+    "radius_sine_coefficients_m": [
+      0.0,
+      0.0,
+      0.011891559294422137,
+      3.199244967072838e-12
+    ]
+  },
+  "numpy": "2.0.2",
+  "observations_sha256": "f65c20b21a5a0cedf013988fc93820c9c49de8cebf9012cb7feb750dfea90a19",
+  "oracle_convergence": null,
+  "oracle_identity": "gpr_bem_ref analytic penetrable-cylinder Mie series",
+  "phase_timing_note": "Per-policy end-to-end includes model initialization, strict warm start, reconstruction, export and final audits. Shared teacher extraction/oracle preparation is reported separately.",
+  "policies": {
+    "curve_only": {
+      "accepted_updates": 4,
+      "canonical_fields": {
+        "holdout_relative_l2": 0.960409947836528,
+        "training_loss": 1.249506831703272,
+        "training_relative_l2": 1.0979858059134684
+      },
+      "canonical_maximum_sampled_boundary_error_m": 0.04159443470653415,
+      "end_to_end_seconds": 1.5145010286942124,
+      "export": {
+        "extraction_calls": 0,
+        "field_audit_calls": 0,
+        "neural_training_calls": 0,
+        "neural_training_steps": 0,
+        "paired_forward_calls": 0,
+        "sdf_query_points": 0,
+        "sdf_value_calls": 0,
+        "seconds": 5.606561899185181e-07,
+        "spatial_gradient_calls": 0
+      },
+      "final_audit": {
+        "extraction_calls": 0,
+        "field_audit_calls": 0,
+        "neural_training_calls": 0,
+        "neural_training_steps": 0,
+        "paired_forward_calls": 1,
+        "sdf_query_points": 0,
+        "sdf_value_calls": 0,
+        "seconds": 0.04513697884976864,
+        "spatial_gradient_calls": 0
+      },
+      "initial_training_status": null,
+      "initialization": {
+        "extraction_calls": 0,
+        "field_audit_calls": 0,
+        "neural_training_calls": 0,
+        "neural_training_steps": 0,
+        "paired_forward_calls": 0,
+        "sdf_query_points": 0,
+        "sdf_value_calls": 0,
+        "seconds": 6.416812539100647e-07,
+        "spatial_gradient_calls": 0
+      },
+      "inverse_config": {
+        "armijo_coefficient": 0.0001,
+        "audit_point_count": 512,
+        "audit_seed": 2718,
+        "consecutive_convergence_iterations": 2,
+        "curvature_penalty_weight": 0.0001,
+        "damping_decrease": 0.3,
+        "damping_increase": 10.0,
+        "direct_curve_retraction": "radial_fourier",
+        "distillation_policy": "curve_only",
+        "eikonal_rms_tolerance": 0.15,
+        "finite_difference_step_m": 0.0002,
+        "geometry_change_tolerance_m": 0.0002,
+        "initial_damping": 0.001,
+        "loss_tolerance": 1e-12,
+        "max_backtracks": 6,
+        "max_damping_trials": 5,
+        "max_iterations": 4,
+        "max_stencil_shrinks": 4,
+        "max_trust_region_solves": 8,
+        "maximum_modal_field_update_m": 0.002,
+        "maximum_mode": 3,
+        "maximum_redistance_curve_drift_m": 0.0015,
+        "maximum_representation_audit_num_nodes": 2048,
+        "maximum_spectral_tail_growth_m": null,
+        "minimum_damping": 1e-06,
+        "minimum_finite_difference_step_m": 1.25e-05,
+        "redistance": {
+          "boundary_max_tolerance_m": 0.0005,
+          "boundary_oversampling_factor": 4,
+          "boundary_weight": 2000.0,
+          "bounds": [
+            [
+              0.3,
+              0.3
+            ],
+            [
+              0.7,
+              0.7
+            ]
+          ],
+          "box_boundary_weight": 5.0,
+          "check_interval": 20,
+          "distance_initial_samples": 256,
+          "distance_maximum_samples": 4096,
+          "distance_rms_tolerance_m": 0.005,
+          "distance_target": "legacy_polygon",
+          "distance_target_tolerance_m": 1e-06,
+          "eikonal_rms_tolerance": 0.1,
+          "eikonal_weight": 0.1,
+          "heldout_sample_count": 256,
+          "learning_rate": 0.002,
+          "max_steps": 1200,
+          "minimum_steps": 100,
+          "no_op_boundary_max_tolerance_m": 1e-06,
+          "normal_offset_m": 0.002,
+          "normal_offset_weight": 20.0,
+          "patience_checks": 15,
+          "sample_count": 512,
+          "seed": 1023,
+          "smooth_boundary_sample_count": 512,
+          "smooth_boundary_sampling": "continuous_curve",
+          "warmup_steps": 0
+        },
+        "relative_loss_change_tolerance": 0.0001,
+        "representation_audit_num_nodes": 512,
+        "representation_audit_tolerance_m": 1e-06,
+        "spectral_tail_reference_rms_m": null,
+        "trust_region_refinement_steps": 8
+      },
+      "legacy_converged": null,
+      "legacy_stop_reason": null,
+      "maximum_system_residual": 2.072670047156739e-15,
+      "model_initialization": {
+        "hidden_features": 64,
+        "hidden_layers": 2,
+        "seed": 23
+      },
+      "policy": "curve_only",
+      "reconstruction": {
+        "bem_seconds": 1.2505650091916323,
+        "extraction_calls": 0,
+        "field_audit_calls": 0,
+        "geometry_audit_seconds": 0.048526949249207973,
+        "infeasible_evaluations": 0,
+        "line_search_seconds": 0.0,
+        "neural_training_calls": 0,
+        "neural_training_steps": 0,
+        "optimizer_evaluations": 62,
+        "paired_forward_calls": 62,
+        "sdf_query_points": 0,
+        "sdf_value_calls": 0,
+        "seconds": 1.4683011882007122,
+        "spatial_gradient_calls": 0
+      },
+      "reconstruction_converged": false,
+      "reconstruction_stop_reason": "maximum_iterations",
+      "representation_drift_m": null,
+      "representation_evaluated": false,
+      "representation_fields": null,
+      "representation_maximum_sampled_boundary_error_m": null,
+      "representation_status": "not_requested",
+      "representation_stop_reason": "not_requested",
+      "requested_delivery_complete": false,
+      "stages": [
+        {
+          "accepted_updates": 1,
+          "legacy_stop_reason": "maximum_iterations",
+          "reconstruction_converged": false,
+          "reconstruction_stop_reason": "maximum_iterations",
+          "stage": 1
+        },
+        {
+          "accepted_updates": 3,
+          "legacy_stop_reason": "maximum_iterations",
+          "reconstruction_converged": false,
+          "reconstruction_stop_reason": "maximum_iterations",
+          "stage": 2
+        }
+      ]
+    },
+    "export_only": {
+      "accepted_updates": 4,
+      "canonical_fields": {
+        "holdout_relative_l2": 0.960409947836528,
+        "training_loss": 1.249506831703272,
+        "training_relative_l2": 1.0979858059134684
+      },
+      "canonical_maximum_sampled_boundary_error_m": 0.04159443470653415,
+      "end_to_end_seconds": 3.6452513094991446,
+      "export": {
+        "extraction_calls": 3,
+        "field_audit_calls": 1,
+        "neural_training_calls": 1,
+        "neural_training_steps": 420,
+        "paired_forward_calls": 0,
+        "sdf_query_points": 1033841,
+        "sdf_value_calls": 1855,
+        "seconds": 2.085046488791704,
+        "spatial_gradient_calls": 487
+      },
+      "final_audit": {
+        "extraction_calls": 0,
+        "field_audit_calls": 0,
+        "neural_training_calls": 0,
+        "neural_training_steps": 0,
+        "paired_forward_calls": 2,
+        "sdf_query_points": 0,
+        "sdf_value_calls": 0,
+        "seconds": 0.09083210676908493,
+        "spatial_gradient_calls": 0
+      },
+      "initial_training_status": null,
+      "initialization": {
+        "extraction_calls": 0,
+        "field_audit_calls": 0,
+        "neural_training_calls": 0,
+        "neural_training_steps": 0,
+        "paired_forward_calls": 0,
+        "sdf_query_points": 0,
+        "sdf_value_calls": 0,
+        "seconds": 8.763745427131653e-07,
+        "spatial_gradient_calls": 0
+      },
+      "inverse_config": {
+        "armijo_coefficient": 0.0001,
+        "audit_point_count": 512,
+        "audit_seed": 2718,
+        "consecutive_convergence_iterations": 2,
+        "curvature_penalty_weight": 0.0001,
+        "damping_decrease": 0.3,
+        "damping_increase": 10.0,
+        "direct_curve_retraction": "radial_fourier",
+        "distillation_policy": "curve_only",
+        "eikonal_rms_tolerance": 0.15,
+        "finite_difference_step_m": 0.0002,
+        "geometry_change_tolerance_m": 0.0002,
+        "initial_damping": 0.001,
+        "loss_tolerance": 1e-12,
+        "max_backtracks": 6,
+        "max_damping_trials": 5,
+        "max_iterations": 4,
+        "max_stencil_shrinks": 4,
+        "max_trust_region_solves": 8,
+        "maximum_modal_field_update_m": 0.002,
+        "maximum_mode": 3,
+        "maximum_redistance_curve_drift_m": 0.0015,
+        "maximum_representation_audit_num_nodes": 2048,
+        "maximum_spectral_tail_growth_m": null,
+        "minimum_damping": 1e-06,
+        "minimum_finite_difference_step_m": 1.25e-05,
+        "redistance": {
+          "boundary_max_tolerance_m": 0.0005,
+          "boundary_oversampling_factor": 4,
+          "boundary_weight": 2000.0,
+          "bounds": [
+            [
+              0.3,
+              0.3
+            ],
+            [
+              0.7,
+              0.7
+            ]
+          ],
+          "box_boundary_weight": 5.0,
+          "check_interval": 20,
+          "distance_initial_samples": 256,
+          "distance_maximum_samples": 4096,
+          "distance_rms_tolerance_m": 0.005,
+          "distance_target": "legacy_polygon",
+          "distance_target_tolerance_m": 1e-06,
+          "eikonal_rms_tolerance": 0.1,
+          "eikonal_weight": 0.1,
+          "heldout_sample_count": 256,
+          "learning_rate": 0.002,
+          "max_steps": 1200,
+          "minimum_steps": 100,
+          "no_op_boundary_max_tolerance_m": 1e-06,
+          "normal_offset_m": 0.002,
+          "normal_offset_weight": 20.0,
+          "patience_checks": 15,
+          "sample_count": 512,
+          "seed": 1023,
+          "smooth_boundary_sample_count": 512,
+          "smooth_boundary_sampling": "continuous_curve",
+          "warmup_steps": 0
+        },
+        "relative_loss_change_tolerance": 0.0001,
+        "representation_audit_num_nodes": 512,
+        "representation_audit_tolerance_m": 1e-06,
+        "spectral_tail_reference_rms_m": null,
+        "trust_region_refinement_steps": 8
+      },
+      "legacy_converged": null,
+      "legacy_stop_reason": null,
+      "maximum_system_residual": 2.072670047156739e-15,
+      "model_initialization": {
+        "hidden_features": 64,
+        "hidden_layers": 2,
+        "seed": 23
+      },
+      "policy": "export_only",
+      "reconstruction": {
+        "bem_seconds": 1.2494542645290494,
+        "extraction_calls": 0,
+        "field_audit_calls": 0,
+        "geometry_audit_seconds": 0.04902127105742693,
+        "infeasible_evaluations": 0,
+        "line_search_seconds": 0.0,
+        "neural_training_calls": 0,
+        "neural_training_steps": 0,
+        "optimizer_evaluations": 62,
+        "paired_forward_calls": 62,
+        "sdf_query_points": 0,
+        "sdf_value_calls": 0,
+        "seconds": 1.468060783110559,
+        "spatial_gradient_calls": 0
+      },
+      "reconstruction_converged": false,
+      "reconstruction_stop_reason": "maximum_iterations",
+      "representation_drift_m": 0.00031414961272607073,
+      "representation_evaluated": true,
+      "representation_fields": {
+        "holdout_relative_l2": 0.9600354280256285,
+        "training_loss": 1.2504185172081927,
+        "training_relative_l2": 1.0981838458443751
+      },
+      "representation_maximum_sampled_boundary_error_m": 0.041801767394169353,
+      "representation_status": "passed",
+      "representation_stop_reason": "smooth_curve_distance_topology_drift_and_eikonal_tolerances",
+      "requested_delivery_complete": false,
+      "stages": [
+        {
+          "accepted_updates": 1,
+          "legacy_stop_reason": "maximum_iterations",
+          "reconstruction_converged": false,
+          "reconstruction_stop_reason": "maximum_iterations",
+          "stage": 1
+        },
+        {
+          "accepted_updates": 3,
+          "legacy_stop_reason": "maximum_iterations",
+          "reconstruction_converged": false,
+          "reconstruction_stop_reason": "maximum_iterations",
+          "stage": 2
+        }
+      ]
+    },
+    "legacy_strict": {
+      "accepted_updates": 4,
+      "canonical_fields": {
+        "holdout_relative_l2": 0.960409947836528,
+        "training_loss": 1.249506831703272,
+        "training_relative_l2": 1.0979858059134684
+      },
+      "canonical_maximum_sampled_boundary_error_m": 0.04159443470653415,
+      "end_to_end_seconds": 7.404212423600256,
+      "export": {
+        "extraction_calls": 0,
+        "field_audit_calls": 0,
+        "neural_training_calls": 0,
+        "neural_training_steps": 0,
+        "paired_forward_calls": 0,
+        "sdf_query_points": 0,
+        "sdf_value_calls": 0,
+        "seconds": 5.345791578292847e-07,
+        "spatial_gradient_calls": 0
+      },
+      "final_audit": {
+        "extraction_calls": 0,
+        "field_audit_calls": 0,
+        "neural_training_calls": 0,
+        "neural_training_steps": 0,
+        "paired_forward_calls": 2,
+        "sdf_query_points": 0,
+        "sdf_value_calls": 0,
+        "seconds": 0.09107794146984816,
+        "spatial_gradient_calls": 0
+      },
+      "initial_training_status": "distance_boundary_and_eikonal_tolerances",
+      "initialization": {
+        "extraction_calls": 1,
+        "field_audit_calls": 0,
+        "neural_training_calls": 1,
+        "neural_training_steps": 460,
+        "paired_forward_calls": 0,
+        "sdf_query_points": 713595,
+        "sdf_value_calls": 1999,
+        "seconds": 1.8617348205298185,
+        "spatial_gradient_calls": 520
+      },
+      "inverse_config": {
+        "armijo_coefficient": 0.0001,
+        "audit_point_count": 512,
+        "audit_seed": 2718,
+        "consecutive_convergence_iterations": 2,
+        "curvature_penalty_weight": 0.0001,
+        "damping_decrease": 0.3,
+        "damping_increase": 10.0,
+        "direct_curve_retraction": "radial_fourier",
+        "distillation_policy": "legacy_strict",
+        "eikonal_rms_tolerance": 0.15,
+        "finite_difference_step_m": 0.0002,
+        "geometry_change_tolerance_m": 0.0002,
+        "initial_damping": 0.001,
+        "loss_tolerance": 1e-12,
+        "max_backtracks": 6,
+        "max_damping_trials": 5,
+        "max_iterations": 4,
+        "max_stencil_shrinks": 4,
+        "max_trust_region_solves": 8,
+        "maximum_modal_field_update_m": 0.002,
+        "maximum_mode": 3,
+        "maximum_redistance_curve_drift_m": 0.0015,
+        "maximum_representation_audit_num_nodes": 2048,
+        "maximum_spectral_tail_growth_m": null,
+        "minimum_damping": 1e-06,
+        "minimum_finite_difference_step_m": 1.25e-05,
+        "redistance": {
+          "boundary_max_tolerance_m": 0.0005,
+          "boundary_oversampling_factor": 4,
+          "boundary_weight": 2000.0,
+          "bounds": [
+            [
+              0.3,
+              0.3
+            ],
+            [
+              0.7,
+              0.7
+            ]
+          ],
+          "box_boundary_weight": 5.0,
+          "check_interval": 20,
+          "distance_initial_samples": 256,
+          "distance_maximum_samples": 4096,
+          "distance_rms_tolerance_m": 0.005,
+          "distance_target": "legacy_polygon",
+          "distance_target_tolerance_m": 1e-06,
+          "eikonal_rms_tolerance": 0.1,
+          "eikonal_weight": 0.1,
+          "heldout_sample_count": 256,
+          "learning_rate": 0.002,
+          "max_steps": 1200,
+          "minimum_steps": 100,
+          "no_op_boundary_max_tolerance_m": 1e-06,
+          "normal_offset_m": 0.002,
+          "normal_offset_weight": 20.0,
+          "patience_checks": 15,
+          "sample_count": 512,
+          "seed": 1023,
+          "smooth_boundary_sample_count": 512,
+          "smooth_boundary_sampling": "continuous_curve",
+          "warmup_steps": 0
+        },
+        "relative_loss_change_tolerance": 0.0001,
+        "representation_audit_num_nodes": 512,
+        "representation_audit_tolerance_m": 1e-06,
+        "spectral_tail_reference_rms_m": null,
+        "trust_region_refinement_steps": 8
+      },
+      "legacy_converged": false,
+      "legacy_stop_reason": "maximum_iterations",
+      "maximum_system_residual": 2.072670047156739e-15,
+      "model_initialization": {
+        "hidden_features": 64,
+        "hidden_layers": 2,
+        "seed": 23
+      },
+      "policy": "legacy_strict",
+      "reconstruction": {
+        "bem_seconds": 1.258071033284068,
+        "extraction_calls": 4,
+        "field_audit_calls": 6,
+        "geometry_audit_seconds": 0.4875007448717952,
+        "infeasible_evaluations": 0,
+        "line_search_seconds": 0.0,
+        "neural_training_calls": 4,
+        "neural_training_steps": 1220,
+        "optimizer_evaluations": 62,
+        "paired_forward_calls": 62,
+        "sdf_query_points": 1933790,
+        "sdf_value_calls": 5376,
+        "seconds": 5.449679126031697,
+        "spatial_gradient_calls": 1409
+      },
+      "reconstruction_converged": false,
+      "reconstruction_stop_reason": "maximum_iterations",
+      "representation_drift_m": 0.00042155806899814145,
+      "representation_evaluated": true,
+      "representation_fields": {
+        "holdout_relative_l2": 0.9598761664112552,
+        "training_loss": 1.2477554498249481,
+        "training_relative_l2": 1.0969223974941718
+      },
+      "representation_maximum_sampled_boundary_error_m": 0.04183825911301228,
+      "representation_status": "failed",
+      "representation_stop_reason": "legacy_representation_tolerances_not_met",
+      "requested_delivery_complete": false,
+      "stages": [
+        {
+          "accepted_updates": 1,
+          "legacy_stop_reason": "maximum_iterations",
+          "reconstruction_converged": false,
+          "reconstruction_stop_reason": "maximum_iterations",
+          "stage": 1
+        },
+        {
+          "accepted_updates": 3,
+          "legacy_stop_reason": "maximum_iterations",
+          "reconstruction_converged": false,
+          "reconstruction_stop_reason": "maximum_iterations",
+          "stage": 2
+        }
+      ]
+    }
+  },
+  "policy_contract_passed": true,
+  "profile": "short",
+  "provenance": {
+    "commit": "41420c2875d49f9ab8774f572c94b989d56fc309",
+    "dirty_paths": [
+      " M .gitignore",
+      " M README.md",
+      " M docs/README.md",
+      " M docs/current_architecture.md",
+      " M docs/solver_neutral_inverse.md",
+      " M docs/validation_change_log.md",
+      " M pytest/README.md",
+      " M pytest/ordered_boundary/test_ordered_boundary.py",
+      " M pytest/ordered_boundary/test_ordered_periodic_curve.py",
+      " M pytest/sdf_inverse/test_star_target_inverse.py",
+      " M pytest/sdf_to_ordered_boundary/test_sdf_boundary_methods_ab.py",
+      " M results/README.md",
+      " M results/inverse_solver_comparison/README.md",
+      " M run_sdf_inverse_comparison.py",
+      " M run_sdf_inverse_contour_video.py",
+      " M solvers/README.md",
+      " M solvers/gpr_bem_kress/README.md",
+      " M solvers/ordered_boundary/validation.py",
+      " M solvers/sdf_inverse/__init__.py",
+      " M solvers/sdf_inverse/forward.py",
+      " M solvers/sdf_inverse/geometry.py",
+      " M solvers/sdf_inverse/models.py",
+      " M solvers/sdf_inverse/optimization.py",
+      " M solvers/sdf_to_ordered_boundary/__init__.py",
+      " M solvers/sdf_to_ordered_boundary/arclength.py",
+      " M solvers/sdf_to_ordered_boundary/frontend.py",
+      " M solvers/sdf_to_ordered_boundary/method_b.py",
+      " M solvers/sdf_to_ordered_boundary/method_c.py",
+      "?? docs/codex_sdf_kress_priorities_2026-09-05.md",
+      "?? docs/inverse_pipeline_review_2026-09-05.md",
+      "?? mlp-arclength-k5-ellipse-to-star-kress-20260904.log",
+      "?? mlp-canonical-ellipse-to-star-kress-20260903.log",
+      "?? mlp-fixed-ellipse-to-star-kress-20260903.log",
+      "?? mlp-full-band-modes-ellipse-to-star-kress-20260903.log",
+      "?? mlp-joint-k6-ellipse-to-star-kress-20260903.log",
+      "?? mlp-radial-continuation-k5-ellipse-to-star-kress-20260904.log",
+      "?? mlp-resolved-k5-ellipse-to-star-kress-20260904.log",
+      "?? pytest/gpr_bem_kress/test_multicomponent.py",
+      "?? pytest/multicylinder_ref/",
+      "?? pytest/sdf_bem_multicomponent/",
+      "?? pytest/sdf_inverse/test_continuous_distance.py",
+      "?? pytest/sdf_inverse/test_contour_video.py",
+      "?? pytest/sdf_inverse/test_curve_forward_seam.py",
+      "?? pytest/sdf_inverse/test_direct_curve_updates.py",
+      "?? pytest/sdf_inverse/test_geometry_sign_contract.py",
+      "?? pytest/sdf_inverse/test_mlp_driver_contract.py",
+      "?? pytest/sdf_inverse/test_mlp_experiment_snapshot.py",
+      "?? pytest/sdf_inverse/test_neural_audit_regressions.py",
+      "?? pytest/sdf_inverse/test_neural_inverse_convergence_diagnostics.py",
+      "?? pytest/sdf_inverse/test_neural_mlp_inverse.py",
+      "?? pytest/sdf_inverse/test_neural_redistance_regressions.py",
+      "?? pytest/sdf_inverse/test_parameter_fd_audit_regressions.py",
+      "?? pytest/sdf_inverse/test_smooth_redistance.py",
+      "?? pytest/sdf_to_ordered_boundary/test_frontend_component_limit.py",
+      "?? pytest/sdf_to_ordered_boundary/test_parameter_aware.py",
+      "?? results/inverse_solver_comparison/mlp-arclength-k5-ellipse-to-star-kress-20260904/",
+      "?? results/inverse_solver_comparison/mlp-canonical-ellipse-to-star-kress-20260903/",
+      "?? results/inverse_solver_comparison/mlp-circle-to-circle-mie-20260903/",
+      "?? results/inverse_solver_comparison/mlp-ellipse-to-circle-mie-20260903/",
+      "?? results/inverse_solver_comparison/mlp-ellipse-to-circle-mode5-control-20260903/",
+      "?? results/inverse_solver_comparison/mlp-ellipse-to-star-kress/",
+      "?? results/inverse_solver_comparison/mlp-ellipse-to-star-nystrom-20260903/",
+      "?? results/inverse_solver_comparison/mlp-fixed-ellipse-to-star-kress-20260903/",
+      "?? results/inverse_solver_comparison/mlp-full-band-modes-ellipse-to-star-kress-20260903/",
+      "?? results/inverse_solver_comparison/mlp-joint-k6-ellipse-to-star-kress-20260903/",
+      "?? results/inverse_solver_comparison/mlp-radial-continuation-k5-ellipse-to-star-kress-20260904/",
+      "?? results/inverse_solver_comparison/mlp-resolved-k5-ellipse-to-star-kress-20260904/",
+      "?? results/inverse_solver_comparison/mlp-star-to-star-nystrom-20260903/",
+      "?? results/inverse_solver_comparison/siren-circle-mie-20260903/",
+      "?? results/multicomponent_split_demo/",
+      "?? run_mlp_sdf_inverse_comparison.py",
+      "?? run_multicomponent_split_demo.py",
+      "?? run_sdf_representation_ablation.py",
+      "?? solvers/gpr_bem_kress/multicomponent.py",
+      "?? solvers/multicylinder_ref/",
+      "?? solvers/sdf_bem_multicomponent/",
+      "?? solvers/sdf_inverse/continuous_distance.py",
+      "?? solvers/sdf_inverse/curve_updates.py",
+      "?? solvers/sdf_inverse/neural.py",
+      "?? solvers/sdf_inverse/neural_optimization.py",
+      "?? solvers/sdf_to_ordered_boundary/parameter_aware.py"
+    ]
+  },
+  "python": "3.9.25",
+  "saved_profile_source": null,
+  "schema": "sdf-reconstruction-representation-ablation-v1",
+  "torch": "2.8.0+cu128"
+}

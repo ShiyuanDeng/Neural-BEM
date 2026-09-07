@@ -12,7 +12,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 import math
 import operator
-from typing import Sequence
+from time import perf_counter
+from typing import Callable, Sequence
 
 import numpy as np
 import torch
@@ -28,6 +29,21 @@ def _real_floating_dtype(dtype: torch.dtype) -> torch.dtype:
     }:
         raise TypeError("dtype must be a real floating-point torch dtype.")
     return dtype
+
+
+def _neural_sdf_architecture():
+    """Lazily import the repository's built SIREN architecture.
+
+    ``gpr_bem_ref`` and ``gpr_bem_mod`` ship byte-identical copies of
+    ``neural_sdf``; the maintained one is used.  Only the network and its
+    Eikonal helper are taken, never solver code, so the solver-neutral inverse
+    gains no dependency on either BEM implementation.  The import is deferred
+    so this module still imports without a solver package present.
+    """
+
+    from gpr_bem_mod import neural_sdf
+
+    return neural_sdf
 
 
 def _chebyshev_first_kind(values: torch.Tensor, order: int) -> torch.Tensor:
@@ -1034,18 +1050,327 @@ def build_star_parameter_controller(
     )
 
 
+
+class SirenImplicitField2D(nn.Module):
+    """The repository's SIREN network presented as a solver-neutral field.
+
+    The network itself is ``neural_sdf.SirenSDF2D``, the same architecture the
+    legacy MOD adjoint pipeline trains.  It is imported lazily so this module
+    keeps no import-time dependency on a solver package; only the network is
+    reused, no BEM code.  Both solver packages ship byte-identical copies.
+
+    Two adapters make it usable here.  Coordinates are mapped onto the
+    network's ``[-1, 1]^2`` design domain, because SIREN's ``omega_0``
+    frequency scaling assumes that domain and not a physical box; the output
+    is rescaled back to metres by the same factor, which leaves the Eikonal
+    condition ``|grad F| = 1`` identical in physical and normalized units.
+
+    Unlike the parametric models, this field is a general function
+    approximator: it has no center, no radius, and no guaranteed topology.
+    Its zero set is whatever training produced, so it must be pretrained to a
+    valid shape (see :func:`pretrain_implicit_field`) and it can lose its
+    single closed contour during optimization.  It deliberately exposes no
+    ``physical_geometry``: shape quantities for this representation are
+    measured from the extracted contour, not read off parameters.
+    """
+
+    claims_signed_distance = False
+
+    def __init__(
+        self,
+        *,
+        bounds: tuple[tuple[float, float], tuple[float, float]],
+        hidden_features: int = 32,
+        hidden_layers: int = 0,
+        omega_0: float = 10.0,
+        random_seed: int = 0,
+        dtype: torch.dtype = torch.float64,
+        device: torch.device | str | None = None,
+    ) -> None:
+        super().__init__()
+        resolved_dtype = _real_floating_dtype(dtype)
+        box = np.asarray(bounds, dtype=np.float64)
+        if box.shape != (2, 2) or not np.all(np.isfinite(box)):
+            raise ValueError("bounds must be ((xmin, ymin), (xmax, ymax)) and finite.")
+        if np.any(box[1] <= box[0]):
+            raise ValueError("Upper bounds must exceed lower bounds.")
+        hidden_count = _positive_integer(hidden_features, name="hidden_features")
+        if isinstance(hidden_layers, (bool, np.bool_)):
+            raise TypeError("hidden_layers must be an integer, not bool.")
+        layer_count = int(operator.index(hidden_layers))
+        if layer_count < 0:
+            raise ValueError("hidden_layers must be non-negative.")
+        frequency = float(omega_0)
+        if not math.isfinite(frequency) or frequency <= 0.0:
+            raise ValueError("omega_0 must be finite and positive.")
+        if isinstance(random_seed, (bool, np.bool_)):
+            raise TypeError("random_seed must be an integer, not bool.")
+        seed = int(operator.index(random_seed))
+
+        siren_module = _neural_sdf_architecture()
+
+        generator_state = torch.random.get_rng_state()
+        try:
+            torch.manual_seed(seed)
+            network = siren_module.SirenSDF2D(
+                hidden_features=hidden_count,
+                hidden_layers=layer_count,
+                first_omega_0=frequency,
+                hidden_omega_0=frequency,
+            )
+        finally:
+            torch.random.set_rng_state(generator_state)
+
+        self.network = network.to(dtype=resolved_dtype, device=device)
+        self.register_buffer(
+            "origin",
+            torch.as_tensor(
+                0.5 * (box[0] + box[1]), dtype=resolved_dtype, device=device
+            ),
+        )
+        self.length_scale = float(0.5 * np.max(box[1] - box[0]))
+        self.hidden_features = hidden_count
+        self.hidden_layers = layer_count
+        self.omega_0 = frequency
+        self.random_seed = seed
+        self.pretraining_report: PretrainingReport | None = None
+
+    @property
+    def num_network_parameters(self) -> int:
+        """Trainable scalar count, which sets the finite-difference cost."""
+
+        return int(sum(p.numel() for p in self.network.parameters()))
+
+    def forward(self, points: torch.Tensor) -> torch.Tensor:
+        if not isinstance(points, torch.Tensor):
+            raise TypeError("points must be a torch.Tensor.")
+        if points.ndim != 2 or points.shape[1] != 2:
+            raise ValueError("points must have shape (num_points, 2).")
+        if not points.is_floating_point():
+            raise TypeError("points must have a floating-point dtype.")
+        if points.device != self.origin.device:
+            raise ValueError(
+                "points and SirenImplicitField2D parameters must share a device."
+            )
+        normalized = (points - self.origin.to(dtype=points.dtype)[None, :]) / (
+            self.length_scale
+        )
+        return self.length_scale * self.network(normalized)
+
+    def initialization_metadata(self) -> dict[str, object]:
+        return {
+            "kind": "siren_neural_implicit",
+            "claims_signed_distance": False,
+            "hidden_features": self.hidden_features,
+            "hidden_layers": self.hidden_layers,
+            "omega_0": self.omega_0,
+            "random_seed": self.random_seed,
+            "network_parameters": self.num_network_parameters,
+            "coordinate_length_scale_m": self.length_scale,
+            "pretraining": (
+                None
+                if self.pretraining_report is None
+                else self.pretraining_report.as_dict()
+            ),
+        }
+
+
+@dataclass(frozen=True)
+class PretrainingReport:
+    """Auditable record of one supervised implicit-field warm start."""
+
+    steps: int
+    final_data_rms_m: float
+    final_eikonal_residual: float
+    initial_data_rms_m: float
+    seconds: float
+
+    def as_dict(self) -> dict[str, float]:
+        return {
+            "steps": float(self.steps),
+            "initial_data_rms_m": self.initial_data_rms_m,
+            "final_data_rms_m": self.final_data_rms_m,
+            "final_eikonal_residual": self.final_eikonal_residual,
+            "seconds": self.seconds,
+        }
+
+
+def pretrain_implicit_field(
+    model: nn.Module,
+    target_signed_distance: Callable[[torch.Tensor], torch.Tensor],
+    *,
+    bounds: tuple[tuple[float, float], tuple[float, float]],
+    steps: int = 6000,
+    batch_size: int = 2048,
+    learning_rate: float = 5.0e-3,
+    eikonal_weight: float = 0.1,
+    random_seed: int = 0,
+) -> PretrainingReport:
+    """Warm-start a general implicit field onto a known signed distance.
+
+    A randomly initialized network has no usable zero contour, so this is a
+    precondition for the pipeline rather than an optimization convenience.
+    The Eikonal penalty is the repository's own ``neural_sdf.eikonal_loss``
+    and is applied throughout training, which keeps ``|grad F|`` near one and
+    therefore keeps the field's magnitude interpretable as a distance.
+    """
+
+    if not isinstance(model, nn.Module):
+        raise TypeError("model must be a torch.nn.Module.")
+    if not callable(target_signed_distance):
+        raise TypeError("target_signed_distance must be callable on (n, 2) tensors.")
+    box = np.asarray(bounds, dtype=np.float64)
+    if box.shape != (2, 2) or not np.all(np.isfinite(box)) or np.any(box[1] <= box[0]):
+        raise ValueError("bounds must be an increasing finite ((xmin, ymin), (xmax, ymax)).")
+    total_steps = _positive_integer(steps, name="steps")
+    batch = _positive_integer(batch_size, name="batch_size")
+    rate = float(learning_rate)
+    weight = float(eikonal_weight)
+    if not math.isfinite(rate) or rate <= 0.0:
+        raise ValueError("learning_rate must be finite and positive.")
+    if not math.isfinite(weight) or weight < 0.0:
+        raise ValueError("eikonal_weight must be finite and non-negative.")
+
+    siren_module = _neural_sdf_architecture()
+
+    reference = next(model.parameters())
+    dtype, device = reference.dtype, reference.device
+    started = perf_counter()
+    generator_state = torch.random.get_rng_state()
+    try:
+        torch.manual_seed(int(random_seed))
+        optimizer = torch.optim.Adam(model.parameters(), lr=rate)
+        schedule = torch.optim.lr_scheduler.CosineAnnealingLR(
+            optimizer, T_max=total_steps
+        )
+        initial_rms = float("nan")
+        data_mean_square = torch.zeros((), dtype=dtype, device=device)
+        gradient_penalty = torch.zeros((), dtype=dtype, device=device)
+        for step in range(total_steps):
+            optimizer.zero_grad(set_to_none=True)
+            points = siren_module.sample_uniform_points(
+                tuple(map(tuple, box)), batch, device=device, dtype=dtype
+            ).requires_grad_(True)
+            values = model(points)
+            data_mean_square = torch.mean(
+                (values - target_signed_distance(points)) ** 2
+            )
+            gradients = torch.autograd.grad(
+                values, points, torch.ones_like(values), create_graph=True
+            )[0]
+            gradient_penalty = siren_module.eikonal_loss(gradients)
+            (data_mean_square + weight * gradient_penalty).backward()
+            optimizer.step()
+            schedule.step()
+            if step == 0:
+                initial_rms = float(data_mean_square.detach()) ** 0.5
+    finally:
+        torch.random.set_rng_state(generator_state)
+
+    return PretrainingReport(
+        steps=total_steps,
+        final_data_rms_m=float(data_mean_square.detach()) ** 0.5,
+        final_eikonal_residual=float(gradient_penalty.detach()),
+        initial_data_rms_m=initial_rms,
+        seconds=float(perf_counter() - started),
+    )
+
+
+def first_order_distance_supervisor(
+    field: nn.Module,
+    *,
+    maximum_distance: float,
+    gradient_floor: float = 1.0e-3,
+) -> Callable[[torch.Tensor], torch.Tensor]:
+    """Return ``F / ||grad F||`` of an analytic field, detached, for training.
+
+    The parametric models in this module are level sets, not distances, so
+    regressing their raw values while also penalizing ``|grad F| = 1`` would
+    set the two objectives against each other.  The first-order distance to
+    the same zero set is the consistent supervision signal: it is exact for a
+    true signed distance such as :class:`CircleSDF2D` and is the same
+    scale-aware quantity this pipeline already uses to report implicit
+    geometry residuals.
+
+    Every field here is radial and therefore non-regular at its own center,
+    where ``||grad F||`` collapses and the ratio is meaningless.  Two bounds
+    keep the supervision finite there: ``gradient_floor``, far below any
+    regular gradient of these Lipschitz fields, and ``maximum_distance``,
+    which should be the domain size, since no distance to a zero set inside
+    the domain can exceed it.  Both saturate a measure-zero set of samples
+    rather than emitting an unbounded training target.
+    """
+
+    if not isinstance(field, nn.Module):
+        raise TypeError("field must be a torch.nn.Module.")
+    limit = float(maximum_distance)
+    floor = float(gradient_floor)
+    if not math.isfinite(limit) or limit <= 0.0:
+        raise ValueError("maximum_distance must be finite and positive.")
+    if not math.isfinite(floor) or floor <= 0.0:
+        raise ValueError("gradient_floor must be finite and positive.")
+
+    def supervisor(points: torch.Tensor) -> torch.Tensor:
+        probes = points.detach().clone().requires_grad_(True)
+        with torch.enable_grad():
+            values = field(probes)
+            gradients = torch.autograd.grad(
+                values, probes, torch.ones_like(values), create_graph=False
+            )[0]
+        norms = torch.linalg.norm(gradients, dim=1, keepdim=True)
+        distance = values / torch.clamp(norms, min=floor)
+        return torch.clamp(distance, min=-limit, max=limit).detach()
+
+    return supervisor
+
+
+def build_siren_parameter_controller(
+    model: SirenImplicitField2D,
+    *,
+    weight_bound: float = 5.0,
+    max_parameters: int | None = None,
+) -> TorchParameterController:
+    """Bound every network weight symmetrically.
+
+    A network has no physical controls to bound, so this envelope only stops a
+    trial from running away; it is deliberately wide enough never to bind for
+    a pretrained field.  ``max_parameters`` defaults to the network's own size
+    because the point of this representation is to exceed the small physical
+    controllers, but the finite-difference cost is still ``2 N + 1`` forward
+    solves per Jacobian and grows linearly with ``N``.
+    """
+
+    if not isinstance(model, SirenImplicitField2D):
+        raise TypeError("model must be a SirenImplicitField2D.")
+    bound = float(weight_bound)
+    if not math.isfinite(bound) or bound <= 0.0:
+        raise ValueError("weight_bound must be finite and positive.")
+    count = model.num_network_parameters
+    limit = count if max_parameters is None else max_parameters
+    return TorchParameterController(
+        model,
+        lower_bounds=-bound,
+        upper_bounds=bound,
+        max_parameters=limit,
+    )
+
 circle_parameter_controller = build_circle_parameter_controller
 
 
 __all__ = [
     "CircleSDF2D",
     "EllipseLevelSet2D",
+    "PretrainingReport",
     "RadialRandomFeatureImplicit2D",
+    "SirenImplicitField2D",
     "StarLevelSet2D",
     "TorchParameterController",
     "build_circle_parameter_controller",
     "build_ellipse_parameter_controller",
     "build_radial_random_feature_parameter_controller",
+    "build_siren_parameter_controller",
     "build_star_parameter_controller",
     "circle_parameter_controller",
+    "first_order_distance_supervisor",
+    "pretrain_implicit_field",
 ]

@@ -3082,9 +3082,9 @@ warnings in 216.92 s; both skips were the expected CuPy-unavailable checks.
 ### Current interpretation
 
 The star moves the accuracy floor from the forward solver to the geometry.
-Kress' final training error equals its own error on the exact target's fitted
-boundary, so it converged to the shared bandwidth-48 representation rather
-than to its own quadrature; the Kress holdout gate is therefore `1e-3` here
+Kress' final training error is on the same geometry-controlled order as its
+error on the exact target's fitted boundary, so the shared bandwidth-48
+representation is material rather than its own quadrature; the Kress holdout gate is therefore `1e-3` here
 against `1e-6` for the circle. MOD remains limited by its own discretisation:
 its final holdout error is within half a percent of what it produces on the
 exact target's boundary. Both solvers absorbed a small part of the shared
@@ -3104,3 +3104,951 @@ not extend the pipeline to topology or lobe-count recovery: the lobe count is
 fixed structure, since an integer cannot be recovered by continuous finite
 differences. The next milestone is unchanged -- a Kress discrete adjoint whose
 directional derivatives are accepted against this low-dimensional baseline.
+
+---
+
+2026-09-03 — alternating full-MLP inverse scaffold
+
+### Change
+
+Added `solvers/sdf_inverse/neural.py`,
+`solvers/sdf_inverse/neural_optimization.py`, and
+`run_mlp_sdf_inverse_comparison.py`. The accepted implicit state is now able to
+be a geometrically initialized residual MLP with all network weights trained.
+The missing Kress shape adjoint is not papered over with weight-wise finite
+differences: a small smooth normal-mode basis supplies black-box data
+directions, and each accepted contour is re-distanced into the MLP with frozen
+polygon-distance labels, boundary/offset anchors, exterior samples, and an
+Eikonal term. A new forward solve must retain the data decrease or the entire
+cycle is rejected. Known contour failures are typed as infeasible geometry so
+they can trigger stencil shrinking/backtracking without hiding solver errors.
+
+Eikonal-only inner optimization was rejected. It neither identifies a zero set
+nor preserves one, and mutating a model inside the existing cached
+finite-difference evaluator would invalidate its numerical Jacobian.
+
+### Focused validation only
+
+```bash
+OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
+NUMEXPR_NUM_THREADS=1 PYTHONPATH=solvers \
+/home/drdeng/miniconda3/envs/EMNerf/bin/python -m pytest \
+  pytest/sdf_inverse/test_neural_mlp_inverse.py -q
+```
+
+Result after hardening: `7 passed in 2.16 s`. The tests cover polygon sign/distance,
+finite smooth modal fields at the centre, deterministic random-hidden MLP
+initialization, non-circular re-distancing with an Eikonal gate, and one
+transactional accepted inverse cycle using a cheap geometry observable. They
+also cover terminal convergence between check intervals, Method-B validation
+translation, exact-initial early exit, caller-mode restoration, redistance
+curve drift, and worst-residual aggregation over modal trials. The existing
+raw-unconstrained-MLP rejection check also passed separately.
+
+No real MOD/Kress neural inverse, multi-seed sweep, fine-grid topology audit,
+or full first-party suite was run in this change. Those expensive checks and
+any accuracy claims are deliberately left for a later calibrated result
+bundle; the checked low-dimensional comparisons remain the current evidence.
+
+---
+
+2026-09-03 — modal step regularization after a measured high-mode ripple
+
+### What was wrong
+
+The first real runs of the alternating MLP inverse were rendered as contour
+videos, and both circle-target cases visibly converged toward a five-lobed
+star. The stored target polyline in those bundles is a true circle (radial
+standard deviation `8e-17 m`), so this was the iterate, not the plot. Fitting
+radial harmonics to the stored contours:
+
+| case | `k=5` amplitude, initial -> final | mean radius, final |
+|---|---:|---:|
+| `mlp-circle-to-circle`, Kress | `0.00 mm -> 8.99 mm` | `52.1 mm` |
+| `mlp-ellipse-to-circle`, Kress | `0.05 mm -> 12.93 mm` | `48.4 mm` |
+
+The low modes were converging correctly at the same time -- centre `(0.480,
+0.520) -> (0.495, 0.505) m`, mean radius `65.0 -> 52.1 mm` -- so the ripple was
+riding on an otherwise working inverse. `maximum_mode` was 5, the highest mode
+in the basis.
+
+### Cause, measured not assumed
+
+`diag(J^T J)` normalized by its maximum, on the first modal Jacobian:
+
+| `k` | circle target, `ka = 1.67` | star target, `ka = 5.01` |
+|---:|---:|---:|
+| 0 | `1.000` | `0.965` |
+| 1 | `0.986` | `0.168` |
+| 2 | `0.898` | `0.504` |
+| 3 | `0.384` | `0.267` |
+| 4 | `0.090` | `0.251` |
+| 5 | `0.011` | `0.403` |
+| 6 | -- | `1.000` |
+| 7 | -- | `0.978` |
+
+On the circle the `k=5` column carries about 1% of the strongest mode's
+sensitivity. Four independent choices then turned that into a growing ripple:
+the Levenberg damping decayed by `0.3` per accepted cycle with no floor and
+reached about `5e-10` after twelve; Gauss-Newton inverted the small singular
+value; an oversized step was brought inside the field-update trust region by
+rescaling, which preserves direction and therefore divided away the resolvable
+content instead of the ripple (`maximum_modal_field_update_m` read exactly its
+`4e-3` cap at every iteration in both cases); and acceptance asked only for
+`loss < current_loss`, which a ripple fitting representation error satisfies
+indefinitely.
+
+A fifth coupling was separate and made convergence unreachable rather than
+wrong: the inner re-distancing stopped at its own `eikonal_rms_tolerance` of
+`0.2` while the outer loop refused to call anything above `0.15` converged, so
+every run could only end at `maximum_iterations`.
+
+### Change
+
+`solvers/sdf_inverse/neural_optimization.py`
+
+- `minimum_damping` floors the Levenberg damping.
+- `curvature_penalty_weight` adds a `k**4` Tikhonov ridge referred to the
+  largest diagonal of the normal matrix. At `1e-4` its threshold at `k=5` is
+  `0.0625` against a measured diagonal of `0.011`, so it dominates the
+  unresolvable mode by about five while sitting at 2% of the `k=3` diagonal
+  and 0.2% of the `k=2` diagonal. On the star, where `k=6` and `k=7` are the
+  best-determined columns, the same weight is a 13-24% ridge and does not
+  block lobe recovery.
+- `_bounded_modal_step` enforces the trust region by raising the damping,
+  which shortens the step and rotates it toward steepest descent.
+  `max_trust_region_solves` bounds that search; the old rescale survives only
+  as the fallback, and `max_trust_region_solves=0` reproduces the old
+  behaviour exactly.
+- `_sufficient_decrease` applies an Armijo test against the step's own
+  predicted decrease. The post-redistance check stays a strict decrease:
+  re-distancing perturbs the shape by an amount that does not shrink with the
+  step length, so an Armijo test there would reject small steps for a reason
+  unrelated to the search direction.
+- `AlternatingNeuralInverseConfig` now rejects an inner Eikonal tolerance
+  above the outer gate.
+- `resolvable_maximum_mode(wavenumber, radius)` returns
+  `ceil(ka + ka**(1/3))`. It is a reporting heuristic with the shape of the
+  Wiscombe multipole truncation, not a theorem.
+- `NeuralInverseIteration` records `applied_damping`.
+
+`run_mlp_sdf_inverse_comparison.py` defaults `--maximum-mode` to that estimate,
+reports the budget in `metrics.json` under `mode_budget` and in `summary.md`,
+and sets the inner Eikonal tolerance to `0.1` -- under the outer gate, but not
+far under, because a wrong ellipse or star needs about `6e-2` to fit at all
+inside the step budget. An explicitly larger basis is still accepted and is
+flagged with `exceeds_resolution`.
+
+### Measured effect
+
+Re-running the four cases with the regularized step, both solvers, and a budget
+large enough to let each run end on its own:
+
+| case | solver | max boundary error, before -> after | holdout rel. L2, before -> after |
+|---|---|---:|---:|
+| circle -> circle | Kress | `1.895e-2 -> 6.335e-4 m` | `1.137 -> 4.253e-2` |
+| circle -> circle | MOD | `1.952e-2 -> 6.403e-4 m` | `1.146 -> 8.394e-2` |
+| ellipse -> circle | Kress | `2.513e-2 -> 6.050e-3 m` | `1.614 -> 4.940e-1` |
+| ellipse -> circle | MOD | `2.602e-2 -> 6.152e-3 m` | `1.641 -> 5.089e-1` |
+| star -> star | Kress | `3.009e-2 -> 4.855e-3 m` | `8.432e-1 -> 2.419e-1` |
+| star -> star | MOD | `3.016e-2 -> 4.757e-3 m` | `8.541e-1 -> 2.577e-1` |
+
+Three of the four cases now stop on `no_decreasing_redistanced_step` on both
+solvers rather than at an iteration cap. `ellipse -> star` still used its whole
+budget at 60 and is being re-run at 150; its 60-cap Kress result was
+`4.227e-2 -> 8.535e-3 m` boundary error against `4.092e-2 m` before.
+
+The star is the load-bearing check, because `k=5` there is the same column that
+had to be suppressed on the circle. Radial harmonics of the recovered contour,
+in millimetres, against a target of `50.000` mean radius and `12.500` at `k=5`
+with every other harmonic zero: Kress recovers `50.13` and `12.255` with no
+spurious harmonic above `0.973`; MOD recovers `50.16` and `12.180` with none
+above `1.217`. The prior priced the same column correctly in both regimes
+without being told which case it was in.
+
+A negative control is kept at
+`results/inverse_solver_comparison/mlp-ellipse-to-circle-mode5-control-20260903/`:
+the same case at `--maximum-mode 5`, above its resolution estimate of 3,
+reaching the same training error with `1.515e-2 m` (Kress) and `1.853e-2 m`
+(MOD) boundary error against `6.050e-3` and `6.152e-3 m` for the capped basis.
+The regularization removes the runaway but not the cost of unaffordable basis
+freedom, which is why the estimate is the default.
+
+One consequence is worth flagging for the solver comparison. Before this
+change, MOD and Kress agreed to three significant digits in every MLP case,
+because geometry error near `2e-2 m` dominated both forwards. At a `6e-4 m`
+floor they separate again: circle-to-circle training error is `4.017e-4`
+(Kress) against `2.718e-3` (MOD).
+
+### Validation run
+
+```bash
+OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
+NUMEXPR_NUM_THREADS=1 PYTHONPATH=solvers \
+/home/drdeng/miniconda3/envs/EMNerf/bin/python -m pytest \
+  pytest/sdf_inverse/ pytest/sdf_to_ordered_boundary/ -q
+```
+
+Result: `117 passed`. Nine tests were added for the new behaviour: the `k**4`
+weights and their disabled form, the trust region rotating a step instead of
+rescaling it, the trust region leaving an in-region step untouched, the Armijo
+test rejecting a negligible fraction of a predicted decrease, the resolution
+estimate against `ka`, and the inner/outer Eikonal tolerance ordering. Three
+existing tests were updated to satisfy that new ordering invariant.
+
+---
+
+2026-09-03 — canonical-curve MLP inverse and low-to-high continuation
+
+### Failure diagnosis
+
+The completed Kress ellipse-to-star run in
+`results/inverse_solver_comparison/mlp-fixed-ellipse-to-star-kress-20260903/`
+showed that the regularized MLP loop still had two coupled floors. It accepted
+25 updates and stopped at `spectral_tail_growth_limit`; training relative L2
+changed only `1.194 -> 1.039`, holdout changed `1.003 -> 1.043`, and maximum
+boundary error worsened `42.03 -> 46.67 mm`. The desired radial `k=5`
+amplitude remained about `0.47 mm` against `12.5 mm`, while the initial
+ellipse's `k=2` content grew.
+
+The forward systems themselves were not the failure: the maximum Kress linear
+residual was about `1.5e-14`, and the exact target passed through the same
+Kress/Method-B forward seam agreed with the independent observations to about
+`4.2e-5` relative error. Runtime attribution instead found `730 s` in the old
+inverse-forward wrapper and `217 s` in neural re-distancing out of `948 s`.
+A comparable single probe measured about `1.25 s` for dense SDF boundary
+extraction and `0.20 s` for Kress, so extraction dominated the nominal
+"forward" bucket. Post-redistance contour drift was only `38-120 micrometres`
+in absolute terms, but it remained a large and sometimes larger-than-step
+fraction late in the trajectory and was fed back into every new Jacobian.
+
+The 0.2 mm radial-tail cap was also not a valid default trust region for this
+geometry. Radial Fourier order and normal-displacement order coincide on a
+circle, not on an ellipse. A measured admissible ellipse update in the active
+normal basis created about `0.224 mm` of radial content above that basis, so
+the hard cap could reject ordinary geometric travel rather than only a ripple.
+
+### Change
+
+- `sdf_inverse.forward.predict_paired_curve_response` now dispatches an
+  existing `PeriodicCurve2D` directly to MOD or Kress. Modal finite-difference
+  probes no longer evaluate the MLP, run marching squares, project a zero set,
+  or refit Method B.
+- Direct normal-mode updates preserve the canonical node phase and Fourier
+  bandwidth. Probe trials receive inexpensive node-polygon/bounds/regular-jet
+  checks; a data-decreasing line-search candidate is rebuilt once with dense
+  continuous validation before it may be accepted.
+- The validated direct curve and its already-computed BEM response are the
+  accepted inverse state. All MLP weights are re-distanced to that curve, then
+  its extracted zero set is checked for topology, field quality, and geometric
+  drift. This is a representation audit only: the extracted curve is not fed
+  into the next Jacobian and does not trigger a redundant BEM acceptance solve.
+- Multiple frequencies now use cumulative low-to-high continuation by
+  default. The `0.5,1.5,2.5 GHz`, `k=5`, 80-iteration calibration uses
+  frequency prefixes with budgets `20/20/40` and mode ceilings `1/3/5`.
+  Canonical contour, MLP representation, damping, and deterministic sampling
+  state carry between stages. `--no-frequency-continuation` retains the joint
+  objective for controlled comparisons.
+- The Levenberg search still raises damping to rotate an oversized direction,
+  but now refines the feasible/infeasible bracket in log damping. It therefore
+  uses the least over-damped feasible step instead of the first decade endpoint.
+- Radial spectral tail remains in every trajectory and result, but its hard
+  growth cap is disabled by default and available only through an explicit
+  `--maximum-spectral-tail-growth-mm`. When enabled, continuation refers each
+  active mode to the original contour rather than re-baselining every stage.
+- Result bundles store canonical and MLP-representation curves and responses
+  separately. Timings distinguish direct objective forwards, neural
+  re-distancing, and selected-candidate geometry/MLP audits; backend BEM and
+  direct curve-update time are also exposed separately, and failed
+  re-distancing attempts contribute to explicit attempt/step counters.
+- A convergence claim now requires small realized loss and geometry changes,
+  a small un-backtracked trust-region model direction, MLP-to-canonical drift
+  and boundary-field residual below the geometry tolerance, and an Eikonal
+  RMS below its gate. The same representation checks apply to stationary
+  line-search exhaustion, not only to accepted updates.
+
+### Focused validation only
+
+No long inverse was run for this change. The final direct curve-forward,
+normal-update, continuation-driver, convergence, re-distancing, video, and
+non-optimization solver-neutral regression selection passed (`60 passed`, with
+the six real inverse cases deliberately deselected). A short real Kress probe
+used the saved initial ellipse
+and only the first 0.5 GHz objective. With the coarse `k=1` stage and refined
+damping, the step used `3.992 mm` of its `4.000 mm` allowance and reduced loss
+from `0.70137` to `0.60493`. The former decade endpoint with the wider `k=3`
+stage used only `0.487 mm` and reached `0.68885`. This is directional evidence
+for the corrected trust/continuation mechanics, not a reconstruction or
+convergence claim. The full calibration remains an explicit user-run command.
+
+---
+
+2026-09-03 — completed canonical diagnostic and full-band mode continuation
+
+### Long-run result
+
+The user-completed Kress run in
+`results/inverse_solver_comparison/mlp-canonical-ellipse-to-star-kress-20260903/`
+did not converge. It accepted 15 updates, and every continuation stage stopped
+with `no_acceptable_mlp_distillation`. Full-band loss changed
+`2.223592919 -> 2.157108810`, training relative L2
+`1.194114882 -> 1.031121445`, holdout relative L2
+`1.003360055 -> 0.942955819`, and canonical maximum boundary error
+`42.0309 -> 27.8343 mm`. Final MLP-to-canonical maximum drift was
+`0.497114 mm`; the corresponding relative response discrepancy was
+`0.00406356`.
+
+The canonical/direct-curve split nevertheless fixed the measured forward
+bottleneck. Inverse time fell from `948.326 s` in the pre-canonical run to
+`288.945 s`. The latter separates into `28.375 s` of direct forwards
+(`26.744 s` in Kress and `1.007 s` in curve updates), `174.511 s` in neural
+re-distancing, and `85.537 s` in selected-candidate geometry and
+representation audits. Boundary extraction is no longer repeated inside
+every finite-difference or line-search forward. Re-distancing and auditing,
+not the forward BEM solve, now dominate.
+
+### Diagnosis and correction
+
+The cumulative low-frequency first stage optimized an objective that did not
+constrain the target lobe. It primarily translated and shrank the ellipse:
+mean radius changed `50.982 -> 40.345 mm`. The final `k=5` component had the
+wrong phase and its vector error worsened `12.480 -> 14.446 mm`. The improved
+boundary maximum and data losses therefore did not indicate the desired lobe
+recovery.
+
+- This intermediate change made full-band progressive-mode continuation the
+  default: all requested
+  training frequencies remain active while modal ceilings grow through
+  `k=1/3/5`. `--frequency-continuation` retains the cumulative-frequency
+  schedule explicitly, and `--no-continuation` requests one full-band,
+  full-mode stage.
+- Damping resets at each stage. Unused accepted-update budget from the warm
+  stages is carried into the final full-mode stage instead of being lost.
+- The maximum representation drift defaults to a `1.5 mm` acceptance safety
+  cap. The independent `0.2 mm` geometry-convergence tolerance still gates a
+  convergence claim, so loosening acceptance does not redefine convergence.
+- Full-validation rejection, failed MLP fitting, representation-extraction
+  failure, and representation-drift rejection are reported separately rather
+  than all being charged to the infeasible-forward count.
+
+At this point no second long inverse had been run. The completed bundle
+above is evidence for the diagnosis and the direct-forward speedup, not for
+convergence of the new default schedule.
+
+### Focused validation
+
+The direct-update, curve-forward, convergence-diagnostic, neural inverse,
+re-distancing, continuation-driver, video, and non-optimization
+solver-neutral selection passes (`80 passed`). This includes an explicit
+regression that distinguishes dense curve-validation rejection from an MLP
+distillation failure. No full inverse case was started during validation.
+
+---
+
+2026-09-03 — progressive-mode failure and joint full-mode correction
+
+### Long-run result
+
+The user-completed Kress run in
+`results/inverse_solver_comparison/mlp-full-band-modes-ellipse-to-star-kress-20260903/`
+did not converge. It accepted 74 canonical updates. Training loss changed
+`2.223592919 -> 1.268193860` and training relative L2
+`1.194115 -> 0.957988`, but holdout relative L2 worsened
+`1.003360 -> 1.075114` and canonical maximum boundary error worsened
+`42.031 -> 48.442 mm`.
+
+Post-run intrinsic geometry analysis measured `29.206 mm` centre error, mean
+radius `44.577 mm`, residual `k=2` amplitude `11.652 mm`, and a `k=5` vector
+of `(-3.849, -1.253) mm` with amplitude `4.048 mm`. The five-lobe component
+was nearly inverted and its vector error was `16.397 mm`. Dense maximum/RMS
+target distance was `49.135/19.457 mm`.
+
+The MLP represented this bad canonical contour faithfully: maximum drift was
+`0.243 mm`, its response discrepancy was `0.002329` relative, and all neural
+fit, extraction, and representation-drift rejection counts were zero. Stage 1
+accepted 20 `k=1` updates. Stage 2 accepted four `k<=3` updates and recorded
+37 dense-validation rejections. Stage 3 accepted 50 `k<=5` updates before the
+overall `no_decreasing_modal_step` stop.
+
+Total inverse time was `377.523 s`. Direct forwards used `232.739 s`, including
+`225.264 s` in Kress; re-distancing used `88.257 s`, and geometry/MLP audits
+used `55.849 s`. Boundary extraction remained outside the 1,458 modal forward
+attempts. The increased forward share is therefore BEM work from the much
+longer trajectory, not regression to extraction inside each probe.
+
+### Diagnosis
+
+Keeping the full frequency band active was insufficient because the modal
+basis was still progressive. Twenty-four low-order updates changed the basin
+before the target `k=5` direction became available. The falling training loss
+therefore hid worse holdout and true geometry.
+
+The older full-basis-from-start run in
+`results/inverse_solver_comparison/mlp-ellipse-to-star-nystrom-20260903/`
+provides a useful historical contrast. It had recovered `k=5` by
+iteration 50; final Kress geometry had `1.626 mm` centre error,
+`k=5 = (12.055, -0.558) mm`, and `7.467 mm` dense maximum target distance.
+That run predates canonical state ownership, so it is not validation of the
+current optimizer. It also used a different acquisition, so it does not
+uniquely isolate the schedule; it motivates a matched test of early access to
+the full basis.
+
+### Change
+
+- The default is now one joint full-band, full-mode stage.
+  `--joint-full-band` is the preferred explicit selector. Progressive-mode
+  and cumulative-frequency continuation remain explicit experimental modes.
+- `max_backtracks` now counts reductions after the un-backtracked candidate.
+  Its new default value of six evaluates the full trial plus six reductions
+  through `1/64`. The former five-reduction limit omitted the sixth reduction
+  that clears the dense-validation barrier measured in stage 2.
+- Failed-step classification retains the best direct canonical candidate. A
+  stationary canonical update that the MLP has not represented within the
+  convergence gates now stops early as
+  `representation_limited_stationary`; it neither claims convergence nor
+  consumes the rest of the iteration budget.
+
+No long inverse has been run after this correction. The recommended next run
+matches the historical two-frequency, 12-pair, full-`k<=6`, 150-update setup,
+but uses the current canonical/audit-only optimizer and explicit
+`--joint-full-band` mode.
+
+### Focused validation
+
+The direct-update, curve-forward, convergence-diagnostic, neural inverse,
+re-distancing, continuation-driver, contour-video, and non-optimization
+solver-neutral selection passes (`95 passed in 28.90 s`). Python compilation
+also passes. No full inverse was started during this validation.
+
+---
+
+2026-09-04 — joint-`k<=6` failure and selected-update remeshing
+
+### Long-run result
+
+The user-completed Kress run in
+`results/inverse_solver_comparison/mlp-joint-k6-ellipse-to-star-kress-20260903/`
+did not converge. Fourteen updates passed the progress-only driver gate before
+the optimizer stopped as `representation_limited_stationary`. Training loss
+changed `1.423241629 -> 0.542048191`, training relative L2
+`1.192384 -> 0.738845`, holdout relative L2
+`1.053290 -> 0.935345`, and maximum boundary error
+`42.031 -> 35.114 mm`. The data decrease was substantial but the final shape
+was still wrong: the canonical stored-curve audit measured
+`k=5 = (-0.420, -4.817) mm` against the target `(12.500, 0) mm`, a
+`13.788 mm` vector error.
+
+The run requested modes through `k=6`. Its wave-based limit was also six, but
+the 12-angle paired scan can identify both real coefficients only through
+`k=5`. This explicit over-limit request is recorded in `metrics.json` and
+prevents interpreting the run as an accuracy validation.
+
+### Diagnosis
+
+The joint schedule removed progressive-mode staging but exposed a more direct
+geometry defect. The first seven accepted normal updates all saturated the
+former `4 mm` displacement cap (`3.975--3.998 mm`). Repeated phase-preserving
+Fourier updates then collapsed the canonical parameterization: minimum speed
+divided by mean speed fell from approximately `1` to `0.003`, maximum absolute
+curvature reached approximately `3.03e6 1/m`, and 83 full continuous
+validations rejected candidate curves. The apparent stationary modal state
+was therefore not evidence of a well-resolved geometric optimum.
+
+The other diagnostics rule out the earlier suspected bottlenecks. All 14
+re-distance attempts succeeded, with zero representation-extraction,
+representation-drift, or spectral-tail rejection. Final MLP-to-canonical
+drift was `0.525 mm` and its response discrepancy was `0.006237`; those values
+miss the strict representation convergence gates but do not explain the
+canonical parameterization collapse. The maximum inverse linear-system
+residual was `8.58e-15`, so BEM algebraic convergence was also intact.
+
+Total inverse time was `96.102 s`. Direct forwards used `48.895 s`, including
+`46.369 s` in Kress and `1.618 s` in curve updates; re-distancing used
+`26.810 s`, and geometry/MLP audits used `20.132 s`. The run made 472 forward
+attempts, nine of them infeasible. Boundary extraction remained outside the
+modal finite-difference loop.
+
+### Change
+
+- Finite-difference probes and preliminary line search remain phase-preserving
+  and extraction-free. Once a candidate supplies sufficient decrease, the
+  same modal update is rebuilt with arc-length redistribution and full
+  continuous validation.
+- The remeshed curve receives a fresh BEM solve, and its response must pass the
+  sufficient-decrease test again. Only that coherent curve/response pair can
+  be re-distanced into the MLP and become the next canonical state.
+- The default maximum modal displacement is reduced from `4.0` to `2.0 mm`;
+  `--maximum-modal-update-mm` exposes the value explicitly. This is a safety
+  response to seven consecutive cap-saturating steps, not a calibrated
+  convergence claim.
+- A full accepted step may reduce damping, but a backtracked accept retains
+  the damping that produced its direction. This avoids immediately rebuilding
+  the same damping through another reject/escalate cycle.
+- Stationary updates with dense continuous-validation rejection now stop as
+  `geometry_limited_stationary`. `representation_limited_stationary` is
+  reserved for stationary canonical motion without that geometry barrier but
+  with unmet MLP convergence gates. Neither is convergence.
+- Live progress and every trajectory CSV row now record the accepted
+  backtrack count, raw trust-region versus accepted-step predicted relative
+  decrease, arc-refit RMS/maximum displacement, and speed ratio before/after
+  refitting. A recurrence of the collapse is therefore directly observable.
+
+These corrections target the measured failure while retaining cheap direct
+curve probes. They have focused test coverage, but no post-correction long
+inverse has yet validated convergence or reconstruction accuracy. The final
+direct-update, curve-forward, convergence, neural inverse, re-distancing,
+driver, video, and solver-neutral selection passed (`100 passed in 23.38 s`);
+Python compilation and the documentation diff check also passed. No new
+long-run command is prescribed in this entry.
+
+## 2026-09-05 — Inverse pipeline audit and correctness repairs
+
+### Hypothesis and review scope
+
+The current MLP path may be doing redundant representation work after a
+successful canonical-curve update. Review covered the parameter-FD inverse,
+alternating neural path, shared extraction, Kress multi-component forwarding,
+legacy MOD adjoint evidence, experiment artifacts, and material/3-D scope.
+Existing user changes and saved experiment bundles were preserved.
+
+The [dated review](inverse_pipeline_review_2026-09-05.md) records the verdict
+and proposed design choices. Its numerical reconstruction/time values come
+from the saved 2026-09-04 radial-continuation K5 bundle, not a new long run.
+No material inversion, topology optimizer, Kress adjoint, or 3-D extension was
+implemented in this audit.
+
+### Repairs
+
+- Retain a surviving one-sided FD probe at an active parameter bound. Do not
+  label missing Jacobian columns or arbitrarily small rejected steps as
+  convergence. Recognize true declared-bound optima with complete projected
+  gradients, preserving raw gradients in iteration records.
+- Enforce outward field-gradient direction for the declared negative-inside
+  convention in single- and multi-component ordered geometry. Sign-reversed
+  fields previously passed CCW canonicalization and represented the wrong
+  material region silently.
+- When only a canonical initial curve is supplied, extract the current MLP
+  representation once instead of assuming zero drift. Explicit audited
+  continuation curves retain their existing reuse path.
+- Enforce radial curve sampling against its own Cartesian bandwidth K+1.
+- Add the exact physical experiment snapshot to new MLP metrics: acquisition
+  arrays, complex source strengths, frequencies, materials, physical constants,
+  target parameters, and observation-noise policy.
+
+### Validation
+
+New regressions reproduced the failures before repair. The integrated command
+after the initial repairs passed `400 passed, 300 warnings in 160.05 s`:
+
+```bash
+env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
+  NUMEXPR_NUM_THREADS=1 PYTHONPATH=solvers \
+  /home/drdeng/miniconda3/envs/EMNerf/bin/python -m pytest \
+  pytest/sdf_inverse pytest/ordered_boundary pytest/sdf_to_ordered_boundary \
+  pytest/gpr_bem_mod pytest/gpr_bem_kress pytest/multicylinder_ref \
+  pytest/sdf_bem_multicomponent pytest/nystrom_ref -q --disable-warnings
+```
+
+That integrated run preceded the final projected-gradient follow-up. Its
+optimizer and bound-stationarity regressions subsequently passed `14 passed
+in 0.12 s`; the solver-neutral tests also passed after the stopping change.
+The final complete `pytest/sdf_inverse` rerun, using the same environment
+above, passed `156 passed in 79.21 s` after the projected-gradient follow-up.
+`git diff --check` also passed.
+Warnings in the broad run were Matplotlib/pyparsing deprecations and existing
+MOD compression diagnostics. The run was scoped to these solver, inverse,
+and geometry packages and did not regenerate saved comparison studies.
+
+## 2026-09-05 — SDF/Kress guide first batch (A/B/C)
+
+### Scope and change
+
+Read the complete [priority brief](codex_sdf_kress_priorities_2026-09-05.md)
+and implemented its first batch only. The
+[implementation/evidence report](sdf_kress_first_batch_2026-09-05.md) owns the
+API mapping, measured comparisons and qualifications. D–H remain deferred.
+Existing dirty-tree changes and all historical artifacts were preserved.
+
+Added explicit strict/curve-only/final-export policies around the same
+canonical optimizer, separate reconstruction and representation outcomes,
+smooth continuous-distance targets independent of BEM N, and the bounded
+exact-ellipse/ordered-label parameterization experiment. Strict policy,
+polygon supervision, production Method B and solver selection defaults remain
+unchanged. Export works on a copy and cannot replace a valid canonical state
+on failure. Failed optional driver diagnostics retain canonical artifacts;
+unavailable metrics are null rather than zero, and unexpected programming
+errors are not swallowed.
+
+### Fresh measurements and decision
+
+- A first ran the short deterministic contract test, then the saved star
+  configuration without competing project benchmarks. All three policies had
+  exactly equal 44-update canonical trajectories and holdout field error
+  `1.3393e-8`. Reconstruction times were strict `229.74 s`, curve-only
+  `81.61 s`, export-only `81.62 s`; final export took another `8.41 s` and
+  failed its 1,200-step fit budget. Strict representation also failed its
+  independent final gate. Canonical N128→256 fields agree to `5.89e-14`
+  relative. Zero neural calls during curve/export reconstruction were
+  instrumented, not inferred. Shared preparation and all other phases are
+  separately recorded. These are single-run timings.
+- B compared polygon versus continuous-distance labels at identical sample
+  coordinates, model initialization and 600-step budgets. Circle extracted
+  drift improved `0.233→0.0385 mm`; star `1.605→0.535 mm`. Physical fields
+  improved under refinement, but every fit failed the strict training gates,
+  the star still exceeded `0.2 mm`, and its global distance RMS worsened
+  slightly. Circle truth is independent Mie; the exact-star Kress reference
+  is self-refined, not an independent solver. No sampling-change experiment
+  is claimed.
+- C generated 82 method records and 246 physical-field rows across four
+  cases and independent K/N ladders, with seven explicit fallbacks. Ellipse
+  ordered-label fitting met the same geometry/field gates at K1/N32 versus
+  Method-B K16/N32 without increased condition or node count. It did not
+  achieve the declared 10% work-reduction threshold. Star/non-star candidates
+  qualified where B did not within the bounded ladder; that is not a
+  matched-accuracy speed comparison. The penalty harmed the non-star result.
+  Retain opt-in; no default promotion. A separately hashed bandwidth-decision
+  supplement reads frozen measurements without rewriting them.
+
+Commands, immutable physical configurations, observation/geometry arrays,
+reference convergence, resolutions, source hashes and dirty-tree provenance
+live in the fresh bundles linked from the report. Post-measurement driver
+failure-path/reporting repairs do not rewrite their source identities.
+
+### Regression validation
+
+All commands used:
+
+```bash
+env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
+  NUMEXPR_NUM_THREADS=1 PYTHONPATH=solvers \
+  /home/drdeng/miniconda3/envs/EMNerf/bin/python -m pytest -q \
+  pytest/ordered_boundary pytest/sdf_to_ordered_boundary \
+  pytest/gpr_bem_kress pytest/sdf_bem_multicomponent pytest/multicylinder_ref \
+  pytest/solver_comparisons/test_parameterization_aware_driver.py
+```
+
+Result: `222 passed, 276 warnings in 39.32 s`.
+
+```bash
+env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
+  NUMEXPR_NUM_THREADS=1 PYTHONPATH=solvers \
+  /home/drdeng/miniconda3/envs/EMNerf/bin/python -m pytest -q --disable-warnings \
+  pytest/gpr_bem_mod pytest/nystrom_ref
+```
+
+Result: `43 passed, 24 warnings in 71.52 s`.
+
+```bash
+env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
+  NUMEXPR_NUM_THREADS=1 PYTHONPATH=solvers \
+  /home/drdeng/miniconda3/envs/EMNerf/bin/python -m pytest -q --disable-warnings \
+  pytest/sdf_inverse
+```
+
+Result: `186 passed in 74.75 s`, including the nine driver instrumentation,
+initialization-failure, artifact-preservation and programming-error tests.
+These three disjoint selections total 451 passed. Warnings are existing
+Matplotlib/pyparsing deprecations and MOD compression diagnostics. The studies
+were not regenerated by this regression run. All 100 final A/B/C NPZ archives
+(1,144 numeric arrays) loaded without pickle. `git diff --check` passed.
+
+The broad inverse run preceded three final narrow reporting repairs:
+
+- An ambiguous legacy `representation_limited_stationary` reason does not by
+  itself imply reconstruction convergence. An explicit internal flag now
+  records the verified consecutive accepted-state branch; a rejected tiny
+  trial keeps reconstruction nonconverged without altering the old strict
+  `converged`/`stop_reason`. The saved star took the verified branch: its
+  final stage has five accepted updates and exactly 116 evaluations, with
+  no additional failed-step Jacobian after the last row; total stage work is
+  `286+461+116=863`. Its measured conclusion is unchanged.
+- Failed distance-target refinement before any network query reports
+  `representation_evaluated=false`, retaining null representation errors.
+- Finite predicted fields can overflow residual normalization. The optional
+  export forward audit now catches that `FloatingPointError` as an export
+  failure, preserving the model and canonical reconstruction; unexpected
+  programming/contract errors still propagate.
+
+The policy and neural-convergence suites passed `33 passed in 0.88 s` after
+these repairs, including both actual legacy stopping paths and the finite-input
+overflow regression. No numerical optimizer, quadrature, observation or
+measured-result file was changed by this final reporting follow-up.
+
+The final combined policy/convergence/driver rerun, under the same environment,
+passed `42 passed in 0.91 s`:
+
+```bash
+python -m pytest -q --disable-warnings \
+  pytest/sdf_inverse/test_distillation_policy.py \
+  pytest/sdf_inverse/test_neural_inverse_convergence_diagnostics.py \
+  pytest/sdf_inverse/test_representation_ablation_driver.py
+```
+
+This overlaps the broad suite; it is not 42 additional independent tests.
+
+## 2026-09-06 — bounded E and H1 follow-up
+
+Authorization: after the completed A/B/C batch, the user asked to continue
+until a design decision was needed. Existing defaults and dated measurements
+are preserved; these are new explicit-import experiments. Full scope and
+qualifications are in [`sdf_kress_followup_2026-09-06.md`](sdf_kress_followup_2026-09-06.md).
+
+**E hypothesis/change:** verify the derivative of the actual discrete Kress
+objective before introducing a neural-derived update rule. New analytic jets
+differentiate all assembled blocks, incident traces, receiver operators and
+material dependence. A conjugate adjoint handles real-stacked fixed weighting
+and duplicate paired complex observations. It returns directional covectors,
+not invented normal densities. New independent matched-material cylinder
+sensitivity supplies a non-FD zero-contrast material oracle.
+
+```bash
+env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
+  NUMEXPR_NUM_THREADS=1 PYTHONPATH=solvers \
+  /home/drdeng/miniconda3/envs/EMNerf/bin/python \
+  run_kress_shape_derivative_validation.py \
+  --output-dir results/kress_shape_derivative/refined-audits-20260906
+```
+
+Result: 96/96 fixed-node records pass; the separate independent-reference and
+physical-refinement gate passes. Wall time 77.77 s. The first
+`bounded-20260906` artifact remains unchanged, with an explicit explanation
+of its inappropriate vanishing-field absolute FD scale and corrected
+phase-reference audit. A unit test now guards the zero-contrast error scale.
+Unsigned paired-index overflow and tiny-source primal-reassembly checks were
+fixed during pre-sweep review. Decision: accept E within its declared
+fixed-grid single-interface domain; do not promote the production optimizer
+or infer multi-interface/topology derivatives.
+
+**H1 hypothesis/change:** test whether true distance values improve conversion
+beyond zero-set projection, ordered labels and tangent information. Five
+exact/distorted/frozen-neural cases compare five methods across K1/4/8 and
+independently refined N64/128/256. Invalid contacts retain their raw candidate,
+query/fitting costs and valid Method-B fallback.
+
+```bash
+env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
+  NUMEXPR_NUM_THREADS=1 PYTHONPATH=solvers \
+  /home/drdeng/miniconda3/envs/EMNerf/bin/python \
+  run_distance_tangency_comparison.py \
+  --output results/distance_tangency/first-batch-20260906
+```
+
+Result: 75 arms, 54 accepted, 21 explicit fallbacks, 86.15 s. No predeclared
+>10% matched-error selected-work win; projected/tangent controls also achieve
+the low-K exact-ellipse result. Every deliberately distorted metric arm and
+every neural metric arm is rejected. A derived bandwidth decision incorrectly
+compared fastest-row K instead of minimum qualifying K; a transparent
+`decision_supplement.json` and regression correct it without rewriting
+measurements. Decision: retain the guards and experimental driver, not a
+mandatory metric-distance conversion stage or SDF-specific advantage claim.
+
+After these implementations and reporting corrections, the following
+regressions ran with the same thread-limited environment:
+
+```bash
+python -m pytest -q --disable-warnings \
+  pytest/ordered_boundary pytest/sdf_to_ordered_boundary \
+  pytest/gpr_bem_kress pytest/sdf_bem_multicomponent pytest/multicylinder_ref \
+  pytest/solver_comparisons/test_parameterization_aware_driver.py \
+  pytest/solver_comparisons/test_distance_tangency_driver.py \
+  pytest/solver_comparisons/test_kress_shape_derivative_driver.py
+python -m pytest -q --disable-warnings pytest/sdf_inverse
+```
+
+Results: **265 passed**, 276 existing warnings in 42.38 s; **217 passed** in
+61.99 s. These disjoint selections total **482 passed**, before the separate
+F/D experiments and their new tests were finalized. No historical comparison
+study was regenerated. The final E driver later expanded dependency hashes
+and made multi-resolution physical-gate failure set its CLI exit status;
+neither changes numerical behavior of the saved passing run.
+
+### F — frozen neural metric comparison, same follow-up
+
+After E passed, a separate explicit-curve optimizer compared identity,
+Sobolev angular length 0.35 and frozen initial neural seeds 0/1/2 on circle/star.
+The neural metric projects `-partial_theta(phi)/|grad(phi)|` into the declared
+radial chart, applies the mass-whitened normalized covariance to E's discrete
+covector and never adds a second `ds`. All arms use the same step/budget gates,
+zero regularization and true-objective acceptance. Only the 65 output-head
+columns of 5,441 MLP parameters are active at the exact initial circle; there
+is no training, extraction or model query after metric initialization.
+
+```bash
+env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
+  NUMEXPR_NUM_THREADS=1 PYTHONPATH=solvers \
+  /home/drdeng/miniconda3/envs/EMNerf/bin/python \
+  run_neural_metric_comparison.py \
+  --output-dir results/neural_metric/comparison-20260906
+```
+
+Result: ten arms completed in 360.63 s without changing predeclared settings.
+All final numerical-refinement gates pass, but **no neural-metric arm wins**.
+Circle identity/Sobolev meet the configured training-loss stop; their held-out
+errors remain nonzero. Neural circle arms and all star arms exhaust the
+accepted-step budget. Both explicit star controls make better training and
+held-out progress than every neural seed at the same 28 frequency-level
+forward calls. The full [summary](../results/neural_metric/comparison-20260906/summary.md)
+and dated follow-up separate those failures from numerical physics resolution.
+
+Sixteen focused tests passed in 1.36 s before timing. Peer review checked
+mass/active-mode projection, exact jets, step and objective consistency,
+head-column counts, immutable geometry, stopping semantics and work accounting.
+Saved accepted-row gradient norms are pre-step; row losses/coefficients are
+post-step. Decision: no default promotion; the result does not test trained
+neural priors, direct neural zero-set optimization, topology or stronger
+spectral-matched explicit smoothers. No historical artifact was overwritten.
+
+### D — one unknown interior permittivity, same follow-up
+
+The separate bounded experiment rebuilds complete material-dependent Kress
+predictions for every candidate and uses E's scaled real residual Jacobian.
+Its one-entry cache validates immutable observation, normalization and scene
+identities. Six declared joint parameters cover radial-K2 geometry plus one
+positive lossless interior permittivity; exterior and source calibration stay
+fixed. Independent Mie observations are frozen before candidate evaluation.
+
+```bash
+env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
+  NUMEXPR_NUM_THREADS=1 PYTHONPATH=solvers \
+  /home/drdeng/miniconda3/envs/EMNerf/bin/python \
+  run_material_inverse_comparison.py \
+  --output results/material_inverse/bounded-20260906
+```
+
+Result: eight arms completed in 73.55 s, with five physical recoveries and three
+retained high-permittivity-start failures. The clean fixed/joint low starts
+recover epsr 3; noisy fixed/joint cases recover 3.000807/3.000048. A fixed start 9
+stops on TRF's cost criterion at 10.1433 without passing independent projected
+stationarity or physical recovery; both high joint starts exhaust their
+40-evaluation budgets at shape bounds, near epsr 4.12, with large held-out
+errors. All numerical forward refinements and material-sensitivity gates pass.
+Near the successful joint result, scaled radius/material columns correlate
+at approximately -0.960; this is a local sensitivity diagnosis, not a global
+identifiability proof. No settings or starts were changed after results.
+
+Eleven focused tests passed in 2.82 s before timing. Review corrected a mutable
+normalization/cache gap, integer-index aliases, failed-forward work accounting,
+Mie-call overcount and geometry-refinement qualification. A mistaken initial
+test checked the identity diagonal of the full system; the corrected test
+checks the material-dependent analytic S-block diagonal. Immutable data and
+all source hashes remained unchanged during the measured run.
+
+Decision: retain the bounded material experiment and explicit failures.
+Robustness to starts is the practical next design issue before adding more
+material variables. Distinct per-component materials, nested regions,
+conductivity, topology proposals and 3-D remain deferred. The complete report
+is [`sdf_kress_followup_2026-09-06.md`](sdf_kress_followup_2026-09-06.md).
+
+### Final combined follow-up regression
+
+After all E/H1/F/D code and focused repairs were finalized:
+
+```bash
+env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
+  NUMEXPR_NUM_THREADS=1 PYTHONPATH=solvers \
+  /home/drdeng/miniconda3/envs/EMNerf/bin/python -m pytest -q --disable-warnings \
+  pytest/ordered_boundary pytest/sdf_to_ordered_boundary \
+  pytest/gpr_bem_kress pytest/sdf_bem_multicomponent pytest/multicylinder_ref \
+  pytest/sdf_inverse \
+  pytest/solver_comparisons/test_parameterization_aware_driver.py \
+  pytest/solver_comparisons/test_distance_tangency_driver.py \
+  pytest/solver_comparisons/test_kress_shape_derivative_driver.py \
+  pytest/solver_comparisons/test_material_inverse_driver.py
+```
+
+Result: **514 passed**, 276 existing warnings in **123.98 s**. The F driver
+contracts are in `pytest/sdf_inverse/test_neural_metric.py` and included here.
+This final selection overlaps the earlier 482-test run; counts are not added.
+All four final E/H1/F/D numeric NPZ bundles loaded with `allow_pickle=False`:
+1,244 finite numeric arrays, none with object dtype. `git diff --check`
+passed. No historical study was regenerated or old measured bundle edited.
+F's post-run audit matched all 60 recorded source hashes; it is explicitly a
+post-run comparison, not a claimed during-run hash monitor. No production
+default, normal solver selector or git commit changed.
+
+## 2026-09-06 — bounded explicit shape/material robustness
+
+The user approved the practical robustness branch after the E/H1/F/D
+follow-up. New explicit-import `sdf_inverse.robust_material_inverse`
+orchestrates the existing radial-K2, single-interior-permittivity model with
+full-band local fitting, cumulative continuation, or deterministic
+contrast-stratified multistart. No SDF or new material region is introduced.
+The baseline D module, historical artifacts and production defaults remain
+unchanged. Full details and the next design boundary are in
+[`material_robustness_2026-09-06.md`](material_robustness_2026-09-06.md).
+
+The frozen 15-workflow comparison uses historical D circle data, noise,
+acquisitions and high-material starts verbatim, plus an independently
+specified radial-K2 noncircular target with interior `epsr=8.4` (background
+6). New observations use separately refined native-curve Nyström kernels.
+Two complex-noise cohorts and three fixed-circle controls are included.
+Only full-band training scores select the delivered candidate; all 15
+selections are sealed before any candidate meets geometry or held-out data.
+
+```bash
+env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
+  NUMEXPR_NUM_THREADS=1 PYTHONPATH=solvers \
+  /home/drdeng/miniconda3/envs/EMNerf/bin/python \
+  run_material_robustness_comparison.py \
+  --output results/material_robustness/bounded-20260906
+```
+
+The shared per-workflow caps are 400 frequency-level forward attempts and
+2,400 analytic-direction attempts, including screening/failed/audit work.
+Continuation stages receive 40/40 evaluations; full-band controls receive
+80; multistart retains two branches. This is not a matched-cost comparison.
+
+Measured physical recovery: **full-band 0/5, continuation 2/5, multistart
+5/5**. Continuation succeeds only for the new noncircular target, clean and
+noisy. All seven successful recoveries pass the separate `1e-7` scaled
+projected-gradient gate; all eight failed recoveries fail that stationarity
+gate. Every allocated search completes and none exhausts a global cap.
+The noisy multistart circle/noncircle geometry errors are 64.89/51.05 µm;
+interior permittivities are 3.0000483/8.4019470 and clean shifted-angle
+holdout field errors are 0.003488/0.006427. All selected candidates, including
+physical failures, pass forward refinement; the maximum N128→256 field
+change is `5.55e-13`.
+
+Elapsed time is **283.71 s**, with 260.81 s workflow, 18.35 s qualification,
+1.32 s data preparation and remaining artifact/other overhead. Workflow
+work is 1,203 frequency forwards and 5,268 analytic directions; qualification
+adds 180 forwards, new independent observations add eight frequency solves,
+and historical circle observation regeneration adds zero. All frozen
+input/selection hashes match; recorded source changes during the run are
+empty. Independent saved-array review verifies the minimum full-band
+ranking, objective replay, physical gates, phase sums, caps, and hashes.
+
+After the timed run, a peer-review numerical edge was fixed only in the
+new robust wrapper: finite residual entries whose squared norm overflows
+cannot become a selected candidate. The already-paid failure remains in
+history with null loss and an explicit reason; valid incumbents and exact
+costs are preserved. Two toy regressions cover this edge. No finite-path
+settings or arithmetic were retuned and the historical measured bundle was
+not rerun. Its source hashes intentionally predate this post-run guard; the
+only subsequent source-hash difference is `robust_material_inverse.py`.
+
+Final post-guard regression:
+
+```bash
+env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
+  NUMEXPR_NUM_THREADS=1 PYTHONPATH=solvers \
+  /home/drdeng/miniconda3/envs/EMNerf/bin/python -m pytest -q --disable-warnings \
+  pytest/ordered_boundary pytest/sdf_to_ordered_boundary \
+  pytest/gpr_bem_kress pytest/sdf_bem_multicomponent pytest/multicylinder_ref \
+  pytest/sdf_inverse \
+  pytest/solver_comparisons/test_parameterization_aware_driver.py \
+  pytest/solver_comparisons/test_distance_tangency_driver.py \
+  pytest/solver_comparisons/test_kress_shape_derivative_driver.py \
+  pytest/solver_comparisons/test_material_inverse_driver.py \
+  pytest/solver_comparisons/test_material_robustness_driver.py
+```
+
+Result: **561 passed**, 276 existing warnings in **110.59 s**. This
+supersedes the overlapping focused 56-test run rather than adding its count.
+The fresh 2,303-array NPZ is finite, numeric and non-pickled; all four JSON
+files pass strict parsing and `git diff --check` passes.
+No production default, solver selector, historical result or git commit was
+changed. Keep the robustness workflow opt-in: five synthetic cases and one
+noise realization per target do not establish global convergence or
+uncertainty. Distinct materials on fixed-count separated explicit loops are
+the recommended next physics scope, subject to the user's decision.

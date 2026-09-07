@@ -1,0 +1,1162 @@
+{
+  "schema_version": 1,
+  "experiment": "task_b_frozen_target_only_ablation",
+  "provenance": {
+    "command": [
+      "/home/drdeng/miniconda3/envs/EMNerf/bin/python",
+      "run_smooth_distance_supervision_comparison.py",
+      "--output-dir",
+      "results/smooth_distance_supervision/task-b-circle-star-refined-20260905",
+      "--steps",
+      "600"
+    ],
+    "commit": "41420c2875d49f9ab8774f572c94b989d56fc309",
+    "dirty_status": "M .gitignore\n M README.md\n M docs/README.md\n M docs/current_architecture.md\n M docs/solver_neutral_inverse.md\n M docs/validation_change_log.md\n M pytest/README.md\n M pytest/ordered_boundary/test_ordered_boundary.py\n M pytest/ordered_boundary/test_ordered_periodic_curve.py\n M pytest/sdf_inverse/test_star_target_inverse.py\n M pytest/sdf_to_ordered_boundary/test_sdf_boundary_methods_ab.py\n M results/README.md\n M results/inverse_solver_comparison/README.md\n M run_sdf_inverse_comparison.py\n M run_sdf_inverse_contour_video.py\n M solvers/README.md\n M solvers/gpr_bem_kress/README.md\n M solvers/ordered_boundary/validation.py\n M solvers/sdf_inverse/__init__.py\n M solvers/sdf_inverse/forward.py\n M solvers/sdf_inverse/geometry.py\n M solvers/sdf_inverse/models.py\n M solvers/sdf_inverse/optimization.py\n M solvers/sdf_to_ordered_boundary/__init__.py\n M solvers/sdf_to_ordered_boundary/arclength.py\n M solvers/sdf_to_ordered_boundary/frontend.py\n M solvers/sdf_to_ordered_boundary/method_b.py\n M solvers/sdf_to_ordered_boundary/method_c.py\n?? docs/codex_sdf_kress_priorities_2026-09-05.md\n?? docs/inverse_pipeline_review_2026-09-05.md\n?? mlp-arclength-k5-ellipse-to-star-kress-20260904.log\n?? mlp-canonical-ellipse-to-star-kress-20260903.log\n?? mlp-fixed-ellipse-to-star-kress-20260903.log\n?? mlp-full-band-modes-ellipse-to-star-kress-20260903.log\n?? mlp-joint-k6-ellipse-to-star-kress-20260903.log\n?? mlp-radial-continuation-k5-ellipse-to-star-kress-20260904.log\n?? mlp-resolved-k5-ellipse-to-star-kress-20260904.log\n?? pytest/gpr_bem_kress/test_multicomponent.py\n?? pytest/multicylinder_ref/\n?? pytest/sdf_bem_multicomponent/\n?? pytest/sdf_inverse/test_continuous_distance.py\n?? pytest/sdf_inverse/test_contour_video.py\n?? pytest/sdf_inverse/test_curve_forward_seam.py\n?? pytest/sdf_inverse/test_direct_curve_updates.py\n?? pytest/sdf_inverse/test_distillation_policy.py\n?? pytest/sdf_inverse/test_geometry_sign_contract.py\n?? pytest/sdf_inverse/test_mlp_driver_contract.py\n?? pytest/sdf_inverse/test_mlp_experiment_snapshot.py\n?? pytest/sdf_inverse/test_neural_audit_regressions.py\n?? pytest/sdf_inverse/test_neural_inverse_convergence_diagnostics.py\n?? pytest/sdf_inverse/test_neural_mlp_inverse.py\n?? pytest/sdf_inverse/test_neural_redistance_regressions.py\n?? pytest/sdf_inverse/test_parameter_fd_audit_regressions.py\n?? pytest/sdf_inverse/test_representation_ablation_driver.py\n?? pytest/sdf_inverse/test_smooth_redistance.py\n?? pytest/sdf_to_ordered_boundary/test_frontend_component_limit.py\n?? pytest/sdf_to_ordered_boundary/test_parameter_aware.py\n?? results/inverse_solver_comparison/mlp-arclength-k5-ellipse-to-star-kress-20260904/\n?? results/inverse_solver_comparison/mlp-canonical-ellipse-to-star-kress-20260903/\n?? results/inverse_solver_comparison/mlp-circle-to-circle-mie-20260903/\n?? results/inverse_solver_comparison/mlp-ellipse-to-circle-mie-20260903/\n?? results/inverse_solver_comparison/mlp-ellipse-to-circle-mode5-control-20260903/\n?? results/inverse_solver_comparison/mlp-ellipse-to-star-kress/\n?? results/inverse_solver_comparison/mlp-ellipse-to-star-nystrom-20260903/\n?? results/inverse_solver_comparison/mlp-fixed-ellipse-to-star-kress-20260903/\n?? results/inverse_solver_comparison/mlp-full-band-modes-ellipse-to-star-kress-20260903/\n?? results/inverse_solver_comparison/mlp-joint-k6-ellipse-to-star-kress-20260903/\n?? results/inverse_solver_comparison/mlp-radial-continuation-k5-ellipse-to-star-kress-20260904/\n?? results/inverse_solver_comparison/mlp-resolved-k5-ellipse-to-star-kress-20260904/\n?? results/inverse_solver_comparison/mlp-star-to-star-nystrom-20260903/\n?? results/inverse_solver_comparison/siren-circle-mie-20260903/\n?? results/multicomponent_split_demo/\n?? results/sdf_representation_ablation/\n?? results/smooth_distance_supervision/\n?? run_mlp_sdf_inverse_comparison.py\n?? run_multicomponent_split_demo.py\n?? run_parameterization_aware_comparison.py\n?? run_sdf_representation_ablation.py\n?? run_smooth_distance_supervision_comparison.py\n?? solvers/gpr_bem_kress/multicomponent.py\n?? solvers/multicylinder_ref/\n?? solvers/sdf_bem_multicomponent/\n?? solvers/sdf_inverse/continuous_distance.py\n?? solvers/sdf_inverse/curve_updates.py\n?? solvers/sdf_inverse/neural.py\n?? solvers/sdf_inverse/neural_optimization.py\n?? solvers/sdf_to_ordered_boundary/parameter_aware.py",
+    "tracked_diff_sha256": "931b288aafbde8cde4b175a5e89a0b2b254beca72df54742993bba89d8ec040a",
+    "implementation_sha256": {
+      "/home/drdeng/Neural_SDF_BEM_AD/run_smooth_distance_supervision_comparison.py": "7eb92d6d7b3baf55c24878375ece22638b1899c8fad641a60014ab558bed931a",
+      "solvers/sdf_inverse/neural.py": "54d52df1a95ae8129b79f6a848a8cce5b7fbd0f7899f64a220791639ae81c58f",
+      "solvers/sdf_inverse/continuous_distance.py": "83be27c3ebe99bce6ec6fa7a1265eda4e0716a8099ef697f65c5995eb44e4126"
+    },
+    "python": "3.9.25",
+    "numpy": "2.0.2",
+    "torch": "2.8.0+cu128",
+    "environment": {
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "PYTHONPATH": "solvers"
+    }
+  },
+  "acquisition": {
+    "source_points": [
+      [
+        0.75,
+        0.5
+      ],
+      [
+        0.625,
+        0.7165063509461096
+      ],
+      [
+        0.37500000000000006,
+        0.7165063509461097
+      ],
+      [
+        0.25,
+        0.5
+      ],
+      [
+        0.3749999999999999,
+        0.2834936490538904
+      ],
+      [
+        0.6249999999999998,
+        0.28349364905389024
+      ]
+    ],
+    "receiver_points": [
+      [
+        0.7190367210737141,
+        0.570163486381992
+      ],
+      [
+        0.5487549989119684,
+        0.7247731080024787
+      ],
+      [
+        0.32971827783825436,
+        0.6546096216204867
+      ],
+      [
+        0.2809632789262859,
+        0.429836513618008
+      ],
+      [
+        0.45124500108803134,
+        0.2752268919975214
+      ],
+      [
+        0.6702817221617454,
+        0.34539037837951314
+      ]
+    ],
+    "angular_frequencies": [
+      3769911184.3077517,
+      5654866776.461628
+    ],
+    "source_strength": {
+      "real": 1.0,
+      "imag": 0.2
+    },
+    "exterior": {
+      "epsr": 6.0,
+      "sigma": 0.0,
+      "mur": 1.0
+    },
+    "interior": {
+      "epsr": 3.0,
+      "sigma": 0.0,
+      "mur": 1.0
+    },
+    "eps0": 8.8541878128e-12,
+    "mu0": 1.25663706212e-06
+  },
+  "redistance_config": {
+    "bounds": [
+      [
+        0.35,
+        0.35
+      ],
+      [
+        0.65,
+        0.65
+      ]
+    ],
+    "max_steps": 600,
+    "minimum_steps": 600,
+    "warmup_steps": 50,
+    "sample_count": 768,
+    "heldout_sample_count": 256,
+    "learning_rate": 0.002,
+    "eikonal_weight": 0.1,
+    "boundary_weight": 200.0,
+    "normal_offset_weight": 20.0,
+    "box_boundary_weight": 5.0,
+    "normal_offset_m": 0.002,
+    "distance_rms_tolerance_m": 1e-05,
+    "boundary_max_tolerance_m": 1e-07,
+    "eikonal_rms_tolerance": 0.2,
+    "check_interval": 600,
+    "patience_checks": 100,
+    "seed": 31415,
+    "no_op_boundary_max_tolerance_m": 1e-09,
+    "boundary_oversampling_factor": 4,
+    "distance_target": "legacy_polygon",
+    "distance_target_tolerance_m": 1e-06,
+    "distance_initial_samples": 256,
+    "distance_maximum_samples": 4096,
+    "smooth_boundary_sample_count": 512,
+    "smooth_boundary_sampling": "continuous_curve"
+  },
+  "distance_accuracy_budget_m": 1e-06,
+  "representation_tolerance_m": 0.0002,
+  "sampling": "Identical legacy polygon boundary/offset and seeded global locations in both arms; smooth arm uses actual nonzero boundary-sample targets.",
+  "normal_offset_identity_assumed": false,
+  "distance_reference": "continuous multiple-local-minimum refinement; initial 512/tightened 1024, tolerances 1e-9/1e-11; agreement is numerical, not certified",
+  "bem_training_polygon_nodes": 32,
+  "cases": [
+    {
+      "shape": "circle",
+      "canonical_cartesian_cosine": [
+        [
+          0.49999999999999983,
+          0.4999999999999998
+        ],
+        [
+          0.06499999999999995,
+          -4.7921736023859296e-17
+        ],
+        [
+          -2.7755575615628914e-17,
+          -4.557714882585939e-17
+        ],
+        [
+          -6.418476861114186e-17,
+          -5.62158826433734e-17
+        ],
+        [
+          -5.551115123125783e-17,
+          -2.9544509200229996e-17
+        ],
+        [
+          -4.447939412621782e-17,
+          -4.358492733391728e-17
+        ],
+        [
+          -3.469446951953614e-17,
+          -1.0842021724855044e-17
+        ]
+      ],
+      "canonical_cartesian_sine": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          9.974659986866641e-18,
+          0.06499999999999999
+        ],
+        [
+          -6.667843360785852e-18,
+          -9.814147243361951e-18
+        ],
+        [
+          -1.0408340855860843e-17,
+          3.583288180064592e-17
+        ],
+        [
+          3.469446951953614e-18,
+          -7.860465750519907e-18
+        ],
+        [
+          0.0,
+          -1.4203048459560108e-17
+        ],
+        [
+          1.0408340855860843e-17,
+          1.1872013788716274e-17
+        ]
+      ],
+      "canonical_bandwidth": 6,
+      "canonical_forward": {
+        "records": [
+          {
+            "num_nodes": 128,
+            "relative_change": null
+          },
+          {
+            "num_nodes": 256,
+            "relative_change": 1.581857076152829e-14
+          },
+          {
+            "num_nodes": 512,
+            "relative_change": 4.773251198813085e-15
+          }
+        ],
+        "seconds": 1.9988047629594803,
+        "solve_count": 6,
+        "converged": true,
+        "relative_tolerance": 1e-07
+      },
+      "reference_distance_diagnostics": {
+        "distance_target_tolerance_m": 1e-09,
+        "distance_refinement_agreement_m": 9.71445146547012e-17,
+        "distance_localization_samples": 1024.0,
+        "distance_refinement_iterations": 40.0,
+        "distance_maximum_local_candidates": 1.0,
+        "distance_query_count": 2048.0,
+        "distance_localization_levels": 2.0,
+        "distance_target_seconds": 0.3232097700238228
+      },
+      "tightened_distance_max_change_m": 1.1102230246251565e-16,
+      "arms": [
+        {
+          "distance_target": "legacy_polygon",
+          "status": "trained",
+          "failure_reason": null,
+          "model": {
+            "kind": "coordinate_normalized_tanh_mlp",
+            "claims_signed_distance": false,
+            "trained_against_signed_distance": false,
+            "hidden_features": 32,
+            "hidden_layers": 2,
+            "fourier_frequencies": [
+              1.0,
+              2.0,
+              4.0,
+              8.0
+            ],
+            "parameter_count": 1697,
+            "seed": 2718,
+            "dtype": "torch.float64",
+            "device": "cpu",
+            "bounds": [
+              [
+                0.35,
+                0.35
+              ],
+              [
+                0.65,
+                0.65
+              ]
+            ],
+            "geometric_initialization": {
+              "kind": "fixed_circle_residual_skip",
+              "center": [
+                0.5,
+                0.5
+              ],
+              "radius": 0.06
+            }
+          },
+          "redistance_converged": false,
+          "redistance_stop_reason": "maximum_steps",
+          "training_steps": 600,
+          "training_seconds": 1.8859568992629647,
+          "calls": {
+            "training_model_forward_calls": 2424,
+            "training_model_evaluated_points": 775680
+          },
+          "training_seconds_includes_target_construction": true,
+          "target_max_error_before_training_m": 0.0003129927654195036,
+          "target_rms_error_before_training_m": 0.00020725428611327332,
+          "independent_field_distance_rms_m": 0.0001928867660752144,
+          "independent_field_distance_max_m": 0.000443873389447319,
+          "independent_sign_mismatches": 3,
+          "redistance_diagnostics": {
+            "polygon_node_count": 32.0,
+            "training_sample_count": 768.0,
+            "boundary_sample_count": 128.0,
+            "boundary_oversampling_factor": 4.0,
+            "normal_offset_sample_count": 256.0,
+            "box_boundary_sample_count": 128.0,
+            "heldout_sample_count": 256.0,
+            "length_scale_m": 0.15000000000000002,
+            "best_full_objective_step": 600.0,
+            "best_full_objective_loss": 0.0001469416312816867
+          },
+          "extractions": [
+            {
+              "grid_shape": [
+                129,
+                129
+              ],
+              "projected_samples": 256,
+              "bandwidth": 24,
+              "audit_samples": [
+                512,
+                1024
+              ],
+              "arclength_dense_resolution": 2048,
+              "status": "success",
+              "failure_reason": null,
+              "component_count": 1,
+              "canonical_set_drift_m": 0.00022818700420649036,
+              "set_audit_refinement_change_m": 0.0,
+              "set_audit_converged": true,
+              "minimum_speed": 0.0647835399510455,
+              "speed_ratio": 1.0006427930096113,
+              "extraction_fit_refinement_drift_m": null,
+              "physical_forward": {
+                "records": [
+                  {
+                    "num_nodes": 128,
+                    "relative_change": null
+                  },
+                  {
+                    "num_nodes": 256,
+                    "relative_change": 1.1456292900625437e-14
+                  },
+                  {
+                    "num_nodes": 512,
+                    "relative_change": 5.855712122202646e-15
+                  }
+                ],
+                "seconds": 2.4575198125094175,
+                "solve_count": 6,
+                "converged": true,
+                "relative_tolerance": 1e-07
+              },
+              "physical_field_relative_error": 0.015679095484802626,
+              "total_seconds": 3.7134453980252147,
+              "model_forward_calls": 14
+            },
+            {
+              "grid_shape": [
+                257,
+                257
+              ],
+              "projected_samples": 512,
+              "bandwidth": 48,
+              "audit_samples": [
+                512,
+                1024
+              ],
+              "arclength_dense_resolution": 2048,
+              "status": "success",
+              "failure_reason": null,
+              "component_count": 1,
+              "canonical_set_drift_m": 0.00023343856408960408,
+              "set_audit_refinement_change_m": 1.2320058519527566e-07,
+              "set_audit_converged": true,
+              "minimum_speed": 0.06480272218933357,
+              "speed_ratio": 1.0000516367810082,
+              "extraction_fit_refinement_drift_m": 5.649145693881615e-06,
+              "physical_forward": {
+                "records": [
+                  {
+                    "num_nodes": 128,
+                    "relative_change": null
+                  },
+                  {
+                    "num_nodes": 256,
+                    "relative_change": 3.326928588452763e-14
+                  },
+                  {
+                    "num_nodes": 512,
+                    "relative_change": 7.959870180932272e-15
+                  }
+                ],
+                "seconds": 2.456160271540284,
+                "solve_count": 6,
+                "converged": true,
+                "relative_tolerance": 1e-07
+              },
+              "physical_field_relative_error": 0.015679050484314734,
+              "total_seconds": 6.049415370449424,
+              "model_forward_calls": 12
+            },
+            {
+              "grid_shape": [
+                513,
+                513
+              ],
+              "projected_samples": 1024,
+              "bandwidth": 96,
+              "audit_samples": [
+                512,
+                1024
+              ],
+              "arclength_dense_resolution": 2048,
+              "status": "success",
+              "failure_reason": null,
+              "component_count": 1,
+              "canonical_set_drift_m": 0.00023338768051746803,
+              "set_audit_refinement_change_m": 1.2131759297029517e-07,
+              "set_audit_converged": true,
+              "minimum_speed": 0.06480440132344445,
+              "speed_ratio": 1.0000000351114122,
+              "extraction_fit_refinement_drift_m": 1.786826674035074e-07,
+              "physical_forward": {
+                "records": [
+                  {
+                    "num_nodes": 256,
+                    "relative_change": null
+                  },
+                  {
+                    "num_nodes": 512,
+                    "relative_change": 1.1734465104272927e-14
+                  }
+                ],
+                "seconds": 2.327892237342894,
+                "solve_count": 4,
+                "converged": true,
+                "relative_tolerance": 1e-07
+              },
+              "physical_field_relative_error": 0.015679052735495448,
+              "total_seconds": 13.08973880764097,
+              "model_forward_calls": 12
+            }
+          ]
+        },
+        {
+          "distance_target": "smooth_curve",
+          "status": "trained",
+          "failure_reason": null,
+          "model": {
+            "kind": "coordinate_normalized_tanh_mlp",
+            "claims_signed_distance": false,
+            "trained_against_signed_distance": false,
+            "hidden_features": 32,
+            "hidden_layers": 2,
+            "fourier_frequencies": [
+              1.0,
+              2.0,
+              4.0,
+              8.0
+            ],
+            "parameter_count": 1697,
+            "seed": 2718,
+            "dtype": "torch.float64",
+            "device": "cpu",
+            "bounds": [
+              [
+                0.35,
+                0.35
+              ],
+              [
+                0.65,
+                0.65
+              ]
+            ],
+            "geometric_initialization": {
+              "kind": "fixed_circle_residual_skip",
+              "center": [
+                0.5,
+                0.5
+              ],
+              "radius": 0.06
+            }
+          },
+          "redistance_converged": false,
+          "redistance_stop_reason": "maximum_steps",
+          "training_steps": 600,
+          "training_seconds": 1.9349734587594867,
+          "calls": {
+            "training_model_forward_calls": 2424,
+            "training_model_evaluated_points": 775680
+          },
+          "training_seconds_includes_target_construction": true,
+          "target_max_error_before_training_m": 1.1102230246251565e-16,
+          "target_rms_error_before_training_m": 1.9970346276337135e-17,
+          "independent_field_distance_rms_m": 0.00010440415044153202,
+          "independent_field_distance_max_m": 0.0004176148376422162,
+          "independent_sign_mismatches": 0,
+          "redistance_diagnostics": {
+            "distance_target_tolerance_m": 1e-06,
+            "distance_refinement_agreement_m": 3.994485028891067e-12,
+            "distance_localization_samples": 512.0,
+            "distance_refinement_iterations": 40.0,
+            "distance_maximum_local_candidates": 1.0,
+            "distance_query_count": 1536.0,
+            "distance_localization_levels": 2.0,
+            "distance_target_seconds": 0.09907286055386066,
+            "smooth_distance_target": 1.0,
+            "legacy_sample_locations": 1.0,
+            "polygon_node_count": 32.0,
+            "training_sample_count": 768.0,
+            "boundary_sample_count": 128.0,
+            "boundary_oversampling_factor": 4.0,
+            "normal_offset_sample_count": 256.0,
+            "box_boundary_sample_count": 128.0,
+            "heldout_sample_count": 256.0,
+            "length_scale_m": 0.15000000000000002,
+            "best_full_objective_step": 600.0,
+            "best_full_objective_loss": 1.145975834528073e-05
+          },
+          "extractions": [
+            {
+              "grid_shape": [
+                129,
+                129
+              ],
+              "projected_samples": 256,
+              "bandwidth": 24,
+              "audit_samples": [
+                512,
+                1024
+              ],
+              "arclength_dense_resolution": 2048,
+              "status": "success",
+              "failure_reason": null,
+              "component_count": 1,
+              "canonical_set_drift_m": 3.734490853061753e-05,
+              "set_audit_refinement_change_m": 0.0,
+              "set_audit_converged": true,
+              "minimum_speed": 0.0649740777188575,
+              "speed_ratio": 1.000806334042725,
+              "extraction_fit_refinement_drift_m": null,
+              "physical_forward": {
+                "records": [
+                  {
+                    "num_nodes": 128,
+                    "relative_change": null
+                  },
+                  {
+                    "num_nodes": 256,
+                    "relative_change": 1.613172454301608e-14
+                  },
+                  {
+                    "num_nodes": 512,
+                    "relative_change": 6.971078411881669e-15
+                  }
+                ],
+                "seconds": 2.46995432022959,
+                "solve_count": 6,
+                "converged": true,
+                "relative_tolerance": 1e-07
+              },
+              "physical_field_relative_error": 0.00014179156967373345,
+              "total_seconds": 3.7270265091210604,
+              "model_forward_calls": 14
+            },
+            {
+              "grid_shape": [
+                257,
+                257
+              ],
+              "projected_samples": 512,
+              "bandwidth": 48,
+              "audit_samples": [
+                512,
+                1024
+              ],
+              "arclength_dense_resolution": 2048,
+              "status": "success",
+              "failure_reason": null,
+              "component_count": 1,
+              "canonical_set_drift_m": 3.8453786511494136e-05,
+              "set_audit_refinement_change_m": 0.0,
+              "set_audit_converged": true,
+              "minimum_speed": 0.06499857590481906,
+              "speed_ratio": 1.0000560302864165,
+              "extraction_fit_refinement_drift_m": 6.759093095377101e-06,
+              "physical_forward": {
+                "records": [
+                  {
+                    "num_nodes": 128,
+                    "relative_change": null
+                  },
+                  {
+                    "num_nodes": 256,
+                    "relative_change": 1.059071613149311e-13
+                  },
+                  {
+                    "num_nodes": 512,
+                    "relative_change": 8.230320615812688e-15
+                  }
+                ],
+                "seconds": 2.453700984828174,
+                "solve_count": 6,
+                "converged": true,
+                "relative_tolerance": 1e-07
+              },
+              "physical_field_relative_error": 0.00014171105762582798,
+              "total_seconds": 6.050019665621221,
+              "model_forward_calls": 12
+            },
+            {
+              "grid_shape": [
+                513,
+                513
+              ],
+              "projected_samples": 1024,
+              "bandwidth": 96,
+              "audit_samples": [
+                512,
+                1024
+              ],
+              "arclength_dense_resolution": 2048,
+              "status": "success",
+              "failure_reason": null,
+              "component_count": 1,
+              "canonical_set_drift_m": 3.847436496490049e-05,
+              "set_audit_refinement_change_m": 0.0,
+              "set_audit_converged": true,
+              "minimum_speed": 0.0650003776437542,
+              "speed_ratio": 1.000000040292509,
+              "extraction_fit_refinement_drift_m": 1.7122780004505653e-07,
+              "physical_forward": {
+                "records": [
+                  {
+                    "num_nodes": 256,
+                    "relative_change": null
+                  },
+                  {
+                    "num_nodes": 512,
+                    "relative_change": 7.154568918779511e-15
+                  }
+                ],
+                "seconds": 2.327360760420561,
+                "solve_count": 4,
+                "converged": true,
+                "relative_tolerance": 1e-07
+              },
+              "physical_field_relative_error": 0.00014171184028460512,
+              "total_seconds": 13.01589930895716,
+              "model_forward_calls": 12
+            }
+          ]
+        }
+      ],
+      "canonical_mie_relative_error": 2.9752088360787483e-15
+    },
+    {
+      "shape": "star",
+      "canonical_cartesian_cosine": [
+        [
+          0.49999999999999967,
+          0.5
+        ],
+        [
+          0.06427012006584266,
+          0.009713478610783935
+        ],
+        [
+          -7.546047120499111e-17,
+          -7.26415455565288e-18
+        ],
+        [
+          -9.020562075079397e-17,
+          -6.071532165918825e-18
+        ],
+        [
+          0.006427012006584175,
+          0.0009713478610783987
+        ],
+        [
+          -8.559776151773058e-17,
+          -1.4094628242311558e-18
+        ],
+        [
+          0.006427012006584194,
+          0.0009713478610784195
+        ]
+      ],
+      "canonical_cartesian_sine": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          -0.009713478610783963,
+          0.06427012006584275
+        ],
+        [
+          -1.6290137641594704e-17,
+          -1.6649279611230527e-17
+        ],
+        [
+          -2.0816681711721685e-17,
+          2.3418766925686896e-17
+        ],
+        [
+          0.0009713478610783952,
+          -0.006427012006584281
+        ],
+        [
+          -3.469446951953614e-18,
+          -1.0408340855860843e-17
+        ],
+        [
+          -0.0009713478610783866,
+          0.00642701200658428
+        ]
+      ],
+      "canonical_bandwidth": 6,
+      "canonical_forward": {
+        "records": [
+          {
+            "num_nodes": 128,
+            "relative_change": null
+          },
+          {
+            "num_nodes": 256,
+            "relative_change": 4.541512159769173e-14
+          },
+          {
+            "num_nodes": 512,
+            "relative_change": 1.3300730096465877e-14
+          }
+        ],
+        "seconds": 2.4504449097439647,
+        "solve_count": 6,
+        "converged": true,
+        "relative_tolerance": 1e-07
+      },
+      "reference_distance_diagnostics": {
+        "distance_target_tolerance_m": 1e-09,
+        "distance_refinement_agreement_m": 1.249000902703301e-16,
+        "distance_localization_samples": 1024.0,
+        "distance_refinement_iterations": 40.0,
+        "distance_maximum_local_candidates": 5.0,
+        "distance_query_count": 2048.0,
+        "distance_localization_levels": 2.0,
+        "distance_target_seconds": 0.3120320215821266
+      },
+      "tightened_distance_max_change_m": 9.71445146547012e-17,
+      "arms": [
+        {
+          "distance_target": "legacy_polygon",
+          "status": "trained",
+          "failure_reason": null,
+          "model": {
+            "kind": "coordinate_normalized_tanh_mlp",
+            "claims_signed_distance": false,
+            "trained_against_signed_distance": false,
+            "hidden_features": 32,
+            "hidden_layers": 2,
+            "fourier_frequencies": [
+              1.0,
+              2.0,
+              4.0,
+              8.0
+            ],
+            "parameter_count": 1697,
+            "seed": 2718,
+            "dtype": "torch.float64",
+            "device": "cpu",
+            "bounds": [
+              [
+                0.35,
+                0.35
+              ],
+              [
+                0.65,
+                0.65
+              ]
+            ],
+            "geometric_initialization": {
+              "kind": "fixed_circle_residual_skip",
+              "center": [
+                0.5,
+                0.5
+              ],
+              "radius": 0.06
+            }
+          },
+          "redistance_converged": false,
+          "redistance_stop_reason": "maximum_steps",
+          "training_steps": 600,
+          "training_seconds": 1.8170183235779405,
+          "calls": {
+            "training_model_forward_calls": 2424,
+            "training_model_evaluated_points": 775680
+          },
+          "training_seconds_includes_target_construction": true,
+          "target_max_error_before_training_m": 0.0018942569576365048,
+          "target_rms_error_before_training_m": 0.0008325334877643863,
+          "independent_field_distance_rms_m": 0.0035422467025080354,
+          "independent_field_distance_max_m": 0.01495490000962886,
+          "independent_sign_mismatches": 8,
+          "redistance_diagnostics": {
+            "polygon_node_count": 32.0,
+            "training_sample_count": 768.0,
+            "boundary_sample_count": 128.0,
+            "boundary_oversampling_factor": 4.0,
+            "normal_offset_sample_count": 256.0,
+            "box_boundary_sample_count": 128.0,
+            "heldout_sample_count": 256.0,
+            "length_scale_m": 0.15000000000000002,
+            "best_full_objective_step": 600.0,
+            "best_full_objective_loss": 0.003496733230081082
+          },
+          "extractions": [
+            {
+              "grid_shape": [
+                129,
+                129
+              ],
+              "projected_samples": 256,
+              "bandwidth": 24,
+              "audit_samples": [
+                512,
+                1024
+              ],
+              "arclength_dense_resolution": 2048,
+              "status": "success",
+              "failure_reason": null,
+              "component_count": 1,
+              "canonical_set_drift_m": 0.0013383236673132713,
+              "set_audit_refinement_change_m": 0.0,
+              "set_audit_converged": true,
+              "minimum_speed": 0.07532699231386666,
+              "speed_ratio": 1.041843088411868,
+              "extraction_fit_refinement_drift_m": null,
+              "physical_forward": {
+                "records": [
+                  {
+                    "num_nodes": 128,
+                    "relative_change": null
+                  },
+                  {
+                    "num_nodes": 256,
+                    "relative_change": 4.21325265742605e-14
+                  },
+                  {
+                    "num_nodes": 512,
+                    "relative_change": 1.164426702492428e-14
+                  }
+                ],
+                "seconds": 1.9689737781882286,
+                "solve_count": 6,
+                "converged": true,
+                "relative_tolerance": 1e-07
+              },
+              "physical_field_relative_error": 0.059116036550661416,
+              "total_seconds": 3.3069936065003276,
+              "model_forward_calls": 16
+            },
+            {
+              "grid_shape": [
+                257,
+                257
+              ],
+              "projected_samples": 512,
+              "bandwidth": 48,
+              "audit_samples": [
+                512,
+                1024
+              ],
+              "arclength_dense_resolution": 2048,
+              "status": "success",
+              "failure_reason": null,
+              "component_count": 1,
+              "canonical_set_drift_m": 0.0016053584182923026,
+              "set_audit_refinement_change_m": 1.480607628380655e-06,
+              "set_audit_converged": true,
+              "minimum_speed": 0.07661275134813224,
+              "speed_ratio": 1.0105210066217407,
+              "extraction_fit_refinement_drift_m": 0.0003906695765648359,
+              "physical_forward": {
+                "records": [
+                  {
+                    "num_nodes": 128,
+                    "relative_change": null
+                  },
+                  {
+                    "num_nodes": 256,
+                    "relative_change": 3.6906040789573567e-08
+                  },
+                  {
+                    "num_nodes": 512,
+                    "relative_change": 1.0410313552278078e-14
+                  }
+                ],
+                "seconds": 2.481587613001466,
+                "solve_count": 6,
+                "converged": true,
+                "relative_tolerance": 1e-07
+              },
+              "physical_field_relative_error": 0.05913688239088633,
+              "total_seconds": 6.665073210373521,
+              "model_forward_calls": 14
+            },
+            {
+              "grid_shape": [
+                513,
+                513
+              ],
+              "projected_samples": 1024,
+              "bandwidth": 96,
+              "audit_samples": [
+                512,
+                1024
+              ],
+              "arclength_dense_resolution": 2048,
+              "status": "success",
+              "failure_reason": null,
+              "component_count": 1,
+              "canonical_set_drift_m": 0.0016049951314921621,
+              "set_audit_refinement_change_m": 1.8000901549086474e-06,
+              "set_audit_converged": true,
+              "minimum_speed": 0.07700387696851409,
+              "speed_ratio": 1.0002576660768956,
+              "extraction_fit_refinement_drift_m": 1.8522519840707335e-05,
+              "physical_forward": {
+                "records": [
+                  {
+                    "num_nodes": 256,
+                    "relative_change": null
+                  },
+                  {
+                    "num_nodes": 512,
+                    "relative_change": 1.0501410949808689e-13
+                  }
+                ],
+                "seconds": 2.3559886049479246,
+                "solve_count": 4,
+                "converged": true,
+                "relative_tolerance": 1e-07
+              },
+              "physical_field_relative_error": 0.05913566359009819,
+              "total_seconds": 16.64281064737588,
+              "model_forward_calls": 14
+            }
+          ]
+        },
+        {
+          "distance_target": "smooth_curve",
+          "status": "trained",
+          "failure_reason": null,
+          "model": {
+            "kind": "coordinate_normalized_tanh_mlp",
+            "claims_signed_distance": false,
+            "trained_against_signed_distance": false,
+            "hidden_features": 32,
+            "hidden_layers": 2,
+            "fourier_frequencies": [
+              1.0,
+              2.0,
+              4.0,
+              8.0
+            ],
+            "parameter_count": 1697,
+            "seed": 2718,
+            "dtype": "torch.float64",
+            "device": "cpu",
+            "bounds": [
+              [
+                0.35,
+                0.35
+              ],
+              [
+                0.65,
+                0.65
+              ]
+            ],
+            "geometric_initialization": {
+              "kind": "fixed_circle_residual_skip",
+              "center": [
+                0.5,
+                0.5
+              ],
+              "radius": 0.06
+            }
+          },
+          "redistance_converged": false,
+          "redistance_stop_reason": "maximum_steps",
+          "training_steps": 600,
+          "training_seconds": 2.015335513278842,
+          "calls": {
+            "training_model_forward_calls": 2424,
+            "training_model_evaluated_points": 775680
+          },
+          "training_seconds_includes_target_construction": true,
+          "target_max_error_before_training_m": 1.3877787807814457e-16,
+          "target_rms_error_before_training_m": 2.371358965683586e-17,
+          "independent_field_distance_rms_m": 0.0035958887782083387,
+          "independent_field_distance_max_m": 0.015509597777836772,
+          "independent_sign_mismatches": 2,
+          "redistance_diagnostics": {
+            "distance_target_tolerance_m": 1e-06,
+            "distance_refinement_agreement_m": 3.1954627295553884e-12,
+            "distance_localization_samples": 512.0,
+            "distance_refinement_iterations": 40.0,
+            "distance_maximum_local_candidates": 5.0,
+            "distance_query_count": 1536.0,
+            "distance_localization_levels": 2.0,
+            "distance_target_seconds": 0.1790338158607483,
+            "smooth_distance_target": 1.0,
+            "legacy_sample_locations": 1.0,
+            "polygon_node_count": 32.0,
+            "training_sample_count": 768.0,
+            "boundary_sample_count": 128.0,
+            "boundary_oversampling_factor": 4.0,
+            "normal_offset_sample_count": 256.0,
+            "box_boundary_sample_count": 128.0,
+            "heldout_sample_count": 256.0,
+            "length_scale_m": 0.15000000000000002,
+            "best_full_objective_step": 600.0,
+            "best_full_objective_loss": 0.0030771543920999705
+          },
+          "extractions": [
+            {
+              "grid_shape": [
+                129,
+                129
+              ],
+              "projected_samples": 256,
+              "bandwidth": 24,
+              "audit_samples": [
+                512,
+                1024
+              ],
+              "arclength_dense_resolution": 2048,
+              "status": "success",
+              "failure_reason": null,
+              "component_count": 1,
+              "canonical_set_drift_m": 0.0003648776651011708,
+              "set_audit_refinement_change_m": 0.0,
+              "set_audit_converged": true,
+              "minimum_speed": 0.0778756765684802,
+              "speed_ratio": 1.0295988360762975,
+              "extraction_fit_refinement_drift_m": null,
+              "physical_forward": {
+                "records": [
+                  {
+                    "num_nodes": 128,
+                    "relative_change": null
+                  },
+                  {
+                    "num_nodes": 256,
+                    "relative_change": 5.202526094430614e-14
+                  },
+                  {
+                    "num_nodes": 512,
+                    "relative_change": 9.451620898446556e-15
+                  }
+                ],
+                "seconds": 2.4811365203931928,
+                "solve_count": 6,
+                "converged": true,
+                "relative_tolerance": 1e-07
+              },
+              "physical_field_relative_error": 0.003827160049486774,
+              "total_seconds": 4.17375498265028,
+              "model_forward_calls": 14
+            },
+            {
+              "grid_shape": [
+                257,
+                257
+              ],
+              "projected_samples": 512,
+              "bandwidth": 48,
+              "audit_samples": [
+                512,
+                1024
+              ],
+              "arclength_dense_resolution": 2048,
+              "status": "success",
+              "failure_reason": null,
+              "component_count": 1,
+              "canonical_set_drift_m": 0.0005296705223762389,
+              "set_audit_refinement_change_m": 0.0,
+              "set_audit_converged": true,
+              "minimum_speed": 0.07878101494601471,
+              "speed_ratio": 1.008334866881002,
+              "extraction_fit_refinement_drift_m": 0.00018161171710295341,
+              "physical_forward": {
+                "records": [
+                  {
+                    "num_nodes": 128,
+                    "relative_change": null
+                  },
+                  {
+                    "num_nodes": 256,
+                    "relative_change": 3.937124998556602e-08
+                  },
+                  {
+                    "num_nodes": 512,
+                    "relative_change": 1.2955053692541394e-14
+                  }
+                ],
+                "seconds": 2.473976457491517,
+                "solve_count": 6,
+                "converged": true,
+                "relative_tolerance": 1e-07
+              },
+              "physical_field_relative_error": 0.0037963578737272258,
+              "total_seconds": 7.5902240090072155,
+              "model_forward_calls": 14
+            },
+            {
+              "grid_shape": [
+                513,
+                513
+              ],
+              "projected_samples": 1024,
+              "bandwidth": 96,
+              "audit_samples": [
+                512,
+                1024
+              ],
+              "arclength_dense_resolution": 2048,
+              "status": "success",
+              "failure_reason": null,
+              "component_count": 1,
+              "canonical_set_drift_m": 0.0005345193986117969,
+              "set_audit_refinement_change_m": 0.0,
+              "set_audit_converged": true,
+              "minimum_speed": 0.07911621250406548,
+              "speed_ratio": 1.000124622668223,
+              "extraction_fit_refinement_drift_m": 1.0550745064448172e-05,
+              "physical_forward": {
+                "records": [
+                  {
+                    "num_nodes": 256,
+                    "relative_change": null
+                  },
+                  {
+                    "num_nodes": 512,
+                    "relative_change": 5.0933193057100015e-14
+                  }
+                ],
+                "seconds": 2.359263171441853,
+                "solve_count": 4,
+                "converged": true,
+                "relative_tolerance": 1e-07
+              },
+              "physical_field_relative_error": 0.0037962617331381288,
+              "total_seconds": 16.6254032086581,
+              "model_forward_calls": 14
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "total_seconds": 114.88601822312921
+}

@@ -38,10 +38,12 @@
 
 ## Objective
 
-Keep the neural/analytic SDF as the geometry and optimization variable, but
-replace the unordered compressed-cloud discretization used by the precision
+Replace the unordered compressed-cloud discretization used by the precision
 forward solver with ordered smooth components and a coherent all-block
-Kress/Nyström Müller discretization.
+Kress/Nyström Müller discretization. An implicit field may initialize or
+represent geometry; it need not own the inverse state. The implemented
+radial-curve branch owns accepted geometry explicitly, with optional SDF
+distillation/export, as recorded in the 2026-09-05 review and A/B/C batch.
 
 The first accepted backend targets smooth disjoint dielectric components in
 the existing 2-D TMz homogeneous full-space problem.
@@ -296,6 +298,15 @@ then, keep the backend opt-in and label every result experimental.
 Begin only after the forward backend is accepted and frozen enough to
 differentiate.
 
+**Bounded progress, 2026-09-06:** the explicit-import single-interface
+`shape_derivative` module implements the complete discrete JVP and paired
+conjugate-objective adjoint on the tested, separated, lossless forward domain.
+The [follow-up evidence](sdf_kress_followup_2026-09-06.md) passes fixed-node FD,
+adjoint/JVP, independent Mie/Nyström and physical-refinement gates. This is not
+selector promotion, multi-interface differentiation, or integration into the
+legacy B-scan inverse. Items 1–2 have single-interface evidence; the later
+coupling choices below remain distinct work rather than automatic handoffs.
+
 1. Derive the discrete adjoint from the complete accepted matrix and receiver
    map; use the literal forward matrices in `A^H lambda = C^H psi`, where the
    forward-owned receiver operator already records `C=[D,-S]`. Do not port
@@ -304,12 +315,15 @@ differentiate.
    finite differences on circle, ellipse, and star. Add a multicomponent case
    only after multicomponent Kress forward assembly is separately implemented
    and accepted; it is outside the initial one-component contract.
-3. Convert the accepted boundary shape density to the existing
-   `shape_gradient_surrogate_loss` interface. Name and test whether every
-   quantity is a nodal directional derivative or an unweighted density so the
-   curve's arc-length weight is applied exactly once.
-4. Freeze ordered extraction and periodic fitting within each gradient
-   evaluation; re-extract after the optimizer update.
+3. Declare the returned quantity before coupling: the implemented result is a
+   coefficient/directional covector, not a unique arbitrary normal density.
+   Apply an explicit coefficient metric directly, or define and validate a
+   normal-displacement basis and mass/Riesz map before any density-based
+   `shape_gradient_surrogate_loss` coupling. Arc weights enter exactly once.
+4. For a later direct-implicit branch, freeze ordered extraction and periodic
+   fitting within each gradient evaluation and validate actual weight update
+   -> re-extraction -> fit -> field transfer. The authoritative-curve branch
+   does not require a representation refit after every update.
 5. Make any finite-difference fallback explicit and opt-in rather than a broad
    exception handler.
 6. Run inverse smoke tests only after the gradient gates pass, then compare

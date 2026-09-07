@@ -13,6 +13,7 @@ from nystrom_ref import (
     star_parameterization,
 )
 from ordered_boundary import (
+    BoundaryValidationConfig,
     PeriodicCurve2D,
     PeriodicParameterization2D,
     circle,
@@ -174,6 +175,81 @@ def test_fourier_producer_is_owned_and_matches_ellipse() -> None:
     for name in ("points", "first_derivatives", "second_derivatives", "third_derivatives"):
         np.testing.assert_allclose(getattr(actual_curve, name), getattr(expected_curve, name), atol=3.0e-14)
     assert parameterization.provenance.source_kind == "fourier"
+
+
+def test_bandwidth_aware_derivative_grid_accepts_regular_mode_48_curve() -> None:
+    cosine = np.zeros((49, 2), dtype=np.float64)
+    sine = np.zeros_like(cosine)
+    cosine[1, 0] = 1.0
+    sine[1, 1] = 1.0
+    cosine[48, 0] = 1.0e-3
+    parameterization = fourier_curve(
+        cosine,
+        sine,
+        component_id="regular-mode-48",
+    )
+
+    # At 1024 nodes, the fourth-order finite-difference audit itself is not
+    # resolved well enough for mode 48 and used to reject this simple regular
+    # Fourier curve even though its supplied derivatives are analytic.
+    undersampled = validate_periodic_parameterization(
+        parameterization,
+        BoundaryValidationConfig(num_samples_per_component=1024),
+    )
+    assert not undersampled.valid
+    assert undersampled.issues == (
+        "regular-mode-48: supplied third derivative is inconsistent with lower derivatives",
+    )
+    assert undersampled.orientation == "counterclockwise"
+    assert undersampled.minimum_speed > 0.95
+    assert undersampled.third_derivative_consistency_error is not None
+    assert undersampled.third_derivative_consistency_error > 1.0e-4
+    assert undersampled.self_intersection_count == 0
+
+    resolved = validate_periodic_parameterization(
+        parameterization,
+        BoundaryValidationConfig(
+            num_samples_per_component=1024,
+            fourier_bandwidth=48,
+        ),
+    )
+    assert resolved.valid
+    assert resolved.num_validation_nodes == 1024
+    assert resolved.num_derivative_validation_nodes == 2048
+    assert resolved.third_derivative_consistency_error is not None
+    assert resolved.third_derivative_consistency_error < 2.0e-5
+    assert resolved.self_intersection_count == 0
+
+
+def test_dense_derivative_grid_still_rejects_inconsistent_third_derivative() -> None:
+    reference = circle((0.0, 0.0), 1.0, component_id="reference")
+
+    def inconsistent_third_derivative(parameters: np.ndarray):
+        evaluation = reference.evaluate(parameters, wrap=False)
+        assert evaluation.third_derivatives is not None
+        return (
+            evaluation.points,
+            evaluation.first_derivatives,
+            evaluation.second_derivatives,
+            np.zeros_like(evaluation.third_derivatives),
+        )
+
+    report = validate_periodic_parameterization(
+        PeriodicParameterization2D(
+            "inconsistent-third",
+            inconsistent_third_derivative,
+        ),
+        BoundaryValidationConfig(
+            num_samples_per_component=128,
+            fourier_bandwidth=48,
+        ),
+    )
+    assert not report.valid
+    assert report.num_validation_nodes == 128
+    assert report.num_derivative_validation_nodes == 2048
+    assert any(
+        "third derivative is inconsistent" in issue for issue in report.issues
+    )
 
 
 @pytest.mark.parametrize(

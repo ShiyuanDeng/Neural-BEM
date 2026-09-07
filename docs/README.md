@@ -1,6 +1,6 @@
 # Documentation map
 
-Last reconciled: 2026-09-02.
+Last reconciled: 2026-09-06.
 
 This page is the navigation entry point. It does not own implementation
 details; each fact should have one canonical document below.
@@ -10,7 +10,12 @@ details; each fact should have one canonical document below.
 | Document | Status | Owns |
 |---|---|---|
 | [`current_architecture.md`](current_architecture.md) | Living, normative | What the repository does today: scope, pipelines, defaults, solver roles, validation, and limitations |
-| [`solver_neutral_inverse.md`](solver_neutral_inverse.md) | Implemented baseline | Common ordered geometry, MOD/Kress numerical inverse, reproduction command, measured recovery, and scalability limits |
+| [`solver_neutral_inverse.md`](solver_neutral_inverse.md) | Implemented baseline + experimental MLP path | Common ordered geometry, MOD/Kress numerical inverse, measured low-dimensional recovery, alternating neural design, and scalability limits |
+| [`inverse_pipeline_review_2026-09-05.md`](inverse_pipeline_review_2026-09-05.md) | Dated review and proposed direction | SDF contribution, evidence limits, audit fixes, and priorities for permittivity, materials, topology, and 3-D |
+| [`sdf_kress_first_batch_2026-09-05.md`](sdf_kress_first_batch_2026-09-05.md) | Implemented A/B/C + fresh evidence | Distillation policies, continuous-distance supervision, bounded parameter-label study, negative results and deferred milestones |
+| [`sdf_kress_followup_2026-09-06.md`](sdf_kress_followup_2026-09-06.md) | Opt-in follow-up implementation and evidence | Complete discrete Kress derivative, distance/tangency controls, and separately bounded inverse experiments |
+| [`material_robustness_2026-09-06.md`](material_robustness_2026-09-06.md) | Opt-in explicit shape/material robustness | Training-only continuation/restarts, full-band selection, global work caps, and frozen recovery comparison |
+| [`codex_sdf_kress_priorities_2026-09-05.md`](codex_sdf_kress_priorities_2026-09-05.md) | Implementation brief | First-batch scope and acceptance gates; D–H remain separately gated work |
 | [`ordered_boundary_nystrom_plan.md`](ordered_boundary_nystrom_plan.md) | Living plan | Remaining ordered-boundary/Kress implementation sequence and acceptance gates |
 | [`validation_change_log.md`](validation_change_log.md) | Append-only history | What changed, what was run, what was measured, and what decision followed |
 | [`qbx_closure.md`](qbx_closure.md) | Closed decision record | Why compressed-cloud QBX/kdiff stopped, retained artifacts, qualifications, and reopening criteria |

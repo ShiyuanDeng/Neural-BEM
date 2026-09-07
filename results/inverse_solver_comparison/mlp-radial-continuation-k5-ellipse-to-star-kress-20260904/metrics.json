@@ -1,0 +1,633 @@
+{
+  "canonical_curve_parameterization": {
+    "coefficient_order": "mean_radius,center_x,center_y,cos_2,sin_2,...,cos_K,sin_K",
+    "initial_center_m": [
+      0.4799999999999845,
+      0.5199999999999899
+    ],
+    "initial_mlp_representation_set_distance_m": 0.00026145787949414406,
+    "initial_projection_radial_maximum_m": 0.0011963525009163756,
+    "initial_projection_radial_rms_m": 0.0007265087067306974,
+    "initial_projection_symmetric_set_distance_m": 0.0012322496873965123,
+    "initial_radius_cosine_coefficients_m": [
+      0.050987084215756144,
+      0.0,
+      0.01109551884316563,
+      8.36093728501023e-17,
+      -0.0001134748940301503,
+      3.933280769853068e-15
+    ],
+    "initial_radius_sine_coefficients_m": [
+      0.0,
+      0.0,
+      0.011424374011342817,
+      -2.0473578026480615e-15,
+      0.0038845330278902807,
+      -8.847872115515573e-16
+    ],
+    "kind": "gauge_fixed_star_shaped_radial_fourier",
+    "maximum_mode": 5
+  },
+  "command": "run_mlp_sdf_inverse_comparison.py --target star --initial-shape ellipse --solvers kress --train-ghz 0.5,1.5,2.5 --holdout-ghz 0.25,1.0,2.0 --num-pairs 24 --maximum-mode 5 --outer-iterations 150 --redistance-steps 1200 --redistance-samples 2048 --maximum-modal-update-mm 2.0 --frequency-continuation --maximum-redistance-drift-mm 1.5 --output-dir results/inverse_solver_comparison/mlp-radial-continuation-k5-ellipse-to-star-kress-20260904 --overwrite",
+  "created_utc": "2026-09-04T11:35:57.736449+00:00",
+  "driver_acceptance": "progress-only: at least one accepted cycle and strict training-loss decrease; this is not a convergence or accuracy claim",
+  "frequency_continuation": {
+    "budget_unit": "accepted_updates",
+    "budget_weights": [
+      1,
+      1,
+      6
+    ],
+    "continuation_enabled": true,
+    "damping_policy": "reset_to_configured_initial_at_every_stage",
+    "enabled": true,
+    "frequency_staging_enabled": true,
+    "stage_losses_are_objective_local": true,
+    "stages": [
+      {
+        "max_iterations": 19,
+        "stage": 1,
+        "train_frequencies_ghz": [
+          0.5
+        ]
+      },
+      {
+        "max_iterations": 20,
+        "stage": 2,
+        "train_frequencies_ghz": [
+          0.5,
+          1.5
+        ]
+      },
+      {
+        "max_iterations": 111,
+        "stage": 3,
+        "train_frequencies_ghz": [
+          0.5,
+          1.5,
+          2.5
+        ]
+      }
+    ],
+    "strategy": "cumulative_low_to_high",
+    "total_outer_iteration_budget": 150,
+    "unused_warm_stage_budget_policy": "carry_to_final_stage"
+  },
+  "geometry_config": {
+    "arclength_dense_resolution": 2048,
+    "bandwidth": 48,
+    "bounds": [
+      [
+        0.3,
+        0.3
+      ],
+      [
+        0.7,
+        0.7
+      ]
+    ],
+    "grid_shape": [
+      257,
+      257
+    ],
+    "num_nodes": 128,
+    "projected_samples": 128,
+    "validation_resolution": 1024
+  },
+  "holdout_frequencies_ghz": [
+    0.25,
+    1.0,
+    2.0
+  ],
+  "initial_geometry_maximum_normalized_residual_m": 3.3642904729448947e-08,
+  "initial_redistance": {
+    "config": {
+      "boundary_max_tolerance_m": 0.0005,
+      "boundary_oversampling_factor": 4,
+      "boundary_weight": 200.0,
+      "bounds": [
+        [
+          0.3,
+          0.3
+        ],
+        [
+          0.7,
+          0.7
+        ]
+      ],
+      "box_boundary_weight": 5.0,
+      "check_interval": 20,
+      "distance_rms_tolerance_m": 0.005,
+      "eikonal_rms_tolerance": 0.1,
+      "eikonal_weight": 0.1,
+      "heldout_sample_count": 512,
+      "learning_rate": 0.002,
+      "max_steps": 1200,
+      "minimum_steps": 151,
+      "no_op_boundary_max_tolerance_m": 1e-06,
+      "normal_offset_m": 0.002,
+      "normal_offset_weight": 20.0,
+      "patience_checks": 15,
+      "sample_count": 2048,
+      "seed": 1023,
+      "warmup_steps": 150
+    },
+    "converged": true,
+    "diagnostics": {
+      "best_full_objective_loss": 0.0015466583196055699,
+      "best_full_objective_step": 480.0,
+      "boundary_oversampling_factor": 4.0,
+      "boundary_sample_count": 512.0,
+      "box_boundary_sample_count": 184.0,
+      "heldout_sample_count": 512.0,
+      "length_scale_m": 0.19999999999999998,
+      "normal_offset_sample_count": 1024.0,
+      "polygon_node_count": 128.0,
+      "training_sample_count": 2048.0
+    },
+    "final_boundary_max_abs_m": 0.0002186854634922148,
+    "final_distance_rms_m": 0.0032138060118203494,
+    "final_eikonal_maximum_deviation": 0.5192293062583628,
+    "final_eikonal_rms": 0.09891388362583525,
+    "final_heldout_distance_rms_m": 0.003232492782852297,
+    "final_total_loss": 0.0015466583196055699,
+    "initial_total_loss": 1.477210965222786,
+    "steps": 480,
+    "stop_reason": "distance_boundary_and_eikonal_tolerances"
+  },
+  "initial_shape": "ellipse",
+  "inverse_config": {
+    "armijo_coefficient": 0.0001,
+    "audit_point_count": 512,
+    "audit_seed": 2718,
+    "consecutive_convergence_iterations": 2,
+    "curvature_penalty_weight": 0.0001,
+    "damping_decrease": 0.3,
+    "damping_increase": 10.0,
+    "direct_curve_retraction": "radial_fourier",
+    "eikonal_rms_tolerance": 0.15,
+    "finite_difference_step_m": 0.0002,
+    "geometry_change_tolerance_m": 0.0002,
+    "initial_damping": 0.001,
+    "loss_tolerance": 1e-12,
+    "max_backtracks": 6,
+    "max_damping_trials": 5,
+    "max_iterations": 150,
+    "max_stencil_shrinks": 4,
+    "max_trust_region_solves": 8,
+    "maximum_modal_field_update_m": 0.002,
+    "maximum_mode": 5,
+    "maximum_redistance_curve_drift_m": 0.0015,
+    "maximum_spectral_tail_growth_m": null,
+    "minimum_damping": 1e-06,
+    "minimum_finite_difference_step_m": 1.25e-05,
+    "redistance": {
+      "boundary_max_tolerance_m": 0.0005,
+      "boundary_oversampling_factor": 4,
+      "boundary_weight": 2000.0,
+      "bounds": [
+        [
+          0.3,
+          0.3
+        ],
+        [
+          0.7,
+          0.7
+        ]
+      ],
+      "box_boundary_weight": 5.0,
+      "check_interval": 20,
+      "distance_rms_tolerance_m": 0.005,
+      "eikonal_rms_tolerance": 0.1,
+      "eikonal_weight": 0.1,
+      "heldout_sample_count": 512,
+      "learning_rate": 0.002,
+      "max_steps": 1200,
+      "minimum_steps": 100,
+      "no_op_boundary_max_tolerance_m": 1e-06,
+      "normal_offset_m": 0.002,
+      "normal_offset_weight": 20.0,
+      "patience_checks": 15,
+      "sample_count": 2048,
+      "seed": 1023,
+      "warmup_steps": 0
+    },
+    "relative_loss_change_tolerance": 0.0001,
+    "spectral_tail_reference_rms_m": null,
+    "trust_region_refinement_steps": 8
+  },
+  "mode_budget": {
+    "angular_observation_count": 24,
+    "angular_resolvable_maximum_mode": 11,
+    "criterion": "min(ceil(ka + ka**(1/3)), floor((N_angles - 1)/2)) on the training band, initial mean radius, and paired ring scan",
+    "exceeds_angular_resolution": false,
+    "exceeds_resolution": false,
+    "exceeds_wavenumber_resolution": false,
+    "initial_mean_radius_m": 0.05098708421575614,
+    "maximum_exterior_ka": 6.543874716061975,
+    "maximum_exterior_wavenumber_per_m": 128.34377208884936,
+    "maximum_mode": 5,
+    "requested_maximum_mode": 5,
+    "resolvable_maximum_mode": 9,
+    "wavenumber_resolvable_maximum_mode": 9
+  },
+  "model": {
+    "bounds": [
+      [
+        0.3,
+        0.3
+      ],
+      [
+        0.7,
+        0.7
+      ]
+    ],
+    "claims_signed_distance": false,
+    "device": "cpu",
+    "dtype": "torch.float64",
+    "fourier_frequencies": [
+      1.0,
+      2.0,
+      4.0,
+      8.0
+    ],
+    "geometric_initialization": {
+      "center": [
+        0.48,
+        0.52
+      ],
+      "kind": "fixed_circle_residual_skip",
+      "radius": 0.065
+    },
+    "hidden_features": 64,
+    "hidden_layers": 2,
+    "kind": "coordinate_normalized_tanh_mlp",
+    "parameter_count": 5441,
+    "seed": 23,
+    "trained_against_signed_distance": true
+  },
+  "oracle_diagnostics": {
+    "coarse": {
+      "maximum_incident_consistency": 4.004542924779091e-15,
+      "maximum_linear_system_relative_residual": 2.0241537563429104e-14,
+      "num_nodes": 256,
+      "total_seconds": 1.588648233562708
+    },
+    "coarse_num_nodes": 256,
+    "fine": {
+      "maximum_incident_consistency": 3.9509887220472536e-15,
+      "maximum_linear_system_relative_residual": 2.0269685248515443e-14,
+      "num_nodes": 512,
+      "total_seconds": 5.265197733417153
+    },
+    "maximum_relative_difference": 2.8794535428482663e-10,
+    "num_nodes": 512,
+    "per_frequency_relative_difference": [
+      3.7943928019393733e-13,
+      2.403929772208912e-11,
+      2.8794535428482663e-10,
+      1.6147426088558745e-12,
+      1.564835464071301e-11,
+      7.078913230005298e-11
+    ]
+  },
+  "provenance": {
+    "git": {
+      "commit": "41420c2875d49f9ab8774f572c94b989d56fc309",
+      "dirty_paths": [
+        " M .gitignore",
+        " M README.md",
+        " M docs/README.md",
+        " M docs/current_architecture.md",
+        " M docs/solver_neutral_inverse.md",
+        " M docs/validation_change_log.md",
+        " M pytest/README.md",
+        " M pytest/ordered_boundary/test_ordered_boundary.py",
+        " M pytest/ordered_boundary/test_ordered_periodic_curve.py",
+        " M pytest/sdf_inverse/test_star_target_inverse.py",
+        " M pytest/sdf_to_ordered_boundary/test_sdf_boundary_methods_ab.py",
+        " M results/README.md",
+        " M results/inverse_solver_comparison/README.md",
+        " M run_sdf_inverse_comparison.py",
+        " M run_sdf_inverse_contour_video.py",
+        " M solvers/README.md",
+        " M solvers/gpr_bem_kress/README.md",
+        " M solvers/ordered_boundary/validation.py",
+        " M solvers/sdf_inverse/__init__.py",
+        " M solvers/sdf_inverse/forward.py",
+        " M solvers/sdf_inverse/geometry.py",
+        " M solvers/sdf_inverse/models.py",
+        " M solvers/sdf_inverse/optimization.py",
+        " M solvers/sdf_to_ordered_boundary/__init__.py",
+        " M solvers/sdf_to_ordered_boundary/arclength.py",
+        " M solvers/sdf_to_ordered_boundary/method_b.py",
+        " M solvers/sdf_to_ordered_boundary/method_c.py",
+        "?? mlp-arclength-k5-ellipse-to-star-kress-20260904.log",
+        "?? mlp-canonical-ellipse-to-star-kress-20260903.log",
+        "?? mlp-fixed-ellipse-to-star-kress-20260903.log",
+        "?? mlp-full-band-modes-ellipse-to-star-kress-20260903.log",
+        "?? mlp-joint-k6-ellipse-to-star-kress-20260903.log",
+        "?? mlp-radial-continuation-k5-ellipse-to-star-kress-20260904.log",
+        "?? mlp-resolved-k5-ellipse-to-star-kress-20260904.log",
+        "?? pytest/gpr_bem_kress/test_multicomponent.py",
+        "?? pytest/multicylinder_ref/",
+        "?? pytest/sdf_bem_multicomponent/",
+        "?? pytest/sdf_inverse/test_contour_video.py",
+        "?? pytest/sdf_inverse/test_curve_forward_seam.py",
+        "?? pytest/sdf_inverse/test_direct_curve_updates.py",
+        "?? pytest/sdf_inverse/test_mlp_driver_contract.py",
+        "?? pytest/sdf_inverse/test_neural_inverse_convergence_diagnostics.py",
+        "?? pytest/sdf_inverse/test_neural_mlp_inverse.py",
+        "?? pytest/sdf_inverse/test_neural_redistance_regressions.py",
+        "?? results/inverse_solver_comparison/mlp-arclength-k5-ellipse-to-star-kress-20260904/",
+        "?? results/inverse_solver_comparison/mlp-canonical-ellipse-to-star-kress-20260903/",
+        "?? results/inverse_solver_comparison/mlp-circle-to-circle-mie-20260903/",
+        "?? results/inverse_solver_comparison/mlp-ellipse-to-circle-mie-20260903/",
+        "?? results/inverse_solver_comparison/mlp-ellipse-to-circle-mode5-control-20260903/",
+        "?? results/inverse_solver_comparison/mlp-ellipse-to-star-kress/",
+        "?? results/inverse_solver_comparison/mlp-ellipse-to-star-nystrom-20260903/",
+        "?? results/inverse_solver_comparison/mlp-fixed-ellipse-to-star-kress-20260903/",
+        "?? results/inverse_solver_comparison/mlp-full-band-modes-ellipse-to-star-kress-20260903/",
+        "?? results/inverse_solver_comparison/mlp-joint-k6-ellipse-to-star-kress-20260903/",
+        "?? results/inverse_solver_comparison/mlp-radial-continuation-k5-ellipse-to-star-kress-20260904/",
+        "?? results/inverse_solver_comparison/mlp-resolved-k5-ellipse-to-star-kress-20260904/",
+        "?? results/inverse_solver_comparison/mlp-star-to-star-nystrom-20260903/",
+        "?? results/inverse_solver_comparison/siren-circle-mie-20260903/",
+        "?? run_mlp_sdf_inverse_comparison.py",
+        "?? solvers/gpr_bem_kress/multicomponent.py",
+        "?? solvers/multicylinder_ref/",
+        "?? solvers/sdf_bem_multicomponent/",
+        "?? solvers/sdf_inverse/curve_updates.py",
+        "?? solvers/sdf_inverse/neural.py",
+        "?? solvers/sdf_inverse/neural_optimization.py"
+      ]
+    },
+    "numpy": "2.0.2",
+    "python": "3.9.25",
+    "torch": "2.8.0+cu128"
+  },
+  "schema": "solver-neutral-alternating-mlp-sdf-inverse-v2",
+  "solvers": {
+    "kress": {
+      "accepted_updates": 44,
+      "converged": false,
+      "final_all_frequency_maximum_system_residual": 1.0772866915913867e-14,
+      "final_holdout_relative_l2": 1.3393169374086996e-08,
+      "final_maximum_boundary_error_m": 2.569831856107766e-10,
+      "final_mlp_representation_all_frequency_maximum_system_residual": 8.07743244728189e-15,
+      "final_mlp_representation_curve_drift_m": 0.0003287309355155226,
+      "final_mlp_representation_holdout_relative_l2": 0.004327378029650234,
+      "final_mlp_representation_maximum_boundary_error_m": 0.000215872432361622,
+      "final_mlp_representation_radial_spectral_tail_rms_m": 5.496377932194581e-05,
+      "final_mlp_representation_response_relative_to_canonical_l2": 0.004755163138459707,
+      "final_mlp_representation_training_relative_l2": 0.005085227190825917,
+      "final_radial_fourier_state": {
+        "center_m": [
+          0.49999999997058014,
+          0.5000000000326589
+        ],
+        "maximum_mode": 5,
+        "minimum_radius_lower_bound_m": 0.03749999982349278,
+        "radius_cosine_coefficients_m": [
+          0.04999999999257688,
+          0.0,
+          -1.4110324927069696e-12,
+          -2.59158823169506e-12,
+          -1.2242502493189742e-10,
+          0.01249999998196597
+        ],
+        "radius_sine_coefficients_m": [
+          0.0,
+          0.0,
+          1.3586047016547592e-13,
+          -2.4201850523652094e-13,
+          -1.3615022717441077e-10,
+          1.09280803728854e-10
+        ]
+      },
+      "final_radial_spectral_tail_rms_m": 6.965676221302666e-17,
+      "final_training_loss": 4.086982623108104e-16,
+      "final_training_relative_l2": 1.0683124213404753e-08,
+      "frequency_continuation_stages": [
+        {
+          "accepted_updates": 19,
+          "accepted_updates_before_stage": 0,
+          "audit_seed": 2718,
+          "automatic_mode_budget": {
+            "angular_observation_count": 24,
+            "angular_resolvable_maximum_mode": 11,
+            "criterion": "min(ceil(ka + ka**(1/3)), floor((N_angles - 1)/2)) on the training band, initial mean radius, and paired ring scan",
+            "exceeds_angular_resolution": false,
+            "exceeds_resolution": false,
+            "exceeds_wavenumber_resolution": false,
+            "initial_mean_radius_m": 0.05098708421575614,
+            "maximum_exterior_ka": 1.308774943212395,
+            "maximum_exterior_wavenumber_per_m": 25.668754417769875,
+            "maximum_mode": 3,
+            "requested_maximum_mode": null,
+            "resolvable_maximum_mode": 3,
+            "wavenumber_resolvable_maximum_mode": 3
+          },
+          "bem_seconds": 8.64641688298434,
+          "carried_budget_in": 0,
+          "continuation_mode_limit": 3,
+          "converged": false,
+          "curve_update_seconds": 0.7031295374035835,
+          "effective_max_iterations": 19,
+          "evaluation_count": 286,
+          "final_loss": 0.05578774981205585,
+          "final_radial_spectral_tail_rms_m": 0.002747951363865939,
+          "final_relative_l2_error": 0.3340291897785456,
+          "forward_seconds": 10.032997263595462,
+          "full_validation_rejection_count": 0,
+          "geometry_audit_seconds": 11.695866413414478,
+          "infeasible_evaluation_count": 0,
+          "initial_damping": 0.001,
+          "initial_loss": 0.7003924126296983,
+          "initial_radial_spectral_tail_rms_m": 0.002747951363865959,
+          "initial_relative_l2_error": 1.1835475593567824,
+          "max_iterations": 19,
+          "maximum_mode": 3,
+          "planned_max_iterations": 19,
+          "radial_spectral_tail_limit_m": null,
+          "redistance_attempt_count": 19,
+          "redistance_failure_count": 0,
+          "redistance_seconds": 42.962965186685324,
+          "redistance_seed": 1023,
+          "representation_drift_rejection_count": 0,
+          "representation_extraction_failure_count": 0,
+          "spectral_tail_growth_allowance_m": null,
+          "spectral_tail_reference_rms_m": 0.002747951363865959,
+          "spectral_tail_rejection_count": 0,
+          "stage": 1,
+          "stop_reason": "maximum_iterations",
+          "total_redistance_step_count": 6280,
+          "total_seconds": 64.90190365724266,
+          "train_frequencies_ghz": [
+            0.5
+          ],
+          "unused_budget_carried_out": 0
+        },
+        {
+          "accepted_updates": 20,
+          "accepted_updates_before_stage": 19,
+          "audit_seed": 2737,
+          "automatic_mode_budget": {
+            "angular_observation_count": 24,
+            "angular_resolvable_maximum_mode": 11,
+            "criterion": "min(ceil(ka + ka**(1/3)), floor((N_angles - 1)/2)) on the training band, initial mean radius, and paired ring scan",
+            "exceeds_angular_resolution": false,
+            "exceeds_resolution": false,
+            "exceeds_wavenumber_resolution": false,
+            "initial_mean_radius_m": 0.04541169600486905,
+            "maximum_exterior_ka": 3.496985017330215,
+            "maximum_exterior_wavenumber_per_m": 77.00626325330963,
+            "maximum_mode": 6,
+            "requested_maximum_mode": null,
+            "resolvable_maximum_mode": 6,
+            "wavenumber_resolvable_maximum_mode": 6
+          },
+          "bem_seconds": 46.89057256747037,
+          "carried_budget_in": 0,
+          "continuation_mode_limit": 5,
+          "converged": false,
+          "curve_update_seconds": 1.2666663192212582,
+          "effective_max_iterations": 20,
+          "evaluation_count": 461,
+          "final_loss": 5.830515570348791e-07,
+          "final_radial_spectral_tail_rms_m": 1.1861469076475276e-16,
+          "final_relative_l2_error": 0.0007438065395650869,
+          "forward_seconds": 49.21933985128999,
+          "full_validation_rejection_count": 0,
+          "geometry_audit_seconds": 14.525103907100856,
+          "infeasible_evaluation_count": 0,
+          "initial_damping": 0.001,
+          "initial_loss": 0.7580063475012682,
+          "initial_radial_spectral_tail_rms_m": 2.959216571304931e-17,
+          "initial_relative_l2_error": 0.8437757042783114,
+          "max_iterations": 20,
+          "maximum_mode": 5,
+          "planned_max_iterations": 20,
+          "radial_spectral_tail_limit_m": null,
+          "redistance_attempt_count": 20,
+          "redistance_failure_count": 0,
+          "redistance_seconds": 75.19467736966908,
+          "redistance_seed": 1042,
+          "representation_drift_rejection_count": 0,
+          "representation_extraction_failure_count": 0,
+          "spectral_tail_growth_allowance_m": null,
+          "spectral_tail_reference_rms_m": 4.472593505400794e-17,
+          "spectral_tail_rejection_count": 0,
+          "stage": 2,
+          "stop_reason": "maximum_iterations",
+          "total_redistance_step_count": 7980,
+          "total_seconds": 139.2073959307745,
+          "train_frequencies_ghz": [
+            0.5,
+            1.5
+          ],
+          "unused_budget_carried_out": 0
+        },
+        {
+          "accepted_updates": 5,
+          "accepted_updates_before_stage": 39,
+          "audit_seed": 2757,
+          "automatic_mode_budget": {
+            "angular_observation_count": 24,
+            "angular_resolvable_maximum_mode": 11,
+            "criterion": "min(ceil(ka + ka**(1/3)), floor((N_angles - 1)/2)) on the training band, initial mean radius, and paired ring scan",
+            "exceeds_angular_resolution": false,
+            "exceeds_resolution": false,
+            "exceeds_wavenumber_resolution": false,
+            "initial_mean_radius_m": 0.049999382899184944,
+            "maximum_exterior_ka": 6.417109403396105,
+            "maximum_exterior_wavenumber_per_m": 128.34377208884936,
+            "maximum_mode": 9,
+            "requested_maximum_mode": null,
+            "resolvable_maximum_mode": 9,
+            "wavenumber_resolvable_maximum_mode": 9
+          },
+          "bem_seconds": 18.28802769910544,
+          "carried_budget_in": 0,
+          "continuation_mode_limit": 5,
+          "converged": false,
+          "curve_update_seconds": 0.29743031971156597,
+          "effective_max_iterations": 111,
+          "evaluation_count": 116,
+          "final_loss": 4.086982623108104e-16,
+          "final_radial_spectral_tail_rms_m": 6.965676221302666e-17,
+          "final_relative_l2_error": 1.0683124213404753e-08,
+          "forward_seconds": 18.938288350589573,
+          "full_validation_rejection_count": 0,
+          "geometry_audit_seconds": 3.847674802877009,
+          "infeasible_evaluation_count": 0,
+          "initial_damping": 0.001,
+          "initial_loss": 5.054653136514171e-06,
+          "initial_radial_spectral_tail_rms_m": 1.1861469076475276e-16,
+          "initial_relative_l2_error": 0.0011114537798857468,
+          "max_iterations": 111,
+          "maximum_mode": 5,
+          "planned_max_iterations": 111,
+          "radial_spectral_tail_limit_m": null,
+          "redistance_attempt_count": 5,
+          "redistance_failure_count": 0,
+          "redistance_seconds": 7.47044631280005,
+          "redistance_seed": 1062,
+          "representation_drift_rejection_count": 0,
+          "representation_extraction_failure_count": 0,
+          "spectral_tail_growth_allowance_m": null,
+          "spectral_tail_reference_rms_m": 4.472593505400794e-17,
+          "spectral_tail_rejection_count": 0,
+          "stage": 3,
+          "stop_reason": "representation_limited_stationary",
+          "total_redistance_step_count": 900,
+          "total_seconds": 30.32293381821364,
+          "train_frequencies_ghz": [
+            0.5,
+            1.5,
+            2.5
+          ],
+          "unused_budget_carried_out": 0
+        }
+      ],
+      "global_requested_tail_cap_m": null,
+      "initial_all_frequency_maximum_system_residual": 9.331401112965947e-15,
+      "initial_holdout_relative_l2": 1.1330229847914428,
+      "initial_maximum_boundary_error_m": 0.04181226790182692,
+      "initial_radial_spectral_tail_rms_m": 4.472593505400794e-17,
+      "initial_training_loss": 2.2992006619999947,
+      "initial_training_relative_l2": 1.2017584768188632,
+      "inverse_bem_seconds": 73.82501714956015,
+      "inverse_curve_update_seconds": 2.2672261763364077,
+      "inverse_forward_attempt_count": 863,
+      "inverse_forward_seconds": 78.19062546547502,
+      "inverse_full_validation_rejection_count": 0,
+      "inverse_geometry_audit_seconds": 30.068645123392344,
+      "inverse_infeasible_forward_attempt_count": 0,
+      "inverse_maximum_system_residual": 1.2258045620957155e-14,
+      "inverse_redistance_attempt_count": 44,
+      "inverse_redistance_failure_count": 0,
+      "inverse_redistance_seconds": 125.62808886915445,
+      "inverse_representation_drift_rejection_count": 0,
+      "inverse_representation_extraction_failure_count": 0,
+      "inverse_spectral_tail_rejection_count": 0,
+      "inverse_total_redistance_step_count": 15160,
+      "inverse_total_seconds": 234.4322334062308,
+      "progress_gate": {
+        "claims_convergence": false,
+        "criterion": "at_least_one_accepted_cycle_and_strict_training_loss_decrease",
+        "passed": true
+      },
+      "radial_spectral_tail_basis_maximum_mode": 5,
+      "radial_spectral_tail_limit_m": null,
+      "stop_reason": "representation_limited_stationary"
+    }
+  },
+  "target": "star",
+  "train_frequencies_ghz": [
+    0.5,
+    1.5,
+    2.5
+  ],
+  "truth_oracle": "nystrom_ref independent Nystrom/Muller solution of the exact star"
+}

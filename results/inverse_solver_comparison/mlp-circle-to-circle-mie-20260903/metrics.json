@@ -1,0 +1,258 @@
+{
+  "command": "run_mlp_sdf_inverse_comparison.py --target circle --initial-shape circle --outer-iterations 60 --output-dir results/inverse_solver_comparison/mlp-circle-to-circle-mie-20260903 --overwrite --no-gate",
+  "created_utc": "2026-09-03T11:58:42.940626+00:00",
+  "driver_acceptance": "progress-only: at least one accepted cycle and strict training-loss decrease; this is not a convergence or accuracy claim",
+  "geometry_config": {
+    "arclength_dense_resolution": 512,
+    "bandwidth": 10,
+    "bounds": [
+      [
+        0.3,
+        0.3
+      ],
+      [
+        0.7,
+        0.7
+      ]
+    ],
+    "grid_shape": [
+      129,
+      129
+    ],
+    "num_nodes": 64,
+    "projected_samples": 64,
+    "validation_resolution": 256
+  },
+  "holdout_frequencies_ghz": [
+    1.0,
+    1.5,
+    2.5
+  ],
+  "initial_geometry_maximum_normalized_residual_m": 1.2967998376992875e-05,
+  "initial_redistance": {
+    "converged": true,
+    "diagnostics": {
+      "boundary_sample_count": 64.0,
+      "box_boundary_sample_count": 184.0,
+      "heldout_sample_count": 512.0,
+      "length_scale_m": 0.19999999999999998,
+      "normal_offset_sample_count": 128.0,
+      "polygon_node_count": 64.0,
+      "training_sample_count": 2048.0
+    },
+    "final_boundary_max_abs_m": 2.281676571907372e-05,
+    "final_distance_rms_m": 5.036240525043596e-05,
+    "final_eikonal_maximum_deviation": 0.008457189456475556,
+    "final_eikonal_rms": 0.001978692047248414,
+    "final_heldout_distance_rms_m": 5.0629404170378236e-05,
+    "final_total_loss": 1.2642101623204232e-06,
+    "initial_total_loss": 2.985191819554443e-07,
+    "steps": 100,
+    "stop_reason": "distance_boundary_and_eikonal_tolerances"
+  },
+  "initial_shape": "circle",
+  "inverse_config": {
+    "armijo_coefficient": 0.0001,
+    "audit_point_count": 512,
+    "audit_seed": 2718,
+    "consecutive_convergence_iterations": 2,
+    "curvature_penalty_weight": 0.0001,
+    "damping_decrease": 0.3,
+    "damping_increase": 10.0,
+    "eikonal_rms_tolerance": 0.15,
+    "finite_difference_step_m": 0.0002,
+    "geometry_change_tolerance_m": 5e-05,
+    "initial_damping": 0.001,
+    "loss_tolerance": 1e-12,
+    "max_backtracks": 5,
+    "max_damping_trials": 5,
+    "max_iterations": 60,
+    "max_stencil_shrinks": 4,
+    "max_trust_region_solves": 8,
+    "maximum_modal_field_update_m": 0.004,
+    "maximum_mode": 3,
+    "maximum_redistance_curve_drift_m": 0.0015,
+    "minimum_damping": 1e-06,
+    "minimum_finite_difference_step_m": 1.25e-05,
+    "redistance": {
+      "boundary_max_tolerance_m": 0.001,
+      "boundary_weight": 200.0,
+      "bounds": [
+        [
+          0.3,
+          0.3
+        ],
+        [
+          0.7,
+          0.7
+        ]
+      ],
+      "box_boundary_weight": 5.0,
+      "check_interval": 20,
+      "distance_rms_tolerance_m": 0.005,
+      "eikonal_rms_tolerance": 0.1,
+      "eikonal_weight": 0.1,
+      "heldout_sample_count": 512,
+      "learning_rate": 0.002,
+      "max_steps": 1200,
+      "minimum_steps": 100,
+      "normal_offset_m": 0.002,
+      "normal_offset_weight": 20.0,
+      "patience_checks": 15,
+      "sample_count": 2048,
+      "seed": 1023,
+      "warmup_steps": 150
+    },
+    "relative_loss_change_tolerance": 0.0001
+  },
+  "mode_budget": {
+    "criterion": "ceil(ka + ka**(1/3)) on the training band and the initial mean radius",
+    "exceeds_resolution": false,
+    "initial_mean_radius_m": 0.06500035346381126,
+    "maximum_exterior_ka": 1.6684781101308088,
+    "maximum_exterior_wavenumber_per_m": 25.668754417769875,
+    "maximum_mode": 3,
+    "requested_maximum_mode": null,
+    "resolvable_maximum_mode": 3
+  },
+  "model": {
+    "bounds": [
+      [
+        0.3,
+        0.3
+      ],
+      [
+        0.7,
+        0.7
+      ]
+    ],
+    "claims_signed_distance": false,
+    "device": "cpu",
+    "dtype": "torch.float64",
+    "fourier_frequencies": [
+      1.0,
+      2.0,
+      4.0,
+      8.0
+    ],
+    "geometric_initialization": {
+      "center": [
+        0.48,
+        0.52
+      ],
+      "kind": "fixed_circle_residual_skip",
+      "radius": 0.065
+    },
+    "hidden_features": 64,
+    "hidden_layers": 2,
+    "kind": "coordinate_normalized_tanh_mlp",
+    "parameter_count": 5441,
+    "seed": 23,
+    "trained_against_signed_distance": true
+  },
+  "oracle_diagnostics": null,
+  "provenance": {
+    "git": {
+      "commit": "41420c2875d49f9ab8774f572c94b989d56fc309",
+      "dirty_paths": [
+        " M README.md",
+        " M docs/README.md",
+        " M docs/current_architecture.md",
+        " M docs/solver_neutral_inverse.md",
+        " M docs/validation_change_log.md",
+        " M pytest/README.md",
+        " M pytest/sdf_inverse/test_star_target_inverse.py",
+        " M results/README.md",
+        " M results/inverse_solver_comparison/README.md",
+        " M run_sdf_inverse_comparison.py",
+        " M run_sdf_inverse_contour_video.py",
+        " M solvers/README.md",
+        " M solvers/sdf_inverse/__init__.py",
+        " M solvers/sdf_inverse/geometry.py",
+        " M solvers/sdf_inverse/models.py",
+        " M solvers/sdf_inverse/optimization.py",
+        " M solvers/sdf_to_ordered_boundary/__init__.py",
+        " M solvers/sdf_to_ordered_boundary/arclength.py",
+        "?? pytest/gpr_bem_kress/test_multicomponent.py",
+        "?? pytest/sdf_inverse/test_multicomponent_forward.py",
+        "?? pytest/sdf_inverse/test_multicomponent_geometry.py",
+        "?? pytest/sdf_inverse/test_neural_mlp_inverse.py",
+        "?? results/inverse_solver_comparison/mlp-circle-to-circle-mie-20260903/",
+        "?? results/inverse_solver_comparison/mlp-ellipse-to-circle-mie-20260903/",
+        "?? results/inverse_solver_comparison/mlp-ellipse-to-star-kress/",
+        "?? results/inverse_solver_comparison/siren-circle-mie-20260903/",
+        "?? run_mlp_sdf_inverse_comparison.py",
+        "?? solvers/gpr_bem_kress/multicomponent.py",
+        "?? solvers/sdf_inverse/circle_union.py",
+        "?? solvers/sdf_inverse/multicomponent_forward.py",
+        "?? solvers/sdf_inverse/multicomponent_geometry.py",
+        "?? solvers/sdf_inverse/neural.py",
+        "?? solvers/sdf_inverse/neural_optimization.py"
+      ]
+    },
+    "numpy": "2.0.2",
+    "python": "3.9.25",
+    "torch": "2.8.0+cu128"
+  },
+  "schema": "solver-neutral-alternating-mlp-sdf-inverse-v1",
+  "solvers": {
+    "kress": {
+      "accepted_updates": 28,
+      "converged": false,
+      "final_all_frequency_maximum_system_residual": 4.913581228689977e-15,
+      "final_holdout_relative_l2": 0.04253398269390193,
+      "final_maximum_boundary_error_m": 0.0006335295372439792,
+      "final_training_loss": 1.471078890411443e-07,
+      "final_training_relative_l2": 0.00040171137808507515,
+      "initial_all_frequency_maximum_system_residual": 4.352611496907489e-15,
+      "initial_holdout_relative_l2": 1.4159564667396038,
+      "initial_maximum_boundary_error_m": 0.0432696540332822,
+      "initial_training_loss": 0.9183698139492713,
+      "initial_training_relative_l2": 0.9739841318442138,
+      "inverse_forward_attempt_count": 527,
+      "inverse_forward_seconds": 61.839032374322414,
+      "inverse_infeasible_forward_attempt_count": 0,
+      "inverse_maximum_system_residual": 7.034321509257895e-16,
+      "inverse_redistance_seconds": 52.812577713280916,
+      "inverse_total_seconds": 114.95572130288929,
+      "progress_gate": {
+        "claims_convergence": false,
+        "criterion": "at_least_one_accepted_cycle_and_strict_training_loss_decrease",
+        "passed": true
+      },
+      "stop_reason": "no_decreasing_redistanced_step"
+    },
+    "mod": {
+      "accepted_updates": 28,
+      "converged": false,
+      "final_all_frequency_maximum_system_residual": 6.476954042117972e-15,
+      "final_holdout_relative_l2": 0.08393875943514764,
+      "final_maximum_boundary_error_m": 0.0006402652867845346,
+      "final_training_loss": 7.494999986699752e-06,
+      "final_training_relative_l2": 0.0027181958606032584,
+      "initial_all_frequency_maximum_system_residual": 3.605314046427088e-15,
+      "initial_holdout_relative_l2": 1.3832257908748022,
+      "initial_maximum_boundary_error_m": 0.0432696540332822,
+      "initial_training_loss": 0.9170449165376359,
+      "initial_training_relative_l2": 0.9735262683591434,
+      "inverse_forward_attempt_count": 525,
+      "inverse_forward_seconds": 107.59793821629137,
+      "inverse_infeasible_forward_attempt_count": 0,
+      "inverse_maximum_system_residual": 6.163786602257628e-16,
+      "inverse_redistance_seconds": 58.756828610785306,
+      "inverse_total_seconds": 166.69237065967172,
+      "progress_gate": {
+        "claims_convergence": false,
+        "criterion": "at_least_one_accepted_cycle_and_strict_training_loss_decrease",
+        "passed": true
+      },
+      "stop_reason": "no_decreasing_redistanced_step"
+    }
+  },
+  "target": "circle",
+  "train_frequencies_ghz": [
+    0.25,
+    0.5
+  ],
+  "truth_oracle": "gpr_bem_ref analytic penetrable-cylinder Mie series"
+}

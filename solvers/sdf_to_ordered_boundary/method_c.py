@@ -621,7 +621,10 @@ def _validate_candidate(
     parameterization = boundary.to_parameterization()
     report = validate_periodic_parameterization(
         parameterization,
-        BoundaryValidationConfig(num_samples_per_component=config.validation_sample_count),
+        BoundaryValidationConfig(
+            num_samples_per_component=config.validation_sample_count,
+            fourier_bandwidth=boundary.bandwidth,
+        ),
     )
     parameters = (
         2.0

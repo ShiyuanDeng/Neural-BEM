@@ -52,6 +52,18 @@ class ComponentCountError(FrontendError):
         )
 
 
+class ComponentLimitError(FrontendError):
+    """Raised before preparation when contour discovery exceeds a safety limit."""
+
+    def __init__(self, actual: int, maximum: int):
+        self.actual = int(actual)
+        self.maximum = int(maximum)
+        super().__init__(
+            "Marching-squares component count exceeds maximum_num_components: "
+            f"detected {self.actual} candidate contour(s), limit {self.maximum}."
+        )
+
+
 class ProjectionError(FrontendError):
     """Raised when safeguarded Newton projection leaves failed points."""
 
@@ -120,6 +132,8 @@ class FrontendConfig:
 
     ``bounds`` follows the repository convention
     ``((xmin, ymin), (xmax, ymax))`` and ``grid_shape`` is ``(ny, nx)``.
+    ``maximum_num_components`` is an optional resource guard checked directly
+    after marching-squares discovery and before any contour is projected.
     """
 
     bounds: tuple[tuple[float, float], tuple[float, float]]
@@ -132,6 +146,7 @@ class FrontendConfig:
     minimum_area_relative: float = 1.0e-12
     second_resample_and_project: bool = True
     projection: ProjectionConfig = ProjectionConfig()
+    maximum_num_components: int | None = None
 
     def __post_init__(self) -> None:
         bounds = np.asarray(self.bounds, dtype=np.float64)
@@ -171,6 +186,13 @@ class FrontendConfig:
             raise TypeError("second_resample_and_project must be boolean.")
         if not isinstance(self.projection, ProjectionConfig):
             raise TypeError("projection must be a ProjectionConfig object.")
+        maximum_num_components = self.maximum_num_components
+        if maximum_num_components is not None:
+            maximum_num_components = _positive_integer(
+                maximum_num_components,
+                name="maximum_num_components",
+                minimum=1,
+            )
         object.__setattr__(self, "bounds", canonical_bounds)
         object.__setattr__(self, "grid_shape", (ny, nx))
         object.__setattr__(self, "projected_samples", projected_samples)
@@ -178,6 +200,11 @@ class FrontendConfig:
         object.__setattr__(self, "boundary_tolerance", boundary_tolerance)
         object.__setattr__(
             self, "second_resample_and_project", bool(self.second_resample_and_project)
+        )
+        object.__setattr__(
+            self,
+            "maximum_num_components",
+            maximum_num_components,
         )
 
     @property
@@ -629,6 +656,14 @@ def _physical_contours(
         fully_connected="low",
         positive_orientation="low",
     )
+    if (
+        config.maximum_num_components is not None
+        and len(index_contours) > config.maximum_num_components
+    ):
+        raise ComponentLimitError(
+            actual=len(index_contours),
+            maximum=config.maximum_num_components,
+        )
     polygons: list[Array] = []
     for contour_index, contour in enumerate(index_contours):
         contour = np.asarray(contour, dtype=np.float64)
@@ -902,6 +937,7 @@ __all__ = [
     "BoundaryTouchingContourError",
     "CartesianGridSample",
     "ComponentCountError",
+    "ComponentLimitError",
     "ContourExtractionError",
     "FrontendComponent",
     "FrontendConfig",

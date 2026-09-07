@@ -5,13 +5,16 @@ This entry point is pure post-processing.  It re-renders no physics and
 touches no solver: it reads the artifacts already written by
 [`run_sdf_inverse_comparison.py`](run_sdf_inverse_comparison.py)
 (``metrics.json``, ``<solver>_trajectory.csv``, ``<solver>_responses.npz``)
-and draws the stored accepted boundary iterates of MOD and Kress side by side
+and draws the stored boundary states of MOD and Kress side by side
 against the analytic target circle, with the shared training objective below.
 
-Only accepted iterates are stored by the driver, so the honest animation is a
-step sequence.  Intermediate frames are optional visual interpolation between
-two stored contours; they are labelled as such in the frame and never change
-any reported number.
+The parametric driver stores accepted iterates.  The continuation MLP driver
+also stores each new stage's duplicate geometry baseline.  The visualizer
+separates stage segments conservatively: losses are directly comparable for
+the default full-band modal progression, but not for explicitly requested
+cumulative-frequency stages.  Intermediate frames are optional visual
+interpolation between stored contours; they are labelled as such and never
+change any reported number.
 
 Usage:
 
@@ -43,16 +46,20 @@ DEFAULT_BUNDLE = (
 DEFAULT_SOLVERS = ("mod", "kress")
 SOLVER_COLORS = {"mod": "#1f77b4", "kress": "#d62728"}
 SOLVER_LABELS = {"mod": "MOD", "kress": "Kress"}
-REQUIRED_TRAJECTORY_COLUMNS = (
-    "iteration",
-    "loss",
-    "relative_l2_error",
-    "center_x_m",
-    "center_y_m",
-    "radius_m",
+REQUIRED_TRAJECTORY_COLUMNS = ("iteration", "loss", "relative_l2_error")
+# The parametric driver records a center and size per iterate; the neural one
+# has none to record, and those columns are derived from the contour instead.
+SHAPE_TRAJECTORY_COLUMNS = ("center_x_m", "center_y_m", "radius_m")
+# Extra per-iterate diagnostics, shown in the frame when a bundle carries them.
+OPTIONAL_TRAJECTORY_COLUMNS = (
+    "raw_amplitude",
+    "raw_rotation",
+    "eikonal_maximum_deviation",
+    "redistance_curve_drift_m",
+    "stage",
+    "stage_iteration",
+    "stage_maximum_mode",
 )
-# Raw controls that are already physical values, shown when the target has them.
-OPTIONAL_TRAJECTORY_COLUMNS = ("raw_amplitude", "raw_rotation")
 VIDEO_SUFFIXES = {".mp4": "ffmpeg", ".gif": "pillow"}
 
 
@@ -157,12 +164,18 @@ def _read_trajectory(path: Path) -> dict[str, np.ndarray]:
     if missing:
         raise BundleError(f"{path} is missing columns: {', '.join(missing)}")
     present = REQUIRED_TRAJECTORY_COLUMNS + tuple(
-        name for name in OPTIONAL_TRAJECTORY_COLUMNS if name in rows[0]
+        name
+        for name in SHAPE_TRAJECTORY_COLUMNS + OPTIONAL_TRAJECTORY_COLUMNS
+        if name in rows[0]
     )
     columns = {
         name: np.asarray([float(row[name]) for row in rows], dtype=np.float64)
         for name in present
     }
+    if "stage_train_frequencies_ghz" in rows[0]:
+        columns["stage_train_frequencies_ghz"] = np.asarray(
+            [row["stage_train_frequencies_ghz"] for row in rows], dtype=object
+        )
     iterations = columns["iteration"]
     if not np.array_equal(iterations, np.arange(iterations.size, dtype=np.float64)):
         raise BundleError(f"{path} accepted iterations are not consecutive from zero.")
@@ -173,13 +186,15 @@ def _read_geometry(path: Path, *, expected_iterates: int) -> dict[str, np.ndarra
     if not path.is_file():
         raise BundleError(f"Missing response archive: {path}")
     with np.load(path) as archive:
-        required = ("geometry_trajectory", "initial_curve_points", "target_curve_points")
-        missing = [name for name in required if name not in archive.files]
-        if missing:
-            raise BundleError(f"{path} is missing arrays: {', '.join(missing)}")
+        # The accepted contour sequence is the only array the animation needs;
+        # the two drivers name their single-curve arrays differently and none
+        # of those are drawn.
+        if "geometry_trajectory" not in archive.files:
+            raise BundleError(
+                f"{path} has no geometry_trajectory; it predates contour "
+                "trajectory recording and cannot be animated."
+            )
         geometry = np.asarray(archive["geometry_trajectory"], dtype=np.float64)
-        initial = np.asarray(archive["initial_curve_points"], dtype=np.float64)
-        target = np.asarray(archive["target_curve_points"], dtype=np.float64)
         exact_boundary = (
             np.asarray(archive["exact_boundary_points"], dtype=np.float64)
             if "exact_boundary_points" in archive.files
@@ -202,8 +217,6 @@ def _read_geometry(path: Path, *, expected_iterates: int) -> dict[str, np.ndarra
         raise BundleError(f"{path} exact_boundary_points must be a finite (N, 2) array.")
     return {
         "geometry_trajectory": geometry,
-        "initial_curve_points": initial,
-        "target_curve_points": target,
         "exact_boundary_points": exact_boundary,
     }
 
@@ -216,12 +229,19 @@ def _load_bundle(bundle: Path, solvers: Sequence[str]) -> dict[str, Any]:
         raise BundleError(f"Missing metrics document: {metrics_path}")
     metrics = json.loads(metrics_path.read_text(encoding="utf-8"))
     target = metrics["target"]
-    if "center_x_m" not in target or "center_y_m" not in target:
-        raise BundleError(f"{metrics_path} has no target center.")
-    # A circle records "radius_m"; a star records its mean radius instead.
-    reference_radius = target.get("radius_m", target.get("mean_radius_m"))
-    if reference_radius is None:
-        raise BundleError(f"{metrics_path} has no target radius.")
+    # Two drivers write bundles here.  The parametric one records the target
+    # as a parameter dictionary; the alternating-MLP one records only its name
+    # and relies on the stored exact boundary polyline, because a neural state
+    # has no target parameters to compare against.
+    if isinstance(target, dict) and "center_x_m" in target:
+        target_center = (float(target["center_x_m"]), float(target["center_y_m"]))
+        reference_radius = target.get("radius_m", target.get("mean_radius_m"))
+        if reference_radius is None:
+            raise BundleError(f"{metrics_path} has no target radius.")
+        reference_radius = float(reference_radius)
+    else:
+        target_center = None
+        reference_radius = None
     loaded: dict[str, dict[str, Any]] = {}
     for solver in solvers:
         trajectory = _read_trajectory(bundle / f"{solver}_trajectory.csv")
@@ -247,12 +267,27 @@ def _load_bundle(bundle: Path, solvers: Sequence[str]) -> dict[str, Any]:
             raise BundleError(
                 f"{bundle} stores different exact boundaries for different solvers."
             )
+    if target_center is None:
+        if not exact_boundaries:
+            raise BundleError(
+                f"{bundle} records neither target parameters nor an exact "
+                "boundary polyline, so there is nothing to compare against."
+            )
+        outline = exact_boundaries[0]
+        centroid = outline.mean(axis=0)
+        target_center = (float(centroid[0]), float(centroid[1]))
+        reference_radius = float(
+            np.mean(np.linalg.norm(outline - centroid[None, :], axis=1))
+        )
     return {
         "path": bundle,
         "metrics": metrics,
-        "target_shape": str(metrics.get("target_shape", "circle")),
-        "target_center": (float(target["center_x_m"]), float(target["center_y_m"])),
-        "target_radius": float(reference_radius),
+        "target_shape": str(
+            metrics.get("target_shape")
+            or (target if isinstance(target, str) else "circle")
+        ),
+        "target_center": target_center,
+        "target_radius": reference_radius,
         "target_amplitude": (
             float(target["amplitude"]) if "amplitude" in target else None
         ),
@@ -288,10 +323,38 @@ def _frame_schedule(
     return schedule
 
 
+def _cyclically_align_contour(
+    reference: np.ndarray, candidate: np.ndarray
+) -> np.ndarray:
+    """Roll ``candidate`` to the closest node correspondence with ``reference``.
+
+    A periodic contour has no distinguished first node.  Independently
+    extracted iterates can therefore describe nearby curves with a cyclically
+    shifted node order.  Blending those arrays directly makes the synthetic
+    morph frames shrink, twist, or spin even though the two stored contours are
+    geometrically close.
+    """
+
+    if reference.shape != candidate.shape:
+        raise ValueError("Periodic contours must have matching shapes for alignment.")
+    errors = np.asarray(
+        [
+            np.sum((reference - np.roll(candidate, shift, axis=0)) ** 2)
+            for shift in range(reference.shape[0])
+        ],
+        dtype=np.float64,
+    )
+    return np.roll(candidate, int(np.argmin(errors)), axis=0)
+
+
 def _stage_contour(
     geometry: np.ndarray, *, stage: int, alpha: float
 ) -> tuple[np.ndarray, int]:
-    """Contour at a global stage, clamped and optionally interpolated forward."""
+    """Contour at a global stage, clamped and optionally interpolated forward.
+
+    Stored endpoint arrays are returned unchanged.  Only intermediate visual
+    frames use a cyclically phase-aligned copy of the following contour.
+    """
 
     last = geometry.shape[0] - 1
     current_index = min(stage, last)
@@ -299,7 +362,10 @@ def _stage_contour(
     current = geometry[current_index]
     if alpha <= 0.0 or next_index == current_index:
         return current, current_index
-    return (1.0 - alpha) * current + alpha * geometry[next_index], current_index
+    if alpha >= 1.0:
+        return geometry[next_index], next_index
+    following = _cyclically_align_contour(current, geometry[next_index])
+    return (1.0 - alpha) * current + alpha * following, current_index
 
 
 def _view_limits(
@@ -309,10 +375,7 @@ def _view_limits(
         record["geometry"]["geometry_trajectory"].reshape(-1, 2)
         for record in bundle["solvers"].values()
     ]
-    stacked.extend(
-        record["geometry"]["initial_curve_points"]
-        for record in bundle["solvers"].values()
-    )
+
     if bundle["exact_boundary"] is not None:
         stacked.append(bundle["exact_boundary"])
     else:
@@ -410,7 +473,7 @@ def _render(bundle: dict[str, Any], args: argparse.Namespace, output: Path) -> i
     grid = figure.add_gridspec(2, len(solvers), height_ratios=(2.15, 1.0))
     benchmark = str(bundle["metrics"].get("benchmark", bundle["path"].name))
     figure.suptitle(
-        f"Accepted contour convergence  |  {benchmark}\n"
+        f"Stored contour trajectory  |  {benchmark}\n"
         f"{bundle['path'].name}  |  identical geometry, objective, and "
         "finite-difference policy; only the forward solver differs",
         fontsize=11,
@@ -484,7 +547,7 @@ def _render(bundle: dict[str, Any], args: argparse.Namespace, output: Path) -> i
 
     loss_axis = figure.add_subplot(grid[1, :])
     loss_axis.set_yscale("log")
-    loss_axis.set_xlabel("accepted iteration")
+    loss_axis.set_xlabel("stored state index")
     loss_axis.set_ylabel("training loss")
     loss_axis.grid(True, which="both", alpha=0.25)
     loss_axis.set_xlim(-0.3, stages - 0.7)
@@ -493,22 +556,40 @@ def _render(bundle: dict[str, Any], args: argparse.Namespace, output: Path) -> i
     for solver in solvers:
         trajectory = bundle["solvers"][solver]["trajectory"]
         losses = np.maximum(trajectory["loss"], loss_floor)
-        loss_axis.plot(
-            trajectory["iteration"],
-            losses,
-            color=SOLVER_COLORS[solver],
-            marker="o",
-            markersize=4.0,
-            linewidth=1.4,
-            alpha=0.35,
-        )
+        if "stage" in trajectory:
+            stages_for_solver = trajectory["stage"].astype(np.int64)
+            boundaries = np.r_[
+                0,
+                1 + np.flatnonzero(np.diff(stages_for_solver) != 0),
+                stages_for_solver.size,
+            ]
+            for first, last in zip(boundaries[:-1], boundaries[1:]):
+                loss_axis.plot(
+                    trajectory["iteration"][first:last],
+                    losses[first:last],
+                    color=SOLVER_COLORS[solver],
+                    marker="o",
+                    markersize=4.0,
+                    linewidth=1.4,
+                    alpha=0.35,
+                )
+        else:
+            loss_axis.plot(
+                trajectory["iteration"],
+                losses,
+                color=SOLVER_COLORS[solver],
+                marker="o",
+                markersize=4.0,
+                linewidth=1.4,
+                alpha=0.35,
+            )
         (marker,) = loss_axis.plot(
             [],
             [],
             color=SOLVER_COLORS[solver],
             marker="o",
             markersize=8.0,
-            linewidth=2.4,
+            linestyle="none",
             label=SOLVER_LABELS[solver],
         )
         markers[solver] = marker
@@ -531,14 +612,34 @@ def _render(bundle: dict[str, Any], args: argparse.Namespace, output: Path) -> i
                 panel = panels[solver]
                 panel["curve"].set_data(closed_contour[:, 0], closed_contour[:, 1])
                 panel["nodes"].set_data(contour[:, 0], contour[:, 1])
+                if "center_x_m" in trajectory:
+                    center = (
+                        trajectory["center_x_m"][iterate],
+                        trajectory["center_y_m"][iterate],
+                    )
+                    mean_radius = trajectory["radius_m"][iterate]
+                else:
+                    # A neural iterate carries no center or radius control, so
+                    # both come from that iterate's own stored contour.
+                    stored = geometry[iterate]
+                    centroid = stored.mean(axis=0)
+                    center = (centroid[0], centroid[1])
+                    mean_radius = float(
+                        np.mean(np.linalg.norm(stored - centroid[None, :], axis=1))
+                    )
                 center_error_mm = 1.0e3 * math.hypot(
-                    trajectory["center_x_m"][iterate] - target_center[0],
-                    trajectory["center_y_m"][iterate] - target_center[1],
+                    center[0] - target_center[0], center[1] - target_center[1]
                 )
-                radius_error_mm = 1.0e3 * abs(
-                    trajectory["radius_m"][iterate] - target_radius
-                )
+                radius_error_mm = 1.0e3 * abs(mean_radius - target_radius)
                 shape_lines = []
+                for label, column, unit in (
+                    ("eikonal dev", "eikonal_maximum_deviation", ""),
+                    ("redist drift", "redistance_curve_drift_m", " m"),
+                ):
+                    if column in trajectory:
+                        shape_lines.append(
+                            f"{label:<10} {trajectory[column][iterate]:.3e}{unit}"
+                        )
                 if (
                     "raw_amplitude" in trajectory
                     and bundle["target_amplitude"] is not None
@@ -567,10 +668,27 @@ def _render(bundle: dict[str, Any], args: argparse.Namespace, output: Path) -> i
                     tag = "  [interpolated]"
                 else:
                     tag = ""
+                if "stage" in trajectory:
+                    stage_number = int(trajectory["stage"][iterate])
+                    stage_iteration = int(trajectory["stage_iteration"][iterate])
+                    stage_mode = int(trajectory["stage_maximum_mode"][iterate])
+                    stage_frequency = trajectory.get(
+                        "stage_train_frequencies_ghz",
+                        np.full(trajectory["iteration"].shape, "?", dtype=object),
+                    )[iterate]
+                    stage_line = (
+                        f"stage {stage_number:d}, iter {stage_iteration:d}, "
+                        f"K={stage_mode:d}\ntrain GHz  {stage_frequency}"
+                    )
+                    if stage_iteration == 0 and alpha <= 0.0:
+                        tag = "  [stage baseline]"
+                else:
+                    stage_line = None
                 panel["annotation"].set_text(
                     "\n".join(
                         [
-                            f"iteration {iterate:d}{tag}",
+                            f"state {iterate:d}{tag}",
+                            *([] if stage_line is None else [stage_line]),
                             f"loss       {trajectory['loss'][iterate]:.3e}",
                             f"rel L2     {trajectory['relative_l2_error'][iterate]:.3e}",
                             f"center err {center_error_mm:.4f} mm",
@@ -579,10 +697,9 @@ def _render(bundle: dict[str, Any], args: argparse.Namespace, output: Path) -> i
                         ]
                     )
                 )
-                visited = trajectory["iteration"][: iterate + 1]
                 markers[solver].set_data(
-                    visited,
-                    np.maximum(trajectory["loss"][: iterate + 1], loss_floor),
+                    [trajectory["iteration"][iterate]],
+                    [max(trajectory["loss"][iterate], loss_floor)],
                 )
             writer.grab_frame()
             if (frame_index + 1) % 25 == 0 or frame_index + 1 == len(schedule):
@@ -619,8 +736,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         metrics = bundle["solvers"][solver]["metrics"]
         print(
             f"  {SOLVER_LABELS[solver]:>5}: "
-            f"{bundle['solvers'][solver]['trajectory']['iteration'].size} accepted "
-            f"iterates, stop_reason={metrics.get('stop_reason', 'unknown')}, "
+            f"{bundle['solvers'][solver]['trajectory']['iteration'].size} stored "
+            f"states, stop_reason={metrics.get('stop_reason', 'unknown')}, "
             f"final rel L2={metrics.get('final_training_relative_l2', float('nan')):.3e}",
             flush=True,
         )

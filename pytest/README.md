@@ -9,13 +9,15 @@ under [`../results/`](../results/); `pytest/` contains no result bundles.
 |---|---|---:|
 | `gpr_bem_shared/` | Selector-backed tests shared by frozen `ref` and operational `mod` | Yes, in system/theory tests |
 | `gpr_bem_mod/` | MOD-only adjoint, inverse, and shape-derivative checks | Yes, except the kernel-identity test |
-| [`gpr_bem_kress/`](gpr_bem_kress/) | Direct-import `PeriodicCurve2D` Kress/Müller blocks, system, receiver operator, and field validation | **Yes** |
+| [`gpr_bem_kress/`](gpr_bem_kress/) | Direct-import Kress/Müller blocks, systems, receivers, fields, and single-interface discrete JVP/objective-adjoint contracts | **Yes** |
+| [`multicylinder_ref/`](multicylinder_ref/) | Independent cylindrical-harmonic oracle for disjoint circular inclusions | **Yes** |
 | `gpr_bem_kdiff/` | Retained k-difference and archived QBX assembly seam | Operator/system checks |
 | `gprmax_ref/` | gprMax cache identity and scene policy | No |
 | `nystrom_ref/` | Independent smooth-boundary forward oracle | Yes |
 | `ordered_boundary/` | Continuous and node-owned geometry contracts | **No** |
 | [`sdf_to_ordered_boundary/`](sdf_to_ordered_boundary/) | Implicit-field extraction, A/B/C fits, geometry metrics, artifacts, and scalar Kress proxy | **No** |
-| [`sdf_inverse/`](sdf_inverse/) | Common ordered geometry, paired MOD/Kress prediction, fixed complex objective, implicit-initialization recovery, and the star target's Nystrom observation seam | **Yes** |
+| [`sdf_inverse/`](sdf_inverse/) | Common ordered geometry, paired MOD/Kress prediction, fixed complex objective, implicit-initialization recovery, the star target's Nystrom observation seam, and focused alternating-MLP contracts | **Yes** |
+| [`sdf_bem_multicomponent/`](sdf_bem_multicomponent/) | Automatic unknown-`M` extraction, readiness gates, direct boundary forwarding, ragged trajectories, and the one-to-two split | **Yes** |
 | [`solver_comparisons/`](solver_comparisons/) | Circle, ellipse, square, star, and two-circle solver comparisons | **Yes** |
 
 The distinction among the geometry, inverse, and comparison rows is
@@ -59,12 +61,25 @@ NUMEXPR_NUM_THREADS=1 PYTHONPATH=solvers \
 ```
 
 It passed `272 passed, 2 skipped` in 193.15 s (194.92 s process wall time) on
-2026-09-02; the skips are the expected CuPy-dependent checks. Running
+2026-09-02, before the later MLP-path tests were added; the skips are the
+expected CuPy-dependent checks. Running
 discovery at the repository root also
 collects vendored optional projects whose dependencies are not installed, so
 their unrelated collection errors are outside the first-party suite.
 
 ## Geometry and parameterization tests
+
+The 2026-09-05 first-batch additions are covered by
+`sdf_inverse/test_distillation_policy.py`, `test_representation_ablation_driver.py`,
+`test_continuous_distance.py`, `test_smooth_redistance.py`,
+`sdf_to_ordered_boundary/test_parameter_aware.py`, and
+`solver_comparisons/test_parameterization_aware_driver.py`. They test strict
+compatibility, no neural work during curve reconstruction, export rollback,
+distance/sign/refinement and solver-N independence, ordered-fit validity and
+fallbacks, and non-mutating evidence postprocessing. The C1/C2 physical-field
+study remains a separate opt-in driver, not a new meaning for historical A/B/C
+geometry metrics. See the [batch report](../docs/sdf_kress_first_batch_2026-09-05.md)
+and its validation entry for actual runs and failed experimental accuracy gates.
 
 Run the complete solver-independent boundary suite with:
 
@@ -98,6 +113,45 @@ It tests physical block actions, the coupled system, the explicit
 `ExteriorReceiverOperator` (`C=[D,-S]`), boundary traces, and Mie receiver
 fields. It does not turn the adjacent geometry-only metrics into solver errors
 or register `gpr_bem_kress` with the normal solver selector.
+
+The 2026-09-06 [follow-up](../docs/sdf_kress_followup_2026-09-06.md) adds
+`gpr_bem_kress/test_shape_derivative.py`,
+`sdf_inverse/test_cylinder_sensitivity_reference.py` and
+`solver_comparisons/test_kress_shape_derivative_driver.py`. They cover actual
+operator/receiver/objective derivatives, repeated complex paired data,
+zero-contrast material sensitivity and evidence-driver gates. Fixed-node
+derivative tests are distinct from the opt-in driver's independent physical
+refinement sweep. The distance-contact guards and driver accounting are
+covered by `sdf_to_ordered_boundary/test_distance_tangency.py` and
+`solver_comparisons/test_distance_tangency_driver.py`; geometry-only tests do
+not acquire physical-field claims merely because their driver audits fields.
+
+The follow-up's `sdf_inverse/test_neural_metric.py` covers mass projection,
+exact radial jets, frozen-head accounting, true-objective acceptance and
+budget/failure reporting. `sdf_inverse/test_material_inverse.py` and
+`solver_comparisons/test_material_inverse_driver.py` cover material rebuilds,
+immutable normalization/cache identity, scaled residual Jacobians, bounded
+stopping, noise cohorts and independent material-sensitivity evidence.
+
+`sdf_inverse/test_robust_material_inverse.py` additionally checks frequency/
+complex-strength alignment, immutable full-band weighting, deterministic
+starts, exact global/phase work accounting, partial failures, best-candidate
+retention, and fixed-shape invariance. Its budget and stationarity tests do
+not assert physical recovery. `solver_comparisons/test_material_robustness_driver.py`
+checks frozen historical replay, independent new data, strict artifacts and
+the all-selections-before-qualification barrier. The separate opt-in driver
+provides the physical recovery measurements.
+
+The automatic multi-component seam, including generic singular-event
+rejection and the two-circle independent-oracle comparison, runs with:
+
+```bash
+PYTHONPATH=solvers python -m pytest -q \
+  pytest/sdf_bem_multicomponent \
+  pytest/gpr_bem_kress/test_multicomponent.py \
+  pytest/multicylinder_ref
+```
+
 The checked exact/noncircular and frozen Method-B convergence tables are
 indexed at
 [`../results/ordered_boundary_nystrom/README.md`](../results/ordered_boundary_nystrom/README.md).

@@ -250,6 +250,14 @@ class ParameterFDConfig:
     loss_tolerance: float = 1.0e-12
     relative_step_tolerance: float = 1.0e-8
     max_parameters: int = 32
+    # "error" propagates a trial whose implicit field has no solver-ready
+    # contour, which is right for parametric models whose bounds are chosen so
+    # that cannot happen.  "reject" treats it as an infeasible trial with an
+    # infinite objective, which is what a general field such as a neural
+    # network needs: its zero set can split or vanish part way through a step
+    # that is otherwise perfectly reasonable.  Rejected trials are counted and
+    # reported; nothing else about the policy changes.
+    infeasible_trial_policy: str = "error"
 
     def __post_init__(self) -> None:
         object.__setattr__(
@@ -321,6 +329,12 @@ class ParameterFDConfig:
                 name,
                 _finite_nonnegative(getattr(self, name), name=name),
             )
+        policy = str(self.infeasible_trial_policy)
+        if policy not in {"error", "reject"}:
+            raise ValueError(
+                "infeasible_trial_policy must be exactly 'error' or 'reject'."
+            )
+        object.__setattr__(self, "infeasible_trial_policy", policy)
 
     def resolved_finite_difference_steps(self, count: int) -> np.ndarray:
         return _resolve_control_vector(
@@ -449,6 +463,8 @@ class ParameterFDInverseResult:
     maximum_system_residual: float
     total_forward_seconds: float
     total_seconds: float
+    infeasible_trial_count: int = 0
+    maximum_frozen_jacobian_columns: int = 0
 
     def __post_init__(self) -> None:
         if self.solver not in {"mod", "kress"}:
@@ -505,6 +521,24 @@ class ParameterFDInverseResult:
         )
         object.__setattr__(self, "cache_hit_count", cache_hit_count)
         object.__setattr__(
+            self,
+            "infeasible_trial_count",
+            _positive_integer(
+                self.infeasible_trial_count,
+                name="infeasible_trial_count",
+                allow_zero=True,
+            ),
+        )
+        object.__setattr__(
+            self,
+            "maximum_frozen_jacobian_columns",
+            _positive_integer(
+                self.maximum_frozen_jacobian_columns,
+                name="maximum_frozen_jacobian_columns",
+                allow_zero=True,
+            ),
+        )
+        object.__setattr__(
             self, "maximum_system_residual", maximum_system_residual
         )
 
@@ -523,8 +557,9 @@ class _ObjectiveEvaluation:
     residual: np.ndarray
     loss: float
     relative_l2_error: float
-    forward_result: "PairedForwardResult"
+    forward_result: "PairedForwardResult | None"
     wall_seconds: float
+    feasible: bool = True
 
 
 class _ObjectiveEvaluator:
@@ -535,15 +570,18 @@ class _ObjectiveEvaluator:
         data: ComplexScatteredData,
         geometry_config: object,
         solver: str,
+        infeasible_trial_policy: str = "error",
     ) -> None:
         self.model = model
         self.controller = controller
         self.data = data
         self.geometry_config = geometry_config
         self.solver = solver
+        self.infeasible_trial_policy = infeasible_trial_policy
         self.cache: dict[bytes, _ObjectiveEvaluation] = {}
         self.evaluation_count = 0
         self.cache_hit_count = 0
+        self.infeasible_trial_count = 0
         self.total_forward_seconds = 0.0
         self.maximum_system_residual = 0.0
 
@@ -561,14 +599,41 @@ class _ObjectiveEvaluator:
             return cached
 
         from .forward import predict_paired_response
+        from .geometry import OrderedSDFGeometryError
 
         started = perf_counter()
-        forward_result = predict_paired_response(
-            self.model,
-            self.data.forward_problem,
-            self.geometry_config,
-            solver=self.solver,
-        )
+        try:
+            forward_result = predict_paired_response(
+                self.model,
+                self.data.forward_problem,
+                self.geometry_config,
+                solver=self.solver,
+            )
+        except OrderedSDFGeometryError:
+            if self.infeasible_trial_policy != "reject":
+                raise
+            # The trial field has no solver-ready contour, so no forward solve
+            # exists to score.  An infinite objective lets the ordinary damping
+            # and backtracking logic reject it without any special case, and
+            # without pretending some finite residual was measured.
+            infeasible = _ObjectiveEvaluation(
+                parameters=_readonly_array(realized, dtype=np.float64, ndim=1),
+                residual=_readonly_array(
+                    np.zeros(2 * self.data.observed_scattered_response.size),
+                    dtype=np.float64,
+                    ndim=1,
+                ),
+                loss=float("inf"),
+                relative_l2_error=float("inf"),
+                forward_result=None,
+                wall_seconds=float(perf_counter() - started),
+                feasible=False,
+            )
+            self.cache[key] = infeasible
+            self.evaluation_count += 1
+            self.infeasible_trial_count += 1
+            self.total_forward_seconds += infeasible.wall_seconds
+            return infeasible
         self.maximum_system_residual = max(
             self.maximum_system_residual,
             _maximum_system_residual(forward_result),
@@ -606,11 +671,18 @@ def _finite_difference_jacobian(
     requested_steps: np.ndarray,
     lower_bounds: np.ndarray,
     upper_bounds: np.ndarray,
-) -> tuple[np.ndarray, float]:
+) -> tuple[np.ndarray, float, int]:
     """Build the common numerical Jacobian, centrally when bounds permit.
 
     A second-order one-sided stencil is used only when an accepted parameter is
     exactly on a bound and a symmetric perturbation is impossible.
+
+    Under the ``reject`` feasibility policy a probe may have no solver-ready
+    contour.  A central difference then degrades to the one-sided difference
+    that survives, and a column with no feasible probe at all is frozen to
+    zero for this iteration rather than being filled with a fabricated
+    derivative.  The count of frozen columns is returned so the caller can
+    report how much of the Jacobian was unavailable.
     """
 
     started = perf_counter()
@@ -619,6 +691,7 @@ def _finite_difference_jacobian(
         (base.residual.size, parameters.size),
         dtype=np.float64,
     )
+    frozen_columns = 0
     for index, requested_step in enumerate(requested_steps):
         lower_room = parameters[index] - lower_bounds[index]
         upper_room = upper_bounds[index] - parameters[index]
@@ -643,9 +716,26 @@ def _finite_difference_jacobian(
                     f"finite_difference_steps[{index}] is not representable in "
                     "the controlled parameter dtype."
                 )
+            if plus_evaluation.feasible and minus_evaluation.feasible:
+                jacobian[:, index] = (
+                    plus_evaluation.residual - minus_evaluation.residual
+                ) / denominator
+                continue
+            one_sided = (
+                plus_evaluation if plus_evaluation.feasible else minus_evaluation
+            )
+            if not one_sided.feasible:
+                jacobian[:, index] = 0.0
+                frozen_columns += 1
+                continue
+            one_sided_step = one_sided.parameters[index] - parameters[index]
+            if abs(one_sided_step) <= resolution:
+                jacobian[:, index] = 0.0
+                frozen_columns += 1
+                continue
             jacobian[:, index] = (
-                plus_evaluation.residual - minus_evaluation.residual
-            ) / denominator
+                one_sided.residual - base.residual
+            ) / one_sided_step
             continue
 
         # Bound-active fallback: retain a deterministic second-order numerical
@@ -668,6 +758,18 @@ def _finite_difference_jacobian(
                     f"finite_difference_steps[{index}] is not representable near "
                     "the lower bound."
                 )
+            if not (first_evaluation.feasible and second_evaluation.feasible):
+                surviving = (
+                    first_evaluation if first_evaluation.feasible else second_evaluation
+                )
+                if surviving.feasible:
+                    jacobian[:, index] = (surviving.residual - base.residual) / (
+                        surviving.parameters[index] - parameters[index]
+                    )
+                else:
+                    jacobian[:, index] = 0.0
+                    frozen_columns += 1
+                continue
             jacobian[:, index] = (
                 -3.0 * base.residual
                 + 4.0 * first_evaluation.residual
@@ -692,6 +794,18 @@ def _finite_difference_jacobian(
                     f"finite_difference_steps[{index}] is not representable near "
                     "the upper bound."
                 )
+            if not (first_evaluation.feasible and second_evaluation.feasible):
+                surviving = (
+                    first_evaluation if first_evaluation.feasible else second_evaluation
+                )
+                if surviving.feasible:
+                    jacobian[:, index] = (surviving.residual - base.residual) / (
+                        surviving.parameters[index] - parameters[index]
+                    )
+                else:
+                    jacobian[:, index] = 0.0
+                    frozen_columns += 1
+                continue
             jacobian[:, index] = (
                 3.0 * base.residual
                 - 4.0 * first_evaluation.residual
@@ -703,7 +817,44 @@ def _finite_difference_jacobian(
         )
 
     evaluator.evaluate(parameters)  # Restore the accepted model state; cache hit.
-    return jacobian, float(perf_counter() - started)
+    return jacobian, float(perf_counter() - started), frozen_columns
+
+
+def _gradient_stationarity_reason(
+    gradient: np.ndarray,
+    parameters: np.ndarray,
+    lower_bounds: np.ndarray,
+    upper_bounds: np.ndarray,
+    *,
+    tolerance: float,
+    frozen_columns: int,
+) -> str | None:
+    """Recognize ordinary or box-constrained first-order stationarity.
+
+    At a lower bound a positive gradient proposes an infeasible negative step;
+    at an upper bound a negative gradient proposes an infeasible positive step.
+    Remove only those components for the stopping test, preserving the raw
+    gradient in records and in the LM step.  The bound resolution matches the
+    finite-difference stencil's definition of a bound-active parameter.
+    """
+
+    if float(np.linalg.norm(gradient, ord=np.inf)) <= tolerance:
+        return "infeasible_jacobian" if frozen_columns else "gradient_tolerance"
+    resolution = 8.0 * np.finfo(np.float64).eps * np.maximum(
+        1.0, np.abs(parameters)
+    )
+    outward = (
+        ((parameters - lower_bounds <= resolution) & (gradient > 0.0))
+        | ((upper_bounds - parameters <= resolution) & (gradient < 0.0))
+    )
+    projected_gradient = np.where(outward, 0.0, gradient)
+    if float(np.linalg.norm(projected_gradient, ord=np.inf)) <= tolerance:
+        return (
+            "infeasible_jacobian"
+            if frozen_columns
+            else "projected_gradient_tolerance"
+        )
+    return None
 
 
 def _geometry_points(forward_result: object) -> np.ndarray:
@@ -843,6 +994,7 @@ def run_parameter_fd_inverse(
         data,
         geometry_config,
         solver_name,
+        infeasible_trial_policy=config.infeasible_trial_policy,
     )
     accepted_parameters = initial_parameters.copy()
     was_training = model.training
@@ -855,14 +1007,22 @@ def run_parameter_fd_inverse(
     try:
         initial_started = perf_counter()
         current = evaluator.evaluate(accepted_parameters)
+        if not current.feasible:
+            # Rejecting trials is a line-search policy, not a licence to start
+            # from a field that has no contour at all.
+            raise ValueError(
+                "The initial implicit field has no solver-ready zero contour; "
+                "warm start it onto a valid shape before inverting."
+            )
         accepted_parameters = np.array(current.parameters, copy=True)
-        jacobian, jacobian_seconds = _finite_difference_jacobian(
+        jacobian, jacobian_seconds, frozen_columns = _finite_difference_jacobian(
             evaluator,
             current,
             finite_difference_steps,
             controller.lower_bounds,
             controller.upper_bounds,
         )
+        maximum_frozen_columns = frozen_columns
         gradient = jacobian.T @ current.residual
         initial_record = _make_iteration_record(
             iteration=0,
@@ -883,15 +1043,23 @@ def run_parameter_fd_inverse(
             progress_callback(initial_record)
 
         damping = config.initial_damping
+        gradient_stop_reason = _gradient_stationarity_reason(
+            gradient,
+            accepted_parameters,
+            controller.lower_bounds,
+            controller.upper_bounds,
+            tolerance=config.gradient_tolerance,
+            frozen_columns=frozen_columns,
+        )
         if current.loss <= config.loss_tolerance:
             converged = True
             stop_reason = "loss_tolerance"
-        elif float(np.linalg.norm(gradient, ord=np.inf)) <= config.gradient_tolerance:
-            converged = True
-            stop_reason = "gradient_tolerance"
+        elif gradient_stop_reason is not None:
+            stop_reason = gradient_stop_reason
+            converged = stop_reason != "infeasible_jacobian"
 
         for iteration in range(1, config.max_iterations + 1):
-            if converged:
+            if converged or stop_reason == "infeasible_jacobian":
                 break
             iteration_started = perf_counter()
             normal_matrix = jacobian.T @ jacobian
@@ -938,11 +1106,12 @@ def run_parameter_fd_inverse(
 
             line_search_seconds = perf_counter() - line_search_started
             if accepted is None or accepted_step is None:
-                if candidate_relative_step <= config.relative_step_tolerance:
-                    converged = True
-                    stop_reason = "relative_step_tolerance"
-                else:
-                    stop_reason = "no_decreasing_step"
+                # Damping and backtracking can make any rejected proposal
+                # arbitrarily small. Only an accepted step or a measured
+                # complete gradient can certify convergence.
+                stop_reason = (
+                    "infeasible_jacobian" if frozen_columns else "no_decreasing_step"
+                )
                 break
 
             previous_loss = current.loss
@@ -952,13 +1121,14 @@ def run_parameter_fd_inverse(
                 used_damping * config.damping_decrease,
                 np.finfo(np.float64).tiny,
             )
-            jacobian, jacobian_seconds = _finite_difference_jacobian(
+            jacobian, jacobian_seconds, frozen_columns = _finite_difference_jacobian(
                 evaluator,
                 current,
                 finite_difference_steps,
                 controller.lower_bounds,
                 controller.upper_bounds,
             )
+            maximum_frozen_columns = max(maximum_frozen_columns, frozen_columns)
             gradient = jacobian.T @ current.residual
             record = _make_iteration_record(
                 iteration=iteration,
@@ -978,25 +1148,34 @@ def run_parameter_fd_inverse(
             if progress_callback is not None:
                 progress_callback(record)
 
+            gradient_stop_reason = _gradient_stationarity_reason(
+                gradient,
+                accepted_parameters,
+                controller.lower_bounds,
+                controller.upper_bounds,
+                tolerance=config.gradient_tolerance,
+                frozen_columns=frozen_columns,
+            )
             if current.loss <= config.loss_tolerance:
                 converged = True
                 stop_reason = "loss_tolerance"
             elif previous_loss - current.loss <= config.loss_tolerance:
-                converged = True
-                stop_reason = "loss_change_tolerance"
-            elif (
-                float(np.linalg.norm(gradient, ord=np.inf))
-                <= config.gradient_tolerance
-            ):
-                converged = True
-                stop_reason = "gradient_tolerance"
+                converged = frozen_columns == 0
+                stop_reason = (
+                    "infeasible_jacobian" if frozen_columns else "loss_change_tolerance"
+                )
+            elif gradient_stop_reason is not None:
+                stop_reason = gradient_stop_reason
+                converged = stop_reason != "infeasible_jacobian"
             elif (
                 float(np.linalg.norm(accepted_step))
                 / max(np.linalg.norm(accepted_parameters), 1.0)
                 <= config.relative_step_tolerance
             ):
-                converged = True
-                stop_reason = "relative_step_tolerance"
+                converged = frozen_columns == 0
+                stop_reason = (
+                    "infeasible_jacobian" if frozen_columns else "relative_step_tolerance"
+                )
 
         return ParameterFDInverseResult(
             solver=solver_name,
@@ -1009,6 +1188,8 @@ def run_parameter_fd_inverse(
             maximum_system_residual=evaluator.maximum_system_residual,
             total_forward_seconds=evaluator.total_forward_seconds,
             total_seconds=float(perf_counter() - run_started),
+            infeasible_trial_count=evaluator.infeasible_trial_count,
+            maximum_frozen_jacobian_columns=maximum_frozen_columns,
         )
     finally:
         controller.assign(accepted_parameters)

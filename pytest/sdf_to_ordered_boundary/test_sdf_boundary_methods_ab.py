@@ -41,6 +41,22 @@ def _small_arclength_config(*, refit_samples: int | None = None) -> ArcLengthCon
     )
 
 
+def test_method_b_scales_only_derivative_validation_with_bandwidth() -> None:
+    config = MethodBConfig(
+        bandwidth=48,
+        validation=BoundaryValidationConfig(num_samples_per_component=1024),
+    )
+    resolved = config.resolved_validation
+
+    # Keep the reusable template generic: experiment profiles replace the
+    # Method-B bandwidth repeatedly.  Only the per-fit resolved policy carries
+    # the active Fourier bandwidth.
+    assert config.validation.fourier_bandwidth is None
+    assert resolved.fourier_bandwidth == 48
+    assert resolved.num_samples_per_component == 1024
+    assert resolved.derivative_samples_per_component == 2048
+
+
 def test_periodic_spline_owns_power_basis_and_has_c2_seam() -> None:
     count = 64
     parameters = _uniform_parameters(count)
