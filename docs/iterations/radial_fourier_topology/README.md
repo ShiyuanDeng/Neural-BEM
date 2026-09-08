@@ -11,10 +11,10 @@ Updated 2026-09-08.
 | Item | Current state |
 |---|---|
 | Active iteration | [Iteration 01](iteration_01/02_proposals/01_radial_fourier_topology_initial_instructions.md) |
-| Stage | Implementation brief received; review and agreed plan pending |
-| Latest contribution | [Initial implementation brief](iteration_01/02_proposals/01_radial_fourier_topology_initial_instructions.md) (baseline head `f5a77ff`) |
-| Execution status | Nothing implemented or run. The brief is explicit that topology recovery is neither implemented nor validated |
-| Next expected research action | Review the brief against the existing radial inverse and the multi-component Kress/Müller forward; record agreements, corrections and open questions as the next numbered document in `iteration_01/02_proposals/` |
+| Stage | Implementation brief and first review recorded; agreed plan pending |
+| Latest contribution | [Codex review](iteration_01/02_proposals/02_codex_review.md) of the initial brief, at head `34864ab` |
+| Execution status | No topology implementation or experiment exists. Review-only regression checks passed; topology recovery remains unimplemented and unvalidated |
+| Next expected research action | Consolidate the [initial brief](iteration_01/02_proposals/01_radial_fourier_topology_initial_instructions.md) and [Codex review](iteration_01/02_proposals/02_codex_review.md) into `iteration_01/03_plan.md`, recording accepted amendments, fixed configurations, gates and deferrals; no implementation or experiment is authorized |
 
 This project's iteration 1 opens from a brief rather than `01_results.md`
 because there is no prior cycle. The latest numbered document is the latest
@@ -29,7 +29,10 @@ does not authorize implementing the brief or launching an inverse.
    fixed-topology-refinement ↔ topological-derivative-birth architecture.
 2. The existing radial inverse and `solvers/gpr_bem_kress/multicomponent.py`
    for the multi-component forward the brief builds on.
-3. Iteration 1's `03_plan.md` once it exists.
+3. [Codex review](iteration_01/02_proposals/02_codex_review.md): agreements,
+   required objective/oracle/seam/optimizer corrections, numerical gates and
+   confidence levels.
+4. Iteration 1's `03_plan.md` once it exists.
 
 ## What to do at each stage
 
@@ -47,4 +50,4 @@ changes. Do not infer the active cycle from the highest folder number.
 
 | Iteration | Cycle | State |
 |---|---|---|
-| [01](iteration_01/02_proposals/01_radial_fourier_topology_initial_instructions.md) | Topology-aware Explicit Radial Fourier inverse: current-domain topological derivative for component birth | Active; brief received, review and plan pending. Nothing implemented |
+| [01](iteration_01/02_proposals/01_radial_fourier_topology_initial_instructions.md) | Topology-aware Explicit Radial Fourier inverse: current-domain topological derivative for component birth | Active; brief and one review recorded, agreed plan pending. Nothing implemented |
