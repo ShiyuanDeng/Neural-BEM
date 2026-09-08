@@ -1,6 +1,6 @@
 # Codex task: diagnose and repair the remaining implicit-MLP star inverse
 
-The [latest directions](implicit_mlp_star_latest_directions_codex.md) supersede
+The [latest directions](02_chatgpt_revised_guide.md) supersede
 this guide's ordering where they conflict. This guide is retained for context.
 
 ## Repository state

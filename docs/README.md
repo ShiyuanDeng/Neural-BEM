@@ -1,8 +1,10 @@
 # Documentation map
 
 Updated 2026-09-08. The current inverse pipelines are **Implicit MLP + Method B**
-and **Explicit Radial Fourier**. The implicit adjoint gradient is validated,
-but all three new 12-pair recovery cases fail overall acceptance. Radial
+and **Explicit Radial Fourier**. The implicit adjoint gradient is validated;
+the [iteration 2 comparison](iterations/implicit_mlp/iteration_02/README.md) has
+two completed 12-pair cases that fail recovery acceptance and one execution
+failure. Radial
 canonical recovery works on recorded cases; its MLP representation gates
 remain separate. These are not matched benchmark results.
 
@@ -11,7 +13,7 @@ remain separate. These are not matched benchmark results.
 | [Current architecture](current_architecture.md) | Implemented capabilities, defaults, and agreed direction |
 | [Implicit MLP + Method B](pipelines/implicit_mlp.md) | Neural adjoint implementation, geometry ownership, derivative checks, and remaining accuracy gates |
 | [Implicit MLP diagnostics](implicit_mlp_diagnostics.md) | Frozen conversion, controlled Eikonal activation, and one-update transfer; contract tests run, experiments not yet run |
-| [Implementation plans](plans/README.md) | Latest work directions, earlier guides, and their reviews |
+| [Experiment iterations](iterations/README.md) | Complete per-iteration results, possible fixes, ChatGPT guides, discussion and final reviews |
 | [Explicit Radial Fourier](pipelines/explicit_radial_fourier.md) | Explicit curve ownership, fitting/export ablations, and frozen neural metrics |
 | [Explicit Radial Fourier shape/material experiments](pipelines/explicit_radial_shape_material.md) | Radial variant with an unknown interior permittivity; derivative, continuation, and restart evidence |
 | [Results catalogue](../results/README.md) | Actual runs, scenes, dates, outcomes, and provenance for both pipelines and their controls |

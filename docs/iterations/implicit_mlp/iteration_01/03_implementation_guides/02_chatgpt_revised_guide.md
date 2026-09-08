@@ -9,14 +9,14 @@ Work from:
 - current reviewed head: `7f9e7d6a3b292cd9fa63d9b9be5e26f483d82c09`
 
 This document supersedes the ordering in the earlier
-[implementation guide](implicit_mlp_star_next_steps_codex.md) where it conflicts
-with the two [2026-09-08 reviews](implicit_mlp_star_next_steps_review.md).
+[implementation guide](01_chatgpt_guide.md) where it conflicts
+with the two [2026-09-08 reviews](../04_discussion/01_codex_review.md).
 
 Read first:
 
 - `docs/pipelines/implicit_mlp.md`
-- `docs/plans/implicit mlp/implicit_mlp_star_next_steps_codex.md`
-- `docs/plans/implicit mlp/implicit_mlp_star_next_steps_review.md`
+- `docs/iterations/implicit_mlp/iteration_01/03_implementation_guides/01_chatgpt_guide.md`
+- `docs/iterations/implicit_mlp/iteration_01/04_discussion/01_codex_review.md`
 - `results/validation/implicit_mlp_adjoint/review-20260908/README.md`
 - `results/validation/implicit_mlp_adjoint/rerun-20260907/README.md`
 - `results/validation/implicit_mlp_adjoint/rerun-20260907/star-bw96/summary.md`

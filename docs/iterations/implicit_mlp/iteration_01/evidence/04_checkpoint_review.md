@@ -1,3 +1,7 @@
+> Written-evidence snapshot collected for this iteration on 2026-09-08.
+> Source run record: [original report](../../../../../results/validation/implicit_mlp_adjoint/review-20260908/README.md). Numerical claims retain
+> their original experiment scope; this copy adds no new measurements.
+
 # Review of the implicit-MLP repair and implementation guide — 2026-09-08
 
 Reviewed implementation `6496cd367541b404ee396a76acf48c03f383a318` and guide
@@ -43,8 +47,8 @@ valid; it never guaranteed that eight halvings suffice for every gradient and
 geometry. These selected probes do not replay all 18 rejected terminal trials
 or Adam's historical moments, and do not demonstrate eventual recovery.
 
-Evidence: [probe metrics](checkpoint_probe.json), [script](checkpoint_probe.py),
-[configuration, hashes and tests](provenance.json).
+Evidence: [probe metrics](../../../../../results/validation/implicit_mlp_adjoint/review-20260908/checkpoint_probe.json), [script](../../../../../results/validation/implicit_mlp_adjoint/review-20260908/checkpoint_probe.py),
+[configuration, hashes and tests](../../../../../results/validation/implicit_mlp_adjoint/review-20260908/provenance.json).
 
 To reproduce without replacing this bundle:
 
@@ -80,7 +84,7 @@ ignored binary artifacts. The script never saves modified network weights.
 ## Companion review
 
 The arguments now follow the implementation guide section by section in
-[the companion review](../../../../docs/iterations/implicit_mlp/iteration_01/04_discussion/01_codex_review.md).
+[the companion review](../04_discussion/01_codex_review.md).
 It maps the termination correction, observability requirements, matched
 acquisition controls, holdout discipline and conditional optimizer changes to
 Phases 1–5. This bundle retains the underlying checkpoint evidence.
