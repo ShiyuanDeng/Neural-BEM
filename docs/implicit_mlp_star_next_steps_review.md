@@ -1,0 +1,265 @@
+# Review: remaining implicit-MLP star inverse implementation guide
+
+This companion follows the order of
+[the implementation guide](implicit_mlp_star_next_steps_codex.md). It reviews
+implementation commit `6496cd367541b404ee396a76acf48c03f383a318` and guide commit
+`127ac89999d65dfff4700bdeb11d55b875d9d0cd`, using the recorded reruns and a fresh
+[frozen-checkpoint audit](../results/validation/implicit_mlp_adjoint/review-20260908/README.md).
+
+**Verdict:** retain the repairs and conversion-resolution controls. Proceed
+with the guide's matched observability and acquisition study after correcting
+its termination premise. Keep continuation and neural Gauss–Newton conditional
+on the earlier measurements.
+
+## Repository state
+
+**Agree.** Reuse the current geometry, Kress forward/adjoint, controllers,
+metrics and artifact conventions. The new probe uses the actual local final
+star checkpoint and saved observations; it does not substitute a reconstructed
+network or change the production optimizer.
+
+## What is already established; do not re-debug these first
+
+**Agree with the retained repairs; amend claims 4 and 5.** The small-gradient
+fallback repair, star pretraining policy and explicit conversion guard remain
+justified. The frozen comparisons establish Fourier bandwidth as the dominant
+conversion-error lever on those checkpoints. They do not establish that every
+subsequent candidate passes the guard at bandwidth 96.
+
+The new audit exactly reproduces the final `star-bw96` training loss,
+`0.3461879920809253`. Its total gradient norm is `8.643277626394939`, and the
+negative total gradient is also a data-descent direction. Probing the unchanged
+fallback gives:
+
+| Trial | Measured outcome | Implication |
+|---|---|---|
+| Backtrack 8, last allowed | Conversion distance 0.112325 mm passes; refinement change 0.0115825 mm exceeds the 0.010 mm limit | The refinement part of the guard still rejects a terminal fallback candidate |
+| Backtrack 9 | All production acceptance checks pass; loss falls to 0.3460535595880327 | An acceptable step exists beyond the configured search budget |
+| Backtracks 10 and 12 | Both pass all production acceptance checks | The acceptable step is not confined to one tested magnitude |
+
+Thus the final accepted contour's 0.1061 mm conversion distance does not rule
+out a guard-related stop. The guard has two conditions and checks each new
+candidate. The previous small-gradient repair also does not guarantee that
+eight halvings suffice for every gradient and geometry.
+
+These probes do not replay Adam's historical moments or every rejected trial.
+They establish an available acceptable fallback step, not eventual recovery.
+The backtrack-9 loss improvement is only about 0.039%; it does not explain the
+large remaining shape error.
+
+The longer-run conclusions should remain narrow:
+
+| Run | Train relative L2 | Holdout relative L2 | Maximum node-to-target error | Verdict |
+|---|---:|---:|---:|---|
+| Circle, bandwidth 20 | 0.001795 | 0.07053 | 1.122 mm | Substantial improvement; recovery gates still fail |
+| Star, bandwidth 96 | 0.5966 | 1.078 | 36.386 mm | Recovery remains poor; fitted lobe amplitude and phase worsen |
+
+The circle's training/holdout gap alone does not establish that further
+iterations cannot improve holdout.
+
+## Working hypothesis
+
+**Agree with separating representation bandwidth from information bandwidth.**
+Treat weak lobe observability as a hypothesis. The guide correctly rejects
+`kR = mode number` as a hard cutoff.
+
+The historical five-parameter star already succeeds at 0.5/1.5 GHz with 12
+pairs; the new neural run uses eight. Those frequencies are therefore not
+categorically incapable of recovering the lobes. Both angular sampling and
+frequency deserve matched controls. Weight count alone also does not establish
+unrecoverability: network directions can change the field without materially
+changing its boundary or measured response.
+
+## Before Phase 1 — terminate only after an audited search
+
+**Add a small prerequisite to the guide.** Log rejection reasons separately:
+extraction/topology, conversion distance, refinement change, boundary movement,
+data Armijo and regularized Armijo. Check a deeper fallback search from the
+saved checkpoint, preserving the conversion and acceptance tolerances.
+
+Separate two questions in the resulting report: why the search stopped, and
+why the accepted geometry is still inaccurate. The present probe answers part
+of the first; it does not answer the second. This is a bounded termination
+audit, not a reason to postpone the observability study for another long inverse.
+
+## Phase 1 — modal and physical-parameter observability audit
+
+### 1A. Boundary-mode Jacobian
+
+**Proceed with normalization and combined-frequency spectra added.** Keep the
+normal Fourier modes as diagnostic probes and preserve MLP geometry ownership.
+Declare their displacement scale, preferably reporting sensitivities for equal
+RMS normal displacement so the constant and oscillatory modes are comparable.
+
+In addition to individual frequencies, vertically stack the real Jacobians
+for each proposed training set and report those spectra and correlations.
+Single-frequency spectra alone cannot measure complementary information across
+frequencies.
+
+With eight paired complex measurements, each frequency contributes at most
+16 real data directions. The proposed modes 0 through 10 give 21 real columns,
+so a single-frequency modal Jacobian must have a null space. The current two
+frequencies supply at most 32 real data directions. Distinguish these dimension
+limits from numerical rank loss and from the observability of the particular
+amplitude/phase directions of interest.
+
+### 1B. Five-parameter physical Jacobian
+
+**Proceed with declared parameter scales.** Report native-unit derivatives,
+but compute comparative conditioning using dimensionless parameter scales or
+equal RMS boundary displacement. Centre/radius in metres, relative amplitude
+and rotation in radians cannot share an unqualified condition number: changing
+metres to millimetres would change it without changing the experiment.
+
+Keep the guide's distinction between arc-length mode 5 and physical star
+amplitude/rotation. A local full-rank physical Jacobian is useful evidence of
+local identifiability; it does not guarantee convergence from the wrong initial
+star or uniqueness in the larger neural shape space.
+
+### 1C. Derivative validation
+
+**Agree.** Use fresh central differences with several magnitudes. Also verify
+forward and derivative refinement at the new frequencies and frozen geometries.
+`num_nodes >= 2K+2` permits sampling the curve; it is not a convergence
+certificate for the BEM operators. This calls for convergence checks, not a
+quadrature redesign.
+
+### Phase-1 artifacts
+
+Keep the requested CSVs and plots. Add the declared displacement/parameter
+scales, combined-frequency spectra, dimension-imposed rank limits and derivative
+convergence windows. Report the result even if mode-5 information is already
+strong at 0.5/1.5 GHz.
+
+## Phase 2 — matched five-parameter star controls
+
+**Proceed, adding an angular-acquisition control.** Alongside P0–P4, compare
+eight and 12 pairs at the same 0.5/1.5 GHz, initial shape, materials and resolved
+forward configuration. This tests the acquisition difference from the
+successful historical five-parameter case before prioritizing higher
+frequencies over more angles.
+
+Record the actual neural warm-start contour error when comparing it with the
+analytic initialization. Matching nominal star parameters does not make a
+pretrained neural contour exactly identical to the analytic star.
+
+### Decision after Phase 2
+
+Qualify the proposed causal conclusions:
+
+- Five-parameter failure at higher frequency warrants acquisition and
+  initialization/multistart investigation; one optimizer's failure does not
+  prove that the acquisition lacks information.
+- Failure at the original band and success at a higher band under matched
+  conditions supports a frequency explanation for that control.
+- Five-parameter success with neural failure narrows the gap to the neural
+  representation, optimization or regularization. The five-parameter control
+  imposes a strong shape-family prior and uses a different optimizer, so this
+  does not uniquely implicate Adam or excess weight count.
+
+Reserve holdout frequencies against the union of all planned training stages.
+The guide's Phase-2 holdout includes 1.0 GHz, which Phase 4 later uses to train.
+
+## Phase 3 — matched direct-MLP frequency ablation
+
+**Agree with changing one acquisition factor at a time.** Keep the architecture,
+seed, pretraining policy and acceptance contract fixed, and use the corrected
+termination diagnostics in every compared run.
+
+Control objective scaling as well as work. The production objective sums
+per-frequency normalized squared residuals. Adding a third frequency changes
+its balance with a fixed Eikonal term; replacing one frequency in a two-frequency
+set does not introduce that particular count change. Declare whether this
+balance is preserved or intentionally changed, and avoid attributing the
+combined effect solely to new information.
+
+Keep the guide's geometric success criteria. Falling training loss alone is
+already known to be insufficient.
+
+## Phase 4 — recursive frequency continuation with the MLP still owning geometry
+
+**Agree as a conditional experiment.** Preserve direct weight updates, transfer
+accepted geometry between stages, and reset Adam moments as proposed.
+
+Choose a common evaluation holdout disjoint from every stage: the suggested
+path trains at 1.0 GHz, so it cannot retain that frequency as a holdout from
+Phase 2. Compare continuation against a direct run with a declared comparable
+total work budget; five separate stage budgets should not be mistaken for one
+60-update experiment. Record forward evaluations and wall time as well as
+accepted updates.
+
+Single-frequency stage losses are different objectives. Report both the
+stage-local loss and performance on a fixed declared evaluation set so a
+stage transition is not misread as improvement on the same objective. Do not
+use holdout performance to select stages or settings.
+
+## Phase 5 — only if the low-dimensional control succeeds but direct-MLP continuation still fails
+
+**Retain the conditional neural Gauss–Newton experiment.** The data-space
+damped solve is plausible for the small residual dimension and preserves the
+MLP as the optimization variable. Diagnose the scaled neural Jacobian before
+building a new optimizer.
+
+The Euclidean minimum-weight-norm step depends on network parameter scaling.
+Specify that metric and the regularization objective. Damping the increment
+alone is not automatically a prior-centred iteratively regularized
+Gauss–Newton method; the guide should distinguish the proposed damped step
+from a full IRGN formulation.
+
+Retain actual-candidate extraction, conversion checks, BEM evaluation and
+rollback. A successful Gauss–Newton experiment would demonstrate improvement
+under its declared conditions; it would not alone prove that historical
+failure came specifically from Adam null-space motion.
+
+## What not to change in this study
+
+**Agree with preserving the validated components and ownership model.** Keep
+the pretraining repair and guard tolerances. Do not introduce boundary-to-MLP
+fitting or enlarge the SIREN without evidence.
+
+The guide explicitly permits reconsideration when new diagnostics contradict
+a previous conclusion. The frozen fallback probe supplies that evidence for
+the claim that the star's guard and finite-search effects are eliminated.
+Distinguish refinement of the guard's independent audit from refinement of
+the production conversion at fixed bandwidth; they are different checks.
+
+## Required experiment discipline
+
+Keep the guide's preservation, provenance, independent observations and
+holdout rules. Add rejection-reason accounting, declared Jacobian scales,
+comparable work budgets and explicit objective scaling. Continue describing
+contour distances as sampled numerical checks, not continuous certificates.
+
+## Suggested result structure
+
+Keep the proposed observability bundle and add a compact termination-audit
+section or subdirectory. Link this existing review probe rather than rewriting
+historical evidence. The top-level decision table should distinguish search
+termination, local information and successful nonlinear recovery; its causal
+interpretations remain conditional on matched controls.
+
+## Literature motivation for this plan
+
+**Appropriate motivation, not validation of this acquisition.** The cited
+[penetrable-object study](https://arxiv.org/abs/2210.11607) examines nonconvex
+inverse scattering and recursive linearization. The
+[dielectric IRGN paper](https://arxiv.org/abs/2006.10830) treats a three-dimensional
+far-field problem, and the [neural implicit paper](https://arxiv.org/abs/2206.02027)
+uses IBIM and discusses a generative shape prior. None establishes sufficiency
+of this repository's eight-pair acquisition or guarantees full-weight recovery.
+
+## Deliverable
+
+First complete the bounded termination audit, then implement Phase 1 with
+scaled and combined-frequency Jacobians. Proceed to the matched Phase-2
+controls according to those findings; retain later phases as conditional.
+
+The final report should answer separately: what rejected the proposed steps,
+which physical directions the data observes, and which matched experiment
+actually improves the recovered geometry.
+
+Review validation: **45 focused inverse/adjoint/repair tests passed**, with
+the command and source hashes saved in the
+[audit provenance](../results/validation/implicit_mlp_adjoint/review-20260908/provenance.json).
+The companion-document edit was checked with `git diff --check`; it changes
+no production implementation or experimental results.
