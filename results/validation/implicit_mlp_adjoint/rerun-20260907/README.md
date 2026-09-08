@@ -54,10 +54,18 @@ premature stop is gone. Five of nine gates pass; the two substantive failures
 are against the exact-target fitting control, at `1.122 mm` boundary against a
 `0.567 mm` allowance and `7.053e-2` holdout against `2.80e-2`.
 
-**4. The star's stop at bandwidth 96 is a real line-search stop, and its lobe
-modes move the wrong way.** Its audited conversion error is `1.061e-4 m`,
-comfortably inside the budget, so the guard is no longer binding. Recovery is
-nonetheless almost unchanged from bandwidth 48. Against an initialization of
+**4. The star's lobe modes move the wrong way at bandwidth 96.** Its audited
+conversion error is `1.061e-4 m`, comfortably inside the budget on the accepted
+state. This was originally read here as a real line-search stop with the guard
+no longer binding; the
+[2026-09-08 checkpoint audit](../review-20260908/README.md) disproves that.
+Probing the same frozen checkpoint shows the guard's refinement-change
+condition rejecting the last permitted backtrack at `1.15825e-5 m` against a
+`1e-5 m` limit, while backtracks 9, 10 and 12 satisfy every production
+condition. The stop is a joint guard and search-budget effect, not a stationary
+point. The available fallback steps are small — backtrack 9 lowers the loss by
+`0.039%` — so this changes why the run stopped, not why its geometry is wrong.
+Recovery is almost unchanged from bandwidth 48. Against an initialization of
 centre `(0.48, 0.52)`, mean radius `0.060`, amplitude `0.12` and rotation
 `0.25 rad`, and a target of `(0.50, 0.50)`, `0.05`, `0.25` and `0` rad:
 
