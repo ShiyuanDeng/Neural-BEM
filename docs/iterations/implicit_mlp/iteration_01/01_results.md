@@ -1,8 +1,10 @@
-# Iteration 01 — results and diagnosis before consultation
+# Iteration 1 — results, problems and possible fixes
 
-Retrospective summary from the September 7–8 reports. These measurements
-precede implementation of the revised A–H guide. Its later outcomes are in
-the local final review; this summary records no new experiment.
+September 7–8, 2026. Written retrospectively from the dated audits and reports,
+so it records no new experiment; the numbering was assigned after the fact.
+Three 12-pair neural inverses failed recovery, targeted repairs were validated
+on frozen checkpoints, and the reruns still failed. That is the case put to
+ChatGPT in [02_proposals](02_proposals/); the outcome is in [03_plan.md](03_plan.md).
 
 ## Problem and setup
 
@@ -88,6 +90,29 @@ The first extra accepted candidate lowers loss 0.3461879921 → 0.3460535596,
 about 0.039%, and moves the boundary 0.07076 mm. This demonstrates a
 nonstationary search-budget stop, not a solution to the 36 mm shape error.
 
+## Possible fixes
+
+Retrospective inventory: no separate pre-consultation proposal was saved, so
+the dispositions come from the later audits and reviews.
+
+| Candidate | Evidence | Discriminating check | Disposition |
+|---|---|---|---|
+| Shrinking fallback and deeper diagnostic search | Another halving admits descent at the old circle/star checkpoints | Evaluate unchanged fallback candidates under the original tests | Shrinking fallback retained; deeper search and rejection accounting implemented |
+| Star pretraining penalty change | Matched known-target error improves 9.18 → 1.15 mm | Fixed seed, network, sample sequence and training budget; check topology | Zero star penalty retained; inverse Eikonal remains separate |
+| Resolved conversion and a guard | Raw and converted contours differ materially | Freeze weights and vary bandwidth, extraction and audit resolution independently | Guard and resolution controls retained; future candidates still require checks |
+| Matched eight-versus-twelve-pair control | Historical five-parameter star succeeds at the original frequencies | Fix family, initialization, optimizer and forward resolution | Test before claiming higher frequency is necessary |
+| Multistatic readout | Solves compute more entries than the paired experiment retains | Scaled physical/modal Jacobians for paired-8, paired-12 and multistatic-8 | Diagnostic arm followed by a conditional neural experiment |
+| Higher frequency and continuation | Lobe sensitivity may depend on band | Combined-frequency spectra, then a matched frequency change | Conditional; no hard mode cutoff or holdout-based selection |
+| Neural GN/TSVD/IRGN | Neural updates may remain poorly conditioned | Scaled neural Jacobian after cheaper physical/modal controls | Defer a production optimizer until evidence justifies it |
+
+Broader distance-supervision prototypes and zero-penalty ellipse pretraining
+failed topology checks. Enlarging the network, weakening fidelity gates and
+returning to a separate curve-to-MLP fitting loop were unsupported.
+
+The consultation had to separate stopping mechanism, information content, shape
+prior and nonlinear optimization, with declared scales, disjoint evaluation
+frequencies and comparable work budgets.
+
 ## Questions entering the revised guide
 
 - Does the five-parameter star still recover with eight pairs at 0.5/1.5 GHz?
@@ -104,7 +129,13 @@ Eight pairs at two frequencies provide 32 real residual entries for 8,577
 weights. This rank ceiling does not prove that every unobserved weight direction
 moves the boundary or that the desired shape is unrecoverable.
 
-Full reports are included in the local [failure audit](evidence/01_failure_audit.md),
-[repairs](evidence/02_validated_repairs.md), [reruns](evidence/03_repair_reruns.md)
-and [checkpoint review](evidence/04_checkpoint_review.md). The
-[final review](05_final_review.md) distinguishes these hypotheses from later results.
+## Supporting reports
+
+Each run report sits with its own metrics, scripts and provenance under
+`results/validation/implicit_mlp_adjoint/`:
+
+- [Failure audit](../../../../results/validation/implicit_mlp_adjoint/failure-audit-20260907/README.md) — fallback, pretraining and raw/converted geometry
+- [Validated repairs](../../../../results/validation/implicit_mlp_adjoint/repairs-20260907/README.md) — adopted changes and rejected prototypes
+- [Repair reruns](../../../../results/validation/implicit_mlp_adjoint/rerun-20260907/README.md) — circle/star bandwidth comparisons
+- [Checkpoint review](../../../../results/validation/implicit_mlp_adjoint/review-20260908/README.md) — the additional acceptable star fallback
+- [Controls and observability](../../../../results/validation/implicit_mlp_adjoint/latest-direction-20260908/README.md) — full A–E results, spectra, validation and costs

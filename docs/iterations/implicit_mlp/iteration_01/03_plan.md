@@ -1,8 +1,9 @@
-# Iteration 01 — final review after matched controls
+# Iteration 1 — final plan and decisions
 
-Retrospective consolidation on 2026-09-08 of the guides, reviews and completed
-A–E study. This records the diagnostic cycle's outcome; it does not imply
-general neural recovery or execution of deferred experiments.
+Consolidated 2026-09-08 from the [results](01_results.md), the
+[proposals and reviews](02_proposals/) and the completed A–E study. This records
+the diagnostic cycle's outcome; it does not imply general neural recovery or
+execution of the deferred experiments.
 
 ## Verdict
 
@@ -68,12 +69,13 @@ original 387.22 seconds includes 52.22 seconds of holdout callbacks; the full
 report preserves that accounting and its subsequent replay correction. These
 are single-run engineering timings.
 
-The [full controls/observability report](evidence/05_controls_and_observability.md)
-is included in this folder with configurations, spectra and artifact references.
+The [full controls/observability report](../../../../results/validation/implicit_mlp_adjoint/latest-direction-20260908/README.md)
+holds the configurations, spectra and artifact references.
 
 ## Handoff
 
 Open questions concern the wrong-start basin, unprobed boundary directions and
 neural update geometry. The following 12-pair repaired wrong-start suite opens
-iteration 02. It does not implement the recommended multistatic change and
-cannot validate that deferred fix. Its results require a separate consultation.
+[iteration 2](../iteration_02/01_results.md). It does not implement the
+recommended multistatic change and cannot validate that deferred fix. Its
+results require a separate consultation.

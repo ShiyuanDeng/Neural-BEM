@@ -1,7 +1,10 @@
-# Iteration 2 — results and suspected causes
+# Iteration 2 — results, problems and possible fixes
 
-Recorded 2026-09-08 by Codex. **Awaiting ChatGPT's fix proposal and subsequent
-review; no next long inverse is authorized by this report.**
+Recorded 2026-09-08 by Codex, after the repaired 12-pair wrong-start suite.
+**Stage 1 only: no ChatGPT proposal has been received and no next long inverse
+is authorized.** The proposals and their reviews go in a `02_proposals/` folder
+here when they arrive; the agreed plan then becomes `03_plan.md`.
+Prior cycle: [iteration 1](../iteration_01/01_results.md).
 
 ## Outcome
 
@@ -13,9 +16,8 @@ result bundle. Circle and star have valid videos. Treat the missing ellipse arm
 as an execution failure, not an inverse accuracy measurement.
 
 The three-step `star-truth` run was a separate local diagnostic, not one of these
-wrong-start comparisons. Its results and the prior acquisition findings are
-included in this report and the local
-[controls/observability evidence](evidence/01_prior_controls_and_observability.md).
+wrong-start comparisons. Its results and the prior acquisition findings are summarised below,
+from [iteration 1's controls/observability report](../../../../results/validation/implicit_mlp_adjoint/latest-direction-20260908/README.md).
 
 ## Experiment and comparison limits
 
@@ -182,7 +184,7 @@ raises `OrderedSDFGeometryError` with both rejection reasons:
 | Conversion refinement change | 0.073997 mm | 0.01 mm |
 
 This probe requires no pretraining, inverse updates, or BEM solve. Its
-[script and saved evidence](evidence/02_ellipse_initialization_audit.md)
+[script and saved evidence](../../../../results/validation/implicit_mlp_adjoint/iteration-02-20260908/ellipse-initial-geometry/README.md)
 are separate from the failed production arm. **Inference:** inadequate conversion
 of the ellipse warm start at the reused circle settings is a strong candidate
 for the startup failure. The missing fresh weights and traceback prevent
@@ -212,9 +214,9 @@ construction rejected first. The 2 mm motion limit, 0.2 mm conversion-distance
 limit, and 0.01 mm refinement-change limit were fixed throughout the September 8
 runs.
 
-## Prior measured context included in this iteration
+## Prior measured context carried forward
 
-The [completed A–E report](evidence/01_prior_controls_and_observability.md)
+The [completed A–E report](../../../../results/validation/implicit_mlp_adjoint/latest-direction-20260908/README.md)
 constrains the next proposal:
 
 - The five-parameter star recovers at 0.5/1.5 GHz with either eight or twelve
@@ -247,7 +249,7 @@ separate validated 3 GHz evaluation set. Do not compare its holdout numbers
 directly with this suite's historical frequency sets, or reuse evaluation
 frequencies for training while continuing to call them held out.
 
-## Questions for the proposal and review
+## Open questions
 
 | Question | Current evidence | What remains to establish cheaply |
 |---|---|---|
@@ -258,17 +260,58 @@ frequencies for training while continuing to call them held out.
 | Which acquisition should a costly run test? | Existing local diagnostics support multistatic as a candidate | A reviewed integration and scaling plan, bounded validation, fixed initialization, disjoint evaluation set, and comparable work budget |
 | Why are the runs expensive? | Hundreds of re-extraction/conversion attempts and about 128 minutes recorded | Profile the relevant path before assigning all cost to BEM or increasing every resolution globally |
 
-The local [possible-fixes note](02_possible_fixes.md) develops these handoff
-questions into candidate actions. ChatGPT's guide should rank
-a small number of discriminating checks, then state which outcomes justify
-implementation and a long inverse. Codex will review that proposal before the
-user agrees to iteration 3. Do not enlarge the network, relax the fidelity
+## Ranked candidate fixes
+
+Codex's candidate actions for the consultation, not an agreed implementation.
+
+| Priority | Candidate | Evidence and cheapest useful check | What would justify a fix |
+|---|---|---|---|
+| 1 | Capture and validate ellipse initialization before inversion | The old archived initial weights fail the new geometry at 3.212 mm distance and 0.0740 mm refinement change; the failed run's fresh weights and traceback are missing | Reproduce and save the actual startup failure, then demonstrate a topology-valid, resolved initialization under unchanged tolerances |
+| 2 | Audit the final star's conversion and search locally | All 30 terminal candidates fail; 29 fail before data evaluation; the accepted state is near the refinement-change limit | Frozen-weight tests separate audit sampling/branch sensitivity from actual raw/converted discrepancy and find a meaningful admissible movement |
+| 3 | Profile candidate evaluation before increasing resolution | Circle needs 423 and star 420 attempted evaluations | Measured extraction, audit, conversion and BEM timings identify a costly repeated operation that can be reduced without changing acceptance results |
+| 4 | Isolate multistatic acquisition in the neural driver | Target modal condition improves about 73.6 → 10.4; indexed forward/adjoint diagnostics already exist | Validated independent observation indexing, residual scaling and neural pullback; a bounded actual-network test before a full wrong-start comparison |
+| 5 | Diagnose neural update directions and regularization | Star loses lobe amplitude while loss falls; circle keeps noncircular error despite good placement | Measure the boundary modes induced by weight updates and data/Eikonal alignment; determine whether the problem is direction, basin or weakly constrained modes |
+| 6 | Consider continuation or scaled neural GN/TSVD/IRGN | They may help a nonlinear basin or poorly conditioned update, but neither is isolated by the current suite | Prior diagnostics justify a specific formulation, scaling and comparison budget |
+
+For the star conversion audit, vary production conversion and independent audit
+resolution separately. Raising a gate or allowing ever smaller movements is
+not evidence of repaired lobes. The 0.1 mm meaningful-movement floor is a
+reporting convention, not an acceptance threshold to silently change.
+
+For multistatic or frequency changes, keep data normalization explicit. More
+entries can change the response norm and effective regularization balance.
+The original suite's evaluation frequencies are historical holdouts, not a
+training-selection score. The prior diagnostic study uses a different 3 GHz
+holdout and should not be compared numerically as though it were the same set.
+
+## Options to defer without new evidence
+
+- Another unchanged full inverse or a simple increase in the update budget.
+- A larger SIREN justified only by failed recovery.
+- Another blanket pretraining redesign: prior alternatives produced extra contours.
+- Relaxed conversion tolerances or a switch to explicit curve-owned updates.
+- Higher frequency presented as necessary merely because the star has five lobes.
+
+## What the proposal must resolve
+
+Rank a small number of discriminating checks: which bounded checks distinguish
+the causes, in what order, and at what cost? Which concrete outcome warrants an
+implementation change or a long inverse? How will unchanged physics, geometry
+ownership and acceptance be verified? Which single factor will the next
+expensive comparison vary? Do not enlarge the network, relax the fidelity
 contract, switch geometry ownership, or repeatedly extend long-run budgets
 without evidence and a reviewed reason.
 
 ## Evidence index
 
-- [Suite manifest and executed commands](../../../../results/inverse/implicit_mlp/2026-09-08/wrong_start_suite.json)
+The suite that produced these results (already run; not a request to rerun):
+
+```bash
+/home/drdeng/miniconda3/envs/EMNerf/bin/python run_implicit_mlp_wrong_start_suite.py \
+  --output-root results/inverse/implicit_mlp/2026-09-08
+```
+
+- [Suite manifest and per-case commands](../../../../results/inverse/implicit_mlp/2026-09-08/wrong_start_suite.json)
 - Current circle: [summary](../../../../results/inverse/implicit_mlp/2026-09-08/circle/summary.md),
   [metrics](../../../../results/inverse/implicit_mlp/2026-09-08/circle/metrics.json),
   [accepted states](../../../../results/inverse/implicit_mlp/2026-09-08/circle/kress_accepted_iterates.json),
@@ -282,7 +325,7 @@ without evidence and a reviewed reason.
 - September 7 baselines: [circle](../../../../results/inverse/implicit_mlp/2026-09-07/circle/summary.md),
   [ellipse-to-circle](../../../../results/inverse/implicit_mlp/2026-09-07/ellipse-to-circle/summary.md),
   [star](../../../../results/inverse/implicit_mlp/2026-09-07/star/summary.md).
-- [Full prior controls and observability report](evidence/01_prior_controls_and_observability.md).
+- [Full prior controls and observability report](../../../../results/validation/implicit_mlp_adjoint/latest-direction-20260908/README.md), carried forward from iteration 1.
 
 Binary artifacts and some large arrays follow the repository's ignore policy.
 Their local existence is verified here; a source-only checkout may not contain

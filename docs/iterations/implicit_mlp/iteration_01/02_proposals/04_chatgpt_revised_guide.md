@@ -10,13 +10,13 @@ Work from:
 
 This document supersedes the ordering in the earlier
 [implementation guide](01_chatgpt_guide.md) where it conflicts
-with the two [2026-09-08 reviews](../04_discussion/01_codex_review.md).
+with the two [2026-09-08 reviews](02_codex_review.md).
 
 Read first:
 
 - `docs/pipelines/implicit_mlp.md`
-- `docs/iterations/implicit_mlp/iteration_01/03_implementation_guides/01_chatgpt_guide.md`
-- `docs/iterations/implicit_mlp/iteration_01/04_discussion/01_codex_review.md`
+- `docs/iterations/implicit_mlp/iteration_01/02_proposals/01_chatgpt_guide.md`
+- `docs/iterations/implicit_mlp/iteration_01/02_proposals/02_codex_review.md`
 - `results/validation/implicit_mlp_adjoint/review-20260908/README.md`
 - `results/validation/implicit_mlp_adjoint/rerun-20260907/README.md`
 - `results/validation/implicit_mlp_adjoint/rerun-20260907/star-bw96/summary.md`

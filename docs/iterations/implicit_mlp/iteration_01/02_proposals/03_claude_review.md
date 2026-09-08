@@ -7,7 +7,7 @@ discussion; the iteration final review records the conclusions after testing.
 A second pass over the same two commits, the
 [checkpoint audit](../../../../../results/validation/implicit_mlp_adjoint/review-20260908/README.md)
 and the historical bundles. These comments follow the guide's phases and add to
-the [Codex companion review](01_codex_review.md) rather than restating it.
+the [Codex companion review](02_codex_review.md) rather than restating it.
 
 ## On the termination correction
 

@@ -80,7 +80,7 @@ ignored binary artifacts. The script never saves modified network weights.
 ## Companion review
 
 The arguments now follow the implementation guide section by section in
-[the companion review](../../../../docs/iterations/implicit_mlp/iteration_01/04_discussion/01_codex_review.md).
+[the companion review](../../../../docs/iterations/implicit_mlp/iteration_01/02_proposals/02_codex_review.md).
 It maps the termination correction, observability requirements, matched
 acquisition controls, holdout discipline and conditional optimizer changes to
 Phases 1–5. This bundle retains the underlying checkpoint evidence.

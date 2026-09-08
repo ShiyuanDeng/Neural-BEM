@@ -1,11 +1,11 @@
 # Review: remaining implicit-MLP star inverse implementation guide
 
 For the current proposed work sequence, see the
-[latest directions](../03_implementation_guides/02_chatgpt_revised_guide.md), which
-incorporate this review and the [additional review](02_claude_review.md).
+[latest directions](04_chatgpt_revised_guide.md), which
+incorporate this review and the [additional review](03_claude_review.md).
 
 This companion follows the order of
-[the implementation guide](../03_implementation_guides/01_chatgpt_guide.md). It reviews
+[the implementation guide](01_chatgpt_guide.md). It reviews
 implementation commit `6496cd367541b404ee396a76acf48c03f383a318` and guide commit
 `127ac89999d65dfff4700bdeb11d55b875d9d0cd`, using the recorded reruns and a fresh
 [frozen-checkpoint audit](../../../../../results/validation/implicit_mlp_adjoint/review-20260908/README.md).
