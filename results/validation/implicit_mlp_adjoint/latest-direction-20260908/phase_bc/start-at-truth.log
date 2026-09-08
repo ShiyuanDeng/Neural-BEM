@@ -1,0 +1,23 @@
+[oracle] nystrom_ref independent Nystrom/Muller solution of the exact star
+[oracle] self-convergence 256 vs 512 nodes: 4.263e-10
+[control] warm starting the same network onto the exact target
+[control] the same network fitted to the exact target lands 1.191e-03 m from it
+
+[KRESS] siren_star implicit recovery with adjoint
+  KRESS iter=00 loss=1.2263e-04 rel=1.0731e-02 center=(0.500124,0.500024) radius=0.050992
+  KRESS iter=01 loss=6.7887e-05 rel=8.1351e-03 center=(0.500000,0.500099) radius=0.050900
+  KRESS iter=02 loss=6.1695e-05 rel=7.7541e-03 center=(0.500028,0.500143) radius=0.050872
+  KRESS iter=03 loss=5.8510e-05 rel=7.4518e-03 center=(0.499992,0.500220) radius=0.050954
+
+Artifacts: /home/drdeng/Neural_SDF_BEM_AD/results/validation/implicit_mlp_adjoint/latest-direction-20260908/phase_bc/start-at-truth
+  FAIL kress_optimizer_converged
+  PASS kress_accepted_losses_monotone
+  FAIL kress_training_loss_drop
+  PASS kress_boundary_error_within_representation
+  FAIL kress_boundary_error_improved
+  PASS kress_holdout_within_representation
+  PASS kress_linear_system_residual
+  PASS kress_holdout_relative_l2
+  FAIL kress_warm_start_is_eikonal
+  PASS observation_oracle_self_convergence
+Overall acceptance: FAIL

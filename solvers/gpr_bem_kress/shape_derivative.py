@@ -541,5 +541,35 @@ def build_paired_objective_adjoint(
     )
 
 
+# The established implementation already accepts arbitrary rectangular
+# acquisition selections and accumulates duplicates in a full R-by-S
+# cotangent. Give that capability an explicit name without another adjoint.
+KressIndexedObjectiveAdjoint = KressPairedObjectiveAdjoint
+
+
+def build_indexed_objective_adjoint(
+    base_results: Sequence[KressTMzForwardResult],
+    observed,
+    source_indices,
+    receiver_indices,
+    *,
+    residual_transform=None,
+    observable: str = "scattered",
+) -> KressIndexedObjectiveAdjoint:
+    """Use the existing conjugate adjoint for arbitrary indexed observations.
+
+    Each measurement is ``full_response[source_indices[m], receiver_indices[m]]``.
+    Duplicate measurements accumulate rather than overwrite cotangents. Both
+    real and imaginary arrays use C order (measurement first, frequency second)
+    before concatenation. The paired entry point retains its existing behavior.
+    """
+
+    return build_paired_objective_adjoint(
+        base_results, observed, source_indices, receiver_indices,
+        residual_transform=residual_transform, observable=observable,
+    )
+
+
 __all__ = ["KressDirection", "KressForwardJVP", "KressPairedObjectiveAdjoint",
-           "linearize_kress_forward", "build_paired_objective_adjoint"]
+           "KressIndexedObjectiveAdjoint", "linearize_kress_forward",
+           "build_paired_objective_adjoint", "build_indexed_objective_adjoint"]

@@ -1,0 +1,214 @@
+{
+  "schema_version": 1,
+  "created_utc": "2026-09-08T13:22:11.817691+00:00",
+  "scope": "Frozen September 7 initial ellipse weights with geometry settings parsed from the failed September 8 suite command; geometry only.",
+  "caveat": "The September 8 ellipse run saved neither its freshly pretrained weights nor its traceback. This diagnostic is a new probe of archived September 7 initial weights; it supports a conversion-failure hypothesis but does not establish the original exception or exact equality to that unsaved model.",
+  "source": {
+    "metrics_path": "results/inverse/implicit_mlp/2026-09-07/ellipse-to-circle/metrics.json",
+    "metrics_sha256": "82e94ab52cf78c1af7e148367c87dc2952b279b4401b99fac986a8c6d7307d02",
+    "vector_json_location": "initialization.raw_parameter_vector",
+    "vector_sha256": "eeac6d4ad2abd99ca95a3bf50dd1dac758f76dd370c73b944ea32d861090df12",
+    "vector_hash_encoding": "Contiguous little-endian IEEE-754 float64 values in initialization.raw_parameter_names order",
+    "parameter_names_sha256": "fa38ce5ed3dc7078a98f63c250bfc617e21f33200a1daf97cb6fd6e7b967915a",
+    "parameter_count": 8577,
+    "constructor": {
+      "bounds": [
+        [
+          0.3,
+          0.3
+        ],
+        [
+          0.7,
+          0.7
+        ]
+      ],
+      "hidden_features": 64,
+      "hidden_layers": 2,
+      "omega_0": 10.0,
+      "random_seed": 0,
+      "dtype": "torch.float64",
+      "device": "cpu"
+    },
+    "original_geometry_config": {
+      "arclength_dense_resolution": 512,
+      "bandwidth": 10,
+      "bounds": [
+        [
+          0.3,
+          0.3
+        ],
+        [
+          0.7,
+          0.7
+        ]
+      ],
+      "grid_shape": [
+        129,
+        129
+      ],
+      "num_nodes": 64,
+      "projected_samples": 64,
+      "validation_resolution": 256
+    },
+    "original_pretraining_report": {
+      "final_data_rms_m": 0.018361236156209344,
+      "final_eikonal_residual": 0.000719067376544713,
+      "initial_data_rms_m": 0.08263191294908998,
+      "seconds": 45.76692678600011,
+      "steps": 6000.0
+    },
+    "original_run_command": "run_implicit_mlp_inverse.py --target circle --initial-model siren_ellipse --solvers kress --optimizer adjoint --max-iterations 60 --num-pairs 12 --output-dir results/inverse/implicit_mlp/ellipse-to-circle-20260907T151516"
+  },
+  "failed_run_record": {
+    "suite_path": "results/inverse/implicit_mlp/2026-09-08/wrong_start_suite.json",
+    "suite_sha256": "147fad9e37f5d21390ee40ecf765b30bfe71b60b1984402564e6466271e59f9e",
+    "status": "failed_inverse",
+    "inverse_exit_code": 1,
+    "inverse_command": [
+      "/home/drdeng/miniconda3/envs/EMNerf/bin/python",
+      "/home/drdeng/Neural_SDF_BEM_AD/run_implicit_mlp_inverse.py",
+      "--target",
+      "circle",
+      "--initial-model",
+      "siren_ellipse",
+      "--solvers",
+      "kress",
+      "--optimizer",
+      "adjoint",
+      "--max-iterations",
+      "60",
+      "--num-pairs",
+      "12",
+      "--train-ghz",
+      "0.25,0.5",
+      "--holdout-ghz",
+      "1.0,1.5,2.5",
+      "--num-nodes",
+      "64",
+      "--bandwidth",
+      "20",
+      "--grid-resolution",
+      "257",
+      "--projected-samples",
+      "128",
+      "--mlp-hidden-features",
+      "64",
+      "--mlp-hidden-layers",
+      "2",
+      "--mlp-pretrain-steps",
+      "6000",
+      "--mlp-pretrain-eikonal-weight",
+      "0.1",
+      "--learning-rate",
+      "0.001",
+      "--eikonal-weight",
+      "0.01",
+      "--loss-tolerance",
+      "1e-12",
+      "--conversion-tolerance-mm",
+      "0.2",
+      "--max-backtracks",
+      "14",
+      "--output-dir",
+      "/home/drdeng/Neural_SDF_BEM_AD/results/inverse/implicit_mlp/2026-09-08/ellipse-to-circle",
+      "--no-gate"
+    ]
+  },
+  "geometry_config": {
+    "bounds": [
+      [
+        0.3,
+        0.3
+      ],
+      [
+        0.7,
+        0.7
+      ]
+    ],
+    "grid_shape": [
+      257,
+      257
+    ],
+    "projected_samples": 128,
+    "bandwidth": 20,
+    "num_nodes": 64,
+    "arclength_dense_resolution": 512,
+    "validation_resolution": 256,
+    "conversion_tolerance_m": 0.0002
+  },
+  "limits_m": {
+    "conversion_distance": 0.0002,
+    "conversion_refinement_change": 1e-05
+  },
+  "measurement": {
+    "status": "rejected_geometry",
+    "exception_type": "OrderedSDFGeometryError",
+    "exception_message": "Method-B conversion fidelity failed: raw/converted contour distance 0.00321163 m, refinement change 7.39968e-05 m; limits 0.0002 m and 1e-05 m. Refine extraction, projected samples and Fourier bandwidth before accepting this field.",
+    "conversion_error_m": 0.0032116255856641817,
+    "conversion_refinement_change_m": 7.399676937248304e-05,
+    "rejection_reasons": [
+      "conversion_distance",
+      "conversion_refinement_change"
+    ]
+  },
+  "geometry_probe_seconds": 7.507888460997492,
+  "total_probe_seconds_excluding_imports_and_json_write": 7.54010524500336,
+  "weights_unchanged_exactly": true,
+  "pretraining_steps_run": 0,
+  "inverse_updates_run": 0,
+  "bem_forward_solves_run": 0,
+  "reproduction": {
+    "working_directory": "/home/drdeng/Neural_SDF_BEM_AD",
+    "command": "OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1 PYTHONPATH=solvers /home/drdeng/miniconda3/envs/EMNerf/bin/python /home/drdeng/Neural_SDF_BEM_AD/results/validation/implicit_mlp_adjoint/iteration-02-20260908/ellipse-initial-geometry/probe.py",
+    "environment": {
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1",
+      "PYTHONPATH": "solvers"
+    },
+    "python": "3.9.25",
+    "packages": {
+      "numpy": "2.0.2",
+      "scipy": "1.13.1",
+      "scikit-image": "0.24.0",
+      "torch": "2.8.0+cu128"
+    },
+    "current_source_sha256": {
+      "results/validation/implicit_mlp_adjoint/iteration-02-20260908/ellipse-initial-geometry/probe.py": "b0ed9cbe477f51c156664f83899cc999dc69a48394f29766f56a339951282018",
+      "run_sdf_inverse_comparison.py": "7ec480109e9b04d97a9727c0b0824a0c810db9c59e33ddbc5837ba70914811bd",
+      "solvers/ordered_boundary/__init__.py": "75a5dfaa90ab61b192396e9c8ab624b253d114690e212566cb8d1bd604c95ba4",
+      "solvers/ordered_boundary/_array_utils.py": "8f90ad86f63ad44ed1d7f9db4d655b6783a67d647c5a14fa0503fc551834a4f5",
+      "solvers/ordered_boundary/analytic.py": "7a499e0e9eb07710cfee0c5f0cdb5c770e42ded214785bfddf61272d3e353cb6",
+      "solvers/ordered_boundary/boundary.py": "8f9bd3afa0978076372d3228d9f904b0b0aa87f94e4142a538695d3d87f9dffc",
+      "solvers/ordered_boundary/boundary_parameterization.py": "3883e2232cf6f9b8a8e3a12e95052e6e2791b942ff8e8b6c3fc59419197c7a2c",
+      "solvers/ordered_boundary/curve.py": "bcc1a40b445b955f6701da11bca39d4a329874bdb3830476d51375f1e99f9ced",
+      "solvers/ordered_boundary/parameterization.py": "d71628ac3dce3ba8aaf262aad28607b29ea74ed65d58850342aaa3fb4db599c8",
+      "solvers/ordered_boundary/validation.py": "d16dc2ecccd7dcd9c733f8d7083e0b80480e3268312b6fb5f68f426ba3fb878d",
+      "solvers/sdf_inverse/__init__.py": "1f145010e02816a67e79c0f70b30e042e0988c6ee323f54a5cec3721702511ba",
+      "solvers/sdf_inverse/continuous_distance.py": "83be27c3ebe99bce6ec6fa7a1265eda4e0716a8099ef697f65c5995eb44e4126",
+      "solvers/sdf_inverse/curve_updates.py": "dc70b88f1f992d42cba37672f6ad8984a30bf42865fa5db992cb526a54855332",
+      "solvers/sdf_inverse/forward.py": "b97a11cbb5ebf16ee63554ba9424236eabfc87af52ff9c18ba7de7025e1cd7ce",
+      "solvers/sdf_inverse/geometry.py": "2341e23d3daf326e81ae064910cefa4cf49edb944e9892d9932293bb71574a56",
+      "solvers/sdf_inverse/implicit_adjoint.py": "8dce78096313fc59a2e4384e7cfbaa1f994faaed829737b9b8cf951317b4224a",
+      "solvers/sdf_inverse/models.py": "566d0a8bc2f997e8b79f139611d5972209fb083a9bb0fc5532e2c7cc0d841183",
+      "solvers/sdf_inverse/neural.py": "54d52df1a95ae8129b79f6a848a8cce5b7fbd0f7899f64a220791639ae81c58f",
+      "solvers/sdf_inverse/neural_optimization.py": "586526e71f005770340903a27aa39b70eec3279e1a045a0f7842be20083366bb",
+      "solvers/sdf_inverse/nystrom_oracle.py": "95c600404053c6b433b36997caf365e80c5cbec4118c5c80d70050eb8955c141",
+      "solvers/sdf_inverse/optimization.py": "364071848e4f6aff036a357794b27565ab5fb8be52dee6361c881779c168e688",
+      "solvers/sdf_inverse/targets.py": "07b3be3e8518c1c349e5c6f2cbd1344819760fdcf2d53732644a2e1270cbf377",
+      "solvers/sdf_to_ordered_boundary/__init__.py": "139c167269426011ef30177a414cd636aefa191a4bdadfc8fa1e6bb1480e445d",
+      "solvers/sdf_to_ordered_boundary/arclength.py": "762da5c4b8c4eee3dfc066388c521b304b61dfe4c3809463d87498880608c071",
+      "solvers/sdf_to_ordered_boundary/artifacts.py": "2a3549a7bbf7645bc7522a6466cd97e167ad9db9cc23ea88b355f11c3b12c986",
+      "solvers/sdf_to_ordered_boundary/experiment.py": "dd3bb0ba2b3237c5fbf2aa95d92ced965aa936ebe269b698b9c1bac02c8dd0e9",
+      "solvers/sdf_to_ordered_boundary/fields.py": "37768f030f62667748c9716ffbf80629a07cc4371c4b08514716c08bad6cebca",
+      "solvers/sdf_to_ordered_boundary/frontend.py": "6dd5e51824e253c77158a6b33f92e42f64ae094a1dad94ecdbc965677e68c0ea",
+      "solvers/sdf_to_ordered_boundary/method_a.py": "61d58105a1913c611a6c297462bf81355a0824b07e5f49b0623c06987cc92e07",
+      "solvers/sdf_to_ordered_boundary/method_b.py": "6bce78114c5e4a8e1e4436757e2466b1adcc9862da3ceed43876b4dc12f1db22",
+      "solvers/sdf_to_ordered_boundary/method_c.py": "1f758d282590b8c8356c373c20df767cb311d9913bcb9cb4fbfa73ebe8391cef",
+      "solvers/sdf_to_ordered_boundary/metrics.py": "efe6d1fef7f5450038f9f696f3def19abddf5c026602a0e4b0066a5bcb8e1954",
+      "solvers/sdf_to_ordered_boundary/representations.py": "db9457d39fabcd75fb29621b66945e24d3796ada4e7a1bb305a0d2dbd0330f93",
+      "solvers/sdf_to_ordered_boundary/results.py": "6fb6332fd390a7c5739708b832c859e56bab42daec63b10002ad9e0dc026ff1a"
+    }
+  }
+}

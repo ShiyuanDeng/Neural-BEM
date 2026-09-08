@@ -169,6 +169,10 @@ measurements there. Input checkpoints and response NPZ files must exist
 locally. [provenance.json](provenance.json) records input/source hashes,
 revision, audit-script hashes and a corrected diagnostic setup error from
 an earlier unsuccessful attempt. The optional output-directory argument
-was added after measurement and does not change numerical settings. Binary
+was added after measurement and does not change numerical settings. The
+audited bundles have since moved to `results/inverse/implicit_mlp/<date>/<case>`;
+provenance.json points at the new paths and every recorded input hash still
+verifies. The frozen scripts are unchanged, so their `*/metrics.json` glob
+predates that date level and needs `*/*/metrics.json` to rerun. Binary
 artifacts follow the repository's existing ignore rules. These audits are
 separate from the broader planned studies in `docs/implicit_mlp_diagnostics.md`.

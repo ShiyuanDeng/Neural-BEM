@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import csv
 from pathlib import Path
+import re
 import sys
 from types import SimpleNamespace
 
@@ -28,7 +29,8 @@ def test_neural_kress_auto_uses_adjoint_and_mod_retains_fd(initial_model):
         "--target", "star" if initial_model == "siren_star" else "circle",
         "--initial-model", initial_model,
     ])
-    assert args.output_dir.parent == Path("results/inverse/implicit_mlp")
+    assert args.output_dir.parent.parent == Path("results/inverse/implicit_mlp")
+    assert re.fullmatch(r"\d{4}-\d{2}-\d{2}", args.output_dir.parent.name)
 
 
 @pytest.mark.parametrize("initial_model", ["circle", "ellipse", "star", "random_features"])
@@ -63,7 +65,8 @@ def test_preferred_implicit_defaults_are_neural_kress_adjoint(target):
     assert args.max_iterations == 60
     assert driver._parse_args(["--target", target]).max_iterations == driver._build_target(target).default_max_iterations
     assert (args.mlp_hidden_features, args.mlp_hidden_layers) == (64, 2)
-    assert args.output_dir.parent == Path("results/inverse/implicit_mlp")
+    assert args.output_dir.parent.parent == Path("results/inverse/implicit_mlp")
+    assert re.fullmatch(r"\d{4}-\d{2}-\d{2}", args.output_dir.parent.name)
     reference = driver._parse_args([
         "--target", target, "--optimizer", "parameter_fd",
         "--mlp-hidden-features", "16", "--mlp-hidden-layers", "0",
@@ -99,6 +102,56 @@ def test_neural_cli_controls_reach_adjoint_configuration():
     assert config.eikonal_weight == 0.03
     assert config.max_backtracks == 4
     assert config.max_iterations == 2
+
+
+def test_truth_control_and_diagnostic_depth_preserve_analytic_defaults():
+    args = driver._parse_args(["--target", "star", "--start-at-truth"], implicit_defaults=True)
+    assert args.start_at_truth
+    config = driver._optimizer_config_for_solver(args, object(), "kress")
+    assert config.max_backtracks == 14
+    assert config.meaningful_boundary_step_m == pytest.approx(1e-4)
+    assert driver._parse_args(["--target", "star"]).max_backtracks == 8
+    with pytest.raises(SystemExit, match="2"):
+        driver._parse_args(["--target", "star", "--start-at-truth"])
+    with pytest.raises(SystemExit, match="2"):
+        driver._parse_args(["--start-at-truth", "--optimizer", "parameter_fd"], implicit_defaults=True)
+    with pytest.raises(SystemExit, match="2"):
+        driver._parse_args(["--record-accepted-holdout"])
+
+
+def test_completed_holdout_replay_isolates_failures_and_restores_final_weights(monkeypatch):
+    from sdf_inverse.models import TorchParameterController
+    model = torch.nn.Linear(1, 1, bias=False, dtype=torch.float64)
+    controller = TorchParameterController(model, lower_bounds=-10, upper_bounds=10)
+    controller.assign(np.array([2.]))
+    result = SimpleNamespace(
+        iterations=tuple(SimpleNamespace(iteration=i, parameter_vector=np.array([float(i)])) for i in range(3)),
+        stop_reason="maximum_iterations", total_seconds=7.0)
+    seen = []
+
+    def forward(*args, **kwargs):
+        value = float(controller.parameter_vector()[0]); seen.append(value)
+        if value == 1.:
+            raise RuntimeError("Deliberate evaluation-only holdout failure")
+        return SimpleNamespace(scattered_response=np.array([[1. + value]], dtype=complex), total_seconds=.25)
+
+    monkeypatch.setattr(driver, "predict_paired_response", forward)
+    replay = driver._replay_accepted_holdout(model, controller, result, object(), np.ones((1, 1), dtype=complex), object(), solver="kress")
+    assert seen == [0., 1., 2.]
+    assert replay["forward_evaluations"] == 3 and replay["failure_count"] == 1
+    assert replay["records"][1]["holdout_relative_l2"] is None
+    assert "Deliberate evaluation-only" in replay["records"][1]["holdout_evaluation_error"]
+    assert replay["records"][2]["holdout_relative_l2"] == pytest.approx(2.)
+    np.testing.assert_array_equal(controller.parameter_vector(), [2.])
+    assert result.stop_reason == "maximum_iterations" and result.total_seconds == 7.
+
+
+@pytest.mark.parametrize("extra,adjoint_depth,fd_depth", [([], 14, 8), (["--max-backtracks", "4"], 4, 4)])
+def test_mixed_neural_comparison_retains_per_optimizer_backtrack_defaults(extra, adjoint_depth, fd_depth):
+    args = driver._parse_args(["--initial-model", "siren_circle", "--solvers", "mod", "kress", *extra])
+    _, controller = driver._build_initial_model("circle")
+    assert driver._optimizer_config_for_solver(args, controller, "kress").max_backtracks == adjoint_depth
+    assert driver._optimizer_config_for_solver(args, controller, "mod").max_backtracks == fd_depth
 
 
 def test_adjoint_dispatch_cannot_silently_fall_back_to_parameter_fd(monkeypatch):

@@ -2,3 +2,9 @@
 *.pdf binary
 *.png binary
 *.npz binary
+
+# Preserve recorded CSV bytes and their hashes, including standard CRLF rows.
+results/**/*.csv -text whitespace=cr-at-eol
+
+# The supplied controlling plan uses intentional Markdown hard line breaks.
+docs/iterations/implicit_mlp/iteration_02/02_proposals/04_final_plan.md whitespace=-blank-at-eol

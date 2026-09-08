@@ -1,0 +1,91 @@
+{
+  "base_commit": "838bedf4eb37beb3c01ae770958e6c92f2abdf04",
+  "branch": "feature/ordered-boundary-nystrom",
+  "integration_utc": "2026-09-08T09:51:08.636200+00:00",
+  "source_state": "uncommitted implementation on the base commit; source hashes below; per-experiment launch hashes in subdirectories",
+  "source_sha256": {
+    "audit_star_observability_spectra.py": "858abf251e093f4e25d28e8692718cc60aa4e98e3b00370b848e74dbcfba063c",
+    "config/circle_config.py": "d74f09b2376d2566a41ba194c362e35326942a51d2f1878fe11726bb35a315aa",
+    "config/star_config.py": "7ae65fa3853a0b07b430ca1267b0aaf904c04f0431b7231e55b311ea1b18ca15",
+    "pytest/sdf_inverse/test_implicit_adjoint.py": "21bfa84d9663ed8a472c016193bd983645a40731dff843dccee9d24adc24b3ae",
+    "pytest/sdf_inverse/test_implicit_adjoint_driver.py": "622d6631963900d071633cdad13d9cc8ec1fb288dc595034cc1273fc96a06048",
+    "pytest/sdf_inverse/test_indexed_forward.py": "0a990044944467134808d93ee47da57455ffc0e72d88e922d632f27b081eaf39",
+    "pytest/sdf_inverse/test_matched_star_controls.py": "a7bd01c945d9d12fdb6d698a26d4522fb134be35b0898caba0540b1823c17a08",
+    "pytest/sdf_inverse/test_pretraining_and_conversion_repairs.py": "d18d7d65063a7d05880c303c5f124ace00d2a0d3839a7538053a06fdf19bfd13",
+    "pytest/sdf_inverse/test_star_observability.py": "363f53a05a0ffcc2d43bf7c73c6443fd46d900aa4e09ee0cceab834cc66adabe",
+    "pytest/sdf_inverse/test_star_observability_spectrum_audit.py": "293fd44616d59cc666f8770bf823050bb526d6c5af50e32815ee9563443dd0af",
+    "run_implicit_star_matched_controls.py": "de122d661b0da841709eb53bcf9b1a56ac026929be5531eac85ddcb6d8f8b219",
+    "run_sdf_inverse_comparison.py": "602d025365264440e8708ba675db1fd93a7b0940d6970b427db9697c851ee4c9",
+    "run_star_observability.py": "cf89e8fbb21abb8be593e256a68f2815c49f0215efbe6f270dbd4fb55f67b2a8",
+    "solvers/gpr_bem_kress/forward.py": "84ec2de53a64ec987d7226e8bc3c23bb851f1e9a3aed85713db76a76e62916f6",
+    "solvers/gpr_bem_kress/shape_derivative.py": "798059a021b6a429a01fe6a4ebe40f1ffee391c24ce58f0d5fe5697af732d55e",
+    "solvers/gpr_bem_kress/system.py": "a9ea01d58680a4656f502aa166894aa816d6f8ce3fcafa4474b89c01453df4e0",
+    "solvers/ordered_boundary/analytic.py": "7a499e0e9eb07710cfee0c5f0cdb5c770e42ded214785bfddf61272d3e353cb6",
+    "solvers/sdf_inverse/__init__.py": "1f145010e02816a67e79c0f70b30e042e0988c6ee323f54a5cec3721702511ba",
+    "solvers/sdf_inverse/forward.py": "b97a11cbb5ebf16ee63554ba9424236eabfc87af52ff9c18ba7de7025e1cd7ce",
+    "solvers/sdf_inverse/geometry.py": "2341e23d3daf326e81ae064910cefa4cf49edb944e9892d9932293bb71574a56",
+    "solvers/sdf_inverse/implicit_adjoint.py": "8dce78096313fc59a2e4384e7cfbaa1f994faaed829737b9b8cf951317b4224a",
+    "solvers/sdf_inverse/nystrom_oracle.py": "95c600404053c6b433b36997caf365e80c5cbec4118c5c80d70050eb8955c141"
+  },
+  "python": "3.9.25 (main, Nov  3 2025, 22:33:05) \n[GCC 11.2.0]",
+  "platform": "Linux-6.8.0-138-generic-x86_64-with-glibc2.35",
+  "versions": {
+    "numpy": "2.0.2",
+    "scipy": "1.13.1",
+    "torch": "2.8.0+cu128"
+  },
+  "acquisition": {
+    "center_m": [
+      0.5,
+      0.5
+    ],
+    "ring_radius_m": 0.3,
+    "receiver_angular_offset_rad": 0.2,
+    "source_counts": [
+      8,
+      12
+    ],
+    "receiver_counts": [
+      8,
+      12
+    ],
+    "readouts": [
+      "paired diagonal",
+      "full source-major Cartesian matrix for eight sources and eight receivers"
+    ],
+    "source_strength_real": 1e-06,
+    "source_strength_imag": 0.0,
+    "exterior": {
+      "epsr": 6.0,
+      "sigma": 0.0,
+      "mur": 1.0
+    },
+    "interior": {
+      "epsr": 3.0,
+      "sigma": 0.0,
+      "mur": 1.0
+    },
+    "eps0": 8.854187817e-12,
+    "mu0": 1.2566370614359173e-06
+  },
+  "observability_frequency_candidates_ghz": [
+    0.25,
+    0.5,
+    1.0,
+    1.5,
+    2.0,
+    2.5
+  ],
+  "inverse_training_frequencies_ghz": [
+    0.5,
+    1.5
+  ],
+  "reserved_holdout_frequencies_ghz": [
+    3.0
+  ],
+  "holdout_selection": "fixed before inverses and observability; 512/1024 independent Nystrom check in phase_a; never used for acquisition/frequency selection",
+  "validation": {
+    "focused_tests_passed": 184,
+    "log": "tests.log"
+  }
+}

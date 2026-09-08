@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import copy
 from datetime import datetime, timezone
 from dataclasses import replace
 import importlib.metadata
@@ -26,6 +27,7 @@ import platform
 import shlex
 import subprocess
 import sys
+from time import perf_counter
 from typing import Any, Mapping, Sequence
 
 
@@ -149,6 +151,10 @@ GENERATED_ARTIFACT_NAMES = (
     "kress_responses.npz",
     "mod_model.pt",
     "kress_model.pt",
+    "kress_trials.jsonl",
+    "kress_accepted_iterates.json",
+    "initial_model.pt", "target_control_initial_model.pt",
+    "execution_stage.json", "failure_traceback.txt",
 )
 
 
@@ -400,9 +406,9 @@ class StarTarget(InverseTarget):
     truth_oracle = "nystrom_ref independent Nystrom/Muller solution of the exact star"
     initial_model_choices = ("star", "siren_star")
     default_initial_model = "star"
-    # The lobe amplitude and phase are nearly invisible below about 1 GHz for a
-    # 0.05 m star in sand, so the training band is chosen where they are
-    # observable rather than copied from the circle case.
+    # Retain the historical band that recovered the five-parameter star.
+    # Physical/modal Jacobian studies must quantify its observability for
+    # general neural boundaries and alternative acquisition patterns.
     default_train_ghz = DEFAULT_STAR_TRAIN_FREQUENCIES_GHZ
     default_holdout_ghz = DEFAULT_STAR_HOLDOUT_FREQUENCIES_GHZ
     # An arc-length Fourier curve needs a high bandwidth for a five-lobe star:
@@ -542,7 +548,8 @@ def _comma_separated_floats(value: str) -> tuple[float, ...]:
 def _parse_args(
     argv: Sequence[str] | None = None, *, implicit_defaults: bool = False
 ) -> argparse.Namespace:
-    run_tag = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    started_utc = datetime.now(timezone.utc)
+    run_tag = started_utc.strftime("%Y%m%dT%H%M%SZ")
     parser = argparse.ArgumentParser(
         description=(
             "Recover an analytic target from a deliberately wrong implicit "
@@ -599,6 +606,10 @@ def _parse_args(
         "--eikonal-weight", type=float, default=0.01,
         help="SDF gradient regularization during adjoint inverse updates.",
     )
+    parser.add_argument("--eikonal-sampling", choices=("uniform_box", "contour_band"), default="uniform_box")
+    parser.add_argument("--max-candidate-evaluations", type=int, default=None)
+    parser.add_argument("--max-wall-seconds", type=float, default=None,
+                        help="Inverse wall cap; checked between evaluations, excluding pretraining and controls.")
     parser.add_argument(
         "--conversion-tolerance-mm", type=float, default=0.2,
         help="Maximum audited raw/Method-B contour disagreement for neural fields, in mm.",
@@ -637,8 +648,20 @@ def _parse_args(
         help="Pretraining penalty override: defaults to 0 for the validated star proxy, 0.1 for circle/ellipse. Independent of --eikonal-weight.",
     )
     parser.add_argument(
-        "--max-backtracks", type=int, default=8,
-        help="Maximum line-search backtracks for the inverse optimizer.",
+        "--max-backtracks", type=int, default=None,
+        help="Maximum line-search halvings (14 for neural adjoint, 8 for parameter FD).",
+    )
+    parser.add_argument(
+        "--start-at-truth", action="store_true",
+        help="Initialize from the exact-target neural fit and record accepted holdout metrics; diagnostic only.",
+    )
+    parser.add_argument(
+        "--record-accepted-holdout", action="store_true",
+        help="Evaluate the fixed holdout after every accepted neural iterate; also enabled by --start-at-truth.",
+    )
+    parser.add_argument(
+        "--meaningful-boundary-step-mm", type=float, default=0.1,
+        help="Reporting floor for meaningful neural boundary movement; does not change acceptance.",
     )
     parser.add_argument(
         "--output-dir",
@@ -699,6 +722,16 @@ def _parse_args(
         args.projected_samples = int(target.projected_samples)
     if args.max_iterations is None:
         args.max_iterations = 60 if implicit_defaults else target.default_max_iterations
+    args.max_backtracks_was_explicit = args.max_backtracks is not None
+    if args.max_backtracks is None:
+        args.max_backtracks = (
+            14 if args.initial_model in SIREN_INITIAL_MODELS
+            and args.optimizer != "parameter_fd" and "kress" in args.solvers else 8
+        )
+    if args.start_at_truth and args.initial_model not in SIREN_INITIAL_MODELS:
+        parser.error("--start-at-truth requires a siren_* initial model")
+    if not math.isfinite(args.meaningful_boundary_step_mm) or args.meaningful_boundary_step_mm <= 0:
+        parser.error("--meaningful-boundary-step-mm must be finite and positive")
     if args.num_pairs < 4:
         parser.error("--num-pairs must be at least 4")
     if args.num_nodes < 32 or args.num_nodes % 2:
@@ -725,6 +758,10 @@ def _parse_args(
         parser.error("--learning-rate must be finite and positive")
     if not math.isfinite(args.eikonal_weight) or args.eikonal_weight < 0.0:
         parser.error("--eikonal-weight must be finite and non-negative")
+    if args.max_candidate_evaluations is not None and args.max_candidate_evaluations < 1:
+        parser.error("--max-candidate-evaluations must be positive")
+    if args.max_wall_seconds is not None and (not math.isfinite(args.max_wall_seconds) or args.max_wall_seconds <= 0):
+        parser.error("--max-wall-seconds must be finite and positive")
     if not math.isfinite(args.conversion_tolerance_mm) or args.conversion_tolerance_mm <= 0.0:
         parser.error("--conversion-tolerance-mm must be finite and positive")
     if args.max_backtracks < 1:
@@ -748,16 +785,25 @@ def _parse_args(
             _optimizer_for_solver(args.initial_model, solver, args.optimizer)
     except ValueError as error:
         parser.error(str(error))
+    if (args.start_at_truth or args.record_accepted_holdout) and any(
+        _optimizer_for_solver(args.initial_model, solver, args.optimizer) != "adjoint"
+        for solver in args.solvers
+    ):
+        parser.error("--start-at-truth and --record-accepted-holdout require neural Kress adjoint optimization")
     if args.output_dir is None:
-        output_root = (
-            Path("results/inverse/implicit_mlp")
-            if args.initial_model in SIREN_INITIAL_MODELS
-            else Path("results/legacy/known_shape_family_parameter_inverse")
-        )
-        args.output_dir = (
-            output_root
-            / f"{args.initial_model}-to-{target.output_tag}-{run_tag}"
-        )
+        case_tag = f"{args.initial_model}-to-{target.output_tag}"
+        if args.initial_model in SIREN_INITIAL_MODELS:
+            # Neural bundles are filed by run date so one day's cases sit together.
+            args.output_dir = (
+                Path("results/inverse/implicit_mlp")
+                / started_utc.strftime("%Y-%m-%d")
+                / f"{case_tag}-{started_utc.strftime('%H%M%SZ')}"
+            )
+        else:
+            args.output_dir = (
+                Path("results/legacy/known_shape_family_parameter_inverse")
+                / f"{case_tag}-{run_tag}"
+            )
     return args
 
 
@@ -1054,6 +1100,10 @@ def _optimizer_config_for_solver(
             loss_tolerance=args.loss_tolerance,
             eikonal_weight=args.eikonal_weight,
             max_backtracks=args.max_backtracks,
+            meaningful_boundary_step_m=args.meaningful_boundary_step_mm * 1.0e-3,
+            max_candidate_evaluations=getattr(args, "max_candidate_evaluations", None),
+            max_wall_seconds=getattr(args, "max_wall_seconds", None),
+            eikonal_sampling=getattr(args, "eikonal_sampling", "uniform_box"),
         )
     return _inverse_config_for_controller(
         controller,
@@ -1062,7 +1112,7 @@ def _optimizer_config_for_solver(
         infeasible_trial_policy=(
             "reject" if args.initial_model in SIREN_INITIAL_MODELS else "error"
         ),
-        max_backtracks=args.max_backtracks,
+        max_backtracks=(args.max_backtracks if getattr(args, "max_backtracks_was_explicit", True) else 8),
     )
 
 
@@ -1076,13 +1126,18 @@ def _run_inverse(
     method: str,
     config: ImplicitMLPAdjointConfig | ParameterFDConfig,
     progress_callback: Any = None,
+    trial_callback: Any = None,
+    optimizer_callback: Any = None,
 ) -> Any:
     if method == "adjoint":
         if solver != "kress":
             raise ValueError("The implicit neural adjoint requires Kress.")
+        extra = {} if trial_callback is None else {"trial_callback": trial_callback}
+        if optimizer_callback is not None:
+            extra["optimizer_callback"] = optimizer_callback
         return run_implicit_mlp_adjoint_inverse(
             model, controller, data, geometry_config,
-            config=config, progress_callback=progress_callback,
+            config=config, progress_callback=progress_callback, **extra,
         )
     if method != "parameter_fd":
         raise ValueError(f"Unresolved optimizer method: {method!r}.")
@@ -1090,6 +1145,39 @@ def _run_inverse(
         model, controller, data, geometry_config,
         solver=solver, config=config, progress_callback=progress_callback,
     )
+
+
+def _replay_accepted_holdout(
+    model: Any, controller: Any, result: Any, holdout_problem: Any,
+    holdout_truth: np.ndarray, geometry_config: Any, *, solver: str,
+) -> dict[str, Any]:
+    """Evaluate completed accepted iterates without entering the optimizer.
+
+    Failures belong to this evaluation report. They cannot change an inverse
+    stopping decision, and the accepted final weights are restored even when
+    one or more holdout predictions fail.
+    """
+    final_parameters = controller.parameter_vector()
+    records = []
+    started = perf_counter()
+    forward_seconds = 0.0
+    try:
+        for iteration in result.iterations:
+            controller.assign(iteration.parameter_vector)
+            record = {"iteration": iteration.iteration, "holdout_relative_l2": None,
+                      "holdout_evaluation_error": None}
+            try:
+                forward = predict_paired_response(model, holdout_problem, geometry_config, solver=solver)
+                forward_seconds += forward.total_seconds
+                _, record["holdout_relative_l2"] = _objective_metrics(forward.scattered_response, holdout_truth)
+            except Exception as error:
+                record["holdout_evaluation_error"] = f"{type(error).__name__}: {error}"
+            records.append(record)
+    finally:
+        controller.assign(final_parameters)
+    return {"records": records, "forward_evaluations": len(records),
+            "forward_seconds": forward_seconds, "wall_seconds": perf_counter() - started,
+            "failure_count": sum(record["holdout_evaluation_error"] is not None for record in records)}
 
 
 def _prepare_output_directory(path: Path, *, overwrite: bool) -> None:
@@ -1111,6 +1199,8 @@ def _prepare_output_directory(path: Path, *, overwrite: bool) -> None:
             artifact = resolved / name
             if artifact.is_file() or artifact.is_symlink():
                 artifact.unlink()
+        for artifact in resolved.glob("kress_optimizer_[0-9][0-9][0-9][0-9].pt"):
+            artifact.unlink()
 
 
 def _write_neural_checkpoint(
@@ -1146,7 +1236,8 @@ def _write_neural_checkpoint(
             "geometry_owner": "mlp_weights",
             "optimizer": optimizer,
             "optimizer_config": _jsonable(vars(config)),
-            "optimizer_diagnostics": _jsonable(getattr(result, "diagnostics", {})),
+            "optimizer_diagnostics": _jsonable(_optimizer_diagnostic_summary(result)),
+            "optimizer_state_dict": getattr(result, "diagnostics", {}).get("optimizer_state_dict"),
             "accepted_iteration": result.iterations[-1].iteration,
             "training_loss": result.iterations[-1].loss,
             "accepted_geometry_points": torch.as_tensor(
@@ -1155,6 +1246,25 @@ def _write_neural_checkpoint(
         },
         path,
     )
+
+
+def _optimizer_diagnostic_summary(result):
+    return {key: value for key, value in getattr(result, "diagnostics", {}).items()
+            if key not in ("optimizer_records", "optimizer_state_dict")}
+
+
+def _write_initial_neural_checkpoint(path, model, initial_model, geometry_config):
+    """Save freshly pretrained weights before even the first geometry build."""
+    torch.save({
+        "schema_version": 2, "stage": "pretrained_before_geometry",
+        "model_class": "sdf_inverse.models.SirenImplicitField2D",
+        "state_dict": {name: value.detach().cpu().clone() for name, value in model.state_dict().items()},
+        "constructor": {"bounds": DEFAULT_GEOMETRY_BOUNDS, "hidden_features": model.hidden_features,
+                        "hidden_layers": model.hidden_layers, "omega_0": model.omega_0,
+                        "random_seed": model.random_seed, "dtype": str(next(model.parameters()).dtype)},
+        "initial_model": initial_model, "initialization": _jsonable(model.initialization_metadata()),
+        "geometry_config": _jsonable(vars(geometry_config)), "geometry_owner": "mlp_weights",
+    }, path)
 
 
 def _ring_scan(
@@ -1255,6 +1365,8 @@ def _jsonable(value: Any) -> Any:
         return [_jsonable(item) for item in value]
     if isinstance(value, np.ndarray):
         return value.tolist()
+    if isinstance(value, torch.Tensor):
+        return value.detach().cpu().tolist()
     if isinstance(value, np.generic):
         return value.item()
     if isinstance(value, Path):
@@ -1792,6 +1904,25 @@ def main(
         output_dir = REPOSITORY_ROOT / output_dir
     _prepare_output_directory(output_dir, overwrite=args.overwrite)
 
+    try:
+        return _execute_comparison(args, argv, output_dir)
+    except Exception as error:
+        import traceback
+        (output_dir / "failure_traceback.txt").write_text(traceback.format_exc(), encoding="utf-8")
+        stage_path = output_dir / "execution_stage.json"
+        stage = json.loads(stage_path.read_text()) if stage_path.exists() else {}
+        stage.update(status="failed", error=f"{type(error).__name__}: {error}")
+        stage_path.write_text(json.dumps(stage, indent=2) + "\n", encoding="utf-8")
+        raise
+
+
+def _execute_comparison(args, argv, output_dir):
+    def stage(name):
+        (output_dir / "execution_stage.json").write_text(
+            json.dumps({"stage": name, "status": "running"}, indent=2) + "\n", encoding="utf-8")
+
+    stage("observation_oracle")
+
     target = _build_target(args.target)
     target_center = target.center
     source_points, receiver_points = _ring_scan(
@@ -1839,15 +1970,19 @@ def main(
         "pretrain_steps": args.mlp_pretrain_steps,
         "pretrain_eikonal_weight": args.mlp_pretrain_eikonal_weight,
     }
-    template_model, template_controller = _build_initial_model(
+    stage("initial_pretraining")
+    template_model, template_controller = (None, None) if args.start_at_truth else _build_initial_model(
         args.initial_model, **neural_factory_options
     )
+    if template_model is not None and args.initial_model in SIREN_INITIAL_MODELS:
+        _write_initial_neural_checkpoint(output_dir / "initial_model.pt", template_model, args.initial_model, geometry_config)
 
     # Measure the same fitting procedure on the known target. This is a
     # representation control, not an intrinsic capacity floor of the network.
     representation_control_model: torch.nn.Module | None = None
     representation_floor: dict[str, Any] | None = None
     if args.initial_model in SIREN_INITIAL_MODELS:
+        stage("target_control_pretraining")
         print(
             "[control] warm starting the same network onto the exact target",
             flush=True,
@@ -1855,6 +1990,8 @@ def main(
         representation_control_model = _build_siren_field(
             target.exact_model(), **neural_factory_options
         )
+        _write_initial_neural_checkpoint(output_dir / "target_control_initial_model.pt", representation_control_model, args.initial_model, geometry_config)
+        stage("target_control_geometry")
         control_geometry = build_ordered_sdf_geometry(
             representation_control_model, geometry_config
         )
@@ -1878,6 +2015,9 @@ def main(
             "from it",
             flush=True,
         )
+        if args.start_at_truth:
+            template_model = copy.deepcopy(representation_control_model)
+            template_controller = build_siren_parameter_controller(template_model)
     optimizer_methods = {
         solver: _optimizer_for_solver(args.initial_model, solver, args.optimizer)
         for solver in args.solvers
@@ -1898,6 +2038,9 @@ def main(
         }
     )
     initial_physical_parameters = template_controller.physical_parameter_dict()
+    initialization_metadata["inverse_initialization"] = (
+        "exact_target_fitting_control" if args.start_at_truth else "wrong_shape_initialization"
+    )
     initial_raw_parameters = template_controller.parameter_vector()
 
     provenance = {
@@ -1923,21 +2066,28 @@ def main(
             f"with {optimizer_method}",
             flush=True,
         )
-        model, controller = _build_initial_model(
-            args.initial_model, **neural_factory_options
-        )
+        if args.start_at_truth:
+            model = copy.deepcopy(representation_control_model)
+            controller = build_siren_parameter_controller(model)
+        else:
+            model, controller = _build_initial_model(
+                args.initial_model, **neural_factory_options
+            )
         if controller.names != template_controller.names or not np.array_equal(
             controller.parameter_vector(), initial_raw_parameters
         ):
             raise RuntimeError("Initial model factory is not deterministic across solvers.")
 
+        stage(f"{solver}_initial_geometry_forward")
         initial_all = predict_paired_response(
             model, all_problem, geometry_config, solver=solver
         )
+        stage(f"{solver}_exact_target_forward")
         target_model = target.exact_model()
         target_geometry_forward = predict_paired_response(
             target_model, all_problem, geometry_config, solver=solver
         )
+        stage(f"{solver}_representation_control_forward")
         representation_forward = (
             None
             if representation_control_model is None
@@ -1948,6 +2098,13 @@ def main(
                 solver=solver,
             )
         )
+
+        accepted_diagnostics = []
+        holdout_evaluations = 0
+        holdout_seconds = 0.0
+        holdout_wall_seconds = 0.0
+        holdout_failures = 0
+        holdout_problem = _build_problem(args.holdout_ghz, source_points, receiver_points)
 
         def progress(iteration: Any, *, _solver: str = solver) -> None:
             physical = iteration.physical_parameters
@@ -1960,7 +2117,40 @@ def main(
                 f"radius={physical['radius']:.6f}",
                 flush=True,
             )
+            if optimizer_method == "adjoint":
+                fitted = (_fit_radial_star_parameters(iteration.geometry_points, lobes=target.shape.lobes)
+                          if isinstance(target, StarTarget) else physical)
+                accepted_diagnostics.append({
+                    "iteration": iteration.iteration, "loss": iteration.loss,
+                    "relative_l2_error": iteration.relative_l2_error,
+                    "objective": iteration.objective, "eikonal_loss": iteration.eikonal_loss,
+                    "fitted_shape": fitted,
+                    "maximum_node_to_exact_boundary_distance_m": float(np.max(target.boundary_distances(iteration.geometry_points))),
+                    "holdout_relative_l2": None,
+                    "holdout_frequencies_ghz": args.holdout_ghz,
+                    "conversion_error_m": iteration.conversion_error_m,
+                    "conversion_refinement_change_m": iteration.conversion_refinement_change_m,
+                    "boundary_movement_m": iteration.boundary_movement_m,
+                    "meaningful_boundary_step": iteration.meaningful_boundary_step,
+                    "data_gradient_norm": iteration.data_gradient_norm,
+                    "weighted_eikonal_gradient_norm": iteration.weighted_eikonal_gradient_norm,
+                    "eikonal_gradient_norm": iteration.eikonal_gradient_norm,
+                    "sample_set_hash": iteration.sample_set_hash,
+                    "acceptance_objective_on_previous_samples": iteration.acceptance_objective,
+                    "evaluation_count": iteration.evaluation_count,
+                    "backtracks": iteration.backtracks, "step_method": iteration.step_method,
+                })
+                (output_dir / f"{solver}_accepted_iterates.json").write_text(
+                    json.dumps(_jsonable(accepted_diagnostics), indent=2) + "\n", encoding="utf-8")
 
+        def trial_progress(trial):
+            with (output_dir / f"{solver}_trials.jsonl").open("a", encoding="utf-8") as stream:
+                stream.write(json.dumps(_jsonable(trial)) + "\n")
+
+        def optimizer_progress(record):
+            torch.save(record, output_dir / f"{solver}_optimizer_{record['iteration']:04d}.pt")
+
+        stage(f"{solver}_inverse")
         inverse_result = _run_inverse(
             model,
             controller,
@@ -1970,7 +2160,28 @@ def main(
             method=optimizer_method,
             config=inverse_configs[solver],
             progress_callback=progress,
+            trial_callback=trial_progress if optimizer_method == "adjoint" else None,
+            optimizer_callback=optimizer_progress if optimizer_method == "adjoint" else None,
         )
+        # Save the accepted result before any optional holdout replay. Neither
+        # evaluation failures nor its elapsed time can alter the inverse.
+        if args.initial_model in SIREN_INITIAL_MODELS:
+            _write_neural_checkpoint(
+                output_dir / f"{solver}_model.pt", model,
+                initial_model=args.initial_model, geometry_config=geometry_config,
+                optimizer=optimizer_method, config=inverse_configs[solver], result=inverse_result)
+        stage(f"{solver}_post_optimization_evaluation")
+        if args.record_accepted_holdout or args.start_at_truth:
+            replay = _replay_accepted_holdout(
+                model, controller, inverse_result, holdout_problem,
+                all_truth[:, len(args.train_ghz):], geometry_config, solver=solver)
+            holdout_evaluations, holdout_seconds = replay["forward_evaluations"], replay["forward_seconds"]
+            holdout_wall_seconds, holdout_failures = replay["wall_seconds"], replay["failure_count"]
+            by_iteration = {record["iteration"]: record for record in replay["records"]}
+            for record in accepted_diagnostics:
+                record.update(by_iteration[record["iteration"]])
+            (output_dir / f"{solver}_accepted_iterates.json").write_text(
+                json.dumps(_jsonable(accepted_diagnostics), indent=2) + "\n", encoding="utf-8")
         final_all = predict_paired_response(
             model, all_problem, geometry_config, solver=solver
         )
@@ -2060,8 +2271,14 @@ def main(
             "optimizer": optimizer_method,
             "optimizer_config": _jsonable(vars(inverse_configs[solver])),
             "optimizer_diagnostics": _jsonable(
-                getattr(inverse_result, "diagnostics", {})
+                _optimizer_diagnostic_summary(inverse_result)
             ),
+            "accepted_iterate_diagnostics": accepted_diagnostics,
+            "evaluation_only_holdout_forward_evaluations": holdout_evaluations,
+            "evaluation_only_holdout_forward_seconds": holdout_seconds,
+            "evaluation_only_holdout_wall_seconds": holdout_wall_seconds,
+            "evaluation_only_holdout_failures": holdout_failures,
+            "accepted_holdout_policy": "post_optimization_replay; errors reported per iterate; final accepted weights restored",
             "geometry_owner": "implicit_model_parameters",
             "neural_update": (
                 "kress_boundary_adjoint_to_sdf_weights"
@@ -2197,13 +2414,6 @@ def main(
             "target_geometry_forward": target_geometry_forward,
         }
         serializable_solver_metrics[solver] = metrics
-        if args.initial_model in SIREN_INITIAL_MODELS:
-            _write_neural_checkpoint(
-                output_dir / f"{solver}_model.pt", model,
-                initial_model=args.initial_model, geometry_config=geometry_config,
-                optimizer=optimizer_method, config=inverse_configs[solver],
-                result=inverse_result,
-            )
         _write_trajectory(
             output_dir / f"{solver}_trajectory.csv", inverse_result,
             optimizer=optimizer_method,
@@ -2371,6 +2581,8 @@ def main(
     for name, gate in gates.items():
         print(f"  {'PASS' if gate['passed'] else 'FAIL'} {name}", flush=True)
     print(f"Overall acceptance: {'PASS' if acceptance_passed else 'FAIL'}", flush=True)
+    (output_dir / "execution_stage.json").write_text(
+        json.dumps({"stage": "complete", "status": "complete", "scientific_acceptance": acceptance_passed}) + "\n")
     return 0 if acceptance_passed or args.no_gate else 1
 
 

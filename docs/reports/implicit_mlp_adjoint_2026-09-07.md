@@ -107,9 +107,9 @@ remains FAIL / unresolved**, even though the tested gradient chain is accurate.
 
 | Run | Accepted updates | Training loss, initial → final | Holdout relative L2, initial → final | Final maximum node-to-boundary error | Stop |
 |---|---:|---:|---:|---:|---|
-| [Circle → circle](../../results/inverse/implicit_mlp/circle-20260907T151516/summary.md) | 43 | 0.921063 → 2.61771e-6 | 1.41727 → 0.0639441 | 1.03817 mm | No decreasing neural step |
-| [Ellipse → circle](../../results/inverse/implicit_mlp/ellipse-to-circle-20260907T151516/summary.md) | 60 | 1.77149 → 7.40537e-5 | 1.66865 → 0.318638 | 6.45039 mm | Maximum iterations |
-| [Star → star](../../results/inverse/implicit_mlp/star-20260907T151516/summary.md) | 60 | 1.28090 → 0.0624068 | 0.881949 → 0.783925 | 26.8327 mm | Maximum iterations |
+| [Circle → circle](../../results/inverse/implicit_mlp/2026-09-07/circle/summary.md) | 43 | 0.921063 → 2.61771e-6 | 1.41727 → 0.0639441 | 1.03817 mm | No decreasing neural step |
+| [Ellipse → circle](../../results/inverse/implicit_mlp/2026-09-07/ellipse-to-circle/summary.md) | 60 | 1.77149 → 7.40537e-5 | 1.66865 → 0.318638 | 6.45039 mm | Maximum iterations |
+| [Star → star](../../results/inverse/implicit_mlp/2026-09-07/star/summary.md) | 60 | 1.28090 → 0.0624068 | 0.881949 → 0.783925 | 26.8327 mm | Maximum iterations |
 
 Here the shape names describe the initialization and target; inverse updates
 act on all 8,577 network weights. These are separate from the archived

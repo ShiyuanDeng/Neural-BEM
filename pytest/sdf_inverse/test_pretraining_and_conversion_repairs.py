@@ -1,9 +1,11 @@
 """Protect compatible warm-start penalties and raw/converted geometry fidelity."""
 
 from dataclasses import replace
+from types import SimpleNamespace
 
 import numpy as np
 import pytest
+import torch
 
 from sdf_inverse.models import CircleSDF2D, StarLevelSet2D
 from sdf_inverse.geometry import OrderedSDFGeometryConfig, OrderedSDFGeometryError, build_ordered_sdf_geometry
@@ -48,6 +50,28 @@ def test_conversion_guard_preserves_a_resolved_curve_and_rejects_lost_lobes():
 def test_invalid_conversion_budget_is_rejected(tolerance):
     with pytest.raises(ValueError):
         OrderedSDFGeometryConfig(bounds=((0.,0.),(1.,1.)),conversion_tolerance_m=tolerance)
+
+
+@pytest.mark.parametrize("errors,reasons", [
+    ((.00021, .00021), ("conversion_distance",)),
+    ((.00010, .00012), ("conversion_refinement_change",)),
+    ((.00018, .00022), ("conversion_distance", "conversion_refinement_change")),
+])
+def test_conversion_distance_and_refinement_failures_have_independent_metadata(monkeypatch, errors, reasons):
+    import sdf_inverse.geometry as geometry
+    import sdf_inverse.neural_optimization as neural
+    distances = iter(errors)
+    points = np.array([[0., 0.], [1., 0.], [0., 1.]])
+    monkeypatch.setattr(geometry, "prepare_single_component", lambda *a, **kw: SimpleNamespace(projected_points=points))
+    monkeypatch.setattr(neural, "maximum_curve_set_distance", lambda *a: next(distances))
+    parameterization = SimpleNamespace(discretize=lambda n: SimpleNamespace(points=points))
+    field = SimpleNamespace(dtype=torch.float64)
+    config = OrderedSDFGeometryConfig(bounds=((.3, .3), (.7, .7)), conversion_tolerance_m=.0002)
+    with pytest.raises(OrderedSDFGeometryError) as failure:
+        geometry._check_conversion_fidelity(field, parameterization, config)
+    assert failure.value.rejection_reasons == reasons
+    assert failure.value.conversion_error_m == max(errors)
+    assert failure.value.conversion_refinement_change_m == abs(errors[1] - errors[0])
 
 
 def test_conversion_resolution_defaults_to_the_target_and_is_overridable():

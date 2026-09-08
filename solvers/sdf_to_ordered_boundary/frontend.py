@@ -515,6 +515,72 @@ def polygon_self_intersection_count(
     *,
     relative_tolerance: float = 1.0e-12,
 ) -> int:
+    """Count nonadjacent intersecting segment pairs with the legacy predicate.
+
+    Square tiles bound temporary storage independently of polygon length. Every
+    nonadjacent pair is tested, including endpoint contacts, collinear overlap,
+    and zero-length edges; tolerances and arithmetic match ``_segments_intersect``.
+    The scalar implementation is retained below as an exact replay oracle.
+    """
+    values = np.asarray(points, dtype=np.float64)
+    count = values.shape[0]
+    if values.ndim != 2 or values.shape[1] != 2 or count < 3:
+        raise ValueError("points must have shape (num_points, 2), with at least 3 points.")
+    extent = np.ptp(values, axis=0)
+    scale = max(float(np.linalg.norm(extent)), np.finfo(np.float64).tiny)
+    cross_tolerance = float(relative_tolerance) * scale**2
+    length_tolerance = float(relative_tolerance) * scale
+    ends = np.roll(values, -1, axis=0)
+    directions = ends - values
+    lower = np.minimum(values, ends) - length_tolerance
+    upper = np.maximum(values, ends) + length_tolerance
+
+    def cross(first, second):
+        return first[..., 0] * second[..., 1] - first[..., 1] * second[..., 0]
+
+    def on_segment(side, point, lo, hi):
+        return ((np.abs(side) <= cross_tolerance)
+                & np.all(point >= lo, axis=-1) & np.all(point <= hi, axis=-1))
+
+    intersections = 0
+    tile_size = 128
+    for first in range(0, count, tile_size):
+        first_stop = min(first + tile_size, count)
+        a = values[first:first_stop, None, :]
+        b = ends[first:first_stop, None, :]
+        ab = directions[first:first_stop, None, :]
+        first_indices = np.arange(first, first_stop)[:, None]
+        for second in range(first, count, tile_size):
+            second_stop = min(second + tile_size, count)
+            c = values[None, second:second_stop, :]
+            d = ends[None, second:second_stop, :]
+            cd = directions[None, second:second_stop, :]
+            second_indices = np.arange(second, second_stop)[None, :]
+            eligible = ((second_indices > first_indices + 1)
+                        & ~((first_indices == 0) & (second_indices == count - 1)))
+            if not np.any(eligible):
+                continue
+            side_c = cross(ab, c - a)
+            side_d = cross(ab, d - a)
+            side_a = cross(cd, a - c)
+            side_b = cross(cd, b - c)
+            proper = ((side_c * side_d < -(cross_tolerance**2))
+                      & (side_a * side_b < -(cross_tolerance**2)))
+            lo_ab, hi_ab = lower[first:first_stop, None, :], upper[first:first_stop, None, :]
+            lo_cd, hi_cd = lower[None, second:second_stop, :], upper[None, second:second_stop, :]
+            contact = (on_segment(side_c, c, lo_ab, hi_ab)
+                       | on_segment(side_d, d, lo_ab, hi_ab)
+                       | on_segment(side_a, a, lo_cd, hi_cd)
+                       | on_segment(side_b, b, lo_cd, hi_cd))
+            intersections += int(np.count_nonzero(eligible & (proper | contact)))
+    return intersections
+
+
+def _polygon_self_intersection_count_legacy(
+    points: Array,
+    *,
+    relative_tolerance: float = 1.0e-12,
+) -> int:
     """Count intersecting nonadjacent segment pairs in a cyclic polygon."""
 
     values = np.asarray(points, dtype=np.float64)

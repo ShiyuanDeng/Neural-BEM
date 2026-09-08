@@ -13,18 +13,41 @@ validated adjoint gradients and accepted neural updates. See the
 and [active neural results](../../results/inverse/implicit_mlp). The current
 optimizer has not completed the intended reconstruction task.
 
+The latest [iteration-3 results](../iterations/implicit_mlp/iteration_03/01_results.md)
+close the iteration-2 diagnostic and acquisition experiments. Both long star
+arms completed, accepting 42 paired and 31 multistatic updates before their
+searches stopped. Multistatic improves geometry at matched work but still
+loses lobe amplitude. The [research handoff](../iterations/implicit_mlp/README.md)
+records the current stage and supported next questions.
+
 The subsequent [failure audit](../../results/validation/implicit_mlp_adjoint/failure-audit-20260907/README.md)
 identified a premature line-search stop, pretraining bias and conversion drift.
 The fixes below change current defaults; the saved recovery runs above retain
 their original settings and FAIL outcomes.
 
 The [reruns after those repairs](../../results/validation/implicit_mlp_adjoint/rerun-20260907/README.md)
-then showed that the **Method-B Fourier bandwidth**, not the optimizer, bounded
-both targets: the circle and star each stopped with their audited conversion
-error pinned to the fidelity budget. Raising it lets the circle accept all 60
+then showed that the **Method-B Fourier bandwidth** constrained both targets:
+the original circle and star runs stopped near the conversion-fidelity budget.
+Raising it lets the circle accept all 60
 updates and end on its iteration budget rather than a stall. Overall recovery
 still FAILS on both targets, and the star's lobe amplitude and phase move away
 from the target while its training loss falls.
+
+The [checkpoint review](../../results/validation/implicit_mlp_adjoint/review-20260908/README.md)
+corrects the bandwidth-96 star's termination: its next candidate failed the
+independent conversion-refinement-change gate, and acceptable fallback steps
+exist beyond the historical eight-backtrack limit. The first such step lowers
+loss by only 0.039%; resolving search termination does not resolve the roughly
+36 mm reconstruction error.
+
+The subsequent [matched controls and observability study](../../results/validation/implicit_mlp_adjoint/latest-direction-20260908/README.md)
+recovers the five-parameter star with eight pairs. At both analytic initial and
+target geometries, all three acquisitions have full rank in the tested 21-mode
+space when 0.5/1.5 GHz are stacked. Multistatic readout improves conditioning,
+and 1.5/2.5 GHz strengthens the weakest modes further. These local diagnostics
+support the next acquisition ablation; they do not establish general neural
+sufficiency. A three-step target-fitted MLP run improves data and holdout losses
+while its maximum boundary error rises slightly from 1.191 to 1.290 mm.
 
 ## How the field becomes a boundary
 
@@ -103,6 +126,24 @@ Solver/derivative errors propagate without an FD fallback. Exact marching-grid v
 no unique branch derivative and are reported explicitly. Connectivity,
 phase choices and interpolation/projection branches remain discrete: the
 local derivative does not certify a topology-changing step.
+
+Neural adjoint runs now default to 14 backtracking halvings; parameter-FD
+controls retain eight. Each evaluated neural trial records independent rejection
+reasons in `kress_trials.jsonl`, including the two conversion gates separately.
+The default 0.1 mm meaningful-boundary-step floor labels small accepted motions
+for reporting and does not change acceptance. `--start-at-truth` initializes a
+diagnostic inverse from the existing exact-target fitting control. Accepted
+geometry/objective diagnostics are saved in `kress_accepted_iterates.json`;
+per-iterate holdout solves are enabled by `--record-accepted-holdout` or
+`--start-at-truth` and never enter the optimizer's decisions.
+
+`PairedForwardProblem` continues to observe source row i at receiver row i.
+The separate `IndexedForwardProblem` selects arbitrary source/receiver entries,
+including full multistatic readout, from the existing full Kress solve. Its
+curve/SDF prediction functions and indexed objective adjoint are used by the
+matched neural runner. The shared implicit-adjoint optimizer dispatches both
+paired and indexed acquisitions; the general comparison driver's paired
+defaults remain available.
 
 ## Entry points and other implementations
 
@@ -231,3 +272,10 @@ The principal implementation seams are
 [Kress geometry reverse](../../solvers/gpr_bem_kress/geometry_pullback.py),
 [Method-B reverse](../../solvers/sdf_inverse/method_b_pullback.py), and
 [implicit adjoint optimizer](../../solvers/sdf_inverse/implicit_adjoint.py).
+
+The [iteration-2 implementation handoff](../iterations/implicit_mlp/iteration_02/03_implementation.md)
+contains the frozen-state diagnostics, exact polygon replay evidence, ellipse
+startup qualification, and bounded matched acquisition/sampling commands. New
+inverse runs save actual optimizer moments and proposals. Contour-aware Eikonal
+sampling and higher-band comparisons retain the final plan's measured-evidence
+gates; no new long inverse is selected by the implementation alone.

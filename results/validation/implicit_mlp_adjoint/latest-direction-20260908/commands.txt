@@ -1,0 +1,15 @@
+OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1 PYTHONPATH=solvers /home/drdeng/miniconda3/envs/EMNerf/bin/python run_implicit_star_matched_controls.py
+OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1 PYTHONPATH=solvers /home/drdeng/miniconda3/envs/EMNerf/bin/python -m pytest pytest/sdf_inverse/test_matched_star_controls.py pytest/sdf_inverse/test_parameter_fd_audit_regressions.py -q
+
+# Run from repository root. Use fresh output paths when repeating.
+OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1 PYTHONPATH=solvers /home/drdeng/miniconda3/envs/EMNerf/bin/python run_implicit_mlp_inverse.py --target star --start-at-truth --max-iterations 3 --num-pairs 8 --num-nodes 194 --bandwidth 96 --grid-resolution 513 --projected-samples 256 --holdout-ghz 3.0 --max-backtracks 14 --no-gate --output-dir results/validation/implicit_mlp_adjoint/latest-direction-20260908/phase_bc/start-at-truth
+OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1 PYTHONPATH=solvers /home/drdeng/miniconda3/envs/EMNerf/bin/python results/validation/implicit_mlp_adjoint/latest-direction-20260908/phase_bc/frozen_fallback_audit.py
+OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1 PYTHONPATH=solvers /home/drdeng/miniconda3/envs/EMNerf/bin/python results/validation/implicit_mlp_adjoint/latest-direction-20260908/phase_bc/replay_truth_holdout.py
+OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 PYTHONPATH=solvers /home/drdeng/miniconda3/envs/EMNerf/bin/python -m pytest pytest/sdf_inverse/test_implicit_adjoint.py pytest/sdf_inverse/test_implicit_adjoint_driver.py pytest/sdf_inverse/test_pretraining_and_conversion_repairs.py -q
+/home/drdeng/miniconda3/envs/EMNerf/bin/python results/validation/implicit_mlp_adjoint/latest-direction-20260908/phase_bc/summarize_phase_bc.py
+
+env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1 /home/drdeng/miniconda3/envs/EMNerf/bin/python run_star_observability.py --output-dir results/validation/implicit_mlp_adjoint/latest-direction-20260908/observability
+
+/home/drdeng/miniconda3/envs/EMNerf/bin/python audit_star_observability_spectra.py --input-dir results/validation/implicit_mlp_adjoint/latest-direction-20260908/observability
+env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1 /home/drdeng/miniconda3/envs/EMNerf/bin/python -m pytest -q pytest/sdf_inverse/test_indexed_forward.py pytest/sdf_inverse/test_curve_forward_seam.py pytest/sdf_inverse/test_solver_neutral_inverse.py pytest/sdf_inverse/test_material_inverse.py pytest/sdf_inverse/test_robust_material_inverse.py pytest/sdf_inverse/test_implicit_adjoint.py pytest/sdf_inverse/test_implicit_adjoint_driver.py pytest/sdf_inverse/test_pretraining_and_conversion_repairs.py pytest/sdf_inverse/test_parameter_fd_audit_regressions.py pytest/sdf_inverse/test_matched_star_controls.py pytest/sdf_inverse/test_star_observability.py pytest/sdf_inverse/test_star_observability_spectrum_audit.py pytest/gpr_bem_kress/test_shape_derivative.py
+git diff --check

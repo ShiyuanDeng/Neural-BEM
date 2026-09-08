@@ -1,0 +1,122 @@
+{
+  "status": "supports_long_controlled_comparison",
+  "selected_principal_factor": "acquisition",
+  "reviewed_initialization": {
+    "checkpoint_sha256": "e827c97f690a639a8c457d5703d9c0d4cc586a1eb0dee8093a5160652fe3bd36",
+    "trajectory_sha256": "71a5810c864b89161073f0b62512ee652a684eb8ffbb6281049bd92b7054b2c0",
+    "state": 0
+  },
+  "source_run": "results/validation/implicit_mlp_adjoint/iteration-02-final/inverse-20260908T170732213677Z",
+  "source_sha256": {
+    "qualification.json": "572565f635b5c183a5b17717f1c3f8c3ea3de45f09f546eda296eb1e6425dbaf",
+    "metrics.json": "9a3fa2fc7d689e02133505caae86d18f86fc23531f0e778d9bb3b2fb1fe9cff0",
+    "shared_initial.pt": "a809d44c442ad9efdbd0ce58a19910f2f10f1bbe7a20e3b4072a8749c29a7b85"
+  },
+  "supporting_reports_sha256": {
+    "motion_review.json": "2a48f453ac44e542b38b4e4dbc7ea02b2680068138a59a8341cfb7cd92783cf0",
+    "optimizer_review.json": "85d7613349b2e5a2cb596ba902d309a4919d81d16944100a5f4f25a32a0db94e",
+    "geometry_review.json": "735ebcda078d794d21a4ca465205c5f764cb5a9c3546c722ad8a71f1531a50cc"
+  },
+  "review_decision": "Run a controlled longer star experiment comparing paired-8 and multistatic-8 at 0.5/1.5 GHz. Preserve all other training settings and the shared wrong-start initialization.",
+  "reasons": [
+    "At exactly 21 attempted candidates both arms have 3 accepted updates; raw symmetric RMS is 19.458 mm paired and 18.559 mm multistatic.",
+    "The phase-aware polar mode-5 coefficient error improves monotonically for multistatic, 12.200 to 11.738 mm; paired worsens to 12.746 mm.",
+    "All accepted raw and converted signed nearest-target motion scores are positive. Multistatic has stronger coordinated correction and less growth of unwanted modes.",
+    "Accepted field gradients remain nonzero and moderate; accepted conversion/refinement errors remain well within unchanged limits.",
+    "Actual Adam proposals outperform total-gradient directions in signed geometric effect at all ten saved states. Exact saved moments, clipping, bounds and accepted steps show no optimizer defect."
+  ],
+  "final_short_metrics": {
+    "E0": {
+      "raw_distances": {
+        "curve_to_target_mean_m": 0.015452246446398707,
+        "curve_to_target_rms_m": 0.019546017083920755,
+        "curve_to_target_max_m": 0.036798412530825136,
+        "target_to_curve_mean_m": 0.014380529782603542,
+        "target_to_curve_rms_m": 0.018284779449428676,
+        "target_to_curve_max_m": 0.03758897067064923,
+        "symmetric_mean_m": 0.014916388114501125,
+        "symmetric_rms_m": 0.01892590742024238,
+        "symmetric_hausdorff_m": 0.03758897067064923
+      },
+      "converted_distances": {
+        "curve_to_target_mean_m": 0.015453825782398671,
+        "curve_to_target_rms_m": 0.0195453911436205,
+        "curve_to_target_max_m": 0.03675987046909864,
+        "target_to_curve_mean_m": 0.014386846030082901,
+        "target_to_curve_rms_m": 0.018291371076250656,
+        "target_to_curve_max_m": 0.03760547450695922,
+        "symmetric_mean_m": 0.014920335906240787,
+        "symmetric_rms_m": 0.018928768723905653,
+        "symmetric_hausdorff_m": 0.03760547450695922
+      },
+      "polar_m5_coefficient_error_m": 0.0127461493321547,
+      "polar_m5_amplitude_m": 0.006370995326692975,
+      "polar_wrong_modes_2_to_10_excluding5_rms_m": 0.0025711854109172717,
+      "field_statistics": {
+        "minimum": 0.818052640510395,
+        "maximum": 1.3685758363978042,
+        "rms": 1.0356963840841094,
+        "spread": 1.672967934611066,
+        "zero_gradient_count": 0,
+        "gradient_values_are_unclipped": true
+      },
+      "evaluation_3ghz_relative_l2": 0.9423089318454924
+    },
+    "E1": {
+      "raw_distances": {
+        "curve_to_target_mean_m": 0.01453901411051843,
+        "curve_to_target_rms_m": 0.017526464988120296,
+        "curve_to_target_max_m": 0.037132003110292834,
+        "target_to_curve_mean_m": 0.014907256220589476,
+        "target_to_curve_rms_m": 0.017757723459394564,
+        "target_to_curve_max_m": 0.03694265581819415,
+        "symmetric_mean_m": 0.014723135165553954,
+        "symmetric_rms_m": 0.01764247314636101,
+        "symmetric_hausdorff_m": 0.037132003110292834
+      },
+      "converted_distances": {
+        "curve_to_target_mean_m": 0.014539318165157772,
+        "curve_to_target_rms_m": 0.017525808140324266,
+        "curve_to_target_max_m": 0.03709188476758389,
+        "target_to_curve_mean_m": 0.014913578488924401,
+        "target_to_curve_rms_m": 0.017764523915961533,
+        "target_to_curve_max_m": 0.03693986928242823,
+        "symmetric_mean_m": 0.014726448327041087,
+        "symmetric_rms_m": 0.01764556971214341,
+        "symmetric_hausdorff_m": 0.03709188476758389
+      },
+      "polar_m5_coefficient_error_m": 0.011738311797336233,
+      "polar_m5_amplitude_m": 0.006574971899497373,
+      "polar_wrong_modes_2_to_10_excluding5_rms_m": 0.0009553252658390464,
+      "field_statistics": {
+        "minimum": 0.7652479465820142,
+        "maximum": 1.2654759726347236,
+        "rms": 1.0073823649543199,
+        "spread": 1.653680977893481,
+        "zero_gradient_count": 0,
+        "gradient_values_are_unclipped": true
+      },
+      "evaluation_3ghz_relative_l2": 0.9236669913045811
+    }
+  },
+  "caveats": [
+    "Five updates from one initialization establish an early comparison, not long-run convergence or complete star recovery.",
+    "Both mode-5 amplitudes shrink. Multistatic improves their phase-aware coefficient error; amplitude recovery remains unresolved.",
+    "Paired has lower final curve-to-target maximum and target-to-curve mean distance. Multistatic is not uniformly better on every geometric metric.",
+    "Multistatic minimum on-contour gradient decreases from 0.820 to 0.765; monitor later field conditioning and admissible motion.",
+    "The 3 GHz evaluation is posthoc corroboration, never a line-search, optimizer, stopping or proposal-selection input."
+  ],
+  "deferred": {
+    "contour_band_eikonal": "Frozen field repair did not establish sufficient improvement.",
+    "high_band": "Original-band multistatic is making admissible geometric progress; no frequency change is justified yet.",
+    "neural_gn_tsvd": "A simpler acquisition change improves the actual trajectory; no frozen neural GN qualification yet.",
+    "ellipse": "Saved initialization remains invalid."
+  },
+  "next_run_caps_per_arm": {
+    "accepted_updates": 60,
+    "attempted_candidates": 1440,
+    "inverse_wall_seconds": 3600
+  },
+  "posthoc_selection": "All accepted states, all actual optimizer snapshots, finite proposal geometry at first optimizer state, each iteration divisible by 10, and last available state. Selection is declared before results and uses no evaluation/target score.",
+  "review_work": "Saved-data arithmetic and plots only; no inverse, BEM, gradient or extraction evaluations."
+}

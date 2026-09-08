@@ -46,7 +46,7 @@ def _finite_complex_matrix(values, *, name: str) -> np.ndarray:
 
 
 def _problem_expected_shape(problem: object) -> tuple[int, int] | None:
-    num_pairs = getattr(problem, "num_pairs", None)
+    num_pairs = getattr(problem, "num_measurements", getattr(problem, "num_pairs", None))
     if num_pairs is None:
         source_points = getattr(problem, "source_points", None)
         if source_points is not None:

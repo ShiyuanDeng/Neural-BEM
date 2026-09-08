@@ -10,12 +10,12 @@ Updated 2026-09-08.
 
 | Item | Current state |
 |---|---|
-| Active iteration | [Iteration 02](iteration_02/01_results.md) |
-| Stage | Proposal review; agreed plan pending |
-| Latest discussion | [Claude review](iteration_02/02_proposals/03_claude_review.md), following the ChatGPT guide and Codex review |
-| Execution status | Reviewer diagnostics have been reported. No iteration-02 agreed plan or execution of that plan is recorded |
-| Next expected research action | Reconcile the guide and both reviews, resolve the proposed ordering and checks, and record the agreed decisions in `iteration_02/03_plan.md` |
-| Current scientific outcome | Full-MLP recovery remains unresolved; local controls and diagnostic improvements do not establish recovery |
+| Active iteration | [Iteration 03](iteration_03/01_results.md) |
+| Stage | Results recorded; iteration-3 proposals and agreed plan pending |
+| Latest completed decisions | Iteration-2 [user-approved final plan](iteration_02/02_proposals/04_final_plan.md), followed by the evidence-based [long acquisition decision](iteration_02/05_acquisition_review.md) |
+| Execution status | Diagnostics, repairs, short acquisition comparison and both long star inverses completed. Long command exited 0; no posthoc errors. Paired accepted 42 updates, multistatic 31; both stopped at `no_decreasing_neural_step` |
+| Next expected research action | Review iteration-3 results and propose bounded checks that separate terminal geometry constraints, field deterioration, optimizer geometry and lobe collapse; no new experiment plan has been adopted |
+| Current scientific outcome | Multistatic improves geometry at matched work but does not recover the star. Final symmetric raw RMS: 9.506 mm versus paired 14.097 mm; multistatic mode-5 amplitude is 1.530 mm versus 12.5 mm truth |
 
 Follow the user's requested task within this state. A request to review or
 update documentation does not imply implementing a proposal or launching an
@@ -24,16 +24,17 @@ automatically adopted plan.
 
 ## Read in this order
 
-1. [Iteration-02 results](iteration_02/01_results.md): the measured failures,
-   comparison limits and evidence index that opened this cycle.
-2. [Iteration-01 final decisions](iteration_01/03_plan.md): what is established,
-   retained and deferred from the previous cycle.
-3. The current discussion, in order:
-   [ChatGPT guide](iteration_02/02_proposals/01_chatgpt_guide.md),
-   [Codex review](iteration_02/02_proposals/02_codex_review.md), and
-   [Claude review](iteration_02/02_proposals/03_claude_review.md).
-4. The active iteration's `03_plan.md` once it exists, then the implementation
-   and artifacts relevant to the assigned task.
+1. [Iteration-03 results](iteration_03/01_results.md): completion, measured
+   long-run outcomes, exact stopping mechanisms, evidence limits and candidate
+   checks. This is the current research state.
+2. Iteration-2's [final plan](iteration_02/02_proposals/04_final_plan.md),
+   [diagnostic repairs](iteration_02/04_diagnostic_fixes.md), and
+   [short acquisition review / long-run decision](iteration_02/05_acquisition_review.md).
+3. The [long-run evidence index](../../../results/validation/implicit_mlp_adjoint/iteration-03-20260908/README.md),
+   then the saved run and diagnostic artifacts relevant to the assigned task.
+4. Iteration-3's numbered proposals and `03_plan.md` once they exist. For older
+   context, use [iteration-02 opening results](iteration_02/01_results.md) and
+   [iteration-01 final decisions](iteration_01/03_plan.md).
 
 Results establish what was measured. Proposals and reviews contribute
 recommendations and may disagree; record which recommendations are accepted,
@@ -55,6 +56,9 @@ Before execution, `03_plan.md` should state the question, accepted decisions,
 bounded checks, deferred work, experiment controls, success criteria and work
 limits. During proposal review, creating that agreed plan is the transition to
 execution pending; do not silently promote a review into execution authority.
+Iteration 2 used the user's explicitly selected
+`iteration_02/02_proposals/04_final_plan.md` as its controlling plan. Its location
+inside the proposal folder does not override that recorded user instruction.
 
 Results from executing the plan open the **next** iteration. Preserve the
 completed cycle's results, numbered discussion and plan as historical records;
@@ -69,15 +73,26 @@ The project handoff lives here; the parent README describes the shared format.
 
 ## Evidence for the current cycle
 
-The [iteration-02 results](iteration_02/01_results.md) state the measurements
-inline and index the September 8 wrong-start suite, archived ellipse probe and
-prior acquisition study. The
-[Claude review diagnostics](../../../results/validation/implicit_mlp_adjoint/iteration-02-20260908/review-diagnostics/README.md)
-contain its probe script, measurements and provenance. New recommendations in
-either review remain proposals even when accompanied by measured diagnostics.
+The [iteration-03 results](iteration_03/01_results.md) state the measurements
+inline. The completed long run is
+`results/validation/implicit_mlp_adjoint/iteration-02-final/long-acquisition-20260908T174300326691Z/`.
+Its `metrics.json` reports completion, and `run.log` ends with exit 0.
+The [iteration-3 evidence index](../../../results/validation/implicit_mlp_adjoint/iteration-03-20260908/README.md)
+links completion checks, actual terminal candidates, signed geometric motion,
+matched-work comparisons, optimizer snapshots and reproducible saved-data
+reviews. Those reviews performed no new inverse or BEM evaluations.
+
+The main unresolved findings are multistatic lobe collapse and late conversion
+distance constraints, paired contour distortion and candidate topology
+detection, and field deterioration in both arms. Intermediate paired Adam
+distortion is now measured; the same defect is not established for multistatic.
+Late finite proposal probes fail geometry and must not be described as verified
+admissible motion. Candidate fixes in the results document are not an adopted
+iteration-3 plan.
 
 Raw run bundles live under `results/`, not inside the iteration folders. In
-particular, `results/inverse/implicit_mlp/2026-09-08/` contains the current suite.
+particular, `results/inverse/implicit_mlp/2026-09-08/` contains the earlier suite
+and the saved initialization used by the acquisition comparisons.
 Some raw bundles, checkpoints, videos and per-weight arrays are local-only and
 may be absent from a checkout. Use the self-contained iteration records to
 review the conclusions; for reproduction, check artifact availability and
@@ -88,4 +103,5 @@ source provenance before claiming a replay or substituting a fresh run.
 | Iteration | Cycle | State |
 |---|---|---|
 | [01](iteration_01/01_results.md) | September 7–8 failures, repairs and matched acquisition controls | Closed; [final decisions](iteration_01/03_plan.md). Neural recovery unresolved |
-| [02](iteration_02/01_results.md) | September 8 repaired 12-pair wrong-start suite | Active; guide and two reviews available; agreed plan pending |
+| [02](iteration_02/01_results.md) | September 8 repaired-suite failures, frozen diagnostics, measurement/audit repairs and controlled acquisition inverses | Closed; [final plan](iteration_02/02_proposals/04_final_plan.md) executed through the supported acquisition branch. Conditional sampling/high-band/neural-GN branches were not run |
+| [03](iteration_03/01_results.md) | Completed long paired-8 / multistatic-8 star comparison | Active; results recorded, proposals and plan pending. Multistatic helps but full neural recovery remains unresolved |

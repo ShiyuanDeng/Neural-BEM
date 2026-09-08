@@ -1,0 +1,368 @@
+{
+  "signature": {
+    "checkpoint_sha256": "e827c97f690a639a8c457d5703d9c0d4cc586a1eb0dee8093a5160652fe3bd36",
+    "trajectory_sha256": "71a5810c864b89161073f0b62512ee652a684eb8ffbb6281049bd92b7054b2c0",
+    "state": 0,
+    "arms": [
+      [
+        "E0",
+        "paired",
+        [
+          0.5,
+          1.5
+        ],
+        "uniform_box"
+      ],
+      [
+        "E1",
+        "multistatic",
+        [
+          0.5,
+          1.5
+        ],
+        "uniform_box"
+      ]
+    ],
+    "experiment": "long",
+    "caps_per_arm": {
+      "accepted_updates": 60,
+      "attempted_candidates": 1440,
+      "wall_seconds": 3600.0
+    },
+    "reporting_policy": {
+      "accepted_geometry": "every accepted state, including initialization and final state",
+      "optimizer_proposals": "every true optimizer record, including rejected proposals",
+      "optimizer_checkpoints": "one file per fresh optimizer record",
+      "finite_proposal_geometry": "optimizer iteration 0, every 10th index, and final available optimizer iteration",
+      "proposal_selection_uses_target_or_evaluation": false,
+      "posthoc_timing": "after both serialized inverse results; excluded from per-arm inverse wall cap"
+    },
+    "conversion_audit_policy": "explicit grid floor 513, samples max(1024,4*bandwidth+4); distance 0.2mm, refinement 0.01mm",
+    "configs": [
+      {
+        "max_iterations": 60,
+        "learning_rate": 0.001,
+        "eikonal_weight": 0.01,
+        "regularization_samples": 512,
+        "random_seed": 0,
+        "max_backtracks": 14,
+        "backtrack_factor": 0.5,
+        "armijo_fraction": 0.0001,
+        "maximum_boundary_step_m": 0.002,
+        "gradient_clip_norm": 10.0,
+        "gradient_tolerance": 1e-10,
+        "loss_tolerance": 1e-12,
+        "meaningful_boundary_step_m": 0.0001,
+        "max_candidate_evaluations": 1440,
+        "max_wall_seconds": 3600.0,
+        "eikonal_sampling": "uniform_box",
+        "contour_band_half_width_m": 0.005
+      },
+      {
+        "max_iterations": 60,
+        "learning_rate": 0.001,
+        "eikonal_weight": 0.01,
+        "regularization_samples": 512,
+        "random_seed": 0,
+        "max_backtracks": 14,
+        "backtrack_factor": 0.5,
+        "armijo_fraction": 0.0001,
+        "maximum_boundary_step_m": 0.002,
+        "gradient_clip_norm": 10.0,
+        "gradient_tolerance": 1e-10,
+        "loss_tolerance": 1e-12,
+        "meaningful_boundary_step_m": 0.0001,
+        "max_candidate_evaluations": 1440,
+        "max_wall_seconds": 3600.0,
+        "eikonal_sampling": "uniform_box",
+        "contour_band_half_width_m": 0.005
+      }
+    ],
+    "evidence": {
+      "path": "/home/drdeng/Neural_SDF_BEM_AD/results/validation/implicit_mlp_adjoint/iteration-02-acquisition-review/decisions.json",
+      "sha256": "605c74aaf203604494c88d7af89bd65d1bfd63ca7a66cf1a4862d13e0c3baf9d",
+      "decisions": {
+        "stage7_supports_long_acquisition": {
+          "supported": true,
+          "reason": "The reviewed short matched comparison improves signed actual neural geometry, phase-aware m5 error and symmetric boundary error at matched candidate work, with controlled field/conversion behavior. Preserve acquisition as the only changed factor.",
+          "report": "promotion.json",
+          "report_sha256": "0605263ca9fb519c3948c1042bcb15f40b4a4b20d7a28c0d9a87d9d85bb6ed90"
+        }
+      }
+    },
+    "source_sha256": {
+      "run_implicit_mlp_iteration2_matched.py": "45c4ce582f84f1def0648cc85bd0e1cc557f1ab7052985845101fa43804730fc",
+      "solvers/sdf_inverse/implicit_adjoint.py": "b6a867ad27b5533c4f988ad1c061ca3a868e90077e32de4b8e012ad5f0cb0c2a",
+      "solvers/sdf_inverse/forward.py": "b97a11cbb5ebf16ee63554ba9424236eabfc87af52ff9c18ba7de7025e1cd7ce",
+      "solvers/sdf_inverse/geometry.py": "5065ef991a27f2c18c4e56ce19f91b0186b9e90ca31bbdcd89d84239c13f25ca",
+      "solvers/sdf_inverse/optimization.py": "d737a1ccaae3fa2e19a0af68e8445607bd4813cb8eb79268b690efe41ba31a2a",
+      "solvers/sdf_inverse/frozen_diagnostics.py": "1d5791c308914d926093bc756e4f165a730d1d8c353a2d0540e22dfd5ce1be5a",
+      "solvers/sdf_inverse/models.py": "566d0a8bc2f997e8b79f139611d5972209fb083a9bb0fc5532e2c7cc0d841183",
+      "solvers/sdf_inverse/method_b_pullback.py": "d9574adf756fe289de0d6020799aa8eb2b58cb1d939d1cc47fe773a6bb6a1da0",
+      "solvers/sdf_inverse/eikonal_sampling.py": "38961780792b38cf775bcdb90628ab6affa17bc991594d80e7253a1c81b1a909",
+      "solvers/sdf_to_ordered_boundary/frontend.py": "e25fc8044f2b3214c7d0bdcf5f7af3ef98b60cbfaf47a14ff9c60ab315d23491",
+      "run_sdf_inverse_comparison.py": "47fb72597510c9eeeb1b977df636b7a2f38f3f147ab22db6386383e7b51af590",
+      "config/base_config.py": "cabc68655b3cac46b610e3a5c544b85f30f67b8627320e562c66e8dbe2d3d1c7",
+      "config/circle_config.py": "d74f09b2376d2566a41ba194c362e35326942a51d2f1878fe11726bb35a315aa",
+      "config/star_config.py": "7ae65fa3853a0b07b430ca1267b0aaf904c04f0431b7231e55b311ea1b18ca15"
+    }
+  },
+  "normalization": "0.5 * sum_f ||prediction_f-observed_f||^2 / fixed_observed_column_norm_f^2; unit frequency weights; no entry-count divisor",
+  "initial_sha256": "a809d44c442ad9efdbd0ce58a19910f2f10f1bbe7a20e3b4072a8749c29a7b85",
+  "arms": {
+    "E0": {
+      "gates": {
+        "oracle_refinement": true,
+        "paired_selection_equivalence": true,
+        "independent_oracle_ordering": true,
+        "normalized_neural_directional_derivative": true,
+        "rollback": true,
+        "starting_curve_forward_refinement": true,
+        "starting_curve_derivative_refinement": true,
+        "starting_curve_conversion_fidelity": true
+      },
+      "oracle": {
+        "coarse_nodes": 512,
+        "fine_nodes": 1024,
+        "relative_difference": 1.3864518954963062e-11,
+        "passed": true
+      },
+      "derivative": {
+        "probes": [
+          {
+            "step": 2e-05,
+            "analytic": -0.27787637713850316,
+            "finite_difference": -0.27787637342790994,
+            "relative_error": 1.3353395707054255e-08
+          },
+          {
+            "step": 1e-05,
+            "analytic": -0.27787637713850316,
+            "finite_difference": -0.27787637674192567,
+            "relative_error": 1.4271723892143495e-09
+          },
+          {
+            "step": 5e-06,
+            "analytic": -0.27787637713850316,
+            "finite_difference": -0.27787637706389035,
+            "relative_error": 2.685108273471559e-10
+          }
+        ],
+        "diagnostics": {
+          "method": "kress_discrete_adjoint_method_b_reverse",
+          "adjoint_solve_count": 2,
+          "finite_difference_probes": 0,
+          "method_b_replay_maximum_error": 7.816580716024646e-12,
+          "gradient_seconds": 6.2028022650047205
+        },
+        "passed": true
+      },
+      "refined_derivative": {
+        "probes": [
+          {
+            "step": 2e-05,
+            "analytic": -0.2778766183002027,
+            "finite_difference": -0.2778766150179912,
+            "relative_error": 1.1811758479947532e-08
+          },
+          {
+            "step": 1e-05,
+            "analytic": -0.2778766183002027,
+            "finite_difference": -0.27787661752709525,
+            "relative_error": 2.7821969032978727e-09
+          },
+          {
+            "step": 5e-06,
+            "analytic": -0.2778766183002027,
+            "finite_difference": -0.2778766209576844,
+            "relative_error": 9.563531001633675e-09
+          }
+        ],
+        "diagnostics": {
+          "method": "kress_discrete_adjoint_method_b_reverse",
+          "adjoint_solve_count": 2,
+          "finite_difference_probes": 0,
+          "method_b_replay_maximum_error": 7.8358569632897e-12,
+          "gradient_seconds": 8.414344374992652
+        },
+        "passed": true
+      },
+      "rollback": {
+        "passed": true,
+        "weights_restored": true,
+        "moments_restored": true,
+        "rejected_candidates": 2
+      },
+      "ordering_relative_error": 1.768637098463071e-11,
+      "forward_refinement_relative_error": 2.6957741499091793e-08,
+      "gradient_refinement_relative_error": 1.6423890104889567e-07,
+      "geometry_config": {
+        "bounds": [
+          [
+            0.3,
+            0.3
+          ],
+          [
+            0.7,
+            0.7
+          ]
+        ],
+        "grid_shape": [
+          513,
+          513
+        ],
+        "projected_samples": 256,
+        "bandwidth": 96,
+        "num_nodes": 194,
+        "arclength_dense_resolution": 2048,
+        "validation_resolution": 1024,
+        "conversion_tolerance_m": 0.0002,
+        "conversion_audit_grid_shape": [
+          513,
+          513
+        ],
+        "conversion_audit_samples": 1024
+      },
+      "conversion_error_m": 1.4095906721727224e-06,
+      "conversion_refinement_change_m": 1.8462931147005143e-07,
+      "observed_column_norms": [
+        1.4646930721218119e-08,
+        1.3638195014008815e-08
+      ]
+    },
+    "E1": {
+      "gates": {
+        "oracle_refinement": true,
+        "paired_selection_equivalence": true,
+        "independent_oracle_ordering": true,
+        "normalized_neural_directional_derivative": true,
+        "rollback": true,
+        "starting_curve_forward_refinement": true,
+        "starting_curve_derivative_refinement": true,
+        "starting_curve_conversion_fidelity": true
+      },
+      "oracle": {
+        "coarse_nodes": 512,
+        "fine_nodes": 1024,
+        "relative_difference": 8.88556905232436e-12,
+        "passed": true
+      },
+      "derivative": {
+        "probes": [
+          {
+            "step": 2e-05,
+            "analytic": 0.06909991707646923,
+            "finite_difference": 0.06909991730197351,
+            "relative_error": 3.2634522691089783e-09
+          },
+          {
+            "step": 1e-05,
+            "analytic": 0.06909991707646923,
+            "finite_difference": 0.06909991703274443,
+            "relative_error": 6.327764693095697e-10
+          },
+          {
+            "step": 5e-06,
+            "analytic": 0.06909991707646923,
+            "finite_difference": 0.06909991701053997,
+            "relative_error": 9.541149228410063e-10
+          }
+        ],
+        "diagnostics": {
+          "method": "kress_discrete_adjoint_method_b_reverse",
+          "adjoint_solve_count": 2,
+          "finite_difference_probes": 0,
+          "method_b_replay_maximum_error": 7.816580716024646e-12,
+          "gradient_seconds": 5.836501803001738
+        },
+        "passed": true
+      },
+      "refined_derivative": {
+        "probes": [
+          {
+            "step": 2e-05,
+            "analytic": 0.06909992500048373,
+            "finite_difference": 0.0690999251901081,
+            "relative_error": 2.7442051672066638e-09
+          },
+          {
+            "step": 1e-05,
+            "analytic": 0.06909992500048373,
+            "finite_difference": 0.06909992485981675,
+            "relative_error": 2.0357037734080143e-09
+          },
+          {
+            "step": 5e-06,
+            "analytic": 0.06909992500048373,
+            "finite_difference": 0.06909992499304352,
+            "relative_error": 1.0767327331577614e-10
+          }
+        ],
+        "diagnostics": {
+          "method": "kress_discrete_adjoint_method_b_reverse",
+          "adjoint_solve_count": 2,
+          "finite_difference_probes": 0,
+          "method_b_replay_maximum_error": 7.8358569632897e-12,
+          "gradient_seconds": 8.09710088999418
+        },
+        "passed": true
+      },
+      "rollback": {
+        "passed": true,
+        "weights_restored": true,
+        "moments_restored": true,
+        "rejected_candidates": 2
+      },
+      "ordering_relative_error": 1.137199013917937e-11,
+      "forward_refinement_relative_error": 7.634025621823553e-09,
+      "gradient_refinement_relative_error": 8.728095688700583e-08,
+      "geometry_config": {
+        "bounds": [
+          [
+            0.3,
+            0.3
+          ],
+          [
+            0.7,
+            0.7
+          ]
+        ],
+        "grid_shape": [
+          513,
+          513
+        ],
+        "projected_samples": 256,
+        "bandwidth": 96,
+        "num_nodes": 194,
+        "arclength_dense_resolution": 2048,
+        "validation_resolution": 1024,
+        "conversion_tolerance_m": 0.0002,
+        "conversion_audit_grid_shape": [
+          513,
+          513
+        ],
+        "conversion_audit_samples": 1024
+      },
+      "conversion_error_m": 1.4095906721727224e-06,
+      "conversion_refinement_change_m": 1.8462931147005143e-07,
+      "observed_column_norms": [
+        7.06020321305343e-08,
+        1.0518853289104761e-07
+      ]
+    }
+  },
+  "evaluation_use": "3 GHz, multistatic-8, posthoc only after both training trajectories",
+  "evaluation_oracle": {
+    "coarse_nodes": 512,
+    "fine_nodes": 1024,
+    "relative_difference": 9.637920832395251e-11,
+    "passed": true
+  },
+  "evaluation_starting_curve_refinement": {
+    "relative_difference": 5.509559329025128e-08,
+    "passed": true,
+    "use": "fixed numerical validation only; no evaluation residual used for optimization"
+  },
+  "observations_sha256": "72dedef63f41b3c58019bdd81e641806a3e472b8796c4ead1ff06d1da039597f",
+  "passed": true
+}

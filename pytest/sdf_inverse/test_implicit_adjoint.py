@@ -126,6 +126,8 @@ def test_rejected_neural_trials_restore_the_last_accepted_weights(monkeypatch):
     assert not result.converged
     assert len(result.iterations) == 1
     assert result.infeasible_trial_count > 0
+    assert result.diagnostics["rejection_reason_counts"]["extraction_topology"] == result.infeasible_trial_count
+    assert len(result.diagnostics["trial_records"]) == result.infeasible_trial_count
     np.testing.assert_array_equal(controller.parameter_vector(), initial)
 
 
@@ -141,11 +143,44 @@ def test_solver_failure_propagates_and_restores_accepted_network(monkeypatch):
             raise RuntimeError("Deliberate solver failure")
         return original(*args, **kwargs)
     monkeypatch.setattr(module, "predict_paired_response", fail_trial)
-    with pytest.raises(RuntimeError, match="Deliberate solver failure"):
+    logged = []
+    with pytest.raises(RuntimeError, match="Deliberate solver failure") as failure:
         run_implicit_mlp_adjoint_inverse(
             model, controller, data, geometry,
-            config=ImplicitMLPAdjointConfig(max_iterations=2, regularization_samples=32))
+            config=ImplicitMLPAdjointConfig(max_iterations=2, regularization_samples=32),
+            trial_callback=logged.append)
+    assert logged[-1]["rejection_reasons"] == ["non_finite_or_solver_failure"]
+    assert failure.value.implicit_mlp_trial_records[-1] == logged[-1]
     np.testing.assert_array_equal(controller.parameter_vector(), initial)
+
+
+def test_deeper_search_records_an_accepted_step_beyond_eight(monkeypatch):
+    import sdf_inverse.implicit_adjoint as module
+    model, controller, data, geometry = _case()
+    original = module.predict_paired_response
+    calls = 0
+
+    def temporary_refinement_barrier(*args, **kwargs):
+        nonlocal calls
+        calls += 1
+        if 2 <= calls <= 10:
+            failure = OrderedSDFGeometryError("Diagnostic refinement barrier")
+            failure.rejection_reasons = ("conversion_refinement_change",)
+            failure.conversion_error_m = .0001
+            failure.conversion_refinement_change_m = .00002
+            raise failure
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(module, "predict_paired_response", temporary_refinement_barrier)
+    result = run_implicit_mlp_adjoint_inverse(
+        model, controller, data, geometry,
+        config=ImplicitMLPAdjointConfig(max_iterations=1, max_backtracks=14, regularization_samples=32))
+    assert len(result.iterations) == 2
+    assert result.final_iteration.backtracks == 9
+    counts = result.diagnostics["rejection_reason_counts"]
+    assert counts["conversion_refinement_change"] == 9
+    assert counts["conversion_distance"] == 0
+    assert result.diagnostics["accepted_steps_beyond_historical_backtrack_8"][0]["backtracks"] == 9
 
 
 def test_finished_initial_state_does_not_require_another_geometry_derivative(monkeypatch):
@@ -193,6 +228,11 @@ def test_small_gradient_fallback_can_descend_after_adam_exhausts_backtracking(mo
     assert len(result.iterations) == 2
     assert result.final_iteration.step_method == "adjoint_steepest_descent"
     assert result.final_iteration.loss < .1 * result.initial_iteration.loss
+    # The real accepted data decrease remains valid below the reporting-only
+    # boundary movement floor; it must not be advertised as shape recovery.
+    assert not result.final_iteration.meaningful_boundary_step
+    assert result.diagnostics["rejection_reason_counts"]["data_armijo"] > 0
+    assert result.diagnostics["rejection_reason_counts"]["regularized_armijo"] > 0
 
 
 @pytest.mark.parametrize("kwargs", ({"learning_rate": 0}, {"eikonal_weight": -1},

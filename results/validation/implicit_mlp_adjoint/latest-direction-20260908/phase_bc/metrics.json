@@ -1,0 +1,236 @@
+{
+  "scope": "Bounded start-at-target-fitting-control and frozen-fallback diagnostics; no long neural inverse.",
+  "short_truth_control": {
+    "source": "start-at-truth/metrics.json",
+    "acquisition": "paired: source row i observed at receiver row i",
+    "source_count": 8,
+    "receiver_count": 8,
+    "measurement_count_per_frequency": 8,
+    "train_frequencies_ghz": [
+      0.5,
+      1.5
+    ],
+    "holdout_frequencies_ghz": [
+      3.0
+    ],
+    "stop_reason": "maximum_iterations",
+    "accepted_updates": 3,
+    "attempted_training_forward_evaluations": 27,
+    "evaluation_only_holdout_forward_evaluations": 4,
+    "additional_all_frequency_reporting_forward_evaluations": 4,
+    "inverse_wall_seconds": 387.2190466309985,
+    "original_inverse_timing_policy": "includes successful original holdout callbacks; corrected driver replays holdout after completed inverse",
+    "post_optimization_holdout_replay": {
+      "records": [
+        {
+          "iteration": 0,
+          "holdout_relative_l2": 0.11963352659549378,
+          "holdout_evaluation_error": null
+        },
+        {
+          "iteration": 1,
+          "holdout_relative_l2": 0.11178056230216281,
+          "holdout_evaluation_error": null
+        },
+        {
+          "iteration": 2,
+          "holdout_relative_l2": 0.09761194730051893,
+          "holdout_evaluation_error": null
+        },
+        {
+          "iteration": 3,
+          "holdout_relative_l2": 0.08925832607707636,
+          "holdout_evaluation_error": null
+        }
+      ],
+      "forward_evaluations": 4,
+      "forward_seconds": 51.359788608999224,
+      "wall_seconds": 51.36089144699508,
+      "failure_count": 0,
+      "scope": "Post-optimization evaluation of saved accepted weights; no neural inverse rerun.",
+      "original_callback_holdout_relative_l2": [
+        0.11963352659549378,
+        0.11178056230216281,
+        0.09761194730051893,
+        0.08925832607707636
+      ],
+      "maximum_absolute_holdout_difference": 0.0,
+      "same_holdout_values": true,
+      "final_accepted_weights_restored_exactly": true,
+      "original_inverse_callback_inclusive_seconds": 387.2190466309985,
+      "original_holdout_forward_seconds": 52.21743433900701,
+      "original_inverse_minus_measured_holdout_forward_seconds": 335.0016122919915,
+      "timing_note": "Original experiment ran before post-optimization replay isolation. Its original inverse time includes holdout callbacks; subtracting measured holdout forward time leaves a small unmeasured callback bookkeeping overhead. Future driver runs time holdout replay entirely separately."
+    },
+    "rejected_trial_count": 23,
+    "rejection_reason_counts": {
+      "boundary_motion_limit": 10,
+      "conversion_distance": 3,
+      "conversion_refinement_change": 1,
+      "data_armijo": 17,
+      "extraction_topology": 3,
+      "non_finite_or_solver_failure": 0,
+      "regularized_armijo": 17
+    },
+    "initial_data_gradient_norm": 1.0072813785834578,
+    "initial_weighted_eikonal_gradient_norm": 0.096734924806741,
+    "initial_eikonal_gradient_norm": 9.6734924806741,
+    "accepted_iterates": [
+      {
+        "backtracks": 0,
+        "boundary_movement_m": 0.0,
+        "conversion_error_m": 1.3187135342847506e-05,
+        "conversion_refinement_change_m": 2.737179856738231e-07,
+        "data_gradient_norm": 1.0072813785834578,
+        "eikonal_loss": 0.04822552266579422,
+        "evaluation_count": 1,
+        "fitted_shape": {
+          "amplitude": 0.24940337868310747,
+          "center_x": 0.5001236233053269,
+          "center_y": 0.5000239600015423,
+          "mean_radius": 0.049993193530222906,
+          "radius": 0.049993193530222906,
+          "rotation_radians": -0.001009948281378134
+        },
+        "holdout_frequencies_ghz": [
+          3.0
+        ],
+        "holdout_relative_l2": 0.11963352659549378,
+        "iteration": 0,
+        "loss": 0.00012263120958870972,
+        "maximum_node_to_exact_boundary_distance_m": 0.0011911248509951348,
+        "meaningful_boundary_step": false,
+        "objective": 0.0006048864362466519,
+        "relative_l2_error": 0.010730663633808146,
+        "step_method": "initial",
+        "weighted_eikonal_gradient_norm": 0.096734924806741,
+        "eikonal_gradient_norm": 9.6734924806741
+      },
+      {
+        "backtracks": 8,
+        "boundary_movement_m": 0.00028836230607088203,
+        "conversion_error_m": 1.3673048125404553e-05,
+        "conversion_refinement_change_m": 2.5862540051702655e-07,
+        "data_gradient_norm": 0.962615343923603,
+        "eikonal_loss": 0.047646622409879366,
+        "evaluation_count": 10,
+        "fitted_shape": {
+          "amplitude": 0.251273921071796,
+          "center_x": 0.5000002995499688,
+          "center_y": 0.5000992059844511,
+          "mean_radius": 0.04988187038851535,
+          "radius": 0.04988187038851535,
+          "rotation_radians": -0.0006865095956453389
+        },
+        "holdout_frequencies_ghz": [
+          3.0
+        ],
+        "holdout_relative_l2": 0.11178056230216281,
+        "iteration": 1,
+        "loss": 6.788740966239606e-05,
+        "maximum_node_to_exact_boundary_distance_m": 0.0011497687564957415,
+        "meaningful_boundary_step": true,
+        "objective": 0.0005443536337611897,
+        "relative_l2_error": 0.008135082086205394,
+        "step_method": "adam",
+        "weighted_eikonal_gradient_norm": 0.09597817008603954,
+        "eikonal_gradient_norm": 9.597817008603954
+      },
+      {
+        "backtracks": 8,
+        "boundary_movement_m": 0.00021822865146787959,
+        "conversion_error_m": 1.3700634468444131e-05,
+        "conversion_refinement_change_m": 2.370544295288446e-07,
+        "data_gradient_norm": 0.8790976475681939,
+        "eikonal_loss": 0.0474384554658035,
+        "evaluation_count": 19,
+        "fitted_shape": {
+          "amplitude": 0.252413473558709,
+          "center_x": 0.5000276615040987,
+          "center_y": 0.500142692389395,
+          "mean_radius": 0.04983635496333029,
+          "radius": 0.04983635496333029,
+          "rotation_radians": -0.0007555263189105261
+        },
+        "holdout_frequencies_ghz": [
+          3.0
+        ],
+        "holdout_relative_l2": 0.09761194730051893,
+        "iteration": 2,
+        "loss": 6.169546693022761e-05,
+        "maximum_node_to_exact_boundary_distance_m": 0.001281489910877641,
+        "meaningful_boundary_step": true,
+        "objective": 0.0005360800215882626,
+        "relative_l2_error": 0.007754070703741736,
+        "step_method": "adam",
+        "weighted_eikonal_gradient_norm": 0.09557718624300578,
+        "eikonal_gradient_norm": 9.557718624300577
+      },
+      {
+        "backtracks": 7,
+        "boundary_movement_m": 0.00040810714386663735,
+        "conversion_error_m": 1.3190187002874614e-05,
+        "conversion_refinement_change_m": 7.184898829979407e-07,
+        "data_gradient_norm": null,
+        "eikonal_loss": 0.046788854871913366,
+        "evaluation_count": 27,
+        "fitted_shape": {
+          "amplitude": 0.25177262319594956,
+          "center_x": 0.4999915956104858,
+          "center_y": 0.5002195877402907,
+          "mean_radius": 0.04991469752813333,
+          "radius": 0.04991469752813333,
+          "rotation_radians": -0.0006890114369407782
+        },
+        "holdout_frequencies_ghz": [
+          3.0
+        ],
+        "holdout_relative_l2": 0.08925832607707636,
+        "iteration": 3,
+        "loss": 5.8510465301332126e-05,
+        "maximum_node_to_exact_boundary_distance_m": 0.0012901892905574372,
+        "meaningful_boundary_step": true,
+        "objective": 0.0005263990140204658,
+        "relative_l2_error": 0.007451797339857357,
+        "step_method": "adam",
+        "weighted_eikonal_gradient_norm": null,
+        "eikonal_gradient_norm": null
+      }
+    ],
+    "decision": "A usable three-step local neighborhood: training and fixed holdout improve while maximum boundary error worsens modestly. Long-term stability is untested."
+  },
+  "frozen_fallback_audit": {
+    "source": "frozen_fallback_metrics.json",
+    "first_accepted_beyond_historical_8": {
+      "backtracks": 9,
+      "maximum_weight_step": 1.9531250000006523e-06,
+      "accepted": true,
+      "rejection_reasons": [],
+      "loss": 0.3460535595880327,
+      "objective": 0.34709571567702063,
+      "eikonal_loss": 0.10421560889879261,
+      "relative_loss_decrease": 0.0003883222294469652,
+      "boundary_movement_m": 7.075868257211537e-05,
+      "meaningful_boundary_step": false,
+      "conversion_error_m": 0.00010919206879405789,
+      "conversion_refinement_change_m": 9.003141722661691e-06
+    },
+    "rejection_reason_counts": {
+      "extraction_topology": 2,
+      "boundary_motion_limit": 1,
+      "data_armijo": 1,
+      "regularized_armijo": 1,
+      "conversion_distance": 2,
+      "conversion_refinement_change": 4
+    },
+    "stop_reason": "completed_frozen_diagnostic_budget",
+    "forward_evaluations": 16,
+    "wall_seconds": 235.46046271300293,
+    "meaningful_boundary_step_floor_m": 0.0001,
+    "decision": "The historical stop is a conversion-refinement/search-depth effect. Accepted deeper steps are below the declared geometric movement floor and do not establish recovery."
+  },
+  "validation": {
+    "focused_tests_passed": 53,
+    "test_log": "tests.log"
+  }
+}

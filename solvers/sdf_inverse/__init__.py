@@ -6,11 +6,15 @@ the same ordered boundary and the same inverse objective.
 """
 
 from .forward import (
+    IndexedForwardProblem,
+    IndexedForwardResult,
     MaterialSpec,
     PairedForwardProblem,
     PairedForwardResult,
     predict_paired_curve_response,
     predict_paired_response,
+    predict_indexed_curve_response,
+    predict_indexed_response,
 )
 from .curve_updates import (
     DirectNormalModeCurveUpdate,
@@ -119,6 +123,10 @@ __all__ = [
     "OrderedSDFGeometryError",
     "PairedForwardProblem",
     "PairedForwardResult",
+    "IndexedForwardProblem",
+    "IndexedForwardResult",
+    "predict_indexed_curve_response",
+    "predict_indexed_response",
     "ParameterFDConfig",
     "ParameterFDInverseResult",
     "ParameterFDIteration",

@@ -1,0 +1,1100 @@
+{
+  "status": "completed_A_through_E; neural_recovery_unresolved",
+  "phase_a": {
+    "paired-12": {
+      "recovery_passed": true,
+      "stop_reason": "no_decreasing_step",
+      "accepted_updates": 10,
+      "rejected_trials": 0,
+      "inverse_forward_evaluations": 121,
+      "inverse_seconds": 75.53224121099629,
+      "final": {
+        "iteration": 10,
+        "training_loss": 3.6891448750503216e-11,
+        "training_relative_l2": 5.880771957865005e-06,
+        "holdout_relative_l2": 0.00020643516505375212,
+        "center_x": 0.5000000012754933,
+        "center_y": 0.4999999973694152,
+        "radius": 0.049999905376549116,
+        "mean_radius": 0.049999905376549116,
+        "amplitude": 0.25000542719998353,
+        "rotation_radians": -1.3519614876435565e-07,
+        "lobes": 5.0,
+        "center_error_m": 2.923501238615411e-09,
+        "mean_radius_error_m": 9.462345088723234e-08,
+        "amplitude_error": 5.427199983532027e-06,
+        "rotation_error_radians": 1.3519614876435565e-07,
+        "mean_node_to_exact_boundary_distance_m": 8.169316936361344e-06,
+        "maximum_node_to_exact_boundary_distance_m": 3.8685543636799456e-05,
+        "forward_evaluations": 121,
+        "wall_seconds": 75.53191516399966,
+        "accepted_trials": 10,
+        "rejected_trials": 0
+      }
+    },
+    "paired-8": {
+      "recovery_passed": true,
+      "stop_reason": "no_decreasing_step",
+      "accepted_updates": 13,
+      "rejected_trials": 0,
+      "inverse_forward_evaluations": 154,
+      "inverse_seconds": 95.80599807899853,
+      "final": {
+        "iteration": 13,
+        "training_loss": 3.1270877508557324e-11,
+        "training_relative_l2": 5.433155820069646e-06,
+        "holdout_relative_l2": 0.00019781294743169894,
+        "center_x": 0.4999999992036227,
+        "center_y": 0.49999999832388214,
+        "radius": 0.04999994166954437,
+        "mean_radius": 0.04999994166954437,
+        "amplitude": 0.250005825108729,
+        "rotation_radians": 5.295867476962676e-07,
+        "lobes": 5.0,
+        "center_error_m": 1.8556906708305653e-09,
+        "mean_radius_error_m": 5.833045563230499e-08,
+        "amplitude_error": 5.825108728985118e-06,
+        "rotation_error_radians": 5.295867476962676e-07,
+        "mean_node_to_exact_boundary_distance_m": 8.169291996006292e-06,
+        "maximum_node_to_exact_boundary_distance_m": 3.869528014785449e-05,
+        "forward_evaluations": 154,
+        "wall_seconds": 95.8056678550056,
+        "accepted_trials": 13,
+        "rejected_trials": 0
+      }
+    }
+  },
+  "phase_b": {
+    "source": "start-at-truth/metrics.json",
+    "acquisition": "paired: source row i observed at receiver row i",
+    "source_count": 8,
+    "receiver_count": 8,
+    "measurement_count_per_frequency": 8,
+    "train_frequencies_ghz": [
+      0.5,
+      1.5
+    ],
+    "holdout_frequencies_ghz": [
+      3.0
+    ],
+    "stop_reason": "maximum_iterations",
+    "accepted_updates": 3,
+    "attempted_training_forward_evaluations": 27,
+    "evaluation_only_holdout_forward_evaluations": 4,
+    "additional_all_frequency_reporting_forward_evaluations": 4,
+    "inverse_wall_seconds": 387.2190466309985,
+    "original_inverse_timing_policy": "includes successful original holdout callbacks; corrected driver replays holdout after completed inverse",
+    "post_optimization_holdout_replay": {
+      "records": [
+        {
+          "iteration": 0,
+          "holdout_relative_l2": 0.11963352659549378,
+          "holdout_evaluation_error": null
+        },
+        {
+          "iteration": 1,
+          "holdout_relative_l2": 0.11178056230216281,
+          "holdout_evaluation_error": null
+        },
+        {
+          "iteration": 2,
+          "holdout_relative_l2": 0.09761194730051893,
+          "holdout_evaluation_error": null
+        },
+        {
+          "iteration": 3,
+          "holdout_relative_l2": 0.08925832607707636,
+          "holdout_evaluation_error": null
+        }
+      ],
+      "forward_evaluations": 4,
+      "forward_seconds": 51.359788608999224,
+      "wall_seconds": 51.36089144699508,
+      "failure_count": 0,
+      "scope": "Post-optimization evaluation of saved accepted weights; no neural inverse rerun.",
+      "original_callback_holdout_relative_l2": [
+        0.11963352659549378,
+        0.11178056230216281,
+        0.09761194730051893,
+        0.08925832607707636
+      ],
+      "maximum_absolute_holdout_difference": 0.0,
+      "same_holdout_values": true,
+      "final_accepted_weights_restored_exactly": true,
+      "original_inverse_callback_inclusive_seconds": 387.2190466309985,
+      "original_holdout_forward_seconds": 52.21743433900701,
+      "original_inverse_minus_measured_holdout_forward_seconds": 335.0016122919915,
+      "timing_note": "Original experiment ran before post-optimization replay isolation. Its original inverse time includes holdout callbacks; subtracting measured holdout forward time leaves a small unmeasured callback bookkeeping overhead. Future driver runs time holdout replay entirely separately."
+    },
+    "rejected_trial_count": 23,
+    "rejection_reason_counts": {
+      "boundary_motion_limit": 10,
+      "conversion_distance": 3,
+      "conversion_refinement_change": 1,
+      "data_armijo": 17,
+      "extraction_topology": 3,
+      "non_finite_or_solver_failure": 0,
+      "regularized_armijo": 17
+    },
+    "initial_data_gradient_norm": 1.0072813785834578,
+    "initial_weighted_eikonal_gradient_norm": 0.096734924806741,
+    "initial_eikonal_gradient_norm": 9.6734924806741,
+    "accepted_iterates": [
+      {
+        "backtracks": 0,
+        "boundary_movement_m": 0.0,
+        "conversion_error_m": 1.3187135342847506e-05,
+        "conversion_refinement_change_m": 2.737179856738231e-07,
+        "data_gradient_norm": 1.0072813785834578,
+        "eikonal_loss": 0.04822552266579422,
+        "evaluation_count": 1,
+        "fitted_shape": {
+          "amplitude": 0.24940337868310747,
+          "center_x": 0.5001236233053269,
+          "center_y": 0.5000239600015423,
+          "mean_radius": 0.049993193530222906,
+          "radius": 0.049993193530222906,
+          "rotation_radians": -0.001009948281378134
+        },
+        "holdout_frequencies_ghz": [
+          3.0
+        ],
+        "holdout_relative_l2": 0.11963352659549378,
+        "iteration": 0,
+        "loss": 0.00012263120958870972,
+        "maximum_node_to_exact_boundary_distance_m": 0.0011911248509951348,
+        "meaningful_boundary_step": false,
+        "objective": 0.0006048864362466519,
+        "relative_l2_error": 0.010730663633808146,
+        "step_method": "initial",
+        "weighted_eikonal_gradient_norm": 0.096734924806741,
+        "eikonal_gradient_norm": 9.6734924806741
+      },
+      {
+        "backtracks": 8,
+        "boundary_movement_m": 0.00028836230607088203,
+        "conversion_error_m": 1.3673048125404553e-05,
+        "conversion_refinement_change_m": 2.5862540051702655e-07,
+        "data_gradient_norm": 0.962615343923603,
+        "eikonal_loss": 0.047646622409879366,
+        "evaluation_count": 10,
+        "fitted_shape": {
+          "amplitude": 0.251273921071796,
+          "center_x": 0.5000002995499688,
+          "center_y": 0.5000992059844511,
+          "mean_radius": 0.04988187038851535,
+          "radius": 0.04988187038851535,
+          "rotation_radians": -0.0006865095956453389
+        },
+        "holdout_frequencies_ghz": [
+          3.0
+        ],
+        "holdout_relative_l2": 0.11178056230216281,
+        "iteration": 1,
+        "loss": 6.788740966239606e-05,
+        "maximum_node_to_exact_boundary_distance_m": 0.0011497687564957415,
+        "meaningful_boundary_step": true,
+        "objective": 0.0005443536337611897,
+        "relative_l2_error": 0.008135082086205394,
+        "step_method": "adam",
+        "weighted_eikonal_gradient_norm": 0.09597817008603954,
+        "eikonal_gradient_norm": 9.597817008603954
+      },
+      {
+        "backtracks": 8,
+        "boundary_movement_m": 0.00021822865146787959,
+        "conversion_error_m": 1.3700634468444131e-05,
+        "conversion_refinement_change_m": 2.370544295288446e-07,
+        "data_gradient_norm": 0.8790976475681939,
+        "eikonal_loss": 0.0474384554658035,
+        "evaluation_count": 19,
+        "fitted_shape": {
+          "amplitude": 0.252413473558709,
+          "center_x": 0.5000276615040987,
+          "center_y": 0.500142692389395,
+          "mean_radius": 0.04983635496333029,
+          "radius": 0.04983635496333029,
+          "rotation_radians": -0.0007555263189105261
+        },
+        "holdout_frequencies_ghz": [
+          3.0
+        ],
+        "holdout_relative_l2": 0.09761194730051893,
+        "iteration": 2,
+        "loss": 6.169546693022761e-05,
+        "maximum_node_to_exact_boundary_distance_m": 0.001281489910877641,
+        "meaningful_boundary_step": true,
+        "objective": 0.0005360800215882626,
+        "relative_l2_error": 0.007754070703741736,
+        "step_method": "adam",
+        "weighted_eikonal_gradient_norm": 0.09557718624300578,
+        "eikonal_gradient_norm": 9.557718624300577
+      },
+      {
+        "backtracks": 7,
+        "boundary_movement_m": 0.00040810714386663735,
+        "conversion_error_m": 1.3190187002874614e-05,
+        "conversion_refinement_change_m": 7.184898829979407e-07,
+        "data_gradient_norm": null,
+        "eikonal_loss": 0.046788854871913366,
+        "evaluation_count": 27,
+        "fitted_shape": {
+          "amplitude": 0.25177262319594956,
+          "center_x": 0.4999915956104858,
+          "center_y": 0.5002195877402907,
+          "mean_radius": 0.04991469752813333,
+          "radius": 0.04991469752813333,
+          "rotation_radians": -0.0006890114369407782
+        },
+        "holdout_frequencies_ghz": [
+          3.0
+        ],
+        "holdout_relative_l2": 0.08925832607707636,
+        "iteration": 3,
+        "loss": 5.8510465301332126e-05,
+        "maximum_node_to_exact_boundary_distance_m": 0.0012901892905574372,
+        "meaningful_boundary_step": true,
+        "objective": 0.0005263990140204658,
+        "relative_l2_error": 0.007451797339857357,
+        "step_method": "adam",
+        "weighted_eikonal_gradient_norm": null,
+        "eikonal_gradient_norm": null
+      }
+    ],
+    "decision": "A usable three-step local neighborhood: training and fixed holdout improve while maximum boundary error worsens modestly. Long-term stability is untested."
+  },
+  "phase_c": {
+    "source": "frozen_fallback_metrics.json",
+    "first_accepted_beyond_historical_8": {
+      "backtracks": 9,
+      "maximum_weight_step": 1.9531250000006523e-06,
+      "accepted": true,
+      "rejection_reasons": [],
+      "loss": 0.3460535595880327,
+      "objective": 0.34709571567702063,
+      "eikonal_loss": 0.10421560889879261,
+      "relative_loss_decrease": 0.0003883222294469652,
+      "boundary_movement_m": 7.075868257211537e-05,
+      "meaningful_boundary_step": false,
+      "conversion_error_m": 0.00010919206879405789,
+      "conversion_refinement_change_m": 9.003141722661691e-06
+    },
+    "rejection_reason_counts": {
+      "extraction_topology": 2,
+      "boundary_motion_limit": 1,
+      "data_armijo": 1,
+      "regularized_armijo": 1,
+      "conversion_distance": 2,
+      "conversion_refinement_change": 4
+    },
+    "stop_reason": "completed_frozen_diagnostic_budget",
+    "forward_evaluations": 16,
+    "wall_seconds": 235.46046271300293,
+    "meaningful_boundary_step_floor_m": 0.0001,
+    "decision": "The historical stop is a conversion-refinement/search-depth effect. Accepted deeper steps are below the declared geometric movement floor and do not establish recovery."
+  },
+  "observability": {
+    "all_resolution_gates_pass": true,
+    "fd_validated_frequencies_ghz": [
+      0.5,
+      1.5
+    ],
+    "fd_rms_perturbations_m": [
+      0.0001,
+      3e-05,
+      1e-05
+    ],
+    "fd_group_count": 72,
+    "maximum_finest_fd_relative_error": 1.1225635589296093e-06,
+    "observed_fd_order_range": [
+      1.999964960667018,
+      2.0000856481891653
+    ],
+    "maximum_forward_relative_refinement": 1.8073214004763745e-13,
+    "maximum_derivative_relative_refinement": 6.225075179570044e-09,
+    "spectrum_refinement_summary": {
+      "spectrum_count": 264,
+      "threshold_rows": 792,
+      "certified_threshold_rows": 792,
+      "uncertain_threshold_rows": 0
+    },
+    "maximum_spectral_bound_relative_to_largest": 1.0553591694836778e-10,
+    "selected_target_relative_spectra": [
+      {
+        "location": "initial",
+        "acquisition": "paired-8",
+        "frequencies_ghz": "0.5+1.5",
+        "family": "physical",
+        "weighting": "target_relative",
+        "singular_values": [
+          0.14622887446471006,
+          0.14363366315218867,
+          0.1143064861140489,
+          0.11020713224501125,
+          0.08808323868956928
+        ],
+        "effective_rank": {
+          "0.01": 5,
+          "0.001": 5,
+          "0.0001": 5
+        },
+        "real_rows": 32,
+        "columns": 5
+      },
+      {
+        "location": "initial",
+        "acquisition": "paired-8",
+        "frequencies_ghz": "0.5+1.5",
+        "family": "modal",
+        "weighting": "target_relative",
+        "singular_values": [
+          0.22736990752830774,
+          0.19368834648843278,
+          0.17786772629018477,
+          0.17137181930233558,
+          0.16031647135216145,
+          0.14746373851693984,
+          0.144916438802027,
+          0.12352467487579372,
+          0.11250889097042488,
+          0.11088716744248325,
+          0.0959842585677442,
+          0.08296543838768082,
+          0.07853237093598067,
+          0.07161810511615892,
+          0.05795608276132867,
+          0.05197291796602447,
+          0.0402425433992334,
+          0.026249545441251562,
+          0.023338445476931452,
+          0.019521797441876505,
+          0.011203335629332678
+        ],
+        "effective_rank": {
+          "0.01": 21,
+          "0.001": 21,
+          "0.0001": 21
+        },
+        "real_rows": 32,
+        "columns": 21
+      },
+      {
+        "location": "initial",
+        "acquisition": "paired-8",
+        "frequencies_ghz": "1.5+2.5",
+        "family": "physical",
+        "weighting": "target_relative",
+        "singular_values": [
+          0.3721437915093515,
+          0.33505474739507163,
+          0.31199552767544175,
+          0.2863830054259754,
+          0.2204747721181428
+        ],
+        "effective_rank": {
+          "0.01": 5,
+          "0.001": 5,
+          "0.0001": 5
+        },
+        "real_rows": 32,
+        "columns": 5
+      },
+      {
+        "location": "initial",
+        "acquisition": "paired-8",
+        "frequencies_ghz": "1.5+2.5",
+        "family": "modal",
+        "weighting": "target_relative",
+        "singular_values": [
+          0.662994951107558,
+          0.6051327863184726,
+          0.5631916723061218,
+          0.468544375013187,
+          0.4516437640119823,
+          0.4082104905316743,
+          0.35115167664533703,
+          0.3415626590709618,
+          0.3162673500564994,
+          0.28202206162394894,
+          0.2720334562686177,
+          0.24013616035400798,
+          0.21945838129917758,
+          0.20779893660277582,
+          0.17654383310844984,
+          0.14599447267384694,
+          0.11642892547444572,
+          0.11073900470196159,
+          0.08033771821169758,
+          0.06179650405623191,
+          0.050240480515413674
+        ],
+        "effective_rank": {
+          "0.01": 21,
+          "0.001": 21,
+          "0.0001": 21
+        },
+        "real_rows": 32,
+        "columns": 21
+      },
+      {
+        "location": "initial",
+        "acquisition": "paired-12",
+        "frequencies_ghz": "0.5+1.5",
+        "family": "physical",
+        "weighting": "target_relative",
+        "singular_values": [
+          0.14819209001444672,
+          0.1304678863071391,
+          0.1270470299743836,
+          0.119683717843353,
+          0.09266062088094333
+        ],
+        "effective_rank": {
+          "0.01": 5,
+          "0.001": 5,
+          "0.0001": 5
+        },
+        "real_rows": 48,
+        "columns": 5
+      },
+      {
+        "location": "initial",
+        "acquisition": "paired-12",
+        "frequencies_ghz": "0.5+1.5",
+        "family": "modal",
+        "weighting": "target_relative",
+        "singular_values": [
+          0.20962714416766406,
+          0.17751464663601627,
+          0.17521524550772552,
+          0.16474529642229455,
+          0.15874740972734572,
+          0.14128865813788768,
+          0.13454757362850947,
+          0.13028080069836562,
+          0.12283412892200543,
+          0.11180513380839403,
+          0.10676386804315176,
+          0.09753174655479586,
+          0.09280363356234331,
+          0.08474680447267398,
+          0.07854331093238086,
+          0.06901735793761114,
+          0.04538615657552975,
+          0.039559273291426326,
+          0.03725836642867509,
+          0.029499481345453663,
+          0.016439333490422207
+        ],
+        "effective_rank": {
+          "0.01": 21,
+          "0.001": 21,
+          "0.0001": 21
+        },
+        "real_rows": 48,
+        "columns": 21
+      },
+      {
+        "location": "initial",
+        "acquisition": "paired-12",
+        "frequencies_ghz": "1.5+2.5",
+        "family": "physical",
+        "weighting": "target_relative",
+        "singular_values": [
+          0.399093851348741,
+          0.3273388695521875,
+          0.29816590913075464,
+          0.2705813128089753,
+          0.25190273197006513
+        ],
+        "effective_rank": {
+          "0.01": 5,
+          "0.001": 5,
+          "0.0001": 5
+        },
+        "real_rows": 48,
+        "columns": 5
+      },
+      {
+        "location": "initial",
+        "acquisition": "paired-12",
+        "frequencies_ghz": "1.5+2.5",
+        "family": "modal",
+        "weighting": "target_relative",
+        "singular_values": [
+          0.578155669702331,
+          0.5434029312827586,
+          0.49320884164701845,
+          0.4650195807153023,
+          0.44795823380132627,
+          0.4113663927026724,
+          0.3626232566199475,
+          0.35676834860707,
+          0.33306185658847365,
+          0.3268437861041676,
+          0.2940200819104753,
+          0.2787813678296727,
+          0.24507907556720887,
+          0.23806695472411218,
+          0.2210258198751676,
+          0.19843966454998865,
+          0.1842114192670778,
+          0.16810713739331065,
+          0.14800104608382209,
+          0.12974954108911912,
+          0.08945849611654443
+        ],
+        "effective_rank": {
+          "0.01": 21,
+          "0.001": 21,
+          "0.0001": 21
+        },
+        "real_rows": 48,
+        "columns": 21
+      },
+      {
+        "location": "initial",
+        "acquisition": "multistatic-8",
+        "frequencies_ghz": "0.5+1.5",
+        "family": "physical",
+        "weighting": "target_relative",
+        "singular_values": [
+          0.06669644649729309,
+          0.05927492048688408,
+          0.05684015166010628,
+          0.03881900900660861,
+          0.035741717805240575
+        ],
+        "effective_rank": {
+          "0.01": 5,
+          "0.001": 5,
+          "0.0001": 5
+        },
+        "real_rows": 256,
+        "columns": 5
+      },
+      {
+        "location": "initial",
+        "acquisition": "multistatic-8",
+        "frequencies_ghz": "0.5+1.5",
+        "family": "modal",
+        "weighting": "target_relative",
+        "singular_values": [
+          0.06700218697422279,
+          0.06146892733832821,
+          0.05974698082507787,
+          0.05183133324123531,
+          0.05129731448274558,
+          0.04333760839944932,
+          0.04255494901863497,
+          0.040328320800303394,
+          0.03960395166867424,
+          0.0382687916652092,
+          0.035873960048490035,
+          0.03542076307783047,
+          0.03368198011789233,
+          0.032495466920099664,
+          0.027891978260142728,
+          0.02674963194835783,
+          0.017714497003386714,
+          0.015628565836513206,
+          0.011527602785527955,
+          0.009566280924826708,
+          0.00733355778593518
+        ],
+        "effective_rank": {
+          "0.01": 21,
+          "0.001": 21,
+          "0.0001": 21
+        },
+        "real_rows": 256,
+        "columns": 21
+      },
+      {
+        "location": "initial",
+        "acquisition": "multistatic-8",
+        "frequencies_ghz": "1.5+2.5",
+        "family": "physical",
+        "weighting": "target_relative",
+        "singular_values": [
+          0.09151222019502603,
+          0.08126418385605383,
+          0.07988237976292369,
+          0.06479481117403105,
+          0.060751138328120624
+        ],
+        "effective_rank": {
+          "0.01": 5,
+          "0.001": 5,
+          "0.0001": 5
+        },
+        "real_rows": 256,
+        "columns": 5
+      },
+      {
+        "location": "initial",
+        "acquisition": "multistatic-8",
+        "frequencies_ghz": "1.5+2.5",
+        "family": "modal",
+        "weighting": "target_relative",
+        "singular_values": [
+          0.09164441124147477,
+          0.0831503545743434,
+          0.08275300800941732,
+          0.08090529506566399,
+          0.07852660154935605,
+          0.07398528547831411,
+          0.07146689069767538,
+          0.06927973062570544,
+          0.0670226322626307,
+          0.06641360377661448,
+          0.0634526014742579,
+          0.06048609202350999,
+          0.060279157476335686,
+          0.05893739510962278,
+          0.05693135915467701,
+          0.054980625594271415,
+          0.052621240197633784,
+          0.050232145456048996,
+          0.043464966676142885,
+          0.039916705081430734,
+          0.03539375981003233
+        ],
+        "effective_rank": {
+          "0.01": 21,
+          "0.001": 21,
+          "0.0001": 21
+        },
+        "real_rows": 256,
+        "columns": 21
+      },
+      {
+        "location": "target",
+        "acquisition": "paired-8",
+        "frequencies_ghz": "0.5+1.5",
+        "family": "physical",
+        "weighting": "target_relative",
+        "singular_values": [
+          0.18917417180633647,
+          0.14880930070731735,
+          0.13081969138585944,
+          0.1265749431954926,
+          0.0878707504406588
+        ],
+        "effective_rank": {
+          "0.01": 5,
+          "0.001": 5,
+          "0.0001": 5
+        },
+        "real_rows": 32,
+        "columns": 5
+      },
+      {
+        "location": "target",
+        "acquisition": "paired-8",
+        "frequencies_ghz": "0.5+1.5",
+        "family": "modal",
+        "weighting": "target_relative",
+        "singular_values": [
+          0.20203554713623956,
+          0.1927765030665921,
+          0.18107702729349312,
+          0.17053441830037977,
+          0.15670573980594601,
+          0.1525754261868525,
+          0.13870316442393574,
+          0.1251924775856966,
+          0.10680047665675182,
+          0.09966804229543338,
+          0.09165301247423897,
+          0.08325546843630588,
+          0.06766314624540666,
+          0.05228324916487525,
+          0.04096732707351448,
+          0.03291818736228114,
+          0.02848296633449441,
+          0.025448518380410623,
+          0.02184730384575103,
+          0.01548435912646693,
+          0.0027462211610540022
+        ],
+        "effective_rank": {
+          "0.01": 21,
+          "0.001": 21,
+          "0.0001": 21
+        },
+        "real_rows": 32,
+        "columns": 21
+      },
+      {
+        "location": "target",
+        "acquisition": "paired-8",
+        "frequencies_ghz": "1.5+2.5",
+        "family": "physical",
+        "weighting": "target_relative",
+        "singular_values": [
+          0.40228370939330205,
+          0.3463403760005205,
+          0.33882417481960736,
+          0.2919204007847704,
+          0.20612699374312832
+        ],
+        "effective_rank": {
+          "0.01": 5,
+          "0.001": 5,
+          "0.0001": 5
+        },
+        "real_rows": 32,
+        "columns": 5
+      },
+      {
+        "location": "target",
+        "acquisition": "paired-8",
+        "frequencies_ghz": "1.5+2.5",
+        "family": "modal",
+        "weighting": "target_relative",
+        "singular_values": [
+          0.7048949957571151,
+          0.6603585048382139,
+          0.5543509351000625,
+          0.5238916436597181,
+          0.46322907119226187,
+          0.4401954247856832,
+          0.42269664657374434,
+          0.3831442509952099,
+          0.3311550673871488,
+          0.29828270888618896,
+          0.2549759507798931,
+          0.23779666198305302,
+          0.20185454930565594,
+          0.18916999665838286,
+          0.1468096766594562,
+          0.14131851873228898,
+          0.13193866986300848,
+          0.11133607115472326,
+          0.08845559981092387,
+          0.07694360660597252,
+          0.052656346938316057
+        ],
+        "effective_rank": {
+          "0.01": 21,
+          "0.001": 21,
+          "0.0001": 21
+        },
+        "real_rows": 32,
+        "columns": 21
+      },
+      {
+        "location": "target",
+        "acquisition": "paired-12",
+        "frequencies_ghz": "0.5+1.5",
+        "family": "physical",
+        "weighting": "target_relative",
+        "singular_values": [
+          0.18911023784026468,
+          0.1488346712612658,
+          0.1286474241798985,
+          0.12856488307324057,
+          0.08828262345816457
+        ],
+        "effective_rank": {
+          "0.01": 5,
+          "0.001": 5,
+          "0.0001": 5
+        },
+        "real_rows": 48,
+        "columns": 5
+      },
+      {
+        "location": "target",
+        "acquisition": "paired-12",
+        "frequencies_ghz": "0.5+1.5",
+        "family": "modal",
+        "weighting": "target_relative",
+        "singular_values": [
+          0.20029820630123982,
+          0.18971521669117877,
+          0.17670431369633377,
+          0.15458617419986295,
+          0.1459142670604531,
+          0.1434829707393253,
+          0.142158866441083,
+          0.10888905609422757,
+          0.10592682109442646,
+          0.10114329791669478,
+          0.09538063492535476,
+          0.09409946490954924,
+          0.07948291490765486,
+          0.07562536641166992,
+          0.07316040902488702,
+          0.06541225970234424,
+          0.046589352941820816,
+          0.04448992172048316,
+          0.025145445023141783,
+          0.01883317843022261,
+          0.012019701300638706
+        ],
+        "effective_rank": {
+          "0.01": 21,
+          "0.001": 21,
+          "0.0001": 21
+        },
+        "real_rows": 48,
+        "columns": 21
+      },
+      {
+        "location": "target",
+        "acquisition": "paired-12",
+        "frequencies_ghz": "1.5+2.5",
+        "family": "physical",
+        "weighting": "target_relative",
+        "singular_values": [
+          0.40068376444048776,
+          0.33852259489479963,
+          0.3012494240023581,
+          0.2935829804999328,
+          0.26870520041215046
+        ],
+        "effective_rank": {
+          "0.01": 5,
+          "0.001": 5,
+          "0.0001": 5
+        },
+        "real_rows": 48,
+        "columns": 5
+      },
+      {
+        "location": "target",
+        "acquisition": "paired-12",
+        "frequencies_ghz": "1.5+2.5",
+        "family": "modal",
+        "weighting": "target_relative",
+        "singular_values": [
+          0.6325563576016398,
+          0.599932520791252,
+          0.581729662091797,
+          0.4984444500852334,
+          0.47108349750896833,
+          0.3941469888521652,
+          0.383443563163202,
+          0.3808534049512008,
+          0.35444367711213787,
+          0.31498366769357455,
+          0.31193919722613406,
+          0.27741153382986944,
+          0.2487481846981468,
+          0.22719591362701105,
+          0.21627810028383299,
+          0.19274440975485635,
+          0.18549305523397272,
+          0.17971411310303542,
+          0.16270521858499273,
+          0.1335356442855062,
+          0.09644672478814868
+        ],
+        "effective_rank": {
+          "0.01": 21,
+          "0.001": 21,
+          "0.0001": 21
+        },
+        "real_rows": 48,
+        "columns": 21
+      },
+      {
+        "location": "target",
+        "acquisition": "multistatic-8",
+        "frequencies_ghz": "0.5+1.5",
+        "family": "physical",
+        "weighting": "target_relative",
+        "singular_values": [
+          0.0685698782231091,
+          0.052727284561457234,
+          0.051463705985878266,
+          0.038485214986414176,
+          0.03471658631786009
+        ],
+        "effective_rank": {
+          "0.01": 5,
+          "0.001": 5,
+          "0.0001": 5
+        },
+        "real_rows": 256,
+        "columns": 5
+      },
+      {
+        "location": "target",
+        "acquisition": "multistatic-8",
+        "frequencies_ghz": "0.5+1.5",
+        "family": "modal",
+        "weighting": "target_relative",
+        "singular_values": [
+          0.07196756640855094,
+          0.060151046677595424,
+          0.06008148375662885,
+          0.04960266108902062,
+          0.049497870491756184,
+          0.043910705701415344,
+          0.042076779042372926,
+          0.041122864915369844,
+          0.03989970201846457,
+          0.03908941048651235,
+          0.0356546225151697,
+          0.03138256832481617,
+          0.030927176522345307,
+          0.027764683291523807,
+          0.027452967579928288,
+          0.025751300671753928,
+          0.016165797123107742,
+          0.015039356948442066,
+          0.012494324637410341,
+          0.009196647115657262,
+          0.0069113926178694775
+        ],
+        "effective_rank": {
+          "0.01": 21,
+          "0.001": 21,
+          "0.0001": 21
+        },
+        "real_rows": 256,
+        "columns": 21
+      },
+      {
+        "location": "target",
+        "acquisition": "multistatic-8",
+        "frequencies_ghz": "1.5+2.5",
+        "family": "physical",
+        "weighting": "target_relative",
+        "singular_values": [
+          0.09454302614524317,
+          0.08106531936935935,
+          0.07461850679474667,
+          0.062363945354634714,
+          0.0615390344437973
+        ],
+        "effective_rank": {
+          "0.01": 5,
+          "0.001": 5,
+          "0.0001": 5
+        },
+        "real_rows": 256,
+        "columns": 5
+      },
+      {
+        "location": "target",
+        "acquisition": "multistatic-8",
+        "frequencies_ghz": "1.5+2.5",
+        "family": "modal",
+        "weighting": "target_relative",
+        "singular_values": [
+          0.09759653787671498,
+          0.08802654115784898,
+          0.08547686891124108,
+          0.08013928117852258,
+          0.0776589554609629,
+          0.07199676766365795,
+          0.07110760764793214,
+          0.06922492509510937,
+          0.06727658784118333,
+          0.06589918056288036,
+          0.06397915653844105,
+          0.062392633472711546,
+          0.06011575756469317,
+          0.05725060638411689,
+          0.05595210098272431,
+          0.055166680319474325,
+          0.0478897968600876,
+          0.045707872903911484,
+          0.04382331721738386,
+          0.04191495832457226,
+          0.03338850189720811
+        ],
+        "effective_rank": {
+          "0.01": 21,
+          "0.001": 21,
+          "0.0001": 21
+        },
+        "real_rows": 256,
+        "columns": 21
+      }
+    ],
+    "work": {
+      "forward_frequency_solves": 336,
+      "jvp_frequency_solves": 1248
+    },
+    "wall_seconds": 1739.975352872003,
+    "stop_reason": "completed_requested_diagnostics",
+    "rejection_reason_counts": {}
+  },
+  "decision_table": [
+    {
+      "phase": "A",
+      "question": "Is the five-parameter star recoverable with eight paired views?",
+      "finding": "Yes: maximum sampled node-to-target error 0.03870 mm, train relative L2 5.433e-6, fixed 3 GHz holdout 1.978e-4.",
+      "limits": "Only within the five-parameter family; not neural sufficiency."
+    },
+    {
+      "phase": "B",
+      "question": "Is the target-fitted MLP locally stable?",
+      "finding": "Three accepted updates remain near the fit; train and holdout improve, but maximum boundary error rises from 1.191 to 1.290 mm.",
+      "limits": "Usable short local descent, not long-term stability or exact truth initialization."
+    },
+    {
+      "phase": "C",
+      "question": "What actually terminates candidate steps?",
+      "finding": "Historical backtrack8 fails conversion refinement change; backtrack9 passes all gates but moves only 0.07076 mm and lowers loss 0.03883%.",
+      "limits": "Deeper search closes termination; accepted crawls do not solve the 36 mm wrong-start error."
+    },
+    {
+      "phase": "D0",
+      "question": "Which physical directions are observed?",
+      "finding": "All five directions have effective rank5 at thresholds1e-2,1e-3,1e-4 in the original band at both geometries for every acquisition.",
+      "limits": "Scaled local derivatives; amplitude/rotation are not absent from the original band."
+    },
+    {
+      "phase": "D1",
+      "question": "Which general boundary modes are observed?",
+      "finding": "All21 mode0..10 columns jointly have rank21 at all thresholds when0.5/1.5GHz are stacked, including paired8. A single paired8 frequency has at least5 structural null directions.",
+      "limits": "Only this21-mode diagnostic space and two analytic geometries; higher modes/neural geometry remain untested."
+    },
+    {
+      "phase": "D2",
+      "question": "Does multistatic readout improve the directions?",
+      "finding": "Yes, conditioning: at target the modal condition number improves73.6 to10.4 and absolute smallest singular value increases18.15x.",
+      "limits": "Per-acquisition normalization changes absolute objective scales; not every normalized singular value increases."
+    },
+    {
+      "phase": "E",
+      "question": "Does higher frequency add beyond multistatic?",
+      "finding": "Yes: multistatic1.5/2.5GHz raises the smallest target-relative modal singular value4.83x at both geometries over0.5/1.5GHz.",
+      "limits": "Adds strength, not missing rank in the tested stacked21-mode basis; no hard frequency cutoff."
+    },
+    {
+      "phase": "F recommendation",
+      "question": "Which acquisition should be used for the next full MLP run?",
+      "finding": "First multistatic8 at0.5/1.5GHz; then a separate multistatic8 at1.5/2.5GHz frequency ablation.",
+      "limits": "Keep the two-frequency objective, architecture, seed, warm start, Eikonal policy, bandwidth96, fidelity gates and work budget fixed; no long run launched here."
+    }
+  ],
+  "next_full_mlp_acquisition": {
+    "sources": 8,
+    "receivers": 8,
+    "readout": "multistatic",
+    "train_frequencies_ghz": [
+      0.5,
+      1.5
+    ],
+    "holdout_frequencies_ghz": [
+      3.0
+    ],
+    "followup_frequency_ablation_ghz": [
+      1.5,
+      2.5
+    ],
+    "launched": false
+  },
+  "validation": {
+    "focused_tests_passed": 184,
+    "log": "tests.log",
+    "git_diff_check": "passed"
+  }
+}

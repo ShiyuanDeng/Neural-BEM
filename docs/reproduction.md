@@ -33,6 +33,7 @@ none of these commands requests overwrite.
 ```bash
 cd /home/drdeng/Neural_SDF_BEM_AD
 REPRO_STAMP=$(date -u +%Y%m%dT%H%M%S%NZ)
+REPRO_DATE=$(date -u +%Y-%m-%d)
 REPRO_PY=(env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
   NUMEXPR_NUM_THREADS=1 PYTHONPATH=solvers \
   /home/drdeng/miniconda3/envs/EMNerf/bin/python)
@@ -85,16 +86,16 @@ inverse loop; no proposed curve is fitted during an adjoint update.
 
 "${REPRO_PY[@]}" run_implicit_mlp_inverse.py \
   --target circle --max-iterations 60 --num-pairs 12 --num-nodes 64 \
-  --output-dir "results/inverse/implicit_mlp/circle-${REPRO_STAMP}"
+  --output-dir "results/inverse/implicit_mlp/${REPRO_DATE}/circle-${REPRO_STAMP}"
 
 "${REPRO_PY[@]}" run_implicit_mlp_inverse.py \
   --target circle --initial-model siren_ellipse \
   --max-iterations 60 --num-pairs 12 --num-nodes 64 \
-  --output-dir "results/inverse/implicit_mlp/ellipse-to-circle-${REPRO_STAMP}"
+  --output-dir "results/inverse/implicit_mlp/${REPRO_DATE}/ellipse-to-circle-${REPRO_STAMP}"
 
 "${REPRO_PY[@]}" run_implicit_mlp_inverse.py \
   --target star --max-iterations 60 --num-pairs 12 --num-nodes 128 \
-  --output-dir "results/inverse/implicit_mlp/star-${REPRO_STAMP}"
+  --output-dir "results/inverse/implicit_mlp/${REPRO_DATE}/star-${REPRO_STAMP}"
 ```
 
 These bounded experiments currently fail some recovery gates; a nonzero gate
@@ -123,7 +124,7 @@ keeps that reference bounded; its forward cost grows with its parameter count.
   --target circle --initial-model siren_circle --solvers kress \
   --optimizer parameter_fd --mlp-hidden-features 32 --mlp-hidden-layers 0 \
   --max-iterations 10 --num-pairs 12 --num-nodes 64 \
-  --output-dir "results/inverse/implicit_mlp/parameter-fd-reference-${REPRO_STAMP}"
+  --output-dir "results/inverse/implicit_mlp/${REPRO_DATE}/parameter-fd-reference-${REPRO_STAMP}"
 ```
 
 The reference uses damped Gauss–Newton; the adjoint path uses Adam and Eikonal

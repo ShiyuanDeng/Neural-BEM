@@ -1,0 +1,84 @@
+{
+  "commit_sha": "838bedf4eb37beb3c01ae770958e6c92f2abdf04",
+  "created_utc": "2026-09-08T09:48:42.235442+00:00",
+  "working_tree_dirty": true,
+  "hash_capture": "Post-run integration snapshot; original run provenance and numerical settings are retained below and in source metrics.",
+  "source_sha256": {
+    "run_implicit_mlp_inverse.py": "407866bb5f476940b7a2c3695c2de24e144a8ea6da1945db907ab0731ac1c026",
+    "run_sdf_inverse_comparison.py": "602d025365264440e8708ba675db1fd93a7b0940d6970b427db9697c851ee4c9",
+    "solvers/sdf_inverse/implicit_adjoint.py": "8dce78096313fc59a2e4384e7cfbaa1f994faaed829737b9b8cf951317b4224a",
+    "solvers/sdf_inverse/geometry.py": "2341e23d3daf326e81ae064910cefa4cf49edb944e9892d9932293bb71574a56",
+    "solvers/sdf_inverse/models.py": "566d0a8bc2f997e8b79f139611d5972209fb083a9bb0fc5532e2c7cc0d841183",
+    "solvers/sdf_inverse/forward.py": "b97a11cbb5ebf16ee63554ba9424236eabfc87af52ff9c18ba7de7025e1cd7ce",
+    "solvers/sdf_inverse/method_b_pullback.py": "d9574adf756fe289de0d6020799aa8eb2b58cb1d939d1cc47fe773a6bb6a1da0",
+    "solvers/gpr_bem_kress/shape_derivative.py": "798059a021b6a429a01fe6a4ebe40f1ffee391c24ce58f0d5fe5697af732d55e",
+    "pytest/sdf_inverse/test_implicit_adjoint.py": "21bfa84d9663ed8a472c016193bd983645a40731dff843dccee9d24adc24b3ae",
+    "pytest/sdf_inverse/test_implicit_adjoint_driver.py": "622d6631963900d071633cdad13d9cc8ec1fb288dc595034cc1273fc96a06048",
+    "pytest/sdf_inverse/test_pretraining_and_conversion_repairs.py": "d18d7d65063a7d05880c303c5f124ace00d2a0d3839a7538053a06fdf19bfd13",
+    "results/validation/implicit_mlp_adjoint/latest-direction-20260908/phase_bc/frozen_fallback_audit.py": "19d0ceebd9194d103867945806b6b66baa69be97d968e5ed80e67f737a1a76f5",
+    "results/validation/implicit_mlp_adjoint/latest-direction-20260908/phase_bc/replay_truth_holdout.py": "9b94fffb9a36a41c4faf2c443c736da29164ae8a867bdade0d03200af9c08625",
+    "results/validation/implicit_mlp_adjoint/latest-direction-20260908/phase_bc/summarize_phase_bc.py": "4dbc79989813ce5cb73c6f6ab3783372a309d51a84af58faf11db1ddbe990ae3"
+  },
+  "original_truth_run_provenance": {
+    "command": "run_implicit_mlp_inverse.py --target star --start-at-truth --max-iterations 3 --num-pairs 8 --num-nodes 194 --bandwidth 96 --grid-resolution 513 --projected-samples 256 --holdout-ghz 3.0 --max-backtracks 14 --no-gate --output-dir results/validation/implicit_mlp_adjoint/latest-direction-20260908/phase_bc/start-at-truth",
+    "created_utc": "2026-09-08T09:33:24.978987+00:00",
+    "git": {
+      "branch": "feature/ordered-boundary-nystrom",
+      "commit": "838bedf4eb37beb3c01ae770958e6c92f2abdf04",
+      "working_tree_status_before_run": "M pytest/sdf_inverse/test_implicit_adjoint.py\n M pytest/sdf_inverse/test_implicit_adjoint_driver.py\n M run_sdf_inverse_comparison.py\n M solvers/gpr_bem_kress/shape_derivative.py\n M solvers/sdf_inverse/__init__.py\n M solvers/sdf_inverse/forward.py\n M solvers/sdf_inverse/geometry.py\n M solvers/sdf_inverse/implicit_adjoint.py\n?? pytest/sdf_inverse/test_indexed_forward.py\n?? results/validation/implicit_mlp_adjoint/latest-direction-20260908/\n?? run_implicit_star_matched_controls.py\n?? run_star_observability.py"
+    },
+    "matplotlib": "3.9.4",
+    "numpy": "2.0.2",
+    "platform": "Linux-6.8.0-138-generic-x86_64-with-glibc2.35",
+    "python": "3.9.25",
+    "scikit_image": "0.24.0",
+    "scipy": "1.13.1",
+    "thread_environment": {
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1"
+    },
+    "torch": "2.8.0+cu128"
+  },
+  "frozen_checkpoint_sha256": "c9b99cddeeab9cffab1b70f2e1a84055f016564ce9631cd3f2011447dd0899ac",
+  "truth_geometry_config": {
+    "arclength_dense_resolution": 2048,
+    "bandwidth": 96,
+    "bounds": [
+      [
+        0.3,
+        0.3
+      ],
+      [
+        0.7,
+        0.7
+      ]
+    ],
+    "conversion_tolerance_m": 0.0002,
+    "grid_shape": [
+      513,
+      513
+    ],
+    "num_nodes": 194,
+    "projected_samples": 256,
+    "validation_resolution": 1024
+  },
+  "truth_optimizer_config": {
+    "armijo_fraction": 0.0001,
+    "backtrack_factor": 0.5,
+    "eikonal_weight": 0.01,
+    "gradient_clip_norm": 10.0,
+    "gradient_tolerance": 1e-10,
+    "learning_rate": 0.001,
+    "loss_tolerance": 1e-12,
+    "max_backtracks": 14,
+    "max_iterations": 3,
+    "maximum_boundary_step_m": 0.002,
+    "meaningful_boundary_step_m": 0.0001,
+    "random_seed": 0,
+    "regularization_samples": 512
+  },
+  "holdout_oracle_validation": "../phase_a/oracle_3ghz_validation.json",
+  "test_log_sha256": "33c6a8823bba93b7f271011eb54959c09c02fac1e0f6c9f37a3368c14089a104"
+}

@@ -1,0 +1,587 @@
+{
+  "acquisition": "paired-8",
+  "num_sources": 8,
+  "num_receivers": 8,
+  "training_frequencies_ghz": [
+    0.5,
+    1.5
+  ],
+  "holdout_frequencies_ghz": [
+    3.0
+  ],
+  "source_points": [
+    [
+      0.8,
+      0.5
+    ],
+    [
+      0.7121320343559643,
+      0.7121320343559643
+    ],
+    [
+      0.5,
+      0.8
+    ],
+    [
+      0.2878679656440358,
+      0.7121320343559643
+    ],
+    [
+      0.2,
+      0.5
+    ],
+    [
+      0.2878679656440357,
+      0.2878679656440358
+    ],
+    [
+      0.49999999999999994,
+      0.2
+    ],
+    [
+      0.7121320343559642,
+      0.2878679656440357
+    ]
+  ],
+  "receiver_points": [
+    [
+      0.7940199733523725,
+      0.5596007992385184
+    ],
+    [
+      0.6657593876560562,
+      0.7500476462674449
+    ],
+    [
+      0.44039920076148165,
+      0.7940199733523725
+    ],
+    [
+      0.2499523537325551,
+      0.6657593876560562
+    ],
+    [
+      0.20598002664762755,
+      0.44039920076148165
+    ],
+    [
+      0.33424061234394375,
+      0.2499523537325551
+    ],
+    [
+      0.5596007992385184,
+      0.20598002664762755
+    ],
+    [
+      0.7500476462674449,
+      0.33424061234394375
+    ]
+  ],
+  "target": {
+    "center_x_m": 0.5,
+    "center_y_m": 0.5,
+    "mean_radius_m": 0.05,
+    "amplitude": 0.25,
+    "lobes": 5.0,
+    "rotation_radians": 0.0,
+    "minimum_radius_m": 0.037500000000000006,
+    "maximum_radius_m": 0.0625
+  },
+  "initial_parameters": {
+    "iteration": 0,
+    "training_loss": 1.5208973132484722,
+    "training_relative_l2": 1.2226582026618884,
+    "holdout_relative_l2": 1.3512380174465868,
+    "center_x": 0.48,
+    "center_y": 0.52,
+    "radius": 0.06,
+    "mean_radius": 0.06,
+    "amplitude": 0.12,
+    "rotation_radians": 0.25,
+    "lobes": 5.0,
+    "center_error_m": 0.02828427124746193,
+    "mean_radius_error_m": 0.009999999999999995,
+    "amplitude_error": 0.13,
+    "rotation_error_radians": 0.25,
+    "mean_node_to_exact_boundary_distance_m": 0.016860037498019165,
+    "maximum_node_to_exact_boundary_distance_m": 0.04308820539184257,
+    "forward_evaluations": 11,
+    "wall_seconds": 6.888838068000041,
+    "accepted_trials": 0,
+    "rejected_trials": 0
+  },
+  "exterior_material": {
+    "epsr": 6.0,
+    "sigma": 0.0,
+    "mur": 1.0
+  },
+  "interior_material": {
+    "epsr": 3.0,
+    "sigma": 0.0,
+    "mur": 1.0
+  },
+  "source_strengths_real": [
+    1e-06,
+    1e-06
+  ],
+  "geometry_config": {
+    "bounds": [
+      [
+        0.3,
+        0.3
+      ],
+      [
+        0.7,
+        0.7
+      ]
+    ],
+    "grid_shape": [
+      257,
+      257
+    ],
+    "projected_samples": 128,
+    "bandwidth": 48,
+    "num_nodes": 128,
+    "arclength_dense_resolution": 2048,
+    "validation_resolution": 1024,
+    "conversion_tolerance_m": null
+  },
+  "optimizer_config": {
+    "max_iterations": 14,
+    "finite_difference_steps": [
+      5e-05,
+      5e-05,
+      0.0004,
+      0.002,
+      0.002
+    ],
+    "max_steps": [
+      0.01,
+      0.01,
+      0.1,
+      0.25,
+      0.25
+    ],
+    "initial_damping": 0.001,
+    "damping_increase": 10.0,
+    "damping_decrease": 0.3,
+    "max_damping_trials": 6,
+    "max_backtracks": 8,
+    "gradient_tolerance": 1e-09,
+    "loss_tolerance": 1e-12,
+    "relative_step_tolerance": 1e-09,
+    "max_parameters": 5,
+    "infeasible_trial_policy": "error"
+  },
+  "optimizer": "existing bounded central-FD damped Gauss-Newton",
+  "stop_reason": "no_decreasing_step",
+  "optimizer_converged": false,
+  "accepted_updates": 13,
+  "rejected_trials": 0,
+  "rejection_reason_counts": {},
+  "inverse_forward_evaluations": 154,
+  "inverse_cache_hits": 28,
+  "posthoc_holdout_forward_evaluations": 14,
+  "inverse_seconds": 95.80599807899853,
+  "oracle_and_inverse_seconds": 104.15103888099839,
+  "total_arm_seconds": 112.56183433999831,
+  "maximum_system_residual": 7.092972906158046e-15,
+  "training_oracle_validation": {
+    "num_nodes": 512,
+    "coarse_num_nodes": 256,
+    "per_frequency_relative_difference": [
+      3.695035493186856e-13,
+      2.4059672080743743e-11
+    ],
+    "maximum_relative_difference": 2.4059672080743743e-11,
+    "fine": {
+      "num_nodes": 512,
+      "maximum_linear_system_relative_residual": 3.6614476481613845e-15,
+      "maximum_incident_consistency": 1.3521812487434102e-15,
+      "total_seconds": 1.3336006329918746
+    },
+    "coarse": {
+      "num_nodes": 256,
+      "maximum_linear_system_relative_residual": 2.790490855702589e-15,
+      "maximum_incident_consistency": 1.1051880230642812e-15,
+      "total_seconds": 0.3330452649970539
+    }
+  },
+  "holdout_oracle_validation": {
+    "num_nodes": 1024,
+    "coarse_num_nodes": 512,
+    "per_frequency_relative_difference": [
+      2.488960662187501e-10
+    ],
+    "maximum_relative_difference": 2.488960662187501e-10,
+    "fine": {
+      "num_nodes": 1024,
+      "maximum_linear_system_relative_residual": 5.0784249104582825e-15,
+      "maximum_incident_consistency": 8.981966945797102e-16,
+      "total_seconds": 3.600397817004705
+    },
+    "coarse": {
+      "num_nodes": 512,
+      "maximum_linear_system_relative_residual": 5.9101100721679555e-15,
+      "maximum_incident_consistency": 1.3476777792967633e-15,
+      "total_seconds": 0.8776403119991301
+    }
+  },
+  "recovery_gates": {
+    "center_error": true,
+    "mean_radius_error": true,
+    "amplitude_error": true,
+    "rotation_error": true,
+    "maximum_node_boundary_error": true,
+    "training_relative_l2": true,
+    "holdout_relative_l2": true
+  },
+  "recovery_passed": true,
+  "final": {
+    "iteration": 13,
+    "training_loss": 3.1270877508557324e-11,
+    "training_relative_l2": 5.433155820069646e-06,
+    "holdout_relative_l2": 0.00019781294743169894,
+    "center_x": 0.4999999992036227,
+    "center_y": 0.49999999832388214,
+    "radius": 0.04999994166954437,
+    "mean_radius": 0.04999994166954437,
+    "amplitude": 0.250005825108729,
+    "rotation_radians": 5.295867476962676e-07,
+    "lobes": 5.0,
+    "center_error_m": 1.8556906708305653e-09,
+    "mean_radius_error_m": 5.833045563230499e-08,
+    "amplitude_error": 5.825108728985118e-06,
+    "rotation_error_radians": 5.295867476962676e-07,
+    "mean_node_to_exact_boundary_distance_m": 8.169291996006292e-06,
+    "maximum_node_to_exact_boundary_distance_m": 3.869528014785449e-05,
+    "forward_evaluations": 154,
+    "wall_seconds": 95.8056678550056,
+    "accepted_trials": 13,
+    "rejected_trials": 0
+  },
+  "accepted_iterates": [
+    {
+      "iteration": 0,
+      "training_loss": 1.5208973132484722,
+      "training_relative_l2": 1.2226582026618884,
+      "holdout_relative_l2": 1.3512380174465868,
+      "center_x": 0.48,
+      "center_y": 0.52,
+      "radius": 0.06,
+      "mean_radius": 0.06,
+      "amplitude": 0.12,
+      "rotation_radians": 0.25,
+      "lobes": 5.0,
+      "center_error_m": 0.02828427124746193,
+      "mean_radius_error_m": 0.009999999999999995,
+      "amplitude_error": 0.13,
+      "rotation_error_radians": 0.25,
+      "mean_node_to_exact_boundary_distance_m": 0.016860037498019165,
+      "maximum_node_to_exact_boundary_distance_m": 0.04308820539184257,
+      "forward_evaluations": 11,
+      "wall_seconds": 6.888838068000041,
+      "accepted_trials": 0,
+      "rejected_trials": 0
+    },
+    {
+      "iteration": 1,
+      "training_loss": 1.0472635836383943,
+      "training_relative_l2": 1.016940729605626,
+      "holdout_relative_l2": 1.3223804366764884,
+      "center_x": 0.4825840532160937,
+      "center_y": 0.5133654189631253,
+      "radius": 0.06318700304365062,
+      "mean_radius": 0.06318700304365062,
+      "amplitude": 0.05780986036259495,
+      "rotation_radians": 0.3690072088325748,
+      "lobes": 5.0,
+      "center_error_m": 0.021953351143725736,
+      "mean_radius_error_m": 0.013187003043650614,
+      "amplitude_error": 0.19219013963740506,
+      "rotation_error_radians": 0.3690072088325748,
+      "mean_node_to_exact_boundary_distance_m": 0.01541299307614188,
+      "maximum_node_to_exact_boundary_distance_m": 0.038359261687570784,
+      "forward_evaluations": 22,
+      "wall_seconds": 13.74136324400024,
+      "accepted_trials": 1,
+      "rejected_trials": 0
+    },
+    {
+      "iteration": 2,
+      "training_loss": 0.8366509762097103,
+      "training_relative_l2": 0.9041614241204953,
+      "holdout_relative_l2": 1.5329021986005564,
+      "center_x": 0.48674746732636465,
+      "center_y": 0.5063201475580852,
+      "radius": 0.06516009612222128,
+      "mean_radius": 0.06516009612222128,
+      "amplitude": 0.06658248381629481,
+      "rotation_radians": 0.5829481048946168,
+      "lobes": 5.0,
+      "center_error_m": 0.014682434655796796,
+      "mean_radius_error_m": 0.015160096122221273,
+      "amplitude_error": 0.1834175161837052,
+      "rotation_error_radians": 0.5829481048946168,
+      "mean_node_to_exact_boundary_distance_m": 0.014785885745889188,
+      "maximum_node_to_exact_boundary_distance_m": 0.0367535363576118,
+      "forward_evaluations": 33,
+      "wall_seconds": 20.720200027004466,
+      "accepted_trials": 2,
+      "rejected_trials": 0
+    },
+    {
+      "iteration": 3,
+      "training_loss": 0.7852370330559078,
+      "training_relative_l2": 0.8719413814093082,
+      "holdout_relative_l2": 1.3982704644809187,
+      "center_x": 0.4889355058779653,
+      "center_y": 0.5048666851887155,
+      "radius": 0.06398706150565514,
+      "mean_radius": 0.06398706150565514,
+      "amplitude": 0.05,
+      "rotation_radians": 0.5381576925420392,
+      "lobes": 5.0,
+      "center_error_m": 0.012087499944264855,
+      "mean_radius_error_m": 0.013987061505655138,
+      "amplitude_error": 0.2,
+      "rotation_error_radians": 0.5381576925420392,
+      "mean_node_to_exact_boundary_distance_m": 0.013077140027030608,
+      "maximum_node_to_exact_boundary_distance_m": 0.03289894475330462,
+      "forward_evaluations": 44,
+      "wall_seconds": 27.590846131992294,
+      "accepted_trials": 3,
+      "rejected_trials": 0
+    },
+    {
+      "iteration": 4,
+      "training_loss": 0.7641847508436492,
+      "training_relative_l2": 0.8577085973185758,
+      "holdout_relative_l2": 1.35741595956489,
+      "center_x": 0.4904613439197939,
+      "center_y": 0.5032136655544545,
+      "radius": 0.0637733178400471,
+      "mean_radius": 0.0637733178400471,
+      "amplitude": 0.05,
+      "rotation_radians": 0.4925975535825563,
+      "lobes": 5.0,
+      "center_error_m": 0.010065466015656695,
+      "mean_radius_error_m": 0.013773317840047095,
+      "amplitude_error": 0.2,
+      "rotation_error_radians": 0.4925975535825563,
+      "mean_node_to_exact_boundary_distance_m": 0.012386649706667148,
+      "maximum_node_to_exact_boundary_distance_m": 0.031221897070446418,
+      "forward_evaluations": 55,
+      "wall_seconds": 34.44527556799585,
+      "accepted_trials": 4,
+      "rejected_trials": 0
+    },
+    {
+      "iteration": 5,
+      "training_loss": 0.7436857661872794,
+      "training_relative_l2": 0.8447982161303863,
+      "holdout_relative_l2": 1.3232091864285347,
+      "center_x": 0.49170290341037115,
+      "center_y": 0.5024769839150559,
+      "radius": 0.06368552618521967,
+      "mean_radius": 0.06368552618521967,
+      "amplitude": 0.05,
+      "rotation_radians": 0.42109000885547565,
+      "lobes": 5.0,
+      "center_error_m": 0.00865894110922787,
+      "mean_radius_error_m": 0.013685526185219662,
+      "amplitude_error": 0.2,
+      "rotation_error_radians": 0.42109000885547565,
+      "mean_node_to_exact_boundary_distance_m": 0.011842632926502913,
+      "maximum_node_to_exact_boundary_distance_m": 0.029668456557201486,
+      "forward_evaluations": 66,
+      "wall_seconds": 41.30754337500548,
+      "accepted_trials": 5,
+      "rejected_trials": 0
+    },
+    {
+      "iteration": 6,
+      "training_loss": 0.6912190297680307,
+      "training_relative_l2": 0.813357157921986,
+      "holdout_relative_l2": 1.3171764581681733,
+      "center_x": 0.49343170694568,
+      "center_y": 0.5019096611350842,
+      "radius": 0.06349592703393618,
+      "mean_radius": 0.06349592703393618,
+      "amplitude": 0.05,
+      "rotation_radians": 0.2970022146443342,
+      "lobes": 5.0,
+      "center_error_m": 0.006840268949265027,
+      "mean_radius_error_m": 0.013495927033936178,
+      "amplitude_error": 0.2,
+      "rotation_error_radians": 0.2970022146443342,
+      "mean_node_to_exact_boundary_distance_m": 0.010939902412659172,
+      "maximum_node_to_exact_boundary_distance_m": 0.026013371522542513,
+      "forward_evaluations": 77,
+      "wall_seconds": 48.121674139998504,
+      "accepted_trials": 6,
+      "rejected_trials": 0
+    },
+    {
+      "iteration": 7,
+      "training_loss": 0.5638733097239184,
+      "training_relative_l2": 0.7334346134900158,
+      "holdout_relative_l2": 1.2859728663961436,
+      "center_x": 0.4962948723076644,
+      "center_y": 0.5007136839985057,
+      "radius": 0.0626305971614274,
+      "mean_radius": 0.0626305971614274,
+      "amplitude": 0.05,
+      "rotation_radians": 0.09892565109389245,
+      "lobes": 5.0,
+      "center_error_m": 0.003773236815551769,
+      "mean_radius_error_m": 0.012630597161427393,
+      "amplitude_error": 0.2,
+      "rotation_error_radians": 0.09892565109389245,
+      "mean_node_to_exact_boundary_distance_m": 0.009440026720306458,
+      "maximum_node_to_exact_boundary_distance_m": 0.02169947624881391,
+      "forward_evaluations": 88,
+      "wall_seconds": 54.940253510998446,
+      "accepted_trials": 7,
+      "rejected_trials": 0
+    },
+    {
+      "iteration": 8,
+      "training_loss": 0.3925854502769061,
+      "training_relative_l2": 0.6105912599358063,
+      "holdout_relative_l2": 1.3613391620524573,
+      "center_x": 0.4990183569755875,
+      "center_y": 0.4994551043355872,
+      "radius": 0.060208626355990655,
+      "mean_radius": 0.060208626355990655,
+      "amplitude": 0.0876983816401482,
+      "rotation_radians": -0.04179981938971414,
+      "lobes": 5.0,
+      "center_error_m": 0.001122735192498029,
+      "mean_radius_error_m": 0.010208626355990652,
+      "amplitude_error": 0.1623016183598518,
+      "rotation_error_radians": 0.04179981938971414,
+      "mean_node_to_exact_boundary_distance_m": 0.007401186419950429,
+      "maximum_node_to_exact_boundary_distance_m": 0.015220718111613317,
+      "forward_evaluations": 99,
+      "wall_seconds": 61.68480368600285,
+      "accepted_trials": 8,
+      "rejected_trials": 0
+    },
+    {
+      "iteration": 9,
+      "training_loss": 0.151552058931736,
+      "training_relative_l2": 0.3786336917464077,
+      "holdout_relative_l2": 1.1781399068677767,
+      "center_x": 0.49989076481246314,
+      "center_y": 0.4996393982005937,
+      "radius": 0.05596481077810653,
+      "mean_radius": 0.05596481077810653,
+      "amplitude": 0.15447072259117228,
+      "rotation_radians": 0.020494856870261237,
+      "lobes": 5.0,
+      "center_error_m": 0.0003767837362881518,
+      "mean_radius_error_m": 0.005964810778106525,
+      "amplitude_error": 0.09552927740882772,
+      "rotation_error_radians": 0.020494856870261237,
+      "mean_node_to_exact_boundary_distance_m": 0.004232461314054004,
+      "maximum_node_to_exact_boundary_distance_m": 0.009108351679756129,
+      "forward_evaluations": 110,
+      "wall_seconds": 68.44058882100217,
+      "accepted_trials": 9,
+      "rejected_trials": 0
+    },
+    {
+      "iteration": 10,
+      "training_loss": 0.00622942438534118,
+      "training_relative_l2": 0.0765511435338699,
+      "holdout_relative_l2": 0.2761369291261028,
+      "center_x": 0.4999775011963979,
+      "center_y": 0.49988180210228705,
+      "radius": 0.0510079517473531,
+      "mean_radius": 0.0510079517473531,
+      "amplitude": 0.22589832285335182,
+      "rotation_radians": -0.003412477884384958,
+      "lobes": 5.0,
+      "center_error_m": 0.00012032015287260252,
+      "mean_radius_error_m": 0.001007951747353096,
+      "amplitude_error": 0.02410167714664818,
+      "rotation_error_radians": 0.003412477884384958,
+      "mean_node_to_exact_boundary_distance_m": 0.0006788662634244557,
+      "maximum_node_to_exact_boundary_distance_m": 0.002022299579887976,
+      "forward_evaluations": 121,
+      "wall_seconds": 75.2363150309975,
+      "accepted_trials": 10,
+      "rejected_trials": 0
+    },
+    {
+      "iteration": 11,
+      "training_loss": 1.0294419879132754e-05,
+      "training_relative_l2": 0.003097593085317036,
+      "holdout_relative_l2": 0.01175872048368317,
+      "center_x": 0.4999983694968311,
+      "center_y": 0.4999968685680457,
+      "radius": 0.05000578409476217,
+      "mean_radius": 0.05000578409476217,
+      "amplitude": 0.2487812130497425,
+      "rotation_radians": 0.0001667464562969353,
+      "lobes": 5.0,
+      "center_error_m": 3.53049666028135e-06,
+      "mean_radius_error_m": 5.784094762165126e-06,
+      "amplitude_error": 0.001218786950257511,
+      "rotation_error_radians": 0.0001667464562969353,
+      "mean_node_to_exact_boundary_distance_m": 2.9069750438040345e-05,
+      "maximum_node_to_exact_boundary_distance_m": 0.00010483296516479601,
+      "forward_evaluations": 132,
+      "wall_seconds": 82.12108181200165,
+      "accepted_trials": 11,
+      "rejected_trials": 0
+    },
+    {
+      "iteration": 12,
+      "training_loss": 6.034989570278701e-11,
+      "training_relative_l2": 7.534332341278985e-06,
+      "holdout_relative_l2": 0.00020288194986784613,
+      "center_x": 0.4999999997692361,
+      "center_y": 0.50000000202506,
+      "radius": 0.04999993400841248,
+      "mean_radius": 0.04999993400841248,
+      "amplitude": 0.2500038754685529,
+      "rotation_radians": 1.7925805598630138e-08,
+      "lobes": 5.0,
+      "center_error_m": 2.0381658469167704e-09,
+      "mean_radius_error_m": 6.599158752090828e-08,
+      "amplitude_error": 3.875468552905215e-06,
+      "rotation_error_radians": 1.7925805598630138e-08,
+      "mean_node_to_exact_boundary_distance_m": 8.170244810384038e-06,
+      "maximum_node_to_exact_boundary_distance_m": 3.8784661871293924e-05,
+      "forward_evaluations": 143,
+      "wall_seconds": 88.96436277400062,
+      "accepted_trials": 12,
+      "rejected_trials": 0
+    },
+    {
+      "iteration": 13,
+      "training_loss": 3.1270877508557324e-11,
+      "training_relative_l2": 5.433155820069646e-06,
+      "holdout_relative_l2": 0.00019781294743169894,
+      "center_x": 0.4999999992036227,
+      "center_y": 0.49999999832388214,
+      "radius": 0.04999994166954437,
+      "mean_radius": 0.04999994166954437,
+      "amplitude": 0.250005825108729,
+      "rotation_radians": 5.295867476962676e-07,
+      "lobes": 5.0,
+      "center_error_m": 1.8556906708305653e-09,
+      "mean_radius_error_m": 5.833045563230499e-08,
+      "amplitude_error": 5.825108728985118e-06,
+      "rotation_error_radians": 5.295867476962676e-07,
+      "mean_node_to_exact_boundary_distance_m": 8.169291996006292e-06,
+      "maximum_node_to_exact_boundary_distance_m": 3.869528014785449e-05,
+      "forward_evaluations": 154,
+      "wall_seconds": 95.8056678550056,
+      "accepted_trials": 13,
+      "rejected_trials": 0
+    }
+  ]
+}

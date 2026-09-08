@@ -121,6 +121,10 @@ class OrderedSDFGeometryConfig:
     # None preserves legacy geometry-only controls. Neural inverse drivers
     # declare a physical conversion budget explicitly.
     conversion_tolerance_m: float | None = None
+    # Explicit bases for a conversion-resolution audit. None reproduces the
+    # historical production-dependent defaults; the refined level doubles both.
+    conversion_audit_grid_shape: tuple[int, int] | None = None
+    conversion_audit_samples: int | None = None
 
     def __post_init__(self) -> None:
         bounds = _canonical_bounds(self.bounds)
@@ -175,6 +179,18 @@ class OrderedSDFGeometryConfig:
             raise ValueError(
                 "validation_resolution must be at least 2 * bandwidth + 2."
             )
+
+        if self.conversion_audit_grid_shape is not None:
+            if len(self.conversion_audit_grid_shape) != 2:
+                raise ValueError("conversion_audit_grid_shape must have two entries (ny, nx).")
+            object.__setattr__(self, "conversion_audit_grid_shape", tuple(
+                _integer_at_least(value, name=f"conversion_audit_grid_shape[{i}]", minimum=2)
+                for i, value in enumerate(self.conversion_audit_grid_shape)
+            ))
+        if self.conversion_audit_samples is not None:
+            object.__setattr__(self, "conversion_audit_samples", _integer_at_least(
+                self.conversion_audit_samples, name="conversion_audit_samples", minimum=8,
+            ))
 
         object.__setattr__(self, "bounds", bounds)
         object.__setattr__(self, "grid_shape", grid_shape)
@@ -429,19 +445,11 @@ def build_ordered_sdf_geometry(
     )
 
 
-def _check_conversion_fidelity(field, parameterization, config):
-    """Check both directed polygonal set distances using independent extraction.
-
-    Audit density is independent of BEM nodes and production projected samples.
-    Refining both grid and sampling checks numerical agreement; it is not a
-    certificate of the continuous zero set. A failure rejects the candidate
-    before its BEM solve and does not silently alter the differentiated map.
-    """
-    from .neural_optimization import maximum_curve_set_distance
-
-    errors = []
-    base_count = max(512, 4 * config.bandwidth + 4)
-    base_grid = tuple(max(257, n) for n in config.grid_shape)
+def _conversion_audit_levels(field, parameterization, config):
+    base_count = (config.conversion_audit_samples if config.conversion_audit_samples is not None
+                  else max(512, 4 * config.bandwidth + 4))
+    base_grid = (config.conversion_audit_grid_shape if config.conversion_audit_grid_shape is not None
+                 else tuple(max(257, n) for n in config.grid_shape))
     for factor in (1, 2):
         count = factor * base_count
         grid = tuple(factor * (n - 1) + 1 for n in base_grid)
@@ -452,18 +460,92 @@ def _check_conversion_fidelity(field, parameterization, config):
             ))
         except FrontendError as exc:
             raise OrderedSDFGeometryError(f"Conversion audit could not resolve the raw zero set: {exc}") from exc
-        errors.append(maximum_curve_set_distance(
-            reference.projected_points, parameterization.discretize(count).points,
-        ))
+        yield count, grid, reference, parameterization.discretize(count).points
+
+
+def measure_conversion_fidelity(field, parameterization, config):
+    """Report independent base/refined audits without accepting the trial field.
+
+    Fidelity violations are reported with the unchanged limits. Extraction or
+    topology failure still raises ``OrderedSDFGeometryError``. Single-component
+    agreement is an observed branch diagnostic, not proof of branch tracking.
+    """
+    from .neural_optimization import _maximum_point_to_closed_polygon_distance
+    from sdf_to_ordered_boundary.frontend import polygon_self_intersection_count
+
+    levels = []
+    for count, grid, reference, converted in _conversion_audit_levels(field, parameterization, config):
+        raw = reference.projected_points
+        forward = _maximum_point_to_closed_polygon_distance(raw, converted)
+        backward = _maximum_point_to_closed_polygon_distance(converted, raw)
+        component = reference.single_component
+        levels.append({
+            "grid_shape": list(grid), "samples": count,
+            "raw_to_converted_m": forward, "converted_to_raw_m": backward,
+            "maximum_error_m": max(forward, backward),
+            "component_count": reference.num_components,
+            "component_id": component.component_id,
+            "raw_self_intersections": component.raw_diagnostics.self_intersection_count,
+            "projected_self_intersections": component.projected_diagnostics.self_intersection_count,
+            "converted_self_intersections": polygon_self_intersection_count(converted),
+            "maximum_projected_field_residual": component.projection_passes[-1].maximum_residual,
+        })
+    maximum = max(level["maximum_error_m"] for level in levels)
+    change = abs(levels[1]["maximum_error_m"] - levels[0]["maximum_error_m"])
+    tolerance = config.conversion_tolerance_m
+    reasons = ([] if tolerance is None else [reason for reason, failed in (
+        ("conversion_distance", maximum > tolerance),
+        ("conversion_refinement_change", change > 0.05 * tolerance),
+    ) if failed])
+    topology_pass = all(level["raw_self_intersections"] == 0
+                        and level["projected_self_intersections"] == 0
+                        and level["converted_self_intersections"] == 0 for level in levels)
+    return {
+        "levels": levels, "maximum_conversion_error_m": maximum,
+        "conversion_refinement_change_m": change,
+        "conversion_tolerance_m": tolerance,
+        "refinement_tolerance_m": None if tolerance is None else 0.05 * tolerance,
+        "fidelity_pass": None if tolerance is None else not reasons,
+        "rejection_reasons": reasons, "topology_pass": topology_pass,
+        "branch_consistent": all(level["component_count"] == 1 for level in levels),
+        "branch_consistency_definition": "One simple extracted component at both audit levels; no branch-tracking proof.",
+        "audit_grid_is_explicit": config.conversion_audit_grid_shape is not None,
+        "audit_samples_are_explicit": config.conversion_audit_samples is not None,
+    }
+
+
+def _check_conversion_fidelity(field, parameterization, config):
+    """Check both directed polygonal set distances using independent extraction.
+
+    Audit density is independent of BEM nodes and production projected samples.
+    Refining both grid and sampling checks numerical agreement; it is not a
+    certificate of the continuous zero set. A failure rejects the candidate
+    before its BEM solve and does not silently alter the differentiated map.
+    """
+    from .neural_optimization import maximum_curve_set_distance
+
+    errors = [maximum_curve_set_distance(reference.projected_points, converted)
+              for _, _, reference, converted in _conversion_audit_levels(field, parameterization, config)]
     change = abs(errors[1] - errors[0])
     tolerance = config.conversion_tolerance_m
     if change > 0.05 * tolerance or max(errors) > tolerance:
-        raise OrderedSDFGeometryError(
+        error = OrderedSDFGeometryError(
             "Method-B conversion fidelity failed: raw/converted contour distance "
             f"{max(errors):.6g} m, refinement change {change:.6g} m; "
             f"limits {tolerance:.6g} m and {0.05 * tolerance:.6g} m. "
             "Refine extraction, projected samples and Fourier bandwidth before accepting this field."
         )
+        # Preserve the exception contract while exposing the two independent
+        # gates without requiring an optimizer to parse rounded error text.
+        error.rejection_reasons = tuple(
+            reason for reason, failed in (
+                ("conversion_distance", max(errors) > tolerance),
+                ("conversion_refinement_change", change > 0.05 * tolerance),
+            ) if failed
+        )
+        error.conversion_error_m = max(errors)
+        error.conversion_refinement_change_m = change
+        raise error
     return max(errors), change
 
 
@@ -515,5 +597,6 @@ __all__ = [
     "OrderedSDFGeometryConfig",
     "OrderedSDFGeometryError",
     "build_ordered_sdf_geometry",
+    "measure_conversion_fidelity",
     "ordered_curve_to_mod_boundary",
 ]
