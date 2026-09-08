@@ -1,0 +1,66 @@
+How much Cartesian bandwidth the star target needs in Method B's own chart.
+
+A read-only review diagnostic.  No model is loaded and no BEM solve, inverse,
+extraction or conversion is run; the only saved input is the shared initial
+``converted_contour`` from the long run.  Everything else is analytic.
+
+Method B refits by arc length, so the chart the direct control would optimize
+is the Cartesian Fourier expansion in the *arc-length* parameter.  The star is
+exactly bandwidth 6 in the polar-angle parameter, because
+
+    (R + A cos 5th)(cos th, sin th)
+
+expands to modes 1, 4 and 6 only.  Arc length is a nonlinear remap of that
+parameter, so the same curve is not bandlimited in the chart actually used.
+This prices the difference, and then prices the error floor of the proposal's
+frozen-tail design, whose achievable curves are
+
+    free active modes 0..B_a  +  the initial curve's modes above B_a.
+
+Because the frozen modes are L2-orthogonal to the active ones, the parameterwise
+L2 displacement of the best achievable curve is exactly the L2 norm of the
+frozen-tail difference, minimized over the parameter-origin gauge.
+
+=== target in the POLAR-ANGLE parameter (not the chart Method B uses) ===
+  k=0: 707.10678 mm  k=1:  70.71068 mm  k=2:   0.00000 mm  k=3:   0.00000 mm  k=4:   8.83883 mm  k=5:   0.00000 mm  k=6:   8.83883 mm  k=7:   0.00000 mm  k=8:   0.00000 mm
+  largest amplitude above mode 6: 5.139e-14 mm (exactly bandlimited at 6)
+
+=== target in the ARC-LENGTH parameter (the chart the control optimizes) ===
+  perimeter 414.9037 mm; polar-parameter speed ratio 2.151657
+  k=0: 707.10678 mm  k=1:  72.13767 mm  k=2:   0.00000 mm  k=3:   0.00000 mm  k=4:   9.26623 mm  k=5:   0.00000 mm  k=6:   7.22503 mm  k=7:   0.00000 mm  k=8:   0.00000 mm
+  next modes: k=9:  1.24127 mm  k=10:  0.00000 mm  k=11:  0.20958 mm  k=12:  0.00000 mm  k=13:  0.00000 mm  k=14:  0.55460 mm  k=15:  0.00000 mm  k=16:  0.35389 mm
+
+  bandwidth the target itself needs in this chart:
+    B_a   active real coefficients   max truncated displacement    RMS
+      4                          18          6956.822 um    5210.744 um
+      6                          26          1847.954 um    1025.346 um
+      8                          34          1847.954 um    1025.346 um
+     10                          42           970.242 um     530.054 um
+     12                          50          1118.437 um     508.916 um
+     14                          58           726.274 um     324.351 um
+     16                          66           476.032 um     206.357 um
+     20                          82           308.493 um     120.477 um
+     24                          98           203.481 um      76.059 um
+     32                         130           106.893 um      41.312 um   <- inside the 200 um conversion gate
+     40                         162            47.814 um      17.081 um   <- inside the 200 um conversion gate
+     48                         194            29.366 um      11.004 um   <- inside the 200 um conversion gate
+
+=== error floor of the frozen-tail design ===
+  achievable curves are: free modes 0..B_a  +  the INITIAL curve's modes above B_a.
+  the floor is the frozen-tail difference, minimized over the parameter gauge.
+    B_a   |tail(initial)|max   |tail(target)|max   floor RMS   floor max   best shift
+      4           3801.954 um          6956.822 um   2334.021 um   3946.907 um   0.0184 rad
+      6            964.105 um          1847.954 um    674.117 um   1652.690 um   0.0675 rad
+      8            947.909 um          1847.954 um    671.201 um   1731.630 um   0.0675 rad
+     10            776.300 um           970.242 um    410.354 um    894.601 um   5.9242 rad
+     12            729.310 um          1118.437 um    385.668 um    948.114 um   5.9273 rad
+     16            491.833 um           476.032 um    213.446 um    533.600 um   5.9488 rad
+     20            445.886 um           308.493 um    155.655 um    345.742 um   2.5341 rad
+     24            394.010 um           203.481 um    117.181 um    293.361 um   2.5403 rad
+     32            146.862 um           106.893 um     43.311 um    111.816 um   0.1227 rad
+     48             25.114 um            29.366 um     10.535 um     29.545 um   2.6783 rad
+
+  |tail(initial)| is the quantity the guide's section 8.1.B budget prices and
+  the quantity the first review reported; the floor column is what the design
+  can actually never correct.  Both are parameterwise displacements in the
+  shared arc-length parameter, not symmetric point-to-curve distances.
