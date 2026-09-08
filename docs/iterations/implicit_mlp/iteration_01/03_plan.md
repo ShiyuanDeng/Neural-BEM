@@ -69,8 +69,9 @@ original 387.22 seconds includes 52.22 seconds of holdout callbacks; the full
 report preserves that accounting and its subsequent replay correction. These
 are single-run engineering timings.
 
-The [full controls/observability report](../../../../results/validation/implicit_mlp_adjoint/latest-direction-20260908/README.md)
-holds the configurations, spectra and artifact references.
+The outcomes above are the full measured record of the A–E study. Its
+configurations, spectra and raw arrays are local at
+`results/validation/implicit_mlp_adjoint/latest-direction-20260908/`.
 
 ## Handoff
 

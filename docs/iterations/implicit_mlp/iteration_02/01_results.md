@@ -17,7 +17,7 @@ as an execution failure, not an inverse accuracy measurement.
 
 The three-step `star-truth` run was a separate local diagnostic, not one of these
 wrong-start comparisons. Its results and the prior acquisition findings are summarised below,
-from [iteration 1's controls/observability report](../../../../results/validation/implicit_mlp_adjoint/latest-direction-20260908/README.md).
+from iteration 1's controls/observability study.
 
 ## Experiment and comparison limits
 
@@ -184,8 +184,7 @@ raises `OrderedSDFGeometryError` with both rejection reasons:
 | Conversion refinement change | 0.073997 mm | 0.01 mm |
 
 This probe requires no pretraining, inverse updates, or BEM solve. Its
-[script and saved evidence](../../../../results/validation/implicit_mlp_adjoint/iteration-02-20260908/ellipse-initial-geometry/README.md)
-are separate from the failed production arm. **Inference:** inadequate conversion
+script and saved evidence are separate from the failed production arm. **Inference:** inadequate conversion
 of the ellipse warm start at the reused circle settings is a strong candidate
 for the startup failure. The missing fresh weights and traceback prevent
 claiming the probe reproduced the original exception exactly. The proposal
@@ -216,8 +215,7 @@ runs.
 
 ## Prior measured context carried forward
 
-The [completed A–E report](../../../../results/validation/implicit_mlp_adjoint/latest-direction-20260908/README.md)
-constrains the next proposal:
+The completed A–E study constrains the next proposal. Its findings, in full:
 
 - The five-parameter star recovers at 0.5/1.5 GHz with either eight or twelve
   paired views, to approximately 0.0387 mm sampled boundary error. This is a
@@ -311,23 +309,19 @@ The suite that produced these results (already run; not a request to rerun):
   --output-root results/inverse/implicit_mlp/2026-09-08
 ```
 
-- [Suite manifest and per-case commands](../../../../results/inverse/implicit_mlp/2026-09-08/wrong_start_suite.json)
-- Current circle: [summary](../../../../results/inverse/implicit_mlp/2026-09-08/circle/summary.md),
-  [metrics](../../../../results/inverse/implicit_mlp/2026-09-08/circle/metrics.json),
-  [accepted states](../../../../results/inverse/implicit_mlp/2026-09-08/circle/kress_accepted_iterates.json),
-  [trials](../../../../results/inverse/implicit_mlp/2026-09-08/circle/kress_trials.jsonl),
-  [video](../../../../results/inverse/implicit_mlp/2026-09-08/circle/contour_evolution.mp4).
-- Current star: [summary](../../../../results/inverse/implicit_mlp/2026-09-08/star/summary.md),
-  [metrics](../../../../results/inverse/implicit_mlp/2026-09-08/star/metrics.json),
-  [accepted states](../../../../results/inverse/implicit_mlp/2026-09-08/star/kress_accepted_iterates.json),
-  [trials](../../../../results/inverse/implicit_mlp/2026-09-08/star/kress_trials.jsonl),
-  [video](../../../../results/inverse/implicit_mlp/2026-09-08/star/contour_evolution.mp4).
-- September 7 baselines: [circle](../../../../results/inverse/implicit_mlp/2026-09-07/circle/summary.md),
-  [ellipse-to-circle](../../../../results/inverse/implicit_mlp/2026-09-07/ellipse-to-circle/summary.md),
-  [star](../../../../results/inverse/implicit_mlp/2026-09-07/star/summary.md).
-- [Full prior controls and observability report](../../../../results/validation/implicit_mlp_adjoint/latest-direction-20260908/README.md), carried forward from iteration 1.
+The tables above are the record: every number cited is stated inline, so no
+artifact is needed to judge these failures. The run bundles themselves are
+local and not in the repository:
 
-Binary artifacts and some large arrays follow the repository's ignore policy.
-Their local existence is verified here; a source-only checkout may not contain
-the videos or checkpoints. No production code was changed and no new long
-inverse was launched to prepare this report.
+- `results/inverse/implicit_mlp/2026-09-08/` — suite manifest with the per-case
+  commands, and per case `summary.md`, `metrics.json`, `kress_trials.jsonl`,
+  `kress_accepted_iterates.json`, `contour_evolution.mp4`
+- `results/validation/implicit_mlp_adjoint/iteration-02-20260908/ellipse-initial-geometry/`
+  — the frozen ellipse probe, `probe.py` and `probe.json`
+- `results/validation/implicit_mlp_adjoint/latest-direction-20260908/` — the
+  iteration 1 A–E controls and observability study, summarised above
+- `results/inverse/implicit_mlp/2026-09-07/` — the September 7 baselines
+
+Videos, checkpoints and per-weight arrays are ignored binaries and will not
+appear in any checkout. No production code was changed and no new long inverse
+was launched to prepare this report.

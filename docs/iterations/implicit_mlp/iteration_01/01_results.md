@@ -131,11 +131,14 @@ moves the boundary or that the desired shape is unrecoverable.
 
 ## Supporting reports
 
-Each run report sits with its own metrics, scripts and provenance under
-`results/validation/implicit_mlp_adjoint/`:
+These four reports are in the repository, each with its own metrics, scripts
+and provenance:
 
 - [Failure audit](../../../../results/validation/implicit_mlp_adjoint/failure-audit-20260907/README.md) — fallback, pretraining and raw/converted geometry
 - [Validated repairs](../../../../results/validation/implicit_mlp_adjoint/repairs-20260907/README.md) — adopted changes and rejected prototypes
 - [Repair reruns](../../../../results/validation/implicit_mlp_adjoint/rerun-20260907/README.md) — circle/star bandwidth comparisons
 - [Checkpoint review](../../../../results/validation/implicit_mlp_adjoint/review-20260908/README.md) — the additional acceptable star fallback
-- [Controls and observability](../../../../results/validation/implicit_mlp_adjoint/latest-direction-20260908/README.md) — full A–E results, spectra, validation and costs
+
+The A–E controls and observability study is not in the repository; its bundle
+is local at `results/validation/implicit_mlp_adjoint/latest-direction-20260908/`.
+Its measured outcomes are tabulated in [03_plan.md](03_plan.md).
