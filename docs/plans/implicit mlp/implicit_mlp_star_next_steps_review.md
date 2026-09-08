@@ -1,10 +1,14 @@
 # Review: remaining implicit-MLP star inverse implementation guide
 
+For the current proposed work sequence, see the
+[latest directions](implicit_mlp_star_latest_directions_codex.md), which
+incorporate this review and the additional comments below.
+
 This companion follows the order of
 [the implementation guide](implicit_mlp_star_next_steps_codex.md). It reviews
 implementation commit `6496cd367541b404ee396a76acf48c03f383a318` and guide commit
 `127ac89999d65dfff4700bdeb11d55b875d9d0cd`, using the recorded reruns and a fresh
-[frozen-checkpoint audit](../results/validation/implicit_mlp_adjoint/review-20260908/README.md).
+[frozen-checkpoint audit](../../../results/validation/implicit_mlp_adjoint/review-20260908/README.md).
 
 **Verdict:** retain the repairs and conversion-resolution controls. Proceed
 with the guide's matched observability and acquisition study after correcting
@@ -260,7 +264,7 @@ actually improves the recovered geometry.
 
 Review validation: **45 focused inverse/adjoint/repair tests passed**, with
 the command and source hashes saved in the
-[audit provenance](../results/validation/implicit_mlp_adjoint/review-20260908/provenance.json).
+[audit provenance](../../../results/validation/implicit_mlp_adjoint/review-20260908/provenance.json).
 The companion-document edit was checked with `git diff --check`; it changes
 no production implementation or experimental results.
 
@@ -269,14 +273,14 @@ no production implementation or experimental results.
 # Additional review comments
 
 A second pass over the same two commits, the
-[checkpoint audit](../results/validation/implicit_mlp_adjoint/review-20260908/README.md)
+[checkpoint audit](../../../results/validation/implicit_mlp_adjoint/review-20260908/README.md)
 and the historical bundles. These comments follow the guide's phases and add to
 the companion review above rather than restating it.
 
 ## On the termination correction
 
 **Concur, and it supersedes a published claim.** Finding 4 of the
-[rerun bundle](../results/validation/implicit_mlp_adjoint/rerun-20260907/README.md)
+[rerun bundle](../../../results/validation/implicit_mlp_adjoint/rerun-20260907/README.md)
 asserted that the bandwidth-96 star reached a real line-search stop with the
 guard no longer binding. The probe shows the refinement-change condition
 rejecting the backtrack-8 candidate at `1.15825e-5 m` against a `1e-5 m` limit,
