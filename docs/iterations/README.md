@@ -19,7 +19,7 @@ under `results/`; the stage files link to them rather than copying them.
 
 ## Implicit MLP
 
-| Iteration | Cycle | State |
-|---|---|---|
-| [1](implicit_mlp/iteration_01/01_results.md) | Sept 7–8 failures, repairs, and the matched acquisition controls | Closed; see [03_plan.md](implicit_mlp/iteration_01/03_plan.md). Neural recovery unresolved |
-| [2](implicit_mlp/iteration_02/01_results.md) | Sept 8 repaired 12-pair wrong-start suite | Stage 1 only; awaiting a proposal |
+Start with the [implicit-MLP handoff](implicit_mlp/README.md) for the active
+iteration, current stage, reading order, next expected action, execution status
+and cycle history. That project README is the maintained entry point; proposal
+numbering alone does not identify the agreed plan or authorize execution.
