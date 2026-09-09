@@ -6,15 +6,15 @@ convention is in the [iterations README](../README.md).
 
 ## Current handoff
 
-Updated 2026-09-08.
+Updated 2026-09-09.
 
 | Item | Current state |
 |---|---|
 | Active iteration | [Iteration 02](iteration_02/01_results.md) |
-| Stage | Results recorded; proposals pending |
-| Latest contribution | [Iteration-02 results](iteration_02/01_results.md) from executing the agreed iteration-01 plan |
-| Execution status | Full pass: G0–G5. The direct multi-Kress forward, current-domain TD, one finite birth, two-component radial refinement and predeclared wrong-A qualification all passed. Two inversion videos and complete metrics are saved in the linked run bundle |
-| Next expected research action | Review the [iteration-02 results](iteration_02/01_results.md), then propose and review the next bounded experiment. Repeated births, an automatic trigger and low-band continuation are candidates, not yet authorized work |
+| Stage | Results plus user-directed challenge qualifications recorded |
+| Latest contribution | [Iteration-02 results](iteration_02/01_results.md), including three post-plan topology challenges |
+| Execution status | Full pass: G0–G5 plus large-circle split, far-away replacement, and diagonal ellipse/star split. Five inversion videos and complete metrics are saved in the linked result bundles |
+| Next expected research action | Propose the next bounded experiment. Noise, repeated unknown-count births, an automatic trigger, and non-star-shaped targets remain open |
 
 This project's iteration 1 opened from a brief rather than `01_results.md`
 because there was no prior cycle. Its agreed plan has now been executed; the
