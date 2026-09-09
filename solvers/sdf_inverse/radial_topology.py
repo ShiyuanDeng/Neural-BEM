@@ -1,10 +1,7 @@
-"""Opt-in topology birth and fixed-topology optimization for radial curves.
+"""Explicit Fourier objective, material sensitivities and fixed-topology LM.
 
-This module is deliberately separate from the established single-component
-implicit inverse.  It owns an ordered tuple of explicit radial-Fourier states,
-uses the direct multi-component Kress seam, and implements exactly one kind of
-topology event: appending a circular component proposed by a current-domain
-topological derivative.
+The automatic birth/death/split/merge controller lives in topology_controller.
+Iteration-01 entry points retain their original numerical policies.
 """
 
 from __future__ import annotations
@@ -26,6 +23,7 @@ from gpr_bem_kress.multicomponent import (
     build_multicomponent_exterior_receiver_operator,
     build_multicomponent_kress_tmz_frequency_system,
     multicomponent_incident_trace_on_boundary,
+    evaluate_multicomponent_interior_total_field,
 )
 from ordered_boundary import OrderedBoundary2D
 from sdf_bem_multicomponent import (
@@ -34,6 +32,7 @@ from sdf_bem_multicomponent import (
 )
 
 from .curve_updates import RadialFourierCurveState, radial_fourier_state_curve
+from .explicit_fourier import CartesianFourierCurveState
 from .geometry import OrderedSDFGeometryConfig, OrderedSDFGeometryError
 from .optimization import (
     ComplexScatteredData,
@@ -44,6 +43,15 @@ from .optimization import (
 
 DEFAULT_TD_CHUNK_SIZE = 4096
 FROZEN_BIRTH_RADIUS_FACTORS = (1.0, 0.75, 0.5, 0.35)
+
+
+def component_radius_floor(component) -> float:
+    """Conservative radial feature radius, or Cartesian equivalent radius.
+
+    Keeping the radial certificate resolved prevents LM approaching a
+    singular pinch while the topology controller prepares a discrete cut.
+    """
+    return float(getattr(component, "minimum_radius_lower_bound_m", component.mean_radius_m))
 
 
 def _readonly(values: Any, *, dtype: Any) -> np.ndarray:
@@ -94,16 +102,20 @@ def circle_radial_fourier_state(
 
 @dataclass(frozen=True)
 class MultiRadialFourierState:
-    """Immutable, authoritatively ordered collection of radial components."""
+    """Immutable explicit components, retaining the iteration-01 API name.
 
-    components: tuple[RadialFourierCurveState, ...]
+    Radial and Cartesian Fourier charts share the vector/rebuild/Kress seam.
+    ``None`` denotes an empty domain in the topology controller.
+    """
+
+    components: tuple[RadialFourierCurveState | CartesianFourierCurveState, ...]
 
     def __post_init__(self) -> None:
         components = tuple(self.components)
         if not components:
             raise ValueError("At least one radial component is required.")
-        if not all(isinstance(item, RadialFourierCurveState) for item in components):
-            raise TypeError("components must contain RadialFourierCurveState objects.")
+        if not all(isinstance(item, (RadialFourierCurveState, CartesianFourierCurveState)) for item in components):
+            raise TypeError("components must contain explicit Fourier curve states.")
         identifiers = tuple(item.component_id for item in components)
         if len(set(identifiers)) != len(identifiers):
             raise ValueError("component_id values must be unique.")
@@ -130,6 +142,9 @@ class MultiRadialFourierState:
     def parameter_names(self) -> tuple[str, ...]:
         result: list[str] = []
         for component in self.components:
+            if isinstance(component, CartesianFourierCurveState):
+                result.extend(component.parameter_names)
+                continue
             prefix = component.component_id
             result.extend((f"{prefix}.radius_m", f"{prefix}.center_x_m", f"{prefix}.center_y_m"))
             for mode in range(2, component.maximum_mode + 1):
@@ -141,6 +156,9 @@ class MultiRadialFourierState:
 
         values: list[float] = []
         for component in self.components:
+            if isinstance(component, CartesianFourierCurveState):
+                values.extend(component.parameter_vector())
+                continue
             values.extend((component.mean_radius_m, *np.asarray(component.center)))
             for mode in range(2, component.maximum_mode + 1):
                 values.extend(
@@ -159,9 +177,12 @@ class MultiRadialFourierState:
             raise ValueError(
                 f"values must contain {self.parameter_count} finite parameters."
             )
-        rebuilt: list[RadialFourierCurveState] = []
+        rebuilt: list[RadialFourierCurveState | CartesianFourierCurveState] = []
         for component, component_slice in zip(self.components, self.parameter_slices):
             local = vector[component_slice]
+            if isinstance(component, CartesianFourierCurveState):
+                rebuilt.append(component.from_parameter_vector(local))
+                continue
             cosine = np.asarray(component.radius_cosine_coefficients).copy()
             sine = np.asarray(component.radius_sine_coefficients).copy()
             cosine[0] = local[0]
@@ -189,9 +210,9 @@ class MultiRadialFourierState:
             raise ValueError(f"step must contain {self.parameter_count} finite values.")
         return self.from_parameter_vector(self.parameter_vector() + delta)
 
-    def appended(self, component: RadialFourierCurveState) -> "MultiRadialFourierState":
-        if not isinstance(component, RadialFourierCurveState):
-            raise TypeError("component must be a RadialFourierCurveState.")
+    def appended(self, component: RadialFourierCurveState | CartesianFourierCurveState) -> "MultiRadialFourierState":
+        if not isinstance(component, (RadialFourierCurveState, CartesianFourierCurveState)):
+            raise TypeError("component must be an explicit Fourier curve state.")
         return MultiRadialFourierState(self.components + (component,))
 
     def boundary(self, geometry_config: OrderedSDFGeometryConfig) -> OrderedBoundary2D:
@@ -201,7 +222,7 @@ class MultiRadialFourierState:
             raise TypeError("geometry_config must be an OrderedSDFGeometryConfig.")
         return OrderedBoundary2D(
             tuple(
-                radial_fourier_state_curve(
+                component.boundary_curve(geometry_config) if isinstance(component, CartesianFourierCurveState) else radial_fourier_state_curve(
                     component,
                     geometry_config=geometry_config,
                     full_validation=True,
@@ -303,14 +324,25 @@ def evaluate_current_domain_topological_derivative(
     geometry_config: OrderedSDFGeometryConfig | None = None,
     solve_config: MultiComponentKressSolveConfig | None = None,
     chunk_size: int = DEFAULT_TD_CHUNK_SIZE,
+    material_change: str = "addition",
 ) -> TopologicalDerivativeResult:
     """Evaluate the exact project-convention TD, solving one RHS batch/frequency.
 
     Physical source row ``s`` is paired only with reciprocal receiver-source
     row ``s``.  Receiver-point evaluation is chunked after the boundary system
     has been solved; no inspection-point solve is performed.
+
+    ``material_change='removal'`` evaluates interior total fields and reverses
+    the squared-wavenumber contrast. For this nonmagnetic scalar convention,
+    D_minus = Re[(k_e^2-k_i^2) sum(conj(residual) u_i u_i_recip)] with exactly
+    the same column scales and frequency weights as the addition derivative.
+    Removal points must lie strictly in one current inclusion.
     """
 
+    if material_change not in ("addition", "removal"):
+        raise ValueError("material_change must be addition or removal.")
+    if material_change == "removal" and state is None:
+        raise ValueError("Material removal requires a nonempty current domain.")
     if not isinstance(data, ComplexScatteredData):
         raise TypeError("data must be ComplexScatteredData.")
     evaluation_points = _finite_points(points, name="points")
@@ -402,6 +434,11 @@ def evaluate_current_domain_topological_derivative(
             )
             if boundary is None:
                 total = incident
+            elif material_change == "removal":
+                assert total_traces is not None
+                total = evaluate_multicomponent_interior_total_field(
+                    boundary, local_points, k_interior, *total_traces
+                )
             else:
                 assert total_traces is not None
                 operator = build_multicomponent_exterior_receiver_operator(
@@ -418,6 +455,8 @@ def evaluate_current_domain_topological_derivative(
                 axis=0,
             )
             contrast = k_interior * k_interior - k_exterior * k_exterior
+            if material_change == "removal":
+                contrast = -contrast
             per_frequency[start:stop, frequency_index] = (
                 weights[frequency_index]
                 / scales[frequency_index] ** 2
@@ -790,11 +829,14 @@ def run_multiradial_fd_inverse(
     solve_config: MultiComponentKressSolveConfig,
     config: ParameterFDConfig,
     progress_callback: Callable[[MultiRadialFDIteration], None] | None = None,
+    minimum_component_radius_m: float = 0.0,
 ) -> MultiRadialFDResult:
     """Bounded central-FD LM optimizer for one fixed multi-radial topology."""
 
     if not isinstance(initial_state, MultiRadialFourierState):
         raise TypeError("initial_state must be MultiRadialFourierState.")
+    if not np.isfinite(minimum_component_radius_m) or minimum_component_radius_m < 0:
+        raise ValueError("minimum_component_radius_m must be finite and nonnegative.")
     if not isinstance(config, ParameterFDConfig):
         raise TypeError("config must be ParameterFDConfig.")
     if config.infeasible_trial_policy != "reject":
@@ -817,6 +859,8 @@ def run_multiradial_fd_inverse(
             return cache[key]
         evaluation_count += 1
         try:
+            if any(component_radius_floor(c) < minimum_component_radius_m for c in state.components):
+                raise OrderedSDFGeometryError("Component is below the topology feature-radius floor.")
             result = evaluate_multiradial_objective(
                 state, data, geometry_config, solve_config=solve_config
             )

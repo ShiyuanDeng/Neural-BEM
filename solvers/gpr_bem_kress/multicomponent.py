@@ -1408,20 +1408,64 @@ def build_multicomponent_exterior_receiver_operator(
         minimum_clearance=clearance,
     )
     wave = validate_wavenumber(k_exterior, name="k_exterior")
+    single, double = _receiver_layer_rows(boundary, receivers, wave)
+    operator = MultiComponentExteriorReceiverOperator(
+        geometry=boundary,
+        receiver_points=receivers,
+        k_exterior=wave,
+        single_layer_rows=single,
+        double_layer_rows=double,
+        build_seconds=float(perf_counter() - started),
+    )
+    return operator
+
+
+def _receiver_layer_rows(boundary, receivers, wave):
+    """Shared smooth Helmholtz layer quadrature for either material side."""
     displacement = receivers[:, None, :] - boundary.points[None, :, :]
     distance = np.linalg.norm(displacement, axis=-1)
     projection = np.einsum("rnd,nd->rn", displacement, boundary.normals) / distance
     green = 0.25j * hankel1(0, wave * distance)
     green_normal = 0.25j * wave * hankel1(1, wave * distance) * projection
-    operator = MultiComponentExteriorReceiverOperator(
-        geometry=boundary,
-        receiver_points=receivers,
-        k_exterior=wave,
-        single_layer_rows=green * boundary.arc_length_weights[None, :],
-        double_layer_rows=green_normal * boundary.arc_length_weights[None, :],
-        build_seconds=float(perf_counter() - started),
-    )
-    return operator
+    return (green * boundary.arc_length_weights[None, :],
+            green_normal * boundary.arc_length_weights[None, :])
+
+
+def evaluate_multicomponent_interior_total_field(
+    boundary: OrderedBoundary2D, points, k_interior: complex,
+    dirichlet_total, neumann_total, *, minimum_clearance: float = 0.0,
+) -> np.ndarray:
+    """Evaluate ``S_i q - D_i u`` using only the containing component.
+
+    The traces use the normal pointing out of the inclusion. No incident
+    field is added to this interior Green representation. Points in the
+    exterior, on a boundary, or in overlapping interiors are rejected.
+    Ordinary smooth quadrature requires callers to keep a resolved clearance.
+    """
+    receivers = _real_points(points, name="points")
+    wave = validate_wavenumber(k_interior, name="k_interior")
+    clearance = _nonnegative_finite(minimum_clearance, name="minimum_clearance")
+    u = _trace_matrix(dirichlet_total, boundary.num_nodes, name="dirichlet_total")
+    q = _trace_matrix(neumann_total, boundary.num_nodes, name="neumann_total")
+    if u.shape != q.shape:
+        raise ValueError("Dirichlet and Neumann trace batches must match.")
+    result = np.zeros((u.shape[0], len(receivers)), dtype=np.complex128)
+    membership = np.zeros(len(receivers), dtype=int)
+    offset = 0
+    for component in boundary.components:
+        selected = _inside_closed_polygon(receivers, component.points)
+        membership += selected
+        if np.any(selected):
+            local = receivers[selected]
+            if _minimum_curve_distance(local, component) <= clearance:
+                raise MultiComponentFieldPointError("Interior points violate boundary clearance.")
+            single, double = _receiver_layer_rows(component, local, wave)
+            section = slice(offset, offset + component.num_nodes)
+            result[:, selected] = q[:, section] @ single.T - u[:, section] @ double.T
+        offset += component.num_nodes
+    if np.any(membership != 1):
+        raise MultiComponentFieldPointError("Each interior point must belong to exactly one component.")
+    return result
 
 
 @dataclass(frozen=True)

@@ -115,8 +115,20 @@ from .radial_topology import (
     iteration01_solve_config,
     run_multiradial_fd_inverse,
 )
+from .explicit_fourier import CartesianFourierCurveState
+from .topology_controller import (
+    TopologyControllerConfig,
+    TopologyInverseResult,
+    build_topology_workspace,
+    run_topology_aware_fourier_inverse,
+)
 
 __all__ = [
+    "CartesianFourierCurveState",
+    "TopologyControllerConfig",
+    "TopologyInverseResult",
+    "build_topology_workspace",
+    "run_topology_aware_fourier_inverse",
     "ImplicitMLPAdjointConfig",
     "ImplicitMLPIteration",
     "ImplicitMLPInverseResult",
