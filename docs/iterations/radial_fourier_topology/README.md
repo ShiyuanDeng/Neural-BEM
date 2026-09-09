@@ -10,16 +10,16 @@ Updated 2026-09-08.
 
 | Item | Current state |
 |---|---|
-| Active iteration | [Iteration 01](iteration_01/02_proposals/01_radial_fourier_topology_initial_instructions.md) |
-| Stage | Implementation brief and first review recorded; agreed plan pending |
-| Latest contribution | [Claude review](iteration_01/02_proposals/03_claude_review.md) of the brief and the Codex review, at head `3835f69` |
-| Execution status | No topology implementation or experiment exists. Review-only regression and oracle probes passed; topology recovery remains unimplemented in the repository and unvalidated through the Kress path |
-| Next expected research action | Consolidate the [initial brief](iteration_01/02_proposals/01_radial_fourier_topology_initial_instructions.md), the [Codex review](iteration_01/02_proposals/02_codex_review.md) and the [Claude review](iteration_01/02_proposals/03_claude_review.md) into `iteration_01/03_plan.md`, recording accepted amendments, the declared scene and frequency band, fixed configurations, gates and deferrals; no implementation or experiment is authorized |
+| Active iteration | [Iteration 02](iteration_02/01_results.md) |
+| Stage | Results recorded; proposals pending |
+| Latest contribution | [Iteration-02 results](iteration_02/01_results.md) from executing the agreed iteration-01 plan |
+| Execution status | Full pass: G0–G5. The direct multi-Kress forward, current-domain TD, one finite birth, two-component radial refinement and predeclared wrong-A qualification all passed. Two inversion videos and complete metrics are saved in the linked run bundle |
+| Next expected research action | Review the [iteration-02 results](iteration_02/01_results.md), then propose and review the next bounded experiment. Repeated births, an automatic trigger and low-band continuation are candidates, not yet authorized work |
 
-This project's iteration 1 opens from a brief rather than `01_results.md`
-because there is no prior cycle. The latest numbered document is the latest
-contribution, not an adopted plan. A request to review or update documentation
-does not authorize implementing the brief or launching an inverse.
+This project's iteration 1 opened from a brief rather than `01_results.md`
+because there was no prior cycle. Its agreed plan has now been executed; the
+measurements open iteration 2. A results record identifies the next questions
+but does not itself authorize another implementation or experiment.
 
 ## Read in this order
 
@@ -38,7 +38,9 @@ does not authorize implementing the brief or launching an inverse.
    region, and where the two earlier documents need correcting. Its probes are
    under
    [`results/validation/radial_fourier_topology/iteration-01-20260908/`](../../../results/validation/radial_fourier_topology/iteration-01-20260908/review-diagnostics-topological-derivative/README.md).
-5. Iteration 1's `03_plan.md` once it exists.
+5. [Iteration 1's agreed plan](iteration_01/03_plan.md).
+6. [Iteration 2's measured results](iteration_02/01_results.md) and the linked
+   implementation artifacts/videos.
 
 ## What to do at each stage
 
@@ -56,4 +58,5 @@ changes. Do not infer the active cycle from the highest folder number.
 
 | Iteration | Cycle | State |
 |---|---|---|
-| [01](iteration_01/02_proposals/01_radial_fourier_topology_initial_instructions.md) | Topology-aware Explicit Radial Fourier inverse: current-domain topological derivative for component birth | Active; brief and two reviews recorded, agreed plan pending. Nothing implemented |
+| [01](iteration_01/03_plan.md) | Topology-aware Explicit Radial Fourier inverse: current-domain topological derivative for component birth | Closed with full G0–G5 pass |
+| [02](iteration_02/01_results.md) | Results of one-component birth and wrong-A qualification | Active; results recorded, proposals pending |

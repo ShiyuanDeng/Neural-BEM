@@ -29,5 +29,5 @@ numbering alone does not identify the agreed plan or authorize execution.
 ## Radial Fourier topology
 
 Start with the [radial-Fourier-topology handoff](radial_fourier_topology/README.md).
-Iteration 1 opens from an implementation brief (no prior cycle); no plan has been
-agreed and no experiment authorized.
+Iteration 1's agreed plan has been executed with a full G0–G5 pass. Its results
+open iteration 2, where proposals are pending.

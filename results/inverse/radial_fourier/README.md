@@ -13,6 +13,7 @@ material/metric variants also retain failed reconstruction arms.
 - [Representation policies](representation_policies/README.md): identical-data strict, curve-only and final-export studies.
 - [Shape/material variants](shape_material/README.md): fixed geometry or radial K2 with material parameters; grouped here by explicit geometry ownership.
 - [Frozen neural-metric variants](neural_metric/comparison-20260906/README.md): radial geometry with different update metrics; no neural training in the inverse.
+- [Topology birth](topology_birth/iteration-01-20260908-234231/README.md): validated current-domain TD birth from one circle to two, followed by direct multi-Kress radial refinement; G0–G5 pass with core and wrong-start MP4 trajectories.
 - [Pipeline explanation](../../../docs/pipelines/explicit_radial_fourier.md): exact ownership and current entry points.
 
 Read reconstruction and representation outcomes separately in the [catalogue](../../README.md).
