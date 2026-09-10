@@ -26,6 +26,13 @@ iteration, current stage, reading order, next expected action, execution status
 and cycle history. That project README is the maintained entry point; proposal
 numbering alone does not identify the agreed plan or authorize execution.
 
+## Cartesian Fourier
+
+Start with the [Cartesian-Fourier handoff](cartesian_fourier/README.md).
+Iteration 1 is a chart study: the optimization state is a Cartesian Fourier
+curve and the MLP is temporarily dropped entirely. Its plan has been executed
+and its results open iteration 2, where proposals are pending.
+
 ## Radial Fourier topology
 
 Start with the [radial-Fourier-topology handoff](radial_fourier_topology/README.md).

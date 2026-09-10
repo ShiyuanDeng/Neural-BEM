@@ -3,7 +3,10 @@
 The fixed-topology LM seam needs only parameter count, vector/rebuild and a
 validated boundary. Radial components remain the economical default chart.
 """
+from __future__ import annotations
+
 from dataclasses import dataclass
+import operator
 
 import numpy as np
 
@@ -19,6 +22,10 @@ class CartesianFourierCurveState:
     cosine_coefficients: np.ndarray
     sine_coefficients: np.ndarray
     component_id: str
+    name: str = "cartesian_fourier_inverse_curve"
+    source_identifier: str | None = None
+    initial_projection_rms_m: float = 0.0
+    initial_projection_maximum_m: float = 0.0
 
     def __post_init__(self):
         c = np.array(self.cosine_coefficients, dtype=float, copy=True)
@@ -29,6 +36,11 @@ class CartesianFourierCurveState:
             raise ValueError("Invalid Cartesian Fourier coefficients.")
         if not isinstance(self.component_id, str) or not self.component_id.strip():
             raise ValueError("component_id must be nonempty.")
+        for label in ("initial_projection_rms_m", "initial_projection_maximum_m"):
+            value = float(getattr(self, label))
+            if not np.isfinite(value) or value < 0.0:
+                raise ValueError(f"{label} must be finite and non-negative.")
+            object.__setattr__(self, label, value)
         c.setflags(write=False)
         s.setflags(write=False)
         object.__setattr__(self, "cosine_coefficients", c)
@@ -67,8 +79,46 @@ class CartesianFourierCurveState:
         if v.shape != (self.parameter_count,):
             raise ValueError("Wrong Cartesian parameter count.")
         n = self.cosine_coefficients.size
-        return CartesianFourierCurveState(v[:n].reshape(-1, 2),
-            np.vstack((np.zeros(2), v[n:].reshape(-1, 2))), self.component_id)
+        return self._replaced(v[:n].reshape(-1, 2),
+                              np.vstack((np.zeros(2), v[n:].reshape(-1, 2))))
+
+    def _replaced(self, cosine, sine):
+        return CartesianFourierCurveState(cosine, sine, self.component_id,
+            name=self.name, source_identifier=self.source_identifier,
+            initial_projection_rms_m=self.initial_projection_rms_m,
+            initial_projection_maximum_m=self.initial_projection_maximum_m)
+
+    @staticmethod
+    def active_parameter_count(maximum_mode):
+        """Stored real coefficients through ``maximum_mode``: ``4 K + 2``."""
+        mode = operator.index(maximum_mode)
+        if isinstance(maximum_mode, bool) or mode < 1:
+            raise ValueError("maximum_mode must be a positive integer.")
+        return 4 * mode + 2
+
+    def incremented(self, coefficients, *, maximum_mode=None):
+        """Return the state after one additive step on modes ``0..A``.
+
+        The active band ``A`` may be lower than the stored bandwidth, so a
+        continuation stage moves only its low-mode prefix while the state
+        stays authoritative at full bandwidth.  The step is ordered
+        ``c_0x, c_0y, c_1x, c_1y, ..., c_Ax, c_Ay, s_1x, s_1y, ..., s_Ax, s_Ay``,
+        matching :meth:`parameter_vector` at band ``A``.
+        """
+        active = self.maximum_mode if maximum_mode is None else operator.index(maximum_mode)
+        if isinstance(maximum_mode, bool) or active < 1:
+            raise ValueError("maximum_mode must be a positive integer.")
+        if active > self.maximum_mode:
+            raise ValueError("maximum_mode cannot exceed the state's maximum mode.")
+        values = np.asarray(coefficients, dtype=float)
+        expected = self.active_parameter_count(active)
+        if values.shape != (expected,) or not np.all(np.isfinite(values)):
+            raise ValueError(f"coefficients must contain {expected} finite values.")
+        cosine = np.array(self.cosine_coefficients, dtype=float, copy=True)
+        sine = np.array(self.sine_coefficients, dtype=float, copy=True)
+        cosine[: active + 1] += values[: 2 * active + 2].reshape(-1, 2)
+        sine[1 : active + 1] += values[2 * active + 2 :].reshape(-1, 2)
+        return self._replaced(cosine, sine)
 
     def parameterization(self):
         return fourier_curve(self.cosine_coefficients, self.sine_coefficients,

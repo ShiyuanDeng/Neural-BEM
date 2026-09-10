@@ -917,3 +917,570 @@ __all__ = [
     "radial_fourier_state_curve",
     "smooth_normal_mode_values",
 ]
+
+
+# ---------------------------------------------------------------------------
+# Cartesian Fourier chart
+#
+# The radial chart above is gauge-fixed by construction: its parameter is the
+# polar angle, so it carries no reparameterization freedom.  The Cartesian
+# chart does, and that freedom is deliberately retained here.  A closed curve
+# is band-limited only in a particular parameter, and for the five-lobed star
+# that parameter is the polar angle, in which the target occupies exactly
+# modes 1, 4 and 6.  Refitting to arc length -- which Method B does -- destroys
+# that property and leaves a truncation floor no bandwidth removes.  Nothing
+# in this section refits.
+# ---------------------------------------------------------------------------
+
+
+def _cartesian_parameter_count(maximum_mode: int) -> int:
+    """Stored real Cartesian coefficients through ``maximum_mode``: ``4 K + 2``."""
+
+    mode = _positive_integer(maximum_mode, name="maximum_mode")
+    return 4 * mode + 2
+
+
+def cartesian_fourier_displacement_basis(
+    parameters: object, *, maximum_mode: int
+) -> np.ndarray:
+    """Exact vector displacement basis of the Cartesian Fourier chart.
+
+    The result has shape ``parameters.shape + (4 K + 2, 2)``.  Contracting its
+    penultimate axis with a coefficient increment gives the exact Cartesian
+    point displacement at fixed parameter.  Unlike the radial basis this is
+    independent of the current state: the chart is affine in its coefficients.
+
+    Ordering matches :meth:`CartesianFourierCurveState.incremented`:
+    ``c_0x, c_0y, c_1x, c_1y, ..., c_Kx, c_Ky, s_1x, s_1y, ..., s_Kx, s_Ky``.
+    """
+
+    if np.iscomplexobj(parameters):
+        raise ValueError("parameters must be real-valued.")
+    values = np.asarray(parameters, dtype=np.float64)
+    if not np.all(np.isfinite(values)):
+        raise ValueError("parameters must contain only finite values.")
+    mode_limit = _positive_integer(maximum_mode, name="maximum_mode")
+    result = np.zeros(
+        values.shape + (_cartesian_parameter_count(mode_limit), 2),
+        dtype=np.float64,
+    )
+    for mode in range(mode_limit + 1):
+        cosine = np.cos(mode * values)
+        result[..., 2 * mode, 0] = cosine
+        result[..., 2 * mode + 1, 1] = cosine
+    offset = 2 * mode_limit + 2
+    for mode in range(1, mode_limit + 1):
+        sine = np.sin(mode * values)
+        result[..., offset + 2 * (mode - 1), 0] = sine
+        result[..., offset + 2 * (mode - 1) + 1, 1] = sine
+    result.setflags(write=False)
+    return result
+
+
+def cartesian_fourier_phase_gauge_direction(
+    state: object, *, maximum_mode: int | None = None
+) -> np.ndarray | None:
+    """Unit coefficient direction of an infinitesimal parameter shift.
+
+    Under ``t -> t + delta`` the point set is unchanged while every mode pair
+    rotates, so ``d c_k = k s_k`` and ``d s_k = -k c_k`` with ``d c_0 = 0``.
+    That direction is an exact null direction of any shape objective and is
+    removed from proposed steps.  ``None`` is returned when the direction
+    degenerates, which happens only for a state with no active harmonics.
+    """
+
+    cosine = np.asarray(state.cosine_coefficients, dtype=np.float64)
+    sine = np.asarray(state.sine_coefficients, dtype=np.float64)
+    active = state.maximum_mode if maximum_mode is None else _positive_integer(
+        maximum_mode, name="maximum_mode"
+    )
+    if active > state.maximum_mode:
+        raise ValueError("maximum_mode cannot exceed the state's maximum mode.")
+    direction = np.zeros(_cartesian_parameter_count(active), dtype=np.float64)
+    offset = 2 * active + 2
+    for mode in range(1, active + 1):
+        direction[2 * mode : 2 * mode + 2] = mode * sine[mode]
+        direction[offset + 2 * (mode - 1) : offset + 2 * mode] = -mode * cosine[mode]
+    norm = float(np.linalg.norm(direction))
+    if not math.isfinite(norm) or norm <= 0.0:
+        return None
+    direction /= norm
+    direction.setflags(write=False)
+    return direction
+
+
+def project_off_phase_gauge(
+    step: object, state: object, *, maximum_mode: int | None = None
+) -> tuple[np.ndarray, float]:
+    """Remove the exact phase direction, returning the step and what was removed."""
+
+    values = np.asarray(step, dtype=np.float64)
+    if values.ndim != 1 or not np.all(np.isfinite(values)):
+        raise ValueError("step must be a finite vector.")
+    direction = cartesian_fourier_phase_gauge_direction(
+        state, maximum_mode=maximum_mode
+    )
+    if direction is None:
+        return values, 0.0
+    if direction.shape != values.shape:
+        raise ValueError("step and gauge direction must have the same length.")
+    component = float(np.dot(values, direction))
+    return values - component * direction, component
+
+
+def fit_cartesian_fourier_curve_state(
+    curve: object,
+    *,
+    maximum_mode: int,
+    center: object | None = None,
+    component_id: str = "cartesian_fourier_inverse_curve",
+    samples: int = 4096,
+    source_identifier: str | None = None,
+) -> object:
+    """Project one star-shaped contour into the polar-angle Cartesian chart.
+
+    The contour is resampled at uniform polar angle about ``center`` and
+    truncated at ``maximum_mode``.  Polar angle, not arc length, is the
+    parameter in which the analytic targets of this project are band-limited.
+
+    This is the sole allowed projection.  Every later state is reached by
+    :meth:`CartesianFourierCurveState.incremented`, so no projection error
+    accumulates across iterations.
+    """
+
+    from .explicit_fourier import CartesianFourierCurveState
+
+    mode_limit = _positive_integer(maximum_mode, name="maximum_mode")
+    count = _positive_integer(samples, name="samples")
+    if count < 2 * (mode_limit + 1):
+        raise ValueError("samples must resolve the requested bandwidth.")
+    points = np.asarray(getattr(curve, "points", curve), dtype=np.float64)
+    if points.ndim != 2 or points.shape[1] != 2 or points.shape[0] < 3:
+        raise ValueError("curve must supply at least three planar points.")
+    if not np.all(np.isfinite(points)):
+        raise ValueError("curve points must be finite.")
+    origin = (
+        np.mean(points, axis=0)
+        if center is None
+        else np.asarray(center, dtype=np.float64)
+    )
+    if origin.shape != (2,) or not np.all(np.isfinite(origin)):
+        raise ValueError("center must contain two finite coordinates.")
+
+    delta = points - origin[None, :]
+    radii = np.linalg.norm(delta, axis=1)
+    if np.any(radii <= 64.0 * np.finfo(float).eps):
+        raise OrderedSDFGeometryError(
+            "Cartesian Fourier projection needs nonzero radii about the center."
+        )
+    angles = np.unwrap(np.arctan2(delta[:, 1], delta[:, 0]))
+    if angles[-1] < angles[0]:
+        angles = angles[::-1]
+        radii = radii[::-1]
+    extended_angles = np.concatenate((angles, angles[:1] + 2.0 * np.pi))
+    extended_radii = np.concatenate((radii, radii[:1]))
+    if np.any(np.diff(extended_angles) <= 0.0):
+        raise OrderedSDFGeometryError(
+            "Contour is not single-valued in polar angle about the requested "
+            "center; the Cartesian polar-angle chart cannot represent it."
+        )
+    if extended_angles[-1] - extended_angles[0] > 2.0 * np.pi + 1.0e-9:
+        raise OrderedSDFGeometryError(
+            "Contour winds more than once about the requested center."
+        )
+
+    sample_angles = extended_angles[0] + 2.0 * np.pi * np.arange(count) / count
+    sampled_radii = np.interp(sample_angles, extended_angles, extended_radii)
+    sampled = origin[None, :] + sampled_radii[:, None] * np.stack(
+        (np.cos(sample_angles), np.sin(sample_angles)), axis=-1
+    )
+
+    spectrum = np.fft.rfft(sampled, axis=0) / count
+    cosine = np.zeros((mode_limit + 1, 2), dtype=np.float64)
+    sine = np.zeros_like(cosine)
+    cosine[0] = spectrum[0].real
+    for mode in range(1, mode_limit + 1):
+        cosine[mode] = 2.0 * spectrum[mode].real
+        sine[mode] = -2.0 * spectrum[mode].imag
+
+    # The transform's parameter is the sample index, whose origin is the first
+    # sampled angle, so the truncation residual must be evaluated in that same
+    # relative parameter.  Using the absolute angle here would report a phase
+    # mismatch as a projection error.
+    relative = sample_angles - sample_angles[0]
+    phase = relative[:, None] * np.arange(mode_limit + 1)[None, :]
+    reconstruction = np.cos(phase) @ cosine + np.sin(phase) @ sine
+    residual = np.linalg.norm(reconstruction - sampled, axis=1)
+    # The chart's own parameter origin is that sample origin, so rotate the
+    # coefficients back to a zero origin and keep the state canonical: the
+    # stored curve is then parameterized by polar angle itself.
+    shift = float(sample_angles[0])
+    if shift:
+        rotated_cosine = np.array(cosine, copy=True)
+        rotated_sine = np.array(sine, copy=True)
+        # The transform's parameter is ``theta - shift``.  Expanding
+        # ``cos(k(theta - shift))`` and ``sin(k(theta - shift))`` and
+        # collecting terms re-expresses the same curve in absolute polar
+        # angle, so the stored state's parameter *is* the polar angle.
+        for mode in range(1, mode_limit + 1):
+            c, s = np.cos(mode * shift), np.sin(mode * shift)
+            rotated_cosine[mode] = c * cosine[mode] - s * sine[mode]
+            rotated_sine[mode] = s * cosine[mode] + c * sine[mode]
+        cosine, sine = rotated_cosine, rotated_sine
+
+    try:
+        return CartesianFourierCurveState(
+            cosine,
+            sine,
+            component_id,
+            source_identifier=source_identifier,
+            initial_projection_rms_m=float(np.sqrt(np.mean(residual * residual))),
+            initial_projection_maximum_m=float(np.max(residual)),
+        )
+    except ValueError as exc:
+        raise OrderedSDFGeometryError(
+            f"Initial Cartesian Fourier projection is not admissible: {exc}"
+        ) from exc
+
+
+def cartesian_fourier_state_curve(
+    state: object,
+    *,
+    geometry_config: OrderedSDFGeometryConfig,
+    full_validation: bool = True,
+) -> PeriodicCurve2D:
+    """Build and validate the deterministic curve represented by ``state``."""
+
+    if not isinstance(geometry_config, OrderedSDFGeometryConfig):
+        raise TypeError("geometry_config must be an OrderedSDFGeometryConfig.")
+    if not isinstance(full_validation, (bool, np.bool_)):
+        raise TypeError("full_validation must be bool.")
+    minimum_resolution = 2 * state.maximum_mode + 2
+    for name in ("num_nodes", "validation_resolution"):
+        if getattr(geometry_config, name) < minimum_resolution:
+            raise ValueError(
+                f"{name} must be at least {minimum_resolution} to sample the "
+                "Cartesian Fourier bandwidth without aliasing."
+            )
+    parameterization = state.parameterization()
+    report = None
+    if full_validation:
+        try:
+            report = validate_periodic_parameterization(
+                parameterization,
+                BoundaryValidationConfig(
+                    num_samples_per_component=geometry_config.validation_resolution,
+                    fourier_bandwidth=state.maximum_mode,
+                ),
+                raise_on_error=True,
+            )
+        except OrderedBoundaryValidationError as exc:
+            raise OrderedSDFGeometryError(
+                f"Cartesian Fourier retraction produced an inadmissible contour: {exc}"
+            ) from exc
+    curve = parameterization.discretize(geometry_config.num_nodes, require_even=True)
+    lower = np.asarray(geometry_config.bounds[0], dtype=np.float64)
+    upper = np.asarray(geometry_config.bounds[1], dtype=np.float64)
+    if report is None:
+        audit_count = max(
+            geometry_config.validation_resolution,
+            64 * (state.maximum_mode + 1),
+        )
+        parameters = 2.0 * np.pi * np.arange(audit_count) / audit_count
+        audit_points = parameterization.evaluate(parameters, wrap=False).points
+        minimum = np.min(audit_points, axis=0)
+        maximum = np.max(audit_points, axis=0)
+    else:
+        minimum = np.asarray(report.bounding_box_min, dtype=np.float64)
+        maximum = np.asarray(report.bounding_box_max, dtype=np.float64)
+    if np.any(minimum <= lower) or np.any(maximum >= upper):
+        raise OrderedSDFGeometryError(
+            "Cartesian Fourier retraction touches or leaves the configured geometry bounds."
+        )
+    if not full_validation and sampled_self_intersection_count(curve.points):
+        raise OrderedSDFGeometryError(
+            "Cartesian Fourier retraction has a solver-grid self-intersection."
+        )
+    return curve
+
+
+@dataclass(frozen=True)
+class DirectCartesianFourierCurveUpdate:
+    """One Cartesian-state increment and its physical step audit.
+
+    ``arclength_refit_*`` are exactly zero because this chart never refits.
+    The normal/tangential split is reported rather than constrained: tangential
+    motion is reparameterization, which the optimizer needs in order to reach
+    the gauge in which the target is band-limited.
+    """
+
+    state: object
+    curve: PeriodicCurve2D
+    coefficients: np.ndarray
+    maximum_displacement_m: float
+    regauge_rms_m: float
+    regauge_maximum_m: float
+    maximum_normal_displacement_m: float
+    maximum_tangential_displacement_m: float
+    rms_normal_displacement_m: float
+    rms_tangential_displacement_m: float
+    tangential_energy_ratio: float
+    speed_ratio_before: float
+    speed_ratio_after: float
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.curve, PeriodicCurve2D):
+            raise TypeError("curve must be a PeriodicCurve2D.")
+        coefficients = np.array(self.coefficients, dtype=np.float64, copy=True)
+        if coefficients.ndim != 1 or not np.all(np.isfinite(coefficients)):
+            raise ValueError("coefficients must be a finite vector.")
+        coefficients.setflags(write=False)
+        object.__setattr__(self, "coefficients", coefficients)
+        for name in (
+            "maximum_displacement_m",
+            "regauge_rms_m",
+            "regauge_maximum_m",
+            "maximum_normal_displacement_m",
+            "maximum_tangential_displacement_m",
+            "rms_normal_displacement_m",
+            "rms_tangential_displacement_m",
+            "tangential_energy_ratio",
+            "speed_ratio_before",
+            "speed_ratio_after",
+        ):
+            value = float(getattr(self, name))
+            if not math.isfinite(value) or value < 0.0:
+                raise ValueError(f"{name} must be finite and non-negative.")
+            object.__setattr__(self, name, value)
+
+    @property
+    def arclength_refit_rms_m(self) -> float:
+        """Polar-angle re-gauge truncation, not an arc-length refit.
+
+        This chart never refits to arc length -- that is what would reinstate
+        the truncation floor it exists to avoid.  The shared trajectory record
+        carries the refit slots, so the polar-angle gauge projection's measured
+        truncation is reported through them and labelled ``regauge_*`` wherever
+        it is written out.  It is exactly zero when re-gauging is disabled.
+        """
+
+        return self.regauge_rms_m
+
+    @property
+    def arclength_refit_maximum_m(self) -> float:
+        return self.regauge_maximum_m
+
+    @property
+    def arclength_speed_ratio_before(self) -> float:
+        return self.speed_ratio_before
+
+    @property
+    def arclength_speed_ratio_after(self) -> float:
+        return self.speed_ratio_after
+
+
+def apply_cartesian_fourier_update(
+    state: object,
+    coefficients: object,
+    *,
+    maximum_mode: int,
+    geometry_config: OrderedSDFGeometryConfig,
+    full_validation: bool = True,
+    regauge: bool = False,
+) -> DirectCartesianFourierCurveUpdate:
+    """Retract an increment in the authoritative Cartesian Fourier state.
+
+    With ``regauge`` the retracted state is re-expressed in its own polar-angle
+    parameter, which removes the chart's null space at the cost of a measured
+    band truncation.  The exact target is a fixed point of that map.
+    """
+
+    active_mode = _positive_integer(maximum_mode, name="maximum_mode")
+    try:
+        next_state = state.incremented(coefficients, maximum_mode=active_mode)
+    except ValueError as exc:
+        raise OrderedSDFGeometryError(
+            f"Cartesian Fourier retraction is not admissible: {exc}"
+        ) from exc
+    regauge_rms = 0.0
+    regauge_maximum = 0.0
+    if regauge:
+        next_state, regauge_rms, regauge_maximum = (
+            regauge_cartesian_state_to_polar_angle(next_state)
+        )
+    curve = cartesian_fourier_state_curve(
+        next_state,
+        geometry_config=geometry_config,
+        full_validation=full_validation,
+    )
+    values = np.asarray(coefficients, dtype=np.float64)
+    audit_count = max(
+        geometry_config.validation_resolution,
+        64 * (state.maximum_mode + 1),
+    )
+    parameters = 2.0 * np.pi * np.arange(audit_count, dtype=np.float64) / audit_count
+    basis = cartesian_fourier_displacement_basis(parameters, maximum_mode=active_mode)
+    displacement = np.einsum("...pd,p->...d", basis, values)
+    magnitude = np.linalg.norm(displacement, axis=-1)
+
+    before = state.parameterization().evaluate(parameters, wrap=False)
+    after = next_state.parameterization().evaluate(parameters, wrap=False)
+    tangents = np.asarray(before.first_derivatives, dtype=np.float64)
+    speeds = np.linalg.norm(tangents, axis=-1)
+    if np.any(speeds <= 0.0) or not np.all(np.isfinite(speeds)):
+        raise OrderedSDFGeometryError(
+            "Cartesian Fourier retraction has a vanishing parameter speed."
+        )
+    unit_tangent = tangents / speeds[:, None]
+    unit_normal = np.stack((unit_tangent[:, 1], -unit_tangent[:, 0]), axis=-1)
+    normal_motion = np.einsum("nd,nd->n", displacement, unit_normal)
+    tangential_motion = np.einsum("nd,nd->n", displacement, unit_tangent)
+    normal_energy = float(np.mean(normal_motion * normal_motion))
+    tangential_energy = float(np.mean(tangential_motion * tangential_motion))
+    total_energy = normal_energy + tangential_energy
+    after_speeds = np.linalg.norm(
+        np.asarray(after.first_derivatives, dtype=np.float64), axis=-1
+    )
+    return DirectCartesianFourierCurveUpdate(
+        state=next_state,
+        curve=curve,
+        coefficients=values,
+        maximum_displacement_m=float(np.max(magnitude)),
+        regauge_rms_m=regauge_rms,
+        regauge_maximum_m=regauge_maximum,
+        maximum_normal_displacement_m=float(np.max(np.abs(normal_motion))),
+        maximum_tangential_displacement_m=float(np.max(np.abs(tangential_motion))),
+        rms_normal_displacement_m=float(np.sqrt(normal_energy)),
+        rms_tangential_displacement_m=float(np.sqrt(tangential_energy)),
+        tangential_energy_ratio=(
+            0.0 if total_energy <= 0.0 else tangential_energy / total_energy
+        ),
+        speed_ratio_before=float(np.max(speeds) / np.min(speeds)),
+        speed_ratio_after=float(np.max(after_speeds) / np.min(after_speeds)),
+    )
+
+
+def cartesian_fourier_velocity_basis(
+    parameters: object, *, maximum_mode: int
+) -> np.ndarray:
+    """Parameter derivative of :func:`cartesian_fourier_displacement_basis`.
+
+    Contracting this with a coefficient increment gives ``d(delta gamma)/dt``,
+    which is what changes the parameter speed.  Reparameterization drift is a
+    property of that derivative, not of the displacement itself: a step can be
+    almost entirely normal in energy and still redistribute the parameter.
+    """
+
+    if np.iscomplexobj(parameters):
+        raise ValueError("parameters must be real-valued.")
+    values = np.asarray(parameters, dtype=np.float64)
+    if not np.all(np.isfinite(values)):
+        raise ValueError("parameters must contain only finite values.")
+    mode_limit = _positive_integer(maximum_mode, name="maximum_mode")
+    result = np.zeros(
+        values.shape + (_cartesian_parameter_count(mode_limit), 2),
+        dtype=np.float64,
+    )
+    for mode in range(1, mode_limit + 1):
+        sine = -mode * np.sin(mode * values)
+        result[..., 2 * mode, 0] = sine
+        result[..., 2 * mode + 1, 1] = sine
+    offset = 2 * mode_limit + 2
+    for mode in range(1, mode_limit + 1):
+        cosine = mode * np.cos(mode * values)
+        result[..., offset + 2 * (mode - 1), 0] = cosine
+        result[..., offset + 2 * (mode - 1) + 1, 1] = cosine
+    result.setflags(write=False)
+    return result
+
+
+def regauge_cartesian_state_to_polar_angle(
+    state: object, *, maximum_mode: int | None = None, samples: int = 2048
+) -> tuple[object, float, float]:
+    """Re-express a Cartesian state in its own polar-angle parameter.
+
+    This is a *gauge* projection, not an arc-length refit.  It changes the
+    parameter and leaves the point set alone, up to the band truncation it
+    reports.  Its purpose is to remove the chart's null space: without it the
+    optimizer's step has a reparameterization component the data cannot see,
+    the parameter speed ratio compounds -- measured at about 1.4 per accepted
+    update, reaching 226 within fifteen -- and the Kress quadrature degrades
+    while the shape stops improving.
+
+    The parameter values are found exactly by Newton iteration on
+    ``angle(gamma(t) - c) = theta``, so no interpolation error is introduced;
+    the returned RMS and maximum are the genuine band-``K`` truncation of the
+    re-gauged curve.  The exact target is a fixed point of this map, because it
+    is band-limited in precisely this parameter.
+    """
+
+    from .explicit_fourier import CartesianFourierCurveState
+
+    mode_limit = state.maximum_mode if maximum_mode is None else _positive_integer(
+        maximum_mode, name="maximum_mode"
+    )
+    count = _positive_integer(samples, name="samples")
+    if count < 4 * (mode_limit + 1):
+        raise ValueError("samples must comfortably resolve the requested bandwidth.")
+    center = np.asarray(state.center, dtype=np.float64)
+    parameterization = state.parameterization()
+    targets = 2.0 * np.pi * np.arange(count, dtype=np.float64) / count
+
+    parameters = np.array(targets, copy=True)
+    for _ in range(64):
+        sample = parameterization.evaluate(parameters, wrap=False)
+        offset = np.asarray(sample.points, dtype=np.float64) - center[None, :]
+        derivative = np.asarray(sample.first_derivatives, dtype=np.float64)
+        squared = np.einsum("nd,nd->n", offset, offset)
+        if np.any(squared <= 0.0):
+            raise OrderedSDFGeometryError(
+                "Re-gauging requires a curve that does not pass through its own center."
+            )
+        residual = np.arctan2(
+            np.sin(np.arctan2(offset[:, 1], offset[:, 0]) - targets),
+            np.cos(np.arctan2(offset[:, 1], offset[:, 0]) - targets),
+        )
+        slope = (
+            offset[:, 0] * derivative[:, 1] - offset[:, 1] * derivative[:, 0]
+        ) / squared
+        if np.any(np.abs(slope) <= 0.0):
+            raise OrderedSDFGeometryError(
+                "Re-gauging requires a strictly monotone polar angle."
+            )
+        parameters = parameters - residual / slope
+        if float(np.max(np.abs(residual))) <= 1.0e-14:
+            break
+    else:
+        raise OrderedSDFGeometryError(
+            "Re-gauging to polar angle did not converge; the contour is probably "
+            "not single-valued about its own center."
+        )
+
+    points = np.asarray(
+        parameterization.evaluate(parameters, wrap=False).points, dtype=np.float64
+    )
+    spectrum = np.fft.rfft(points, axis=0) / count
+    cosine = np.zeros((mode_limit + 1, 2), dtype=np.float64)
+    sine = np.zeros_like(cosine)
+    cosine[0] = spectrum[0].real
+    for mode in range(1, mode_limit + 1):
+        cosine[mode] = 2.0 * spectrum[mode].real
+        sine[mode] = -2.0 * spectrum[mode].imag
+    phase = targets[:, None] * np.arange(mode_limit + 1)[None, :]
+    residual = np.linalg.norm(
+        np.cos(phase) @ cosine + np.sin(phase) @ sine - points, axis=1
+    )
+    regauged = CartesianFourierCurveState(
+        cosine,
+        sine,
+        state.component_id,
+        name=state.name,
+        source_identifier=state.source_identifier,
+        initial_projection_rms_m=state.initial_projection_rms_m,
+        initial_projection_maximum_m=state.initial_projection_maximum_m,
+    )
+    return (
+        regauged,
+        float(np.sqrt(np.mean(residual * residual))),
+        float(np.max(residual)),
+    )

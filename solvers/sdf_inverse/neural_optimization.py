@@ -48,7 +48,15 @@ from torch import nn
 from ordered_boundary import PeriodicCurve2D, PeriodicParameterization2D
 
 from .curve_updates import (
+    DirectCartesianFourierCurveUpdate,
     RadialFourierCurveState,
+    apply_cartesian_fourier_update,
+    cartesian_fourier_displacement_basis,
+    cartesian_fourier_velocity_basis,
+    cartesian_fourier_phase_gauge_direction,
+    cartesian_fourier_state_curve,
+    fit_cartesian_fourier_curve_state,
+    _cartesian_parameter_count,
     apply_normal_mode_update,
     apply_radial_fourier_update,
     fit_radial_fourier_curve_state,
@@ -100,6 +108,18 @@ def _finite_positive(value: object, *, name: str, allow_zero: bool = False) -> f
         relation = "non-negative" if allow_zero else "positive"
         raise ValueError(f"{name} must be finite and {relation}.")
     return result
+
+
+def active_parameter_count(config: "AlternatingNeuralInverseConfig") -> int:
+    """Number of real search coordinates for the configured chart.
+
+    The normal and radial charts carry ``1 + 2 K``; the Cartesian chart is a
+    vector chart and carries ``4 K + 2``.
+    """
+
+    if config.direct_curve_retraction == "cartesian_fourier":
+        return _cartesian_parameter_count(config.maximum_mode)
+    return normal_mode_count(config.maximum_mode)
 
 
 def normal_mode_count(maximum_mode: int) -> int:
@@ -230,6 +250,32 @@ class AlternatingNeuralInverseConfig:
     # that direction, and an any-decrease test accepts the result forever.
     minimum_damping: float = 1.0e-6
     curvature_penalty_weight: float = 1.0e-4
+    # Reparameterization is invisible to the data, so a step that spends the
+    # trust region on it buys nothing and degrades the parameter speed the
+    # quadrature depends on.  The measured failure without this cap is
+    # specific: on the Cartesian chart the speed ratio ran from 2.4 to 226 in
+    # fifteen accepted updates while the boundary error stalled at 34 mm.
+    # Bounding the tangential *displacement* does not prevent it, because the
+    # speed responds to that displacement's parameter derivative; bounding the
+    # resulting speed ratio does.  The response is the same as for an oversized
+    # step -- raise the damping, which rotates the direction toward steepest
+    # descent, and the data gradient carries no reparameterization.  The
+    # analytic star in its own polar-angle chart has a speed ratio of 2.13, so
+    # this bound does not exclude the target.  It is a backstop only: enforcing
+    # it alone pins the iteration against the cap, because the drift is a
+    # property of the chart's metric rather than an incidental excursion.  The
+    # working control is the tangential prior below, which prices
+    # reparameterization instead of forbidding it: the near-null directions of
+    # the Cartesian chart are exactly the reparameterizations, and Levenberg
+    # damping alone does not reach them because their normal-matrix diagonal is
+    # floored at one.
+    maximum_parameter_speed_ratio: float = 8.0
+    tangential_penalty_weight: float = 1.0e-2
+    # Re-express every retracted state in its own polar-angle parameter.  This
+    # is a gauge projection, not an arc-length refit: it fixes the parameter
+    # and leaves the point set alone up to a reported band truncation, and the
+    # analytic target is an exact fixed point of it.
+    regauge_to_polar_angle: bool = False
     armijo_coefficient: float = 1.0e-4
     max_trust_region_solves: int = 8
     trust_region_refinement_steps: int = 8
@@ -336,6 +382,19 @@ class AlternatingNeuralInverseConfig:
                     allow_zero=True,
                 ),
             )
+        speed_ratio = float(self.maximum_parameter_speed_ratio)
+        if not math.isfinite(speed_ratio) or speed_ratio < 1.0:
+            raise ValueError("maximum_parameter_speed_ratio must be at least one.")
+        object.__setattr__(self, "maximum_parameter_speed_ratio", speed_ratio)
+        if not isinstance(self.regauge_to_polar_angle, (bool, np.bool_)):
+            raise TypeError("regauge_to_polar_angle must be bool.")
+        object.__setattr__(
+            self, "regauge_to_polar_angle", bool(self.regauge_to_polar_angle)
+        )
+        tangential = float(self.tangential_penalty_weight)
+        if not math.isfinite(tangential) or tangential < 0.0:
+            raise ValueError("tangential_penalty_weight must be finite and non-negative.")
+        object.__setattr__(self, "tangential_penalty_weight", tangential)
         for name in ("curvature_penalty_weight", "armijo_coefficient"):
             object.__setattr__(
                 self, name, _finite_positive(getattr(self, name), name=name, allow_zero=True)
@@ -367,9 +426,14 @@ class AlternatingNeuralInverseConfig:
             or self.damping_decrease > 1.0
         ):
             raise ValueError("damping_decrease must lie in (0, 1].")
-        if self.direct_curve_retraction not in {"normal", "radial_fourier"}:
+        if self.direct_curve_retraction not in {
+            "normal",
+            "radial_fourier",
+            "cartesian_fourier",
+        }:
             raise ValueError(
-                "direct_curve_retraction must be 'normal' or 'radial_fourier'."
+                "direct_curve_retraction must be 'normal', 'radial_fourier' "
+                "or 'cartesian_fourier'."
             )
 
 
@@ -530,6 +594,7 @@ class AlternatingNeuralInverseResult:
     representation_extraction_failure_count: int = 0
     representation_drift_rejection_count: int = 0
     final_radial_curve_state: RadialFourierCurveState | None = None
+    final_cartesian_curve_state: object | None = None
     distillation_policy: str = "legacy_strict"
     reconstruction_converged: bool | None = None
     reconstruction_stop_reason: str | None = None
@@ -739,6 +804,8 @@ class _ModalEvaluator:
         direct_curve_probes: bool,
         direct_curve_retraction: str = "normal",
         radial_curve_state: RadialFourierCurveState | None = None,
+        cartesian_curve_state: object | None = None,
+        regauge: bool = False,
     ) -> None:
         self.model = model
         self.curve = curve
@@ -752,7 +819,13 @@ class _ModalEvaluator:
         self.direct_curve_probes = bool(direct_curve_probes)
         self.direct_curve_retraction = str(direct_curve_retraction)
         self.radial_curve_state = radial_curve_state
-        if self.direct_curve_retraction not in {"normal", "radial_fourier"}:
+        self.cartesian_curve_state = cartesian_curve_state
+        self.regauge = bool(regauge)
+        if self.direct_curve_retraction not in {
+            "normal",
+            "radial_fourier",
+            "cartesian_fourier",
+        }:
             raise ValueError("Unsupported direct curve retraction.")
         if self.direct_curve_retraction == "radial_fourier":
             if not self.direct_curve_probes:
@@ -769,6 +842,24 @@ class _ModalEvaluator:
             raise ValueError(
                 "radial_curve_state is only valid with radial Fourier retraction."
             )
+        if self.direct_curve_retraction == "cartesian_fourier":
+            if not self.direct_curve_probes:
+                raise ValueError("Cartesian Fourier retraction requires direct curve probes.")
+            if self.cartesian_curve_state is None:
+                raise TypeError(
+                    "cartesian_curve_state is required for Cartesian Fourier retraction."
+                )
+            if self.maximum_mode > self.cartesian_curve_state.maximum_mode:
+                raise ValueError(
+                    "maximum_mode cannot exceed cartesian_curve_state.maximum_mode."
+                )
+            self.parameter_count = _cartesian_parameter_count(self.maximum_mode)
+        else:
+            if self.cartesian_curve_state is not None:
+                raise ValueError(
+                    "cartesian_curve_state is only valid with Cartesian Fourier retraction."
+                )
+            self.parameter_count = normal_mode_count(self.maximum_mode)
         self.cache: dict[bytes, _Evaluation | OrderedSDFGeometryError] = {}
         self.evaluation_count = 0
         self.infeasible_count = 0
@@ -776,7 +867,7 @@ class _ModalEvaluator:
         self.bem_seconds = 0.0
         self.curve_update_seconds = 0.0
         self.maximum_system_residual = _maximum_system_residual(base_forward)
-        zeros = np.zeros(normal_mode_count(maximum_mode), dtype=np.float64)
+        zeros = np.zeros(self.parameter_count, dtype=np.float64)
         self.cache[self._key(zeros)] = self._from_forward(zeros, base_forward, 0.0)
 
     @staticmethod
@@ -802,7 +893,7 @@ class _ModalEvaluator:
 
     def evaluate(self, coefficients: np.ndarray) -> _Evaluation:
         values = np.asarray(coefficients, dtype=np.float64)
-        expected = normal_mode_count(self.maximum_mode)
+        expected = self.parameter_count
         if values.shape != (expected,) or not np.all(np.isfinite(values)):
             raise ValueError(f"coefficients must have finite shape ({expected},).")
         key = self._key(values)
@@ -817,7 +908,17 @@ class _ModalEvaluator:
         try:
             curve_update_started = perf_counter()
             if self.direct_curve_probes:
-                if self.direct_curve_retraction == "radial_fourier":
+                if self.direct_curve_retraction == "cartesian_fourier":
+                    assert self.cartesian_curve_state is not None
+                    update = apply_cartesian_fourier_update(
+                        self.cartesian_curve_state,
+                        values,
+                        maximum_mode=self.maximum_mode,
+                        geometry_config=self.geometry_config,
+                        full_validation=False,
+                        regauge=self.regauge,
+                    )
+                elif self.direct_curve_retraction == "radial_fourier":
                     assert self.radial_curve_state is not None
                     update = apply_radial_fourier_update(
                         self.radial_curve_state,
@@ -895,7 +996,7 @@ def _modal_jacobian(
     base: _Evaluation,
     config: AlternatingNeuralInverseConfig,
 ) -> tuple[np.ndarray, np.ndarray]:
-    count = normal_mode_count(config.maximum_mode)
+    count = active_parameter_count(config)
     jacobian = np.empty((base.residual.size, count), dtype=np.float64)
     used_steps = np.empty(count, dtype=np.float64)
     origin = np.zeros(count, dtype=np.float64)
@@ -990,7 +1091,21 @@ def _curvature_penalty(
     resolve are then bought at their smoothness cost instead of for free.
     """
 
-    if config.direct_curve_retraction == "radial_fourier":
+    if config.direct_curve_retraction == "cartesian_fourier":
+        # Cartesian ordering: the mode-zero pair is exact translation and the
+        # mode-one pair carries size and aspect, which is the structural
+        # analogue of the radial chart's unpenalized mean radius.  Neither
+        # bends the curve, so neither is priced.
+        harmonics = [
+            float(mode)
+            for mode in range(2, config.maximum_mode + 1)
+            for _ in range(2)
+        ]
+        orders = np.asarray(
+            [0.0, 0.0, 0.0, 0.0] + harmonics + [0.0, 0.0] + harmonics,
+            dtype=np.float64,
+        )
+    elif config.direct_curve_retraction == "radial_fourier":
         # Gauge-fixed ordering: mean radius, x/y translation, then radial
         # harmonics 2..K.  Rigid translations and uniform dilation carry no
         # bending penalty.
@@ -1034,6 +1149,10 @@ def _bounded_modal_step(
     basis_at_curve: np.ndarray,
     damping: float,
     config: AlternatingNeuralInverseConfig,
+    gauge_direction: np.ndarray | None = None,
+    speed_guard: "Callable[[np.ndarray], float] | None" = None,
+    tangential_prior: np.ndarray | None = None,
+    unit_normals: np.ndarray | None = None,
 ) -> tuple[np.ndarray, float] | None:
     """A Levenberg step inside the field-update trust region, or ``None``.
 
@@ -1044,6 +1163,41 @@ def _bounded_modal_step(
     rescale survives only as the fallback once the damping search is spent.
     """
 
+    def degauge(values: np.ndarray) -> np.ndarray:
+        # The Cartesian chart carries one exact null direction: an
+        # infinitesimal parameter shift rotates every mode pair without
+        # moving the point set.  Removing it here rather than after the
+        # solve keeps the trust region measured on the step that is
+        # actually retracted.
+        if gauge_direction is None:
+            return values
+        return values - float(values @ gauge_direction) * gauge_direction
+
+    def admissible(values: np.ndarray) -> bool:
+        # Reparameterization is invisible to the data and corrosive to the
+        # quadrature.  Treat a step that distorts the parameter speed the same
+        # way an oversized step is treated, so the damping search answers both.
+        if speed_guard is None:
+            return True
+        ratio = speed_guard(values)
+        return math.isfinite(ratio) and ratio <= config.maximum_parameter_speed_ratio
+
+    prior = (
+        np.zeros((gradient.size, gradient.size), dtype=np.float64)
+        if tangential_prior is None
+        else tangential_prior
+    )
+
+    def motion(values: np.ndarray) -> float:
+        # Only normal motion changes the shape.  Measuring the trust region on
+        # the full displacement lets a step spend its whole budget on
+        # reparameterization: the measured Cartesian run took six 1.9 mm steps
+        # that moved the boundary by 2.3 mm in total.
+        if unit_normals is None:
+            return _maximum_modal_displacement(basis_at_curve, values)
+        displacement = np.einsum("npd,p->nd", basis_at_curve, values)
+        return float(np.max(np.abs(np.einsum("nd,nd->n", displacement, unit_normals))))
+
     trial = float(damping)
     attempted = trial
     step = None
@@ -1052,16 +1206,18 @@ def _bounded_modal_step(
     for _ in range(config.max_trust_region_solves + 1):
         try:
             step = np.linalg.solve(
-                normal_matrix + trial * np.diag(scaling) + np.diag(curvature), -gradient
+                normal_matrix + trial * np.diag(scaling) + np.diag(curvature) + prior,
+                -gradient
             )
         except np.linalg.LinAlgError:
             return None
         if not np.all(np.isfinite(step)):
             return None
-        maximum = _maximum_modal_displacement(basis_at_curve, step)
+        step = degauge(step)
+        maximum = motion(step)
         if not math.isfinite(maximum):
             return None
-        if maximum <= config.maximum_modal_field_update_m:
+        if maximum <= config.maximum_modal_field_update_m and admissible(step):
             if infeasible_damping is None:
                 return step, trial
 
@@ -1078,19 +1234,21 @@ def _bounded_modal_step(
                     midpoint_step = np.linalg.solve(
                         normal_matrix
                         + midpoint * np.diag(scaling)
-                        + np.diag(curvature),
+                        + np.diag(curvature)
+                        + prior,
                         -gradient,
                     )
                 except np.linalg.LinAlgError:
                     break
                 if not np.all(np.isfinite(midpoint_step)):
                     break
-                midpoint_maximum = _maximum_modal_displacement(
-                    basis_at_curve, midpoint_step
-                )
+                midpoint_step = degauge(midpoint_step)
+                midpoint_maximum = motion(midpoint_step)
                 if not math.isfinite(midpoint_maximum):
                     break
-                if midpoint_maximum <= config.maximum_modal_field_update_m:
+                if midpoint_maximum <= config.maximum_modal_field_update_m and admissible(
+                    midpoint_step
+                ):
                     feasible_damping = midpoint
                     feasible_step = midpoint_step
                 else:
@@ -1539,6 +1697,7 @@ def _run_alternating_neural_inverse_eval(
     initial_curve: PeriodicCurve2D | None = None,
     initial_representation_curve: PeriodicCurve2D | None = None,
     initial_radial_curve_state: RadialFourierCurveState | None = None,
+    initial_cartesian_curve_state: object | None = None,
 ) -> AlternatingNeuralInverseResult:
     """Run direct ordered-curve updates and distil each accepted state to an MLP."""
 
@@ -1572,6 +1731,8 @@ def _run_alternating_neural_inverse_eval(
         )
     if initial_curve is None and initial_radial_curve_state is not None:
         raise ValueError("initial_radial_curve_state requires initial_curve.")
+    if initial_curve is None and initial_cartesian_curve_state is not None:
+        raise ValueError("initial_cartesian_curve_state requires initial_curve.")
 
     default_model_predictor = forward_predictor is None
     if default_model_predictor:
@@ -1609,6 +1770,17 @@ def _run_alternating_neural_inverse_eval(
         raise ValueError(
             "Radial Fourier retraction requires an explicit initial_curve."
         )
+    if (
+        config.direct_curve_retraction != "cartesian_fourier"
+        and initial_cartesian_curve_state is not None
+    ):
+        raise ValueError(
+            "initial_cartesian_curve_state requires Cartesian Fourier retraction."
+        )
+    if config.direct_curve_retraction == "cartesian_fourier" and not direct_curve_probes:
+        raise ValueError("Cartesian Fourier retraction requires direct curve probes.")
+    if config.direct_curve_retraction == "cartesian_fourier" and initial_curve is None:
+        raise ValueError("Cartesian Fourier retraction requires an initial curve.")
     if config.direct_curve_retraction == "normal" and initial_radial_curve_state is not None:
         raise ValueError(
             "initial_radial_curve_state requires radial Fourier retraction."
@@ -1647,6 +1819,7 @@ def _run_alternating_neural_inverse_eval(
     started = perf_counter()
     initial_geometry_audit_wall = 0.0
     current_radial_curve_state: RadialFourierCurveState | None = None
+    current_cartesian_curve_state: object | None = None
     if initial_curve is None:
         current_forward = model_predictor(
             model, data.forward_problem, geometry_config, solver=solver
@@ -1670,7 +1843,39 @@ def _run_alternating_neural_inverse_eval(
             total_geometry_audit_seconds += initial_geometry_audit_wall
         else:
             current_representation_curve = initial_representation_curve
-        if config.direct_curve_retraction == "radial_fourier":
+        if config.direct_curve_retraction == "cartesian_fourier":
+            assert isinstance(geometry_config, OrderedSDFGeometryConfig)
+            if initial_cartesian_curve_state is None:
+                current_cartesian_curve_state = fit_cartesian_fourier_curve_state(
+                    current_curve,
+                    maximum_mode=config.maximum_mode,
+                )
+                current_curve = cartesian_fourier_state_curve(
+                    current_cartesian_curve_state,
+                    geometry_config=geometry_config,
+                    full_validation=True,
+                )
+            else:
+                current_cartesian_curve_state = initial_cartesian_curve_state
+                if config.maximum_mode > current_cartesian_curve_state.maximum_mode:
+                    raise ValueError(
+                        "config.maximum_mode cannot exceed the supplied Cartesian "
+                        "state's maximum mode."
+                    )
+                represented = cartesian_fourier_state_curve(
+                    current_cartesian_curve_state,
+                    geometry_config=geometry_config,
+                    full_validation=True,
+                )
+                if not np.array_equal(
+                    np.asarray(represented.points, dtype=np.float64),
+                    np.asarray(current_curve.points, dtype=np.float64),
+                ):
+                    raise ValueError(
+                        "initial_curve must exactly match initial_cartesian_curve_state."
+                    )
+                current_curve = represented
+        elif config.direct_curve_retraction == "radial_fourier":
             assert isinstance(geometry_config, OrderedSDFGeometryConfig)
             if initial_radial_curve_state is None:
                 current_radial_curve_state = fit_radial_fourier_curve_state(
@@ -1753,7 +1958,7 @@ def _run_alternating_neural_inverse_eval(
         loss=current_loss,
         relative_l2_error=current_relative,
         geometry_points=current_points,
-        modal_step=np.zeros(normal_mode_count(config.maximum_mode)),
+        modal_step=np.zeros(active_parameter_count(config)),
         applied_damping=0.0,
         maximum_modal_field_update_m=0.0,
         curve_change_m=0.0,
@@ -1825,6 +2030,7 @@ def _run_alternating_neural_inverse_eval(
             ),
             spectral_tail_rejection_count=total_spectral_tail_rejections,
             final_radial_curve_state=current_radial_curve_state,
+            final_cartesian_curve_state=current_cartesian_curve_state,
             distillation_policy=config.distillation_policy,
             representation_evaluated=strict_representation,
             representation_status="evaluated" if strict_representation else "not_requested",
@@ -1836,7 +2042,10 @@ def _run_alternating_neural_inverse_eval(
         iteration_redistance_config = _redistance_config_for_iteration(
             config.redistance, iteration
         )
-        if current_radial_curve_state is None:
+        if current_cartesian_curve_state is not None:
+            center = np.asarray(current_cartesian_curve_state.center)
+            radius_scale = current_cartesian_curve_state.mean_radius_m
+        elif current_radial_curve_state is None:
             center, radius_scale = _curve_center_and_scale(current_points)
         else:
             center = np.asarray(current_radial_curve_state.center)
@@ -1855,8 +2064,10 @@ def _run_alternating_neural_inverse_eval(
             direct_curve_probes=direct_curve_probes,
             direct_curve_retraction=config.direct_curve_retraction,
             radial_curve_state=current_radial_curve_state,
+            cartesian_curve_state=current_cartesian_curve_state,
+            regauge=config.regauge_to_polar_angle,
         )
-        base = evaluator.evaluate(np.zeros(normal_mode_count(config.maximum_mode)))
+        base = evaluator.evaluate(np.zeros(evaluator.parameter_count))
         try:
             jacobian, _used_steps = _modal_jacobian(evaluator, base, config)
         except OrderedSDFGeometryError:
@@ -1875,7 +2086,81 @@ def _run_alternating_neural_inverse_eval(
         normal_matrix = jacobian.T @ jacobian
         scaling = np.maximum(np.diag(normal_matrix), 1.0)
         curvature = _curvature_penalty(normal_matrix, config)
-        if current_radial_curve_state is None:
+        speed_guard = None
+        tangential_prior = None
+        unit_normals = None
+        gauge_direction = (
+            None
+            if current_cartesian_curve_state is None
+            else cartesian_fourier_phase_gauge_direction(
+                current_cartesian_curve_state, maximum_mode=config.maximum_mode
+            )
+        )
+        if current_cartesian_curve_state is not None:
+            # The Cartesian chart is affine in its coefficients, so the
+            # displacement basis does not depend on the current state.  Audit
+            # the same dense uniform grid the retraction audits.
+            cartesian_audit_count = max(
+                geometry_config.validation_resolution,
+                64 * (current_cartesian_curve_state.maximum_mode + 1),
+            )
+            cartesian_audit_parameters = (
+                2.0
+                * np.pi
+                * np.arange(cartesian_audit_count, dtype=np.float64)
+                / cartesian_audit_count
+            )
+            basis_at_curve = cartesian_fourier_displacement_basis(
+                cartesian_audit_parameters,
+                maximum_mode=config.maximum_mode,
+            )
+            audit_derivatives = np.asarray(
+                current_cartesian_curve_state.parameterization()
+                .evaluate(cartesian_audit_parameters, wrap=False)
+                .first_derivatives,
+                dtype=np.float64,
+            )
+            if np.any(np.linalg.norm(audit_derivatives, axis=1) <= 0.0):
+                stop_reason = "vanishing_parameter_speed"
+                break
+            # Tangential Gram matrix of the chart's own basis.  Its large
+            # eigenvalues are the reparameterizations: motion the data cannot
+            # see.  Referring it to the best-determined column of the normal
+            # matrix keeps the prior invariant to residual units and scale,
+            # exactly as the curvature prior is.
+            audit_unit_tangents = audit_derivatives / np.linalg.norm(
+                audit_derivatives, axis=1
+            )[:, None]
+            unit_normals = np.stack(
+                (audit_unit_tangents[:, 1], -audit_unit_tangents[:, 0]), axis=-1
+            )
+            tangential_components = np.einsum(
+                "npd,nd->np", basis_at_curve, audit_unit_tangents
+            )
+            tangential_prior = (
+                config.tangential_penalty_weight
+                * max(float(np.max(np.diag(normal_matrix))), 1.0)
+                * (tangential_components.T @ tangential_components)
+                / len(cartesian_audit_parameters)
+            )
+            velocity_basis = cartesian_fourier_velocity_basis(
+                cartesian_audit_parameters, maximum_mode=config.maximum_mode
+            )
+
+            def speed_guard(
+                values: np.ndarray,
+                *,
+                base: np.ndarray = audit_derivatives,
+                velocity: np.ndarray = velocity_basis,
+            ) -> float:
+                speeds = np.linalg.norm(
+                    base + np.einsum("npd,p->nd", velocity, values), axis=1
+                )
+                smallest = float(np.min(speeds))
+                if not math.isfinite(smallest) or smallest <= 0.0:
+                    return math.inf
+                return float(np.max(speeds)) / smallest
+        elif current_radial_curve_state is None:
             basis_at_curve = _mode_values_at_curve(
                 model, current_points, center, radius_scale, config.maximum_mode
             )
@@ -1925,6 +2210,18 @@ def _run_alternating_neural_inverse_eval(
                 basis_at_curve,
                 trial_damping,
                 config,
+                # Only the Cartesian chart has a gauge; keeping the call shape
+                # unchanged elsewhere preserves the existing injection seam.
+                **(
+                    {}
+                    if gauge_direction is None
+                    else {
+                        "gauge_direction": gauge_direction,
+                        "speed_guard": speed_guard,
+                        "tangential_prior": tangential_prior,
+                        "unit_normals": unit_normals,
+                    }
+                ),
             )
             if bounded is None:
                 trial_damping *= config.damping_increase
@@ -1987,7 +2284,16 @@ def _run_alternating_neural_inverse_eval(
                     # so its already-computed probe response remains exact.
                     validation_started = perf_counter()
                     try:
-                        if current_radial_curve_state is None:
+                        if current_cartesian_curve_state is not None:
+                            validated_update = apply_cartesian_fourier_update(
+                                current_cartesian_curve_state,
+                                modal_step,
+                                maximum_mode=config.maximum_mode,
+                                geometry_config=geometry_config,
+                                full_validation=True,
+                                regauge=config.regauge_to_polar_angle,
+                            )
+                        elif current_radial_curve_state is None:
                             validated_update = apply_normal_mode_update(
                                 current_curve,
                                 modal_step,
@@ -2027,14 +2333,17 @@ def _run_alternating_neural_inverse_eval(
                         validated_update.arclength_speed_ratio_after
                     )
                     direct_curve = validated_update.curve
-                    if current_radial_curve_state is not None:
+                    if (
+                        current_radial_curve_state is not None
+                        or current_cartesian_curve_state is not None
+                    ):
                         probe_points = np.asarray(
                             direct.forward_result.geometry_build.curve.points,
                             dtype=np.float64,
                         )
                         if not np.array_equal(probe_points, direct_curve.points):
                             raise RuntimeError(
-                                "Radial probe and fully validated retraction must be identical."
+                                "Chart probe and fully validated retraction must be identical."
                             )
                     candidate_spectral_tail = _radial_spectral_tail_rms(
                         np.asarray(direct_curve.points, dtype=np.float64),
@@ -2049,7 +2358,10 @@ def _run_alternating_neural_inverse_eval(
                         tail_blocked_decrease_count += 1
                         continue
 
-                    if current_radial_curve_state is None:
+                    if (
+                        current_radial_curve_state is None
+                        and current_cartesian_curve_state is None
+                    ):
                         remeshed_forward_started = perf_counter()
                         total_evaluations += 1
                         try:
@@ -2468,6 +2780,21 @@ def _run_alternating_neural_inverse_eval(
                 model.trained_against_signed_distance = (
                     accepted_model.trained_against_signed_distance
                 )
+        if current_cartesian_curve_state is not None:
+            advanced = apply_cartesian_fourier_update(
+                current_cartesian_curve_state,
+                accepted_step,
+                maximum_mode=config.maximum_mode,
+                geometry_config=geometry_config,
+                full_validation=False,
+                regauge=config.regauge_to_polar_angle,
+            )
+            current_cartesian_curve_state = advanced.state
+            represented_curve = advanced.curve
+            if not np.array_equal(represented_curve.points, accepted_curve.points):
+                raise RuntimeError(
+                    "Accepted curve does not match the advanced Cartesian state."
+                )
         if current_radial_curve_state is not None:
             current_radial_curve_state = current_radial_curve_state.incremented(
                 accepted_step,
@@ -2665,6 +2992,7 @@ def _run_alternating_neural_inverse_eval(
         ),
         spectral_tail_rejection_count=total_spectral_tail_rejections,
         final_radial_curve_state=current_radial_curve_state,
+        final_cartesian_curve_state=current_cartesian_curve_state,
         distillation_policy=config.distillation_policy,
         representation_evaluated=strict_representation,
         representation_status="evaluated" if strict_representation else "not_requested",
@@ -2882,6 +3210,7 @@ def run_alternating_neural_inverse(
     initial_curve: PeriodicCurve2D | None = None,
     initial_representation_curve: PeriodicCurve2D | None = None,
     initial_radial_curve_state: RadialFourierCurveState | None = None,
+    initial_cartesian_curve_state: object | None = None,
 ) -> AlternatingNeuralInverseResult:
     """Run the alternating inverse with a canonical ordered-contour state.
 
@@ -2894,6 +3223,12 @@ def run_alternating_neural_inverse(
     alongside it when those two differ. In ``legacy_strict``, omitting that
     representation with an explicit ``initial_curve`` performs one
     geometry-only extraction to audit the model before optimization begins.
+
+    With ``config.direct_curve_retraction == 'cartesian_fourier'`` the state is
+    a Cartesian Fourier curve in the polar-angle parameter, no neural field is
+    consulted, and no arc-length refit occurs: the target of this project is
+    band-limited in polar angle and not in arc length.  Its one exact null
+    direction, a parameter shift, is projected out of every step.
 
     With ``config.direct_curve_retraction == 'radial_fourier'``, an explicit
     ``initial_curve`` is projected once when ``initial_radial_curve_state`` is
@@ -2942,6 +3277,7 @@ def run_alternating_neural_inverse(
             initial_curve=initial_curve,
             initial_representation_curve=initial_representation_curve,
             initial_radial_curve_state=initial_radial_curve_state,
+            initial_cartesian_curve_state=initial_cartesian_curve_state,
         )
         if config.distillation_policy == "legacy_strict":
             final = result.final_iteration
