@@ -31,8 +31,13 @@ from sdf_bem_multicomponent import (
     predict_multicomponent_kress_paired_boundary_response,
 )
 
-from .curve_updates import RadialFourierCurveState, radial_fourier_state_curve
-from .explicit_fourier import CartesianFourierCurveState
+from .curve_updates import (
+    RadialFourierCurveState,
+    polar_angle_gauge_fixed_point,
+    polar_angle_gauge_tangent_basis,
+    radial_fourier_state_curve,
+)
+from .explicit_fourier import CartesianFourierCurveState, circle_cartesian_fourier_state
 from .geometry import OrderedSDFGeometryConfig, OrderedSDFGeometryError
 from .optimization import (
     ComplexScatteredData,
@@ -46,12 +51,20 @@ FROZEN_BIRTH_RADIUS_FACTORS = (1.0, 0.75, 0.5, 0.35)
 
 
 def component_radius_floor(component) -> float:
-    """Conservative radial feature radius, or Cartesian equivalent radius.
+    """Conservative feature radius of one explicit component.
 
-    Keeping the radial certificate resolved prevents LM approaching a
-    singular pinch while the topology controller prepares a discrete cut.
+    Keeping the certificate resolved prevents LM approaching a singular pinch
+    while the topology controller prepares a discrete cut.  Both charts bound
+    the same quantity -- the minimum distance from the component's own centre
+    to its boundary -- whenever that quantity is a feature radius at all.  A
+    Cartesian fallback contour that is *not* star-shaped about its centre has
+    no such interpretation, so it falls back to the equivalent-area radius it
+    used before the polar-angle gauge existed.
     """
-    return float(getattr(component, "minimum_radius_lower_bound_m", component.mean_radius_m))
+    if isinstance(component, CartesianFourierCurveState):
+        return float(component.minimum_radius_lower_bound_m
+                     if component.is_star_shaped_about_center else component.mean_radius_m)
+    return float(component.minimum_radius_lower_bound_m)
 
 
 def _readonly(values: Any, *, dtype: Any) -> np.ndarray:
@@ -203,6 +216,53 @@ class MultiRadialFourierState:
                 )
             )
         return MultiRadialFourierState(tuple(rebuilt))
+
+    def polar_angle_gauge_fixed(self) -> tuple["MultiRadialFourierState", float]:
+        """Re-express every Cartesian component in its own polar-angle parameter.
+
+        Radial components are already gauge-fixed and are returned untouched.
+        Every Cartesian component must be projectable, or this raises: there is
+        no skip.  An un-projectable component is one that has left the
+        star-shaped set, and passing it through would let the next step be
+        taken in the free chart, which is the drift the gauge exists to stop.
+        Callers reach this only under the Cartesian chart, whose contour fits
+        already refuse anything the gauge cannot hold, so a failure here is a
+        step to reject rather than a state to tolerate.
+
+        The second value is the largest residual band truncation, which is the
+        component's genuine distance from the gauge-fixed set: exactly zero for
+        a curve that is band-limited in its own polar angle -- every circle,
+        and every curve reached from the radial chart at one mode lower.
+        """
+        rebuilt: list[RadialFourierCurveState | CartesianFourierCurveState] = []
+        truncation = 0.0
+        for component in self.components:
+            if not isinstance(component, CartesianFourierCurveState):
+                rebuilt.append(component)
+                continue
+            regauged, maximum = polar_angle_gauge_fixed_point(component)
+            rebuilt.append(regauged)
+            truncation = max(truncation, float(maximum))
+        return MultiRadialFourierState(tuple(rebuilt)), truncation
+
+    def gauge_tangent_basis(self) -> np.ndarray:
+        """Orthonormal basis of the directions a gauge-fixed step may take.
+
+        A radial component contributes its own coordinates unchanged; a
+        Cartesian one contributes the linear subspace its gauge fixes, which is
+        much smaller than its coefficient count.  Components occupy disjoint
+        parameter slices, so the block-diagonal assembly is orthonormal.  A
+        purely radial state gets the identity and is unaffected.
+        """
+        rows: list[np.ndarray] = []
+        for component, component_slice in zip(self.components, self.parameter_slices):
+            width = component_slice.stop - component_slice.start
+            local = (polar_angle_gauge_tangent_basis(component.maximum_mode)
+                     if isinstance(component, CartesianFourierCurveState) else np.eye(width))
+            block = np.zeros((len(local), self.parameter_count), dtype=np.float64)
+            block[:, component_slice] = local
+            rows.append(block)
+        return np.vstack(rows) if rows else np.zeros((0, self.parameter_count))
 
     def incremented(self, step: Any) -> "MultiRadialFourierState":
         delta = np.asarray(step, dtype=np.float64)
@@ -717,9 +777,17 @@ def evaluate_birth_ladder(
     component_id: str = "td_birth_001",
     radius_factors: tuple[float, ...] = FROZEN_BIRTH_RADIUS_FACTORS,
     minimum_radius_m: float = 0.005,
+    chart: str = "radial",
 ) -> BirthResult:
-    """Score the frozen finite-radius ladder at both Kress resolutions."""
+    """Score the frozen finite-radius ladder at both Kress resolutions.
 
+    ``chart`` selects only which exact circle the newborn is expressed in.  A
+    circle is mode one alone in either chart, so the ladder's geometry, its
+    acceptance rule and its recorded radii are identical.
+    """
+
+    if chart not in ("radial", "cartesian"):
+        raise ValueError("chart must be 'radial' or 'cartesian'.")
     if tuple(radius_factors) != FROZEN_BIRTH_RADIUS_FACTORS:
         raise ValueError("iteration 01 requires the frozen birth-radius ladder.")
     center = np.asarray(seed_center, dtype=np.float64)
@@ -742,7 +810,10 @@ def evaluate_birth_ladder(
             trial = BirthTrial(factor, radius, None, None, None, None, False, "below_minimum_radius", None)
             trials.append(trial)
             continue
-        candidate = state.appended(circle_radial_fourier_state(center, radius, component_id))
+        newborn = (circle_cartesian_fourier_state(center, radius, component_id)
+                   if chart == "cartesian" else
+                   circle_radial_fourier_state(center, radius, component_id))
+        candidate = state.appended(newborn)
         try:
             production = evaluate_multiradial_objective(
                 candidate, data, production_geometry_config, solve_config=solve_config
@@ -808,6 +879,7 @@ class MultiRadialFDIteration:
     damping: float
     evaluation_count: int
     maximum_system_residual: float
+    gauge_truncation_maximum_m: float = 0.0
 
 
 @dataclass(frozen=True)
@@ -830,8 +902,20 @@ def run_multiradial_fd_inverse(
     config: ParameterFDConfig,
     progress_callback: Callable[[MultiRadialFDIteration], None] | None = None,
     minimum_component_radius_m: float = 0.0,
+    cartesian_gauge: bool = False,
 ) -> MultiRadialFDResult:
-    """Bounded central-FD LM optimizer for one fixed multi-radial topology."""
+    """Bounded central-FD LM optimizer for one fixed multi-radial topology.
+
+    With ``cartesian_gauge`` the retraction is gauge-fixing: every retracted
+    state, in the Jacobian as well as on the accepted step, is re-expressed in
+    its own polar-angle parameter, and the exact phase null direction is
+    removed from the proposed step before it is clipped.  The Cartesian chart
+    needs this.  Left free, its parameter drifts along directions the data
+    cannot see, the quadrature degrades and the shape stops improving; the
+    softer controls that were measured instead all failed.  Radial components
+    are unaffected either way, so a purely radial state takes the identical
+    code path at ``cartesian_gauge=True``.
+    """
 
     if not isinstance(initial_state, MultiRadialFourierState):
         raise TypeError("initial_state must be MultiRadialFourierState.")
@@ -870,16 +954,38 @@ def run_multiradial_fd_inverse(
         cache[key] = result
         return result
 
-    def jacobian(state: MultiRadialFourierState) -> tuple[np.ndarray, int]:
+    def retract(state: MultiRadialFourierState, step: np.ndarray) -> tuple[MultiRadialFourierState, float]:
+        candidate = state.incremented(step)
+        if not cartesian_gauge:
+            return candidate, 0.0
+        return candidate.polar_angle_gauge_fixed()
+
+    def jacobian(state: MultiRadialFourierState) -> tuple[np.ndarray, np.ndarray | None, int]:
+        """Central differences along the directions the step may actually take.
+
+        Under the Cartesian gauge those are the gauge-fixed subspace's basis
+        directions, not the raw coefficients.  Probing a raw coefficient would
+        be probing mostly off the subspace, where the retraction has to project
+        the perturbation back and can refuse it outright -- and a refused probe
+        freezes its column to zero, which corrupts every reachable direction
+        that coefficient contributes to.  It also costs: band six has 26
+        coefficients and 11 reachable directions.
+        """
+        basis = state.gauge_tangent_basis() if cartesian_gauge else None
+        directions = np.eye(parameter_count) if basis is None else basis
+        # A unit direction gets the configured step; a spread-out one gets the
+        # same step in a norm-weighted sense, so the difference quotient is
+        # measured at one scale across the basis.
+        sizes = (fd_steps if basis is None
+                 else np.sqrt((directions * directions) @ (fd_steps * fd_steps)))
         columns: list[np.ndarray] = []
         frozen = 0
-        for index, step_size in enumerate(fd_steps):
-            step = np.zeros(parameter_count)
-            step[index] = step_size
+        for direction, step_size in zip(directions, sizes):
+            step = step_size * direction
             try:
-                plus_state = state.incremented(step)
-                minus_state = state.incremented(-step)
-            except ValueError:
+                plus_state = retract(state, step)[0]
+                minus_state = retract(state, -step)[0]
+            except (ValueError, OrderedSDFGeometryError):
                 frozen += 1
                 columns.append(np.zeros_like(current.residual))
                 continue
@@ -890,12 +996,17 @@ def run_multiradial_fd_inverse(
                 columns.append(np.zeros_like(current.residual))
             else:
                 columns.append((plus.residual - minus.residual) / (2.0 * step_size))
-        return np.column_stack(columns), frozen
+        return np.column_stack(columns), basis, frozen
 
+    gauge_truncation = 0.0
+    if cartesian_gauge:
+        # The first accepted state must satisfy the same gauge as every later
+        # one, or iteration one measures a projection the trajectory then keeps.
+        accepted_state, gauge_truncation = accepted_state.polar_angle_gauge_fixed()
     current = evaluate(accepted_state)
     if current is None:
         raise ValueError("initial_state is not solver-ready.")
-    matrix, frozen_columns = jacobian(accepted_state)
+    matrix, basis, frozen_columns = jacobian(accepted_state)
     gradient = matrix.T @ current.residual
     records: list[MultiRadialFDIteration] = []
     damping = config.initial_damping
@@ -908,11 +1019,13 @@ def run_multiradial_fd_inverse(
             parameter_vector=accepted_state.parameter_vector(),
             loss=current.loss,
             relative_l2_error=current.relative_l2_error,
-            gradient=_readonly(gradient, dtype=np.float64),
+            gradient=_readonly(gradient if basis is None else basis.T @ gradient,
+                               dtype=np.float64),
             step=_readonly(step, dtype=np.float64),
             damping=float(used_damping),
             evaluation_count=evaluation_count,
             maximum_system_residual=current.maximum_system_residual,
+            gauge_truncation_maximum_m=float(gauge_truncation),
         )
         records.append(item)
         if progress_callback is not None:
@@ -931,9 +1044,15 @@ def run_multiradial_fd_inverse(
             break
         normal = matrix.T @ matrix
         scaling = np.maximum(np.diag(normal), 1.0)
+        reduced_max_steps = (
+            None if basis is None
+            else np.min(np.where(np.abs(basis) > 1.0e-12,
+                                 max_steps / np.maximum(np.abs(basis), 1.0e-12), np.inf), axis=1)
+        )
         accepted_evaluation = None
         accepted_candidate = None
         accepted_step = None
+        accepted_truncation = 0.0
         used_damping = damping
         trial_damping = damping
         for _ in range(config.max_damping_trials):
@@ -944,7 +1063,15 @@ def run_multiradial_fd_inverse(
             except np.linalg.LinAlgError:
                 trial_damping *= config.damping_increase
                 continue
-            proposed = np.clip(proposed, -max_steps, max_steps)
+            if basis is None:
+                proposed = np.clip(proposed, -max_steps, max_steps)
+            else:
+                # Clip in the subspace's own coordinates. Clipping the rebuilt
+                # coefficient vector instead would push the step out of the
+                # gauge-fixed subspace, and the retraction would then have to
+                # recover a step the clip had bent. The per-direction bound is
+                # the tightest coefficient bound that direction can violate.
+                proposed = basis.T @ np.clip(proposed, -reduced_max_steps, reduced_max_steps)
             for backtrack in range(config.max_backtracks + 1):
                 step = (0.5**backtrack) * proposed
                 relative_step = float(
@@ -954,8 +1081,8 @@ def run_multiradial_fd_inverse(
                 if relative_step <= config.relative_step_tolerance:
                     continue
                 try:
-                    candidate = accepted_state.incremented(step)
-                except ValueError:
+                    candidate, candidate_truncation = retract(accepted_state, step)
+                except (ValueError, OrderedSDFGeometryError):
                     infeasible_count += 1
                     continue
                 candidate_evaluation = evaluate(candidate)
@@ -963,6 +1090,7 @@ def run_multiradial_fd_inverse(
                     accepted_evaluation = candidate_evaluation
                     accepted_candidate = candidate
                     accepted_step = step
+                    accepted_truncation = candidate_truncation
                     used_damping = trial_damping
                     break
             if accepted_evaluation is not None:
@@ -973,9 +1101,10 @@ def run_multiradial_fd_inverse(
             break
         previous_loss = current.loss
         accepted_state = accepted_candidate
+        gauge_truncation = accepted_truncation
         current = accepted_evaluation
         damping = max(used_damping * config.damping_decrease, np.finfo(float).tiny)
-        matrix, frozen_columns = jacobian(accepted_state)
+        matrix, basis, frozen_columns = jacobian(accepted_state)
         gradient = matrix.T @ current.residual
         record(iteration, accepted_step, used_damping)
         if current.loss <= config.loss_tolerance:

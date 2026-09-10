@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
-"""Iteration-02 automatic unknown-topology inversions and trajectory videos."""
+"""Automatic unknown-topology inversions and trajectory videos.
+
+``--chart radial`` is the iteration-02 radial-Fourier controller.  ``--chart
+cartesian`` runs the identical cases, data and budgets with every accepted
+component held as a polar-angle Cartesian Fourier curve, gauge-fixed after
+every retraction.  The two differ only in the chart, so their bundles compare
+directly.
+"""
 from __future__ import annotations
 import argparse
 from dataclasses import asdict, replace
@@ -22,10 +29,13 @@ from sdf_inverse.curve_updates import RadialFourierCurveState
 from sdf_inverse.explicit_fourier import CartesianFourierCurveState
 from sdf_inverse.topology_controller import (
     TopologyControllerConfig, TopologyFrame, component_parameterization, run_topology_aware_fourier_inverse,
-    topology_objective,
+    state_in_chart, topology_objective,
 )
 
 CASES = ('repeated-birth', 'death', 'split', 'merge', 'mixed')
+CHARTS = ('radial', 'cartesian')
+DEFAULT_OUTPUT_ROOT = {'radial': Path('results/inverse/radial_fourier/topology_controller'),
+                       'cartesian': Path('results/inverse/cartesian_fourier/topology_controller')}
 
 
 def circle(x, y, radius, cid):
@@ -37,7 +47,18 @@ def peanut(cid):
                                   np.zeros(3), cid)
 
 
-def case_spec(name, demonstration='original'):
+def case_spec(name, demonstration='original', chart='radial'):
+    """The case's initial state, truth curves and truth components.
+
+    ``chart`` re-expresses only the *initial* state.  Truth geometry, the
+    oracle and every budget are identical across charts, so a Cartesian run is
+    a chart substitution and not a different experiment.
+    """
+    initial, truth, circles = _case_spec(name, demonstration)
+    return state_in_chart(initial, chart), truth, circles
+
+
+def _case_spec(name, demonstration='original'):
     a, b = circle(.44, .50, .033, 'truth.A'), circle(.56, .50, .033, 'truth.B')
     visible = demonstration == 'visible-refinement'
     if visible:
@@ -177,7 +198,7 @@ def render_case(path, title, truth, frames, events, *, show_refinement=False):
 def run_case(name, output, args):
     path = output / name
     path.mkdir(parents=True, exist_ok=False)
-    initial, truth, circles = case_spec(name, args.demonstration)
+    initial, truth, circles = case_spec(name, args.demonstration, args.chart)
     quick = args.profile == 'quick'
     production, refined = baseline._geometry_config(48 if quick else 64), baseline._geometry_config(96 if quick else 128)
     solve = baseline.iteration01_solve_config()
@@ -195,13 +216,13 @@ def run_case(name, output, args):
     data = ComplexScatteredData(problem, observed)
     config = TopologyControllerConfig(raster_size=81 if quick else 121,
         fixed_iterations=12 if quick else 22, candidate_refinement_iterations=3,
-        maximum_cycles=10, maximum_events=7, relative_error_tolerance=.003)
+        maximum_cycles=10, maximum_events=7, relative_error_tolerance=.003, chart=args.chart)
     if args.demonstration == 'visible-refinement':
         config = replace(config, candidate_refinement_iterations=0,
                          birth_radius_grid_m=(.016, .024, .036, .048),
                          split_seed_radius_factors=(1., .75, .5))
     write_json(path / 'manifest.json', dict(case=name, demonstration=args.demonstration,
-        controller=asdict(config), oracle=oracle,
+        chart=args.chart, controller=asdict(config), oracle=oracle,
         frequencies_hz=frequencies, production_nodes=production.num_nodes, refined_nodes=refined.num_nodes,
         initial_state=serialize_state(initial), truth_state=None if circles is None else serialize_state(MultiRadialFourierState(circles)),
         supplied_target_count=False, supplied_event_policy=False))
@@ -227,7 +248,8 @@ def run_case(name, output, args):
     else:
         hausdorff = None
     metrics = dict(case=name, stop_reason=result.stop_reason, events=result.events,
-        demonstration=args.demonstration,
+        demonstration=args.demonstration, chart=args.chart,
+        final_parameter_count=None if result.final_state is None else result.final_state.parameter_count,
         component_counts=[0 if initial is None else len(initial.components)] + [len(e['after_ids']) for e in result.events],
         final_relative_error=relative, refined_relative_error=refined_relative,
         final_loss=prod_loss, refined_loss=refined_loss, hausdorff_m=hausdorff,
@@ -245,7 +267,7 @@ def run_case(name, output, args):
                 for c in circles], candidate_refinement_iterations=config.candidate_refinement_iterations)
         write_json(path / 'radius_audit.json', radius_audit)
     if not args.skip_video:
-        render_case(path, name, truth, result.frames, result.events,
+        render_case(path, f'{name} ({args.chart} chart)', truth, result.frames, result.events,
                     show_refinement=args.demonstration == 'visible-refinement')
     print(json.dumps({k: metrics[k] for k in ('case', 'stop_reason', 'component_counts', 'final_relative_error', 'hausdorff_m')}, default=float), flush=True)
     return metrics
@@ -256,15 +278,22 @@ def write_suite_summary(output):
     metrics = [json.loads((output / name / 'metrics.json').read_text())
                for name in CASES if (output / name / 'metrics.json').exists()]
     write_json(output / 'suite_metrics.json', metrics)
-    rows = ['# Automatic Fourier topology inversions', '',
-            'The same controller receives data and initial geometry, with no target count or event policy.', '',
-            '| Inversion video | Component counts | Relative data error | Sampled Hausdorff (mm) | Stop |',
-            '|---|---|---:|---:|---|']
+    chart = next((item.get('chart', 'radial') for item in metrics), 'radial')
+    rows = [f'# Automatic Fourier topology inversions — {chart} chart', '',
+            'The same controller receives data and initial geometry, with no target count or event policy.', '']
+    if chart == 'cartesian':
+        rows += ['Every accepted component is a polar-angle Cartesian Fourier curve, re-expressed '
+                 'in its own polar angle after each retraction. The cases, observations, oracle and '
+                 'budgets are those of the radial bundle, so the two compare directly.', '']
+    rows += ['| Inversion video | Component counts | Relative data error | Sampled Hausdorff (mm) | Parameters | Stop |',
+             '|---|---|---:|---:|---:|---|']
     for item in metrics:
         name = item['case']
         counts = ' → '.join(map(str, item['component_counts']))
         distance = '—' if item['hausdorff_m'] is None else f"{1000 * item['hausdorff_m']:.4g}"
-        rows.append(f"| [{name}]({name}/inversion.mp4) | {counts} | {item['final_relative_error']:.3g} | {distance} | {item['stop_reason']} |")
+        parameters = item.get('final_parameter_count') or '—'
+        rows.append(f"| [{name}]({name}/inversion.mp4) | {counts} | {item['final_relative_error']:.3g} "
+                    f"| {distance} | {parameters} | {item['stop_reason']} |")
     completed = [item['case'] for item in metrics]
     if len(completed) >= 2 and all((output / name / 'inversion.mp4').exists() for name in completed):
         playlist = output / 'video_playlist.txt'
@@ -293,11 +322,13 @@ def main():
     parser.add_argument('--case', choices=('all',) + CASES, default='all')
     parser.add_argument('--profile', choices=('quick', 'full'), default='full')
     parser.add_argument('--demonstration', choices=('original', 'visible-refinement'), default='original')
+    parser.add_argument('--chart', choices=CHARTS, default='radial',
+                        help='Chart every accepted component is held in.')
     parser.add_argument('--output', type=Path, default=None)
     parser.add_argument('--skip-video', action='store_true')
     parser.add_argument('--render-only', action='store_true', help='Render existing saved trajectories without rerunning inversions.')
     args = parser.parse_args()
-    output = args.output or Path('results/inverse/radial_fourier/topology_controller') / datetime.now().strftime('%Y%m%d-%H%M%S')
+    output = args.output or DEFAULT_OUTPUT_ROOT[args.chart] / datetime.now().strftime('%Y%m%d-%H%M%S')
     output.mkdir(parents=True, exist_ok=True)
     metrics = []
     for name in CASES if args.case == 'all' else (args.case,):
@@ -308,10 +339,12 @@ def main():
             metric = json.loads((path / 'metrics.json').read_text())
             manifest = json.loads((path / 'manifest.json').read_text())
             demonstration = manifest.get('demonstration', 'original')
+            chart = manifest.get('chart', 'radial')
             truth_state = deserialize_state(manifest.get('truth_state'))
             truth = (tuple(component_parameterization(c) for c in truth_state.components)
-                     if truth_state is not None else case_spec(name, demonstration)[1])
-            render_case(path, name, truth, frames, metric['events'], show_refinement=demonstration == 'visible-refinement')
+                     if truth_state is not None else case_spec(name, demonstration, chart)[1])
+            render_case(path, f'{name} ({chart} chart)', truth, frames, metric['events'],
+                        show_refinement=demonstration == 'visible-refinement')
             metrics.append(metric)
         else:
             metrics.append(run_case(name, output, args))

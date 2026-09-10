@@ -56,9 +56,9 @@ def test_ellipse_and_star_are_on_opposite_diagonal_corners() -> None:
 
 def test_mode_promotion_is_exactly_shape_preserving() -> None:
     state = driver._case_spec("ellipse-star").initial_state
-    before = driver._sample_radial(state.components[0])
+    before = driver._sample_component(state.components[0])
     promoted = driver._promote(state, 5)
-    after = driver._sample_radial(promoted.components[0])
+    after = driver._sample_component(promoted.components[0])
 
     assert promoted.components[0].maximum_mode == 5
     np.testing.assert_array_equal(after, before)
@@ -71,8 +71,8 @@ def test_mode_promotion_never_lowers_an_existing_component() -> None:
 
     assert unchanged.components[0].maximum_mode == 5
     np.testing.assert_array_equal(
-        driver._sample_radial(unchanged.components[0]),
-        driver._sample_radial(state.components[0]),
+        driver._sample_component(unchanged.components[0]),
+        driver._sample_component(state.components[0]),
     )
 
 

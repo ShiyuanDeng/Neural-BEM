@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
-"""Run the post-iteration-01 radial-topology challenge cases.
+"""Run the post-iteration-01 topology challenge cases in either Fourier chart.
+
+``--chart radial`` is the original radial-Fourier suite, unchanged.  ``--chart
+cartesian`` runs the same three cases, observations, oracle, schedules and
+budgets with every accepted component held as a polar-angle Cartesian Fourier
+curve, gauge-fixed after every retraction.  Only the chart differs, so the two
+bundles compare directly.
 
 This is an experiment driver, not a unit-test shortcut.  It generates fresh
 observations, runs the inverse without using the truth geometry for proposals,
@@ -17,7 +23,7 @@ iteration-01 additive TD can remove material from an enclosing component.
 from __future__ import annotations
 
 import argparse
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime
 import itertools
 import json
@@ -45,6 +51,7 @@ from sdf_bem_multicomponent import (  # noqa: E402
     predict_multicomponent_kress_paired_boundary_response,
 )
 from sdf_inverse import (  # noqa: E402
+    CartesianFourierCurveState,
     ComplexScatteredData,
     MultiRadialFDResult,
     MultiRadialFourierState,
@@ -57,6 +64,9 @@ from sdf_inverse import (  # noqa: E402
     normalized_complex_residual,
     run_multiradial_fd_inverse,
 )
+from sdf_inverse.topology_controller import (  # noqa: E402
+    circle_component, component_parameterization, state_in_chart,
+)
 
 
 CASE_NAMES = (
@@ -64,6 +74,7 @@ CASE_NAMES = (
     "large-split",
     "ellipse-star",
 )
+CHARTS = ("radial", "cartesian")
 FREQUENCIES_HZ = np.asarray((0.50e9, 1.50e9, 2.50e9), dtype=np.float64)
 TRUTH_CIRCLE_CENTERS = np.asarray(((0.43, 0.50), (0.57, 0.50)), dtype=np.float64)
 TRUTH_CIRCLE_RADII = np.asarray((0.035, 0.035), dtype=np.float64)
@@ -96,6 +107,7 @@ class CaseSpec:
     geometry_tolerance_m: float
     training_tolerance: float
     holdout_tolerance: float
+    chart: str = "radial"
 
 
 @dataclass
@@ -137,7 +149,22 @@ def _radial_state(
     )
 
 
-def _case_spec(name: str) -> CaseSpec:
+def _case_spec(name: str, chart: str = "radial") -> CaseSpec:
+    """The case in the requested chart.
+
+    Only the initial state changes: a radial component of band ``K`` is exactly
+    a polar-angle Cartesian component of band ``K + 1``, so both charts start
+    from the same geometry, see the same observations and are held to the same
+    declared tolerances.
+    """
+    spec = _radial_case_spec(name)
+    if chart == "radial":
+        return spec
+    return replace(spec, chart=chart,
+                   initial_state=state_in_chart(spec.initial_state, chart))
+
+
+def _radial_case_spec(name: str) -> CaseSpec:
     circle_truth = tuple(
         circle(tuple(center), float(radius), component_id=component_id)
         for center, radius, component_id in zip(
@@ -234,6 +261,12 @@ def _parse_args() -> argparse.Namespace:
         default=None,
         help="Suite result root (default: a new timestamped directory).",
     )
+    parser.add_argument(
+        "--chart",
+        choices=CHARTS,
+        default="radial",
+        help="Chart every accepted component is held in.",
+    )
     parser.add_argument("--overwrite", action="store_true")
     parser.add_argument("--skip-video", action="store_true")
     parser.add_argument(
@@ -248,27 +281,20 @@ def _output_root(args: argparse.Namespace) -> Path:
     if args.output is not None:
         return args.output.resolve()
     stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    family = "cartesian_fourier" if args.chart == "cartesian" else "radial_fourier"
     return (
         ROOT
         / "results"
         / "inverse"
-        / "radial_fourier"
+        / family
         / "topology_challenges"
         / f"challenge-suite-{stamp}"
     )
 
 
-def _sample_radial(component: RadialFourierCurveState, count: int = 720) -> np.ndarray:
-    angles = np.linspace(0.0, 2.0 * np.pi, count, endpoint=False)
-    modes = np.arange(component.maximum_mode + 1, dtype=np.float64)
-    phases = angles[:, None] * modes[None, :]
-    radii = (
-        np.cos(phases) @ np.asarray(component.radius_cosine_coefficients)
-        + np.sin(phases) @ np.asarray(component.radius_sine_coefficients)
-    )
-    return np.asarray(component.center)[None, :] + radii[:, None] * np.column_stack(
-        (np.cos(angles), np.sin(angles))
-    )
+def _sample_component(component, count: int = 720) -> np.ndarray:
+    """Sample either chart's component on its own uniform parameter."""
+    return np.asarray(component_parameterization(component).discretize(count).points)
 
 
 def _truth_points(spec: CaseSpec, count: int = 720) -> tuple[np.ndarray, ...]:
@@ -276,8 +302,32 @@ def _truth_points(spec: CaseSpec, count: int = 720) -> tuple[np.ndarray, ...]:
 
 
 def _promote(state: MultiRadialFourierState, maximum_mode: int) -> MultiRadialFourierState:
+    """Open coefficients up to ``maximum_mode`` without moving the geometry.
+
+    The schedule is declared in radial modes.  A Cartesian component carries
+    the same shape content one band higher, so it is padded to
+    ``maximum_mode + 1``: the two charts then reach the same shape space at the
+    same schedule entry, which is what makes a continuation stage comparable
+    across charts rather than a mode behind.
+    """
     promoted = []
     for component in state.components:
+        if isinstance(component, CartesianFourierCurveState):
+            component_mode = max(maximum_mode + 1, component.maximum_mode)
+            cosine = np.zeros((component_mode + 1, 2), dtype=np.float64)
+            sine = np.zeros_like(cosine)
+            cosine[: component.maximum_mode + 1] = component.cosine_coefficients
+            sine[: component.maximum_mode + 1] = component.sine_coefficients
+            promoted.append(
+                CartesianFourierCurveState(
+                    cosine,
+                    sine,
+                    component.component_id,
+                    name=component.name,
+                    source_identifier=component.source_identifier,
+                )
+            )
+            continue
         component_mode = max(maximum_mode, component.maximum_mode)
         cosine = np.zeros(component_mode + 1, dtype=np.float64)
         sine = np.zeros(component_mode + 1, dtype=np.float64)
@@ -301,10 +351,17 @@ def _optimizer_config(state: MultiRadialFourierState, iterations: int) -> Parame
     fd_steps = []
     for name in state.parameter_names:
         fd_steps.append(1.0e-4)
-        if name.endswith("radius_m"):
+        # The Cartesian names carry the same three roles: mode zero translates,
+        # mode one scales, and the rest are shape. The shape bound is halved
+        # because a radial mode-m amplitude appears in this chart as two
+        # coefficient pairs of *half* that amplitude, so half the bound is what
+        # reproduces the radial trust region rather than doubling it.
+        if name.endswith("radius_m") or ".cos_1_" in name or ".sin_1_" in name:
             maximum_steps.append(0.012)
-        elif ".center_" in name:
+        elif ".center_" in name or ".cos_0_" in name:
             maximum_steps.append(0.025)
+        elif ".cos_" in name or ".sin_" in name:
+            maximum_steps.append(0.003)
         else:
             maximum_steps.append(0.006)
     return ParameterFDConfig(
@@ -384,6 +441,7 @@ def _run_optimizer(
     *,
     iterations: int,
     stage: str,
+    chart: str = "radial",
 ) -> MultiRadialFDResult:
     return run_multiradial_fd_inverse(
         state,
@@ -391,6 +449,7 @@ def _run_optimizer(
         geometry,
         solve_config=solve_config,
         config=_optimizer_config(state, iterations),
+        cartesian_gauge=chart == "cartesian",
         progress_callback=lambda item: print(
             f"[{stage}] accepted {item.iteration:02d}: "
             f"J={item.loss:.6e}, rel={item.relative_l2_error:.6e}",
@@ -438,6 +497,7 @@ def _background_seed_state(
     production_geometry,
     refined_geometry,
     solve_config,
+    chart: str = "radial",
 ) -> tuple[MultiRadialFourierState | None, list[dict[str, Any]]]:
     # Use the TD minimum itself rather than a possibly merged region centroid.
     # The finite radius remains TD-derived and truth-free.
@@ -453,7 +513,7 @@ def _background_seed_state(
     accepted: list[tuple[float, MultiRadialFourierState]] = []
     for radius in radii:
         candidate = MultiRadialFourierState(
-            (circle_radial_fourier_state(seed, radius, "split_seed_000"),)
+            (circle_component(seed, radius, "split_seed_000", chart),)
         )
         row: dict[str, Any] = {
             "seed_x_m": seed[0],
@@ -518,6 +578,7 @@ def _additive_birth(
     refined_geometry,
     solve_config,
     output: Path,
+    chart: str = "radial",
 ) -> tuple[MultiRadialFourierState | None, dict[str, Any]]:
     production, _ = build_td_raster(
         current,
@@ -544,6 +605,7 @@ def _additive_birth(
         refined_geometry_config=refined_geometry,
         solve_config=solve_config,
         component_id="td_birth_001",
+        chart=chart,
     )
     trial_rows = [
         {
@@ -580,6 +642,7 @@ def _replacement_split(
     output: Path,
     *,
     seed_mode_schedule: tuple[int, ...] = (),
+    chart: str = "radial",
 ) -> tuple[
     MultiRadialFourierState | None,
     dict[str, Any],
@@ -607,6 +670,7 @@ def _replacement_split(
         production_geometry,
         refined_geometry,
         solve_config,
+        chart,
     )
     _write_csv(output / "split_first_component_trials.csv", first_rows)
     record: dict[str, Any] = {
@@ -632,6 +696,7 @@ def _replacement_split(
         solve_config,
         iterations=profile.single_seed_iterations,
         stage="split-first-component",
+        chart=chart,
     )
     first_state = first_fit.final_state
     first_optimization: list[tuple[str, MultiRadialFDResult]] = [
@@ -649,6 +714,7 @@ def _replacement_split(
             solve_config,
             iterations=profile.single_seed_iterations,
             stage=f"split-first-shape-k{maximum_mode}",
+            chart=chart,
         )
         first_optimization.append(
             (f"split_proposal_first_k{maximum_mode}", shape_fit)
@@ -681,6 +747,7 @@ def _replacement_split(
         refined_geometry_config=refined_geometry,
         solve_config=solve_config,
         component_id="td_birth_001",
+        chart=chart,
     )
     second_rows = [
         {key: value for key, value in trial.__dict__.items() if key != "state"}
@@ -750,7 +817,7 @@ def _geometry_metrics(
     state: MultiRadialFourierState,
     spec: CaseSpec,
 ) -> tuple[list[dict[str, Any]], float]:
-    recovered = tuple(_sample_radial(component) for component in state.components)
+    recovered = tuple(_sample_component(component) for component in state.components)
     truths = _truth_points(spec)
     if len(recovered) != len(truths):
         return [], math.inf
@@ -821,7 +888,7 @@ def _render_video(
                         label="truth" if index == 0 else None,
                     )
                 for index, component in enumerate(state.components):
-                    points = _sample_radial(component)
+                    points = _sample_component(component)
                     closed = np.vstack((points, points[0]))
                     ax.plot(
                         closed[:, 0],
@@ -855,6 +922,7 @@ def _case_manifest(spec: CaseSpec, profile: RunProfile) -> dict[str, Any]:
     return {
         "case": spec.name,
         "title": spec.title,
+        "chart": spec.chart,
         "profile": profile.__dict__,
         "proposal_policy": spec.proposal_policy,
         "topology_frequency_hz": FREQUENCIES_HZ[0],
@@ -909,6 +977,7 @@ def run_case(
         solve_config,
         iterations=profile.pre_iterations,
         stage="pre-topology",
+        chart=spec.chart,
     )
     trajectory_rows.extend(_trajectory_rows(pre, "pre_topology"))
     _append_optimizer_trace(trace, pre, "pre-topology")
@@ -923,6 +992,7 @@ def run_case(
             refined_geometry,
             solve_config,
             output,
+            spec.chart,
         )
         split_first_fit = None
     else:
@@ -935,6 +1005,7 @@ def run_case(
             solve_config,
             output,
             seed_mode_schedule=spec.mode_schedule,
+            chart=spec.chart,
         )
         for stage, split_first_fit in split_first_fits:
             trajectory_rows.extend(
@@ -945,6 +1016,7 @@ def run_case(
         elapsed = float(perf_counter() - started)
         metrics = {
             "case": spec.name,
+            "chart": spec.chart,
             "profile": profile.name,
             "outcome": "topology_proposal_failed",
             "qualified": False if profile.name == "full" else None,
@@ -975,6 +1047,7 @@ def run_case(
         solve_config,
         iterations=profile.post_iterations,
         stage="post-topology-low-frequency",
+        chart=spec.chart,
     )
     trajectory_rows.extend(_trajectory_rows(post, "post_topology_low_frequency"))
     _append_optimizer_trace(trace, post, "post-topology low frequency")
@@ -994,6 +1067,7 @@ def run_case(
             solve_config,
             iterations=profile.mode_iterations,
             stage=f"shape-k{maximum_mode}",
+        chart=spec.chart,
         )
         trajectory_rows.extend(_trajectory_rows(result, f"shape_k{maximum_mode}"))
         _append_optimizer_trace(trace, result, f"shape K={maximum_mode}")
@@ -1014,6 +1088,7 @@ def run_case(
             solve_config,
             iterations=profile.frequency_iterations,
             stage="full-training-band",
+            chart=spec.chart,
         )
         trajectory_rows.extend(_trajectory_rows(full_band, "full_training_band"))
         _append_optimizer_trace(trace, full_band, "full training band")
@@ -1059,6 +1134,7 @@ def run_case(
     elapsed = float(perf_counter() - started)
     metrics = {
         "case": spec.name,
+        "chart": spec.chart,
         "profile": profile.name,
         "outcome": (
             "full_pass"
@@ -1100,7 +1176,8 @@ def run_case(
     (output / "README.md").write_text(
         f"# {spec.title}\n\n"
         f"Outcome: **{metrics['outcome']}**.\n\n"
-        f"Profile: `{profile.name}`. Proposal policy: `{spec.proposal_policy}`. "
+        f"Profile: `{profile.name}`. Chart: `{spec.chart}`. "
+        f"Proposal policy: `{spec.proposal_policy}`. "
         f"Observation source: {oracle_description}. The inverse used only "
         f"{', '.join(f'{FREQUENCIES_HZ[i] / 1e9:.2f} GHz' for i in spec.training_indices)}; "
         "all other frequencies are holdouts. Truth geometry is used only for final "
@@ -1114,7 +1191,7 @@ def main() -> int:
     args = _parse_args()
     profile = _profile(args.profile)
     case_names = CASE_NAMES if args.case == "all" else (args.case,)
-    specs = tuple(_case_spec(name) for name in case_names)
+    specs = tuple(_case_spec(name, args.chart) for name in case_names)
     if args.dry_run:
         print(
             json.dumps(
@@ -1162,6 +1239,7 @@ def main() -> int:
         results.append(result)
         print(f"Finished {spec.name}: {result['outcome']}", flush=True)
     suite = {
+        "chart": args.chart,
         "profile": profile.name,
         "cases": results,
         "elapsed_seconds": float(perf_counter() - suite_started),

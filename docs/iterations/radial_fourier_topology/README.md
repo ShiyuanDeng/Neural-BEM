@@ -15,6 +15,7 @@ Updated 2026-09-09.
 | Latest contribution | [Iteration-02 results](iteration_02/01_results.md), including three post-plan topology challenges |
 | Execution status | Full pass: G0–G5 plus large-circle split, far-away replacement, and diagonal ellipse/star split. Five inversion videos and complete metrics are saved in the linked result bundles |
 | Next expected research action | Propose the next bounded experiment. Noise, repeated unknown-count births, an automatic trigger, and non-star-shaped targets remain open |
+| Downstream use | The [Cartesian-Fourier cycle's iteration 3](../cartesian_fourier/iteration_03/03_results.md) runs this controller under a `--chart` flag and reproduces all eight of these cases. Every radial code path is unchanged and its recorded bundles are untouched; three of that cycle's findings are about this controller and are worth reading here — the candidate-polish rule that decides a split, the feature-radius certificate, and the trust region's dependence on coordinates |
 
 This project's iteration 1 opened from a brief rather than `01_results.md`
 because there was no prior cycle. Its agreed plan has now been executed; the

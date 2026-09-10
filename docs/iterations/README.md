@@ -31,10 +31,14 @@ numbering alone does not identify the agreed plan or authorize execution.
 Start with the [Cartesian-Fourier handoff](cartesian_fourier/README.md).
 Iteration 1 is a chart study: the optimization state is a Cartesian Fourier
 curve and the MLP is temporarily dropped entirely. Its plan has been executed
-and its results open iteration 2, where proposals are pending.
+and its results opened iteration 2. Iteration 3 is a user-directed
+implementation that gives the chart the radial cycle's automatic topology
+controller and matches it on all eight of its inverse cases.
 
 ## Radial Fourier topology
 
 Start with the [radial-Fourier-topology handoff](radial_fourier_topology/README.md).
 Iteration 1's agreed plan has been executed with a full G0–G5 pass. Its results
-open iteration 2, where proposals are pending.
+open iteration 2, where proposals are pending. The controller iteration 2 built
+is shared: the Cartesian-Fourier cycle's iteration 3 runs the same code under a
+`--chart` flag, and every radial path is unchanged.

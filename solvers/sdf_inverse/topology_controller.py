@@ -14,8 +14,11 @@ import numpy as np
 from scipy import ndimage
 from skimage.measure import find_contours
 
-from .curve_updates import fit_radial_fourier_curve_state, radial_fourier_parameterization
-from .explicit_fourier import CartesianFourierCurveState
+from .curve_updates import (
+    fit_cartesian_fourier_curve_state, fit_radial_fourier_curve_state,
+    polar_angle_gauge_fixed_point, radial_fourier_parameterization,
+)
+from .explicit_fourier import CartesianFourierCurveState, circle_cartesian_fourier_state
 from .geometry import OrderedSDFGeometryError
 from .optimization import ParameterFDConfig, normalized_complex_residual
 from .radial_topology import (
@@ -32,6 +35,52 @@ GEOMETRY_ERRORS = (ValueError, OrderedSDFGeometryError, MultiComponentKressGeome
 def component_parameterization(component):
     return (component.parameterization() if isinstance(component, CartesianFourierCurveState)
             else radial_fourier_parameterization(component))
+
+
+def chart_contour_modes(config):
+    """Bandwidth a fitted contour is given in the configured chart.
+
+    A radial component of band ``K`` is *exactly* a polar-angle Cartesian
+    component of band ``K + 1``: ``r(theta) e(theta)`` raises every radial mode
+    by one, and the radial chart's gauge-fixed mode one keeps the Cartesian
+    mean on the radial centre.  Asking for one more mode is therefore what
+    makes the two charts carry the same shape content at the same setting,
+    rather than handicapping the Cartesian fit by a mode.
+    """
+    return config.contour_modes + 1 if config.chart == 'cartesian' else config.contour_modes
+
+
+def cartesian_component(component):
+    """The exact polar-angle Cartesian form of one explicit component.
+
+    A radial component of band ``K`` is a gauge-fixed Cartesian component of
+    band ``K + 1`` to machine precision: ``r(theta) e(theta)`` raises every
+    radial mode by one, and the radial chart's zeroed mode one keeps the
+    Cartesian mean exactly on the radial centre, which is the point the gauge
+    measures its angle about.  Nothing is lost or approximated here, so a
+    Cartesian run may start from the same geometry a radial run starts from.
+    """
+    if isinstance(component, CartesianFourierCurveState):
+        return component
+    curve = radial_fourier_parameterization(component).discretize(4096)
+    fitted = fit_cartesian_fourier_curve_state(
+        curve.points, maximum_mode=component.maximum_mode + 1, center=component.center,
+        component_id=component.component_id, source_identifier=component.source_identifier)
+    return polar_angle_gauge_fixed_point(fitted)[0]
+
+
+def state_in_chart(state, chart):
+    """Re-express a whole state in ``chart``, or return it unchanged."""
+    if state is None or chart != 'cartesian':
+        return state
+    return MultiRadialFourierState(tuple(cartesian_component(c) for c in state.components))
+
+
+def circle_component(center, radius_m, component_id, chart):
+    """A circular seed in the requested chart. Both are exact circles."""
+    if chart == 'cartesian':
+        return circle_cartesian_fourier_state(center, radius_m, component_id)
+    return circle_radial_fourier_state(center, radius_m, component_id)
 
 
 @dataclass(frozen=True)
@@ -54,8 +103,11 @@ class TopologyControllerConfig:
     cross_resolution_factor: float = 5.0
     maximum_candidates_per_type: int = 48
     contour_modes: int = 8
+    chart: str = 'radial'
 
     def __post_init__(self):
+        if self.chart not in ('radial', 'cartesian'):
+            raise ValueError("chart must be 'radial' or 'cartesian'.")
         for name in ('raster_size', 'maximum_events', 'maximum_cycles', 'fixed_iterations',
                      'maximum_candidates_per_type', 'contour_modes'):
             if isinstance(getattr(self, name), bool) or int(getattr(self, name)) != getattr(self, name) or getattr(self, name) < 1:
@@ -193,8 +245,19 @@ def classify_material_change(old_masks, proposed):
     return 'no_topology_change'
 
 
-def fit_mask_component(mask, workspace, component_id, maximum_mode, geometry):
-    """Fit one outer contour; promote nonradial contours to a Cartesian chart."""
+def fit_mask_component(mask, workspace, component_id, maximum_mode, geometry, chart='radial'):
+    """Fit one outer contour in the requested chart.
+
+    ``radial`` keeps the historical policy: a radial fit when it is admissible
+    and faithful, otherwise promotion to an arc-length Cartesian contour that
+    no radial component could hold.  ``cartesian`` fits the polar-angle chart
+    directly and requires the result to be gauge-fixed, because that is the
+    chart its optimizer holds every component in.  Arc length gets no fallback
+    there: it is the parameter in which these targets are *not* band-limited,
+    so a contour fitted in it carries a truncation error the optimizer cannot
+    remove, and its scored loss would not be the loss the optimizer starts
+    from.
+    """
     if np.any(ndimage.binary_fill_holes(mask) & ~mask):
         raise ValueError('unsupported_nested_hole')
     if np.any(mask[[0, -1], :]) or np.any(mask[:, [0, -1]]):
@@ -222,6 +285,30 @@ def fit_mask_component(mask, workspace, component_id, maximum_mode, geometry):
     cartesian = CartesianFourierCurveState(cosine, sine, component_id)
     curve = cartesian.parameterization().discretize(512)
     center = np.mean(workspace.points[mask], axis=0)
+    if chart == 'cartesian':
+        # Two centres are tried: the mask's own centroid, and the smoothed
+        # contour's Fourier mean. A cut can leave a piece that is single-valued
+        # in polar angle about one and not the other.
+        tolerance = max(2.5 * workspace.spacing_m, .12 * cartesian.mean_radius_m)
+        for origin in (center, cartesian.center):
+            try:
+                polar = fit_cartesian_fourier_curve_state(curve.points, maximum_mode=maximum_mode,
+                                                          center=origin, component_id=component_id)
+                # The fit's centre is the requested one; the gauge's centre is
+                # the component's own Fourier mean, and the projection
+                # reconciles them. Its residual is the component's distance
+                # from the chart the optimizer holds it in, so a contour that
+                # cannot reach that chart is not a candidate: accepting it
+                # would hand the optimizer a state whose scored loss is not
+                # the loss it starts from.
+                polar, residual = polar_angle_gauge_fixed_point(polar)
+                if max(polar.initial_projection_maximum_m, residual) > tolerance:
+                    raise ValueError('Gauge-fixed polar-angle fit loses contour features.')
+                polar.boundary_curve(geometry)
+                return polar
+            except GEOMETRY_ERRORS:
+                continue
+        raise ValueError('No gauge-fixed polar-angle contour represents this mask.')
     try:
         radial = fit_radial_fourier_curve_state(curve, maximum_mode=maximum_mode, center=center)
         # A poor projection must not silently erase a neck or a concavity.
@@ -273,17 +360,18 @@ def generate_topology_candidates(state, workspace, geometry, config, event_seria
         children = tuple(f'{serial}.{kind}{i + 1}' for i in range(len(pieces)))
         seed_factors = config.split_seed_radius_factors if kind == 'split' else (1.,)
         variants = [(1, factor) for factor in seed_factors]
-        if config.contour_modes != 1:
-            variants.append((config.contour_modes, 1.))
+        contour_modes = chart_contour_modes(config)
+        if contour_modes != 1:
+            variants.append((contour_modes, 1.))
         for modes, seed_factor in variants:
             try:
                 # A moment-matched circular seed is a deliberately coarse
                 # candidate, independently scored beside the contour fit.
                 # Do not confuse that approximation with chart promotion.
                 fitted = tuple(
-                    circle_radial_fourier_state(np.mean(w.points[p], axis=0),
-                        seed_factor * np.sqrt(np.count_nonzero(p) * pixel_area / np.pi), cid)
-                    if modes == 1 else fit_mask_component(p, w, cid, modes, geometry)
+                    circle_component(np.mean(w.points[p], axis=0),
+                        seed_factor * np.sqrt(np.count_nonzero(p) * pixel_area / np.pi), cid, config.chart)
+                    if modes == 1 else fit_mask_component(p, w, cid, modes, geometry, config.chart)
                     for p, cid in zip(pieces, children))
                 replacement = MultiRadialFourierState(unaffected + fitted) if unaffected + fitted else None
                 candidates.append(TopologyCandidate(kind, replacement, parents, children,
@@ -318,7 +406,7 @@ def generate_topology_candidates(state, workspace, geometry, config, event_seria
                     disk = np.linalg.norm(w.points - center, axis=-1) <= size
                     if classify_material_change(w.component_masks, w.material | disk) != 'birth':
                         continue
-                    child = circle_radial_fourier_state(center, size, f'{serial}.birth')
+                    child = circle_component(center, size, f'{serial}.birth', config.chart)
                     new = MultiRadialFourierState(components + (child,))
                     candidates.append(TopologyCandidate('birth', new, (), (child.component_id,),
                         float(np.sum(w.addition[region]) * pixel_area), f'exterior_td_region; radius={size:.5g}'))
@@ -418,7 +506,14 @@ def generate_topology_candidates(state, workspace, geometry, config, event_seria
 
 
 def _optimizer_config(state, config, iterations=None):
-    steps = [(.012 if name.endswith('radius_m') else .018 if '.center_' in name else .006)
+    # The Cartesian names carry the same three roles under different spellings:
+    # mode zero translates, mode one scales, and the rest are shape. The shape
+    # bound is halved because a radial mode-m amplitude appears in this chart
+    # as two coefficient pairs of *half* that amplitude, so half the bound is
+    # what reproduces the radial trust region rather than doubling it.
+    steps = [(.012 if name.endswith('radius_m') or '.cos_1_' in name or '.sin_1_' in name
+              else .018 if '.center_' in name or '.cos_0_' in name
+              else .003 if '.cos_' in name or '.sin_' in name else .006)
              for name in state.parameter_names]
     return ParameterFDConfig(max_iterations=config.fixed_iterations if iterations is None else iterations,
         finite_difference_steps=1.e-4, max_steps=np.asarray(steps), initial_damping=1.e-3,
@@ -449,6 +544,7 @@ def run_topology_aware_fourier_inverse(initial_state, data, production_geometry_
             result = run_multiradial_fd_inverse(state, data, production_geometry_config,
                 solve_config=solve_config, config=_optimizer_config(state, config),
                 minimum_component_radius_m=config.minimum_component_radius_m,
+                cartesian_gauge=config.chart == 'cartesian',
                 progress_callback=lambda item: emit(item.state, item.loss, f'refine {item.iteration}', cycle))
             state = result.final_state
             trigger = result.stop_reason
@@ -512,7 +608,8 @@ def run_topology_aware_fourier_inverse(initial_state, data, production_geometry_
                         result = run_multiradial_fd_inverse(candidate.state, data, production_geometry_config,
                             solve_config=solve_config,
                             config=_optimizer_config(candidate.state, config, config.candidate_refinement_iterations),
-                            minimum_component_radius_m=config.minimum_component_radius_m)
+                            minimum_component_radius_m=config.minimum_component_radius_m,
+                            cartesian_gauge=config.chart == 'cartesian')
                         candidate = replace(candidate, state=result.final_state)
                         row['production_loss'] = result.iterations[-1].loss
                         row['candidate_refinement_steps'] = len(result.iterations) - 1

@@ -115,7 +115,7 @@ from .radial_topology import (
     iteration01_solve_config,
     run_multiradial_fd_inverse,
 )
-from .explicit_fourier import CartesianFourierCurveState
+from .explicit_fourier import CartesianFourierCurveState, circle_cartesian_fourier_state
 from .topology_controller import (
     TopologyControllerConfig,
     TopologyInverseResult,
@@ -187,6 +187,7 @@ __all__ = [
     "build_siren_parameter_controller",
     "build_star_parameter_controller",
     "circle_parameter_controller",
+    "circle_cartesian_fourier_state",
     "circle_radial_fourier_state",
     "evaluate_birth_ladder",
     "evaluate_current_domain_topological_derivative",

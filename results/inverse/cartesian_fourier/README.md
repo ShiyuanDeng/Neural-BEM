@@ -27,3 +27,17 @@ The comparison target is
 `results/inverse/radial_fourier/mlp-radial-continuation-k5-ellipse-to-star-kress-20260904/`,
 which shares this experiment's initial contour, acquisition, frequencies,
 geometry configuration and optimizer settings exactly.
+
+## Topology
+
+Iteration 3 added automatic birth, death, split and merge to this chart, run
+against the radial cycle's own suites. The controller receives data and initial
+geometry only — no target component count, no event policy.
+
+| Bundle | Result |
+|---|---|
+| [`topology_controller/iteration-03-20260910`](topology_controller/iteration-03-20260910/README.md) | Five automatic inversions, all `recovered`, with event sequences identical to the radial bundle's |
+| [`topology_challenges/challenge-suite-20260910`](topology_challenges/README.md) | Three challenge cases, all `full_pass` against the same declared gates |
+
+Both use `--chart cartesian` on the shared drivers; the radial bundles they are
+matched against are unchanged.

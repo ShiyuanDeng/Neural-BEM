@@ -1,7 +1,13 @@
-"""Cartesian fallback chart for topology-event contours.
+"""Cartesian Fourier chart for explicit components and topology-event contours.
 
 The fixed-topology LM seam needs only parameter count, vector/rebuild and a
-validated boundary. Radial components remain the economical default chart.
+validated boundary. Two uses share the same state.  As a *fallback* under the
+radial chart it carries a contour no radial component can hold, in whatever
+parameter the fit produced.  As the *authoritative* chart of the Cartesian
+topology cycle it is gauge-fixed to polar angle by
+:func:`~sdf_inverse.curve_updates.regauge_cartesian_state_to_polar_angle` after
+every retraction, which is the regime the feature-radius certificate below
+describes.
 """
 from __future__ import annotations
 
@@ -56,13 +62,76 @@ class CartesianFourierCurveState:
 
     @property
     def mean_radius_m(self):
-        p = self.parameterization().discretize(128).points
-        area = .5 * np.sum(p[:, 0] * np.roll(p[:, 1], -1) - p[:, 1] * np.roll(p[:, 0], -1))
-        return np.sqrt(abs(area) / np.pi)
+        """Equivalent-area radius from the exact enclosed area.
+
+        ``A = pi sum_k k (c_kx s_ky - s_kx c_ky)`` is the Fourier form of the
+        shoelace integral, so no polygon discretization error enters: a sampled
+        128-gon understates a circle's radius by two parts in ten thousand,
+        which is larger than the accuracy these inversions reach.
+        """
+        modes = np.arange(1, self.maximum_mode + 1)
+        cosine, sine = self.cosine_coefficients[1:], self.sine_coefficients[1:]
+        area = np.pi * np.sum(modes * (cosine[:, 0] * sine[:, 1] - sine[:, 0] * cosine[:, 1]))
+        return float(np.sqrt(abs(area) / np.pi))
 
     @property
     def parameter_count(self):
         return 4 * self.maximum_mode + 2
+
+    def polar_offsets(self, count=None):
+        """Sample ``gamma(t) - center`` on a uniform parameter grid.
+
+        The grid resolves the stored bandwidth generously because the feature
+        radius below turns these samples into a bound through a Lipschitz
+        constant, and a coarse grid pays for that directly.
+        """
+        modes = self.maximum_mode
+        n = max(4096, 128 * (modes + 1)) if count is None else int(count)
+        parameters = 2. * np.pi * np.arange(n) / n
+        phase = parameters[:, None] * np.arange(modes + 1)[None, :]
+        points = np.cos(phase) @ self.cosine_coefficients + np.sin(phase) @ self.sine_coefficients
+        return parameters, points - self.cosine_coefficients[0]
+
+    @property
+    def minimum_radius_lower_bound_m(self):
+        """The radial chart's positivity certificate, computed in this chart.
+
+        In the polar-angle gauge the parameter *is* the polar angle, so
+        ``|gamma(t) - center|`` is the radial profile ``rho(theta)`` itself and
+        its coefficient-norm bound ``rho_0 - sum_{k>=2} |rho_k|`` is exactly
+        what :class:`RadialFourierCurveState` certifies.  Using the same
+        quantity rather than a tighter sampled bound is deliberate: it is what
+        keeps a component from approaching a degenerate shape whose boundary
+        nearly reaches its own centre, and the radial chart refuses to exist
+        below it.  Measured on the ellipse/star challenge, a tighter bound let
+        the star component reach a ``10 um`` polar radius at an equivalent-area
+        radius of ``38 mm``, where every later probe failed and the mode
+        continuation could not proceed.
+
+        Mode one carries translation in the radial chart and is excluded there
+        for the same reason it is excluded here: a gauge-fixed state has none.
+        """
+        _, offsets = self.polar_offsets()
+        radii = np.linalg.norm(offsets, axis=1)
+        spectrum = np.fft.rfft(radii) / len(radii)
+        modes = min(self.maximum_mode, len(spectrum) - 1)
+        magnitudes = 2. * np.abs(spectrum[2:modes + 1])
+        return float(spectrum[0].real - np.sum(magnitudes))
+
+    @property
+    def is_star_shaped_about_center(self):
+        """Whether the sampled polar angle about ``center`` is monotone.
+
+        Sampled, not certified: it decides which feature-radius measure applies,
+        and a state that fails it cannot be re-gauged to polar angle either.
+        """
+        _, offsets = self.polar_offsets()
+        if np.any(np.linalg.norm(offsets, axis=1) <= 0.):
+            return False
+        angles = np.arctan2(offsets[:, 1], offsets[:, 0])
+        step = np.diff(np.concatenate((angles, angles[:1])))
+        step = np.arctan2(np.sin(step), np.cos(step))
+        return bool(np.all(step > 0.) or np.all(step < 0.))
 
     @property
     def parameter_names(self):
@@ -138,3 +207,26 @@ class CartesianFourierCurveState:
                 np.any(np.asarray(report.bounding_box_max) >= config.bounds[1])):
             raise OrderedSDFGeometryError("Cartesian curve leaves geometry bounds.")
         return curve.discretize(config.num_nodes, require_even=True)
+
+
+def circle_cartesian_fourier_state(center, radius_m, component_id, *, maximum_mode=1):
+    """Construct the exact polar-angle representation of a circle.
+
+    A circle is mode one alone -- ``c_1 = (r, 0)``, ``s_1 = (0, r)`` -- in the
+    parameter that is its own polar angle, so this seed is an exact fixed point
+    of the re-gauge at every bandwidth.  Padding to a higher ``maximum_mode``
+    leaves the geometry untouched and only opens coefficients for the optimizer.
+    """
+    radius = float(radius_m)
+    if not np.isfinite(radius) or radius <= 0.:
+        raise ValueError("radius_m must be finite and positive.")
+    modes = operator.index(maximum_mode)
+    if isinstance(maximum_mode, bool) or modes < 1:
+        raise ValueError("maximum_mode must be a positive integer.")
+    cosine = np.zeros((modes + 1, 2))
+    sine = np.zeros((modes + 1, 2))
+    cosine[0] = np.asarray(center, dtype=float)
+    cosine[1, 0] = radius
+    sine[1, 1] = radius
+    return CartesianFourierCurveState(cosine, sine, component_id,
+        name=f"cartesian_fourier_{component_id}", source_identifier=component_id)
