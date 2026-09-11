@@ -221,6 +221,7 @@ def run_case(name, output, args):
         maximum_cycles=10, maximum_events=7, relative_error_tolerance=.003, chart=args.chart)
     config = replace(config,
         include_simplest_candidate=getattr(args, 'include_simplest_candidate', False),
+        refined_feasibility_guard=getattr(args, 'refined_feasibility_guard', False),
         candidates_refined_per_group=getattr(args, 'candidates_refined_per_group', 1),
         candidate_refinement_iterations=getattr(args, 'candidate_refinement_iterations', 3))
     if args.demonstration == 'visible-refinement':
@@ -343,6 +344,8 @@ def main():
     parser.add_argument('--candidate-refinement-iterations', type=int, default=3)
     parser.add_argument('--include-simplest-candidate', action='store_true',
                         help='Also refine the simplest family if the best raw candidate has more optimization directions.')
+    parser.add_argument('--refined-feasibility-guard', action='store_true',
+                        help='Require every optimizer step to be admissible at the refined discretization too.')
     parser.add_argument('--render-only', action='store_true', help='Render existing saved trajectories without rerunning inversions.')
     args = parser.parse_args()
     output = args.output or DEFAULT_OUTPUT_ROOT[args.chart] / datetime.now().strftime('%Y%m%d-%H%M%S')

@@ -20,6 +20,7 @@ from gpr_bem_kress.multicomponent import (
     MultiComponentAssemblyConfig,
     MultiComponentKressGeometryError,
     MultiComponentKressSolveConfig,
+    adapt_multicomponent_boundary,
     build_multicomponent_exterior_receiver_operator,
     build_multicomponent_kress_tmz_frequency_system,
     multicomponent_incident_trace_on_boundary,
@@ -713,6 +714,35 @@ class MultiRadialObjectiveEvaluation:
     forward_seconds: float
 
 
+def multiradial_geometry_admissible(
+    state: MultiRadialFourierState | None,
+    geometry_config: OrderedSDFGeometryConfig,
+    *,
+    solve_config: MultiComponentKressSolveConfig | None = None,
+) -> bool:
+    """Whether one state's boundary is Kress-admissible at this discretisation.
+
+    Geometry only: it builds the boundary and runs the same component-grid,
+    topology and clearance checks the assembly runs, without a forward solve.
+    The distinction matters because those checks are discretisation-dependent.
+    An inscribed polygon overstates the gap between two components, and it
+    overstates it more at 64 nodes than at 128, so a state the production
+    resolution accepts can be refused by the refined one.  Asking the question
+    directly costs a curve evaluation instead of a BIE solve.
+    """
+
+    if state is None:
+        return True
+    try:
+        adapt_multicomponent_boundary(
+            state.boundary(geometry_config),
+            config=None if solve_config is None else solve_config.assembly,
+        )
+    except (OrderedSDFGeometryError, MultiComponentKressGeometryError):
+        return False
+    return True
+
+
 def evaluate_multiradial_objective(
     state: MultiRadialFourierState,
     data: ComplexScatteredData,
@@ -899,6 +929,9 @@ class MultiRadialFDResult:
     evaluation_count: int
     infeasible_trial_count: int
     total_seconds: float
+    # Trials refused only because a *finer* discretisation than the one being
+    # optimized at calls them inadmissible. Zero means the guard never bit.
+    feasibility_rejected_trial_count: int = 0
 
 
 def run_multiradial_fd_inverse(
@@ -911,6 +944,7 @@ def run_multiradial_fd_inverse(
     progress_callback: Callable[[MultiRadialFDIteration], None] | None = None,
     minimum_component_radius_m: float = 0.0,
     cartesian_gauge: bool = False,
+    feasibility_geometry_configs: tuple[OrderedSDFGeometryConfig, ...] = (),
 ) -> MultiRadialFDResult:
     """Bounded central-FD LM optimizer for one fixed multi-radial topology.
 
@@ -923,6 +957,14 @@ def run_multiradial_fd_inverse(
     softer controls that were measured instead all failed.  Radial components
     are unaffected either way, so a purely radial state takes the identical
     code path at ``cartesian_gauge=True``.
+
+    ``feasibility_geometry_configs`` names *additional* discretisations at
+    which every trial state must be geometrically admissible.  The objective
+    is still evaluated only at ``geometry_config``; the extra resolutions cost
+    curve evaluations, not solves.  Left empty, the optimizer searches exactly
+    the feasible set its own resolution defines -- and a caller that evaluates
+    the result at a finer one can then be handed a state that resolution
+    refuses.
     """
 
     if not isinstance(initial_state, MultiRadialFourierState):
@@ -933,6 +975,9 @@ def run_multiradial_fd_inverse(
         raise TypeError("config must be ParameterFDConfig.")
     if config.infeasible_trial_policy != "reject":
         raise ValueError("the topology experiment requires infeasible_trial_policy='reject'.")
+    feasibility_configs = tuple(feasibility_geometry_configs)
+    if not all(isinstance(item, OrderedSDFGeometryConfig) for item in feasibility_configs):
+        raise TypeError("feasibility_geometry_configs must contain OrderedSDFGeometryConfig objects.")
     parameter_count = initial_state.parameter_count
     if parameter_count > config.max_parameters:
         raise ValueError("state exceeds config.max_parameters.")
@@ -942,10 +987,11 @@ def run_multiradial_fd_inverse(
     cache: dict[bytes, MultiRadialObjectiveEvaluation | None] = {}
     evaluation_count = 0
     infeasible_count = 0
+    feasibility_rejected = 0
     started = perf_counter()
 
     def evaluate(state: MultiRadialFourierState) -> MultiRadialObjectiveEvaluation | None:
-        nonlocal evaluation_count, infeasible_count
+        nonlocal evaluation_count, infeasible_count, feasibility_rejected
         key = np.asarray(state.parameter_vector()).tobytes()
         if key in cache:
             return cache[key]
@@ -953,6 +999,12 @@ def run_multiradial_fd_inverse(
         try:
             if any(component_radius_floor(c) < minimum_component_radius_m for c in state.components):
                 raise OrderedSDFGeometryError("Component is below the topology feature-radius floor.")
+            if any(not multiradial_geometry_admissible(state, extra, solve_config=solve_config)
+                   for extra in feasibility_configs):
+                feasibility_rejected += 1
+                raise OrderedSDFGeometryError(
+                    "State is inadmissible at a required finer discretisation."
+                )
             result = evaluate_multiradial_objective(
                 state, data, geometry_config, solve_config=solve_config
             )
@@ -1138,6 +1190,7 @@ def run_multiradial_fd_inverse(
         evaluation_count=evaluation_count,
         infeasible_trial_count=infeasible_count,
         total_seconds=float(perf_counter() - started),
+        feasibility_rejected_trial_count=feasibility_rejected,
     )
 
 
@@ -1186,5 +1239,6 @@ __all__ = [
     "evaluate_multiradial_objective",
     "iteration01_optimizer_config",
     "iteration01_solve_config",
+    "multiradial_geometry_admissible",
     "run_multiradial_fd_inverse",
 ]

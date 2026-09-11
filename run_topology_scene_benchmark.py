@@ -42,7 +42,16 @@ from sdf_inverse.work_accounting import accounted_call, collect_work, current_wo
 
 ROOT = Path(__file__).resolve().parent
 DEFAULT_SPEC = ROOT / 'config/topology_scenes_v1.json'
-ARMS = {'A': False, 'F': True}
+# An arm is a named controller policy over the frozen scenes. Scenes, data,
+# acquisition, budgets and gates never vary with the arm.
+ARM_POLICIES = {'A': dict(include_simplest_candidate=False),
+                'F': dict(include_simplest_candidate=True),
+                'G': dict(include_simplest_candidate=False, refined_feasibility_guard=True)}
+ARM_LABELS = {'A': 'default A', 'F': 'selective F', 'G': 'guarded G'}
+POLICY_KEYS = sorted({key for policy in ARM_POLICIES.values() for key in policy})
+DEFAULT_ARMS = ('A', 'F')
+# Archived bundle analyses iterate this name; it stays the pair they ran.
+ARMS = DEFAULT_ARMS
 
 
 def read(path):
@@ -67,7 +76,13 @@ def initial_state(scene):
 
 
 def controller_config(spec, arm):
-    return TopologyControllerConfig(**spec['controller'], include_simplest_candidate=ARMS[arm])
+    return TopologyControllerConfig(**spec['controller'], **ARM_POLICIES[arm])
+
+
+def suite_arms(output):
+    """The arms a prepared bundle actually declares, so summaries stay honest."""
+    arms = read(output / 'manifest.json').get('arms', DEFAULT_ARMS)
+    return tuple(arms)
 
 
 def relative_columns(predicted, observed):
@@ -80,7 +95,7 @@ def scene_geometry_check(scene, spec):
     initial = initial_state(scene)
     start = [] if initial is None else [component_parameterization(c).discretize(
         spec['geometry_samples']).points for c in initial.components]
-    config = controller_config(spec, 'A')
+    config = controller_config(spec, DEFAULT_ARMS[0])
     within = all(np.max(np.linalg.norm(p - config.inspection_center, axis=1)) <=
                  config.inspection_radius_m + 1e-12 for p in truth + start)
     separated = all(not np.any(_inside_polygon(a, b)) and not np.any(_inside_polygon(b, a))
@@ -120,14 +135,15 @@ def reuse_reference_data(output, reference, spec):
         new_oracle_solves=0))
 
 
-def prepare(output, spec_path, reference_data=None):
+def prepare(output, spec_path, reference_data=None, arms=DEFAULT_ARMS, experiment_id='TOP-006'):
     output.mkdir(parents=True, exist_ok=False)
     spec = read(spec_path)
     driver.write_json(output / 'scene_spec.json', spec)
     provenance = source_provenance(ROOT)
     provenance['benchmark_spec_sha256'] = digest(output / 'scene_spec.json')
-    driver.write_json(output / 'manifest.json', dict(experiment_id='TOP-006', spec_version=spec['version'],
-        source=provenance, arms=ARMS, expected_runs=2*len(spec['scenes']), workers_limit=4,
+    driver.write_json(output / 'manifest.json', dict(experiment_id=experiment_id, spec_version=spec['version'],
+        source=provenance, arms=list(arms), arm_policies={a: ARM_POLICIES[a] for a in arms},
+        expected_runs=len(arms)*len(spec['scenes']), workers_limit=4,
         per_run_timeout_seconds=600, suite_wall_ceiling_seconds=2700,
         oracle_work_in_inversion_counts=False, controlled_wall_time_comparison=False))
     if reference_data is not None:
@@ -403,40 +419,43 @@ def render_initials(output):
 
 def summarize(output, render=True):
     spec = read(output / 'scene_spec.json')
+    arms = suite_arms(output)
     rows, failures, pairs = [], [], []
     for scene in spec['scenes']:
-        for arm in ARMS:
+        for arm in arms:
             path = output / 'runs' / arm / scene['id']
             if (path / 'metrics.json').exists():
                 rows.append(read(path / 'metrics.json'))
             elif (path / 'failure.json').exists():
                 failures.append(read(path / 'failure.json'))
-        paths = [output / 'runs' / arm / scene['id'] / 'manifest.json' for arm in ARMS]
+        paths = [output / 'runs' / arm / scene['id'] / 'manifest.json' for arm in arms]
         if all(p.exists() for p in paths):
-            a, f = map(read, paths)
-            a_config, f_config = a['controller'].copy(), f['controller'].copy()
-            a_config.pop('include_simplest_candidate'); f_config.pop('include_simplest_candidate')
-            pairs.append(dict(scene=scene['id'], same_observations=a['observations_sha256']==f['observations_sha256'],
-                same_initial_state=a['initial_state']==f['initial_state'], same_remaining_config=a_config==f_config,
-                same_source=a['source']==f['source']))
+            manifests = [read(p) for p in paths]
+            configs = [{k: v for k, v in m['controller'].items() if k not in POLICY_KEYS} for m in manifests]
+            first = manifests[0]
+            pairs.append(dict(scene=scene['id'],
+                same_observations=all(m['observations_sha256']==first['observations_sha256'] for m in manifests),
+                same_initial_state=all(m['initial_state']==first['initial_state'] for m in manifests),
+                same_remaining_config=all(c==configs[0] for c in configs),
+                same_source=all(m['source']==first['source'] for m in manifests)))
     totals = {arm:dict(completed=sum(r['arm']==arm for r in rows),
         passed=sum(r['arm']==arm and r['passed'] for r in rows),
         failed_or_missing=len(spec['scenes'])-sum(r['arm']==arm and r['passed'] for r in rows),
         bie_frequency_solve_count=sum(r['work']['totals']['bie_frequency_solve_count'] for r in rows if r['arm']==arm))
-        for arm in ARMS}
-    for arm in ARMS:
+        for arm in arms}
+    for arm in arms:
         partial_paths = [output / 'runs' / arm / f['scene'] / 'checkpoint.json'
                          for f in failures if f['arm']==arm]
         totals[arm]['error_or_timeout_count'] = len(partial_paths)
         totals[arm]['all_runs_bie_solve_lower_bound'] = totals[arm]['bie_frequency_solve_count'] + sum(
             read(p)['work']['totals']['bie_frequency_solve_count'] for p in partial_paths if p.exists())
-    complete = len(rows)+len(failures)==2*len(spec['scenes'])
-    result = dict(spec_version=spec['version'], complete=complete, metrics=rows, failures=failures,
+    complete = len(rows)+len(failures)==len(arms)*len(spec['scenes'])
+    result = dict(spec_version=spec['version'], arms=list(arms), complete=complete, metrics=rows, failures=failures,
         paired_input_checks=pairs, all_inputs_paired=len(pairs)==len(spec['scenes']) and
         all(all(v for k, v in pair.items() if k != 'scene') for pair in pairs), totals=totals)
     driver.write_json(output / 'suite_metrics.json', result)
     if render:
-        render_results(output, spec, rows)
+        render_results(output, spec, rows, arms)
     print(json.dumps(dict(complete=complete, totals=totals)), flush=True)
     return result
 
@@ -472,16 +491,17 @@ def saved_run_frames(path):
     return tuple(frames)
 
 
-def render_results(output, spec, rows):
+def render_results(output, spec, rows, arms=DEFAULT_ARMS):
     import matplotlib
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
     lookup = {(r['scene'], r['arm']): r for r in rows}
     for group in ('original', 'new'):
         scenes = [s for s in spec['scenes'] if s['group']==group]
-        fig, axes = plt.subplots(len(scenes), 2, figsize=(10, 3.2*len(scenes)), constrained_layout=True)
+        fig, axes = plt.subplots(len(scenes), len(arms), squeeze=False,
+                                 figsize=(5*len(arms), 3.2*len(scenes)), constrained_layout=True)
         for i, scene in enumerate(scenes):
-            for j, arm in enumerate(ARMS):
+            for j, arm in enumerate(arms):
                 ax = axes[i, j]
                 row = lookup.get((scene['id'], arm))
                 path = output / 'runs' / arm / scene['id']
@@ -490,7 +510,7 @@ def render_results(output, spec, rows):
                 detail = ('FAILED — last saved state' if (path / 'failure.json').exists() else 'INCOMPLETE') if row is None else (
                     f"{'PASS' if row['passed'] else 'FAIL'} | {row['geometry']['component_count']}/{len(scene['truth'])} objects"
                     f" | IoU {row['geometry']['union_iou']:.2f}")
-                ax.set_title(f"{scene['id']} — {'default A' if arm=='A' else 'selective F'}\n{detail}", fontsize=10)
+                ax.set_title(f"{scene['id']} — {ARM_LABELS[arm]}\n{detail}", fontsize=10)
             xlim = (min(ax.get_xlim()[0] for ax in axes[i]), max(ax.get_xlim()[1] for ax in axes[i]))
             ylim = (min(ax.get_ylim()[0] for ax in axes[i]), max(ax.get_ylim()[1] for ax in axes[i]))
             for ax in axes[i]:
@@ -500,24 +520,26 @@ def render_results(output, spec, rows):
         fig.savefig(output / f'{group}_results.svg')
         fig.savefig(output / f'{group}_results.png', dpi=135)
         plt.close(fig)
-    # The requested scene gets a compact three-panel view suitable for sharing.
+    # The requested scene gets its own compact panel per arm, suitable for sharing.
     scene = next(s for s in spec['scenes'] if s['id']=='far-ellipse-star')
-    fig, axes = plt.subplots(1, 3, figsize=(13, 4.5), constrained_layout=True)
+    fig, axes = plt.subplots(1, 1+len(arms), squeeze=False,
+                             figsize=(4.3*(1+len(arms)), 4.5), constrained_layout=True)
+    axes = axes[0]
     plot_geometry(axes[0], scene, None, initial_state(scene))
     axes[0].set_title('Starting circle and targets')
     axes[0].legend(fontsize=8)
-    for ax, arm in zip(axes[1:], ARMS):
+    for ax, arm in zip(axes[1:], arms):
         row = lookup.get((scene['id'], arm))
         path = output / 'runs' / arm / scene['id']
         state = saved_run_state(path, row)
         plot_geometry(ax, scene, state)
-        ax.set_title(f"{'Default A' if arm=='A' else 'Selective F'} — "
+        ax.set_title(f"{ARM_LABELS[arm].capitalize()} — "
                      + (('FAILED: last saved state' if (path / 'failure.json').exists() else 'incomplete')
                         if row is None else ('PASS' if row['passed'] else 'FAIL')))
     fig.savefig(output / 'far_ellipse_star.svg')
     fig.savefig(output / 'far_ellipse_star.png', dpi=160)
     plt.close(fig)
-    for arm in ARMS:
+    for arm in arms:
         path = output / 'runs' / arm / scene['id']
         frames = saved_run_frames(path)
         if frames and not (path / 'inversion.mp4').exists():
@@ -536,15 +558,21 @@ def main():
     parser.add_argument('--prepare-only', action='store_true')
     parser.add_argument('--run-one', nargs=2, metavar=('SCENE', 'ARM'))
     parser.add_argument('--summary-only', action='store_true')
+    parser.add_argument('--arms', default=','.join(DEFAULT_ARMS),
+                        help='Comma-separated controller policies to run, e.g. A,G. Scenes and budgets never vary.')
+    parser.add_argument('--experiment-id', default='TOP-006')
     parser.add_argument('--skip-render', action='store_true')
     args = parser.parse_args()
     output = args.output.resolve()
+    arms = tuple(name.strip() for name in args.arms.split(',') if name.strip())
+    if not arms or any(name not in ARM_POLICIES for name in arms) or len(set(arms)) != len(arms):
+        raise SystemExit(f'--arms must be distinct names from {sorted(ARM_POLICIES)}')
     if args.summary_only:
         return 0 if summarize(output, not args.skip_render)['complete'] else 1
     if args.run_one:
         run_one(output, *args.run_one)
         return 0
-    prepare(output, args.spec, args.reference_data)
+    prepare(output, args.spec, args.reference_data, arms, args.experiment_id)
     if args.prepare_only:
         return 0
     (output / 'logs').mkdir()
@@ -554,7 +582,7 @@ def main():
     scenes = sorted(spec['scenes'], key=lambda s: s['id'] != 'far-ellipse-star')
     records = []
     with ThreadPoolExecutor(max_workers=args.workers) as pool:
-        jobs = [pool.submit(run_job, output, scene['id'], arm, deadline) for scene in scenes for arm in ARMS]
+        jobs = [pool.submit(run_job, output, scene['id'], arm, deadline) for scene in scenes for arm in arms]
         for job in as_completed(jobs):
             records.append(job.result())
             driver.write_json(output / 'execution_status.json', records)

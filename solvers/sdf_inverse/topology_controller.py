@@ -25,7 +25,8 @@ from .optimization import ParameterFDConfig, normalized_complex_residual
 from .radial_topology import (
     MultiRadialFourierState, _inside_polygon, _minimum_polygon_distance,
     circle_radial_fourier_state, evaluate_current_domain_topological_derivative,
-    evaluate_multiradial_objective, run_multiradial_fd_inverse, component_radius_floor,
+    evaluate_multiradial_objective, multiradial_geometry_admissible,
+    run_multiradial_fd_inverse, component_radius_floor,
 )
 from gpr_bem_kress.multicomponent import MultiComponentKressGeometryError
 from .work_accounting import accounted_call, collect_work, current_work, work_delta
@@ -103,6 +104,10 @@ class TopologyControllerConfig:
     candidate_refinement_iterations: int = 3
     candidates_refined_per_group: int = 1
     include_simplest_candidate: bool = False
+    # Off reproduces every recorded run: the optimizer then searches the
+    # feasible set its own production resolution defines, and the refined
+    # evaluations that follow may refuse what it accepted.
+    refined_feasibility_guard: bool = False
     relative_error_tolerance: float = 0.005
     acceptance_absolute_margin: float = 1.e-10
     acceptance_relative_margin: float = 1.e-5
@@ -120,8 +125,9 @@ class TopologyControllerConfig:
                 raise ValueError(f'{name} must be a positive integer.')
         if not isinstance(self.candidates_refined_per_group, (int, np.integer)):
             raise ValueError('candidates_refined_per_group must be a positive integer.')
-        if not isinstance(self.include_simplest_candidate, bool):
-            raise ValueError('include_simplest_candidate must be boolean.')
+        for name in ('include_simplest_candidate', 'refined_feasibility_guard'):
+            if not isinstance(getattr(self, name), bool):
+                raise ValueError(f'{name} must be boolean.')
         if (self.raster_size < 17 or isinstance(self.candidate_refinement_iterations, bool)
                 or not isinstance(self.candidate_refinement_iterations, (int, np.integer))
                 or self.candidate_refinement_iterations < 0):
@@ -599,6 +605,12 @@ def _run_topology_aware_fourier_inverse(initial_state, data, production_geometry
     stop = 'maximum_cycles'
     used_ids = set(() if initial_state is None else initial_state.component_ids)
     event_serial = 1
+    # With the guard, every optimizer step must also be admissible at the
+    # resolution the controller checks events at, and the last state an actual
+    # refined evaluation accepted is kept as the state to fall back to.
+    guard = config.refined_feasibility_guard
+    guard_configs = (refined_geometry_config,) if guard else ()
+    refined_feasible_state = None
 
     def emit(current, loss, label, cycle):
         frame = TopologyFrame(current, float(loss), label, cycle)
@@ -608,6 +620,7 @@ def _run_topology_aware_fourier_inverse(initial_state, data, production_geometry
 
     for cycle in range(config.maximum_cycles):
         cycle_started = current_work()
+        guard_rejected = 0
         if cycle == 0 and replay_first_event:
             trigger = 'saved_pre_event_replay'
         elif state is not None and all(component_radius_floor(c) >= config.minimum_component_radius_m for c in state.components):
@@ -615,16 +628,31 @@ def _run_topology_aware_fourier_inverse(initial_state, data, production_geometry
                 solve_config=solve_config, config=_optimizer_config(state, config),
                 minimum_component_radius_m=config.minimum_component_radius_m,
                 cartesian_gauge=config.chart == 'cartesian',
+                feasibility_geometry_configs=guard_configs,
                 progress_callback=lambda item: emit(item.state, item.loss, f'refine {item.iteration}', cycle))
             state = result.final_state
             trigger = result.stop_reason
+            if guard:
+                guard_rejected = result.feasibility_rejected_trial_count
         elif state is None:
             trigger = 'empty_domain'
             emit(None, accounted_call('production_base', topology_objective, None, data, production_geometry_config, solve_config)[0], trigger, cycle)
         else:
             trigger = 'component_radius_floor'
             emit(state, accounted_call('production_base', topology_objective, state, data, production_geometry_config, solve_config)[0], trigger, cycle)
+        rolled_back = False
+        if guard and not multiradial_geometry_admissible(state, refined_geometry_config, solve_config=solve_config):
+            # Geometry only, so a state the refined resolution refuses is
+            # detected without spending the solve that would have raised.
+            if refined_feasible_state is None or not multiradial_geometry_admissible(
+                    refined_feasible_state, refined_geometry_config, solve_config=solve_config):
+                stop = 'refined_infeasible'
+                break
+            state, rolled_back = refined_feasible_state, True
+            trigger = f'{trigger}; refined_infeasible_rollback'
         base_loss, relative = accounted_call('production_base', topology_objective, state, data, production_geometry_config, solve_config)
+        if rolled_back:
+            emit(state, base_loss, 'refined infeasible rollback', cycle)
         if relative <= config.relative_error_tolerance:
             stop = 'recovered'
             break
@@ -638,7 +666,21 @@ def _run_topology_aware_fourier_inverse(initial_state, data, production_geometry
             event_serial += 1
         candidates, rejections = generate_topology_candidates(
             state, workspace, production_geometry_config, config, event_serial)
-        refined_base = accounted_call('refined_base', topology_objective, state, data, refined_geometry_config, solve_config)[0]
+        try:
+            refined_base = accounted_call('refined_base', topology_objective, state, data, refined_geometry_config, solve_config)[0]
+        except GEOMETRY_ERRORS as exc:
+            # Unguarded, this is the uncaught abort TOP-006 recorded; the
+            # reference behaviour is preserved deliberately.
+            if not guard:
+                raise
+            stop = 'refined_infeasible'
+            passes.append(dict(cycle=cycle, trigger=trigger, base_loss=base_loss,
+                               refined_base_loss=None, refined_base_reason=str(exc),
+                               trials=[], rejected_masks=rejections,
+                               evaluation_count=work_delta(current_work(), cycle_started)['totals']['evaluation_count'],
+                               work=work_delta(current_work(), cycle_started), refinement_work=None))
+            break
+        refined_feasible_state = state
         trials, feasible = [], []
         for candidate in candidates:
             row = dict(kind=candidate.kind, parents=candidate.parents, children=candidate.children,
@@ -687,12 +729,15 @@ def _run_topology_aware_fourier_inverse(initial_state, data, production_geometry
                             solve_config=solve_config,
                             config=_optimizer_config(candidate.state, config, config.candidate_refinement_iterations),
                             minimum_component_radius_m=config.minimum_component_radius_m,
-                            cartesian_gauge=config.chart == 'cartesian')
+                            cartesian_gauge=config.chart == 'cartesian',
+                            feasibility_geometry_configs=guard_configs)
                         candidate = replace(candidate, state=result.final_state)
                         row['production_loss'] = result.iterations[-1].loss
                         row['candidate_refinement_steps'] = len(result.iterations) - 1
                         row['optimizer_evaluation_count'] = result.evaluation_count
                         row['optimizer_infeasible_trial_count'] = result.infeasible_trial_count
+                        if guard:
+                            guard_rejected += result.feasibility_rejected_trial_count
                         feasible = [(row['production_loss'], candidate, row) if item[2] is row else item for item in feasible]
                     except GEOMETRY_ERRORS as exc:
                         row['polish_reason'] = str(exc)
@@ -720,7 +765,9 @@ def _run_topology_aware_fourier_inverse(initial_state, data, production_geometry
         passes.append(dict(cycle=cycle, trigger=trigger, base_loss=base_loss,
                            refined_base_loss=refined_base, trials=trials, rejected_masks=rejections,
                            evaluation_count=pass_work['totals']['evaluation_count'],
-                           work=pass_work, refinement_work=refinement_work))
+                           work=pass_work, refinement_work=refinement_work,
+                           **(dict(refined_feasibility_rejected_trials=guard_rejected,
+                                   refined_infeasible_rollback=rolled_back) if guard else {})))
         if not accepted:
             stop = 'topology_stationary'
             break
@@ -739,6 +786,8 @@ def _run_topology_aware_fourier_inverse(initial_state, data, production_geometry
         used_ids.update(best.children)
         event_serial += 1
         emit(state, base_loss, f'before {best.kind}', cycle)
-        state = best.state
+        # The winner passed an actual refined evaluation above, so it is the
+        # anchor a later refined rejection falls back to.
+        state = refined_feasible_state = best.state
         emit(state, loss, f'{best.kind.upper()} accepted', cycle)
     return TopologyInverseResult(state, stop, tuple(frames), tuple(events), tuple(passes))

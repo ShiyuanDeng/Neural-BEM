@@ -113,6 +113,7 @@ from .radial_topology import (
     evaluate_multiradial_objective,
     iteration01_optimizer_config,
     iteration01_solve_config,
+    multiradial_geometry_admissible,
     run_multiradial_fd_inverse,
 )
 from .explicit_fourier import CartesianFourierCurveState, circle_cartesian_fourier_state
@@ -192,6 +193,7 @@ __all__ = [
     "evaluate_birth_ladder",
     "evaluate_current_domain_topological_derivative",
     "evaluate_multiradial_objective",
+    "multiradial_geometry_admissible",
     "first_order_distance_supervisor",
     "fit_radial_fourier_curve_state",
     "maximum_curve_set_distance",
