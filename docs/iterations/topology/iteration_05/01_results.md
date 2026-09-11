@@ -68,13 +68,24 @@ not in a closeout.
 ## Next discriminating questions
 
 1. **Why a mode-9 component stalls 18.6 mm from an ellipse at 3.06% training
-   error.** Before adding bandwidth anywhere, establish whether the objective,
-   the trust region, the gauge or the single training frequency is what stops
-   it. A promotion experiment that skips this may buy modes nobody uses.
+   error.** Answered by a read-only
+   [review diagnostic](02_proposals/01_stall_diagnostic.md): that component sits
+   exactly on the 8-mm feature-radius floor, 15 of its 20 gauge directions are
+   refused by the floor, and each refusal freezes a Jacobian column. The merge
+   contour fit handed it a peanut neck 0.8 mm above the floor and refinement
+   drove it onto the floor. So the next test is candidate acceptance that asks
+   for refinement headroom, together with an FD Jacobian that projects along an
+   active constraint instead of freezing the column.
 2. **Shape capacity after birth**, as in the iteration-04 question, but now
-   conditioned on the answer to (1): birth seeds are still circles, and the
-   star in both new completions is still a circle.
-3. **The three remaining timeouts.** Central, enclosing and far-three-shapes
+   conditioned on (1): birth seeds are still circles, the star in both new
+   completions is still a circle, and `far-two-stars` leaves 1.4% of its
+   training data unexplained with nothing pinned and 22 mm of headroom. Giving a
+   component nine modes did not by itself make them usable.
+3. **Acquisition.** Of the seven failures only `merge` fits its training data
+   (7.9e-05) and still misses the holdout at 9.4%; that one is information
+   limited at 0.5 GHz. The rest leave 1.4–3.1% of the training residual on the
+   table, so more data is not what they are short of.
+4. **The three remaining timeouts.** Central, enclosing and far-three-shapes
    spend ten minutes without converging in either arm. Cost per cycle, not
    feasibility, now dominates those scenes.
 
