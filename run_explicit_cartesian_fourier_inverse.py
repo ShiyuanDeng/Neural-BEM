@@ -7,8 +7,9 @@ term, no representation audit and no conversion gate anywhere in the loop.  The
 network argument of the shared optimizer is a parameterless placeholder and the
 ``curve_only`` policy guarantees it is never evaluated.
 
-The parameter is polar angle at initialization and free thereafter, and nothing
-refits to arc length.  That is the point of the experiment: in polar angle the
+The parameter is polar angle at initialization and is re-gauged after each
+update by default; ``--no-regauge`` leaves it free. Nothing refits to arc length.
+In polar angle the
 five-lobed target is exactly ``a_1 cos t + a_4/b_4 + a_6/b_6``, so band six
 contains it to machine precision, while in arc length it is not band-limited at
 any practical bandwidth.  See docs/iterations/cartesian_fourier/iteration_01.
@@ -171,6 +172,13 @@ def _cartesian_spectrum(state: object) -> dict[str, Any]:
     }
 
 
+def _reference_mismatches(args: argparse.Namespace) -> list[str]:
+    """The saved radial numbers apply only to their own inverse problem."""
+    expected = dict(target="star", initial_shape="ellipse", num_pairs=24, num_nodes=128,
+                    train_ghz=(0.5, 1.5, 2.5), holdout_ghz=(0.25, 1.0, 2.0))
+    return [name for name, value in expected.items() if getattr(args, name) != value]
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     target = _build_target(args.target)
@@ -178,6 +186,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.num_nodes is None:
         args.num_nodes = target.default_num_nodes
     geometry_config = target.geometry_config(args.num_nodes)
+    reference_mismatches = _reference_mismatches(args)
 
     teacher = _initial_teacher(args.initial_shape)
     raw_curve = build_ordered_sdf_geometry(teacher, geometry_config).curve
@@ -537,8 +546,21 @@ def main(argv: Sequence[str] | None = None) -> int:
         and final_holdout[1] <= 1.0e-07
         and final_boundary_error <= 1.0e-08
     )
+    metrics["parity_evaluated"] = not reference_mismatches
+    metrics["parity_reference_mismatches"] = reference_mismatches
+    if reference_mismatches:
+        for field in ("reference_run", "parity_reference", "parity_gates", "parity_achieved"):
+            metrics[field] = None
     (output / "metrics.json").write_text(json.dumps(metrics, indent=2) + "\n")
 
+    reference_values = ("1.068e-08", "1.339e-08", "2.570e-10 m", "44") if not reference_mismatches else ("—",) * 4
+    parity_summary = (
+        f"Parity gates met: **{metrics['parity_achieved']}** "
+        "(train and holdout `<= 1e-07`, boundary error `<= 1e-08 m`)."
+        if not reference_mismatches else
+        "Radial parity not evaluated: this run differs from the saved ellipse-to-star reference in "
+        + ", ".join(reference_mismatches) + "."
+    )
     summary = [
         "# Direct Cartesian Fourier inverse (no MLP)",
         "",
@@ -553,20 +575,20 @@ def main(argv: Sequence[str] | None = None) -> int:
         "",
         "| Quantity | Initial | Final | Radial reference final |",
         "|---|---:|---:|---:|",
-        f"| Train rel. L2 | {initial_train[1]:.3e} | {final_train[1]:.3e} | 1.068e-08 |",
-        f"| Holdout rel. L2 | {initial_holdout[1]:.3e} | {final_holdout[1]:.3e} | 1.339e-08 |",
-        f"| Max boundary error | {initial_boundary_error:.3e} m | {final_boundary_error:.3e} m | 2.570e-10 m |",
-        f"| Accepted updates | - | {sum(s['accepted_updates'] for s in stage_metadata)} | 44 |",
+        f"| Train rel. L2 | {initial_train[1]:.3e} | {final_train[1]:.3e} | {reference_values[0]} |",
+        f"| Holdout rel. L2 | {initial_holdout[1]:.3e} | {final_holdout[1]:.3e} | {reference_values[1]} |",
+        f"| Max boundary error | {initial_boundary_error:.3e} m | {final_boundary_error:.3e} m | {reference_values[2]} |",
+        f"| Accepted updates | - | {sum(s['accepted_updates'] for s in stage_metadata)} | {reference_values[3]} |",
         "",
-        f"Parity gates met: **{metrics['parity_achieved']}** "
-        "(train and holdout `<= 1e-07`, boundary error `<= 1e-08 m`).",
+        parity_summary,
         "",
         f"Stop reason: `{stage_metadata[-1]['stop_reason']}`.",
         "",
         "One-time polar-angle projection of the initial contour: "
         f"`{1.0e3 * initial_state.initial_projection_rms_m:.3f}` mm RMS / "
         f"`{1.0e3 * initial_state.initial_projection_maximum_m:.3f}` mm maximum. "
-        "Every later state is reached by increment, never by refitting.",
+        + ("Accepted increments are re-gauged to polar angle, with band truncation recorded in the trajectory."
+         if args.regauge else "Later increments retain the free parameterization (--no-regauge)."),
         "",
     ]
     (output / "summary.md").write_text("\n".join(summary))

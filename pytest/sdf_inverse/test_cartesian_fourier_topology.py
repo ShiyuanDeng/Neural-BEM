@@ -61,6 +61,75 @@ def test_a_circle_is_mode_one_alone_and_an_exact_gauge_fixed_point():
         assert np.count_nonzero(seed.sine_coefficients[2:]) == 0
 
 
+@pytest.mark.parametrize('phase,orientation', [(0.7, 1.), (np.pi / 2, 1.), (0.7, -1.)])
+def test_gauge_fixing_removes_phase_even_when_band_truncation_is_zero(phase, orientation):
+    seed = circle_cartesian_fourier_state((.47, .52), .031, 'seed', maximum_mode=3)
+    cosine, sine = seed.cosine_coefficients.copy(), seed.sine_coefficients.copy()
+    cosine[1] = .031 * np.array([np.cos(phase), np.sin(phase)])
+    sine[1] = orientation * .031 * np.array([-np.sin(phase), np.cos(phase)])
+    shifted = seed._replaced(cosine, sine)
+    # Reparameterization is exact, but the input is not in the optimizer's gauge.
+    assert regauge_cartesian_state_to_polar_angle(shifted)[2] < 1e-14
+    fixed, residual = polar_angle_gauge_fixed_point(shifted)
+    np.testing.assert_allclose(fixed.parameter_vector(), seed.parameter_vector(), atol=1e-13)
+    assert residual < 1e-13
+
+
+def test_gauge_rejects_a_multiply_traversed_circle():
+    seed = circle_cartesian_fourier_state((.5, .5), .03, 'double', maximum_mode=2)
+    cosine, sine = seed.cosine_coefficients.copy(), seed.sine_coefficients.copy()
+    cosine[2], sine[2] = cosine[1], sine[1]
+    cosine[1], sine[1] = 0., 0.
+    with pytest.raises(OrderedSDFGeometryError, match='one|monotone'):
+        regauge_cartesian_state_to_polar_angle(seed._replaced(cosine, sine))
+
+
+def test_ungauged_ellipse_radius_bound_does_not_overstate_its_minor_radius():
+    seed = circle_cartesian_fourier_state((.5, .5), .09, 'ellipse')
+    sine = seed.sine_coefficients.copy()
+    sine[1, 1] = .01
+    component = seed._replaced(seed.cosine_coefficients, sine)
+    assert component.is_star_shaped_about_center
+    assert 0.009 < component.minimum_radius_lower_bound_m <= .01
+    assert component_radius_floor(component) <= .01
+
+
+def test_controller_api_honors_cartesian_chart_for_radial_initial_geometry():
+    from sdf_inverse.topology_controller import run_topology_aware_fourier_inverse
+    state = MultiRadialFourierState(tuple(circle_radial_fourier_state(center, radius, cid)
+        for (center, radius), cid in zip(TWO_CIRCLES, ('A', 'B'))))
+    result = run_topology_aware_fourier_inverse(
+        state, _two_circle_data(), baseline._geometry_config(64), baseline._geometry_config(128),
+        solve_config=baseline.iteration01_solve_config(),
+        config=TopologyControllerConfig(chart='cartesian', maximum_cycles=1, fixed_iterations=1))
+    assert result.stop_reason == 'recovered'
+    assert result.final_state.component_ids == state.component_ids
+    assert all(isinstance(component, CartesianFourierCurveState)
+               for frame in result.frames for component in frame.state.components)
+
+
+def test_contour_fit_checks_geometry_after_gauge_convergence(monkeypatch):
+    import sdf_inverse.topology_controller as controller
+    axis = np.linspace(.3, .7, 161)
+    x, y = np.meshgrid(axis, axis)
+    points = np.stack((x, y), axis=-1)
+    mask = np.linalg.norm(points - [.5, .5], axis=-1) < .05
+    nan = np.full_like(x, np.nan)
+    workspace = TopologyWorkspace(points, axis, axis, np.ones_like(mask), mask, (mask,),
+                                 nan, nan, axis[1] - axis[0])
+    gauge = controller.polar_angle_gauge_fixed_point
+
+    def converged_but_displaced(component):
+        fixed, residual = gauge(component)
+        cosine = fixed.cosine_coefficients.copy()
+        cosine[0, 0] += .025
+        return fixed._replaced(cosine, fixed.sine_coefficients), residual
+
+    monkeypatch.setattr(controller, 'polar_angle_gauge_fixed_point', converged_but_displaced)
+    with pytest.raises(ValueError, match='No gauge-fixed'):
+        fit_mask_component(mask, workspace, 'circle', 6, baseline._geometry_config(64), 'cartesian')
+
+
 def test_the_radial_chart_embeds_exactly_one_band_higher():
     """Both charts must start a matched run from identical geometry."""
     for component in (circle_radial_fourier_state((.5, .5), .033, 'c'), _peanut(),

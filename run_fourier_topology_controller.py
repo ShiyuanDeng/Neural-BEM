@@ -285,14 +285,15 @@ def write_suite_summary(output):
         rows += ['Every accepted component is a polar-angle Cartesian Fourier curve, re-expressed '
                  'in its own polar angle after each retraction. The cases, observations, oracle and '
                  'budgets are those of the radial bundle, so the two compare directly.', '']
-    rows += ['| Inversion video | Component counts | Relative data error | Sampled Hausdorff (mm) | Parameters | Stop |',
+    rows += ['| Case / inversion video | Component counts | Relative data error | Sampled Hausdorff (mm) | Parameters | Stop |',
              '|---|---|---:|---:|---:|---|']
     for item in metrics:
         name = item['case']
         counts = ' → '.join(map(str, item['component_counts']))
         distance = '—' if item['hausdorff_m'] is None else f"{1000 * item['hausdorff_m']:.4g}"
         parameters = item.get('final_parameter_count') or '—'
-        rows.append(f"| [{name}]({name}/inversion.mp4) | {counts} | {item['final_relative_error']:.3g} "
+        artifact = 'inversion.mp4' if (output / name / 'inversion.mp4').exists() else 'metrics.json'
+        rows.append(f"| [{name}]({name}/{artifact}) | {counts} | {item['final_relative_error']:.3g} "
                     f"| {distance} | {parameters} | {item['stop_reason']} |")
     completed = [item['case'] for item in metrics]
     if len(completed) >= 2 and all((output / name / 'inversion.mp4').exists() for name in completed):
@@ -309,7 +310,7 @@ def write_suite_summary(output):
                  'See each case’s `radius_audit.json` for the exact searched radii and target offsets. '
                  'The split starts with a 100-mm-radius circle and tests smaller circular seeds from its cut regions.']
     rows += ['', 'Each case contains `manifest.json`, `metrics.json`, `trajectory.json`, '
-             '`topology_passes.json`, observations and sensitivity rasters. Videos contain actual accepted '
+             '`topology_passes.json`, observations and sensitivity rasters. When rendered, videos contain actual accepted '
              'states; topology transitions are discrete. Both production and refined objectives must improve.', '',
              'These are noiseless, same-material, 0.5-GHz demonstrations. Nested holes and touching boundaries '
              'are unsupported. Generated videos and array files follow the repository’s existing Git-ignore policy.', '']

@@ -81,9 +81,8 @@ class CartesianFourierCurveState:
     def polar_offsets(self, count=None):
         """Sample ``gamma(t) - center`` on a uniform parameter grid.
 
-        The grid resolves the stored bandwidth generously because the feature
-        radius below turns these samples into a bound through a Lipschitz
-        constant, and a coarse grid pays for that directly.
+        The grid resolves the stored bandwidth generously for the gauge check
+        and the conservative feature-radius bounds below.
         """
         modes = self.maximum_mode
         n = max(4096, 128 * (modes + 1)) if count is None else int(count)
@@ -111,8 +110,24 @@ class CartesianFourierCurveState:
         Mode one carries translation in the radial chart and is excluded there
         for the same reason it is excluded here: a gauge-fixed state has none.
         """
+        from .curve_updates import polar_angle_gauge_tangent_basis
+
         _, offsets = self.polar_offsets()
         radii = np.linalg.norm(offsets, axis=1)
+        vector = self.parameter_vector()
+        basis = polar_angle_gauge_tangent_basis(self.maximum_mode)
+        gauge_error = np.linalg.norm(vector - basis.T @ (basis @ vector))
+        if gauge_error > 64. * np.finfo(float).eps * max(1., np.linalg.norm(vector)):
+            # A star-shaped contour need not use polar angle as its parameter.
+            # For example x=a*cos(t), y=b*sin(t) is an ellipse at K=1; its
+            # average sampled radius is not a lower bound on its minor radius.
+            # |d |gamma-center| / dt| <= |gamma'| gives a bound between samples
+            # that remains valid in the free Cartesian fallback chart.
+            modes = np.arange(1, self.maximum_mode + 1)
+            speed_bound = np.sum(modes * (
+                np.linalg.norm(self.cosine_coefficients[1:], axis=1)
+                + np.linalg.norm(self.sine_coefficients[1:], axis=1)))
+            return float(np.min(radii) - np.pi * speed_bound / len(radii))
         spectrum = np.fft.rfft(radii) / len(radii)
         modes = min(self.maximum_mode, len(spectrum) - 1)
         magnitudes = 2. * np.abs(spectrum[2:modes + 1])
@@ -131,7 +146,8 @@ class CartesianFourierCurveState:
         angles = np.arctan2(offsets[:, 1], offsets[:, 0])
         step = np.diff(np.concatenate((angles, angles[:1])))
         step = np.arctan2(np.sin(step), np.cos(step))
-        return bool(np.all(step > 0.) or np.all(step < 0.))
+        return bool((np.all(step > 0.) or np.all(step < 0.))
+                    and np.isclose(abs(np.sum(step)), 2. * np.pi, rtol=0., atol=1e-10))
 
     @property
     def parameter_names(self):

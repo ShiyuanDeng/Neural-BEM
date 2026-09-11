@@ -229,10 +229,10 @@ class MultiRadialFourierState:
         already refuse anything the gauge cannot hold, so a failure here is a
         step to reject rather than a state to tolerate.
 
-        The second value is the largest residual band truncation, which is the
-        component's genuine distance from the gauge-fixed set: exactly zero for
-        a curve that is band-limited in its own polar angle -- every circle,
-        and every curve reached from the radial chart at one mode lower.
+        The second value combines band truncation with a displacement bound
+        between the state and its next gauge projection. Band truncation alone
+        cannot detect a phase-shifted circle. The residual is zero to roundoff
+        for a canonical circle or an exact radial embedding one band lower.
         """
         rebuilt: list[RadialFourierCurveState | CartesianFourierCurveState] = []
         truncation = 0.0
@@ -879,6 +879,7 @@ class MultiRadialFDIteration:
     damping: float
     evaluation_count: int
     maximum_system_residual: float
+    # Legacy field name: includes the gauge-displacement bound as well as truncation.
     gauge_truncation_maximum_m: float = 0.0
 
 
@@ -908,8 +909,8 @@ def run_multiradial_fd_inverse(
 
     With ``cartesian_gauge`` the retraction is gauge-fixing: every retracted
     state, in the Jacobian as well as on the accepted step, is re-expressed in
-    its own polar-angle parameter, and the exact phase null direction is
-    removed from the proposed step before it is clipped.  The Cartesian chart
+    its own polar-angle parameter. Jacobians and steps use the subspace that
+    preserves this gauge, including removal of the phase null direction. The Cartesian chart
     needs this.  Left free, its parameter drifts along directions the data
     cannot see, the quadrature degrades and the shape stops improving; the
     softer controls that were measured instead all failed.  Radial components

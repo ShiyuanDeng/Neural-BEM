@@ -12,6 +12,7 @@ from typing import Callable
 
 import numpy as np
 from scipy import ndimage
+from scipy.spatial import cKDTree
 from skimage.measure import find_contours
 
 from .curve_updates import (
@@ -71,6 +72,8 @@ def cartesian_component(component):
 
 def state_in_chart(state, chart):
     """Re-express a whole state in ``chart``, or return it unchanged."""
+    if chart not in ('radial', 'cartesian'):
+        raise ValueError("chart must be 'radial' or 'cartesian'.")
     if state is None or chart != 'cartesian':
         return state
     return MultiRadialFourierState(tuple(cartesian_component(c) for c in state.components))
@@ -302,7 +305,13 @@ def fit_mask_component(mask, workspace, component_id, maximum_mode, geometry, ch
                 # would hand the optimizer a state whose scored loss is not
                 # the loss it starts from.
                 polar, residual = polar_angle_gauge_fixed_point(polar)
-                if max(polar.initial_projection_maximum_m, residual) > tolerance:
+                # Gauge convergence says nothing about how far the iterations
+                # moved the contour. Check the final geometry against the
+                # source mask contour, rather than only the first fit's error.
+                final_points = polar.parameterization().discretize(2048).points
+                contour_error = max(cKDTree(final_points).query(points)[0].max(),
+                                    cKDTree(points).query(final_points)[0].max())
+                if max(polar.initial_projection_maximum_m, residual, contour_error) > tolerance:
                     raise ValueError('Gauge-fixed polar-angle fit loses contour features.')
                 polar.boundary_curve(geometry)
                 return polar
@@ -528,7 +537,10 @@ def run_topology_aware_fourier_inverse(initial_state, data, production_geometry_
         workspace_callback: Callable[[int, TopologyWorkspace], None] | None = None):
     """Refine, compare finite events, accept the best, restart and repeat."""
     config = TopologyControllerConfig() if config is None else config
-    state, frames, events, passes = initial_state, [], [], []
+    state = state_in_chart(initial_state, config.chart)
+    if state is not None and config.chart == 'cartesian':
+        state, _ = state.polar_angle_gauge_fixed()
+    frames, events, passes = [], [], []
     stop = 'maximum_cycles'
     used_ids = set(() if initial_state is None else initial_state.component_ids)
     event_serial = 1

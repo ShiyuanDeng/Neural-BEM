@@ -1044,9 +1044,9 @@ def fit_cartesian_fourier_curve_state(
     truncated at ``maximum_mode``.  Polar angle, not arc length, is the
     parameter in which the analytic targets of this project are band-limited.
 
-    This is the sole allowed projection.  Every later state is reached by
-    :meth:`CartesianFourierCurveState.incremented`, so no projection error
-    accumulates across iterations.
+    This initializes the coefficient state. Later increments may optionally
+    be re-gauged with :func:`regauge_cartesian_state_to_polar_angle`; those
+    projections have their own reported truncation error.
     """
 
     from .explicit_fourier import CartesianFourierCurveState
@@ -1460,20 +1460,22 @@ def polar_angle_gauge_fixed_point(
 ) -> tuple[object, float]:
     """Iterate :func:`regauge_cartesian_state_to_polar_angle` to its fixed point.
 
-    One application does *not* produce a gauge-fixed state.  The map is a
-    linear iteration whose contraction was measured at ``1/2`` across every
-    probed band and perturbation, so a single projection leaves half of the
+    One application does *not* generally produce a gauge-fixed state.  The map's
+    contraction was measured near ``1/2`` on the tested perturbations, so a
+    single projection leaves some of the
     parameter's excess behind, and an optimizer that applies one per accepted
     step inherits that rate: the measured loss then fell by exactly four per
     iteration where the radial chart was quadratic.  Vector Aitken
     extrapolation over the measured ratio reaches the fixed point -- machine
-    precision for a band-limited target, and the nearest representable curve
+    precision for a band-limited target, and a representable curve
     otherwise -- in two or three rounds.
 
     The returned pair is always ``(state, that state's own measured distance
-    from the gauge-fixed set)``, never a state beside the residual of the state
-    before it.  Re-gauging reports the distance of its *input*, so only states
-    that have been passed through the map again carry a measurement, and only
+    from its next gauge projection)``, never a state beside the residual of the state
+    before it. Band truncation alone is insufficient: a phase-shifted circle
+    has zero truncation while still being outside the optimizer's subspace.
+    We also bound the displacement between input and output at the same parameter.
+    Only states that have been passed through the map carry a measurement, and only
     those are eligible to be returned.  Extrapolation is a proposal, never a
     commitment: the best measured state wins, so the result cannot be worse
     gauged than plain iteration would have left it.
@@ -1520,6 +1522,16 @@ def polar_angle_gauge_fixed_point(
         if measured < best_truncation:
             best, best_truncation = candidate, float(measured)
 
+    def measured_projection(candidate: object) -> tuple[object, float]:
+        projected, _, truncation = regauge_cartesian_state_to_polar_angle(candidate, samples=count)
+        # The sum of harmonic-vector norms bounds displacement at every
+        # parameter, including pure phase changes with zero band truncation.
+        displacement_bound = float(
+            np.linalg.norm(projected.cosine_coefficients - candidate.cosine_coefficients, axis=1).sum()
+            + np.linalg.norm(projected.sine_coefficients - candidate.sine_coefficients, axis=1).sum()
+        )
+        return projected, max(truncation, displacement_bound)
+
     for _ in range(passes):
         # ``first`` measures ``current``; ``second`` measures ``once``.  A
         # projection can leave the star-shaped set even when the state it
@@ -1528,7 +1540,7 @@ def polar_angle_gauge_fixed_point(
         # round that cannot measure anything at all leaves the caller with
         # nothing to accept.
         try:
-            once, _, first = regauge_cartesian_state_to_polar_angle(current, samples=count)
+            once, first = measured_projection(current)
         except (OrderedSDFGeometryError, ValueError):
             if best is None:
                 raise
@@ -1537,7 +1549,7 @@ def polar_angle_gauge_fixed_point(
         if best_truncation <= tolerance:
             break
         try:
-            twice, _, second = regauge_cartesian_state_to_polar_angle(once, samples=count)
+            twice, second = measured_projection(once)
         except (OrderedSDFGeometryError, ValueError):
             break
         consider(once, second)
@@ -1557,9 +1569,7 @@ def polar_angle_gauge_fixed_point(
             current, once.parameter_vector() + second_difference / (1.0 - ratio)
         )
         try:
-            _, _, extrapolated = regauge_cartesian_state_to_polar_angle(
-                proposal, samples=count
-            )
+            _, extrapolated = measured_projection(proposal)
         except (OrderedSDFGeometryError, ValueError):
             current = twice
             continue
@@ -1596,7 +1606,7 @@ def regauge_cartesian_state_to_polar_angle(
     Newton is *started* from a monotone interpolation of a dense probe of
     ``angle(gamma(t))`` rather than from the target angles themselves.  That
     only chooses the starting point -- every returned parameter is still
-    polished to ``1e-14`` -- but it is what makes the map usable near a pinch,
+    polished against a displacement tolerance -- but it is what makes the map usable near a pinch,
     where the angle sweeps almost the whole turn over a few percent of the
     parameter and the naive start does not converge in any iteration budget.
     A curve whose probe is not monotone is reported as not single-valued
@@ -1637,6 +1647,8 @@ def regauge_cartesian_state_to_polar_angle(
             "not single-valued about its own center."
         )
     extended_angles = np.concatenate((ordered_angles, ordered_angles[:1] + 2.0 * np.pi))
+    if np.any(np.diff(extended_angles) <= 0.0):
+        raise OrderedSDFGeometryError("Re-gauging requires exactly one monotone turn about the center.")
     extended_parameters = np.concatenate((probe, probe[:1] + 2.0 * np.pi))
     wrapped = extended_angles[0] + np.mod(
         orientation * targets - extended_angles[0], 2.0 * np.pi
@@ -1651,6 +1663,7 @@ def regauge_cartesian_state_to_polar_angle(
     displacement_tolerance_m = 1.0e-15
     admissible_displacement_m = 1.0e-12
     best_displacement = math.inf
+    best_parameters = parameters.copy()
     for _ in range(64):
         sample = parameterization.evaluate(parameters, wrap=False)
         offset = np.asarray(sample.points, dtype=np.float64) - center[None, :]
@@ -1663,10 +1676,12 @@ def regauge_cartesian_state_to_polar_angle(
         angles = np.arctan2(offset[:, 1], offset[:, 0])
         residual = np.arctan2(np.sin(angles - targets), np.cos(angles - targets))
         displacement = float(np.max(np.abs(residual) * np.sqrt(squared)))
-        if displacement <= displacement_tolerance_m or displacement >= best_displacement:
-            best_displacement = min(best_displacement, displacement)
+        if displacement >= best_displacement:
             break
         best_displacement = displacement
+        best_parameters = parameters.copy()
+        if displacement <= displacement_tolerance_m:
+            break
         slope = (
             offset[:, 0] * derivative[:, 1] - offset[:, 1] * derivative[:, 0]
         ) / squared
@@ -1682,7 +1697,7 @@ def regauge_cartesian_state_to_polar_angle(
         )
 
     points = np.asarray(
-        parameterization.evaluate(parameters, wrap=False).points, dtype=np.float64
+        parameterization.evaluate(best_parameters, wrap=False).points, dtype=np.float64
     )
     spectrum = np.fft.rfft(points, axis=0) / count
     cosine = np.zeros((mode_limit + 1, 2), dtype=np.float64)
