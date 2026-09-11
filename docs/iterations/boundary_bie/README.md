@@ -103,6 +103,20 @@ and does not advance to the next step until the previous one passes:
    quadrature and conditioning are most stressed.
 4. **Integration into automatic topology search**, only after 1–3 pass.
 
+## Starting work on this track
+
+**Current gate: 2 of 7 — a review of the brief.** See the shared
+[gate sequence](../README.md#from-brief-to-execution) for what each gate means
+and what moves it.
+
+Until a named experiment ID is approved by the user, an agent on this track
+**may** read the evidence, write a review, propose experiments, and update these
+documents. It **may not** change numerical code, alter an experiment
+configuration, or launch a run.
+
+When an ID is approved, work on it in its own branch — `track/boundary-bie-BIE-001` —
+and never in a checkout another track is using. `BIE-001` is a desk study over existing code and bundles — no runs, no production edits — so it needs no branch of its own until it selects a prototype.
+
 ## Relationship to the existing cycles
 
 This track does not move, renumber or supersede the Cartesian-Fourier or

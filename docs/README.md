@@ -49,6 +49,12 @@ Galerkin formulations, derivatives, conditioning, and cost. Replacing Kress is
 | [Topology](iterations/topology/README.md) | How can the inverse choose and execute topology changes more reliably, without a prescribed object count or excessive BIE cost? | Brief drafted; no review, no plan | Review [the brief](iterations/topology/iteration_01/02_proposals/01_topology_research_brief.md); decide whether `TOP-001` is the right first experiment | **None** |
 | [Boundary–BIE](iterations/boundary_bie/README.md) | Which properties of smooth-boundary representations improve the accuracy, conditioning, differentiation or cost of the BIE inverse? | Brief drafted; no review, no plan | Review [the brief](iterations/boundary_bie/iteration_01/02_proposals/01_boundary_bie_research_brief.md); decide whether `BIE-001` — comparison and selection of one prototype — is the right first deliverable | **None** |
 
+Both tracks are at **gate 2 of 7** — awaiting a review of their brief. The
+[gate sequence](iterations/README.md#from-brief-to-execution) states what each
+gate means, who moves it, and the exact phrases that do: *"review TOP-001"*
+starts a review, *"approve TOP-001"* authorises implementation. Only the user
+can grant gate 4.
+
 **Explicitly approved work: none.** `TOP-001`–`TOP-004` and `BIE-001`,
 `BIE-003`–`BIE-005` are all `PROPOSED — NOT APPROVED FOR EXECUTION`; `BIE-002`
 is a reserved ID whose contract `BIE-001` is meant to write, and has none yet.

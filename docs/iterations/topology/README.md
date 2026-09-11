@@ -75,6 +75,20 @@ Updated 2026-09-11.
 5. `solvers/sdf_inverse/topology_controller.py` and
    `solvers/sdf_inverse/radial_topology.py` for the mechanisms themselves.
 
+## Starting work on this track
+
+**Current gate: 2 of 7 — a review of the brief.** See the shared
+[gate sequence](../README.md#from-brief-to-execution) for what each gate means
+and what moves it.
+
+Until a named experiment ID is approved by the user, an agent on this track
+**may** read the evidence, write a review, propose experiments, and update these
+documents. It **may not** change numerical code, alter an experiment
+configuration, or launch a run.
+
+When an ID is approved, work on it in its own branch — `track/topology-TOP-001` —
+and never in a checkout another track is using. `TOP-001` additionally requires adding solve-count instrumentation to `run_fourier_topology_controller.py`; that driver is shared with the boundary–BIE validation path, so declare the change before implementing it.
+
 ## Relationship to the existing cycles
 
 This track does **not** move, renumber or supersede the radial-Fourier-topology

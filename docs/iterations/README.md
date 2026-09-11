@@ -82,6 +82,29 @@ changes. Do not infer the active cycle from the highest folder number.
   |---|---|
   | `NOT STARTED` / `IN PROGRESS` / `COMPLETE` / `ABANDONED` | With artifact paths once anything has run |
 
+### From brief to execution
+
+The gates, in order. A track states which one it is at; an agent picking up a
+track does the next one and nothing beyond it.
+
+| # | Gate | Who does it | What moves it |
+|---|---|---|---|
+| 1 | **Brief or results** exist | any agent | — |
+| 2 | **Review** written, resolving every material recommendation | an agent who is not the brief's author, where practical | the user saying *"review TOP-001"* — or any request to review the track |
+| 3 | **Agreed `03_plan.md`** consolidating the review | an agent | the user accepting the review's recommendation |
+| 4 | **Approval of a named ID** | **the user only** | the user saying *"approve TOP-001"*. No agent may grant this, infer it, or treat silence as it |
+| 5 | **Branch or worktree** created for the track | the implementation owner | gate 4 passed |
+| 6 | **Implementation and runs** within the contract's scope and budget | the implementation owner | gate 5 done |
+| 7 | **Closeout**: results open the next iteration | owner + reviewer | runs complete |
+
+Without gate 4 an agent may read, review, propose, and write documents. It may
+**not** change numerical code, alter an experiment configuration, or launch a
+run — not even a small one, and not as "just checking".
+
+Use one branch per experiment ID, named `track/<track>-<ID>` — for example
+`track/topology-TOP-001` or `track/boundary-bie-BIE-001`. Two tracks must never
+share a working checkout.
+
 ## Experiment contract template
 
 Copy this into a proposal for each experiment. Keep it compact; link out for
