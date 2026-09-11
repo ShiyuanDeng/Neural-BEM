@@ -79,3 +79,8 @@ LM iterations. Controller bundles now include per-stage work counts and source
 provenance. `run_topology_allocation_experiment.py` replays saved pre-event states
 under declared A/B/C budgets, with held-out observations used only for final
 qualification. See the [topology handoff](../iterations/topology/README.md).
+
+Use `--include-simplest-candidate` to enable TOP-005's qualified selective
+policy. It preserves the normal shortlist and adds the minimum-dimension
+family champion only when the raw leader is more complex. The default stays
+unchanged. [Quality/cost tradeoffs, videos and commands](../../results/validation/topology/TOP-005-20260911/README.md).

@@ -124,11 +124,13 @@ def audit_geometry(final, truth):
                 geometry_relative_l2=float(np.sqrt(np.mean(distances**2)) / .033))
 
 
-def run_replay(output, chart, arm, magnitude, seed, *, historical=False, provenance=None):
+def run_replay(output, chart, arm, magnitude, seed, *, historical=False, provenance=None,
+               include_simplest=False, experiment_id='TOP-001'):
     frozen, settings, data, reference_metrics, reference_manifest = load_reference(chart)
     initial, perturbation = perturbed_state(frozen, magnitude, seed, chart)
     count, iterations = ARMS[arm]
     config = replace(settings, candidates_refined_per_group=count, candidate_refinement_iterations=iterations,
+                     include_simplest_candidate=include_simplest,
                      maximum_candidates_per_type=settings.maximum_candidates_per_type if historical else 48)
     relative = Path('historical' if historical else 'comparison') / chart / arm / f'm{magnitude:g}-s{seed if magnitude else 0}'
     path = output / relative
@@ -138,7 +140,7 @@ def run_replay(output, chart, arm, magnitude, seed, *, historical=False, provena
     production, refined = baseline._geometry_config(64), baseline._geometry_config(128)
     input_hashes = {name: hashlib.sha256((REFERENCES[chart] / name).read_bytes()).hexdigest()
                     for name in ('manifest.json', 'trajectory.json', 'metrics.json', 'observations.npz')}
-    manifest = dict(experiment_id='TOP-001', chart=chart, arm=arm, historical_qualification=historical,
+    manifest = dict(experiment_id=experiment_id, chart=chart, arm=arm, historical_qualification=historical,
         perturbation=perturbation, controller=asdict(config), source_provenance=provenance,
         reference=str(REFERENCES[chart].relative_to(ROOT)), input_sha256=input_hashes,
         frozen_state=serialize_state(frozen), initial_state=serialize_state(initial),
@@ -175,7 +177,7 @@ def run_replay(output, chart, arm, magnitude, seed, *, historical=False, provena
     write_json(path / 'holdout_observations.json', dict(problem=asdict(holdout_problem),
         observed_real=holdout_observed.real, observed_imag=holdout_observed.imag))
     event = canonical_event(result.events[0] if result.events else None)
-    metrics = dict(experiment_id='TOP-001', path=str(relative), chart=chart, arm=arm,
+    metrics = dict(experiment_id=experiment_id, path=str(relative), chart=chart, arm=arm,
         magnitude=magnitude, seed=seed if magnitude else None, historical_qualification=historical,
         stop_reason=result.stop_reason, events=result.events, first_event=event,
         historical_event_match=event == canonical_event(reference_metrics['events'][0]),

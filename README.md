@@ -37,6 +37,12 @@ three-way recovery benchmark has not been completed. Neural evidence is recorded
   gradient checks and fresh output paths.
 - [Documentation map](docs/README.md): current guidance, reports, references, and legacy records.
 
+**Track A update (2026-09-11):** TOP-001 and TOP-005 are complete. The new
+opt-in `--include-simplest-candidate` policy reduces worst Cartesian split
+error from 175 µm to 31 nm across ten replays, using 42% fewer BIE solves.
+All five full-controller quality checks pass; total work falls 7%, with
+extra cost on four unchanged cases. [Report, videos and reproduction commands](results/validation/topology/TOP-005-20260911/README.md).
+
 ## Implementation at a glance
 
 | Entry point | What it currently runs |
@@ -44,7 +50,8 @@ three-way recovery benchmark has not been completed. Neural evidence is recorded
 | `run_implicit_mlp_inverse.py` | Implicit MLP + Method B: direct neural-weight Kress-adjoint updates with actual-MLP acceptance |
 | `run_explicit_radial_fourier_inverse.py` | Explicit Radial Fourier: curve-owned inverse with MLP fitting/audits; old `run_mlp_sdf_inverse_comparison.py` alias retained |
 | `run_explicit_cartesian_fourier_inverse.py` | MLP-free single-component Cartesian Fourier inverse |
-| `run_fourier_topology_controller.py --chart cartesian` | Automatic Cartesian Fourier birth, death, split and merge |
+| `run_fourier_topology_controller.py --chart cartesian` | Automatic Cartesian Fourier birth, death, split and merge; optional selective candidate refinement |
+| `run_selective_topology_experiment.py` | TOP-005: baseline replay checks, twenty paired split replays and five full-controller qualifications |
 | `run_radial_fourier_topology_challenges.py --chart cartesian` | Cartesian versions of the three topology replacement challenges |
 | `run_sdf_inverse_comparison.py` | Shared comparison driver: Kress neural cases use adjoint by default; archived known-shape-family controls and explicit parameter-FD references remain runnable |
 | `run_sdf_representation_ablation.py` | Explicit Radial Fourier under `legacy_strict`, `curve_only`, and `export_only` representation policies |
@@ -78,10 +85,10 @@ use `--solver`, then `SOLVER`, then frozen `gpr_bem_ref`; use `--solver=mod`
 explicitly for MOD. Ordered inverse
 drivers import their peers directly.
 
-The radial inverse is single-component and star-shaped. Separate multi-component
-extraction/forward demonstrations include a prescribed split, but there is no
-data-driven object-count inverse. Layered ground and 3-D inversion are outside
-the current implementation.
+The single-component radial driver is star-shaped. The separate automatic
+topology controller chooses birth, death, split and merge from data without a
+supplied object count; its evidence is bounded to the recorded synthetic cases.
+Layered ground and 3-D inversion are outside the current implementation.
 
 ## Repository layout
 

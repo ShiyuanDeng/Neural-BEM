@@ -3,7 +3,7 @@
 Updated 2026-09-11 against [baseline B0](baselines/B0_2026-09-10.md) — commit
 **`345038a`** (recorded against `e34ed5f` plus an uncommitted working tree,
 committed 2026-09-11). Statements below were checked
-against the source at that state, with the TOP-001 extensions below added on
+against the source at that state, with the TOP-001/TOP-005 extensions below added on
 2026-09-11. Where a claim rests on a recorded run rather than on the code, it says so.
 
 The three current inverse pipelines are **Implicit MLP + Method B**, **Explicit
@@ -234,3 +234,19 @@ Earlier implementation details and recommendations remain in
 in [technical references](reference/README.md). Dated plans describe their
 original checkpoints; use this page and the current pipeline pages for present
 capabilities and defaults.
+
+## Selective refinement qualification (TOP-005)
+
+`include_simplest_candidate=False` preserves the baseline shortlist. When
+explicitly enabled, the controller also refines the best minimum-dimension
+candidate if its raw leader has more optimization directions. It adds at most
+one candidate, keeps the same LM budget, and records raw rank, accessible
+dimension and selection reason. Cartesian cost uses gauge tangent dimension.
+The objective, construction, trigger and acceptance are unchanged.
+
+The [TOP-005 report](../results/validation/topology/TOP-005-20260911/README.md)
+records twenty split replays and five full Cartesian controller cases. All
+quality and aggregate-cost gates pass, with 42.3% fewer split-suite BIE solves
+and 7.1% fewer full-controller solves. Four individual controller cases cost
+more despite exactly unchanged trajectories. This is an opt-in result on the
+declared synthetic cases; broader generalization remains open.

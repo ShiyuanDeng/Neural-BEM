@@ -102,6 +102,7 @@ class TopologyControllerConfig:
     fixed_iterations: int = 18
     candidate_refinement_iterations: int = 3
     candidates_refined_per_group: int = 1
+    include_simplest_candidate: bool = False
     relative_error_tolerance: float = 0.005
     acceptance_absolute_margin: float = 1.e-10
     acceptance_relative_margin: float = 1.e-5
@@ -119,6 +120,8 @@ class TopologyControllerConfig:
                 raise ValueError(f'{name} must be a positive integer.')
         if not isinstance(self.candidates_refined_per_group, (int, np.integer)):
             raise ValueError('candidates_refined_per_group must be a positive integer.')
+        if not isinstance(self.include_simplest_candidate, bool):
+            raise ValueError('include_simplest_candidate must be boolean.')
         if (self.raster_size < 17 or isinstance(self.candidate_refinement_iterations, bool)
                 or not isinstance(self.candidate_refinement_iterations, (int, np.integer))
                 or self.candidate_refinement_iterations < 0):
@@ -539,6 +542,27 @@ def _optimizer_config(state, config, iterations=None):
         max_parameters=max(64, state.parameter_count), infeasible_trial_policy='reject')
 
 
+def _refinement_shortlist(group, config):
+    """Keep raw leaders and optionally one cheaper-dimensional family champion."""
+    selected = list(group[:config.candidates_refined_per_group])
+    if not group or not config.include_simplest_candidate:
+        return selected
+
+    def dimension(item):
+        state = item[1].state
+        if state is None:
+            return 0
+        return (len(state.gauge_tangent_basis()) if config.chart == 'cartesian'
+                else state.parameter_count)
+
+    # group is already sorted by raw loss; min therefore breaks dimension ties
+    # by raw loss as well. Array-containing states must never be compared by ==.
+    simplest = min(group, key=dimension)
+    if dimension(simplest) < dimension(group[0]) and all(simplest[2] is not row[2] for row in selected):
+        selected.append(simplest)
+    return selected
+
+
 def run_topology_aware_fourier_inverse(initial_state, data, production_geometry_config,
         refined_geometry_config, *, solve_config, config=None,
         progress_callback: Callable[[TopologyFrame], None] | None = None,
@@ -647,11 +671,16 @@ def _run_topology_aware_fourier_inverse(initial_state, data, production_geometry
             group = sorted((x for x in feasible if x[1].kind == kind and
                             (0 if x[1].state is None else len(x[1].state.components)) == component_count),
                            key=lambda x: x[0])
-            for rank, (loss, candidate, row) in enumerate(group[:config.candidates_refined_per_group], 1):
+            ranks = {id(item[2]): rank for rank, item in enumerate(group, 1)}
+            for loss, candidate, row in _refinement_shortlist(group, config):
                 if not config.candidate_refinement_iterations:
                     continue
                 if candidate.state is not None:
-                    row['candidate_refinement_raw_rank'] = rank
+                    row['candidate_refinement_raw_rank'] = ranks[id(row)]
+                    row['candidate_refinement_selection'] = ('raw_rank' if ranks[id(row)] <= config.candidates_refined_per_group
+                                                             else 'lowest_dimension')
+                    row['candidate_refinement_dimension'] = (len(candidate.state.gauge_tangent_basis())
+                        if config.chart == 'cartesian' else candidate.state.parameter_count)
                     candidate_started = current_work()
                     try:
                         result = accounted_call('candidate_refinement', run_multiradial_fd_inverse, candidate.state, data, production_geometry_config,

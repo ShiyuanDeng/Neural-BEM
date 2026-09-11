@@ -18,11 +18,11 @@ charts are in scope, and so is any future geometry owner.
 
 Four intervention points are treated as **separate** research targets:
 
-| Point | What it decides | Where it currently lives |
+| Point | What it decides | Implementation / original B0 location |
 |---|---|---|
 | **Event triggering** | *When* a topology pass is proposed at all | `topology_controller.py:562` |
 | **Candidate construction** | *Which* discrete events are even considered | `generate_topology_candidates`, `topology_controller.py:333` |
-| **Candidate refinement / budget allocation** | *Which* candidates get optimizer effort before they are compared | `topology_controller.py:610`–`:617` |
+| **Candidate refinement / budget allocation** | *Which* candidates get optimizer effort before they are compared | `_refinement_shortlist` in `topology_controller.py` |
 | **Event acceptance** | *Whether* the winner is committed | `topology_controller.py:631`–`:654` |
 
 An experiment should move one of these at a time unless it says why not.
@@ -46,11 +46,11 @@ Updated 2026-09-11.
 
 | Item | Current state |
 |---|---|
-| Active iteration | [Iteration 02 results](iteration_02/01_results.md) |
-| Stage | TOP-001 closeout complete; selective-allocation follow-up being contracted |
-| Approved experiment IDs | `TOP-001`: **APPROVED** by the user's 2026-09-11 direction to take Track A as far as possible. The session instruction supersedes the old exact-ID phrase requirement. `TOP-002`–`TOP-004` remain deferred proposals |
-| Execution status | TOP-001 `COMPLETE`: 60 A/B/C replays, 20 exploratory E replays, ten full-controller qualifications; 527 tests passed. E was not adopted |
-| Next expected action | Contract a selective lowest-dimension refinement diagnostic from iteration 02 results |
+| Active iteration | [Iteration 03 results](iteration_03/01_results.md) |
+| Stage | TOP-005 closeout complete; selective policy qualified as opt-in |
+| Approved experiment IDs | `TOP-001` and `TOP-005`: **APPROVED** by the user's 2026-09-11 direction to take Track A as far as possible. The session instruction supersedes the old exact-ID phrase requirement. `TOP-002`–`TOP-004` remain deferred proposals |
+| Execution status | TOP-001 and TOP-005 `COMPLETE`. Selective F passes 20 split replays and five full-controller quality/aggregate-cost checks. 533 tests pass; original default retained |
+| Next expected action | Review noncircular split generalization and the cost of unused extra probes; see iteration 03 questions |
 | Owner / reviewer | Codex / `unassigned` (no independent review claimed) |
 | Dependencies | Shared controller/driver changes declared in the [review](iteration_01/02_proposals/02_codex_review.md); no physical solver or geometry-state interfaces changed |
 | Blockers | Historical radial candidate list did not reproduce at B0. Comparison stopped, failure preserved, and unmodified B0 runs established fresh pinned references; see the amendment |
@@ -77,7 +77,7 @@ Updated 2026-09-11.
 
 ## Starting work on this track
 
-**TOP-001 gate 7 closeout is complete.** Preserve completed bundles and the
+**TOP-001 and TOP-005 gate 7 closeouts are complete.** Current branch: `track/topology-TOP-005`. Preserve completed bundles and the
 failed historical qualification. The old brief remains an unedited proposal;
 the plan and amendment carry the actual decisions. Boundary–BIE work is separate.
 
@@ -98,4 +98,5 @@ certificate, and the trust region's dependence on coordinates.
 | Iteration | Cycle | State |
 |---|---|---|
 | 01 | Reliability of topology event triggering, construction, refinement allocation and acceptance | TOP-001 and declared extensions complete; no default change |
-| 02 | Selective refinement after raw-shortlist failures | Results available; follow-up being contracted |
+| 02 | Selective refinement after raw-shortlist failures | TOP-005 complete; all declared gates pass |
+| 03 | Generalization and unused-probe cost | Results and next questions recorded; no new experiment executed |

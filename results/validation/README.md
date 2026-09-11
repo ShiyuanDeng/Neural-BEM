@@ -2,6 +2,7 @@
 
 | Family | What was measured |
 |---|---|
+| [Topology treatments](topology/README.md) | Candidate-allocation comparisons, selective-policy qualification and audited BIE work |
 | [Implicit MLP adjoint](implicit_mlp_adjoint/README.md) | Kress geometry reverse, Method-B reverse and full neural gradients; early inverse runs retain failed recovery gates |
 | [SDF boundary parameterization](sdf_boundary_parameterization) | Methods A/B/C geometry and a manufactured scalar quadrature proxy |
 | [Ordered Nyström](ordered_boundary_nystrom/README.md) | Exact/frozen fitted curves, physical blocks, receiver fields and refinement |

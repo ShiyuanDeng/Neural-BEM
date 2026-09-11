@@ -2,6 +2,7 @@
 
 | Bundle | Role and outcome |
 |---|---|
+| [TOP-005 report](TOP-005-20260911/README.md) | Selective refinement: twenty split replays and five full-controller cases pass all declared quality and aggregate-cost gates |
 | [TOP-001 report](TOP-001-20260911-comparison/report.md) | 60 paired A/B/C split replays; raw top-two policy not adopted |
 | [Expanded shortlist](TOP-001E-20260911/metrics.json) | 20 exploratory three-candidate replays; Cartesian split recovery stabilizes, radial cost increases |
 | [Five-case qualification](TOP-001E-controller-20260911/qualification.json) | Ten full Cartesian inversions; E fails the death training gate and aggregate cost gate |

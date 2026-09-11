@@ -20,8 +20,9 @@ byte-for-byte, so the audit is the reference evidence for the current state.
 Limitations that change how the baseline can be used:
 
 - A fresh checkout of `e34ed5f` **does not** reproduce B0 — use `345038a`.
-- The audit bundle's rasters, figures and videos are **not** in git, excluded by
-  the repository's `results/` binary policy. Its numbers are; its pictures are not.
+- Most audit rasters and figures are excluded by the `results/` binary policy.
+  The death-case video and inspected final frame are tracked exceptions; the
+  numerical records are tracked.
 - Topology bundles predating TOP-001 do not record their producing commit.
 - The single-component Cartesian bundle's recorded commit `4f0fd6d` is not an
   ancestor of HEAD; it was rewritten into `7dae78e` and the trees differ.
@@ -46,12 +47,12 @@ Galerkin formulations, derivatives, conditioning, and cost. Replacing Kress is
 
 | Track | Question | Stage | Next expected action | Approved IDs |
 |---|---|---|---|---|
-| [Topology / Track A](iterations/topology/README.md) | How can the inverse choose and execute topology changes more reliably, without a prescribed object count or excessive BIE cost? | TOP-001 closeout complete | Contract the selective-allocation follow-up from [iteration 02 results](iterations/topology/iteration_02/01_results.md) | **TOP-001** |
+| [Topology / Track A](iterations/topology/README.md) | How can the inverse choose and execute topology changes more reliably, without a prescribed object count or excessive BIE cost? | TOP-005 complete; selective policy qualified as opt-in | Review [iteration 03 results and next questions](iterations/topology/iteration_03/01_results.md) | **TOP-001, TOP-005** |
 | [Boundary–BIE](iterations/boundary_bie/README.md) | Which properties of smooth-boundary representations improve the accuracy, conditioning, differentiation or cost of the BIE inverse? | Brief drafted; no review, no plan | Review [the brief](iterations/boundary_bie/iteration_01/02_proposals/01_boundary_bie_research_brief.md); decide whether `BIE-001` — comparison and selection of one prototype — is the right first deliverable | **None** |
 
-Topology has completed **gate 7 of 7 for TOP-001** under the user's 2026-09-11 direction to take
+Topology has completed **gate 7 for TOP-001 and TOP-005** under the user's 2026-09-11 direction to take
 Track A as far as possible. That session instruction authorizes the TOP-001
-plan without asking again for an exact ID phrase. Boundary–BIE remains at
+and TOP-005 plans without asking again for an exact ID phrase. Boundary–BIE remains at
 **gate 2 of 7**, awaiting brief review. TOP-002–TOP-004 remain deferred;
 no BIE experiment is approved. See the track handoffs for execution status.
 
