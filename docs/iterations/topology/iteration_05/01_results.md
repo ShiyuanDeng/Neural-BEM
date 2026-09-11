@@ -1,7 +1,8 @@
 # Topology iteration 05 — the crash is gone; the shapes are the problem
 
 TOP-007 completed on 2026-09-11.
-[Full results and visuals](../../../../results/validation/topology/TOP-007-20260911-refined-feasibility/README.md).
+[Full results and visuals](../../../../results/validation/topology/TOP-007-20260911-refined-feasibility/README.md)
+· [videos of all twelve guarded scenes](../../../../results/validation/topology/TOP-007-20260911-refined-feasibility/videos.md).
 The intervention is one opt-in mechanism in the fixed-topology optimizer; the
 frozen twelve-scene v1 benchmark, its observations, budgets and gates are
 unchanged, and the default controller is untouched.

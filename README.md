@@ -58,7 +58,8 @@ to be admissible at both resolutions, using geometry checks and no extra
 solves. Guarded runs abort nothing and return 9/12 against the default's 7/12,
 with identical final states wherever both arms complete; **both arms still pass
 5/12**, so the remaining failure is shape, not feasibility.
-[Report and comparisons](results/validation/topology/TOP-007-20260911-refined-feasibility/README.md).
+[Report and comparisons](results/validation/topology/TOP-007-20260911-refined-feasibility/README.md) ·
+[videos of every scene](results/validation/topology/TOP-007-20260911-refined-feasibility/videos.md).
 
 ## Implementation at a glance
 

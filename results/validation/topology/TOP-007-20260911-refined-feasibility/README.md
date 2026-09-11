@@ -16,7 +16,7 @@ Three scenes still reach the ten-minute ceiling in both arms (central, enclosing
 
 [Requested distant-circle comparison](far_ellipse_star.svg) · [All initial scenes](initial_scenes.svg) · [New scene results](new_results.svg) · [Original controls](original_results.svg) · [Error and work](error_and_work.svg)
 
-[Default requested-scene video](runs/A/far-ellipse-star/inversion.mp4) · [Guarded requested-scene video](runs/G/far-ellipse-star/inversion.mp4)
+**[All videos](videos.md)** — every guarded scene, plus the default arm on the two scenes whose outcome changed. The before/after pair is [default](runs/A/far-ellipse-star/inversion.mp4) against [guarded](runs/G/far-ellipse-star/inversion.mp4) on the requested scene.
 
 ## Per-scene outcomes
 
