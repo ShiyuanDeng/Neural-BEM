@@ -209,9 +209,9 @@ under. The [September 7 adjoint report](reports/implicit_mlp_adjoint_2026-09-07.
 records gradient validation and the failed circle, ellipse-to-circle and star
 experiments. The [September 10 pipeline audit](../results/validation/cartesian_fourier/pipeline-audit-20260910/README.md)
 is the freshest verification of the explicit Cartesian path and the only bundle
-pinned to the current source by hash. Its numbers are committed; its rasters,
-figures and videos are excluded by the repository's `results/` binary policy and
-will be absent from a fresh checkout.
+pinned to the current source by hash. Its numbers and its inversion video are
+committed; its `.npz` rasters and `.png` figures are excluded by the
+repository's `results/` binary policy and will be absent from a fresh checkout.
 
 Earlier implementation details and recommendations remain in
 [dated reports](reports/README.md); mathematics and numerical protocols remain

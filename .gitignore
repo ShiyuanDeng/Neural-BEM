@@ -30,9 +30,13 @@ dist/
 /*.npy
 /results/**/*.npz
 /results/**/*.png
-/results/**/*.mp4
 /results/**/*.pt
 /results/validation/solver_comparisons/current/
+
+# Inversion videos under results/ are tracked. They are how runs are actually
+# reviewed, and the whole corpus is about 24 MB -- small next to the excluded
+# checkpoints (351 MB), per-weight trajectories (141 MB) and rasters (133 MB).
+# Keep them small: a few hundred kB per run, not per-frame PNG dumps.
 
 # Generated scratch diagnostics; keep the scripts themselves tracked.
 /scratchpad/**/*.csv
@@ -72,20 +76,19 @@ dist/
 !/results/legacy/known_shape_family_parameter_inverse/wrong-star-nystrom-20260903/**/*.npz
 !/results/legacy/known_shape_family_parameter_inverse/wrong-star-nystrom-20260903/**/*.png
 
-# Reviewed topology inversion evidence, including the requested videos.
-!/results/inverse/radial_fourier/topology_controller/iteration-02-20260909/**/*.mp4
+# Reviewed topology inversion evidence: rasters and figures. Videos no longer
+# need naming here -- every results/ video is tracked.
 !/results/inverse/radial_fourier/topology_controller/iteration-02-20260909/**/*.png
 !/results/inverse/radial_fourier/topology_controller/iteration-02-20260909/**/*.npz
-!/results/inverse/radial_fourier/topology_controller/visible-refinement-20260909/**/*.mp4
 !/results/inverse/radial_fourier/topology_controller/visible-refinement-20260909/**/*.png
 !/results/inverse/radial_fourier/topology_controller/visible-refinement-20260909/**/*.npz
 
 # The matched Cartesian-chart repeat of the same inversions and challenges.
-!/results/inverse/cartesian_fourier/topology_controller/iteration-03-20260910/**/*.mp4
 !/results/inverse/cartesian_fourier/topology_controller/iteration-03-20260910/**/*.png
 !/results/inverse/cartesian_fourier/topology_controller/iteration-03-20260910/**/*.npz
-!/results/inverse/cartesian_fourier/topology_challenges/challenge-suite-20260910/**/*.mp4
-!/results/inverse/cartesian_fourier/topology_challenges/challenge-suite-20260910/**/*.npz
+
+# The one inspected final frame the September 10 audit README links as evidence.
+!/results/validation/cartesian_fourier/pipeline-audit-20260910/controller/death/final.png
 
 # Small reviewed figures embedded in the iteration-2/3 research records.
 !/results/validation/implicit_mlp_adjoint/iteration-02-acquisition-review/comparison.png
