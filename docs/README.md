@@ -47,7 +47,7 @@ Galerkin formulations, derivatives, conditioning, and cost. Replacing Kress is
 
 | Track | Question | Stage | Next expected action | Approved IDs |
 |---|---|---|---|---|
-| [Topology / Track A](iterations/topology/README.md) | How can the inverse choose and execute topology changes more reliably, without a prescribed object count or excessive BIE cost? | TOP-005 complete; selective policy qualified as opt-in | Review [iteration 03 results and next questions](iterations/topology/iteration_03/01_results.md) | **TOP-001, TOP-005** |
+| [Topology / Track A](iterations/topology/README.md) | How can the inverse choose and execute topology changes more reliably, without a prescribed object count or excessive BIE cost? | TOP-006 complete; both policies pass 5/12 broader scenes | Review [iteration 04](iterations/topology/iteration_04/01_results.md): refined feasibility and shape capacity; preserve all benchmark scenes | **TOP-001, TOP-005, TOP-006** |
 | [Boundary–BIE](iterations/boundary_bie/README.md) | Which properties of smooth-boundary representations improve the accuracy, conditioning, differentiation or cost of the BIE inverse? | Brief drafted; no review, no plan | Review [the brief](iterations/boundary_bie/iteration_01/02_proposals/01_boundary_bie_research_brief.md); decide whether `BIE-001` — comparison and selection of one prototype — is the right first deliverable | **None** |
 
 Topology has completed **gate 7 for TOP-001 and TOP-005** under the user's 2026-09-11 direction to take
@@ -55,6 +55,13 @@ Track A as far as possible. That session instruction authorizes the TOP-001
 and TOP-005 plans without asking again for an exact ID phrase. Boundary–BIE remains at
 **gate 2 of 7**, awaiting brief review. TOP-002–TOP-004 remain deferred;
 no BIE experiment is approved. See the track handoffs for execution status.
+
+The user's subsequent 2026-09-11 direction authorizes TOP-006: test a distant
+large-circle initialization against ellipse/star targets and use a broader
+scene matrix for current and future performance comparisons. The numerical
+controller stayed frozen during this completed measurement; results opened
+iteration 04. The requested distant ellipse/star case fails. All future
+performance comparisons must include the [full frozen scene matrix](benchmarks/topology_scenes.md).
 
 ### Dependencies and blockers
 

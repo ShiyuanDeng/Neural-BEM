@@ -46,14 +46,14 @@ Updated 2026-09-11.
 
 | Item | Current state |
 |---|---|
-| Active iteration | [Iteration 03 results](iteration_03/01_results.md) |
-| Stage | TOP-005 closeout complete; selective policy qualified as opt-in |
-| Approved experiment IDs | `TOP-001` and `TOP-005`: **APPROVED** by the user's 2026-09-11 direction to take Track A as far as possible. The session instruction supersedes the old exact-ID phrase requirement. `TOP-002`–`TOP-004` remain deferred proposals |
-| Execution status | TOP-001 and TOP-005 `COMPLETE`. Selective F passes 20 split replays and five full-controller quality/aggregate-cost checks. 533 tests pass; original default retained |
-| Next expected action | Review noncircular split generalization and the cost of unused extra probes; see iteration 03 questions |
+| Active iteration | [Iteration 04 results](iteration_04/01_results.md) |
+| Stage | TOP-006 closeout complete; broad-scene failures recorded |
+| Approved experiment IDs | `TOP-001`, `TOP-005`, `TOP-006`: **APPROVED** by the user's Track A and broader-scene requests on 2026-09-11. The session instructions supersede the old exact-ID phrase requirement. `TOP-002`–`TOP-004` remain deferred proposals |
+| Execution status | TOP-001, TOP-005 and TOP-006 `COMPLETE`. Both current policies pass 5/12 frozen scenes; requested distant ellipse/star case fails. 546 tests pass; controller/default unchanged |
+| Next expected action | Review refined feasibility of inner updates and automatic shape-mode activation after birth; preserve the full v1 benchmark |
 | Owner / reviewer | Codex / `unassigned` (no independent review claimed) |
 | Dependencies | Shared controller/driver changes declared in the [review](iteration_01/02_proposals/02_codex_review.md); no physical solver or geometry-state interfaces changed |
-| Blockers | Historical radial candidate list did not reproduce at B0. Comparison stopped, failure preserved, and unmodified B0 runs established fresh pinned references; see the amendment |
+| Blockers | No execution blocker. Broader-scene measurement exposes geometry exceptions, timeouts and wrong shapes; these remain open controller problems |
 
 ## Reading order
 
@@ -77,7 +77,15 @@ Updated 2026-09-11.
 
 ## Starting work on this track
 
-**TOP-001 and TOP-005 gate 7 closeouts are complete.** Current branch: `track/topology-TOP-005`. Preserve completed bundles and the
+All future performance evaluations must include the complete
+[frozen topology scene benchmark](../../benchmarks/topology_scenes.md), with
+per-scene successes and failures. Preserve v1 scenes, observations and gates;
+declare changed budgets/acquisition as a separate comparison.
+
+**TOP-001, TOP-005 and TOP-006 gate 7 closeouts are complete.** TOP-006 was APPROVED by
+the user's request for distant ellipse/star and broader future scene testing;
+execution is COMPLETE. Current branch: `feature/ordered-boundary-nystrom`;
+TOP-005 was merged and its branch removed at the user's direction. Preserve completed bundles and the
 failed historical qualification. The old brief remains an unedited proposal;
 the plan and amendment carry the actual decisions. Boundary–BIE work is separate.
 
@@ -99,4 +107,5 @@ certificate, and the trust region's dependence on coordinates.
 |---|---|---|
 | 01 | Reliability of topology event triggering, construction, refinement allocation and acceptance | TOP-001 and declared extensions complete; no default change |
 | 02 | Selective refinement after raw-shortlist failures | TOP-005 complete; all declared gates pass |
-| 03 | Generalization and unused-probe cost | Results and next questions recorded; no new experiment executed |
+| 03 | Broader automatic-controller scenes | TOP-006 complete; v1 benchmark established, current policies pass 5/12 scenes |
+| 04 | Refined feasibility, shape capacity and held-out prediction | Results and next questions recorded; no new experiment executed |

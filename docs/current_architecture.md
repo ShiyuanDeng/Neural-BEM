@@ -237,6 +237,14 @@ capabilities and defaults.
 
 ## Selective refinement qualification (TOP-005)
 
+The [twelve-scene v1 benchmark](benchmarks/topology_scenes.md) now evaluates
+the current automatic controller beyond circular split targets. It adds
+poor initialization, ellipses, five/seven-lobed stars and three different
+targets, with separate count, boundary, overlap and held-out-frequency gates.
+The harness supplies observations and initial geometry only to the controller.
+Birth seeds remain circles; no general within-component bandwidth promotion
+was added by TOP-005 or by this benchmark.
+
 `include_simplest_candidate=False` preserves the baseline shortlist. When
 explicitly enabled, the controller also refines the best minimum-dimension
 candidate if its raw leader has more optimization directions. It adds at most

@@ -84,3 +84,8 @@ Use `--include-simplest-candidate` to enable TOP-005's qualified selective
 policy. It preserves the normal shortlist and adds the minimum-dimension
 family champion only when the raw leader is more complex. The default stays
 unchanged. [Quality/cost tradeoffs, videos and commands](../../results/validation/topology/TOP-005-20260911/README.md).
+
+The [twelve-scene topology benchmark](../benchmarks/topology_scenes.md) is the
+required broader performance comparison, including distant starts and
+ellipse/star targets. Its runner wraps the existing automatic controller
+without supplying target count, event policy, shape family or mode schedule.

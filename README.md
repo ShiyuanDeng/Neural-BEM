@@ -43,6 +43,13 @@ error from 175 µm to 31 nm across ten replays, using 42% fewer BIE solves.
 All five full-controller quality checks pass; total work falls 7%, with
 extra cost on four unchanged cases. [Report, videos and reproduction commands](results/validation/topology/TOP-005-20260911/README.md).
 
+**Broader performance benchmark:** [Topology scenes v1](docs/benchmarks/topology_scenes.md)
+adds distant/enclosing starts, ellipses, stars and three different targets.
+Current and future topology performance comparisons must report all twelve
+scenes, including failures; circular split improvements alone do not establish
+general recovery. TOP-006 tested both current policies: **5/12 scenes pass for
+each; the distant ellipse/star case fails**. [Results and visual comparisons](results/validation/topology/TOP-006-20260911-scenes-v1/README.md).
+
 ## Implementation at a glance
 
 | Entry point | What it currently runs |
@@ -52,6 +59,7 @@ extra cost on four unchanged cases. [Report, videos and reproduction commands](r
 | `run_explicit_cartesian_fourier_inverse.py` | MLP-free single-component Cartesian Fourier inverse |
 | `run_fourier_topology_controller.py --chart cartesian` | Automatic Cartesian Fourier birth, death, split and merge; optional selective candidate refinement |
 | `run_selective_topology_experiment.py` | TOP-005: baseline replay checks, twenty paired split replays and five full-controller qualifications |
+| `run_topology_scene_benchmark.py` | Frozen twelve-scene A/F benchmark, geometry/holdout checks, overlays and difficult-case videos |
 | `run_radial_fourier_topology_challenges.py --chart cartesian` | Cartesian versions of the three topology replacement challenges |
 | `run_sdf_inverse_comparison.py` | Shared comparison driver: Kress neural cases use adjoint by default; archived known-shape-family controls and explicit parameter-FD references remain runnable |
 | `run_sdf_representation_ablation.py` | Explicit Radial Fourier under `legacy_strict`, `curve_only`, and `export_only` representation policies |
