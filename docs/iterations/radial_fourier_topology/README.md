@@ -14,13 +14,26 @@ Updated 2026-09-09.
 | Stage | Results plus user-directed challenge qualifications recorded |
 | Latest contribution | [Iteration-02 results](iteration_02/01_results.md), including three post-plan topology challenges |
 | Execution status | Full pass: G0–G5 plus large-circle split, far-away replacement, and diagonal ellipse/star split. Five inversion videos and complete metrics are saved in the linked result bundles |
-| Next expected research action | Propose the next bounded experiment. Noise, repeated unknown-count births, an automatic trigger, and non-star-shaped targets remain open |
+| Next expected research action | **Forward-looking work has moved to the [topology track](../topology/README.md)**, which owns the shared controller's open questions under experiment IDs. Noise, repeated unknown-count births, an explicit event trigger and non-star-shaped targets remain open and are carried there |
+| Baseline | [B0 — 2026-09-10](../../baselines/B0_2026-09-10.md). This cycle's bundles are the radial reference B0 §4 pins; none of them records the commit that produced it |
 | Downstream use | The [Cartesian-Fourier cycle's iteration 3](../cartesian_fourier/iteration_03/03_results.md) runs this controller under a `--chart` flag and reproduces all eight of these cases. Every radial code path is unchanged and its recorded bundles are untouched; three of that cycle's findings are about this controller and are worth reading here — the candidate-polish rule that decides a split, the feature-radius certificate, and the trust region's dependence on coordinates |
 
 This project's iteration 1 opened from a brief rather than `01_results.md`
 because there was no prior cycle. Its agreed plan has now been executed; the
 measurements open iteration 2. A results record identifies the next questions
 but does not itself authorize another implementation or experiment.
+
+## Relationship to the active tracks
+
+This cycle built the automatic controller that both charts now share. Questions
+about that controller — event triggering, candidate construction, refinement
+allocation and acceptance — are now organised by question in the
+[topology track](../topology/README.md), which cites this cycle's iteration-1
+brief, reviews, plan and iteration-2 results as its starting evidence.
+
+Nothing here is moved, renumbered or superseded, and this cycle's approval and
+completion history is unchanged. The topology track has **no approved
+experiment**; a candidate listed in this cycle's results is not authorisation.
 
 ## Read in this order
 

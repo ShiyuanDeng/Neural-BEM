@@ -1,5 +1,15 @@
 # Iteration 3 — results, problems and possible fixes
 
+> **Later annotation, 2026-09-11 — this cycle is paused.** By user direction,
+> diagnosing the implicit MLP is not the current priority; the explicit
+> Cartesian Fourier implementation comes first. See the
+> [pause notice on `03_plan.md`](03_plan.md). The record below is unchanged and
+> keeps its full standing as evidence.
+>
+> Two statements in the header below were accurate on 2026-09-08 and are now
+> superseded by later documents in this folder: four numbered proposal documents
+> and an agreed `03_plan.md` do exist. Nothing was executed under that plan.
+
 Recorded 2026-09-08 by Codex after execution of the iteration-2 diagnostic plan,
 its repairs, the short acquisition comparison, and the longer star inverses.
 **Results stage: no iteration-3 proposal or agreed plan is recorded.** Numbered

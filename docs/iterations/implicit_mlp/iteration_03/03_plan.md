@@ -1,5 +1,40 @@
 # Iteration 3 — final plan and decisions
 
+> ## Status: PAUSED — not the current priority
+>
+> **User direction, 2026-09-11: diagnosing the implicit MLP is not what we want
+> right now. The explicit Cartesian Fourier implementation comes first.**
+>
+> This plan's stated purpose is diagnostic — §11 below says so explicitly:
+> "determine whether the implicit MLP representation and its pullback/field
+> machinery are what make the current recovery loop difficult". That is exactly
+> the question being deferred, so the plan is **paused as written**.
+>
+> | | |
+> |---|---|
+> | Approval status | `PAUSED`. Consolidated and agreed on 2026-09-08; **never executed**; now deferred by user direction |
+> | Execution status | `NOT STARTED`. No implementation began, no arm was run, no artifact was produced |
+> | What "Cartesian Fourier first" points to | The explicit, MLP-free pipeline and its two active tracks: [topology](../../topology/README.md) and [boundary–BIE](../../boundary_bie/README.md). See the [dashboard](../../../README.md) |
+> | Resumption condition | A user decision to resume. Nothing in this repository resumes it automatically |
+>
+> **Nothing in this plan is withdrawn, superseded or rewritten.** Its decisions,
+> its band choice, its gate structure and its two arms stand as recorded, and
+> the D-GN / D-Adam design remains available if the track resumes.
+>
+> **One thing to re-settle on resumption.** This plan was consolidated from the
+> ChatGPT guide and the first two Claude reviews. The
+> [gradient diagnosis](02_proposals/04_claude_gradient_diagnosis.md) arrived
+> **afterwards** and clears both leading gradient hypotheses, which removes work
+> the plan budgeted for and changes what each arm can implicate. Whoever resumes
+> this cycle must decide whether the plan stands as written or is
+> re-consolidated to absorb that diagnosis. That question is **not** resolved by
+> the pause, and was not resolved here.
+>
+> The implicit-MLP track remains **scientifically open** — paused, not closed
+> and not abandoned. Neural recovery is still unresolved, and the findings in
+> [01_results.md](01_results.md) and the four proposal documents keep their full
+> standing as evidence.
+
 Consolidated 2026-09-08 from the [iteration-3 results](01_results.md), the
 [ChatGPT proposal](02_proposals/01_chatgpt_guide.md), the
 [first Claude review](02_proposals/02_claude_review.md), and the

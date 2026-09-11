@@ -376,7 +376,7 @@ Two probes, with scripts, full-precision output and their caveats at
 the modal sensitivity, coherence and singular spectrum under seven acquisitions
 at two frozen states, and the arc-length chart bandwidth with the frozen-tail
 floor. About 700 Kress forward solves on frozen analytic curves at the long
-run's own geometry configuration. **No inverse was run, no MLP was loaded, no
+run's node count and bandwidth. **No inverse was run, no MLP was loaded, no
 extraction, projection, Method-B fit, conversion audit or adjoint was
 evaluated, and no saved artifact was modified.** The trajectory table is read
 from saved `geometry_trajectory.json` files with no new computation. The radial

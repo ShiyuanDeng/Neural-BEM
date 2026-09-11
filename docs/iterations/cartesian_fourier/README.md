@@ -16,14 +16,17 @@ topology suite (iteration 3).
 loop, and not as an audit. That is a deliberate, temporary control, not a finding
 about the implicit representation: the implicit-MLP cycle's
 [gradient diagnosis](../implicit_mlp/iteration_03/02_proposals/04_claude_gradient_diagnosis.md)
-cleared both leading gradient hypotheses, and that cycle remains open at its own
-[iteration-3 plan](../implicit_mlp/iteration_03/03_plan.md). Nothing here closes it.
+cleared both leading gradient hypotheses. That cycle is now **paused by user
+direction (2026-09-11)** at its own
+[iteration-3 plan](../implicit_mlp/iteration_03/03_plan.md), which was never
+executed. Paused, not closed: nothing here or there closes it.
 
 Topology was out of scope for iterations 1 and 2 — one fixed component, no
 birth, death, split or merge. **Iteration 3 removes that restriction**: the
 chart now carries the same automatic topology controller the
 [radial Fourier topology](../radial_fourier_topology/README.md) cycle built, at
-that cycle's accuracy and cost, on all eight of its inverse cases.
+the same declared recovery gates on all eight inverse cases, at comparable cost.
+The automatic split retains a substantial geometric-accuracy gap.
 
 ## Current handoff
 
@@ -33,14 +36,36 @@ Updated 2026-09-10.
 |---|---|
 | Active iteration | [Iteration 03](iteration_03/03_results.md) |
 | Stage | User-directed implementation executed and measured. Iteration 2's proposals remain unopened; iteration 3 answers its question 3 as a by-product |
-| Latest contribution | [Topology in the Cartesian chart](iteration_03/03_results.md): all five automatic inversions recover with identical event sequences, all three challenge cases pass their declared gates, at equal cost |
+| Latest contribution | [Topology in the Cartesian chart](iteration_03/03_results.md): all five automatic inversions recover with identical event sequences, all three challenge cases pass their declared gates, at comparable measured cost; see the split caveat |
 | Iteration-3 references to match | `results/inverse/radial_fourier/topology_controller/iteration-02-20260909` (five automatic inversions) and `results/inverse/radial_fourier/topology_challenges/` (three challenge cases) |
 | Iteration-3 execution status | Complete. Five inversions recover with identical event sequences; three challenge cases pass every declared gate; 13 new regressions, 505 passing in `pytest/sdf_inverse` |
 | What iteration 3 settled | The gauge-fixed Cartesian chart is **not** distinguishable from the radial chart in what it can represent: its gauge-fixed set is a linear subspace, and that subspace is exactly the radial chart one band lower. Iteration 2's question 3, answered in the negative. Iteration 1's reported 2x cost gap also closed, and was a measurement artefact — the extra solves probed directions the gauge annihilates |
-| Iteration-3 caveat | The `split` inversion recovers at `1.12e-05` relative against radial's `2.89e-07`, because the shared controller's finite candidate search selected a different cut. The pre-split geometries agree to `0.14 mm`; this is search-path variance, not a chart property |
+| Iteration-3 caveat | The `split` inversion recovers at `1.12e-05` relative against radial's `2.89e-07`, because the shared controller's finite candidate search selected a different cut. The pre-split geometries agree to `0.14 mm`; candidate-search sensitivity is a plausible explanation, not an isolated cause |
 | Iteration-1 outcome, unchanged | Maximum boundary error `4.181e-02 -> 2.761e-09 m` in 41 accepted updates against the radial reference `mlp-radial-continuation-k5-ellipse-to-star-kress-20260904`'s `2.570e-10 m` in 44. Band **6** was fixed by an algebraic identity, not tuned; the geometric parity gate passes and the two data gates miss by 13% and 30% |
 | What decided iteration 1 | Not bandwidth but parameterization drift, which its plan's section 4 got wrong; see the [amendment](iteration_01/03_plan.md). A gauge-fixing retraction was the fix, and iteration 3 found that one application of it is not enough |
-| Next expected research action | Propose the next bounded experiment from [iteration 3's candidates](iteration_03/03_results.md) or [iteration 2's](iteration_02/01_results.md). The open iteration-2 question about the re-gauge accuracy floor is unaffected by iteration 3 |
+| Next expected research action | **Forward-looking work has moved to the question-based tracks.** Iteration 3's topology candidates are carried by the [topology track](../topology/README.md); iteration 2's open re-gauge accuracy floor and the chart/gauge questions are carried by the [boundary–BIE track](../boundary_bie/README.md). Propose new bounded experiments there, under an experiment ID |
+| Baseline | [B0 — 2026-09-10](../../baselines/B0_2026-09-10.md). Note that the September 10 audit revised this cycle's split geometry error from `295.9 um` to `175.21 um`; the dated bundle keeps its original value |
+
+The [subsequent pipeline audit](../../../results/validation/cartesian_fourier/pipeline-audit-20260910/README.md)
+records correctness fixes, fresh validation, and corrected geometry units.
+
+## Relationship to the active tracks
+
+This cycle is a **completed history**, not a paused queue. It is not moved,
+renumbered or superseded, and its iteration folders stay exactly where they are.
+Two question-based tracks now carry the forward work and cite this cycle as
+starting evidence:
+
+- [Topology](../topology/README.md) — iteration 3's candidate checks 1 and 2
+  (split candidate-selection variance, and whether the polish budget is the
+  actual lever) are the motivation for its first proposed experiment, `TOP-001`.
+- [Boundary–BIE](../boundary_bie/README.md) — iteration 3's candidate checks 3
+  and 4 (what the gauge buys, and what the un-gauged chart would cost) and
+  iteration 2's re-gauge accuracy floor belong to its geometry-coordinates
+  direction.
+
+Neither track has an approved experiment. Nothing in this cycle's records
+authorises work in either of them.
 
 ## Read in this order
 

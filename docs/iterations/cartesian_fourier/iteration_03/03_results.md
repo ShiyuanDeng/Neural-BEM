@@ -22,11 +22,11 @@ The controller decides its own events. `run_fourier_topology_controller.py
 
 | Case | Components | Radial rel L2 | Cartesian rel L2 | Radial Hausdorff | Cartesian Hausdorff |
 |---|---|---:|---:|---:|---:|
-| repeated-birth | 0 → 1 → 2 → 3 | `1.62e-07` | `1.62e-07` | `9.251 um` | `9.262 um` |
-| death | 3 → 2 | `1.10e-06` | `1.10e-06` | `40.54 um` | `40.58 um` |
-| split | 1 → 2 | `2.89e-07` | `1.12e-05` | `15.60 um` | `295.9 um` |
+| repeated-birth | 0 → 1 → 2 → 3 | `1.62e-07` | `1.62e-07` | `9.251 nm` | `9.262 nm` |
+| death | 3 → 2 | `1.10e-06` | `1.10e-06` | `40.54 nm` | `40.58 nm` |
+| split | 1 → 2 | `2.89e-07` | `1.12e-05` | `15.60 nm` | `295.9 um` |
 | merge | 2 → 1 | `7.98e-05` | `7.88e-05` | `722.7 um` | `724.1 um` |
-| mixed | 2 → 3 → 2 | `4.27e-07` | `4.28e-07` | `14.18 um` | `14.20 um` |
+| mixed | 2 → 3 → 2 | `4.27e-07` | `4.28e-07` | `14.18 nm` | `14.20 nm` |
 
 All five stop `recovered`. The accepted event sequences are identical case by
 case — three births; one death; one split; one merge; a split then a death —
@@ -47,10 +47,9 @@ why the Cartesian run's `1.12e-05` is not refined further.
 The two circle candidates themselves agree: raw `0.2014` radial against
 `0.2038` Cartesian, for the same corridor. What differs is which corridors the
 finite search retained at all — six families radial, nine Cartesian — off two
-pre-split geometries whose bounding boxes agree to `0.14 mm`. So this is the
-shared controller's discrete candidate search being sensitive to a sub-
-millimetre difference in the state it is handed, not the Cartesian chart
-representing or refining anything worse. It is downstream of the chart in the
+pre-split geometries whose bounding boxes agree to `0.14 mm`. This is consistent with sensitivity of the shared controller's discrete
+candidate search to a sub-millimetre geometry change. It does not isolate that
+cause from chart-dependent contour fitting or refinement. It is downstream of the chart in the
 sense that the two optimizers reached slightly different pre-split states, and
 it would be worth confirming that the radial chart is equally sensitive; that
 check is listed below.
@@ -114,9 +113,11 @@ the challenge cases against `12/12/93 s`.
 ## What this does and does not establish
 
 It establishes that the Cartesian polar-angle chart carries automatic
-birth, death, split and merge at the radial chart's accuracy, on this
+birth, death, split and merge and passes the declared recovery tests on this
 project's noiseless same-material 0.5-GHz acquisition, without a target count
-or event policy, and at the same cost.
+or event policy, at comparable measured solver cost. The split has
+`295.9 um` sampled Hausdorff error against radial's `15.60 nm` (about 19,000 times
+larger), so matching geometric accuracy is not established on every case.
 
 It does not establish anything the radial cycle had not already established
 about the physics: nested holes, touching boundaries, multi-material regions,
@@ -182,3 +183,10 @@ OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python -m pytest \
   pre-date this iteration all still pass, and two of them changed only to
   follow a helper renamed from `_sample_radial` to `_sample_component` now
   that it samples either chart.
+
+## Subsequent audit
+
+The [September 10 pipeline audit](../../../../results/validation/cartesian_fourier/pipeline-audit-20260910/README.md)
+records correctness fixes and fresh runs. The original metrics above are unchanged;
+the unit labels for the nanometre-scale controller errors were corrected from
+`um` to `nm` after checking the stored metre values.

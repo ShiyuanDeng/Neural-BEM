@@ -3,24 +3,33 @@
 Research code for homogeneous full-space 2-D TMz dielectric transmission,
 neural implicit geometry, boundary-element forward modeling, and inversion.
 
-**The two current inverse pipelines are Implicit MLP + Method B and Explicit
-Radial Fourier.** The implicit pipeline updates neural weights with the Kress
+**The three current inverse pipelines are Implicit MLP + Method B, Explicit
+Cartesian Fourier, and Explicit Radial Fourier.** The implicit pipeline updates neural weights with the Kress
 adjoint; Method B supplies the MLP's boundary to the physical solver. Its
 gradient is validated, but recovery remains **FAIL / unresolved**: the new
 12-pair circle, ellipse-to-circle and star runs all fail overall acceptance.
 Radial Fourier recovers its canonical curve on recorded cases; MLP fitting and
-representation gates are separate. No matched comparison between these two
-pipelines has been completed. The evidence is recorded in the
+representation gates are separate. Cartesian Fourier runs without neural
+fitting or audits and includes corresponding topology suites. A matched
+three-way recovery benchmark has not been completed. Neural evidence is recorded in the
 [implementation report](docs/reports/implicit_mlp_adjoint_2026-09-07.md).
 
 ## Start here
 
+- [Project dashboard](docs/README.md): current baseline, the two current
+  research objectives, active tracks and what each is waiting for. **Start
+  here if you are picking up work.**
+- [Baseline B0](docs/baselines/B0_2026-09-10.md): the executable comparison
+  reference — commit `345038a`, the audited source for the current tracks —
+  and its provenance limitations.
 - [Current architecture](docs/current_architecture.md): actual capabilities,
   defaults, and the distinction between implicit and explicit geometry.
 - [Implicit MLP + Method B](docs/pipelines/implicit_mlp.md): adjoint
   updates, historical evidence, and acceptance requirements.
 - [Explicit Radial Fourier](docs/pipelines/explicit_radial_fourier.md): curve
   recovery, MLP representation policies, and frozen neural metrics.
+- [Explicit Cartesian Fourier](docs/pipelines/explicit_cartesian_fourier.md):
+  MLP-free curve inversion and automatic topology, with their representation limits.
 - [Explicit Radial Fourier shape/material experiments](docs/pipelines/explicit_radial_shape_material.md):
   the radial variant with one unknown interior permittivity.
 - [Results catalogue](results/README.md): pipeline, scene, date, outcome, and takeaway.
@@ -34,6 +43,9 @@ pipelines has been completed. The evidence is recorded in the
 |---|---|
 | `run_implicit_mlp_inverse.py` | Implicit MLP + Method B: direct neural-weight Kress-adjoint updates with actual-MLP acceptance |
 | `run_explicit_radial_fourier_inverse.py` | Explicit Radial Fourier: curve-owned inverse with MLP fitting/audits; old `run_mlp_sdf_inverse_comparison.py` alias retained |
+| `run_explicit_cartesian_fourier_inverse.py` | MLP-free single-component Cartesian Fourier inverse |
+| `run_fourier_topology_controller.py --chart cartesian` | Automatic Cartesian Fourier birth, death, split and merge |
+| `run_radial_fourier_topology_challenges.py --chart cartesian` | Cartesian versions of the three topology replacement challenges |
 | `run_sdf_inverse_comparison.py` | Shared comparison driver: Kress neural cases use adjoint by default; archived known-shape-family controls and explicit parameter-FD references remain runnable |
 | `run_sdf_representation_ablation.py` | Explicit Radial Fourier under `legacy_strict`, `curve_only`, and `export_only` representation policies |
 | `run_material_inverse_comparison.py` | Fixed or radial-K2 shape plus one interior permittivity, using analytic Kress derivatives |
@@ -83,7 +95,7 @@ the current implementation.
 | `results/validation/` | Geometry, forward, conversion, and derivative studies |
 | `results/demos/` | Demonstrations, separate from inverse recovery claims |
 | `results/legacy/` | Known-shape-family parameter inverses, superseded inverse/development runs and archived solver experiments |
-| `docs/pipelines/` | The two current pipelines, radial variants, and their validation limits |
+| `docs/pipelines/` | The three current pipelines, radial variants, and their validation limits |
 | `docs/reports/`, `docs/reference/`, `docs/legacy/` | Dated evidence, technical detail, and superseded plans |
 
 Measurements retain their original run IDs and machine-readable payloads.
