@@ -27,6 +27,8 @@ from sdf_bem_multicomponent import predict_multicomponent_kress_paired_boundary_
 from sdf_inverse import ComplexScatteredData, MultiRadialFourierState, circle_radial_fourier_state
 from sdf_inverse.curve_updates import RadialFourierCurveState
 from sdf_inverse.explicit_fourier import CartesianFourierCurveState
+from sdf_inverse.experiment_record import source_provenance
+from sdf_inverse.work_accounting import accounted_call, collect_work
 from sdf_inverse.topology_controller import (
     TopologyControllerConfig, TopologyFrame, component_parameterization, run_topology_aware_fourier_inverse,
     state_in_chart, topology_objective,
@@ -217,11 +219,15 @@ def run_case(name, output, args):
     config = TopologyControllerConfig(raster_size=81 if quick else 121,
         fixed_iterations=12 if quick else 22, candidate_refinement_iterations=3,
         maximum_cycles=10, maximum_events=7, relative_error_tolerance=.003, chart=args.chart)
+    config = replace(config,
+        candidates_refined_per_group=getattr(args, 'candidates_refined_per_group', 1),
+        candidate_refinement_iterations=getattr(args, 'candidate_refinement_iterations', 3))
     if args.demonstration == 'visible-refinement':
         config = replace(config, candidate_refinement_iterations=0,
                          birth_radius_grid_m=(.016, .024, .036, .048),
                          split_seed_radius_factors=(1., .75, .5))
     write_json(path / 'manifest.json', dict(case=name, demonstration=args.demonstration,
+        provenance=source_provenance(Path(__file__).resolve().parent),
         chart=args.chart, controller=asdict(config), oracle=oracle,
         frequencies_hz=frequencies, production_nodes=production.num_nodes, refined_nodes=refined.num_nodes,
         initial_state=serialize_state(initial), truth_state=None if circles is None else serialize_state(MultiRadialFourierState(circles)),
@@ -238,8 +244,11 @@ def run_case(name, output, args):
     started = perf_counter()
     result = run_topology_aware_fourier_inverse(initial, data, production, refined,
         solve_config=solve, config=config, progress_callback=progress, workspace_callback=workspace)
-    prod_loss, relative = topology_objective(result.final_state, data, production, solve)
-    refined_loss, refined_relative = topology_objective(result.final_state, data, refined, solve)
+    with collect_work() as audit_work:
+        prod_loss, relative = accounted_call('final_production_audit', topology_objective,
+                                            result.final_state, data, production, solve)
+        refined_loss, refined_relative = accounted_call('final_refined_audit', topology_objective,
+                                                       result.final_state, data, refined, solve)
     final_points = np.concatenate([component_parameterization(c).discretize(512).points for c in result.final_state.components]) if result.final_state else np.zeros((0, 2))
     truth_points = np.concatenate([c.discretize(512).points for c in truth])
     if len(final_points):
@@ -248,6 +257,8 @@ def run_case(name, output, args):
     else:
         hausdorff = None
     metrics = dict(case=name, stop_reason=result.stop_reason, events=result.events,
+        evaluation_count=result.evaluation_count, work=result.work,
+        final_audit_work=audit_work.snapshot(),
         demonstration=args.demonstration, chart=args.chart,
         final_parameter_count=None if result.final_state is None else result.final_state.parameter_count,
         component_counts=[0 if initial is None else len(initial.components)] + [len(e['after_ids']) for e in result.events],
@@ -327,6 +338,8 @@ def main():
                         help='Chart every accepted component is held in.')
     parser.add_argument('--output', type=Path, default=None)
     parser.add_argument('--skip-video', action='store_true')
+    parser.add_argument('--candidates-refined-per-group', type=int, default=1)
+    parser.add_argument('--candidate-refinement-iterations', type=int, default=3)
     parser.add_argument('--render-only', action='store_true', help='Render existing saved trajectories without rerunning inversions.')
     args = parser.parse_args()
     output = args.output or DEFAULT_OUTPUT_ROOT[args.chart] / datetime.now().strftime('%Y%m%d-%H%M%S')

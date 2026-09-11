@@ -3,8 +3,8 @@
 Updated 2026-09-11 against [baseline B0](baselines/B0_2026-09-10.md) — commit
 **`345038a`** (recorded against `e34ed5f` plus an uncommitted working tree,
 committed 2026-09-11). Statements below were checked
-against the source at that state; where a claim rests on a recorded run rather
-than on the code, it says so.
+against the source at that state, with the TOP-001 extensions below added on
+2026-09-11. Where a claim rests on a recorded run rather than on the code, it says so.
 
 The three current inverse pipelines are **Implicit MLP + Method B**, **Explicit
 Cartesian Fourier** and **Explicit Radial Fourier**. They differ in which
@@ -95,8 +95,24 @@ unsupported nested holes), numerical-resolution failures (cross-component
 quadrature clearance, cross-resolution margin), geometric inadmissibility
 (intersecting or touching components), and poor objective values.
 
-The controller driver does **not** record forward-solve counts; the challenge
-driver does.
+TOP-001 adds optional `candidates_refined_per_group` (default **1**) and
+`replay_first_event` controls. Replay bypasses the first fixed-topology solve
+on an already gauge-valid pre-event state; subsequent cycles are unchanged.
+Allocation ranks by the original raw scores and refines the requested number
+per group. Candidate construction, objective, optimizer and acceptance remain B0.
+
+The controller now records per-pass and total uncached objective-call counts,
+completed paired predictions, and objective/TD frequency-solve counts by stage.
+Final audits are separate. Empty-domain evaluations and optimizer cache hits
+require no BIE solve. `evaluation_count` includes objective calls with invalid
+boundaries, but not trials rejected by the optimizer before calling the objective.
+Completed-forward counts exclude failed predictions; a prediction that fails
+after some frequency solves is not a completed prediction. The TOP-001 runs
+must audit such failures before interpreting completed counts as all work.
+Per-candidate optimizer attempt/infeasibility counts are also retained. These
+counters are passive and scoped to each controller invocation. The shared CLI
+records source hashes and exposes both allocation controls. See the
+[TOP-001 plan](iterations/topology/iteration_01/03_plan.md).
 
 ## Representation and physical-model restrictions
 

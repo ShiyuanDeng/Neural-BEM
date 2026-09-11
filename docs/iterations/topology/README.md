@@ -46,14 +46,14 @@ Updated 2026-09-11.
 
 | Item | Current state |
 |---|---|
-| Active iteration | [Iteration 01](iteration_01/02_proposals/01_topology_research_brief.md) |
-| Stage | **Proposal drafted; no review, no agreed plan.** The track opens from a brief, not from `01_results.md` — there is no prior cycle in this track to produce one |
-| Approved experiment IDs | **None.** `TOP-001` … `TOP-004` are all `PROPOSED — NOT APPROVED FOR EXECUTION` |
-| Execution status | `NOT STARTED`. No code changed, no run launched, no instrumentation added |
-| Next expected action | A review of the brief that resolves each candidate as accept / reject / defer / named diagnostic, and in particular decides whether `TOP-001` is the right first experiment |
-| Owner / reviewer | `unassigned` / `unassigned` |
-| Dependencies | `TOP-001` needs solve-count instrumentation in `run_fourier_topology_controller.py`, which currently records none (B0 §8.4). That is part of `TOP-001`'s scope, and it touches a driver the boundary–BIE track also uses |
-| Blockers | None. The starting evidence exists and the saved pre-event states needed for replay are present in the committed bundles |
+| Active iteration | [Iteration 02 results](iteration_02/01_results.md) |
+| Stage | TOP-001 closeout complete; selective-allocation follow-up being contracted |
+| Approved experiment IDs | `TOP-001`: **APPROVED** by the user's 2026-09-11 direction to take Track A as far as possible. The session instruction supersedes the old exact-ID phrase requirement. `TOP-002`–`TOP-004` remain deferred proposals |
+| Execution status | TOP-001 `COMPLETE`: 60 A/B/C replays, 20 exploratory E replays, ten full-controller qualifications; 527 tests passed. E was not adopted |
+| Next expected action | Contract a selective lowest-dimension refinement diagnostic from iteration 02 results |
+| Owner / reviewer | Codex / `unassigned` (no independent review claimed) |
+| Dependencies | Shared controller/driver changes declared in the [review](iteration_01/02_proposals/02_codex_review.md); no physical solver or geometry-state interfaces changed |
+| Blockers | Historical radial candidate list did not reproduce at B0. Comparison stopped, failure preserved, and unmodified B0 runs established fresh pinned references; see the amendment |
 
 ## Reading order
 
@@ -77,17 +77,9 @@ Updated 2026-09-11.
 
 ## Starting work on this track
 
-**Current gate: 2 of 7 — a review of the brief.** See the shared
-[gate sequence](../README.md#from-brief-to-execution) for what each gate means
-and what moves it.
-
-Until a named experiment ID is approved by the user, an agent on this track
-**may** read the evidence, write a review, propose experiments, and update these
-documents. It **may not** change numerical code, alter an experiment
-configuration, or launch a run.
-
-When an ID is approved, work on it in its own branch — `track/topology-TOP-001` —
-and never in a checkout another track is using. `TOP-001` additionally requires adding solve-count instrumentation to `run_fourier_topology_controller.py`; that driver is shared with the boundary–BIE validation path, so declare the change before implementing it.
+**TOP-001 gate 7 closeout is complete.** Preserve completed bundles and the
+failed historical qualification. The old brief remains an unedited proposal;
+the plan and amendment carry the actual decisions. Boundary–BIE work is separate.
 
 ## Relationship to the existing cycles
 
@@ -105,4 +97,5 @@ certificate, and the trust region's dependence on coordinates.
 
 | Iteration | Cycle | State |
 |---|---|---|
-| 01 | Reliability of topology event triggering, construction, refinement allocation and acceptance | Active; brief drafted, nothing approved, nothing executed |
+| 01 | Reliability of topology event triggering, construction, refinement allocation and acceptance | TOP-001 and declared extensions complete; no default change |
+| 02 | Selective refinement after raw-shortlist failures | Results available; follow-up being contracted |

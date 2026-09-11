@@ -22,11 +22,11 @@ Limitations that change how the baseline can be used:
 - A fresh checkout of `e34ed5f` **does not** reproduce B0 — use `345038a`.
 - The audit bundle's rasters, figures and videos are **not** in git, excluded by
   the repository's `results/` binary policy. Its numbers are; its pictures are not.
-- No topology result bundle records the commit that produced it.
+- Topology bundles predating TOP-001 do not record their producing commit.
 - The single-component Cartesian bundle's recorded commit `4f0fd6d` is not an
   ancestor of HEAD; it was rewritten into `7dae78e` and the trees differ.
-- The controller driver records no forward-solve counts, so no compute-matched
-  topology comparison is currently possible without adding instrumentation.
+- B0's controller driver records no forward-solve counts. TOP-001 now adds
+  passive accounting; historical bundles still cannot support cost comparisons.
 - Full list: [B0 §8](baselines/B0_2026-09-10.md#8-known-limitations-and-missing-provenance).
 
 ## Current research objectives
@@ -46,30 +46,25 @@ Galerkin formulations, derivatives, conditioning, and cost. Replacing Kress is
 
 | Track | Question | Stage | Next expected action | Approved IDs |
 |---|---|---|---|---|
-| [Topology](iterations/topology/README.md) | How can the inverse choose and execute topology changes more reliably, without a prescribed object count or excessive BIE cost? | Brief drafted; no review, no plan | Review [the brief](iterations/topology/iteration_01/02_proposals/01_topology_research_brief.md); decide whether `TOP-001` is the right first experiment | **None** |
+| [Topology / Track A](iterations/topology/README.md) | How can the inverse choose and execute topology changes more reliably, without a prescribed object count or excessive BIE cost? | TOP-001 closeout complete | Contract the selective-allocation follow-up from [iteration 02 results](iterations/topology/iteration_02/01_results.md) | **TOP-001** |
 | [Boundary–BIE](iterations/boundary_bie/README.md) | Which properties of smooth-boundary representations improve the accuracy, conditioning, differentiation or cost of the BIE inverse? | Brief drafted; no review, no plan | Review [the brief](iterations/boundary_bie/iteration_01/02_proposals/01_boundary_bie_research_brief.md); decide whether `BIE-001` — comparison and selection of one prototype — is the right first deliverable | **None** |
 
-Both tracks are at **gate 2 of 7** — awaiting a review of their brief. The
-[gate sequence](iterations/README.md#from-brief-to-execution) states what each
-gate means, who moves it, and the exact phrases that do: *"review TOP-001"*
-starts a review, *"approve TOP-001"* authorises implementation. Only the user
-can grant gate 4.
-
-**Explicitly approved work: none.** `TOP-001`–`TOP-004` and `BIE-001`,
-`BIE-003`–`BIE-005` are all `PROPOSED — NOT APPROVED FOR EXECUTION`; `BIE-002`
-is a reserved ID whose contract `BIE-001` is meant to write, and has none yet.
-Approval is per experiment ID; see the
-[approval rule](iterations/README.md#approval-rule).
+Topology has completed **gate 7 of 7 for TOP-001** under the user's 2026-09-11 direction to take
+Track A as far as possible. That session instruction authorizes the TOP-001
+plan without asking again for an exact ID phrase. Boundary–BIE remains at
+**gate 2 of 7**, awaiting brief review. TOP-002–TOP-004 remain deferred;
+no BIE experiment is approved. See the track handoffs for execution status.
 
 ### Dependencies and blockers
 
-- `TOP-001` requires solve-count instrumentation in
-  `run_fourier_topology_controller.py` (none at B0). That work is inside
-  `TOP-001`'s scope and touches a driver the boundary–BIE validation path also
-  uses — declare it before implementing.
+- `TOP-001` adds solve-count instrumentation in the shared controller driver;
+  the [review](iterations/topology/iteration_01/02_proposals/02_codex_review.md)
+  declared those changes before implementation.
 - Any boundary–BIE prototype will touch shared solver interfaces the topology
   track depends on. Shared-interface changes are declared before implementation.
-- No track is blocked. Both are waiting on review, not on evidence.
+- The historical radial split failed exact event replay because B0 retains a
+  different candidate set. That failure is preserved; fresh unmodified B0 runs
+  qualify both charts, and the paired comparison is complete.
 
 ## Paused and historical tracks
 

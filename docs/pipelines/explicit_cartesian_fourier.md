@@ -70,3 +70,12 @@ The [results index](../../results/inverse/cartesian_fourier/README.md) links the
 single-component study and both topology suites. The [pipeline audit](../../results/validation/cartesian_fourier/pipeline-audit-20260910/README.md)
 records subsequent fixes and fresh verification. Historical measured bundles
 retain their original results.
+
+## TOP-001 allocation experiment
+
+The shared controller accepts `--candidates-refined-per-group` and
+`--candidate-refinement-iterations`, defaulting to B0's one candidate and three
+LM iterations. Controller bundles now include per-stage work counts and source
+provenance. `run_topology_allocation_experiment.py` replays saved pre-event states
+under declared A/B/C budgets, with held-out observations used only for final
+qualification. See the [topology handoff](../iterations/topology/README.md).

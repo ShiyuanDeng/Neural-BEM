@@ -399,6 +399,8 @@ def evaluate_current_domain_topological_derivative(
     Removal points must lie strictly in one current inclusion.
     """
 
+    from .work_accounting import record_work
+    record_work(td_evaluation_count=1)
     if material_change not in ("addition", "removal"):
         raise ValueError("material_change must be addition or removal.")
     if material_change == "removal" and state is None:
@@ -462,6 +464,7 @@ def evaluate_current_domain_topological_derivative(
             )
             rhs = np.concatenate((incident_dirichlet, incident_neumann), axis=1).T
             solution = np.linalg.solve(system.system_matrix, rhs)
+            record_work(td_frequency_solve_count=1)
             equation_residual = system.system_matrix @ solution - rhs
             relative = float(np.linalg.norm(equation_residual) / np.linalg.norm(rhs))
             linear_residuals[frequency_index] = max(
@@ -719,6 +722,8 @@ def evaluate_multiradial_objective(
 ) -> MultiRadialObjectiveEvaluation:
     """Evaluate the actual direct-boundary Kress objective."""
 
+    from .work_accounting import record_work
+    record_work(evaluation_count=1)
     started = perf_counter()
     boundary = state.boundary(geometry_config)
     forward = predict_multicomponent_kress_paired_boundary_response(
@@ -726,6 +731,8 @@ def evaluate_multiradial_objective(
         data.forward_problem,
         solve_config=solve_config,
     )
+    record_work(forward_evaluation_count=1,
+                forward_frequency_solve_count=len(forward.linear_system_relative_residuals))
     residual, relative = normalized_complex_residual(
         forward.scattered_response,
         data.observed_scattered_response,

@@ -6,7 +6,7 @@ smooth explicit Fourier components with persistent IDs.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, field, replace
 from itertools import combinations
 from typing import Callable
 
@@ -28,6 +28,7 @@ from .radial_topology import (
     evaluate_multiradial_objective, run_multiradial_fd_inverse, component_radius_floor,
 )
 from gpr_bem_kress.multicomponent import MultiComponentKressGeometryError
+from .work_accounting import accounted_call, collect_work, current_work, work_delta
 
 CONNECTIVITY = ndimage.generate_binary_structure(2, 1)
 GEOMETRY_ERRORS = (ValueError, OrderedSDFGeometryError, MultiComponentKressGeometryError)
@@ -100,6 +101,7 @@ class TopologyControllerConfig:
     maximum_cycles: int = 12
     fixed_iterations: int = 18
     candidate_refinement_iterations: int = 3
+    candidates_refined_per_group: int = 1
     relative_error_tolerance: float = 0.005
     acceptance_absolute_margin: float = 1.e-10
     acceptance_relative_margin: float = 1.e-5
@@ -112,10 +114,14 @@ class TopologyControllerConfig:
         if self.chart not in ('radial', 'cartesian'):
             raise ValueError("chart must be 'radial' or 'cartesian'.")
         for name in ('raster_size', 'maximum_events', 'maximum_cycles', 'fixed_iterations',
-                     'maximum_candidates_per_type', 'contour_modes'):
+                     'maximum_candidates_per_type', 'contour_modes', 'candidates_refined_per_group'):
             if isinstance(getattr(self, name), bool) or int(getattr(self, name)) != getattr(self, name) or getattr(self, name) < 1:
                 raise ValueError(f'{name} must be a positive integer.')
-        if self.raster_size < 17 or self.candidate_refinement_iterations < 0:
+        if not isinstance(self.candidates_refined_per_group, (int, np.integer)):
+            raise ValueError('candidates_refined_per_group must be a positive integer.')
+        if (self.raster_size < 17 or isinstance(self.candidate_refinement_iterations, bool)
+                or not isinstance(self.candidate_refinement_iterations, (int, np.integer))
+                or self.candidate_refinement_iterations < 0):
             raise ValueError('Insufficient raster or invalid candidate refinement budget.')
         for name in ('inspection_radius_m', 'boundary_buffer_m', 'minimum_component_radius_m',
                      'maximum_birth_radius_m', 'relative_error_tolerance', 'acceptance_absolute_margin',
@@ -180,6 +186,8 @@ class TopologyInverseResult:
     frames: tuple[TopologyFrame, ...]
     events: tuple[dict, ...]
     passes: tuple[dict, ...]
+    evaluation_count: int = 0
+    work: dict = field(default_factory=dict)
 
 
 def topology_objective(state, data, geometry, solve_config):
@@ -534,11 +542,34 @@ def _optimizer_config(state, config, iterations=None):
 def run_topology_aware_fourier_inverse(initial_state, data, production_geometry_config,
         refined_geometry_config, *, solve_config, config=None,
         progress_callback: Callable[[TopologyFrame], None] | None = None,
-        workspace_callback: Callable[[int, TopologyWorkspace], None] | None = None):
+        workspace_callback: Callable[[int, TopologyWorkspace], None] | None = None,
+        replay_first_event: bool = False):
+    """Run the controller with passive work counts and optional frozen replay.
+
+    ``replay_first_event`` starts at a saved pre-event state, bypassing only
+    cycle zero's fixed-topology optimizer. Later cycles retain the normal policy.
+    It does not prescribe the winning event or the resulting component count.
+    """
+    with collect_work() as ledger:
+        result = _run_topology_aware_fourier_inverse(
+            initial_state, data, production_geometry_config, refined_geometry_config,
+            solve_config=solve_config, config=config, progress_callback=progress_callback,
+            workspace_callback=workspace_callback, replay_first_event=replay_first_event)
+        work = ledger.snapshot()
+        return replace(result, evaluation_count=work['totals']['evaluation_count'], work=work)
+
+
+def _run_topology_aware_fourier_inverse(initial_state, data, production_geometry_config,
+        refined_geometry_config, *, solve_config, config=None,
+        progress_callback=None, workspace_callback=None, replay_first_event=False):
     """Refine, compare finite events, accept the best, restart and repeat."""
     config = TopologyControllerConfig() if config is None else config
     state = state_in_chart(initial_state, config.chart)
-    if state is not None and config.chart == 'cartesian':
+    if state is not None and config.chart == 'cartesian' and replay_first_event:
+        canonical, _ = state.polar_angle_gauge_fixed()
+        if np.max(np.abs(canonical.parameter_vector() - state.parameter_vector())) > 1.e-10:
+            raise ValueError('A Cartesian pre-event replay state must already satisfy the polar-angle gauge.')
+    if state is not None and config.chart == 'cartesian' and not replay_first_event:
         state, _ = state.polar_angle_gauge_fixed()
     frames, events, passes = [], [], []
     stop = 'maximum_cycles'
@@ -552,8 +583,11 @@ def run_topology_aware_fourier_inverse(initial_state, data, production_geometry_
             progress_callback(frame)
 
     for cycle in range(config.maximum_cycles):
-        if state is not None and all(component_radius_floor(c) >= config.minimum_component_radius_m for c in state.components):
-            result = run_multiradial_fd_inverse(state, data, production_geometry_config,
+        cycle_started = current_work()
+        if cycle == 0 and replay_first_event:
+            trigger = 'saved_pre_event_replay'
+        elif state is not None and all(component_radius_floor(c) >= config.minimum_component_radius_m for c in state.components):
+            result = accounted_call('fixed_refinement', run_multiradial_fd_inverse, state, data, production_geometry_config,
                 solve_config=solve_config, config=_optimizer_config(state, config),
                 minimum_component_radius_m=config.minimum_component_radius_m,
                 cartesian_gauge=config.chart == 'cartesian',
@@ -562,25 +596,25 @@ def run_topology_aware_fourier_inverse(initial_state, data, production_geometry_
             trigger = result.stop_reason
         elif state is None:
             trigger = 'empty_domain'
-            emit(None, topology_objective(None, data, production_geometry_config, solve_config)[0], trigger, cycle)
+            emit(None, accounted_call('production_base', topology_objective, None, data, production_geometry_config, solve_config)[0], trigger, cycle)
         else:
             trigger = 'component_radius_floor'
-            emit(state, topology_objective(state, data, production_geometry_config, solve_config)[0], trigger, cycle)
-        base_loss, relative = topology_objective(state, data, production_geometry_config, solve_config)
+            emit(state, accounted_call('production_base', topology_objective, state, data, production_geometry_config, solve_config)[0], trigger, cycle)
+        base_loss, relative = accounted_call('production_base', topology_objective, state, data, production_geometry_config, solve_config)
         if relative <= config.relative_error_tolerance:
             stop = 'recovered'
             break
         if len(events) >= config.maximum_events:
             stop = 'maximum_events'
             break
-        workspace = build_topology_workspace(state, data, production_geometry_config, solve_config, config)
+        workspace = accounted_call('topological_derivative', build_topology_workspace, state, data, production_geometry_config, solve_config, config)
         if workspace_callback:
             workspace_callback(cycle, workspace)
         while any(cid.startswith(f't{event_serial:03d}.') for cid in used_ids):
             event_serial += 1
         candidates, rejections = generate_topology_candidates(
             state, workspace, production_geometry_config, config, event_serial)
-        refined_base = topology_objective(state, data, refined_geometry_config, solve_config)[0]
+        refined_base = accounted_call('refined_base', topology_objective, state, data, refined_geometry_config, solve_config)[0]
         trials, feasible = [], []
         for candidate in candidates:
             row = dict(kind=candidate.kind, parents=candidate.parents, children=candidate.children,
@@ -598,26 +632,29 @@ def run_topology_aware_fourier_inverse(initial_state, data, production_geometry_
                 if candidate.state is not None and any(component_radius_floor(c) < config.minimum_component_radius_m
                                                         for c in candidate.state.components):
                     raise ValueError('Candidate violates topology feature-radius floor.')
-                loss = topology_objective(candidate.state, data, production_geometry_config, solve_config)[0]
+                loss = accounted_call('candidate_raw', topology_objective, candidate.state, data, production_geometry_config, solve_config)[0]
                 row['raw_production_loss'] = loss
                 row['production_loss'] = loss
                 feasible.append((loss, candidate, row))
             except GEOMETRY_ERRORS as exc:
                 row['reason'] = f'invalid_geometry: {exc}'
-        # Apply the same short refinement budget to each competing event type
-        # and resulting component count. A higher-dimensional fragmented cut
-        # must not prevent a simple split from being refined and compared.
+        # Rank once by raw score. Refining an earlier candidate must not change
+        # which later raw candidates receive the declared per-group budget.
+        refinement_started = current_work()
         refinement_groups = sorted(set((item[1].kind, 0 if item[1].state is None
                                         else len(item[1].state.components)) for item in feasible))
         for kind, component_count in refinement_groups:
             group = sorted((x for x in feasible if x[1].kind == kind and
                             (0 if x[1].state is None else len(x[1].state.components)) == component_count),
                            key=lambda x: x[0])
-            if group and config.candidate_refinement_iterations:
-                loss, candidate, row = group[0]
+            for rank, (loss, candidate, row) in enumerate(group[:config.candidates_refined_per_group], 1):
+                if not config.candidate_refinement_iterations:
+                    continue
                 if candidate.state is not None:
+                    row['candidate_refinement_raw_rank'] = rank
+                    candidate_started = current_work()
                     try:
-                        result = run_multiradial_fd_inverse(candidate.state, data, production_geometry_config,
+                        result = accounted_call('candidate_refinement', run_multiradial_fd_inverse, candidate.state, data, production_geometry_config,
                             solve_config=solve_config,
                             config=_optimizer_config(candidate.state, config, config.candidate_refinement_iterations),
                             minimum_component_radius_m=config.minimum_component_radius_m,
@@ -625,9 +662,13 @@ def run_topology_aware_fourier_inverse(initial_state, data, production_geometry_
                         candidate = replace(candidate, state=result.final_state)
                         row['production_loss'] = result.iterations[-1].loss
                         row['candidate_refinement_steps'] = len(result.iterations) - 1
+                        row['optimizer_evaluation_count'] = result.evaluation_count
+                        row['optimizer_infeasible_trial_count'] = result.infeasible_trial_count
                         feasible = [(row['production_loss'], candidate, row) if item[2] is row else item for item in feasible]
                     except GEOMETRY_ERRORS as exc:
                         row['polish_reason'] = str(exc)
+                    row['refinement_work'] = work_delta(current_work(), candidate_started)
+        refinement_work = work_delta(current_work(), refinement_started)
         accepted = []
         margin = config.acceptance_absolute_margin + config.acceptance_relative_margin * base_loss
         for loss, candidate, row in feasible:
@@ -636,7 +677,7 @@ def run_topology_aware_fourier_inverse(initial_state, data, production_geometry_
                 row['reason'] = 'production_objective_not_decreased'
                 continue
             try:
-                refined = topology_objective(candidate.state, data, refined_geometry_config, solve_config)[0]
+                refined = accounted_call('candidate_acceptance', topology_objective, candidate.state, data, refined_geometry_config, solve_config)[0]
                 row['refined_loss'] = refined
                 refined_delta = refined_base - refined
                 if min(delta, refined_delta) <= margin + config.cross_resolution_factor * abs(delta - refined_delta):
@@ -646,8 +687,11 @@ def run_topology_aware_fourier_inverse(initial_state, data, production_geometry_
                 accepted.append((loss, candidate, row))
             except GEOMETRY_ERRORS as exc:
                 row['reason'] = f'refined_invalid_geometry: {exc}'
+        pass_work = work_delta(current_work(), cycle_started)
         passes.append(dict(cycle=cycle, trigger=trigger, base_loss=base_loss,
-                           refined_base_loss=refined_base, trials=trials, rejected_masks=rejections))
+                           refined_base_loss=refined_base, trials=trials, rejected_masks=rejections,
+                           evaluation_count=pass_work['totals']['evaluation_count'],
+                           work=pass_work, refinement_work=refinement_work))
         if not accepted:
             stop = 'topology_stationary'
             break
