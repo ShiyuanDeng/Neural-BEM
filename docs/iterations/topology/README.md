@@ -84,8 +84,11 @@ declare changed budgets/acquisition as a separate comparison.
 
 **TOP-001, TOP-005, TOP-006 and TOP-007 gate 7 closeouts are complete.** TOP-007 was
 APPROVED by the user's 2026-09-11 direction to take Track A as far as possible and
-to continue from the latest fixes; execution is COMPLETE. Current branch: `feature/ordered-boundary-nystrom`;
-TOP-005 was merged and its branch removed at the user's direction. Preserve completed bundles and the
+to continue from the latest fixes; execution is COMPLETE. Current branch: `feature/ordered-boundary-nystrom`. The per-experiment branches
+are removed once merged, at the user's direction: `track/topology-TOP-005` after
+that cycle, and `track/topology-TOP-001` (tip `746c9fb`) on 2026-09-11, once its
+commits were contained in this branch. The executed plans still name the branch
+each cycle used, which is a record of what happened, not a checkout that exists. Preserve completed bundles and the
 failed historical qualification. The old brief remains an unedited proposal;
 the plan and amendment carry the actual decisions. Boundary–BIE work is separate.
 
