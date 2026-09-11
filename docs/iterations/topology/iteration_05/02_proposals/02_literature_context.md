@@ -7,6 +7,11 @@ is evidence about this code. Treat it as a reading list that says which of our
 problems are already named in the literature, and which of them we appear to
 have arrived at ourselves.
 
+**Status: this page is not the verdict.** On 2026-09-11 the user held all
+implementation until a thorough literature review is done. Nothing below
+authorises a fix, and the next agent should extend this into a real review
+rather than act on it.
+
 ## Short answer
 
 Three of the four suspects are well-documented problems in their own fields.

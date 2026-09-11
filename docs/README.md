@@ -47,7 +47,7 @@ Galerkin formulations, derivatives, conditioning, and cost. Replacing Kress is
 
 | Track | Question | Stage | Next expected action | Approved IDs |
 |---|---|---|---|---|
-| [Topology / Track A](iterations/topology/README.md) | How can the inverse choose and execute topology changes more reliably, without a prescribed object count or excessive BIE cost? | TOP-007 complete; guarded runs abort nothing, both arms still pass 5/12 | Read [iteration 05](iterations/topology/iteration_05/01_results.md): decide on the guard as default, and diagnose the stalled mode-9 component before promoting bandwidth | **TOP-001, TOP-005, TOP-006, TOP-007** |
+| [Topology / Track A](iterations/topology/README.md) | How can the inverse choose and execute topology changes more reliably, without a prescribed object count or excessive BIE cost? | TOP-007 complete; guarded runs abort nothing, both arms still pass 5/12. **Implementation held for a literature verdict** | Wait for that verdict before attempting any fix; [iteration 05](iterations/topology/iteration_05/01_results.md) has the diagnosis and the candidate fixes, none approved | **TOP-001, TOP-005, TOP-006, TOP-007** |
 | [Boundary–BIE](iterations/boundary_bie/README.md) | Which properties of smooth-boundary representations improve the accuracy, conditioning, differentiation or cost of the BIE inverse? | Brief drafted; no review, no plan | Review [the brief](iterations/boundary_bie/iteration_01/02_proposals/01_boundary_bie_research_brief.md); decide whether `BIE-001` — comparison and selection of one prototype — is the right first deliverable | **None** |
 
 Topology has completed **gate 7 for TOP-001, TOP-005, TOP-006 and TOP-007** under the

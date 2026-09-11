@@ -47,13 +47,13 @@ Updated 2026-09-11.
 | Item | Current state |
 |---|---|
 | Active iteration | [Iteration 05 results](iteration_05/01_results.md) |
-| Stage | TOP-007 closeout complete; stall diagnosed and placed against the literature, no experiment contract written yet |
+| Stage | TOP-007 closeout complete; stall diagnosed. **On hold for a thorough literature verdict** (user direction, 2026-09-11) |
 | Approved experiment IDs | `TOP-001`, `TOP-005`, `TOP-006`, `TOP-007`: **APPROVED** by the user's Track A, broader-scene and continuation requests on 2026-09-11. The session instructions supersede the old exact-ID phrase requirement. `TOP-002`–`TOP-004` and `TOP-008` remain proposals |
 | Execution status | TOP-001, TOP-005, TOP-006 and TOP-007 `COMPLETE`. The guarded arm aborts nothing and returns 9/12 runs against the default's 7/12, with identical final states wherever both completed and the same 5/12 passing. 554 tests pass; controller default unchanged |
-| Next expected action | Write the next experiment contract from the [stall diagnostic](iteration_05/02_proposals/01_stall_diagnostic.md) and its [literature context](iteration_05/02_proposals/02_literature_context.md): a relaxable or headroom-aware feature-radius floor, and an FD Jacobian that slides along an active constraint instead of freezing the column. Separately, decide whether the guard becomes the default in a declared comparison |
+| Next expected action | **Wait.** The user asked on 2026-09-11 for a thorough literature verdict before any fix is attempted. Do not write or run TOP-008. The candidate fixes — an FD Jacobian that slides along an active constraint instead of freezing the column, and a relaxable or headroom-aware feature-radius floor — stay unimplemented until that verdict lands. The [search-only pointers](iteration_05/02_proposals/02_literature_context.md) are not that verdict. Whether the guard becomes the default is a separate, still-open decision |
 | Owner / reviewer | Claude / `unassigned` (no independent review claimed) |
 | Dependencies | Shared controller/driver changes declared in the [review](iteration_01/02_proposals/02_codex_review.md) and the [TOP-007 review](iteration_04/02_proposals/02_feasibility_review.md); no physical solver or geometry-state interfaces changed |
-| Blockers | No execution blocker. Three scenes still spend the full ten minutes in both arms, and no automatic mechanism recovers noncircular shapes |
+| Blockers | Implementation is deliberately held pending the literature verdict. Three scenes still spend the full ten minutes in both arms, and no automatic mechanism recovers noncircular shapes |
 
 ## Reading order
 
