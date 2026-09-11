@@ -23,7 +23,7 @@ overstates it more at 64 nodes than at 128. The optimizer is therefore free to
 park a state on its own feasibility boundary, where the next refined evaluation
 — `refined_base`, which is not inside any `try` — raises and kills the run.
 The saved checkpoints reproduce this without rerunning any physics
-([probe](../../../../results/validation/topology/TOP-006-20260911-scenes-v1/README.md)).
+([bundle](../../../../../results/validation/topology/TOP-006-20260911-scenes-v1/README.md)).
 
 Two facts follow. The separation floor is not the problem: the true curves are
 genuinely closer than 10 mm, the sequence above converges from above, and
