@@ -252,6 +252,26 @@ one candidate, keeps the same LM budget, and records raw rank, accessible
 dimension and selection reason. Cartesian cost uses gauge tangent dimension.
 The objective, construction, trigger and acceptance are unchanged.
 
+## Refined feasibility of optimizer steps (TOP-007)
+
+The fixed-topology optimizer and the controller's event checks run at two
+discretizations. Inter-component clearance is measured on discretized curves,
+so the coarser production resolution overstates it: for the components that
+ended TOP-006's `far-ellipse-star` run, the 64-node polygons measured
+1.000359e-02 m of clearance where the 128-node polygons measured
+9.971374e-03 m against the solver's 1.0e-02 m floor. An optimizer that only
+has to satisfy production can therefore hand the next refined evaluation a
+boundary the solver refuses, which is how four TOP-006 runs ended.
+
+`refined_feasibility_guard=False` is the default and preserves that behaviour
+exactly. Enabled, `run_multiradial_fd_inverse` treats a trial state as
+infeasible unless it also passes the multicomponent adapter at every extra
+discretization it is given — a geometry-only check that performs no forward
+solve — and the controller falls back to its last refined-feasible state, or
+stops with `refined_infeasible`, rather than aborting. Guard-rejected trials
+and rollbacks are recorded per cycle in `topology_passes.json`. Birth seeds
+remain circles; no bandwidth promotion was added here either.
+
 The [TOP-005 report](../results/validation/topology/TOP-005-20260911/README.md)
 records twenty split replays and five full Cartesian controller cases. All
 quality and aggregate-cost gates pass, with 42.3% fewer split-suite BIE solves

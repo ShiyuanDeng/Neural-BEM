@@ -7,6 +7,9 @@ executed by [`run_topology_scene_benchmark.py`](../../run_topology_scene_benchma
 Its first measurement is [TOP-006](../../results/validation/topology/TOP-006-20260911-scenes-v1/README.md):
 both current policies pass 5/12 scenes. The requested distant ellipse/star case
 fails; retain it as a regression target rather than removing it from the suite.
+Its second is [TOP-007](../../results/validation/topology/TOP-007-20260911-refined-feasibility/README.md),
+which adds the guarded arm: still 5/12, but nothing aborts and the requested
+case finishes with the correct object count and the wrong shapes.
 
 ## Scene matrix
 
@@ -63,14 +66,24 @@ are used only for observation generation and evaluation.
 ```bash
 env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1 \
   PYTHONPATH=solvers /home/drdeng/miniconda3/envs/EMNerf/bin/python \
-  run_topology_scene_benchmark.py --workers 4 \
+  run_topology_scene_benchmark.py --workers 4 --arms A,G --experiment-id TOP-007 \
   --reference-data results/validation/topology/TOP-006-20260911-scenes-v1 \
   --output results/validation/topology/my-fresh-scene-comparison
 ```
 
-The output directory must be new. The runner checks oracle convergence, then
-runs A (default) and F (selective). Each inversion has a ten-minute ceiling;
-the suite has a 45-minute inversion ceiling. Four single-thread subprocesses
+The output directory must be new. `--arms` names the controller policies to
+compare — `A` default, `F` selective refinement, `G` default plus the refined
+feasibility guard — and defaults to `A,F`. The chosen arms and their policy
+overrides are recorded in the run manifest, and every arm shares the same
+scenes, observations, initial states, budgets and gates: an arm changes the
+controller policy and nothing else. A candidate policy needs its own name
+here rather than a changed default, so the reference arm stays comparable.
+**Do not edit any hashed source while a suite is running** — the runner
+re-checks `solvers/**/*.py`, `run_*topology*.py` and `config/**/*.py` before
+each inversion and fails the run if they changed.
+
+The runner checks oracle convergence, then runs each requested arm. Each
+inversion has a ten-minute ceiling; the suite has a 45-minute inversion ceiling. Four single-thread subprocesses
 may overlap; elapsed times are descriptive, not a controlled speed comparison.
 
 Start visual review with `initial_scenes.svg`, `far_ellipse_star.svg`, then

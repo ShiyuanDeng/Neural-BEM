@@ -1,0 +1,222 @@
+{
+  "arm": "A",
+  "audit_work": {
+    "stages": {
+      "final_production": {
+        "evaluation_count": 1,
+        "forward_evaluation_count": 1,
+        "forward_frequency_solve_count": 1
+      },
+      "final_refined": {
+        "evaluation_count": 1,
+        "forward_evaluation_count": 1,
+        "forward_frequency_solve_count": 1
+      },
+      "holdout": {
+        "evaluation_count": 1,
+        "forward_evaluation_count": 1,
+        "forward_frequency_solve_count": 2
+      }
+    },
+    "totals": {
+      "bie_frequency_solve_count": 4,
+      "evaluation_count": 3,
+      "forward_evaluation_count": 3,
+      "forward_frequency_solve_count": 4,
+      "td_evaluation_count": 0,
+      "td_frequency_solve_count": 0
+    }
+  },
+  "completed": true,
+  "events": [
+    {
+      "after_ids": [
+        "initial.circle",
+        "t001.birth"
+      ],
+      "before_ids": [
+        "initial.circle"
+      ],
+      "candidate_refinement_steps": 3,
+      "children": [
+        "t001.birth"
+      ],
+      "construction": "exterior_td_region; radius=0.024664",
+      "cycle": 0,
+      "kind": "birth",
+      "parents": [],
+      "production_after": 0.30603485940351527,
+      "production_before": 0.5095812073672032,
+      "raw_birth_radius_m": 0.024664256734439886,
+      "refined_after": 0.3060348594035178,
+      "refined_before": 0.5095812073672026
+    },
+    {
+      "after_ids": [
+        "initial.circle",
+        "t001.birth",
+        "t002.birth"
+      ],
+      "before_ids": [
+        "initial.circle",
+        "t001.birth"
+      ],
+      "candidate_refinement_steps": 3,
+      "children": [
+        "t002.birth"
+      ],
+      "construction": "exterior_td_region; radius=0.024592",
+      "cycle": 1,
+      "kind": "birth",
+      "parents": [],
+      "production_after": 0.15903975814512947,
+      "production_before": 0.3038992018172497,
+      "raw_birth_radius_m": 0.02459245379682983,
+      "refined_after": 0.15903975814513088,
+      "refined_before": 0.30389920181724767
+    },
+    {
+      "after_ids": [
+        "t001.birth",
+        "t002.birth"
+      ],
+      "before_ids": [
+        "initial.circle",
+        "t001.birth",
+        "t002.birth"
+      ],
+      "candidate_refinement_steps": 3,
+      "children": [],
+      "construction": "leave_one_component_out",
+      "cycle": 2,
+      "kind": "death",
+      "parents": [
+        "initial.circle"
+      ],
+      "production_after": 1.0098465690081878e-12,
+      "production_before": 0.15802009803705924,
+      "refined_after": 1.0098465703363054e-12,
+      "refined_before": 0.15802009803705602
+    }
+  ],
+  "final_loss": 1.0098465690081878e-12,
+  "final_relative_error": 1.4211590825858925e-06,
+  "final_state": [
+    {
+      "chart": "cartesian",
+      "component_id": "t001.birth",
+      "maximum_mode": 1,
+      "parameters": [
+        0.6100000063867838,
+        0.5300000048806943,
+        0.035999994407248694,
+        -2.0613079805317163e-18,
+        1.6055765679708e-18,
+        0.035999994407248694
+      ]
+    },
+    {
+      "chart": "cartesian",
+      "component_id": "t002.birth",
+      "maximum_mode": 1,
+      "parameters": [
+        0.5499999857456546,
+        0.4300000080752329,
+        0.03399994788561112,
+        -1.7106732002563032e-18,
+        1.3324630922345968e-18,
+        0.03399994788561112
+      ]
+    }
+  ],
+  "gates": {
+    "all_event_margins_pass": true,
+    "boundary": true,
+    "correct_count": true,
+    "holdout": true,
+    "monotone_accepted_states": true,
+    "overlap": true,
+    "training": true
+  },
+  "geometry": {
+    "component_count": 2,
+    "final_maximum_modes": [
+      1,
+      1
+    ],
+    "matched_components": [
+      {
+        "hausdorff_m": 1.363091443430708e-08,
+        "recovered_component": "t001.birth",
+        "truth_component": "truth.B"
+      },
+      {
+        "hausdorff_m": 6.849717709376406e-08,
+        "recovered_component": "t002.birth",
+        "truth_component": "truth.A"
+      }
+    ],
+    "maximum_matched_hausdorff_m": 6.849717709376406e-08,
+    "truth_component_count": 2,
+    "union_iou": 1.0
+  },
+  "group": "new",
+  "holdout_relative_errors": [
+    9.064490972896623e-06,
+    6.877819762897384e-06
+  ],
+  "inversion_seconds": 175.51868515403476,
+  "maximum_holdout_relative_error": 9.064490972896623e-06,
+  "passed": true,
+  "refined_loss": 1.0098465703363054e-12,
+  "refined_relative_error": 1.4211590835204238e-06,
+  "scene": "far-two-circles",
+  "stop_reason": "recovered",
+  "total_seconds": 176.22959452401847,
+  "work": {
+    "stages": {
+      "candidate_acceptance": {
+        "evaluation_count": 35,
+        "forward_evaluation_count": 35,
+        "forward_frequency_solve_count": 35
+      },
+      "candidate_raw": {
+        "evaluation_count": 124,
+        "forward_evaluation_count": 59,
+        "forward_frequency_solve_count": 59
+      },
+      "candidate_refinement": {
+        "evaluation_count": 796,
+        "forward_evaluation_count": 726,
+        "forward_frequency_solve_count": 726
+      },
+      "fixed_refinement": {
+        "evaluation_count": 1186,
+        "forward_evaluation_count": 1186,
+        "forward_frequency_solve_count": 1186
+      },
+      "production_base": {
+        "evaluation_count": 4,
+        "forward_evaluation_count": 4,
+        "forward_frequency_solve_count": 4
+      },
+      "refined_base": {
+        "evaluation_count": 3,
+        "forward_evaluation_count": 3,
+        "forward_frequency_solve_count": 3
+      },
+      "topological_derivative": {
+        "td_evaluation_count": 6,
+        "td_frequency_solve_count": 6
+      }
+    },
+    "totals": {
+      "bie_frequency_solve_count": 2019,
+      "evaluation_count": 2148,
+      "forward_evaluation_count": 2013,
+      "forward_frequency_solve_count": 2013,
+      "td_evaluation_count": 6,
+      "td_frequency_solve_count": 6
+    }
+  }
+}

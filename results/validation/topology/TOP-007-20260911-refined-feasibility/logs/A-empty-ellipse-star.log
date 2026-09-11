@@ -1,0 +1,58 @@
+empty-ellipse-star A: cycle=0 empty_domain M=0 J=0.5
+empty-ellipse-star A: cycle=0 before birth M=0 J=0.5
+empty-ellipse-star A: cycle=0 BIRTH accepted M=1 J=0.197491
+empty-ellipse-star A: cycle=1 refine 0 M=1 J=0.197491
+empty-ellipse-star A: cycle=1 refine 1 M=1 J=0.197491
+empty-ellipse-star A: cycle=1 refine 2 M=1 J=0.197491
+empty-ellipse-star A: cycle=1 refine 3 M=1 J=0.197491
+empty-ellipse-star A: cycle=1 before birth M=1 J=0.197491
+empty-ellipse-star A: cycle=1 BIRTH accepted M=2 J=0.0073253
+empty-ellipse-star A: cycle=2 refine 0 M=2 J=0.0073253
+empty-ellipse-star A: cycle=2 refine 1 M=2 J=0.00732526
+empty-ellipse-star A: cycle=2 refine 2 M=2 J=0.00732525
+empty-ellipse-star A: cycle=2 refine 3 M=2 J=0.00732525
+empty-ellipse-star A: cycle=2 before birth M=2 J=0.00732525
+empty-ellipse-star A: cycle=2 BIRTH accepted M=3 J=0.00211029
+empty-ellipse-star A: cycle=3 refine 0 M=3 J=0.00211029
+empty-ellipse-star A: cycle=3 refine 1 M=3 J=0.00209853
+empty-ellipse-star A: cycle=3 refine 2 M=3 J=0.00209342
+empty-ellipse-star A: cycle=3 refine 3 M=3 J=0.00205961
+empty-ellipse-star A: cycle=3 refine 4 M=3 J=0.00195803
+empty-ellipse-star A: cycle=3 refine 5 M=3 J=0.00195776
+empty-ellipse-star A: cycle=3 refine 6 M=3 J=0.00195776
+Traceback (most recent call last):
+  File "/home/drdeng/Neural_SDF_BEM_AD/run_topology_scene_benchmark.py", line 594, in <module>
+    raise SystemExit(main())
+  File "/home/drdeng/Neural_SDF_BEM_AD/run_topology_scene_benchmark.py", line 573, in main
+    run_one(output, *args.run_one)
+  File "/home/drdeng/Neural_SDF_BEM_AD/run_topology_scene_benchmark.py", line 312, in run_one
+    result = run_topology_aware_fourier_inverse(initial, data, production, refined,
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/topology_controller.py", line 584, in run_topology_aware_fourier_inverse
+    result = _run_topology_aware_fourier_inverse(
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/topology_controller.py", line 670, in _run_topology_aware_fourier_inverse
+    refined_base = accounted_call('refined_base', topology_objective, state, data, refined_geometry_config, solve_config)[0]
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/work_accounting.py", line 68, in accounted_call
+    return function(*args, **kwargs)
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/topology_controller.py", line 208, in topology_objective
+    evaluation = evaluate_multiradial_objective(state, data, geometry, solve_config=solve_config)
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/radial_topology.py", line 759, in evaluate_multiradial_objective
+    forward = predict_multicomponent_kress_paired_boundary_response(
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_bem_multicomponent/forward.py", line 623, in predict_multicomponent_kress_paired_boundary_response
+    _solve_paired_boundary(boundary, resolved_problem, settings)
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_bem_multicomponent/forward.py", line 558, in _solve_paired_boundary
+    forwards = tuple(
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_bem_multicomponent/forward.py", line 559, in <genexpr>
+    solve_multicomponent_kress_tmz_total_field_batch(
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/gpr_bem_kress/multicomponent.py", line 1730, in solve_multicomponent_kress_tmz_total_field_batch
+    system = build_multicomponent_kress_tmz_frequency_system(
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/gpr_bem_kress/multicomponent.py", line 1195, in build_multicomponent_kress_tmz_frequency_system
+    return build_multicomponent_muller_system(
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/gpr_bem_kress/multicomponent.py", line 1118, in build_multicomponent_muller_system
+    blocks = build_multicomponent_muller_blocks(
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/gpr_bem_kress/multicomponent.py", line 845, in build_multicomponent_muller_blocks
+    adapter = adapt_multicomponent_boundary(boundary, config=settings)
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/gpr_bem_kress/multicomponent.py", line 608, in adapt_multicomponent_boundary
+    report = _validate_component_pair(first, second, settings)
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/gpr_bem_kress/multicomponent.py", line 373, in _validate_component_pair
+    raise MultiComponentTopologyError(
+gpr_bem_kress.multicomponent.MultiComponentTopologyError: components 't002.birth' and 't003.birth' are too close for ordinary cross-component quadrature: minimum 9.971400e-03, required > 1.000000e-02.

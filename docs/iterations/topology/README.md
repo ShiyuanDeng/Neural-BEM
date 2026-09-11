@@ -46,14 +46,14 @@ Updated 2026-09-11.
 
 | Item | Current state |
 |---|---|
-| Active iteration | [Iteration 04 results](iteration_04/01_results.md) |
-| Stage | TOP-006 closeout complete; broad-scene failures recorded |
-| Approved experiment IDs | `TOP-001`, `TOP-005`, `TOP-006`: **APPROVED** by the user's Track A and broader-scene requests on 2026-09-11. The session instructions supersede the old exact-ID phrase requirement. `TOP-002`–`TOP-004` remain deferred proposals |
-| Execution status | TOP-001, TOP-005 and TOP-006 `COMPLETE`. Both current policies pass 5/12 frozen scenes; requested distant ellipse/star case fails. 546 tests pass; controller/default unchanged |
-| Next expected action | Review refined feasibility of inner updates and automatic shape-mode activation after birth; preserve the full v1 benchmark |
-| Owner / reviewer | Codex / `unassigned` (no independent review claimed) |
-| Dependencies | Shared controller/driver changes declared in the [review](iteration_01/02_proposals/02_codex_review.md); no physical solver or geometry-state interfaces changed |
-| Blockers | No execution blocker. Broader-scene measurement exposes geometry exceptions, timeouts and wrong shapes; these remain open controller problems |
+| Active iteration | [Iteration 05 results](iteration_05/01_results.md) |
+| Stage | TOP-007 closeout complete; no proposal for the next cycle yet |
+| Approved experiment IDs | `TOP-001`, `TOP-005`, `TOP-006`, `TOP-007`: **APPROVED** by the user's Track A, broader-scene and continuation requests on 2026-09-11. The session instructions supersede the old exact-ID phrase requirement. `TOP-002`–`TOP-004` and `TOP-008` remain proposals |
+| Execution status | TOP-001, TOP-005, TOP-006 and TOP-007 `COMPLETE`. The guarded arm aborts nothing and returns 9/12 runs against the default's 7/12, with identical final states wherever both completed and the same 5/12 passing. 554 tests pass; controller default unchanged |
+| Next expected action | Decide whether the guard becomes the default in a declared comparison, and diagnose why a mode-9 component stalls 18.6 mm from the ellipse before proposing bandwidth promotion |
+| Owner / reviewer | Claude / `unassigned` (no independent review claimed) |
+| Dependencies | Shared controller/driver changes declared in the [review](iteration_01/02_proposals/02_codex_review.md) and the [TOP-007 review](iteration_04/02_proposals/02_feasibility_review.md); no physical solver or geometry-state interfaces changed |
+| Blockers | No execution blocker. Three scenes still spend the full ten minutes in both arms, and no automatic mechanism recovers noncircular shapes |
 
 ## Reading order
 
@@ -82,9 +82,9 @@ All future performance evaluations must include the complete
 per-scene successes and failures. Preserve v1 scenes, observations and gates;
 declare changed budgets/acquisition as a separate comparison.
 
-**TOP-001, TOP-005 and TOP-006 gate 7 closeouts are complete.** TOP-006 was APPROVED by
-the user's request for distant ellipse/star and broader future scene testing;
-execution is COMPLETE. Current branch: `feature/ordered-boundary-nystrom`;
+**TOP-001, TOP-005, TOP-006 and TOP-007 gate 7 closeouts are complete.** TOP-007 was
+APPROVED by the user's 2026-09-11 direction to take Track A as far as possible and
+to continue from the latest fixes; execution is COMPLETE. Current branch: `feature/ordered-boundary-nystrom`;
 TOP-005 was merged and its branch removed at the user's direction. Preserve completed bundles and the
 failed historical qualification. The old brief remains an unedited proposal;
 the plan and amendment carry the actual decisions. Boundary–BIE work is separate.
@@ -108,4 +108,5 @@ certificate, and the trust region's dependence on coordinates.
 | 01 | Reliability of topology event triggering, construction, refinement allocation and acceptance | TOP-001 and declared extensions complete; no default change |
 | 02 | Selective refinement after raw-shortlist failures | TOP-005 complete; all declared gates pass |
 | 03 | Broader automatic-controller scenes | TOP-006 complete; v1 benchmark established, current policies pass 5/12 scenes |
-| 04 | Refined feasibility, shape capacity and held-out prediction | Results and next questions recorded; no new experiment executed |
+| 04 | Refined feasibility, shape capacity and held-out prediction | TOP-007 proposed, reviewed, planned and executed |
+| 05 | Why finished runs still return wrong shapes | Results recorded; guard qualified and left opt-in; next questions open |

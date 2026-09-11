@@ -2,7 +2,7 @@
 
 - **Approval status:** APPROVED under the user's 2026-09-11 direction to take
   Track A as far as possible and to continue from the latest fixes.
-- **Execution status:** IN PROGRESS.
+- **Execution status:** COMPLETE. [Iteration 05 results](../iteration_05/01_results.md).
 - **Owner:** Claude. **Independent reviewer:** unassigned.
 - **Baseline:** `116b9b3` (TOP-006) on `feature/ordered-boundary-nystrom`.
 - **Branch:** continue `feature/ordered-boundary-nystrom`; no new branch, no
@@ -60,3 +60,23 @@ tests and documentation. No scene, gate, budget, default or solver-interface
 change. Artifacts: fresh
 `results/validation/topology/TOP-007-20260911-refined-feasibility/`. Results
 open iteration 05.
+
+## Closeout record
+
+All 24 runs were attempted under the original contract and all returned inside
+the 45-minute ceiling. Arm A reproduced TOP-006 exactly on every completed
+scene and on both aborts. Arm G aborted nothing: it returned 9/12 runs against
+A's 7/12, with identical final states wherever both arms completed, and the
+same 5/12 scenes passing. The controller-level rollback never fired.
+
+One declared check did not apply: every completed guarded run rejected at least
+one trial, so "identical wherever the guard rejects nothing" had no members.
+The per-scene agreement recorded in its place is stronger, and the results say
+so rather than reporting a vacuous pass. The guard stays opt-in; making it the
+default is recommended as a separately declared comparison, because it would
+change the reference behaviour the TOP-001/TOP-005 replay bundles reproduce
+against.
+
+The finished runs moved the open problem from feasibility to shape: a mode-9
+component stops 18.6 mm from the ellipse at 3.06% training error, which is what
+[iteration 05](../iteration_05/01_results.md) opens on.

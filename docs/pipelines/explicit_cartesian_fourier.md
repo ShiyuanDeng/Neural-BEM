@@ -85,6 +85,12 @@ policy. It preserves the normal shortlist and adds the minimum-dimension
 family champion only when the raw leader is more complex. The default stays
 unchanged. [Quality/cost tradeoffs, videos and commands](../../results/validation/topology/TOP-005-20260911/README.md).
 
+Use `--refined-feasibility-guard` to require every optimizer step to be
+admissible at the refined discretization as well as the production one. The
+check is geometric and costs no forward solve; with it off, the optimizer can
+stop on the production feasibility boundary and the next refined evaluation
+then raises. The default stays unchanged.
+
 The [twelve-scene topology benchmark](../benchmarks/topology_scenes.md) is the
 required broader performance comparison, including distant starts and
 ellipse/star targets. Its runner wraps the existing automatic controller

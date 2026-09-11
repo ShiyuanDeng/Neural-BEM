@@ -50,6 +50,16 @@ scenes, including failures; circular split improvements alone do not establish
 general recovery. TOP-006 tested both current policies: **5/12 scenes pass for
 each; the distant ellipse/star case fails**. [Results and visual comparisons](results/validation/topology/TOP-006-20260911-scenes-v1/README.md).
 
+**Track A update (2026-09-11, TOP-007):** four of those failures were uncaught
+geometry exceptions, not bad reconstructions — the optimizer could stop on the
+production resolution's feasibility boundary, which the refined evaluation then
+refused. The opt-in `--refined-feasibility-guard` requires every optimizer step
+to be admissible at both resolutions, using geometry checks and no extra
+solves. Guarded runs abort nothing and return 9/12 against the default's 7/12,
+with identical final states wherever both arms complete; **both arms still pass
+5/12**, so the remaining failure is shape, not feasibility.
+[Report and comparisons](results/validation/topology/TOP-007-20260911-refined-feasibility/README.md).
+
 ## Implementation at a glance
 
 | Entry point | What it currently runs |
@@ -59,7 +69,7 @@ each; the distant ellipse/star case fails**. [Results and visual comparisons](re
 | `run_explicit_cartesian_fourier_inverse.py` | MLP-free single-component Cartesian Fourier inverse |
 | `run_fourier_topology_controller.py --chart cartesian` | Automatic Cartesian Fourier birth, death, split and merge; optional selective candidate refinement |
 | `run_selective_topology_experiment.py` | TOP-005: baseline replay checks, twenty paired split replays and five full-controller qualifications |
-| `run_topology_scene_benchmark.py` | Frozen twelve-scene A/F benchmark, geometry/holdout checks, overlays and difficult-case videos |
+| `run_topology_scene_benchmark.py` | Frozen twelve-scene benchmark over named controller arms, geometry/holdout checks, overlays and difficult-case videos |
 | `run_radial_fourier_topology_challenges.py --chart cartesian` | Cartesian versions of the three topology replacement challenges |
 | `run_sdf_inverse_comparison.py` | Shared comparison driver: Kress neural cases use adjoint by default; archived known-shape-family controls and explicit parameter-FD references remain runnable |
 | `run_sdf_representation_ablation.py` | Explicit Radial Fourier under `legacy_strict`, `curve_only`, and `export_only` representation policies |
