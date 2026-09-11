@@ -47,10 +47,10 @@ Updated 2026-09-11.
 | Item | Current state |
 |---|---|
 | Active iteration | [Iteration 05 results](iteration_05/01_results.md) |
-| Stage | TOP-007 closeout complete; no proposal for the next cycle yet |
+| Stage | TOP-007 closeout complete; stall diagnosed and placed against the literature, no experiment contract written yet |
 | Approved experiment IDs | `TOP-001`, `TOP-005`, `TOP-006`, `TOP-007`: **APPROVED** by the user's Track A, broader-scene and continuation requests on 2026-09-11. The session instructions supersede the old exact-ID phrase requirement. `TOP-002`–`TOP-004` and `TOP-008` remain proposals |
 | Execution status | TOP-001, TOP-005, TOP-006 and TOP-007 `COMPLETE`. The guarded arm aborts nothing and returns 9/12 runs against the default's 7/12, with identical final states wherever both completed and the same 5/12 passing. 554 tests pass; controller default unchanged |
-| Next expected action | Decide whether the guard becomes the default in a declared comparison, and diagnose why a mode-9 component stalls 18.6 mm from the ellipse before proposing bandwidth promotion |
+| Next expected action | Write the next experiment contract from the [stall diagnostic](iteration_05/02_proposals/01_stall_diagnostic.md) and its [literature context](iteration_05/02_proposals/02_literature_context.md): a relaxable or headroom-aware feature-radius floor, and an FD Jacobian that slides along an active constraint instead of freezing the column. Separately, decide whether the guard becomes the default in a declared comparison |
 | Owner / reviewer | Claude / `unassigned` (no independent review claimed) |
 | Dependencies | Shared controller/driver changes declared in the [review](iteration_01/02_proposals/02_codex_review.md) and the [TOP-007 review](iteration_04/02_proposals/02_feasibility_review.md); no physical solver or geometry-state interfaces changed |
 | Blockers | No execution blocker. Three scenes still spend the full ten minutes in both arms, and no automatic mechanism recovers noncircular shapes |

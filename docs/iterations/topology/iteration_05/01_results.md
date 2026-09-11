@@ -89,5 +89,13 @@ not in a closeout.
    spend ten minutes without converging in either arm. Cost per cycle, not
    feasibility, now dominates those scenes.
 
+[Literature context](02_proposals/02_literature_context.md) places these
+questions against published work: the unrelaxable-constraint setting, minimum
+length scale in topology optimization, nucleation/merging with topological
+derivatives, and the single-frequency limit are all named elsewhere. The
+interaction that actually stopped our runs — a hard geometric floor meeting a
+topology event's own output, with a finite-difference Jacobian on top — is the
+part that search did not find reported.
+
 No controller default, gate, scene or budget changed in this cycle.
 TOP-002–TOP-004 remain deferred proposals.
