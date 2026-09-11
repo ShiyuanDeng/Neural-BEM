@@ -1,0 +1,92 @@
+Is the neural gradient chain still correct at late states?
+
+A review diagnostic for the gradient-diagnosis addendum. It re-runs, at frozen
+saved accepted states, the correctness checks the long run performed only at
+state 0, and splits the chain so the two halves can be blamed separately:
+
+    weights --[A] Method-B reverse--> curve jets --[B] Kress pullback--> dL
+
+    stage B   Kress objective adjoint and geometry pullback
+    stage A   extraction, projection, Fourier fit, arc-length refit reverse
+    A o B     the composite the inverse actually used
+
+Each stage is compared against central finite differences of the production
+forward path at the same frozen state. No inverse is run, no optimizer step is
+taken, no production file is written and no saved artifact is modified. Weights
+are restored after every perturbation.
+
+Stage A needs no BEM solve at all: it contracts the differentiable Method-B
+replay with a fixed random covector and finite-differences the production
+geometry build. Stage B and the composite need forward solves.
+
+geometry: 194 nodes, bandwidth 96, bounds ((0.3, 0.3), (0.7, 0.7))
+finite-difference steps (2e-05, 1e-05, 5e-06), seed 724
+
+########## E0: paired, states [0, 10, 20, 26, 30, 31, 36, 40, 42] of 0..42 ##########
+  --- state 0 ---
+    A  Method-B reverse    h=2e-05:1.02e-07  h=1e-05:5.69e-08  h=5e-06:3.55e-08  | worst of last two: 5.687e-08
+                           replay error 7.817e-12 m
+  --- state 10 ---
+    A  Method-B reverse    h=2e-05:5.73e-08  h=1e-05:3.94e-08  h=5e-06:9.71e-08  | worst of last two: 9.713e-08
+                           replay error 8.067e-12 m
+  --- state 20 ---
+    A  Method-B reverse    h=2e-05:1.40e-05  h=1e-05:9.37e-08  h=5e-06:6.26e-08  | worst of last two: 9.366e-08
+                           replay error 1.096e-11 m
+  --- state 26 ---
+    A  Method-B reverse    h=2e-05:2.27e-07  h=1e-05:2.35e-08  h=5e-06:6.34e-08  | worst of last two: 6.338e-08
+                           replay error 8.024e-12 m
+  --- state 30 ---
+    A  Method-B reverse    h=2e-05:3.84e-06  h=1e-05:3.74e-06  h=5e-06:3.68e-06  | worst of last two: 3.742e-06
+                           replay error 7.491e-12 m
+  --- state 31 ---
+    A  Method-B reverse    h=2e-05:1.54e-05  h=1e-05:2.92e-05  h=5e-06:5.67e-05  | worst of last two: 5.672e-05
+                           replay error 1.672e-11 m
+  --- state 36 ---
+    A  Method-B reverse    h=2e-05:8.54e-07  h=1e-05:8.76e-08  h=5e-06:2.61e-08  | worst of last two: 8.758e-08
+                           replay error 8.536e-12 m
+  --- state 40 ---
+    A  Method-B reverse    h=2e-05:3.80e-07  h=1e-05:5.81e-07  h=5e-06:2.15e-07  | worst of last two: 5.809e-07
+                           replay error 6.902e-12 m
+  --- state 42 ---
+    A  Method-B reverse    h=2e-05:8.16e-07  h=1e-05:1.42e-06  h=5e-06:1.64e-06  | worst of last two: 1.637e-06
+                           replay error 1.535e-11 m
+
+########## E1: multistatic, states [0, 10, 20, 26, 30, 31, 36, 40, 42] of 0..31 ##########
+  --- state 0 ---
+    A  Method-B reverse    h=2e-05:1.02e-07  h=1e-05:5.69e-08  h=5e-06:3.55e-08  | worst of last two: 5.687e-08
+                           replay error 7.817e-12 m
+  --- state 10 ---
+    A  Method-B reverse    h=2e-05:4.37e-08  h=1e-05:6.42e-08  h=5e-06:7.50e-07  | worst of last two: 7.499e-07
+                           replay error 7.186e-12 m
+  --- state 20 ---
+    A  Method-B reverse    h=2e-05:2.05e-07  h=1e-05:9.24e-08  h=5e-06:1.41e-07  | worst of last two: 1.413e-07
+                           replay error 1.994e-11 m
+  --- state 26 ---
+    A  Method-B reverse    h=2e-05:9.18e-09  h=1e-05:5.76e-09  h=5e-06:1.23e-10  | worst of last two: 5.760e-09
+                           replay error 1.820e-11 m
+  --- state 30 ---
+    A  Method-B reverse    h=2e-05:4.08e-08  h=1e-05:2.08e-10  h=5e-06:5.48e-09  | worst of last two: 5.481e-09
+                           replay error 6.416e-12 m
+  --- state 31 ---
+    A  Method-B reverse     UNAVAILABLE: OrderedSDFGeometryError: Method-B conversion fidelity failed: raw/converted contour distance 0.000200007 m, refinement change 2.33388e-06 m; limits 0.0002 m and 1e-05 m. Refine extraction, projected samples and Fourier bandwidth before accepting this field.
+  state 36: no saved checkpoint
+  state 40: no saved checkpoint
+  state 42: no saved checkpoint
+
+########## summary: worst relative error over the two smallest steps ##########
+  state        A Method-B reverse    AoB composite   replay error m
+  E0/0                  5.687e-08              n/a        7.817e-12
+  E0/10                 9.713e-08              n/a        8.067e-12
+  E0/20                 9.366e-08              n/a        1.096e-11
+  E0/26                 6.338e-08              n/a        8.024e-12
+  E0/30                 3.742e-06              n/a        7.491e-12
+  E0/31                 5.672e-05              n/a        1.672e-11
+  E0/36                 8.758e-08              n/a        8.536e-12
+  E0/40                 5.809e-07              n/a        6.902e-12
+  E0/42                 1.637e-06              n/a        1.535e-11
+  E1/0                  5.687e-08              n/a        7.817e-12
+  E1/10                 7.499e-07              n/a        7.186e-12
+  E1/20                 1.413e-07              n/a        1.994e-11
+  E1/26                 5.760e-09              n/a        1.820e-11
+  E1/30                 5.481e-09              n/a        6.416e-12
+  E1/31                       n/a              n/a              n/a

@@ -1,0 +1,161 @@
+{
+  "base_commit": "e34ed5fb76dd52c1910ede6cdfd62963c042baa8",
+  "source_sha256": {
+    "run_explicit_cartesian_fourier_inverse.py": "f33519cc1e4efb1f794aac8d59aaa01fb41b64beda62d306c6f33fb362fd1ae1",
+    "run_fourier_topology_controller.py": "3b074cec66ecb31460091e380400b561acc2e0e5a5e327419450103f433345c6",
+    "run_radial_fourier_topology_challenges.py": "dd665084f84a7a83f0fd25b64ee22127eac7471639e349596dee510289dff8f0",
+    "solvers/sdf_inverse/curve_updates.py": "2cdf4db9a356f74930006dc90706227c3860b69f5399e15668d4fb2cc377cd0b",
+    "solvers/sdf_inverse/explicit_fourier.py": "3fafd83f37f4a097e43d3fcc49e3cce4c557ac1cdad4b88407d536cc545498e9",
+    "solvers/sdf_inverse/radial_topology.py": "abe96bcc4fa9ca85a22936679b274ea999d13ebf2c65fe8ea68c6fa0fb4ff305",
+    "solvers/sdf_inverse/topology_controller.py": "8ebc02a8d620eab9c8536b71ebc90d52e704edb0fa3562635d8bab6addcb9570",
+    "solvers/sdf_inverse/neural_optimization.py": "8d8a3a649f97b5c411884ae17699e2d41a5ac9462cca412a50eee16a32c629f6"
+  },
+  "tests": {
+    "before_changes": 505,
+    "after_changes": 514,
+    "log": "tests.log"
+  },
+  "controller": [
+    {
+      "case": "death",
+      "stop": "recovered",
+      "component_counts": [
+        3,
+        2
+      ],
+      "event_sequence": [
+        "death"
+      ],
+      "relative_l2": 1.1025366466246768e-06,
+      "hausdorff_m": 4.0575319486821496e-08,
+      "previous_cartesian_hausdorff_m": 4.0575319486821496e-08,
+      "radial_reference_hausdorff_m": 4.0535329813244136e-08,
+      "maximum_gauge_subspace_residual": 3.7976575056083206e-17,
+      "accepted_events_verified": true,
+      "trajectory_monotone": true
+    },
+    {
+      "case": "merge",
+      "stop": "recovered",
+      "component_counts": [
+        2,
+        1
+      ],
+      "event_sequence": [
+        "merge"
+      ],
+      "relative_l2": 7.878760616749787e-05,
+      "hausdorff_m": 0.0007241253425898881,
+      "previous_cartesian_hausdorff_m": 0.0007241253425898881,
+      "radial_reference_hausdorff_m": 0.0007226515099269705,
+      "maximum_gauge_subspace_residual": 6.897881623296331e-15,
+      "accepted_events_verified": true,
+      "trajectory_monotone": true
+    },
+    {
+      "case": "mixed",
+      "stop": "recovered",
+      "component_counts": [
+        2,
+        3,
+        2
+      ],
+      "event_sequence": [
+        "split",
+        "death"
+      ],
+      "relative_l2": 4.282592586475744e-07,
+      "hausdorff_m": 1.4199737166286261e-08,
+      "previous_cartesian_hausdorff_m": 1.4199737166286261e-08,
+      "radial_reference_hausdorff_m": 1.4178189571891072e-08,
+      "maximum_gauge_subspace_residual": 5.895680852168268e-17,
+      "accepted_events_verified": true,
+      "trajectory_monotone": true
+    },
+    {
+      "case": "repeated-birth",
+      "stop": "recovered",
+      "component_counts": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "event_sequence": [
+        "birth",
+        "birth",
+        "birth"
+      ],
+      "relative_l2": 1.6206666812011902e-07,
+      "hausdorff_m": 9.261684789106352e-09,
+      "previous_cartesian_hausdorff_m": 9.261684789106352e-09,
+      "radial_reference_hausdorff_m": 9.251029288927818e-09,
+      "maximum_gauge_subspace_residual": 3.9877731786217245e-17,
+      "accepted_events_verified": true,
+      "trajectory_monotone": true
+    },
+    {
+      "case": "split",
+      "stop": "recovered",
+      "component_counts": [
+        1,
+        2
+      ],
+      "event_sequence": [
+        "split"
+      ],
+      "relative_l2": 6.873379723866001e-06,
+      "hausdorff_m": 0.00017521084820423599,
+      "previous_cartesian_hausdorff_m": 0.000295854113667206,
+      "radial_reference_hausdorff_m": 1.560407070222425e-08,
+      "maximum_gauge_subspace_residual": 2.677840539337615e-14,
+      "accepted_events_verified": true,
+      "trajectory_monotone": true
+    }
+  ],
+  "challenges": [
+    {
+      "case": "far-circle",
+      "outcome": "full_pass",
+      "training_relative_l2": 1.9306323165675163e-07,
+      "holdout_relative_l2": {
+        "1.50_GHz": 8.281137731134869e-07,
+        "2.50_GHz": 1.1884490328885023e-06
+      },
+      "maximum_geometry_error_m": 1.0828871466195267e-08
+    },
+    {
+      "case": "large-split",
+      "outcome": "full_pass",
+      "training_relative_l2": 1.9306323165675163e-07,
+      "holdout_relative_l2": {
+        "1.50_GHz": 8.281137731134869e-07,
+        "2.50_GHz": 1.1884490328885023e-06
+      },
+      "maximum_geometry_error_m": 1.0828871466195267e-08
+    },
+    {
+      "case": "ellipse-star",
+      "outcome": "full_pass",
+      "training_relative_l2": 0.00567781404095827,
+      "holdout_relative_l2": {
+        "2.50_GHz": 0.05245033311309029
+      },
+      "maximum_geometry_error_m": 0.0005516187988762797
+    }
+  ],
+  "single_component": {
+    "accepted_updates": 41,
+    "trajectory_rows": 44,
+    "initial_train_relative_l2": 1.1968450210030168,
+    "final_train_relative_l2": 1.29622069181693e-07,
+    "initial_holdout_relative_l2": 1.13609643749061,
+    "final_holdout_relative_l2": 1.1269545939447375e-07,
+    "initial_maximum_boundary_error_m": 0.04180882803796604,
+    "final_maximum_boundary_error_m": 2.7610521646796335e-09,
+    "stop_reason": "stable_data_and_geometry"
+  },
+  "single_parity_achieved": false,
+  "saved_video_files_probed": 9,
+  "rendered_video": "controller/death/inversion.mp4"
+}

@@ -10,8 +10,11 @@ which were read-only over saved contours.
 no extraction, projection, Method-B fit, conversion audit or adjoint is
 evaluated, and no saved artifact is modified. Every solve is on a frozen
 analytic curve built by the production `radial_fourier_state_curve` retraction
-at the long run's own geometry configuration: 194 Kress nodes, bandwidth 96,
-`(0,0)-(1,1)` bounds. Total cost is roughly 700 forward solves, about ten
+at the long run's node count and bandwidth: 194 Kress nodes, bandwidth 96. The
+probe declares `(0,0)-(1,1)` bounds where the run uses `(0.3,0.3)-(0.7,0.7)`; on
+the curve-only path the bounds serve only as a containment check, which every
+curve here passes with margin under either box, and the Kress solve depends on
+the curve and the problem alone. Total cost is roughly 700 forward solves, about ten
 minutes on one thread.
 
 | File | Contents |

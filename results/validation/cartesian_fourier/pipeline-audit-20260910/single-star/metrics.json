@@ -1,0 +1,449 @@
+{
+  "schema": 1,
+  "experiment": "direct_cartesian_fourier_inverse",
+  "neural_field": "absent: curve_only policy with a parameterless placeholder",
+  "created_utc": "2026-09-10T14:30:30.288396+00:00",
+  "command": "/home/drdeng/miniconda3/envs/EMNerf/bin/python run_explicit_cartesian_fourier_inverse.py --target star --initial-shape ellipse --train-ghz 0.5,1.5,2.5 --holdout-ghz 0.25,1.0,2.0 --num-pairs 24 --maximum-mode 6 --outer-iterations 150 --output-dir results/validation/cartesian_fourier/pipeline-audit-20260910/single-star",
+  "provenance": {
+    "git": {
+      "commit": "e34ed5fb76dd52c1910ede6cdfd62963c042baa8",
+      "dirty": true
+    },
+    "python": "3.9.25 (main, Nov  3 2025, 22:33:05) \n[GCC 11.2.0]",
+    "platform": "Linux-6.8.0-138-generic-x86_64-with-glibc2.35",
+    "numpy": "2.0.2"
+  },
+  "plan": "docs/iterations/cartesian_fourier/iteration_01/03_plan.md",
+  "reference_run": "results/inverse/radial_fourier/mlp-radial-continuation-k5-ellipse-to-star-kress-20260904",
+  "target": "star",
+  "initial_shape": "ellipse",
+  "train_frequencies_ghz": [
+    0.5,
+    1.5,
+    2.5
+  ],
+  "holdout_frequencies_ghz": [
+    0.25,
+    1.0,
+    2.0
+  ],
+  "num_pairs": 24,
+  "geometry_config": {
+    "bounds": [
+      [
+        0.3,
+        0.3
+      ],
+      [
+        0.7,
+        0.7
+      ]
+    ],
+    "grid_shape": [
+      257,
+      257
+    ],
+    "projected_samples": 128,
+    "bandwidth": 48,
+    "num_nodes": 128,
+    "arclength_dense_resolution": 2048,
+    "validation_resolution": 1024,
+    "conversion_tolerance_m": null,
+    "conversion_audit_grid_shape": null,
+    "conversion_audit_samples": null
+  },
+  "chart": {
+    "kind": "cartesian_fourier_polar_angle_parameter",
+    "maximum_mode": 6,
+    "stored_coefficients": 26,
+    "active_after_phase_gauge": 25,
+    "arclength_refit": false,
+    "radial_mode_budget": {
+      "maximum_mode": 9,
+      "resolvable_maximum_mode": 9,
+      "wavenumber_resolvable_maximum_mode": 9,
+      "angular_resolvable_maximum_mode": 11,
+      "angular_observation_count": 24,
+      "requested_maximum_mode": null,
+      "initial_mean_radius_m": 0.05383196638478131,
+      "maximum_exterior_wavenumber_per_m": 128.34377208884936,
+      "maximum_exterior_ka": 6.908997624782973,
+      "exceeds_wavenumber_resolution": false,
+      "exceeds_angular_resolution": false,
+      "exceeds_resolution": false,
+      "criterion": "min(ceil(ka + ka**(1/3)), floor((N_angles - 1)/2)) on the training band, initial mean radius, and paired ring scan"
+    },
+    "coefficient_order": "c_0x,c_0y,c_1x,c_1y,...,c_Kx,c_Ky,s_1x,s_1y,...,s_Kx,s_Ky",
+    "initial_projection_rms_m": 0.0005141834714982823,
+    "initial_projection_maximum_m": 0.0008526569657074906,
+    "initial_projection_set_distance_m": 0.0008976462532750146,
+    "initial_spectrum": {
+      "cosine_coefficients_m": [
+        [
+          0.4799999999999852,
+          0.5199999999999914
+        ],
+        [
+          0.05656233401985495,
+          0.005720758376800953
+        ],
+        [
+          9.452475431254448e-16,
+          -2.877421949457508e-15
+        ],
+        [
+          0.0055019338607448145,
+          -0.003867056302869645
+        ],
+        [
+          1.8676101044101434e-15,
+          9.548021772696623e-16
+        ],
+        [
+          -0.0004065263563741638,
+          -0.0015309197617153585
+        ],
+        [
+          2.737238946269433e-15,
+          1.7017029893160794e-15
+        ]
+      ],
+      "sine_coefficients_m": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.005720758376800956,
+          0.045450166567903294
+        ],
+        [
+          1.5011811234526671e-16,
+          5.114211300417151e-16
+        ],
+        [
+          0.007574460450732262,
+          0.005610233591206841
+        ],
+        [
+          -1.7643406217110323e-15,
+          -1.4262759943719657e-15
+        ],
+        [
+          0.0021764843861472563,
+          0.00029822662591214266
+        ],
+        [
+          8.917691269879155e-16,
+          5.592059134964196e-16
+        ]
+      ],
+      "mode_amplitude_m": [
+        0.7076722405181489,
+        0.07301006385174082,
+        3.0752458459303356e-15,
+        0.01157897114277374,
+        3.0897857112355164e-15,
+        0.002708320955644512,
+        3.3906096122024473e-15
+      ]
+    },
+    "final_spectrum": {
+      "cosine_coefficients_m": [
+        [
+          0.49999999999217615,
+          0.500000000049711
+        ],
+        [
+          0.05000000084625037,
+          1.2532275857259773e-10
+        ],
+        [
+          -9.82092222949793e-11,
+          4.0392162772549776e-11
+        ],
+        [
+          8.443726223525669e-10,
+          -1.4133484771472647e-10
+        ],
+        [
+          0.006249999899156566,
+          -2.1691722172683314e-11
+        ],
+        [
+          -3.4240707339401547e-12,
+          2.5218636173165594e-11
+        ],
+        [
+          0.006250001280729854,
+          2.0715390756773636e-10
+        ]
+      ],
+      "sine_coefficients_m": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          1.2532276179132293e-10,
+          0.04999999915295475
+        ],
+        [
+          2.2046836501481876e-12,
+          1.0460939478249617e-10
+        ],
+        [
+          1.093106689930194e-10,
+          8.48922993238232e-10
+        ],
+        [
+          2.0905118754783666e-11,
+          -0.006250000101975191
+        ],
+        [
+          -6.805545614802632e-12,
+          -1.1263000028004488e-12
+        ],
+        [
+          2.0636730312326127e-10,
+          0.006249998720401884
+        ]
+      ],
+      "mode_amplitude_m": [
+        0.7071067812161662,
+        0.0707106781180927,
+        1.4907905373990735e-10,
+        1.2106030461556573e-09,
+        0.008838834765632119,
+        2.6368311922400138e-11,
+        0.008838834765632294
+      ]
+    }
+  },
+  "inverse_config": {
+    "redistance": {
+      "bounds": [
+        [
+          0.3,
+          0.3
+        ],
+        [
+          0.7,
+          0.7
+        ]
+      ],
+      "max_steps": 1200,
+      "minimum_steps": 100,
+      "warmup_steps": 150,
+      "sample_count": 2048,
+      "heldout_sample_count": 512,
+      "learning_rate": 0.002,
+      "eikonal_weight": 0.1,
+      "boundary_weight": 200.0,
+      "normal_offset_weight": 20.0,
+      "box_boundary_weight": 5.0,
+      "normal_offset_m": 0.002,
+      "distance_rms_tolerance_m": 0.005,
+      "boundary_max_tolerance_m": 0.001,
+      "eikonal_rms_tolerance": 0.2,
+      "check_interval": 20,
+      "patience_checks": 15,
+      "seed": 31415,
+      "no_op_boundary_max_tolerance_m": 1e-06,
+      "boundary_oversampling_factor": 4,
+      "distance_target": "legacy_polygon",
+      "distance_target_tolerance_m": 1e-06,
+      "distance_initial_samples": 256,
+      "distance_maximum_samples": 4096,
+      "smooth_boundary_sample_count": 512,
+      "smooth_boundary_sampling": "continuous_curve"
+    },
+    "max_iterations": 150,
+    "maximum_mode": 6,
+    "finite_difference_step_m": 0.0002,
+    "minimum_finite_difference_step_m": 1.25e-05,
+    "max_stencil_shrinks": 4,
+    "maximum_modal_field_update_m": 0.002,
+    "maximum_redistance_curve_drift_m": 0.0015,
+    "maximum_spectral_tail_growth_m": null,
+    "spectral_tail_reference_rms_m": null,
+    "initial_damping": 0.001,
+    "minimum_damping": 1e-06,
+    "curvature_penalty_weight": 0.0001,
+    "maximum_parameter_speed_ratio": 16.0,
+    "tangential_penalty_weight": 0.0,
+    "regauge_to_polar_angle": true,
+    "armijo_coefficient": 0.0001,
+    "max_trust_region_solves": 8,
+    "trust_region_refinement_steps": 8,
+    "damping_increase": 10.0,
+    "damping_decrease": 0.3,
+    "max_damping_trials": 5,
+    "max_backtracks": 6,
+    "loss_tolerance": 1e-12,
+    "relative_loss_change_tolerance": 0.0001,
+    "geometry_change_tolerance_m": 0.0002,
+    "eikonal_rms_tolerance": 0.15,
+    "consecutive_convergence_iterations": 2,
+    "audit_point_count": 512,
+    "audit_seed": 2718,
+    "direct_curve_retraction": "cartesian_fourier",
+    "distillation_policy": "curve_only",
+    "representation_audit_num_nodes": 512,
+    "maximum_representation_audit_num_nodes": 2048,
+    "representation_audit_tolerance_m": 1e-06,
+    "representation_export_drift_tolerance_m": 0.0002
+  },
+  "continuation_stages": [
+    {
+      "stage": 1,
+      "train_frequencies_ghz": [
+        0.5
+      ],
+      "max_iterations": 19,
+      "maximum_mode": 4,
+      "automatic_radial_mode_budget": {
+        "maximum_mode": 3,
+        "resolvable_maximum_mode": 3,
+        "wavenumber_resolvable_maximum_mode": 3,
+        "angular_resolvable_maximum_mode": 11,
+        "angular_observation_count": 24,
+        "requested_maximum_mode": null,
+        "initial_mean_radius_m": 0.05100742535570754,
+        "maximum_exterior_wavenumber_per_m": 25.668754417769875,
+        "maximum_exterior_ka": 1.3092970749383852,
+        "exceeds_wavenumber_resolution": false,
+        "exceeds_angular_resolution": false,
+        "exceeds_resolution": false,
+        "criterion": "min(ceil(ka + ka**(1/3)), floor((N_angles - 1)/2)) on the training band, initial mean radius, and paired ring scan"
+      },
+      "accepted_updates": 19,
+      "converged": false,
+      "stop_reason": "maximum_iterations",
+      "reconstruction_stop_reason": "maximum_iterations",
+      "initial_loss": 0.6993107576887718,
+      "final_loss": 0.009983644606280782,
+      "evaluation_count": 704,
+      "infeasible_evaluation_count": 0,
+      "full_validation_rejection_count": 0
+    },
+    {
+      "stage": 2,
+      "train_frequencies_ghz": [
+        0.5,
+        1.5
+      ],
+      "max_iterations": 20,
+      "maximum_mode": 6,
+      "automatic_radial_mode_budget": {
+        "maximum_mode": 6,
+        "resolvable_maximum_mode": 6,
+        "wavenumber_resolvable_maximum_mode": 6,
+        "angular_resolvable_maximum_mode": 11,
+        "angular_observation_count": 24,
+        "requested_maximum_mode": null,
+        "initial_mean_radius_m": 0.04686687747337194,
+        "maximum_exterior_wavenumber_per_m": 77.00626325330963,
+        "maximum_exterior_ka": 3.609043104575086,
+        "exceeds_wavenumber_resolution": false,
+        "exceeds_angular_resolution": false,
+        "exceeds_resolution": false,
+        "criterion": "min(ceil(ka + ka**(1/3)), floor((N_angles - 1)/2)) on the training band, initial mean radius, and paired ring scan"
+      },
+      "accepted_updates": 20,
+      "converged": false,
+      "stop_reason": "maximum_iterations",
+      "reconstruction_stop_reason": "maximum_iterations",
+      "initial_loss": 1.007560879618315,
+      "final_loss": 2.1658207841362877e-13,
+      "evaluation_count": 1061,
+      "infeasible_evaluation_count": 0,
+      "full_validation_rejection_count": 0
+    },
+    {
+      "stage": 3,
+      "train_frequencies_ghz": [
+        0.5,
+        1.5,
+        2.5
+      ],
+      "max_iterations": 111,
+      "maximum_mode": 6,
+      "automatic_radial_mode_budget": {
+        "maximum_mode": 9,
+        "resolvable_maximum_mode": 9,
+        "wavenumber_resolvable_maximum_mode": 9,
+        "angular_resolvable_maximum_mode": 11,
+        "angular_observation_count": 24,
+        "requested_maximum_mode": null,
+        "initial_mean_radius_m": 0.049999999996634105,
+        "maximum_exterior_wavenumber_per_m": 128.34377208884936,
+        "maximum_exterior_ka": 6.417188604010477,
+        "exceeds_wavenumber_resolution": false,
+        "exceeds_angular_resolution": false,
+        "exceeds_resolution": false,
+        "criterion": "min(ceil(ka + ka**(1/3)), floor((N_angles - 1)/2)) on the training band, initial mean radius, and paired ring scan"
+      },
+      "accepted_updates": 2,
+      "converged": true,
+      "stop_reason": "stable_data_and_geometry",
+      "reconstruction_stop_reason": "stable_data_and_geometry",
+      "initial_loss": 1.1565668624765154e-12,
+      "final_loss": 6.02323350289668e-14,
+      "evaluation_count": 107,
+      "infeasible_evaluation_count": 0,
+      "full_validation_rejection_count": 0
+    }
+  ],
+  "oracle_diagnostics": {
+    "num_nodes": 512,
+    "coarse_num_nodes": 256,
+    "per_frequency_relative_difference": [
+      3.7946233131213287e-13,
+      2.404580758853362e-11,
+      2.8798066152594983e-10,
+      1.6147648570885061e-12,
+      1.5645342491561926e-11,
+      7.080395856760416e-11
+    ],
+    "maximum_relative_difference": 2.8798066152594983e-10,
+    "fine": {
+      "num_nodes": 512,
+      "maximum_linear_system_relative_residual": 2.182402695451322e-14,
+      "maximum_incident_consistency": 3.5419690744672254e-15,
+      "total_seconds": 5.301944791979622
+    },
+    "coarse": {
+      "num_nodes": 256,
+      "maximum_linear_system_relative_residual": 1.7419949802096574e-14,
+      "maximum_incident_consistency": 3.4227018299267233e-15,
+      "total_seconds": 1.6235870530363172
+    }
+  },
+  "truth_oracle": "nystrom_ref independent Nystrom/Muller solution of the exact star",
+  "results": {
+    "accepted_updates": 41,
+    "trajectory_rows": 44,
+    "initial_train_relative_l2": 1.1968450210030168,
+    "final_train_relative_l2": 1.29622069181693e-07,
+    "initial_holdout_relative_l2": 1.13609643749061,
+    "final_holdout_relative_l2": 1.1269545939447375e-07,
+    "initial_maximum_boundary_error_m": 0.04180882803796604,
+    "final_maximum_boundary_error_m": 2.7610521646796335e-09,
+    "stop_reason": "stable_data_and_geometry"
+  },
+  "parity_reference": {
+    "final_train_relative_l2": 1.068e-08,
+    "final_holdout_relative_l2": 1.339e-08,
+    "final_maximum_boundary_error_m": 2.57e-10,
+    "accepted_updates": 44
+  },
+  "parity_gates": {
+    "train_relative_l2_max": 1e-07,
+    "holdout_relative_l2_max": 1e-07,
+    "maximum_boundary_error_max_m": 1e-08
+  },
+  "parity_achieved": false,
+  "parity_evaluated": true,
+  "parity_reference_mismatches": []
+}

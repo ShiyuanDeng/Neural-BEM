@@ -15,8 +15,8 @@ video overlays, never for a proposal or an accepted step.
 
 The ellipse/star case is eight staged optimizations deep and the two charts
 agree at every stage — `0.20782`, `0.19355`, `0.18752`, `0.17020`,
-`6.154e-03`, `7.326e-07`, `3.359e-10`, `7.108e-05` — with identical accepted-
-iteration counts. That agreement is not a coincidence of the endpoint: the
+`6.154e-03`, `7.326e-07`, `3.359e-10`, `7.108e-05` — with one additional Cartesian update in the pre-topology stage and matching
+accepted-update counts in the later recorded stages. That agreement is not a coincidence of the endpoint: the
 gauge-fixed Cartesian chart's reachable set *is* the radial chart one band
 lower, so once the trust region and the feature-radius certificate are
 expressed in matching coordinates the two optimizers trace the same path.

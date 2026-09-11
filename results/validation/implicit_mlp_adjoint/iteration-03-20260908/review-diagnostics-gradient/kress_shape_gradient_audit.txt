@@ -1,0 +1,57 @@
+Is the Kress shape gradient correct at the run's own deformed geometries?
+
+Stage B of the gradient-chain audit, and independently the check the direct
+Method-B Fourier proposal's section 7.2 asks for. It removes the MLP entirely:
+a saved contour is re-expressed exactly as its bandwidth-96 Cartesian Fourier
+curve, perturbed coherently in coefficient space, and the Kress objective
+adjoint plus geometry pullback
+
+    dL = sum_i q_i . d gamma_i + sum_i p_i . d gamma'_i
+
+is compared with central finite differences of the same production objective.
+
+No inverse is run, no MLP is loaded, no extraction, projection or Method-B fit
+is performed, and no saved artifact is modified. The only inputs are each arm's
+``geometry_trajectory.json`` and the run's ``observations.npz``.
+
+Because the saved contour has 194 nodes and bandwidth 96 is exactly
+``(194 - 2) / 2``, the discrete Fourier transform of those nodes recovers the
+curve exactly; the reported Nyquist bin is the check that it did.
+
+active perturbation band 8, steps (0.0001, 5e-05, 2.5e-05), seed 724
+
+########## E0: paired ##########
+  --- state 0 ---
+    exact-recovery check: Nyquist bin 9.614e-18 m, max node difference 1.578e-15 m
+    data objective 1.533445
+    B  Kress shape gradient  h=1.00e-04: 2.018e-05  h=5.00e-05: 5.045e-06  h=2.50e-05: 1.261e-06   | worst of last two: 5.045e-06
+  --- state 21 ---
+    exact-recovery check: Nyquist bin 1.993e-17 m, max node difference 1.201e-15 m
+    data objective 0.451152
+    B  Kress shape gradient  h=1.00e-04: 5.047e-04  h=5.00e-05: 1.262e-04  h=2.50e-05: 3.156e-05   | worst of last two: 1.262e-04
+  --- state 42 ---
+    exact-recovery check: Nyquist bin 2.040e-17 m, max node difference 1.688e-15 m
+    data objective 0.325002
+    B  Kress shape gradient  h=1.00e-04: 9.722e-05  h=5.00e-05: 2.430e-05  h=2.50e-05: 6.076e-06   | worst of last two: 2.430e-05
+
+########## E1: multistatic ##########
+  --- state 0 ---
+    exact-recovery check: Nyquist bin 9.614e-18 m, max node difference 1.578e-15 m
+    data objective 0.525327
+    B  Kress shape gradient  h=1.00e-04: 5.992e-06  h=5.00e-05: 1.498e-06  h=2.50e-05: 3.745e-07   | worst of last two: 1.498e-06
+  --- state 16 ---
+    exact-recovery check: Nyquist bin 8.917e-18 m, max node difference 1.494e-15 m
+    data objective 0.173809
+    B  Kress shape gradient  h=1.00e-04: 1.717e-05  h=5.00e-05: 4.293e-06  h=2.50e-05: 1.073e-06   | worst of last two: 4.293e-06
+  --- state 31 ---
+    exact-recovery check: Nyquist bin 4.354e-17 m, max node difference 1.337e-15 m
+    data objective 0.075804
+    B  Kress shape gradient  h=1.00e-04: 4.194e-05  h=5.00e-05: 1.048e-05  h=2.50e-05: 2.621e-06   | worst of last two: 1.048e-05
+
+########## summary: worst relative error over the two smallest steps ##########
+  E0/0       5.045e-06
+  E0/21      1.262e-04
+  E0/42      2.430e-05
+  E1/0       1.498e-06
+  E1/16      4.293e-06
+  E1/31      1.048e-05

@@ -1,12 +1,21 @@
-# Two inverse pipelines
+# Three inverse pipelines
 
-These directories distinguish the two shape representations to compare. They
+These directories distinguish the three shape representations to compare. They
 do not imply that a matched comparison has already been completed.
 
 | Directory | Shape owner and measured status |
 |---|---|
 | [implicit_mlp](implicit_mlp/README.md) | Full neural weights; extraction/Method B and Kress adjoint. Current circle, ellipse-to-circle and star runs all FAIL recovery acceptance. Gradient checks pass; the recovery pipeline remains broken/unresolved. |
+| [cartesian_fourier](cartesian_fourier/README.md) | Explicit Cartesian Fourier coefficients without neural fitting or audits. Includes the single-component ellipse-to-star study, five automatic topology cases, and three topology challenges. |
 | [radial_fourier](radial_fourier/README.md) | Explicit radial Fourier coefficients. Recorded canonical reconstruction works in the successful controls; MLP fitting/export failures are reported separately. Material and frozen-metric variants live inside this pipeline. |
+
+The two Fourier charts have corresponding topology suites. Their other saved
+cases are not a matched three-way benchmark: Cartesian has one full
+single-component study, implicit MLP has circle/star initialization studies,
+and material/metric variants remain specific to radial Fourier.
+
+See the [Cartesian pipeline guide](../../docs/pipelines/explicit_cartesian_fourier.md)
+for entry points and the distinction between its two optimizers.
 
 The old `method_b` bundles are now
 [legacy known-shape-family parameter inverses](../legacy/known_shape_family_parameter_inverse/README.md).

@@ -2,8 +2,8 @@
 
 Direct inverses whose accepted optimization state is a Cartesian Fourier curve
 `gamma(t)` in the **polar-angle** parameter. No neural field participates: no
-extraction, no re-distancing, no Eikonal term, no representation audit and no
-conversion gate. The shared optimizer's network argument is a parameterless
+neural extraction, no re-distancing, no Eikonal term, no representation audit and no
+conversion gate. The analytic initialization is extracted once. The shared optimizer's network argument is a parameterless
 placeholder under the `curve_only` policy.
 
 Nothing here refits to arc length. That is deliberate and load-bearing: the
@@ -41,3 +41,9 @@ geometry only — no target component count, no event policy.
 
 Both use `--chart cartesian` on the shared drivers; the radial bundles they are
 matched against are unchanged.
+
+The [pipeline guide](../../../docs/pipelines/explicit_cartesian_fourier.md)
+distinguishes the single-component optimizer from the topology optimizer's
+gauge-preserving subspace. The [September 10 audit](../../validation/cartesian_fourier/pipeline-audit-20260910/README.md)
+records later correctness fixes and fresh validation; the dated bundles above
+retain their original measurements.

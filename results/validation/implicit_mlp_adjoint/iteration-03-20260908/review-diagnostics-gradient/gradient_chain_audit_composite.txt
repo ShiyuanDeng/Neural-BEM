@@ -1,0 +1,66 @@
+Is the neural gradient chain still correct at late states?
+
+A review diagnostic for the gradient-diagnosis addendum. It re-runs, at frozen
+saved accepted states, the correctness checks the long run performed only at
+state 0, and splits the chain so the two halves can be blamed separately:
+
+    weights --[A] Method-B reverse--> curve jets --[B] Kress pullback--> dL
+
+    stage B   Kress objective adjoint and geometry pullback
+    stage A   extraction, projection, Fourier fit, arc-length refit reverse
+    A o B     the composite the inverse actually used
+
+Each stage is compared against central finite differences of the production
+forward path at the same frozen state. No inverse is run, no optimizer step is
+taken, no production file is written and no saved artifact is modified. Weights
+are restored after every perturbation.
+
+Stage A needs no BEM solve at all: it contracts the differentiable Method-B
+replay with a fixed random covector and finite-differences the production
+geometry build. Stage B and the composite need forward solves.
+
+geometry: 194 nodes, bandwidth 96, bounds ((0.3, 0.3), (0.7, 0.7))
+finite-difference steps (2e-05, 1e-05, 5e-06), seed 724
+
+########## E0: paired, states [0, 26, 30] of 0..42 ##########
+  --- state 0 ---
+    A  Method-B reverse    h=2e-05:1.02e-07  h=1e-05:5.69e-08  h=5e-06:3.55e-08  | worst of last two: 5.687e-08
+                           replay error 7.817e-12 m
+    AoB composite          h=2e-05:1.34e-08  h=1e-05:1.43e-09  h=5e-06:2.69e-10  | worst of last two: 1.427e-09
+                           gradient norm 91.5731, replay 7.817e-12 m
+  --- state 26 ---
+    A  Method-B reverse    h=2e-05:2.27e-07  h=1e-05:2.35e-08  h=5e-06:6.34e-08  | worst of last two: 6.338e-08
+                           replay error 8.024e-12 m
+    AoB composite          h=2e-05:1.69e-06  h=1e-05:7.90e-10  h=5e-06:6.62e-09  | worst of last two: 6.617e-09
+                           gradient norm 15.0659, replay 8.024e-12 m
+  --- state 30 ---
+    A  Method-B reverse    h=2e-05:3.84e-06  h=1e-05:3.74e-06  h=5e-06:3.68e-06  | worst of last two: 3.742e-06
+                           replay error 7.491e-12 m
+    AoB composite          h=2e-05:5.09e-07  h=1e-05:7.83e-09  h=5e-06:1.27e-06  | worst of last two: 1.265e-06
+                           gradient norm 11.0332, replay 7.491e-12 m
+
+########## E1: multistatic, states [0, 26, 30] of 0..31 ##########
+  --- state 0 ---
+    A  Method-B reverse    h=2e-05:1.02e-07  h=1e-05:5.69e-08  h=5e-06:3.55e-08  | worst of last two: 5.687e-08
+                           replay error 7.817e-12 m
+    AoB composite          h=2e-05:3.26e-09  h=1e-05:6.33e-10  h=5e-06:9.54e-10  | worst of last two: 9.541e-10
+                           gradient norm 34.3985, replay 7.817e-12 m
+  --- state 26 ---
+    A  Method-B reverse    h=2e-05:9.18e-09  h=1e-05:5.76e-09  h=5e-06:1.23e-10  | worst of last two: 5.760e-09
+                           replay error 1.820e-11 m
+    AoB composite          h=2e-05:1.67e-08  h=1e-05:1.32e-08  h=5e-06:2.36e-08  | worst of last two: 2.361e-08
+                           gradient norm 8.5934, replay 1.820e-11 m
+  --- state 30 ---
+    A  Method-B reverse    h=2e-05:4.08e-08  h=1e-05:2.08e-10  h=5e-06:5.48e-09  | worst of last two: 5.481e-09
+                           replay error 6.416e-12 m
+    AoB composite          h=2e-05:8.11e-09  h=1e-05:4.68e-09  h=5e-06:6.43e-06  | worst of last two: 6.434e-06
+                           gradient norm 8.5551, replay 6.416e-12 m
+
+########## summary: worst relative error over the two smallest steps ##########
+  state        A Method-B reverse    AoB composite   replay error m
+  E0/0                  5.687e-08        1.427e-09        7.817e-12
+  E0/26                 6.338e-08        6.617e-09        8.024e-12
+  E0/30                 3.742e-06        1.265e-06        7.491e-12
+  E1/0                  5.687e-08        9.541e-10        7.817e-12
+  E1/26                 5.760e-09        2.361e-08        1.820e-11
+  E1/30                 5.481e-09        6.434e-06        6.416e-12
