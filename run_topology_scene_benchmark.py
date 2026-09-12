@@ -46,8 +46,11 @@ DEFAULT_SPEC = ROOT / 'config/topology_scenes_v1.json'
 # acquisition, budgets and gates never vary with the arm.
 ARM_POLICIES = {'A': dict(include_simplest_candidate=False),
                 'F': dict(include_simplest_candidate=True),
-                'G': dict(include_simplest_candidate=False, refined_feasibility_guard=True)}
-ARM_LABELS = {'A': 'default A', 'F': 'selective F', 'G': 'guarded G'}
+                'G': dict(include_simplest_candidate=False, refined_feasibility_guard=True),
+                'H': dict(include_simplest_candidate=False, refined_feasibility_guard=True,
+                          feasible_fd_jacobian=True)}
+ARM_LABELS = {'A': 'default A', 'F': 'selective F', 'G': 'guarded G',
+              'H': 'feasible-FD H'}
 POLICY_KEYS = sorted({key for policy in ARM_POLICIES.values() for key in policy})
 DEFAULT_ARMS = ('A', 'F')
 # Archived bundle analyses iterate this name; it stays the pair they ran.
