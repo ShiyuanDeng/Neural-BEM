@@ -47,10 +47,11 @@ Galerkin formulations, derivatives, conditioning, and cost. Replacing Kress is
 
 | Track | Question | Stage | Next expected action | Approved IDs |
 |---|---|---|---|---|
-| [Topology / Track A](iterations/topology/README.md) | How can the inverse choose and execute topology changes more reliably, without a prescribed object count or excessive BIE cost? | TOP-007 complete; both arms still pass 5/12. **Literature verdict complete; written next steps only** | [Review the ranked verdict](iterations/topology/iteration_05/02_proposals/03_literature_verdict.md): feasible FD information first, controlled shape-capacity enrichment separately; floor relaxation and merge headroom deferred. No new implementation approved | **TOP-001, TOP-005, TOP-006, TOP-007** |
+| [Topology / Track A](iterations/topology/README.md) | How can the inverse choose and execute topology changes more reliably, without a prescribed object count or excessive BIE cost? | TOP-008 complete, TOP-009 stopped at its stage-2 gate. Both accepted candidates from the literature verdict are measured; **the binding constraint is now data and regularization** | Neither remaining direction is authorized. [Iteration 07](iterations/topology/iteration_07/01_results.md) states the two options — a regularized promotion rule, or richer acquisition, which needs a new untouched evaluation set | **TOP-001, TOP-005, TOP-006, TOP-007, TOP-008, TOP-009** |
 | [Boundary–BIE](iterations/boundary_bie/README.md) | Which properties of smooth-boundary representations improve the accuracy, conditioning, differentiation or cost of the BIE inverse? | Brief drafted; no review, no plan | Review [the brief](iterations/boundary_bie/iteration_01/02_proposals/01_boundary_bie_research_brief.md); decide whether `BIE-001` — comparison and selection of one prototype — is the right first deliverable | **None** |
 
-Topology has completed **gate 7 for TOP-001, TOP-005, TOP-006 and TOP-007** under the
+Topology has completed **gate 7 for TOP-001, TOP-005, TOP-006, TOP-007, TOP-008
+and TOP-009** under the
 user's 2026-09-11 directions to take Track A as far as possible and to continue
 from the latest fixes. Those session instructions authorize those plans without
 asking again for an exact ID phrase. Boundary–BIE remains at
@@ -64,7 +65,23 @@ controller stayed frozen during this completed measurement; results opened
 iteration 04. The requested distant ellipse/star case fails. All future
 performance comparisons must include the [full frozen scene matrix](benchmarks/topology_scenes.md).
 
-**TOP-007 (2026-09-11)** then fixed why four of those runs died: the optimizer
+**TOP-008 and TOP-009 (2026-09-12)** implemented the two candidates the
+[literature verdict](iterations/topology/iteration_05/02_proposals/03_literature_verdict.md)
+accepts, and between them changed what the open question is. TOP-008 found a real
+defect — a probe the radius floor refused was recorded as a derivative of zero —
+and correcting it freed the pinned component from 8.000 mm to 22.737 mm, returned
+10/12 runs against 9/12 and improved `split` to 0.000023 mm at a quarter of the
+solves, while buying **no new benchmark pass**. TOP-009 then showed that adding
+shape bandwidth fits the training data 248x better and makes boundary error, IoU
+and holdout error **monotonically worse**, with a circular control confirming the
+probe distinguishes a space that is missing shape from one that is not. Capacity
+was never the shortage: 24 observations at one frequency do not determine
+harmonics that fine, so the binding constraint on frozen v1 is data and
+regularization.
+[TOP-008](../results/validation/topology/TOP-008-20260912-feasible-fd/README.md) ·
+[TOP-009](../results/validation/topology/TOP-009-20260912-bandwidth-capacity/README.md).
+
+**TOP-007 (2026-09-11)** fixed why four earlier runs died: the optimizer
 searched the production resolution's feasible set while the controller
 evaluated at the refined one. With the opt-in refined feasibility guard no
 guarded run aborts, the requested distant ellipse/star case finishes with the

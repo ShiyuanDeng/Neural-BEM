@@ -2,6 +2,8 @@
 
 | Bundle | Role and outcome |
 |---|---|
+| [TOP-009 bandwidth capacity](TOP-009-20260912-bandwidth-capacity/README.md) | Stopped at its stage-2 gate: added shape modes are observable and fit 248x better, while boundary error, IoU and holdout error all worsen monotonically. A circular control shows 0 of 14 rungs observable. The binding constraint is data and regularization, not capacity |
+| [TOP-008 feasible finite differences](TOP-008-20260912-feasible-fd/README.md) | 24 inversions on the same frozen scenes: measuring the feasible side of a refused probe frees the pinned component from 8.000 mm to 22.737 mm, returns 10/12 runs against 9/12 and takes `split` to 0.000023 mm at a quarter of the solves — with the pass count unchanged at 5/12 |
 | [TOP-007 videos](TOP-007-20260911-refined-feasibility/videos.md) | Every guarded scene as an inversion video, with the default-arm before/after pair on the two scenes the guard rescued |
 | [TOP-007 refined-feasibility report](TOP-007-20260911-refined-feasibility/README.md) | 24 inversions on the same frozen scenes: the guarded arm aborts nothing and returns 9/12 runs against the default's 7/12, with identical states wherever both completed and 5/12 passing in both |
 | [TOP-006 broad-scene report](TOP-006-20260911-scenes-v1/README.md) | 24 attempted inversions across twelve frozen scenes; both policies pass 5/12. Distant ellipse/star fails, with all exceptions/timeouts and visible last states retained |

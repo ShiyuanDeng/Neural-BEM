@@ -61,6 +61,25 @@ with identical final states wherever both arms complete; **both arms still pass
 [Report and comparisons](results/validation/topology/TOP-007-20260911-refined-feasibility/README.md) ·
 [videos of every scene](results/validation/topology/TOP-007-20260911-refined-feasibility/videos.md).
 
+**Track A update (2026-09-12, TOP-008 and TOP-009):** the two candidates an
+evidence-based literature review accepted are now both measured. TOP-008: a
+probe the 8-mm radius floor refused was being recorded as a derivative of zero,
+freezing its Jacobian column, and a gradient assembled from those zeros could
+still report convergence. The opt-in `--feasible-fd-jacobian` measures the
+feasible side instead; it frees the pinned component from 8.000 mm to 22.737 mm,
+returns 10/12 runs against 9/12 and takes `split` to 0.000023 mm at a quarter of
+the solves — but **buys no new benchmark pass**, still 5/12.
+[Report](results/validation/topology/TOP-008-20260912-feasible-fd/README.md).
+
+TOP-009 then tested whether the failing shapes are simply missing bandwidth. They
+are not. Adding modes fits the training data **248x better** and makes boundary
+error, IoU and holdout error **monotonically worse**, while a circular control
+shows the probe distinguishes a space that lacks shape from one that does not.
+Twenty-four observations at a single 0.5-GHz frequency do not determine harmonics
+that fine, so **the binding constraint is data and regularization, not capacity
+and no longer the derivative**.
+[Report](results/validation/topology/TOP-009-20260912-bandwidth-capacity/README.md).
+
 ## Implementation at a glance
 
 | Entry point | What it currently runs |

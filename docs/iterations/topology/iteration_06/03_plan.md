@@ -4,7 +4,7 @@
   implement the Codex plan and to keep going. The plan is the
   [literature verdict](../iteration_05/02_proposals/03_literature_verdict.md);
   this contract implements its rank 2, the only other candidate it accepts.
-- **Execution status:** IN PROGRESS.
+- **Execution status:** STOPPED AT STAGE 2. [Iteration 07 results](../iteration_07/01_results.md).
 - **Owner:** Claude. **Independent reviewer:** Codex (literature verdict).
 - **Baseline:** `106929b` on `feature/ordered-boundary-nystrom`.
 - **Branch:** continue `feature/ordered-boundary-nystrom`; no new branch.
@@ -71,4 +71,31 @@ surprise.
 
 ## Closeout record
 
-To be completed.
+Stage 1 passed, stage 2 failed its declared predicate, and the line was stopped
+before the suite;
+[bundle](../../../../results/validation/topology/TOP-009-20260912-bandwidth-capacity/README.md),
+[closeout](../iteration_07/01_results.md).
+
+- **Stage 1 PASS.** 14 of 14 rungs observable at `far-two-stars`, explaining up
+  to 0.6445 of the residual beyond the existing span, against 0 of 14 and at most
+  3.8e-7 at the circular control. Zero padding moved the boundary by 0.000e+00 m;
+  columns stable to 7.3e-5 against the 0.25 tolerance.
+- **Stage 2 FAIL.** All seven rungs retained by the training-only rule. Training
+  loss fell 248x, 9.219e-05 to 3.717e-07, while matched boundary error rose
+  7.595 mm to 17.599 mm, union IoU fell 0.7468 to 0.6383 and worst holdout error
+  rose 1.003 to 1.514 — all monotonically. The best reconstruction in the climb
+  is the starting state.
+- **Stage 3 NOT RUN.** The stage-2 predicate included boundary error, so the gate
+  holds. Tuning the rule after seeing its result is what the stage structure
+  exists to prevent.
+
+The declared risk — that the fine ladder would cost timeouts rather than buy
+passes — did not get the chance to materialize, because the rule failed on
+accuracy first.
+
+Recorded overrun: the climb used 3127 solves against the declared 2500 cap, as
+the stage script tests the cap between rungs. Degradation is monotone from the
+first rung, so the conclusion does not depend on it.
+
+`bandwidth_promotion` ships opt-in and off. The finding is that the binding
+constraint on frozen v1 is data and regularization, not capacity.

@@ -9,7 +9,16 @@ both current policies pass 5/12 scenes. The requested distant ellipse/star case
 fails; retain it as a regression target rather than removing it from the suite.
 Its second is [TOP-007](../../results/validation/topology/TOP-007-20260911-refined-feasibility/README.md),
 which adds the guarded arm: still 5/12, but nothing aborts and the requested
-case finishes with the correct object count and the wrong shapes.
+case finishes with the correct object count and the wrong shapes. Its third is
+[TOP-008](../../results/validation/topology/TOP-008-20260912-feasible-fd/README.md),
+which corrects the finite-difference stencil at an active constraint: 10/12 runs
+return against 9/12, `split` improves to 0.000023 mm at a quarter of the solves,
+and the pass count is **still 5/12**.
+[TOP-009](../../results/validation/topology/TOP-009-20260912-bandwidth-capacity/README.md)
+stopped before reaching this suite: its stage-2 gate showed that adding shape
+bandwidth fits the training data 248x better while making boundary error, IoU and
+holdout error monotonically worse, so the suite was not spent confirming a rule
+already shown to harm generalization.
 
 ## Scene matrix
 
@@ -73,7 +82,8 @@ env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMEXPR_NUM_THREA
 
 The output directory must be new. `--arms` names the controller policies to
 compare — `A` default, `F` selective refinement, `G` default plus the refined
-feasibility guard — and defaults to `A,F`. The chosen arms and their policy
+feasibility guard, `H` that guard plus the feasible finite-difference stencil,
+and `J` that pair plus bandwidth promotion — and defaults to `A,F`. The chosen arms and their policy
 overrides are recorded in the run manifest, and every arm shares the same
 scenes, observations, initial states, budgets and gates: an arm changes the
 controller policy and nothing else. A candidate policy needs its own name

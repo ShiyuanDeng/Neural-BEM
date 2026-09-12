@@ -46,14 +46,14 @@ Updated 2026-09-12.
 
 | Item | Current state |
 |---|---|
-| Active iteration | [Iteration 05 results](iteration_05/01_results.md) |
-| Stage | TOP-007 closeout complete; **literature verdict written** under the user's 2026-09-12 request for an evidence-based review and ranked, written next steps |
-| Approved experiment IDs | `TOP-001`, `TOP-005`, `TOP-006`, `TOP-007`: **APPROVED** by the user's Track A, broader-scene and continuation requests on 2026-09-11. The session instructions supersede the old exact-ID phrase requirement. `TOP-002`–`TOP-004` and `TOP-008` remain proposals |
-| Execution status | TOP-001, TOP-005, TOP-006 and TOP-007 `COMPLETE`. The guarded arm aborts nothing and returns 9/12 runs against the default's 7/12, with identical final states wherever both completed and the same 5/12 passing. 554 tests pass; controller default unchanged |
-| Next expected action | Read the [literature verdict and ranked next steps](iteration_05/02_proposals/03_literature_verdict.md). It recommends feasible FD information and truthful stopping first, then controlled shape-capacity enrichment in a separate comparison. It does **not** recommend relaxing the floor or adding merge headroom as the next fix. Full shape recovery remains unproven. The current request authorizes written review only; no TOP-008 implementation or run has started. Whether the guard becomes the default remains separate |
-| Owner / reviewer | TOP-007 implementation: Claude; literature verdict: Codex. Independent review of the verdict: `unassigned` |
-| Dependencies | Shared controller/driver changes declared in the [review](iteration_01/02_proposals/02_codex_review.md) and the [TOP-007 review](iteration_04/02_proposals/02_feasibility_review.md); no physical solver or geometry-state interfaces changed |
-| Blockers | No proposed change is established as a complete recovery fix. The literature review is complete; implementation remains unstarted under the written-only scope. Three scenes still time out and noncircular recovery is unresolved |
+| Active iteration | [Iteration 07 results](iteration_07/01_results.md) |
+| Stage | TOP-008 complete, TOP-009 stopped at its stage-2 gate. **Both accepted candidates from the literature verdict are now measured** |
+| Approved experiment IDs | `TOP-001`, `TOP-005`, `TOP-006`, `TOP-007` approved 2026-09-11; `TOP-008` and `TOP-009` approved 2026-09-12 by the user's direction to implement the Codex plan and keep going. `TOP-002`–`TOP-004` remain proposals |
+| Execution status | TOP-008 `COMPLETE`: the feasible-FD stencil frees the pinned component (8.000 mm to 22.737 mm), returns 10/12 runs against 9/12, and improves `split` to 0.000023 mm at a quarter of the solves — but buys **no new benchmark pass**, still 5/12. TOP-009 `STOPPED AT STAGE 2`: bandwidth enrichment fits 248x better and makes geometry, IoU and holdout monotonically worse. 578 tests pass; both new mechanisms ship opt-in and off; no controller default changed |
+| Next expected action | **Neither remaining direction is authorized — both need the user's decision.** (1) *Regularization*: the promotion rule chose on training data alone and had no way to see it was overfitting; a discrepancy principle, L-curve or coefficient penalty would give it one, and it reuses everything already built. (2) *Acquisition*, the verdict's rank 4: more frequencies would plausibly make fine harmonics identifiable, but 1.5 and 2.5 GHz are the current holdout, so using them needs a **new untouched evaluation set** and therefore changes the frozen benchmark's data contract. Separately unresolved: whether `refined_feasibility_guard` and `feasible_fd_jacobian` become defaults — one decision, one declared comparison, not two closeouts |
+| Owner / reviewer | TOP-008 and TOP-009 implementation: Claude; literature verdict: Codex. Independent review of either cycle: `unassigned` |
+| Dependencies | Shared controller/driver changes declared in each cycle's review before implementation; no physical solver or geometry-state interface changed |
+| Blockers | The binding constraint on frozen v1 is now **data and regularization** — it is no longer the derivative, and it was never capacity. Three scenes still time out. Noncircular recovery is unresolved and no proposed change is established as a complete recovery fix |
 
 ## Reading order
 
