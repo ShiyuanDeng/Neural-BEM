@@ -88,7 +88,7 @@ than twice in two closeouts.
 ## Next
 
 Rank 2 of the verdict, the only other candidate it accepts:
-[TOP-009](../iteration_05/02_proposals/06_bandwidth_capacity_contract.md),
+[TOP-009](02_proposals/01_bandwidth_capacity_contract.md),
 controlled bandwidth enrichment. `far-two-stars` is the case — two Cartesian
 mode-1 components against a five- and a seven-lobed star, nothing pinned, 1.4%
 of the training residual unexplained, and its final state bit-identical under

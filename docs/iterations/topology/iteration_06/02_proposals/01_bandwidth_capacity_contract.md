@@ -1,6 +1,6 @@
 # TOP-009 — controlled bandwidth enrichment of surviving components
 
-Contract for rank 2 of the [literature verdict](03_literature_verdict.md), the
+Contract for rank 2 of the [literature verdict](../../iteration_05/02_proposals/03_literature_verdict.md), the
 only other candidate it accepts. The verdict requires this to be a **separate
 comparison** from the derivative correction so the two effects stay
 identifiable, and this contract implements nothing from ranks 3–10.

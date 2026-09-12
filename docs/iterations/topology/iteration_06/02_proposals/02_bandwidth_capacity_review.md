@@ -1,6 +1,6 @@
 # Review of the TOP-009 contract
 
-Self-review of [the contract](06_bandwidth_capacity_contract.md), written before
+Self-review of [the contract](01_bandwidth_capacity_contract.md), written before
 implementation. Accepted points are binding.
 
 ## 1. Where in the cycle does a promotion happen? — ACCEPTED
@@ -27,10 +27,19 @@ Promoting every component at once conflates their contributions: a retained
 promotion could be carried entirely by one component while another is being
 paid for and doing nothing.
 
-**Resolution:** one component per attempt, chosen as the lowest current
-bandwidth, ties broken by `component_id` for determinism. The objective change
-is then attributable to exactly one component, and the retain/revert decision is
-unambiguous. A second component is reached on the next stationary cycle.
+**Resolution:** components are tried in ladder order — lowest current bandwidth
+first, ties broken by `component_id` for determinism — each evaluated
+independently against the same base, and **at most one is retained**. The
+objective change is then attributable to exactly one component and the
+retain/revert decision is unambiguous.
+
+Amended during implementation: an earlier wording said one component per cycle
+and deferred the rest to the next stationary cycle. That is wrong for the case
+this contract exists for — `far-two-stars` has *two* mode-1 components, and if
+the first one's promotion is refused the run stops and the second is never
+reached. Trying each in order within the stationary cycle keeps attribution
+intact and does not strand the second component. The cost is bounded by the
+component count, and only in a cycle that was about to end the run anyway.
 
 ## 3. The fine ladder is expensive — ACCEPTED, with the cost declared
 

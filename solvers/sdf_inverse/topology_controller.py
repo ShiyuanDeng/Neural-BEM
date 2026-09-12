@@ -72,6 +72,50 @@ def cartesian_component(component):
     return polar_angle_gauge_fixed_point(fitted)[0]
 
 
+def zero_padded_component(component, maximum_mode):
+    """The same curve in a strictly larger nested space, geometry unchanged.
+
+    Padding the Cartesian coefficient arrays with zeros adds harmonics that
+    contribute nothing to the boundary, so the curve this returns is the curve
+    it was given.  Callers still verify that against the objective rather than
+    trusting it: a silent change here would look exactly like a promotion that
+    helped.
+    """
+    if not isinstance(component, CartesianFourierCurveState):
+        raise ValueError('bandwidth promotion requires the Cartesian chart.')
+    pad = int(maximum_mode) - component.maximum_mode
+    if pad <= 0:
+        raise ValueError('promotion must strictly increase the bandwidth.')
+    return replace(component,
+                   cosine_coefficients=np.vstack(
+                       [component.cosine_coefficients, np.zeros((pad, 2))]),
+                   sine_coefficients=np.vstack(
+                       [component.sine_coefficients, np.zeros((pad, 2))]))
+
+
+def gauge_dimension(component):
+    """Search directions this component actually has under the polar gauge."""
+    return len(MultiRadialFourierState((component,)).gauge_tangent_basis())
+
+
+def next_bandwidth_rung(component, cap):
+    """Smallest bandwidth above this component's that adds a search direction.
+
+    Under the polar-angle gauge ``K = 1`` and ``K = 2`` carry the *same* three
+    directions -- translate in x, translate in y, scale the radius -- so a rung
+    that only raises the stored mode count buys parameters and no direction at
+    all.  Stating the rule in gauge dimension rather than mode count means it
+    can never spend such a rung, and means no constant here comes from a truth.
+    """
+    if not isinstance(component, CartesianFourierCurveState):
+        return None
+    current = gauge_dimension(component)
+    for mode in range(component.maximum_mode + 1, int(cap) + 1):
+        if gauge_dimension(zero_padded_component(component, mode)) > current:
+            return mode
+    return None
+
+
 def state_in_chart(state, chart):
     """Re-express a whole state in ``chart``, or return it unchanged."""
     if chart not in ('radial', 'cartesian'):
@@ -112,6 +156,9 @@ class TopologyControllerConfig:
     # freezes its Jacobian column to a zero nothing measured, and a gradient
     # assembled from those zeros can still report convergence.
     feasible_fd_jacobian: bool = False
+    # Off reproduces every recorded run: a component keeps the bandwidth it was
+    # constructed with, and a mode-1 circle can only translate and scale.
+    bandwidth_promotion: bool = False
     relative_error_tolerance: float = 0.005
     acceptance_absolute_margin: float = 1.e-10
     acceptance_relative_margin: float = 1.e-5
@@ -130,7 +177,7 @@ class TopologyControllerConfig:
         if not isinstance(self.candidates_refined_per_group, (int, np.integer)):
             raise ValueError('candidates_refined_per_group must be a positive integer.')
         for name in ('include_simplest_candidate', 'refined_feasibility_guard',
-                     'feasible_fd_jacobian'):
+                     'feasible_fd_jacobian', 'bandwidth_promotion'):
             if not isinstance(getattr(self, name), bool):
                 raise ValueError(f'{name} must be boolean.')
         if (self.raster_size < 17 or isinstance(self.candidate_refinement_iterations, bool)
@@ -617,6 +664,75 @@ def _run_topology_aware_fourier_inverse(initial_state, data, production_geometry
     guard_configs = (refined_geometry_config,) if guard else ()
     refined_feasible_state = None
     feasible_fd = config.feasible_fd_jacobian
+    promotions = []
+
+    def attempt_bandwidth_promotion(current, base_production, base_refined, cycle, margin):
+        """One rung for one component, retained only on a measured decrease.
+
+        Attempted only where the cycle would otherwise stop.  The observed
+        failure is a run that halts with the right component count and the wrong
+        shapes, and a component that can still enter a richer space has not
+        finished.  Components are tried in ladder order -- lowest bandwidth
+        first, ties by id -- each evaluated independently against the same base,
+        and at most one is retained, so the objective change is attributable to
+        exactly one component.
+        """
+        if current is None:
+            return None
+        cap = chart_contour_modes(config)
+        order = sorted(range(len(current.components)),
+                       key=lambda i: (current.components[i].maximum_mode,
+                                      current.components[i].component_id))
+        for index in order:
+            component = current.components[index]
+            rung = next_bandwidth_rung(component, cap)
+            record = dict(cycle=cycle, component_id=component.component_id,
+                          from_mode=component.maximum_mode, to_mode=rung, retained=False)
+            if rung is None:
+                record['reason'] = 'at_bandwidth_cap'
+                promotions.append(record)
+                continue
+            padded = MultiRadialFourierState(
+                current.components[:index]
+                + (zero_padded_component(component, rung),)
+                + current.components[index + 1:])
+            try:
+                padded_loss = accounted_call('bandwidth_padding', topology_objective, padded,
+                                             data, production_geometry_config, solve_config)[0]
+                # Zero padding must be exact. Drift here would be
+                # indistinguishable from a promotion that helped.
+                record['padding_loss_change'] = float(padded_loss - base_production)
+                if abs(padded_loss - base_production) > margin:
+                    record['reason'] = 'padding_changed_the_objective'
+                    promotions.append(record)
+                    continue
+                result = accounted_call('bandwidth_refinement', run_multiradial_fd_inverse,
+                    padded, data, production_geometry_config, solve_config=solve_config,
+                    config=_optimizer_config(padded, config),
+                    minimum_component_radius_m=config.minimum_component_radius_m,
+                    cartesian_gauge=config.chart == 'cartesian',
+                    feasibility_geometry_configs=guard_configs,
+                    feasible_fd_jacobian=feasible_fd,
+                    progress_callback=lambda item: emit(item.state, item.loss,
+                                                       f'promote {item.iteration}', cycle))
+                production_after = float(result.iterations[-1].loss)
+                refined_after = float(accounted_call('bandwidth_acceptance', topology_objective,
+                    result.final_state, data, refined_geometry_config, solve_config)[0])
+            except GEOMETRY_ERRORS as exc:
+                record['reason'] = f'promotion_invalid_geometry: {exc}'
+                promotions.append(record)
+                continue
+            record.update(production_after=production_after, refined_after=refined_after,
+                          optimizer_stop_reason=result.stop_reason)
+            # Training only, at both resolutions, against the existing margin.
+            if (base_production - production_after > margin
+                    and base_refined - refined_after > margin):
+                record['retained'] = True
+                promotions.append(record)
+                return result.final_state
+            record['reason'] = 'no_decrease_at_both_resolutions'
+            promotions.append(record)
+        return None
 
     def emit(current, loss, label, cycle):
         frame = TopologyFrame(current, float(loss), label, cycle)
@@ -777,6 +893,10 @@ def _run_topology_aware_fourier_inverse(initial_state, data, production_geometry
                 accepted.append((loss, candidate, row))
             except GEOMETRY_ERRORS as exc:
                 row['reason'] = f'refined_invalid_geometry: {exc}'
+        # Before the pass row is built, so the promotion's own work is inside
+        # this cycle's accounting and its record lands in this cycle's row.
+        promoted = (attempt_bandwidth_promotion(state, base_loss, refined_base, cycle, margin)
+                    if config.bandwidth_promotion and not accepted else None)
         pass_work = work_delta(current_work(), cycle_started)
         passes.append(dict(cycle=cycle, trigger=trigger, base_loss=base_loss,
                            refined_base_loss=refined_base, trials=trials, rejected_masks=rejections,
@@ -785,10 +905,19 @@ def _run_topology_aware_fourier_inverse(initial_state, data, production_geometry
                            **(dict(refined_feasibility_rejected_trials=guard_rejected,
                                    refined_infeasible_rollback=rolled_back) if guard else {}),
                            **(dict(one_sided_jacobian_columns=one_sided_columns,
-                                   unresolved_jacobian_columns=unresolved_columns) if feasible_fd else {})))
+                                   unresolved_jacobian_columns=unresolved_columns) if feasible_fd else {}),
+                           **(dict(bandwidth_promotions=[r for r in promotions if r['cycle'] == cycle])
+                              if config.bandwidth_promotion else {})))
         if not accepted:
-            stop = 'topology_stationary'
-            break
+            if promoted is None:
+                stop = 'topology_stationary'
+                break
+            # A promotion changes no component count, so it is not an event and
+            # does not consume the event budget.
+            emit(state, base_loss, 'before promotion', cycle)
+            state = refined_feasible_state = promoted
+            emit(state, promotions[-1]['production_after'], 'PROMOTION accepted', cycle)
+            continue
         loss, best, row = min(accepted, key=lambda item: item[0])
         row['accepted'] = True
         event = dict(cycle=cycle, kind=best.kind, parents=best.parents, children=best.children,

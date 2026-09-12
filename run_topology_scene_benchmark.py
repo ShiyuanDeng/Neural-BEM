@@ -48,9 +48,11 @@ ARM_POLICIES = {'A': dict(include_simplest_candidate=False),
                 'F': dict(include_simplest_candidate=True),
                 'G': dict(include_simplest_candidate=False, refined_feasibility_guard=True),
                 'H': dict(include_simplest_candidate=False, refined_feasibility_guard=True,
-                          feasible_fd_jacobian=True)}
+                          feasible_fd_jacobian=True),
+                'J': dict(include_simplest_candidate=False, refined_feasibility_guard=True,
+                          feasible_fd_jacobian=True, bandwidth_promotion=True)}
 ARM_LABELS = {'A': 'default A', 'F': 'selective F', 'G': 'guarded G',
-              'H': 'feasible-FD H'}
+              'H': 'feasible-FD H', 'J': 'enriched J'}
 POLICY_KEYS = sorted({key for policy in ARM_POLICIES.values() for key in policy})
 DEFAULT_ARMS = ('A', 'F')
 # Archived bundle analyses iterate this name; it stays the pair they ran.
