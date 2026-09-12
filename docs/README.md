@@ -47,11 +47,11 @@ Galerkin formulations, derivatives, conditioning, and cost. Replacing Kress is
 
 | Track | Question | Stage | Next expected action | Approved IDs |
 |---|---|---|---|---|
-| [Topology / Track A](iterations/topology/README.md) | How can the inverse choose and execute topology changes more reliably, without a prescribed object count or excessive BIE cost? | TOP-008 complete; TOP-009 failed stage 2; independent review completed and promotion counters repaired | **Stopping versus stationarity** — 13/14 ladder refinements stopped on loss change. A low truth residual establishes consistency, not uniqueness. [Review and proposed TOP-010](iterations/topology/iteration_07/02_proposals/01_independent_review.md); new diagnostic not yet run | **TOP-001, TOP-005, TOP-006, TOP-007, TOP-008, TOP-009** |
+| [Topology / Track A](iterations/topology/README.md) | How can the inverse choose and execute topology changes more reliably, without a prescribed object count or excessive BIE cost? | TOP-010 complete. Four optimizer and representation defects found and fixed — **each improved the objective, none improved the reconstruction** | **Why the gated geometry is insensitive to four orders of magnitude of training objective.** [Iteration 08](iterations/topology/iteration_08/01_results.md) names the two successors; neither authorized | **TOP-001, TOP-005, TOP-006, TOP-007, TOP-008, TOP-009, TOP-010** |
 | [Boundary–BIE](iterations/boundary_bie/README.md) | Which properties of smooth-boundary representations improve the accuracy, conditioning, differentiation or cost of the BIE inverse? | Brief drafted; no review, no plan | Review [the brief](iterations/boundary_bie/iteration_01/02_proposals/01_boundary_bie_research_brief.md); decide whether `BIE-001` — comparison and selection of one prototype — is the right first deliverable | **None** |
 
-Topology has completed **gate 7 for TOP-001, TOP-005, TOP-006, TOP-007, TOP-008
-and TOP-009** under the
+Topology has completed **gate 7 for TOP-001, TOP-005, TOP-006, TOP-007, TOP-008,
+TOP-009 and TOP-010** under the
 user's 2026-09-11 directions to take Track A as far as possible and to continue
 from the latest fixes. Those session instructions authorize those plans without
 asking again for an exact ID phrase. Boundary–BIE remains at
@@ -64,6 +64,20 @@ scene matrix for current and future performance comparisons. The numerical
 controller stayed frozen during this completed measurement; results opened
 iteration 04. The requested distant ellipse/star case fails. All future
 performance comparisons must include the [full frozen scene matrix](benchmarks/topology_scenes.md).
+
+**TOP-010 (2026-09-12)** then executed the independent review's diagnostic and
+refuted the local-minimum reading operationally. At the saved state the terminal
+gradient is **4013x the optimizer's own tolerance**, stable across three FD
+scales, with a full-rank Jacobian — and three restarts of the **unmodified**
+optimizer recover 1.7x in the objective. Three absolute constants, including one
+serving as both the loss target and the accepted loss change, sit at the same
+order as the entire remaining objective. But matched boundary error moved
+11.849 to 11.991 mm and IoU stayed at 0.7088 across that whole gain. Four
+defects are now found and fixed — derivative, capacity, ladder truncation,
+premature stopping — **each worth objective and none worth geometry**. The open
+question is now why the gated geometry is insensitive to four orders of
+magnitude of training objective.
+[TOP-010](../results/validation/topology/TOP-010-20260912-stopping-vs-stationarity/README.md).
 
 **TOP-008 and TOP-009 (2026-09-12)** implemented the two candidates the
 [literature verdict](iterations/topology/iteration_05/02_proposals/03_literature_verdict.md)

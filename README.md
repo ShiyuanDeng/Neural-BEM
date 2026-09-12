@@ -91,6 +91,20 @@ optimizer stopping from stationarity before choosing a restart strategy.
 [Review and counter repair](docs/iterations/topology/iteration_07/02_proposals/01_independent_review.md).
 [Report](results/validation/topology/TOP-009-20260912-bandwidth-capacity/README.md).
 
+**Track A update (2026-09-12, TOP-010):** the independent review's diagnostic
+refutes the local-minimum reading. At the saved state the terminal gradient is
+**4013x the optimizer's own tolerance**, stable across three finite-difference
+scales, with a full-rank Jacobian — and three restarts of the **unmodified**
+optimizer recover **1.7x** in the objective in 45 seconds with no source change.
+Three absolute constants, one of them serving as both the loss target and the
+accepted loss change, sit at the same order as the entire remaining objective.
+Yet matched boundary error moved 11.849 to 11.991 mm and IoU stayed at 0.7088.
+Four defects are now found and fixed — derivative, capacity, ladder truncation,
+premature stopping — **each worth objective and none worth geometry**, and the
+benchmark still passes 5/12. The open question is why the gated geometry is
+insensitive to four orders of magnitude of training objective.
+[Report](results/validation/topology/TOP-010-20260912-stopping-vs-stationarity/README.md).
+
 ## Implementation at a glance
 
 | Entry point | What it currently runs |

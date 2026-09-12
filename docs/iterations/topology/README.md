@@ -46,20 +46,14 @@ Updated 2026-09-12.
 
 | Item | Current state |
 |---|---|
-| Active iteration | [Iteration 07 results](iteration_07/01_results.md) |
-| Stage | TOP-008 complete; TOP-009 failed stage 2, followed by stages 3/4 and [independent review](iteration_07/02_proposals/01_independent_review.md). Both accepted mechanisms are measured; promotion diagnostics repaired |
+| Active iteration | [Iteration 08 results](iteration_08/01_results.md) |
+| Stage | TOP-010 complete. Four optimizer/representation defects are now found and fixed, **each improving the objective and none improving the reconstruction** |
 | Approved experiment IDs | `TOP-001`, `TOP-005`, `TOP-006`, `TOP-007` approved 2026-09-11; `TOP-008` and `TOP-009` approved 2026-09-12 by the user's direction to implement the Codex plan and keep going. `TOP-002`–`TOP-004` remain proposals |
-| Execution status | TOP-008 `COMPLETE`: feasible FD improves completion and circular split recovery, but the benchmark remains 5/12. TOP-009 failed its stage-2 gate; stage 4 completed [9, 9] and remains **74,159x above the known truth objective** with poor geometry. Independent review qualifies the causal claims and repairs promotion diagnostics. The earlier 578-test result remains historical; the repair passes 108 focused tests. All three mechanisms remain opt-in and off |
-| Next expected action | Review proposed **TOP-010: stopping versus stationarity**. Thirteen of fourteen K=9 ladder refinements stopped on loss change; the final state satisfies the controller's data tolerance despite poor geometry. A low truth residual establishes forward consistency, not unique recovery. Audit terminal derivatives and feasible descent before choosing phase restarts. The [review](iteration_07/02_proposals/01_independent_review.md) specifies a bounded diagnostic; execution is NOT STARTED. Default-policy decisions remain separate |
+| Execution status | TOP-008 `COMPLETE`, TOP-009 `STOPPED AT STAGE 2` with its reading corrected twice, TOP-010 `COMPLETE`. TOP-010 refutes the local-minimum reading operationally: the terminal gradient is 4013x the optimizer's own tolerance with a full-rank Jacobian, and three restarts of the **unmodified** optimizer recover 1.7x in the objective — while matched error moves 11.849 to 11.991 mm and IoU stays at 0.7088. 581 tests pass; all three mechanisms remain opt-in and off; no controller default changed |
+| Next expected action | **The question has changed and neither successor is authorized.** It is no longer which optimizer defect to fix — four have been found and fixed, each worth objective and none worth geometry. It is **why the gated geometry is insensitive to four orders of magnitude of training objective**: the final K=9 state satisfies the frozen 0.003 data tolerance at 8.7878e-05 while sitting 11.849 mm from the truth. (1) A sensitivity and conditioning study at the saved states — which geometric directions the acquisition constrains, and how much boundary displacement lies inside that tolerance; the direct successor, reusing everything built. (2) Acquisition, better motivated now than when deferred, but 1.5 and 2.5 GHz are the current holdout so it needs a new untouched evaluation set and a change to the frozen data contract — the user's decision. Default-policy decisions remain separate |
 | Owner / reviewer | TOP-008 and TOP-009 implementation: Claude; literature verdict and independent source/evidence review: Codex. Codex repaired omitted promotion counters; 108 focused regression tests pass |
 | Dependencies | Shared controller/driver changes declared in each cycle's review before implementation; no physical solver or geometry-state interface changed |
-| Blockers | Noncircular recovery remains unresolved. The full diagnostic ladder has sufficient truth bandwidth, but terminal stationarity, conditioning and unique/stable recovery are not established. Its early-stop behavior differs from the full controller. Historical timeout/failure records remain; no new scene benchmark was run |
-
-The user's BEM-versus-FDTD question is recorded in
-[Boundary methods and FDTD](iteration_07/02_proposals/02_boundary_methods_and_fdtd.md).
-It separates forward-solver changes from material-field reconstruction and
-recommends an independent forward/derivative comparison first. No matched FDTD
-comparison has been run for this assessment.
+| Blockers | Four explanations tested, each real and none sufficient: the derivative, capacity, ladder truncation and premature stopping. The benchmark still passes 5/12. What blocks recovery is the decoupling between the training objective and the gated geometry at this scale, which is a sensitivity and conditioning question. Three scenes still time out |
 
 ## Reading order
 
@@ -121,3 +115,4 @@ certificate, and the trust region's dependence on coordinates.
 | 05 | Why finished runs still return wrong shapes | Results recorded; guard opt-in; literature verdict ranks corrections and qualifies earlier causal claims; written next steps only |
 | 06 | Feasible finite differences and the capacity contract | TOP-008 complete; TOP-009 implemented opt-in |
 | 07 | Bandwidth ladder and interpretation review | TOP-009 stage-2 gate failed; stages 3/4 preserved; independent review corrects stationarity/data claims and proposes TOP-010 |
+| 08 | Stopping versus stationarity | TOP-010 complete; neither saved state is stationary, restarts recover 1.7x objective and no geometry |
