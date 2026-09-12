@@ -16,14 +16,18 @@ return against 9/12, `split` improves to 0.000023 mm at a quarter of the solves,
 and the pass count is **still 5/12**.
 [TOP-009](../../results/validation/topology/TOP-009-20260912-bandwidth-capacity/README.md)
 stopped before reaching this suite: its stage-2 gate showed that adding shape
-bandwidth fits the training data 248x better while making boundary error, IoU and
-holdout error monotonically worse, so the suite was not spent on a rule that
+bandwidth fits the training data 248x better while leaving final boundary error,
+IoU and holdout error worse, so the suite was not spent on a rule that
 degrades a gated metric. Its stage-3 diagnostic then traced most of that
 degradation to rotational phase on a ladder truncated by its own solve cap, and
 established that the true geometry fits this acquisition to 3.23e-07 relative
-error. Stage 4 then exhausted the ladder at K=9 and the failure survived it, so
-the frozen v1 data and the Fourier representation are both sufficient for these
-scenes and the remaining obstacle is a local minimum.
+error. Stage 4 then exhausted the ladder at K=9 and the failure survived it.
+[Independent review](../iterations/topology/iteration_07/02_proposals/01_independent_review.md)
+qualifies the interpretation: the `far-two-stars` truth is representable and
+consistent with the observations, but uniqueness and terminal stationarity
+were not established. Thirteen of fourteen rung refinements stopped on small
+loss change. This diagnostic bypassed the full controller and does not qualify
+promotion on the twelve-scene benchmark.
 
 ## Scene matrix
 

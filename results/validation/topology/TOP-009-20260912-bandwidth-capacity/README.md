@@ -1,4 +1,15 @@
-# TOP-009 — the ladder finished, and the optimizer is still stuck
+# TOP-009 — completed bandwidth ladder, unresolved recovery
+
+> **Independent review amendment, 2026-09-12:** the interpretation below is
+> historical. A small truth residual establishes forward consistency, not
+> unique recovery. Thirteen of fourteen ladder refinements stopped on loss
+> change, so the saved record does not certify a local minimum. Stage-2 geometry
+> degradation is not monotone, although its final result fails the gate.
+> [The independent review](../../../../docs/iterations/topology/iteration_07/02_proposals/01_independent_review.md)
+> gives the current interpretation, repairs omitted promotion counters, and
+> proposes a stopping/stationarity diagnostic. Original JSON, scripts and
+> measurements are preserved. The recorded 7446 counter is not total BIE work;
+> the stage-4 script excludes baseline/holdout calls from it.
 
 Rank 2 of the [literature verdict](../../../../docs/iterations/topology/iteration_05/02_proposals/03_literature_verdict.md),
 the only other candidate it accepts.
@@ -24,8 +35,8 @@ default changed, and `bandwidth_promotion` ships opt-in and off.
 
 ## Stage 3 — the correction
 
-**The acquisition determines these shapes.** Evaluated at the *true* geometry,
-expressed in the reconstruction's own chart:
+**A known attainable objective exists, far below what the climb reaches.**
+Evaluated at the *true* geometry, expressed in the reconstruction's own chart:
 
 | State | Training loss | Relative L2 |
 |---|---:|---:|
@@ -33,13 +44,17 @@ expressed in the reconstruction's own chart:
 | Climb start, modes [1, 1] | 9.2195e-05 | 1.36e-02 |
 | Climb final, modes [6, 5] | 3.7174e-07 | — |
 
-The climb's answer is **7,139,598× worse** in training loss than the truth. So
-24 observations at 0.5 GHz are nowhere near exhausted, there is no
-non-uniqueness at this level, and the optimizer is sitting in a local minimum.
-An acquisition limit would have shown the truth fitting *no better* than the
-reconstruction. It fits seven million times better.
+The climb's answer is **7,139,598× worse** in training loss than the truth. That
+establishes suboptimality and nothing more. **Forward consistency at the truth is
+not identifiability**: a small truth residual shows this chart and forward model
+*can* match the observations at the supplied truth, not that the inverse is
+unique or stable. No alternative-solution search or conditioning audit has been
+run at the final state. (`F(x1, x2) = x1` fits exactly for every `x2` —
+consistency and non-uniqueness coexist.)
 
-**The mis-fit is largely rotational phase.**
+**A substantial rotational phase mismatch is present.** The angles below are
+selected against the known truth, so they score a geometric mismatch and are
+evaluation-only; no training-objective decrease was measured along them.
 
 | Component | Matched error | Best over rigid rotation | At |
 |---|---:|---:|---:|
@@ -69,14 +84,14 @@ truth requires, and the rung that would have mattered was never attempted. The
 earlier write-up recorded the overrun as a budget note without recognising that
 it meant the experiment was truncated.
 
-**So the stage-2 failure is optimization, not information.** A local minimum in
-rotational phase, on a ladder that stopped early.
+**So the stage-2 failure is not explained by information alone** — a ladder that
+stopped early, and a phase mismatch whose cause is not yet identified.
 
-Two secondary readings also fall with it. Cross-resolution discrepancy, GCV and
-AIC were checked against the saved climb and none identifies the damaging rung —
-but that is not evidence about regularization. All three presume a noise floor
-the residual should not be driven below, and here the truth drives it to 5e-14.
-They are inapplicable, not merely unhelpful.
+Cross-resolution discrepancy, GCV and AIC were also checked against the saved
+climb and none identifies the damaging rung. All three presume a noise floor the
+residual should not be driven below, and this problem is noiseless, so they are
+inapplicable here rather than refuted — which says nothing either way about
+whether some other regularization would help.
 
 ## Stage 4 — the ladder, finished
 
@@ -128,9 +143,24 @@ each component's isoperimetric ratio sits between the two truths rather than on
 its own. The optimizer has the right amount of material in roughly the right
 place and the wrong boundary.
 
-**So bandwidth is necessary and nowhere near sufficient.** The binding obstacle
-is a local minimum the LM optimizer cannot leave, four orders of magnitude above
-the objective the true geometry attains, with every mode it needs available.
+**So bandwidth is necessary and nowhere near sufficient.** Why the optimizer
+stops where it does is *not* settled by this record: **13 of the 14 retained rung
+refinements stopped on `loss_change_tolerance`** and one on `maximum_iterations`,
+none on the gradient test. `_optimizer_config` uses the same absolute `1e-10` for
+the loss target and the accepted loss change, and that branch precedes the
+gradient check, so the stop reason bounds nothing about the terminal gradient.
+Early stopping, ill-conditioned steps, finite-difference error, active
+constraints, a saddle and a local minimum all remain consistent with what was
+saved, and the rung records carry no terminal gradient norms or unresolved-column
+counts.
+
+Two further qualifications. The 7446 `solves` figure is this script's own counter
+— optimizer evaluations plus padding and refined-acceptance calls — excluding the
+baseline and per-rung holdout evaluations, and some optimizer evaluations are
+rejected before any BIE solve; it is a diagnostic counter, not a controlled
+BIE-work measurement. And this script calls the fixed-topology optimizer directly,
+bypassing the controller's early `recovered` return, topology proposals and cycle
+limits, so it does not qualify the opt-in mechanism on the frozen suite.
 
 [Ladder record](stage4_uncapped_ladder.json) | [script](stage4_uncapped_ladder.py)
 
@@ -177,10 +207,12 @@ contract.
 | `t001` 5→6 | **3.717e-07** | 17.599 mm | 0.6383 | 1.514 |
 
 All seven rungs were retained by the training-only rule. Training loss falls
-monotonically by 248×; matched error, IoU and holdout error degrade
-monotonically. On the metrics as gated, the best reconstruction in the climb is
-the state it started from — which is what stopped the line, correctly, because
-the contract's stage-2 predicate included boundary error.
+monotonically by 248×. The geometry and holdout columns **do not** degrade
+monotonically — matched error improves from 7.892 to 7.593 mm between the first
+two retained rungs and from 14.130 to 12.265 mm between the third and fourth —
+but the endpoint is worse than the start on every gated measure, which is what
+stopped the line, correctly, because the contract's stage-2 predicate included
+boundary error.
 
 Stage 3 then showed that most of that degradation is phase, on a truncated
 ladder. The gate outcome stands; the mechanism behind it is not what it looked
@@ -194,14 +226,21 @@ attributable to the promotion.
 
 ## What this bundle establishes
 
-- **The data is sufficient.** The truth fits to 3.23e-07 relative error on the
-  training acquisition. Neither more frequencies nor regularization is what the
-  frozen v1 shape failures are short of.
+- **A far better objective value is attainable.** The truth fits to 3.23e-07
+  relative error on the training acquisition, so the reconstruction is
+  suboptimal. This is *not* a sufficiency result for the data: consistency at the
+  truth is not uniqueness or stability, and the decisive counter-observation is
+  the controller's own tolerance — the final K=9 answer sits at **8.7878e-05**
+  relative error, inside the frozen **0.003** data gate, with **11.849 mm**
+  boundary error and **1.4154** worst holdout error. A data fit that good beside
+  geometry that poor argues for taking acquisition and regularization seriously,
+  not for eliminating them.
 - **Bandwidth enrichment produces real shape.** A component that provably could
   only translate and scale became a five-lobed star of the right perimeter, area
   and isoperimetric ratio.
-- **The optimizer cannot find the phase.** It lands 34° out and stays there,
-  7.1e6× above the achievable objective.
+- **A phase mismatch is present and unexplained.** The reconstruction sits 34°
+  out by a truth-selected rotation, 7.1e6× above a known attainable objective.
+  Whether that is a phase minimum in the training objective is untested.
 - **The truncation mattered, and did not save the result.** Stage 4 ran the
   ladder to exhaustion at [9, 9]. The stage-2 cap had stopped it at its worst
   rung, so the recovered answer is better than stage 2 reported — 11.849 mm
@@ -210,10 +249,12 @@ attributable to the promotion.
 - **Bandwidth is necessary and not sufficient.** With every mode both truths
   require, the optimizer still sits 74,159x above the achievable objective.
 
-The next question is globalization — escaping a local minimum that four orders
-of magnitude of objective and a full mode ladder do not resolve — not
-regularization, not acquisition, and no longer capacity. That needs its own
-contract; nothing here authorizes one.
+The next question is **separating stopping from stationarity** before any
+restart mechanism is chosen: audit the terminal gradient at several FD steps, the
+reduced-Jacobian singular values, and whether a feasible descent direction exists
+at the saved K=9 state. That is the independent review's proposed TOP-010, and
+nothing here authorizes it. Acquisition and regularization remain open rather
+than eliminated.
 
 ## Verification
 

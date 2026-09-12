@@ -1,0 +1,59 @@
+{
+  "scope": "Saved-artifact and source review; no forward solve or inverse run.",
+  "reviewed_experiment_commit": "ab10e400d62ad173d3799dc4660eec4112f6dfd2",
+  "source_sha256": {
+    "results/validation/topology/TOP-009-20260912-bandwidth-capacity/stage2_climb.json": "6b67c99b69f142d76c305a34a16a1b1b8cac7b8d40886e7872a4fe457551af09",
+    "results/validation/topology/TOP-009-20260912-bandwidth-capacity/stage3_correction.json": "237f999ce13fded3f9fcf9e0fcf588f78cbafb56dd22fd6675c9c36b4ec05093",
+    "results/validation/topology/TOP-009-20260912-bandwidth-capacity/stage4_uncapped_ladder.json": "d5d00ce2a2b74a719365e1601a6a67901e6f2ca719f73e0f30fe8e76725da110",
+    "results/validation/topology/TOP-008-20260912-feasible-fd/scene_spec.json": "5925cb79da3b44ce964c564c6fcde02dc5cccacab7af307f0ce495aa81210365",
+    "results/validation/topology/TOP-009-20260912-review/audit_saved_evidence.py": "e74fc1ce1a7941c1b031dcc573f6507abc45398ffcf2c87e3aff17a31756b8d1",
+    "solvers/sdf_inverse/radial_topology.py": "f6e5c0b4eed52c2a607dbff784cfcc1e35c51760d5d42c7722753130e8b09fae",
+    "solvers/sdf_inverse/topology_controller.py": "e9d5f045099eda8a50570c21b1a323d4070c109493487031fe1b2ab457895f3e",
+    "solvers/sdf_inverse/optimization.py": "d737a1ccaae3fa2e19a0af68e8445607bd4813cb8eb79268b690efe41ba31a2a",
+    "results/validation/topology/TOP-009-20260912-bandwidth-capacity/stage4_uncapped_ladder.py": "14a1daeb5409492a55215c888660d0b967b22229cf3963323a5c667dddd47220"
+  },
+  "retained_rungs": 14,
+  "optimizer_stop_reasons": {
+    "loss_change_tolerance": 13,
+    "maximum_iterations": 1
+  },
+  "terminal_optimizer_stop_reason": "loss_change_tolerance",
+  "final_modes": [
+    9,
+    9
+  ],
+  "final_relative_l2_from_loss": 8.787786436567257e-05,
+  "final_over_truth_loss_ratio": 74158.63144799315,
+  "controller_relative_error_tolerance": 0.003,
+  "first_saved_rung_below_controller_tolerance": {
+    "modes": [
+      5,
+      5
+    ],
+    "relative_l2_from_loss": 0.001658007952974491,
+    "matched_hausdorff_m": 0.01563409877104589
+  },
+  "final_matched_hausdorff_m": 0.011848799184435503,
+  "final_worst_holdout_relative_error": 1.4153879281669846,
+  "stage2_boundary_error_monotonically_worsens": false,
+  "stage2_boundary_error_improvements": [
+    {
+      "from_rung": 1,
+      "to_rung": 2,
+      "before_m": 0.007891593604721142,
+      "after_m": 0.00759320398857172
+    },
+    {
+      "from_rung": 3,
+      "to_rung": 4,
+      "before_m": 0.014130293415672908,
+      "after_m": 0.012264725501533073
+    }
+  ],
+  "interpretation_limits": [
+    "Small loss change does not certify a small gradient or a local minimum.",
+    "An accurate truth forward response does not prove uniqueness or stable recovery.",
+    "A saved rung below the controller threshold would satisfy its data stop; this is not a replay of the full controller trajectory.",
+    "Truth-selected rotations are geometry diagnostics, not training-selected proposals."
+  ]
+}

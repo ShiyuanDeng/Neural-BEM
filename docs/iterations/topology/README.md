@@ -47,13 +47,19 @@ Updated 2026-09-12.
 | Item | Current state |
 |---|---|
 | Active iteration | [Iteration 07 results](iteration_07/01_results.md) |
-| Stage | TOP-008 complete, TOP-009 stopped at its stage-2 gate and then **corrected by its own stage-3 diagnostic**. Both accepted candidates from the literature verdict are measured |
+| Stage | TOP-008 complete; TOP-009 failed stage 2, followed by stages 3/4 and [independent review](iteration_07/02_proposals/01_independent_review.md). Both accepted mechanisms are measured; promotion diagnostics repaired |
 | Approved experiment IDs | `TOP-001`, `TOP-005`, `TOP-006`, `TOP-007` approved 2026-09-11; `TOP-008` and `TOP-009` approved 2026-09-12 by the user's direction to implement the Codex plan and keep going. `TOP-002`–`TOP-004` remain proposals |
-| Execution status | TOP-008 `COMPLETE`: the feasible-FD stencil frees the pinned component (8.000 mm to 22.737 mm), returns 10/12 runs against 9/12, improves `split` to 0.000023 mm at a quarter of the solves — but buys **no new benchmark pass**, still 5/12. TOP-009 `STOPPED AT STAGE 2, READING CORRECTED TWICE`: stage 3 refuted the data hypothesis, stage 4 then ran the ladder to exhaustion at modes [9, 9] and the failure survives it — **74,159x above the objective the true geometry attains, with every mode both truths require**. 578 tests pass; all three new mechanisms ship opt-in and off; no controller default changed |
-| Next expected action | **Globalization — and not authorized.** Representation, data and a truncated ladder are all eliminated: the true geometry fits the training acquisition to 3.23e-07, and a finished `K = 9` ladder still lands 74,159x above it, worse than the circles it started from on matched error, IoU and holdout alike. Two candidates remain, both optimization-side and neither touching the acquisition or the frozen benchmark: (1) seed promoted modes from a contour fit instead of zeroing them, since zero is the least determined phase for a symmetric mode pair; (2) try several phases at promotion and keep the best by training objective. Separately unresolved: whether `refined_feasibility_guard`, `feasible_fd_jacobian` and `bandwidth_promotion` become defaults — one declared comparison, not three closeouts |
-| Owner / reviewer | TOP-008 and TOP-009 implementation: Claude; literature verdict: Codex. Independent review of either cycle: `unassigned` |
+| Execution status | TOP-008 `COMPLETE`: feasible FD improves completion and circular split recovery, but the benchmark remains 5/12. TOP-009 failed its stage-2 gate; stage 4 completed [9, 9] and remains **74,159x above the known truth objective** with poor geometry. Independent review qualifies the causal claims and repairs promotion diagnostics. The earlier 578-test result remains historical; the repair passes 108 focused tests. All three mechanisms remain opt-in and off |
+| Next expected action | Review proposed **TOP-010: stopping versus stationarity**. Thirteen of fourteen K=9 ladder refinements stopped on loss change; the final state satisfies the controller's data tolerance despite poor geometry. A low truth residual establishes forward consistency, not unique recovery. Audit terminal derivatives and feasible descent before choosing phase restarts. The [review](iteration_07/02_proposals/01_independent_review.md) specifies a bounded diagnostic; execution is NOT STARTED. Default-policy decisions remain separate |
+| Owner / reviewer | TOP-008 and TOP-009 implementation: Claude; literature verdict and independent source/evidence review: Codex. Codex repaired omitted promotion counters; 108 focused regression tests pass |
 | Dependencies | Shared controller/driver changes declared in each cycle's review before implementation; no physical solver or geometry-state interface changed |
-| Blockers | Four explanations are now tested and eliminated in order: the derivative (fixed, insufficient), capacity (restored, insufficient), data/regularization (refuted — the truth fits to 3.23e-07) and ladder truncation (stage 4 exhausts it; the failure survives). What remains is a local minimum. Three scenes still time out and noncircular recovery is unresolved |
+| Blockers | Noncircular recovery remains unresolved. The full diagnostic ladder has sufficient truth bandwidth, but terminal stationarity, conditioning and unique/stable recovery are not established. Its early-stop behavior differs from the full controller. Historical timeout/failure records remain; no new scene benchmark was run |
+
+The user's BEM-versus-FDTD question is recorded in
+[Boundary methods and FDTD](iteration_07/02_proposals/02_boundary_methods_and_fdtd.md).
+It separates forward-solver changes from material-field reconstruction and
+recommends an independent forward/derivative comparison first. No matched FDTD
+comparison has been run for this assessment.
 
 ## Reading order
 
@@ -113,3 +119,5 @@ certificate, and the trust region's dependence on coordinates.
 | 03 | Broader automatic-controller scenes | TOP-006 complete; v1 benchmark established, current policies pass 5/12 scenes |
 | 04 | Refined feasibility, shape capacity and held-out prediction | TOP-007 proposed, reviewed, planned and executed |
 | 05 | Why finished runs still return wrong shapes | Results recorded; guard opt-in; literature verdict ranks corrections and qualifies earlier causal claims; written next steps only |
+| 06 | Feasible finite differences and the capacity contract | TOP-008 complete; TOP-009 implemented opt-in |
+| 07 | Bandwidth ladder and interpretation review | TOP-009 stage-2 gate failed; stages 3/4 preserved; independent review corrects stationarity/data claims and proposes TOP-010 |

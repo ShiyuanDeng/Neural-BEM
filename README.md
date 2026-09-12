@@ -72,19 +72,23 @@ the solves — but **buys no new benchmark pass**, still 5/12.
 [Report](results/validation/topology/TOP-008-20260912-feasible-fd/README.md).
 
 TOP-009 then added the missing shape bandwidth. Adding modes fits the training
-data **248x better** while boundary error, IoU and holdout error all get
-**monotonically worse**, which stopped the line before the benchmark. A stage-3
+data **248x better** while final boundary error, IoU and holdout error get
+**worse**, which stopped the line before the benchmark. A stage-3
 diagnostic corrected the reading: the **true geometry fits the same training
 acquisition to 3.23e-07 relative error**, so the reconstruction is 7.1e6x worse
-than achievable and the data is not the limit. One component became a genuine
-five-lobed star of the right perimeter, area and isoperimetric ratio, then parked
-**34 degrees out of rotational phase** — which the phase-sensitive boundary gate
-scores worse than the circle it replaced. A fourth stage ran the mode ladder to
+than this known attainable value. One component acquired star-like shape with
+similar perimeter, area and isoperimetric ratio. A truth-selected rotation of
+**34 degrees** reduces its boundary error, exposing a substantial phase mismatch.
+A fourth stage ran the mode ladder to
 exhaustion at K=9, enough for both a five- and a seven-lobed star: the answer
 improves to 11.849 mm from 17.599, still ends worse than the circles it started
 from, and remains **74,159x above the objective the true geometry attains**.
-**The remaining obstacle is a local minimum — not information, not
-representation, and not a truncated experiment.**
+**Independent review:** this demonstrates a suboptimal reconstruction, not a
+certified local minimum or unique inversion. Thirteen of fourteen refinements
+stopped on small loss change; the final data error already satisfies the
+controller's tolerance despite poor geometry. The next proposed check separates
+optimizer stopping from stationarity before choosing a restart strategy.
+[Review and counter repair](docs/iterations/topology/iteration_07/02_proposals/01_independent_review.md).
 [Report](results/validation/topology/TOP-009-20260912-bandwidth-capacity/README.md).
 
 ## Implementation at a glance

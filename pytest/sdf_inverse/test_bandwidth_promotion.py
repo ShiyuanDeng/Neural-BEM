@@ -4,9 +4,12 @@ Geometry and gauge algebra only — no BIE solve anywhere in this file.
 """
 import numpy as np
 import pytest
+from types import SimpleNamespace
 
 from sdf_inverse import MultiRadialFourierState
+from sdf_inverse import topology_controller as controller
 from sdf_inverse.explicit_fourier import circle_cartesian_fourier_state
+from gpr_bem_kress.multicomponent import MultiComponentTopologyError
 from sdf_inverse.topology_controller import (
     TopologyControllerConfig, chart_contour_modes, component_parameterization,
     gauge_dimension, next_bandwidth_rung, zero_padded_component,
@@ -109,3 +112,59 @@ def test_the_benchmark_arm_differs_from_its_baseline_by_one_policy():
     h, j = benchmark.ARM_POLICIES['H'], benchmark.ARM_POLICIES['J']
     assert {k: v for k, v in j.items() if k != 'bandwidth_promotion'} == h
     assert j['bandwidth_promotion'] is True
+
+
+@pytest.mark.parametrize('outcome', ('accepted', 'no_decrease', 'refined_invalid'))
+def test_promotion_diagnostics_include_work_even_when_the_rung_is_rejected(monkeypatch, outcome):
+    """A promotion is part of its cycle, including unsuccessful refinement."""
+    initial = MultiRadialFourierState((circle(),))
+    production, refined = object(), object()
+    optimized = None
+
+    def objective(state, data, geometry, solve):
+        if state is optimized:
+            if geometry is refined and outcome == 'refined_invalid':
+                raise MultiComponentTopologyError('synthetic refined rejection')
+            return (.5 if outcome == 'accepted' else 1.), 1.
+        return 1., 1.
+
+    def optimize(state, *args, **kwargs):
+        nonlocal optimized
+        assert kwargs['feasibility_geometry_configs'] == (refined,)
+        assert kwargs['feasible_fd_jacobian'] is True
+        # The first call is fixed refinement; the second is the promoted rung.
+        promoted = state.components[0].maximum_mode == 3
+        if promoted:
+            optimized = state
+        return SimpleNamespace(
+            final_state=state, iterations=[SimpleNamespace(loss=.5 if promoted else 1.)],
+            stop_reason='loss_change_tolerance',
+            feasibility_rejected_trial_count=5 if promoted else 2,
+            one_sided_jacobian_column_count=7 if promoted else 3,
+            unresolved_jacobian_column_count=11 if promoted else 4)
+
+    monkeypatch.setattr(controller, 'topology_objective', objective)
+    monkeypatch.setattr(controller, 'run_multiradial_fd_inverse', optimize)
+    monkeypatch.setattr(controller, 'multiradial_geometry_admissible', lambda *a, **k: True)
+    monkeypatch.setattr(controller, 'build_topology_workspace', lambda *a: None)
+    monkeypatch.setattr(controller, 'generate_topology_candidates', lambda *a: ((), ()))
+    result = controller.run_topology_aware_fourier_inverse(
+        initial, None, production, refined, solve_config=None,
+        config=TopologyControllerConfig(chart='cartesian', maximum_cycles=1,
+            bandwidth_promotion=True, feasible_fd_jacobian=True, refined_feasibility_guard=True))
+
+    row = result.passes[0]
+    assert row['refined_feasibility_rejected_trials'] == 7
+    assert row['one_sided_jacobian_columns'] == 10
+    assert row['unresolved_jacobian_columns'] == 15
+    promotion = row['bandwidth_promotions'][0]
+    assert promotion['refined_feasibility_rejected_trials'] == 5
+    assert promotion['one_sided_jacobian_columns'] == 7
+    assert promotion['unresolved_jacobian_columns'] == 11
+    assert promotion['retained'] is (outcome == 'accepted')
+    assert result.events == ()
+    assert result.final_state.components[0].maximum_mode == (3 if outcome == 'accepted' else 1)
+    if outcome == 'refined_invalid':
+        assert 'synthetic refined rejection' in promotion['reason']
+    elif outcome == 'no_decrease':
+        assert promotion['reason'] == 'no_decrease_at_both_resolutions'

@@ -677,6 +677,7 @@ def _run_topology_aware_fourier_inverse(initial_state, data, production_geometry
         and at most one is retained, so the objective change is attributable to
         exactly one component.
         """
+        nonlocal guard_rejected, one_sided_columns, unresolved_columns
         if current is None:
             return None
         cap = chart_contour_modes(config)
@@ -715,6 +716,16 @@ def _run_topology_aware_fourier_inverse(initial_state, data, production_geometry
                     feasible_fd_jacobian=feasible_fd,
                     progress_callback=lambda item: emit(item.state, item.loss,
                                                        f'promote {item.iteration}', cycle))
+                # Refinement work belongs to this pass even if the subsequent
+                # acceptance check rejects the rung or raises a geometry error.
+                if guard:
+                    guard_rejected += result.feasibility_rejected_trial_count
+                    record['refined_feasibility_rejected_trials'] = result.feasibility_rejected_trial_count
+                if feasible_fd:
+                    one_sided_columns += result.one_sided_jacobian_column_count
+                    unresolved_columns += result.unresolved_jacobian_column_count
+                    record['one_sided_jacobian_columns'] = result.one_sided_jacobian_column_count
+                    record['unresolved_jacobian_columns'] = result.unresolved_jacobian_column_count
                 production_after = float(result.iterations[-1].loss)
                 refined_after = float(accounted_call('bandwidth_acceptance', topology_objective,
                     result.final_state, data, refined_geometry_config, solve_config)[0])
