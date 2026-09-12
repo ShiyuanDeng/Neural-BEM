@@ -90,17 +90,22 @@ objective**, and that is a question about sensitivity, conditioning and what the
 0.003 data tolerance actually certifies — the final K=9 state satisfies that
 tolerance at 8.7878e-05 while sitting 11.849 mm from the truth.
 
-Two candidates, neither authorized and each needing its own contract:
+Two candidates, now written as contracts, **neither approved**:
 
-1. **A sensitivity and conditioning study** at the saved states: which geometric
-   directions the acquisition actually constrains, and how much boundary
-   displacement lies inside the 0.003 data tolerance. This is the direct
-   successor and reuses everything built.
-2. **Acquisition** — the review's earlier rank 4. Now better motivated than when
-   it was deferred, because the decoupling above is what an information shortage
-   looks like. It still requires a new untouched evaluation set, since 1.5 and
-   2.5 GHz are the current holdout, and therefore a change to the frozen
-   benchmark's data contract. That is the user's decision.
+1. **[TOP-011 — how much geometry hides inside the data tolerance](02_proposals/01_sensitivity_and_conditioning.md).**
+   Diagnostic only, no source change. For each singular direction of the
+   Jacobian, how far can the boundary move while the data fit stays inside the
+   frozen 0.003 tolerance? The plateau's singular values already span 2.085e-04
+   to 28.83, but nobody has converted that into millimetres. This is the direct
+   successor, it reuses everything built, and it is the cheaper question.
+2. **[TOP-012 — richer acquisition, and what it costs the benchmark](02_proposals/02_acquisition_change.md).**
+   Better motivated than when the verdict deferred it, and explicitly gated
+   behind TOP-011 so we do not buy data to fix a problem not yet shown to be
+   about data. It also documents a route the earlier discussion missed: adding
+   **source/receiver pairs at 0.5 GHz** enriches the acquisition **without
+   touching the 1.5/2.5 GHz holdout**, unlike adding frequencies, which destroys
+   it. Any route creates a v2 benchmark; v1 stays immutable. **Requires the
+   user's decision.**
 
 No controller default, gate, scene or budget changed in this cycle.
 TOP-002–TOP-004 remain deferred proposals.
