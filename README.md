@@ -79,9 +79,12 @@ acquisition to 3.23e-07 relative error**, so the reconstruction is 7.1e6x worse
 than achievable and the data is not the limit. One component became a genuine
 five-lobed star of the right perimeter, area and isoperimetric ratio, then parked
 **34 degrees out of rotational phase** — which the phase-sensitive boundary gate
-scores worse than the circle it replaced — while the ladder stopped on its solve
-cap with the other component three rungs below the bandwidth its seven-lobed
-truth needs. **The remaining obstacle is a local minimum, not information.**
+scores worse than the circle it replaced. A fourth stage ran the mode ladder to
+exhaustion at K=9, enough for both a five- and a seven-lobed star: the answer
+improves to 11.849 mm from 17.599, still ends worse than the circles it started
+from, and remains **74,159x above the objective the true geometry attains**.
+**The remaining obstacle is a local minimum — not information, not
+representation, and not a truncated experiment.**
 [Report](results/validation/topology/TOP-009-20260912-bandwidth-capacity/README.md).
 
 ## Implementation at a glance

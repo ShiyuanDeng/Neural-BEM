@@ -21,8 +21,9 @@ holdout error monotonically worse, so the suite was not spent on a rule that
 degrades a gated metric. Its stage-3 diagnostic then traced most of that
 degradation to rotational phase on a ladder truncated by its own solve cap, and
 established that the true geometry fits this acquisition to 3.23e-07 relative
-error — so the frozen v1 data is sufficient for these scenes and the remaining
-obstacle is optimization.
+error. Stage 4 then exhausted the ladder at K=9 and the failure survived it, so
+the frozen v1 data and the Fourier representation are both sufficient for these
+scenes and the remaining obstacle is a local minimum.
 
 ## Scene matrix
 

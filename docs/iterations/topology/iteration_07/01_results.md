@@ -1,4 +1,4 @@
-# Topology iteration 07 — the data was never the problem either
+# Topology iteration 07 — not the modes, not the data, the optimizer
 
 TOP-009 stopped at stage 2 on 2026-09-12, implementing rank 2 of the
 [literature verdict](../iteration_05/02_proposals/03_literature_verdict.md).
@@ -20,9 +20,42 @@ correction notice rather than quietly rewritten.
 
 ## The result in one line
 
-Adding shape bandwidth **does** produce real shape — and the optimizer then
-parks it a third of a lobe out of rotational phase, 7.1 million times above the
-objective the true geometry achieves, on a ladder that stopped early.
+Adding shape bandwidth **does** produce real shape — and with every mode both
+truths require, the optimizer still lands **74,159× above** the objective the
+true geometry achieves, and worse on every gated measure than the two circles it
+started from.
+
+## Stage 4 — the ladder, finished
+
+Stage 2 stopped on its 2500-solve cap at modes [6, 5], so no statement about the
+full ladder had been earned. Rerun with declared budgets of 40000 solves and
+3600 s it exhausts: **14 of 14 rungs retained**, reaching [9, 9] in 7446 solves
+and 762 s.
+
+| Modes | Matched error | Union IoU | Worst holdout |
+|---|---:|---:|---:|
+| [1, 1] *start* | **7.595 mm** | **0.7468** | **1.003** |
+| [3, 3] | 7.593 mm | 0.7458 | 1.005 |
+| [5, 5] | 15.634 mm | 0.6952 | 1.147 |
+| **[6, 5]** | **17.599 mm** | **0.6383** | **1.514** |
+| [7, 7] | 12.030 mm | 0.7177 | 1.318 |
+| [8, 8] | 11.323 mm | 0.7129 | 1.372 |
+| [9, 9] *final* | 11.849 mm | 0.7088 | 1.415 |
+
+**The stage-2 cap stopped the climb at its single worst rung.** Matched error
+peaks at exactly [6, 5] and recovers afterwards. Stage 2 read the ladder at the
+one point that flattered its failure most, by accident of the budget — a second
+way that truncation distorted the result, beyond the one stage 3 found.
+
+**It still does not recover.** The finished ladder is worse than the starting
+circles on matched error, IoU and holdout alike. And at `K = 9`, which covers
+both a five- and a seven-lobed star, the training loss is 3.8613e-09 against the
+truth's 5.2068e-14 — so this is no longer a representation limit of any kind.
+Phase is still wrong at the top: `t001` needs 156° to reach 7.036 mm.
+
+Areas come back to within 0.3% (3112.5 mm² against 3106.0; 2887.3 against
+2895.9) while perimeters and lobe structure do not. The optimizer finds the
+right amount of material in roughly the right place and the wrong boundary.
 
 ## What stage 3 measured
 
@@ -77,11 +110,14 @@ Three explanations have now been tested and eliminated in order:
 2. **Capacity** — genuinely missing, genuinely restored, not sufficient.
 3. **Data and regularization** — refuted here: the truth fits to 3.23e-07.
 
-What is left is **globalization**. The objective has a local minimum in
-rotational phase that the LM optimizer cannot leave, and a promotion that
-zero-pads starts the new modes at exactly zero, where the phase of a symmetric
-mode pair is least determined. Both are optimization problems, and both are
-addressable without touching the acquisition or the frozen benchmark.
+What is left is **globalization**, and stage 4 makes that conclusion much
+stronger than stage 3 could. With every mode both truths require, the optimizer
+still sits four orders of magnitude above the achievable objective. The failure
+survives a finished ladder, so it cannot be blamed on representation, on data,
+or on a truncated experiment. A promotion that zero-pads also starts the new
+modes at exactly zero, where the phase of a symmetric mode pair is least
+determined. These are optimization problems, addressable without touching the
+acquisition or the frozen benchmark.
 
 Also invalidated: the earlier suggestion that classical model selection had
 "failed". Cross-resolution discrepancy, GCV and AIC were checked against the
@@ -92,8 +128,8 @@ They are inapplicable to a noiseless problem, which is a different statement.
 ## Next
 
 One question, not authorized, needing its own contract: **escaping the phase
-minimum and letting the ladder finish.** Candidate mechanisms, in the order the
-evidence supports them:
+minimum.** The ladder is no longer part of it — stage 4 settled that. Candidate
+mechanisms, in the order the evidence supports them:
 
 1. **Seed the new modes instead of zeroing them.** Promotion currently pads with
    zeros, which is the least informative starting phase available. The controller
@@ -101,9 +137,9 @@ evidence supports them:
    same machinery could seed a promotion.
 2. **Try several phases at promotion time** and keep the best by training
    objective. Directly targets the observed failure and needs no new theory.
-3. **Raise or remove the ladder's solve cap** so the second component can reach
-   the bandwidth its truth requires. The cheapest of the three, and until it is
-   done no result about the full ladder means anything.
+3. ~~Raise the ladder's solve cap.~~ **Done** — stage 4. The ladder exhausts at
+   [9, 9] and the failure survives it, which is what promotes the other two from
+   speculation to the actual next test.
 
 Regularization is **not** the next step, and neither is richer acquisition. Both
 were plausible before stage 3 and neither survives it.

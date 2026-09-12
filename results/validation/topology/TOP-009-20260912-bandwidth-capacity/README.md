@@ -1,4 +1,4 @@
-# TOP-009 — the optimizer is stuck, and the ladder never finished
+# TOP-009 — the ladder finished, and the optimizer is still stuck
 
 Rank 2 of the [literature verdict](../../../../docs/iterations/topology/iteration_05/02_proposals/03_literature_verdict.md),
 the only other candidate it accepts.
@@ -78,6 +78,62 @@ but that is not evidence about regularization. All three presume a noise floor
 the residual should not be driven below, and here the truth drives it to 5e-14.
 They are inapplicable, not merely unhelpful.
 
+## Stage 4 — the ladder, finished
+
+Stage 2 stopped on its 2500-solve cap at modes [6, 5], so no statement about the
+*full* ladder was ever earned. Rerun from the same saved state with declared
+budgets of 40000 solves and 3600 s, it exhausts: **14 of 14 rungs attempted and
+retained**, reaching [9, 9] in 7446 solves and 762 s.
+
+| Modes | Matched error | Union IoU | Worst holdout |
+|---|---:|---:|---:|
+| [1, 1] *start* | **7.595 mm** | **0.7468** | **1.003** |
+| [3, 3] | 7.593 mm | 0.7458 | 1.005 |
+| [4, 4] | 12.265 mm | 0.7167 | 1.036 |
+| [5, 5] | 15.634 mm | 0.6952 | 1.147 |
+| **[6, 5]** | **17.599 mm** | **0.6383** | **1.514** |
+| [6, 6] | 14.175 mm | 0.6545 | 1.383 |
+| [7, 7] | 12.030 mm | 0.7177 | 1.318 |
+| [8, 8] | 11.323 mm | 0.7129 | 1.372 |
+| [9, 9] *final* | 11.849 mm | 0.7088 | 1.415 |
+
+**The stage-2 cap truncated the climb at its single worst rung.** Matched error
+peaks at exactly [6, 5] — 17.599 mm — then recovers to 11.3-11.8 mm once both
+components get past it. The earlier write-up read the ladder at the one point
+that flattered its failure most, by accident of the budget.
+
+**The full ladder still does not recover.** 11.849 mm against the starting
+circles' 7.595 mm, IoU 0.7088 against 0.7468, worst holdout 1.415 against 1.003.
+Enrichment ends worse on every gated measure than the two circles it began with.
+
+**And with all the bandwidth its truth requires, the optimizer is still
+74,159x above the achievable objective** — final training loss 3.8613e-09
+against the truth's 5.2068e-14. `K = 9` covers both a five-lobed and a
+seven-lobed star (a radial *m*-lobe harmonic needs Cartesian *m*+1), so this is
+no longer a representation limit of any kind. Phase is still wrong at the top of
+the ladder: `t001` needs a 156 degree rotation to reach 7.036 mm, `t003` a 138
+degree rotation to reach 10.328 mm.
+
+Shape measures show what the components actually became:
+
+| Curve | Perimeter | Area | Isoperimetric ratio |
+|---|---:|---:|---:|
+| `truth.star5` | 253.02 mm | 3106.0 mm2 | 1.6403 |
+| final `t001` (K=9) | 267.56 mm | **3112.5 mm2** | 1.8303 |
+| `truth.star7` | 273.64 mm | 2895.9 mm2 | 2.0577 |
+| final `t003` (K=9) | 233.07 mm | **2887.3 mm2** | 1.4972 |
+
+Areas are recovered to within 0.3%; perimeters and lobe structure are not, and
+each component's isoperimetric ratio sits between the two truths rather than on
+its own. The optimizer has the right amount of material in roughly the right
+place and the wrong boundary.
+
+**So bandwidth is necessary and nowhere near sufficient.** The binding obstacle
+is a local minimum the LM optimizer cannot leave, four orders of magnitude above
+the objective the true geometry attains, with every mode it needs available.
+
+[Ladder record](stage4_uncapped_ladder.json) | [script](stage4_uncapped_ladder.py)
+
 ## Stage 1 — are the added directions observable? PASS
 
 A per-rung probe of two saved states, no optimizer and no topology search. The
@@ -146,12 +202,18 @@ attributable to the promotion.
   and isoperimetric ratio.
 - **The optimizer cannot find the phase.** It lands 34° out and stays there,
   7.1e6× above the achievable objective.
-- **The experiment was truncated.** The ladder stopped on its solve cap with the
-  second component three rungs below the bandwidth its truth needs.
+- **The truncation mattered, and did not save the result.** Stage 4 ran the
+  ladder to exhaustion at [9, 9]. The stage-2 cap had stopped it at its worst
+  rung, so the recovered answer is better than stage 2 reported — 11.849 mm
+  rather than 17.599 mm — but still worse than the circles it started from on
+  every gated measure.
+- **Bandwidth is necessary and not sufficient.** With every mode both truths
+  require, the optimizer still sits 74,159x above the achievable objective.
 
-The next question is globalization — escaping the rotational-phase minimum and
-letting the ladder finish — not regularization and not acquisition. That needs
-its own contract; nothing here authorizes one.
+The next question is globalization — escaping a local minimum that four orders
+of magnitude of objective and a full mode ladder do not resolve — not
+regularization, not acquisition, and no longer capacity. That needs its own
+contract; nothing here authorizes one.
 
 ## Verification
 
@@ -174,4 +236,6 @@ env PYTHONPATH=solvers /home/drdeng/miniconda3/envs/EMNerf/bin/python \
   results/validation/topology/TOP-009-20260912-bandwidth-capacity/stage2_climb.py
 env PYTHONPATH=solvers /home/drdeng/miniconda3/envs/EMNerf/bin/python \
   results/validation/topology/TOP-009-20260912-bandwidth-capacity/stage3_correction.py
+env PYTHONPATH=solvers /home/drdeng/miniconda3/envs/EMNerf/bin/python \
+  results/validation/topology/TOP-009-20260912-bandwidth-capacity/stage4_uncapped_ladder.py
 ```

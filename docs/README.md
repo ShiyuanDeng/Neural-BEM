@@ -47,7 +47,7 @@ Galerkin formulations, derivatives, conditioning, and cost. Replacing Kress is
 
 | Track | Question | Stage | Next expected action | Approved IDs |
 |---|---|---|---|---|
-| [Topology / Track A](iterations/topology/README.md) | How can the inverse choose and execute topology changes more reliably, without a prescribed object count or excessive BIE cost? | TOP-008 complete; TOP-009 stopped at its stage-2 gate and then **corrected by its own stage-3 diagnostic** | **Globalization, not regularization** — the truth fits the training acquisition to 3.23e-07, so the failure is a local minimum in rotational phase on a truncated ladder. [Iteration 07](iterations/topology/iteration_07/01_results.md) ranks the candidates; none authorized | **TOP-001, TOP-005, TOP-006, TOP-007, TOP-008, TOP-009** |
+| [Topology / Track A](iterations/topology/README.md) | How can the inverse choose and execute topology changes more reliably, without a prescribed object count or excessive BIE cost? | TOP-008 complete; TOP-009 stopped at its stage-2 gate, then corrected twice by its own diagnostics | **Globalization** — representation, data and ladder truncation are all eliminated; a finished K=9 ladder still lands 74,159x above the objective the true geometry attains. [Iteration 07](iterations/topology/iteration_07/01_results.md) ranks what is left; none authorized | **TOP-001, TOP-005, TOP-006, TOP-007, TOP-008, TOP-009** |
 | [Boundary–BIE](iterations/boundary_bie/README.md) | Which properties of smooth-boundary representations improve the accuracy, conditioning, differentiation or cost of the BIE inverse? | Brief drafted; no review, no plan | Review [the brief](iterations/boundary_bie/iteration_01/02_proposals/01_boundary_bie_research_brief.md); decide whether `BIE-001` — comparison and selection of one prototype — is the right first deliverable | **None** |
 
 Topology has completed **gate 7 for TOP-001, TOP-005, TOP-006, TOP-007, TOP-008
@@ -79,10 +79,13 @@ the **true geometry fits the training acquisition to 3.23e-07 relative error**,
 so the climb's answer is 7.1e6x worse than achievable and the data is nowhere
 near exhausted. Most of the degraded boundary error is rotational phase — one
 component became a genuine five-lobed star and parked 34 degrees out — and the
-ladder stopped on its solve cap with the other component three rungs below the
-bandwidth its truth requires. Three explanations are now eliminated in order:
-the derivative, capacity, and data/regularization. What remains is
-globalization, an optimization problem.
+ladder had stopped on its solve cap at what turned out to be its single worst
+rung. A fourth stage then ran the ladder to exhaustion at modes [9, 9], enough
+for both a five- and a seven-lobed star: it recovers to 11.849 mm from 17.599,
+and still ends worse than the circles it started from while sitting 74,159x
+above the achievable objective. Four explanations are now eliminated in order —
+the derivative, capacity, data/regularization, and ladder truncation — leaving
+a local minimum, an optimization problem.
 [TOP-008](../results/validation/topology/TOP-008-20260912-feasible-fd/README.md) ·
 [TOP-009](../results/validation/topology/TOP-009-20260912-bandwidth-capacity/README.md).
 
