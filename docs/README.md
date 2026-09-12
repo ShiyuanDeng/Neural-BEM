@@ -1,6 +1,6 @@
 # Project dashboard
 
-Updated 2026-09-11. This page is the entry point: current baseline, current
+Updated 2026-09-12. This page is the entry point: current baseline, current
 research objectives, active tracks and what each one is waiting for. It
 **summarises and links**. Measurements live in the
 [results catalogue](../results/README.md); implemented capability lives in
@@ -47,7 +47,7 @@ Galerkin formulations, derivatives, conditioning, and cost. Replacing Kress is
 
 | Track | Question | Stage | Next expected action | Approved IDs |
 |---|---|---|---|---|
-| [Topology / Track A](iterations/topology/README.md) | How can the inverse choose and execute topology changes more reliably, without a prescribed object count or excessive BIE cost? | TOP-007 complete; guarded runs abort nothing, both arms still pass 5/12. **Implementation held for a literature verdict** | Wait for that verdict before attempting any fix; [iteration 05](iterations/topology/iteration_05/01_results.md) has the diagnosis and the candidate fixes, none approved | **TOP-001, TOP-005, TOP-006, TOP-007** |
+| [Topology / Track A](iterations/topology/README.md) | How can the inverse choose and execute topology changes more reliably, without a prescribed object count or excessive BIE cost? | TOP-007 complete; both arms still pass 5/12. **Literature verdict complete; written next steps only** | [Review the ranked verdict](iterations/topology/iteration_05/02_proposals/03_literature_verdict.md): feasible FD information first, controlled shape-capacity enrichment separately; floor relaxation and merge headroom deferred. No new implementation approved | **TOP-001, TOP-005, TOP-006, TOP-007** |
 | [Boundary–BIE](iterations/boundary_bie/README.md) | Which properties of smooth-boundary representations improve the accuracy, conditioning, differentiation or cost of the BIE inverse? | Brief drafted; no review, no plan | Review [the brief](iterations/boundary_bie/iteration_01/02_proposals/01_boundary_bie_research_brief.md); decide whether `BIE-001` — comparison and selection of one prototype — is the right first deliverable | **None** |
 
 Topology has completed **gate 7 for TOP-001, TOP-005, TOP-006 and TOP-007** under the
@@ -69,8 +69,9 @@ searched the production resolution's feasible set while the controller
 evaluated at the refined one. With the opt-in refined feasibility guard no
 guarded run aborts, the requested distant ellipse/star case finishes with the
 correct object count, and every scene both arms complete returns an identical
-state. Pass counts are unchanged at 5/12, which places the remaining failure in
-shape rather than feasibility.
+state. Pass counts are unchanged at 5/12. The literature verdict identifies
+constraint-aware refinement, shape capacity and held-out prediction as separate
+remaining questions.
 [Report](../results/validation/topology/TOP-007-20260911-refined-feasibility/README.md).
 
 ### Dependencies and blockers

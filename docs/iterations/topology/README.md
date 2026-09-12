@@ -42,18 +42,18 @@ which controller behaviour the baseline pins.
 
 ## Current handoff
 
-Updated 2026-09-11.
+Updated 2026-09-12.
 
 | Item | Current state |
 |---|---|
 | Active iteration | [Iteration 05 results](iteration_05/01_results.md) |
-| Stage | TOP-007 closeout complete; stall diagnosed. **On hold for a thorough literature verdict** (user direction, 2026-09-11) |
+| Stage | TOP-007 closeout complete; **literature verdict written** under the user's 2026-09-12 request for an evidence-based review and ranked, written next steps |
 | Approved experiment IDs | `TOP-001`, `TOP-005`, `TOP-006`, `TOP-007`: **APPROVED** by the user's Track A, broader-scene and continuation requests on 2026-09-11. The session instructions supersede the old exact-ID phrase requirement. `TOP-002`–`TOP-004` and `TOP-008` remain proposals |
 | Execution status | TOP-001, TOP-005, TOP-006 and TOP-007 `COMPLETE`. The guarded arm aborts nothing and returns 9/12 runs against the default's 7/12, with identical final states wherever both completed and the same 5/12 passing. 554 tests pass; controller default unchanged |
-| Next expected action | **Wait.** The user asked on 2026-09-11 for a thorough literature verdict before any fix is attempted. Do not write or run TOP-008. The candidate fixes — an FD Jacobian that slides along an active constraint instead of freezing the column, and a relaxable or headroom-aware feature-radius floor — stay unimplemented until that verdict lands. The [search-only pointers](iteration_05/02_proposals/02_literature_context.md) are not that verdict. Whether the guard becomes the default is a separate, still-open decision |
-| Owner / reviewer | Claude / `unassigned` (no independent review claimed) |
+| Next expected action | Read the [literature verdict and ranked next steps](iteration_05/02_proposals/03_literature_verdict.md). It recommends feasible FD information and truthful stopping first, then controlled shape-capacity enrichment in a separate comparison. It does **not** recommend relaxing the floor or adding merge headroom as the next fix. Full shape recovery remains unproven. The current request authorizes written review only; no TOP-008 implementation or run has started. Whether the guard becomes the default remains separate |
+| Owner / reviewer | TOP-007 implementation: Claude; literature verdict: Codex. Independent review of the verdict: `unassigned` |
 | Dependencies | Shared controller/driver changes declared in the [review](iteration_01/02_proposals/02_codex_review.md) and the [TOP-007 review](iteration_04/02_proposals/02_feasibility_review.md); no physical solver or geometry-state interfaces changed |
-| Blockers | Implementation is deliberately held pending the literature verdict. Three scenes still spend the full ten minutes in both arms, and no automatic mechanism recovers noncircular shapes |
+| Blockers | No proposed change is established as a complete recovery fix. The literature review is complete; implementation remains unstarted under the written-only scope. Three scenes still time out and noncircular recovery is unresolved |
 
 ## Reading order
 
@@ -112,4 +112,4 @@ certificate, and the trust region's dependence on coordinates.
 | 02 | Selective refinement after raw-shortlist failures | TOP-005 complete; all declared gates pass |
 | 03 | Broader automatic-controller scenes | TOP-006 complete; v1 benchmark established, current policies pass 5/12 scenes |
 | 04 | Refined feasibility, shape capacity and held-out prediction | TOP-007 proposed, reviewed, planned and executed |
-| 05 | Why finished runs still return wrong shapes | Results recorded; guard qualified and left opt-in; next questions open |
+| 05 | Why finished runs still return wrong shapes | Results recorded; guard opt-in; literature verdict ranks corrections and qualifies earlier causal claims; written next steps only |
