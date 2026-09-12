@@ -1,0 +1,237 @@
+{
+  "arm": "G",
+  "audit_work": {
+    "stages": {
+      "final_production": {
+        "evaluation_count": 1,
+        "forward_evaluation_count": 1,
+        "forward_frequency_solve_count": 1
+      },
+      "final_refined": {
+        "evaluation_count": 1,
+        "forward_evaluation_count": 1,
+        "forward_frequency_solve_count": 1
+      },
+      "holdout": {
+        "evaluation_count": 1,
+        "forward_evaluation_count": 1,
+        "forward_frequency_solve_count": 2
+      }
+    },
+    "totals": {
+      "bie_frequency_solve_count": 4,
+      "evaluation_count": 3,
+      "forward_evaluation_count": 3,
+      "forward_frequency_solve_count": 4,
+      "td_evaluation_count": 0,
+      "td_frequency_solve_count": 0
+    }
+  },
+  "completed": true,
+  "events": [
+    {
+      "after_ids": [
+        "t001.birth"
+      ],
+      "before_ids": [],
+      "candidate_refinement_steps": 3,
+      "children": [
+        "t001.birth"
+      ],
+      "construction": "exterior_td_region; radius=0.024807",
+      "cycle": 0,
+      "kind": "birth",
+      "parents": [],
+      "production_after": 0.21487255230611907,
+      "production_before": 0.4999999999999998,
+      "raw_birth_radius_m": 0.02480723913071888,
+      "refined_after": 0.21487255230611924,
+      "refined_before": 0.4999999999999998
+    },
+    {
+      "after_ids": [
+        "t001.birth",
+        "t002.birth"
+      ],
+      "before_ids": [
+        "t001.birth"
+      ],
+      "candidate_refinement_steps": 3,
+      "children": [
+        "t002.birth"
+      ],
+      "construction": "exterior_td_region; radius=0.024736",
+      "cycle": 1,
+      "kind": "birth",
+      "parents": [],
+      "production_after": 0.08048710176316778,
+      "production_before": 0.21487225710268676,
+      "raw_birth_radius_m": 0.02473585124420659,
+      "refined_after": 0.08048710176316781,
+      "refined_before": 0.21487225710268693
+    },
+    {
+      "after_ids": [
+        "t001.birth",
+        "t002.birth",
+        "t003.birth"
+      ],
+      "before_ids": [
+        "t001.birth",
+        "t002.birth"
+      ],
+      "candidate_refinement_steps": 3,
+      "children": [
+        "t003.birth"
+      ],
+      "construction": "exterior_td_region; radius=0.019595",
+      "cycle": 2,
+      "kind": "birth",
+      "parents": [],
+      "production_after": 7.825509991510158e-09,
+      "production_before": 0.08048474813638844,
+      "raw_birth_radius_m": 0.01959493047217066,
+      "refined_after": 7.825509991416292e-09,
+      "refined_before": 0.0804847481363882
+    }
+  ],
+  "final_loss": 1.3132802457778391e-14,
+  "final_relative_error": 1.6206666812011902e-07,
+  "final_state": [
+    {
+      "chart": "cartesian",
+      "component_id": "t001.birth",
+      "maximum_mode": 1,
+      "parameters": [
+        0.5800000050161561,
+        0.45999999739823344,
+        0.02999999702056098,
+        -9.442590846977764e-19,
+        7.354942952742228e-19,
+        0.029999997020560987
+      ]
+    },
+    {
+      "chart": "cartesian",
+      "component_id": "t002.birth",
+      "maximum_mode": 1,
+      "parameters": [
+        0.42999999475357636,
+        0.45499999683499287,
+        0.02799999686547829,
+        -5.935572622578011e-19,
+        4.62328599622555e-19,
+        0.027999996865478296
+      ]
+    },
+    {
+      "chart": "cartesian",
+      "component_id": "t003.birth",
+      "maximum_mode": 1,
+      "parameters": [
+        0.5049999999298433,
+        0.5999999976939602,
+        0.027000003088791323,
+        -1.3465497986665047e-18,
+        1.0488431737343067e-18,
+        0.027000003088791323
+      ]
+    }
+  ],
+  "gates": {
+    "all_event_margins_pass": true,
+    "boundary": true,
+    "correct_count": true,
+    "holdout": true,
+    "monotone_accepted_states": true,
+    "overlap": true,
+    "training": true
+  },
+  "geometry": {
+    "component_count": 3,
+    "final_maximum_modes": [
+      1,
+      1,
+      1
+    ],
+    "matched_components": [
+      {
+        "hausdorff_m": 8.63019225043942e-09,
+        "recovered_component": "t001.birth",
+        "truth_component": "truth.B"
+      },
+      {
+        "hausdorff_m": 9.261684789106352e-09,
+        "recovered_component": "t002.birth",
+        "truth_component": "truth.A"
+      },
+      {
+        "hausdorff_m": 5.3958979491363975e-09,
+        "recovered_component": "t003.birth",
+        "truth_component": "truth.C"
+      }
+    ],
+    "maximum_matched_hausdorff_m": 9.261684789106352e-09,
+    "truth_component_count": 3,
+    "union_iou": 1.0
+  },
+  "group": "original",
+  "holdout_relative_errors": [
+    6.865331192510263e-07,
+    1.1158854024275568e-06
+  ],
+  "inversion_seconds": 77.96531686000526,
+  "maximum_holdout_relative_error": 1.1158854024275568e-06,
+  "passed": true,
+  "refined_loss": 1.3132802384357778e-14,
+  "refined_relative_error": 1.6206666766709178e-07,
+  "scene": "repeated-birth",
+  "stop_reason": "recovered",
+  "total_seconds": 79.3248257880332,
+  "work": {
+    "stages": {
+      "candidate_acceptance": {
+        "evaluation_count": 53,
+        "forward_evaluation_count": 53,
+        "forward_frequency_solve_count": 53
+      },
+      "candidate_raw": {
+        "evaluation_count": 91,
+        "forward_evaluation_count": 75,
+        "forward_frequency_solve_count": 75
+      },
+      "candidate_refinement": {
+        "evaluation_count": 488,
+        "forward_evaluation_count": 488,
+        "forward_frequency_solve_count": 488
+      },
+      "fixed_refinement": {
+        "evaluation_count": 164,
+        "forward_evaluation_count": 164,
+        "forward_frequency_solve_count": 164
+      },
+      "production_base": {
+        "evaluation_count": 3,
+        "forward_evaluation_count": 3,
+        "forward_frequency_solve_count": 3
+      },
+      "refined_base": {
+        "evaluation_count": 2,
+        "forward_evaluation_count": 2,
+        "forward_frequency_solve_count": 2
+      },
+      "topological_derivative": {
+        "td_evaluation_count": 5,
+        "td_frequency_solve_count": 4
+      }
+    },
+    "totals": {
+      "bie_frequency_solve_count": 789,
+      "evaluation_count": 801,
+      "forward_evaluation_count": 785,
+      "forward_frequency_solve_count": 785,
+      "td_evaluation_count": 5,
+      "td_frequency_solve_count": 4
+    }
+  }
+}

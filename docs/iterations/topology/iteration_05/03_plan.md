@@ -4,7 +4,7 @@
   implement the Codex plan when it arrived. The plan is the
   [literature verdict](02_proposals/03_literature_verdict.md); this contract
   implements its rank 1 and nothing else.
-- **Execution status:** IN PROGRESS.
+- **Execution status:** COMPLETE. [Iteration 06 results](../iteration_06/01_results.md).
 - **Owner:** Claude. **Independent reviewer:** Codex (literature verdict).
 - **Baseline:** `897e5da` on `feature/ordered-boundary-nystrom`.
 - **Branch:** continue `feature/ordered-boundary-nystrom`; no new branch.
@@ -59,6 +59,23 @@ touching topology. That set is pre-existing and unaffected.
 
 ## Closeout record
 
-To be completed. Results go to [iteration 06](../iteration_06/01_results.md)
-and the bundle at
-`results/validation/topology/TOP-008-20260912-feasible-fd/`.
+All three stages executed inside their declared budgets;
+[bundle](../../../../results/validation/topology/TOP-008-20260912-feasible-fd/README.md),
+[closeout](../iteration_06/01_results.md).
+
+- **Stage 1 PASS.** 15 of 20 directions one-sided, none blocked both ways. Worst
+  stability 7.2e-3 against the 0.25 tolerance; worst one-sided-vs-central 4.5e-3.
+- **Stage 2 PASS.** Frozen stencil takes 0 iterations; feasible stencil decreases
+  at both resolutions and lifts the pinned component from 8.000 mm to 22.737 mm.
+  Stopped at the iteration budget while still improving.
+- **Stage 3 NO NEW PASS.** 10/12 returned against 9/12; both arms still pass
+  5/12. `split` sharply better and 4x cheaper, `central-ellipse-star` newly
+  completes, `far-two-stars` identical, the two ellipse/star scenes mixed —
+  better boundary, worse training residual.
+
+Verification passes every check, including exact reproduction of TOP-007 by arm
+G on all nine completed scenes. `feasible_fd_jacobian` stays opt-in.
+
+The declared "inert wherever no column is one-sided" check has no members, as
+every completed guarded run used at least one. Recorded as vacuous rather than
+claimed, with the identical `far-two-stars` final state reported in its place.
