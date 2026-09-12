@@ -47,7 +47,7 @@ Galerkin formulations, derivatives, conditioning, and cost. Replacing Kress is
 
 | Track | Question | Stage | Next expected action | Approved IDs |
 |---|---|---|---|---|
-| [Topology / Track A](iterations/topology/README.md) | How can the inverse choose and execute topology changes more reliably, without a prescribed object count or excessive BIE cost? | TOP-008 complete, TOP-009 stopped at its stage-2 gate. Both accepted candidates from the literature verdict are measured; **the binding constraint is now data and regularization** | Neither remaining direction is authorized. [Iteration 07](iterations/topology/iteration_07/01_results.md) states the two options — a regularized promotion rule, or richer acquisition, which needs a new untouched evaluation set | **TOP-001, TOP-005, TOP-006, TOP-007, TOP-008, TOP-009** |
+| [Topology / Track A](iterations/topology/README.md) | How can the inverse choose and execute topology changes more reliably, without a prescribed object count or excessive BIE cost? | TOP-008 complete; TOP-009 stopped at its stage-2 gate and then **corrected by its own stage-3 diagnostic** | **Globalization, not regularization** — the truth fits the training acquisition to 3.23e-07, so the failure is a local minimum in rotational phase on a truncated ladder. [Iteration 07](iterations/topology/iteration_07/01_results.md) ranks the candidates; none authorized | **TOP-001, TOP-005, TOP-006, TOP-007, TOP-008, TOP-009** |
 | [Boundary–BIE](iterations/boundary_bie/README.md) | Which properties of smooth-boundary representations improve the accuracy, conditioning, differentiation or cost of the BIE inverse? | Brief drafted; no review, no plan | Review [the brief](iterations/boundary_bie/iteration_01/02_proposals/01_boundary_bie_research_brief.md); decide whether `BIE-001` — comparison and selection of one prototype — is the right first deliverable | **None** |
 
 Topology has completed **gate 7 for TOP-001, TOP-005, TOP-006, TOP-007, TOP-008
@@ -73,11 +73,16 @@ and correcting it freed the pinned component from 8.000 mm to 22.737 mm, returne
 10/12 runs against 9/12 and improved `split` to 0.000023 mm at a quarter of the
 solves, while buying **no new benchmark pass**. TOP-009 then showed that adding
 shape bandwidth fits the training data 248x better and makes boundary error, IoU
-and holdout error **monotonically worse**, with a circular control confirming the
-probe distinguishes a space that is missing shape from one that is not. Capacity
-was never the shortage: 24 observations at one frequency do not determine
-harmonics that fine, so the binding constraint on frozen v1 is data and
-regularization.
+and holdout error **monotonically worse**, which stopped the line before the
+suite. A same-day stage-3 diagnostic then corrected the reading of that result:
+the **true geometry fits the training acquisition to 3.23e-07 relative error**,
+so the climb's answer is 7.1e6x worse than achievable and the data is nowhere
+near exhausted. Most of the degraded boundary error is rotational phase — one
+component became a genuine five-lobed star and parked 34 degrees out — and the
+ladder stopped on its solve cap with the other component three rungs below the
+bandwidth its truth requires. Three explanations are now eliminated in order:
+the derivative, capacity, and data/regularization. What remains is
+globalization, an optimization problem.
 [TOP-008](../results/validation/topology/TOP-008-20260912-feasible-fd/README.md) ·
 [TOP-009](../results/validation/topology/TOP-009-20260912-bandwidth-capacity/README.md).
 

@@ -71,13 +71,17 @@ returns 10/12 runs against 9/12 and takes `split` to 0.000023 mm at a quarter of
 the solves — but **buys no new benchmark pass**, still 5/12.
 [Report](results/validation/topology/TOP-008-20260912-feasible-fd/README.md).
 
-TOP-009 then tested whether the failing shapes are simply missing bandwidth. They
-are not. Adding modes fits the training data **248x better** and makes boundary
-error, IoU and holdout error **monotonically worse**, while a circular control
-shows the probe distinguishes a space that lacks shape from one that does not.
-Twenty-four observations at a single 0.5-GHz frequency do not determine harmonics
-that fine, so **the binding constraint is data and regularization, not capacity
-and no longer the derivative**.
+TOP-009 then added the missing shape bandwidth. Adding modes fits the training
+data **248x better** while boundary error, IoU and holdout error all get
+**monotonically worse**, which stopped the line before the benchmark. A stage-3
+diagnostic corrected the reading: the **true geometry fits the same training
+acquisition to 3.23e-07 relative error**, so the reconstruction is 7.1e6x worse
+than achievable and the data is not the limit. One component became a genuine
+five-lobed star of the right perimeter, area and isoperimetric ratio, then parked
+**34 degrees out of rotational phase** — which the phase-sensitive boundary gate
+scores worse than the circle it replaced — while the ladder stopped on its solve
+cap with the other component three rungs below the bandwidth its seven-lobed
+truth needs. **The remaining obstacle is a local minimum, not information.**
 [Report](results/validation/topology/TOP-009-20260912-bandwidth-capacity/README.md).
 
 ## Implementation at a glance

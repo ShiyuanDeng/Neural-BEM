@@ -17,8 +17,12 @@ and the pass count is **still 5/12**.
 [TOP-009](../../results/validation/topology/TOP-009-20260912-bandwidth-capacity/README.md)
 stopped before reaching this suite: its stage-2 gate showed that adding shape
 bandwidth fits the training data 248x better while making boundary error, IoU and
-holdout error monotonically worse, so the suite was not spent confirming a rule
-already shown to harm generalization.
+holdout error monotonically worse, so the suite was not spent on a rule that
+degrades a gated metric. Its stage-3 diagnostic then traced most of that
+degradation to rotational phase on a ladder truncated by its own solve cap, and
+established that the true geometry fits this acquisition to 3.23e-07 relative
+error — so the frozen v1 data is sufficient for these scenes and the remaining
+obstacle is optimization.
 
 ## Scene matrix
 

@@ -1,4 +1,4 @@
-# TOP-009 — bandwidth was not the binding constraint
+# TOP-009 — the optimizer is stuck, and the ladder never finished
 
 Rank 2 of the [literature verdict](../../../../docs/iterations/topology/iteration_05/02_proposals/03_literature_verdict.md),
 the only other candidate it accepts.
@@ -6,16 +6,77 @@ the only other candidate it accepts.
 [review](../../../../docs/iterations/topology/iteration_06/02_proposals/02_bandwidth_capacity_review.md) ·
 [plan](../../../../docs/iterations/topology/iteration_06/03_plan.md).
 
-**Stage 1 passed and stage 2 failed its declared predicate, so the line was
-stopped and the twelve-scene suite was not run.** The added directions are
-real, observable, and highly effective at fitting the training data — and every
-one of them makes the reconstruction worse. On this acquisition, capacity is not
-what is missing.
+Stage 1 passed. Stage 2 failed its declared predicate — boundary error, IoU and
+holdout error all worsened while training loss fell 248× — so the line stopped
+and the twelve-scene suite was not run.
+
+> **Correction, same day.** Stage 2 was first written up as overfitting on an
+> under-determined acquisition, concluding that the binding constraint was data
+> and regularization. **That conclusion was wrong**, and
+> [stage 3](stage3_correction.py) refutes it with four measurements that need no
+> new inversion. The stage-1 and stage-2 *measurements* below are unchanged; the
+> reading of them is corrected. This section is the corrected reading.
 
 Observations, initial states and saved final states come from the qualified
-[TOP-008 bundle](../TOP-008-20260912-feasible-fd/README.md) and are
-byte-identical to TOP-007's and TOP-006's. No new oracle solve was performed,
-and no controller default changed. `bandwidth_promotion` ships opt-in and off.
+[TOP-008 bundle](../TOP-008-20260912-feasible-fd/README.md), byte-identical to
+TOP-007's and TOP-006's. No new oracle solve was performed, no controller
+default changed, and `bandwidth_promotion` ships opt-in and off.
+
+## Stage 3 — the correction
+
+**The acquisition determines these shapes.** Evaluated at the *true* geometry,
+expressed in the reconstruction's own chart:
+
+| State | Training loss | Relative L2 |
+|---|---:|---:|
+| **True geometry** | **5.2068e-14** | **3.23e-07** |
+| Climb start, modes [1, 1] | 9.2195e-05 | 1.36e-02 |
+| Climb final, modes [6, 5] | 3.7174e-07 | — |
+
+The climb's answer is **7,139,598× worse** in training loss than the truth. So
+24 observations at 0.5 GHz are nowhere near exhausted, there is no
+non-uniqueness at this level, and the optimizer is sitting in a local minimum.
+An acquisition limit would have shown the truth fitting *no better* than the
+reconstruction. It fits seven million times better.
+
+**The mis-fit is largely rotational phase.**
+
+| Component | Matched error | Best over rigid rotation | At |
+|---|---:|---:|---:|
+| `t001` K=6 vs `truth.star5` | 17.600 mm | **6.523 mm** | 34.0° |
+| `t003` K=5 vs `truth.star7` | 11.940 mm | 10.059 mm | 204.0° |
+
+`t001` became a genuine five-lobed star and then sat a third of a lobe out of
+phase. Rotated into place it beats the **7.595 mm** circle it started from. The
+matched-Hausdorff and IoU gates are phase-sensitive, so a correctly shaped but
+mis-rotated star scores worse than a featureless circle of the right size —
+which is exactly what the stage-2 table recorded.
+
+Phase-blind shape measures agree that the shape itself improved:
+
+| Curve | Perimeter | Area | Isoperimetric ratio |
+|---|---:|---:|---:|
+| `truth.star5` | 253.02 mm | 3106.0 mm² | 1.6403 |
+| final `t001` (K=6) | **256.13 mm** | **3129.8 mm²** | **1.6680** |
+| `truth.star7` | 273.64 mm | 2895.9 mm² | 2.0577 |
+| final `t003` (K=5) | 206.85 mm | 2867.0 mm² | 1.1877 |
+
+**And the ladder never finished.** Stage 2 stopped on `solve_cap` — 3127 solves
+against the declared 2500 — not on ladder exhaustion. A radial *m*-lobe harmonic
+needs Cartesian bandwidth *m*+1, so `truth.star7` requires **K ≥ 8** and `t003`
+was cut off at **K = 5**. The second component was never given the bandwidth its
+truth requires, and the rung that would have mattered was never attempted. The
+earlier write-up recorded the overrun as a budget note without recognising that
+it meant the experiment was truncated.
+
+**So the stage-2 failure is optimization, not information.** A local minimum in
+rotational phase, on a ladder that stopped early.
+
+Two secondary readings also fall with it. Cross-resolution discrepancy, GCV and
+AIC were checked against the saved climb and none identifies the damaging rung —
+but that is not evidence about regularization. All three presume a noise floor
+the residual should not be driven below, and here the truth drives it to 5e-14.
+They are inapplicable, not merely unhelpful.
 
 ## Stage 1 — are the added directions observable? PASS
 
@@ -29,21 +90,19 @@ declared in the contract before execution.
 | `far-two-circles` — truth really is circles | 14 | **0** | at most **3.8e-7** |
 
 At `far-two-stars` the six existing mode-1 directions explain **0.000011** of the
-residual — essentially nothing. One rung to `K = 3` reaches 20.4% beyond that
-span; the full ladder reaches 64.4%. The control behaves exactly as a control:
-when the truth is already inside the space, added modes explain 3.8e-7 of the
-residual, five orders of magnitude below the floor, and nothing is observable.
+residual. One rung to `K = 3` reaches 20.4% beyond that span; the full ladder
+reaches 64.4%. The control behaves as a control: where the truth is already
+inside the space, the same ladder explains 3.8e-7, five orders of magnitude
+below the floor, and nothing is observable.
 
 Zero padding moved the boundary by **0.000e+00 m** at every rung on both states,
-and column estimates are stable to 7.3e-5 against the 0.25 tolerance.
-
-One warning visible here and worth carrying: the weakest new column at `K = 9`
-is 4.7e-6 of the largest, while the span gain from `K = 8` to `K = 9` is only
-0.615 to 0.644. High rungs add directions that are individually very weak.
+and column estimates are stable to 7.3e-5 against the 0.25 tolerance. The weakest
+new column at `K = 9` is 4.7e-6 of the largest, so high rungs add individually
+weak directions — a conditioning warning worth carrying.
 
 [Per-rung record](stage1_observability.json) · [script](stage1_observability.py)
 
-## Stage 2 — does climbing help? NO
+## Stage 2 — does climbing help? NOT AS RUN
 
 One bounded continuation from the saved `far-two-stars` state, with the promotion
 rule and without it. Geometry and holdout error are recorded at every retained
@@ -61,63 +120,50 @@ contract.
 | `t003` 4→5 | 1.374e-06 | 15.634 mm | 0.6952 | 1.147 |
 | `t001` 5→6 | **3.717e-07** | 17.599 mm | 0.6383 | 1.514 |
 
-Every rung was retained by the training-only rule. Training loss falls
-**monotonically by 248×**. Matched boundary error, union IoU and worst holdout
-error **all degrade monotonically**. The best reconstruction in the entire climb
-is the state it started from, and there is no rung at which enrichment helps.
+All seven rungs were retained by the training-only rule. Training loss falls
+monotonically by 248×; matched error, IoU and holdout error degrade
+monotonically. On the metrics as gated, the best reconstruction in the climb is
+the state it started from — which is what stopped the line, correctly, because
+the contract's stage-2 predicate included boundary error.
 
-The contract's stage-2 predicate was the objective at both resolutions **and the
-boundary error**. The boundary error got worse, so stage 2 does not pass and
-stage 3 was not run. Running a twelve-scene suite to confirm a rule already shown
-to harm generalization would have spent forty-five minutes on a known answer.
+Stage 3 then showed that most of that degradation is phase, on a truncated
+ladder. The gate outcome stands; the mechanism behind it is not what it looked
+like.
 
 The control arm — the same state refined without promotion — moves nothing in 13
-solves, confirming the state really was stationary and that everything below is
+solves, confirming the state really was stationary and that everything above is
 attributable to the promotion.
-
-**Budget note, reported as an overrun.** 226.8 s against the 600 s ceiling, but
-**3127 solves against the declared 2500 cap**. The cap is tested between rungs,
-so a rung that begins inside it can finish outside it. That is an implementation
-detail of the stage script, not a controller behaviour, and the overrun does not
-affect the conclusion — the degradation is monotone from the first rung, long
-before the cap.
 
 [Climb record](stage2_climb.json) · [script](stage2_climb.py)
 
-## What this establishes
+## What this bundle establishes
 
-The two accepted candidates from the literature verdict are now both measured,
-and between them they say something the verdict could not:
+- **The data is sufficient.** The truth fits to 3.23e-07 relative error on the
+  training acquisition. Neither more frequencies nor regularization is what the
+  frozen v1 shape failures are short of.
+- **Bandwidth enrichment produces real shape.** A component that provably could
+  only translate and scale became a five-lobed star of the right perimeter, area
+  and isoperimetric ratio.
+- **The optimizer cannot find the phase.** It lands 34° out and stays there,
+  7.1e6× above the achievable objective.
+- **The experiment was truncated.** The ladder stopped on its solve cap with the
+  second component three rungs below the bandwidth its truth needs.
 
-- **Rank 1 was a real defect** and fixing it freed the pinned component
-  ([TOP-008](../TOP-008-20260912-feasible-fd/README.md)).
-- **Rank 2 is not a shortage.** The modes are there, they are observable, they
-  fit — and they fit the wrong thing. At 0.5 GHz the exterior wavelength is about
-  245 mm and `k·rho0 ≈ 0.92`; 24 observations at that single frequency do not
-  determine harmonics this fine, so the extra freedom goes into artefacts.
-
-That reframes the remaining failures. `far-ellipse-star` stalling at 3% training
-error with a mode-9 component is not an under-parameterized fit — it is an
-**over-parameterized one on an under-determined acquisition.** The binding
-constraint on the frozen v1 benchmark is data and regularization, not capacity
-and no longer the derivative.
-
-This promotes the verdict's rank 4 — richer acquisition, with a fresh
-evaluation-only set, since fitting a held-out frequency destroys the holdout —
-and a regularization proposal from "deferred" to the next question. It does not
-authorize either; both need their own contract.
+The next question is globalization — escaping the rotational-phase minimum and
+letting the ladder finish — not regularization and not acquisition. That needs
+its own contract; nothing here authorizes one.
 
 ## Verification
 
-Stage 1 and stage 2 read saved artifacts and perform their own solves; no
+Stages 1, 2 and 3 read saved artifacts and perform their own solves; no
 inversion, oracle solve or benchmark run was repeated. The
 [manifest](manifest.json) records the 155 hashed numerical sources and commit
-`b7e7d03`. `pytest/sdf_inverse` reports **578 passed**
-([log](tests.log)), including fourteen geometry-and-gauge tests for the ladder
-that use no BIE solve.
+`b7e7d03`. `pytest/sdf_inverse` reports **578 passed** ([log](tests.log)),
+including fourteen geometry-and-gauge tests for the ladder that use no BIE solve.
 
 This is a re-reading of artifacts by the implementation owner, not independent
-scientific review. Reviewer: unassigned.
+scientific review. Reviewer: unassigned. The stage-3 correction was produced by
+the same owner who wrote the reading it overturns.
 
 Reproduce from the repository root:
 
@@ -126,4 +172,6 @@ env PYTHONPATH=solvers /home/drdeng/miniconda3/envs/EMNerf/bin/python \
   results/validation/topology/TOP-009-20260912-bandwidth-capacity/stage1_observability.py
 env PYTHONPATH=solvers /home/drdeng/miniconda3/envs/EMNerf/bin/python \
   results/validation/topology/TOP-009-20260912-bandwidth-capacity/stage2_climb.py
+env PYTHONPATH=solvers /home/drdeng/miniconda3/envs/EMNerf/bin/python \
+  results/validation/topology/TOP-009-20260912-bandwidth-capacity/stage3_correction.py
 ```

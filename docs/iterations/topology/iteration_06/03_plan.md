@@ -97,5 +97,15 @@ Recorded overrun: the climb used 3127 solves against the declared 2500 cap, as
 the stage script tests the cap between rungs. Degradation is monotone from the
 first rung, so the conclusion does not depend on it.
 
-`bandwidth_promotion` ships opt-in and off. The finding is that the binding
-constraint on frozen v1 is data and regularization, not capacity.
+`bandwidth_promotion` ships opt-in and off.
+
+**Amended the same day.** The closeout first read stage 2 as overfitting on an
+under-determined acquisition. A [stage-3 diagnostic](../../../../results/validation/topology/TOP-009-20260912-bandwidth-capacity/stage3_correction.py)
+refutes that: the true geometry fits the training acquisition to 5.2068e-14
+(relative L2 3.23e-07), so the climb's answer is 7,139,598x worse than
+achievable and the data is nowhere near exhausted. Most of the degraded boundary
+error is rotational phase -- component `t001` scores 6.523 mm once rotated 34
+degrees, against the 7.595 mm circle it started from -- and the ladder stopped on
+its solve cap with `t003` three rungs below the K >= 8 its seven-lobed truth
+requires. The stage-2 gate outcome stands; the mechanism is optimization, not
+information. Recorded as an amendment rather than a rewrite.

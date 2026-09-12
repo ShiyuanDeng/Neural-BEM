@@ -1,4 +1,4 @@
-# Topology iteration 07 — the modes were never the problem
+# Topology iteration 07 — the data was never the problem either
 
 TOP-009 stopped at stage 2 on 2026-09-12, implementing rank 2 of the
 [literature verdict](../iteration_05/02_proposals/03_literature_verdict.md).
@@ -6,95 +6,107 @@ TOP-009 stopped at stage 2 on 2026-09-12, implementing rank 2 of the
 The frozen twelve-scene v1 benchmark, its observations, budgets and gates are
 unchanged; `bandwidth_promotion` ships opt-in and off; no suite was run.
 
+## Correction notice
+
+This page was first written as *"the modes were never the problem"*, concluding
+from stage 2 that bandwidth enrichment overfits an under-determined acquisition
+and that the binding constraint had become data and regularization. **That
+conclusion was wrong.** A stage-3 diagnostic, run the same day and needing no new
+inversion, refutes it. The stage-1 and stage-2 measurements are unchanged and
+still stand; what follows is the corrected reading of them. The superseded
+reading is preserved in the git history of this file and in the
+[bundle](../../../../results/validation/topology/TOP-009-20260912-bandwidth-capacity/README.md)'s
+correction notice rather than quietly rewritten.
+
 ## The result in one line
 
-Adding shape bandwidth to a stalled component fits the training data **248×
-better** and makes the reconstruction **monotonically worse** at every rung.
+Adding shape bandwidth **does** produce real shape — and the optimizer then
+parks it a third of a lobe out of rotational phase, 7.1 million times above the
+objective the true geometry achieves, on a ladder that stopped early.
 
-| Rung retained | Training loss | Matched error | Union IoU | Worst holdout |
-|---|---:|---:|---:|---:|
-| *start*, modes [1, 1] | 9.219e-05 | **7.595 mm** | **0.7468** | **1.003** |
-| both components 1→3 | 8.515e-05 | 7.593 mm | 0.7458 | 1.005 |
-| both 3→4 | 5.228e-05 | 12.265 mm | 0.7167 | 1.036 |
-| both 4→5 | 1.374e-06 | 15.634 mm | 0.6952 | 1.147 |
-| `t001` 5→6 | **3.717e-07** | 17.599 mm | 0.6383 | 1.514 |
+## What stage 3 measured
 
-The best reconstruction in the whole climb is the state it started from.
+**The acquisition is not the limit.** At the true geometry, expressed in the
+reconstruction's own chart, the training loss is **5.2068e-14** — relative L2
+error 3.23e-07. The climb's final answer sits at 3.7174e-07, which is
+**7,139,598×** worse. Twenty-four observations at 0.5 GHz determine these shapes
+to seven significant figures. An acquisition limit would have shown the truth
+fitting no better than the reconstruction.
 
-## Why this is not a null result
+**The mis-fit is largely phase.** Component `t001` at K=6 scores 17.600 mm
+matched error against `truth.star5`, but **6.523 mm** once rigidly rotated by
+34° — better than the 7.595 mm circle it started from. Its perimeter (256.13 mm
+against 253.02), area (3129.8 mm² against 3106.0) and isoperimetric ratio
+(1.6680 against 1.6403) all say it is a five-lobed star of the right size. The
+matched-Hausdorff and IoU gates are phase-sensitive, so a correctly shaped but
+mis-rotated star scores worse than a featureless circle.
 
-Stage 1 ruled out the boring explanations before stage 2 ran.
+**And the ladder never finished.** Stage 2 stopped on its declared `solve_cap`,
+3127 solves against 2500 — not on ladder exhaustion. A radial *m*-lobe harmonic
+needs Cartesian bandwidth *m*+1, so `truth.star7` needs **K ≥ 8** and `t003` was
+cut off at **K = 5**. The rung that would have mattered for the second component
+was never attempted. The first write-up recorded the overrun as a budget note
+without noticing it meant the experiment was truncated.
 
-The added directions are **real and observable**. At `far-two-stars` the six
-existing mode-1 directions explain 0.000011 of the residual; one rung to `K = 3`
-reaches 20.4% beyond that span and the full ladder reaches 64.4%. Column
-estimates are stable to 7.3e-5 against a declared 0.25 tolerance, and zero
-padding moved the boundary by exactly 0.000e+00 m at every rung.
+## What still stands from stage 1
 
-The control worked. At `far-two-circles`, whose truth genuinely is circular, the
-same ladder explains at most 3.8e-7 of the residual beyond the existing span —
-five orders of magnitude under the declared floor — and not one rung is
-observable. So the probe distinguishes a space that is missing shape from one
-that is not.
+The added directions are real and observable: at `far-two-stars` the six existing
+mode-1 directions explain 0.000011 of the residual, one rung to K=3 reaches 20.4%
+beyond that span and the ladder reaches 64.4%. Zero padding moved the boundary by
+exactly 0.000e+00 m. The circular control found **0 of 14** rungs observable, so
+the probe distinguishes a space missing shape from one that is not.
 
-So the modes are present, measurable and effective at fitting. They simply fit
-the wrong thing.
+Stage 1 was right, and it was the part that predicted this: the modes were always
+going to be usable.
 
-## What it means
-
-At 0.5 GHz the exterior wavelength is about 245 mm and `k·rho0 ≈ 0.92`. Twenty-four
-observations at that one frequency do not determine harmonics this fine, so
-every direction the promotion adds is spent on artefacts. The training-only
-promotion rule — written that way deliberately, because using holdout data to
-choose modes would destroy the holdout — retained all seven rungs, which is the
-correct behaviour of a rule that cannot see what it is doing wrong.
-
-This reframes the two remaining shape failures. `far-ellipse-star` stalling at
-3% training error with a **mode-9** component is not an under-parameterized fit.
-It is an over-parameterized one on an under-determined acquisition, which is why
-TOP-008 freeing that component improved its boundary error while making its
-training residual worse.
-
-**The binding constraint on frozen v1 is data and regularization.** It is no
-longer the derivative, which TOP-008 fixed, and it was never capacity.
-
-## Why stage 3 was not run
+## Why stage 2 still stopped the line, correctly
 
 The contract's stage-2 predicate was the objective at both resolutions **and the
-boundary error**. Boundary error degraded, so stage 2 does not pass and the gate
-holds. Running the twelve-scene suite would have spent forty-five minutes
-confirming that a rule already shown to harm generalization harms it on twelve
-scenes instead of one — and the rule would have been tuned after seeing its
-result, which is what the stage structure exists to prevent.
+boundary error**. Boundary error degraded, so the gate held and the twelve-scene
+suite was not run. That was the right call on the evidence available at the time,
+and it remains the right call — shipping a rule that degrades the gated metric
+would have been wrong whatever the mechanism turned out to be.
 
-One budget overrun is recorded rather than smoothed: the climb used 3127 solves
-against a declared 2500 cap, because the stage script tests the cap between
-rungs and a rung that starts inside it can finish outside. It does not affect the
-conclusion; degradation is monotone from the first rung.
+What changed is the diagnosis, not the decision.
 
-## What ships
+## Where this leaves the track
 
-`bandwidth_promotion` stays in the tree, opt-in and off, with fourteen
-geometry-and-gauge tests and no BIE solve among them. It is the instrument that
-produced this finding and the one a regularized or multi-frequency successor
-would reuse. Nothing about it is recommended as a default.
+Three explanations have now been tested and eliminated in order:
 
-Both accepted candidates from the literature verdict are now measured. Ranks
-3, 5, 6, 8 remain deferred; 7, 9 remain rejected; 10 remains not pursued.
+1. **The derivative** — real defect, fixed in TOP-008, not sufficient.
+2. **Capacity** — genuinely missing, genuinely restored, not sufficient.
+3. **Data and regularization** — refuted here: the truth fits to 3.23e-07.
+
+What is left is **globalization**. The objective has a local minimum in
+rotational phase that the LM optimizer cannot leave, and a promotion that
+zero-pads starts the new modes at exactly zero, where the phase of a symmetric
+mode pair is least determined. Both are optimization problems, and both are
+addressable without touching the acquisition or the frozen benchmark.
+
+Also invalidated: the earlier suggestion that classical model selection had
+"failed". Cross-resolution discrepancy, GCV and AIC were checked against the
+saved climb and none flags the damaging rung — but all three presume a noise
+floor the residual should not go below, and here the truth drives it to 5e-14.
+They are inapplicable to a noiseless problem, which is a different statement.
 
 ## Next
 
-Two questions, neither authorized, each needing its own contract:
+One question, not authorized, needing its own contract: **escaping the phase
+minimum and letting the ladder finish.** Candidate mechanisms, in the order the
+evidence supports them:
 
-1. **Regularization.** The promotion rule chose on training data alone and had
-   no way to see it was overfitting. A discrepancy principle, an L-curve, or a
-   coefficient penalty would give it one. This is the cheaper of the two and it
-   reuses everything already built.
-2. **Acquisition** — the verdict's rank 4. More frequencies would plausibly make
-   fine harmonics identifiable, but 1.5 and 2.5 GHz are the current holdout, so
-   using them requires a **new untouched evaluation set** and therefore a change
-   to the frozen benchmark's data contract. That is a decision for the user, not
-   a step to take quietly.
+1. **Seed the new modes instead of zeroing them.** Promotion currently pads with
+   zeros, which is the least informative starting phase available. The controller
+   already fits contours at a requested bandwidth for topology candidates; the
+   same machinery could seed a promotion.
+2. **Try several phases at promotion time** and keep the best by training
+   objective. Directly targets the observed failure and needs no new theory.
+3. **Raise or remove the ladder's solve cap** so the second component can reach
+   the bandwidth its truth requires. The cheapest of the three, and until it is
+   done no result about the full ladder means anything.
+
+Regularization is **not** the next step, and neither is richer acquisition. Both
+were plausible before stage 3 and neither survives it.
 
 No controller default, gate, scene or budget changed in this cycle.
 TOP-002–TOP-004 remain deferred proposals.
