@@ -76,13 +76,30 @@ the same direction: the true residual grows **much faster** than the derivative
 says. At rank 33 the linear model licenses a step of 12.59; the measurement
 permits 0.0025, five thousand times smaller.
 
-So the weak directions are not data-blind. **The derivative is blind to them
-while the objective is not** — their response is quadratic, not linear. That is
-a sharper statement than "ill-conditioned", and it is what caps the permitted
-movement at ~6 mm instead of the metres the spectrum alone would allow. It is
-also the contract's third decision criterion firing on its own terms: the local
-model does not describe the tolerance neighbourhood in the directions that
-matter.
+So the weak directions are not data-blind. The objective responds to them
+strongly; the **derivative** does not, because their leading response is
+quadratic. That is what caps the permitted movement at ~6 mm instead of the
+metres the spectrum alone would allow, and it is the contract's third decision
+criterion firing on its own terms: the local model does not describe the
+tolerance neighbourhood in the directions that matter.
+
+### The validity radius, read from the same probes
+
+`model_validity_radius.py` reads those probes back — **no solver runs** — and
+splits the spectrum cleanly at rank 15, identically at both states:
+
+| | Ranks 0–14 | Ranks 15–33 |
+|---|---|---|
+| Linear model within 10% | **out to the full permitted step** | **at no probed step at all** |
+| Smallest fraction of the permitted step probed | — | 0.25–0.50 |
+| Model error there | ≤0.10 | **0.12 – 16.7** (0.14 – 28.2 at the endpoint) |
+
+The Jacobian itself is not wrong: it is stable to 3e-06 across the three FD
+scales with zero unresolved columns. What the split says is that in the bottom
+nineteen directions the model's **validity radius** is smaller than a quarter of
+the step the tolerance permits. A Levenberg–Marquardt step confined to where its
+own model holds moves the boundary by a fraction of the millimetres those
+directions actually contain.
 
 ## Scored against the truth, afterwards
 
@@ -142,4 +159,5 @@ searched exhaustively inside the budget.
 | `tolerance_sensitivity.json` | Per-direction table, probes, spectra, truth scores |
 | `execution.log` | Full run log |
 | `manifest.json` | Source and configuration provenance |
+| `model_validity_radius.py`, `.json` | Where the linear model stops describing, from the recorded probes; no solves |
 | `write_manifest.py` | How the manifest was produced |
