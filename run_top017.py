@@ -41,6 +41,14 @@ def state_hash(state):
         default=lambda x:x.tolist() if hasattr(x,'tolist') else float(x)).encode()).hexdigest()
 
 
+def evaluation_snapshot(evaluation):
+    """Serialize an already computed objective; never dispatch work for logging."""
+    return dict(state=p.driver.serialize_state(evaluation.state),
+                state_sha256=state_hash(evaluation.state), loss=evaluation.loss,
+                prediction_real=np.asarray(evaluation.prediction).real,
+                prediction_imag=np.asarray(evaluation.prediction).imag)
+
+
 def source_hashes():
     paths = [*sorted((ROOT/'solvers').rglob('*.py')),
              *sorted((ROOT/'config').rglob('*.py')),
@@ -249,6 +257,16 @@ def fit_stage(initial, data, nodes, solve, optimizer, floor, ledger, output):
             row['accepted'] = False
             row['numerical_obstruction'] = True
             write(output/'acceptance.json',checks)
+            write(output/'numerical_failure.json', dict(
+                reason='candidate leaves frozen numerical-resolution regime',
+                **context, accepted=False, accepted_state_sha256=state_hash(current),
+                production_base=evaluation_snapshot(base),
+                production_candidate=evaluation_snapshot(candidate),
+                refined_base=evaluation_snapshot(rb),
+                refined_candidate=evaluation_snapshot(rc), acceptance=row,
+                prediction_tolerances=np.where(np.array(frequencies)>.5e9+1.,1e-7,1e-5),
+                geometry_configs={str(low):asdict(production),str(high):asdict(refined)},
+                solve_config=asdict(solve), work=ledger.snapshot()))
             raise NumericalFailure('candidate leaves frozen numerical-resolution regime')
         return row['accepted']
     original = rt.evaluate_multiradial_objective
@@ -310,13 +328,19 @@ def fit_stage(initial, data, nodes, solve, optimizer, floor, ledger, output):
 
 
 def run_schedule(initial, arm, observed, nodes, solve, optimizer, floor, ledger, output,
-                 initial_score, scorer, fit=fit_stage, feasibility=p.feasible):
+                 initial_score, scorer, fit=fit_stage, feasibility=p.feasible, stage_plan=None):
     """Outer owner keeps scorer/evaluation data outside the fit function."""
+    plan = tuple(zip((2,3,4),QUOTAS)) if stage_plan is None else tuple(stage_plan)
+    if arm not in ('S','F') or not plan or any(
+            number not in (1,2,3,4) or quota <= 0 for number,quota in plan):
+        raise ValueError('invalid declared continuation schedule')
+    if any(b[0] != a[0]+1 for a,b in zip(plan,plan[1:])):
+        raise ValueError('continuation stages must be consecutive')
     state = initial
     record = dict(arm=arm,status='IN_PROGRESS',initial_state=p.driver.serialize_state(initial),
                   initial_state_sha256=state_hash(initial),initial=initial_score,stages=[])
     try:
-        for number, quota in zip((2,3,4),QUOTAS):
+        for number, quota in plan:
             ledger.begin_stage(number,quota)
             active = 1 if arm=='S' else number
             data = p.training_data(p.TRAIN[:active],observed[:,:active])
@@ -351,7 +375,7 @@ def run_schedule(initial, arm, observed, nodes, solve, optimizer, floor, ledger,
         record.update(status='HARD_STOP',reason='IMPLEMENTATION_ERROR',detail=str(exc),traceback=traceback.format_exc())
     finally:
         record.update(final_state=p.driver.serialize_state(state),final_state_sha256=state_hash(state),work=ledger.snapshot())
-        record['complete_effective_exposure'] = len(record['stages'])==3 and all(
+        record['complete_effective_exposure'] = len(record['stages'])==len(plan) and all(
             r['terminal']['effective_training_exposure'] for r in record['stages'])
         record['numerically_qualified'] = bool(record['stages']) and all(
             r.get('score',{}).get('numerically_qualified',False) for r in record['stages'])
@@ -382,7 +406,10 @@ def freeze_inputs(bundle):
         history[name]=digest
     base_manifest = read(SOURCE/'manifest.json')
     for name,digest in source_hashes().items():
-        if 'top017' in name or name=='solvers/sdf_inverse/radial_topology.py': continue
+        # Experiment-owned additions are not inherited TOP-016 source. The
+        # follow-up driver is separately frozen by its own output manifest.
+        if 'top017' in name or name in ('solvers/sdf_inverse/radial_topology.py',
+                                       'run_topology_recovery_followup.py'): continue
         original = subprocess.check_output(['git','show',f'{BASE}:{name}'],cwd=ROOT)
         if hashlib.sha256(original).hexdigest()!=digest:
             raise ImplementationError(f'unplanned inherited source change: {name}')
