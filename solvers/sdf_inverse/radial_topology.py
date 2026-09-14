@@ -957,6 +957,7 @@ def run_multiradial_fd_inverse(
     jacobian_batch_callback: Callable[[int], None] | None = None,
     accepted_state_callback: Callable[[int, MultiRadialObjectiveEvaluation], None] | None = None,
     evaluation_event_callback: Callable[[str], None] | None = None,
+    diagnostic_callback: Callable[[str, dict], None] | None = None,
 ) -> MultiRadialFDResult:
     """Bounded central-FD LM optimizer for one fixed multi-radial topology.
 
@@ -965,6 +966,8 @@ def run_multiradial_fd_inverse(
     owner so it can preserve partial evidence. ``loss_change_stopping=False``
     disables only accepted-loss-change stopping, retaining the configured
     objective target and all other convergence tests.
+    ``diagnostic_callback`` receives Jacobian completion and candidate/feasibility
+    events. It may interrupt before a step; it does not change the default math.
 
     With ``cartesian_gauge`` the retraction is gauge-fixing: every retracted
     state, in the Jacobian as well as on the accepted step, is re-expressed in
@@ -1004,7 +1007,7 @@ def run_multiradial_fd_inverse(
     if not isinstance(loss_change_stopping, bool):
         raise TypeError("loss_change_stopping must be boolean.")
     for callback in (candidate_acceptance_callback, jacobian_batch_callback, accepted_state_callback,
-                     evaluation_event_callback):
+                     evaluation_event_callback, diagnostic_callback):
         if callback is not None and not callable(callback):
             raise TypeError("optimizer hooks must be callable or None.")
 
@@ -1053,8 +1056,10 @@ def run_multiradial_fd_inverse(
             result = evaluate_multiradial_objective(
                 state, data, geometry_config, solve_config=solve_config
             )
-        except (OrderedSDFGeometryError, MultiComponentKressGeometryError):
+        except (OrderedSDFGeometryError, MultiComponentKressGeometryError) as exc:
             infeasible_count += 1
+            if diagnostic_callback is not None:
+                diagnostic_callback("feasibility_refusal", dict(state=state, reason=str(exc)))
             result = None
         cache[key] = result
         return result
@@ -1071,7 +1076,9 @@ def run_multiradial_fd_inverse(
         """One side of a difference quotient, or None if that side is refused."""
         try:
             trial = retract(state, step)[0]
-        except (ValueError, OrderedSDFGeometryError):
+        except (ValueError, OrderedSDFGeometryError) as exc:
+            if diagnostic_callback is not None:
+                diagnostic_callback("feasibility_refusal", dict(state=state, step=step, reason=str(exc)))
             return None
         return evaluate(trial)
 
@@ -1141,6 +1148,10 @@ def run_multiradial_fd_inverse(
             else:
                 unresolved += 1
                 columns.append(np.zeros_like(current.residual))
+        if diagnostic_callback is not None:
+            diagnostic_callback("jacobian_complete", dict(state=state,
+                unresolved_columns=unresolved, one_sided_columns=one_sided,
+                directions=len(directions)))
         return np.column_stack(columns), basis, unresolved, one_sided
 
     gauge_truncation = 0.0
@@ -1242,12 +1253,20 @@ def run_multiradial_fd_inverse(
                 )
                 if relative_step <= config.relative_step_tolerance:
                     continue
+                if diagnostic_callback is not None:
+                    diagnostic_callback("candidate_attempt", dict(state=accepted_state, step=step))
                 try:
                     candidate, candidate_truncation = retract(accepted_state, step)
-                except (ValueError, OrderedSDFGeometryError):
+                except (ValueError, OrderedSDFGeometryError) as exc:
                     infeasible_count += 1
+                    if diagnostic_callback is not None:
+                        diagnostic_callback("feasibility_refusal", dict(state=accepted_state,
+                            step=step, reason=str(exc)))
                     continue
                 candidate_evaluation = evaluate(candidate)
+                if diagnostic_callback is not None:
+                    diagnostic_callback("candidate_evaluated", dict(base=current,
+                        candidate=candidate_evaluation))
                 if (candidate_evaluation is not None and candidate_evaluation.loss < current.loss
                         and (candidate_acceptance_callback is None
                              or candidate_acceptance_callback(current, candidate_evaluation))):
