@@ -9,7 +9,25 @@ both current policies pass 5/12 scenes. The requested distant ellipse/star case
 fails; retain it as a regression target rather than removing it from the suite.
 Its second is [TOP-007](../../results/validation/topology/TOP-007-20260911-refined-feasibility/README.md),
 which adds the guarded arm: still 5/12, but nothing aborts and the requested
-case finishes with the correct object count and the wrong shapes.
+case finishes with the correct object count and the wrong shapes. Its third is
+[TOP-008](../../results/validation/topology/TOP-008-20260912-feasible-fd/README.md),
+which corrects the finite-difference stencil at an active constraint: 10/12 runs
+return against 9/12, `split` improves to 0.000023 mm at a quarter of the solves,
+and the pass count is **still 5/12**.
+[TOP-009](../../results/validation/topology/TOP-009-20260912-bandwidth-capacity/README.md)
+stopped before reaching this suite: its stage-2 gate showed that adding shape
+bandwidth fits the training data 248x better while leaving final boundary error,
+IoU and holdout error worse, so the suite was not spent on a rule that
+degrades a gated metric. Its stage-3 diagnostic then traced most of that
+degradation to rotational phase on a ladder truncated by its own solve cap, and
+established that the true geometry fits this acquisition to 3.23e-07 relative
+error. Stage 4 then exhausted the ladder at K=9 and the failure survived it.
+[Independent review](../iterations/topology/iteration_07/02_proposals/01_independent_review.md)
+qualifies the interpretation: the `far-two-stars` truth is representable and
+consistent with the observations, but uniqueness and terminal stationarity
+were not established. Thirteen of fourteen rung refinements stopped on small
+loss change. This diagnostic bypassed the full controller and does not qualify
+promotion on the twelve-scene benchmark.
 
 ## Scene matrix
 
@@ -73,7 +91,8 @@ env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMEXPR_NUM_THREA
 
 The output directory must be new. `--arms` names the controller policies to
 compare — `A` default, `F` selective refinement, `G` default plus the refined
-feasibility guard — and defaults to `A,F`. The chosen arms and their policy
+feasibility guard, `H` that guard plus the feasible finite-difference stencil,
+and `J` that pair plus bandwidth promotion — and defaults to `A,F`. The chosen arms and their policy
 overrides are recorded in the run manifest, and every arm shares the same
 scenes, observations, initial states, budgets and gates: an arm changes the
 controller policy and nothing else. A candidate policy needs its own name

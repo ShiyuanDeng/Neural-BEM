@@ -1,0 +1,218 @@
+{
+  "arm": "H",
+  "audit_work": {
+    "stages": {
+      "final_production": {
+        "evaluation_count": 1,
+        "forward_evaluation_count": 1,
+        "forward_frequency_solve_count": 1
+      },
+      "final_refined": {
+        "evaluation_count": 1,
+        "forward_evaluation_count": 1,
+        "forward_frequency_solve_count": 1
+      },
+      "holdout": {
+        "evaluation_count": 1,
+        "forward_evaluation_count": 1,
+        "forward_frequency_solve_count": 2
+      }
+    },
+    "totals": {
+      "bie_frequency_solve_count": 4,
+      "evaluation_count": 3,
+      "forward_evaluation_count": 3,
+      "forward_frequency_solve_count": 4,
+      "td_evaluation_count": 0,
+      "td_frequency_solve_count": 0
+    }
+  },
+  "completed": true,
+  "events": [
+    {
+      "after_ids": [
+        "initial.circle",
+        "t001.birth"
+      ],
+      "before_ids": [
+        "initial.circle"
+      ],
+      "candidate_refinement_steps": 3,
+      "children": [
+        "t001.birth"
+      ],
+      "construction": "exterior_td_region; radius=0.024592",
+      "cycle": 0,
+      "kind": "birth",
+      "parents": [],
+      "production_after": 0.36511383279358184,
+      "production_before": 0.5796783418387776,
+      "raw_birth_radius_m": 0.02459245379682983,
+      "refined_after": 0.3651138327935888,
+      "refined_before": 0.5796783418387783
+    },
+    {
+      "after_ids": [
+        "t001.birth"
+      ],
+      "before_ids": [
+        "initial.circle",
+        "t001.birth"
+      ],
+      "candidate_refinement_steps": 3,
+      "children": [],
+      "construction": "leave_one_component_out",
+      "cycle": 1,
+      "kind": "death",
+      "parents": [
+        "initial.circle"
+      ],
+      "production_after": 0.1855314164929634,
+      "production_before": 0.36425940583799654,
+      "refined_after": 0.18553141649296348,
+      "refined_before": 0.3642594058379936
+    },
+    {
+      "after_ids": [
+        "t001.birth",
+        "t003.birth"
+      ],
+      "before_ids": [
+        "t001.birth"
+      ],
+      "candidate_refinement_steps": 3,
+      "children": [
+        "t003.birth"
+      ],
+      "construction": "exterior_td_region; radius=0.024376",
+      "cycle": 2,
+      "kind": "birth",
+      "parents": [],
+      "production_after": 9.219381536562618e-05,
+      "production_before": 0.1855302860717101,
+      "raw_birth_radius_m": 0.024375775971438328,
+      "refined_after": 9.219381536561773e-05,
+      "refined_before": 0.18553028607171013
+    }
+  ],
+  "final_loss": 9.219376825852734e-05,
+  "final_relative_error": 0.013578937238129302,
+  "final_state": [
+    {
+      "chart": "cartesian",
+      "component_id": "t001.birth",
+      "maximum_mode": 1,
+      "parameters": [
+        0.5500783766431202,
+        0.43000132609748376,
+        0.030920537612676793,
+        -1.150708497989332e-18,
+        8.9630012515644e-19,
+        0.03092053761267679
+      ]
+    },
+    {
+      "chart": "cartesian",
+      "component_id": "t003.birth",
+      "maximum_mode": 1,
+      "parameters": [
+        0.6100336680460026,
+        0.5399518408530354,
+        0.02995053687113405,
+        -1.0137230997911387e-18,
+        7.896006180578288e-19,
+        0.02995053687113405
+      ]
+    }
+  ],
+  "gates": {
+    "all_event_margins_pass": true,
+    "boundary": false,
+    "correct_count": true,
+    "holdout": false,
+    "monotone_accepted_states": true,
+    "overlap": false,
+    "training": false
+  },
+  "geometry": {
+    "component_count": 2,
+    "final_maximum_modes": [
+      1,
+      1
+    ],
+    "matched_components": [
+      {
+        "hausdorff_m": 0.007595102782666241,
+        "recovered_component": "t001.birth",
+        "truth_component": "truth.star5"
+      },
+      {
+        "hausdorff_m": 0.006704421659917238,
+        "recovered_component": "t003.birth",
+        "truth_component": "truth.star7"
+      }
+    ],
+    "maximum_matched_hausdorff_m": 0.007595102782666241,
+    "truth_component_count": 2,
+    "union_iou": 0.746843853820598
+  },
+  "group": "new",
+  "holdout_relative_errors": [
+    0.4938514784782577,
+    0.9567163293152768
+  ],
+  "inversion_seconds": 144.45947278599488,
+  "maximum_holdout_relative_error": 0.9567163293152768,
+  "passed": false,
+  "refined_loss": 9.219376825852807e-05,
+  "refined_relative_error": 0.013578937238129358,
+  "scene": "far-two-stars",
+  "stop_reason": "topology_stationary",
+  "total_seconds": 145.1942008000333,
+  "work": {
+    "stages": {
+      "candidate_acceptance": {
+        "evaluation_count": 41,
+        "forward_evaluation_count": 41,
+        "forward_frequency_solve_count": 41
+      },
+      "candidate_raw": {
+        "evaluation_count": 148,
+        "forward_evaluation_count": 81,
+        "forward_frequency_solve_count": 81
+      },
+      "candidate_refinement": {
+        "evaluation_count": 698,
+        "forward_evaluation_count": 698,
+        "forward_frequency_solve_count": 698
+      },
+      "fixed_refinement": {
+        "evaluation_count": 712,
+        "forward_evaluation_count": 712,
+        "forward_frequency_solve_count": 712
+      },
+      "production_base": {
+        "evaluation_count": 4,
+        "forward_evaluation_count": 4,
+        "forward_frequency_solve_count": 4
+      },
+      "refined_base": {
+        "evaluation_count": 4,
+        "forward_evaluation_count": 4,
+        "forward_frequency_solve_count": 4
+      },
+      "topological_derivative": {
+        "td_evaluation_count": 8,
+        "td_frequency_solve_count": 8
+      }
+    },
+    "totals": {
+      "bie_frequency_solve_count": 1548,
+      "evaluation_count": 1607,
+      "forward_evaluation_count": 1540,
+      "forward_frequency_solve_count": 1540,
+      "td_evaluation_count": 8,
+      "td_frequency_solve_count": 8
+    }
+  }
+}

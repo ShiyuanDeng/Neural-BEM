@@ -129,3 +129,69 @@ def test_reference_reuse_refuses_changed_scene_specification(tmp_path):
     old.write_json(reference/'scene_spec.json',dict(version='different'))
     with pytest.raises(ValueError, match='identical frozen scene'):
         benchmark.reuse_reference_data(output,reference,dict(version='v1'))
+
+
+def test_frozen_v1_acquisition_is_the_default_and_did_not_move():
+    """v1 names no acquisition, so every v1 bundle must reproduce from defaults."""
+    spec = benchmark.read(benchmark.DEFAULT_SPEC)
+    assert 'acquisition' not in spec
+    sources, receivers = old.baseline._ring_scan()
+    assert sources.shape == (old.baseline.RING_POSITIONS, 2) == (24, 2)
+    default_sources, default_receivers = old.baseline._acquisition_scan(None)
+    np.testing.assert_array_equal(sources, default_sources)
+    np.testing.assert_array_equal(receivers, default_receivers)
+    radii = np.linalg.norm(sources - np.asarray(old.baseline.SCENE_CENTER), axis=1)
+    np.testing.assert_allclose(radii, old.baseline.RING_STANDOFF_M)
+
+
+def test_v2_acquisition_adds_positions_without_moving_the_v1_ones():
+    """Route A must be added angular coverage, not relocated coverage."""
+    v1 = benchmark.read(benchmark.DEFAULT_SPEC)
+    v2 = benchmark.read(benchmark.ROOT/'config/topology_scenes_v2.json')
+    assert v2['acquisition'] == dict(ring_positions=48, standoff_m=0.30)
+    assert {k: v for k, v in v2.items() if k not in ('version', 'acquisition')} == \
+           {k: v for k, v in v1.items() if k != 'version'}
+    assert v2['training_frequencies_hz'] == v1['training_frequencies_hz']
+    assert v2['holdout_frequencies_hz'] == v1['holdout_frequencies_hz']
+    assert v2['gates'] == v1['gates'] and v2['controller'] == v1['controller']
+    base_sources, base_receivers = old.baseline._acquisition_scan(None)
+    sources, receivers = old.baseline._acquisition_scan(v2['acquisition'])
+    assert len(sources) == 48
+    np.testing.assert_allclose(sources[::2], base_sources)
+    np.testing.assert_allclose(receivers[::2], base_receivers)
+
+
+def test_unknown_acquisition_key_is_refused_rather_than_ignored():
+    with pytest.raises(ValueError, match='Unknown acquisition keys'):
+        old.baseline._acquisition_scan(dict(ring_position=48))
+    with pytest.raises(ValueError, match='positive number'):
+        old.baseline._ring_scan(positions=0)
+    with pytest.raises(ValueError, match='finite positive radius'):
+        old.baseline._ring_scan(standoff=0.0)
+
+
+def test_shared_data_rebuilds_the_specification_acquisition(tmp_path):
+    """Observations saved under one acquisition must not load under another."""
+    spec = benchmark.read(benchmark.ROOT/'config/topology_scenes_v2.json')
+    spec['scenes'] = spec['scenes'][:1]
+    scene = spec['scenes'][0]
+    path = tmp_path/'scenes'/scene['id']
+    path.mkdir(parents=True)
+    frequencies = spec['training_frequencies_hz']+spec['holdout_frequencies_hz']
+    problem = old.baseline._problem(np.asarray(frequencies), acquisition=spec['acquisition'])
+    assert len(problem.source_points) == 48
+    observed = np.ones((len(problem.source_points), len(frequencies)), dtype=complex)
+    old.write_json(path/'observations.json', dict(frequencies_hz=frequencies,
+        source_points=problem.source_points, receiver_points=problem.receiver_points,
+        source_strengths_real=problem.source_strengths.real,
+        source_strengths_imag=problem.source_strengths.imag,
+        observed_real=observed.real, observed_imag=observed.imag,
+        exterior=benchmark.asdict(problem.exterior), interior=benchmark.asdict(problem.interior),
+        eps0=problem.eps0, mu0=problem.mu0))
+    training, holdout = benchmark.shared_data(tmp_path, scene, spec)
+    assert len(training.forward_problem.source_points) == 48
+    assert len(holdout.forward_problem.angular_frequencies) == len(spec['holdout_frequencies_hz'])
+    v1_spec = dict(spec)
+    v1_spec.pop('acquisition')
+    with pytest.raises(AssertionError):
+        benchmark.shared_data(tmp_path, scene, v1_spec)

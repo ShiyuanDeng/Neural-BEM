@@ -42,18 +42,18 @@ which controller behaviour the baseline pins.
 
 ## Current handoff
 
-Updated 2026-09-11.
+Updated 2026-09-12.
 
 | Item | Current state |
 |---|---|
-| Active iteration | [Iteration 05 results](iteration_05/01_results.md) |
-| Stage | TOP-007 closeout complete; no proposal for the next cycle yet |
-| Approved experiment IDs | `TOP-001`, `TOP-005`, `TOP-006`, `TOP-007`: **APPROVED** by the user's Track A, broader-scene and continuation requests on 2026-09-11. The session instructions supersede the old exact-ID phrase requirement. `TOP-002`–`TOP-004` and `TOP-008` remain proposals |
-| Execution status | TOP-001, TOP-005, TOP-006 and TOP-007 `COMPLETE`. The guarded arm aborts nothing and returns 9/12 runs against the default's 7/12, with identical final states wherever both completed and the same 5/12 passing. 554 tests pass; controller default unchanged |
-| Next expected action | Decide whether the guard becomes the default in a declared comparison, and diagnose why a mode-9 component stalls 18.6 mm from the ellipse before proposing bandwidth promotion |
-| Owner / reviewer | Claude / `unassigned` (no independent review claimed) |
-| Dependencies | Shared controller/driver changes declared in the [review](iteration_01/02_proposals/02_codex_review.md) and the [TOP-007 review](iteration_04/02_proposals/02_feasibility_review.md); no physical solver or geometry-state interfaces changed |
-| Blockers | No execution blocker. Three scenes still spend the full ten minutes in both arms, and no automatic mechanism recovers noncircular shapes |
+| Active iteration | [Iteration 08 results](iteration_08/01_results.md) |
+| Stage | TOP-010 complete. Four optimizer/representation defects are now found and fixed, **each improving the objective and none improving the reconstruction** |
+| Approved experiment IDs | `TOP-001`, `TOP-005`, `TOP-006`, `TOP-007` approved 2026-09-11; `TOP-008` and `TOP-009` approved 2026-09-12 by the user's direction to implement the Codex plan and keep going. `TOP-002`–`TOP-004` remain proposals |
+| Execution status | TOP-008 `COMPLETE`, TOP-009 `STOPPED AT STAGE 2` with its reading corrected twice, TOP-010 `COMPLETE`. TOP-010 refutes the local-minimum reading operationally: the terminal gradient is 4013x the optimizer's own tolerance with a full-rank Jacobian, and three restarts of the **unmodified** optimizer recover 1.7x in the objective — while matched error moves 11.849 to 11.991 mm and IoU stays at 0.7088. 581 tests pass; all three mechanisms remain opt-in and off; no controller default changed |
+| Next expected action | **Review [TOP-011](iteration_08/02_proposals/01_sensitivity_and_conditioning.md), then decide [TOP-012](iteration_08/02_proposals/02_acquisition_change.md). Neither approved.** The question is no longer which optimizer defect to fix — four have been found and fixed, each worth objective and none worth geometry. It is why the gated geometry is insensitive to four orders of magnitude of training objective: the final K=9 state satisfies the frozen 0.003 data tolerance at 8.7878e-05 while sitting 11.849 mm from the truth. TOP-011 measures how many millimetres of boundary movement hide inside that tolerance, per singular direction, with no source change. TOP-012 is gated behind it and needs a **user decision**, because every acquisition route creates a v2 benchmark — though adding source/receiver pairs at 0.5 GHz would enrich the data without touching the 1.5/2.5 GHz holdout, unlike adding frequencies. Default-policy decisions remain separate |
+| Owner / reviewer | TOP-008 and TOP-009 implementation: Claude; literature verdict and independent source/evidence review: Codex. Codex repaired omitted promotion counters; 108 focused regression tests pass |
+| Dependencies | Shared controller/driver changes declared in each cycle's review before implementation; no physical solver or geometry-state interface changed |
+| Blockers | Four explanations tested, each real and none sufficient: the derivative, capacity, ladder truncation and premature stopping. The benchmark still passes 5/12. What blocks recovery is the decoupling between the training objective and the gated geometry at this scale, which is a sensitivity and conditioning question. Three scenes still time out |
 
 ## Reading order
 
@@ -112,4 +112,7 @@ certificate, and the trust region's dependence on coordinates.
 | 02 | Selective refinement after raw-shortlist failures | TOP-005 complete; all declared gates pass |
 | 03 | Broader automatic-controller scenes | TOP-006 complete; v1 benchmark established, current policies pass 5/12 scenes |
 | 04 | Refined feasibility, shape capacity and held-out prediction | TOP-007 proposed, reviewed, planned and executed |
-| 05 | Why finished runs still return wrong shapes | Results recorded; guard qualified and left opt-in; next questions open |
+| 05 | Why finished runs still return wrong shapes | Results recorded; guard opt-in; literature verdict ranks corrections and qualifies earlier causal claims; written next steps only |
+| 06 | Feasible finite differences and the capacity contract | TOP-008 complete; TOP-009 implemented opt-in |
+| 07 | Bandwidth ladder and interpretation review | TOP-009 stage-2 gate failed; stages 3/4 preserved; independent review corrects stationarity/data claims and proposes TOP-010 |
+| 08 | Stopping versus stationarity | TOP-010 complete; neither saved state is stationary, restarts recover 1.7x objective and no geometry |

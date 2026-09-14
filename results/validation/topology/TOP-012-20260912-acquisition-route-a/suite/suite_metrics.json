@@ -1,0 +1,2367 @@
+{
+  "all_inputs_paired": true,
+  "arms": [
+    "H"
+  ],
+  "complete": true,
+  "failures": [
+    {
+      "arm": "H",
+      "partial_work_is_lower_bound": true,
+      "reason": "timeout",
+      "scene": "enclosing-ellipse-star",
+      "timeout_seconds": 600.0
+    },
+    {
+      "arm": "H",
+      "partial_work_is_lower_bound": true,
+      "reason": "timeout",
+      "scene": "far-three-shapes",
+      "timeout_seconds": 600.0
+    }
+  ],
+  "metrics": [
+    {
+      "arm": "H",
+      "audit_work": {
+        "stages": {
+          "final_production": {
+            "evaluation_count": 1,
+            "forward_evaluation_count": 1,
+            "forward_frequency_solve_count": 1
+          },
+          "final_refined": {
+            "evaluation_count": 1,
+            "forward_evaluation_count": 1,
+            "forward_frequency_solve_count": 1
+          },
+          "holdout": {
+            "evaluation_count": 1,
+            "forward_evaluation_count": 1,
+            "forward_frequency_solve_count": 2
+          }
+        },
+        "totals": {
+          "bie_frequency_solve_count": 4,
+          "evaluation_count": 3,
+          "forward_evaluation_count": 3,
+          "forward_frequency_solve_count": 4,
+          "td_evaluation_count": 0,
+          "td_frequency_solve_count": 0
+        }
+      },
+      "completed": true,
+      "events": [
+        {
+          "after_ids": [
+            "t001.birth"
+          ],
+          "before_ids": [],
+          "candidate_refinement_steps": 3,
+          "children": [
+            "t001.birth"
+          ],
+          "construction": "exterior_td_region; radius=0.024807",
+          "cycle": 0,
+          "kind": "birth",
+          "parents": [],
+          "production_after": 0.21487255288187584,
+          "production_before": 0.5,
+          "raw_birth_radius_m": 0.02480723913071888,
+          "refined_after": 0.2148725528818759,
+          "refined_before": 0.5
+        },
+        {
+          "after_ids": [
+            "t001.birth",
+            "t002.birth"
+          ],
+          "before_ids": [
+            "t001.birth"
+          ],
+          "candidate_refinement_steps": 3,
+          "children": [
+            "t002.birth"
+          ],
+          "construction": "exterior_td_region; radius=0.024736",
+          "cycle": 1,
+          "kind": "birth",
+          "parents": [],
+          "production_after": 0.08048710215231042,
+          "production_before": 0.21487225767837864,
+          "raw_birth_radius_m": 0.02473585124420659,
+          "refined_after": 0.08048710215231039,
+          "refined_before": 0.21487225767837853
+        },
+        {
+          "after_ids": [
+            "t001.birth",
+            "t002.birth",
+            "t003.birth"
+          ],
+          "before_ids": [
+            "t001.birth",
+            "t002.birth"
+          ],
+          "candidate_refinement_steps": 3,
+          "children": [
+            "t003.birth"
+          ],
+          "construction": "exterior_td_region; radius=0.019595",
+          "cycle": 2,
+          "kind": "birth",
+          "parents": [],
+          "production_after": 7.825507363069073e-09,
+          "production_before": 0.0804847485261506,
+          "raw_birth_radius_m": 0.01959493047217066,
+          "refined_after": 7.82550736299737e-09,
+          "refined_before": 0.0804847485261504
+        }
+      ],
+      "final_loss": 1.313279566787277e-14,
+      "final_relative_error": 1.620666262243573e-07,
+      "final_state": [
+        {
+          "chart": "cartesian",
+          "component_id": "t001.birth",
+          "maximum_mode": 1,
+          "parameters": [
+            0.580000005016155,
+            0.4599999973982337,
+            0.0299999970205621,
+            -9.442590846979807e-19,
+            7.354942952743823e-19,
+            0.029999997020562108
+          ]
+        },
+        {
+          "chart": "cartesian",
+          "component_id": "t002.birth",
+          "maximum_mode": 1,
+          "parameters": [
+            0.42999999475357764,
+            0.45499999683499354,
+            0.027999996865479,
+            -5.935572622579308e-19,
+            4.6232859962265555e-19,
+            0.027999996865479
+          ]
+        },
+        {
+          "chart": "cartesian",
+          "component_id": "t003.birth",
+          "maximum_mode": 1,
+          "parameters": [
+            0.5049999999298436,
+            0.5999999976939611,
+            0.027000003088789918,
+            -1.3465497986662499e-18,
+            1.048843173734108e-18,
+            0.027000003088789918
+          ]
+        }
+      ],
+      "gates": {
+        "all_event_margins_pass": true,
+        "boundary": true,
+        "correct_count": true,
+        "holdout": true,
+        "monotone_accepted_states": true,
+        "overlap": true,
+        "training": true
+      },
+      "geometry": {
+        "component_count": 3,
+        "final_maximum_modes": [
+          1,
+          1,
+          1
+        ],
+        "matched_components": [
+          {
+            "hausdorff_m": 8.630189994536898e-09,
+            "recovered_component": "t001.birth",
+            "truth_component": "truth.B"
+          },
+          {
+            "hausdorff_m": 9.261682656773459e-09,
+            "recovered_component": "t002.birth",
+            "truth_component": "truth.A"
+          },
+          {
+            "hausdorff_m": 5.395895719548624e-09,
+            "recovered_component": "t003.birth",
+            "truth_component": "truth.C"
+          }
+        ],
+        "maximum_matched_hausdorff_m": 9.261682656773459e-09,
+        "truth_component_count": 3,
+        "union_iou": 1.0
+      },
+      "group": "original",
+      "holdout_relative_errors": [
+        6.149515559088397e-07,
+        1.1084748016672373e-06
+      ],
+      "inversion_seconds": 82.36603750899667,
+      "maximum_holdout_relative_error": 1.1084748016672373e-06,
+      "passed": true,
+      "refined_loss": 1.3132795778407323e-14,
+      "refined_relative_error": 1.6206662690638885e-07,
+      "scene": "repeated-birth",
+      "stop_reason": "recovered",
+      "total_seconds": 83.76381652697455,
+      "work": {
+        "stages": {
+          "candidate_acceptance": {
+            "evaluation_count": 53,
+            "forward_evaluation_count": 53,
+            "forward_frequency_solve_count": 53
+          },
+          "candidate_raw": {
+            "evaluation_count": 91,
+            "forward_evaluation_count": 75,
+            "forward_frequency_solve_count": 75
+          },
+          "candidate_refinement": {
+            "evaluation_count": 488,
+            "forward_evaluation_count": 488,
+            "forward_frequency_solve_count": 488
+          },
+          "fixed_refinement": {
+            "evaluation_count": 164,
+            "forward_evaluation_count": 164,
+            "forward_frequency_solve_count": 164
+          },
+          "production_base": {
+            "evaluation_count": 3,
+            "forward_evaluation_count": 3,
+            "forward_frequency_solve_count": 3
+          },
+          "refined_base": {
+            "evaluation_count": 2,
+            "forward_evaluation_count": 2,
+            "forward_frequency_solve_count": 2
+          },
+          "topological_derivative": {
+            "td_evaluation_count": 5,
+            "td_frequency_solve_count": 4
+          }
+        },
+        "totals": {
+          "bie_frequency_solve_count": 789,
+          "evaluation_count": 801,
+          "forward_evaluation_count": 785,
+          "forward_frequency_solve_count": 785,
+          "td_evaluation_count": 5,
+          "td_frequency_solve_count": 4
+        }
+      }
+    },
+    {
+      "arm": "H",
+      "audit_work": {
+        "stages": {
+          "final_production": {
+            "evaluation_count": 1,
+            "forward_evaluation_count": 1,
+            "forward_frequency_solve_count": 1
+          },
+          "final_refined": {
+            "evaluation_count": 1,
+            "forward_evaluation_count": 1,
+            "forward_frequency_solve_count": 1
+          },
+          "holdout": {
+            "evaluation_count": 1,
+            "forward_evaluation_count": 1,
+            "forward_frequency_solve_count": 2
+          }
+        },
+        "totals": {
+          "bie_frequency_solve_count": 4,
+          "evaluation_count": 3,
+          "forward_evaluation_count": 3,
+          "forward_frequency_solve_count": 4,
+          "td_evaluation_count": 0,
+          "td_frequency_solve_count": 0
+        }
+      },
+      "completed": true,
+      "events": [
+        {
+          "after_ids": [
+            "initial.A",
+            "initial.B"
+          ],
+          "before_ids": [
+            "initial.A",
+            "initial.B",
+            "spurious"
+          ],
+          "candidate_refinement_steps": 2,
+          "children": [],
+          "construction": "leave_one_component_out",
+          "cycle": 0,
+          "kind": "death",
+          "parents": [
+            "spurious"
+          ],
+          "production_after": 1.7833050412719273e-15,
+          "production_before": 0.0018185376862896838,
+          "refined_after": 1.7833050785180493e-15,
+          "refined_before": 0.00181853768628967
+        }
+      ],
+      "final_loss": 1.7833050412719273e-15,
+      "final_relative_error": 5.97211024893534e-08,
+      "final_state": [
+        {
+          "chart": "cartesian",
+          "component_id": "initial.A",
+          "maximum_mode": 2,
+          "parameters": [
+            0.44000000078693047,
+            0.500000000249445,
+            0.03299999881703309,
+            -4.443534599100259e-18,
+            2.0746187451210646e-18,
+            2.9561062345617053e-26,
+            4.419817735475521e-18,
+            0.03299999881703309,
+            -7.260043399942448e-19,
+            -1.7407940460600765e-25
+          ]
+        },
+        {
+          "chart": "cartesian",
+          "component_id": "initial.B",
+          "maximum_mode": 2,
+          "parameters": [
+            0.5599999992130695,
+            0.500000000249445,
+            0.03299999881703308,
+            -4.155543397033794e-18,
+            -1.985898307397774e-26,
+            -3.282478976666384e-20,
+            3.89804543996687e-18,
+            0.03299999881703308,
+            1.7097478014920923e-26,
+            -1.106787765762713e-20
+          ]
+        }
+      ],
+      "gates": {
+        "all_event_margins_pass": true,
+        "boundary": true,
+        "correct_count": true,
+        "holdout": true,
+        "monotone_accepted_states": true,
+        "overlap": true,
+        "training": true
+      },
+      "geometry": {
+        "component_count": 2,
+        "final_maximum_modes": [
+          2,
+          2
+        ],
+        "matched_components": [
+          {
+            "hausdorff_m": 2.008486329377341e-09,
+            "recovered_component": "initial.A",
+            "truth_component": "truth.A"
+          },
+          {
+            "hausdorff_m": 2.00848638229529e-09,
+            "recovered_component": "initial.B",
+            "truth_component": "truth.B"
+          }
+        ],
+        "maximum_matched_hausdorff_m": 2.00848638229529e-09,
+        "truth_component_count": 2,
+        "union_iou": 0.9986798679867986
+      },
+      "group": "original",
+      "holdout_relative_errors": [
+        2.448974517740239e-07,
+        2.11311239428477e-07
+      ],
+      "inversion_seconds": 49.728838492999785,
+      "maximum_holdout_relative_error": 2.448974517740239e-07,
+      "passed": true,
+      "refined_loss": 1.7833050785180493e-15,
+      "refined_relative_error": 5.97211031130211e-08,
+      "scene": "death",
+      "stop_reason": "recovered",
+      "total_seconds": 50.46797851001611,
+      "work": {
+        "stages": {
+          "candidate_acceptance": {
+            "evaluation_count": 1,
+            "forward_evaluation_count": 1,
+            "forward_frequency_solve_count": 1
+          },
+          "candidate_raw": {
+            "evaluation_count": 41,
+            "forward_evaluation_count": 21,
+            "forward_frequency_solve_count": 21
+          },
+          "candidate_refinement": {
+            "evaluation_count": 143,
+            "forward_evaluation_count": 143,
+            "forward_frequency_solve_count": 143
+          },
+          "fixed_refinement": {
+            "evaluation_count": 123,
+            "forward_evaluation_count": 123,
+            "forward_frequency_solve_count": 123
+          },
+          "production_base": {
+            "evaluation_count": 2,
+            "forward_evaluation_count": 2,
+            "forward_frequency_solve_count": 2
+          },
+          "refined_base": {
+            "evaluation_count": 1,
+            "forward_evaluation_count": 1,
+            "forward_frequency_solve_count": 1
+          },
+          "topological_derivative": {
+            "td_evaluation_count": 2,
+            "td_frequency_solve_count": 2
+          }
+        },
+        "totals": {
+          "bie_frequency_solve_count": 293,
+          "evaluation_count": 311,
+          "forward_evaluation_count": 291,
+          "forward_frequency_solve_count": 291,
+          "td_evaluation_count": 2,
+          "td_frequency_solve_count": 2
+        }
+      }
+    },
+    {
+      "arm": "H",
+      "audit_work": {
+        "stages": {
+          "final_production": {
+            "evaluation_count": 1,
+            "forward_evaluation_count": 1,
+            "forward_frequency_solve_count": 1
+          },
+          "final_refined": {
+            "evaluation_count": 1,
+            "forward_evaluation_count": 1,
+            "forward_frequency_solve_count": 1
+          },
+          "holdout": {
+            "evaluation_count": 1,
+            "forward_evaluation_count": 1,
+            "forward_frequency_solve_count": 2
+          }
+        },
+        "totals": {
+          "bie_frequency_solve_count": 4,
+          "evaluation_count": 3,
+          "forward_evaluation_count": 3,
+          "forward_frequency_solve_count": 4,
+          "td_evaluation_count": 0,
+          "td_frequency_solve_count": 0
+        }
+      },
+      "completed": true,
+      "events": [
+        {
+          "after_ids": [
+            "t001.split1",
+            "t001.split2"
+          ],
+          "before_ids": [
+            "parent"
+          ],
+          "candidate_refinement_steps": 3,
+          "children": [
+            "t001.split1",
+            "t001.split2"
+          ],
+          "construction": "interior_td_corridor; width=0.032; angle=0.7853981633974483; offset=0.0; modes=1; seed_scale=1",
+          "cycle": 0,
+          "kind": "split",
+          "parents": [
+            "parent"
+          ],
+          "production_after": 2.3035735853551147e-13,
+          "production_before": 0.24272693110005758,
+          "refined_after": 2.3035735878157155e-13,
+          "refined_before": 0.2427248156798813
+        }
+      ],
+      "final_loss": 2.3035735853551147e-13,
+      "final_relative_error": 6.78759690222558e-07,
+      "final_state": [
+        {
+          "chart": "cartesian",
+          "component_id": "t001.split1",
+          "maximum_mode": 1,
+          "parameters": [
+            0.44000001824918883,
+            0.49999999354793934,
+            0.03299999599928417,
+            7.267095435524248e-19,
+            -5.660424477411452e-19,
+            0.03299999599928417
+          ]
+        },
+        {
+          "chart": "cartesian",
+          "component_id": "t001.split2",
+          "maximum_mode": 1,
+          "parameters": [
+            0.5599999817508112,
+            0.5000000064520608,
+            0.03299999599928419,
+            7.267095435524215e-19,
+            -5.660424477411427e-19,
+            0.03299999599928419
+          ]
+        }
+      ],
+      "gates": {
+        "all_event_margins_pass": true,
+        "boundary": true,
+        "correct_count": true,
+        "holdout": true,
+        "monotone_accepted_states": true,
+        "overlap": true,
+        "training": true
+      },
+      "geometry": {
+        "component_count": 2,
+        "final_maximum_modes": [
+          1,
+          1
+        ],
+        "matched_components": [
+          {
+            "hausdorff_m": 2.3356893665928738e-08,
+            "recovered_component": "t001.split1",
+            "truth_component": "truth.A"
+          },
+          {
+            "hausdorff_m": 2.335689373985892e-08,
+            "recovered_component": "t001.split2",
+            "truth_component": "truth.B"
+          }
+        ],
+        "maximum_matched_hausdorff_m": 2.335689373985892e-08,
+        "truth_component_count": 2,
+        "union_iou": 0.9986807387862797
+      },
+      "group": "original",
+      "holdout_relative_errors": [
+        2.291146815517533e-06,
+        3.3262085799968395e-06
+      ],
+      "inversion_seconds": 29.465178447950166,
+      "maximum_holdout_relative_error": 3.3262085799968395e-06,
+      "passed": true,
+      "refined_loss": 2.3035735878157155e-13,
+      "refined_relative_error": 6.787596905850723e-07,
+      "scene": "split",
+      "stop_reason": "recovered",
+      "total_seconds": 30.22409372898983,
+      "work": {
+        "stages": {
+          "candidate_acceptance": {
+            "evaluation_count": 20,
+            "forward_evaluation_count": 20,
+            "forward_frequency_solve_count": 20
+          },
+          "candidate_raw": {
+            "evaluation_count": 40,
+            "forward_evaluation_count": 34,
+            "forward_frequency_solve_count": 34
+          },
+          "candidate_refinement": {
+            "evaluation_count": 155,
+            "forward_evaluation_count": 155,
+            "forward_frequency_solve_count": 155
+          },
+          "fixed_refinement": {
+            "evaluation_count": 67,
+            "forward_evaluation_count": 67,
+            "forward_frequency_solve_count": 67
+          },
+          "production_base": {
+            "evaluation_count": 2,
+            "forward_evaluation_count": 2,
+            "forward_frequency_solve_count": 2
+          },
+          "refined_base": {
+            "evaluation_count": 1,
+            "forward_evaluation_count": 1,
+            "forward_frequency_solve_count": 1
+          },
+          "topological_derivative": {
+            "td_evaluation_count": 2,
+            "td_frequency_solve_count": 2
+          }
+        },
+        "totals": {
+          "bie_frequency_solve_count": 281,
+          "evaluation_count": 285,
+          "forward_evaluation_count": 279,
+          "forward_frequency_solve_count": 279,
+          "td_evaluation_count": 2,
+          "td_frequency_solve_count": 2
+        }
+      }
+    },
+    {
+      "arm": "H",
+      "audit_work": {
+        "stages": {
+          "final_production": {
+            "evaluation_count": 1,
+            "forward_evaluation_count": 1,
+            "forward_frequency_solve_count": 1
+          },
+          "final_refined": {
+            "evaluation_count": 1,
+            "forward_evaluation_count": 1,
+            "forward_frequency_solve_count": 1
+          },
+          "holdout": {
+            "evaluation_count": 1,
+            "forward_evaluation_count": 1,
+            "forward_frequency_solve_count": 2
+          }
+        },
+        "totals": {
+          "bie_frequency_solve_count": 4,
+          "evaluation_count": 3,
+          "forward_evaluation_count": 3,
+          "forward_frequency_solve_count": 4,
+          "td_evaluation_count": 0,
+          "td_frequency_solve_count": 0
+        }
+      },
+      "completed": true,
+      "events": [
+        {
+          "after_ids": [
+            "t001.merge1"
+          ],
+          "before_ids": [
+            "left",
+            "right"
+          ],
+          "candidate_refinement_steps": 3,
+          "children": [
+            "t001.merge1"
+          ],
+          "construction": "exterior_td_bridge; factor=1.05; modes=9; seed_scale=1",
+          "cycle": 0,
+          "kind": "merge",
+          "parents": [
+            "left",
+            "right"
+          ],
+          "production_after": 4.995487238670203e-06,
+          "production_before": 0.04607077352111241,
+          "refined_after": 4.995487372949761e-06,
+          "refined_before": 0.046071141696566516
+        }
+      ],
+      "final_loss": 3.103743073261214e-09,
+      "final_relative_error": 7.878760147715139e-05,
+      "final_state": [
+        {
+          "chart": "cartesian",
+          "component_id": "t001.merge1",
+          "maximum_mode": 9,
+          "parameters": [
+            0.49999999999999944,
+            0.5000000000000002,
+            0.06910965550043544,
+            -7.227825467636609e-10,
+            8.087327486168688e-16,
+            -3.3637971772424437e-16,
+            0.015402085528345474,
+            3.545968829938032e-09,
+            -1.0297590963482692e-15,
+            1.253558376155206e-15,
+            0.004849644183372904,
+            -5.7651574412751326e-09,
+            -4.765379938381704e-16,
+            -1.8564768941565447e-15,
+            0.0018499287958559168,
+            2.476679515675713e-09,
+            1.3448995393475895e-15,
+            9.524459978811895e-16,
+            0.0005447622294437811,
+            4.652906765049335e-10,
+            -7.227825197972565e-10,
+            0.045394439677656453,
+            -2.7090550246030227e-16,
+            -7.408751260489915e-16,
+            2.1004037609158197e-09,
+            0.008313130294433504,
+            6.133973821678408e-16,
+            2.521636790686784e-15,
+            -1.1878483932873252e-10,
+            0.0022393110505390572,
+            9.830472548698349e-18,
+            -3.0877714822028584e-15,
+            -3.4072627734923712e-09,
+            0.0007604043369779254,
+            -9.159631796475934e-16,
+            1.3414538667948982e-15,
+            -4.6529260355919e-10,
+            0.0005447622294342169
+          ]
+        }
+      ],
+      "gates": {
+        "all_event_margins_pass": true,
+        "boundary": true,
+        "correct_count": true,
+        "holdout": false,
+        "monotone_accepted_states": true,
+        "overlap": true,
+        "training": true
+      },
+      "geometry": {
+        "component_count": 1,
+        "final_maximum_modes": [
+          9
+        ],
+        "matched_components": [
+          {
+            "hausdorff_m": 0.0005541558814512529,
+            "recovered_component": "t001.merge1",
+            "truth_component": "truth.connected"
+          }
+        ],
+        "maximum_matched_hausdorff_m": 0.0005541558814512529,
+        "truth_component_count": 1,
+        "union_iou": 0.9934354485776805
+      },
+      "group": "original",
+      "holdout_relative_errors": [
+        0.048543348536660084,
+        0.08121697969192868
+      ],
+      "inversion_seconds": 33.48618679802166,
+      "maximum_holdout_relative_error": 0.08121697969192868,
+      "passed": false,
+      "refined_loss": 3.1037430709353714e-09,
+      "refined_relative_error": 7.878760144763097e-05,
+      "scene": "merge",
+      "stop_reason": "recovered",
+      "total_seconds": 33.787743565044366,
+      "work": {
+        "stages": {
+          "candidate_acceptance": {
+            "evaluation_count": 4,
+            "forward_evaluation_count": 4,
+            "forward_frequency_solve_count": 4
+          },
+          "candidate_raw": {
+            "evaluation_count": 21,
+            "forward_evaluation_count": 15,
+            "forward_frequency_solve_count": 15
+          },
+          "candidate_refinement": {
+            "evaluation_count": 213,
+            "forward_evaluation_count": 213,
+            "forward_frequency_solve_count": 213
+          },
+          "fixed_refinement": {
+            "evaluation_count": 301,
+            "forward_evaluation_count": 301,
+            "forward_frequency_solve_count": 301
+          },
+          "production_base": {
+            "evaluation_count": 2,
+            "forward_evaluation_count": 2,
+            "forward_frequency_solve_count": 2
+          },
+          "refined_base": {
+            "evaluation_count": 1,
+            "forward_evaluation_count": 1,
+            "forward_frequency_solve_count": 1
+          },
+          "topological_derivative": {
+            "td_evaluation_count": 2,
+            "td_frequency_solve_count": 2
+          }
+        },
+        "totals": {
+          "bie_frequency_solve_count": 538,
+          "evaluation_count": 542,
+          "forward_evaluation_count": 536,
+          "forward_frequency_solve_count": 536,
+          "td_evaluation_count": 2,
+          "td_frequency_solve_count": 2
+        }
+      }
+    },
+    {
+      "arm": "H",
+      "audit_work": {
+        "stages": {
+          "final_production": {
+            "evaluation_count": 1,
+            "forward_evaluation_count": 1,
+            "forward_frequency_solve_count": 1
+          },
+          "final_refined": {
+            "evaluation_count": 1,
+            "forward_evaluation_count": 1,
+            "forward_frequency_solve_count": 1
+          },
+          "holdout": {
+            "evaluation_count": 1,
+            "forward_evaluation_count": 1,
+            "forward_frequency_solve_count": 2
+          }
+        },
+        "totals": {
+          "bie_frequency_solve_count": 4,
+          "evaluation_count": 3,
+          "forward_evaluation_count": 3,
+          "forward_frequency_solve_count": 4,
+          "td_evaluation_count": 0,
+          "td_frequency_solve_count": 0
+        }
+      },
+      "completed": true,
+      "events": [
+        {
+          "after_ids": [
+            "spurious",
+            "t001.split1",
+            "t001.split2"
+          ],
+          "before_ids": [
+            "parent",
+            "spurious"
+          ],
+          "candidate_refinement_steps": 3,
+          "children": [
+            "t001.split1",
+            "t001.split2"
+          ],
+          "construction": "interior_td_corridor; width=0.032; angle=0.7853981633974483; offset=0.0; modes=9; seed_scale=1",
+          "cycle": 0,
+          "kind": "split",
+          "parents": [
+            "parent"
+          ],
+          "production_after": 0.036890911442805874,
+          "production_before": 0.2539911975445748,
+          "refined_after": 0.03689091145032391,
+          "refined_before": 0.2539888392612915
+        },
+        {
+          "after_ids": [
+            "t001.split1",
+            "t001.split2"
+          ],
+          "before_ids": [
+            "spurious",
+            "t001.split1",
+            "t001.split2"
+          ],
+          "candidate_refinement_steps": 3,
+          "children": [],
+          "construction": "leave_one_component_out",
+          "cycle": 1,
+          "kind": "death",
+          "parents": [
+            "spurious"
+          ],
+          "production_after": 0.0013884235315631778,
+          "production_before": 0.03664773920371854,
+          "refined_after": 0.0013891729590750712,
+          "refined_before": 0.036647739210086544
+        }
+      ],
+      "final_loss": 1.0144722397306455e-11,
+      "final_relative_error": 4.504380622750802e-06,
+      "final_state": [
+        {
+          "chart": "cartesian",
+          "component_id": "t001.split1",
+          "maximum_mode": 9,
+          "parameters": [
+            0.4399997624330395,
+            0.5000000171107901,
+            0.032999754521976156,
+            1.2358120883631257e-07,
+            -6.480966107323188e-07,
+            4.437083073627745e-07,
+            -2.459896682214188e-06,
+            1.2741127872903994e-06,
+            -6.964951460450952e-06,
+            3.724505303133715e-06,
+            -1.690882303788433e-05,
+            8.067698009666715e-06,
+            -3.509967763496585e-05,
+            7.148139291398741e-06,
+            -3.892769067094825e-05,
+            -1.5912247544797018e-05,
+            -2.8782822778816243e-05,
+            -1.1316352900972135e-05,
+            -2.427578755551794e-05,
+            6.44685553850033e-06,
+            1.23581208852891e-07,
+            0.03300016047549511,
+            4.4370830603336573e-07,
+            6.480965978171323e-07,
+            1.521275204989182e-06,
+            2.053943163237319e-06,
+            4.611921916529139e-06,
+            5.668758251931848e-06,
+            1.0863086001923296e-05,
+            1.2394983192414331e-05,
+            1.5484566511058885e-05,
+            2.246596792256753e-05,
+            3.018536466806471e-06,
+            9.623884440671671e-06,
+            1.1316352901519559e-05,
+            -2.8782822778693335e-05,
+            -6.446855539515973e-06,
+            -2.427578755608933e-05
+          ]
+        },
+        {
+          "chart": "cartesian",
+          "component_id": "t001.split2",
+          "maximum_mode": 9,
+          "parameters": [
+            0.559999829716904,
+            0.4999999941982545,
+            0.03300015527255106,
+            8.903210508732498e-08,
+            -6.167514380941231e-07,
+            -4.082954323491669e-07,
+            2.1892262029953646e-06,
+            1.31676480860275e-06,
+            -5.463861160135465e-06,
+            -3.92935242590218e-06,
+            8.840002456645507e-06,
+            8.853118390361442e-06,
+            1.0375595052675972e-06,
+            -8.089863326245753e-06,
+            -4.606107327077538e-05,
+            -2.6443497267497542e-05,
+            5.884669228511575e-06,
+            1.2427511193056445e-05,
+            -5.282777808126828e-05,
+            1.6184581962541294e-05,
+            8.90321051021352e-08,
+            0.03299992341543819,
+            -4.0829544980882136e-07,
+            6.167514548516633e-07,
+            1.494829018813197e-06,
+            -1.9573690901107906e-06,
+            -4.74594330806871e-06,
+            4.230358267190371e-06,
+            1.166471221777579e-05,
+            -4.6934071635532875e-06,
+            -1.6765159060225057e-05,
+            -1.0731778932603642e-05,
+            -5.925666659379217e-06,
+            5.959448289099805e-05,
+            -1.2427511193403103e-05,
+            5.884669209368044e-06,
+            -1.6184581964324028e-05,
+            -5.2827778080507984e-05
+          ]
+        }
+      ],
+      "gates": {
+        "all_event_margins_pass": true,
+        "boundary": true,
+        "correct_count": true,
+        "holdout": true,
+        "monotone_accepted_states": true,
+        "overlap": true,
+        "training": true
+      },
+      "geometry": {
+        "component_count": 2,
+        "final_maximum_modes": [
+          9,
+          9
+        ],
+        "matched_components": [
+          {
+            "hausdorff_m": 0.00016290581238171246,
+            "recovered_component": "t001.split1",
+            "truth_component": "truth.A"
+          },
+          {
+            "hausdorff_m": 0.00017000754920112147,
+            "recovered_component": "t001.split2",
+            "truth_component": "truth.B"
+          }
+        ],
+        "maximum_matched_hausdorff_m": 0.00017000754920112147,
+        "truth_component_count": 2,
+        "union_iou": 0.9973597359735974
+      },
+      "group": "original",
+      "holdout_relative_errors": [
+        0.003683739962719673,
+        0.013266026876925461
+      ],
+      "inversion_seconds": 276.7702976700384,
+      "maximum_holdout_relative_error": 0.013266026876925461,
+      "passed": true,
+      "refined_loss": 1.0144722401641549e-11,
+      "refined_relative_error": 4.50438062371322e-06,
+      "scene": "mixed",
+      "stop_reason": "recovered",
+      "total_seconds": 277.5048586730263,
+      "work": {
+        "stages": {
+          "candidate_acceptance": {
+            "evaluation_count": 31,
+            "forward_evaluation_count": 31,
+            "forward_frequency_solve_count": 31
+          },
+          "candidate_raw": {
+            "evaluation_count": 89,
+            "forward_evaluation_count": 67,
+            "forward_frequency_solve_count": 67
+          },
+          "candidate_refinement": {
+            "evaluation_count": 1120,
+            "forward_evaluation_count": 1093,
+            "forward_frequency_solve_count": 1093
+          },
+          "fixed_refinement": {
+            "evaluation_count": 1074,
+            "forward_evaluation_count": 1074,
+            "forward_frequency_solve_count": 1074
+          },
+          "production_base": {
+            "evaluation_count": 3,
+            "forward_evaluation_count": 3,
+            "forward_frequency_solve_count": 3
+          },
+          "refined_base": {
+            "evaluation_count": 2,
+            "forward_evaluation_count": 2,
+            "forward_frequency_solve_count": 2
+          },
+          "topological_derivative": {
+            "td_evaluation_count": 4,
+            "td_frequency_solve_count": 4
+          }
+        },
+        "totals": {
+          "bie_frequency_solve_count": 2274,
+          "evaluation_count": 2319,
+          "forward_evaluation_count": 2270,
+          "forward_frequency_solve_count": 2270,
+          "td_evaluation_count": 4,
+          "td_frequency_solve_count": 4
+        }
+      }
+    },
+    {
+      "arm": "H",
+      "audit_work": {
+        "stages": {
+          "final_production": {
+            "evaluation_count": 1,
+            "forward_evaluation_count": 1,
+            "forward_frequency_solve_count": 1
+          },
+          "final_refined": {
+            "evaluation_count": 1,
+            "forward_evaluation_count": 1,
+            "forward_frequency_solve_count": 1
+          },
+          "holdout": {
+            "evaluation_count": 1,
+            "forward_evaluation_count": 1,
+            "forward_frequency_solve_count": 2
+          }
+        },
+        "totals": {
+          "bie_frequency_solve_count": 4,
+          "evaluation_count": 3,
+          "forward_evaluation_count": 3,
+          "forward_frequency_solve_count": 4,
+          "td_evaluation_count": 0,
+          "td_frequency_solve_count": 0
+        }
+      },
+      "completed": true,
+      "events": [
+        {
+          "after_ids": [
+            "initial.circle",
+            "t001.birth"
+          ],
+          "before_ids": [
+            "initial.circle"
+          ],
+          "candidate_refinement_steps": 3,
+          "children": [
+            "t001.birth"
+          ],
+          "construction": "exterior_td_region; radius=0.024664",
+          "cycle": 0,
+          "kind": "birth",
+          "parents": [],
+          "production_after": 0.30603483733550385,
+          "production_before": 0.5095812047683763,
+          "raw_birth_radius_m": 0.024664256734439886,
+          "refined_after": 0.306034837335511,
+          "refined_before": 0.5095812047683728
+        },
+        {
+          "after_ids": [
+            "initial.circle",
+            "t001.birth",
+            "t002.birth"
+          ],
+          "before_ids": [
+            "initial.circle",
+            "t001.birth"
+          ],
+          "candidate_refinement_steps": 3,
+          "children": [
+            "t002.birth"
+          ],
+          "construction": "exterior_td_region; radius=0.024592",
+          "cycle": 1,
+          "kind": "birth",
+          "parents": [],
+          "production_after": 0.15903954009042182,
+          "production_before": 0.30389956583091965,
+          "raw_birth_radius_m": 0.02459245379682983,
+          "refined_after": 0.15903954009041926,
+          "refined_before": 0.30389956583092415
+        },
+        {
+          "after_ids": [
+            "t001.birth",
+            "t002.birth"
+          ],
+          "before_ids": [
+            "initial.circle",
+            "t001.birth",
+            "t002.birth"
+          ],
+          "candidate_refinement_steps": 3,
+          "children": [],
+          "construction": "leave_one_component_out",
+          "cycle": 2,
+          "kind": "death",
+          "parents": [
+            "initial.circle"
+          ],
+          "production_after": 1.0092727111469403e-12,
+          "production_before": 0.158019429599147,
+          "refined_after": 1.0092727111635586e-12,
+          "refined_before": 0.15801942959914475
+        }
+      ],
+      "final_loss": 1.0092727111469403e-12,
+      "final_relative_error": 1.4207552295500726e-06,
+      "final_state": [
+        {
+          "chart": "cartesian",
+          "component_id": "t001.birth",
+          "maximum_mode": 1,
+          "parameters": [
+            0.6100000063862739,
+            0.5300000048804249,
+            0.035999994402400134,
+            -2.0613079796500433e-18,
+            1.6055765672840544e-18,
+            0.03599999440240015
+          ]
+        },
+        {
+          "chart": "cartesian",
+          "component_id": "t002.birth",
+          "maximum_mode": 1,
+          "parameters": [
+            0.5499999857515844,
+            0.4300000080680173,
+            0.03399994790034125,
+            -1.7106732029348507e-18,
+            1.3324630943209484e-18,
+            0.03399994790034125
+          ]
+        }
+      ],
+      "gates": {
+        "all_event_margins_pass": true,
+        "boundary": true,
+        "correct_count": true,
+        "holdout": true,
+        "monotone_accepted_states": true,
+        "overlap": true,
+        "training": true
+      },
+      "geometry": {
+        "component_count": 2,
+        "final_maximum_modes": [
+          1,
+          1
+        ],
+        "matched_components": [
+          {
+            "hausdorff_m": 1.3635194256655966e-08,
+            "recovered_component": "t001.birth",
+            "truth_component": "truth.B"
+          },
+          {
+            "hausdorff_m": 6.847373108031512e-08,
+            "recovered_component": "t002.birth",
+            "truth_component": "truth.A"
+          }
+        ],
+        "maximum_matched_hausdorff_m": 6.847373108031512e-08,
+        "truth_component_count": 2,
+        "union_iou": 1.0
+      },
+      "group": "new",
+      "holdout_relative_errors": [
+        9.206380420584351e-06,
+        6.898559996106269e-06
+      ],
+      "inversion_seconds": 250.56646547897253,
+      "maximum_holdout_relative_error": 9.206380420584351e-06,
+      "passed": true,
+      "refined_loss": 1.0092727111635586e-12,
+      "refined_relative_error": 1.4207552295617697e-06,
+      "scene": "far-two-circles",
+      "stop_reason": "recovered",
+      "total_seconds": 251.3068276619888,
+      "work": {
+        "stages": {
+          "candidate_acceptance": {
+            "evaluation_count": 35,
+            "forward_evaluation_count": 35,
+            "forward_frequency_solve_count": 35
+          },
+          "candidate_raw": {
+            "evaluation_count": 124,
+            "forward_evaluation_count": 59,
+            "forward_frequency_solve_count": 59
+          },
+          "candidate_refinement": {
+            "evaluation_count": 725,
+            "forward_evaluation_count": 725,
+            "forward_frequency_solve_count": 725
+          },
+          "fixed_refinement": {
+            "evaluation_count": 1186,
+            "forward_evaluation_count": 1186,
+            "forward_frequency_solve_count": 1186
+          },
+          "production_base": {
+            "evaluation_count": 4,
+            "forward_evaluation_count": 4,
+            "forward_frequency_solve_count": 4
+          },
+          "refined_base": {
+            "evaluation_count": 3,
+            "forward_evaluation_count": 3,
+            "forward_frequency_solve_count": 3
+          },
+          "topological_derivative": {
+            "td_evaluation_count": 6,
+            "td_frequency_solve_count": 6
+          }
+        },
+        "totals": {
+          "bie_frequency_solve_count": 2018,
+          "evaluation_count": 2077,
+          "forward_evaluation_count": 2012,
+          "forward_frequency_solve_count": 2012,
+          "td_evaluation_count": 6,
+          "td_frequency_solve_count": 6
+        }
+      }
+    },
+    {
+      "arm": "H",
+      "audit_work": {
+        "stages": {
+          "final_production": {
+            "evaluation_count": 1,
+            "forward_evaluation_count": 1,
+            "forward_frequency_solve_count": 1
+          },
+          "final_refined": {
+            "evaluation_count": 1,
+            "forward_evaluation_count": 1,
+            "forward_frequency_solve_count": 1
+          },
+          "holdout": {
+            "evaluation_count": 1,
+            "forward_evaluation_count": 1,
+            "forward_frequency_solve_count": 2
+          }
+        },
+        "totals": {
+          "bie_frequency_solve_count": 4,
+          "evaluation_count": 3,
+          "forward_evaluation_count": 3,
+          "forward_frequency_solve_count": 4,
+          "td_evaluation_count": 0,
+          "td_frequency_solve_count": 0
+        }
+      },
+      "completed": true,
+      "events": [
+        {
+          "after_ids": [
+            "initial.circle",
+            "t001.birth"
+          ],
+          "before_ids": [
+            "initial.circle"
+          ],
+          "candidate_refinement_steps": 3,
+          "children": [
+            "t001.birth"
+          ],
+          "construction": "exterior_td_region; radius=0.024949",
+          "cycle": 0,
+          "kind": "birth",
+          "parents": [],
+          "production_after": 0.30368433918935406,
+          "production_before": 0.4869412717585484,
+          "raw_birth_radius_m": 0.024949402123397194,
+          "refined_after": 0.30368433918935545,
+          "refined_before": 0.48694127175854696
+        },
+        {
+          "after_ids": [
+            "initial.circle",
+            "t001.birth",
+            "t002.birth"
+          ],
+          "before_ids": [
+            "initial.circle",
+            "t001.birth"
+          ],
+          "candidate_refinement_steps": 3,
+          "children": [
+            "t002.birth"
+          ],
+          "construction": "exterior_td_region; radius=0.024303",
+          "cycle": 1,
+          "kind": "birth",
+          "parents": [],
+          "production_after": 0.17629460883681436,
+          "production_before": 0.30359945046570874,
+          "raw_birth_radius_m": 0.024303120739867894,
+          "refined_after": 0.17629460883681092,
+          "refined_before": 0.30359945046571596
+        },
+        {
+          "after_ids": [
+            "t001.birth",
+            "t002.birth"
+          ],
+          "before_ids": [
+            "initial.circle",
+            "t001.birth",
+            "t002.birth"
+          ],
+          "candidate_refinement_steps": 3,
+          "children": [],
+          "construction": "leave_one_component_out",
+          "cycle": 2,
+          "kind": "death",
+          "parents": [
+            "initial.circle"
+          ],
+          "production_after": 0.007327188038899019,
+          "production_before": 0.17617875206950628,
+          "refined_after": 0.007327188038899006,
+          "refined_before": 0.17617875206950245
+        },
+        {
+          "after_ids": [
+            "t001.birth",
+            "t002.birth",
+            "t004.birth"
+          ],
+          "before_ids": [
+            "t001.birth",
+            "t002.birth"
+          ],
+          "candidate_refinement_steps": 3,
+          "children": [
+            "t004.birth"
+          ],
+          "construction": "exterior_td_region; radius=0.009262",
+          "cycle": 3,
+          "kind": "birth",
+          "parents": [],
+          "production_after": 0.0021107048152762026,
+          "production_before": 0.007325270450896584,
+          "raw_birth_radius_m": 0.009261992999702207,
+          "refined_after": 0.0021107048152761813,
+          "refined_before": 0.007325270450896589
+        }
+      ],
+      "final_loss": 0.0020820070066508087,
+      "final_relative_error": 0.0645291718008345,
+      "final_state": [
+        {
+          "chart": "cartesian",
+          "component_id": "t001.birth",
+          "maximum_mode": 1,
+          "parameters": [
+            0.6096545145914395,
+            0.5299339950942303,
+            0.03533519672799917,
+            -1.8885688713476222e-18,
+            1.4710280828838761e-18,
+            0.03533519672799917
+          ]
+        },
+        {
+          "chart": "cartesian",
+          "component_id": "t002.birth",
+          "maximum_mode": 1,
+          "parameters": [
+            0.5452532406154809,
+            0.4280230058520499,
+            0.03247245208367669,
+            -1.4855237815703974e-18,
+            1.1570916124030918e-18,
+            0.032472452083676696
+          ]
+        },
+        {
+          "chart": "cartesian",
+          "component_id": "t004.birth",
+          "maximum_mode": 1,
+          "parameters": [
+            0.5949607433297726,
+            0.4505018278402955,
+            0.012093237919287264,
+            -5.148379325661001e-19,
+            4.0101320551693417e-19,
+            0.012093237919287264
+          ]
+        }
+      ],
+      "gates": {
+        "all_event_margins_pass": true,
+        "boundary": false,
+        "correct_count": false,
+        "holdout": false,
+        "monotone_accepted_states": true,
+        "overlap": false,
+        "training": false
+      },
+      "geometry": {
+        "component_count": 3,
+        "final_maximum_modes": [
+          1,
+          1,
+          1
+        ],
+        "matched_components": [
+          {
+            "hausdorff_m": 0.0096566760855543,
+            "recovered_component": "t001.birth",
+            "truth_component": "truth.star"
+          },
+          {
+            "hausdorff_m": 0.017616642878000174,
+            "recovered_component": "t002.birth",
+            "truth_component": "truth.ellipse"
+          }
+        ],
+        "maximum_matched_hausdorff_m": 0.017616642878000174,
+        "truth_component_count": 2,
+        "union_iou": 0.6927592954990215
+      },
+      "group": "new",
+      "holdout_relative_errors": [
+        1.0811028553720552,
+        1.1856395377266489
+      ],
+      "inversion_seconds": 286.1365997029934,
+      "maximum_holdout_relative_error": 1.1856395377266489,
+      "passed": false,
+      "refined_loss": 0.002082007006650886,
+      "refined_relative_error": 0.06452917180083571,
+      "scene": "far-ellipse-star",
+      "stop_reason": "topology_stationary",
+      "total_seconds": 287.3564642529818,
+      "work": {
+        "stages": {
+          "candidate_acceptance": {
+            "evaluation_count": 37,
+            "forward_evaluation_count": 37,
+            "forward_frequency_solve_count": 37
+          },
+          "candidate_raw": {
+            "evaluation_count": 209,
+            "forward_evaluation_count": 110,
+            "forward_frequency_solve_count": 110
+          },
+          "candidate_refinement": {
+            "evaluation_count": 923,
+            "forward_evaluation_count": 923,
+            "forward_frequency_solve_count": 923
+          },
+          "fixed_refinement": {
+            "evaluation_count": 1330,
+            "forward_evaluation_count": 1330,
+            "forward_frequency_solve_count": 1330
+          },
+          "production_base": {
+            "evaluation_count": 5,
+            "forward_evaluation_count": 5,
+            "forward_frequency_solve_count": 5
+          },
+          "refined_base": {
+            "evaluation_count": 5,
+            "forward_evaluation_count": 5,
+            "forward_frequency_solve_count": 5
+          },
+          "topological_derivative": {
+            "td_evaluation_count": 10,
+            "td_frequency_solve_count": 10
+          }
+        },
+        "totals": {
+          "bie_frequency_solve_count": 2420,
+          "evaluation_count": 2509,
+          "forward_evaluation_count": 2410,
+          "forward_frequency_solve_count": 2410,
+          "td_evaluation_count": 10,
+          "td_frequency_solve_count": 10
+        }
+      }
+    },
+    {
+      "arm": "H",
+      "audit_work": {
+        "stages": {
+          "final_production": {
+            "evaluation_count": 1,
+            "forward_evaluation_count": 1,
+            "forward_frequency_solve_count": 1
+          },
+          "final_refined": {
+            "evaluation_count": 1,
+            "forward_evaluation_count": 1,
+            "forward_frequency_solve_count": 1
+          },
+          "holdout": {
+            "evaluation_count": 1,
+            "forward_evaluation_count": 1,
+            "forward_frequency_solve_count": 2
+          }
+        },
+        "totals": {
+          "bie_frequency_solve_count": 4,
+          "evaluation_count": 3,
+          "forward_evaluation_count": 3,
+          "forward_frequency_solve_count": 4,
+          "td_evaluation_count": 0,
+          "td_frequency_solve_count": 0
+        }
+      },
+      "completed": true,
+      "events": [
+        {
+          "after_ids": [
+            "t001.split1",
+            "t001.split2"
+          ],
+          "before_ids": [
+            "initial.circle"
+          ],
+          "candidate_refinement_steps": 3,
+          "children": [
+            "t001.split1",
+            "t001.split2"
+          ],
+          "construction": "interior_td_corridor; width=0.032; angle=-0.7853981633974483; offset=0.0; modes=1; seed_scale=1",
+          "cycle": 0,
+          "kind": "split",
+          "parents": [
+            "initial.circle"
+          ],
+          "production_after": 0.08528882077314025,
+          "production_before": 0.6870798324847288,
+          "refined_after": 0.08528882077314044,
+          "refined_before": 0.6870798324480963
+        },
+        {
+          "after_ids": [
+            "t001.split1",
+            "t001.split2",
+            "t002.birth"
+          ],
+          "before_ids": [
+            "t001.split1",
+            "t001.split2"
+          ],
+          "candidate_refinement_steps": 3,
+          "children": [
+            "t002.birth"
+          ],
+          "construction": "exterior_td_region; radius=0.0093087",
+          "cycle": 1,
+          "kind": "birth",
+          "parents": [],
+          "production_after": 0.0015425260783769133,
+          "production_before": 0.006270712716459762,
+          "raw_birth_radius_m": 0.009308653209366823,
+          "refined_after": 0.0015425260783769002,
+          "refined_before": 0.006270712716459775
+        },
+        {
+          "after_ids": [
+            "t001.split2",
+            "t003.merge1"
+          ],
+          "before_ids": [
+            "t001.split1",
+            "t001.split2",
+            "t002.birth"
+          ],
+          "candidate_refinement_steps": 3,
+          "children": [
+            "t003.merge1"
+          ],
+          "construction": "exterior_td_bridge; factor=1.05; modes=9; seed_scale=1",
+          "cycle": 2,
+          "kind": "merge",
+          "parents": [
+            "t001.split1",
+            "t002.birth"
+          ],
+          "production_after": 0.000455017349948336,
+          "production_before": 0.0015177662959098503,
+          "refined_after": 0.00045475728356193904,
+          "refined_before": 0.0015177662959098143
+        }
+      ],
+      "final_loss": 0.00012260845502509585,
+      "final_relative_error": 0.01565940324693734,
+      "final_state": [
+        {
+          "chart": "cartesian",
+          "component_id": "t001.split2",
+          "maximum_mode": 1,
+          "parameters": [
+            0.5552647990113173,
+            0.5552691158497847,
+            0.03579649574662643,
+            -4.429124944033547e-18,
+            3.4498965190640184e-18,
+            0.03579649574662644
+          ]
+        },
+        {
+          "chart": "cartesian",
+          "component_id": "t003.merge1",
+          "maximum_mode": 9,
+          "parameters": [
+            0.4445108822192933,
+            0.4444743719476384,
+            0.03603186362310794,
+            0.0033832731944283666,
+            -0.0006342427123329226,
+            0.00070584293585707,
+            -0.0004850309062697024,
+            -0.0030186913284603184,
+            -0.0010487935339600707,
+            -0.00040436587223984086,
+            -0.003488141299045049,
+            -0.0007058812583367654,
+            -5.378207450155157e-05,
+            0.0002236878136161499,
+            -0.0006693669740328104,
+            -0.0004077923079995325,
+            0.00036076874712139695,
+            -0.0005251648772254589,
+            3.917230709346624e-05,
+            0.0007490917003719337,
+            0.003383273194428369,
+            0.031442721399813946,
+            0.0007058429358421592,
+            0.0006342427123303082,
+            0.0037478550603964053,
+            0.0050741731295637,
+            0.0010073199994593952,
+            -0.0002196918907031744,
+            2.3282473599319875e-05,
+            -0.0020710627367883537,
+            0.0008266419408357158,
+            -0.0007753195687553374,
+            -0.0010903910927369794,
+            -0.0007477115882238694,
+            0.0005251648772264124,
+            0.00036076874713239103,
+            -0.0007490917003645656,
+            3.917230709758697e-05
+          ]
+        }
+      ],
+      "gates": {
+        "all_event_margins_pass": true,
+        "boundary": false,
+        "correct_count": true,
+        "holdout": false,
+        "monotone_accepted_states": true,
+        "overlap": false,
+        "training": false
+      },
+      "geometry": {
+        "component_count": 2,
+        "final_maximum_modes": [
+          1,
+          9
+        ],
+        "matched_components": [
+          {
+            "hausdorff_m": 0.009220370867543763,
+            "recovered_component": "t001.split2",
+            "truth_component": "truth.star"
+          },
+          {
+            "hausdorff_m": 0.00775388019344104,
+            "recovered_component": "t003.merge1",
+            "truth_component": "truth.ellipse"
+          }
+        ],
+        "maximum_matched_hausdorff_m": 0.009220370867543763,
+        "truth_component_count": 2,
+        "union_iou": 0.7757606750191767
+      },
+      "group": "new",
+      "holdout_relative_errors": [
+        0.8709546483782993,
+        0.9054218673439628
+      ],
+      "inversion_seconds": 264.93745403096545,
+      "maximum_holdout_relative_error": 0.9054218673439628,
+      "passed": false,
+      "refined_loss": 0.0001226084550310543,
+      "refined_relative_error": 0.015659403247317842,
+      "scene": "central-ellipse-star",
+      "stop_reason": "topology_stationary",
+      "total_seconds": 265.6806981919799,
+      "work": {
+        "stages": {
+          "candidate_acceptance": {
+            "evaluation_count": 48,
+            "forward_evaluation_count": 48,
+            "forward_frequency_solve_count": 48
+          },
+          "candidate_raw": {
+            "evaluation_count": 163,
+            "forward_evaluation_count": 124,
+            "forward_frequency_solve_count": 124
+          },
+          "candidate_refinement": {
+            "evaluation_count": 1132,
+            "forward_evaluation_count": 1131,
+            "forward_frequency_solve_count": 1131
+          },
+          "fixed_refinement": {
+            "evaluation_count": 1357,
+            "forward_evaluation_count": 1357,
+            "forward_frequency_solve_count": 1357
+          },
+          "production_base": {
+            "evaluation_count": 4,
+            "forward_evaluation_count": 4,
+            "forward_frequency_solve_count": 4
+          },
+          "refined_base": {
+            "evaluation_count": 4,
+            "forward_evaluation_count": 4,
+            "forward_frequency_solve_count": 4
+          },
+          "topological_derivative": {
+            "td_evaluation_count": 8,
+            "td_frequency_solve_count": 8
+          }
+        },
+        "totals": {
+          "bie_frequency_solve_count": 2676,
+          "evaluation_count": 2708,
+          "forward_evaluation_count": 2668,
+          "forward_frequency_solve_count": 2668,
+          "td_evaluation_count": 8,
+          "td_frequency_solve_count": 8
+        }
+      }
+    },
+    {
+      "arm": "H",
+      "audit_work": {
+        "stages": {
+          "final_production": {
+            "evaluation_count": 1,
+            "forward_evaluation_count": 1,
+            "forward_frequency_solve_count": 1
+          },
+          "final_refined": {
+            "evaluation_count": 1,
+            "forward_evaluation_count": 1,
+            "forward_frequency_solve_count": 1
+          },
+          "holdout": {
+            "evaluation_count": 1,
+            "forward_evaluation_count": 1,
+            "forward_frequency_solve_count": 2
+          }
+        },
+        "totals": {
+          "bie_frequency_solve_count": 4,
+          "evaluation_count": 3,
+          "forward_evaluation_count": 3,
+          "forward_frequency_solve_count": 4,
+          "td_evaluation_count": 0,
+          "td_frequency_solve_count": 0
+        }
+      },
+      "completed": true,
+      "events": [
+        {
+          "after_ids": [
+            "t001.birth"
+          ],
+          "before_ids": [],
+          "candidate_refinement_steps": 3,
+          "children": [
+            "t001.birth"
+          ],
+          "construction": "exterior_td_region; radius=0.024736",
+          "cycle": 0,
+          "kind": "birth",
+          "parents": [],
+          "production_after": 0.1974911021698281,
+          "production_before": 0.5,
+          "raw_birth_radius_m": 0.02473585124420659,
+          "refined_after": 0.19749110216982807,
+          "refined_before": 0.5
+        },
+        {
+          "after_ids": [
+            "t001.birth",
+            "t002.birth"
+          ],
+          "before_ids": [
+            "t001.birth"
+          ],
+          "candidate_refinement_steps": 3,
+          "children": [
+            "t002.birth"
+          ],
+          "construction": "exterior_td_region; radius=0.036077",
+          "cycle": 1,
+          "kind": "birth",
+          "parents": [],
+          "production_after": 0.007325311356060331,
+          "production_before": 0.19749080670344313,
+          "raw_birth_radius_m": 0.03607677586537363,
+          "refined_after": 0.0073253113560603055,
+          "refined_before": 0.1974908067034432
+        },
+        {
+          "after_ids": [
+            "t001.birth",
+            "t002.birth",
+            "t003.birth"
+          ],
+          "before_ids": [
+            "t001.birth",
+            "t002.birth"
+          ],
+          "candidate_refinement_steps": 3,
+          "children": [
+            "t003.birth"
+          ],
+          "construction": "exterior_td_region; radius=0.009262",
+          "cycle": 2,
+          "kind": "birth",
+          "parents": [],
+          "production_after": 0.0021107054525822087,
+          "production_before": 0.0073252704511626845,
+          "raw_birth_radius_m": 0.009261992999702207,
+          "refined_after": 0.002110705452582141,
+          "refined_before": 0.00732527045116267
+        }
+      ],
+      "final_loss": 0.0020819502078847246,
+      "final_relative_error": 0.06452829159190138,
+      "final_state": [
+        {
+          "chart": "cartesian",
+          "component_id": "t001.birth",
+          "maximum_mode": 1,
+          "parameters": [
+            0.6096545110371663,
+            0.5299339927873102,
+            0.03533521028063738,
+            -1.9274037562393597e-18,
+            1.5012770227758814e-18,
+            0.03533521028063738
+          ]
+        },
+        {
+          "chart": "cartesian",
+          "component_id": "t002.birth",
+          "maximum_mode": 1,
+          "parameters": [
+            0.5452532680554751,
+            0.42802301695614764,
+            0.03247247155151841,
+            6.554122423136231e-19,
+            -5.105081572276786e-19,
+            0.03247247155151841
+          ]
+        },
+        {
+          "chart": "cartesian",
+          "component_id": "t003.birth",
+          "maximum_mode": 1,
+          "parameters": [
+            0.5949606207531483,
+            0.4505018462618779,
+            0.01209324726711789,
+            -5.148396323900048e-19,
+            4.01014529529385e-19,
+            0.012093247267117893
+          ]
+        }
+      ],
+      "gates": {
+        "all_event_margins_pass": true,
+        "boundary": false,
+        "correct_count": false,
+        "holdout": false,
+        "monotone_accepted_states": true,
+        "overlap": false,
+        "training": false
+      },
+      "geometry": {
+        "component_count": 3,
+        "final_maximum_modes": [
+          1,
+          1,
+          1
+        ],
+        "matched_components": [
+          {
+            "hausdorff_m": 0.00965666647381209,
+            "recovered_component": "t001.birth",
+            "truth_component": "truth.star"
+          },
+          {
+            "hausdorff_m": 0.01761659411206473,
+            "recovered_component": "t002.birth",
+            "truth_component": "truth.ellipse"
+          }
+        ],
+        "maximum_matched_hausdorff_m": 0.01761659411206473,
+        "truth_component_count": 2,
+        "union_iou": 0.6927592954990215
+      },
+      "group": "new",
+      "holdout_relative_errors": [
+        1.081100993673413,
+        1.1856399279741918
+      ],
+      "inversion_seconds": 85.86763378395699,
+      "maximum_holdout_relative_error": 1.1856399279741918,
+      "passed": false,
+      "refined_loss": 0.002081950207884731,
+      "refined_relative_error": 0.06452829159190147,
+      "scene": "empty-ellipse-star",
+      "stop_reason": "topology_stationary",
+      "total_seconds": 87.13070481596515,
+      "work": {
+        "stages": {
+          "candidate_acceptance": {
+            "evaluation_count": 37,
+            "forward_evaluation_count": 37,
+            "forward_frequency_solve_count": 37
+          },
+          "candidate_raw": {
+            "evaluation_count": 121,
+            "forward_evaluation_count": 94,
+            "forward_frequency_solve_count": 94
+          },
+          "candidate_refinement": {
+            "evaluation_count": 450,
+            "forward_evaluation_count": 450,
+            "forward_frequency_solve_count": 450
+          },
+          "fixed_refinement": {
+            "evaluation_count": 185,
+            "forward_evaluation_count": 185,
+            "forward_frequency_solve_count": 185
+          },
+          "production_base": {
+            "evaluation_count": 3,
+            "forward_evaluation_count": 3,
+            "forward_frequency_solve_count": 3
+          },
+          "refined_base": {
+            "evaluation_count": 3,
+            "forward_evaluation_count": 3,
+            "forward_frequency_solve_count": 3
+          },
+          "topological_derivative": {
+            "td_evaluation_count": 7,
+            "td_frequency_solve_count": 6
+          }
+        },
+        "totals": {
+          "bie_frequency_solve_count": 778,
+          "evaluation_count": 799,
+          "forward_evaluation_count": 772,
+          "forward_frequency_solve_count": 772,
+          "td_evaluation_count": 7,
+          "td_frequency_solve_count": 6
+        }
+      }
+    },
+    {
+      "arm": "H",
+      "audit_work": {
+        "stages": {
+          "final_production": {
+            "evaluation_count": 1,
+            "forward_evaluation_count": 1,
+            "forward_frequency_solve_count": 1
+          },
+          "final_refined": {
+            "evaluation_count": 1,
+            "forward_evaluation_count": 1,
+            "forward_frequency_solve_count": 1
+          },
+          "holdout": {
+            "evaluation_count": 1,
+            "forward_evaluation_count": 1,
+            "forward_frequency_solve_count": 2
+          }
+        },
+        "totals": {
+          "bie_frequency_solve_count": 4,
+          "evaluation_count": 3,
+          "forward_evaluation_count": 3,
+          "forward_frequency_solve_count": 4,
+          "td_evaluation_count": 0,
+          "td_frequency_solve_count": 0
+        }
+      },
+      "completed": true,
+      "events": [
+        {
+          "after_ids": [
+            "initial.circle",
+            "t001.birth"
+          ],
+          "before_ids": [
+            "initial.circle"
+          ],
+          "candidate_refinement_steps": 3,
+          "children": [
+            "t001.birth"
+          ],
+          "construction": "exterior_td_region; radius=0.024592",
+          "cycle": 0,
+          "kind": "birth",
+          "parents": [],
+          "production_after": 0.36511383279358184,
+          "production_before": 0.5796783418387776,
+          "raw_birth_radius_m": 0.02459245379682983,
+          "refined_after": 0.3651138327935888,
+          "refined_before": 0.5796783418387783
+        },
+        {
+          "after_ids": [
+            "t001.birth"
+          ],
+          "before_ids": [
+            "initial.circle",
+            "t001.birth"
+          ],
+          "candidate_refinement_steps": 3,
+          "children": [],
+          "construction": "leave_one_component_out",
+          "cycle": 1,
+          "kind": "death",
+          "parents": [
+            "initial.circle"
+          ],
+          "production_after": 0.1855314164929634,
+          "production_before": 0.36425940583799654,
+          "refined_after": 0.18553141649296348,
+          "refined_before": 0.3642594058379936
+        },
+        {
+          "after_ids": [
+            "t001.birth",
+            "t003.birth"
+          ],
+          "before_ids": [
+            "t001.birth"
+          ],
+          "candidate_refinement_steps": 3,
+          "children": [
+            "t003.birth"
+          ],
+          "construction": "exterior_td_region; radius=0.024376",
+          "cycle": 2,
+          "kind": "birth",
+          "parents": [],
+          "production_after": 9.219381536562618e-05,
+          "production_before": 0.1855302860717101,
+          "raw_birth_radius_m": 0.024375775971438328,
+          "refined_after": 9.219381536561773e-05,
+          "refined_before": 0.18553028607171013
+        }
+      ],
+      "final_loss": 9.219376825852734e-05,
+      "final_relative_error": 0.013578937238129302,
+      "final_state": [
+        {
+          "chart": "cartesian",
+          "component_id": "t001.birth",
+          "maximum_mode": 1,
+          "parameters": [
+            0.5500783766431202,
+            0.43000132609748376,
+            0.030920537612676793,
+            -1.150708497989332e-18,
+            8.9630012515644e-19,
+            0.03092053761267679
+          ]
+        },
+        {
+          "chart": "cartesian",
+          "component_id": "t003.birth",
+          "maximum_mode": 1,
+          "parameters": [
+            0.6100336680460026,
+            0.5399518408530354,
+            0.02995053687113405,
+            -1.0137230997911387e-18,
+            7.896006180578288e-19,
+            0.02995053687113405
+          ]
+        }
+      ],
+      "gates": {
+        "all_event_margins_pass": true,
+        "boundary": false,
+        "correct_count": true,
+        "holdout": false,
+        "monotone_accepted_states": true,
+        "overlap": false,
+        "training": false
+      },
+      "geometry": {
+        "component_count": 2,
+        "final_maximum_modes": [
+          1,
+          1
+        ],
+        "matched_components": [
+          {
+            "hausdorff_m": 0.007595102782666241,
+            "recovered_component": "t001.birth",
+            "truth_component": "truth.star5"
+          },
+          {
+            "hausdorff_m": 0.006704421659917238,
+            "recovered_component": "t003.birth",
+            "truth_component": "truth.star7"
+          }
+        ],
+        "maximum_matched_hausdorff_m": 0.007595102782666241,
+        "truth_component_count": 2,
+        "union_iou": 0.746843853820598
+      },
+      "group": "new",
+      "holdout_relative_errors": [
+        0.4938514784782577,
+        0.9567163293152768
+      ],
+      "inversion_seconds": 144.45947278599488,
+      "maximum_holdout_relative_error": 0.9567163293152768,
+      "passed": false,
+      "refined_loss": 9.219376825852807e-05,
+      "refined_relative_error": 0.013578937238129358,
+      "scene": "far-two-stars",
+      "stop_reason": "topology_stationary",
+      "total_seconds": 145.1942008000333,
+      "work": {
+        "stages": {
+          "candidate_acceptance": {
+            "evaluation_count": 41,
+            "forward_evaluation_count": 41,
+            "forward_frequency_solve_count": 41
+          },
+          "candidate_raw": {
+            "evaluation_count": 148,
+            "forward_evaluation_count": 81,
+            "forward_frequency_solve_count": 81
+          },
+          "candidate_refinement": {
+            "evaluation_count": 698,
+            "forward_evaluation_count": 698,
+            "forward_frequency_solve_count": 698
+          },
+          "fixed_refinement": {
+            "evaluation_count": 712,
+            "forward_evaluation_count": 712,
+            "forward_frequency_solve_count": 712
+          },
+          "production_base": {
+            "evaluation_count": 4,
+            "forward_evaluation_count": 4,
+            "forward_frequency_solve_count": 4
+          },
+          "refined_base": {
+            "evaluation_count": 4,
+            "forward_evaluation_count": 4,
+            "forward_frequency_solve_count": 4
+          },
+          "topological_derivative": {
+            "td_evaluation_count": 8,
+            "td_frequency_solve_count": 8
+          }
+        },
+        "totals": {
+          "bie_frequency_solve_count": 1548,
+          "evaluation_count": 1607,
+          "forward_evaluation_count": 1540,
+          "forward_frequency_solve_count": 1540,
+          "td_evaluation_count": 8,
+          "td_frequency_solve_count": 8
+        }
+      }
+    }
+  ],
+  "paired_input_checks": [
+    {
+      "same_initial_state": true,
+      "same_observations": true,
+      "same_remaining_config": true,
+      "same_source": true,
+      "scene": "repeated-birth"
+    },
+    {
+      "same_initial_state": true,
+      "same_observations": true,
+      "same_remaining_config": true,
+      "same_source": true,
+      "scene": "death"
+    },
+    {
+      "same_initial_state": true,
+      "same_observations": true,
+      "same_remaining_config": true,
+      "same_source": true,
+      "scene": "split"
+    },
+    {
+      "same_initial_state": true,
+      "same_observations": true,
+      "same_remaining_config": true,
+      "same_source": true,
+      "scene": "merge"
+    },
+    {
+      "same_initial_state": true,
+      "same_observations": true,
+      "same_remaining_config": true,
+      "same_source": true,
+      "scene": "mixed"
+    },
+    {
+      "same_initial_state": true,
+      "same_observations": true,
+      "same_remaining_config": true,
+      "same_source": true,
+      "scene": "far-two-circles"
+    },
+    {
+      "same_initial_state": true,
+      "same_observations": true,
+      "same_remaining_config": true,
+      "same_source": true,
+      "scene": "far-ellipse-star"
+    },
+    {
+      "same_initial_state": true,
+      "same_observations": true,
+      "same_remaining_config": true,
+      "same_source": true,
+      "scene": "central-ellipse-star"
+    },
+    {
+      "same_initial_state": true,
+      "same_observations": true,
+      "same_remaining_config": true,
+      "same_source": true,
+      "scene": "enclosing-ellipse-star"
+    },
+    {
+      "same_initial_state": true,
+      "same_observations": true,
+      "same_remaining_config": true,
+      "same_source": true,
+      "scene": "empty-ellipse-star"
+    },
+    {
+      "same_initial_state": true,
+      "same_observations": true,
+      "same_remaining_config": true,
+      "same_source": true,
+      "scene": "far-two-stars"
+    },
+    {
+      "same_initial_state": true,
+      "same_observations": true,
+      "same_remaining_config": true,
+      "same_source": true,
+      "scene": "far-three-shapes"
+    }
+  ],
+  "spec_version": "topology-scenes-v2-acquisition-a",
+  "totals": {
+    "H": {
+      "all_runs_bie_solve_lower_bound": 18436,
+      "bie_frequency_solve_count": 13615,
+      "completed": 10,
+      "error_or_timeout_count": 2,
+      "failed_or_missing": 7,
+      "passed": 5
+    }
+  }
+}

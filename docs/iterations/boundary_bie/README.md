@@ -52,7 +52,7 @@ representation-scope distinction this track must not blur.
 
 ## Current handoff
 
-Updated 2026-09-11.
+Updated 2026-09-12; experiment status remains unchanged.
 
 | Item | Current state |
 |---|---|
@@ -65,6 +65,13 @@ Updated 2026-09-11.
 | Dependencies | None blocking. `BIE-001` is a desk study over existing code and bundles. Any prototype selected by it will touch shared solver interfaces and must be declared before implementation |
 | Blockers | None |
 | Open question the review must not skip | Whether a modal-trace prototype is the right first prototype. It is a candidate, deliberately **not** pre-selected |
+
+Related discussion: [Are the current failures intrinsic to boundary methods?
+What FDTD would change](../topology/iteration_07/02_proposals/02_boundary_methods_and_fdtd.md).
+This records the user's solver-alternative question, distinguishes solver and
+geometry-representation changes, and suggests a matched forward/derivative
+check. It is not the full review of the Boundary–BIE brief, and no FDTD
+comparison was run for it.
 
 ## Reading order
 

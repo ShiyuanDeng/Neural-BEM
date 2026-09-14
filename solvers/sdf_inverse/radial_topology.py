@@ -932,6 +932,12 @@ class MultiRadialFDResult:
     # Trials refused only because a *finer* discretisation than the one being
     # optimized at calls them inadmissible. Zero means the guard never bit.
     feasibility_rejected_trial_count: int = 0
+    # Jacobian columns, summed over every assembly, that were measured on one
+    # feasible side because the other side was refused.
+    one_sided_jacobian_column_count: int = 0
+    # Columns no admissible probe reached on either side. These are the only
+    # genuinely unknown derivatives; they are zero because nothing measured them.
+    unresolved_jacobian_column_count: int = 0
 
 
 def run_multiradial_fd_inverse(
@@ -945,6 +951,7 @@ def run_multiradial_fd_inverse(
     minimum_component_radius_m: float = 0.0,
     cartesian_gauge: bool = False,
     feasibility_geometry_configs: tuple[OrderedSDFGeometryConfig, ...] = (),
+    feasible_fd_jacobian: bool = False,
 ) -> MultiRadialFDResult:
     """Bounded central-FD LM optimizer for one fixed multi-radial topology.
 
@@ -965,6 +972,17 @@ def run_multiradial_fd_inverse(
     the feasible set its own resolution defines -- and a caller that evaluates
     the result at a finer one can then be handed a state that resolution
     refuses.
+
+    ``feasible_fd_jacobian`` keeps the derivative information that survives an
+    active constraint.  A refused probe says a step is inadmissible; it does not
+    say the derivative is zero, and writing a zero there feeds a number nothing
+    measured into the normal equations.  With the flag on, each side of every
+    difference quotient is attempted independently: both sides give the central
+    difference as before, one side gives the one-sided quotient at that same
+    step, and only a direction blocked on *both* sides stays an unresolved zero.
+    A small gradient then certifies stationarity only when no column is
+    unresolved.  Left off, every path, count, stop reason and recorded field is
+    what it was before the correction, so earlier arms replay unchanged.
     """
 
     if not isinstance(initial_state, MultiRadialFourierState):
@@ -1020,7 +1038,19 @@ def run_multiradial_fd_inverse(
             return candidate, 0.0
         return candidate.polar_angle_gauge_fixed()
 
-    def jacobian(state: MultiRadialFourierState) -> tuple[np.ndarray, np.ndarray | None, int]:
+    def probe(
+        state: MultiRadialFourierState, step: np.ndarray
+    ) -> MultiRadialObjectiveEvaluation | None:
+        """One side of a difference quotient, or None if that side is refused."""
+        try:
+            trial = retract(state, step)[0]
+        except (ValueError, OrderedSDFGeometryError):
+            return None
+        return evaluate(trial)
+
+    def jacobian(
+        state: MultiRadialFourierState,
+    ) -> tuple[np.ndarray, np.ndarray | None, int, int]:
         """Central differences along the directions the step may actually take.
 
         Under the Cartesian gauge those are the gauge-fixed subspace's basis
@@ -1038,25 +1068,51 @@ def run_multiradial_fd_inverse(
         # measured at one scale across the basis.
         sizes = (fd_steps if basis is None
                  else np.sqrt((directions * directions) @ (fd_steps * fd_steps)))
+        # Cached, so the base residual a one-sided quotient needs is the one the
+        # optimizer already holds at this state and costs no extra solve. It has
+        # to come through evaluate() rather than be formed separately, or the
+        # gauge it was fixed in could differ from the probes'.
+        base = evaluate(state) if feasible_fd_jacobian else None
         columns: list[np.ndarray] = []
-        frozen = 0
+        unresolved = 0
+        one_sided = 0
         for direction, step_size in zip(directions, sizes):
             step = step_size * direction
-            try:
-                plus_state = retract(state, step)[0]
-                minus_state = retract(state, -step)[0]
-            except (ValueError, OrderedSDFGeometryError):
-                frozen += 1
-                columns.append(np.zeros_like(current.residual))
+            if not feasible_fd_jacobian:
+                try:
+                    plus_state = retract(state, step)[0]
+                    minus_state = retract(state, -step)[0]
+                except (ValueError, OrderedSDFGeometryError):
+                    unresolved += 1
+                    columns.append(np.zeros_like(current.residual))
+                    continue
+                plus = evaluate(plus_state)
+                minus = evaluate(minus_state)
+                if plus is None or minus is None:
+                    unresolved += 1
+                    columns.append(np.zeros_like(current.residual))
+                else:
+                    columns.append((plus.residual - minus.residual) / (2.0 * step_size))
                 continue
-            plus = evaluate(plus_state)
-            minus = evaluate(minus_state)
-            if plus is None or minus is None:
-                frozen += 1
-                columns.append(np.zeros_like(current.residual))
-            else:
+            # Independently: the shared try above abandons both sides when only
+            # one of the two retractions fails.
+            plus = probe(state, step)
+            minus = probe(state, -step)
+            if plus is not None and minus is not None:
                 columns.append((plus.residual - minus.residual) / (2.0 * step_size))
-        return np.column_stack(columns), basis, frozen
+            elif plus is not None and base is not None:
+                # Forward and backward both estimate +Jd; the base residual is
+                # the near end of the forward quotient and the far end of the
+                # backward one.
+                one_sided += 1
+                columns.append((plus.residual - base.residual) / step_size)
+            elif minus is not None and base is not None:
+                one_sided += 1
+                columns.append((base.residual - minus.residual) / step_size)
+            else:
+                unresolved += 1
+                columns.append(np.zeros_like(current.residual))
+        return np.column_stack(columns), basis, unresolved, one_sided
 
     gauge_truncation = 0.0
     if cartesian_gauge:
@@ -1066,7 +1122,9 @@ def run_multiradial_fd_inverse(
     current = evaluate(accepted_state)
     if current is None:
         raise ValueError("initial_state is not solver-ready.")
-    matrix, basis, frozen_columns = jacobian(accepted_state)
+    matrix, basis, unresolved_columns, one_sided_new = jacobian(accepted_state)
+    one_sided_columns = one_sided_new
+    unresolved_total = unresolved_columns
     gradient = matrix.T @ current.residual
     records: list[MultiRadialFDIteration] = []
     damping = config.initial_damping
@@ -1091,13 +1149,26 @@ def run_multiradial_fd_inverse(
         if progress_callback is not None:
             progress_callback(item)
 
+    def gradient_stop() -> tuple[bool, str]:
+        """A small gradient is stationarity only if every column was measured.
+
+        The other two tolerance branches already refuse to certify a run with
+        unresolved columns; this one did not, so a gradient whose norm came from
+        zeros nothing measured could report convergence. The legacy path keeps
+        that historical answer so arms recorded before the correction replay
+        unchanged.
+        """
+        if feasible_fd_jacobian and unresolved_columns:
+            return False, "infeasible_jacobian"
+        return True, "gradient_tolerance"
+
     record(0, np.zeros(parameter_count), damping)
     converged = False
     stop_reason = "maximum_iterations"
     if current.loss <= config.loss_tolerance:
         converged, stop_reason = True, "loss_tolerance"
     elif np.linalg.norm(gradient, ord=np.inf) <= config.gradient_tolerance:
-        converged, stop_reason = True, "gradient_tolerance"
+        converged, stop_reason = gradient_stop()
 
     for iteration in range(1, config.max_iterations + 1):
         if converged:
@@ -1157,29 +1228,31 @@ def run_multiradial_fd_inverse(
                 break
             trial_damping *= config.damping_increase
         if accepted_evaluation is None or accepted_candidate is None or accepted_step is None:
-            stop_reason = "infeasible_jacobian" if frozen_columns else "no_decreasing_step"
+            stop_reason = "infeasible_jacobian" if unresolved_columns else "no_decreasing_step"
             break
         previous_loss = current.loss
         accepted_state = accepted_candidate
         gauge_truncation = accepted_truncation
         current = accepted_evaluation
         damping = max(used_damping * config.damping_decrease, np.finfo(float).tiny)
-        matrix, basis, frozen_columns = jacobian(accepted_state)
+        matrix, basis, unresolved_columns, one_sided_new = jacobian(accepted_state)
+        one_sided_columns += one_sided_new
+        unresolved_total += unresolved_columns
         gradient = matrix.T @ current.residual
         record(iteration, accepted_step, used_damping)
         if current.loss <= config.loss_tolerance:
             converged, stop_reason = True, "loss_tolerance"
         elif previous_loss - current.loss <= config.loss_tolerance:
-            converged, stop_reason = frozen_columns == 0, (
-                "loss_change_tolerance" if frozen_columns == 0 else "infeasible_jacobian"
+            converged, stop_reason = unresolved_columns == 0, (
+                "loss_change_tolerance" if unresolved_columns == 0 else "infeasible_jacobian"
             )
         elif np.linalg.norm(gradient, ord=np.inf) <= config.gradient_tolerance:
-            converged, stop_reason = True, "gradient_tolerance"
+            converged, stop_reason = gradient_stop()
         elif float(np.linalg.norm(accepted_step)) / max(
             np.linalg.norm(accepted_state.parameter_vector()), 1.0
         ) <= config.relative_step_tolerance:
-            converged, stop_reason = frozen_columns == 0, (
-                "relative_step_tolerance" if frozen_columns == 0 else "infeasible_jacobian"
+            converged, stop_reason = unresolved_columns == 0, (
+                "relative_step_tolerance" if unresolved_columns == 0 else "infeasible_jacobian"
             )
 
     return MultiRadialFDResult(
@@ -1191,6 +1264,8 @@ def run_multiradial_fd_inverse(
         infeasible_trial_count=infeasible_count,
         total_seconds=float(perf_counter() - started),
         feasibility_rejected_trial_count=feasibility_rejected,
+        one_sided_jacobian_column_count=one_sided_columns,
+        unresolved_jacobian_column_count=unresolved_total,
     )
 
 

@@ -61,6 +61,50 @@ with identical final states wherever both arms complete; **both arms still pass
 [Report and comparisons](results/validation/topology/TOP-007-20260911-refined-feasibility/README.md) ·
 [videos of every scene](results/validation/topology/TOP-007-20260911-refined-feasibility/videos.md).
 
+**Track A update (2026-09-12, TOP-008 and TOP-009):** the two candidates an
+evidence-based literature review accepted are now both measured. TOP-008: a
+probe the 8-mm radius floor refused was being recorded as a derivative of zero,
+freezing its Jacobian column, and a gradient assembled from those zeros could
+still report convergence. The opt-in `--feasible-fd-jacobian` measures the
+feasible side instead; it frees the pinned component from 8.000 mm to 22.737 mm,
+returns 10/12 runs against 9/12 and takes `split` to 0.000023 mm at a quarter of
+the solves — but **buys no new benchmark pass**, still 5/12.
+[Report](results/validation/topology/TOP-008-20260912-feasible-fd/README.md).
+
+TOP-009 then added the missing shape bandwidth. Adding modes fits the training
+data **248x better** while final boundary error, IoU and holdout error get
+**worse**, which stopped the line before the benchmark. A stage-3
+diagnostic corrected the reading: the **true geometry fits the same training
+acquisition to 3.23e-07 relative error**, so the reconstruction is 7.1e6x worse
+than this known attainable value. One component acquired star-like shape with
+similar perimeter, area and isoperimetric ratio. A truth-selected rotation of
+**34 degrees** reduces its boundary error, exposing a substantial phase mismatch.
+A fourth stage ran the mode ladder to
+exhaustion at K=9, enough for both a five- and a seven-lobed star: the answer
+improves to 11.849 mm from 17.599, still ends worse than the circles it started
+from, and remains **74,159x above the objective the true geometry attains**.
+**Independent review:** this demonstrates a suboptimal reconstruction, not a
+certified local minimum or unique inversion. Thirteen of fourteen refinements
+stopped on small loss change; the final data error already satisfies the
+controller's tolerance despite poor geometry. The next proposed check separates
+optimizer stopping from stationarity before choosing a restart strategy.
+[Review and counter repair](docs/iterations/topology/iteration_07/02_proposals/01_independent_review.md).
+[Report](results/validation/topology/TOP-009-20260912-bandwidth-capacity/README.md).
+
+**Track A update (2026-09-12, TOP-010):** the independent review's diagnostic
+refutes the local-minimum reading. At the saved state the terminal gradient is
+**4013x the optimizer's own tolerance**, stable across three finite-difference
+scales, with a full-rank Jacobian — and three restarts of the **unmodified**
+optimizer recover **1.7x** in the objective in 45 seconds with no source change.
+Three absolute constants, one of them serving as both the loss target and the
+accepted loss change, sit at the same order as the entire remaining objective.
+Yet matched boundary error moved 11.849 to 11.991 mm and IoU stayed at 0.7088.
+Four defects are now found and fixed — derivative, capacity, ladder truncation,
+premature stopping — **each worth objective and none worth geometry**, and the
+benchmark still passes 5/12. The open question is why the gated geometry is
+insensitive to four orders of magnitude of training objective.
+[Report](results/validation/topology/TOP-010-20260912-stopping-vs-stationarity/README.md).
+
 ## Implementation at a glance
 
 | Entry point | What it currently runs |

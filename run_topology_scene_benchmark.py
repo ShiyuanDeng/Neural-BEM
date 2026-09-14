@@ -46,8 +46,13 @@ DEFAULT_SPEC = ROOT / 'config/topology_scenes_v1.json'
 # acquisition, budgets and gates never vary with the arm.
 ARM_POLICIES = {'A': dict(include_simplest_candidate=False),
                 'F': dict(include_simplest_candidate=True),
-                'G': dict(include_simplest_candidate=False, refined_feasibility_guard=True)}
-ARM_LABELS = {'A': 'default A', 'F': 'selective F', 'G': 'guarded G'}
+                'G': dict(include_simplest_candidate=False, refined_feasibility_guard=True),
+                'H': dict(include_simplest_candidate=False, refined_feasibility_guard=True,
+                          feasible_fd_jacobian=True),
+                'J': dict(include_simplest_candidate=False, refined_feasibility_guard=True,
+                          feasible_fd_jacobian=True, bandwidth_promotion=True)}
+ARM_LABELS = {'A': 'default A', 'F': 'selective F', 'G': 'guarded G',
+              'H': 'feasible-FD H', 'J': 'enriched J'}
 POLICY_KEYS = sorted({key for policy in ARM_POLICIES.values() for key in policy})
 DEFAULT_ARMS = ('A', 'F')
 # Archived bundle analyses iterate this name; it stays the pair they ran.
@@ -142,7 +147,8 @@ def prepare(output, spec_path, reference_data=None, arms=DEFAULT_ARMS, experimen
     provenance = source_provenance(ROOT)
     provenance['benchmark_spec_sha256'] = digest(output / 'scene_spec.json')
     driver.write_json(output / 'manifest.json', dict(experiment_id=experiment_id, spec_version=spec['version'],
-        source=provenance, arms=list(arms), arm_policies={a: ARM_POLICIES[a] for a in arms},
+        acquisition=spec.get('acquisition'), source=provenance, arms=list(arms),
+        arm_policies={a: ARM_POLICIES[a] for a in arms},
         expected_runs=len(arms)*len(spec['scenes']), workers_limit=4,
         per_run_timeout_seconds=600, suite_wall_ceiling_seconds=2700,
         oracle_work_in_inversion_counts=False, controlled_wall_time_comparison=False))
@@ -151,7 +157,8 @@ def prepare(output, spec_path, reference_data=None, arms=DEFAULT_ARMS, experimen
         render_initials(output)
         return
     frequencies = np.asarray(spec['training_frequencies_hz'] + spec['holdout_frequencies_hz'])
-    problem = driver.baseline._problem(frequencies)
+    acquisition = spec.get('acquisition')
+    problem = driver.baseline._problem(frequencies, acquisition=acquisition)
     solve = driver.baseline.iteration01_solve_config()
     records = []
     for scene in spec['scenes']:
@@ -168,7 +175,8 @@ def prepare(output, spec_path, reference_data=None, arms=DEFAULT_ARMS, experimen
             observed = driver.baseline._oracle_response(
                 np.array([item['center'] for item in scene['truth']]),
                 np.array([item['radius'] for item in scene['truth']]), frequencies,
-                component_ids=tuple(item['component_id'] for item in scene['truth']))
+                component_ids=tuple(item['component_id'] for item in scene['truth']),
+                acquisition=acquisition)
             oracle = 'independent cylindrical harmonics'
             changes = np.zeros(len(frequencies))
         else:
@@ -203,8 +211,9 @@ def prepare(output, spec_path, reference_data=None, arms=DEFAULT_ARMS, experimen
 def shared_data(output, scene, spec):
     saved = read(output / 'scenes' / scene['id'] / 'observations.json')
     frequencies = np.array(saved['frequencies_hz'])
+    acquisition = spec.get('acquisition')
     observed = np.array(saved['observed_real']) + 1j*np.array(saved['observed_imag'])
-    full_problem = driver.baseline._problem(frequencies)
+    full_problem = driver.baseline._problem(frequencies, acquisition=acquisition)
     np.testing.assert_array_equal(full_problem.source_points, saved['source_points'])
     np.testing.assert_array_equal(full_problem.receiver_points, saved['receiver_points'])
     np.testing.assert_array_equal(frequencies, spec['training_frequencies_hz'] + spec['holdout_frequencies_hz'])
@@ -215,8 +224,10 @@ def shared_data(output, scene, spec):
             full_problem.eps0 != saved['eps0'] or full_problem.mu0 != saved['mu0']):
         raise ValueError('Reference observations use different material constants.')
     n = len(spec['training_frequencies_hz'])
-    return (ComplexScatteredData(driver.baseline._problem(frequencies[:n]), observed[:, :n]),
-            ComplexScatteredData(driver.baseline._problem(frequencies[n:]), observed[:, n:]))
+    return (ComplexScatteredData(driver.baseline._problem(frequencies[:n], acquisition=acquisition),
+                                 observed[:, :n]),
+            ComplexScatteredData(driver.baseline._problem(frequencies[n:], acquisition=acquisition),
+                                 observed[:, n:]))
 
 
 def union_mask(polygons, points):
@@ -411,7 +422,8 @@ def render_initials(output):
         plot_geometry(ax, scene, None, initial_state(scene))
         ax.set_title(scene['title'], fontsize=9)
     axes.flat[0].legend(fontsize=8)
-    fig.suptitle('Frozen topology scenes v1 — dashed targets, dotted initial geometry')
+    fig.suptitle(f"Frozen topology scenes {spec['version']} — dashed targets, "
+                 'dotted initial geometry')
     fig.savefig(output / 'initial_scenes.svg')
     fig.savefig(output / 'initial_scenes.png', dpi=140)
     plt.close(fig)

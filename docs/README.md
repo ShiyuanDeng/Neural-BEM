@@ -1,6 +1,6 @@
 # Project dashboard
 
-Updated 2026-09-11. This page is the entry point: current baseline, current
+Updated 2026-09-12. This page is the entry point: current baseline, current
 research objectives, active tracks and what each one is waiting for. It
 **summarises and links**. Measurements live in the
 [results catalogue](../results/README.md); implemented capability lives in
@@ -47,10 +47,11 @@ Galerkin formulations, derivatives, conditioning, and cost. Replacing Kress is
 
 | Track | Question | Stage | Next expected action | Approved IDs |
 |---|---|---|---|---|
-| [Topology / Track A](iterations/topology/README.md) | How can the inverse choose and execute topology changes more reliably, without a prescribed object count or excessive BIE cost? | TOP-007 complete; guarded runs abort nothing, both arms still pass 5/12 | Read [iteration 05](iterations/topology/iteration_05/01_results.md): decide on the guard as default, and diagnose the stalled mode-9 component before promoting bandwidth | **TOP-001, TOP-005, TOP-006, TOP-007** |
+| [Topology / Track A](iterations/topology/README.md) | How can the inverse choose and execute topology changes more reliably, without a prescribed object count or excessive BIE cost? | TOP-010 complete. Four optimizer and representation defects found and fixed — **each improved the objective, none improved the reconstruction** | **Why the gated geometry is insensitive to four orders of magnitude of training objective.** [TOP-011](iterations/topology/iteration_08/02_proposals/01_sensitivity_and_conditioning.md) measures it with no source change; [TOP-012](iterations/topology/iteration_08/02_proposals/02_acquisition_change.md) is gated behind it and needs a user decision. Neither approved | **TOP-001, TOP-005, TOP-006, TOP-007, TOP-008, TOP-009, TOP-010** |
 | [Boundary–BIE](iterations/boundary_bie/README.md) | Which properties of smooth-boundary representations improve the accuracy, conditioning, differentiation or cost of the BIE inverse? | Brief drafted; no review, no plan | Review [the brief](iterations/boundary_bie/iteration_01/02_proposals/01_boundary_bie_research_brief.md); decide whether `BIE-001` — comparison and selection of one prototype — is the right first deliverable | **None** |
 
-Topology has completed **gate 7 for TOP-001, TOP-005, TOP-006 and TOP-007** under the
+Topology has completed **gate 7 for TOP-001, TOP-005, TOP-006, TOP-007, TOP-008,
+TOP-009 and TOP-010** under the
 user's 2026-09-11 directions to take Track A as far as possible and to continue
 from the latest fixes. Those session instructions authorize those plans without
 asking again for an exact ID phrase. Boundary–BIE remains at
@@ -64,13 +65,55 @@ controller stayed frozen during this completed measurement; results opened
 iteration 04. The requested distant ellipse/star case fails. All future
 performance comparisons must include the [full frozen scene matrix](benchmarks/topology_scenes.md).
 
-**TOP-007 (2026-09-11)** then fixed why four of those runs died: the optimizer
+**TOP-010 (2026-09-12)** then executed the independent review's diagnostic and
+refuted the local-minimum reading operationally. At the saved state the terminal
+gradient is **4013x the optimizer's own tolerance**, stable across three FD
+scales, with a full-rank Jacobian — and three restarts of the **unmodified**
+optimizer recover 1.7x in the objective. Three absolute constants, including one
+serving as both the loss target and the accepted loss change, sit at the same
+order as the entire remaining objective. But matched boundary error moved
+11.849 to 11.991 mm and IoU stayed at 0.7088 across that whole gain. Four
+defects are now found and fixed — derivative, capacity, ladder truncation,
+premature stopping — **each worth objective and none worth geometry**. The open
+question is now why the gated geometry is insensitive to four orders of
+magnitude of training objective.
+[TOP-010](../results/validation/topology/TOP-010-20260912-stopping-vs-stationarity/README.md).
+
+**TOP-008 and TOP-009 (2026-09-12)** implemented the two candidates the
+[literature verdict](iterations/topology/iteration_05/02_proposals/03_literature_verdict.md)
+accepts, and between them changed what the open question is. TOP-008 found a real
+defect — a probe the radius floor refused was recorded as a derivative of zero —
+and correcting it freed the pinned component from 8.000 mm to 22.737 mm, returned
+10/12 runs against 9/12 and improved `split` to 0.000023 mm at a quarter of the
+solves, while buying **no new benchmark pass**. TOP-009 then showed that adding
+shape bandwidth fits the training data 248x better and makes final boundary error, IoU
+and holdout error **worse**, which stopped the line before the
+suite. A same-day stage-3 diagnostic then corrected the reading of that result:
+the **true geometry fits the training acquisition to 3.23e-07 relative error**,
+so the climb's answer is 7.1e6x above a known attainable value.
+One component's boundary error improves under a truth-selected 34-degree
+rotation. The ladder had stopped on its solve cap at its single worst
+rung. A fourth stage then ran the ladder to exhaustion at modes [9, 9], enough
+for both a five- and a seven-lobed star: it recovers to 11.849 mm from 17.599,
+and still ends worse than the circles it started from while sitting 74,159x
+above the known attainable objective. Independent review found that 13/14
+refinements stopped on loss change, so neither stationarity nor a local minimum
+is established. Truth consistency also does not establish unique or stable
+recovery. [The review](iterations/topology/iteration_07/02_proposals/01_independent_review.md)
+repairs omitted promotion counters and proposes a stopping/stationarity audit
+before selecting a restart mechanism. Its 108 focused tests pass; no new
+benchmark recovery is claimed.
+[TOP-008](../results/validation/topology/TOP-008-20260912-feasible-fd/README.md) ·
+[TOP-009](../results/validation/topology/TOP-009-20260912-bandwidth-capacity/README.md).
+
+**TOP-007 (2026-09-11)** fixed why four earlier runs died: the optimizer
 searched the production resolution's feasible set while the controller
 evaluated at the refined one. With the opt-in refined feasibility guard no
 guarded run aborts, the requested distant ellipse/star case finishes with the
 correct object count, and every scene both arms complete returns an identical
-state. Pass counts are unchanged at 5/12, which places the remaining failure in
-shape rather than feasibility.
+state. Pass counts are unchanged at 5/12. The literature verdict identifies
+constraint-aware refinement, shape capacity and held-out prediction as separate
+remaining questions.
 [Report](../results/validation/topology/TOP-007-20260911-refined-feasibility/README.md).
 
 ### Dependencies and blockers
