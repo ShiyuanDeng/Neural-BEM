@@ -124,3 +124,7 @@ New proposals remain in the current iteration. Executed results open the next it
 Correct an earlier interpretation with a dated amendment or a later review that links it. Preserve original measurements and executed plans. Do not rewrite history to make the latest explanation appear to have been predicted.
 
 An experiment is complete when its artifacts and limitations support a clear decision, including a negative or inconclusive decision. “Keep iterating” is not a substitute for closeout.
+
+## Staged-execution amendment — adopted 2026-09-14
+
+The user adopted the [TOP-017 staged-execution amendment](topology/iteration_10/02_proposals/02_staged_execution_addendum.md). It distinguishes planned stage quotas from hard trial limits, requires effective intervention exposure, and preserves historical TOP-016 classifications. The approved experiment plan owns the numerical limits.

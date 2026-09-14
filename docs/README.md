@@ -47,10 +47,10 @@ Galerkin formulations, derivatives, conditioning, and cost. Replacing Kress is
 
 | Track | Question | Stage | Next expected action | Approved IDs |
 |---|---|---|---|---|
-| [Topology / Track A](iterations/topology/README.md) | Fixed-topology recovery before new controller mechanisms | TOP-016 COMPLETE without promotion; iteration 10 results available | Review [the measured closeout](iterations/topology/iteration_10/01_results.md): information improved, principal trials were budget-limited, and F-merge regressed | TOP-001, TOP-005–012, TOP-016 |
+| [Topology / Track A](iterations/topology/README.md) | Remaining fixed-topology frequency exposure from saved endpoints | TOP-017 APPROVED, implementation/review IN PROGRESS | Execute [iteration-10 contract](iterations/topology/iteration_10/03_plan.md), within conditional gates and budgets | TOP-001, TOP-005–012, TOP-016, TOP-017 |
 | [Boundary–BIE](iterations/boundary_bie/README.md) | Which properties of smooth-boundary representations improve the accuracy, conditioning, differentiation or cost of the BIE inverse? | Brief drafted; no review, no plan | Review [the brief](iterations/boundary_bie/iteration_01/02_proposals/01_boundary_bie_research_brief.md); decide whether `BIE-001` — comparison and selection of one prototype — is the right first deliverable | **None** |
 
-**TOP-016 is complete without promotion.** Its [iteration-10 closeout](iterations/topology/iteration_10/01_results.md) records passed information screens, principal/local stage-1 budget stops, and a completed frequency-continuation merge control that introduces a geometric failure. The next action is a review decision about any revised contract; no successor or full suite is authorized.
+**TOP-017 is approved and in progress.** The user adopted the staged-execution amendment on 2026-09-14. It reuses TOP-016’s completed common-stage endpoints, audits the merge representation assumption, and conditionally executes four remaining principal schedules. [TOP-016](iterations/topology/iteration_10/01_results.md) remains complete without promotion; its merge regression is preserved. No full suite or successor is authorized.
 
 TOP-011/012 completion is recorded in [iteration 09](iterations/topology/iteration_09/01_results.md). The user’s 2026-09-14 instruction adopts TOP-016 and its conditional stages; TOP-013/014 are deferred and TOP-015 is superseded. Boundary–BIE remains awaiting brief review with no experiment approved.
 
