@@ -1,0 +1,48 @@
+{
+  "active_wall_seconds": 4.104118852992542,
+  "archived_optimized_state_used": false,
+  "continuation_work": null,
+  "detail": "MultiComponentTopologyError: components 'initial.circle' and 't001.birth' are too close for ordinary cross-component quadrature: minimum 6.266932e-03, required > 1.000000e-02.",
+  "fresh_circle_start": true,
+  "fresh_recovery_pass": false,
+  "reason": "PHYSICAL_SOLVE_FAILED",
+  "sources_and_history_unchanged": true,
+  "status": "HARD_STOP",
+  "supplied_target_count": false,
+  "topology_work": {
+    "active_wall_seconds": 4.104118852992542,
+    "attempted": {
+      "topological_derivative": 2,
+      "topology_forward": 78
+    },
+    "calls": {},
+    "completed": {
+      "topological_derivative": 2,
+      "topology_forward": 77
+    },
+    "endpoint_reserve": 0,
+    "failed": {
+      "topology_forward": 1
+    },
+    "per_frequency_attempted": {
+      "None:topological_derivative:500000000": 2,
+      "None:topology_forward:500000000": 78
+    },
+    "per_frequency_completed": {
+      "None:topological_derivative:500000000": 2,
+      "None:topology_forward:500000000": 77
+    },
+    "per_frequency_failed": {
+      "None:topology_forward:500000000": 1
+    },
+    "solve_cap": 4000,
+    "stage": null,
+    "stage_attempted": 80,
+    "stage_quota": null,
+    "total_attempted": 80,
+    "wall_ceiling_seconds": 600,
+    "within_solve_cap": true
+  },
+  "total_attempted_frequency_solves": 80,
+  "traceback": "Traceback (most recent call last):\n  File \"/home/drdeng/Neural_SDF_BEM_AD/run_top017.py\", line 136, in counted\n    value = original(*args, **kwargs)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/gpr_bem_kress/multicomponent.py\", line 1730, in solve_multicomponent_kress_tmz_total_field_batch\n    system = build_multicomponent_kress_tmz_frequency_system(\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/gpr_bem_kress/multicomponent.py\", line 1195, in build_multicomponent_kress_tmz_frequency_system\n    return build_multicomponent_muller_system(\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/gpr_bem_kress/multicomponent.py\", line 1118, in build_multicomponent_muller_system\n    blocks = build_multicomponent_muller_blocks(\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/gpr_bem_kress/multicomponent.py\", line 845, in build_multicomponent_muller_blocks\n    adapter = adapt_multicomponent_boundary(boundary, config=settings)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/gpr_bem_kress/multicomponent.py\", line 608, in adapt_multicomponent_boundary\n    report = _validate_component_pair(first, second, settings)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/gpr_bem_kress/multicomponent.py\", line 373, in _validate_component_pair\n    raise MultiComponentTopologyError(\ngpr_bem_kress.multicomponent.MultiComponentTopologyError: components 'initial.circle' and 't001.birth' are too close for ordinary cross-component quadrature: minimum 6.266932e-03, required > 1.000000e-02.\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"/home/drdeng/Neural_SDF_BEM_AD/run_topology_recovery_followup.py\", line 277, in central\n    state = topology_prefix(initial,p.training_data(p.TRAIN[:1],observed[:,:1]),\n  File \"/home/drdeng/Neural_SDF_BEM_AD/run_topology_recovery_followup.py\", line 204, in topology_prefix\n    result = controller(initial,data,p.driver.baseline._geometry_config(64),\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/topology_controller.py\", line 636, in run_topology_aware_fourier_inverse\n    result = _run_topology_aware_fourier_inverse(\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/topology_controller.py\", line 840, in _run_topology_aware_fourier_inverse\n    loss = accounted_call('candidate_raw', topology_objective, candidate.state, data, production_geometry_config, solve_config)[0]\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/work_accounting.py\", line 68, in accounted_call\n    return function(*args, **kwargs)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/topology_controller.py\", line 260, in topology_objective\n    evaluation = evaluate_multiradial_objective(state, data, geometry, solve_config=solve_config)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/radial_topology.py\", line 759, in evaluate_multiradial_objective\n    forward = predict_multicomponent_kress_paired_boundary_response(\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_bem_multicomponent/forward.py\", line 623, in predict_multicomponent_kress_paired_boundary_response\n    _solve_paired_boundary(boundary, resolved_problem, settings)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_bem_multicomponent/forward.py\", line 558, in _solve_paired_boundary\n    forwards = tuple(\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_bem_multicomponent/forward.py\", line 559, in <genexpr>\n    solve_multicomponent_kress_tmz_total_field_batch(\n  File \"/home/drdeng/Neural_SDF_BEM_AD/run_top017.py\", line 141, in counted\n    raise PhysicalFailure(f'{type(exc).__name__}: {exc}') from exc\nrun_top017.PhysicalFailure: MultiComponentTopologyError: components 'initial.circle' and 't001.birth' are too close for ordinary cross-component quadrature: minimum 6.266932e-03, required > 1.000000e-02.\n"
+}

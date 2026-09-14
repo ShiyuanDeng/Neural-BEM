@@ -43,3 +43,20 @@ Validated work is committed locally. No push, merge or branch deletion is author
 The user's follow-up requested video evidence. [This 53-second animation](../../../../results/validation/topology/TOP-017-20260914-central-video/central_circle_to_ellipse_star.mp4) shows the archived central-circle topology history, the shared TOP-016 continuation, and TOP-017's S/F accepted states. [Rendering provenance and limits](../../../../results/validation/topology/TOP-017-20260914-central-video/README.md) explain the explicit run boundaries. No numerical run was repeated and the sealed result bundle is unchanged.
 
 The central shape-recovery result passes all original gates, but TOP-017 began with two already-found components. A fresh integrated automatic run from the initial circle has not been revalidated; the video must not be read as that stronger claim.
+
+## Later user-authorized engineering validation — 2026-09-14
+
+The user subsequently requested implementation of the three engineering actions
+in [the follow-up scope](02_engineering_followup.md). The [new result bundle](../../../../results/validation/topology/TOP-017-followup-20260914-engineering/README.md)
+preserves the original closeout above and resolves its missing fresh-start check:
+one newly executed central-circle topology → cumulative-continuation run passes
+all final numerical/reconstruction gates, at **0.0623345 mm**, **0.999426 IoU** and
+**0.00123772** worst development-evaluation error. [Fresh-run video](../../../../results/validation/topology/TOP-017-followup-20260914-engineering/fresh_circle_to_ellipse_star.mp4).
+
+The three exact saved two-star states all qualify at 256/512 with unchanged
+tolerances, and the rejected F step passes the original loss-acceptance formula
+at that resolution. This diagnoses their 128-node obstruction; two-star recovery
+has not been rerun. Failure checkpoints now preserve the complete rejected
+candidate and predictions. All 67 focused tests pass. A topology instrumentation
+repair and its initial failed attempt are explicitly retained and charged to the
+same original budget. No suite, merge inverse, promotion or successor was run.
