@@ -1,6 +1,6 @@
 # Project dashboard
 
-Updated 2026-09-12. This page is the entry point: current baseline, current
+Updated 2026-09-14. This page is the entry point: current baseline, current
 research objectives, active tracks and what each one is waiting for. It
 **summarises and links**. Measurements live in the
 [results catalogue](../results/README.md); implemented capability lives in
@@ -47,16 +47,14 @@ Galerkin formulations, derivatives, conditioning, and cost. Replacing Kress is
 
 | Track | Question | Stage | Next expected action | Approved IDs |
 |---|---|---|---|---|
-| [Topology / Track A](iterations/topology/README.md) | How can the inverse choose and execute topology changes more reliably, without a prescribed object count or excessive BIE cost? | TOP-010 complete. Four optimizer and representation defects found and fixed — **each improved the objective, none improved the reconstruction** | **Why the gated geometry is insensitive to four orders of magnitude of training objective.** [TOP-011](iterations/topology/iteration_08/02_proposals/01_sensitivity_and_conditioning.md) measures it with no source change; [TOP-012](iterations/topology/iteration_08/02_proposals/02_acquisition_change.md) is gated behind it and needs a user decision. Neither approved | **TOP-001, TOP-005, TOP-006, TOP-007, TOP-008, TOP-009, TOP-010** |
+| [Topology / Track A](iterations/topology/README.md) | Fixed-count recovery and numerical qualification | TOP-017 COMPLETE; central F recovers, two-star pair numerically obstructed | Review [iteration 11](iterations/topology/iteration_11/01_results.md): decide whether one separately scoped two-star resolution check is justified | TOP-001, TOP-005–012, TOP-016, TOP-017 |
 | [Boundary–BIE](iterations/boundary_bie/README.md) | Which properties of smooth-boundary representations improve the accuracy, conditioning, differentiation or cost of the BIE inverse? | Brief drafted; no review, no plan | Review [the brief](iterations/boundary_bie/iteration_01/02_proposals/01_boundary_bie_research_brief.md); decide whether `BIE-001` — comparison and selection of one prototype — is the right first deliverable | **None** |
 
-Topology has completed **gate 7 for TOP-001, TOP-005, TOP-006, TOP-007, TOP-008,
-TOP-009 and TOP-010** under the
-user's 2026-09-11 directions to take Track A as far as possible and to continue
-from the latest fixes. Those session instructions authorize those plans without
-asking again for an exact ID phrase. Boundary–BIE remains at
-**gate 2 of 7**, awaiting brief review. TOP-002–TOP-004 remain deferred;
-no BIE experiment is approved. See the track handoffs for execution status.
+**TOP-017 is complete without promotion.** [Iteration 11](iterations/topology/iteration_11/01_results.md) records a qualified central F recovery, substantially better than the paired S control, and two-star hard stops at the frozen numerical gates. The full principal predicate remains incomplete. TOP-016’s merge regression is preserved; the evaluation-only representation audit does not resolve it. No suite or successor is authorized.
+
+TOP-011/012 completion is recorded in [iteration 09](iterations/topology/iteration_09/01_results.md). The user’s 2026-09-14 instruction adopts TOP-016 and its conditional stages; TOP-013/014 are deferred and TOP-015 is superseded. Boundary–BIE remains awaiting brief review with no experiment approved.
+
+The [2026-09-14 review](iterations/topology/iteration_09/02_proposals/04_recovery_reset_review.md) corrects the older “no geometry improvement” summary: TOP-008 improved selected geometries and cost despite an unchanged 5/12 pass count. TOP-011's local walks do not certify distance to truth; TOP-012 tested paired-ring densification, not all spatial acquisitions. The historical summaries below retain their original scope and should be read with that amendment.
 
 The user's subsequent 2026-09-11 direction authorizes TOP-006: test a distant
 large-circle initialization against ellipse/star targets and use a broader
@@ -72,11 +70,7 @@ scales, with a full-rank Jacobian — and three restarts of the **unmodified**
 optimizer recover 1.7x in the objective. Three absolute constants, including one
 serving as both the loss target and the accepted loss change, sit at the same
 order as the entire remaining objective. But matched boundary error moved
-11.849 to 11.991 mm and IoU stayed at 0.7088 across that whole gain. Four
-defects are now found and fixed — derivative, capacity, ladder truncation,
-premature stopping — **each worth objective and none worth geometry**. The open
-question is now why the gated geometry is insensitive to four orders of
-magnitude of training objective.
+11.849 to 11.991 mm and IoU stayed at 0.7088 across that whole gain. The saved two-star diagnostics show objective gains without acceptable shape recovery. This does not erase TOP-008’s measured geometric improvements. TOP-016 isolated fixed-topology recovery; TOP-017 then exposed the added-frequency intervention from its retained endpoints.
 [TOP-010](../results/validation/topology/TOP-010-20260912-stopping-vs-stationarity/README.md).
 
 **TOP-008 and TOP-009 (2026-09-12)** implemented the two candidates the

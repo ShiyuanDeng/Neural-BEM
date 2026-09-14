@@ -12,6 +12,16 @@ conclusions to this register only after reviewing the actual run artifacts.
 
 [catalog.csv](catalog.csv) contains **175 rows**. The original 162 rows span 60 saved or empty run bundles, including the three existing 12-pair neural runs indexed during this reorganization, the two initial adjoint diagnostics, the radial-topology birth demonstration, and three full-pass topology challenges. The new topology rows group the TOP-001/TOP-005 replay and controller comparisons by chart/arm; scalar metrics there are worst-case values. The original CSV snapshot predates the Cartesian suites; use the [Cartesian index](inverse/cartesian_fourier/README.md) and [pipeline audit](validation/cartesian_fourier/pipeline-audit-20260910/README.md) for that evidence. The earlier exporter-failed partial attempt is recorded separately in the [adjoint validation index](validation/implicit_mlp_adjoint/README.md). Inverse runs have a row per solver, policy or declared arm; larger supporting sweeps explicitly identify their grouped scope. The catalogue records accepted geometry, derivative/optimizer, MLP role, target and initialization, observation setup, separate recovery/representation outcomes, date evidence, provenance, and each result's implication for the implicit MLP pipeline.
 
+## TOP-017 staged principal continuation
+
+[Central-case video (53 s)](validation/topology/TOP-017-20260914-central-video/central_circle_to_ellipse_star.mp4) · [Video provenance](validation/topology/TOP-017-20260914-central-video/README.md)
+
+[TOP-017 result bundle](validation/topology/TOP-017-20260914-staged-continuation/README.md) · [Iteration 11](../docs/iterations/topology/iteration_11/01_results.md) · 2026-09-14: central F recovered within all original gates and substantially outperformed the matched S control; the two-star pair stopped at frozen numerical gates. The full paired predicate is incomplete, with no promotion. 12,535 new attempted/completed solves, zero failed; all limits respected. Historical TOP-016 evidence and its merge regression remain preserved.
+
+## TOP-016 bounded fixed-topology continuation
+
+[TOP-016 result bundle](validation/topology/TOP-016-20260914-fixed-topology/README.md) · 2026-09-14: both local-information gates passed, but principal and truth-assisted local trials stopped at their first-stage budgets. The completed frequency-continuation merge control introduced a geometric failure. No promotion; 10,306 attempted/completed frequency solves, zero failed. The bundle preserves all arms, exact work, source/input hashes, independent review and reporting limitations. [Iteration 10](../docs/iterations/topology/iteration_10/01_results.md) preserves that closeout; its successor TOP-017 is recorded above.
+
 ## Find the right evidence
 
 | Location | Evidence and use |

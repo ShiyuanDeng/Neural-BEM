@@ -278,3 +278,15 @@ quality and aggregate-cost gates pass, with 42.3% fewer split-suite BIE solves
 and 7.1% fewer full-controller solves. Four individual controller cases cost
 more despite exactly unchanged trajectories. This is an opt-in result on the
 declared synthetic cases; broader generalization remains open.
+
+
+## Experimental bounded fixed-topology orchestration (TOP-016)
+
+`run_multiradial_fd_inverse` has opt-in hooks for independent loss-change stopping, per-candidate validation, Jacobian work reservation, accepted-state checkpointing before derivative work, and cache-event accounting. Their defaults preserve the previous trajectory and LM equations. TOP-016 uses them in a training-only pilot interface with both-resolution loss-decrease checks; no controller or physical-solver default changed. The [completed bounded experiment](../results/validation/topology/TOP-016-20260914-fixed-topology/README.md) is not promoted: principal comparisons are budget-limited and its completed F-merge control regresses. The options remain experimental.
+
+
+## Experimental staged execution and measured recovery (TOP-017)
+
+`run_top017.py` distinguishes binding stage quotas from hard solve/time limits and exposes complete Jacobian, candidate and feasibility events through an optional optimizer diagnostic callback. It retains exact accepted-state, objective, gradient and frequency-work associations; the inherited FD/LM equations, physical interface and defaults are unchanged. `run_top017_campaign.py` enforces the outer watchdog and at most two numerical workers. Historical TOP-016 runner behavior remains intact.
+
+The [TOP-017 closeout](iterations/topology/iteration_11/01_results.md) demonstrates central fixed-count recovery with the specified cumulative-frequency protocol from a retained common-stage endpoint. Both two-star arms hit frozen numerical gates before completing exposure, and the merge control regression remains unresolved. This experimental protocol is not promoted; its result does not establish automatic topology recovery or full-suite performance.

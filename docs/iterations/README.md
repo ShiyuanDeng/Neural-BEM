@@ -23,6 +23,8 @@ stage files link to them rather than copying them.
 This page holds the operating rules shared by every track. Track handoffs carry
 state, not duplicate copies of these rules.
 
+The [research implementation principles](implementation_principles.md), adopted by the user on 2026-09-14, supplement this workflow with numerical experiment design and interpretation guidance.
+
 ## Tracks
 
 | Track | Organised around | Handoff |
@@ -40,6 +42,8 @@ question-based tracks cite. The implicit-MLP track is **paused by user
 direction (2026-09-11)** — diagnosing the MLP is not the current priority and
 the explicit Cartesian Fourier implementation comes first. It remains
 scientifically open: paused, not closed and not abandoned.
+
+Topology’s latest executed closeout is [iteration 11](topology/iteration_11/01_results.md): TOP-017 central recovery with two-star numerical obstructions. Its handoff owns the next decision; no successor is authorized.
 
 The current comparison reference for both active tracks is
 [baseline B0](../baselines/B0_2026-09-10.md).
@@ -93,7 +97,7 @@ track does the next one and nothing beyond it.
 | 2 | **Review** written, resolving every material recommendation | an agent who is not the brief's author, where practical | the user saying *"review TOP-001"* — or any request to review the track |
 | 3 | **Agreed `03_plan.md`** consolidating the review | an agent | the user accepting the review's recommendation |
 | 4 | **Approval of a named ID** | **the user only** | the user saying *"approve TOP-001"*. No agent may grant this, infer it, or treat silence as it |
-| 5 | **Branch or worktree** created for the track | the implementation owner | gate 4 passed |
+| 5 | **Existing checkout selected**; any new branch/worktree separately approved | the implementation owner | gate 4 passed; ask the user before creating a branch or worktree |
 | 6 | **Implementation and runs** within the contract's scope and budget | the implementation owner | gate 5 done |
 | 7 | **Closeout**: results open the next iteration | owner + reviewer | runs complete |
 
@@ -101,9 +105,13 @@ Without gate 4 an agent may read, review, propose, and write documents. It may
 **not** change numerical code, alter an experiment configuration, or launch a
 run — not even a small one, and not as "just checking".
 
-Use one branch per experiment ID, named `track/<track>-<ID>` — for example
-`track/topology-TOP-001` or `track/boundary-bie-BIE-001`. Two tracks must never
-share a working checkout.
+**User override adopted 2026-09-14:** work in the existing
+`/home/drdeng/Neural_SDF_BEM_AD` checkout on `feature/ordered-boundary-nystrom`.
+Before creating any branch or additional worktree, ask the user directly and
+obtain explicit approval, even in full-access mode. Experiment/plan/ZIP approval
+does not authorize branch creation. This replaces the previous one-branch-per-ID
+rule. Run separate implementation tracks sequentially unless the user explicitly
+approves separate checkouts; never let simultaneous writers share a checkout.
 
 ## Experiment contract template
 
@@ -154,7 +162,8 @@ experiment result), and its artifacts belong beside the review.
 - **One implementation owner and one independent reviewer per experiment.**
   Claude and Codex can rotate roles. Record actual assignments only; write
   `unassigned` otherwise.
-- **Separate branches or worktrees** for concurrent implementation tracks.
+- **Sequential implementation in the existing checkout by default.** Creating
+  another branch or worktree requires the user's separate explicit approval.
 - **No two agents modify the same working checkout at the same time.**
 - **Shared-interface changes are declared before implementation** — geometry
   state, the objective, or the solver interface. A track may not silently alter

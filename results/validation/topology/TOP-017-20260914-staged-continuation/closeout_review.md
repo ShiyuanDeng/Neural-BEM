@@ -1,0 +1,16 @@
+# TOP-017 independent closeout review
+
+Reviewer: Codex `/root/top017_review`. Completed 2026-09-14. Read-only source/JSON verification; no reviewer edits or physical solves. **ACCEPTED; no remaining corrections.** This file records the actual reviewer findings supplied to the implementation owner.
+
+- Verified all **193 measured-source hashes**, **10 copied input hashes**, **160 historical artifact hashes**, four worker manifests, and nine executed stage records. Measured numerical revision is `e3e581f`; inherited observations and retained states are unchanged.
+- All accepted-state/checkpoint, objective, frequency, gradient and endpoint-score associations match. The rejected F-far candidate differs from its retained state; no rejected coefficients or partial Jacobian became an accepted checkpoint.
+- Derived endpoint-inclusive stage work is within every quota; all solve and wall ceilings pass. **12,535 attempted/completed frequency solves, zero failed**. Summed active worker time **1,866.0136 s** differs from campaign elapsed **1,001.9825 s**, as expected with at most two workers.
+- Both central schedules completed effective training exposure and numerical qualification. Final F: **0.0623345 mm** boundary, **0.999426 IoU**, **0.00123772** worst evaluation error, **3,850 solves**. S used **4,772 solves**, ending at **6.12516 mm** and **0.321496**. F's improvements from the reused start are **99.2929% boundary** and **99.7626% evaluation**; advantages over S are **98.9823%** and **99.6150%**. All original F reconstruction gates pass.
+- The predetermined final stage 4 is retained even though stage 3 had slightly smaller boundary/evaluation scores. No best-stage selection. Configured final gradient stopping does not imply all preceding stages converged.
+- F-far stops at a candidate's 0.75-GHz discrepancy **1.361419901e-7 > 1e-7**, preserving the latest accepted state/gradient. Its absent full endpoint score is explicit. S-far stops at its stage-3 endpoint's 1.25-GHz discrepancy **1.066409614e-7 > 1e-7**, with no stage 4. The report visibly marks that endpoint's recorded scores **numerically qualified: False**.
+- Phase A passed with **48 solves, 11.1579 s**, no failed solves and no optional 512-node work. Merge K9/K17 projections are feasible and qualified at 128/256; projection capacity/sampling variation are separated from the measured historical inverse regression. No projection initializes an inverse.
+- The full principal predicate remains false because the two-star comparison is numerically obstructed. Central recovery remains valid positive evidence. No promotion is justified by this contract, and no successor was run.
+
+Exactly one next decision is recorded: **whether to separately scope numerical-resolution qualification of the saved two-star states**. This is a decision to consider, not execution approval.
+
+Implementation review accepted 56 focused tests before dispatch (25.36 s). Final owner validation again passed all 56 (24.95 s); tests are mocked/geometry-only. Fine-grained counts remain explicitly partial for an interrupted Jacobian, missing gradients are not invented, and matrix/RHS accounting was not added. [Final tests](final_tests.log) · [Full scorecard](scorecard.json).
