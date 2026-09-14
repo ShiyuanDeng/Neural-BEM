@@ -1,0 +1,232 @@
+{
+  "arm": "H",
+  "audit_work": {
+    "stages": {
+      "final_production": {
+        "evaluation_count": 1,
+        "forward_evaluation_count": 1,
+        "forward_frequency_solve_count": 1
+      },
+      "final_refined": {
+        "evaluation_count": 1,
+        "forward_evaluation_count": 1,
+        "forward_frequency_solve_count": 1
+      },
+      "holdout": {
+        "evaluation_count": 1,
+        "forward_evaluation_count": 1,
+        "forward_frequency_solve_count": 2
+      }
+    },
+    "totals": {
+      "bie_frequency_solve_count": 4,
+      "evaluation_count": 3,
+      "forward_evaluation_count": 3,
+      "forward_frequency_solve_count": 4,
+      "td_evaluation_count": 0,
+      "td_frequency_solve_count": 0
+    }
+  },
+  "completed": true,
+  "events": [
+    {
+      "after_ids": [
+        "t001.birth"
+      ],
+      "before_ids": [],
+      "candidate_refinement_steps": 3,
+      "children": [
+        "t001.birth"
+      ],
+      "construction": "exterior_td_region; radius=0.024736",
+      "cycle": 0,
+      "kind": "birth",
+      "parents": [],
+      "production_after": 0.1974911021698281,
+      "production_before": 0.5,
+      "raw_birth_radius_m": 0.02473585124420659,
+      "refined_after": 0.19749110216982807,
+      "refined_before": 0.5
+    },
+    {
+      "after_ids": [
+        "t001.birth",
+        "t002.birth"
+      ],
+      "before_ids": [
+        "t001.birth"
+      ],
+      "candidate_refinement_steps": 3,
+      "children": [
+        "t002.birth"
+      ],
+      "construction": "exterior_td_region; radius=0.036077",
+      "cycle": 1,
+      "kind": "birth",
+      "parents": [],
+      "production_after": 0.007325311356060331,
+      "production_before": 0.19749080670344313,
+      "raw_birth_radius_m": 0.03607677586537363,
+      "refined_after": 0.0073253113560603055,
+      "refined_before": 0.1974908067034432
+    },
+    {
+      "after_ids": [
+        "t001.birth",
+        "t002.birth",
+        "t003.birth"
+      ],
+      "before_ids": [
+        "t001.birth",
+        "t002.birth"
+      ],
+      "candidate_refinement_steps": 3,
+      "children": [
+        "t003.birth"
+      ],
+      "construction": "exterior_td_region; radius=0.009262",
+      "cycle": 2,
+      "kind": "birth",
+      "parents": [],
+      "production_after": 0.0021107054525822087,
+      "production_before": 0.0073252704511626845,
+      "raw_birth_radius_m": 0.009261992999702207,
+      "refined_after": 0.002110705452582141,
+      "refined_before": 0.00732527045116267
+    }
+  ],
+  "final_loss": 0.0020819502078847246,
+  "final_relative_error": 0.06452829159190138,
+  "final_state": [
+    {
+      "chart": "cartesian",
+      "component_id": "t001.birth",
+      "maximum_mode": 1,
+      "parameters": [
+        0.6096545110371663,
+        0.5299339927873102,
+        0.03533521028063738,
+        -1.9274037562393597e-18,
+        1.5012770227758814e-18,
+        0.03533521028063738
+      ]
+    },
+    {
+      "chart": "cartesian",
+      "component_id": "t002.birth",
+      "maximum_mode": 1,
+      "parameters": [
+        0.5452532680554751,
+        0.42802301695614764,
+        0.03247247155151841,
+        6.554122423136231e-19,
+        -5.105081572276786e-19,
+        0.03247247155151841
+      ]
+    },
+    {
+      "chart": "cartesian",
+      "component_id": "t003.birth",
+      "maximum_mode": 1,
+      "parameters": [
+        0.5949606207531483,
+        0.4505018462618779,
+        0.01209324726711789,
+        -5.148396323900048e-19,
+        4.01014529529385e-19,
+        0.012093247267117893
+      ]
+    }
+  ],
+  "gates": {
+    "all_event_margins_pass": true,
+    "boundary": false,
+    "correct_count": false,
+    "holdout": false,
+    "monotone_accepted_states": true,
+    "overlap": false,
+    "training": false
+  },
+  "geometry": {
+    "component_count": 3,
+    "final_maximum_modes": [
+      1,
+      1,
+      1
+    ],
+    "matched_components": [
+      {
+        "hausdorff_m": 0.00965666647381209,
+        "recovered_component": "t001.birth",
+        "truth_component": "truth.star"
+      },
+      {
+        "hausdorff_m": 0.01761659411206473,
+        "recovered_component": "t002.birth",
+        "truth_component": "truth.ellipse"
+      }
+    ],
+    "maximum_matched_hausdorff_m": 0.01761659411206473,
+    "truth_component_count": 2,
+    "union_iou": 0.6927592954990215
+  },
+  "group": "new",
+  "holdout_relative_errors": [
+    1.081100993673413,
+    1.1856399279741918
+  ],
+  "inversion_seconds": 85.86763378395699,
+  "maximum_holdout_relative_error": 1.1856399279741918,
+  "passed": false,
+  "refined_loss": 0.002081950207884731,
+  "refined_relative_error": 0.06452829159190147,
+  "scene": "empty-ellipse-star",
+  "stop_reason": "topology_stationary",
+  "total_seconds": 87.13070481596515,
+  "work": {
+    "stages": {
+      "candidate_acceptance": {
+        "evaluation_count": 37,
+        "forward_evaluation_count": 37,
+        "forward_frequency_solve_count": 37
+      },
+      "candidate_raw": {
+        "evaluation_count": 121,
+        "forward_evaluation_count": 94,
+        "forward_frequency_solve_count": 94
+      },
+      "candidate_refinement": {
+        "evaluation_count": 450,
+        "forward_evaluation_count": 450,
+        "forward_frequency_solve_count": 450
+      },
+      "fixed_refinement": {
+        "evaluation_count": 185,
+        "forward_evaluation_count": 185,
+        "forward_frequency_solve_count": 185
+      },
+      "production_base": {
+        "evaluation_count": 3,
+        "forward_evaluation_count": 3,
+        "forward_frequency_solve_count": 3
+      },
+      "refined_base": {
+        "evaluation_count": 3,
+        "forward_evaluation_count": 3,
+        "forward_frequency_solve_count": 3
+      },
+      "topological_derivative": {
+        "td_evaluation_count": 7,
+        "td_frequency_solve_count": 6
+      }
+    },
+    "totals": {
+      "bie_frequency_solve_count": 778,
+      "evaluation_count": 799,
+      "forward_evaluation_count": 772,
+      "forward_frequency_solve_count": 772,
+      "td_evaluation_count": 7,
+      "td_frequency_solve_count": 6
+    }
+  }
+}

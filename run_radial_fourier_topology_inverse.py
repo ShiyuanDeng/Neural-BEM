@@ -128,9 +128,29 @@ def _geometry_config(nodes: int) -> OrderedSDFGeometryConfig:
     )
 
 
-def _ring_scan() -> tuple[np.ndarray, np.ndarray]:
-    angles = np.linspace(0.0, 2.0 * np.pi, 24, endpoint=False)
-    standoff = 0.30
+#: The frozen v1 acquisition.  Every recorded benchmark bundle was generated
+#: with exactly these numbers, so they are defaults and never move: a richer
+#: acquisition is a separately named specification that overrides them.
+RING_POSITIONS = 24
+RING_STANDOFF_M = 0.30
+
+
+def _ring_scan(positions: int = RING_POSITIONS,
+               standoff: float = RING_STANDOFF_M) -> tuple[np.ndarray, np.ndarray]:
+    """Paired source/receiver ring, ``positions`` pairs at radius ``standoff``.
+
+    Called with no arguments this is the frozen v1 acquisition, bit for bit.
+    The arguments exist so an acquisition study can add spatial diversity at
+    the same training frequency without editing the v1 numbers underneath the
+    bundles that already used them.
+    """
+    positions = int(positions)
+    if positions < 1:
+        raise ValueError("positions must be a positive number of source/receiver pairs.")
+    standoff = float(standoff)
+    if not np.isfinite(standoff) or standoff <= 0.0:
+        raise ValueError("standoff must be a finite positive radius in metres.")
+    angles = np.linspace(0.0, 2.0 * np.pi, positions, endpoint=False)
     offset = float(cfg.TX_RX_OFFSET) / standoff
     sources = np.column_stack(
         (SCENE_CENTER[0] + standoff * np.cos(angles), SCENE_CENTER[1] + standoff * np.sin(angles))
@@ -141,8 +161,29 @@ def _ring_scan() -> tuple[np.ndarray, np.ndarray]:
     return sources, receivers
 
 
-def _problem(frequencies: np.ndarray, strength: complex = SOURCE_STRENGTH) -> PairedForwardProblem:
-    sources, receivers = _ring_scan()
+def _acquisition_scan(acquisition: dict[str, Any] | None) -> tuple[np.ndarray, np.ndarray]:
+    """Resolve a specification's optional acquisition block to a ring scan.
+
+    ``None`` means the frozen v1 acquisition.  Unknown keys raise rather than
+    being ignored, so a typo in a specification cannot silently reproduce v1
+    while claiming to be something else.
+    """
+    if acquisition is None:
+        return _ring_scan()
+    names = {"ring_positions": "positions", "standoff_m": "standoff"}
+    unknown = sorted(set(acquisition) - set(names))
+    if unknown:
+        raise ValueError(f"Unknown acquisition keys: {unknown}.")
+    return _ring_scan(**{names[key]: value for key, value in acquisition.items()})
+
+
+def _problem(
+    frequencies: np.ndarray,
+    strength: complex = SOURCE_STRENGTH,
+    *,
+    acquisition: dict[str, Any] | None = None,
+) -> PairedForwardProblem:
+    sources, receivers = _acquisition_scan(acquisition)
     return PairedForwardProblem(
         source_points=sources,
         receiver_points=receivers,
@@ -170,8 +211,9 @@ def _oracle_response(
     *,
     component_ids: tuple[str, ...],
     strength: complex = SOURCE_STRENGTH,
+    acquisition: dict[str, Any] | None = None,
 ) -> np.ndarray:
-    sources, receivers = _ring_scan()
+    sources, receivers = _acquisition_scan(acquisition)
     columns = []
     cylinders = [
         CircularCylinder2D(tuple(center), float(radius), component_id)
