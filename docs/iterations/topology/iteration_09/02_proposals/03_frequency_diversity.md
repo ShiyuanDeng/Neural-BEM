@@ -89,3 +89,8 @@ v2.
 
 `config/topology_scenes_v3.json` and
 `results/validation/topology/TOP-015-<run-id>/`.
+
+
+## Status amendment — 2026-09-14
+
+**SUPERSEDED by TOP-016.** The user adopted the bounded [fixed-topology pilot](../03_plan.md) and [recovery-reset review](04_recovery_reset_review.md). TOP-015 was not executed. Its original proposal remains above as historical context.

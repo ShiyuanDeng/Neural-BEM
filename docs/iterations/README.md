@@ -23,6 +23,8 @@ stage files link to them rather than copying them.
 This page holds the operating rules shared by every track. Track handoffs carry
 state, not duplicate copies of these rules.
 
+The [research implementation principles](implementation_principles.md), adopted by the user on 2026-09-14, supplement this workflow with numerical experiment design and interpretation guidance.
+
 ## Tracks
 
 | Track | Organised around | Handoff |

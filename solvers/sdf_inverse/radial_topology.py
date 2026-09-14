@@ -952,8 +952,19 @@ def run_multiradial_fd_inverse(
     cartesian_gauge: bool = False,
     feasibility_geometry_configs: tuple[OrderedSDFGeometryConfig, ...] = (),
     feasible_fd_jacobian: bool = False,
+    loss_change_stopping: bool = True,
+    candidate_acceptance_callback: Callable[[MultiRadialObjectiveEvaluation, MultiRadialObjectiveEvaluation], bool] | None = None,
+    jacobian_batch_callback: Callable[[int], None] | None = None,
+    accepted_state_callback: Callable[[int, MultiRadialObjectiveEvaluation], None] | None = None,
+    evaluation_event_callback: Callable[[str], None] | None = None,
 ) -> MultiRadialFDResult:
     """Bounded central-FD LM optimizer for one fixed multi-radial topology.
+
+    Optional callbacks allow experiment-owned candidate validation, batch
+    reservations and accepted-state checkpoints. Exceptions propagate to the
+    owner so it can preserve partial evidence. ``loss_change_stopping=False``
+    disables only accepted-loss-change stopping, retaining the configured
+    objective target and all other convergence tests.
 
     With ``cartesian_gauge`` the retraction is gauge-fixing: every retracted
     state, in the Jacobian as well as on the accepted step, is re-expressed in
@@ -985,6 +996,18 @@ def run_multiradial_fd_inverse(
     what it was before the correction, so earlier arms replay unchanged.
     """
 
+    # TOP-016 opt-in orchestration hooks. Defaults retain every legacy step.
+    # Candidate acceptance supplements the existing strict production decrease;
+    # the callback may enforce refined loss agreement or external work limits.
+    # Checkpoints precede Jacobians so a budget interruption retains the newest
+    # accepted state, without claiming an uncomputed terminal gradient.
+    if not isinstance(loss_change_stopping, bool):
+        raise TypeError("loss_change_stopping must be boolean.")
+    for callback in (candidate_acceptance_callback, jacobian_batch_callback, accepted_state_callback,
+                     evaluation_event_callback):
+        if callback is not None and not callable(callback):
+            raise TypeError("optimizer hooks must be callable or None.")
+
     if not isinstance(initial_state, MultiRadialFourierState):
         raise TypeError("initial_state must be MultiRadialFourierState.")
     if not np.isfinite(minimum_component_radius_m) or minimum_component_radius_m < 0:
@@ -1012,7 +1035,11 @@ def run_multiradial_fd_inverse(
         nonlocal evaluation_count, infeasible_count, feasibility_rejected
         key = np.asarray(state.parameter_vector()).tobytes()
         if key in cache:
+            if evaluation_event_callback is not None:
+                evaluation_event_callback("cache_hit")
             return cache[key]
+        if evaluation_event_callback is not None:
+            evaluation_event_callback("cache_miss")
         evaluation_count += 1
         try:
             if any(component_radius_floor(c) < minimum_component_radius_m for c in state.components):
@@ -1063,6 +1090,8 @@ def run_multiradial_fd_inverse(
         """
         basis = state.gauge_tangent_basis() if cartesian_gauge else None
         directions = np.eye(parameter_count) if basis is None else basis
+        if jacobian_batch_callback is not None:
+            jacobian_batch_callback(2 * len(directions))
         # A unit direction gets the configured step; a spread-out one gets the
         # same step in a norm-weighted sense, so the difference quotient is
         # measured at one scale across the basis.
@@ -1122,6 +1151,8 @@ def run_multiradial_fd_inverse(
     current = evaluate(accepted_state)
     if current is None:
         raise ValueError("initial_state is not solver-ready.")
+    if accepted_state_callback is not None:
+        accepted_state_callback(0, current)
     matrix, basis, unresolved_columns, one_sided_new = jacobian(accepted_state)
     one_sided_columns = one_sided_new
     unresolved_total = unresolved_columns
@@ -1217,7 +1248,9 @@ def run_multiradial_fd_inverse(
                     infeasible_count += 1
                     continue
                 candidate_evaluation = evaluate(candidate)
-                if candidate_evaluation is not None and candidate_evaluation.loss < current.loss:
+                if (candidate_evaluation is not None and candidate_evaluation.loss < current.loss
+                        and (candidate_acceptance_callback is None
+                             or candidate_acceptance_callback(current, candidate_evaluation))):
                     accepted_evaluation = candidate_evaluation
                     accepted_candidate = candidate
                     accepted_step = step
@@ -1235,6 +1268,8 @@ def run_multiradial_fd_inverse(
         gauge_truncation = accepted_truncation
         current = accepted_evaluation
         damping = max(used_damping * config.damping_decrease, np.finfo(float).tiny)
+        if accepted_state_callback is not None:
+            accepted_state_callback(iteration, current)
         matrix, basis, unresolved_columns, one_sided_new = jacobian(accepted_state)
         one_sided_columns += one_sided_new
         unresolved_total += unresolved_columns
@@ -1242,7 +1277,7 @@ def run_multiradial_fd_inverse(
         record(iteration, accepted_step, used_damping)
         if current.loss <= config.loss_tolerance:
             converged, stop_reason = True, "loss_tolerance"
-        elif previous_loss - current.loss <= config.loss_tolerance:
+        elif loss_change_stopping and previous_loss - current.loss <= config.loss_tolerance:
             converged, stop_reason = unresolved_columns == 0, (
                 "loss_change_tolerance" if unresolved_columns == 0 else "infeasible_jacobian"
             )

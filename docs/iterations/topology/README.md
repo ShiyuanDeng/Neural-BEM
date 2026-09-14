@@ -42,18 +42,20 @@ which controller behaviour the baseline pins.
 
 ## Current handoff
 
-Updated 2026-09-12.
+Updated 2026-09-14.
 
 | Item | Current state |
 |---|---|
-| Active iteration | [Iteration 08 results](iteration_08/01_results.md) |
-| Stage | TOP-010 complete. Four optimizer/representation defects are now found and fixed, **each improving the objective and none improving the reconstruction** |
-| Approved experiment IDs | `TOP-001`, `TOP-005`, `TOP-006`, `TOP-007` approved 2026-09-11; `TOP-008` and `TOP-009` approved 2026-09-12 by the user's direction to implement the Codex plan and keep going. `TOP-002`–`TOP-004` remain proposals |
-| Execution status | TOP-008 `COMPLETE`, TOP-009 `STOPPED AT STAGE 2` with its reading corrected twice, TOP-010 `COMPLETE`. TOP-010 refutes the local-minimum reading operationally: the terminal gradient is 4013x the optimizer's own tolerance with a full-rank Jacobian, and three restarts of the **unmodified** optimizer recover 1.7x in the objective — while matched error moves 11.849 to 11.991 mm and IoU stays at 0.7088. 581 tests pass; all three mechanisms remain opt-in and off; no controller default changed |
-| Next expected action | **Review [TOP-011](iteration_08/02_proposals/01_sensitivity_and_conditioning.md), then decide [TOP-012](iteration_08/02_proposals/02_acquisition_change.md). Neither approved.** The question is no longer which optimizer defect to fix — four have been found and fixed, each worth objective and none worth geometry. It is why the gated geometry is insensitive to four orders of magnitude of training objective: the final K=9 state satisfies the frozen 0.003 data tolerance at 8.7878e-05 while sitting 11.849 mm from the truth. TOP-011 measures how many millimetres of boundary movement hide inside that tolerance, per singular direction, with no source change. TOP-012 is gated behind it and needs a **user decision**, because every acquisition route creates a v2 benchmark — though adding source/receiver pairs at 0.5 GHz would enrich the data without touching the 1.5/2.5 GHz holdout, unlike adding frequencies. Default-policy decisions remain separate |
-| Owner / reviewer | TOP-008 and TOP-009 implementation: Claude; literature verdict and independent source/evidence review: Codex. Codex repaired omitted promotion counters; 108 focused regression tests pass |
-| Dependencies | Shared controller/driver changes declared in each cycle's review before implementation; no physical solver or geometry-state interface changed |
-| Blockers | Four explanations tested, each real and none sufficient: the derivative, capacity, ladder truncation and premature stopping. The benchmark still passes 5/12. What blocks recovery is the decoupling between the training objective and the gated geometry at this scale, which is a sensitivity and conditioning question. Three scenes still time out |
+| Active iteration | [Iteration 10 results](iteration_10/01_results.md); iteration 09 retains the executed TOP-016 plan |
+| Stage | TOP-011/012 and TOP-016 COMPLETE; TOP-016 closed without promotion |
+| Approval | User's 2026-09-14 instruction to install and follow the TOP-016 archive adopts [the plan](iteration_09/03_plan.md), including its conditional stages and hard budgets |
+| Next expected action | Review whether a revised fixed-topology contract is warranted, addressing the merge regression and stage-1 budget obstruction; no successor or suite authorized |
+| Owner / reviewer | Codex `/root`; `/root/top016_review` preflight and `/root/top016_closeout_review` closeout |
+| Deferred / superseded | TOP-013 and TOP-014 not selected for execution; TOP-015 SUPERSEDED by TOP-016; TOP-002–004 remain deferred |
+| Evidence interpretation | [Recovery-reset review](iteration_09/02_proposals/04_recovery_reset_review.md) corrects the overly broad claim that prior fixes never improved geometry, and qualifies sensitivity claims. Historical `recovered` means data-fit threshold reached |
+| Git scope | Worktree `/home/drdeng/Neural-BEM-TOP-016`, branch `track/topology-TOP-016`; commit validated work locally; no push or merge |
+
+TOP-001 and TOP-005–012 have recorded approvals and completed closeouts. TOP-016's [bounded fixed-count results](iteration_10/01_results.md) report passed information screens, incomplete principal comparisons, and an adverse completed merge control. This is not twelve-scene qualification.
 
 ## Reading order
 
@@ -77,7 +79,7 @@ Updated 2026-09-12.
 
 ## Starting work on this track
 
-All future performance evaluations must include the complete
+Controller performance qualifications must include the complete
 [frozen topology scene benchmark](../../benchmarks/topology_scenes.md), with
 per-scene successes and failures. Preserve v1 scenes, observations and gates;
 declare changed budgets/acquisition as a separate comparison.
@@ -116,3 +118,5 @@ certificate, and the trust region's dependence on coordinates.
 | 06 | Feasible finite differences and the capacity contract | TOP-008 complete; TOP-009 implemented opt-in |
 | 07 | Bandwidth ladder and interpretation review | TOP-009 stage-2 gate failed; stages 3/4 preserved; independent review corrects stationarity/data claims and proposes TOP-010 |
 | 08 | Stopping versus stationarity | TOP-010 complete; neither saved state is stationary, restarts recover 1.7x objective and no geometry |
+| 09 | Tolerance, acquisition, and recovery reset | TOP-011/012 complete; TOP-013/014 deferred, TOP-015 superseded; TOP-016 approved and executed from the iteration-09 plan |
+| 10 | Bounded fixed-topology continuation | TOP-016 complete without promotion; principal/local budget obstruction and F-merge regression; next review decision pending |

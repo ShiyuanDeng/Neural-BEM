@@ -1,0 +1,114 @@
+{
+  "absolute_margin": 1e-14,
+  "control_input": {
+    "field": "final_state",
+    "path": "results/validation/topology/TOP-008-20260912-feasible-fd/runs/H/merge/metrics.json"
+  },
+  "control_scene": "merge",
+  "cross_resolution_factor": 5.0,
+  "derivative_relative_stability_tolerance": 0.25,
+  "evaluation_frequencies_hz": [
+    1500000000.0,
+    2500000000.0
+  ],
+  "experiment": "TOP-016",
+  "loss_change_stopping": false,
+  "main_arm_cap": 8000,
+  "main_arm_seconds": 1800,
+  "maximum_mode": 9,
+  "new_frequency_resolution_relative": 1e-07,
+  "node_pairs": [
+    [
+      64,
+      128
+    ],
+    [
+      128,
+      256
+    ],
+    [
+      256,
+      512
+    ]
+  ],
+  "objective_target": 1e-14,
+  "optimizer_receives_evaluation": false,
+  "optimizer_receives_truth": false,
+  "optional_local_arm_cap": 2000,
+  "optional_local_arm_seconds": 600,
+  "optional_local_stage_caps": [
+    250,
+    350,
+    500,
+    900
+  ],
+  "original_gates": {
+    "maximum_holdout_relative_l2": 0.05,
+    "maximum_matched_hausdorff_m": 0.001,
+    "maximum_refined_training_relative_l2": 0.003,
+    "minimum_union_iou": 0.9
+  },
+  "original_observations_bundle": "results/validation/topology/TOP-008-20260912-feasible-fd",
+  "padding_error_m": 1e-10,
+  "phase01_frequency_solve_cap": 5000,
+  "phase01_seconds": 1200,
+  "phase0_artifacts": "phase0",
+  "phase1_artifacts": "phase1",
+  "principal_inputs": {
+    "central-ellipse-star": {
+      "field": "final_state",
+      "path": "results/validation/topology/TOP-008-20260912-feasible-fd/runs/H/central-ellipse-star/metrics.json"
+    },
+    "far-two-stars": {
+      "field": "final_state",
+      "path": "results/validation/topology/TOP-010-20260912-stopping-vs-stationarity/stageB_restart_continuation.json"
+    }
+  },
+  "principal_scenes": [
+    "far-two-stars",
+    "central-ellipse-star"
+  ],
+  "promotion_criteria": {
+    "F_min_boundary_improvement_both": 0.3,
+    "F_min_evaluation_improvement_both": 0.2,
+    "F_min_vs_S_one": 0.2,
+    "F_no_iou_or_evaluation_regression": true,
+    "F_not_worse_vs_S_other": true,
+    "merge_no_new_geometry_failure": true,
+    "one_principal_meets_original_gates": true
+  },
+  "reference_spec": "config/topology_scenes_v1.json",
+  "relative_margin": 1e-08,
+  "representation_error_m": 0.0001,
+  "screen": {
+    "amplitudes_m": [
+      0.0005,
+      0.001
+    ],
+    "directions": 8,
+    "fraction_gain": 0.5,
+    "median_gain": 1.5,
+    "minimum_usable": 4,
+    "signs": [
+      -1,
+      1
+    ],
+    "uncertainty_factor": 5
+  },
+  "selected_nodes": [
+    128,
+    256
+  ],
+  "stage_caps": [
+    1000,
+    1250,
+    1750,
+    4000
+  ],
+  "training_frequencies_hz": [
+    500000000.0,
+    750000000.0,
+    1000000000.0,
+    1250000000.0
+  ]
+}

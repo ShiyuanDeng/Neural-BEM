@@ -278,3 +278,8 @@ quality and aggregate-cost gates pass, with 42.3% fewer split-suite BIE solves
 and 7.1% fewer full-controller solves. Four individual controller cases cost
 more despite exactly unchanged trajectories. This is an opt-in result on the
 declared synthetic cases; broader generalization remains open.
+
+
+## Experimental bounded fixed-topology orchestration (TOP-016)
+
+`run_multiradial_fd_inverse` has opt-in hooks for independent loss-change stopping, per-candidate validation, Jacobian work reservation, accepted-state checkpointing before derivative work, and cache-event accounting. Their defaults preserve the previous trajectory and LM equations. TOP-016 uses them in a training-only pilot interface with both-resolution loss-decrease checks; no controller or physical-solver default changed. The [completed bounded experiment](../results/validation/topology/TOP-016-20260914-fixed-topology/README.md) is not promoted: principal comparisons are budget-limited and its completed F-merge control regresses. The options remain experimental.
