@@ -14,6 +14,8 @@ conclusions to this register only after reviewing the actual run artifacts.
 
 ## TOP-017 staged principal continuation
 
+[Central-case video (53 s)](validation/topology/TOP-017-20260914-central-video/central_circle_to_ellipse_star.mp4) · [Video provenance](validation/topology/TOP-017-20260914-central-video/README.md)
+
 [TOP-017 result bundle](validation/topology/TOP-017-20260914-staged-continuation/README.md) · [Iteration 11](../docs/iterations/topology/iteration_11/01_results.md) · 2026-09-14: central F recovered within all original gates and substantially outperformed the matched S control; the two-star pair stopped at frozen numerical gates. The full paired predicate is incomplete, with no promotion. 12,535 new attempted/completed solves, zero failed; all limits respected. Historical TOP-016 evidence and its merge regression remain preserved.
 
 ## TOP-016 bounded fixed-topology continuation

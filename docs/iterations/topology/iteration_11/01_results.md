@@ -37,3 +37,9 @@ The implementation uses the inherited FD/LM mathematics and settings, with one o
 **Decide whether a separately scoped numerical-resolution check of the saved two-star states is justified before any further continuation experiment.** This closeout does not authorize that work, a higher-resolution rerun, a merge inverse, new controls, a suite or a successor ID. TOP-013/014 remain deferred and TOP-015 remains superseded as previously recorded.
 
 Validated work is committed locally. No push, merge or branch deletion is authorized by this closeout.
+
+## Visual evidence addendum — 2026-09-14
+
+The user's follow-up requested video evidence. [This 53-second animation](../../../../results/validation/topology/TOP-017-20260914-central-video/central_circle_to_ellipse_star.mp4) shows the archived central-circle topology history, the shared TOP-016 continuation, and TOP-017's S/F accepted states. [Rendering provenance and limits](../../../../results/validation/topology/TOP-017-20260914-central-video/README.md) explain the explicit run boundaries. No numerical run was repeated and the sealed result bundle is unchanged.
+
+The central shape-recovery result passes all original gates, but TOP-017 began with two already-found components. A fresh integrated automatic run from the initial circle has not been revalidated; the video must not be read as that stronger claim.
