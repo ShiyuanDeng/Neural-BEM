@@ -102,6 +102,8 @@ def summarize(bundle):
             assert end-start<=t['work']['stage_quota']
             stage['derived_attempted_including_endpoint']=end-start
             stage['unused_quota']=t['work']['stage_quota']-(end-start)
+            if 'aggregate_endpoint_objective' in stage:
+                stage['same_active_refined_gain']=stage['aggregate_start_objective']-stage['aggregate_endpoint_objective']
         if 'final' in trial:assert trial['final_score_state_sha256']==trial['final_state_sha256']
     work=Counter();completed=Counter();failed=Counter()
     all_work=[audit['work']]+[t['work'] for t in trials]
@@ -109,9 +111,11 @@ def summarize(bundle):
     assert sum(work.values())<=28256 and audit['work']['total_attempted']<=256
     all_exposed=len(trials)==4 and all(t['complete_effective_exposure'] and t['schedule_complete'] and t['numerically_qualified'] for t in trials)
     criteria={};promising=False
-    if all_exposed:
+    if trials:
         by={(t['scene'],t['arm']):t for t in trials}
         for scene in SCENES:
+            if not all((scene,a) in by and by[scene,a]['schedule_complete'] and
+                       by[scene,a]['numerically_qualified'] for a in ('S','F')):continue
             f=by[scene,'F'];s=by[scene,'S'];a=f['initial'];b=f['final'];c=s['final']
             boundary=lambda x:x['geometry']['maximum_matched_hausdorff_m']
             criteria[scene]=dict(boundary_improvement=1-boundary(b)/boundary(a),
@@ -122,7 +126,7 @@ def summarize(bundle):
                 F_boundary_advantage=1-boundary(b)/boundary(c),
                 F_evaluation_advantage=1-b['maximum_evaluation_error']/c['maximum_evaluation_error'],
                 original_gates_pass=b['original_gates_pass'])
-        promising=(all(c['boundary_improvement']>=.3 and c['evaluation_improvement']>=.2 and c['iou_not_lower'] and
+        promising=(all_exposed and all(c['boundary_improvement']>=.3 and c['evaluation_improvement']>=.2 and c['iou_not_lower'] and
              c['F_not_worse_boundary_than_S'] and c['F_not_worse_evaluation_than_S'] for c in criteria.values()) and
              any(c['original_gates_pass'] for c in criteria.values()) and
              any(max(c['F_boundary_advantage'],c['F_evaluation_advantage'])>=.2 for c in criteria.values()))
@@ -134,7 +138,24 @@ def summarize(bundle):
         decision='Close this bounded fixed-K cumulative protocol as not qualified; require one separately justified representation/regularization or optimizer question before more inverse work.'
     else:
         outcome='INCOMPLETE_EXPOSURE_OR_NUMERICAL_OBSTRUCTION'
-        decision='Review the exact recorded obstruction before any further experiment; added-frequency recovery benefit remains unresolved where exposure or numerics failed.'
+        decision='Decide whether a separately scoped numerical-resolution check of the saved two-star states is justified before any further continuation experiment.'
+    obstructions=[]
+    for t in trials:
+        if t['status']!='HARD_STOP':continue
+        stage=t['stages'][-1] if t['stages'] else None
+        item=dict(scene=t['scene'],arm=t['arm'],reason=t.get('reason'),detail=t.get('detail'),
+                  stage=None if stage is None else stage['stage'])
+        if stage:
+            item['terminal_reason']=stage['terminal']['reason']
+            item['retained_state_sha256']=stage['terminal']['state_sha256']
+            if 'score' in stage:item['endpoint_numerical_checks']=stage['score']['numerical_checks']
+            path=bundle/'runs'/f"{t['arm']}-{t['scene']}"/f"stage_{stage['stage']}"/'acceptance.json'
+            if path.exists():
+                item['rejected_numerically_unqualified_candidates']=[r for r in read(path) if r.get('numerical_obstruction')]
+        obstructions.append(item)
+    successes=[dict(scene=t['scene'],arm=t['arm'],stage=s['stage'],score=s['score'])
+               for t in trials for s in t['stages'] if s.get('score',{}).get('numerically_qualified') and
+               s['score']['original_gates_pass']]
     report=dict(experiment='TOP-017',execution_status='COMPLETE',outcome=outcome,decision=decision,
         all_pairs_complete_exposure_and_numerics=all_exposed,promising_principal_predicate=promising,
         production_promotion=False,criteria=criteria,phase_a=audit,trials=trials,missing_trials=missing,
@@ -148,13 +169,15 @@ def summarize(bundle):
             'Per-frequency requested objective events are distinguished from actual attempted/completed physical calls.',
             'No matrix factorization/RHS instrumentation was added; work counts physical frequency solves.',
             'Original gates are development evaluation criteria, not new benchmark passes or untouched generalization.'])
+    report['numerical_obstructions']=obstructions
+    report['qualified_successful_predetermined_endpoints']=successes
     write(bundle/'scorecard.json',report)
     rows=[]
     for t in trials:
         def row(label,score,solves='—',stop='—'):
-            if not score:return f'| {label} | unavailable | — | — | — | — | {solves} | {stop} |'
+            if not score:return f'| {label} | unavailable | — | — | — | — | — | {solves} | {stop} |'
             g=score['geometry'];e=score['maximum_evaluation_error']
-            return f"| {label} | {1000*g['maximum_matched_hausdorff_m']:.6g} | {g['union_iou']:.6g} | {score['training_errors'][0]:.6g} | {e:.6g} | {score['original_gates_pass']} | {solves} | {stop} |"
+            return f"| {label} | {1000*g['maximum_matched_hausdorff_m']:.6g} | {g['union_iou']:.6g} | {score['training_errors'][0]:.6g} | {e:.6g} | {score['original_gates_pass']} | {score['numerically_qualified']} | {solves} | {stop} |"
         label=f"{t['scene']} {t['arm']}"
         rows.append(row(label+' original TOP-016 start',reuse[t['scene']]['original_top016_start_score']))
         rows.append(row(label+' reused start',t['initial']))
@@ -166,22 +189,33 @@ def summarize(bundle):
             term=s['terminal'];e=term['exposure'];f=','.join(f'{v/1e9:g}' for v in s['active_frequencies_hz'])
             exposure.append(f"| {t['scene']} {t['arm']} {s['stage']} | {f} | {e.get('jacobian_batches_completed',0)} | {e.get('candidate_attempts',0)} | {term['accepted_steps']} | {term['optimizer_stop']} | {term['convergence']} | {s['unused_quota']} |")
     projections=[]
-    for k,r in audit.get('merge_projection',{}).items():
+    for k,r in sorted(audit.get('merge_projection',{}).items(),key=lambda x:int(x[0])):
         sc=r.get('score',{});geom=r['benchmark_geometry']
         projections.append(f"| {k} | {1000*geom['maximum_matched_hausdorff_m']:.7g} | {1000*r['dense_geometry']['16384']['bidirectional_sample_distance_m']:.7g} | {1000*r['dense_geometry']['32768']['bidirectional_sample_distance_m']:.7g} | {sc.get('maximum_evaluation_error')} | {r.get('numerically_qualified')} |")
+    benefits=[]
+    for t in trials:
+        if t['schedule_complete'] and t['numerically_qualified'] and t.get('final',{}).get('original_gates_pass'):
+            a=t['initial'];b=t['final']
+            benefits.append(f"**{t['scene']} {t['arm']} recovered within the original gates:** boundary {1000*a['geometry']['maximum_matched_hausdorff_m']:.6g} → {1000*b['geometry']['maximum_matched_hausdorff_m']:.6g} mm, IoU {b['geometry']['union_iou']:.6g}, worst evaluation error {a['maximum_evaluation_error']:.6g} → {b['maximum_evaluation_error']:.6g}. This is fixed-count recovery on this development case, not a new benchmark-suite pass.")
+    positive='\n\n'.join(benefits)
+    obstruction_text='\n'.join(f"- {r['scene']} {r['arm']}, stage {r['stage']}: {r.get('detail') or r.get('terminal_reason') or r['reason']}." for r in obstructions)
     text=f'''# TOP-017 — remaining principal frequency exposure
 
 **{outcome}.** Promising principal predicate: **{promising}**. Production promotion: **False**.
 
-[Approved contract](../../../../docs/iterations/topology/iteration_10/03_plan.md) · [Implementation review](preflight.md) · [Full scorecard](scorecard.json) · [Frozen configuration](contract.json) · [Saved merge audit](merge_stage_audit.md)
+{positive}
+
+[Approved contract](../../../../docs/iterations/topology/iteration_10/03_plan.md) · [Implementation review](preflight.md) · [Independent closeout](closeout_review.md) · [Full scorecard](scorecard.json) · [Frozen configuration](contract.json) · [Saved merge audit](merge_stage_audit.md)
 
 ## Principal endpoints
 
-Comparisons start from the same reused stage-1 coefficients. Original TOP-016 starts provide context only. Stage 1 was not replayed. Every new stage resets optimizer state identically for both arms; S trains only0.5 GHz, F follows the cumulative schedule. All reported scores belong to predetermined retained endpoints.
+Comparisons start from the same reused stage-1 coefficients. Original TOP-016 starts provide context only. Stage 1 was not replayed. Every new stage resets optimizer state identically for both arms; S trains only 0.5 GHz, F follows the cumulative schedule. All reported scores belong to predetermined retained endpoints.
 
-| Case/arm/endpoint | Boundary mm | IoU | Refined0.5-GHz error | Worst1.5/2.5-GHz error | Original gates | New stage solves | Stage outcome |
-|---|---:|---:|---:|---:|---|---:|---|
+| Case/arm/endpoint | Boundary mm | IoU | Refined 0.5-GHz error | Worst 1.5/2.5-GHz error | Original gates | Numerically qualified | New stage solves | Optimizer-stage outcome |
+|---|---:|---:|---:|---:|---|---|---:|---|
 {table}
+
+[Endpoint quality figure](endpoint_quality.png) · [SVG](endpoint_quality.svg). The final predetermined stage 4 is the headline endpoint, even though central F stage 3 had slightly smaller boundary/evaluation errors. No best-stage selection was performed.
 
 ## Training exposure and stopping
 
@@ -193,19 +227,25 @@ Schedule exposure, bounded completion, numerical qualification, configured conve
 
 ## Merge representation audit
 
-Fixed evaluation-only projections use the inherited truth-to-polar-angle-gauged Cartesian fitter at K9 and K17. The16,384-sample procedure is predetermined;32,768 samples check projection/distance stability, never select a better fit. These states never enter an inverse. A poor projection is not an approximation lower bound; a good projection is not recovery evidence.
+Fixed evaluation-only projections use the inherited truth-to-polar-angle-gauged Cartesian fitter at K9 and K17. The 16,384-sample procedure is predetermined; 32,768 samples check projection/distance stability, never select a better fit. These states never enter an inverse. A poor projection is not an approximation lower bound; a good projection is not recovery evidence.
 
-| K | Benchmark boundary mm | Dense16,384 mm | Dense32,768 mm | Worst evaluation error |128/256 qualified |
+| K | Benchmark boundary mm | Dense 16,384 mm | Dense 32,768 mm | Worst evaluation error | 128/256 qualified |
 |---|---:|---:|---:|---:|---|
 {chr(10).join(projections)}
 
-The [saved merge stages](merge_stage_audit.md) retain the measured adverse inverse result: prediction deterioration at shared stage1, geometric deterioration beginning at F stage2. Audit capacity does not resolve that regression.
+The [saved merge stages](merge_stage_audit.md) retain the measured adverse inverse result: prediction deterioration at shared stage 1, geometric deterioration beginning at F stage 2. Audit capacity does not resolve that regression.
 
 ## Work and limits
 
-New attempted/completed/failed frequency solves: **{report['work']['total_attempted']}/{report['work']['total_completed']}/{report['work']['total_failed']}**. Phase A: **{audit['work']['total_attempted']}/256** attempted. Each trial cap7000 and each stage quota include endpoint scoring; unused quota is not transferred. Historical common-prefix costs are separate in the scorecard. At most two numerical workers, single-thread BLAS; summed worker time is not campaign elapsed time. See [campaign](campaign.json) and [environment](environment.json).
+New attempted/completed/failed frequency solves: **{report['work']['total_attempted']}/{report['work']['total_completed']}/{report['work']['total_failed']}**. Phase A: **{audit['work']['total_attempted']}/256** attempted. Each trial cap 7000 and each stage quota include endpoint scoring; unused quota is not transferred. Historical common-prefix costs are separate in the scorecard. At most two numerical workers, single-thread BLAS; summed worker time is not campaign elapsed time. See [campaign](campaign.json) and [environment](environment.json).
 
 Last gradients carry exact state/objective/resolution associations. Interrupted derivative diagnostics may be partial; no terminal Jacobian was run solely for reporting. Exact frequency solves are counted; factorization/RHS counts are unavailable. Development evaluation frequencies never fit updates and do not establish generalization.
+
+## Recorded obstructions
+
+{obstruction_text}
+
+The scorecard retains exact failed discrepancies and associations with rejected candidates and retained states. The two-star pair did not complete effective exposure to the whole schedule; these stops do not decide its frequency-recovery benefit. The measured central recovery is retained separately.
 
 ## Next decision
 

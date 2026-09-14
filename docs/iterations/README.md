@@ -43,6 +43,8 @@ direction (2026-09-11)** — diagnosing the MLP is not the current priority and
 the explicit Cartesian Fourier implementation comes first. It remains
 scientifically open: paused, not closed and not abandoned.
 
+Topology’s latest executed closeout is [iteration 11](topology/iteration_11/01_results.md): TOP-017 central recovery with two-star numerical obstructions. Its handoff owns the next decision; no successor is authorized.
+
 The current comparison reference for both active tracks is
 [baseline B0](../baselines/B0_2026-09-10.md).
 

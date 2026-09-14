@@ -9,4 +9,10 @@ OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 /home/drdeng/minicond
 python summarize_top017.py --bundle results/validation/topology/TOP-017-20260914-staged-continuation
 ```
 
-The campaign owns its7500-second outer watchdog and launches only approved Phase A and, on PASS, four trials with at most two concurrent numerical workers. Its JSON records exact worker commands/exit codes. Fresh execution folders are mandatory; do not rerun into this historical bundle. The summary commands only read saved JSON and rebuild reports; they perform zero physical solves. Tests use analytic/mock forwards and geometry only.
+The campaign owns its 7500-second outer watchdog and launches only approved Phase A and, on PASS, four trials with at most two concurrent numerical workers. Its JSON records exact worker commands/exit codes. Fresh execution folders are mandatory; do not rerun into this historical bundle. The summary commands only read saved JSON and rebuild reports; they perform zero physical solves. Tests use analytic/mock forwards and geometry only.
+
+The saved-metric figure can be rebuilt without numerical solves:
+
+```bash
+/home/drdeng/miniconda3/envs/EMNerf/bin/python results/validation/topology/TOP-017-20260914-staged-continuation/plot_endpoints.py
+```

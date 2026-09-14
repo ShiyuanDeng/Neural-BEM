@@ -6,7 +6,7 @@ and [staged-execution amendment](02_proposals/02_staged_execution_addendum.md).
 ## Status, authority and placement
 
 - **Approval status:** APPROVED
-- **Execution status:** IN PROGRESS
+- **Execution status:** COMPLETE
 - **Owner:** Codex `/root`. **Reviewer:** Codex `/root/top017_review` (independent, read-only).
 - **Reviewed base:** `track/topology-TOP-016` at `9ad3c8b191c7f1130764c0476480290b0f6a6e4a`.
 - **Experiment branch after approval:** `track/topology-TOP-017`, separate worktree.
@@ -350,3 +350,13 @@ manifests before physical work. Validated commits stay local; no push or merge.
 
 [Implementation preflight and review](../../../../results/validation/topology/TOP-017-20260914-staged-continuation/preflight.md)
 owns the file/API map and review resolutions.
+
+### Execution dispatch — 2026-09-14
+
+Independent implementation review accepted; 56 focused mocked/geometry tests passed. Numerical source revision: `e3e581f` (committed before physical dispatch). The 7500-second campaign watchdog owns Phase A and the four conditionally released trials. Sources stay frozen while workers run. [Campaign evidence](../../../../results/validation/topology/TOP-017-20260914-staged-continuation/campaign.json).
+
+### Closeout — 2026-09-14
+
+The approved campaign is complete. Phase A passed; both central schedules completed and central F recovered within all original gates. Both two-star trials stopped at frozen numerical-qualification gates, so the full principal comparison/predicate is incomplete. No promotion. New work: 12,535 attempted/completed frequency solves, zero failures; all ceilings respected. Historical evidence and numerical defaults are preserved.
+
+[Iteration 11 results](../iteration_11/01_results.md) opens the next cycle and records exactly one next decision: whether a separately scoped numerical-resolution check of the saved two-star states is justified. No successor was allocated or executed. The result bundle records execution revision, validation, real independent review and exact artifacts. Validated commits remain local; no push or merge.

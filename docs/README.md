@@ -47,10 +47,10 @@ Galerkin formulations, derivatives, conditioning, and cost. Replacing Kress is
 
 | Track | Question | Stage | Next expected action | Approved IDs |
 |---|---|---|---|---|
-| [Topology / Track A](iterations/topology/README.md) | Remaining fixed-topology frequency exposure from saved endpoints | TOP-017 APPROVED, implementation/review IN PROGRESS | Execute [iteration-10 contract](iterations/topology/iteration_10/03_plan.md), within conditional gates and budgets | TOP-001, TOP-005–012, TOP-016, TOP-017 |
+| [Topology / Track A](iterations/topology/README.md) | Fixed-count recovery and numerical qualification | TOP-017 COMPLETE; central F recovers, two-star pair numerically obstructed | Review [iteration 11](iterations/topology/iteration_11/01_results.md): decide whether one separately scoped two-star resolution check is justified | TOP-001, TOP-005–012, TOP-016, TOP-017 |
 | [Boundary–BIE](iterations/boundary_bie/README.md) | Which properties of smooth-boundary representations improve the accuracy, conditioning, differentiation or cost of the BIE inverse? | Brief drafted; no review, no plan | Review [the brief](iterations/boundary_bie/iteration_01/02_proposals/01_boundary_bie_research_brief.md); decide whether `BIE-001` — comparison and selection of one prototype — is the right first deliverable | **None** |
 
-**TOP-017 is approved and in progress.** The user adopted the staged-execution amendment on 2026-09-14. It reuses TOP-016’s completed common-stage endpoints, audits the merge representation assumption, and conditionally executes four remaining principal schedules. [TOP-016](iterations/topology/iteration_10/01_results.md) remains complete without promotion; its merge regression is preserved. No full suite or successor is authorized.
+**TOP-017 is complete without promotion.** [Iteration 11](iterations/topology/iteration_11/01_results.md) records a qualified central F recovery, substantially better than the paired S control, and two-star hard stops at the frozen numerical gates. The full principal predicate remains incomplete. TOP-016’s merge regression is preserved; the evaluation-only representation audit does not resolve it. No suite or successor is authorized.
 
 TOP-011/012 completion is recorded in [iteration 09](iterations/topology/iteration_09/01_results.md). The user’s 2026-09-14 instruction adopts TOP-016 and its conditional stages; TOP-013/014 are deferred and TOP-015 is superseded. Boundary–BIE remains awaiting brief review with no experiment approved.
 
@@ -70,7 +70,7 @@ scales, with a full-rank Jacobian — and three restarts of the **unmodified**
 optimizer recover 1.7x in the objective. Three absolute constants, including one
 serving as both the loss target and the accepted loss change, sit at the same
 order as the entire remaining objective. But matched boundary error moved
-11.849 to 11.991 mm and IoU stayed at 0.7088 across that whole gain. The saved two-star diagnostics show objective gains without acceptable shape recovery. This does not erase TOP-008’s measured geometric improvements. TOP-016 now isolates fixed-topology recovery under a bounded frequency protocol.
+11.849 to 11.991 mm and IoU stayed at 0.7088 across that whole gain. The saved two-star diagnostics show objective gains without acceptable shape recovery. This does not erase TOP-008’s measured geometric improvements. TOP-016 isolated fixed-topology recovery; TOP-017 then exposed the added-frequency intervention from its retained endpoints.
 [TOP-010](../results/validation/topology/TOP-010-20260912-stopping-vs-stationarity/README.md).
 
 **TOP-008 and TOP-009 (2026-09-12)** implemented the two candidates the

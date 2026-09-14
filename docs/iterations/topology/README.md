@@ -46,20 +46,20 @@ Updated 2026-09-14.
 
 | Item | Current state |
 |---|---|
-| Active iteration | Iteration 10: [approved TOP-017 plan](iteration_10/03_plan.md), with TOP-016 results preserved |
-| Stage | TOP-017 IN PROGRESS: implementation and independent review before Phase A |
+| Active iteration | [Iteration 11 results](iteration_11/01_results.md); iteration 10 retains the executed TOP-017 plan |
+| Stage | TOP-017 COMPLETE without promotion: qualified central F recovery; two-star numerical obstructions |
 | Approval | Explicit user approval 2026-09-14 of TOP-017 scope/budgets and staged-execution amendment |
-| Next expected action | Complete implementation review and mocked safety tests, then approved Phase A and conditionally four principal trials |
-| Owner / reviewer | Codex `/root`; `/root/top016_review` preflight and `/root/top016_closeout_review` closeout |
+| Next expected action | Decide whether one separately scoped numerical-resolution check of saved two-star states is justified; no new run authorized |
+| Owner / reviewer | Codex `/root`; independent implementation and closeout reviewer `/root/top017_review` |
 | Deferred / superseded | TOP-013 and TOP-014 not selected for execution; TOP-015 SUPERSEDED by TOP-016; TOP-002–004 remain deferred |
-| Evidence interpretation | [Recovery-reset review](iteration_09/02_proposals/04_recovery_reset_review.md) corrects the overly broad claim that prior fixes never improved geometry, and qualifies sensitivity claims. Historical `recovered` means data-fit threshold reached |
+| Evidence interpretation | Central fixed-count recovery is measured; incomplete two-star exposure prevents the full paired predicate. TOP-016 merge regression remains unresolved |
 | Git scope | `/home/drdeng/Neural-BEM-TOP-017`, `track/topology-TOP-017`, verified base `9ad3c8b`; validated local commits only, no push/merge |
 
-TOP-001 and TOP-005–012 have recorded approvals and completed closeouts. TOP-016's [bounded fixed-count results](iteration_10/01_results.md) report passed information screens, incomplete principal comparisons, and an adverse completed merge control. This is not twelve-scene qualification.
+TOP-001, TOP-005–012, TOP-016 and TOP-017 have recorded approvals and completed closeouts. TOP-016's [bounded fixed-count results](iteration_10/01_results.md) report passed information screens, incomplete principal comparisons, and an adverse completed merge control. This is not twelve-scene qualification.
 
 ## Reading order
 
-1. This handoff.
+1. This handoff and [the latest iteration-11 results](iteration_11/01_results.md).
 2. [Baseline B0](../../baselines/B0_2026-09-10.md) — especially §5 (acceptance
    and stopping rules), §6 (demonstrated scope) and §8 (limitations).
 3. [The topology research brief](iteration_01/02_proposals/01_topology_research_brief.md)
@@ -119,4 +119,5 @@ certificate, and the trust region's dependence on coordinates.
 | 07 | Bandwidth ladder and interpretation review | TOP-009 stage-2 gate failed; stages 3/4 preserved; independent review corrects stationarity/data claims and proposes TOP-010 |
 | 08 | Stopping versus stationarity | TOP-010 complete; neither saved state is stationary, restarts recover 1.7x objective and no geometry |
 | 09 | Tolerance, acquisition, and recovery reset | TOP-011/012 complete; TOP-013/014 deferred, TOP-015 superseded; TOP-016 approved and executed from the iteration-09 plan |
-| 10 | Bounded fixed-topology continuation | TOP-016 complete without promotion; TOP-017 approved and in progress from saved endpoints |
+| 10 | Bounded fixed-topology continuation | TOP-016 results reviewed; TOP-017 approved and executed from saved endpoints |
+| 11 | Central recovery and numerical qualification | TOP-017 complete: central F recovered, two-star pair numerically obstructed; one next review decision, no successor authorized |

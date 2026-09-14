@@ -14,11 +14,11 @@ conclusions to this register only after reviewing the actual run artifacts.
 
 ## TOP-017 staged principal continuation
 
-[Approved contract](../docs/iterations/topology/iteration_10/03_plan.md) · [Implementation preflight](validation/topology/TOP-017-20260914-staged-continuation/preflight.md) · 2026-09-14: implementation and independent review in progress; physical work not started. TOP-016 evidence remains immutable.
+[TOP-017 result bundle](validation/topology/TOP-017-20260914-staged-continuation/README.md) · [Iteration 11](../docs/iterations/topology/iteration_11/01_results.md) · 2026-09-14: central F recovered within all original gates and substantially outperformed the matched S control; the two-star pair stopped at frozen numerical gates. The full paired predicate is incomplete, with no promotion. 12,535 new attempted/completed solves, zero failed; all limits respected. Historical TOP-016 evidence and its merge regression remain preserved.
 
 ## TOP-016 bounded fixed-topology continuation
 
-[TOP-016 result bundle](validation/topology/TOP-016-20260914-fixed-topology/README.md) · 2026-09-14: both local-information gates passed, but principal and truth-assisted local trials stopped at their first-stage budgets. The completed frequency-continuation merge control introduced a geometric failure. No promotion; 10,306 attempted/completed frequency solves, zero failed. The bundle preserves all arms, exact work, source/input hashes, independent review and reporting limitations. [Iteration 10](../docs/iterations/topology/iteration_10/01_results.md) owns the next review decision.
+[TOP-016 result bundle](validation/topology/TOP-016-20260914-fixed-topology/README.md) · 2026-09-14: both local-information gates passed, but principal and truth-assisted local trials stopped at their first-stage budgets. The completed frequency-continuation merge control introduced a geometric failure. No promotion; 10,306 attempted/completed frequency solves, zero failed. The bundle preserves all arms, exact work, source/input hashes, independent review and reporting limitations. [Iteration 10](../docs/iterations/topology/iteration_10/01_results.md) preserves that closeout; its successor TOP-017 is recorded above.
 
 ## Find the right evidence
 
