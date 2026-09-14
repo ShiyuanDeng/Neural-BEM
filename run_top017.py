@@ -74,8 +74,9 @@ class ImplementationError(Stop): code = 'IMPLEMENTATION_ERROR'
 
 
 class Ledger(p.Ledger):
-    def __init__(self, cap=7000, seconds=1800., clock=time.perf_counter):
+    def __init__(self, cap=7000, seconds=1800., clock=time.perf_counter, preserve_errors=()):
         super().__init__(cap, seconds, clock)
+        self.preserve_errors = tuple(preserve_errors)
         self.stage = None
         self.stage_start = 0
         self.stage_quota = None
@@ -138,6 +139,9 @@ class Ledger(p.Ledger):
                 self.failed[category] += 1
                 self.frequency_failed[key] += 1
                 if isinstance(exc, (Stop, KeyboardInterrupt, SystemExit)): raise
+                if isinstance(exc, self.preserve_errors):
+                    self.calls['preserved_candidate_refusals'] += 1
+                    raise
                 raise PhysicalFailure(f'{type(exc).__name__}: {exc}') from exc
             self.completed[category] += 1
             self.frequency_completed[key] += 1

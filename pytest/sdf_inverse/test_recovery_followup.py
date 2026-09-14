@@ -115,6 +115,19 @@ def test_td_attempt_completion_failure_cap_and_restoration(monkeypatch,failure):
     assert f.work_accounting.record_work is record
 
 
+def test_topology_preserves_expected_candidate_geometry_refusal(monkeypatch):
+    from gpr_bem_kress.multicomponent import MultiComponentTopologyError
+    error=MultiComponentTopologyError('candidate components too close')
+    def forward(*a,**k):raise error
+    monkeypatch.setattr(p.physical,'solve_multicomponent_kress_tmz_total_field_batch',forward)
+    ledger=f.TopologyLedger()
+    with ledger.instrument(),pytest.raises(MultiComponentTopologyError) as caught:
+        p.physical.solve_multicomponent_kress_tmz_total_field_batch(None,None,None,2*np.pi*.5e9)
+    assert caught.value is error and ledger.total==1
+    assert ledger.calls['preserved_candidate_refusals']==1
+    assert ledger.failed['unclassified']==1  # refused physical API attempt, not a completed BIE solve
+
+
 def test_integrity_check_refuses_changed_copied_input(tmp_path,monkeypatch):
     source=tmp_path/'input.json';source.write_text('{}')
     manifest=dict(source_sha256={},historical_sha256={},copied_input_sha256={str(source):p.digest(source)})

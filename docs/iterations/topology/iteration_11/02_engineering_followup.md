@@ -50,3 +50,19 @@ Retain complete new artifacts separately from sealed TOP-008/016/017 bundles.
 Report numerical qualification separately from shape success. A successful
 single-scene fresh run is not a suite pass or general policy promotion.
 Validate and commit locally; pushing awaits a new `cp` or push instruction.
+
+## Integration repair discovered during validation
+
+The first central attempt stopped after 80 physical API attempts / 4.105 seconds:
+the inherited TOP-017 ledger wrapped a routine rejected topology candidate's
+`MultiComponentTopologyError` as `PhysicalFailure`, preventing the controller's
+normal geometry-refusal handling. This was an instrumentation integration defect,
+not evidence against recovery. Preserve that attempt under `central/`.
+
+Add a topology-only exception-preservation option (TOP-017's default remains
+unchanged), with a regression test using the actual exception class. Execute the
+corrected validation under `central-validated/`, deducting the first attempt's
+80 calls and measured wall time from the original topology ceiling. The original
+4,000/600 and continuation bounds remain binding across both attempts. Refused
+physical API calls stay charged and are separately identified in work accounting.
+This correction does not change topology candidates or numerical acceptance.

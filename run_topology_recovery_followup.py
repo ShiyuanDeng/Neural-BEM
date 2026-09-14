@@ -19,6 +19,7 @@ import traceback
 import numpy as np
 import run_top017 as m
 from sdf_inverse import work_accounting
+from sdf_inverse.topology_controller import GEOMETRY_ERRORS
 
 p = m.p
 ROOT = m.ROOT
@@ -75,7 +76,8 @@ def verify(manifest):
     for name, sha in manifest['historical_sha256'].items():
         if p.digest(ROOT/name) != sha:
             raise m.ImplementationError(f'historical input changed: {name}')
-    for name,sha in manifest.get('copied_input_sha256',{}).items():
+    for name,sha in {**manifest.get('copied_input_sha256',{}),
+                     **manifest.get('prior_attempt_sha256',{})}.items():
         if p.digest(Path(name)) != sha:
             raise m.ImplementationError(f'copied input changed: {name}')
 
@@ -147,8 +149,11 @@ class TopologyLedger(m.Ledger):
 
 The TD builds/solves its own system, outside the paired-forward wrapper. Its
 existing record_work callback reports completion immediately after the solve.
-Only instrumentation changes; numerical arguments and return values are intact.
-"""
+    Only instrumentation changes; numerical arguments and return values are intact.
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs, preserve_errors=GEOMETRY_ERRORS)
+
     @contextmanager
     def instrument(self):
         build = m.rt.build_multicomponent_kress_tmz_frequency_system
@@ -161,10 +166,7 @@ Only instrumentation changes; numerical arguments and return values are intact.
             self.attempted['topological_derivative'] += 1
             self.frequency_attempted[key] += 1
             pending.append(key)
-            try:
-                return build(boundary,omega,**kwargs)
-            except Exception as exc:
-                raise m.PhysicalFailure(f'TD system construction failed: {exc}') from exc
+            return build(boundary,omega,**kwargs)
 
         def counted_record(**counts):
             for _ in range(counts.get('td_frequency_solve_count',0)):
@@ -229,9 +231,21 @@ def continuation_start(state, control, solve):
     return padded,optimizer,delta
 
 
-def central(output):
+def central(output, repair_of=None):
     manifest = freeze(output,'central')
-    prefix_ledger = TopologyLedger(cap=4000,seconds=600)
+    prior_work = None
+    if repair_of is not None:
+        prior = read(repair_of/'result.json')
+        if (prior.get('reason')!='PHYSICAL_SOLVE_FAILED' or prior.get('continuation_work') is not None
+                or not prior.get('detail','').startswith('MultiComponentTopologyError:')
+                or prior.get('prior_attempt_work') is not None):
+            raise m.ImplementationError('repair budget requires the single saved instrumentation failure')
+        prior_work = prior['topology_work']
+        manifest['prior_attempt_sha256'] = {str(x):p.digest(x) for x in repair_of.rglob('*') if x.is_file()}
+        write(output/'manifest.json',manifest)
+    prior_solves = 0 if prior_work is None else prior_work['total_attempted']
+    prior_seconds = 0 if prior_work is None else prior_work['active_wall_seconds']
+    prefix_ledger = TopologyLedger(cap=4000-prior_solves,seconds=600-prior_seconds)
     prefix_work = None
     continuation_ledger = None
     result = dict(status='IN_PROGRESS',fresh_circle_start=True,
@@ -262,7 +276,8 @@ def central(output):
     if len(initial.components)!=1 or initial.component_ids!=('initial.circle',):
         raise m.ImplementationError('fresh circle input differs from declared initialization')
     write(output/'contract.json',dict(topology_controller=asdict(control),
-        topology_nodes=[64,128],topology_solve_cap=4000,topology_wall_seconds=600,
+        topology_nodes=[64,128],topology_solve_cap=prefix_ledger.cap,
+        topology_wall_seconds=prefix_ledger.seconds,prior_attempt_work=prior_work,
         continuation_nodes=m.NODES,stage_plan=FULL_PLAN,continuation_solve_cap=8012,
         continuation_wall_seconds=1800,solve_config=asdict(solve),
         initial_state_sha256=m.state_hash(initial),training_frequencies_hz=p.TRAIN,
@@ -307,6 +322,9 @@ def central(output):
         0 if continuation_ledger is None else continuation_ledger.total)
     result['active_wall_seconds'] = result['topology_work']['active_wall_seconds'] + (
         0 if continuation_ledger is None else result['continuation_work']['active_wall_seconds'])
+    result['prior_attempt_work'] = prior_work
+    result['total_attempted_including_prior_attempt'] = result['total_attempted_frequency_solves']+prior_solves
+    result['active_wall_seconds_including_prior_attempt'] = result['active_wall_seconds']+prior_seconds
     return seal(output,manifest,result)
 
 
@@ -314,11 +332,15 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--phase',choices=('resolution','central'),required=True)
     parser.add_argument('--output',type=Path,required=True)
+    parser.add_argument('--repair-of',type=Path,help='Charge the saved instrumentation failure against the same budget')
     args = parser.parse_args()
     for key in ('OPENBLAS_NUM_THREADS','OMP_NUM_THREADS','MKL_NUM_THREADS'):
         if os.environ.get(key)!='1':
             raise ValueError('single-thread BLAS required')
-    result = {'resolution':resolution,'central':central}[args.phase](args.output.resolve())
+    if args.repair_of is not None and args.phase!='central':
+        parser.error('--repair-of is only valid for the central integration repair')
+    result = (resolution(args.output.resolve()) if args.phase=='resolution' else
+              central(args.output.resolve(),None if args.repair_of is None else args.repair_of.resolve()))
     print(json.dumps({key:result[key] for key in ('status','fresh_recovery_pass',
         'all_states_qualify_256_512','sources_and_history_unchanged') if key in result}),flush=True)
     return 0 if result['status'] in ('RESOLUTION_CHECK_COMPLETE','COMPLETED_SCHEDULE') else 1
