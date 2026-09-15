@@ -2,6 +2,7 @@
 
 | Bundle | Role and outcome |
 |---|---|
+| [TOP-018 S/F video](TOP-018-20260915-two-star-video/README.md) | 50-second side-by-side playback of all saved accepted-state records, from COMMON to the prescribed final endpoints; no new numerical solves |
 | [TOP-018 qualified two-star pair](TOP-018-20260915-resolution-qualified-pair/README.md) | Both 256/512 schedules qualify; F recovers at 0.00167644 mm while S fails at 11.793168 mm. 8,336 completed solves, zero failed; original post-schedule reporting failures retained and repaired without reruns. No promotion or successor |
 | [TOP-017 engineering follow-up](TOP-017-followup-20260914-engineering/README.md) | One fresh central-circle pipeline passes; three saved two-star states qualify at 256/512. Historical evidence reused by TOP-018 |
 | [TOP-017 staged continuation](TOP-017-20260914-staged-continuation/README.md) | Central F recovers; historical two-star arms stop at 128/256 numerical gates. Central success and the merge-control interpretation remain preserved |

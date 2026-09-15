@@ -45,6 +45,10 @@ scientifically open: paused, not closed and not abandoned.
 
 Topology’s latest executed closeout is [iteration 12](topology/iteration_12/01_results.md): TOP-018's qualified 256/512 pair recovers the two-star case under F while S fails recovery. The earlier fresh central-circle success remains preserved. The [TOP-018 plan](topology/iteration_11/03_plan.md) is APPROVED / COMPLETE. The handoff owns the next capacity-qualified merge-control decision; no successor is approved.
 
+The [topology completion roadmap](topology/README.md#completion-roadmap) records
+the remaining sequence, completion criteria and restart instructions. TOP-018's
+closeout does not mean the topology work is complete.
+
 The current comparison reference for both active tracks is
 [baseline B0](../baselines/B0_2026-09-10.md).
 

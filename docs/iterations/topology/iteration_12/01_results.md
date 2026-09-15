@@ -18,6 +18,10 @@ previously blocked by numerical qualification.
 [Full result bundle][bundle] · [fixed-state figure][figure] ·
 [all stages, gradients, exposure and objectives][scorecard] · [owner closeout review][review].
 
+[Side-by-side S/F video (50 s)][video] · [video provenance][video_provenance].
+The animation uses all saved accepted-state records, with stages aligned for
+playback and no new numerical solves.
+
 ## What was measured
 
 Phase A passed with **86 new attempted/completed frequency solves**. All four
@@ -76,8 +80,16 @@ that control is the next discriminating step before broader integration claims.
 No merge inverse, new bandwidth change, suite, fresh two-star run or successor
 starts under TOP-018.
 
+The [handoff completion roadmap](../README.md#completion-roadmap) records the
+conditional sequence after this decision: fresh automatic two-star integration,
+the full frozen twelve-scene comparison, then closure against declared gates.
+It also records what a new session should read first and which execution
+contracts remain to be defined and approved.
+
 [bundle]: ../../../../results/validation/topology/TOP-018-20260915-resolution-qualified-pair/README.md
 [figure]: ../../../../results/validation/topology/TOP-018-20260915-resolution-qualified-pair/endpoints.svg
 [scorecard]: ../../../../results/validation/topology/TOP-018-20260915-resolution-qualified-pair/scorecard.json
 [review]: ../../../../results/validation/topology/TOP-018-20260915-resolution-qualified-pair/closeout_review.md
 [repair]: ../../../../results/validation/topology/TOP-018-20260915-resolution-qualified-pair/reporting_repair.json
+[video]: ../../../../results/validation/topology/TOP-018-20260915-two-star-video/two_star_S_vs_F.mp4
+[video_provenance]: ../../../../results/validation/topology/TOP-018-20260915-two-star-video/README.md

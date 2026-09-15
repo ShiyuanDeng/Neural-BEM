@@ -49,7 +49,7 @@ Updated 2026-09-15.
 | Active iteration | [Iteration 12 results](iteration_12/01_results.md); iteration 11 retains the executed TOP-018 plan |
 | Stage | TOP-018 COMPLETE: both 256/512 schedules qualify; F recovers both stars and the matched S control fails recovery |
 | Approval | TOP-018 APPROVED on 2026-09-15 by the user's “yesh” response to the explicit audit/conditional-pair approval request; [contract](iteration_11/03_plan.md) |
-| Next expected action | Prepare one separately approved K=17 merge-control S/F comparison with qualified representation capacity; no successor is approved or running |
+| Next expected action | Prepare one separately approved K=17 merge-control S/F comparison with qualified representation capacity; follow the [completion roadmap](#completion-roadmap). No successor is approved or running |
 | Owner / reviewer | TOP-018: Codex `/root`, owner source/artifact review; no independent-agent review. TOP-017 retains its historical independent review |
 | Deferred / superseded | TOP-013 and TOP-014 not selected for execution; TOP-015 SUPERSEDED by TOP-016; TOP-002–004 remain deferred |
 | Evidence interpretation | Fresh central recovery and the saved-common-start two-star F recovery both pass their contracts. Two-star automatic count recovery and twelve-scene qualification remain untested; TOP-016 merge regression remains unresolved |
@@ -68,6 +68,57 @@ the matched pair. The final F boundary error is 0.00167644 mm, versus S's
 11.793168 mm. A post-schedule reporting type error and both worker exits are
 preserved; metadata was repaired without new physical solves. No new branch or
 worktree was created, and no push is authorized by the experiment contract.
+
+## Completion roadmap
+
+Recorded 2026-09-15 so a new session can resume from this handoff without chat
+history. **The topology work is not complete.** The validated fresh central
+pipeline and saved-common-start two-star continuation establish the successes
+above; merge recovery and broader automatic-controller qualification remain
+open. TOP-018 itself is complete.
+
+Proceed in this order, with later work conditional on the preceding evidence:
+
+1. **Resolve the merge regression with a capacity-qualified comparison.**
+   Prepare and review one bounded K=17 single-frequency (S) versus cumulative-
+   frequency (F) merge-control contract in iteration 12. The
+   [TOP-017 projection audit](iteration_11/01_results.md#merge-control-audit)
+   found a K=17 representation that passes geometry and prediction gates;
+   that evaluation-only projection must not initialize the inverse. The
+   [TOP-016 adverse control](iteration_10/01_results.md) remains the regression
+   evidence. Freeze a common initialization without truth assistance, active
+   frequency schedules, numerical checks, scoring gates, endpoint-inclusive
+   solve quotas and wall ceilings before execution approval. The result must
+   distinguish successful inverse recovery from numerical failure, inadequate
+   progress or budget exhaustion. A failed comparison leads to a bounded
+   diagnosis of the measured failure; it does not automatically release a suite.
+2. **Qualify fresh automatic two-star recovery.** Once the merge result supports
+   a candidate policy, separately scope a run from the frozen original distant
+   circle through the topology controller and continuation, without a supplied
+   object count or the saved COMMON checkpoint. Check topology-event validity,
+   final count, geometry, prediction and work. Preserve the fresh central
+   success as a regression control. TOP-018's fixed-count result cannot replace
+   this integration check.
+3. **Qualify the complete frozen twelve-scene comparison.** After focused
+   controls pass, compare candidate and reference on every scene in the
+   [v1 benchmark](../../benchmarks/topology_scenes.md), retaining all failures
+   and attempted/completed work. Preserve v1 inputs and gates; changes to
+   acquisition, mode schedules, numerical resolution or budgets must be explicit
+   in a separately named comparison. Report each recovery criterion, numerical
+   qualification and cost, rather than only optimizer completion or pass count.
+4. **Close the topology work against declared acceptance criteria.** A closeout
+   must account for the merge regression, fresh two-star integration and all
+   twelve scene outcomes, with the required recovery, numerical, cost and
+   regression gates satisfied. Unresolved required failures keep the work open;
+   any narrower completion claim needs an explicitly agreed scope. Promotion
+   requires a measured decision and reproducible artifacts.
+
+**Restart action:** read this handoff, the
+[iteration-12 results](iteration_12/01_results.md), the two merge records linked
+above and the [shared workflow](../README.md); then prepare the first contract.
+The later steps are a conditional roadmap. Their experiment IDs, budgets and
+execution approval have not been assigned. No numerical successor starts from
+this roadmap alone; use the existing checkout and branch recorded above.
 
 ## Reading order
 

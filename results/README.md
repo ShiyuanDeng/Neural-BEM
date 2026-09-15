@@ -14,6 +14,9 @@ conclusions to this register only after reviewing the actual run artifacts.
 
 ## TOP-018 resolution-qualified two-star pair
 
+[S/F comparison video (50 s)](validation/topology/TOP-018-20260915-two-star-video/two_star_S_vs_F.mp4) ·
+[Video provenance](validation/topology/TOP-018-20260915-two-star-video/README.md)
+
 [Result bundle](validation/topology/TOP-018-20260915-resolution-qualified-pair/README.md) ·
 [Endpoint figure](validation/topology/TOP-018-20260915-resolution-qualified-pair/endpoints.svg) ·
 [Iteration 12](../docs/iterations/topology/iteration_12/01_results.md) · 2026-09-15:
