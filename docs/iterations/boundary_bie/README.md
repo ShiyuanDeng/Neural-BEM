@@ -52,19 +52,20 @@ representation-scope distinction this track must not blur.
 
 ## Current handoff
 
-Updated 2026-09-12; experiment status remains unchanged.
+Updated 2026-09-15.
 
 | Item | Current state |
 |---|---|
-| Active iteration | [Iteration 01](iteration_01/02_proposals/01_boundary_bie_research_brief.md) |
-| Stage | **Proposal drafted; no review, no agreed plan.** The track opens from a brief; there is no prior cycle in this track to produce `01_results.md` |
-| Approved experiment IDs | **None.** `BIE-001`, `BIE-003`–`BIE-005` are `PROPOSED — NOT APPROVED FOR EXECUTION`; `BIE-002` is a reserved ID with no contract yet — `BIE-001` is meant to write it |
-| Execution status | `NOT STARTED`. No code changed, no prototype written, no run launched |
-| Next expected action | A review of the brief that resolves each candidate direction as accept / reject / defer / named diagnostic, and decides whether `BIE-001` — a comparison and *selection* of one discriminating prototype — is the right first deliverable |
-| Owner / reviewer | `unassigned` / `unassigned` |
-| Dependencies | None blocking. `BIE-001` is a desk study over existing code and bundles. Any prototype selected by it will touch shared solver interfaces and must be declared before implementation |
-| Blockers | None |
-| Open question the review must not skip | Whether a modal-trace prototype is the right first prototype. It is a candidate, deliberately **not** pre-selected |
+| Active iteration | [Iteration 03 results](iteration_03/01_results.md) |
+| Stage | BIE-004 COMPLETE: coupled analytic Jacobians qualify and are 1.87x faster; BIE-002 negative preserved |
+| Approved experiment IDs | **BIE-002, BIE-004 APPROVED** by explicit user instructions; [BIE-004 plan](iteration_02/03_plan.md) |
+| Execution status | **BIE-004 COMPLETE**; [result bundle](../../../results/validation/boundary_bie/BIE-004-20260915-coupled-02/README.md) |
+| Next expected action | Prepare one opt-in integration and matched inverse validation; coordinate shared edits with topology measurement windows |
+| Owner / reviewer | Codex / self-review; no independent reviewer claimed |
+| Dependencies | Experiment-local coupled shape derivative now qualified on two saved states; production optimizer still uses FD |
+| Blockers | No scientific blocker for the tested derivative; production integration and inverse recovery remain untested |
+| BIE-001 disposition | **SUPERSEDED** by the [current review](iteration_01/02_proposals/03_current_checkout_review.md) and BIE-002; no BIE-001 numerical execution |
+| Deferred | BIE-003, BIE-005, idea 3, inverse integration and production solver changes |
 
 Related discussion: [Are the current failures intrinsic to boundary methods?
 What FDTD would change](../topology/iteration_07/02_proposals/02_boundary_methods_and_fdtd.md).
@@ -112,17 +113,12 @@ and does not advance to the next step until the previous one passes:
 
 ## Starting work on this track
 
-**Current gate: 2 of 7 — a review of the brief.** See the shared
-[gate sequence](../README.md#from-brief-to-execution) for what each gate means
-and what moves it.
-
-Until a named experiment ID is approved by the user, an agent on this track
-**may** read the evidence, write a review, propose experiments, and update these
-documents. It **may not** change numerical code, alter an experiment
-configuration, or launch a run.
-
-When an ID is approved, work on it in its own branch — `track/boundary-bie-BIE-001` —
-and never in a checkout another track is using. `BIE-001` is a desk study over existing code and bundles — no runs, no production edits — so it needs no branch of its own until it selects a prototype.
+**Current gate: 7 of 7 — BIE-004 closeout complete.** See the
+[agreed plan](iteration_02/03_plan.md). Work on the existing
+`feature/ordered-boundary-nystrom` branch; no branch or worktree creation.
+The user identified active topology fixes: keep the diagnostic in its isolated
+experiment directory and leave shared solver/topology files read-only. Stop
+measurements on imported numerical source drift. Do not execute a successor.
 
 ## Relationship to the existing cycles
 
@@ -136,4 +132,6 @@ stays where it is.
 
 | Iteration | Cycle | State |
 |---|---|---|
-| 01 | Which boundary-representation mechanism is worth prototyping for the BIE inverse | Active; brief drafted, nothing approved, nothing executed |
+| 01 | Which boundary-representation mechanism is worth prototyping for the BIE inverse | BIE-002 approved and completed; BIE-001 desk-study superseded |
+| 02 | BIE-002 modal/structure evidence | BIE-004 approved and completed under later user instruction |
+| 03 | Coupled analytic Jacobian qualification and cost | Results available; opt-in integration/matched inverse validation recommended, not executed |

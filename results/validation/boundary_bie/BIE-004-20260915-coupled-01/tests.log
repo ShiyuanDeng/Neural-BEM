@@ -1,0 +1,47 @@
+.F..                                                                     [100%]
+=================================== FAILURES ===================================
+________________ test_shape_only_and_component_grid_validation _________________
+
+    def test_shape_only_and_component_grid_validation():
+        curve=circle((.5,.5),.03).discretize(24)
+        with pytest.raises(ValueError,match='shape directions only'):
+            component_jets(curve,KressDirection(exterior_epsr=1.))
+        with pytest.raises(ValueError,match='node grid'):
+>           component_jets(curve,KressDirection(points=np.zeros((26,2))))
+
+experiments/bie004_multi_derivative/test_algebra.py:25: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+<string>:10: in __init__
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = KressDirection(points=array([[0., 0.],
+       [0., 0.],
+       [0., 0.],
+       [0., 0.],
+       [0., 0.],
+       [0.,...ves=None, second_derivatives=None, third_derivatives=None, exterior_epsr=0.0, interior_epsr=0.0, source_strengths=None)
+
+    def __post_init__(self):
+        if (self.points is None) != (self.first_derivatives is None):
+>           raise ValueError("points and first_derivatives must be supplied together.")
+E           ValueError: points and first_derivatives must be supplied together.
+
+solvers/gpr_bem_kress/shape_derivative.py:71: ValueError
+
+During handling of the above exception, another exception occurred:
+
+    def test_shape_only_and_component_grid_validation():
+        curve=circle((.5,.5),.03).discretize(24)
+        with pytest.raises(ValueError,match='shape directions only'):
+            component_jets(curve,KressDirection(exterior_epsr=1.))
+        with pytest.raises(ValueError,match='node grid'):
+>           component_jets(curve,KressDirection(points=np.zeros((26,2))))
+E           AssertionError: Regex pattern did not match.
+E            Regex: 'node grid'
+E            Input: 'points and first_derivatives must be supplied together.'
+
+experiments/bie004_multi_derivative/test_algebra.py:25: AssertionError
+=========================== short test summary info ============================
+FAILED experiments/bie004_multi_derivative/test_algebra.py::test_shape_only_and_component_grid_validation
+1 failed, 3 passed in 0.10s

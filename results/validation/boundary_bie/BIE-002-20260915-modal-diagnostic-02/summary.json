@@ -1,0 +1,131 @@
+{
+  "H2_FIELD": "NO_USEFUL_SIMPLE_COMPRESSION",
+  "H2_OPERATOR": "ORACLE_STRUCTURE_ONLY; fixed-band promotion failed",
+  "recommendation": "Stop/defer this simple projected-field and centered-band prototype; retain tuned nodal Kress. Do not execute a successor.",
+  "full_mode_cases_passed": 10,
+  "reference_cases_qualified": 10,
+  "maximum_full_mode_data_error": 1.9111319919056108e-14,
+  "maximum_full_mode_state_error": 6.494196901987178e-15,
+  "maximum_forward_reference_discrepancy": 1.3005567917360272e-11,
+  "maximum_sensitivity_reference_discrepancy": 1.6373019901735193e-13,
+  "high_frequency_comparison": [
+    {
+      "case": "circle",
+      "frequency_hz": 1250000000,
+      "nodes_per_component": 128,
+      "retained_modes": 31,
+      "data_relative": 1.1061980967476892e-14,
+      "lifted_residual": 1.014341372579424e-09,
+      "worst_sampled_sensitivity_relative": 9.368682194303162e-15,
+      "passes": true,
+      "scope": "forward + sampled sensitivities"
+    },
+    {
+      "case": "ellipse",
+      "frequency_hz": 1250000000,
+      "nodes_per_component": 128,
+      "retained_modes": 63,
+      "data_relative": 6.635481078030071e-15,
+      "lifted_residual": 2.6034388991067526e-10,
+      "worst_sampled_sensitivity_relative": 1.002895244855577e-14,
+      "passes": true,
+      "scope": "forward + sampled sensitivities"
+    },
+    {
+      "case": "star",
+      "frequency_hz": 1250000000,
+      "nodes_per_component": 128,
+      "retained_modes": 95,
+      "data_relative": 2.0542334577734713e-07,
+      "lifted_residual": 0.000508841269535778,
+      "worst_sampled_sensitivity_relative": 5.233648295393998e-06,
+      "passes": false,
+      "scope": "forward + sampled sensitivities"
+    },
+    {
+      "case": "saved_common",
+      "frequency_hz": 1250000000,
+      "nodes_per_component": 256,
+      "retained_modes": 191,
+      "data_relative": 2.2496438783997767e-07,
+      "lifted_residual": 0.00040652273395799544,
+      "worst_sampled_sensitivity_relative": null,
+      "passes": false,
+      "scope": "FORWARD_ONLY"
+    },
+    {
+      "case": "saved_difficult",
+      "frequency_hz": 1250000000,
+      "nodes_per_component": 256,
+      "retained_modes": 191,
+      "data_relative": 1.1281795670168216e-06,
+      "lifted_residual": 0.0009543667438051919,
+      "worst_sampled_sensitivity_relative": null,
+      "passes": false,
+      "scope": "FORWARD_ONLY"
+    }
+  ],
+  "timing": {
+    "nodal": {
+      "forward_total_seconds": {
+        "median": 0.014144403161481023,
+        "minimum": 0.01394725707359612,
+        "maximum": 0.014236593968234956
+      },
+      "forward_plus_one_jvp_seconds": {
+        "median": 0.050364754744805396,
+        "minimum": 0.05031024699565023,
+        "maximum": 0.050880945986136794
+      }
+    },
+    "modal": {
+      "forward_total_seconds": {
+        "median": 0.048685276065953076,
+        "minimum": 0.04818507062736899,
+        "maximum": 0.04892060381826013
+      },
+      "forward_plus_one_jvp_seconds": {
+        "median": 0.17613326490391046,
+        "minimum": 0.17573123762849718,
+        "maximum": 0.17929775989614427
+      }
+    }
+  },
+  "modal_slowdown": {
+    "forward_total_seconds": 3.4420169950002593,
+    "forward_plus_one_jvp_seconds": 3.4971532333745117
+  },
+  "oracle": [
+    {
+      "case": "ellipse",
+      "all_block_oracle_retention": 0.057220458984375,
+      "self_oracle_with_dense_cross_retention": 0.057220458984375
+    },
+    {
+      "case": "star",
+      "all_block_oracle_retention": 0.1677093505859375,
+      "self_oracle_with_dense_cross_retention": 0.1677093505859375
+    },
+    {
+      "case": "saved_common",
+      "all_block_oracle_retention": 0.3822784423828125,
+      "self_oracle_with_dense_cross_retention": 0.7607288360595703
+    },
+    {
+      "case": "saved_difficult",
+      "all_block_oracle_retention": 0.47698211669921875,
+      "self_oracle_with_dense_cross_retention": 0.8131561279296875
+    }
+  ],
+  "counts": {
+    "assemblies": 85,
+    "derivatives": 36,
+    "factorizations": 116,
+    "solves": 224
+  },
+  "numerical_seconds": 24.533445902052335,
+  "peak_rss_bytes": 833691648,
+  "tests": "4 algebra tests passed; production/full-mode/spectrum/analytic/Taylor checks in ledger",
+  "audit": "PASS: counts reconcile; all reserved operations completed; source hashes unchanged; no multi-interface sensitivity claim",
+  "reporting_seconds": 0.0088840740500018
+}

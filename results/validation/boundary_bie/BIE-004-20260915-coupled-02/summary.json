@@ -1,0 +1,113 @@
+{
+  "verdict": "ANALYTIC_JACOBIAN_QUALIFIED_AND_FASTER",
+  "accuracy_qualified": true,
+  "promotion_screen_passed": true,
+  "full_jacobians": [
+    {
+      "case": "common",
+      "rows": 48,
+      "columns": 34,
+      "relative_error": 1.41417996323874e-07,
+      "worst_column_error": 3.031747481385821e-07
+    },
+    {
+      "case": "terminal",
+      "rows": 48,
+      "columns": 34,
+      "relative_error": 1.4051418158929795e-07,
+      "worst_column_error": 4.6473405416430194e-07
+    }
+  ],
+  "operator_checks": 1008,
+  "failed_operator_checks": 0,
+  "worst_operator_relative_error": 2.5684920610515237e-06,
+  "worst_small_step_jvp_relative_error": 3.990093821394484e-07,
+  "worst_current_fd_step_relative_error": 2.6169960777146575e-05,
+  "worst_forward_refinement": 6.67202461425549e-14,
+  "worst_sensitivity_refinement": 9.500092628260523e-12,
+  "taylor_ratios": [
+    4.000556663509228,
+    4.000280309515479,
+    4.000140558883194,
+    4.000114394345765,
+    4.00005961237758,
+    4.000030218167786
+  ],
+  "timing": {
+    "analytic": {
+      "repetitions": 3,
+      "median": 26.248568925075233,
+      "minimum": 26.2135441909777,
+      "maximum": 26.276994913001545,
+      "seconds": [
+        26.248568925075233,
+        26.2135441909777,
+        26.276994913001545
+      ],
+      "counts_per_repeat": {
+        "assemblies": 35,
+        "derivatives": 34,
+        "factorizations": 1,
+        "solves": 35
+      }
+    },
+    "fd": {
+      "repetitions": 3,
+      "median": 49.08261675294489,
+      "minimum": 49.022512909956276,
+      "maximum": 49.17515565897338,
+      "seconds": [
+        49.08261675294489,
+        49.022512909956276,
+        49.17515565897338
+      ],
+      "counts_per_repeat": {
+        "assemblies": 69,
+        "derivatives": 0,
+        "factorizations": 69,
+        "solves": 69
+      }
+    }
+  },
+  "speedup": 1.8699159140084132,
+  "timing_ranges_nonoverlapping": true,
+  "uncontaminated_timing": true,
+  "benchmark_status": {
+    "status": "COMPLETE"
+  },
+  "counts": {
+    "assemblies": 703,
+    "derivatives": 200,
+    "factorizations": 504,
+    "solves": 703
+  },
+  "numerical_seconds": 595.5750640491024,
+  "peak_rss_bytes": 1815068672,
+  "attempts": [
+    {
+      "path": "results/validation/boundary_bie/BIE-004-20260915-coupled-02",
+      "status": "COMPLETE",
+      "failure": null,
+      "counts": {
+        "assemblies": 703,
+        "derivatives": 200,
+        "factorizations": 504,
+        "solves": 703
+      }
+    },
+    {
+      "path": "results/validation/boundary_bie/BIE-004-20260915-coupled-01",
+      "status": "STOPPED",
+      "failure": "Stop('WIRING_FAILURE: algebra tests')",
+      "counts": {
+        "assemblies": 0,
+        "derivatives": 0,
+        "factorizations": 0,
+        "solves": 0
+      }
+    }
+  ],
+  "recommendation": "Prepare one opt-in integration and matched inverse validation after topology reaches a stable integration point; preserve current defaults.",
+  "numerical_source_unchanged": true,
+  "inverse_executed": false
+}
