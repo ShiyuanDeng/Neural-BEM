@@ -43,7 +43,7 @@ direction (2026-09-11)** — diagnosing the MLP is not the current priority and
 the explicit Cartesian Fourier implementation comes first. It remains
 scientifically open: paused, not closed and not abandoned.
 
-Topology’s latest executed closeout is [iteration 11](topology/iteration_11/01_results.md): TOP-017 and the later user-requested engineering follow-up. A fresh central-circle pipeline passes; saved two-star states qualify at 256/512, while two-star recovery remains untested at that resolution. Its handoff owns the next decision; no successor has been run.
+Topology’s latest executed closeout is [iteration 11](topology/iteration_11/01_results.md): TOP-017 and the later user-requested engineering follow-up. A fresh central-circle pipeline passes; saved two-star states qualify at 256/512, while two-star recovery remains untested at that resolution. The [TOP-018 plan](topology/iteration_11/03_plan.md) is APPROVED / IN PROGRESS, beginning with implementation and pre-dispatch tests. Its handoff owns the execution state.
 
 The current comparison reference for both active tracks is
 [baseline B0](../baselines/B0_2026-09-10.md).

@@ -42,14 +42,14 @@ which controller behaviour the baseline pins.
 
 ## Current handoff
 
-Updated 2026-09-14.
+Updated 2026-09-15.
 
 | Item | Current state |
 |---|---|
 | Active iteration | [Iteration 11 results](iteration_11/01_results.md); iteration 10 retains the executed TOP-017 plan |
-| Stage | TOP-017 and user-requested engineering follow-up COMPLETE: fresh central circle recovery passes; saved two-star states qualify at 256/512 |
-| Approval | Explicit TOP-017 approval and later instruction to implement the three engineering actions; [follow-up scope](iteration_11/02_engineering_followup.md) |
-| Next expected action | Decide whether to scope two-star continuation at 256/512; no further inverse or successor has been run |
+| Stage | TOP-017 and engineering follow-up COMPLETE. TOP-018 IN PROGRESS: implementation and pre-dispatch tests |
+| Approval | TOP-018 APPROVED on 2026-09-15 by the user's “yesh” response to the explicit audit/conditional-pair approval request; [contract](iteration_11/03_plan.md) |
+| Next expected action | Complete implementation/tests, run Phase A, and release exactly the matched two-star S/F pair if its gate passes. [Current-source review](iteration_11/02_proposals/02_TOP018_current_checkout_review.md) identifies verified prediction reuse and remaining checks |
 | Owner / reviewer | Codex `/root`; TOP-017 independent reviewer `/root/top017_review`. Engineering follow-up reviewed by the owner, without an independent-agent review |
 | Deferred / superseded | TOP-013 and TOP-014 not selected for execution; TOP-015 SUPERSEDED by TOP-016; TOP-002–004 remain deferred |
 | Evidence interpretation | One fresh central circle-start pipeline passes. Two-star resolution is diagnosed on saved states, but recovery and the full paired predicate remain unresolved. TOP-016 merge regression remains unresolved |
@@ -61,6 +61,13 @@ The later [engineering result bundle](../../../results/validation/topology/TOP-0
 and [fresh-run video](../../../results/validation/topology/TOP-017-followup-20260914-engineering/fresh_circle_to_ellipse_star.mp4)
 record the user-requested implementation follow-up. Existing numerical defaults
 and historical measurements are preserved; validated work is committed locally.
+
+TOP-018's supplied review predates that follow-up. Its installed plan retains the
+same scope and budgets, with verified historical predictions eligible for reuse.
+Codex `/root` reviewed installation and the intervening source changes without
+physical solves. TOP-018 is now approved; Codex `/root` owns implementation and
+the owner review, without an independent-agent review. No new branch/worktree
+was created.
 
 ## Reading order
 
@@ -125,4 +132,4 @@ certificate, and the trust region's dependence on coordinates.
 | 08 | Stopping versus stationarity | TOP-010 complete; neither saved state is stationary, restarts recover 1.7x objective and no geometry |
 | 09 | Tolerance, acquisition, and recovery reset | TOP-011/012 complete; TOP-013/014 deferred, TOP-015 superseded; TOP-016 approved and executed from the iteration-09 plan |
 | 10 | Bounded fixed-topology continuation | TOP-016 results reviewed; TOP-017 approved and executed from saved endpoints |
-| 11 | Central recovery and numerical qualification | TOP-017 complete; authorized engineering follow-up validates a fresh central-circle run and diagnoses the saved two-star resolution obstruction. No successor run |
+| 11 | Central recovery and numerical qualification | TOP-017 and engineering follow-up complete. TOP-018 proposal/plan installed and reconciled with current evidence; awaiting explicit approval, no successor run |
