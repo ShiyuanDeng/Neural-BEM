@@ -1,0 +1,30 @@
+stage 2 iteration 0 loss 5.3094267114948375e-05 solves 138
+stage 2 iteration 1 loss 3.095965546030905e-05 solves 282
+stage 2 iteration 2 loss 2.713203637820392e-05 solves 426
+stage 2 iteration 3 loss 2.6210512475961937e-05 solves 570
+stage 2 iteration 4 loss 2.3875763612042506e-05 solves 716
+stage 2 iteration 5 loss 2.200233680344287e-05 solves 862
+stage 2 iteration 6 loss 2.0312141718145927e-05 solves 1008
+stage 2 iteration 7 loss 1.8695752933170984e-05 solves 1154
+stage 3 iteration 0 loss 0.00013209404918940176 solves 1383
+stage 3 iteration 1 loss 6.816286591067476e-05 solves 1599
+stage 3 iteration 2 loss 4.850423650853893e-05 solves 1809
+stage 3 iteration 3 loss 2.5489105810680323e-05 solves 2022
+stage 3 iteration 4 loss 1.7659321649288125e-05 solves 2235
+stage 3 iteration 5 loss 1.6844269525570594e-05 solves 2445
+stage 3 iteration 6 loss 1.1874827408384958e-07 solves 2655
+stage 3 iteration 7 loss 1.3700059563057218e-08 solves 2865
+stage 4 iteration 0 loss 2.0410195690647754e-11 solves 3159
+stage 4 iteration 1 loss 8.291789516519195e-16 solves 3443
+Traceback (most recent call last):
+  File "/home/drdeng/Neural_SDF_BEM_AD/experiments/top018/run.py", line 536, in <module>
+    if __name__=='__main__':main()
+  File "/home/drdeng/Neural_SDF_BEM_AD/experiments/top018/run.py", line 532, in main
+    result=trial(args.bundle.resolve(),args.arm,args.seconds)
+  File "/home/drdeng/Neural_SDF_BEM_AD/experiments/top018/run.py", line 465, in trial
+    result=schedule(initial,arm,observed,optimizer,opt['minimum_component_radius_m'],ledger,output,
+  File "/home/drdeng/Neural_SDF_BEM_AD/experiments/top018/run.py", line 438, in schedule
+    require(last_gradient['active_frequencies_hz']==stage['active_frequencies_hz']
+  File "/home/drdeng/Neural_SDF_BEM_AD/experiments/top018/run.py", line 50, in require
+    raise m.ImplementationError(reason)
+run_top017.ImplementationError: last measured gradient objective/resolution mismatch

@@ -423,6 +423,13 @@ def schedule(initial,arm,observed,optimizer,floor,ledger,output,initial_score,sc
             except Exception as exc:
                 result['reporting_score_missing_reason']=f'{type(exc).__name__}: {exc}'
     result['work']=ledger.snapshot()
+    bind_objective_records(result,observed,output)
+    write(output/'metrics.json',result)
+    return result
+
+
+def bind_objective_records(result,observed,output):
+    """Attach identities to saved diagnostics; no forward or derivative calls."""
     for stage in result['stages']:
         active=len(stage['active_frequencies_hz'])
         terminal=stage['terminal']
@@ -435,7 +442,7 @@ def schedule(initial,arm,observed,optimizer,floor,ledger,output,initial_score,sc
             gradient['objective_sha256']=terminal['objective_identity']['objective_sha256']
         last_gradient=terminal.get('last_measured_gradient')
         if last_gradient is not None:
-            require(last_gradient['active_frequencies_hz']==stage['active_frequencies_hz']
+            require(list(last_gradient['active_frequencies_hz'])==list(stage['active_frequencies_hz'])
                     and last_gradient['production_nodes']==256 and last_gradient['refined_nodes']==512,
                     'last measured gradient objective/resolution mismatch')
             last_gradient['objective_sha256']=terminal['objective_identity']['objective_sha256']
@@ -443,7 +450,6 @@ def schedule(initial,arm,observed,optimizer,floor,ledger,output,initial_score,sc
         if stage_path.exists():
             write(stage_path/'objective_associations.json',dict(
                 endpoint=terminal['objective_identity'],gradient=gradient,last_measured_gradient=last_gradient))
-    write(output/'metrics.json',result)
     return result
 
 
@@ -507,7 +513,8 @@ def campaign(bundle,validation):
             futures=[pool.submit(run_worker,bundle,arm,deadline) for arm in arms]
             for future in futures:
                 record['workers'].append(future.result());write(bundle/'campaign.json',record)
-        record['status']='COMPLETE'
+        record['status']=('COMPLETE' if all(w['exit_code']==0 and not w['campaign_timeout']
+                            for w in record['workers']) else 'COMPLETE_WITH_FAILED_WORKERS')
     else:record['status']='STOPPED_AT_PHASE_A'
     record['elapsed_seconds']=time.monotonic()-began
     write(bundle/'campaign.json',record)

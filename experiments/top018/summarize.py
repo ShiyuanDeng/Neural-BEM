@@ -4,6 +4,7 @@ from collections import Counter
 import hashlib
 import json
 from pathlib import Path
+import subprocess
 
 ROOT=Path(__file__).resolve().parents[2]
 
@@ -25,7 +26,24 @@ def score_row(label,score,state=None,**extra):
 
 def summarize(bundle):
     manifest=read(bundle/'manifest.json');audit=read(bundle/'phase_a/audit.json');campaign=read(bundle/'campaign.json')
-    for name,sha in manifest['source_sha256'].items():assert digest(ROOT/name)==sha,('source',name)
+    reporting=read(bundle/'reporting_repair.json') if (bundle/'reporting_repair.json').exists() else None
+    source_changes={}
+    for name,sha in manifest['source_sha256'].items():
+        current=digest(ROOT/name)
+        if current!=sha:
+            assert reporting is not None and reporting['current_reporting_source_sha256'].get(name)==current,('unreviewed source change',name)
+            measured=subprocess.check_output(['git','show',manifest['git_revision']+':'+name],cwd=ROOT)
+            assert hashlib.sha256(measured).hexdigest()==sha,('measured source',name)
+            source_changes[name]=dict(measured=sha,current_reporting=current)
+    if reporting is not None:
+        integrity=read(bundle/'source_integrity_before_reporting_repair.json')
+        assert integrity['status']=='PASS' and integrity['frozen_sources_unchanged_through_numerical_completion']
+        assert reporting['source_integrity_record_sha256']==digest(bundle/'source_integrity_before_reporting_repair.json')
+        for arm,association in reporting['arms'].items():
+            folder=bundle/'runs'/f'{arm}-far-two-stars'
+            assert association['original_metrics_sha256']==digest(folder/'metrics_before_reporting_repair.json')
+            assert association['reconciled_metrics_sha256']==digest(folder/'metrics.json')
+            assert association['worker_log_sha256']==digest(bundle/f'{arm}.log')
     for name,sha in manifest['input_sha256'].items():assert digest(bundle/name)==sha,('input',name)
     for name,sha in manifest['historical_sha256'].items():assert digest(ROOT/name)==sha,('history',name)
     common=read(bundle/'inputs/far-two-stars/state.json');common_hash=state_hash(common)
@@ -121,6 +139,8 @@ def summarize(bundle):
                           production_nodes=128,refined_nodes=256,source=str(central_path.relative_to(ROOT)),source_sha256=digest(central_path))
     scorecard=dict(outcome=outcome,decision=decision,pair_complete_and_qualified=complete,rows=rows,
         reused_central=central_row,unavailable_arms=unavailable,
+        worker_exit_failures=[w for w in campaign['workers'] if w['exit_code']!=0],
+        reporting_repair=reporting,current_reporting_source_changes=source_changes,
         trials={a:{k:t[k] for k in ('status','schedule_complete','numerically_qualified','convergence',
             'complete_effective_exposure','reconstruction_gates_pass','work')} for a,t in trials.items()})
     ledger=dict(total_attempted=sum(totals['attempted'].values()),total_completed=sum(totals['completed'].values()),
@@ -200,9 +220,27 @@ Rebuild without physical solves:
 python experiments/top018/summarize.py --bundle {bundle.relative_to(ROOT)}
 ```
 '''
+    if reporting is not None:
+        summary+='''
+## Preserved reporting failure and repair
+
+Both numerical schedules completed before their workers exited with a
+post-schedule annotation error: Python list/tuple equality rejected identical
+frequency values. The [diagnosis](reporting_failure_diagnosis.md), original
+`metrics_before_reporting_repair.json` files and worker tracebacks are retained.
+The source/input hashes were verified unchanged through numerical completion
+before the reporting code was corrected. Measured numerical source remains
+`9bde9d1`; later reporting changes are identified separately.
+
+[Reconciliation record](reporting_repair.json) verifies that every original
+scientific field is unchanged. Only missing objective associations and integrity
+metadata were rebuilt. No physical solve, derivative, inverse or restart was
+performed by the repair. Worker exit failures remain visible in the scorecard.
+'''
     (bundle/'README.md').write_text(summary)
     verification=dict(status='PASS',source_files=len(manifest['source_sha256']),
         historical_files=len(manifest['historical_sha256']),input_files=len(manifest['input_sha256']),
+        current_reporting_source_changes=source_changes,
         source_input_state_score_gradient_and_solve_associations_verified=True,
         complete_pair=complete,new_physical_solves_in_verification=0)
     write(bundle/'verification.json',verification)

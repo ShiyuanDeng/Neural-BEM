@@ -47,7 +47,7 @@ Galerkin formulations, derivatives, conditioning, and cost. Replacing Kress is
 
 | Track | Question | Stage | Next expected action | Approved IDs |
 |---|---|---|---|---|
-| [Topology / Track A](iterations/topology/README.md) | Fixed-count recovery and numerical qualification | TOP-017 and engineering follow-up COMPLETE; TOP-018 APPROVED / IN PROGRESS | Execute [TOP-018](iterations/topology/iteration_11/03_plan.md): qualify the remaining checks, then conditionally run the matched two-star pair | TOP-001, TOP-005–012, TOP-016, TOP-017, TOP-018 |
+| [Topology / Track A](iterations/topology/README.md) | Fixed-count recovery and numerical qualification | TOP-018 COMPLETE: qualified two-star F recovery relative to matched S | Review [iteration 12](iterations/topology/iteration_12/01_results.md); prepare one separately approved capacity-qualified K=17 merge-control comparison | TOP-001, TOP-005–012, TOP-016, TOP-017, TOP-018 |
 | [Boundary–BIE](iterations/boundary_bie/README.md) | Which properties of smooth-boundary representations improve the accuracy, conditioning, differentiation or cost of the BIE inverse? | Brief drafted; no review, no plan | Review [the brief](iterations/boundary_bie/iteration_01/02_proposals/01_boundary_bie_research_brief.md); decide whether `BIE-001` — comparison and selection of one prototype — is the right first deliverable | **None** |
 
 **TOP-017 is complete without promotion.** [Iteration 11](iterations/topology/iteration_11/01_results.md) records a qualified central F recovery, substantially better than the paired S control, and two-star hard stops at the frozen numerical gates. The full principal predicate remains incomplete. TOP-016’s merge regression is preserved; the evaluation-only representation audit does not resolve it. Only the bounded TOP-018 successor is approved; no suite is authorized.
@@ -56,7 +56,11 @@ The later [engineering follow-up](../results/validation/topology/TOP-017-followu
 also validates a fresh central-circle recovery and 256/512 predictions for three
 saved two-star states. The [TOP-018 installation review](iterations/topology/iteration_11/02_proposals/02_TOP018_current_checkout_review.md)
 preserves that evidence and identifies the remaining common-start and derivative
-checks. Higher-resolution two-star recovery remains untested.
+checks. [TOP-018](../results/validation/topology/TOP-018-20260915-resolution-qualified-pair/README.md)
+has now completed that comparison: both schedules qualify at 256/512, F recovers
+at 0.00167644 mm boundary error, and S fails at 11.793168 mm. The reporting-only
+repair and failed worker exits are retained in the bundle; no numerical work was
+repeated. No broader controller promotion or successor is authorized.
 
 TOP-011/012 completion is recorded in [iteration 09](iterations/topology/iteration_09/01_results.md). The user’s 2026-09-14 instruction adopts TOP-016 and its conditional stages; TOP-013/014 are deferred and TOP-015 is superseded. Boundary–BIE remains awaiting brief review with no experiment approved.
 

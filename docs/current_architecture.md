@@ -290,3 +290,13 @@ declared synthetic cases; broader generalization remains open.
 `run_top017.py` distinguishes binding stage quotas from hard solve/time limits and exposes complete Jacobian, candidate and feasibility events through an optional optimizer diagnostic callback. It retains exact accepted-state, objective, gradient and frequency-work associations; the inherited FD/LM equations, physical interface and defaults are unchanged. `run_top017_campaign.py` enforces the outer watchdog and at most two numerical workers. Historical TOP-016 runner behavior remains intact.
 
 The [TOP-017 closeout](iterations/topology/iteration_11/01_results.md) demonstrates central fixed-count recovery with the specified cumulative-frequency protocol from a retained common-stage endpoint. Both two-star arms hit frozen numerical gates before completing exposure, and the merge control regression remains unresolved. This experimental protocol is not promoted; its result does not establish automatic topology recovery or full-suite performance.
+
+The later [TOP-018 closeout](iterations/topology/iteration_12/01_results.md)
+qualifies the saved two-star states and completes a matched pair at 256/512.
+Its cumulative-frequency arm recovers at 0.00167644 mm boundary error; the
+single-frequency control fails at 11.793168 mm. The wrapper in
+`experiments/top018/run.py` reuses the same numerical methods and defaults, with
+explicit resolution, release gates and resource ceilings. A post-schedule
+reporting type error was repaired from saved artifacts and remains documented.
+This is a fixed-count result; the merge regression and broader controller
+qualification remain open.

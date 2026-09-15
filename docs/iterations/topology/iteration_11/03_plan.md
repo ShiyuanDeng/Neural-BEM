@@ -6,13 +6,22 @@ Prepared 2026-09-15. Consolidates the
 ## Status and authority
 
 - **Approval status:** APPROVED
-- **Execution status:** IN PROGRESS — implementation and pre-dispatch tests
+- **Execution status:** COMPLETE — numerical campaign and artifact closeout under
+  `results/validation/topology/TOP-018-20260915-resolution-qualified-pair/`
 - **Owner:** Codex `/root`. **Reviewer:** owner source/artifact review;
   no independent-agent review assigned or claimed.
 - **Approval record:** 2026-09-15, the user replied “yesh” to the explicit request
   to approve TOP-018's audit and conditional two-arm run, capped at 14,256 solves.
   This approves the full conditional contract below and its local commit, with
   no branch/worktree creation or push.
+- **Measured source:** `9bde9d1`; 87 pre-dispatch mocked/geometry tests passed.
+  [Implementation review](../../../../experiments/top018/implementation_review.md).
+- **Closeout:** [iteration 12](../iteration_12/01_results.md). Phase A passed
+  (86 new solves); both 256/512 schedules completed and qualified. Final F
+  recovers, S fails the recovery gates. Total 8,336 completed solves, zero failed.
+  A post-schedule metadata type error was repaired from saved artifacts with
+  original worker failures retained; 89 final tests pass. Numerical work was
+  not repeated. The result bundle records measured and reporting source hashes.
 - **Reviewed source:** `243fe19a7937dd519c4a55bc3e04d464ee04d2a4` on
   `feature/ordered-boundary-nystrom`.
 - **Default checkout:** `/home/drdeng/Neural_SDF_BEM_AD`, the existing branch.

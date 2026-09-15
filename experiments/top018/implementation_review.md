@@ -71,3 +71,16 @@ of every future candidate. Any such obstruction closes this bounded experiment.
 **Review decision:** accept this implementation for its approved pre-dispatch
 tests and conditional numerical contract. No change to the scientific scope,
 numerical tolerances, or resource ceilings is authorized by this review.
+
+## Post-run reporting correction — 2026-09-15
+
+Both numerical schedules completed before a list/tuple frequency-metadata
+comparison failed in the final annotation loop. After both workers stopped,
+the owner verified all frozen source/input hashes, preserved the original
+metrics and tracebacks, and corrected the comparison to compare sequence values.
+The annotation helper can now rebuild identities from saved records without
+physical calls; the campaign also exposes failed worker exits in its status.
+Two new tests reproduce this exact inherited metadata seam; all 89 final tests
+pass. The [closeout review](../../results/validation/topology/TOP-018-20260915-resolution-qualified-pair/closeout_review.md)
+records numerical provenance `9bde9d1`, later reporting hashes and zero-physics
+reconciliation. The pre-dispatch validation record above remains historical.

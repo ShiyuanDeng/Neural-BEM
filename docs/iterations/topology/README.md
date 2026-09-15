@@ -46,32 +46,32 @@ Updated 2026-09-15.
 
 | Item | Current state |
 |---|---|
-| Active iteration | [Iteration 11 results](iteration_11/01_results.md); iteration 10 retains the executed TOP-017 plan |
-| Stage | TOP-017 and engineering follow-up COMPLETE. TOP-018 IN PROGRESS: implementation and pre-dispatch tests |
+| Active iteration | [Iteration 12 results](iteration_12/01_results.md); iteration 11 retains the executed TOP-018 plan |
+| Stage | TOP-018 COMPLETE: both 256/512 schedules qualify; F recovers both stars and the matched S control fails recovery |
 | Approval | TOP-018 APPROVED on 2026-09-15 by the user's “yesh” response to the explicit audit/conditional-pair approval request; [contract](iteration_11/03_plan.md) |
-| Next expected action | Complete implementation/tests, run Phase A, and release exactly the matched two-star S/F pair if its gate passes. [Current-source review](iteration_11/02_proposals/02_TOP018_current_checkout_review.md) identifies verified prediction reuse and remaining checks |
-| Owner / reviewer | Codex `/root`; TOP-017 independent reviewer `/root/top017_review`. Engineering follow-up reviewed by the owner, without an independent-agent review |
+| Next expected action | Prepare one separately approved K=17 merge-control S/F comparison with qualified representation capacity; no successor is approved or running |
+| Owner / reviewer | TOP-018: Codex `/root`, owner source/artifact review; no independent-agent review. TOP-017 retains its historical independent review |
 | Deferred / superseded | TOP-013 and TOP-014 not selected for execution; TOP-015 SUPERSEDED by TOP-016; TOP-002–004 remain deferred |
-| Evidence interpretation | One fresh central circle-start pipeline passes. Two-star resolution is diagnosed on saved states, but recovery and the full paired predicate remain unresolved. TOP-016 merge regression remains unresolved |
+| Evidence interpretation | Fresh central recovery and the saved-common-start two-star F recovery both pass their contracts. Two-star automatic count recovery and twelve-scene qualification remain untested; TOP-016 merge regression remains unresolved |
 | Git scope | Consolidated by user direction into `/home/drdeng/Neural_SDF_BEM_AD`, branch `feature/ordered-boundary-nystrom`. Ask the user explicitly before any new branch/worktree, even in full-access mode |
 
-TOP-001, TOP-005–012, TOP-016 and TOP-017 have recorded approvals and completed closeouts. TOP-016's [bounded fixed-count results](iteration_10/01_results.md) report passed information screens, incomplete principal comparisons, and an adverse completed merge control. This is not twelve-scene qualification.
+TOP-001, TOP-005–012, TOP-016, TOP-017 and TOP-018 have recorded approvals and completed closeouts. TOP-016's [bounded fixed-count results](iteration_10/01_results.md) report passed information screens, incomplete principal comparisons, and an adverse completed merge control. This is not twelve-scene qualification.
 
 The later [engineering result bundle](../../../results/validation/topology/TOP-017-followup-20260914-engineering/README.md)
 and [fresh-run video](../../../results/validation/topology/TOP-017-followup-20260914-engineering/fresh_circle_to_ellipse_star.mp4)
 record the user-requested implementation follow-up. Existing numerical defaults
 and historical measurements are preserved; validated work is committed locally.
 
-TOP-018's supplied review predates that follow-up. Its installed plan retains the
-same scope and budgets, with verified historical predictions eligible for reuse.
-Codex `/root` reviewed installation and the intervening source changes without
-physical solves. TOP-018 is now approved; Codex `/root` owns implementation and
-the owner review, without an independent-agent review. No new branch/worktree
-was created.
+TOP-018's supplied review predates that follow-up. Its [completed bundle](../../../results/validation/topology/TOP-018-20260915-resolution-qualified-pair/README.md)
+reuses the verified predictions, qualifies the remaining checks, and completes
+the matched pair. The final F boundary error is 0.00167644 mm, versus S's
+11.793168 mm. A post-schedule reporting type error and both worker exits are
+preserved; metadata was repaired without new physical solves. No new branch or
+worktree was created, and no push is authorized by the experiment contract.
 
 ## Reading order
 
-1. This handoff and [the latest iteration-11 results](iteration_11/01_results.md).
+1. This handoff and [the latest iteration-12 results](iteration_12/01_results.md).
 2. [Baseline B0](../../baselines/B0_2026-09-10.md) — especially §5 (acceptance
    and stopping rules), §6 (demonstrated scope) and §8 (limitations).
 3. [The topology research brief](iteration_01/02_proposals/01_topology_research_brief.md)
@@ -132,4 +132,5 @@ certificate, and the trust region's dependence on coordinates.
 | 08 | Stopping versus stationarity | TOP-010 complete; neither saved state is stationary, restarts recover 1.7x objective and no geometry |
 | 09 | Tolerance, acquisition, and recovery reset | TOP-011/012 complete; TOP-013/014 deferred, TOP-015 superseded; TOP-016 approved and executed from the iteration-09 plan |
 | 10 | Bounded fixed-topology continuation | TOP-016 results reviewed; TOP-017 approved and executed from saved endpoints |
-| 11 | Central recovery and numerical qualification | TOP-017 and engineering follow-up complete. TOP-018 proposal/plan installed and reconciled with current evidence; awaiting explicit approval, no successor run |
+| 11 | Central recovery and numerical qualification | TOP-017 and engineering follow-up complete. TOP-018 approved and executed under its bounded audit/conditional-pair contract |
+| 12 | Qualified two-star paired recovery | TOP-018 complete: F recovers, S does not; one capacity-qualified merge-control decision remains, with no successor approved |

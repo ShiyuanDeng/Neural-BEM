@@ -2,6 +2,9 @@
 
 | Bundle | Role and outcome |
 |---|---|
+| [TOP-018 qualified two-star pair](TOP-018-20260915-resolution-qualified-pair/README.md) | Both 256/512 schedules qualify; F recovers at 0.00167644 mm while S fails at 11.793168 mm. 8,336 completed solves, zero failed; original post-schedule reporting failures retained and repaired without reruns. No promotion or successor |
+| [TOP-017 engineering follow-up](TOP-017-followup-20260914-engineering/README.md) | One fresh central-circle pipeline passes; three saved two-star states qualify at 256/512. Historical evidence reused by TOP-018 |
+| [TOP-017 staged continuation](TOP-017-20260914-staged-continuation/README.md) | Central F recovers; historical two-star arms stop at 128/256 numerical gates. Central success and the merge-control interpretation remain preserved |
 | [TOP-009 independent review](TOP-009-20260912-review/README.md) | 13/14 ladder refinements stopped on small loss change; neither stationarity nor unique recovery is established. Promotion counters repaired; 108 focused tests pass. Proposed next diagnostic separates stopping from stationarity |
 | [TOP-010 stopping versus stationarity](TOP-010-20260912-stopping-vs-stationarity/README.md) | Neither saved state is stationary: terminal gradient 4013x the optimizer's tolerance with a full-rank Jacobian, and three restarts of the unmodified optimizer recover 1.7x objective. Matched error moves 11.849 to 11.991 mm and IoU is unchanged, so repairing the stopping rules would not recover these shapes |
 | [TOP-009 bandwidth capacity](TOP-009-20260912-bandwidth-capacity/README.md) | Failed stage 2: shape modes fit 248x better but final geometry/holdout worsen. Stage 4 exhausts K=9 and reaches 11.849 mm, still worse than the start and 74,159x above the known truth objective. Independent review qualifies the original local-minimum and data-sufficiency claims |

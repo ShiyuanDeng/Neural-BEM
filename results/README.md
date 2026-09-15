@@ -12,6 +12,18 @@ conclusions to this register only after reviewing the actual run artifacts.
 
 [catalog.csv](catalog.csv) contains **175 rows**. The original 162 rows span 60 saved or empty run bundles, including the three existing 12-pair neural runs indexed during this reorganization, the two initial adjoint diagnostics, the radial-topology birth demonstration, and three full-pass topology challenges. The new topology rows group the TOP-001/TOP-005 replay and controller comparisons by chart/arm; scalar metrics there are worst-case values. The original CSV snapshot predates the Cartesian suites; use the [Cartesian index](inverse/cartesian_fourier/README.md) and [pipeline audit](validation/cartesian_fourier/pipeline-audit-20260910/README.md) for that evidence. The earlier exporter-failed partial attempt is recorded separately in the [adjoint validation index](validation/implicit_mlp_adjoint/README.md). Inverse runs have a row per solver, policy or declared arm; larger supporting sweeps explicitly identify their grouped scope. The catalogue records accepted geometry, derivative/optimizer, MLP role, target and initialization, observation setup, separate recovery/representation outcomes, date evidence, provenance, and each result's implication for the implicit MLP pipeline.
 
+## TOP-018 resolution-qualified two-star pair
+
+[Result bundle](validation/topology/TOP-018-20260915-resolution-qualified-pair/README.md) ·
+[Endpoint figure](validation/topology/TOP-018-20260915-resolution-qualified-pair/endpoints.svg) ·
+[Iteration 12](../docs/iterations/topology/iteration_12/01_results.md) · 2026-09-15:
+both matched schedules qualified at 256/512. F recovers (0.00167644 mm boundary,
+3.323707e-6 worst evaluation error); S fails recovery (11.793168 mm, 1.306218).
+8,336 new solves completed, zero failed; all ceilings passed. A post-schedule
+reporting error was repaired from saved artifacts, with both failed worker exits
+preserved. Fixed-count development-case evidence; no controller promotion or
+successor run. TOP-016's merge regression and the earlier central successes remain.
+
 ## TOP-017 staged principal continuation
 
 [Central-case video (53 s)](validation/topology/TOP-017-20260914-central-video/central_circle_to_ellipse_star.mp4) · [Video provenance](validation/topology/TOP-017-20260914-central-video/README.md)

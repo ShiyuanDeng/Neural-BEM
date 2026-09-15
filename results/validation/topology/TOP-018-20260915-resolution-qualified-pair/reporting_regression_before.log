@@ -1,0 +1,82 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+________ test_completed_schedule_binds_list_gradient_to_tuple_stage[S] _________
+
+tmp_path = PosixPath('/tmp/pytest-of-drdeng/pytest-126/test_completed_schedule_binds_0')
+arm = 'S'
+
+    @pytest.mark.parametrize('arm',['S','F'])
+    def test_completed_schedule_binds_list_gradient_to_tuple_stage(tmp_path,arm):
+        m,p=n.m,n.p
+        state=p.driver.deserialize_state(m.read(n.HISTORY/'inputs/far-two-stars/state.json'))
+        observed=np.ones((24,4),complex)
+        def score(s):
+            return dict(training_errors=[.1]*4,numerically_qualified=True,original_gates_pass=False)
+        def fit(initial,data,nodes,solve,optimizer,floor,ledger,output):
+            output.mkdir(parents=True)
+            frequencies=(data.forward_problem.angular_frequencies/(2*np.pi)).tolist()
+            gradient=dict(state_sha256=m.state_hash(initial),active_frequencies_hz=frequencies,
+                          production_nodes=256,refined_nodes=512)
+            return initial,dict(stage_outcome='STAGE_QUOTA_REACHED',effective_training_exposure=True,
+                convergence='UNCONFIRMED',final_state=p.driver.serialize_state(initial),
+                gradient=gradient,last_measured_gradient=dict(gradient))
+>       result=n.schedule(state,arm,observed,None,.008,m.Ledger(seconds=7200),tmp_path,score(state),
+                           score,fit=fit,feasibility=lambda *a:True)
+
+pytest/sdf_inverse/test_top018_reporting.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+experiments/top018/run.py:438: in schedule
+    require(last_gradient['active_frequencies_hz']==stage['active_frequencies_hz']
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False
+reason = 'last measured gradient objective/resolution mismatch'
+
+    def require(condition, reason):
+        if not condition:
+>           raise m.ImplementationError(reason)
+E           run_top017.ImplementationError: last measured gradient objective/resolution mismatch
+
+experiments/top018/run.py:50: ImplementationError
+________ test_completed_schedule_binds_list_gradient_to_tuple_stage[F] _________
+
+tmp_path = PosixPath('/tmp/pytest-of-drdeng/pytest-126/test_completed_schedule_binds_1')
+arm = 'F'
+
+    @pytest.mark.parametrize('arm',['S','F'])
+    def test_completed_schedule_binds_list_gradient_to_tuple_stage(tmp_path,arm):
+        m,p=n.m,n.p
+        state=p.driver.deserialize_state(m.read(n.HISTORY/'inputs/far-two-stars/state.json'))
+        observed=np.ones((24,4),complex)
+        def score(s):
+            return dict(training_errors=[.1]*4,numerically_qualified=True,original_gates_pass=False)
+        def fit(initial,data,nodes,solve,optimizer,floor,ledger,output):
+            output.mkdir(parents=True)
+            frequencies=(data.forward_problem.angular_frequencies/(2*np.pi)).tolist()
+            gradient=dict(state_sha256=m.state_hash(initial),active_frequencies_hz=frequencies,
+                          production_nodes=256,refined_nodes=512)
+            return initial,dict(stage_outcome='STAGE_QUOTA_REACHED',effective_training_exposure=True,
+                convergence='UNCONFIRMED',final_state=p.driver.serialize_state(initial),
+                gradient=gradient,last_measured_gradient=dict(gradient))
+>       result=n.schedule(state,arm,observed,None,.008,m.Ledger(seconds=7200),tmp_path,score(state),
+                           score,fit=fit,feasibility=lambda *a:True)
+
+pytest/sdf_inverse/test_top018_reporting.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+experiments/top018/run.py:438: in schedule
+    require(last_gradient['active_frequencies_hz']==stage['active_frequencies_hz']
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False
+reason = 'last measured gradient objective/resolution mismatch'
+
+    def require(condition, reason):
+        if not condition:
+>           raise m.ImplementationError(reason)
+E           run_top017.ImplementationError: last measured gradient objective/resolution mismatch
+
+experiments/top018/run.py:50: ImplementationError
+=========================== short test summary info ============================
+FAILED pytest/sdf_inverse/test_top018_reporting.py::test_completed_schedule_binds_list_gradient_to_tuple_stage[S]
+FAILED pytest/sdf_inverse/test_top018_reporting.py::test_completed_schedule_binds_list_gradient_to_tuple_stage[F]
+2 failed in 0.13s
