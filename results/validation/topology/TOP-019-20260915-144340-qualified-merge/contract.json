@@ -1,0 +1,225 @@
+{
+  "acceptance": {
+    "absolute_margin": 1e-14,
+    "cross_resolution_factor": 5,
+    "relative_margin": 1e-08
+  },
+  "approval": "2026-09-15 user: go",
+  "blas_threads": 1,
+  "campaign_seconds": 15300,
+  "campaign_solve_cap": 16256,
+  "derivative_floor_multiplier": 5,
+  "derivative_relative_stability": 0.25,
+  "derivative_rows": [
+    0,
+    32
+  ],
+  "derivative_steps": [
+    0.0001,
+    5e-05
+  ],
+  "endpoint_reserve": 12,
+  "experiment": "TOP-019",
+  "frequencies_hz": [
+    500000000.0,
+    750000000.0,
+    1000000000.0,
+    1250000000.0,
+    1500000000.0,
+    2500000000.0
+  ],
+  "geometry_configs": {
+    "256": {
+      "arclength_dense_resolution": 256,
+      "bandwidth": 1,
+      "bounds": [
+        [
+          0.2,
+          0.2
+        ],
+        [
+          0.8,
+          0.8
+        ]
+      ],
+      "conversion_audit_grid_shape": null,
+      "conversion_audit_samples": null,
+      "conversion_tolerance_m": null,
+      "grid_shape": [
+        16,
+        16
+      ],
+      "num_nodes": 256,
+      "projected_samples": 8,
+      "validation_resolution": 256
+    },
+    "512": {
+      "arclength_dense_resolution": 256,
+      "bandwidth": 1,
+      "bounds": [
+        [
+          0.2,
+          0.2
+        ],
+        [
+          0.8,
+          0.8
+        ]
+      ],
+      "conversion_audit_grid_shape": null,
+      "conversion_audit_samples": null,
+      "conversion_tolerance_m": null,
+      "grid_shape": [
+        16,
+        16
+      ],
+      "num_nodes": 512,
+      "projected_samples": 8,
+      "validation_resolution": 256
+    }
+  },
+  "maximum_mode": 17,
+  "new_observations": false,
+  "nodes": [
+    256,
+    512
+  ],
+  "normalization": "0.5 * mean_f(||prediction_f-observed_f||_2^2 / ||observed_f||_2^2)",
+  "numerical_workers": 1,
+  "optimizer": {
+    "damping_decrease": 0.3,
+    "damping_increase": 10.0,
+    "finite_difference_steps": 0.0001,
+    "gradient_tolerance": 1e-07,
+    "infeasible_trial_policy": "reject",
+    "initial_damping": 0.001,
+    "loss_tolerance": 1e-14,
+    "max_backtracks": 7,
+    "max_damping_trials": 5,
+    "max_iterations": 22,
+    "max_parameters": 70,
+    "max_steps": [
+      0.018,
+      0.018,
+      0.012,
+      0.012,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.012,
+      0.012,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003
+    ],
+    "relative_step_tolerance": 1e-07
+  },
+  "optimizer_receives_evaluation": false,
+  "optimizer_receives_truth": false,
+  "owner": "Codex /root",
+  "phase_a_seconds": 900,
+  "phase_a_solve_cap": 256,
+  "prediction_tolerances": [
+    1e-05,
+    1e-07,
+    1e-07,
+    1e-07,
+    1e-05,
+    1e-05
+  ],
+  "reviewer": "owner review; independent reviewer unassigned",
+  "solve_config": {
+    "assembly": {
+      "minimum_absolute_clearance": 0.01,
+      "minimum_clearance_in_weights": 2.0,
+      "self_assembly": {
+        "maximum_overlap_pairs": 256,
+        "measure_overlap": true,
+        "near_argument": 0.75,
+        "series_terms": 24,
+        "target_chunk_size": 64
+      }
+    },
+    "compute_condition_number": false,
+    "minimum_field_point_clearance_in_weights": 2.0
+  },
+  "stage_plan": [
+    [
+      1,
+      1000
+    ],
+    [
+      2,
+      1250
+    ],
+    [
+      3,
+      1750
+    ],
+    [
+      4,
+      4000
+    ]
+  ],
+  "supplied_component_count": true,
+  "trial_seconds": 7200,
+  "trial_solve_cap": 8000
+}

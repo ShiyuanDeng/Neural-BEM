@@ -10,7 +10,19 @@ activation, and one-update transfer with a zero-update control. Their new
 outputs belong under `validation/method_b_failure_diagnostics/`; add measured
 conclusions to this register only after reviewing the actual run artifacts.
 
-[catalog.csv](catalog.csv) contains **175 rows**. The original 162 rows span 60 saved or empty run bundles, including the three existing 12-pair neural runs indexed during this reorganization, the two initial adjoint diagnostics, the radial-topology birth demonstration, and three full-pass topology challenges. The new topology rows group the TOP-001/TOP-005 replay and controller comparisons by chart/arm; scalar metrics there are worst-case values. The original CSV snapshot predates the Cartesian suites; use the [Cartesian index](inverse/cartesian_fourier/README.md) and [pipeline audit](validation/cartesian_fourier/pipeline-audit-20260910/README.md) for that evidence. The earlier exporter-failed partial attempt is recorded separately in the [adjoint validation index](validation/implicit_mlp_adjoint/README.md). Inverse runs have a row per solver, policy or declared arm; larger supporting sweeps explicitly identify their grouped scope. The catalogue records accepted geometry, derivative/optimizer, MLP role, target and initialization, observation setup, separate recovery/representation outcomes, date evidence, provenance, and each result's implication for the implicit MLP pipeline.
+[catalog.csv](catalog.csv) contains **177 rows**. The original 162 rows span 60 saved or empty run bundles, including the three existing 12-pair neural runs indexed during this reorganization, the two initial adjoint diagnostics, the radial-topology birth demonstration, and three full-pass topology challenges. The new topology rows group the TOP-001/TOP-005 replay and controller comparisons by chart/arm; scalar metrics there are worst-case values. Two TOP-019 rows record the prescribed S/F merge endpoints. The original CSV snapshot predates the Cartesian suites; use the [Cartesian index](inverse/cartesian_fourier/README.md) and [pipeline audit](validation/cartesian_fourier/pipeline-audit-20260910/README.md) for that evidence. The earlier exporter-failed partial attempt is recorded separately in the [adjoint validation index](validation/implicit_mlp_adjoint/README.md). Inverse runs have a row per solver, policy or declared arm; larger supporting sweeps explicitly identify their grouped scope. The catalogue records accepted geometry, derivative/optimizer, MLP role, target and initialization, observation setup, separate recovery/representation outcomes, date evidence, provenance, and each result's implication for the implicit MLP pipeline.
+
+## TOP-019 capacity-qualified merge pair
+
+[Result bundle](validation/topology/TOP-019-20260915-144340-qualified-merge/README.md) ·
+[Endpoint figure](validation/topology/TOP-019-20260915-144340-qualified-merge/endpoints.svg) ·
+[Iteration 13](../docs/iterations/topology/iteration_13/01_results.md) · 2026-09-15:
+both K=17 arms recover and qualify at 256/512. S ends at 0.0860067 mm / 0.0116406
+worst evaluation error (1,284 solves); F at 0.0214283 mm / 0.00229358 (4,844).
+Total 6,232 completed solves, zero failed. F buys more precision at higher cost;
+there is no binary recovery advantage on this control. The historical K=9 merge
+regression remains preserved. Fresh automatic two-star integration is next to
+scope; no successor or production promotion is approved.
 
 ## TOP-018 resolution-qualified two-star pair
 

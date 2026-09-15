@@ -46,16 +46,16 @@ Updated 2026-09-15.
 
 | Item | Current state |
 |---|---|
-| Active iteration | [Iteration 12 results](iteration_12/01_results.md); iteration 11 retains the executed TOP-018 plan |
-| Stage | TOP-018 COMPLETE: both 256/512 schedules qualify; F recovers both stars and the matched S control fails recovery |
-| Approval | TOP-018 APPROVED on 2026-09-15 by the user's “yesh” response to the explicit audit/conditional-pair approval request; [contract](iteration_11/03_plan.md) |
-| Next expected action | Prepare one separately approved K=17 merge-control S/F comparison with qualified representation capacity; follow the [completion roadmap](#completion-roadmap). No successor is approved or running |
-| Owner / reviewer | TOP-018: Codex `/root`, owner source/artifact review; no independent-agent review. TOP-017 retains its historical independent review |
+| Active iteration | [Iteration 13 results](iteration_13/01_results.md); iteration 12 retains the executed TOP-019 plan |
+| Stage | TOP-019 COMPLETE: both K=17 merge arms recover and qualify; F improves precision at higher cost |
+| Approval | TOP-019 APPROVED on 2026-09-15 by the user’s “go” response to its explicit audit/conditional-pair request; [plan](iteration_12/03_plan.md). TOP-018 retains its completed [approved contract](iteration_11/03_plan.md) |
+| Next expected action | Scope one fresh automatic two-star controller/continuation check, without a supplied count or saved COMMON start. [Decision](iteration_13/01_results.md#decision-and-next-step) and [completion roadmap](#completion-roadmap); no successor ID or execution is approved |
+| Owner / reviewer | TOP-019: Codex `/root`, owner implementation/closeout review; no independent review claimed. TOP-018 retains its owner review; TOP-017 retains its historical independent review |
 | Deferred / superseded | TOP-013 and TOP-014 not selected for execution; TOP-015 SUPERSEDED by TOP-016; TOP-002–004 remain deferred |
-| Evidence interpretation | Fresh central recovery and the saved-common-start two-star F recovery both pass their contracts. Two-star automatic count recovery and twelve-scene qualification remain untested; TOP-016 merge regression remains unresolved |
+| Evidence interpretation | Fresh central, saved-common-start two-star F, and the new K=17 merge S/F pair pass their contracts. Fresh automatic two-star recovery and twelve-scene qualification remain untested. The old K=9 merge regression is preserved; it does not recur in TOP-019 |
 | Git scope | Consolidated by user direction into `/home/drdeng/Neural_SDF_BEM_AD`, branch `feature/ordered-boundary-nystrom`. Ask the user explicitly before any new branch/worktree, even in full-access mode |
 
-TOP-001, TOP-005–012, TOP-016, TOP-017 and TOP-018 have recorded approvals and completed closeouts. TOP-016's [bounded fixed-count results](iteration_10/01_results.md) report passed information screens, incomplete principal comparisons, and an adverse completed merge control. This is not twelve-scene qualification.
+TOP-001, TOP-005–012, TOP-016, TOP-017, TOP-018 and TOP-019 have recorded approvals and completed closeouts. TOP-016's [bounded fixed-count results](iteration_10/01_results.md) report passed information screens, incomplete principal comparisons, and an adverse completed merge control. This is not twelve-scene qualification.
 
 The later [engineering result bundle](../../../results/validation/topology/TOP-017-followup-20260914-engineering/README.md)
 and [fresh-run video](../../../results/validation/topology/TOP-017-followup-20260914-engineering/fresh_circle_to_ellipse_star.mp4)
@@ -69,31 +69,34 @@ the matched pair. The final F boundary error is 0.00167644 mm, versus S's
 preserved; metadata was repaired without new physical solves. No new branch or
 worktree was created, and no push is authorized by the experiment contract.
 
+TOP-019's [completed merge bundle](../../../results/validation/topology/TOP-019-20260915-144340-qualified-merge/README.md)
+records both qualified recoveries: S ends at 0.0860067 mm / 0.0116406 worst
+prediction error, F at 0.0214283 mm / 0.00229358. F uses 3.77× the solves for
+4.01× boundary and 5.08× prediction accuracy. Total new work is 6,232 solves,
+zero failed; 84 pre-dispatch tests and final artifact verification pass. Keep F
+as the development candidate for the next integration check and S as a successful
+lower-cost merge control. No production promotion or successor is approved.
+
 ## Completion roadmap
 
 Recorded 2026-09-15 so a new session can resume from this handoff without chat
 history. **The topology work is not complete.** The validated fresh central
 pipeline and saved-common-start two-star continuation establish the successes
-above; merge recovery and broader automatic-controller qualification remain
-open. TOP-018 itself is complete.
+above; TOP-019 now adds qualified merge-control recovery. The broader automatic
+controller still needs qualification. TOP-018 and TOP-019 are complete.
 
 Proceed in this order, with later work conditional on the preceding evidence:
 
-1. **Resolve the merge regression with a capacity-qualified comparison.**
-   Prepare and review one bounded K=17 single-frequency (S) versus cumulative-
-   frequency (F) merge-control contract in iteration 12. The
-   [TOP-017 projection audit](iteration_11/01_results.md#merge-control-audit)
-   found a K=17 representation that passes geometry and prediction gates;
-   that evaluation-only projection must not initialize the inverse. The
-   [TOP-016 adverse control](iteration_10/01_results.md) remains the regression
-   evidence. Freeze a common initialization without truth assistance, active
-   frequency schedules, numerical checks, scoring gates, endpoint-inclusive
-   solve quotas and wall ceilings before execution approval. The result must
-   distinguish successful inverse recovery from numerical failure, inadequate
-   progress or budget exhaustion. A failed comparison leads to a bounded
-   diagnosis of the measured failure; it does not automatically release a suite.
-2. **Qualify fresh automatic two-star recovery.** Once the merge result supports
-   a candidate policy, separately scope a run from the frozen original distant
+1. **Resolve the merge regression with a capacity-qualified comparison — complete
+   for the bounded TOP-019 protocol.** The [iteration-13 closeout](iteration_13/01_results.md)
+   records both K=17 S/F recoveries from a coefficient-identical, zero-padded
+   original controller start. The truth projection was evaluation-only. F has
+   better boundary/prediction accuracy and higher work; both arms pass the
+   original gates. Preserve the historical K=9 adverse result and the changed
+   resolution/quota conventions. This does not qualify a universal K=17 policy.
+2. **Qualify fresh automatic two-star recovery — next scoping decision.** The
+   merge result supports further qualification of F; separately scope a run from
+   the frozen original distant
    circle through the topology controller and continuation, without a supplied
    object count or the saved COMMON checkpoint. Check topology-event validity,
    final count, geometry, prediction and work. Preserve the fresh central
@@ -113,16 +116,16 @@ Proceed in this order, with later work conditional on the preceding evidence:
    any narrower completion claim needs an explicitly agreed scope. Promotion
    requires a measured decision and reproducible artifacts.
 
-**Restart action:** read this handoff, the
-[iteration-12 results](iteration_12/01_results.md), the two merge records linked
-above and the [shared workflow](../README.md); then prepare the first contract.
-The later steps are a conditional roadmap. Their experiment IDs, budgets and
-execution approval have not been assigned. No numerical successor starts from
-this roadmap alone; use the existing checkout and branch recorded above.
+**Restart action:** read this handoff, [iteration 13](iteration_13/01_results.md),
+the completed [TOP-019 plan](iteration_12/03_plan.md), and the
+[shared workflow](../README.md). Prepare the fresh automatic two-star contract;
+do not replay the completed merge pair. Steps 2–4 remain conditional, with no
+successor IDs, budgets or execution approval assigned. Use the existing checkout
+and branch recorded above.
 
 ## Reading order
 
-1. This handoff and [the latest iteration-12 results](iteration_12/01_results.md).
+1. This handoff and [the latest iteration-13 results](iteration_13/01_results.md).
 2. [Baseline B0](../../baselines/B0_2026-09-10.md) — especially §5 (acceptance
    and stopping rules), §6 (demonstrated scope) and §8 (limitations).
 3. [The topology research brief](iteration_01/02_proposals/01_topology_research_brief.md)
@@ -184,4 +187,5 @@ certificate, and the trust region's dependence on coordinates.
 | 09 | Tolerance, acquisition, and recovery reset | TOP-011/012 complete; TOP-013/014 deferred, TOP-015 superseded; TOP-016 approved and executed from the iteration-09 plan |
 | 10 | Bounded fixed-topology continuation | TOP-016 results reviewed; TOP-017 approved and executed from saved endpoints |
 | 11 | Central recovery and numerical qualification | TOP-017 and engineering follow-up complete. TOP-018 approved and executed under its bounded audit/conditional-pair contract |
-| 12 | Qualified two-star paired recovery | TOP-018 complete: F recovers, S does not; one capacity-qualified merge-control decision remains, with no successor approved |
+| 12 | Qualified two-star paired recovery | TOP-018 complete; TOP-019 approved and executed from the iteration-12 plan |
+| 13 | Capacity-qualified merge recovery | TOP-019 complete: both arms recover; F improves precision at higher cost. Fresh automatic two-star integration is the next scoping decision |
