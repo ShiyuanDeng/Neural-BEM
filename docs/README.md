@@ -1,5 +1,7 @@
 # Project dashboard
 
+**Latest topology results:** [TOP-025 all-scene videos](../results/validation/topology/TOP-025-20260915-210356-all-scenes-current/README.md) and [iteration 18](iterations/topology/iteration_18/01_results.md): 7/12 scenes pass all gates.
+
 Updated 2026-09-15. This page is the entry point: current baseline, current
 research objectives, active tracks and what each one is waiting for. It
 **summarises and links**. Measurements live in the

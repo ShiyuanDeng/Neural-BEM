@@ -1,0 +1,52 @@
+{
+  "actual_attempted_calls": 3393,
+  "actual_completed_solves": 2362,
+  "actual_failed_or_refused_calls": 1031,
+  "archived_optimized_state_used": false,
+  "detail": "hard wall limit during numerical batch",
+  "fresh_recovery_pass": false,
+  "geometry_refused_calls": 1031,
+  "original_start_sha256": "dcc7276cc6dba89143347d214bd5a4fd718d31d4e3f3bab0cbea8020f7c923fd",
+  "reason": "TRIAL_WALL_LIMIT",
+  "scene": "enclosing-ellipse-star",
+  "sources_and_inputs_unchanged": true,
+  "status": "HARD_STOP",
+  "supplied_target_count": false,
+  "topology_work": {
+    "active_wall_seconds": 600.0015379069373,
+    "attempted": {
+      "topological_derivative": 14,
+      "topology_forward": 3379
+    },
+    "calls": {
+      "preserved_candidate_refusals": 1031
+    },
+    "completed": {
+      "topological_derivative": 14,
+      "topology_forward": 2348
+    },
+    "endpoint_reserve": 0,
+    "failed": {
+      "topology_forward": 1031
+    },
+    "per_frequency_attempted": {
+      "None:topological_derivative:500000000": 14,
+      "None:topology_forward:500000000": 3379
+    },
+    "per_frequency_completed": {
+      "None:topological_derivative:500000000": 14,
+      "None:topology_forward:500000000": 2348
+    },
+    "per_frequency_failed": {
+      "None:topology_forward:500000000": 1031
+    },
+    "solve_cap": 4000,
+    "stage": null,
+    "stage_attempted": 3393,
+    "stage_quota": null,
+    "total_attempted": 3393,
+    "wall_ceiling_seconds": 600,
+    "within_solve_cap": true
+  },
+  "traceback": "Traceback (most recent call last):\n  File \"/home/drdeng/Neural_SDF_BEM_AD/experiments/top025/run.py\", line 153, in run_scene\n    state=follow.topology_prefix(initial,p.training_data(p.TRAIN[:1],observed[:,:1]),control,solve,ledger,folder/'topology')\n  File \"/home/drdeng/Neural_SDF_BEM_AD/run_topology_recovery_followup.py\", line 206, in topology_prefix\n    result = controller(initial,data,p.driver.baseline._geometry_config(64),\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/topology_controller.py\", line 636, in run_topology_aware_fourier_inverse\n    result = _run_topology_aware_fourier_inverse(\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/topology_controller.py\", line 867, in _run_topology_aware_fourier_inverse\n    result = accounted_call('candidate_refinement', run_multiradial_fd_inverse, candidate.state, data, production_geometry_config,\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/work_accounting.py\", line 68, in accounted_call\n    return function(*args, **kwargs)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/radial_topology.py\", line 1292, in run_multiradial_fd_inverse\n    matrix, basis, unresolved_columns, one_sided_new = jacobian(accepted_state)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/radial_topology.py\", line 1135, in jacobian\n    plus = probe(state, step)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/radial_topology.py\", line 1083, in probe\n    return evaluate(trial)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/radial_topology.py\", line 1050, in evaluate\n    if any(not multiradial_geometry_admissible(state, extra, solve_config=solve_config)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/radial_topology.py\", line 1050, in <genexpr>\n    if any(not multiradial_geometry_admissible(state, extra, solve_config=solve_config)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/radial_topology.py\", line 738, in multiradial_geometry_admissible\n    state.boundary(geometry_config),\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/radial_topology.py\", line 285, in boundary\n    tuple(\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/radial_topology.py\", line 286, in <genexpr>\n    component.boundary_curve(geometry_config) if isinstance(component, CartesianFourierCurveState) else radial_fourier_state_curve(\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/explicit_fourier.py\", line 217, in boundary_curve\n    report = validate_periodic_parameterization(curve, BoundaryValidationConfig(\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/ordered_boundary/validation.py\", line 356, in validate_periodic_parameterization\n    self_intersections = _self_intersection_count(points, cross_tolerance, length_tolerance)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/ordered_boundary/validation.py\", line 598, in _self_intersection_count\n    intersections = _segment_pair_intersection_matrix(\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/ordered_boundary/validation.py\", line 546, in _segment_pair_intersection_matrix\n    o1 = cross2d(first_delta[:, None, :], second_start[None, :, :] - first_start[:, None, :])\n  File \"/home/drdeng/Neural_SDF_BEM_AD/run_top017.py\", line 149, in alarm\n    def alarm(*_): raise TrialWallLimit('hard wall limit during numerical batch')\nrun_top017.TrialWallLimit: hard wall limit during numerical batch\n"
+}

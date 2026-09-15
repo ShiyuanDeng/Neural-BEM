@@ -44,18 +44,25 @@ which controller behaviour the baseline pins.
 
 Updated 2026-09-15.
 
+**Later authorization:** after TOP-019, the user instructed “cp first. then i
+approve you to finish the rest”. TOP-019 is pushed as `fa2666f`. The
+[TOP-020 plan](iteration_13/03_plan.md) records the first bounded successor.
+This later instruction supersedes the no-successor-approval statements in the
+historical closeouts and roadmap below. Preserve evidence gates and declare
+each following contract before dispatch; no further branch/worktree is approved.
+
 | Item | Current state |
 |---|---|
-| Active iteration | [Iteration 13 results](iteration_13/01_results.md); iteration 12 retains the executed TOP-019 plan |
-| Stage | TOP-019 COMPLETE: both K=17 merge arms recover and qualify; F improves precision at higher cost |
-| Approval | TOP-019 APPROVED on 2026-09-15 by the user’s “go” response to its explicit audit/conditional-pair request; [plan](iteration_12/03_plan.md). TOP-018 retains its completed [approved contract](iteration_11/03_plan.md) |
-| Next expected action | Scope one fresh automatic two-star controller/continuation check, without a supplied count or saved COMMON start. [Decision](iteration_13/01_results.md#decision-and-next-step) and [completion roadmap](#completion-roadmap); no successor ID or execution is approved |
-| Owner / reviewer | TOP-019: Codex `/root`, owner implementation/closeout review; no independent review claimed. TOP-018 retains its owner review; TOP-017 retains its historical independent review |
+| Active iteration | [Iteration 18 results](iteration_18/01_results.md); iteration 17 holds the executed TOP-025 plan |
+| Stage | TOP-025 COMPLETE: all twelve fresh scenes attempted; 7/12 pass; video gallery verified |
+| Approval | User explicitly requested latest-code performance across all cases with videos; [evaluation plan](iteration_17/03_plan.md). This authorizes descriptive suite execution despite TOP-024's failure; TOP-021's conditional comparison remains unchanged |
+| Next expected action | Review the all-scene inventory with the user; no corrective redesign or successor is included |
+| Owner / reviewer | TOP-020/022/023/024/025: Codex `/root`, owner implementation/closeout review; independent reviewer unassigned. TOP-017 retains its historical independent review |
 | Deferred / superseded | TOP-013 and TOP-014 not selected for execution; TOP-015 SUPERSEDED by TOP-016; TOP-002–004 remain deferred |
-| Evidence interpretation | Fresh central, saved-common-start two-star F, and the new K=17 merge S/F pair pass their contracts. Fresh automatic two-star recovery and twelve-scene qualification remain untested. The old K=9 merge regression is preserved; it does not recur in TOP-019 |
+| Evidence interpretation | TOP-025 freshly measures all twelve scenes: 7/12 pass the original recovery and numerical gates. The descriptive inventory is complete; automatic reliability and the conditional matched comparison remain unqualified |
 | Git scope | Consolidated by user direction into `/home/drdeng/Neural_SDF_BEM_AD`, branch `feature/ordered-boundary-nystrom`. Ask the user explicitly before any new branch/worktree, even in full-access mode |
 
-TOP-001, TOP-005–012, TOP-016, TOP-017, TOP-018 and TOP-019 have recorded approvals and completed closeouts. TOP-016's [bounded fixed-count results](iteration_10/01_results.md) report passed information screens, incomplete principal comparisons, and an adverse completed merge control. This is not twelve-scene qualification.
+TOP-001, TOP-005–012 and TOP-016–020 have recorded approvals and completed closeouts. TOP-016's [bounded fixed-count results](iteration_10/01_results.md) report passed information screens, incomplete principal comparisons, and an adverse completed merge control. This is not twelve-scene qualification.
 
 The later [engineering result bundle](../../../results/validation/topology/TOP-017-followup-20260914-engineering/README.md)
 and [fresh-run video](../../../results/validation/topology/TOP-017-followup-20260914-engineering/fresh_circle_to_ellipse_star.mp4)
@@ -77,6 +84,36 @@ zero failed; 84 pre-dispatch tests and final artifact verification pass. Keep F
 as the development candidate for the next integration check and S as a successful
 lower-cost merge control. No production promotion or successor is approved.
 
+## Latest measurement
+
+[TOP-025](iteration_18/01_results.md) completes the user-requested all-case visual
+evaluation: **7/12 fresh scenes pass**, with every failure retained.
+[Video gallery](../../../results/validation/topology/TOP-025-20260915-210356-all-scenes-current/README.md) includes twelve scene MP4s, an
+overview, a final contact sheet and exact scores. This is a single-candidate
+measurement, not a matched improvement claim.
+
+[TOP-024](iteration_17/01_results.md) completes the bounded baseline/reset pair:
+**NEITHER_ARM_RECOVERED**. 7,504 new calls, 0 failed/refused;
+98 pre-dispatch tests and saved-array verification pass. Neither arm recovers within the declared bounds. The initial damping reset does not resolve the fresh two-star recovery blocker. No fresh integration or full-suite run is released. Further work needs a separately declared bounded diagnosis of the remaining failure; this experiment does not establish non-recoverability at arbitrary cost or from other starts.
+
+[TOP-023](iteration_16/01_results.md) reconstructs TOP-022's terminal model and
+passes the two selected two-scale/two-resolution derivative checks. Damping
+1e-2 gives 3.978× the baseline step gain with 8 versus 24 candidate calls;
+clipping is inactive in all four proposals. Total 396 calls, all completed,
+zero failed, in 274.109 seconds. 85 pre-dispatch tests, source/input checks and
+saved-array replay pass. No inverse or recovery qualification is claimed;
+a bounded matched continuation comparison is released for scoping.
+
+[TOP-022](iteration_15/01_results.md) completes fresh direct four-frequency
+refinement but fails recovery: 9.755053 mm, 0.830130 IoU and 0.619185 worst
+development error. Both numerical endpoints pass. The exact fresh H endpoint
+matches TOP-020. 22 updates end at maximum iterations with a measured terminal
+reduced gradient 0.014276, above its 1e-7 tolerance. 8,247 charged calls = 8,180
+completed systems + 67 geometry refusals. 112 pre-dispatch tests, source/input
+verification and saved-array replay pass. TOP-020's staged failure remains
+preserved. Neither result releases a full-suite candidate; diagnose the terminal
+training model before another expensive inversion.
+
 ## Completion roadmap
 
 Recorded 2026-09-15 so a new session can resume from this handoff without chat
@@ -94,14 +131,15 @@ Proceed in this order, with later work conditional on the preceding evidence:
    better boundary/prediction accuracy and higher work; both arms pass the
    original gates. Preserve the historical K=9 adverse result and the changed
    resolution/quota conventions. This does not qualify a universal K=17 policy.
-2. **Qualify fresh automatic two-star recovery — next scoping decision.** The
-   merge result supports further qualification of F; separately scope a run from
-   the frozen original distant
-   circle through the topology controller and continuation, without a supplied
-   object count or the saved COMMON checkpoint. Check topology-event validity,
-   final count, geometry, prediction and work. Preserve the fresh central
-   success as a regression control. TOP-018's fixed-count result cannot replace
-   this integration check.
+2. **Qualify fresh automatic two-star recovery — in progress.** TOP-020's fresh
+   staged protocol fails recovery despite valid topology and qualified numerics.
+   TOP-022's direct four-frequency refinement also fails, from the same freshly
+   computed H endpoint and original circle under identical total caps. TOP-023 qualifies a larger-damping first step; TOP-024 tests that reset
+   through a bounded matched continuation. Read its iteration-17 closeout before
+   scoping any further work. Preserve the fresh central
+   success as a regression control. TOP-018's saved COMMON result cannot replace
+   this integration check. The completed [TOP-022 plan](iteration_14/03_plan.md)
+   and [iteration-15 result](iteration_15/01_results.md) retain the negative evidence.
 3. **Qualify the complete frozen twelve-scene comparison.** After focused
    controls pass, compare candidate and reference on every scene in the
    [v1 benchmark](../../benchmarks/topology_scenes.md), retaining all failures
@@ -116,16 +154,16 @@ Proceed in this order, with later work conditional on the preceding evidence:
    any narrower completion claim needs an explicitly agreed scope. Promotion
    requires a measured decision and reproducible artifacts.
 
-**Restart action:** read this handoff, [iteration 13](iteration_13/01_results.md),
-the completed [TOP-019 plan](iteration_12/03_plan.md), and the
-[shared workflow](../README.md). Prepare the fresh automatic two-star contract;
-do not replay the completed merge pair. Steps 2–4 remain conditional, with no
-successor IDs, budgets or execution approval assigned. Use the existing checkout
-and branch recorded above.
+**Restart action:** read this handoff, [iteration 18](iteration_18/01_results.md),
+the completed [TOP-025 plan](iteration_17/03_plan.md), and the
+[shared workflow](../README.md). The current bounded request is complete;
+do not replay completed TOP-019/020/022/023/024/025. Steps 3–4 remain conditional on recovery
+evidence, under the user's recorded remaining-work approval. Declare subsequent
+contracts before dispatch. Use the existing checkout and branch recorded above.
 
 ## Reading order
 
-1. This handoff and [the latest iteration-13 results](iteration_13/01_results.md).
+1. This handoff and [the latest iteration-18 results](iteration_18/01_results.md).
 2. [Baseline B0](../../baselines/B0_2026-09-10.md) — especially §5 (acceptance
    and stopping rules), §6 (demonstrated scope) and §8 (limitations).
 3. [The topology research brief](iteration_01/02_proposals/01_topology_research_brief.md)
@@ -188,4 +226,16 @@ certificate, and the trust region's dependence on coordinates.
 | 10 | Bounded fixed-topology continuation | TOP-016 results reviewed; TOP-017 approved and executed from saved endpoints |
 | 11 | Central recovery and numerical qualification | TOP-017 and engineering follow-up complete. TOP-018 approved and executed under its bounded audit/conditional-pair contract |
 | 12 | Qualified two-star paired recovery | TOP-018 complete; TOP-019 approved and executed from the iteration-12 plan |
-| 13 | Capacity-qualified merge recovery | TOP-019 complete: both arms recover; F improves precision at higher cost. Fresh automatic two-star integration is the next scoping decision |
+| 13 | Capacity-qualified merge recovery | TOP-019 complete: both arms recover; F improves precision at higher cost. TOP-020 approved and executed from the iteration-13 plan |
+| 14 | Fresh automatic staged two-star recovery | TOP-020 complete but recovery fails; TOP-021 not dispatched; TOP-022 approved and executed |
+| 15 | Direct four-frequency entry and terminal diagnosis | TOP-022 complete but recovery fails; terminal gradient is measured and above tolerance; bounded model diagnosis is next |
+| 16 | Terminal derivative and damping diagnosis | TOP-023 complete; bounded TOP-024 pair executed |
+| 17 | Bounded damping-reset continuation | TOP-024 complete: NEITHER_ARM_RECOVERED; fresh/full-suite qualification remains open |
+
+## All-scene evaluation update — 2026-09-15
+
+The user requested the full current-code visual inventory despite the earlier
+focused failure. TOP-025 completes that request with 7/12 passing scenes.
+The result does not retrospectively release TOP-021 or erase the focused
+failures. The [gallery](../../../results/validation/topology/TOP-025-20260915-210356-all-scenes-current/README.md) is the current scene-level
+performance reference; the broader reliability question remains evidence-based.

@@ -1,0 +1,52 @@
+{
+  "actual_attempted_calls": 2957,
+  "actual_completed_solves": 2862,
+  "actual_failed_or_refused_calls": 95,
+  "archived_optimized_state_used": false,
+  "detail": "hard wall limit during numerical batch",
+  "fresh_recovery_pass": false,
+  "geometry_refused_calls": 94,
+  "original_start_sha256": "0dad2193cfe76b1ef7386b61df16402dca86d111b1c307a6f671597a04297edc",
+  "reason": "TRIAL_WALL_LIMIT",
+  "scene": "far-three-shapes",
+  "sources_and_inputs_unchanged": true,
+  "status": "HARD_STOP",
+  "supplied_target_count": false,
+  "topology_work": {
+    "active_wall_seconds": 600.002797566005,
+    "attempted": {
+      "topological_derivative": 12,
+      "topology_forward": 2945
+    },
+    "calls": {
+      "preserved_candidate_refusals": 94
+    },
+    "completed": {
+      "topological_derivative": 12,
+      "topology_forward": 2850
+    },
+    "endpoint_reserve": 0,
+    "failed": {
+      "topology_forward": 95
+    },
+    "per_frequency_attempted": {
+      "None:topological_derivative:500000000": 12,
+      "None:topology_forward:500000000": 2945
+    },
+    "per_frequency_completed": {
+      "None:topological_derivative:500000000": 12,
+      "None:topology_forward:500000000": 2850
+    },
+    "per_frequency_failed": {
+      "None:topology_forward:500000000": 95
+    },
+    "solve_cap": 4000,
+    "stage": null,
+    "stage_attempted": 2957,
+    "stage_quota": null,
+    "total_attempted": 2957,
+    "wall_ceiling_seconds": 600,
+    "within_solve_cap": true
+  },
+  "traceback": "Traceback (most recent call last):\n  File \"/home/drdeng/Neural_SDF_BEM_AD/experiments/top025/run.py\", line 153, in run_scene\n    state=follow.topology_prefix(initial,p.training_data(p.TRAIN[:1],observed[:,:1]),control,solve,ledger,folder/'topology')\n  File \"/home/drdeng/Neural_SDF_BEM_AD/run_topology_recovery_followup.py\", line 206, in topology_prefix\n    result = controller(initial,data,p.driver.baseline._geometry_config(64),\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/topology_controller.py\", line 636, in run_topology_aware_fourier_inverse\n    result = _run_topology_aware_fourier_inverse(\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/topology_controller.py\", line 762, in _run_topology_aware_fourier_inverse\n    result = accounted_call('fixed_refinement', run_multiradial_fd_inverse, state, data, production_geometry_config,\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/work_accounting.py\", line 68, in accounted_call\n    return function(*args, **kwargs)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/radial_topology.py\", line 1292, in run_multiradial_fd_inverse\n    matrix, basis, unresolved_columns, one_sided_new = jacobian(accepted_state)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/radial_topology.py\", line 1136, in jacobian\n    minus = probe(state, -step)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/radial_topology.py\", line 1083, in probe\n    return evaluate(trial)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/radial_topology.py\", line 1056, in evaluate\n    result = evaluate_multiradial_objective(\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/radial_topology.py\", line 759, in evaluate_multiradial_objective\n    forward = predict_multicomponent_kress_paired_boundary_response(\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_bem_multicomponent/forward.py\", line 623, in predict_multicomponent_kress_paired_boundary_response\n    _solve_paired_boundary(boundary, resolved_problem, settings)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_bem_multicomponent/forward.py\", line 558, in _solve_paired_boundary\n    forwards = tuple(\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_bem_multicomponent/forward.py\", line 559, in <genexpr>\n    solve_multicomponent_kress_tmz_total_field_batch(\n  File \"/home/drdeng/Neural_SDF_BEM_AD/run_top017.py\", line 137, in counted\n    value = original(*args, **kwargs)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/gpr_bem_kress/multicomponent.py\", line 1790, in solve_multicomponent_kress_tmz_total_field_batch\n    receiver_operator = build_multicomponent_exterior_receiver_operator(\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/gpr_bem_kress/multicomponent.py\", line 1411, in build_multicomponent_exterior_receiver_operator\n    single, double = _receiver_layer_rows(boundary, receivers, wave)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/gpr_bem_kress/multicomponent.py\", line 1429, in _receiver_layer_rows\n    green_normal = 0.25j * wave * hankel1(1, wave * distance) * projection\n  File \"/home/drdeng/Neural_SDF_BEM_AD/run_top017.py\", line 149, in alarm\n    def alarm(*_): raise TrialWallLimit('hard wall limit during numerical batch')\nrun_top017.TrialWallLimit: hard wall limit during numerical batch\n"
+}

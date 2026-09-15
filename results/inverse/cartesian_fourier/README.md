@@ -1,5 +1,7 @@
 # Cartesian Fourier inverses
 
+**Current all-scene visual review:** [TOP-025 gallery](../../validation/topology/TOP-025-20260915-210356-all-scenes-current/README.md) — 7/12 fresh scenes pass; one video per scene, overview, complete failure reasons and work accounting.
+
 Direct inverses whose accepted optimization state is a Cartesian Fourier curve
 `gamma(t)` in the **polar-angle** parameter. No neural field participates: no
 neural extraction, no re-distancing, no Eikonal term, no representation audit and no

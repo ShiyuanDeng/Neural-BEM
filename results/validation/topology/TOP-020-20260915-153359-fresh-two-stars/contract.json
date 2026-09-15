@@ -1,0 +1,110 @@
+{
+  "approval": "2026-09-15 user: cp first. then i approve you to finish the rest",
+  "archived_optimized_state_used": false,
+  "blas_threads": 1,
+  "continuation_nodes": [
+    256,
+    512
+  ],
+  "continuation_solve_cap": 8012,
+  "continuation_wall_seconds": 7200,
+  "evaluation_frequencies_hz": [
+    1500000000.0,
+    2500000000.0
+  ],
+  "experiment": "TOP-020",
+  "independent_review": false,
+  "initial_state_sha256": "0dad2193cfe76b1ef7386b61df16402dca86d111b1c307a6f671597a04297edc",
+  "maximum_mode": 9,
+  "normalization": "0.5 * mean_f(||prediction_f-observed_f||_2^2 / ||observed_f||_2^2)",
+  "numerical_workers": 1,
+  "owner": "Codex /root",
+  "prediction_tolerances": [
+    1e-05,
+    1e-07,
+    1e-07,
+    1e-07,
+    1e-05,
+    1e-05
+  ],
+  "scene": "far-two-stars",
+  "solve_config": {
+    "assembly": {
+      "minimum_absolute_clearance": 0.01,
+      "minimum_clearance_in_weights": 2.0,
+      "self_assembly": {
+        "maximum_overlap_pairs": 256,
+        "measure_overlap": true,
+        "near_argument": 0.75,
+        "series_terms": 24,
+        "target_chunk_size": 64
+      }
+    },
+    "compute_condition_number": false,
+    "minimum_field_point_clearance_in_weights": 2.0
+  },
+  "stage_plan": [
+    [
+      1,
+      1000
+    ],
+    [
+      2,
+      1250
+    ],
+    [
+      3,
+      1750
+    ],
+    [
+      4,
+      4000
+    ]
+  ],
+  "supplied_target_count": false,
+  "topology_controller": {
+    "acceptance_absolute_margin": 1e-10,
+    "acceptance_relative_margin": 1e-05,
+    "bandwidth_promotion": false,
+    "birth_radius_grid_m": null,
+    "boundary_buffer_m": 0.006,
+    "candidate_refinement_iterations": 3,
+    "candidates_refined_per_group": 1,
+    "chart": "cartesian",
+    "contour_modes": 8,
+    "cross_resolution_factor": 5.0,
+    "feasible_fd_jacobian": true,
+    "fixed_iterations": 22,
+    "include_simplest_candidate": false,
+    "inspection_center": [
+      0.5,
+      0.5
+    ],
+    "inspection_radius_m": 0.2,
+    "maximum_birth_radius_m": 0.065,
+    "maximum_candidates_per_type": 48,
+    "maximum_cycles": 10,
+    "maximum_events": 7,
+    "minimum_component_radius_m": 0.008,
+    "raster_size": 121,
+    "refined_feasibility_guard": true,
+    "relative_error_tolerance": 0.003,
+    "split_seed_radius_factors": [
+      1.0
+    ]
+  },
+  "topology_nodes": [
+    64,
+    128
+  ],
+  "topology_solve_cap": 4000,
+  "topology_wall_seconds": 600,
+  "total_active_wall_seconds": 7800,
+  "total_solve_cap": 12012,
+  "training_frequencies_hz": [
+    500000000.0,
+    750000000.0,
+    1000000000.0,
+    1250000000.0
+  ]
+}

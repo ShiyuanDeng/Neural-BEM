@@ -1,5 +1,7 @@
 # Results and experiment catalogue
 
+**Latest Cartesian topology evaluation:** [All twelve scenes and videos](validation/topology/TOP-025-20260915-210356-all-scenes-current/README.md), **7/12 passing**, using the frozen current integrated pipeline and original starts.
+
 The three current inverse pipelines are [Implicit MLP + Method B](inverse/implicit_mlp/README.md), [Explicit Cartesian Fourier](inverse/cartesian_fourier/README.md), and [Explicit Radial Fourier](inverse/radial_fourier/README.md). **Implicit-MLP recovery remains broken/unresolved:** the adjoint gradient checks pass, but all three new 12-pair inverse runs fail recovery acceptance. **Explicit radial reconstruction works in the recorded successful controls**, with separate failures of neural fitting/export and some experimental variants. Cartesian Fourier runs without neural fitting or audits and includes both topology suites. These folders are not yet a matched three-way benchmark.
 
 The old `results/inverse/method_b` results are now [legacy known-shape-family parameter controls](legacy/known_shape_family_parameter_inverse/README.md). They estimate 3–7 unknowns within supplied circle/ellipse/five-lobe/radial-feature families. Their clean recovery videos are not full-MLP inverse evidence. Material and frozen-neural-metric studies now sit inside `inverse/radial_fourier` because they use explicit geometry.
@@ -10,7 +12,7 @@ activation, and one-update transfer with a zero-update control. Their new
 outputs belong under `validation/method_b_failure_diagnostics/`; add measured
 conclusions to this register only after reviewing the actual run artifacts.
 
-[catalog.csv](catalog.csv) contains **177 rows**. The original 162 rows span 60 saved or empty run bundles, including the three existing 12-pair neural runs indexed during this reorganization, the two initial adjoint diagnostics, the radial-topology birth demonstration, and three full-pass topology challenges. The new topology rows group the TOP-001/TOP-005 replay and controller comparisons by chart/arm; scalar metrics there are worst-case values. Two TOP-019 rows record the prescribed S/F merge endpoints. The original CSV snapshot predates the Cartesian suites; use the [Cartesian index](inverse/cartesian_fourier/README.md) and [pipeline audit](validation/cartesian_fourier/pipeline-audit-20260910/README.md) for that evidence. The earlier exporter-failed partial attempt is recorded separately in the [adjoint validation index](validation/implicit_mlp_adjoint/README.md). Inverse runs have a row per solver, policy or declared arm; larger supporting sweeps explicitly identify their grouped scope. The catalogue records accepted geometry, derivative/optimizer, MLP role, target and initialization, observation setup, separate recovery/representation outcomes, date evidence, provenance, and each result's implication for the implicit MLP pipeline.
+[catalog.csv](catalog.csv) contains **194 rows**. The original 162 rows span 60 saved or empty run bundles, including the three existing 12-pair neural runs indexed during this reorganization, the two initial adjoint diagnostics, the radial-topology birth demonstration, and three full-pass topology challenges. The new topology rows group the TOP-001/TOP-005 replay and controller comparisons by chart/arm; scalar metrics there are worst-case values. Two TOP-019 rows record the prescribed S/F merge endpoints. The original CSV snapshot predates the Cartesian suites; use the [Cartesian index](inverse/cartesian_fourier/README.md) and [pipeline audit](validation/cartesian_fourier/pipeline-audit-20260910/README.md) for that evidence. The earlier exporter-failed partial attempt is recorded separately in the [adjoint validation index](validation/implicit_mlp_adjoint/README.md). Inverse runs have a row per solver, policy or declared arm; larger supporting sweeps explicitly identify their grouped scope. The catalogue records accepted geometry, derivative/optimizer, MLP role, target and initialization, observation setup, separate recovery/representation outcomes, date evidence, provenance, and each result's implication for the implicit MLP pipeline.
 
 ## TOP-019 capacity-qualified merge pair
 
@@ -115,3 +117,39 @@ and predates the five new adjoint rows. The
 the later directory moves and payload-preservation checks, without a numerical rerun. The old
 geometry path is the sole compatibility alias; [relocations](relocations.json)
 explain it and all moves.
+
+## TOP-023 terminal derivative and damping diagnosis
+
+[TOP-023 closeout](validation/topology/TOP-023-20260915-181302-terminal-model/README.md):
+the terminal model and selected directional checks pass. Damping 1e-2 gives
+3.978× the baseline step gain using 8 versus 24 candidate calls. 396 total new
+calls, zero failures; 85 pre-dispatch tests and saved-array replay pass. No
+inverse was run. [Iteration 16](../docs/iterations/topology/iteration_16/01_results.md)
+records the bounded continuation comparison next; no full suite is released.
+
+## TOP-022 fresh direct four-frequency integration
+
+[TOP-022 closeout](validation/topology/TOP-022-20260915-165552-fresh-direct-two-stars/README.md):
+the fresh direct protocol also fails recovery despite qualified numerics.
+Final boundary error 9.755053 mm, IoU 0.830130, worst development error 0.619185;
+8,247 charged calls. 22 updates stop at maximum iterations with a measured
+terminal gradient above tolerance. 112 pre-dispatch tests and artifact replay
+pass. [Iteration 15](../docs/iterations/topology/iteration_15/01_results.md)
+records the bounded terminal-model diagnosis next; no full suite is released.
+
+## TOP-020 fresh automatic two-star integration
+
+[TOP-020 closeout](validation/topology/TOP-020-20260915-153359-fresh-two-stars/README.md):
+the original distant-circle controller finds two objects, but its fresh staged
+refinement fails recovery despite qualified numerics (9.97354 mm, IoU 0.828248,
+worst development error 0.601150). All 9,375 calls reconcile: 9,308 completed
+systems and 67 geometry refusals. The full staged suite is not released;
+[iteration 14](../docs/iterations/topology/iteration_14/01_results.md) records the
+next bounded protocol check. Historical positive and adverse evidence is kept.
+
+## TOP-024 bounded two-star continuation
+
+[TOP-024 closeout](validation/topology/TOP-024-20260915-201101-bounded-damping-pair/README.md):
+**NEITHER_ARM_RECOVERED** under unchanged gates, with 7,504 new calls
+and 0 failed/refused. [Iteration 17](../docs/iterations/topology/iteration_17/01_results.md)
+records the decision; the overall automatic method remains unqualified.

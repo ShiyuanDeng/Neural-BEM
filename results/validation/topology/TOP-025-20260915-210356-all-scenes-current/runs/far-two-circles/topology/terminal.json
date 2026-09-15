@@ -1,0 +1,184 @@
+{
+  "controller_work": {
+    "stages": {
+      "candidate_acceptance": {
+        "evaluation_count": 35,
+        "forward_evaluation_count": 35,
+        "forward_frequency_solve_count": 35
+      },
+      "candidate_raw": {
+        "evaluation_count": 124,
+        "forward_evaluation_count": 59,
+        "forward_frequency_solve_count": 59
+      },
+      "candidate_refinement": {
+        "evaluation_count": 744,
+        "forward_evaluation_count": 742,
+        "forward_frequency_solve_count": 742
+      },
+      "fixed_refinement": {
+        "evaluation_count": 1186,
+        "forward_evaluation_count": 1186,
+        "forward_frequency_solve_count": 1186
+      },
+      "production_base": {
+        "evaluation_count": 4,
+        "forward_evaluation_count": 4,
+        "forward_frequency_solve_count": 4
+      },
+      "refined_base": {
+        "evaluation_count": 3,
+        "forward_evaluation_count": 3,
+        "forward_frequency_solve_count": 3
+      },
+      "topological_derivative": {
+        "td_evaluation_count": 6,
+        "td_frequency_solve_count": 6
+      }
+    },
+    "totals": {
+      "bie_frequency_solve_count": 2035,
+      "evaluation_count": 2096,
+      "forward_evaluation_count": 2029,
+      "forward_frequency_solve_count": 2029,
+      "td_evaluation_count": 6,
+      "td_frequency_solve_count": 6
+    }
+  },
+  "events": [
+    {
+      "after_ids": [
+        "initial.circle",
+        "t001.birth"
+      ],
+      "before_ids": [
+        "initial.circle"
+      ],
+      "candidate_refinement_steps": 3,
+      "children": [
+        "t001.birth"
+      ],
+      "construction": "exterior_td_region; radius=0.024664",
+      "cycle": 0,
+      "kind": "birth",
+      "parents": [],
+      "production_after": 0.30603485940351527,
+      "production_before": 0.5095812073672032,
+      "raw_birth_radius_m": 0.024664256734439886,
+      "refined_after": 0.3060348594035178,
+      "refined_before": 0.5095812073672026
+    },
+    {
+      "after_ids": [
+        "initial.circle",
+        "t001.birth",
+        "t002.birth"
+      ],
+      "before_ids": [
+        "initial.circle",
+        "t001.birth"
+      ],
+      "candidate_refinement_steps": 3,
+      "children": [
+        "t002.birth"
+      ],
+      "construction": "exterior_td_region; radius=0.024592",
+      "cycle": 1,
+      "kind": "birth",
+      "parents": [],
+      "production_after": 0.15903975814512947,
+      "production_before": 0.3038992018172497,
+      "raw_birth_radius_m": 0.02459245379682983,
+      "refined_after": 0.15903975814513088,
+      "refined_before": 0.30389920181724767
+    },
+    {
+      "after_ids": [
+        "t001.birth",
+        "t002.birth"
+      ],
+      "before_ids": [
+        "initial.circle",
+        "t001.birth",
+        "t002.birth"
+      ],
+      "candidate_refinement_steps": 3,
+      "children": [],
+      "construction": "leave_one_component_out",
+      "cycle": 2,
+      "kind": "death",
+      "parents": [
+        "initial.circle"
+      ],
+      "production_after": 1.0098465690081878e-12,
+      "production_before": 0.15802009803705924,
+      "refined_after": 1.0098465703363054e-12,
+      "refined_before": 0.15802009803705602
+    }
+  ],
+  "final_state": [
+    {
+      "chart": "cartesian",
+      "component_id": "t001.birth",
+      "maximum_mode": 1,
+      "parameters": [
+        0.6100000063867838,
+        0.5300000048806943,
+        0.035999994407248694,
+        -2.0613079805317163e-18,
+        1.6055765679708e-18,
+        0.035999994407248694
+      ]
+    },
+    {
+      "chart": "cartesian",
+      "component_id": "t002.birth",
+      "maximum_mode": 1,
+      "parameters": [
+        0.5499999857456546,
+        0.4300000080752329,
+        0.03399994788561112,
+        -1.7106732002563032e-18,
+        1.3324630922345968e-18,
+        0.03399994788561112
+      ]
+    }
+  ],
+  "stop_reason": "recovered",
+  "work": {
+    "active_wall_seconds": 243.1089670190122,
+    "attempted": {
+      "topological_derivative": 6,
+      "topology_forward": 2096
+    },
+    "calls": {
+      "preserved_candidate_refusals": 67
+    },
+    "completed": {
+      "topological_derivative": 6,
+      "topology_forward": 2029
+    },
+    "endpoint_reserve": 0,
+    "failed": {
+      "topology_forward": 67
+    },
+    "per_frequency_attempted": {
+      "None:topological_derivative:500000000": 6,
+      "None:topology_forward:500000000": 2096
+    },
+    "per_frequency_completed": {
+      "None:topological_derivative:500000000": 6,
+      "None:topology_forward:500000000": 2029
+    },
+    "per_frequency_failed": {
+      "None:topology_forward:500000000": 67
+    },
+    "solve_cap": 4000,
+    "stage": null,
+    "stage_attempted": 2102,
+    "stage_quota": null,
+    "total_attempted": 2102,
+    "wall_ceiling_seconds": 600,
+    "within_solve_cap": true
+  }
+}

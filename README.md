@@ -1,5 +1,7 @@
 # Neural SDF BEM AD
 
+**Latest all-scene results:** [TOP-025 video gallery](results/validation/topology/TOP-025-20260915-210356-all-scenes-current/README.md) · [Overview video](results/validation/topology/TOP-025-20260915-210356-all-scenes-current/videos/all_scenes.mp4) · [Final scenes](results/validation/topology/TOP-025-20260915-210356-all-scenes-current/all_scenes.png). Fresh current-pipeline runs: **7/12 pass all gates**. Every success, failure and work stop is included.
+
 Research code for homogeneous full-space 2-D TMz dielectric transmission,
 neural implicit geometry, boundary-element forward modeling, and inversion.
 

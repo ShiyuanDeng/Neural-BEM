@@ -2,6 +2,11 @@
 
 | Bundle | Role and outcome |
 |---|---|
+| [TOP-025 all-scene gallery](TOP-025-20260915-210356-all-scenes-current/README.md) | 7/12 fresh scenes pass the current H → cumulative-F protocol; twelve scene videos plus overview; all failures retained |
+| [TOP-024 bounded damping pair](TOP-024-20260915-201101-bounded-damping-pair/README.md) | NEITHER_ARM_RECOVERED; 7,504 new calls, 0 failed/refused. Unchanged 256/512 and recovery gates; fresh/full-suite qualification remains open |
+| [TOP-023 terminal model diagnosis](TOP-023-20260915-181302-terminal-model/README.md) | Selected derivative checks pass; damping 1e-2 gives 3.978× baseline step gain using 8 versus 24 candidate calls. 396 total calls, zero failed. No inverse or recovery qualification; bounded continuation comparison next |
+| [TOP-022 fresh direct-frequency integration](TOP-022-20260915-165552-fresh-direct-two-stars/README.md) | Numerically qualified but recovery fails: 9.755053 mm, IoU 0.830130, worst development error 0.619185. 8,247 charged calls; maximum iterations with terminal gradient 0.014276, above tolerance. No full-suite release |
+| [TOP-020 fresh two-star integration](TOP-020-20260915-153359-fresh-two-stars/README.md) | All numerical gates pass but fresh recovery fails: 9.97354 mm, IoU 0.828248, worst development error 0.601150. 9,375 charged calls, 9,308 completed systems, 67 geometry refusals; TOP-021 not released |
 | [TOP-019 qualified merge pair](TOP-019-20260915-144340-qualified-merge/README.md) | Both K=17 S/F arms recover at 256/512. F improves boundary/prediction accuracy by 4.01×/5.08× for 3.77× work. 6,232 completed solves, zero failed; all quotas and numerical gates pass |
 | [TOP-018 S/F video](TOP-018-20260915-two-star-video/README.md) | 50-second side-by-side playback of all saved accepted-state records, from COMMON to the prescribed final endpoints; no new numerical solves |
 | [TOP-018 qualified two-star pair](TOP-018-20260915-resolution-qualified-pair/README.md) | Both 256/512 schedules qualify; F recovers at 0.00167644 mm while S fails at 11.793168 mm. 8,336 completed solves, zero failed; original post-schedule reporting failures retained and repaired without reruns. No promotion or successor |
