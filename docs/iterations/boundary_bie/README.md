@@ -56,16 +56,16 @@ Updated 2026-09-15.
 
 | Item | Current state |
 |---|---|
-| Active iteration | [Iteration 03 results](iteration_03/01_results.md) |
-| Stage | BIE-004 COMPLETE: coupled analytic Jacobians qualify and are 1.87x faster; BIE-002 negative preserved |
-| Approved experiment IDs | **BIE-002, BIE-004 APPROVED** by explicit user instructions; [BIE-004 plan](iteration_02/03_plan.md) |
-| Execution status | **BIE-004 COMPLETE**; [result bundle](../../../results/validation/boundary_bie/BIE-004-20260915-coupled-02/README.md) |
-| Next expected action | Prepare one opt-in integration and matched inverse validation; coordinate shared edits with topology measurement windows |
+| Active iteration | [Iteration 04 results](iteration_04/01_results.md) |
+| Stage | BIE-006 COMPLETE: stop first-order operator reuse; no accuracy-range benefit or qualifying savings |
+| Approved experiment IDs | **BIE-002, BIE-004, BIE-006 APPROVED** by explicit user instructions; [BIE-006 plan](iteration_03/03_plan.md) |
+| Execution status | **BIE-006 COMPLETE**; [result bundle](../../../results/validation/boundary_bie/BIE-006-20260915-205942-operator-reuse/README.md) |
+| Next expected action | User decision on next work; analytic-Jacobian integration/coverage remains separate and unexecuted |
 | Owner / reviewer | Codex / self-review; no independent reviewer claimed |
 | Dependencies | Experiment-local coupled shape derivative now qualified on two saved states; production optimizer still uses FD |
-| Blockers | No scientific blocker for the tested derivative; production integration and inverse recovery remain untested |
+| Blockers | First-order reuse did not meet its benefit gates; analytic-Jacobian production integration and inverse recovery remain untested |
 | BIE-001 disposition | **SUPERSEDED** by the [current review](iteration_01/02_proposals/03_current_checkout_review.md) and BIE-002; no BIE-001 numerical execution |
-| Deferred | BIE-003, BIE-005, idea 3, inverse integration and production solver changes |
+| Deferred | BIE-003, BIE-005, inverse integration and production solver changes |
 
 Related discussion: [Are the current failures intrinsic to boundary methods?
 What FDTD would change](../topology/iteration_07/02_proposals/02_boundary_methods_and_fdtd.md).
@@ -113,12 +113,13 @@ and does not advance to the next step until the previous one passes:
 
 ## Starting work on this track
 
-**Current gate: 7 of 7 — BIE-004 closeout complete.** See the
-[agreed plan](iteration_02/03_plan.md). Work on the existing
+**Current gate: 7 of 7 — BIE-006 closeout complete.** See the
+[agreed plan](iteration_03/03_plan.md). Work on the existing
 `feature/ordered-boundary-nystrom` branch; no branch or worktree creation.
 The user identified active topology fixes: keep the diagnostic in its isolated
 experiment directory and leave shared solver/topology files read-only. Stop
-measurements on imported numerical source drift. Do not execute a successor.
+measurements on imported numerical source drift. The user authorized Idea 3 with
+“then go”; BIE-006 is the concrete bounded contract. No further successor is included.
 
 ## Relationship to the existing cycles
 
@@ -134,4 +135,5 @@ stays where it is.
 |---|---|---|
 | 01 | Which boundary-representation mechanism is worth prototyping for the BIE inverse | BIE-002 approved and completed; BIE-001 desk-study superseded |
 | 02 | BIE-002 modal/structure evidence | BIE-004 approved and completed under later user instruction |
-| 03 | Coupled analytic Jacobian qualification and cost | Results available; opt-in integration/matched inverse validation recommended, not executed |
+| 03 | Coupled analytic Jacobian qualification and cost | BIE-006 approved and completed under later user direction |
+| 04 | First-order operator reuse accuracy/range/cost | BIE-006 complete; stop this first-order approach; no successor executed |
