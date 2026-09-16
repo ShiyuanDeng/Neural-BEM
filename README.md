@@ -157,7 +157,10 @@ use `--solver`, then `SOLVER`, then frozen `gpr_bem_ref`; use `--solver=mod`
 explicitly for MOD. Ordered inverse
 drivers import their peers directly.
 
-The single-component radial driver is star-shaped. The separate automatic
+The single-component radial driver is star-shaped, and so is the Cartesian
+chart under its polar-angle gauge -- an open concern recorded 2026-09-15,
+since removing that restriction was a reason for adopting the Cartesian
+chart. See the Cartesian pipeline's representation limits. The separate automatic
 topology controller chooses birth, death, split and merge from data without a
 supplied object count; its evidence is bounded to the recorded synthetic cases.
 Layered ground and 3-D inversion are outside the current implementation.

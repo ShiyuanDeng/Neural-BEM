@@ -14,6 +14,18 @@ contains it to `6.4e-17 m`, while the same curve resampled to arc length is not
 band-limited at any practical bandwidth — band 32 still leaves `1.069e-04 m`.
 Choosing the parameter, not the bandwidth, is what sets the accuracy ceiling.
 
+## Open concern: still star-shaped
+
+Recorded 2026-09-15 by the project owner, unresolved. Escaping the radial
+chart's star-shaped restriction was a reason for moving to this chart, and the
+polar-angle gauge does not achieve it: gauge-fixed Cartesian bandwidth K is the
+same shape family as radial bandwidth K-1, and non-star-shaped contours are
+rejected by the Cartesian topology policy. See
+[`docs/pipelines/explicit_cartesian_fourier.md`](../../../docs/pipelines/explicit_cartesian_fourier.md)
+for the representation limits this sits under. The recovery and conditioning
+results below are not affected by this note, and none of them claims
+non-star-shaped recovery.
+
 Run with `run_explicit_cartesian_fourier_inverse.py`. Plan and results:
 `docs/iterations/cartesian_fourier/`.
 

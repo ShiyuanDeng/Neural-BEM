@@ -56,6 +56,21 @@ be representable in this star-shaped family. A non-star-shaped contour is
 rejected by the Cartesian topology policy. The radial controller separately
 allows ungauged Cartesian fallback contours; that is a different policy.
 
+### Open concern: the restriction this chart was adopted to escape
+
+Recorded 2026-09-15 by the project owner; unresolved, and no fix is proposed
+or scheduled here. The Cartesian chart was taken up in part to get away from
+the radial chart's star-shaped restriction. Under the polar-angle gauge it
+does not deliver that. The gauge-fixed set is exactly the curves that are
+star-shaped about their own Fourier mean, so the two charts carry the same
+shape family; the `contour_modes + 1` compensation in
+`sdf_inverse/topology_controller.py` exists precisely to keep the two matched,
+and a mask that is not star-shaped about either candidate centre is refused
+outright by `fit_mask_component`. What the Cartesian chart is measured to buy
+over radial is conditioning and step behaviour on that shared family, not a
+larger one. This note exists so the objection is not lost behind the
+favourable conditioning results.
+
 The demonstrated topology cases have disjoint, same-material components.
 Nested holes, touching interfaces and multi-material topology are not covered.
 
