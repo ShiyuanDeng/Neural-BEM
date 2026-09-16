@@ -6,7 +6,8 @@ afterward. Earlier iteration contracts do not constrain this exploration.
 
 Follow-up: [coupled objects, direct Jacobian actions, and selecting an extra
 measurement frequency](02_coupled_modes_and_measurements.md) extends this work
-and records the latest results.
+and records those results. The next extension is
+[compiled Laurent scattering libraries and object identification](03_scattering_library.md).
 
 ## What now works
 

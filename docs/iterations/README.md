@@ -31,7 +31,7 @@ The [research implementation principles](implementation_principles.md), adopted 
 |---|---|---|
 | **Topology** | *How can the inverse choose and execute topology changes more reliably?* | [`topology/README.md`](topology/README.md) |
 | **Boundary–BIE** | *Which properties of smooth-boundary representations improve the BIE inverse?* | [`boundary_bie/README.md`](boundary_bie/README.md) |
-| **Speed-up** | *Where does the inverse spend its time, and which cost can be removed at matched geometry?* | [`speedup/README.md`](speedup/README.md) |
+| **Speed-up** | *How can the complete inverse reach the required reconstruction quality with less time and fewer failed attempts?* | [`speedup/README.md`](speedup/README.md) |
 | Radial Fourier topology | The cycle that built the automatic controller | [`radial_fourier_topology/README.md`](radial_fourier_topology/README.md) |
 | Cartesian Fourier | The chart study and its topology match | [`cartesian_fourier/README.md`](cartesian_fourier/README.md) |
 | Implicit MLP | Neural-owned geometry with Method B | [`implicit_mlp/README.md`](implicit_mlp/README.md) |
@@ -229,14 +229,51 @@ identify the agreed plan or authorize execution.
 
 ### Speed-up
 
-Start with the [handoff](speedup/README.md). The track asks where the inverse
-spends its time and which of that can be removed **without changing what it
-recovers**. That scope boundary is what separates it from Boundary–BIE: a change
-to the formulation, the discretisation, the feasible set or the converged
-geometry is not a speed-up result even when it is faster, and belongs to the
-track that owns the mechanism. Iteration 1 records the cost profile: between
+Start with the [handoff](speedup/README.md). The track asks how to reduce time
+to the required reconstruction quality. The user's 2026-09-16 clarification
+extends its design discussion to the whole pipeline: initialization, topology,
+representation, physics fidelity, data scheduling, optimization and stopping.
+Execution improvements require matched algorithm/recovery; architecture changes
+compare time and success at matched final quality and data access. Cross-reference
+Boundary–BIE and topology for shared mechanisms. Iteration 1 records the cost profile: between
 90.7% and 95.1% of forward solves in the measured topology runs were
 finite-difference Jacobian probes. SPD-001 completed the combined analytic,
 CPU-kernel and CUDA comparison. SPD-002 made analytic Jacobians and fast CPU
 kernels the default; [iteration 3](speedup/iteration_03/01_results.md) records
 complete death/split pipelines running 1.86x/1.89x faster with matched recovery.
+The user's further-acceleration request is recorded in the
+[iteration-3 brief](speedup/iteration_03/02_proposals/01_further_full_inverse_speedups.md):
+exact reuse across continuation, shared kernel preparation, CPU parallelism
+and GPU derivative assembly. SPD-003 proposes an exact-reuse comparison and
+remains unexecuted.
+The later [outsider architecture brief](speedup/iteration_03/02_proposals/03_pipeline_redesign_outsider_view.md)
+led to the authorized SPD-004 investigation. [Iteration 4](speedup/iteration_04/01_results.md)
+records additional 5.12x/6.72x complete-runtime speedups on death/split by checking
+training readiness before mandatory continuation. All ten full workers recover
+with identical paired final geometry; merge retains the original continuation
+with effectively unchanged runtime. The implementation remains experimental.
+Its twelve-scene archive audit prioritizes earlier final-grid feasibility and
+adaptive topology/shape/data decisions for harder cases. Fresh timing covers
+three noiseless scenes; host-wide isolation is unverified.
+The subsequent [reciprocal Kress review](speedup/iteration_04/02_reciprocal_derivative_priority_review.md)
+revises next-work priority: qualify the reciprocal derivative with the existing
+nodal forward, then measure readiness on that baseline. The new derivative
+can reduce fitting cost throughout topology search; its exploratory fitting
+ratios must not be multiplied by SPD-004's full-worker ratios.
+The user then authorized SPD-005: [iteration 5](speedup/iteration_05/01_results.md)
+records the completed guarded reciprocal integration. All 18 full workers
+recover, with 1.77x–2.38x additional speedups and 5.10x/6.64x gains on the easy
+cases when readiness is added. The raw derivative misses one 64-node gate, so
+the opt-in runtime retains operator derivatives below 128 nodes. A separate
+continuation-stage profile spends 94.6% of its time in legacy stencil-feasibility
+checks; geometry-validation reuse and the FD-compatible constraint policy are
+the next targets. This remains a three-scene noiseless comparison, with no
+production-default or GPU-speedup claim.
+
+The subsequent user-authorized BIE-005 compiler integration is closed in
+[iteration 6](speedup/iteration_06/01_results.md). All 16 matched full workers
+recover; compiled Kress reduces full runtime by 4.5% on central ellipse/star
+and 5.6% on two stars beyond reciprocal plus readiness. It remains opt-in.
+A compiled hard-case update still spends 88.5% of profiled time in legacy
+stencil-feasibility checks, so geometry reuse and constraint-policy qualification
+come before GPU work. The four-scene result is not a new twelve-scene runtime.

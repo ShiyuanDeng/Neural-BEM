@@ -6,7 +6,9 @@ contains the latest implementation and numerical results. The user explicitly
 authorized open exploration beyond the earlier iteration contracts and asked
 for rough documentation after building an inverse pipeline. The gates and
 handoff below record the earlier BIE-006 work; they do not limit iteration 05.
-Latest follow-up: [coupled modal recovery and measurement selection](iteration_05/02_coupled_modes_and_measurements.md).
+Follow-ups: [coupled modal recovery and measurement selection](iteration_05/02_coupled_modes_and_measurements.md),
+then [compiled Laurent scattering libraries, pose inverses, and object identification](iteration_05/03_scattering_library.md).
+Latest: [Laurent shape derivatives of scattering matrices and joint shape/pose inversion](iteration_05/04_deformable_scattering.md).
 
 This is the handoff for agents working on the **boundary representation and BIE
 solve** research track. Read the current state below before choosing work. The

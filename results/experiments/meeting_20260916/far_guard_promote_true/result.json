@@ -1,0 +1,141 @@
+{
+  "command": {
+    "cap": 20000,
+    "continue_fit": false,
+    "control": "{\"bandwidth_promotion\":true}",
+    "frequencies": "0",
+    "guard_nodes": [
+      256,
+      512
+    ],
+    "nodes": 64,
+    "output": "/home/drdeng/Neural_SDF_BEM_AD/results/experiments/meeting_20260916/far_guard_promote_true",
+    "refined": 128,
+    "scene": "far-ellipse-star",
+    "seconds": 900.0,
+    "seed_modes": 0,
+    "true_jacobian": true
+  },
+  "continuation_feasible": true,
+  "controller": {
+    "acceptance_absolute_margin": 1e-10,
+    "acceptance_relative_margin": 1e-05,
+    "bandwidth_promotion": true,
+    "birth_radius_grid_m": null,
+    "boundary_buffer_m": 0.006,
+    "candidate_refinement_iterations": 3,
+    "candidates_refined_per_group": 1,
+    "chart": "cartesian",
+    "contour_modes": 8,
+    "cross_resolution_factor": 5.0,
+    "feasible_fd_jacobian": true,
+    "fixed_iterations": 22,
+    "include_simplest_candidate": false,
+    "inspection_center": [
+      0.5,
+      0.5
+    ],
+    "inspection_radius_m": 0.2,
+    "maximum_birth_radius_m": 0.065,
+    "maximum_candidates_per_type": 48,
+    "maximum_cycles": 10,
+    "maximum_events": 7,
+    "minimum_component_radius_m": 0.008,
+    "raster_size": 121,
+    "refined_feasibility_guard": true,
+    "relative_error_tolerance": 0.003,
+    "split_seed_radius_factors": [
+      1.0
+    ]
+  },
+  "frequencies_hz": [
+    500000000.0
+  ],
+  "geometry": {
+    "component_count": 2,
+    "final_maximum_modes": [
+      5,
+      9
+    ],
+    "matched_components": [
+      {
+        "hausdorff_m": 0.01916981745038229,
+        "recovered_component": "t001.birth",
+        "truth_component": "truth.star"
+      },
+      {
+        "hausdorff_m": 0.01412733822836272,
+        "recovered_component": "t005.merge1",
+        "truth_component": "truth.ellipse"
+      }
+    ],
+    "maximum_matched_hausdorff_m": 0.01916981745038229,
+    "truth_component_count": 2,
+    "union_iou": 0.7647207480414455
+  },
+  "nodes": [
+    64,
+    128
+  ],
+  "original_start": true,
+  "runtime": {
+    "analytic_constraint_policy": "true",
+    "device": "cpu",
+    "jacobian": "auto",
+    "kernels": "real_bessel",
+    "profile": "fast"
+  },
+  "scene": "far-ellipse-star",
+  "seconds": 900.0,
+  "source_bundle": "/home/drdeng/Neural_SDF_BEM_AD/results/validation/topology/TOP-025-20260915-210356-all-scenes-current",
+  "status": "TOPOLOGY_COMPLETE",
+  "supplied_target_count": false,
+  "topology_seconds": 594.0252635569777,
+  "topology_work": {
+    "active_wall_seconds": 594.0252812859835,
+    "attempted": {
+      "topological_derivative": 16,
+      "topology_forward": 1831
+    },
+    "budget_unit": "one full frequency system or one analytic directional assembly/tangent",
+    "budget_work_units": 6976,
+    "calls": {
+      "preserved_candidate_refusals": 63
+    },
+    "completed": {
+      "topological_derivative": 16,
+      "topology_forward": 1768
+    },
+    "derivative_assemblies_attempted": {
+      "topology_forward": 5129
+    },
+    "derivative_assemblies_completed": {
+      "topology_forward": 5129
+    },
+    "derivative_assemblies_failed": {},
+    "endpoint_reserve": 0,
+    "failed": {
+      "topology_forward": 63
+    },
+    "per_frequency_attempted": {
+      "None:topological_derivative:500000000": 16,
+      "None:topology_forward:500000000": 1831
+    },
+    "per_frequency_completed": {
+      "None:topological_derivative:500000000": 16,
+      "None:topology_forward:500000000": 1768
+    },
+    "per_frequency_failed": {
+      "None:topology_forward:500000000": 63
+    },
+    "solve_cap": 20000,
+    "stage": null,
+    "stage_attempted": 1847,
+    "stage_quota": null,
+    "stage_work_units": 6976,
+    "total_attempted": 1847,
+    "wall_ceiling_seconds": 900.0,
+    "within_solve_cap": true
+  },
+  "total_seconds": 594.4842931489693
+}

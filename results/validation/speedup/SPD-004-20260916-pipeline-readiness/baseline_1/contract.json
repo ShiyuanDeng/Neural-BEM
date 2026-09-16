@@ -1,0 +1,129 @@
+{
+  "approval": "user: investigate go; bounded architecture investigation",
+  "archived_optimized_state_used": false,
+  "arm": "baseline_1",
+  "arms": [
+    "F"
+  ],
+  "blas_threads": 1,
+  "campaign_seconds": 25200,
+  "campaign_solve_cap": 144216,
+  "capacity_rule": "K17 for one returned component; K9 per component otherwise",
+  "continuation_nodes": [
+    256,
+    512
+  ],
+  "continuation_seconds": 7200,
+  "continuation_solve_cap": 8012,
+  "damping_reset": false,
+  "evaluation_frequencies_hz": [
+    1500000000.0,
+    2500000000.0
+  ],
+  "evaluation_only": true,
+  "experiment": "SPD-004",
+  "independent_review": false,
+  "inverse_runtime": {
+    "analytic_constraint_policy": "fd_compatible",
+    "device": "cpu",
+    "jacobian": "auto",
+    "kernels": "real_bessel",
+    "profile": "fast"
+  },
+  "maximum_workers": 4,
+  "normalization": "0.5 * mean_f(||prediction_f-observed_f||_2^2 / ||observed_f||_2^2)",
+  "oracle_seconds": 300,
+  "oracle_solve_cap": 72,
+  "prediction_tolerances": [
+    1e-05,
+    1e-07,
+    1e-07,
+    1e-07,
+    1e-05,
+    1e-05
+  ],
+  "scene_outer_seconds": 7900,
+  "scenes": [
+    "death",
+    "split"
+  ],
+  "solve_config": {
+    "assembly": {
+      "minimum_absolute_clearance": 0.01,
+      "minimum_clearance_in_weights": 2.0,
+      "self_assembly": {
+        "maximum_overlap_pairs": 256,
+        "measure_overlap": true,
+        "near_argument": 0.75,
+        "series_terms": 24,
+        "target_chunk_size": 64
+      }
+    },
+    "compute_condition_number": false,
+    "minimum_field_point_clearance_in_weights": 2.0
+  },
+  "stage_plan": [
+    [
+      1,
+      1000
+    ],
+    [
+      2,
+      1250
+    ],
+    [
+      3,
+      1750
+    ],
+    [
+      4,
+      4000
+    ]
+  ],
+  "supplied_target_count": false,
+  "termination_grace_seconds": 10,
+  "top021_release_claim": false,
+  "topology_controller": {
+    "acceptance_absolute_margin": 1e-10,
+    "acceptance_relative_margin": 1e-05,
+    "bandwidth_promotion": false,
+    "birth_radius_grid_m": null,
+    "boundary_buffer_m": 0.006,
+    "candidate_refinement_iterations": 3,
+    "candidates_refined_per_group": 1,
+    "chart": "cartesian",
+    "contour_modes": 8,
+    "cross_resolution_factor": 5.0,
+    "feasible_fd_jacobian": true,
+    "fixed_iterations": 22,
+    "include_simplest_candidate": false,
+    "inspection_center": [
+      0.5,
+      0.5
+    ],
+    "inspection_radius_m": 0.2,
+    "maximum_birth_radius_m": 0.065,
+    "maximum_candidates_per_type": 48,
+    "maximum_cycles": 10,
+    "maximum_events": 7,
+    "minimum_component_radius_m": 0.008,
+    "raster_size": 121,
+    "refined_feasibility_guard": true,
+    "relative_error_tolerance": 0.003,
+    "split_seed_radius_factors": [
+      1.0
+    ]
+  },
+  "topology_nodes": [
+    64,
+    128
+  ],
+  "topology_seconds": 600,
+  "topology_solve_cap": 4000,
+  "training_frequencies_hz": [
+    500000000.0,
+    750000000.0,
+    1000000000.0,
+    1250000000.0
+  ]
+}

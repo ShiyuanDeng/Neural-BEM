@@ -1,0 +1,655 @@
+"""Scale-aware diagnostics for continuous parameterizations and topology."""
+
+from __future__ import annotations
+
+from dataclasses import asdict, dataclass
+import math
+import operator
+
+import numpy as np
+
+from ._array_utils import cross2d
+from .boundary_parameterization import OrderedBoundaryParameterization2D
+from .parameterization import PeriodicParameterization2D
+
+
+@dataclass(frozen=True)
+class BoundaryValidationConfig:
+    """Resolution and scale-relative tolerances for geometry diagnostics.
+
+    ``num_samples_per_component`` remains the grid used for topology and
+    geometric summaries.  Derivative consistency is an independent numerical
+    differentiation audit and may use the denser
+    ``derivative_samples_per_component`` grid.  Supplying ``fourier_bandwidth``
+    raises only that derivative grid to a conservative bandlimit-aware power
+    of two; it does not make the quadratic intersection audit more expensive.
+    """
+
+    num_samples_per_component: int = 512
+    closure_relative_tolerance: float = 1.0e-10
+    closure_absolute_tolerance: float = 1.0e-12
+    minimum_speed_relative: float = 1.0e-10
+    minimum_area_relative: float = 1.0e-12
+    derivative_relative_tolerance: float = 1.0e-4
+    intersection_relative_tolerance: float = 1.0e-12
+    minimum_intercomponent_clearance: float = 0.0
+    require_counterclockwise: bool = True
+    allow_nested_components: bool = False
+    derivative_samples_per_component: int | None = None
+    fourier_bandwidth: int | None = None
+
+    def __post_init__(self) -> None:
+        if isinstance(self.num_samples_per_component, bool):
+            raise TypeError("num_samples_per_component must be an integer, not bool.")
+        try:
+            sample_count = operator.index(self.num_samples_per_component)
+        except TypeError as exc:
+            raise TypeError("num_samples_per_component must be an integer.") from exc
+        if sample_count < 16:
+            raise ValueError("num_samples_per_component must be at least 16.")
+        object.__setattr__(self, "num_samples_per_component", sample_count)
+        for name in (
+            "closure_relative_tolerance",
+            "closure_absolute_tolerance",
+            "minimum_speed_relative",
+            "minimum_area_relative",
+            "derivative_relative_tolerance",
+            "intersection_relative_tolerance",
+            "minimum_intercomponent_clearance",
+        ):
+            value = float(getattr(self, name))
+            if not np.isfinite(value) or value < 0.0:
+                raise ValueError(f"{name} must be finite and non-negative.")
+            object.__setattr__(self, name, value)
+        derivative_count = self.derivative_samples_per_component
+        if derivative_count is None:
+            derivative_count = sample_count
+        elif isinstance(derivative_count, bool):
+            raise TypeError(
+                "derivative_samples_per_component must be an integer, not bool."
+            )
+        else:
+            try:
+                derivative_count = operator.index(derivative_count)
+            except TypeError as exc:
+                raise TypeError(
+                    "derivative_samples_per_component must be an integer."
+                ) from exc
+            if derivative_count < 16:
+                raise ValueError(
+                    "derivative_samples_per_component must be at least 16."
+                )
+        bandwidth = self.fourier_bandwidth
+        if bandwidth is not None:
+            if isinstance(bandwidth, bool):
+                raise TypeError("fourier_bandwidth must be an integer, not bool.")
+            try:
+                bandwidth = operator.index(bandwidth)
+            except TypeError as exc:
+                raise TypeError("fourier_bandwidth must be an integer.") from exc
+            if bandwidth < 1:
+                raise ValueError("fourier_bandwidth must be positive.")
+            # The fourth-order centred first-derivative stencil has leading
+            # relative error (k h)^4 / 30.  Thirty-two samples per retained
+            # mode puts that error below half the default 1e-4 tolerance.  For
+            # tighter tolerances, increase the samples-per-mode requirement;
+            # rounding the total up to a power of two provides margin and is
+            # efficient for the Fourier curves that motivate this policy.
+            tolerance = self.derivative_relative_tolerance
+            tolerance_samples_per_mode = 32
+            if tolerance > 0.0:
+                tolerance_samples_per_mode = max(
+                    tolerance_samples_per_mode,
+                    math.ceil(2.0 * math.pi / (15.0 * tolerance) ** 0.25),
+                )
+            required = tolerance_samples_per_mode * bandwidth
+            safe_fourier_count = 1 << (required - 1).bit_length()
+            derivative_count = max(derivative_count, safe_fourier_count)
+        derivative_count = max(derivative_count, sample_count)
+        object.__setattr__(
+            self,
+            "derivative_samples_per_component",
+            derivative_count,
+        )
+        object.__setattr__(self, "fourier_bandwidth", bandwidth)
+        for name in ("require_counterclockwise", "allow_nested_components"):
+            value = getattr(self, name)
+            if not isinstance(value, (bool, np.bool_)):
+                raise TypeError(f"{name} must be boolean.")
+            object.__setattr__(self, name, bool(value))
+
+
+@dataclass(frozen=True)
+class CurveGeometryReport:
+    component_id: str
+    name: str
+    valid: bool
+    issues: tuple[str, ...]
+    num_validation_nodes: int
+    orientation: str
+    phase_anchor: tuple[float, float]
+    parameter_origin: float
+    maximum_derivative_order: int
+    source_kind: str
+    source_identifier: str | None
+    projection_residual: float | None
+    fit_residual: float | None
+    signed_area: float
+    perimeter: float
+    minimum_speed: float
+    maximum_speed: float
+    minimum_curvature: float | None
+    maximum_curvature: float | None
+    position_closure_error: float
+    first_derivative_closure_error: float
+    second_derivative_closure_error: float
+    third_derivative_closure_error: float | None
+    first_derivative_consistency_error: float
+    second_derivative_consistency_error: float
+    third_derivative_consistency_error: float | None
+    self_intersection_count: int
+    bounding_box_min: tuple[float, float]
+    bounding_box_max: tuple[float, float]
+    num_derivative_validation_nodes: int | None = None
+
+    def to_dict(self) -> dict[str, object]:
+        return asdict(self)
+
+
+@dataclass(frozen=True)
+class OrderedBoundaryReport:
+    valid: bool
+    issues: tuple[str, ...]
+    components: tuple[CurveGeometryReport, ...]
+    minimum_intercomponent_clearance: float | None
+    intersecting_component_pairs: tuple[tuple[str, str], ...]
+    nested_component_pairs: tuple[tuple[str, str], ...]
+
+    @property
+    def num_components(self) -> int:
+        return len(self.components)
+
+    @property
+    def total_perimeter(self) -> float:
+        return float(sum(component.perimeter for component in self.components))
+
+    def to_dict(self) -> dict[str, object]:
+        payload = asdict(self)
+        payload["num_components"] = self.num_components
+        payload["total_perimeter"] = self.total_perimeter
+        return payload
+
+
+class OrderedBoundaryValidationError(ValueError):
+    """Raised when requested validation rejects a parameterized boundary."""
+
+    def __init__(self, report: CurveGeometryReport | OrderedBoundaryReport):
+        self.report = report
+        super().__init__("; ".join(report.issues) if report.issues else "Ordered boundary is invalid.")
+
+
+def sampled_self_intersection_count(
+    points: np.ndarray,
+    *,
+    relative_tolerance: float = 1.0e-12,
+) -> int:
+    """Count non-adjacent intersections in one endpoint-free closed polygon.
+
+    This sampled check is useful for node-owned curves that deliberately have
+    no continuous evaluator.  It is a topology guard, not a proof that an
+    unresolved curve is simple between its stored nodes.
+    """
+
+    values = np.asarray(points, dtype=np.float64)
+    if values.ndim != 2 or values.shape[1] != 2 or values.shape[0] < 3:
+        raise ValueError("points must have shape (num_points, 2) with at least 3 points.")
+    if not np.all(np.isfinite(values)):
+        raise ValueError("points must contain only finite values.")
+    tolerance = float(relative_tolerance)
+    if not np.isfinite(tolerance) or tolerance < 0.0:
+        raise ValueError("relative_tolerance must be finite and non-negative.")
+    scale = max(
+        float(np.linalg.norm(np.max(values, axis=0) - np.min(values, axis=0))),
+        np.finfo(float).tiny,
+    )
+    return _self_intersection_count(
+        values,
+        tolerance * scale**2,
+        tolerance * scale,
+    )
+
+
+def validate_periodic_parameterization(
+    curve: PeriodicParameterization2D,
+    config: BoundaryValidationConfig | None = None,
+    *,
+    raise_on_error: bool = False,
+) -> CurveGeometryReport:
+    """Evaluate regularity, derivative, orientation, closure, and simplicity."""
+
+    settings = BoundaryValidationConfig() if config is None else config
+    count = int(settings.num_samples_per_component)
+    derivative_count = int(settings.derivative_samples_per_component)
+    step = curve.period / count
+    parameters = curve.parameter_origin + step * np.arange(count, dtype=float)
+    evaluation = curve.evaluate(parameters, wrap=False)
+    points = evaluation.points
+    first_derivatives = evaluation.first_derivatives
+    second_derivatives = evaluation.second_derivatives
+    third_derivatives = evaluation.third_derivatives
+    speeds = np.linalg.norm(first_derivatives, axis=1)
+    weights = step * speeds
+    perimeter = float(np.sum(weights))
+    signed_area = 0.5 * step * float(np.sum(cross2d(points, first_derivatives)))
+    if signed_area > 0.0:
+        orientation = "counterclockwise"
+    elif signed_area < 0.0:
+        orientation = "clockwise"
+    else:
+        orientation = "degenerate"
+    scale = max(
+        float(np.linalg.norm(np.max(points, axis=0) - np.min(points, axis=0))),
+        perimeter / (2.0 * np.pi),
+        np.finfo(float).tiny,
+    )
+    probe = curve.parameter_origin + curve.period * np.arange(8, dtype=float) / 8.0
+    periodic_probe = curve.evaluate(
+        np.concatenate((probe, probe + curve.period)),
+        wrap=False,
+    )
+    position_closure = float(
+        np.max(np.linalg.norm(periodic_probe.points[8:] - periodic_probe.points[:8], axis=1))
+    )
+    first_closure = float(
+        np.max(
+            np.linalg.norm(
+                periodic_probe.first_derivatives[8:] - periodic_probe.first_derivatives[:8],
+                axis=1,
+            )
+        )
+    )
+    second_closure = float(
+        np.max(
+            np.linalg.norm(
+                periodic_probe.second_derivatives[8:] - periodic_probe.second_derivatives[:8],
+                axis=1,
+            )
+        )
+    )
+    third_closure = None
+    if periodic_probe.third_derivatives is not None:
+        third_closure = float(
+            np.max(
+                np.linalg.norm(
+                    periodic_probe.third_derivatives[8:] - periodic_probe.third_derivatives[:8],
+                    axis=1,
+                )
+            )
+        )
+    if derivative_count == count:
+        derivative_step = step
+        derivative_points = points
+        derivative_first = first_derivatives
+        derivative_second = second_derivatives
+        derivative_third = third_derivatives
+    else:
+        derivative_step = curve.period / derivative_count
+        derivative_parameters = (
+            curve.parameter_origin
+            + derivative_step * np.arange(derivative_count, dtype=float)
+        )
+        derivative_evaluation = curve.evaluate(
+            derivative_parameters,
+            wrap=False,
+        )
+        derivative_points = derivative_evaluation.points
+        derivative_first = derivative_evaluation.first_derivatives
+        derivative_second = derivative_evaluation.second_derivatives
+        derivative_third = derivative_evaluation.third_derivatives
+    point_first = (
+        np.roll(derivative_points, 2, axis=0)
+        - 8.0 * np.roll(derivative_points, 1, axis=0)
+        + 8.0 * np.roll(derivative_points, -1, axis=0)
+        - np.roll(derivative_points, -2, axis=0)
+    ) / (12.0 * derivative_step)
+    point_second = (
+        -np.roll(derivative_points, 2, axis=0)
+        + 16.0 * np.roll(derivative_points, 1, axis=0)
+        - 30.0 * derivative_points
+        + 16.0 * np.roll(derivative_points, -1, axis=0)
+        - np.roll(derivative_points, -2, axis=0)
+    ) / (12.0 * derivative_step**2)
+    first_scale = max(
+        float(np.max(np.linalg.norm(derivative_first, axis=1))),
+        scale / curve.period,
+    )
+    second_scale = max(
+        float(np.max(np.linalg.norm(derivative_second, axis=1))),
+        scale / curve.period**2,
+    )
+    first_consistency = float(
+        np.max(np.linalg.norm(point_first - derivative_first, axis=1)) / first_scale
+    )
+    second_consistency = float(
+        np.max(np.linalg.norm(point_second - derivative_second, axis=1))
+        / second_scale
+    )
+    third_consistency = None
+    third_scale = None
+    if derivative_third is not None:
+        second_first = (
+            np.roll(derivative_second, 2, axis=0)
+            - 8.0 * np.roll(derivative_second, 1, axis=0)
+            + 8.0 * np.roll(derivative_second, -1, axis=0)
+            - np.roll(derivative_second, -2, axis=0)
+        ) / (12.0 * derivative_step)
+        third_scale = max(
+            float(np.max(np.linalg.norm(derivative_third, axis=1))),
+            scale / curve.period**3,
+        )
+        third_consistency = float(
+            np.max(np.linalg.norm(second_first - derivative_third, axis=1))
+            / third_scale
+        )
+    cross_tolerance = settings.intersection_relative_tolerance * scale**2
+    length_tolerance = settings.intersection_relative_tolerance * scale
+    self_intersections = _self_intersection_count(points, cross_tolerance, length_tolerance)
+    closure_tolerance = (
+        settings.closure_absolute_tolerance + settings.closure_relative_tolerance * scale
+    )
+    issues = []
+    if position_closure > closure_tolerance:
+        issues.append(f"{curve.component_id}: position is not periodic at the seam")
+    if (
+        first_closure
+        > settings.closure_absolute_tolerance + settings.closure_relative_tolerance * first_scale
+    ):
+        issues.append(f"{curve.component_id}: first derivative is not periodic at the seam")
+    if (
+        second_closure
+        > settings.closure_absolute_tolerance + settings.closure_relative_tolerance * second_scale
+    ):
+        issues.append(f"{curve.component_id}: second derivative is not periodic at the seam")
+    if (
+        third_closure is not None
+        and third_scale is not None
+        and third_closure
+        > settings.closure_absolute_tolerance + settings.closure_relative_tolerance * third_scale
+    ):
+        issues.append(f"{curve.component_id}: third derivative is not periodic at the seam")
+    speed_threshold = settings.minimum_speed_relative * scale / curve.period
+    if float(np.min(speeds)) <= speed_threshold:
+        issues.append(f"{curve.component_id}: parameterisation speed is too small")
+    if abs(signed_area) <= settings.minimum_area_relative * scale**2:
+        issues.append(f"{curve.component_id}: enclosed signed area is degenerate")
+    if settings.require_counterclockwise and signed_area <= 0.0:
+        issues.append(f"{curve.component_id}: component is not counterclockwise")
+    if first_consistency > settings.derivative_relative_tolerance:
+        issues.append(f"{curve.component_id}: supplied first derivative is inconsistent with positions")
+    if second_consistency > settings.derivative_relative_tolerance:
+        issues.append(f"{curve.component_id}: supplied second derivative is inconsistent with positions")
+    if third_consistency is not None and third_consistency > settings.derivative_relative_tolerance:
+        issues.append(f"{curve.component_id}: supplied third derivative is inconsistent with lower derivatives")
+    if self_intersections:
+        issues.append(
+            f"{curve.component_id}: sampled curve has {self_intersections} self-intersection(s)"
+        )
+    regular_mask = speeds > speed_threshold
+    curvature_values = (
+        cross2d(first_derivatives, second_derivatives)[regular_mask] / speeds[regular_mask] ** 3
+    )
+    report = CurveGeometryReport(
+        component_id=curve.component_id,
+        name=curve.name,
+        valid=not issues,
+        issues=tuple(issues),
+        num_validation_nodes=count,
+        num_derivative_validation_nodes=derivative_count,
+        orientation=orientation,
+        phase_anchor=tuple(float(value) for value in points[0]),
+        parameter_origin=curve.parameter_origin,
+        maximum_derivative_order=3 if third_derivatives is not None else 2,
+        source_kind=curve.provenance.source_kind,
+        source_identifier=curve.provenance.source_identifier,
+        projection_residual=curve.provenance.projection_residual,
+        fit_residual=curve.provenance.fit_residual,
+        signed_area=signed_area,
+        perimeter=perimeter,
+        minimum_speed=float(np.min(speeds)),
+        maximum_speed=float(np.max(speeds)),
+        minimum_curvature=float(np.min(curvature_values)) if curvature_values.size else None,
+        maximum_curvature=float(np.max(curvature_values)) if curvature_values.size else None,
+        position_closure_error=position_closure,
+        first_derivative_closure_error=first_closure,
+        second_derivative_closure_error=second_closure,
+        third_derivative_closure_error=third_closure,
+        first_derivative_consistency_error=first_consistency,
+        second_derivative_consistency_error=second_consistency,
+        third_derivative_consistency_error=third_consistency,
+        self_intersection_count=self_intersections,
+        bounding_box_min=tuple(float(value) for value in np.min(points, axis=0)),
+        bounding_box_max=tuple(float(value) for value in np.max(points, axis=0)),
+    )
+    if raise_on_error and not report.valid:
+        raise OrderedBoundaryValidationError(report)
+    return report
+
+
+def validate_ordered_parameterization(
+    boundary: OrderedBoundaryParameterization2D,
+    config: BoundaryValidationConfig | None = None,
+    *,
+    raise_on_error: bool = False,
+) -> OrderedBoundaryReport:
+    """Validate every continuous component plus crossings, nesting, and clearance."""
+
+    settings = BoundaryValidationConfig() if config is None else config
+    component_reports = tuple(
+        validate_periodic_parameterization(component, settings) for component in boundary.components
+    )
+    parameter_step = tuple(
+        component.period / settings.num_samples_per_component for component in boundary.components
+    )
+    points = tuple(
+        component.evaluate(
+            component.parameter_origin
+            + step * np.arange(settings.num_samples_per_component, dtype=float),
+            wrap=False,
+        ).points
+        for component, step in zip(boundary.components, parameter_step)
+    )
+    intersecting_pairs = []
+    nested_pairs = []
+    minimum_clearance: float | None = None
+    for first_index in range(boundary.num_components):
+        for second_index in range(first_index + 1, boundary.num_components):
+            first_id = boundary.components[first_index].component_id
+            second_id = boundary.components[second_index].component_id
+            first_points = points[first_index]
+            second_points = points[second_index]
+            pair_scale = max(
+                float(np.linalg.norm(np.max(first_points, axis=0) - np.min(first_points, axis=0))),
+                float(np.linalg.norm(np.max(second_points, axis=0) - np.min(second_points, axis=0))),
+                np.finfo(float).tiny,
+            )
+            tolerance = settings.intersection_relative_tolerance * pair_scale**2
+            length_tolerance = settings.intersection_relative_tolerance * pair_scale
+            if _polylines_intersect(first_points, second_points, tolerance, length_tolerance):
+                intersecting_pairs.append((first_id, second_id))
+                minimum_clearance = 0.0
+                continue
+            clearance = _polyline_clearance(first_points, second_points)
+            minimum_clearance = (
+                clearance if minimum_clearance is None else min(minimum_clearance, clearance)
+            )
+            if _point_in_polygon(first_points[0], second_points):
+                nested_pairs.append((first_id, second_id))
+            elif _point_in_polygon(second_points[0], first_points):
+                nested_pairs.append((second_id, first_id))
+    issues = [issue for report in component_reports for issue in report.issues]
+    for first_id, second_id in intersecting_pairs:
+        issues.append(f"components {first_id} and {second_id} intersect")
+    if nested_pairs and not settings.allow_nested_components:
+        for inner_id, outer_id in nested_pairs:
+            issues.append(f"component {inner_id} is nested inside {outer_id}")
+    if (
+        minimum_clearance is not None
+        and minimum_clearance < settings.minimum_intercomponent_clearance
+    ):
+        issues.append(
+            "minimum intercomponent clearance "
+            f"{minimum_clearance:.6g} is below {settings.minimum_intercomponent_clearance:.6g}"
+        )
+    report = OrderedBoundaryReport(
+        valid=not issues,
+        issues=tuple(issues),
+        components=component_reports,
+        minimum_intercomponent_clearance=minimum_clearance,
+        intersecting_component_pairs=tuple(intersecting_pairs),
+        nested_component_pairs=tuple(nested_pairs),
+    )
+    if raise_on_error and not report.valid:
+        raise OrderedBoundaryValidationError(report)
+    return report
+
+
+def _segment_intersection_matrix(
+    first_points: np.ndarray,
+    second_points: np.ndarray,
+    cross_tolerance: float,
+    length_tolerance: float,
+) -> np.ndarray:
+    first_start = first_points
+    first_end = np.roll(first_points, -1, axis=0)
+    second_start = second_points
+    second_end = np.roll(second_points, -1, axis=0)
+    return _segment_pair_intersection_matrix(
+        first_start,
+        first_end,
+        second_start,
+        second_end,
+        cross_tolerance,
+        length_tolerance,
+    )
+
+
+def _segment_pair_intersection_matrix(
+    first_start: np.ndarray,
+    first_end: np.ndarray,
+    second_start: np.ndarray,
+    second_end: np.ndarray,
+    cross_tolerance: float,
+    length_tolerance: float,
+) -> np.ndarray:
+    first_delta = first_end - first_start
+    second_delta = second_end - second_start
+    o1 = cross2d(first_delta[:, None, :], second_start[None, :, :] - first_start[:, None, :])
+    o2 = cross2d(first_delta[:, None, :], second_end[None, :, :] - first_start[:, None, :])
+    o3 = cross2d(second_delta[None, :, :], first_start[:, None, :] - second_start[None, :, :])
+    o4 = cross2d(second_delta[None, :, :], first_end[:, None, :] - second_start[None, :, :])
+    proper = (
+        (o1 > cross_tolerance) & (o2 < -cross_tolerance)
+        | (o1 < -cross_tolerance) & (o2 > cross_tolerance)
+    ) & (
+        (o3 > cross_tolerance) & (o4 < -cross_tolerance)
+        | (o3 < -cross_tolerance) & (o4 > cross_tolerance)
+    )
+    touching = (
+        (np.abs(o1) <= cross_tolerance)
+        & _point_on_segment_matrix(second_start, first_start, first_end, length_tolerance)
+        | (np.abs(o2) <= cross_tolerance)
+        & _point_on_segment_matrix(second_end, first_start, first_end, length_tolerance)
+        | (np.abs(o3) <= cross_tolerance)
+        & _point_on_segment_matrix(first_start, second_start, second_end, length_tolerance).T
+        | (np.abs(o4) <= cross_tolerance)
+        & _point_on_segment_matrix(first_end, second_start, second_end, length_tolerance).T
+    )
+    return proper | touching
+
+
+def _point_on_segment_matrix(
+    points: np.ndarray,
+    segment_start: np.ndarray,
+    segment_end: np.ndarray,
+    length_tolerance: float,
+) -> np.ndarray:
+    lower = np.minimum(segment_start, segment_end)[:, None, :]
+    upper = np.maximum(segment_start, segment_end)[:, None, :]
+    candidates = points[None, :, :]
+    return np.all(
+        (candidates >= lower - length_tolerance) & (candidates <= upper + length_tolerance),
+        axis=-1,
+    )
+
+
+def _self_intersection_count(
+    points: np.ndarray,
+    cross_tolerance: float,
+    length_tolerance: float,
+) -> int:
+    count = points.shape[0]
+    starts = points
+    ends = np.roll(points, -1, axis=0)
+    second_indices = np.arange(count)[None, :]
+    intersections_found = 0
+    for first in range(0, count, 256):
+        past = min(first + 256, count)
+        first_indices = np.arange(first, past)[:, None]
+        intersections = _segment_pair_intersection_matrix(
+            starts[first:past],
+            ends[first:past],
+            starts,
+            ends,
+            cross_tolerance,
+            length_tolerance,
+        )
+        nonadjacent_upper = (
+            (second_indices > first_indices)
+            & ((second_indices - first_indices) % count != 1)
+            & ((first_indices - second_indices) % count != 1)
+        )
+        intersections_found += int(
+            np.count_nonzero(intersections & nonadjacent_upper)
+        )
+    return intersections_found
+
+
+def _polylines_intersect(
+    first: np.ndarray,
+    second: np.ndarray,
+    cross_tolerance: float,
+    length_tolerance: float,
+) -> bool:
+    return bool(np.any(_segment_intersection_matrix(first, second, cross_tolerance, length_tolerance)))
+
+
+def _point_to_segments_minimum(points: np.ndarray, segment_points: np.ndarray) -> float:
+    starts = segment_points
+    deltas = np.roll(segment_points, -1, axis=0) - starts
+    denominator = np.sum(deltas * deltas, axis=1)
+    minimum = float("inf")
+    chunk_size = 256
+    for start in range(0, points.shape[0], chunk_size):
+        candidates = points[start : start + chunk_size]
+        displacement = candidates[:, None, :] - starts[None, :, :]
+        fraction = np.einsum("cnd,nd->cn", displacement, deltas) / denominator[None, :]
+        fraction = np.clip(fraction, 0.0, 1.0)
+        closest = starts[None, :, :] + fraction[..., None] * deltas[None, :, :]
+        minimum = min(minimum, float(np.min(np.linalg.norm(candidates[:, None, :] - closest, axis=-1))))
+    return minimum
+
+
+def _polyline_clearance(first: np.ndarray, second: np.ndarray) -> float:
+    return min(_point_to_segments_minimum(first, second), _point_to_segments_minimum(second, first))
+
+
+def _point_in_polygon(point: np.ndarray, polygon: np.ndarray) -> bool:
+    x, y = float(point[0]), float(point[1])
+    x0 = polygon[:, 0]
+    y0 = polygon[:, 1]
+    x1 = np.roll(x0, -1)
+    y1 = np.roll(y0, -1)
+    crosses = (y0 > y) != (y1 > y)
+    denominator = np.where(np.abs(y1 - y0) > 0.0, y1 - y0, 1.0)
+    intersection_x = x0 + (y - y0) * (x1 - x0) / denominator
+    return bool(np.count_nonzero(crosses & (x < intersection_x)) % 2)

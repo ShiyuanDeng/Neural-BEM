@@ -1,0 +1,36 @@
+[
+  [
+    "/home/drdeng/miniconda3/envs/EMNerf/bin/python",
+    "-m",
+    "experiments.topology_playground_20260916.run",
+    "--scene",
+    "far-ellipse-star",
+    "--output",
+    "results/experiments/meeting_20260916/uniform_far_ellipse_star/topology",
+    "--frequencies",
+    "0,1",
+    "--seed-modes",
+    "3",
+    "--initial-modes",
+    "3",
+    "--guard-nodes",
+    "256",
+    "512",
+    "--true-jacobian",
+    "--control",
+    "{\"bandwidth_promotion\": true, \"maximum_cycles\": 16}",
+    "--seconds",
+    "750.0"
+  ],
+  [
+    "/home/drdeng/miniconda3/envs/EMNerf/bin/python",
+    "-m",
+    "experiments.topology_playground_20260916.expanded_fit",
+    "--source",
+    "results/experiments/meeting_20260916/uniform_far_ellipse_star/topology",
+    "--output",
+    "results/experiments/meeting_20260916/uniform_far_ellipse_star/refinement",
+    "--seconds",
+    "950.0"
+  ]
+]

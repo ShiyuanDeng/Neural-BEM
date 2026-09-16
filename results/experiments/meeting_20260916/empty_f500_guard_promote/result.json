@@ -1,0 +1,136 @@
+{
+  "command": {
+    "cap": 20000,
+    "continue_fit": false,
+    "control": "{\"bandwidth_promotion\":true}",
+    "frequencies": "0",
+    "guard_nodes": [
+      256,
+      512
+    ],
+    "nodes": 64,
+    "output": "/home/drdeng/Neural_SDF_BEM_AD/results/experiments/meeting_20260916/empty_f500_guard_promote",
+    "refined": 128,
+    "scene": "empty-ellipse-star",
+    "seconds": 600
+  },
+  "continuation_feasible": true,
+  "controller": {
+    "acceptance_absolute_margin": 1e-10,
+    "acceptance_relative_margin": 1e-05,
+    "bandwidth_promotion": true,
+    "birth_radius_grid_m": null,
+    "boundary_buffer_m": 0.006,
+    "candidate_refinement_iterations": 3,
+    "candidates_refined_per_group": 1,
+    "chart": "cartesian",
+    "contour_modes": 8,
+    "cross_resolution_factor": 5.0,
+    "feasible_fd_jacobian": true,
+    "fixed_iterations": 22,
+    "include_simplest_candidate": false,
+    "inspection_center": [
+      0.5,
+      0.5
+    ],
+    "inspection_radius_m": 0.2,
+    "maximum_birth_radius_m": 0.065,
+    "maximum_candidates_per_type": 48,
+    "maximum_cycles": 10,
+    "maximum_events": 7,
+    "minimum_component_radius_m": 0.008,
+    "raster_size": 121,
+    "refined_feasibility_guard": true,
+    "relative_error_tolerance": 0.003,
+    "split_seed_radius_factors": [
+      1.0
+    ]
+  },
+  "detail": "hard wall limit during numerical batch",
+  "frequencies_hz": [
+    500000000.0
+  ],
+  "geometry": {
+    "component_count": 2,
+    "final_maximum_modes": [
+      1,
+      9
+    ],
+    "matched_components": [
+      {
+        "hausdorff_m": 0.009040981474713739,
+        "recovered_component": "t001.birth",
+        "truth_component": "truth.star"
+      },
+      {
+        "hausdorff_m": 0.009756275139113991,
+        "recovered_component": "t004.merge1",
+        "truth_component": "truth.ellipse"
+      }
+    ],
+    "maximum_matched_hausdorff_m": 0.009756275139113991,
+    "truth_component_count": 2,
+    "union_iou": 0.7491236855282924
+  },
+  "nodes": [
+    64,
+    128
+  ],
+  "original_start": true,
+  "reason": "TRIAL_WALL_LIMIT",
+  "runtime": {
+    "analytic_constraint_policy": "fd_compatible",
+    "device": "cpu",
+    "jacobian": "auto",
+    "kernels": "real_bessel",
+    "profile": "fast"
+  },
+  "scene": "empty-ellipse-star",
+  "seconds": 600,
+  "source_bundle": "/home/drdeng/Neural_SDF_BEM_AD/results/validation/topology/TOP-025-20260915-210356-all-scenes-current",
+  "status": "STOPPED",
+  "supplied_target_count": false,
+  "topology_seconds": 600.0122135620331,
+  "topology_work": {
+    "active_wall_seconds": 600.0122309019789,
+    "attempted": {
+      "topological_derivative": 8,
+      "topology_forward": 502
+    },
+    "budget_unit": "one full frequency system or one analytic directional assembly/tangent",
+    "budget_work_units": 1398,
+    "calls": {},
+    "completed": {
+      "topological_derivative": 8,
+      "topology_forward": 502
+    },
+    "derivative_assemblies_attempted": {
+      "topology_forward": 888
+    },
+    "derivative_assemblies_completed": {
+      "topology_forward": 888
+    },
+    "derivative_assemblies_failed": {},
+    "endpoint_reserve": 0,
+    "failed": {},
+    "per_frequency_attempted": {
+      "None:topological_derivative:500000000": 8,
+      "None:topology_forward:500000000": 502
+    },
+    "per_frequency_completed": {
+      "None:topological_derivative:500000000": 8,
+      "None:topology_forward:500000000": 502
+    },
+    "per_frequency_failed": {},
+    "solve_cap": 20000,
+    "stage": null,
+    "stage_attempted": 510,
+    "stage_quota": null,
+    "stage_work_units": 1398,
+    "total_attempted": 510,
+    "wall_ceiling_seconds": 600,
+    "within_solve_cap": true
+  },
+  "total_seconds": 600.4762074779719,
+  "traceback": "Traceback (most recent call last):\n  File \"/home/drdeng/Neural_SDF_BEM_AD/experiments/topology_playground_20260916/run.py\", line 49, in run\n    tc.circle_component = flexible_circle\n  File \"/home/drdeng/Neural_SDF_BEM_AD/run_topology_recovery_followup.py\", line 206, in topology_prefix\n    result = controller(initial,data,p.driver.baseline._geometry_config(64),\n  File \"/home/drdeng/Neural_SDF_BEM_AD/experiments/topology_playground_20260916/run.py\", line 43, in controller\n    # deform before the controller decides whether another object is needed.\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/runtime.py\", line 77, in wrapped\n    return function(*args, **kwargs)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/topology_controller.py\", line 639, in run_topology_aware_fourier_inverse\n    result = _run_topology_aware_fourier_inverse(\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/topology_controller.py\", line 878, in _run_topology_aware_fourier_inverse\n    result = accounted_call('candidate_refinement', run_multiradial_fd_inverse, candidate.state, data, production_geometry_config,\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/work_accounting.py\", line 97, in accounted_call\n    return function(*args, **kwargs)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/runtime.py\", line 77, in wrapped\n    return function(*args, **kwargs)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/radial_topology.py\", line 1362, in run_multiradial_fd_inverse\n    matrix, basis, unresolved_columns, one_sided_new = jacobian(accepted_state)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/radial_topology.py\", line 1156, in jacobian\n    plus, minus = allowed(step), allowed(-step)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/radial_topology.py\", line 1150, in allowed\n    return all(multiradial_geometry_admissible(trial, g, solve_config=solve_config)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/radial_topology.py\", line 1150, in <genexpr>\n    return all(multiradial_geometry_admissible(trial, g, solve_config=solve_config)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/radial_topology.py\", line 739, in multiradial_geometry_admissible\n    adapt_multicomponent_boundary(\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/gpr_bem_kress/multicomponent.py\", line 596, in adapt_multicomponent_boundary\n    adapters = tuple(\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/gpr_bem_kress/multicomponent.py\", line 597, in <genexpr>\n    _component_adapter(\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/gpr_bem_kress/multicomponent.py\", line 193, in _component_adapter\n    return adapt_periodic_curve(component)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/gpr_bem_kress/geometry.py\", line 128, in adapt_periodic_curve\n    return PeriodicCurveAdapter(curve)\n  File \"<string>\", line 4, in __init__\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/gpr_bem_kress/geometry.py\", line 82, in __post_init__\n    intersections = sampled_self_intersection_count(self.curve.points)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/ordered_boundary/validation.py\", line 215, in sampled_self_intersection_count\n    return _self_intersection_count(\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/ordered_boundary/validation.py\", line 598, in _self_intersection_count\n    intersections = _segment_pair_intersection_matrix(\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/ordered_boundary/validation.py\", line 563, in _segment_pair_intersection_matrix\n    & _point_on_segment_matrix(first_start, second_start, second_end, length_tolerance).T\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/ordered_boundary/validation.py\", line 579, in _point_on_segment_matrix\n    return np.all(\n  File \"/home/drdeng/miniconda3/envs/EMNerf/lib/python3.9/site-packages/numpy/_core/fromnumeric.py\", line 2601, in all\n    return _wrapreduction_any_all(a, np.logical_and, 'all', axis, out,\n  File \"/home/drdeng/miniconda3/envs/EMNerf/lib/python3.9/site-packages/numpy/_core/fromnumeric.py\", line 102, in _wrapreduction_any_all\n    return ufunc.reduce(obj, axis, bool, out, **passkwargs)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/run_top017.py\", line 155, in alarm\n    def alarm(*_): raise TrialWallLimit('hard wall limit during numerical batch')\nrun_top017.TrialWallLimit: hard wall limit during numerical batch\n"
+}

@@ -1,0 +1,149 @@
+{
+  "command": {
+    "cap": 20000,
+    "continue_fit": false,
+    "control": "{\"bandwidth_promotion\":true,\"maximum_cycles\":16,\"maximum_events\":10}",
+    "frequencies": "0",
+    "guard_nodes": [
+      256,
+      512
+    ],
+    "nodes": 64,
+    "output": "/home/drdeng/Neural_SDF_BEM_AD/results/experiments/meeting_20260916/three_shapes_guard_promote_true",
+    "refined": 128,
+    "scene": "far-three-shapes",
+    "seconds": 900.0,
+    "seed_modes": 0,
+    "true_jacobian": true
+  },
+  "continuation_feasible": true,
+  "controller": {
+    "acceptance_absolute_margin": 1e-10,
+    "acceptance_relative_margin": 1e-05,
+    "bandwidth_promotion": true,
+    "birth_radius_grid_m": null,
+    "boundary_buffer_m": 0.006,
+    "candidate_refinement_iterations": 3,
+    "candidates_refined_per_group": 1,
+    "chart": "cartesian",
+    "contour_modes": 8,
+    "cross_resolution_factor": 5.0,
+    "feasible_fd_jacobian": true,
+    "fixed_iterations": 22,
+    "include_simplest_candidate": false,
+    "inspection_center": [
+      0.5,
+      0.5
+    ],
+    "inspection_radius_m": 0.2,
+    "maximum_birth_radius_m": 0.065,
+    "maximum_candidates_per_type": 48,
+    "maximum_cycles": 16,
+    "maximum_events": 10,
+    "minimum_component_radius_m": 0.008,
+    "raster_size": 121,
+    "refined_feasibility_guard": true,
+    "relative_error_tolerance": 0.003,
+    "split_seed_radius_factors": [
+      1.0
+    ]
+  },
+  "detail": "hard wall limit during numerical batch",
+  "frequencies_hz": [
+    500000000.0
+  ],
+  "geometry": {
+    "component_count": 8,
+    "final_maximum_modes": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    "matched_components": [
+      {
+        "hausdorff_m": 0.013930488111987584,
+        "recovered_component": "t001.birth",
+        "truth_component": "truth.star"
+      },
+      {
+        "hausdorff_m": 0.018048351599914993,
+        "recovered_component": "t003.birth",
+        "truth_component": "truth.circle"
+      },
+      {
+        "hausdorff_m": 0.02992679622269232,
+        "recovered_component": "t006.birth",
+        "truth_component": "truth.ellipse"
+      }
+    ],
+    "maximum_matched_hausdorff_m": 0.02992679622269232,
+    "truth_component_count": 3,
+    "union_iou": 0.37911869789599045
+  },
+  "nodes": [
+    64,
+    128
+  ],
+  "original_start": true,
+  "reason": "TRIAL_WALL_LIMIT",
+  "runtime": {
+    "analytic_constraint_policy": "true",
+    "device": "cpu",
+    "jacobian": "auto",
+    "kernels": "real_bessel",
+    "profile": "fast"
+  },
+  "scene": "far-three-shapes",
+  "seconds": 900.0,
+  "source_bundle": "/home/drdeng/Neural_SDF_BEM_AD/results/validation/topology/TOP-025-20260915-210356-all-scenes-current",
+  "status": "STOPPED",
+  "supplied_target_count": false,
+  "topology_seconds": 900.0012543170014,
+  "topology_work": {
+    "active_wall_seconds": 900.0012728929287,
+    "attempted": {
+      "topological_derivative": 16,
+      "topology_forward": 761
+    },
+    "budget_unit": "one full frequency system or one analytic directional assembly/tangent",
+    "budget_work_units": 2925,
+    "calls": {},
+    "completed": {
+      "topological_derivative": 16,
+      "topology_forward": 761
+    },
+    "derivative_assemblies_attempted": {
+      "topology_forward": 2148
+    },
+    "derivative_assemblies_completed": {
+      "topology_forward": 2148
+    },
+    "derivative_assemblies_failed": {},
+    "endpoint_reserve": 0,
+    "failed": {},
+    "per_frequency_attempted": {
+      "None:topological_derivative:500000000": 16,
+      "None:topology_forward:500000000": 761
+    },
+    "per_frequency_completed": {
+      "None:topological_derivative:500000000": 16,
+      "None:topology_forward:500000000": 761
+    },
+    "per_frequency_failed": {},
+    "solve_cap": 20000,
+    "stage": null,
+    "stage_attempted": 777,
+    "stage_quota": null,
+    "stage_work_units": 2925,
+    "total_attempted": 777,
+    "wall_ceiling_seconds": 900.0,
+    "within_solve_cap": true
+  },
+  "total_seconds": 903.5925594490254,
+  "traceback": "Traceback (most recent call last):\n  File \"/home/drdeng/Neural_SDF_BEM_AD/experiments/topology_playground_20260916/run.py\", line 61, in run\n    # A circular seed has identical geometry after zero padding, but can then\n  File \"/home/drdeng/Neural_SDF_BEM_AD/run_topology_recovery_followup.py\", line 206, in topology_prefix\n    result = controller(initial,data,p.driver.baseline._geometry_config(64),\n  File \"/home/drdeng/Neural_SDF_BEM_AD/experiments/topology_playground_20260916/run.py\", line 55, in controller\n    record = dict(scene=args.scene, frequencies_hz=frequencies, original_start=True,\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/runtime.py\", line 77, in wrapped\n    return function(*args, **kwargs)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/topology_controller.py\", line 639, in run_topology_aware_fourier_inverse\n    required by a later continuation stage, including candidate acceptance.\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/topology_controller.py\", line 849, in _run_topology_aware_fourier_inverse\n    try:\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/topology_controller.py\", line 673, in guard_admissible\n    guard = config.refined_feasibility_guard or bool(extra_guard_configs)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/topology_controller.py\", line 673, in <genexpr>\n    guard = config.refined_feasibility_guard or bool(extra_guard_configs)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/radial_topology.py\", line 739, in multiradial_geometry_admissible\n    adapt_multicomponent_boundary(\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/gpr_bem_kress/multicomponent.py\", line 608, in adapt_multicomponent_boundary\n    report = _validate_component_pair(first, second, settings)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/gpr_bem_kress/multicomponent.py\", line 353, in _validate_component_pair\n    clearance, intersects, nested = _component_pair_clearance(first, second)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/gpr_bem_kress/multicomponent.py\", line 334, in _component_pair_clearance\n    float(np.min(_point_to_segment_distances(first_points, second_points))),\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/gpr_bem_kress/multicomponent.py\", line 215, in _point_to_segment_distances\n    fraction = np.divide(\n  File \"/home/drdeng/Neural_SDF_BEM_AD/run_top017.py\", line 155, in alarm\n    def alarm(*_): raise TrialWallLimit('hard wall limit during numerical batch')\nrun_top017.TrialWallLimit: hard wall limit during numerical batch\n"
+}

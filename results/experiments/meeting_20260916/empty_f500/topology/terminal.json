@@ -1,0 +1,215 @@
+{
+  "controller_work": {
+    "stages": {
+      "candidate_acceptance": {
+        "evaluation_count": 37,
+        "forward_evaluation_count": 37,
+        "forward_frequency_solve_count": 37
+      },
+      "candidate_raw": {
+        "evaluation_count": 121,
+        "forward_evaluation_count": 94,
+        "forward_frequency_solve_count": 94
+      },
+      "candidate_refinement": {
+        "analytic_base_frequency_solve_count": 37,
+        "derivative_assembly_count": 204,
+        "evaluation_count": 62,
+        "factorization_count": 37,
+        "forward_evaluation_count": 62,
+        "forward_frequency_solve_count": 62,
+        "tangent_solve_count": 204
+      },
+      "fixed_refinement": {
+        "analytic_base_frequency_solve_count": 15,
+        "derivative_assembly_count": 99,
+        "evaluation_count": 45,
+        "factorization_count": 15,
+        "forward_evaluation_count": 45,
+        "forward_frequency_solve_count": 45,
+        "tangent_solve_count": 99
+      },
+      "production_base": {
+        "evaluation_count": 3,
+        "forward_evaluation_count": 3,
+        "forward_frequency_solve_count": 3
+      },
+      "refined_base": {
+        "evaluation_count": 3,
+        "forward_evaluation_count": 3,
+        "forward_frequency_solve_count": 3
+      },
+      "topological_derivative": {
+        "td_evaluation_count": 7,
+        "td_frequency_solve_count": 6
+      }
+    },
+    "totals": {
+      "analytic_base_frequency_solve_count": 52,
+      "bie_frequency_solve_count": 302,
+      "derivative_assembly_count": 303,
+      "evaluation_count": 271,
+      "factorization_count": 52,
+      "forward_evaluation_count": 244,
+      "forward_frequency_solve_count": 244,
+      "tangent_solve_count": 303,
+      "td_evaluation_count": 7,
+      "td_frequency_solve_count": 6
+    }
+  },
+  "events": [
+    {
+      "after_ids": [
+        "t001.birth"
+      ],
+      "before_ids": [],
+      "candidate_refinement_steps": 3,
+      "children": [
+        "t001.birth"
+      ],
+      "construction": "exterior_td_region; radius=0.024736",
+      "cycle": 0,
+      "kind": "birth",
+      "parents": [],
+      "production_after": 0.19749107630885926,
+      "production_before": 0.49999999999999994,
+      "raw_birth_radius_m": 0.02473585124420659,
+      "refined_after": 0.1974910763088591,
+      "refined_before": 0.49999999999999994
+    },
+    {
+      "after_ids": [
+        "t001.birth",
+        "t002.birth"
+      ],
+      "before_ids": [
+        "t001.birth"
+      ],
+      "candidate_refinement_steps": 3,
+      "children": [
+        "t002.birth"
+      ],
+      "construction": "exterior_td_region; radius=0.036077",
+      "cycle": 1,
+      "kind": "birth",
+      "parents": [],
+      "production_after": 0.007325295310647479,
+      "production_before": 0.1974907808173551,
+      "raw_birth_radius_m": 0.03607677586537363,
+      "refined_after": 0.007325295310647423,
+      "refined_before": 0.19749078081735516
+    },
+    {
+      "after_ids": [
+        "t001.birth",
+        "t002.birth",
+        "t003.birth"
+      ],
+      "before_ids": [
+        "t001.birth",
+        "t002.birth"
+      ],
+      "candidate_refinement_steps": 3,
+      "children": [
+        "t003.birth"
+      ],
+      "construction": "exterior_td_region; radius=0.009262",
+      "cycle": 2,
+      "kind": "birth",
+      "parents": [],
+      "production_after": 0.002110287864236162,
+      "production_before": 0.007325254405955951,
+      "raw_birth_radius_m": 0.009261992999702207,
+      "refined_after": 0.0021102878642361546,
+      "refined_before": 0.007325254405955835
+    }
+  ],
+  "final_state": [
+    {
+      "chart": "cartesian",
+      "component_id": "t001.birth",
+      "maximum_mode": 1,
+      "parameters": [
+        0.6096543729720927,
+        0.5299337651579481,
+        0.03533527738612465,
+        -1.9274159588044152e-18,
+        1.5012865274945895e-18,
+        0.03533527738612465
+      ]
+    },
+    {
+      "chart": "cartesian",
+      "component_id": "t002.birth",
+      "maximum_mode": 1,
+      "parameters": [
+        0.5452533380345804,
+        0.42802326204731583,
+        0.03247254806441246,
+        6.553983290912404e-19,
+        -5.104973200582435e-19,
+        0.03247254806441246
+      ]
+    },
+    {
+      "chart": "cartesian",
+      "component_id": "t003.birth",
+      "maximum_mode": 1,
+      "parameters": [
+        0.594961496884632,
+        0.45050029495029664,
+        0.012093142031131113,
+        -5.148204961162438e-19,
+        4.009996240649715e-19,
+        0.012093142031131113
+      ]
+    }
+  ],
+  "stop_reason": "topology_stationary",
+  "work": {
+    "active_wall_seconds": 70.9333696810063,
+    "attempted": {
+      "topological_derivative": 6,
+      "topology_forward": 323
+    },
+    "budget_unit": "one full frequency system or one analytic directional assembly/tangent",
+    "budget_work_units": 632,
+    "calls": {
+      "preserved_candidate_refusals": 27
+    },
+    "completed": {
+      "topological_derivative": 6,
+      "topology_forward": 296
+    },
+    "derivative_assemblies_attempted": {
+      "topology_forward": 303
+    },
+    "derivative_assemblies_completed": {
+      "topology_forward": 303
+    },
+    "derivative_assemblies_failed": {},
+    "endpoint_reserve": 0,
+    "failed": {
+      "topology_forward": 27
+    },
+    "per_frequency_attempted": {
+      "None:topological_derivative:500000000": 6,
+      "None:topology_forward:500000000": 323
+    },
+    "per_frequency_completed": {
+      "None:topological_derivative:500000000": 6,
+      "None:topology_forward:500000000": 296
+    },
+    "per_frequency_failed": {
+      "None:topology_forward:500000000": 27
+    },
+    "solve_cap": 20000,
+    "stage": null,
+    "stage_attempted": 329,
+    "stage_quota": null,
+    "stage_work_units": 632,
+    "total_attempted": 329,
+    "wall_ceiling_seconds": 600,
+    "within_solve_cap": true
+  }
+}

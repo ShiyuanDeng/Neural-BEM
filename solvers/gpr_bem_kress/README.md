@@ -121,6 +121,22 @@ with inverse_runtime("reference"):
     result = run_multiradial_fd_inverse(...)  # FD/reference CPU
 ```
 
+SPD-005 adds an opt-in `--inverse-runtime reciprocal` (or
+`SDF_INVERSE_RUNTIME=reciprocal`, `inverse_runtime("reciprocal")`). It uses the
+same Kress forward and optimizer, with coupled source/receiver trace products
+for Cartesian shape derivatives. Unit receiver illuminations reuse each base
+LU; shape columns are boundary contractions. Complex source strength is applied
+once, through the primal trace, and the reciprocal product has no conjugation.
+The runtime retains operator derivatives when any component has fewer than
+128 nodes. Explicit `method="reciprocal"` calls bypass that guard for diagnostics.
+`fast` remains the operator-derivative default and comparison. The reciprocal
+identity approximates the continuous shape derivative, so accuracy on coarse
+grids must be qualified; see the [SPD-005 plan](../../docs/iterations/speedup/iteration_04/03_plan.md).
+The existing high-level lossless/nonmagnetic material restriction and
+`fd_compatible` constraint policy apply. Passive counters distinguish primal
+RHSs, reciprocal RHS batches/columns and contractions; budget ledgers charge
+one reciprocal batch without calling it another matrix assembly.
+
 Execution choices are `kernels="reference"` or `"real_bessel"`, and
 `device="cpu"` or `"cuda"`. They are scoped to the context. The standalone
 forward solver retains reference kernels when called without a context;
@@ -153,3 +169,41 @@ assemblies/tangents. `total_attempted` remains a full-system count;
 The [SPD-001 plan](../../docs/iterations/speedup/iteration_01/03_plan.md) owns
 the original bounded numerical/runtime comparison. The user authorized default
 promotion under [SPD-002](../../docs/iterations/speedup/iteration_02/03_plan.md).
+
+### Compiled Kress inverse backend (opt-in)
+
+`--inverse-runtime compiled` or `SDF_INVERSE_RUNTIME=compiled` selects the
+SPD-006 reduced scattering backend inside analytic Cartesian fits at 256 or
+more nodes. Multi-object states use local Kress regular-wave compilations and
+a small coupled outgoing-wave system. Single-object states retain reciprocal
+Kress. Existing 64-node topology fits, TD fields, readiness, independent refined
+candidate checks and final endpoint checks keep full Kress. `fast` remains the
+default; standalone forward APIs are unchanged.
+
+The compiler preserves the full production Cartesian shape space and gauge.
+Reciprocal source/receiver traces reconstructed from the local regular-wave
+solutions supply the shape Jacobian. Its cache belongs to one fit and reuses
+unchanged local coefficients, including pure translations. Rotations expressed
+as changed Cartesian coefficients recompile. Cylindrical normalization uses a
+fixed 0.1 m scale; a separate coefficient-sum radius certifies geometric bounds.
+
+Each new state compares outgoing orders 20/24, then 24/28 or 28/32 if needed.
+Prediction changes must be <=1e-11 and whole/worst-column derivative changes
+<=1e-7. Local and reduced linear residuals must be <=1e-10. Failure falls back
+to full Kress and is recorded, as do overlapping bounding circles, acquisition
+points within a bounding circle, unsupported materials and requested full
+condition-number diagnostics. Original geometry/clearance checks still apply.
+
+Work ledgers charge a `compiled` frequency batch separately from physical full
+systems and reciprocal RHS batches. Passive counters additionally report local
+factorizations/RHS columns, local cache hits, reduced solves/RHS columns and
+fallbacks. Angular retries are included in the batch and their reduced solves
+are counted individually. `compiled_backend.json` in continuation stage results
+records convergence checks and fallback reasons.
+
+Saved-state qualification passed 33/33 checks and 114 regression tests passed
+(one unavailable-CUDA skip). All 16 matched full workers recovered. With the
+same readiness wrapper, compiled continuation reduced full runtime by 4.5% on
+central ellipse/star and 5.6% on two stars; death and the single-object merge
+control were unchanged. Readiness is separate from runtime-profile selection.
+See the [SPD-006 results and remaining-cost profile](../../docs/iterations/speedup/iteration_06/01_results.md).

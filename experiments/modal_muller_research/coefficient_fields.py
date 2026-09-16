@@ -121,7 +121,7 @@ def solve(geometries, ko, ki, sources, receivers, strengths=1e-6, *, cutoff=40,
     factors = lu_factor(matrix)
     state = lu_solve(factors, rhs)
     y = receiver@state
-    return dict(y=y, state=state, a=matrix, b=rhs, c=receiver, factors=factors,
+    return dict(y=y, state=state, a=matrix, b=rhs, c=receiver, factors=factors, waves=waves,
                 diagnostics=diagnostics, setup_seconds=assembled-started,
                 solve_seconds=perf_counter()-assembled, total_seconds=perf_counter()-started,
                 boundary_nodes=0, point_pair_kernel_calls=0)

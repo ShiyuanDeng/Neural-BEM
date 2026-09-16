@@ -1,0 +1,148 @@
+{
+  "command": {
+    "cap": 20000,
+    "continue_fit": false,
+    "control": "{\"bandwidth_promotion\": true, \"maximum_cycles\": 16}",
+    "frequencies": "0,1",
+    "guard_nodes": [
+      256,
+      512
+    ],
+    "initial_modes": 3,
+    "nodes": 64,
+    "output": "/home/drdeng/Neural_SDF_BEM_AD/results/experiments/meeting_20260916/uniform_far_two_stars/topology",
+    "refined": 128,
+    "scene": "far-two-stars",
+    "seconds": 750.0,
+    "seed_modes": 3,
+    "training_ghz": null,
+    "true_jacobian": true
+  },
+  "continuation_feasible": true,
+  "controller": {
+    "acceptance_absolute_margin": 1e-10,
+    "acceptance_relative_margin": 1e-05,
+    "bandwidth_promotion": true,
+    "birth_radius_grid_m": null,
+    "boundary_buffer_m": 0.006,
+    "candidate_refinement_iterations": 3,
+    "candidates_refined_per_group": 1,
+    "chart": "cartesian",
+    "contour_modes": 8,
+    "cross_resolution_factor": 5.0,
+    "feasible_fd_jacobian": true,
+    "fixed_iterations": 22,
+    "include_simplest_candidate": false,
+    "inspection_center": [
+      0.5,
+      0.5
+    ],
+    "inspection_radius_m": 0.2,
+    "maximum_birth_radius_m": 0.065,
+    "maximum_candidates_per_type": 48,
+    "maximum_cycles": 16,
+    "maximum_events": 7,
+    "minimum_component_radius_m": 0.008,
+    "raster_size": 121,
+    "refined_feasibility_guard": true,
+    "relative_error_tolerance": 0.003,
+    "split_seed_radius_factors": [
+      1.0
+    ]
+  },
+  "frequencies_hz": [
+    500000000.0,
+    750000000.0
+  ],
+  "geometry": {
+    "component_count": 2,
+    "final_maximum_modes": [
+      6,
+      6
+    ],
+    "matched_components": [
+      {
+        "hausdorff_m": 0.011059804076340992,
+        "recovered_component": "t002.birth",
+        "truth_component": "truth.star7"
+      },
+      {
+        "hausdorff_m": 0.002137783917882127,
+        "recovered_component": "t003.birth",
+        "truth_component": "truth.star5"
+      }
+    ],
+    "maximum_matched_hausdorff_m": 0.011059804076340992,
+    "truth_component_count": 2,
+    "union_iou": 0.8176550783912747
+  },
+  "nodes": [
+    64,
+    128
+  ],
+  "original_start": true,
+  "runtime": {
+    "analytic_constraint_policy": "true",
+    "device": "cpu",
+    "jacobian": "auto",
+    "kernels": "real_bessel",
+    "profile": "fast"
+  },
+  "scene": "far-two-stars",
+  "seconds": 750.0,
+  "source_bundle": "/home/drdeng/Neural_SDF_BEM_AD/results/validation/topology/TOP-025-20260915-210356-all-scenes-current",
+  "status": "TOPOLOGY_COMPLETE",
+  "supplied_target_count": false,
+  "topology_seconds": 372.8666785740061,
+  "topology_work": {
+    "active_wall_seconds": 372.86669717601035,
+    "attempted": {
+      "topological_derivative": 32,
+      "topology_forward": 1417
+    },
+    "budget_unit": "one full frequency system or one analytic directional assembly/tangent",
+    "budget_work_units": 7373,
+    "calls": {
+      "preserved_candidate_refusals": 3
+    },
+    "completed": {
+      "topological_derivative": 32,
+      "topology_forward": 1414
+    },
+    "derivative_assemblies_attempted": {
+      "topology_forward": 5924
+    },
+    "derivative_assemblies_completed": {
+      "topology_forward": 5924
+    },
+    "derivative_assemblies_failed": {},
+    "endpoint_reserve": 0,
+    "failed": {
+      "topology_forward": 3
+    },
+    "per_frequency_attempted": {
+      "None:topological_derivative:500000000": 16,
+      "None:topological_derivative:750000000": 16,
+      "None:topology_forward:500000000": 710,
+      "None:topology_forward:750000000": 707
+    },
+    "per_frequency_completed": {
+      "None:topological_derivative:500000000": 16,
+      "None:topological_derivative:750000000": 16,
+      "None:topology_forward:500000000": 707,
+      "None:topology_forward:750000000": 707
+    },
+    "per_frequency_failed": {
+      "None:topology_forward:500000000": 3
+    },
+    "solve_cap": 20000,
+    "stage": null,
+    "stage_attempted": 1449,
+    "stage_quota": null,
+    "stage_work_units": 7373,
+    "total_attempted": 1449,
+    "wall_ceiling_seconds": 750.0,
+    "within_solve_cap": true
+  },
+  "total_seconds": 373.3142512299819
+}

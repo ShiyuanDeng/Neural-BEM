@@ -1,0 +1,41 @@
+{
+  "command": [
+    "ffmpeg",
+    "-y",
+    "-loglevel",
+    "error",
+    "-f",
+    "rawvideo",
+    "-vcodec",
+    "rawvideo",
+    "-pix_fmt",
+    "rgb24",
+    "-s",
+    "1800x1320",
+    "-r",
+    "12",
+    "-i",
+    "-",
+    "-an",
+    "-c:v",
+    "libx264",
+    "-crf",
+    "22",
+    "-pix_fmt",
+    "yuv420p",
+    "-threads",
+    "2",
+    "-movflags",
+    "+faststart",
+    "/home/drdeng/Neural_SDF_BEM_AD/results/experiments/meeting_20260916/videos/all_scenes.mp4"
+  ],
+  "fps": 12,
+  "frames": 396,
+  "probe": {
+    "duration": "33.000000",
+    "height": 1320,
+    "nb_frames": "396",
+    "width": 1800
+  },
+  "sha256": "652b21a32587c7ec40b44c73fdb47cc5f77944390ba180599c57476162c75eb0"
+}

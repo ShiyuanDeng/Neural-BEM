@@ -3,6 +3,9 @@
 Follow-up to [the first inverse](01_exploration.md), 2026-09-16. Still an
 exploratory notebook, with no production-default changes or new execution gates.
 
+Next: [compile Laurent objects into reusable scattering matrices, then recover
+their types and poses without online boundary solves](03_scattering_library.md).
+
 The new implementation is
 [`coupled_inverse.py`](../../../../experiments/modal_muller_research/coupled_inverse.py).
 It handles multiple interacting components, reciprocal shape derivatives, dense
