@@ -625,6 +625,7 @@ def _refinement_shortlist(group, config):
 @inverse_execution
 def run_topology_aware_fourier_inverse(initial_state, data, production_geometry_config,
         refined_geometry_config, *, solve_config, config=None,
+        feasibility_geometry_configs=(),
         progress_callback: Callable[[TopologyFrame], None] | None = None,
         workspace_callback: Callable[[int, TopologyWorkspace], None] | None = None,
         replay_first_event: bool = False):
@@ -633,19 +634,25 @@ def run_topology_aware_fourier_inverse(initial_state, data, production_geometry_
     ``replay_first_event`` starts at a saved pre-event state, bypassing only
     cycle zero's fixed-topology optimizer. Later cycles retain the normal policy.
     It does not prescribe the winning event or the resulting component count.
+
+    ``feasibility_geometry_configs`` adds geometry-only checks at resolutions
+    required by a later continuation stage, including candidate acceptance.
+    A coarse polygon can otherwise pass clearance while the handoff fails.
     """
     with collect_work() as ledger:
         result = _run_topology_aware_fourier_inverse(
             initial_state, data, production_geometry_config, refined_geometry_config,
             solve_config=solve_config, config=config, progress_callback=progress_callback,
-            workspace_callback=workspace_callback, replay_first_event=replay_first_event)
+            workspace_callback=workspace_callback, replay_first_event=replay_first_event,
+            feasibility_geometry_configs=feasibility_geometry_configs)
         work = ledger.snapshot()
         return replace(result, evaluation_count=work['totals']['evaluation_count'], work=work)
 
 
 def _run_topology_aware_fourier_inverse(initial_state, data, production_geometry_config,
         refined_geometry_config, *, solve_config, config=None,
-        progress_callback=None, workspace_callback=None, replay_first_event=False):
+        progress_callback=None, workspace_callback=None, replay_first_event=False,
+        feasibility_geometry_configs=()):
     """Refine, compare finite events, accept the best, restart and repeat."""
     config = TopologyControllerConfig() if config is None else config
     state = state_in_chart(initial_state, config.chart)
@@ -662,8 +669,13 @@ def _run_topology_aware_fourier_inverse(initial_state, data, production_geometry
     # With the guard, every optimizer step must also be admissible at the
     # resolution the controller checks events at, and the last state an actual
     # refined evaluation accepted is kept as the state to fall back to.
-    guard = config.refined_feasibility_guard
-    guard_configs = (refined_geometry_config,) if guard else ()
+    extra_guard_configs = tuple(feasibility_geometry_configs)
+    guard = config.refined_feasibility_guard or bool(extra_guard_configs)
+    guard_configs = ((refined_geometry_config,) if guard else ()) + extra_guard_configs
+
+    def guard_admissible(candidate):
+        return all(multiradial_geometry_admissible(candidate, geometry,
+            solve_config=solve_config) for geometry in guard_configs)
     refined_feasible_state = None
     feasible_fd = config.feasible_fd_jacobian
     promotions = []
@@ -782,11 +794,10 @@ def _run_topology_aware_fourier_inverse(initial_state, data, production_geometry
             trigger = 'component_radius_floor'
             emit(state, accounted_call('production_base', topology_objective, state, data, production_geometry_config, solve_config)[0], trigger, cycle)
         rolled_back = False
-        if guard and not multiradial_geometry_admissible(state, refined_geometry_config, solve_config=solve_config):
+        if guard and not guard_admissible(state):
             # Geometry only, so a state the refined resolution refuses is
             # detected without spending the solve that would have raised.
-            if refined_feasible_state is None or not multiradial_geometry_admissible(
-                    refined_feasible_state, refined_geometry_config, solve_config=solve_config):
+            if refined_feasible_state is None or not guard_admissible(refined_feasible_state):
                 stop = 'refined_infeasible'
                 break
             state, rolled_back = refined_feasible_state, True
@@ -839,6 +850,8 @@ def _run_topology_aware_fourier_inverse(initial_state, data, production_geometry
                 if candidate.state is not None and any(component_radius_floor(c) < config.minimum_component_radius_m
                                                         for c in candidate.state.components):
                     raise ValueError('Candidate violates topology feature-radius floor.')
+                if extra_guard_configs and not guard_admissible(candidate.state):
+                    raise ValueError('Candidate is inadmissible at a required handoff discretisation.')
                 loss = accounted_call('candidate_raw', topology_objective, candidate.state, data, production_geometry_config, solve_config)[0]
                 row['raw_production_loss'] = loss
                 row['production_loss'] = loss

@@ -73,7 +73,7 @@ def test_guarded_optimizer_refuses_that_state_the_unguarded_one_accepts(monkeypa
                         synthetic_objective([(.5, .5), (.5, .5), (.5, .5)]))
     state = driver.deserialize_state(json.loads(ABORTED.read_text())['state'])
     unguarded = run_multiradial_fd_inverse(state, None, PRODUCTION, solve_config=SOLVE,
-        config=optimizer_config(), cartesian_gauge=True)
+        config=optimizer_config(), cartesian_gauge=True, jacobian_mode='fd')
     assert unguarded.feasibility_rejected_trial_count == 0
     with pytest.raises(ValueError, match='not solver-ready'):
         run_multiradial_fd_inverse(state, None, PRODUCTION, solve_config=SOLVE,
@@ -169,3 +169,35 @@ def test_state_the_refined_resolution_refuses_stops_a_guarded_run_without_an_anc
     stub_controller(monkeypatch, refined_raises=False)
     monkeypatch.setattr(topology_controller, 'multiradial_geometry_admissible', lambda *a, **k: False)
     assert run_stubbed(guard=True).stop_reason == 'refined_infeasible'
+
+
+def test_continuation_handoff_guard_rejects_recorded_coarse_feasible_endpoint(monkeypatch):
+    endpoint = ROOT / ('results/validation/topology/TOP-025-20260915-210356-all-scenes-current/'
+                       'runs/empty-ellipse-star/topology/terminal.json')
+    state = driver.deserialize_state(json.loads(endpoint.read_text())['final_state'])
+    fine = driver.baseline._geometry_config(512)
+    assert multiradial_geometry_admissible(state, PRODUCTION, solve_config=SOLVE)
+    assert multiradial_geometry_admissible(state, REFINED, solve_config=SOLVE)
+    assert not multiradial_geometry_admissible(state, fine, solve_config=SOLVE)
+    stub_controller(monkeypatch, refined_raises=False)
+    result = _run_topology_aware_fourier_inverse(state, None, PRODUCTION, REFINED,
+        solve_config=SOLVE, config=TopologyControllerConfig(chart='cartesian'),
+        feasibility_geometry_configs=(fine,))
+    assert result.stop_reason == 'refined_infeasible'
+
+
+def test_handoff_guard_is_forwarded_to_fixed_topology_optimizer(monkeypatch):
+    stub_controller(monkeypatch, refined_raises=False)
+    refinement = topology_controller.run_multiradial_fd_inverse
+    fine = driver.baseline._geometry_config(512)
+    calls = []
+
+    def capture(*args, **kwargs):
+        calls.append(kwargs['feasibility_geometry_configs'])
+        return refinement(*args, **kwargs)
+
+    monkeypatch.setattr(topology_controller, 'run_multiradial_fd_inverse', capture)
+    _run_topology_aware_fourier_inverse(two_circles(.05), None, PRODUCTION, REFINED,
+        solve_config=SOLVE, config=TopologyControllerConfig(chart='radial'),
+        feasibility_geometry_configs=(fine,))
+    assert calls and all(configs == (REFINED, fine) for configs in calls)
