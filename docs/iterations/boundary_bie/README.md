@@ -1,5 +1,13 @@
 # Boundary–BIE track: start here
 
+**2026-09-16 exploratory update:** [Iteration 05 — native modal Müller inverse,
+reciprocal derivatives, and adaptive shape modes](iteration_05/01_exploration.md)
+contains the latest implementation and numerical results. The user explicitly
+authorized open exploration beyond the earlier iteration contracts and asked
+for rough documentation after building an inverse pipeline. The gates and
+handoff below record the earlier BIE-006 work; they do not limit iteration 05.
+Latest follow-up: [coupled modal recovery and measurement selection](iteration_05/02_coupled_modes_and_measurements.md).
+
 This is the handoff for agents working on the **boundary representation and BIE
 solve** research track. Read the current state below before choosing work. The
 shared folder convention, approval rule, experiment-contract template and
@@ -50,7 +58,7 @@ working tree; that source was committed on 2026-09-11 as **`345038a`**, which is
 what to check out. B0 §9 lists what it pins for this track; §7 records the
 representation-scope distinction this track must not blur.
 
-## Current handoff
+## Previous handoff — BIE-006
 
 Updated 2026-09-15.
 
@@ -137,3 +145,4 @@ stays where it is.
 | 02 | BIE-002 modal/structure evidence | BIE-004 approved and completed under later user instruction |
 | 03 | Coupled analytic Jacobian qualification and cost | BIE-006 approved and completed under later user direction |
 | 04 | First-order operator reuse accuracy/range/cost | BIE-006 complete; stop this first-order approach; no successor executed |
+| 05 | Native modal inverse, reciprocal shape derivative, and residual-driven harmonics | Working exploratory pipeline; independent checks and timed recoveries; no production promotion |

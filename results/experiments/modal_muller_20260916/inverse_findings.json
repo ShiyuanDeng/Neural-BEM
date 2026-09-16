@@ -1,0 +1,83 @@
+{
+  "median_seconds": {
+    "clean": {
+      "nodal64": 1.9585008369758725,
+      "native_hadamard": 1.3162895130226389,
+      "nodal_hadamard": 0.10422645590733737
+    },
+    "noise_1pct": {
+      "nodal64": 3.6460779530461878,
+      "native_hadamard": 2.1773089899215847,
+      "nodal_hadamard": 0.19267234194558114
+    },
+    "unmodeled_mode7": {
+      "nodal64": 5.292038580053486,
+      "native_hadamard": 3.7485422840109095,
+      "nodal_hadamard": 0.2780414510052651
+    }
+  },
+  "adaptive": [
+    {
+      "case": "noise_1pct",
+      "selected_mode": null,
+      "extra_seconds": 0.20092361397109926,
+      "before": {
+        "boundary_rms_mm": 0.03800704416721818,
+        "boundary_hausdorff_mm": 0.06767070827053324,
+        "center_error_mm": 0.007462440155080871,
+        "clean_data_error": 0.0019370432445653723,
+        "observed_data_error": 0.009944398858409002,
+        "held_out_data_error": 0.0018211872804064994,
+        "validation_seconds": 0.20207719202153385,
+        "oracle_256_512_error": 1.6072092963425376e-14
+      },
+      "after": {
+        "boundary_rms_mm": 0.03800704416721818,
+        "boundary_hausdorff_mm": 0.06767070827053324,
+        "center_error_mm": 0.007462440155080871,
+        "observed_data_error": 0.009944398858409002,
+        "clean_data_error": 0.0019370432445653723,
+        "held_out_data_error": 0.0018211872804064994
+      }
+    },
+    {
+      "case": "unmodeled_mode7",
+      "selected_mode": 7,
+      "extra_seconds": 1.618841886986047,
+      "before": {
+        "boundary_rms_mm": 0.6808604297358808,
+        "boundary_hausdorff_mm": 1.0990368820150989,
+        "center_error_mm": 0.0434153753472291,
+        "clean_data_error": 0.010274444258835513,
+        "observed_data_error": 0.013322401579546287,
+        "held_out_data_error": 0.01694813260174023,
+        "validation_seconds": 0.20041006396058947,
+        "oracle_256_512_error": 2.4545917278247385e-14
+      },
+      "after": {
+        "boundary_rms_mm": 0.06094695388138533,
+        "boundary_hausdorff_mm": 0.11955257108895766,
+        "center_error_mm": 0.016216771747268727,
+        "observed_data_error": 0.009835269340302238,
+        "clean_data_error": 0.0021272807187359354,
+        "held_out_data_error": 0.0027145937141290384
+      }
+    }
+  ],
+  "timing_scope": "All inverse work; excludes independent data generation and final validation. Mode enrichment is additional and is not included in the base timing bars.",
+  "source_hashes": {
+    "experiments/modal_muller_research/test_inverse.py": "158c7a6e03a65976949357d3e0104059d9d4644adce8761167b5ab0d7a8e232c",
+    "experiments/modal_muller_research/test_coefficients.py": "ec0e731780bb1342f11dccf92b13256632af11facfe53f223ac5371e9d7be6da",
+    "experiments/modal_muller_research/coefficient_operator.py": "973a844f7ac29d2c7023de86b83010b7a99a39b10608d9739e5f26cd65d7fece",
+    "experiments/modal_muller_research/inverse.py": "51104928963482cf32adda4da071aeecd4941787965dfbe20e1560095e7e0a1a",
+    "experiments/modal_muller_research/coefficient_fields.py": "9b5f0bd0db69c8eff7e37b5d04413de4edbdfeb28797882d000860badb20fc5e",
+    "experiments/modal_muller_research/run_enrichment.py": "73db716dc3f08fe34bf7dceb19432a67c585101c1e9a1b6df1a7cae9b652cfb5",
+    "experiments/modal_muller_research/__init__.py": "4357d388817587928055ee57f1f66dafdd484a2155feaeac6c98d4e8ec5b1a73",
+    "experiments/modal_muller_research/run_inverse.py": "bd24dd8991552afff69fe6b7f8bd046976e011ab95d08f91dbc2cc4cf15f4d54",
+    "experiments/modal_muller_research/probe.py": "942ff2280d2c7558e3678a0c999bae81ef3432943cc7fbca65cd941136bb9a3b",
+    "experiments/modal_muller_research/modal.py": "5ed47a3a23792a65717cfc3d23646e24db970522baf005c63f7d9b710fcf905b",
+    "experiments/modal_muller_research/plot_inverse_findings.py": "982add9a165a177334059a54c5b30f9031261e91a82df1b53cf41a0d7206daba",
+    "experiments/modal_muller_research/coefficient_derivative.py": "d9ed5f418ceeb04506c41e64d3e532ec08ee2366d7658f8f6e4132c51b496c42",
+    "experiments/modal_muller_research/run_native.py": "8caf5d4f790d3a5194ca681efdd3843b35acd22aeef9a0ec0b1a73dd79ff7e13"
+  }
+}
