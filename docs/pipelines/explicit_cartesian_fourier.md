@@ -28,6 +28,15 @@ disables that operation for parameterization experiments. Its finite-difference
 Jacobian still uses the full coefficient space with a phase gauge removed.
 
 The topology path uses `run_multiradial_fd_inverse(cartesian_gauge=True)`.
+Since SPD-002, this API defaults to **analytic Jacobians and faster CPU kernels**,
+including candidate refinement and the current four-stage continuation. Existing
+Cartesian topology commands use the faster mode without extra flags. Restore
+FD/reference CPU with `--inverse-runtime reference` on the controller, benchmark,
+challenge or TOP-025 runner, or set `SDF_INVERSE_RUNTIME=reference` for any caller.
+The mode is inherited by worker processes and saved in new run manifests.
+CUDA remains optional. This default change was directly requested by the user;
+the [SPD-002 plan](../iterations/speedup/iteration_02/03_plan.md) records its validation.
+
 It enforces a converged polar-angle gauge, and computes steps and Jacobians in
 the subspace that preserves it. Gauge convergence checks both truncation and
 the change in parameterized geometry; zero truncation alone is insufficient.

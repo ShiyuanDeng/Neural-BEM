@@ -60,12 +60,12 @@ Updated 2026-09-15.
 | Stage | BIE-006 COMPLETE: stop first-order operator reuse; no accuracy-range benefit or qualifying savings |
 | Approved experiment IDs | **BIE-002, BIE-004, BIE-006 APPROVED** by explicit user instructions; [BIE-006 plan](iteration_03/03_plan.md) |
 | Execution status | **BIE-006 COMPLETE**; [result bundle](../../../results/validation/boundary_bie/BIE-006-20260915-205942-operator-reuse/README.md) |
-| Next expected action | User decision on next work; analytic-Jacobian integration/coverage remains separate and unexecuted |
+| Next expected action | [SPD-002](../speedup/iteration_03/01_results.md) completed default promotion and two full-case speed/recovery checks; broader recovery coverage remains open |
 | Owner / reviewer | Codex / self-review; no independent reviewer claimed |
-| Dependencies | Experiment-local coupled shape derivative now qualified on two saved states; production optimizer still uses FD |
-| Blockers | First-order reuse did not meet its benefit gates; analytic-Jacobian production integration and inverse recovery remain untested |
+| Dependencies | Coupled derivative integrated by SPD-001; user-requested analytic/fast-CPU default promotion is tracked by [SPD-002](../speedup/iteration_02/03_plan.md) |
+| Blockers | First-order reuse did not meet its benefit gates; SPD-001 qualifies integration and one update, not full inverse recovery |
 | BIE-001 disposition | **SUPERSEDED** by the [current review](iteration_01/02_proposals/03_current_checkout_review.md) and BIE-002; no BIE-001 numerical execution |
-| Deferred | BIE-003, BIE-005, inverse integration and production solver changes |
+| Deferred | BIE-003, BIE-005 and broader recovery coverage; integration/default validation is recorded in the speed-up track |
 
 Related discussion: [Are the current failures intrinsic to boundary methods?
 What FDTD would change](../topology/iteration_07/02_proposals/02_boundary_methods_and_fdtd.md).

@@ -1,0 +1,97 @@
+........................................................................ [ 27%]
+........................................................................ [ 55%]
+.............................................................F.......... [ 82%]
+................................F............                            [100%]
+=================================== FAILURES ===================================
+_______ test_the_gauged_chart_matches_the_radial_chart_update_for_update _______
+
+    def test_the_gauged_chart_matches_the_radial_chart_update_for_update():
+        """The parity claim, at the smallest scale that can carry it.
+    
+        Four accepted updates in either chart, from the same wrong pair of circles
+        to the same two-circle data, for the same number of forward solves. The
+        cost matched only once the Jacobian was measured along the gauge-fixed
+        subspace: probing all ``4K + 2`` coefficients of a chart whose gauge leaves
+        ``2K - 1`` reachable directions is what made the earlier Cartesian run cost
+        twice the radial one.
+        """
+        data = _two_circle_data()
+        geometry = baseline._geometry_config(64)
+        solve = baseline.iteration01_solve_config()
+        results = {}
+        for chart, seed in (('radial', circle_radial_fourier_state),
+                            ('cartesian', circle_cartesian_fourier_state)):
+            state = MultiRadialFourierState((seed((.43, .49), .030, 'A'), seed((.57, .51), .036, 'B')))
+            results[chart] = run_multiradial_fd_inverse(
+                state, data, geometry, solve_config=solve, config=_fd_config(state, 4),
+                minimum_component_radius_m=.008, cartesian_gauge=chart == 'cartesian')
+        radial, cartesian = results['radial'], results['cartesian']
+        assert len(cartesian.iterations) == len(radial.iterations) == 5
+        final = cartesian.iterations[-1]
+        assert final.relative_l2_error < 2.5 * radial.iterations[-1].relative_l2_error
+        assert final.relative_l2_error < 1e-8
+        # Both circles recovered, and the gauge cost nothing at the fixed point.
+        for component in cartesian.final_state.components:
+            assert component.mean_radius_m == pytest.approx(.033, abs=1e-7)
+        assert final.gauge_truncation_maximum_m < 1e-10
+>       assert cartesian.evaluation_count == radial.evaluation_count
+E       assert 5 == 65
+E        +  where 5 = MultiRadialFDResult(iterations=(MultiRadialFDIteration(iteration=0, state=MultiRadialFourierState(components=(Cartesia...74748976901, feasibility_rejected_trial_count=0, one_sided_jacobian_column_count=0, unresolved_jacobian_column_count=0).evaluation_count
+E        +  and   65 = MultiRadialFDResult(iterations=(MultiRadialFDIteration(iteration=0, state=MultiRadialFourierState(components=(RadialFo...02050273493, feasibility_rejected_trial_count=0, one_sided_jacobian_column_count=0, unresolved_jacobian_column_count=0).evaluation_count
+
+pytest/sdf_inverse/test_cartesian_fourier_topology.py:364: AssertionError
+_______________ test_fit_stage_smoke_and_latest_state_retention ________________
+
+tmp_path = PosixPath('/tmp/pytest-of-drdeng/pytest-153/test_fit_stage_smoke_and_lates0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7cda83ab4eb0>
+
+    def test_fit_stage_smoke_and_latest_state_retention(tmp_path,monkeypatch):
+        state=m.p.driver.deserialize_state(m.p.benchmark.read(m.p.PLATEAU)['final_state'])
+        data=m.p.training_data((.5e9,),np.ones((24,1),complex))
+        initial_center=state.components[0].center[0]
+        def objective(candidate,data,geometry,*,solve_config=None):
+            value=candidate.components[0].center[0]-(initial_center-.001)
+            prediction=np.ones((24,1),complex)+value
+            residual,_=m.p.normalized_complex_residual(prediction,data.observed_scattered_response,data.frequency_weights)
+            return m.rt.MultiRadialObjectiveEvaluation(candidate,.5*float(residual@residual),float(np.linalg.norm(residual)),residual,prediction,0.,0.)
+        monkeypatch.setattr(m.rt,'evaluate_multiradial_objective',objective)
+        controller=m.p.TopologyControllerConfig(**m.p.benchmark.read(m.p.DATA/'scene_spec.json')['controller'])
+        optimizer=replace(m.p._optimizer_config(state,controller),max_iterations=1,loss_tolerance=1e-14)
+        ledger=m.TrialLedger(8000,1800);ledger.begin_stage(1,1000)
+        final,terminal=m.fit_stage(state,data,(128,256),m.p.driver.baseline.iteration01_solve_config(),optimizer,.008,ledger,tmp_path/'stage')
+>       assert terminal['failure_type'] is None
+E       AssertionError: assert 'FloatingPointError' is None
+
+pytest/sdf_inverse/test_top016_pilot.py:50: AssertionError
+=============================== warnings summary ===============================
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:64
+  /home/drdeng/miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:64: PyparsingDeprecationWarning: 'oneOf' deprecated - use 'one_of'
+    prop = Group((name + Suppress("=") + comma_separated(value)) | oneOf(_CONSTANTS))
+
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:85
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:85
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:85
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:85
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:85
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:85
+  /home/drdeng/miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:85: PyparsingDeprecationWarning: 'parseString' deprecated - use 'parse_string'
+    parse = parser.parseString(pattern)
+
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:89
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:89
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:89
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:89
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:89
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:89
+  /home/drdeng/miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:89: PyparsingDeprecationWarning: 'resetCache' deprecated - use 'reset_cache'
+    parser.resetCache()
+
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_mathtext.py:45
+  /home/drdeng/miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_mathtext.py:45: PyparsingDeprecationWarning: 'enablePackrat' deprecated - use 'enable_packrat'
+    ParserElement.enablePackrat()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED pytest/sdf_inverse/test_cartesian_fourier_topology.py::test_the_gauged_chart_matches_the_radial_chart_update_for_update
+FAILED pytest/sdf_inverse/test_top016_pilot.py::test_fit_stage_smoke_and_latest_state_retention
+2 failed, 259 passed, 14 warnings in 37.00s

@@ -31,11 +31,12 @@ The [research implementation principles](implementation_principles.md), adopted 
 |---|---|---|
 | **Topology** | *How can the inverse choose and execute topology changes more reliably?* | [`topology/README.md`](topology/README.md) |
 | **Boundary–BIE** | *Which properties of smooth-boundary representations improve the BIE inverse?* | [`boundary_bie/README.md`](boundary_bie/README.md) |
+| **Speed-up** | *Where does the inverse spend its time, and which cost can be removed at matched geometry?* | [`speedup/README.md`](speedup/README.md) |
 | Radial Fourier topology | The cycle that built the automatic controller | [`radial_fourier_topology/README.md`](radial_fourier_topology/README.md) |
 | Cartesian Fourier | The chart study and its topology match | [`cartesian_fourier/README.md`](cartesian_fourier/README.md) |
 | Implicit MLP | Neural-owned geometry with Method B | [`implicit_mlp/README.md`](implicit_mlp/README.md) |
 
-The first two are **question-based** and are the current active agenda. The
+The first three are **question-based** and are the current active agenda. The
 last three are **representation-based** histories: they are closed or paused as
 cycles, they are not renumbered or moved, and they are the starting evidence the
 question-based tracks cite. The implicit-MLP track is **paused by user
@@ -56,7 +57,7 @@ The [topology completion roadmap](topology/README.md#completion-roadmap) records
 the remaining sequence, completion criteria and restart instructions. TOP-018's
 closeout does not mean the topology work is complete.
 
-The current comparison reference for both active tracks is
+The current comparison reference for these tracks is
 [baseline B0](../baselines/B0_2026-09-10.md).
 
 ## What to do at each stage
@@ -225,3 +226,17 @@ Start with the [handoff](implicit_mlp/README.md) for the active iteration,
 stage, reading order, next expected action, execution status and cycle history.
 That handoff is the maintained entry point; proposal numbering alone does not
 identify the agreed plan or authorize execution.
+
+### Speed-up
+
+Start with the [handoff](speedup/README.md). The track asks where the inverse
+spends its time and which of that can be removed **without changing what it
+recovers**. That scope boundary is what separates it from Boundary–BIE: a change
+to the formulation, the discretisation, the feasible set or the converged
+geometry is not a speed-up result even when it is faster, and belongs to the
+track that owns the mechanism. Iteration 1 records the cost profile: between
+90.7% and 95.1% of forward solves in the measured topology runs were
+finite-difference Jacobian probes. SPD-001 completed the combined analytic,
+CPU-kernel and CUDA comparison. SPD-002 made analytic Jacobians and fast CPU
+kernels the default; [iteration 3](speedup/iteration_03/01_results.md) records
+complete death/split pipelines running 1.86x/1.89x faster with matched recovery.

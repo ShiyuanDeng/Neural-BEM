@@ -18,7 +18,7 @@ the [dashboard](README.md).
 |---|---|---|---|
 | [Implicit MLP + Method B](pipelines/implicit_mlp.md) | Neural weights; the candidate network's extracted Method-B boundary determines acceptance | Kress discrete adjoint through branch-local extraction/conversion reverse; Adam/backtracking | Gradient validated; all three current 12-pair recovery runs fail overall acceptance |
 | [Explicit Radial Fourier](pipelines/explicit_radial_fourier.md) | Radial Fourier coefficients; an MLP fits/audits the accepted curve | MOD or Kress; radial finite differences in the main driver | Canonical curve recovery succeeds on recorded cases; the extracted MLP can still fail representation gates |
-| [Explicit Cartesian Fourier](pipelines/explicit_cartesian_fourier.md) | Cartesian Fourier coefficients; no neural field | Kress with finite differences; full coefficient space in the single-component study, gauge-preserving subspace in the topology optimizer | Single-component ellipse-to-star recovery; five automatic topology cases and three challenge cases recorded in each chart |
+| [Explicit Cartesian Fourier](pipelines/explicit_cartesian_fourier.md) | Cartesian Fourier coefficients; no neural field | Kress; analytic Jacobians and fast CPU kernels by default in the topology optimizer, FD in the separate single-component study | Single-component ellipse-to-star recovery; automatic topology and challenge controls; SPD-002 records default-runtime validation |
 
 Both explicit pipelines share one multi-component state object,
 `MultiRadialFourierState`, which holds radial **or** Cartesian Fourier
@@ -53,16 +53,23 @@ The boundary unknown is **nodal**; there is no modal trace representation.
 A condition number is available but off by default, and the code records that it
 is `raw_mixed_unit_nodal_2_norm` and not scale-invariant.
 
-Three derivative paths exist and are distinct:
+Derivative paths:
 
 | Path | Used by | Mechanism |
 |---|---|---|
 | Analytic discrete Kress shape derivative, **single interface** | material inverses; the implicit-MLP geometry pullback | `gpr_bem_kress/shape_derivative.py`, differentiating the actual kernel branches, diagonals, normals, weights, incident traces and receiver map |
-| Central finite differences, multi-component | the explicit topology optimizer `run_multiradial_fd_inverse` | Levenberg damping, strict decrease, backtracking, geometry rejection, exact rollback |
+| Analytic discrete coupled Kress shape derivative | Cartesian topology refinement and continuation by default | BIE-004 derivative, integrated by SPD-001 and promoted by SPD-002; retained base LU, streamed tangent solves, fast CPU kernels |
+| Central finite differences, multi-component | radial coefficient states and the explicit `reference` runtime profile | Same Levenberg damping, strict decrease, backtracking, geometry rejection and rollback |
 | Central finite differences, single-component full chart | `run_explicit_cartesian_fourier_inverse.py` | full `4K + 2` coefficient columns with the phase direction projected out |
 
-The explicit multi-component path **does not** use the analytic derivative:
-neither `radial_topology.py` nor `topology_controller.py` imports it.
+The shared `sdf_inverse.runtime` selects analytic Cartesian Jacobians and fast
+CPU kernels for existing topology and continuation callers. Its default
+FD-compatible constraint policy preserves stencil refusals and one-sided
+fallback. `--inverse-runtime reference` or `SDF_INVERSE_RUNTIME=reference`
+restores the FD/reference CPU path, including spawned workers. Standalone
+forward calls still honor their own explicit execution settings. Physical
+system counts remain separate from derivative assemblies; run budgets charge
+both. See [SPD-002](iterations/speedup/iteration_02/03_plan.md).
 
 The verified Kress derivative handles coherent fixed-grid curve/material
 directions. The geometry reverse and branch-local Method-B reverse connect it to

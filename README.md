@@ -1,6 +1,13 @@
 # Neural SDF BEM AD
 
-**Latest all-scene results:** [TOP-025 video gallery](results/validation/topology/TOP-025-20260915-210356-all-scenes-current/README.md) · [Overview video](results/validation/topology/TOP-025-20260915-210356-all-scenes-current/videos/all_scenes.mp4) · [Final scenes](results/validation/topology/TOP-025-20260915-210356-all-scenes-current/all_scenes.png). Fresh current-pipeline runs: **7/12 pass all gates**. Every success, failure and work stop is included.
+**Latest all-scene results:** [TOP-025 video gallery](results/validation/topology/TOP-025-20260915-210356-all-scenes-current/README.md) · [Overview video](results/validation/topology/TOP-025-20260915-210356-all-scenes-current/videos/all_scenes.mp4) · [Final scenes](results/validation/topology/TOP-025-20260915-210356-all-scenes-current/all_scenes.png). Saved reference-pipeline runs: **7/12 pass all gates**. Every success, failure and work stop is included.
+
+**Current Cartesian topology default:** analytic Jacobians and faster CPU kernels,
+including continuation. Existing commands select it automatically; use
+`--inverse-runtime reference` to restore FD/reference CPU. See the
+[pipeline guide](docs/pipelines/explicit_cartesian_fourier.md) and
+[SPD-002 results](docs/iterations/speedup/iteration_03/01_results.md): complete
+death/split pipelines ran **1.86x/1.89x faster**, with both recovery checks passing.
 
 Research code for homogeneous full-space 2-D TMz dielectric transmission,
 neural implicit geometry, boundary-element forward modeling, and inversion.

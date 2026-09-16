@@ -2,7 +2,7 @@
 
 **Latest topology results:** [TOP-025 all-scene videos](../results/validation/topology/TOP-025-20260915-210356-all-scenes-current/README.md) and [iteration 18](iterations/topology/iteration_18/01_results.md): 7/12 scenes pass all gates.
 
-Updated 2026-09-15. This page is the entry point: current baseline, current
+Updated 2026-09-16. This page is the entry point: current baseline, current
 research objectives, active tracks and what each one is waiting for. It
 **summarises and links**. Measurements live in the
 [results catalogue](../results/README.md); implemented capability lives in
@@ -10,6 +10,12 @@ research objectives, active tracks and what each one is waiting for. It
 track handoffs. This page does not maintain a second experiment register.
 
 ## Current baseline
+
+Current Cartesian topology execution defaults to **analytic Jacobians and
+fast CPU kernels**, following the user's SPD-002 promotion instruction.
+The [pipeline guide](pipelines/explicit_cartesian_fourier.md) documents the
+reference-mode switch. Historical TOP-025 all-scene results above used FD;
+the [speed-up track](iterations/speedup/README.md) owns the new runtime evidence.
 
 **[B0 — 2026-09-10](baselines/B0_2026-09-10.md).** Branch
 `feature/ordered-boundary-nystrom`, **commit `345038a`**. B0 was recorded
@@ -51,6 +57,7 @@ Galerkin formulations, derivatives, conditioning, and cost. Replacing Kress is
 |---|---|---|---|---|
 | [Topology / Track A](iterations/topology/README.md) | Fixed-count recovery and numerical qualification | TOP-018 COMPLETE: qualified two-star F recovery relative to matched S | Review [iteration 12](iterations/topology/iteration_12/01_results.md); prepare one separately approved capacity-qualified K=17 merge-control comparison | TOP-001, TOP-005–012, TOP-016, TOP-017, TOP-018 |
 | [Boundary–BIE](iterations/boundary_bie/README.md) | Which properties of smooth-boundary representations improve the accuracy, conditioning, differentiation or cost of the BIE inverse? | Brief drafted; no review, no plan | Review [the brief](iterations/boundary_bie/iteration_01/02_proposals/01_boundary_bie_research_brief.md); decide whether `BIE-001` — comparison and selection of one prototype — is the right first deliverable | **None** |
+| [Speed-up](iterations/speedup/README.md) | Where does the inverse actually spend its time, and which of that can be removed without changing what it recovers? | SPD-002 COMPLETE: analytic Jacobians and fast CPU kernels are the default | Use the fast default; [complete death/split pipelines](iterations/speedup/iteration_03/01_results.md) ran 1.86x/1.89x faster with both recovering | SPD-001, SPD-002 |
 
 **TOP-017 is complete without promotion.** [Iteration 11](iterations/topology/iteration_11/01_results.md) records a qualified central F recovery, substantially better than the paired S control, and two-star hard stops at the frozen numerical gates. The full principal predicate remains incomplete. TOP-016’s merge regression is preserved; the evaluation-only representation audit does not resolve it. Only the bounded TOP-018 successor is approved; no suite is authorized.
 

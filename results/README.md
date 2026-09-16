@@ -12,7 +12,29 @@ activation, and one-update transfer with a zero-update control. Their new
 outputs belong under `validation/method_b_failure_diagnostics/`; add measured
 conclusions to this register only after reviewing the actual run artifacts.
 
-[catalog.csv](catalog.csv) contains **194 rows**. The original 162 rows span 60 saved or empty run bundles, including the three existing 12-pair neural runs indexed during this reorganization, the two initial adjoint diagnostics, the radial-topology birth demonstration, and three full-pass topology challenges. The new topology rows group the TOP-001/TOP-005 replay and controller comparisons by chart/arm; scalar metrics there are worst-case values. Two TOP-019 rows record the prescribed S/F merge endpoints. The original CSV snapshot predates the Cartesian suites; use the [Cartesian index](inverse/cartesian_fourier/README.md) and [pipeline audit](validation/cartesian_fourier/pipeline-audit-20260910/README.md) for that evidence. The earlier exporter-failed partial attempt is recorded separately in the [adjoint validation index](validation/implicit_mlp_adjoint/README.md). Inverse runs have a row per solver, policy or declared arm; larger supporting sweeps explicitly identify their grouped scope. The catalogue records accepted geometry, derivative/optimizer, MLP role, target and initialization, observation setup, separate recovery/representation outcomes, date evidence, provenance, and each result's implication for the implicit MLP pipeline.
+[catalog.csv](catalog.csv) contains **204 rows**. The original 162 rows span 60 saved or empty run bundles, including the three existing 12-pair neural runs indexed during this reorganization, the two initial adjoint diagnostics, the radial-topology birth demonstration, and three full-pass topology challenges. The new topology rows group the TOP-001/TOP-005 replay and controller comparisons by chart/arm; scalar metrics there are worst-case values. Two TOP-019 rows record the prescribed S/F merge endpoints. The original CSV snapshot predates the Cartesian suites; use the [Cartesian index](inverse/cartesian_fourier/README.md) and [pipeline audit](validation/cartesian_fourier/pipeline-audit-20260910/README.md) for that evidence. The earlier exporter-failed partial attempt is recorded separately in the [adjoint validation index](validation/implicit_mlp_adjoint/README.md). Inverse runs have a row per solver, policy or declared arm; larger supporting sweeps explicitly identify their grouped scope. The catalogue records accepted geometry, derivative/optimizer, MLP role, target and initialization, observation setup, separate recovery/representation outcomes, date evidence, provenance, and each result's implication for the implicit MLP pipeline.
+
+## SPD-002 fast default in complete topology pipelines
+
+[Full measured comparison](validation/speedup/SPD-002-20260916-default-pipeline/README.md)
+· [Default-promotion closeout](../docs/iterations/speedup/iteration_03/01_results.md) · 2026-09-16:
+**Death: 434.65 → 233.73 s (1.86x); split: 418.01 → 221.53 s (1.89x).**
+Both reference and fast profiles complete automatic topology and all four
+continuation stages and pass every recovery gate. Recovered boundaries differ
+by less than 7e-11 m. 261 tests pass. Analytic Cartesian Jacobians and fast CPU
+kernels are now the default; the reference profile restores FD/reference CPU.
+Two full-case controls, not a new twelve-scene scorecard.
+
+## SPD-001 combined analytic Jacobian and CPU/CUDA speed
+
+[Six-arm measured comparison](validation/speedup/SPD-001-20260915-233833-combined/README.md)
+· [Closeout](../docs/iterations/speedup/iteration_02/01_results.md) · 2026-09-16:
+**261.2 s → 100.4 s (2.60x)** for one complete four-frequency optimizer update
+with analytic derivatives and faster CPU kernels; adding CUDA gives **98.2 s
+(2.66x)**. All six arms accept one update and agree within 0.022 micrometres
+in coefficient infinity norm. Three-repeat Jacobian timings show 3.11x/3.13x
+for those combined paths. 145 tests pass. This is bounded local optimizer
+runtime evidence, not full-recovery or default-promotion evidence.
 
 ## TOP-019 capacity-qualified merge pair
 

@@ -79,3 +79,77 @@ existing Kress implementation independently to every self interaction, and
 uses exterior-only smooth quadrature between disjoint components. It is not
 re-exported here, so enabling it is an intentional future routing decision and
 cannot change existing single-component callers.
+
+## Optional coupled Jacobians and execution settings (SPD-001)
+
+`gpr_bem_kress.coupled_shape_derivative` promotes BIE-004's exact coupled
+shape derivative. `build_coupled_base` retains one LU per geometry/frequency;
+`directional_operators` and `tangent_response` reuse it for all source RHSs and
+coefficient directions. Self and both directed cross interactions, incident
+traces and receiver maps are differentiated. The per-direction primal
+consistency check remains active. This API covers fixed-topology, disjoint,
+same-material lossless nonmagnetic components.
+
+The Cartesian state bridge is
+`sdf_inverse.analytic_jacobian.cartesian_residual_jacobian`. The existing
+`run_multiradial_fd_inverse` retains its historical name. Since SPD-002, its
+shared inverse runtime defaults to **analytic Cartesian Jacobians + fast CPU
+kernels**. Radial coefficients retain FD. Topology refinement, candidate
+refinement and current-pipeline continuation inherit this default.
+
+```python
+from gpr_bem_kress.execution import execution
+from sdf_inverse.radial_topology import run_multiradial_fd_inverse
+
+with execution(kernels="real_bessel", device="cpu") as work:
+    result = run_multiradial_fd_inverse(
+        initial_state, data, geometry_config,
+        solve_config=solve_config, config=optimizer_config,
+        cartesian_gauge=True, jacobian_mode="analytic",
+    )
+```
+
+Normal topology commands need no additional flag. Use `--inverse-runtime
+reference` on the topology controller, topology benchmark, challenge driver or
+TOP-025 runner to restore FD/reference CPU. `SDF_INVERSE_RUNTIME=reference`
+works for all callers and is inherited by spawned workers. In Python:
+
+```python
+from sdf_inverse.runtime import inverse_runtime
+
+with inverse_runtime("reference"):
+    result = run_multiradial_fd_inverse(...)  # FD/reference CPU
+```
+
+Execution choices are `kernels="reference"` or `"real_bessel"`, and
+`device="cpu"` or `"cuda"`. They are scoped to the context. The standalone
+forward solver retains reference kernels when called without a context;
+inverse entry points supply the fast CPU context. Explicit contexts take
+precedence over inverse defaults. CUDA is explicit,
+requires an available device and lazily imports Torch. CPU use does not load
+Torch. All paths retain double precision. The fast special functions use a
+real-positive-argument path and the existing general complex fallback; the
+near-interaction series and diagonals are unchanged.
+
+`analytic_constraint_policy="true"` uses the actual analytic column even when
+an FD stencil would lose a side; physical candidate feasibility is still
+checked. The default `"fd_compatible"` policy reproduces stencil refusals and
+uses measured one-sided FD only where needed, reporting those fallback columns.
+Analytic derivatives and finite-step quotients can still give slightly
+different iterates. Explicit analytic requests for unsupported non-Cartesian
+coefficient bridges fail; the default `auto` selection uses FD for those states.
+
+`work.counts` and `work.seconds` distinguish dense factor/solve calls, retained
+factorizations, RHS solves, derivative assemblies and transfers. Phase times
+can be nested and must not simply be summed. The inverse's passive work ledger
+adds analytic-base, derivative-assembly, tangent-solve and retained-factor
+counters; legacy forward/TD counters continue to describe their existing
+paths. For total factorizations use the execution context or combine the
+legacy forward/TD system counts with the additional retained-factor count.
+Current pipeline budgets charge both full systems and analytic directional
+assemblies/tangents. `total_attempted` remains a full-system count;
+`budget_work_units` additionally includes attempted derivative assemblies.
+
+The [SPD-001 plan](../../docs/iterations/speedup/iteration_01/03_plan.md) owns
+the original bounded numerical/runtime comparison. The user authorized default
+promotion under [SPD-002](../../docs/iterations/speedup/iteration_02/03_plan.md).

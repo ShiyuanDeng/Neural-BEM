@@ -1,0 +1,194 @@
+........................................................................ [ 40%]
+.............................F.......................................... [ 80%]
+..........FFF.....F.................                                     [100%]
+=================================== FAILURES ===================================
+_______________ test_fd_default_and_analytic_constraint_policies _______________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7adf76473d00>
+
+    def test_fd_default_and_analytic_constraint_policies(monkeypatch):
+        state=rt.MultiRadialFourierState((circle_cartesian_fourier_state((.5,.5),.03,'one',maximum_mode=3),))
+        target=state.parameter_vector()+np.linspace(1e-4,3e-4,state.parameter_count)
+        def objective(s,*a,**k):
+            residual=s.parameter_vector()-target
+            return rt.MultiRadialObjectiveEvaluation(s,.5*float(residual@residual),float(np.linalg.norm(residual)),
+                residual,np.zeros(1,complex),0.,0.)
+        monkeypatch.setattr(rt,'evaluate_multiradial_objective',objective)
+        monkeypatch.setattr(aj,'cartesian_residual_jacobian',lambda s,d,g,**k:(k['directions'].T.copy(),np.zeros(1,complex)))
+        config=ParameterFDConfig(max_iterations=1,max_parameters=64,finite_difference_steps=1e-4,
+            gradient_tolerance=1.,loss_tolerance=1e-30,infeasible_trial_policy='reject')
+        def run(**kw):return rt.run_multiradial_fd_inverse(state,None,p.driver.baseline._geometry_config(32),
+            solve_config=p.driver.baseline.iteration01_solve_config(),config=config,
+            minimum_component_radius_m=.03,cartesian_gauge=True,feasible_fd_jacobian=True,**kw)
+        default,fd=run(),run(jacobian_mode='fd')
+        compatible=run(jacobian_mode='analytic',analytic_constraint_policy='fd_compatible')
+        true=run(jacobian_mode='analytic',analytic_constraint_policy='true')
+>       np.testing.assert_array_equal(default.iterations[0].gradient,fd.iterations[0].gradient)
+
+pytest/sdf_inverse/test_spd001.py:101: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/numpy/_utils/__init__.py:85: in wrapper
+    return fun(*args, **kwargs)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+args = (<built-in function eq>, array([-1.00000000e-04, -1.15384615e-04, -1.84615385e-04,  3.47197447e-20,
+       -2.20062722...,
+       -2.07604799e-20, -1.84615385e-04,  5.72210414e-21, -1.00261294e-20,
+       -5.23579058e-22, -1.14189621e-20]))
+kwds = {'err_msg': '', 'header': 'Arrays are not equal', 'strict': False, 'verbose': True}
+
+    @wraps(func)
+    def inner(*args, **kwds):
+        with self._recreate_cm():
+>           return func(*args, **kwds)
+E           AssertionError: 
+E           Arrays are not equal
+E           
+E           Mismatched elements: 2 / 14 (14.3%)
+E           Max absolute difference among violations: 1.27122705e-17
+E           Max relative difference among violations: 1.10182046e-13
+E            ACTUAL: array([-1.000000e-04, -1.153846e-04, -1.846154e-04,  3.471974e-20,
+E                  -2.200627e-22,  7.044880e-21,  5.730192e-21, -5.838906e-21,
+E                  -2.076048e-20, -1.846154e-04,  5.722104e-21, -1.002613e-20,
+E                  -5.235791e-22, -1.141896e-20])
+E            DESIRED: array([-1.000000e-04, -1.153846e-04, -1.846154e-04,  3.471974e-20,
+E                  -2.200627e-22,  7.044880e-21,  5.730192e-21, -5.838906e-21,
+E                  -2.076048e-20, -1.846154e-04,  5.722104e-21, -1.002613e-20,
+E                  -5.235791e-22, -1.141896e-20])
+
+../miniconda3/envs/EMNerf/lib/python3.9/contextlib.py:79: AssertionError
+___ test_real_optimizer_mock_forward_binds_exposure_gradient_and_rejections ____
+
+tmp_path = PosixPath('/tmp/pytest-of-drdeng/pytest-152/test_real_optimizer_mock_forwa0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7adf7109f730>
+state = MultiRadialFourierState(components=(CartesianFourierCurveState(cosine_coefficients=array([[ 5.49997467e-01,  4.2968373...esian_fourier_inverse_curve', source_identifier=None, initial_projection_rms_m=0.0, initial_projection_maximum_m=0.0)))
+
+    def test_real_optimizer_mock_forward_binds_exposure_gradient_and_rejections(tmp_path,monkeypatch,state):
+        monkeypatch.setattr(m.rt,'evaluate_multiradial_objective',fake_objective(state))
+        ledger=m.Ledger();ledger.begin_stage(2,1250)
+        data=m.p.training_data(m.p.TRAIN[:2],np.ones((24,2),complex))
+        final,t=m.fit_stage(state,data,m.NODES,m.p.driver.baseline.iteration01_solve_config(),
+            replace(optimizer(state),max_iterations=1),.008,ledger,tmp_path/'stage')
+>       assert t['stage_outcome']=='NORMAL_OPTIMIZER_RETURN'
+E       AssertionError: assert 'IMPLEMENTATION_ERROR' == 'NORMAL_OPTIMIZER_RETURN'
+E         
+E         - NORMAL_OPTIMIZER_RETURN
+E         + IMPLEMENTATION_ERROR
+
+pytest/sdf_inverse/test_top017.py:131: AssertionError
+________ test_latest_accepted_checkpoint_survives_refused_next_jacobian ________
+
+tmp_path = PosixPath('/tmp/pytest-of-drdeng/pytest-152/test_latest_accepted_checkpoin0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7adf7104c310>
+state = MultiRadialFourierState(components=(CartesianFourierCurveState(cosine_coefficients=array([[ 5.49997467e-01,  4.2968373...esian_fourier_inverse_curve', source_identifier=None, initial_projection_rms_m=0.0, initial_projection_maximum_m=0.0)))
+
+    def test_latest_accepted_checkpoint_survives_refused_next_jacobian(tmp_path,monkeypatch,state):
+        monkeypatch.setattr(m.rt,'evaluate_multiradial_objective',fake_objective(state))
+        class RefuseSecond(m.Ledger):
+            batches=0
+            def reserve(self,n):
+                if n==71:
+                    self.batches+=1
+                    if self.batches==2:raise m.StageQuota('mock next batch')
+                super().reserve(n)
+        ledger=RefuseSecond();ledger.begin_stage(2,1250)
+        data=m.p.training_data((.5e9,),np.ones((24,1),complex))
+        final,t=m.fit_stage(state,data,m.NODES,m.p.driver.baseline.iteration01_solve_config(),
+            optimizer(state),.008,ledger,tmp_path/'stage')
+>       assert t['stage_outcome']=='STAGE_QUOTA_REACHED' and t['accepted_steps']==1
+E       AssertionError: assert ('IMPLEMENTATION_ERROR' == 'STAGE_QUOTA_REACHED'
+E         
+E         - STAGE_QUOTA_REACHED
+E         + IMPLEMENTATION_ERROR)
+
+pytest/sdf_inverse/test_top017.py:154: AssertionError
+_______________ test_unresolved_jacobian_stops_before_candidate ________________
+
+tmp_path = PosixPath('/tmp/pytest-of-drdeng/pytest-152/test_unresolved_jacobian_stops0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7adf7103e8b0>
+state = MultiRadialFourierState(components=(CartesianFourierCurveState(cosine_coefficients=array([[ 5.49997467e-01,  4.2968373...esian_fourier_inverse_curve', source_identifier=None, initial_projection_rms_m=0.0, initial_projection_maximum_m=0.0)))
+
+    def test_unresolved_jacobian_stops_before_candidate(tmp_path,monkeypatch,state):
+        def objective(candidate,data,geometry,*,solve_config=None):
+            if m.state_hash(candidate)!=m.state_hash(state):raise m.rt.OrderedSDFGeometryError('mock both sides refused')
+            return fake_objective(state)(candidate,data,geometry,solve_config=solve_config)
+        monkeypatch.setattr(m.rt,'evaluate_multiradial_objective',objective)
+        ledger=m.Ledger();ledger.begin_stage(2,1250)
+        data=m.p.training_data((.5e9,),np.ones((24,1),complex))
+        final,t=m.fit_stage(state,data,m.NODES,m.p.driver.baseline.iteration01_solve_config(),optimizer(state),.008,ledger,tmp_path/'stage')
+>       assert t['stage_outcome']=='UNRESOLVED_DERIVATIVE'
+E       AssertionError: assert 'IMPLEMENTATION_ERROR' == 'UNRESOLVED_DERIVATIVE'
+E         
+E         - UNRESOLVED_DERIVATIVE
+E         + IMPLEMENTATION_ERROR
+
+pytest/sdf_inverse/test_top017.py:169: AssertionError
+___________ test_reuse_manifest_and_resolved_inputs_without_physics ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-drdeng/pytest-152/test_reuse_manifest_and_resolv0')
+state = MultiRadialFourierState(components=(CartesianFourierCurveState(cosine_coefficients=array([[ 5.49997467e-01,  4.2968373...esian_fourier_inverse_curve', source_identifier=None, initial_projection_rms_m=0.0, initial_projection_maximum_m=0.0)))
+
+    def test_reuse_manifest_and_resolved_inputs_without_physics(tmp_path,state):
+>       spec,states,opts=m.freeze_inputs(tmp_path)
+
+pytest/sdf_inverse/test_top017.py:215: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+bundle = PosixPath('/tmp/pytest-of-drdeng/pytest-152/test_reuse_manifest_and_resolv0')
+
+    def freeze_inputs(bundle):
+        # Compare every retained artifact byte against the reviewed git tree.
+        listing = subprocess.check_output(['git','ls-tree','-r','--name-only',BASE,'--',str(SOURCE.relative_to(ROOT))],cwd=ROOT,text=True).splitlines()
+        history = {}
+        for name in listing:
+            before = subprocess.check_output(['git','show',f'{BASE}:{name}'],cwd=ROOT)
+            digest = hashlib.sha256(before).hexdigest()
+            if p.digest(ROOT/name)!=digest: raise ImplementationError(f'historical artifact changed: {name}')
+            history[name]=digest
+        base_manifest = read(SOURCE/'manifest.json')
+        for name,digest in source_hashes().items():
+            # Experiment-owned additions are not inherited TOP-016 source. The
+            # follow-up driver is separately frozen by its own output manifest.
+            if 'top017' in name or name in ('solvers/sdf_inverse/radial_topology.py',
+                                           'run_topology_recovery_followup.py'): continue
+            original = subprocess.check_output(['git','show',f'{BASE}:{name}'],cwd=ROOT)
+            if hashlib.sha256(original).hexdigest()!=digest:
+>               raise ImplementationError(f'unplanned inherited source change: {name}')
+E               run_top017.ImplementationError: unplanned inherited source change: solvers/gpr_bem_kress/_kernels.py
+
+run_top017.py:430: ImplementationError
+=============================== warnings summary ===============================
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:64
+  /home/drdeng/miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:64: PyparsingDeprecationWarning: 'oneOf' deprecated - use 'one_of'
+    prop = Group((name + Suppress("=") + comma_separated(value)) | oneOf(_CONSTANTS))
+
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:85
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:85
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:85
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:85
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:85
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:85
+  /home/drdeng/miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:85: PyparsingDeprecationWarning: 'parseString' deprecated - use 'parse_string'
+    parse = parser.parseString(pattern)
+
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:89
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:89
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:89
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:89
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:89
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:89
+  /home/drdeng/miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:89: PyparsingDeprecationWarning: 'resetCache' deprecated - use 'reset_cache'
+    parser.resetCache()
+
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_mathtext.py:45
+  /home/drdeng/miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_mathtext.py:45: PyparsingDeprecationWarning: 'enablePackrat' deprecated - use 'enable_packrat'
+    ParserElement.enablePackrat()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED pytest/sdf_inverse/test_spd001.py::test_fd_default_and_analytic_constraint_policies
+FAILED pytest/sdf_inverse/test_top017.py::test_real_optimizer_mock_forward_binds_exposure_gradient_and_rejections
+FAILED pytest/sdf_inverse/test_top017.py::test_latest_accepted_checkpoint_survives_refused_next_jacobian
+FAILED pytest/sdf_inverse/test_top017.py::test_unresolved_jacobian_stops_before_candidate
+FAILED pytest/sdf_inverse/test_top017.py::test_reuse_manifest_and_resolved_inputs_without_physics
+5 failed, 175 passed, 14 warnings in 18.75s
