@@ -1,0 +1,104 @@
+{
+  "experiment": "LAU-001",
+  "stage": "campaign",
+  "anchor": "star",
+  "a_ref_anchor_m": 0.036514720319345176,
+  "light_speed": 299792458.0105029,
+  "electrical_sizes": [
+    2.0,
+    5.0,
+    10.0
+  ],
+  "frequencies_hz": {
+    "2.0": 1066908626.1672807,
+    "5.0": 2667271565.4182014,
+    "10.0": 5334543130.836403
+  },
+  "fixtures": [
+    "circle",
+    "ellipse",
+    "star"
+  ],
+  "cutoff_ladder": [
+    16,
+    24,
+    32,
+    40,
+    48,
+    56
+  ],
+  "bandwidth_rule": "max(96, 2*K_u)",
+  "bessel_terms_primary": 28,
+  "bessel_terms_fallback": 48,
+  "oracle_nodes": [
+    256,
+    384
+  ],
+  "band_widths": [
+    4,
+    8,
+    16,
+    32
+  ],
+  "fractions": [
+    0.1,
+    0.2,
+    0.3,
+    0.5
+  ],
+  "split_labels": [
+    "IDENTITY_ONLY",
+    "VERIFIED_SINGULAR_SPLIT"
+  ],
+  "support_floor": 1e-12,
+  "bessel_weight_floor": 1e-14,
+  "score_floor": 1e-12,
+  "finite_difference_steps": [
+    0.001,
+    0.0005,
+    0.00025
+  ],
+  "truth_direction": {
+    "2": "0.015*a_ref, inside the training span",
+    "4": "0.010*a_ref, unmodelled by every probed direction"
+  },
+  "gates": {
+    "receiver": 1e-06,
+    "data_derivative": 0.001,
+    "data_derivative_target": 0.0001,
+    "objective_derivative": 0.001,
+    "lifted_residual": 1e-06,
+    "retention": 0.3
+  },
+  "control_gates": {
+    "receiver": 1e-07,
+    "lifted_residual": 1e-07,
+    "data_derivative": 0.0001,
+    "oracle_receiver": 1e-08,
+    "oracle_derivative": 1e-05,
+    "full_dft_equivalence": 1e-10
+  },
+  "ceilings": {
+    "assemblies": 500,
+    "factorizations": 1200,
+    "rhs_batches": 2500,
+    "seconds": 2700,
+    "peak_gib": 8.0
+  },
+  "acquisition": {
+    "sources": 24,
+    "receivers": 24,
+    "selection": "paired diagonal",
+    "provenance": "results/validation/topology/TOP-018-20260915-resolution-qualified-pair/inputs/far-two-stars/observations.json",
+    "exterior": {
+      "epsr": 6.0,
+      "mur": 1.0,
+      "sigma": 0.0
+    },
+    "interior": {
+      "epsr": 3.0,
+      "mur": 1.0,
+      "sigma": 0.0
+    }
+  }
+}

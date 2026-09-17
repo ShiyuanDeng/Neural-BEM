@@ -31,14 +31,21 @@ The [research implementation principles](implementation_principles.md), adopted 
 |---|---|---|
 | **Topology** | *How can the inverse choose and execute topology changes more reliably?* | [`topology/README.md`](topology/README.md) |
 | **Boundary–BIE** | *Which properties of smooth-boundary representations improve the BIE inverse?* | [`boundary_bie/README.md`](boundary_bie/README.md) |
+| **Laurent** | *What does a node-free Laurent/Fourier coefficient representation give the inverse, and what does it cost?* | [`laurent/README.md`](laurent/README.md) |
 | **Speed-up** | *How can the complete inverse reach the required reconstruction quality with less time and fewer failed attempts?* | [`speedup/README.md`](speedup/README.md) |
 | Experiments | What can the observations identify, and which formulations improve the inverse? Closed exploratory screen | [`experiments/README.md`](experiments/README.md) |
 | Radial Fourier topology | The cycle that built the automatic controller | [`radial_fourier_topology/README.md`](radial_fourier_topology/README.md) |
 | Cartesian Fourier | The chart study and its topology match | [`cartesian_fourier/README.md`](cartesian_fourier/README.md) |
 | Implicit MLP | Neural-owned geometry with Method B | [`implicit_mlp/README.md`](implicit_mlp/README.md) |
 
-Topology, Boundary–BIE and Speed-up are **question-based** and are the current
-active agenda. Experiments records the completed cross-domain investigation;
+Topology, Boundary–BIE, Laurent and Speed-up are **question-based** and are the
+current active agenda. Laurent was opened on 2026-09-17 by user direction: the
+coefficient-space pipeline built on 2026-09-16 was recorded as exploratory
+notebooks inside Boundary–BIE iteration 05, and is now large enough to own a
+cycle structure. **Nothing was moved to open it** — iteration 05's records stay
+in `boundary_bie/` and the new track cites them as starting evidence, the same
+way Boundary–BIE cites the Cartesian-Fourier history. Its first cycle ran
+LAU-001 to a `STRUCTURE_ONLY` closeout the same day. Experiments records the completed cross-domain investigation;
 its [iteration 01](experiments/iteration_01/01_results.md) is closed with no
 successor scheduled. Radial Fourier topology, Cartesian Fourier and Implicit MLP
 are **representation-based** histories: they are closed or paused as
