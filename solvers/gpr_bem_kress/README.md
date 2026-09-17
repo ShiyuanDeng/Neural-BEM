@@ -129,7 +129,7 @@ LU; shape columns are boundary contractions. Complex source strength is applied
 once, through the primal trace, and the reciprocal product has no conjugation.
 The runtime retains operator derivatives when any component has fewer than
 128 nodes. Explicit `method="reciprocal"` calls bypass that guard for diagnostics.
-`fast` remains the operator-derivative default and comparison. The reciprocal
+`fast` remains the explicit operator-derivative comparison profile. The reciprocal
 identity approximates the continuous shape derivative, so accuracy on coarse
 grids must be qualified; see the [SPD-005 plan](../../docs/iterations/speedup/iteration_04/03_plan.md).
 The existing high-level lossless/nonmagnetic material restriction and
@@ -170,15 +170,16 @@ The [SPD-001 plan](../../docs/iterations/speedup/iteration_01/03_plan.md) owns
 the original bounded numerical/runtime comparison. The user authorized default
 promotion under [SPD-002](../../docs/iterations/speedup/iteration_02/03_plan.md).
 
-### Compiled Kress inverse backend (opt-in)
+### Compiled Kress inverse backend (default)
 
-`--inverse-runtime compiled` or `SDF_INVERSE_RUNTIME=compiled` selects the
+The default `compiled` profile (also selected explicitly with
+`--inverse-runtime compiled` or `SDF_INVERSE_RUNTIME=compiled`) uses the
 SPD-006 reduced scattering backend inside analytic Cartesian fits at 256 or
 more nodes. Multi-object states use local Kress regular-wave compilations and
 a small coupled outgoing-wave system. Single-object states retain reciprocal
 Kress. Existing 64-node topology fits, TD fields, readiness, independent refined
-candidate checks and final endpoint checks keep full Kress. `fast` remains the
-default; standalone forward APIs are unchanged.
+candidate checks and final endpoint checks keep full Kress. `fast` is the
+previous operator comparison profile; standalone forward APIs retain their own settings.
 
 The compiler preserves the full production Cartesian shape space and gauge.
 Reciprocal source/receiver traces reconstructed from the local regular-wave
@@ -205,5 +206,8 @@ Saved-state qualification passed 33/33 checks and 114 regression tests passed
 (one unavailable-CUDA skip). All 16 matched full workers recovered. With the
 same readiness wrapper, compiled continuation reduced full runtime by 4.5% on
 central ellipse/star and 5.6% on two stars; death and the single-object merge
-control were unchanged. Readiness is separate from runtime-profile selection.
+control were unchanged. Following SPD-007 default promotion, the normal TOP-025
+full pipeline enables readiness with the compiled profile. Comparison profiles
+(`fast`, `reciprocal`, `reference`) retain the full continuation schedule. See the
+[default-promotion record](../../docs/iterations/speedup/iteration_07/01_results.md).
 See the [SPD-006 results and remaining-cost profile](../../docs/iterations/speedup/iteration_06/01_results.md).

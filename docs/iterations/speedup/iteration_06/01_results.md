@@ -91,7 +91,10 @@ continuation integration. The earlier SPD-004/005 sealed bundles remain unchange
 Use `--inverse-runtime compiled`, `SDF_INVERSE_RUNTIME=compiled`, or
 `inverse_runtime("compiled")`. The profile selects the numerical backend;
 readiness is separately enabled by this experiment's full-worker wrapper.
-The existing `fast` default is unchanged.
+At SPD-006 closeout, the `fast` default was unchanged. The subsequent
+[SPD-007 promotion](../iteration_07/01_results.md) makes compiled + reciprocal +
+readiness the normal full-pipeline default; the timings here remain the original
+sealed SPD-006 measurements.
 
 Analytic Cartesian fits at 256 or more nodes use local Kress regular-to-outgoing
 maps and a reduced coupled scattering system when there are at least two

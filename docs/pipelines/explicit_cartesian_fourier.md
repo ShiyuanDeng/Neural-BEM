@@ -28,14 +28,27 @@ disables that operation for parameterization experiments. Its finite-difference
 Jacobian still uses the full coefficient space with a phase gauge removed.
 
 The topology path uses `run_multiradial_fd_inverse(cartesian_gauge=True)`.
-Since SPD-002, this API defaults to **analytic Jacobians and faster CPU kernels**,
-including candidate refinement and the current four-stage continuation. Existing
-Cartesian topology commands use the faster mode without extra flags. Restore
-FD/reference CPU with `--inverse-runtime reference` on the controller, benchmark,
-challenge or TOP-025 runner, or set `SDF_INVERSE_RUNTIME=reference` for any caller.
-The mode is inherited by worker processes and saved in new run manifests.
-CUDA remains optional. This default change was directly requested by the user;
-the [SPD-002 plan](../iterations/speedup/iteration_02/03_plan.md) records its validation.
+The default `compiled` runtime uses fast CPU kernels, guarded reciprocal
+Jacobians from 128 nodes, and compiled scattering for multi-object Cartesian
+fits from 256 nodes. Coarse topology uses operator derivatives; single objects,
+unsupported geometry and failed angular checks retain full Kress fallbacks.
+Radial coefficients retain FD and the constraint policy remains `fd_compatible`.
+
+The normal TOP-025 full pipeline also checks training-only readiness before the
+four-stage continuation. All four training frequencies must meet the fixed fit
+and 256/512-node agreement tolerances. A ready handoff still receives independent
+endpoint scoring; otherwise the existing schedule runs with the same optimizer
+and stage budgets. A ready result does not claim optimizer stationarity.
+
+Existing commands need no additional flags. `--inverse-runtime fast` restores
+the previous operator-derivative profile, `reciprocal` uses reciprocal derivatives
+without compiled fits, and `reference` restores FD/reference CPU. Those comparison
+profiles run the full continuation schedule. `SDF_INVERSE_RUNTIME` supports the
+same choices; an existing environment setting or explicit Python context takes
+precedence over the default. Worker manifests record the selection.
+Readiness belongs to the full pipeline, not standalone fixed-topology fit calls.
+See the [SPD-007 promotion record](../iterations/speedup/iteration_07/01_results.md)
+and [SPD-006 measured results](../iterations/speedup/iteration_06/01_results.md).
 
 It enforces a converged polar-angle gauge, and computes steps and Jacobians in
 the subspace that preserves it. Gauge convergence checks both truncation and

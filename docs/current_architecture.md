@@ -5,6 +5,7 @@ Updated 2026-09-11 against [baseline B0](baselines/B0_2026-09-10.md) — commit
 committed 2026-09-11). Statements below were checked
 against the source at that state, with the TOP-001/TOP-005 extensions below added on
 2026-09-11. Where a claim rests on a recorded run rather than on the code, it says so.
+The shared full-inverse runtime section was updated on 2026-09-17 for SPD-007.
 
 The three current inverse pipelines are **Implicit MLP + Method B**, **Explicit
 Cartesian Fourier** and **Explicit Radial Fourier**. They differ in which
@@ -18,7 +19,7 @@ the [dashboard](README.md).
 |---|---|---|---|
 | [Implicit MLP + Method B](pipelines/implicit_mlp.md) | Neural weights; the candidate network's extracted Method-B boundary determines acceptance | Kress discrete adjoint through branch-local extraction/conversion reverse; Adam/backtracking | Gradient validated; all three current 12-pair recovery runs fail overall acceptance |
 | [Explicit Radial Fourier](pipelines/explicit_radial_fourier.md) | Radial Fourier coefficients; an MLP fits/audits the accepted curve | MOD or Kress; radial finite differences in the main driver | Canonical curve recovery succeeds on recorded cases; the extracted MLP can still fail representation gates |
-| [Explicit Cartesian Fourier](pipelines/explicit_cartesian_fourier.md) | Cartesian Fourier coefficients; no neural field | Kress; analytic Jacobians and fast CPU kernels by default in the topology optimizer, FD in the separate single-component study | Single-component ellipse-to-star recovery; automatic topology and challenge controls; SPD-002 records default-runtime validation |
+| [Explicit Cartesian Fourier](pipelines/explicit_cartesian_fourier.md) | Cartesian Fourier coefficients; no neural field | Kress; analytic Jacobians and fast CPU kernels by default in the topology optimizer, FD in the separate single-component study | Single-component ellipse-to-star recovery; automatic topology and challenge controls; SPD-006 validates compiled continuation; SPD-007 promotes the default |
 
 Both explicit pipelines share one multi-component state object,
 `MultiRadialFourierState`, which holds radial **or** Cartesian Fourier
@@ -58,18 +59,24 @@ Derivative paths:
 | Path | Used by | Mechanism |
 |---|---|---|
 | Analytic discrete Kress shape derivative, **single interface** | material inverses; the implicit-MLP geometry pullback | `gpr_bem_kress/shape_derivative.py`, differentiating the actual kernel branches, diagonals, normals, weights, incident traces and receiver map |
-| Analytic discrete coupled Kress shape derivative | Cartesian topology refinement and continuation by default | BIE-004 derivative, integrated by SPD-001 and promoted by SPD-002; retained base LU, streamed tangent solves, fast CPU kernels |
+| Analytic Cartesian Kress shape derivatives | Topology refinement and continuation by default | Operator derivatives below 128 nodes; guarded reciprocal derivatives above; compiled multi-object fits from 256 nodes with full Kress fallback |
 | Central finite differences, multi-component | radial coefficient states and the explicit `reference` runtime profile | Same Levenberg damping, strict decrease, backtracking, geometry rejection and rollback |
 | Central finite differences, single-component full chart | `run_explicit_cartesian_fourier_inverse.py` | full `4K + 2` coefficient columns with the phase direction projected out |
 
-The shared `sdf_inverse.runtime` selects analytic Cartesian Jacobians and fast
-CPU kernels for existing topology and continuation callers. Its default
-FD-compatible constraint policy preserves stencil refusals and one-sided
-fallback. `--inverse-runtime reference` or `SDF_INVERSE_RUNTIME=reference`
-restores the FD/reference CPU path, including spawned workers. Standalone
-forward calls still honor their own explicit execution settings. Physical
-system counts remain separate from derivative assemblies; run budgets charge
-both. See [SPD-002](iterations/speedup/iteration_02/03_plan.md).
+The shared `sdf_inverse.runtime` defaults to **compiled** on CPU: guarded
+reciprocal Cartesian Jacobians and reduced multi-object Kress fits from 256 nodes.
+Single objects and unqualified compiled states retain full Kress. Coarse topology
+uses operator derivatives, and independent refined/endpoint predictions use full
+Kress. The TOP-025 full pipeline enables training-only readiness before fitting,
+then independently scores the endpoint even when continuation is skipped.
+The FD-compatible constraint policy preserves stencil refusals and one-sided
+fallback. `--inverse-runtime fast` restores the earlier operator profile;
+`reciprocal` selects full Kress reciprocal fitting; `reference` restores FD/reference
+CPU. These comparison profiles retain the full schedule. Environment overrides
+and explicit execution contexts remain honored. Physical systems, derivative
+assemblies, reciprocal batches and compiled batches are separately counted and
+charged. See [SPD-007](iterations/speedup/iteration_07/01_results.md) and the
+[SPD-006 matched evidence](iterations/speedup/iteration_06/01_results.md).
 
 The verified Kress derivative handles coherent fixed-grid curve/material
 directions. The geometry reverse and branch-local Method-B reverse connect it to

@@ -1,6 +1,4 @@
 """SPD-004: isolated experiment wrapper around the unchanged full scene worker."""
-from collections import Counter
-from dataclasses import asdict
 from datetime import datetime, timezone
 from pathlib import Path
 import argparse
@@ -12,18 +10,16 @@ import shutil
 import subprocess
 import sys
 import time
-import traceback
 import numpy as np
 
 from experiments.top025 import run as pipeline
-from sdf_inverse.runtime import inverse_execution, runtime_metadata
-from .gate import training_readiness
+from sdf_inverse.runtime import inverse_execution, inverse_runtime, runtime_metadata
+from experiments.top025.readiness import combine_work, screen_training, readiness_continuation
 
 ROOT, p, m = pipeline.ROOT, pipeline.p, pipeline.m
 read, write = pipeline.read, pipeline.write
 HISTORY = ROOT/'results/validation/topology/TOP-025-20260915-210356-all-scenes-current'
 PLAN = ROOT/'docs/iterations/speedup/iteration_03/03_plan.md'
-ORIGINAL_CONTINUATION = pipeline.run_continuation
 NODES = (256, 512)
 THREAD_KEYS = ('OMP_NUM_THREADS','OPENBLAS_NUM_THREADS','MKL_NUM_THREADS','NUMEXPR_NUM_THREADS')
 
@@ -54,89 +50,6 @@ def environment():
                 python=sys.version, cpu_count=os.cpu_count(), load_average=os.getloadavg(),
                 visible_numerical_processes=processes, process_visibility='current PID namespace; host-wide isolation unverified',
                 threads={k:os.environ.get(k) for k in THREAD_KEYS})
-
-
-def combine_work(parts, elapsed):
-    fields = ('attempted','completed','failed','calls','derivative_assemblies_attempted',
-              'derivative_assemblies_completed','derivative_assemblies_failed',
-              'per_frequency_attempted','per_frequency_completed','per_frequency_failed')
-    result = {}
-    for name in fields:
-        total = Counter()
-        for part in parts:
-            total.update(part.get(name, {}))
-        result[name] = dict(total)
-    result.update(total_attempted=sum(r['total_attempted'] for r in parts),
-                  budget_work_units=sum(r['budget_work_units'] for r in parts),
-                  solve_cap=sum(r['solve_cap'] for r in parts),
-                  within_solve_cap=all(r['within_solve_cap'] for r in parts),
-                  active_wall_seconds=elapsed,
-                  budget_unit='one full frequency system or one analytic directional assembly/tangent',
-                  parts=parts)
-    return result
-
-
-def screen_training(state, observed, solve, floor, ledger):
-    """All routing inputs are training or numerical configuration, never truth."""
-    p.training_data(p.TRAIN, observed)
-    if not p.feasible(state, NODES, solve, floor):
-        return dict(ready=False, reason='geometry_inadmissible'), {}
-    predictions = {n:p.prediction(state, p.TRAIN, n, solve, ledger, 'readiness') for n in NODES}
-    return training_readiness(observed, predictions[256], predictions[512]), predictions
-
-
-@inverse_execution
-def readiness_continuation(folder, state, optimizer, observed, evaluation, scene, spec, control, solve):
-    started = time.perf_counter()
-    screen = m.Ledger(cap=8, seconds=300)
-    parts = []
-    result = dict(status='IN_PROGRESS', fresh_recovery_pass=False)
-    try:
-        with screen.instrument():
-            decision, training_predictions = screen_training(state, observed, solve,
-                control.minimum_component_radius_m, screen)
-        parts.append(screen.snapshot())
-        write(folder.parent/'readiness.json',dict(decision=decision, state_sha256=m.state_hash(state),
-            predictions={str(n):pipeline.follow.complex_record(v) for n,v in training_predictions.items()},
-            frequencies_hz=p.TRAIN, solve_config=asdict(solve), work=parts[-1]))
-        if not decision['ready']:
-            result = ORIGINAL_CONTINUATION(folder, state, optimizer, observed, evaluation, scene, spec, control, solve)
-            parts.append(result['work'])
-            result.update(readiness=decision, skipped_continuation=False, screening_work=parts[0])
-        else:
-            # Routing is finished before independent evaluation/truth is used.
-            folder.mkdir(parents=True, exist_ok=False)
-            endpoint = m.Ledger(cap=4, seconds=300)
-            with endpoint.instrument():
-                predictions = {n:np.column_stack((training_predictions[n],
-                    p.prediction(state, p.EVALUATION, n, solve, endpoint, 'endpoint'))) for n in NODES}
-            parts.append(endpoint.snapshot())
-            score = pipeline.base.score_predictions(state, scene, spec, observed, evaluation, predictions)
-            write(folder/'endpoint_predictions.json',dict(state=p.driver.serialize_state(state),
-                state_sha256=m.state_hash(state), frequencies_hz=pipeline.follow.FREQUENCIES,
-                solve_config=asdict(solve), training_predictions_reused_after_decision=True,
-                predictions={str(n):pipeline.follow.complex_record(v) for n,v in predictions.items()},score=score))
-            metrics = dict(status='READY_WITHOUT_CONTINUATION',final_state=p.driver.serialize_state(state),
-                final_state_sha256=m.state_hash(state),final=score, stages=[], schedule_complete=False,
-                complete_effective_exposure=False, convergence='STATIONARITY_NOT_MEASURED',
-                training_readiness=decision, reconstruction_gates_pass=score['original_gates_pass'],
-                numerically_qualified=score['numerically_qualified'])
-            write(folder/'metrics.json',metrics)
-            result.update(status='READY_WITHOUT_CONTINUATION',readiness=decision,
-                skipped_continuation=True, fresh_recovery_pass=bool(score['original_gates_pass'] and score['numerically_qualified']),
-                schedule=metrics, screening_work=parts[0])
-    except Exception as exc:
-        if not parts:
-            parts.append(screen.snapshot())
-        # Preserve any partially attempted endpoint work as well.
-        if 'endpoint' in locals() and len(parts)==1:
-            parts.append(endpoint.snapshot())
-        result.update(status='HARD_STOP',reason=getattr(exc,'code',type(exc).__name__),
-                      detail=str(exc),traceback=traceback.format_exc(),fresh_recovery_pass=False)
-    folder.mkdir(parents=True, exist_ok=True)
-    result['work'] = combine_work(parts, time.perf_counter()-started)
-    write(folder/'result.json',result)
-    return result
 
 
 def make_arm(parent, label, scenes):
@@ -181,8 +94,9 @@ def prepare(parent, test_log):
     shutil.copyfile(PLAN,parent/'approved_plan.md')
     shutil.copyfile(test_log,parent/'tests.log')
     scenes=('death','split','merge')
-    for label in ('baseline_0','readiness_0','baseline_1','readiness_1'):
-        make_arm(parent,label,scenes if label.endswith('_0') else scenes[:2])
+    with inverse_runtime('fast'):
+        for label in ('baseline_0','readiness_0','baseline_1','readiness_1'):
+            make_arm(parent,label,scenes if label.endswith('_0') else scenes[:2])
     frozen=sources()
     for name in frozen:
         target=parent/'measured_sources'/name;target.parent.mkdir(parents=True,exist_ok=True)
@@ -242,7 +156,8 @@ def worker(parent, label, scene):
     if label.startswith('readiness'):
         pipeline.run_continuation=readiness_continuation
     before=environment()
-    result=pipeline.run_scene(parent/label,scene)
+    with inverse_runtime('fast'):
+        result=pipeline.run_scene(parent/label,scene)
     verify_all(parent)
     write(parent/label/'runs'/scene/'worker_environment.json',dict(before=before,after=environment()))
     return result

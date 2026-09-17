@@ -72,7 +72,6 @@ def prepare(bundle, qualification, test_log):
 
 def worker(bundle, label, scene):
     verify(bundle)
-    previous.combine_work = combine_work
     pipeline.run_continuation = previous.readiness_continuation
     before = previous.environment()
     with inverse_runtime(label.rsplit('_',1)[0]), execution(kernels='real_bessel') as performance, collect_work() as passive:

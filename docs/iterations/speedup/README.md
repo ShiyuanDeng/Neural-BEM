@@ -71,18 +71,29 @@ renumber, move or supersede any Boundary–BIE iteration.
 
 ## Current handoff
 
-Updated 2026-09-16.
+Updated 2026-09-17.
 
 | Item | Current state |
 |---|---|
-| Active iteration | Iteration 06 — [SPD-006 compiled full-inverse results and geometry-cost profile](iteration_06/01_results.md) |
-| Stage | **SPD-006 COMPLETE / QUALITY PRESERVED**, following the user's “go” on compiled Kress integration. [Closed plan](iteration_05/03_plan.md). Earlier sealed results are unchanged |
-| Approved experiment IDs | **SPD-001**, **SPD-002**, **SPD-004**, **SPD-005**, **SPD-006** (direct “go” after the compiled integration recommendation, 2026-09-16) |
+| Active iteration | Iteration 07 — [SPD-007 default promotion](iteration_07/01_results.md), following the SPD-006 full-inverse qualification |
+| Stage | **SPD-007 COMPLETE / DEFAULT PROMOTED**, authorized by the user’s “yes” on 2026-09-17. Compiled + reciprocal + readiness is now the normal full-inverse path. Earlier sealed results are unchanged |
+| Approved experiment IDs | **SPD-001**, **SPD-002**, **SPD-004**, **SPD-005**, **SPD-006**, **SPD-007** (direct “yes” to default promotion, 2026-09-17) |
 | Next expected action | Qualify geometry-validation reuse and separately compare the true-analytic constraint policy. The [concrete follow-up](iteration_05/02_proposals/02_geometry_cost_followup.md) identifies reusable component checks/adapters and certified separation. No new numerical follow-up has been dispatched |
 | Owner / reviewer | Codex `/root` / self-review; no independent reviewer claimed |
-| Dependencies | 114 tests pass (one CUDA skip); 33 compiled qualification checks and 1340 worker angular checks pass. All 16 workers recover; events and accepted steps match. Maximum paired boundary difference is 1.047e-13 m. All 220 source and 339 input hashes and work counts verify. The earlier raw 64-node reciprocal failure remains archived |
-| Evidence limits | Four noiseless scenes, two workers per arm/scene. One compiled update CPU profile, with profiler overhead. Host-wide isolation unverified. No all-scene, noisy-data or GPU speedup claim |
+| Dependencies | SPD-007: 249 tests pass (one CUDA skip); 2/2 fresh default-CLI workers recover with exactly matching prior endpoints/steps; 312 artifact hashes verify. SPD-006: 33 compiled qualification checks, 1340 angular checks and 16/16 recovered workers. Maximum paired boundary difference 1.047e-13 m; original source/input hashes and work counts verify |
+| Evidence limits | SPD-007 checks dispatch/quality; no new matched speedup claim. SPD-006 measured four noiseless scenes with two workers per arm/scene and one profiled update. Host-wide isolation unverified. No all-scene, noisy-data or GPU speedup claim |
 | Git scope | Existing checkout, branch `feature/ordered-boundary-nystrom`. Ask the user explicitly before any new branch or worktree, even in full-access mode |
+
+### Current default: compiled + reciprocal + readiness
+
+[SPD-007](iteration_07/01_results.md) promotes the qualified setup to the normal
+full pipeline. No extra flag is needed. `compiled` supplies guarded reciprocal
+Jacobians and reduced multi-object fits; TOP-025 checks training-only readiness
+before continuation and always retains independent endpoint checks. Unready
+states run the existing schedule. Single objects, coarse grids and unsupported
+compiled states retain their validated fallbacks. `--inverse-runtime fast`,
+`reciprocal`, and `reference` retain the comparison paths without readiness.
+An explicit environment setting or Python context still overrides the default.
 
 ### Latest result: compiled Kress helps, but geometry still dominates an update
 
@@ -99,9 +110,9 @@ same readiness shortcut in both arms, are:
 | Two stars | 22m48s | 21m32s | 5.6% |
 
 The full gauge, controller and geometry/constraint rules are preserved.
-Compiled continuation is opt-in; the existing coarse topology and independent
-validation paths retain full Kress. Readiness is separately enabled by the
-experiment wrapper. The 2.48x local-fit prototype result does not transfer to
+For those SPD-006 measurements, compiled continuation was opt-in and readiness
+was enabled by the experiment wrapper. SPD-007 now makes their combination the
+default; coarse topology and independent validation retain full Kress. The 2.48x local-fit prototype result does not transfer to
 the full inverse. No full twelve-scene compiled runtime has been measured.
 
 A compiled central-case update spends **88.5% of its profiled 26.96 seconds in
@@ -205,7 +216,7 @@ evidence remains useful:
   update, while CUDA linear algebra reduced that update's wall time by only
   2.2%. A useful GPU successor should address assembly itself.
 
-SPD-003 proposes a narrower reuse comparison against the current fast default
+SPD-003 proposed a narrower reuse comparison against the then-current fast default
 and remains unexecuted. SPD-004's saved all-scene audit finds a different next
 priority for harder cases: final-grid feasibility can fail after expensive
 topology fitting, and unsuccessful candidate refinements can consume hundreds
@@ -292,3 +303,4 @@ Three additional rules specific to this track:
 | 04 | Training-only readiness and full-pipeline architecture audit | [SPD-004 closeout](iteration_04/01_results.md): additional 5.12x/6.72x full-runtime speedups on death/split, preserved merge fallback, and a twelve-scene audit of next architectural changes |
 | 05 | Guarded reciprocal Kress integration and compiler review | [SPD-005 closeout](iteration_05/01_results.md): all 18 workers recover; reciprocal fitting and readiness improve full runtime, with geometry checks exposed as remaining cost |
 | 06 | Compiled Kress continuation in complete inverse workers | [SPD-006 closeout](iteration_06/01_results.md): all 16 workers recover; 4.5%/5.6% additional hard-case time reductions, with geometry/constraint work still the next priority |
+| 07 | Promote the qualified full-pipeline default | [SPD-007](iteration_07/01_results.md): compiled + reciprocal + readiness, with comparison profiles and fallback/reporting checks |

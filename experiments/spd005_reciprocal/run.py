@@ -84,7 +84,6 @@ def prepare(bundle, qualification, test_log):
 def worker(bundle, arm, scene):
     verify(bundle)
     if arm.startswith('combined'):
-        previous.combine_work = combine_work
         pipeline.run_continuation = previous.readiness_continuation
     before = previous.environment()
     with inverse_runtime(profile(arm)), execution(kernels='real_bessel') as performance, collect_work() as passive:
