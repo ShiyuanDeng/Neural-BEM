@@ -1,5 +1,11 @@
 # Topology track: start here
 
+**2026-09-17 shared-interface notice:** completed [SPD-008](../speedup/iteration_08/01_results.md)
+qualifies opt-in exact geometry-validation reuse and boolean separation checks:
+16/16 workers recover with exact paired trajectories, endpoints and work.
+The refined-grid guard, topology controller and FD-compatible constraint policy
+remain intact. TOP-025's completed compiled campaign and its failures are preserved.
+
 This is the handoff for agents working on the **topology** research track. Read
 the current state below before choosing work. The shared folder convention,
 approval rule, experiment-contract template and collaboration rules are in the

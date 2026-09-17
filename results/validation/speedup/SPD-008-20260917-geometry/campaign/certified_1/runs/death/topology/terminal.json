@@ -1,0 +1,190 @@
+{
+  "controller_work": {
+    "stages": {
+      "candidate_acceptance": {
+        "evaluation_count": 1,
+        "forward_evaluation_count": 1,
+        "forward_frequency_solve_count": 1
+      },
+      "candidate_raw": {
+        "evaluation_count": 41,
+        "forward_evaluation_count": 21,
+        "forward_frequency_solve_count": 21
+      },
+      "candidate_refinement": {
+        "analytic_base_frequency_solve_count": 5,
+        "analytic_primal_rhs_count": 120,
+        "derivative_assembly_count": 70,
+        "evaluation_count": 7,
+        "factorization_count": 5,
+        "forward_evaluation_count": 7,
+        "forward_frequency_solve_count": 7,
+        "tangent_solve_count": 70
+      },
+      "fixed_refinement": {
+        "analytic_base_frequency_solve_count": 7,
+        "analytic_primal_rhs_count": 168,
+        "derivative_assembly_count": 60,
+        "evaluation_count": 11,
+        "factorization_count": 7,
+        "forward_evaluation_count": 11,
+        "forward_frequency_solve_count": 11,
+        "tangent_solve_count": 60
+      },
+      "production_base": {
+        "evaluation_count": 2,
+        "forward_evaluation_count": 2,
+        "forward_frequency_solve_count": 2
+      },
+      "refined_base": {
+        "evaluation_count": 1,
+        "forward_evaluation_count": 1,
+        "forward_frequency_solve_count": 1
+      },
+      "topological_derivative": {
+        "td_evaluation_count": 2,
+        "td_frequency_solve_count": 2
+      }
+    },
+    "totals": {
+      "analytic_base_frequency_solve_count": 12,
+      "analytic_primal_rhs_count": 288,
+      "bie_frequency_solve_count": 57,
+      "compiled_fallback_count": 0,
+      "compiled_frequency_batch_count": 0,
+      "compiled_local_cache_hit_count": 0,
+      "compiled_local_factorization_count": 0,
+      "compiled_local_rhs_count": 0,
+      "compiled_reduced_rhs_count": 0,
+      "compiled_reduced_solve_count": 0,
+      "derivative_assembly_count": 130,
+      "evaluation_count": 63,
+      "factorization_count": 12,
+      "forward_evaluation_count": 43,
+      "forward_frequency_solve_count": 43,
+      "reciprocal_contraction_count": 0,
+      "reciprocal_frequency_solve_count": 0,
+      "reciprocal_rhs_count": 0,
+      "tangent_solve_count": 130,
+      "td_evaluation_count": 2,
+      "td_frequency_solve_count": 2
+    }
+  },
+  "events": [
+    {
+      "after_ids": [
+        "initial.A",
+        "initial.B"
+      ],
+      "before_ids": [
+        "initial.A",
+        "initial.B",
+        "spurious"
+      ],
+      "candidate_refinement_steps": 2,
+      "children": [],
+      "construction": "leave_one_component_out",
+      "cycle": 0,
+      "kind": "death",
+      "parents": [
+        "spurious"
+      ],
+      "production_after": 1.8230962142114466e-15,
+      "production_before": 0.0018185479589000984,
+      "refined_after": 1.8230961796722443e-15,
+      "refined_before": 0.001818547958900043
+    }
+  ],
+  "final_state": [
+    {
+      "chart": "cartesian",
+      "component_id": "initial.A",
+      "maximum_mode": 2,
+      "parameters": [
+        0.4400000007982281,
+        0.5000000002559072,
+        0.03299999880572713,
+        -4.443534596785523e-18,
+        2.0746187449312665e-18,
+        2.9843585986197985e-26,
+        4.419817733723695e-18,
+        0.03299999880572713,
+        -7.260043398308391e-19,
+        -1.7574313194493126e-25
+      ]
+    },
+    {
+      "chart": "cartesian",
+      "component_id": "initial.B",
+      "maximum_mode": 2,
+      "parameters": [
+        0.5599999992017707,
+        0.5000000002559074,
+        0.032999998805729645,
+        -4.155543394719576e-18,
+        -2.0048738727461256e-26,
+        -3.28247894842033e-20,
+        3.898045438215435e-18,
+        0.032999998805729645,
+        1.7260847061454316e-26,
+        -1.1067879320982778e-20
+      ]
+    }
+  ],
+  "stop_reason": "recovered",
+  "work": {
+    "active_wall_seconds": 20.048207164974883,
+    "attempted": {
+      "topological_derivative": 2,
+      "topology_forward": 75
+    },
+    "budget_unit": "one full frequency system, operator direction/tangent, reciprocal RHS batch, or compiled frequency batch",
+    "budget_work_units": 207,
+    "calls": {
+      "preserved_candidate_refusals": 20
+    },
+    "compiled_batches_attempted": {},
+    "compiled_batches_completed": {},
+    "compiled_batches_failed": {},
+    "compiled_per_frequency_attempted": {},
+    "compiled_per_frequency_completed": {},
+    "compiled_per_frequency_failed": {},
+    "completed": {
+      "topological_derivative": 2,
+      "topology_forward": 55
+    },
+    "derivative_assemblies_attempted": {
+      "topology_forward": 130
+    },
+    "derivative_assemblies_completed": {
+      "topology_forward": 130
+    },
+    "derivative_assemblies_failed": {},
+    "endpoint_reserve": 0,
+    "failed": {
+      "topology_forward": 20
+    },
+    "per_frequency_attempted": {
+      "None:topological_derivative:500000000": 2,
+      "None:topology_forward:500000000": 75
+    },
+    "per_frequency_completed": {
+      "None:topological_derivative:500000000": 2,
+      "None:topology_forward:500000000": 55
+    },
+    "per_frequency_failed": {
+      "None:topology_forward:500000000": 20
+    },
+    "reciprocal_batches_attempted": {},
+    "reciprocal_batches_completed": {},
+    "reciprocal_batches_failed": {},
+    "solve_cap": 4000,
+    "stage": null,
+    "stage_attempted": 77,
+    "stage_quota": null,
+    "stage_work_units": 207,
+    "total_attempted": 77,
+    "wall_ceiling_seconds": 600,
+    "within_solve_cap": true
+  }
+}

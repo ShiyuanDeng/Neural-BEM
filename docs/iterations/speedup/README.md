@@ -5,6 +5,11 @@ current state below before choosing work. The shared folder convention, approval
 rule, experiment-contract template and collaboration rules are in the
 [iterations README](../README.md).
 
+For the measured progression from original FD to the current default, see the
+[full-inverse runtime history](full_inverse_runtime_history.md): each speedup's
+matched before/after times, per-scene configurations, and the original all-scene
+record, with timing and recovery differences kept explicit.
+
 ## Research question and scope
 
 > **How can the complete inverse reach the required reconstruction quality
@@ -75,13 +80,13 @@ Updated 2026-09-17.
 
 | Item | Current state |
 |---|---|
-| Active iteration | Iteration 07 — [SPD-007 default promotion](iteration_07/01_results.md), following the SPD-006 full-inverse qualification |
-| Stage | **SPD-007 COMPLETE / DEFAULT PROMOTED**, authorized by the user’s “yes” on 2026-09-17. Compiled + reciprocal + readiness is now the normal full-inverse path. Earlier sealed results are unchanged |
-| Approved experiment IDs | **SPD-001**, **SPD-002**, **SPD-004**, **SPD-005**, **SPD-006**, **SPD-007** (direct “yes” to default promotion, 2026-09-17) |
-| Next expected action | Qualify geometry-validation reuse and separately compare the true-analytic constraint policy. The [concrete follow-up](iteration_05/02_proposals/02_geometry_cost_followup.md) identifies reusable component checks/adapters and certified separation. No new numerical follow-up has been dispatched |
+| Active iteration | Iteration 08 — [SPD-008 exact geometry acceleration](iteration_08/01_results.md) |
+| Stage | **SPD-008 APPROVED / COMPLETE** under the [plan](iteration_07/03_plan.md). Exact geometry reuse and the boolean certificate are qualified opt-in; SPD-007 compiled + reciprocal + readiness remains the default |
+| Approved experiment IDs | **SPD-001**, **SPD-002**, **SPD-004**, **SPD-005**, **SPD-006**, **SPD-007**, **SPD-008** (direct “yes” to implementation and validation, 2026-09-17) |
+| Next expected action | Review isolated timing confirmation and all-twelve-scene default qualification, or another exact geometry optimization. No successor run is scheduled. SPD-009 remains separate and unexecuted |
 | Owner / reviewer | Codex `/root` / self-review; no independent reviewer claimed |
-| Dependencies | SPD-007: 249 tests pass (one CUDA skip); 2/2 fresh default-CLI workers recover with exactly matching prior endpoints/steps; 312 artifact hashes verify. SPD-006: 33 compiled qualification checks, 1340 angular checks and 16/16 recovered workers. Maximum paired boundary difference 1.047e-13 m; original source/input hashes and work counts verify |
-| Evidence limits | SPD-007 checks dispatch/quality; no new matched speedup claim. SPD-006 measured four noiseless scenes with two workers per arm/scene and one profiled update. Host-wide isolation unverified. No all-scene, noisy-data or GPU speedup claim |
+| Dependencies | SPD-008: 144 tests pass (one CUDA skip), 456 replay decisions agree, 3.65x/3.56x stencil gains, and 16/16 full workers recover with exactly matched trajectories, endpoints and work. Current/archived source/input hashes verify; all 618 artifacts from the completed TOP-025 compiled campaign remain intact |
+| Evidence limits | SPD-008 measures four noiseless scenes, two workers per arm/scene, mutually sequential CPU workers and one BLAS thread. Post-run LAU-001 artifact timestamps indicate another 31.30 s screen overlapped the last worker; other pilot/test timings are unavailable. Wall times are shared-host observations, not isolated evidence. Geometry acceleration remains opt-in; no all-scene, noisy-data or GPU speedup claim |
 | Git scope | Existing checkout, branch `feature/ordered-boundary-nystrom`. Ask the user explicitly before any new branch or worktree, even in full-access mode |
 
 ### Current default: compiled + reciprocal + readiness
@@ -95,7 +100,34 @@ compiled states retain their validated fallbacks. `--inverse-runtime fast`,
 `reciprocal`, and `reference` retain the comparison paths without readiness.
 An explicit environment setting or Python context still overrides the default.
 
-### Latest result: compiled Kress helps, but geometry still dominates an update
+### Latest result: exact geometry acceleration halves the hard-scene runtime
+
+[SPD-008](iteration_08/01_results.md) caches exact component reports and sampled
+self-intersection counts within each fit, then uses a conservative separation
+certificate for boolean pair checks with the original exact fallback. All 16
+workers recover with identical paired trajectories, decisions, endpoints and
+work counts. Median complete runtimes are:
+
+| Scene | Reference geometry | Exact cache + certificate | Time reduction |
+|---|---:|---:|---:|
+| Death | 46.32 s | 30.56 s | 34.0% |
+| Merge | 2m56s | 2m17s | 22.4% |
+| Central ellipse/star | 17m50s | 8m50s | 50.5% |
+| Two stars | 21m55s | 9m58s | 54.5% |
+
+These are observed shared-host timings. A separate LAU-001 screen appears to
+have overlapped the last worker; the [closeout](iteration_08/01_results.md)
+records this limit. Source hashes and exact numerical/work comparisons pass.
+
+The full gauge, controller, FD-compatible policy, refined checks and independent
+endpoint scoring remain intact. Detailed clearance reports keep measured
+distances. Geometry acceleration is available through the
+[fit-local Python context](../../../experiments/spd008_geometry/README.md) and
+remains opt-in; default promotion requires its own recorded scope. The separate
+accelerated update profile still exposes sampled self-intersections as remaining
+cost, but its timings are not whole-inverse shares.
+
+### Previous result: compiled Kress helps, but geometry still dominates an update
 
 [SPD-006](iteration_06/01_results.md) integrates the BIE-005 nodal scattering
 compiler as `--inverse-runtime compiled` / `SDF_INVERSE_RUNTIME=compiled`.
@@ -113,7 +145,9 @@ The full gauge, controller and geometry/constraint rules are preserved.
 For those SPD-006 measurements, compiled continuation was opt-in and readiness
 was enabled by the experiment wrapper. SPD-007 now makes their combination the
 default; coarse topology and independent validation retain full Kress. The 2.48x local-fit prototype result does not transfer to
-the full inverse. No full twelve-scene compiled runtime has been measured.
+the full inverse. SPD-006 did not include an all-twelve-scene campaign. The later
+completed default-runtime TOP-025 record is in the
+[runtime history](full_inverse_runtime_history.md).
 
 A compiled central-case update spends **88.5% of its profiled 26.96 seconds in
 legacy stencil-feasibility checks**, versus 0.50 seconds in the compiled
@@ -242,7 +276,8 @@ overlapping numerical work would invalidate both runs' machine-load conditions.
 ## Reading order
 
 1. This handoff.
-   For current next work, read the [SPD-006 results and profile](iteration_06/01_results.md),
+   For current next work, read the [SPD-008 results](iteration_08/01_results.md),
+   the [SPD-006 results and profile](iteration_06/01_results.md),
    the [concrete geometry follow-up](iteration_05/02_proposals/02_geometry_cost_followup.md),
    then the [SPD-005 results and profile](iteration_05/01_results.md),
    then the [reciprocal Kress priority review](iteration_04/02_reciprocal_derivative_priority_review.md),
@@ -304,3 +339,4 @@ Three additional rules specific to this track:
 | 05 | Guarded reciprocal Kress integration and compiler review | [SPD-005 closeout](iteration_05/01_results.md): all 18 workers recover; reciprocal fitting and readiness improve full runtime, with geometry checks exposed as remaining cost |
 | 06 | Compiled Kress continuation in complete inverse workers | [SPD-006 closeout](iteration_06/01_results.md): all 16 workers recover; 4.5%/5.6% additional hard-case time reductions, with geometry/constraint work still the next priority |
 | 07 | Promote the qualified full-pipeline default | [SPD-007](iteration_07/01_results.md): compiled + reciprocal + readiness, with comparison profiles and fallback/reporting checks |
+| 08 | Exact fit-local geometry validation and pair certification | [SPD-008](iteration_08/01_results.md): 16/16 recovered workers, exact paired results/work, 50.5%/54.5% hard-scene time reductions; qualified opt-in |

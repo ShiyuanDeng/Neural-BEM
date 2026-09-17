@@ -1,0 +1,75 @@
+{
+  "actual_attempted_calls": 329,
+  "actual_completed_solves": 302,
+  "actual_failed_or_refused_calls": 27,
+  "archived_optimized_state_used": false,
+  "detail": "automatic endpoint infeasible at continuation nodes",
+  "fresh_recovery_pass": false,
+  "geometry_refused_calls": 27,
+  "original_start_sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+  "reason": "NUMERICAL_FAILURE",
+  "scene": "empty-ellipse-star",
+  "sources_and_inputs_unchanged": true,
+  "status": "HARD_STOP",
+  "supplied_target_count": false,
+  "topology_checks": {
+    "all_event_margins_pass": true,
+    "monotone_accepted_states": true
+  },
+  "topology_work": {
+    "active_wall_seconds": 70.99446551396977,
+    "attempted": {
+      "topological_derivative": 6,
+      "topology_forward": 323
+    },
+    "budget_unit": "one full frequency system, operator direction/tangent, reciprocal RHS batch, or compiled frequency batch",
+    "budget_work_units": 632,
+    "calls": {
+      "preserved_candidate_refusals": 27
+    },
+    "compiled_batches_attempted": {},
+    "compiled_batches_completed": {},
+    "compiled_batches_failed": {},
+    "compiled_per_frequency_attempted": {},
+    "compiled_per_frequency_completed": {},
+    "compiled_per_frequency_failed": {},
+    "completed": {
+      "topological_derivative": 6,
+      "topology_forward": 296
+    },
+    "derivative_assemblies_attempted": {
+      "topology_forward": 303
+    },
+    "derivative_assemblies_completed": {
+      "topology_forward": 303
+    },
+    "derivative_assemblies_failed": {},
+    "endpoint_reserve": 0,
+    "failed": {
+      "topology_forward": 27
+    },
+    "per_frequency_attempted": {
+      "None:topological_derivative:500000000": 6,
+      "None:topology_forward:500000000": 323
+    },
+    "per_frequency_completed": {
+      "None:topological_derivative:500000000": 6,
+      "None:topology_forward:500000000": 296
+    },
+    "per_frequency_failed": {
+      "None:topology_forward:500000000": 27
+    },
+    "reciprocal_batches_attempted": {},
+    "reciprocal_batches_completed": {},
+    "reciprocal_batches_failed": {},
+    "solve_cap": 4000,
+    "stage": null,
+    "stage_attempted": 329,
+    "stage_quota": null,
+    "stage_work_units": 632,
+    "total_attempted": 329,
+    "wall_ceiling_seconds": 600,
+    "within_solve_cap": true
+  },
+  "traceback": "Traceback (most recent call last):\n  File \"/home/drdeng/Neural_SDF_BEM_AD/experiments/top025/run.py\", line 178, in run_scene\n    state,optimizer,capacity=suite.capacity_start(state,control,solve)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/experiments/top021/run.py\", line 67, in capacity_start\n    raise m.NumericalFailure('automatic endpoint infeasible at continuation nodes')\nrun_top017.NumericalFailure: automatic endpoint infeasible at continuation nodes\n"
+}

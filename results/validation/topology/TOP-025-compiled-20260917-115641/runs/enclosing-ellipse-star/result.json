@@ -1,0 +1,71 @@
+{
+  "actual_attempted_calls": 1576,
+  "actual_completed_solves": 604,
+  "actual_failed_or_refused_calls": 972,
+  "archived_optimized_state_used": false,
+  "detail": "topology did not reach a declared handoff: maximum_events",
+  "fresh_recovery_pass": false,
+  "geometry_refused_calls": 972,
+  "original_start_sha256": "dcc7276cc6dba89143347d214bd5a4fd718d31d4e3f3bab0cbea8020f7c923fd",
+  "reason": "NUMERICAL_FAILURE",
+  "scene": "enclosing-ellipse-star",
+  "sources_and_inputs_unchanged": true,
+  "status": "HARD_STOP",
+  "supplied_target_count": false,
+  "topology_work": {
+    "active_wall_seconds": 571.8543342350749,
+    "attempted": {
+      "topological_derivative": 14,
+      "topology_forward": 1562
+    },
+    "budget_unit": "one full frequency system, operator direction/tangent, reciprocal RHS batch, or compiled frequency batch",
+    "budget_work_units": 2830,
+    "calls": {
+      "preserved_candidate_refusals": 972
+    },
+    "compiled_batches_attempted": {},
+    "compiled_batches_completed": {},
+    "compiled_batches_failed": {},
+    "compiled_per_frequency_attempted": {},
+    "compiled_per_frequency_completed": {},
+    "compiled_per_frequency_failed": {},
+    "completed": {
+      "topological_derivative": 14,
+      "topology_forward": 590
+    },
+    "derivative_assemblies_attempted": {
+      "topology_forward": 1254
+    },
+    "derivative_assemblies_completed": {
+      "topology_forward": 1254
+    },
+    "derivative_assemblies_failed": {},
+    "endpoint_reserve": 0,
+    "failed": {
+      "topology_forward": 972
+    },
+    "per_frequency_attempted": {
+      "None:topological_derivative:500000000": 14,
+      "None:topology_forward:500000000": 1562
+    },
+    "per_frequency_completed": {
+      "None:topological_derivative:500000000": 14,
+      "None:topology_forward:500000000": 590
+    },
+    "per_frequency_failed": {
+      "None:topology_forward:500000000": 972
+    },
+    "reciprocal_batches_attempted": {},
+    "reciprocal_batches_completed": {},
+    "reciprocal_batches_failed": {},
+    "solve_cap": 4000,
+    "stage": null,
+    "stage_attempted": 1576,
+    "stage_quota": null,
+    "stage_work_units": 2830,
+    "total_attempted": 1576,
+    "wall_ceiling_seconds": 600,
+    "within_solve_cap": true
+  },
+  "traceback": "Traceback (most recent call last):\n  File \"/home/drdeng/Neural_SDF_BEM_AD/experiments/top025/run.py\", line 174, in run_scene\n    state=follow.topology_prefix(initial,p.training_data(p.TRAIN[:1],observed[:,:1]),control,solve,ledger,folder/'topology')\n  File \"/home/drdeng/Neural_SDF_BEM_AD/run_topology_recovery_followup.py\", line 215, in topology_prefix\n    raise m.NumericalFailure(f'topology did not reach a declared handoff: {result.stop_reason}')\nrun_top017.NumericalFailure: topology did not reach a declared handoff: maximum_events\n"
+}

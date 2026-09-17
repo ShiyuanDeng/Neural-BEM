@@ -23,9 +23,11 @@ import numpy as np
 from scipy.linalg import lu_factor, lu_solve
 
 from experiments.modal_muller_research.coefficient_operator import (
-    CoefficientGeometry, dense_product, kernel_matrix, sparse_product, times)
+    CoefficientGeometry, LaurentGeometry, dense_product, kernel_matrix, sparse_product, times)
 from experiments.modal_muller_research.coefficient_derivative import (
     FixedAcquisition, NativeShapeForward, ShapeOperator, prepare_direction)
+from experiments.modal_muller_research.scattering_library import parameterization
+from experiments.bie002_modal_diagnostic.fixtures import inputs
 
 BLOCK_NAMES = ('K', 'V', 'T', 'Kp')
 
@@ -43,7 +45,7 @@ def waves(frequency, acq):
     return factor * np.sqrt(acq['exterior']['epsr']), factor * np.sqrt(acq['interior']['epsr'])
 
 
-def nodal_reference(parameterizations, frequency, acq, nodes):
+def nodal_reference(parameterizations, frequency, acq, nodes, ledger=None):
     """Independent single-component Kress oracle. Imports solvers/ read-only."""
     from ordered_boundary import OrderedBoundary2D  # noqa: F401  (kept for parity)
     from gpr_bem_kress import Material
@@ -51,6 +53,9 @@ def nodal_reference(parameterizations, frequency, acq, nodes):
     from gpr_bem_kress.system import build_kress_tmz_frequency_system
     from gpr_bem_kress.forward import (kress_incident_trace_on_boundary,
                                        build_exterior_receiver_operator)
+    if ledger is not None:
+        ledger.charge(assemblies=1, factorizations=1, rhs_batches=1,
+                      rhs_columns=len(acq['source_points']))
     started = perf_counter()
     curves = [p.discretize(nodes, require_even=True) for p in parameterizations]
     if len(curves) != 1:
@@ -67,9 +72,49 @@ def nodal_reference(parameterizations, frequency, acq, nodes):
         c = build_exterior_receiver_operator(
             geometry, np.array(acq['receiver_points']), system.k_exterior).state_rows
     a = system.system_matrix
-    state = lu_solve(lu_factor(a), b)
+    factors = lu_factor(a)
+    state = lu_solve(factors, b)
     return dict(y=c @ state, state=state, a=a, b=b, c=c, curves=curves,
+                system=system, factors=factors, acquisition=acq, ledger=ledger,
                 seconds=perf_counter() - started)
+
+
+def direction_values(geometry, dz, theta):
+    """Physical Cartesian displacement in the same fixed Laurent chart."""
+    return geometry.scale * sum((v * np.exp(1j * j * theta) for j, v in dz.items()),
+                                np.zeros_like(theta, dtype=complex))
+
+
+def nodal_derivatives(reference, geometry, directions):
+    """Independent continuous Hadamard oracle, qualified in N and by nodal FD.
+
+    No Laurent operator derivative enters this reference. Both primal and unit
+    receiver traces come from the nodal Kress matrix; no complex conjugation.
+    Returns full receiver-by-source matrices, allowing separate illuminations.
+    """
+    from gpr_bem_kress.execution import execution
+    from gpr_bem_kress.forward import kress_incident_trace_on_boundary
+    curve, = reference['curves']
+    system, acq = reference['system'], reference['acquisition']
+    if 'reciprocal_state' not in reference:
+        if reference['ledger'] is not None:
+            reference['ledger'].charge(rhs_batches=1, rhs_columns=len(acq['receiver_points']))
+        with execution(kernels='real_bessel'):
+            d, n = kress_incident_trace_on_boundary(
+                curve, np.asarray(acq['receiver_points']), system.k_exterior, 1.)
+        rhs = np.concatenate((d, n), axis=1).T
+        reference['reciprocal_state'] = lu_solve(reference['factors'], rhs)
+    count = curve.num_nodes
+    us, ur = reference['state'][:count], reference['reciprocal_state'][:count]
+    theta = (curve.parameters - curve.parameter_origin) * 2 * np.pi / curve.period
+    result = []
+    for dz in directions:
+        velocity = direction_values(geometry, dz, theta)
+        normal = velocity.real * curve.normals[:, 0] + velocity.imag * curve.normals[:, 1]
+        weights = normal * curve.arc_length_weights
+        result.append((system.k_interior**2 - system.k_exterior**2)
+                      * (ur.T @ (weights[:, None] * us)))
+    return result
 
 
 def lift(state, curves, cutoff):
@@ -162,7 +207,11 @@ def split_derivative(operator, direction):
 class NativeCase:
     """One geometry at one frequency: operator, acquisition, split and derivatives."""
 
-    def __init__(self, geometry, acq, frequency, cutoff, bandwidth, terms, angular_order=36):
+    def __init__(self, geometry, acq, frequency, cutoff, bandwidth, terms, angular_order=36,
+                 ledger=None):
+        if ledger is not None:
+            ledger.charge(assemblies=1, factorizations=1, rhs_batches=1,
+                          rhs_columns=len(acq['source_points']))
         started = perf_counter()
         self.geometry, self.acq, self.frequency = geometry, acq, frequency
         self.cutoff, self.bandwidth, self.terms = cutoff, bandwidth, terms
@@ -217,19 +266,55 @@ class NativeCase:
         raise ValueError(label)
 
 
-def solve_masked(protected, remainder, mask, b, c):
+def solve_masked(protected, remainder, mask, b, c, ledger=None):
+    if ledger is not None:
+        ledger.charge(factorizations=1, rhs_batches=1, rhs_columns=b.shape[1])
     matrix = protected + mask * remainder
     factors = lu_factor(matrix)
     state = lu_solve(factors, b)
-    return dict(a=matrix, factors=factors, state=state, y=c @ state)
+    return dict(a=matrix, factors=factors, state=state, y=c @ state, ledger=ledger)
 
 
 def masked_data_derivative(solved, case, derivative, mask, label):
     """D_v Y for the SAME frozen-mask model: D_v A~ = D_v S + Pi_S D_v R."""
     d_protected, d_remainder = case.derivative_parts(derivative, label)
     da = d_protected + mask * d_remainder
-    transfer = lu_solve(solved['factors'], case.c.T, trans=1).T
+    if 'transfer' not in solved:
+        if solved.get('ledger') is not None:
+            solved['ledger'].charge(rhs_batches=1, rhs_columns=case.c.shape[0])
+        solved['transfer'] = lu_solve(solved['factors'], case.c.T, trans=1).T
+    transfer = solved['transfer']
     return derivative['dc'] @ solved['state'] + transfer @ (derivative['db'] - da @ solved['state'])
+
+
+def masked_hadamard_derivatives(solved, case, directions):
+    """Continuous identity on compressed traces; distinct from its discrete tangent.
+
+    Periodic quadrature integrates the finite trigonometric product exactly.
+    These diagnostic samples are not part of the node-free forward assembler.
+    """
+    fields, cutoff = case.fields, case.cutoff
+    if 'reciprocal_state' not in solved:
+        if solved.get('ledger') is not None:
+            solved['ledger'].charge(rhs_batches=1, rhs_columns=case.c.shape[0])
+        idx = fields.bandwidth + case.operator.modes
+        f, q = fields.waves.values[:, 2:-2], fields.waves.flux[:, 2:-2]
+        rhs = np.concatenate((f[idx] @ fields.acquisition.receiver_weights,
+                              q[idx] @ fields.acquisition.receiver_weights))
+        solved['reciprocal_state'] = lu_solve(solved['factors'], rhs)
+    degree = max([abs(j) for j in case.geometry.coefficients]
+                 + [abs(j) for dz in directions for j in dz])
+    count = 4 * cutoff + 2 * degree + 1
+    theta = 2 * np.pi * np.arange(count) / count
+    basis = np.exp(1j * theta[:, None] * case.operator.modes)
+    us = basis @ solved['state'][:2 * cutoff + 1]
+    ur = basis @ solved['reciprocal_state'][:2 * cutoff + 1]
+    normal_speed = case.geometry.scale * sum(
+        j * v * np.exp(1j * j * theta) for j, v in case.geometry.coefficients.items())
+    return [(case.ki**2 - case.ko**2) * 2 * np.pi / count
+            * (ur.T @ (np.real(direction_values(case.geometry, dz, theta)
+                              * normal_speed.conj())[:, None] * us))
+            for dz in directions]
 
 
 def moved_geometry(geometry, dz, step):

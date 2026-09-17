@@ -21,8 +21,12 @@ def stack(block_masks):
 
 def _top_fraction(score, fraction):
     """Deterministic top-`fraction` selection; ties broken by flat index."""
+    return _top_count(score, int(np.floor(fraction * score.size + 0.5)))
+
+
+def _top_count(score, keep):
+    """An absolute per-block budget, independent of the trace dimension."""
     size = score.size
-    keep = int(np.floor(fraction * size + 0.5))
     keep = max(0, min(size, keep))
     if keep == 0:
         return np.zeros(score.shape, bool)
@@ -48,12 +52,14 @@ def band(case, label, width, **_):
     return stack({name: inside.copy() for name in BLOCK_NAMES})
 
 
-def forward(case, label, fraction, **_):
+def forward(case, label, fraction, count_per_block=None, **_):
     blocks = case.remainder_blocks(label)
-    return stack({n: _top_fraction(np.abs(blocks[n]), fraction) for n in BLOCK_NAMES})
+    return stack({n: (_top_fraction(np.abs(blocks[n]), fraction) if count_per_block is None
+                      else _top_count(np.abs(blocks[n]), count_per_block))
+                  for n in BLOCK_NAMES})
 
 
-def derivative_aware(case, label, fraction, derivatives, floor, **_):
+def derivative_aware(case, label, fraction, derivatives, floor, count_per_block=None, **_):
     """Score each entry by forward and training-derivative magnitude together."""
     blocks = case.remainder_blocks(label)
     derivative_blocks = [case.derivative_remainder_blocks(d, label) for d in derivatives]
@@ -67,7 +73,8 @@ def derivative_aware(case, label, fraction, derivatives, floor, **_):
         for db in derivative_blocks:
             d_denominator = max(np.linalg.norm(db[name]), floor * reference)
             score = np.maximum(score, np.abs(db[name]) / d_denominator)
-        chosen[name] = _top_fraction(score, fraction)
+        chosen[name] = (_top_fraction(score, fraction) if count_per_block is None
+                        else _top_count(score, count_per_block))
     return stack(chosen)
 
 

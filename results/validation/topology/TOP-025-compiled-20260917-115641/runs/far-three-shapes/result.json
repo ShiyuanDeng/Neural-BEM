@@ -1,0 +1,73 @@
+{
+  "actual_attempted_calls": 916,
+  "actual_completed_solves": 779,
+  "actual_failed_or_refused_calls": 137,
+  "archived_optimized_state_used": false,
+  "detail": "hard wall limit during numerical batch",
+  "fresh_recovery_pass": false,
+  "geometry_refused_calls": 137,
+  "original_start_sha256": "0dad2193cfe76b1ef7386b61df16402dca86d111b1c307a6f671597a04297edc",
+  "reason": "TRIAL_WALL_LIMIT",
+  "scene": "far-three-shapes",
+  "sources_and_inputs_unchanged": true,
+  "status": "HARD_STOP",
+  "supplied_target_count": false,
+  "topology_work": {
+    "active_wall_seconds": 600.0020596419927,
+    "attempted": {
+      "topological_derivative": 14,
+      "topology_forward": 902
+    },
+    "budget_unit": "one full frequency system, operator direction/tangent, reciprocal RHS batch, or compiled frequency batch",
+    "budget_work_units": 2323,
+    "calls": {
+      "preserved_candidate_refusals": 137
+    },
+    "compiled_batches_attempted": {},
+    "compiled_batches_completed": {},
+    "compiled_batches_failed": {},
+    "compiled_per_frequency_attempted": {},
+    "compiled_per_frequency_completed": {},
+    "compiled_per_frequency_failed": {},
+    "completed": {
+      "topological_derivative": 14,
+      "topology_forward": 765
+    },
+    "derivative_assemblies_attempted": {
+      "topology_forward": 1407
+    },
+    "derivative_assemblies_completed": {
+      "topology_forward": 1406
+    },
+    "derivative_assemblies_failed": {
+      "topology_forward": 1
+    },
+    "endpoint_reserve": 0,
+    "failed": {
+      "topology_forward": 137
+    },
+    "per_frequency_attempted": {
+      "None:topological_derivative:500000000": 14,
+      "None:topology_forward:500000000": 902
+    },
+    "per_frequency_completed": {
+      "None:topological_derivative:500000000": 14,
+      "None:topology_forward:500000000": 765
+    },
+    "per_frequency_failed": {
+      "None:topology_forward:500000000": 137
+    },
+    "reciprocal_batches_attempted": {},
+    "reciprocal_batches_completed": {},
+    "reciprocal_batches_failed": {},
+    "solve_cap": 4000,
+    "stage": null,
+    "stage_attempted": 916,
+    "stage_quota": null,
+    "stage_work_units": 2323,
+    "total_attempted": 916,
+    "wall_ceiling_seconds": 600,
+    "within_solve_cap": true
+  },
+  "traceback": "Traceback (most recent call last):\n  File \"/home/drdeng/Neural_SDF_BEM_AD/experiments/top025/run.py\", line 174, in run_scene\n    state=follow.topology_prefix(initial,p.training_data(p.TRAIN[:1],observed[:,:1]),control,solve,ledger,folder/'topology')\n  File \"/home/drdeng/Neural_SDF_BEM_AD/run_topology_recovery_followup.py\", line 206, in topology_prefix\n    result = controller(initial,data,p.driver.baseline._geometry_config(64),\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/runtime.py\", line 85, in wrapped\n    return function(*args, **kwargs)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/topology_controller.py\", line 643, in run_topology_aware_fourier_inverse\n    result = _run_topology_aware_fourier_inverse(\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/topology_controller.py\", line 882, in _run_topology_aware_fourier_inverse\n    result = accounted_call('candidate_refinement', run_multiradial_fd_inverse, candidate.state, data, production_geometry_config,\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/work_accounting.py\", line 102, in accounted_call\n    return function(*args, **kwargs)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/runtime.py\", line 85, in wrapped\n    return function(*args, **kwargs)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/radial_topology.py\", line 1254, in run_multiradial_fd_inverse\n    matrix, basis, unresolved_columns, one_sided_new = jacobian(accepted_state)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/radial_topology.py\", line 1153, in jacobian\n    matrix, prediction = cartesian_residual_jacobian(\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/analytic_jacobian.py\", line 98, in cartesian_residual_jacobian\n    operators = directional_operators(base, direction)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/gpr_bem_kress/coupled_shape_derivative.py\", line 181, in directional_operators\n    system = _stack((_stack((identity-k,v),1),_stack((-t,identity+kp),1)),0)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/gpr_bem_kress/shape_derivative.py\", line 278, in _stack\n    np.concatenate([v.d for v in values], axis=axis))\n  File \"/home/drdeng/Neural_SDF_BEM_AD/run_top017.py\", line 156, in alarm\n    def alarm(*_): raise TrialWallLimit('hard wall limit during numerical batch')\nrun_top017.TrialWallLimit: hard wall limit during numerical batch\n"
+}

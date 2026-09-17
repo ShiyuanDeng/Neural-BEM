@@ -3,6 +3,7 @@
 Gate values are frozen by the plan and are not renegotiated after results.
 """
 import numpy as np
+from time import perf_counter
 
 from .adapters import lift, relative
 
@@ -20,8 +21,28 @@ def paired(values):
 
 
 def lifted_residual(state, reference, cutoff):
+    """Residual in the fixed oracle flux coordinates (u, J*d_n u)."""
     physical = lift(state, reference['curves'], cutoff)
-    return relative(reference['a'] @ physical, reference['b'])
+    speed = np.concatenate([c.speeds * c.period / (2 * np.pi)
+                            for c in reference['curves']])
+    scale = np.r_[np.ones(len(speed)), speed][:, None]
+    return relative(scale * (reference['a'] @ physical), scale * reference['b'])
+
+
+def acceptance(receiver, residual, training, heldout, objective_pass, *, qualified=True):
+    """One conjunction for base, refinement, window, and offset comparisons.
+
+    Objective correctness and independent reference qualification may never be
+    silently dropped by an individual stage. Nonfinite errors fail closed.
+    """
+    checks = dict(
+        reference_qualified=bool(qualified),
+        passes_receiver=bool(np.isfinite(receiver) and receiver <= GATES['receiver']),
+        passes_residual=bool(np.isfinite(residual) and residual <= GATES['lifted_residual']),
+        passes_data_derivative=bool(np.isfinite(training) and training <= GATES['data_derivative']),
+        passes_heldout_derivative=bool(np.isfinite(heldout) and heldout <= GATES['data_derivative']),
+        objective_derivative_all_pass=bool(objective_pass))
+    return dict(checks, passes_all=all(checks.values()))
 
 
 def objective(y, observed, weight=1.0):
@@ -59,15 +80,26 @@ class Ledger:
         self.counts = dict(assemblies=0, factorizations=0, rhs_batches=0, rhs_columns=0)
         self.seconds = dict()
         self.stopped = None
+        self.started = perf_counter()
 
     def charge(self, **amounts):
-        for key, value in amounts.items():
-            self.counts[key] = self.counts.get(key, 0) + value
+        self.check_resources()
         for key in ('assemblies', 'factorizations', 'rhs_batches'):
-            if self.counts.get(key, 0) > self.CEILINGS[key]:
+            if self.counts.get(key, 0) + amounts.get(key, 0) > self.CEILINGS[key]:
                 self.stopped = f'{key} ceiling exceeded'
                 raise RuntimeError(f'LAU-001 budget ceiling: {key} '
-                                   f'{self.counts[key]} > {self.CEILINGS[key]}')
+                                   f'{self.counts[key]} + {amounts.get(key, 0)} > '
+                                   f'{self.CEILINGS[key]}')
+        for key, value in amounts.items():
+            self.counts[key] = self.counts.get(key, 0) + value
+
+    def check_resources(self):
+        import resource
+        elapsed = perf_counter() - self.started
+        peak = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / (1024 ** 2)
+        if elapsed > self.CEILINGS['seconds'] or peak > self.CEILINGS['peak_gib']:
+            self.stopped = 'wall time or peak memory ceiling exceeded'
+            raise RuntimeError(f'LAU-001 budget ceiling: {self.stopped}')
 
     def can_afford(self, **amounts):
         return all(self.counts.get(k, 0) + v <= self.CEILINGS[k] for k, v in amounts.items())

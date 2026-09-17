@@ -1,5 +1,21 @@
 # Boundary–BIE track: start here
 
+**2026-09-17 shared-interface notice:** completed [SPD-008](../speedup/iteration_08/01_results.md)
+qualifies opt-in fit-local exact geometry-validation reuse and a boolean separation
+certificate. Curve ownership, detailed clearance reports, quadrature and the
+default geometry/constraint policy remain unchanged. All 16 workers recover
+with exact paired trajectories, endpoints and work; hard-scene times fall
+50.5%/54.5% in the bounded four-scene comparison. The closeout records concurrent
+LAU-001 work; those wall times are shared-host observations.
+
+**2026-09-17 track notice:** the Laurent/coefficient work below now has its own
+cycle structure at [`../laurent/README.md`](../laurent/README.md), opened by
+user direction. **Nothing moved** — iteration 05's four records stay here and
+the new track cites them as starting evidence. Successor Laurent proposals are
+filed there, not in this track. The received modal derivative-compression brief
+is filed as [Laurent iteration 01](../laurent/iteration_01/03_plan.md) rather
+than under `iteration_05/02_proposals/` as that brief's §1 suggested.
+
 **2026-09-16 exploratory update:** [Iteration 05 — native modal Müller inverse,
 reciprocal derivatives, and adaptive shape modes](iteration_05/01_exploration.md)
 contains the latest implementation and numerical results. The user explicitly

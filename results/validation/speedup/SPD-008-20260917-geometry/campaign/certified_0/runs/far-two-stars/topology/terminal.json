@@ -1,0 +1,224 @@
+{
+  "controller_work": {
+    "stages": {
+      "candidate_acceptance": {
+        "evaluation_count": 41,
+        "forward_evaluation_count": 41,
+        "forward_frequency_solve_count": 41
+      },
+      "candidate_raw": {
+        "evaluation_count": 148,
+        "forward_evaluation_count": 81,
+        "forward_frequency_solve_count": 81
+      },
+      "candidate_refinement": {
+        "analytic_base_frequency_solve_count": 36,
+        "analytic_primal_rhs_count": 864,
+        "derivative_assembly_count": 332,
+        "evaluation_count": 38,
+        "factorization_count": 36,
+        "forward_evaluation_count": 38,
+        "forward_frequency_solve_count": 38,
+        "tangent_solve_count": 332
+      },
+      "fixed_refinement": {
+        "analytic_base_frequency_solve_count": 54,
+        "analytic_primal_rhs_count": 1296,
+        "derivative_assembly_count": 329,
+        "evaluation_count": 54,
+        "factorization_count": 54,
+        "forward_evaluation_count": 54,
+        "forward_frequency_solve_count": 54,
+        "tangent_solve_count": 329
+      },
+      "production_base": {
+        "evaluation_count": 4,
+        "forward_evaluation_count": 4,
+        "forward_frequency_solve_count": 4
+      },
+      "refined_base": {
+        "evaluation_count": 4,
+        "forward_evaluation_count": 4,
+        "forward_frequency_solve_count": 4
+      },
+      "topological_derivative": {
+        "td_evaluation_count": 8,
+        "td_frequency_solve_count": 8
+      }
+    },
+    "totals": {
+      "analytic_base_frequency_solve_count": 90,
+      "analytic_primal_rhs_count": 2160,
+      "bie_frequency_solve_count": 320,
+      "compiled_fallback_count": 0,
+      "compiled_frequency_batch_count": 0,
+      "compiled_local_cache_hit_count": 0,
+      "compiled_local_factorization_count": 0,
+      "compiled_local_rhs_count": 0,
+      "compiled_reduced_rhs_count": 0,
+      "compiled_reduced_solve_count": 0,
+      "derivative_assembly_count": 661,
+      "evaluation_count": 289,
+      "factorization_count": 90,
+      "forward_evaluation_count": 222,
+      "forward_frequency_solve_count": 222,
+      "reciprocal_contraction_count": 0,
+      "reciprocal_frequency_solve_count": 0,
+      "reciprocal_rhs_count": 0,
+      "tangent_solve_count": 661,
+      "td_evaluation_count": 8,
+      "td_frequency_solve_count": 8
+    }
+  },
+  "events": [
+    {
+      "after_ids": [
+        "initial.circle",
+        "t001.birth"
+      ],
+      "before_ids": [
+        "initial.circle"
+      ],
+      "candidate_refinement_steps": 3,
+      "children": [
+        "t001.birth"
+      ],
+      "construction": "exterior_td_region; radius=0.024592",
+      "cycle": 0,
+      "kind": "birth",
+      "parents": [],
+      "production_after": 0.36511393052203484,
+      "production_before": 0.5796783901123319,
+      "raw_birth_radius_m": 0.02459245379682983,
+      "refined_after": 0.36511393052203284,
+      "refined_before": 0.5796783901123307
+    },
+    {
+      "after_ids": [
+        "t001.birth"
+      ],
+      "before_ids": [
+        "initial.circle",
+        "t001.birth"
+      ],
+      "candidate_refinement_steps": 3,
+      "children": [],
+      "construction": "leave_one_component_out",
+      "cycle": 1,
+      "kind": "death",
+      "parents": [
+        "initial.circle"
+      ],
+      "production_after": 0.18553140197324797,
+      "production_before": 0.36425947645353157,
+      "refined_after": 0.18553140197324827,
+      "refined_before": 0.3642594764535338
+    },
+    {
+      "after_ids": [
+        "t001.birth",
+        "t003.birth"
+      ],
+      "before_ids": [
+        "t001.birth"
+      ],
+      "candidate_refinement_steps": 3,
+      "children": [
+        "t003.birth"
+      ],
+      "construction": "exterior_td_region; radius=0.024376",
+      "cycle": 2,
+      "kind": "birth",
+      "parents": [],
+      "production_after": 9.21948794917021e-05,
+      "production_before": 0.18553027168801592,
+      "raw_birth_radius_m": 0.024375775971438328,
+      "refined_after": 9.219487949170027e-05,
+      "refined_before": 0.1855302716880158
+    }
+  ],
+  "final_state": [
+    {
+      "chart": "cartesian",
+      "component_id": "t001.birth",
+      "maximum_mode": 1,
+      "parameters": [
+        0.5500783785503234,
+        0.4300013262710808,
+        0.030920540489615945,
+        -1.150709021136372e-18,
+        8.963005326417057e-19,
+        0.030920540489615952
+      ]
+    },
+    {
+      "chart": "cartesian",
+      "component_id": "t003.birth",
+      "maximum_mode": 1,
+      "parameters": [
+        0.6100336587067358,
+        0.5399518369750689,
+        0.029950532871489598,
+        -1.0137223724896377e-18,
+        7.896000515542988e-19,
+        0.029950532871489598
+      ]
+    }
+  ],
+  "stop_reason": "topology_stationary",
+  "work": {
+    "active_wall_seconds": 65.40577517997008,
+    "attempted": {
+      "topological_derivative": 8,
+      "topology_forward": 379
+    },
+    "budget_unit": "one full frequency system, operator direction/tangent, reciprocal RHS batch, or compiled frequency batch",
+    "budget_work_units": 1048,
+    "calls": {
+      "preserved_candidate_refusals": 67
+    },
+    "compiled_batches_attempted": {},
+    "compiled_batches_completed": {},
+    "compiled_batches_failed": {},
+    "compiled_per_frequency_attempted": {},
+    "compiled_per_frequency_completed": {},
+    "compiled_per_frequency_failed": {},
+    "completed": {
+      "topological_derivative": 8,
+      "topology_forward": 312
+    },
+    "derivative_assemblies_attempted": {
+      "topology_forward": 661
+    },
+    "derivative_assemblies_completed": {
+      "topology_forward": 661
+    },
+    "derivative_assemblies_failed": {},
+    "endpoint_reserve": 0,
+    "failed": {
+      "topology_forward": 67
+    },
+    "per_frequency_attempted": {
+      "None:topological_derivative:500000000": 8,
+      "None:topology_forward:500000000": 379
+    },
+    "per_frequency_completed": {
+      "None:topological_derivative:500000000": 8,
+      "None:topology_forward:500000000": 312
+    },
+    "per_frequency_failed": {
+      "None:topology_forward:500000000": 67
+    },
+    "reciprocal_batches_attempted": {},
+    "reciprocal_batches_completed": {},
+    "reciprocal_batches_failed": {},
+    "solve_cap": 4000,
+    "stage": null,
+    "stage_attempted": 387,
+    "stage_quota": null,
+    "stage_work_units": 1048,
+    "total_attempted": 387,
+    "wall_ceiling_seconds": 600,
+    "within_solve_cap": true
+  }
+}
