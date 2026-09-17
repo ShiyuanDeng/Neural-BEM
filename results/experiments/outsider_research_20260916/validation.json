@@ -1,0 +1,144 @@
+{
+  "git_head": "51aeea531b180924df56097a973d748ed7454270",
+  "branch": "feature/ordered-boundary-nystrom",
+  "versions": {
+    "python": "3.9.25",
+    "numpy": "2.0.2",
+    "scipy": "1.13.1"
+  },
+  "focused_tests": {
+    "command": "python -m pytest -q experiments/support_certificates/test_core.py experiments/support_certificates/test_layered.py experiments/operator_rom/test_rom.py",
+    "observed_result": "10 passed in 0.09s",
+    "note": "Executed before this audit; no tested numerical code changed afterward."
+  },
+  "fresh_dual_checks": [
+    {
+      "n": 8,
+      "name": "left",
+      "cross": false,
+      "eigenvalue": 0.027974166052942232,
+      "freshly_evaluated_dual": 0.037034514883888536,
+      "stored_lower_bound": 0.03703451488384297
+    },
+    {
+      "n": 8,
+      "name": "left",
+      "cross": true,
+      "eigenvalue": 1.3086062126858753,
+      "freshly_evaluated_dual": 0.044013193352413604,
+      "stored_lower_bound": 0.04401319335236877
+    },
+    {
+      "n": 8,
+      "name": "full",
+      "cross": false,
+      "eigenvalue": 9.607558159724041e-05,
+      "freshly_evaluated_dual": -9.135771367962953e-06,
+      "stored_lower_bound": -9.135771412705144e-06
+    },
+    {
+      "n": 8,
+      "name": "full",
+      "cross": true,
+      "eigenvalue": 9.607558159724041e-05,
+      "freshly_evaluated_dual": -9.135771367962953e-06,
+      "stored_lower_bound": -9.135771412705144e-06
+    },
+    {
+      "n": 12,
+      "name": "left",
+      "cross": false,
+      "eigenvalue": 0.02090752609328723,
+      "freshly_evaluated_dual": 0.032716437589638825,
+      "stored_lower_bound": 0.032716437589593354
+    },
+    {
+      "n": 12,
+      "name": "left",
+      "cross": true,
+      "eigenvalue": 0.5066154026888435,
+      "freshly_evaluated_dual": 0.03901132345151903,
+      "stored_lower_bound": 0.03901132345147353
+    },
+    {
+      "n": 16,
+      "name": "left",
+      "cross": false,
+      "eigenvalue": 0.018200543220305367,
+      "freshly_evaluated_dual": 0.031209487427749538,
+      "stored_lower_bound": 0.03120948742770399
+    },
+    {
+      "n": 16,
+      "name": "left",
+      "cross": true,
+      "eigenvalue": 0.27578101771755487,
+      "freshly_evaluated_dual": 0.037339387715274674,
+      "stored_lower_bound": 0.03733938771522911
+    }
+  ],
+  "local_document_links": "passed",
+  "source_whitespace": "passed",
+  "source_hashes": {
+    "experiments/operator_rom/README.md": "44cddef85f9c8a764fc2cfcb489fd6df1980ae27614eb1009c16c5a56b161bc3",
+    "experiments/operator_rom/__init__.py": "595456b5e043e739ccd45c3ba04ea359ff3c1ab99f36581b24720d7c555a4ee7",
+    "experiments/operator_rom/fixed_projection.py": "edbc96a0b8d28164506861ca1989fe4d359eb68ac61865761a68288751849960",
+    "experiments/operator_rom/qualify.py": "db4a0a6163039322773cf72f1cf094ec5f3b39c815b03d6881768031856ba45c",
+    "experiments/operator_rom/screen.py": "ccc30e24c8a9bb28bdbaf08116ef0dcd61d631190a330e0d4a443ac241aa48b5",
+    "experiments/operator_rom/test_rom.py": "3753ad08fcf75af4fddb5423b68fd4a9c4361ac69af0c7ede46363c071369dcc",
+    "experiments/passive_shape/README.md": "197ec8a5aac42cc39672797e2ffd0c1d251451fb0689f88bb3ff340cfd39dbc5",
+    "experiments/passive_shape/__init__.py": "49f91f76d159f27ec6aac3eaa63158d330e71394db8bd474106b7fba079ffc52",
+    "experiments/passive_shape/qualify.py": "485583e6ec50726841151941090bf8bfcea9956faacc6924d62dd7a1ecb56694",
+    "experiments/passive_shape/screen.py": "53eb65bdffe3b8304e346d88f9f8400350091e23b04f3e50d18ccf2dac4a27e5",
+    "experiments/support_certificates/README.md": "b1f4b637da19f966f47a70455c1a9a7164f0905249203347122385c41a2d433f",
+    "experiments/support_certificates/__init__.py": "33627f965bf2d5b58c873fcfe27a009555c40aec733fd8c39cc656ea57492522",
+    "experiments/support_certificates/alternatives.py": "1148a8dbd482c470a135d215aa37baaeaaa5eea9b32a9d787eac97698592f0dc",
+    "experiments/support_certificates/audit.py": "19e49ae8d8e260b47f7570663bda60aa64883474c2674d55c82eec6b2ff6b9a7",
+    "experiments/support_certificates/broad_material.py": "d909666da03f4b99a376cbb57fd294a6aee42d28521d52d2c203cef91c35c656",
+    "experiments/support_certificates/broad_qualification.py": "ff64a79a602eb9401b8753df343f4b38926057ecf505fcb194e0379c51b27e0b",
+    "experiments/support_certificates/complex_material.py": "8057b60ecebc46256e8047a9b434532bea2d84591af668977efd67d5d50860b4",
+    "experiments/support_certificates/complex_screen.py": "6e008054019b2cf66f2286a6b4a8e1c3af4a1c04b6b37d6229b7f509c563b137",
+    "experiments/support_certificates/core.py": "24b9583253da7367c21139600867d9c2154c1cd9ee7ee72ef294ec41257f40e8",
+    "experiments/support_certificates/cross_material.py": "2d83a4b78a340fcff86fcc1d8e0b0e5df09d6229b839db396ba32989c23a405a",
+    "experiments/support_certificates/cross_qualification.py": "a5c22780b854b6b9277ae362a9911c566250eeefc36604403876b523dcc1eb90",
+    "experiments/support_certificates/cross_screen.py": "1ee8ec4f482ae5639935259fcdcf020b480b65e5809782c62dda6adae8682bd9",
+    "experiments/support_certificates/independent.py": "5b3ba073c66c39b4b2be5bf322aa80d32adaf41c5ac0927f416c96b7755aa164",
+    "experiments/support_certificates/layered.py": "e8de401a3d766f1df6d4bf809fa710c4e09324abe54b5f55869c5a9e71869870",
+    "experiments/support_certificates/layered_screen.py": "e75dedb9c302ef9a5f23ea71c2c81d8ce6568abf9b1ed417832dc36e7683d201",
+    "experiments/support_certificates/material_screen.py": "bd950c409c00e23207e3a39d282bf46211be9eda3c789f1fd8a9f0f74f425ae0",
+    "experiments/support_certificates/primal_check.py": "c81ddf42e06bf83b3b1184a411db29756d2bae680fdd863bb2f65d18da9c8085",
+    "experiments/support_certificates/report.py": "d01b98e36c9a73df09858edb6c88c5e046034ce7a5715b6a3e843df993df3cfe",
+    "experiments/support_certificates/screen.py": "6c526a65970ef237dd8e8a98b81c0a4c7a2aeed00daa980404cd7560b8d33e8f",
+    "experiments/support_certificates/test_core.py": "1f8eb61a15f0497338f71a7bf3f1b6770c96edd1570965cb6bcd22d858acf0c3",
+    "experiments/support_certificates/test_layered.py": "dfb5599e17a6755e514a1f1b6397663ecc9709d729ceb3ae5bb8691afe5d675d"
+  },
+  "evidence_hashes": {
+    "results/experiments/operator_rom_20260916/fixed_projection.json": "31ad274d040aad4d0a9589c540d88715f56d1e83825e82cb19d0e82d6cb83a08",
+    "results/experiments/operator_rom_20260916/qualification.json": "e170ea125f43e08e4d2cce464bfdbd875f30f616f472fd68b7b438bee4eb1708",
+    "results/experiments/operator_rom_20260916/screen.json": "310921692b94884a8dc34bc216bf48675803fe1dc8068a2814d56052a448da71",
+    "results/experiments/outsider_research_20260916/README.md": "14c0d73781d97c0d78e13e3005c2167f86699f9fd6bb8d6b68d075268bb8e8e3",
+    "results/experiments/outsider_research_20260916/findings.svg": "712122900254a17010dcbc68d9d4efeeae940525c9716361d8511cb7c4bd2195",
+    "results/experiments/outsider_research_20260916/summary.json": "68bd1b2f4e2eb7a47f32abf7b9439e9b93f485c5db8b5dd93b539a7fd8c978ba",
+    "results/experiments/outsider_research_20260916/wrong_support.svg": "93d7b47c3a5529f2d57313d652177dd35242b11951106222436f95f6d1f3b0b4",
+    "results/experiments/passive_shape_20260916/qualification.json": "cce27c525cdb79f44577150ee222c2c401b3090891594aa90b67dd62add8e99e",
+    "results/experiments/passive_shape_20260916/screen.json": "09834f2812d83b370eac801c2ea678e01f984384a9973b6dd8e4d48c38353ac7",
+    "results/experiments/support_certificates_20260916/alternatives.json": "fd147c99732924f9bc143833193b728f295b0023548ef2859a04109329bcd1f8",
+    "results/experiments/support_certificates_20260916/broad_material.json": "f4531ea16d867f25123c3d6a8fe062021a1dad8d090c617ba765de3ca210966f",
+    "results/experiments/support_certificates_20260916/broad_qualification.json": "e5d36bc377e95c29dc5480d07037a4997d567547cb422d1c66daaf3f24dc18b4",
+    "results/experiments/support_certificates_20260916/complex_material.json": "90e6d8531735c2a1b008ac1331caf65823d94ea5cf367dc159609adfa694fbd9",
+    "results/experiments/support_certificates_20260916/cross_material.json": "27f2999e3bba187f560fff57ef3b80fb3765b8359d23dfd2533a1ee2140bd2cb",
+    "results/experiments/support_certificates_20260916/cross_qualification.json": "f252c5a7b37b81bc6bb06b10cff8940be6bf65cc4e347e4f46b094abd6e2c794",
+    "results/experiments/support_certificates_20260916/cross_screen.json": "09be17c7972da0050f845c778a41b571fde25616e89b53f47d708d6ad59cd9a5",
+    "results/experiments/support_certificates_20260916/independent.json": "e13054825aac45b83b748edb85abb53b3dd03c6c8ae1e9904012e5af0e720b3c",
+    "results/experiments/support_certificates_20260916/layered.json": "c4ff5e3f44f0fe621d7ce8af1d875179d6ca797000c26f5fb4236fc6f9d5f2f3",
+    "results/experiments/support_certificates_20260916/manifest.json": "a8a461187cd6130c80dc2c2bc5aeb5893000fcab4a03562f359e7ea344d92d4e",
+    "results/experiments/support_certificates_20260916/material_screen.json": "fb3f4daf3cacd1689ea21403924d887e2cb98bd624e2fa476f5d12bbad19857f",
+    "results/experiments/support_certificates_20260916/primal_checks.json": "2e80e0a4c0e7f41f101326456b19118685658f43e48d7820a3759daaabafd7cc",
+    "results/experiments/support_certificates_20260916/screen.json": "b4f455c27c0b3eef3d95066e5a7daf0f52ad8334f86468cb9fcce6a0be37dafe"
+  },
+  "limitations": [
+    "Floating-point verification, not an interval proof.",
+    "No uniform continuum modelling-error bound.",
+    "Finite slices and synthetic data; no production or field-data qualification."
+  ]
+}

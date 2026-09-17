@@ -10,6 +10,12 @@ Follow-ups: [coupled modal recovery and measurement selection](iteration_05/02_c
 then [compiled Laurent scattering libraries, pose inverses, and object identification](iteration_05/03_scattering_library.md).
 Latest: [Laurent shape derivatives of scattering matrices and joint shape/pose inversion](iteration_05/04_deformable_scattering.md).
 
+**2026-09-17 filing update:** the subsequent user-directed search beyond Laurent
+is recorded separately in [Experiments, iteration 01](../experiments/iteration_01/01_results.md).
+It tests support-exclusion certificates, operator-ROM objectives and passive
+material/shape ambiguity. That investigation is closed at its documented
+limitations; it does not establish another BIE implementation step.
+
 This is the handoff for agents working on the **boundary representation and BIE
 solve** research track. Read the current state below before choosing work. The
 shared folder convention, approval rule, experiment-contract template and
