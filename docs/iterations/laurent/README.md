@@ -86,6 +86,7 @@ promotion; no Laurent code is on any default path.
 | `dT/dx` in Laurent coordinates, and its fingerprints | Reciprocal vs differentiated compiler `7.0e-15`; centered recompilation `7e-11`–`2e-10`. A circle's `δr = ε cos kθ` opens exactly the `\|m−n\| = k` bands | [iteration 05 §4](../boundary_bie/iteration_05/04_deformable_scattering.md) |
 | Joint shape+pose inversion, 24 unknowns | All 54 inverses converge; four objects 1% noise: boundary RMS `0.1438 mm`, held-out field `0.3196%`; local-model discrepancy falls `1.40e-2 → 1.60e-13` over four accepted updates | same |
 | The compiled path supports real information experiments | Calibration-aware design does **not** beat well-spread uniform multioffset (negative); an uncertain neighbour **does** improve target-harmonic recovery `0.654 → 0.118 mm` | [calibration](../../../results/experiments/laurent_calibration_20260916/report.md), [neighbour](../../../results/experiments/laurent_neighbour_20260916/report.md) |
+| Published Fourier compression construction reproduced | JWY2021 scalar mask: 0.687% entries at 2,047 unknowns, analytic-density error 1.63e-11. Adapted transmission masks pass six of eight cases with fewer represented forward slots; both higher-frequency stars fail. Exact table reproduction and runtime gains remain open | [LAU-002 closeout](../../../results/validation/laurent/LAU-002-20260917-closeout/README.md) |
 
 ### Measured cost position — read this before proposing a speed claim
 
@@ -136,8 +137,12 @@ These apply to every layer and must be restated in any successor plan.
 | Iteration | Cycle | State |
 |---|---|---|
 | — | Pre-track exploration (filed in Boundary–BIE iteration 05, 2026-09-16) | Four exploration records; 30 tests pass; no production promotion |
-| 01 | **Does the modal operator's remainder compress while preserving geometry derivatives?** | **LAU-001 APPROVED and COMPLETE** (2026-09-17). Verdict `STRUCTURE_ONLY`: derivative-aware retention meets every gate at 0.30 on both noncircular fixtures, forward-only selection gets derivatives 160–760% wrong at identical field accuracy, and nothing converts retention into work. [Bundle](../../../results/validation/laurent/LAU-001-20260917-modal-derivative-compression/README.md) |
-| 02 | What LAU-001 settled, and the one thing it did not | [Results recorded](iteration_02/01_results.md); no proposal yet, no successor approved |
+| 01 | **Does the modal operator's remainder compress while preserving geometry derivatives?** | **LAU-001 COMPLETE** (2026-09-17). Original `STRUCTURE_ONLY` result; the “every gate” and refinement interpretation are corrected by LAU-001-R1. [Original bundle](../../../results/validation/laurent/LAU-001-20260917-modal-derivative-compression/README.md) |
+| 02 | Independent review and validation repair | **LAU-001-R1 APPROVED and COMPLETE**. [Contract](iteration_02/03_plan.md). Independent derivatives, objective gating, flux scaling, fixed-count refinement, asymmetric and held-out checks |
+| 03 | What survives the corrected screen? | [Results](iteration_03/01_results.md): ellipse passes at fixed 30%; both stars fail fixed 30%/50% budgets. The refined star pass uses more entries than the smaller dense remainder. Coefficient-window qualification survives; no speed or promotion claim |
+| 04 | Published construction and numerical transmission transfer | **LAU-002 COMPLETE**. [Results](iteration_04/01_results.md): scalar convergence verified, printed-table discrepancies preserved; adapted masks reduce represented entries on six of eight transmission cases. No runtime or production claim |
+| 05 | Innovation: sensitivity-preserving trace reduction | **LAU-003 COMPLETE**. [Results](iteration_05/01_results.md): 48/194 unknowns preserve anchor derivatives; compact frozen reuse fails. 120/194 tangent model survives small offsets but fails new illumination. No inverse/speed claim |
+| 06 | Protected spans and guarded reuse | **LAU-004 COMPLETE**. [Results](iteration_06/01_results.md): rank 80→56 / 120→112; 42/42 delivered physical passes with 24 rebuilds. No compact nonanchor reuse, inverse or speed claim |
 
 ## Reading order
 
@@ -160,20 +165,29 @@ These apply to every layer and must be restated in any successor plan.
 
 ## Current state
 
+The user directed a shift to our innovations on 2026-09-17 and authorized
+proceeding. **LAU-003 is APPROVED** under that instruction; its bounded contract
+records the scope. Exact paper-table parity is no longer the active objective.
+
 | Item | Value |
 |---|---|
-| Active iteration | [02](iteration_02/01_results.md) |
-| Stage | **Gate 7 of 7 — LAU-001 closeout complete; results recorded, no proposal yet** |
-| Approved experiment IDs | **`LAU-001`** — approved by the user 2026-09-17, executed the same day |
-| Execution status | `COMPLETE`. Verdict `STRUCTURE_ONLY` |
-| Next expected action | Interpret [iteration 02](iteration_02/01_results.md) and propose the next discriminating check. The bundle names one: does a structured sparse assembly at 0.30 retention beat the dense native assembly at matched quality? Nothing is approved |
-| Owner / reviewer | Claude / **self-review only** — no independent reviewer was assigned |
+| Active iteration | [06: protected spans and guarded delivery](iteration_06/01_results.md) |
+| Stage | **LAU-004 COMPLETE; 2026-09-18 priority review recommends parking generic compression**. [Review](iteration_06/02_proposals/01_outsider_priority_review.md); user direction pending |
+| Approved experiment IDs | **`LAU-001`, `LAU-001-R1`, `LAU-002`, `LAU-003`, `LAU-004`**. LAU-004 authorized by the user’s “go” after LAU-003; [contract](iteration_05/03_plan.md). LAU-003 authorized by the user’s instruction to proceed with our innovations; [contract](iteration_04/03_plan.md). LAU-002 authorized by the user's instruction to catch up with the literature, 2026-09-17; [contract](iteration_03/03_plan.md). Repair authorized by “just keep fixin and testin” after the outsider review, 2026-09-17 |
+| Execution status | `COMPLETE` for LAU-004 pilot; campaign not released (compact nonanchor reuse target failed). Prior experiments complete |
+| Next expected action | Consider the [outsider priority review](iteration_06/02_proposals/01_outsider_priority_review.md): preserve compression tools, prioritize a direct inverse-information question, and reopen compression only with a cost/quality case |
+| Owner / reviewer | Codex implemented and validated LAU-004; independent reviewer unassigned. Earlier repair history remains in its own records |
 | Branch | `feature/ordered-boundary-nystrom` in the existing checkout; no branch or worktree creation |
-| Shared interfaces | None touched. `solvers/` and `modal_muller_research/` stayed read-only; the screen lives in [`experiments/laurent_compression/`](../../../experiments/laurent_compression/README.md) |
+| Shared interfaces | None touched. `solvers/` and `modal_muller_research/` stayed read-only; experiments live in [`laurent_compression/`](../../../experiments/laurent_compression/README.md), [`laurent_literature/`](../../../experiments/laurent_literature/README.md), [`laurent_tangent_rom/`](../../../experiments/laurent_tangent_rom/README.md) and [`laurent_adaptive_rom/`](../../../experiments/laurent_adaptive_rom/README.md) |
 
 The 2026-09-16 open-exploration authorisation recorded in the
 [Boundary–BIE handoff](../boundary_bie/README.md) covered that exploration. It
 is **not** a standing authorisation for a numbered experiment on this track.
+The 2026-09-17 repair instruction separately authorized LAU-001-R1's bounded
+corrections and reruns; it did not request a sparse assembler or default change.
+The subsequent instruction to catch up with literature separately authorized
+LAU-002's reproduction and bounded transmission transfer; its completed scope
+does not establish a fast assembler or justify a production default change.
 
 ## Reproduce the current pipeline
 

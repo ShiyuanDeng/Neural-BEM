@@ -1,5 +1,15 @@
 # Iteration 02 — what LAU-001 settled, and the one thing it did not
 
+> **2026-09-17 correction following independent review:** the “Settled” table
+> below records the original interpretation, which overstates the completed
+> checks. The campaign omitted independent physical derivative qualification,
+> excluded objective accuracy from `passes_all`, used an unscaled residual,
+> and omitted geometry-offset and new-illumination checks. Its refined 30%
+> star mask also retains more entries than the entire smaller remainder.
+> The user authorized repairs with “just keep fixin and testin”.
+> [LAU-001-R1](03_plan.md) owns those repairs; corrected results open
+> [iteration 03](../iteration_03/01_results.md). The prior bundle is preserved.
+
 **Opened by the executed [LAU-001 plan](../iteration_01/03_plan.md), 2026-09-17.
 Verdict `STRUCTURE_ONLY`. Stage: results recorded; no proposal yet.**
 

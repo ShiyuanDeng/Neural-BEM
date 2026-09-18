@@ -12,7 +12,40 @@ activation, and one-update transfer with a zero-update control. Their new
 outputs belong under `validation/method_b_failure_diagnostics/`; add measured
 conclusions to this register only after reviewing the actual run artifacts.
 
-[catalog.csv](catalog.csv) contains **204 rows**. The original 162 rows span 60 saved or empty run bundles, including the three existing 12-pair neural runs indexed during this reorganization, the two initial adjoint diagnostics, the radial-topology birth demonstration, and three full-pass topology challenges. The new topology rows group the TOP-001/TOP-005 replay and controller comparisons by chart/arm; scalar metrics there are worst-case values. Two TOP-019 rows record the prescribed S/F merge endpoints. The original CSV snapshot predates the Cartesian suites; use the [Cartesian index](inverse/cartesian_fourier/README.md) and [pipeline audit](validation/cartesian_fourier/pipeline-audit-20260910/README.md) for that evidence. The earlier exporter-failed partial attempt is recorded separately in the [adjoint validation index](validation/implicit_mlp_adjoint/README.md). Inverse runs have a row per solver, policy or declared arm; larger supporting sweeps explicitly identify their grouped scope. The catalogue records accepted geometry, derivative/optimizer, MLP role, target and initialization, observation setup, separate recovery/representation outcomes, date evidence, provenance, and each result's implication for the implicit MLP pipeline.
+[catalog.csv](catalog.csv) contains **208 rows**. The original 162 rows span 60 saved or empty run bundles, including the three existing 12-pair neural runs indexed during this reorganization, the two initial adjoint diagnostics, the radial-topology birth demonstration, and three full-pass topology challenges. The new topology rows group the TOP-001/TOP-005 replay and controller comparisons by chart/arm; scalar metrics there are worst-case values. Two TOP-019 rows record the prescribed S/F merge endpoints. The original CSV snapshot predates the Cartesian suites; use the [Cartesian index](inverse/cartesian_fourier/README.md) and [pipeline audit](validation/cartesian_fourier/pipeline-audit-20260910/README.md) for that evidence. The earlier exporter-failed partial attempt is recorded separately in the [adjoint validation index](validation/implicit_mlp_adjoint/README.md). Inverse runs have a row per solver, policy or declared arm; larger supporting sweeps explicitly identify their grouped scope. The catalogue records accepted geometry, derivative/optimizer, MLP role, target and initialization, observation setup, separate recovery/representation outcomes, date evidence, provenance, and each result's implication for the implicit MLP pipeline.
+
+## LAU-004 protected spans and guarded reuse
+
+[Measured protected-basis pilot](validation/laurent/LAU-004-20260917-closeout/README.md)
+· [Iteration 06](../docs/iterations/laurent/iteration_06/01_results.md) · 2026-09-17:
+protecting the primal span reduces rank 80→56 on the ellipse and 120→112 on the
+asymmetric star. The guard rejects all 18 inaccurate frozen models, plus six
+accurate ones; 18 reuses and 24 rebuilds deliver 42/42 physical passes. 90 tests,
+14 controls, 12 physical finite differences, 66 bound checks and both new/old
+bundle audits pass. No compact nonanchor reuse, so the wider campaign is not
+released. No inverse or speed claim; one grouped catalogue row.
+
+## LAU-003 sensitivity-preserving trace reduction
+
+[Innovation screen](validation/laurent/LAU-003-20260917-closeout/README.md)
+· [Iteration 05](../docs/iterations/laurent/iteration_05/01_results.md) · 2026-09-17:
+forward-only field interpolation fails shape sensitivities. Primal/adjoint
+closure preserves six anchor derivatives with 48/194 unknowns, but compact
+local reuse fails. Tangent enrichment survives both small geometry offsets at
+120/194 unknowns and 48.8% stored-model-family slots; new illumination fails.
+83 tests and the pilot audit pass; one coarse FD gate blocks the wider campaign.
+No inverse recovery, speed or production claim. One grouped catalogue row.
+
+## LAU-002 published Fourier compression and transmission transfer
+
+[Measured literature comparison](validation/laurent/LAU-002-20260917-closeout/README.md)
+· [Iteration 04](../docs/iterations/laurent/iteration_04/01_results.md) · 2026-09-17:
+the 2021 scalar construction converges with 0.687% retained entries and 1.63e-11
+analytic-density error at 2,047 unknowns. Adapted masks pass fields, residuals
+and shape derivatives with fewer represented forward slots on six of eight
+transmission cases; both higher-frequency stars fail. 77 tests and two bundle
+audits pass. Exact printed-table reproduction and actual runtime gains remain
+open. Two grouped supporting-sweep rows are recorded in the catalogue.
 
 ## SPD-002 fast default in complete topology pipelines
 
