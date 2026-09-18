@@ -19,6 +19,11 @@ Cartesian-Fourier history.
 > geometry, boundary traces and scattering give the inverse that a nodal
 > discretisation does not — and what does it cost?**
 
+**The track is closed at iteration 07 by user direction (2026-09-18), on the LAU-005
+calibration-identifiability result.** It is closed as a cycle, not abandoned: the open
+questions below, the parked compression line and the standing limits are all preserved,
+and reopening any of them needs a fresh contract and a named ID.
+
 The track is organised around that question, not around promoting the Laurent
 solver. **Replacing Kress is not the goal.** The recorded evidence is explicit
 that the node-free path is currently *slower* than an accuracy-matched nodal
@@ -86,6 +91,7 @@ promotion; no Laurent code is on any default path.
 | `dT/dx` in Laurent coordinates, and its fingerprints | Reciprocal vs differentiated compiler `7.0e-15`; centered recompilation `7e-11`–`2e-10`. A circle's `δr = ε cos kθ` opens exactly the `\|m−n\| = k` bands | [iteration 05 §4](../boundary_bie/iteration_05/04_deformable_scattering.md) |
 | Joint shape+pose inversion, 24 unknowns | All 54 inverses converge; four objects 1% noise: boundary RMS `0.1438 mm`, held-out field `0.3196%`; local-model discrepancy falls `1.40e-2 → 1.60e-13` over four accepted updates | same |
 | The compiled path supports real information experiments | Calibration-aware design does **not** beat well-spread uniform multioffset (negative); an uncertain neighbour **does** improve target-harmonic recovery `0.654 → 0.118 mm` | [calibration](../../../results/experiments/laurent_calibration_20260916/report.md), [neighbour](../../../results/experiments/laurent_neighbour_20260916/report.md) |
+| Calibration quality decides *where* a neighbour helps, not *whether* | Continuous log-gain prior over the recorded 63-point screen: coupling beats the additive control at **exact** calibration in **137/189** configuration/prior cells (illumination, not nuisance ambiguity); **70** cross over at median `tau*` **0.172 dB / 1.89 deg**; **15** never pay. Endpoints reproduce the recorded screen to `1.5e-14`; the bridge arm reproduces all five published medians exactly | [LAU-005 closeout](../../../results/validation/laurent/LAU-005-20260918-closeout/README.md) |
 | Published Fourier compression construction reproduced | JWY2021 scalar mask: 0.687% entries at 2,047 unknowns, analytic-density error 1.63e-11. Adapted transmission masks pass six of eight cases with fewer represented forward slots; both higher-frequency stars fail. Exact table reproduction and runtime gains remain open | [LAU-002 closeout](../../../results/validation/laurent/LAU-002-20260917-closeout/README.md) |
 
 ### Measured cost position — read this before proposing a speed claim
@@ -143,6 +149,7 @@ These apply to every layer and must be restated in any successor plan.
 | 04 | Published construction and numerical transmission transfer | **LAU-002 COMPLETE**. [Results](iteration_04/01_results.md): scalar convergence verified, printed-table discrepancies preserved; adapted masks reduce represented entries on six of eight transmission cases. No runtime or production claim |
 | 05 | Innovation: sensitivity-preserving trace reduction | **LAU-003 COMPLETE**. [Results](iteration_05/01_results.md): 48/194 unknowns preserve anchor derivatives; compact frozen reuse fails. 120/194 tangent model survives small offsets but fails new illumination. No inverse/speed claim |
 | 06 | Protected spans and guarded reuse | **LAU-004 COMPLETE**. [Results](iteration_06/01_results.md): rank 80→56 / 120→112; 42/42 delivered physical passes with 24 rebuilds. No compact nonanchor reuse, inverse or speed claim |
+| 07 | Calibration uncertainty and neighbour-assisted identifiability | **LAU-005 COMPLETE; track closed here by user direction, 2026-09-18**. [Results](iteration_07/01_results.md): 137/189 cells keep the coupled advantage at exact calibration; 70 cross at median 0.172 dB / 1.89 deg. Matched nonlinear recovery follows the bound; 600/600 converge. No promotion or speed claim |
 
 ## Reading order
 
@@ -171,14 +178,14 @@ records the scope. Exact paper-table parity is no longer the active objective.
 
 | Item | Value |
 |---|---|
-| Active iteration | [06: protected spans and guarded delivery](iteration_06/01_results.md) |
-| Stage | **LAU-004 COMPLETE; 2026-09-18 priority review recommends parking generic compression**. [Review](iteration_06/02_proposals/01_outsider_priority_review.md); user direction pending |
-| Approved experiment IDs | **`LAU-001`, `LAU-001-R1`, `LAU-002`, `LAU-003`, `LAU-004`**. LAU-004 authorized by the user’s “go” after LAU-003; [contract](iteration_05/03_plan.md). LAU-003 authorized by the user’s instruction to proceed with our innovations; [contract](iteration_04/03_plan.md). LAU-002 authorized by the user's instruction to catch up with the literature, 2026-09-17; [contract](iteration_03/03_plan.md). Repair authorized by “just keep fixin and testin” after the outsider review, 2026-09-17 |
-| Execution status | `COMPLETE` for LAU-004 pilot; campaign not released (compact nonanchor reuse target failed). Prior experiments complete |
-| Next expected action | Consider the [outsider priority review](iteration_06/02_proposals/01_outsider_priority_review.md): preserve compression tools, prioritize a direct inverse-information question, and reopen compression only with a cost/quality case |
-| Owner / reviewer | Codex implemented and validated LAU-004; independent reviewer unassigned. Earlier repair history remains in its own records |
+| Active iteration | [07: calibration uncertainty and neighbour-assisted identifiability](iteration_07/01_results.md) |
+| Stage | **CLOSED at iteration 07 by user direction, 2026-09-18**, on the LAU-005 result. No successor is scheduled and no proposal is pending. Generic trace compression stays **parked**; its reopening condition from the iteration-06 review still stands |
+| Approved experiment IDs | **`LAU-001`, `LAU-001-R1`, `LAU-002`, `LAU-003`, `LAU-004`, `LAU-005`**. LAU-005 authorized by the user's 2026-09-18 instruction to try the alternative in the Laurent report while dropping the compression bit; [contract](iteration_06/03_plan.md). LAU-004 authorized by the user’s “go” after LAU-003; [contract](iteration_05/03_plan.md). LAU-003 authorized by the user’s instruction to proceed with our innovations; [contract](iteration_04/03_plan.md). LAU-002 authorized by the user's instruction to catch up with the literature, 2026-09-17; [contract](iteration_03/03_plan.md). Repair authorized by “just keep fixin and testin” after the outsider review, 2026-09-17 |
+| Execution status | `COMPLETE` for LAU-005, both stages inside budget. `COMPLETE` for the LAU-004 pilot; its campaign stays unreleased (compact nonanchor reuse target failed). Prior experiments complete |
+| Next expected action | **None scheduled — the track is closed.** If it reopens, the [iteration-07 results](iteration_07/01_results.md) name the two standing candidates (a geometry-indexed explanation of the crossing/always/never partition, or a realistic correlated/drifting/frequency-dependent calibration model). Either needs a fresh contract and a named ID; neither is authorized |
+| Owner / reviewer | Claude implemented and validated LAU-005; independent reviewer unassigned. Codex implemented and validated LAU-004; earlier repair history remains in its own records |
 | Branch | `feature/ordered-boundary-nystrom` in the existing checkout; no branch or worktree creation |
-| Shared interfaces | None touched. `solvers/` and `modal_muller_research/` stayed read-only; experiments live in [`laurent_compression/`](../../../experiments/laurent_compression/README.md), [`laurent_literature/`](../../../experiments/laurent_literature/README.md), [`laurent_tangent_rom/`](../../../experiments/laurent_tangent_rom/README.md) and [`laurent_adaptive_rom/`](../../../experiments/laurent_adaptive_rom/README.md) |
+| Shared interfaces | None touched. `solvers/` and `modal_muller_research/` stayed read-only; experiments live in [`laurent_compression/`](../../../experiments/laurent_compression/README.md), [`laurent_literature/`](../../../experiments/laurent_literature/README.md), [`laurent_tangent_rom/`](../../../experiments/laurent_tangent_rom/README.md), [`laurent_adaptive_rom/`](../../../experiments/laurent_adaptive_rom/README.md) and [`laurent_identifiability/`](../../../experiments/laurent_identifiability/README.md). LAU-005 imports `laurent_neighbour`, `laurent_calibration` and `modal_muller_research` read-only and all of their recorded hashes still validate. Two `solvers/` files the neighbour bundle pins (`multicomponent.py`, `ordered_boundary/validation.py`) changed earlier under the speed-up track's commit `25de4cd`; the bridge arm's exact reproduction of all five published medians shows this did not perturb the compared results |
 
 The 2026-09-16 open-exploration authorisation recorded in the
 [Boundary–BIE handoff](../boundary_bie/README.md) covered that exploration. It

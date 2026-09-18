@@ -38,14 +38,18 @@ The [research implementation principles](implementation_principles.md), adopted 
 | Cartesian Fourier | The chart study and its topology match | [`cartesian_fourier/README.md`](cartesian_fourier/README.md) |
 | Implicit MLP | Neural-owned geometry with Method B | [`implicit_mlp/README.md`](implicit_mlp/README.md) |
 
-Topology, Boundary–BIE, Laurent and Speed-up are **question-based** and are the
-current active agenda. Laurent was opened on 2026-09-17 by user direction: the
+Topology, Boundary–BIE, Laurent and Speed-up are **question-based**. Topology,
+Boundary–BIE and Speed-up are the current active agenda; **Laurent is closed at
+iteration 07 by user direction (2026-09-18)** on the LAU-005 calibration-identifiability
+result, with no successor scheduled. Laurent was opened on 2026-09-17 by user direction: the
 coefficient-space pipeline built on 2026-09-16 was recorded as exploratory
 notebooks inside Boundary–BIE iteration 05, and is now large enough to own a
 cycle structure. **Nothing was moved to open it** — iteration 05's records stay
 in `boundary_bie/` and the new track cites them as starting evidence, the same
 way Boundary–BIE cites the Cartesian-Fourier history. Its first cycle ran
-LAU-001 to a `STRUCTURE_ONLY` closeout the same day. Experiments records the completed cross-domain investigation;
+LAU-001 to a `STRUCTURE_ONLY` closeout the same day, and its last,
+[iteration 07](laurent/iteration_07/01_results.md), closed LAU-005: calibration quality
+decides *where* a neighbour helps, not *whether*. Experiments records the completed cross-domain investigation;
 its [iteration 01](experiments/iteration_01/01_results.md) is closed with no
 successor scheduled. Radial Fourier topology, Cartesian Fourier and Implicit MLP
 are **representation-based** histories: they are closed or paused as

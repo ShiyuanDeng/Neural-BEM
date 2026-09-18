@@ -12,7 +12,20 @@ activation, and one-update transfer with a zero-update control. Their new
 outputs belong under `validation/method_b_failure_diagnostics/`; add measured
 conclusions to this register only after reviewing the actual run artifacts.
 
-[catalog.csv](catalog.csv) contains **208 rows**. The original 162 rows span 60 saved or empty run bundles, including the three existing 12-pair neural runs indexed during this reorganization, the two initial adjoint diagnostics, the radial-topology birth demonstration, and three full-pass topology challenges. The new topology rows group the TOP-001/TOP-005 replay and controller comparisons by chart/arm; scalar metrics there are worst-case values. Two TOP-019 rows record the prescribed S/F merge endpoints. The original CSV snapshot predates the Cartesian suites; use the [Cartesian index](inverse/cartesian_fourier/README.md) and [pipeline audit](validation/cartesian_fourier/pipeline-audit-20260910/README.md) for that evidence. The earlier exporter-failed partial attempt is recorded separately in the [adjoint validation index](validation/implicit_mlp_adjoint/README.md). Inverse runs have a row per solver, policy or declared arm; larger supporting sweeps explicitly identify their grouped scope. The catalogue records accepted geometry, derivative/optimizer, MLP role, target and initialization, observation setup, separate recovery/representation outcomes, date evidence, provenance, and each result's implication for the implicit MLP pipeline.
+[catalog.csv](catalog.csv) contains **209 rows**. The original 162 rows span 60 saved or empty run bundles, including the three existing 12-pair neural runs indexed during this reorganization, the two initial adjoint diagnostics, the radial-topology birth demonstration, and three full-pass topology challenges. The new topology rows group the TOP-001/TOP-005 replay and controller comparisons by chart/arm; scalar metrics there are worst-case values. Two TOP-019 rows record the prescribed S/F merge endpoints. The original CSV snapshot predates the Cartesian suites; use the [Cartesian index](inverse/cartesian_fourier/README.md) and [pipeline audit](validation/cartesian_fourier/pipeline-audit-20260910/README.md) for that evidence. The earlier exporter-failed partial attempt is recorded separately in the [adjoint validation index](validation/implicit_mlp_adjoint/README.md). Inverse runs have a row per solver, policy or declared arm; larger supporting sweeps explicitly identify their grouped scope. The catalogue records accepted geometry, derivative/optimizer, MLP role, target and initialization, observation setup, separate recovery/representation outcomes, date evidence, provenance, and each result's implication for the implicit MLP pipeline.
+
+## LAU-005 calibration uncertainty and neighbour-assisted identifiability
+
+[Measured calibration sweep](validation/laurent/LAU-005-20260918-closeout/README.md)
+· [Iteration 07](../docs/iterations/laurent/iteration_07/01_results.md) · 2026-09-18:
+making antenna calibration uncertainty continuous settles what the neighbour study left
+open. Across all 189 configuration/prior cells of its recorded 63-point screen, coupling
+beats the additive control **at exact calibration** in 137 — so the benefit is mainly
+illumination, not calibration ambiguity. 70 cells cross over at a median 0.172 dB / 1.89
+degrees of per-antenna gain error and 15 never pay. Endpoints reproduce the recorded screen
+to 1.5e-14, no swept curve is non-monotone, and the flat-prior bridge arm reproduces all
+five published medians exactly. 600/600 matched nonlinear fits converge and follow the
+bound. No production promotion, speed claim or field-GPR claim; one grouped catalogue row.
 
 ## LAU-004 protected spans and guarded reuse
 
