@@ -1,5 +1,13 @@
 # Laurent track: start here
 
+**2026-09-21 archive cross-reference:** the subsequent
+[modal-compression track](../modal_compression/README.md) is now also closed by
+user direction. Its [compression evidence index](../modal_compression/evidence_index.md)
+is the main cross-track navigation for BIE-002, LAU-001 through LAU-004,
+the September 18 studies and MC-001. This Laurent folder retains the original
+LAU plans/results and its broader solver, scattering-matrix and identifiability
+history. Nothing was moved or renumbered; LAU-005 is not compression evidence.
+
 **Opened 2026-09-17 by user direction.** The Laurent/coefficient work was built
 as an exploratory notebook inside Boundary–BIE iteration 05 and as two isolated
 application experiments. It is now large enough to own a cycle structure. This
@@ -179,7 +187,7 @@ records the scope. Exact paper-table parity is no longer the active objective.
 | Item | Value |
 |---|---|
 | Active iteration | [07: calibration uncertainty and neighbour-assisted identifiability](iteration_07/01_results.md) |
-| Stage | **CLOSED at iteration 07 by user direction, 2026-09-18**, on the LAU-005 result. No successor is scheduled and no proposal is pending. Generic trace compression stays **parked**; its reopening condition from the iteration-06 review still stands |
+| Stage | **CLOSED at iteration 07 by user direction, 2026-09-18**, on the LAU-005 result. No successor is scheduled and no proposal is pending. The later compression review is separately **closed on 2026-09-21**; its [closeout](../modal_compression/CLOSEOUT.md) owns the current compression decision |
 | Approved experiment IDs | **`LAU-001`, `LAU-001-R1`, `LAU-002`, `LAU-003`, `LAU-004`, `LAU-005`**. LAU-005 authorized by the user's 2026-09-18 instruction to try the alternative in the Laurent report while dropping the compression bit; [contract](iteration_06/03_plan.md). LAU-004 authorized by the user’s “go” after LAU-003; [contract](iteration_05/03_plan.md). LAU-003 authorized by the user’s instruction to proceed with our innovations; [contract](iteration_04/03_plan.md). LAU-002 authorized by the user's instruction to catch up with the literature, 2026-09-17; [contract](iteration_03/03_plan.md). Repair authorized by “just keep fixin and testin” after the outsider review, 2026-09-17 |
 | Execution status | `COMPLETE` for LAU-005, both stages inside budget. `COMPLETE` for the LAU-004 pilot; its campaign stays unreleased (compact nonanchor reuse target failed). Prior experiments complete |
 | Next expected action | **None scheduled — the track is closed.** If it reopens, the [iteration-07 results](iteration_07/01_results.md) name the two standing candidates (a geometry-indexed explanation of the crossing/always/never partition, or a realistic correlated/drifting/frequency-dependent calibration model). Either needs a fresh contract and a named ID; neither is authorized |

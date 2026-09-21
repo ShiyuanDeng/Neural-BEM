@@ -32,13 +32,14 @@ The [research implementation principles](implementation_principles.md), adopted 
 | **Topology** | *How can the inverse choose and execute topology changes more reliably?* | [`topology/README.md`](topology/README.md) |
 | **Boundary–BIE** | *Which properties of smooth-boundary representations improve the BIE inverse?* | [`boundary_bie/README.md`](boundary_bie/README.md) |
 | **Laurent** | *What does a node-free Laurent/Fourier coefficient representation give the inverse, and what does it cost?* | [`laurent/README.md`](laurent/README.md) |
+| **Modal compression** | *What can modal compression offer in physical sensitivities, accuracy control, memory and repeated work?* | [`modal_compression/README.md`](modal_compression/README.md) |
 | **Speed-up** | *How can the complete inverse reach the required reconstruction quality with less time and fewer failed attempts?* | [`speedup/README.md`](speedup/README.md) |
 | Experiments | What can the observations identify, and which formulations improve the inverse? Closed exploratory screen | [`experiments/README.md`](experiments/README.md) |
 | Radial Fourier topology | The cycle that built the automatic controller | [`radial_fourier_topology/README.md`](radial_fourier_topology/README.md) |
 | Cartesian Fourier | The chart study and its topology match | [`cartesian_fourier/README.md`](cartesian_fourier/README.md) |
 | Implicit MLP | Neural-owned geometry with Method B | [`implicit_mlp/README.md`](implicit_mlp/README.md) |
 
-Topology, Boundary–BIE, Laurent and Speed-up are **question-based**. Topology,
+Topology, Boundary–BIE, Laurent, Modal compression and Speed-up are **question-based**. Topology,
 Boundary–BIE and Speed-up are the current active agenda; **Laurent is closed at
 iteration 07 by user direction (2026-09-18)** on the LAU-005 calibration-identifiability
 result, with no successor scheduled. Laurent was opened on 2026-09-17 by user direction: the
@@ -58,6 +59,22 @@ question-based tracks cite. The implicit-MLP track is **paused by user
 direction (2026-09-11)** — diagnosing the MLP is not the current priority and
 the explicit Cartesian Fourier implementation comes first. It remains
 scientifically open: paused, not closed and not abandoned.
+
+**Modal compression opened for review on 2026-09-21 by user direction.** Its
+[iteration-01 review](modal_compression/iteration_01/02_proposals/01_outsider_evidence_review.md)
+audits the Laurent evidence, the September 18 Fourier–Galerkin experiments and
+the newly supplied theoretical report. It preserves the closed Laurent history
+and proposes a physical-sensitivity diagnostic (`MC-001`). The user's follow-up
+approved a simple matrix/derivative visualization screen and conditional
+continuation on success; [MC-001's plan](modal_compression/iteration_01/03_plan.md)
+records its gates and budget. [Iteration 02](modal_compression/iteration_02/01_results.md)
+closes Stage A: all 12 references qualified, but no noncircle met the 50%
+common-mask gate. **The user closed the track at iteration 02 on 2026-09-21.**
+Stage B did not run and no successor is scheduled. The
+[closeout](modal_compression/CLOSEOUT.md) records the scientific limits and
+small-2D-workload cost objection; the [evidence index](modal_compression/evidence_index.md)
+connects the original compression records across Modal compression and Laurent
+without moving or renumbering them.
 
 Topology’s latest executed closeout is [iteration 18](topology/iteration_18/01_results.md):
 TOP-025 completes the user-requested current-code all-case video inventory.
