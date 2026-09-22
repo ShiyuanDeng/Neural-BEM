@@ -85,3 +85,11 @@ update at k=1 per contrast under shared small work caps; a campaign run requires
 explicit budgets. The §4.1 boundary inverse now recovers the glider along the
 paper's ladder; [SC-013](../../results/validation/shape_continuation/SC-013-paper-glider-recovery/README.md)
 owns those measurements and their limits.
+
+[SC-014](../../results/validation/shape_continuation/SC-014-figure1-calibration/README.md)
+compares five profiles with the digitized figure. The
+[2026-09-22 Codex review](../iterations/shape_frequency_continuation/iteration_03/02_proposals/01_codex_review.md)
+accepts the independent GN/SD searches and explicit direction policy. It records
+partial low-contrast agreement, unmatched high contrast, unresolved area-plotting
+provenance, and differences in stopping norm and driver-resolution attribution.
+These concerns must remain explicit when choosing the fixed adaptive control.

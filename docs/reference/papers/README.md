@@ -22,15 +22,21 @@ explicit request to keep the paper with the documentation.
 The authors' MATLAB/Fortran code is
 [flatironinstitute/inverse-obstacle-scattering2d](https://github.com/flatironinstitute/inverse-obstacle-scattering2d),
 identified by the user on 2026-09-22. It is **not** vendored here; it was read
-at commit `bda24bddbf4562497280b671bc174ef891b47c6b` (2024-07-09) to settle
-settings the manuscript states loosely or not at all. The routines that matter
+at commit `bda24bddbf4562497280b671bc174ef891b47c6b` (2024-07-09) to audit
+settings the manuscript states loosely or differently. The routines that matter
 for this pipeline are `src/+rla/inverse_solver.m`,
-`src/+rla/update_inverse_iterate.m`, `src/+rla/update_geom.m`, and the driver
-`examples/inverse_solver_scripts/ex1_plane.m`.
+`src/+rla/update_inverse_iterate.m`, `src/+rla/update_geom.m`,
+`src/+rla/rla_inverse_solver.m`, and the example drivers
+`examples/inverse_solver_scripts/ex1_plane.m` (Dirichlet) and
+`tests/driver_charlie_transmission.m` (transmission, Charlie cavity).
 
-Where the code and the manuscript disagree, the
-[audit](../../../experiments/shape_continuation/PAPER.md) follows the code and
-says so: the code is what produced the published figures. The repository solves
-sound-soft/hard/impedance problems, so its drivers are not the Figure 1
-transmission case; its optimizer settings are read as the authors' conventions,
-not as recovered Figure 1 inputs.
+The [audit](../../../experiments/shape_continuation/PAPER.md) distinguishes
+inspected code conventions, manuscript settings and our implementation choices.
+The repository includes transmission as well as sound-soft/hard/impedance
+problems. Neither cited driver has been identified as the exact Figure 1
+glider input, and the Figure 1 plotting path has not been recovered. In
+particular, the transmission driver's `nppw=30` is for data generation, not its
+inverse resolution. The [2026-09-22 Codex review](../../iterations/shape_frequency_continuation/iteration_03/02_proposals/01_codex_review.md)
+records pinned source links, confirmed optimizer fixes and remaining fidelity
+concerns. Attribution to this repository alone does not establish which version
+or settings produced the published figure.

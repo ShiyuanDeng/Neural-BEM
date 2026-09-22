@@ -1,5 +1,14 @@
 # Codex review of the iteration-02 work, and its resolution
 
+**Dated correction, 2026-09-22:** the later
+[Codex review of `1a6a55a`](../../iteration_03/02_proposals/01_codex_review.md)
+confirms the two optimizer fixes but supersedes this record's resolution
+attribution and initial-circle argument. Upstream `nppw=30` is for data
+generation, its inverse starts with 500 nodes, and our RMS stopping test differs
+from its filtered coefficient norm. Residual decrease does not imply area-error
+decrease; Figure 1's plotting convention remains unverified. The original
+resolution narrative below is retained as the historical record.
+
 Codex reviewed commit `8e5c152` on 2026-09-22 and left executable reproducers
 rather than prose, in
 [`results/validation/shape_continuation/review-20260922/`](../../../../../results/validation/shape_continuation/review-20260922/):

@@ -1,32 +1,39 @@
-# Iteration 03 — what actually reproduces Figure 1
+# Iteration 03 — partial Figure 1 agreement and unresolved fidelity
 
 Opened 2026-09-22 by [SC-014](../../../../results/validation/shape_continuation/SC-014-figure1-calibration/README.md),
-which closes the calibration question [iteration 02](../iteration_02/01_results.md)
-left open and supersedes its headline. [Track handoff](../README.md).
+which investigates the calibration question [iteration 02](../iteration_02/01_results.md)
+left open. [Track handoff](../README.md).
+
+**Interpretation corrected on 2026-09-22 after Codex's review of `1a6a55a`.**
+The [review](02_proposals/01_codex_review.md) accepts the optimizer repairs,
+records two remaining profile differences, and withdraws the earlier claims
+that the plotted axis, author band rule and replication were settled. The
+original wording remains in Git history; the run measurements are unchanged.
 
 ## What opened this cycle
 
 Iteration 02 recovered the glider but scored 2.5x-26x *below* the published
-curve, and named calibration as the next decision. Codex then reviewed the work
+curve under the printed normalized-area interpretation, and named calibration
+as the next decision. Codex then reviewed the work
 and left [executable probes](../iteration_02/02_proposals/01_codex_review_resolution.md);
 two of its findings were real defects, and its source manifest listed the
 transmission drivers the earlier reading had missed.
 
 ## Result
 
-Both halves of the gap are now explained, and neither was a numerical error.
+**The corrected optimizer is a better foundation for continuation experiments.**
+GN and SD now receive independent filter searches, and explicit direction
+selection removes the SD warm-up counter's dependence on chunk size. Both
+regressions pass; the full reviewed suite has 171 passing tests.
 
-**We were reading the wrong axis.** §4 defines `εΓ = δA/A`, but every driver in
-the reference repository computes the raw symmetric-difference area and nothing
-there divides by the true area. Read raw, the published k=1 points become
-better than the unit circle the run starts from; read as printed they are
-worse, after a stage that runs to its iteration cap under an enforced residual
-decrease. The raw reading also gives the better agreement wherever any profile
-matches, and the better combined score across both contrasts.
+**Agreement depends strongly on settings and the area interpretation.** The
+inspected upstream drivers save raw symmetric-difference area, while §4 defines
+`εΓ = δA/A`. Raw-area plotting is plausible, but the Figure 1 plotting path has
+not been recovered. Decreasing scattering residual does not guarantee decreasing
+shape-area error, so comparison with the initial circle cannot settle the axis.
 
-**We were running the wrong settings.** §4's prose and the authors'
-transmission driver disagree on the optimizer, the update band, the resolution
-and both tolerances. Running the driver configuration:
+The five executed arms give the following agreement under the **raw-area
+hypothesis**; both readings are retained in SC-014:
 
 | Contrast | Profile | Agreement (log10 RMS of ratio) |
 |---|---|---:|
@@ -36,39 +43,54 @@ and both tolerances. Running the driver configuration:
 | 10 | driver | 0.629 |
 | 10 | paper (§4 prose) | 0.675 |
 
-**Contrast 0.33 replicates over k ∈ [1,5]**: median ratio 1.04, with the
-published staircase appearing at the same frequencies. **Contrast 10 does not**
-— the published curve sits between the prose profile (too strong) and the
-driver profile (too weak) across the whole window, so its band rule is
-bracketed but unidentified.
+**Contrast 0.33 has encouraging partial agreement over k ∈ [1,5].** Its
+published/ours ratio has median 1.0367 but spans **0.6504–1.5688**; it is not
+pointwise agreement within 4%. **Contrast 10 remains unmatched.** The published
+curve lies between two tested curves under the raw-area reading, but that does
+not identify a bandwidth rule between them. The profiles also change optimizer,
+resolution, tolerance and iteration cap, so they do not isolate the band's effect.
 
-The first stage is the cleanest discriminator, because every profile starts
-from the same circle and the reachable error is set by the band, not the
-optimizer. The published k=1 points match an update band of **2 at both
-contrasts** — `use_lscaled_modes` with no interior wavenumber — against 9 modes
-at contrast 10 under §4's rule.
+The closest k=1 error occurs for the M=2 profile at both contrasts. That scalar
+comparison cannot identify the authors' bandwidth or optimizer trajectory.
+Neither an exact Figure 1 configuration nor its plotting convention is recovered.
+
+## Remaining implementation differences
+
+- **Stopping norm:** our profiles use RMS physical displacement; upstream uses
+  filtered coefficient norm. Six of the 17 low-contrast driver stages stop
+  while the reference coefficient threshold still fails. The impact of changing
+  this test on the final reconstruction has not been measured.
+- **Resolution attribution:** upstream's local `nppw=30` is for data generation.
+  Its inverse starts with 500 nodes and does not set `opts.nppw`. Our profile
+  uses 30 in inverse K/N sizing. Saved resolution checks pass, but describing
+  that as the driver's inverse resolution was incorrect.
+
+`driver` remains the CLI label for a driver-inspired profile with local choices,
+not the authors' recovered Figure 1 inputs. The
+[review](02_proposals/01_codex_review.md) gives pinned source links and the
+per-arm stopping counts. Numerical settings are unchanged by this amendment.
 
 ## What this costs and what it means for the track
 
-The prose profile is not merely inaccurate as a reproduction, it is expensive:
-at contrast 10 it spent 1334 forwards and 639 s to land further from the
-published curve than the scaled profile reached with 126 forwards and 108 s.
-Its wide band makes Gauss-Newton proposals fail geometry and curvature checks
-repeatedly, and the search pays a full filter sweep for each failure.
+At contrast 10, the `paper` profile spent 1334 forwards and 639 s, versus 126
+forwards and 108 s for `scaled`. These are different configurations producing
+different reconstructions; proximity to the published error curve is not a
+recovery-quality gate. Timings came from concurrently running arms and are not
+a controlled wall-clock comparison. Forward counts are exact.
 
-For the track's actual question — whether adapting the shape-harmonic band and
-frequency steps beats a fixed ladder — this changes the baseline. The honest
-fixed-ladder baseline is now the **driver profile at contrast 0.33**, which is
-calibrated against a published result, rather than the prose profile, which is
-not. An adaptive policy should be compared against the configuration the
-authors actually ran.
+For the track's actual question — whether adapting shape harmonics and frequency
+steps improves recovery per unit work — a fixed control must have explicit,
+frozen settings and quality criteria. **SC-014 does not establish an authoritative
+paper-matched baseline.** Resolve the stopping/resolution choices before freezing
+that control. Paper reproduction and adaptive improvement remain separate claims;
+a control should not be selected solely for resembling the published error curve.
 
 ## Limits
 
 - `scaled` was proposed after seeing `driver` fail at contrast 10: one degree
-  of freedom fitted against a digitized plot. Its only independent support is
-  that it is forced to equal `driver` whenever `ki <= k`, so the contrast-0.33
-  agreement is not a fit to it. It is not a recovered author setting.
+  of freedom fitted against a digitized plot. Its equality with `driver` when
+  `ki <= k` is algebraic, not independent validation at high contrast. It is
+  not a recovered author setting.
 - The published curves run to k=10; ours stop at k=5 and k=3.
 - Digitization is worth about 0.75% per pixel, so agreement below a few percent
   is not meaningful.
@@ -76,17 +98,16 @@ authors actually ran.
   differences in the [audit](../../../../experiments/shape_continuation/PAPER.md)
   stand. Matching `εΓ` is not a claim of identical trajectories.
 
-## Candidate next steps
+## Review recommendations
 
-None is proposed as an experiment or approved.
+These are recommendations, not implemented numerical repairs or new run results.
+The user's current instruction is to correct the write-up and record the verdict.
 
-1. **Extend contrast 0.33 to k=10** on the driver profile, where the published
-   curve drops another 25x. It is the only arm with a calibrated match, and
-   whether the agreement survives the drop is the strongest single test of the
-   replication. Cost grows as dense `N³`, but the driver profile's 30
-   points/wavelength keeps it far cheaper than the prose profile.
-2. **Identify the contrast-10 band rule** inside the bracket, rather than
-   testing further guesses against the digitized plot. Any rule fitted to that
-   plot needs a second, independent case before it is worth believing.
-3. **Leave both alone and start the adaptive comparison** on the calibrated
-   contrast-0.33 baseline, accepting that contrast 10 is uncalibrated.
+1. Make the stopping measure explicit and resolve which numerical resolution
+   convention the reference-inspired profile should use; validate any repair
+   before comparing trajectories.
+2. Keep both plot interpretations until Figure 1 plotting provenance is found.
+   Do not infer the author settings by fitting additional rules to the same plot.
+3. Freeze a clearly specified fixed ladder and recovery/work metrics for an
+   adaptive comparison. A later k=10 extension or independent geometry can test
+   broader agreement; neither was run as part of this review.

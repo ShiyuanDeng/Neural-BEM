@@ -108,20 +108,21 @@ trust-region band had excluded the update's own highest harmonic; with that and
 three further settings corrected against the authors' code,
 [SC-013](../../results/validation/shape_continuation/SC-013-paper-glider-recovery/README.md)
 recovers the Figure 1 glider at both contrasts, but 2.5x-26x below the printed
-curve rather than matching it. A Codex review of that work found two defects in
-the candidate search and listed the transmission drivers the reading had missed.
-[Iteration 03](shape_frequency_continuation/iteration_03/01_results.md) closes
+curve under the printed normalized-area interpretation. A Codex review found
+candidate-search and direction-scheduling defects, and listed the transmission
+drivers the reading had missed.
+[Iteration 03](shape_frequency_continuation/iteration_03/01_results.md) investigates
 the calibration question with
 [SC-014](../../results/validation/shape_continuation/SC-014-figure1-calibration/README.md):
-the published axis is the **raw** area difference rather than §4's normalized
-`εΓ`, and the update band is the driver's `floor(2kL/2π)` with no interior
-wavenumber. On the authors' own transmission-driver settings, **contrast 0.33
-reproduces the published curve over k in [1,5]** (log10 RMS 0.117 of the ratio);
-contrast 10 is bracketed between two band rules, not matched. The calibrated
-fixed-ladder baseline for any adaptive comparison is therefore the driver
-profile, not §4's prose. This remains §4.1 only: the paper's harder shapes,
-noise, k>5 and any adaptive-policy benefit are untested, and no successor
-experiment is proposed or approved.
+contrast 0.33 shows partial agreement over k in [1,5] under a raw-area plotting
+hypothesis (log10 RMS 0.117; published/ours ratio 0.65–1.57); contrast 10 remains
+unmatched. The [2026-09-22 Codex review](shape_frequency_continuation/iteration_03/02_proposals/01_codex_review.md)
+accepts the independent direction searches and explicit direction policy, but
+identifies remaining stopping-norm and resolution-attribution differences.
+The plotting convention, Figure 1 band rule and paper-matched baseline are
+**not established**. The user's current request corrects the write-up and adds
+these verdicts without changing numerical settings or rerunning the inverse.
+The paper's harder shapes, noise, k>5 and adaptive-policy benefit remain untested.
 
 ## What to do at each stage
 

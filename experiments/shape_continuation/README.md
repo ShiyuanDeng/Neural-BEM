@@ -248,11 +248,13 @@ cavities, high contrast, noisy/limited aperture observations, unknown material,
 or multiple components.
 
 The `glider` fixture matches the paper's listed radial coefficients, but the
-short `k<=2` demo is not its reconstruction campaign. Full paper replication
-still needs verified author curvature/filter settings and comparisons on the
-paper's harder shapes. [Figure 1 preparation](PAPER.md) supplies the two actual
-contrasts and an explicit frequency/resolution profile; its small smoke is not
-a reproduction of the published reconstructions.
+short `k<=2` demo is not its reconstruction campaign. The
+[Figure 1 audit](PAPER.md) supplies the two actual contrasts and selectable
+profiles. The [latest review](../../docs/iterations/shape_frequency_continuation/iteration_03/02_proposals/01_codex_review.md)
+accepts the optimizer fixes; it records remaining stopping/resolution differences
+and unverified plotting provenance. SC-014 shows partial agreement at low
+contrast, while high contrast remains unmatched. Full paper replication,
+including its harder shapes, is not established.
 
 For subsequent adaptive experiments, keep geometry/solver/optimizer fixed.
 Frequency jumps must select observations that actually exist; held-out data and
