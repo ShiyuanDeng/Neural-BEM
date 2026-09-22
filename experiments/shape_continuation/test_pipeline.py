@@ -199,6 +199,21 @@ def test_geometry_metric_uses_segments_and_not_parameter_phase():
     assert error < 1e-7 and bound > error
 
 
+def test_sampling_bound_contains_known_continuous_hausdorff_distance():
+    # z=exp(it)+.1 exp(7it) stays within .1 of the unit circle and attains
+    # that distance at z=1.1. A phase shift changes samples, not this exact bound.
+    coefficients = np.zeros(15, complex)
+    coefficients[8], coefficients[14] = np.exp(.11j), .1 * np.exp(.77j)
+    curve = FourierCurve(coefficients)
+    bounds = []
+    for count in (16, 64, 256):
+        error, bound = boundary_distance(FourierCurve.circle(), curve, count=count)
+        assert abs(error - .1) <= bound
+        bounds.append(bound)
+    assert bounds[0] > bounds[1] > bounds[2]
+    assert abs(error - .1) < 1e-4
+
+
 def test_cartesian_real_and_complex_fourier_forms_are_equivalent():
     from ordered_boundary import fourier_curve
     rng = np.random.default_rng(91)

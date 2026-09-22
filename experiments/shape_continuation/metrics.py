@@ -27,9 +27,14 @@ def points_to_polygon_distance(points, polygon):
 
 
 def boundary_distance(first, second, count=8192):
-    """Symmetric vertex-to-segment distance and a conservative sampling bound."""
+    """Sampled distance and a bound on its error for the continuous Fourier curves."""
     points = [np.column_stack((z.real, z.imag)) for z in (first.values(count), second.values(count))]
     error = max(np.max(points_to_polygon_distance(points[0], points[1])),
                 np.max(points_to_polygon_distance(points[1], points[0])))
     bound = max(np.max(np.linalg.norm(np.roll(p, -1, axis=0) - p, axis=1)) / 2 for p in points)
+    # The half-edge term covers unsampled points on the two polygons. Also
+    # account for replacing each smooth Fourier curve by its polygon: linear
+    # interpolation error <= dt^2 * sup|z''| / 8, with a Fourier triangle bound.
+    bound += (2 * np.pi / count) ** 2 / 8 * sum(
+        np.sum(curve.modes ** 2 * np.abs(curve.coefficients)) for curve in (first, second))
     return float(error), float(bound)

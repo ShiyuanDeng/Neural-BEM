@@ -22,6 +22,29 @@ separate. There is no polar-angle restriction. Complex Fourier coefficients
 are an equivalent storage notation for Cartesian Fourier geometry; they do
 not select the native Fourier–Galerkin Müller solver.
 
+The experiment controls have distinct jobs:
+
+| Control | Meaning |
+|---|---|
+| `Stage.wavenumber` | Selects one measured complex data matrix and its acquisition. |
+| `Stage.update_modes` | Chooses the `2M+1` real Fourier coefficients of the normal update. This is the primary shape-harmonic continuation control. |
+| `Stage.curvature_modes` | Sets the curvature-energy band used for admissibility; its tail tolerance is explicit in `FitConfig`. |
+| `Stage.curve_modes` | Resolves Cartesian curve storage and arclength refitting. Insufficient storage rejects a proposal rather than silently smoothing it. |
+| `Stage.nodes` | Resolves nodal Müller/Kress quadrature, independently of the update band. |
+
+`fit_frequency` is the experiment unit: it receives a current curve, one
+immutable observation, and a stage, then returns the curve, stop reason,
+accepted states, residual/gradient/rank history, and every rejected trial.
+`run_continuation` supplies a fixed increasing frequency ladder and allows a
+policy to choose stage resolutions. An adaptive controller that repeats a
+frequency can call `fit_frequency` directly. This keeps policy experiments
+outside the physical solver and one-frequency optimizer.
+
+The synthetic harness saves stage checkpoints, can resume a saved run with an
+explicit new budget, and qualifies both fields and normal Jacobians at N/2N.
+Truth and held-out observations remain evaluation inputs. A small filtered
+step means small physical movement; it does not assert stationarity or recovery.
+
 The only project dependencies are `ordered_boundary`, `gpr_bem_kress`, and its
 `periodic_kress` dependency. The former inverse drivers, SDF/MLP machinery,
 topology controller, automatic runtime selection, and modal research packages

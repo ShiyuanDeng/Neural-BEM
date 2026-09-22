@@ -186,7 +186,10 @@ Differences that matter:
   or unbounded automatic refinement. Reference observations must separately
   pass the `data-nodes/2` versus `data-nodes` gate before inversion begins.
 - Boundary errors use symmetric vertex-to-segment distance with sampling
-  resolution recorded, and area-size difference. The paper's symmetric-area
+  resolution recorded. A conservative continuous-curve error bound includes
+  half-edge sampling and Fourier second-derivative interpolation bounds; the
+  shape gate uses the error plus this bound. Area-size difference is also saved.
+  The paper's symmetric-area
   reconstruction metric is not implemented. No volume inverse is implemented.
 
 ## Qualification and remaining work
@@ -200,9 +203,16 @@ The subsequent [resolution screen](../../results/validation/shape_continuation/S
 qualified spectral arclength integration and a faster blocked reciprocal
 contraction through k=8 on ellipse/glider geometries. Those numerical changes
 are distinct from the bitwise-preserving SC-002 cleanup.
-This establishes a small working inverse and continuation interface. It does
-not establish robustness for gliders/cavities, high contrast, noisy/limited
-aperture observations, unknown material, or multiple components.
+The [glider checkpoint extension through k=12](../../results/validation/shape_continuation/SC-008-glider-extension/README.md)
+now passes field/Jacobian refinement, held-out prediction and conservative shape
+gates, using 2022 cumulative inverse forward calls from the original circle.
+The held-out error is 9.98e-6 and the relative boundary-error upper bound is
+0.001803. The final stop is a small step, with residual 2.47e-5, rather than a
+claim of meeting the stricter 1e-5 data-fit tolerance.
+This establishes a working inverse and checked continuation interface for the
+ellipse and one glider case. It does not establish general robustness for
+cavities, high contrast, noisy/limited aperture observations, unknown material,
+or multiple components.
 
 The `glider` fixture matches the paper's listed radial coefficients, but the
 short `k<=2` demo is not its reconstruction campaign. Full paper replication

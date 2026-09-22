@@ -3,9 +3,9 @@
 The implementation is on `feature/shape-frequency-continuation`. Current
 controls cover the forward physics, normal derivative, geometry, filtered-step
 stopping, single-frequency recovery, warm starts, policy handoffs and import
-isolation: **41 tests pass** with the existing Kress isolation/block tests.
-The ellipse passes recovery gates; the bounded glider tests below include
-failures and must not be read as evidence of general robustness.
+isolation: **42 tests pass** with the existing Kress isolation/block tests.
+The ellipse and extended glider pass the declared recovery gates. Earlier
+failures remain below; these cases do not establish general robustness.
 
 | Qualification | Finding |
 |---|---|
@@ -16,6 +16,9 @@ failures and must not be read as evidence of general robustness.
 | [SC-005 glider](SC-005-glider-filtered-step/README.md) | Correct physical stopping advances to k=4.75 under the same cap; recovery still fails. |
 | [SC-005 ellipse regression](SC-005-ellipse-regression/summary.json) | All gates pass after the repair, with the same 21 forward calls and 8 Jacobians. |
 | [SC-006 filter-only comparison](SC-006-glider-paper-filter/README.md) | No added backtracking: budget ends at k=7.25, but shape and prediction errors worsen. |
+| [SC-007 restart checks](SC-007-restart-smoke/README.md) | Restart preserves the problem and endpoint; field and full-Jacobian stage checks pass. |
+| [SC-008 glider extension](SC-008-glider-extension/README.md) | Reaches k=12 with 522 additional forwards (2022 cumulative); held-out error 9.98e-6 and conservative relative boundary-error bound 0.001803. |
+| [SC-009 conservative scoring](SC-009-conservative-scoring/summary.json) | Ellipse regression with the shape gate applied to the continuous-boundary error upper bound. |
 
 Each run retains its source hashes, command, observations, states and rejected
 trials. Small steps, exhausted search, iteration limits and work limits are

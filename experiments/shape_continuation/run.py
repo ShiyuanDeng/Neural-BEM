@@ -218,6 +218,7 @@ def run(args):
         sampled_boundary_hausdorff=float(boundary_error),
         boundary_sampling_bound=float(sampling_bound),
         relative_boundary_error=float(boundary_error / radius),
+        relative_boundary_error_upper_bound=float((boundary_error + sampling_bound) / radius),
         relative_area_difference=float(abs(final.nodes(8192).signed_area / truth.nodes(8192).signed_area - 1)),
         evaluation_work=evaluation_work.summary(), holdout_wavenumber=holdout_k,
         elapsed_seconds=perf_counter() - started)
@@ -227,7 +228,7 @@ def run(args):
         all_stages_completed=len(result) == len(waves) and all(r.stop_reason != "budget_exhausted" for r in result),
         endpoint_resolution=max(r["relative_difference"] for r in resolutions) <= 1e-6,
         holdout=summary["holdout_relative_error"] <= 1e-3,
-        shape=summary["relative_boundary_error"] <= 1e-2)
+        shape=summary["relative_boundary_error_upper_bound"] <= 1e-2)
     (args.output / "summary.json").write_text(json.dumps(summary, indent=2) + "\n")
     import matplotlib
     matplotlib.use("Agg")
@@ -252,7 +253,8 @@ def run(args):
     figure.tight_layout()
     figure.savefig(args.output / "recovery.png", dpi=160)
     plt.close(figure)
-    print(json.dumps({k: summary[k] for k in ("scene", "qualification", "relative_boundary_error", "holdout_relative_error", "inverse_work", "elapsed_seconds")}, indent=2))
+    print(json.dumps({k: summary[k] for k in ("scene", "qualification", "relative_boundary_error",
+        "relative_boundary_error_upper_bound", "holdout_relative_error", "inverse_work", "elapsed_seconds")}, indent=2))
 
 
 if __name__ == "__main__":
