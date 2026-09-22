@@ -1,0 +1,679 @@
+{
+  "provenance": {
+    "commit": "8ab1c9119578ee5d0784e998917d4f7135579617",
+    "git_status": " M experiments/shape_continuation/forward.py\n M experiments/shape_continuation/geometry.py\n M experiments/shape_continuation/inverse.py\n M experiments/shape_continuation/test_pipeline.py\n?? experiments/shape_continuation/resolution.py\n?? results/validation/shape_continuation/SC-003-glider-pilot/\n?? results/validation/shape_continuation/SC-003-resolution-refined/\n?? results/validation/shape_continuation/SC-003-resolution-screen/\n",
+    "source_sha256": {
+      "experiments/shape_continuation/metrics.py": "e628877e9dd7d09e362eccb2e839430d62b971b5e65fbb578c26a34f82d708c9",
+      "experiments/shape_continuation/run.py": "1450fc09cda1ca7da2ffac81f3e5a62bd9c5ecfc4ee63ea3b5065a232bbfcf5f",
+      "experiments/shape_continuation/benchmark.py": "49f41a0c94ebbe51d0e085f76eac09012ead40f442a5c00e23927a21903f935e",
+      "experiments/shape_continuation/geometry.py": "4dfb492f17aad6b0890137b8317f247a7fc9d52be9f0fd3aa100a7b94a51cb76",
+      "experiments/shape_continuation/forward.py": "e180d9f8684ac91df86006780e84c01b49ae3f0c132cba70f7553ec43dc11d59",
+      "experiments/shape_continuation/resolution.py": "51ef9ca5fc3b02156a0484c63f89506db489900fffc2a479565fff688719a0f5",
+      "experiments/shape_continuation/validation.py": "e5d5454648b5a8dc81a6e6c83b2c85fc9c0bb8cc48c6a312c2ac23f828ce4723",
+      "experiments/shape_continuation/inverse.py": "e5bde16e6c87523d671598aaf2b34cad33cbed7257d705af6589d60dcbd6409a",
+      "experiments/shape_continuation/__init__.py": "5662cacffba105c502974c9613acc321aa1b3a49e08a47ea40cc700641a60109",
+      "experiments/shape_continuation/schedule.py": "605e346b01117f8771816221c58faaf8f9644c1562b20ee5c85f28abcdcae24e",
+      "experiments/shape_continuation/test_pipeline.py": "54e09c463abf3dda5090ac4a97ee3aea13e82d5c7fe18fd60011ff6d1963ee3e",
+      "solvers/gpr_bem_kress/geometry.py": "16df0292b6752422466a7fa0bdd9de10d18696d91a1533d90552e93797db2c45",
+      "solvers/gpr_bem_kress/forward.py": "3c1cb87d89174d728e86a11278cde1ee15c11b0e85cefc122fac0d6ff7d726c9",
+      "solvers/gpr_bem_kress/execution.py": "db6e828ad08e7eee82e266ee56dc00ef85f64b488ab2a62128193a6482f1a682",
+      "solvers/gpr_bem_kress/reciprocal_shape_derivative.py": "5a1907209a62ea6729403d7e9425e84d92282f27a059f1238b0e7ee05f9b7a08",
+      "solvers/gpr_bem_kress/shape_derivative.py": "42bc0d368195424d86ae587653c54d20a441f0b822f9cef882b9f000ee1ca6a8",
+      "solvers/gpr_bem_kress/system.py": "a9ea01d58680a4656f502aa166894aa816d6f8ce3fcafa4474b89c01453df4e0",
+      "solvers/gpr_bem_kress/multicomponent.py": "b44a6affd7a954a04ba403eb45387b7cc484f8d1d2e396990a04ae965ba3f763",
+      "solvers/gpr_bem_kress/materials.py": "2d573bae208b1b4a5e712eda41c8dad1e68f47b1e9644afb79c766a017d391a6",
+      "solvers/gpr_bem_kress/coupled_shape_derivative.py": "12b9a17a7b49e5c8e99ffa123b06caee1139fbb5cf60964be6ca662b1ffef338",
+      "solvers/gpr_bem_kress/conventions.py": "394ec22c5f750354b3a9d163ff5c72fe00423715da66ba6c53bafc5dcabe6799",
+      "solvers/gpr_bem_kress/geometry_pullback.py": "b4e2be345991a7d58d742fdae6c9c7055c4d4c6f72ab3a3b9de9b708cc1e71f3",
+      "solvers/gpr_bem_kress/_kernels.py": "708a7a3dfdb8fd1f8343eb1393734dd035b8f11b3232ed3bc1777c9a4cb14961",
+      "solvers/gpr_bem_kress/__init__.py": "2e42b910dd316eabd54a3e8d3a2bd67336b9e462a32969cb5f2e47be3dee8681",
+      "solvers/gpr_bem_kress/operators.py": "d212790ce939a5c8b2acf3c4456fd5a0bd12a8201eaffefa8f2d672dfa93245a",
+      "solvers/gpr_bem_kress/compiled_scattering.py": "531fce6c79f1d67a044997d7759d4f604af19ef8359b4dd0d907fcda01b4bf09",
+      "solvers/ordered_boundary/boundary.py": "8f9bd3afa0978076372d3228d9f904b0b0aa87f94e4142a538695d3d87f9dffc",
+      "solvers/ordered_boundary/_array_utils.py": "8f90ad86f63ad44ed1d7f9db4d655b6783a67d647c5a14fa0503fc551834a4f5",
+      "solvers/ordered_boundary/parameterization.py": "d71628ac3dce3ba8aaf262aad28607b29ea74ed65d58850342aaa3fb4db599c8",
+      "solvers/ordered_boundary/curve.py": "bcc1a40b445b955f6701da11bca39d4a329874bdb3830476d51375f1e99f9ced",
+      "solvers/ordered_boundary/validation.py": "d8427996ec7297e07edc6b950fef94ef2bb4f006ad6c339266579acbdd995b9d",
+      "solvers/ordered_boundary/validation_cache.py": "dfa8cd5e91d42a7c24027b3de725222b0c073eec7272aa34585bf945e50c0056",
+      "solvers/ordered_boundary/__init__.py": "75a5dfaa90ab61b192396e9c8ab624b253d114690e212566cb8d1bd604c95ba4",
+      "solvers/ordered_boundary/analytic.py": "7a499e0e9eb07710cfee0c5f0cdb5c770e42ded214785bfddf61272d3e353cb6",
+      "solvers/ordered_boundary/boundary_parameterization.py": "3883e2232cf6f9b8a8e3a12e95052e6e2791b942ff8e8b6c3fc59419197c7a2c",
+      "solvers/periodic_kress/weights.py": "4b5b8cf2edd21793841c29a901c2ed304e0d46e5d30f1d078ac45ea9253e8726",
+      "solvers/periodic_kress/__init__.py": "170aaa97498ae490d75b14159b583d50c0734b23b5cb62085bc65479ceb5f38f"
+    },
+    "python": "3.9.25 (main, Nov  3 2025, 22:33:05) \n[GCC 11.2.0]",
+    "platform": "Linux-6.8.0-138-generic-x86_64-with-glibc2.35",
+    "command": [
+      "/home/drdeng/Neural_SDF_BEM_AD/experiments/shape_continuation/resolution.py",
+      "--output",
+      "results/validation/shape_continuation/SC-003-resolution-refined"
+    ],
+    "timestamp": "2026-09-22T00:28:37.432203+00:00"
+  },
+  "rows": [
+    {
+      "scene": "ellipse",
+      "wavenumber": 1.0,
+      "nodes": 64,
+      "forward_seconds": 0.0092498988378793,
+      "jacobian_seconds": 0.0012025958858430386,
+      "system_residual": 5.642501355075254e-16,
+      "field_difference": null,
+      "jacobian_difference": null,
+      "work": {
+        "attempted": 1,
+        "completed": 1,
+        "failed": 0,
+        "jacobians": 1,
+        "factorizations": 1,
+        "rhs_columns": 20,
+        "seconds": {
+          "assembly": 0.00737827317789197,
+          "receiver_operator": 0.0010854220017790794,
+          "factorization": 0.0002711659763008356,
+          "forward_solve": 0.00021497998386621475,
+          "reciprocal_solve": 0.001055300934240222,
+          "jacobian_contraction": 4.554819315671921e-05
+        }
+      }
+    },
+    {
+      "scene": "ellipse",
+      "wavenumber": 1.0,
+      "nodes": 128,
+      "forward_seconds": 0.03125433507375419,
+      "jacobian_seconds": 0.0029742978513240814,
+      "system_residual": 5.679225308463295e-16,
+      "field_difference": 1.6890917024135831e-15,
+      "jacobian_difference": 6.458734801302089e-16,
+      "work": {
+        "attempted": 1,
+        "completed": 1,
+        "failed": 0,
+        "jacobians": 1,
+        "factorizations": 1,
+        "rhs_columns": 20,
+        "seconds": {
+          "assembly": 0.026401721872389317,
+          "receiver_operator": 0.0029729490634053946,
+          "factorization": 0.0010515060275793076,
+          "forward_solve": 0.00036805891431868076,
+          "reciprocal_solve": 0.0028004131745547056,
+          "jacobian_contraction": 6.284588016569614e-05
+        }
+      }
+    },
+    {
+      "scene": "ellipse",
+      "wavenumber": 1.0,
+      "nodes": 256,
+      "forward_seconds": 0.11459035705775023,
+      "jacobian_seconds": 0.009377680020406842,
+      "system_residual": 6.535382538892985e-16,
+      "field_difference": 1.9757100786605665e-15,
+      "jacobian_difference": 7.088265514279375e-16,
+      "work": {
+        "attempted": 1,
+        "completed": 1,
+        "failed": 0,
+        "jacobians": 1,
+        "factorizations": 1,
+        "rhs_columns": 20,
+        "seconds": {
+          "assembly": 0.09769220696762204,
+          "receiver_operator": 0.008440511068329215,
+          "factorization": 0.006984625943005085,
+          "forward_solve": 0.0009209900163114071,
+          "reciprocal_solve": 0.009154652012512088,
+          "jacobian_contraction": 9.468896314501762e-05
+        }
+      }
+    },
+    {
+      "scene": "ellipse",
+      "wavenumber": 1.0,
+      "nodes": 512,
+      "forward_seconds": 0.47524508694186807,
+      "jacobian_seconds": 0.03718006005510688,
+      "system_residual": 6.555790333413446e-16,
+      "field_difference": 2.019160439327398e-15,
+      "jacobian_difference": 7.321494561605144e-16,
+      "work": {
+        "attempted": 1,
+        "completed": 1,
+        "failed": 0,
+        "jacobians": 1,
+        "factorizations": 1,
+        "rhs_columns": 20,
+        "seconds": {
+          "assembly": 0.390562609070912,
+          "receiver_operator": 0.03343272488564253,
+          "factorization": 0.04580223304219544,
+          "forward_solve": 0.004314647056162357,
+          "reciprocal_solve": 0.03676730417646468,
+          "jacobian_contraction": 0.00019859196618199348
+        }
+      }
+    },
+    {
+      "scene": "ellipse",
+      "wavenumber": 4.0,
+      "nodes": 64,
+      "forward_seconds": 0.01737648108974099,
+      "jacobian_seconds": 0.002565101021900773,
+      "system_residual": 6.681686364026724e-16,
+      "field_difference": null,
+      "jacobian_difference": null,
+      "work": {
+        "attempted": 1,
+        "completed": 1,
+        "failed": 0,
+        "jacobians": 1,
+        "factorizations": 1,
+        "rhs_columns": 80,
+        "seconds": {
+          "assembly": 0.014669157797470689,
+          "receiver_operator": 0.0016381919849663973,
+          "factorization": 0.00019777007400989532,
+          "forward_solve": 0.000305333873257041,
+          "reciprocal_solve": 0.001549656968563795,
+          "jacobian_contraction": 0.0008734399452805519
+        }
+      }
+    },
+    {
+      "scene": "ellipse",
+      "wavenumber": 4.0,
+      "nodes": 128,
+      "forward_seconds": 0.05585132888518274,
+      "jacobian_seconds": 0.005351013969630003,
+      "system_residual": 8.549229032831706e-16,
+      "field_difference": 1.3358606538205852e-15,
+      "jacobian_difference": 2.172030453588897e-15,
+      "work": {
+        "attempted": 1,
+        "completed": 1,
+        "failed": 0,
+        "jacobians": 1,
+        "factorizations": 1,
+        "rhs_columns": 80,
+        "seconds": {
+          "assembly": 0.04944061883725226,
+          "receiver_operator": 0.0038120630197227,
+          "factorization": 0.0010923780500888824,
+          "forward_solve": 0.0008909129537642002,
+          "reciprocal_solve": 0.003977270098403096,
+          "jacobian_contraction": 0.0012091770768165588
+        }
+      }
+    },
+    {
+      "scene": "ellipse",
+      "wavenumber": 4.0,
+      "nodes": 256,
+      "forward_seconds": 0.20745763112790883,
+      "jacobian_seconds": 0.015542606823146343,
+      "system_residual": 9.72052475728961e-16,
+      "field_difference": 1.2598600141983165e-15,
+      "jacobian_difference": 2.407340088840686e-15,
+      "work": {
+        "attempted": 1,
+        "completed": 1,
+        "failed": 0,
+        "jacobians": 1,
+        "factorizations": 1,
+        "rhs_columns": 80,
+        "seconds": {
+          "assembly": 0.18733924301341176,
+          "receiver_operator": 0.010284744901582599,
+          "factorization": 0.00649439892731607,
+          "forward_solve": 0.00273049995303154,
+          "reciprocal_solve": 0.012681834166869521,
+          "jacobian_contraction": 0.002670247107744217
+        }
+      }
+    },
+    {
+      "scene": "ellipse",
+      "wavenumber": 4.0,
+      "nodes": 512,
+      "forward_seconds": 0.8291026449296623,
+      "jacobian_seconds": 0.050616584019735456,
+      "system_residual": 1.002543050229405e-15,
+      "field_difference": 1.1675049355203067e-15,
+      "jacobian_difference": 2.1854054951673294e-15,
+      "work": {
+        "attempted": 1,
+        "completed": 1,
+        "failed": 0,
+        "jacobians": 1,
+        "factorizations": 1,
+        "rhs_columns": 80,
+        "seconds": {
+          "assembly": 0.7369494738522917,
+          "receiver_operator": 0.035909500904381275,
+          "factorization": 0.044346289010718465,
+          "forward_solve": 0.011104567209258676,
+          "reciprocal_solve": 0.04549962584860623,
+          "jacobian_contraction": 0.004805467091500759
+        }
+      }
+    },
+    {
+      "scene": "ellipse",
+      "wavenumber": 8.0,
+      "nodes": 64,
+      "forward_seconds": 0.019218005938455462,
+      "jacobian_seconds": 0.00857379799708724,
+      "system_residual": 3.7380790690586156e-15,
+      "field_difference": null,
+      "jacobian_difference": null,
+      "work": {
+        "attempted": 1,
+        "completed": 1,
+        "failed": 0,
+        "jacobians": 1,
+        "factorizations": 1,
+        "rhs_columns": 160,
+        "seconds": {
+          "assembly": 0.013860201928764582,
+          "receiver_operator": 0.0022734119556844234,
+          "factorization": 0.0002121941652148962,
+          "forward_solve": 0.0006468119099736214,
+          "reciprocal_solve": 0.002257789019495249,
+          "jacobian_contraction": 0.006021491950377822
+        }
+      }
+    },
+    {
+      "scene": "ellipse",
+      "wavenumber": 8.0,
+      "nodes": 128,
+      "forward_seconds": 0.0608307309448719,
+      "jacobian_seconds": 0.01551887416280806,
+      "system_residual": 1.381497303892798e-15,
+      "field_difference": 6.64776938973447e-15,
+      "jacobian_difference": 1.3709221716433418e-06,
+      "work": {
+        "attempted": 1,
+        "completed": 1,
+        "failed": 0,
+        "jacobians": 1,
+        "factorizations": 1,
+        "rhs_columns": 160,
+        "seconds": {
+          "assembly": 0.05274471896700561,
+          "receiver_operator": 0.00491540296934545,
+          "factorization": 0.0009580559562891722,
+          "forward_solve": 0.0016047880053520203,
+          "reciprocal_solve": 0.005579069023951888,
+          "jacobian_contraction": 0.009602979989722371
+        }
+      }
+    },
+    {
+      "scene": "ellipse",
+      "wavenumber": 8.0,
+      "nodes": 256,
+      "forward_seconds": 0.23087187204509974,
+      "jacobian_seconds": 0.03252576384693384,
+      "system_residual": 2.032967773162641e-15,
+      "field_difference": 2.0495429538713373e-15,
+      "jacobian_difference": 6.5826134789851155e-15,
+      "work": {
+        "attempted": 1,
+        "completed": 1,
+        "failed": 0,
+        "jacobians": 1,
+        "factorizations": 1,
+        "rhs_columns": 160,
+        "seconds": {
+          "assembly": 0.20449692104011774,
+          "receiver_operator": 0.013293694937601686,
+          "factorization": 0.0065858568996191025,
+          "forward_solve": 0.005705437855795026,
+          "reciprocal_solve": 0.01681411685422063,
+          "jacobian_contraction": 0.015210668090730906
+        }
+      }
+    },
+    {
+      "scene": "ellipse",
+      "wavenumber": 8.0,
+      "nodes": 512,
+      "forward_seconds": 0.9104852620512247,
+      "jacobian_seconds": 0.08555562095716596,
+      "system_residual": 1.6961116210136052e-15,
+      "field_difference": 1.6894510521495524e-15,
+      "jacobian_difference": 5.365437294180236e-15,
+      "work": {
+        "attempted": 1,
+        "completed": 1,
+        "failed": 0,
+        "jacobians": 1,
+        "factorizations": 1,
+        "rhs_columns": 160,
+        "seconds": {
+          "assembly": 0.8052548400592059,
+          "receiver_operator": 0.04005525214597583,
+          "factorization": 0.04365311190485954,
+          "forward_solve": 0.020363132935017347,
+          "reciprocal_solve": 0.05754717602394521,
+          "jacobian_contraction": 0.02745326212607324
+        }
+      }
+    },
+    {
+      "scene": "glider",
+      "wavenumber": 1.0,
+      "nodes": 64,
+      "forward_seconds": 0.009207591880112886,
+      "jacobian_seconds": 0.001118214800953865,
+      "system_residual": 5.599899618318874e-16,
+      "field_difference": null,
+      "jacobian_difference": null,
+      "work": {
+        "attempted": 1,
+        "completed": 1,
+        "failed": 0,
+        "jacobians": 1,
+        "factorizations": 1,
+        "rhs_columns": 20,
+        "seconds": {
+          "assembly": 0.007483199937269092,
+          "receiver_operator": 0.0011081458069384098,
+          "factorization": 0.0002061082050204277,
+          "forward_solve": 0.0001364781055599451,
+          "reciprocal_solve": 0.0009816798847168684,
+          "jacobian_contraction": 3.7014950066804886e-05
+        }
+      }
+    },
+    {
+      "scene": "glider",
+      "wavenumber": 1.0,
+      "nodes": 128,
+      "forward_seconds": 0.028426008066162467,
+      "jacobian_seconds": 0.002825082978233695,
+      "system_residual": 5.661666880505215e-16,
+      "field_difference": 2.5014857077271565e-07,
+      "jacobian_difference": 0.0001446615995058497,
+      "work": {
+        "attempted": 1,
+        "completed": 1,
+        "failed": 0,
+        "jacobians": 1,
+        "factorizations": 1,
+        "rhs_columns": 20,
+        "seconds": {
+          "assembly": 0.024063722928985953,
+          "receiver_operator": 0.002613696036860347,
+          "factorization": 0.0009602541103959084,
+          "forward_solve": 0.00031964899972081184,
+          "reciprocal_solve": 0.0026583150029182434,
+          "jacobian_contraction": 6.245682016015053e-05
+        }
+      }
+    },
+    {
+      "scene": "glider",
+      "wavenumber": 1.0,
+      "nodes": 256,
+      "forward_seconds": 0.10558065609075129,
+      "jacobian_seconds": 0.009408824844285846,
+      "system_residual": 6.449664928981453e-16,
+      "field_difference": 8.735890512353152e-12,
+      "jacobian_difference": 4.405020910163916e-07,
+      "work": {
+        "attempted": 1,
+        "completed": 1,
+        "failed": 0,
+        "jacobians": 1,
+        "factorizations": 1,
+        "rhs_columns": 20,
+        "seconds": {
+          "assembly": 0.08936642901971936,
+          "receiver_operator": 0.008545940043404698,
+          "factorization": 0.006216280162334442,
+          "forward_solve": 0.0009495248086750507,
+          "reciprocal_solve": 0.009195249062031507,
+          "jacobian_contraction": 8.738506585359573e-05
+        }
+      }
+    },
+    {
+      "scene": "glider",
+      "wavenumber": 1.0,
+      "nodes": 512,
+      "forward_seconds": 0.4403010120149702,
+      "jacobian_seconds": 0.0356982690282166,
+      "system_residual": 6.373452724811924e-16,
+      "field_difference": 2.440886432026459e-15,
+      "jacobian_difference": 1.3326003770804752e-11,
+      "work": {
+        "attempted": 1,
+        "completed": 1,
+        "failed": 0,
+        "jacobians": 1,
+        "factorizations": 1,
+        "rhs_columns": 20,
+        "seconds": {
+          "assembly": 0.3598342479672283,
+          "receiver_operator": 0.03210478508844972,
+          "factorization": 0.04326436505652964,
+          "forward_solve": 0.0045123600866645575,
+          "reciprocal_solve": 0.035298192873597145,
+          "jacobian_contraction": 0.00019424990750849247
+        }
+      }
+    },
+    {
+      "scene": "glider",
+      "wavenumber": 4.0,
+      "nodes": 64,
+      "forward_seconds": 0.01591140008531511,
+      "jacobian_seconds": 0.0025236979126930237,
+      "system_residual": 6.390967877439515e-16,
+      "field_difference": null,
+      "jacobian_difference": null,
+      "work": {
+        "attempted": 1,
+        "completed": 1,
+        "failed": 0,
+        "jacobians": 1,
+        "factorizations": 1,
+        "rhs_columns": 80,
+        "seconds": {
+          "assembly": 0.013476706808432937,
+          "receiver_operator": 0.001577934017404914,
+          "factorization": 0.00020651216618716717,
+          "forward_solve": 0.00029737409204244614,
+          "reciprocal_solve": 0.001466577872633934,
+          "jacobian_contraction": 0.0009278268553316593
+        }
+      }
+    },
+    {
+      "scene": "glider",
+      "wavenumber": 4.0,
+      "nodes": 128,
+      "forward_seconds": 0.05512329307384789,
+      "jacobian_seconds": 0.005836410913616419,
+      "system_residual": 8.196224281556289e-16,
+      "field_difference": 2.907181785209472e-06,
+      "jacobian_difference": 0.0018450427704231034,
+      "work": {
+        "attempted": 1,
+        "completed": 1,
+        "failed": 0,
+        "jacobians": 1,
+        "factorizations": 1,
+        "rhs_columns": 80,
+        "seconds": {
+          "assembly": 0.048896794905886054,
+          "receiver_operator": 0.0037952112033963203,
+          "factorization": 0.0010136759374290705,
+          "forward_solve": 0.0008919970132410526,
+          "reciprocal_solve": 0.004113415023311973,
+          "jacobian_contraction": 0.0015666340477764606
+        }
+      }
+    },
+    {
+      "scene": "glider",
+      "wavenumber": 4.0,
+      "nodes": 256,
+      "forward_seconds": 0.2125095841474831,
+      "jacobian_seconds": 0.014284068020060658,
+      "system_residual": 9.104601719467655e-16,
+      "field_difference": 2.0889089191424637e-11,
+      "jacobian_difference": 1.7783094023640514e-06,
+      "work": {
+        "attempted": 1,
+        "completed": 1,
+        "failed": 0,
+        "jacobians": 1,
+        "factorizations": 1,
+        "rhs_columns": 80,
+        "seconds": {
+          "assembly": 0.19214546401053667,
+          "receiver_operator": 0.010530834086239338,
+          "factorization": 0.006445795064792037,
+          "forward_solve": 0.002756612142547965,
+          "reciprocal_solve": 0.012217808049172163,
+          "jacobian_contraction": 0.0018728289287537336
+        }
+      }
+    },
+    {
+      "scene": "glider",
+      "wavenumber": 4.0,
+      "nodes": 512,
+      "forward_seconds": 0.8357368009164929,
+      "jacobian_seconds": 0.048774191876873374,
+      "system_residual": 9.338332745791325e-16,
+      "field_difference": 1.40284139171878e-15,
+      "jacobian_difference": 5.4326209890051086e-11,
+      "work": {
+        "attempted": 1,
+        "completed": 1,
+        "failed": 0,
+        "jacobians": 1,
+        "factorizations": 1,
+        "rhs_columns": 80,
+        "seconds": {
+          "assembly": 0.7447367398999631,
+          "receiver_operator": 0.03488726704381406,
+          "factorization": 0.044356685131788254,
+          "forward_solve": 0.010937429033219814,
+          "reciprocal_solve": 0.04432906094007194,
+          "jacobian_contraction": 0.004142309073358774
+        }
+      }
+    },
+    {
+      "scene": "glider",
+      "wavenumber": 8.0,
+      "nodes": 64,
+      "forward_seconds": 0.01743291295133531,
+      "jacobian_seconds": 0.0074311960488557816,
+      "system_residual": 2.9816039276023317e-15,
+      "field_difference": null,
+      "jacobian_difference": null,
+      "work": {
+        "attempted": 1,
+        "completed": 1,
+        "failed": 0,
+        "jacobians": 1,
+        "factorizations": 1,
+        "rhs_columns": 160,
+        "seconds": {
+          "assembly": 0.014004000928252935,
+          "receiver_operator": 0.0022399630397558212,
+          "factorization": 0.0002048660535365343,
+          "forward_solve": 0.0006083929911255836,
+          "reciprocal_solve": 0.002141067059710622,
+          "jacobian_contraction": 0.005014145979657769
+        }
+      }
+    },
+    {
+      "scene": "glider",
+      "wavenumber": 8.0,
+      "nodes": 128,
+      "forward_seconds": 0.06127092498354614,
+      "jacobian_seconds": 0.014676362974569201,
+      "system_residual": 1.8115047821515316e-15,
+      "field_difference": 0.0016776292079887884,
+      "jacobian_difference": 0.21988240457494132,
+      "work": {
+        "attempted": 1,
+        "completed": 1,
+        "failed": 0,
+        "jacobians": 1,
+        "factorizations": 1,
+        "rhs_columns": 160,
+        "seconds": {
+          "assembly": 0.05309038911946118,
+          "receiver_operator": 0.004891340853646398,
+          "factorization": 0.001073380932211876,
+          "forward_solve": 0.0016054061707109213,
+          "reciprocal_solve": 0.005732879042625427,
+          "jacobian_contraction": 0.008600285975262523
+        }
+      }
+    },
+    {
+      "scene": "glider",
+      "wavenumber": 8.0,
+      "nodes": 256,
+      "forward_seconds": 0.2292045650538057,
+      "jacobian_seconds": 0.032968651968985796,
+      "system_residual": 1.30042554260016e-15,
+      "field_difference": 1.4028112038823555e-09,
+      "jacobian_difference": 5.877870789671896e-05,
+      "work": {
+        "attempted": 1,
+        "completed": 1,
+        "failed": 0,
+        "jacobians": 1,
+        "factorizations": 1,
+        "rhs_columns": 160,
+        "seconds": {
+          "assembly": 0.20311561389826238,
+          "receiver_operator": 0.013014541007578373,
+          "factorization": 0.006573301972821355,
+          "forward_solve": 0.0053276929538697,
+          "reciprocal_solve": 0.01644314988516271,
+          "jacobian_contraction": 0.01613821997307241
+        }
+      }
+    },
+    {
+      "scene": "glider",
+      "wavenumber": 8.0,
+      "nodes": 512,
+      "forward_seconds": 0.9068741679657251,
+      "jacobian_seconds": 0.0855845520272851,
+      "system_residual": 1.3519449217687846e-15,
+      "field_difference": 1.8805741548670617e-15,
+      "jacobian_difference": 1.1426342843374679e-10,
+      "work": {
+        "attempted": 1,
+        "completed": 1,
+        "failed": 0,
+        "jacobians": 1,
+        "factorizations": 1,
+        "rhs_columns": 160,
+        "seconds": {
+          "assembly": 0.8030603129882365,
+          "receiver_operator": 0.03975609806366265,
+          "factorization": 0.04231949895620346,
+          "forward_solve": 0.020500521874055266,
+          "reciprocal_solve": 0.05762850889004767,
+          "jacobian_contraction": 0.02741923904977739
+        }
+      }
+    }
+  ]
+}

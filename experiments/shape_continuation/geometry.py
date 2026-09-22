@@ -84,13 +84,17 @@ class FourierCurve:
 
 def arclength_angles(curve):
     """Normalized arclength at the supplied uniform parameter nodes."""
-    theta = np.r_[curve.parameters, 2 * np.pi]
-    speed = np.r_[curve.speeds, curve.speeds[0]]
-    primitive = CubicSpline(theta, speed, bc_type="periodic").antiderivative()
-    distance = primitive(theta) - primitive(0)
-    if np.any(np.diff(distance) <= 0):
+    count = curve.num_nodes
+    modes = np.fft.fftfreq(count) * count
+    speed = np.fft.fft(curve.speeds) / count
+    primitive = np.zeros(count, complex)
+    primitive[1:] = speed[1:] / (1j * modes[1:])
+    oscillation = (np.fft.ifft(primitive) * count).real
+    distance = speed[0].real * curve.parameters + oscillation - oscillation[0]
+    length = 2 * np.pi * speed[0].real
+    if np.any(np.diff(np.r_[distance, length]) <= 0):
         raise ValueError("Non-monotone arclength map.")
-    return 2 * np.pi * distance[:-1] / distance[-1], float(distance[-1])
+    return 2 * np.pi * distance / length, float(length)
 
 
 def reparameterize(curve, band, *, tolerance=1e-7):

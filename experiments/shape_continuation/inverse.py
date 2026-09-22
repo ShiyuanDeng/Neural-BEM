@@ -158,7 +158,7 @@ def fit_frequency(initial, observation, stage, contrast, *, config=None, work=No
     return FitResult(shape, stage, reason, error, history, trials, states)
 
 
-def run_continuation(initial, observations, stages, contrast, *, config=None, work=None):
+def run_continuation(initial, observations, stages, contrast, *, config=None, work=None, on_stage=None):
     """Warm-start ordered single-frequency objectives; no hidden cumulative fit."""
     observations, stages = tuple(observations), tuple(stages)
     if len(observations) != len(stages) or not stages:
@@ -178,6 +178,8 @@ def run_continuation(initial, observations, stages, contrast, *, config=None, wo
         result = fit_frequency(shape, observation, stage, contrast, config=config, work=work)
         results.append(result)
         shape = result.shape
+        if on_stage is not None:
+            on_stage(len(results) - 1, result)
         if result.stop_reason == "budget_exhausted":
             break
     return results

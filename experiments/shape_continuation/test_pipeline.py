@@ -203,3 +203,24 @@ def test_dense_geometry_checks_keep_the_same_sample_resolution():
     from .geometry import grid_size
     curve, _ = reparameterize(ellipse(), 48)
     assert curve.validate().num_nodes == grid_size(48) == 2048
+
+
+def test_spectral_arclength_has_no_spline_integration_error_floor():
+    from .geometry import arclength_angles
+    curve = ellipse()
+    coarse, length = arclength_angles(curve.nodes(64))
+    fine, refined_length = arclength_angles(curve.nodes(1024))
+    assert np.max(np.abs(coarse - fine[::16])) < 1e-13
+    assert abs(length - refined_length) < 1e-13
+
+
+def test_blocked_reciprocal_contraction_matches_literal_identity():
+    from gpr_bem_kress import kress_incident_trace_on_boundary
+    from scipy.linalg import lu_solve
+    state = solve(ellipse(), 2., 1.44, Acquisition.ring(5, 7), 64)
+    h = normal_basis(state.curve, 4)
+    d, n = kress_incident_trace_on_boundary(state.curve, state.acquisition.receivers, state.wavenumber)
+    reciprocal = lu_solve(state.factors, np.concatenate((d, n), axis=1).T)[:64]
+    expected = (state.interior_wavenumber**2 - state.wavenumber**2) * np.einsum(
+        'nr,np,nd,n->drp', reciprocal, h, state.traces[:64], state.curve.arc_length_weights)
+    assert np.allclose(shape_jacobian(state, h), expected, rtol=2e-13, atol=2e-13)

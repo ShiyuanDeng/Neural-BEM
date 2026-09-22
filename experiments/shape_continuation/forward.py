@@ -156,9 +156,19 @@ def shape_jacobian(state, normal_displacements, *, work=None):
         reciprocal, _ = _solve(state.matrix, state.factors, np.concatenate((d, n), axis=1).T)
     count = state.curve.num_nodes
     with timed(work, "jacobian_contraction"):
-        value = (state.interior_wavenumber ** 2 - state.wavenumber ** 2) * np.einsum(
-            "nr,np,nd,n->drp", reciprocal[:count], h, state.traces[:count],
-            state.curve.arc_length_weights, optimize=True)
+        # Dense matrix products are much faster than the four-index einsum at
+        # large illumination/update counts. Cap the temporary at about 32 MiB.
+        sources = state.traces[:count]
+        receivers = reciprocal[:count].T
+        value = np.empty((sources.shape[1], receivers.shape[0], h.shape[1]), complex)
+        block = max(1, (32 * 1024 ** 2) // (16 * count * sources.shape[1]))
+        for start in range(0, h.shape[1], block):
+            stop = min(start + block, h.shape[1])
+            weighted = (h[:, start:stop, None] * state.curve.arc_length_weights[:, None, None]
+                        * sources[:, None, :])
+            product = receivers @ weighted.reshape(count, -1)
+            value[:, :, start:stop] = product.reshape(receivers.shape[0], stop-start, sources.shape[1]).transpose(2, 0, 1)
+        value *= state.interior_wavenumber ** 2 - state.wavenumber ** 2
     if not np.isfinite(value).all():
         raise FloatingPointError("Nonfinite shape Jacobian.")
     return value

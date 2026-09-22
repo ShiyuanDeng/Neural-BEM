@@ -31,6 +31,7 @@ runtime selector, modal compression, or experimental Laurent solver is used.
 - `run.py`: bounded synthetic recovery demonstration and saved provenance.
 - `metrics.py`: evaluation-only boundary distances; no inverse dependency.
 - `benchmark.py`: inverse-only replay timing from saved observations.
+- `resolution.py`: independent field/Jacobian convergence and timing screen.
 - `test_pipeline.py`: independent circle series, derivative convergence,
   geometry/reparameterization, recovery, continuation and import isolation.
 
@@ -143,6 +144,10 @@ The [cleanup/profile qualification](../../results/validation/shape_continuation/
 reduced this ellipse inverse from 19.66 s to 0.835 s by accelerating the geometry
 checks. Every saved accepted state is bitwise unchanged. This is measured at
 128 Kress nodes and is not a high-frequency performance claim.
+The subsequent [resolution screen](../../results/validation/shape_continuation/SC-003-resolution-refined/README.md)
+qualified spectral arclength integration and a faster blocked reciprocal
+contraction through k=8 on ellipse/glider geometries. Those numerical changes
+are distinct from the bitwise-preserving SC-002 cleanup.
 This establishes a small working inverse and continuation interface. It does
 not establish robustness for gliders/cavities, high contrast, noisy/limited
 aperture observations, unknown material, or multiple components.
