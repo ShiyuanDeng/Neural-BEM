@@ -1,5 +1,8 @@
 # Shape and frequency continuation qualification
 
+The [research handoff and iterations](../../../docs/iterations/shape_frequency_continuation/README.md)
+interpret this evidence and record next decisions. Artifacts remain here.
+
 The implementation is on `feature/shape-frequency-continuation`. Current
 controls cover the forward physics, normal derivative, geometry, filtered-step
 stopping, single-frequency recovery, warm starts, policy handoffs, cache reuse, qualification rollback and import

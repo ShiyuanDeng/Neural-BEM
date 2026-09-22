@@ -6,6 +6,9 @@ until its continuation scheme can be implemented. Continued on the user-authoriz
 `feature/shape-frequency-continuation` branch, with committed/pushed checkpoints.
 Owner: Codex. Independent reviewer: unassigned.
 
+[Research iterations and current handoff](../../docs/iterations/shape_frequency_continuation/README.md)
+record the experimental questions and decisions; this page owns the working API.
+
 Reference: [On the robustness of inverse scattering for penetrable,
 homogeneous objects with complicated boundary, Inverse Problems 39 (2023)
 035004](https://doi.org/10.1088/1361-6420/acb2ec),

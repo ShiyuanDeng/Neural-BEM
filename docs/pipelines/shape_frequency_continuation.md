@@ -2,6 +2,8 @@
 
 The working research entry point is
 [`experiments/shape_continuation`](../../experiments/shape_continuation/README.md).
+Research cycles and the current handoff are in
+[`docs/iterations/shape_frequency_continuation`](../iterations/shape_frequency_continuation/README.md).
 It follows the boundary-inversion structure in Borges, Rachh and Greengard,
 *On the robustness of inverse scattering for penetrable, homogeneous objects
 with complicated boundary*, Inverse Problems 39 (2023) 035004,

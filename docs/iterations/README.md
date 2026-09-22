@@ -29,6 +29,7 @@ The [research implementation principles](implementation_principles.md), adopted 
 
 | Track | Organised around | Handoff |
 |---|---|---|
+| **Shape/frequency continuation** | *How should shape harmonics and frequency steps adapt in a qualified nodal inverse?* | [`shape_frequency_continuation/README.md`](shape_frequency_continuation/README.md) |
 | **Topology** | *How can the inverse choose and execute topology changes more reliably?* | [`topology/README.md`](topology/README.md) |
 | **Boundary–BIE** | *Which properties of smooth-boundary representations improve the BIE inverse?* | [`boundary_bie/README.md`](boundary_bie/README.md) |
 | **Laurent** | *What does a node-free Laurent/Fourier coefficient representation give the inverse, and what does it cost?* | [`laurent/README.md`](laurent/README.md) |
@@ -39,8 +40,9 @@ The [research implementation principles](implementation_principles.md), adopted 
 | Cartesian Fourier | The chart study and its topology match | [`cartesian_fourier/README.md`](cartesian_fourier/README.md) |
 | Implicit MLP | Neural-owned geometry with Method B | [`implicit_mlp/README.md`](implicit_mlp/README.md) |
 
-Topology, Boundary–BIE, Laurent, Modal compression and Speed-up are **question-based**. Topology,
-Boundary–BIE and Speed-up are the current active agenda; **Laurent is closed at
+Topology, Boundary–BIE, Laurent, Modal compression, Speed-up and Shape/frequency
+continuation are **question-based**. Topology, Boundary–BIE, Speed-up and
+Shape/frequency continuation are the current active agenda; **Laurent is closed at
 iteration 07 by user direction (2026-09-18)** on the LAU-005 calibration-identifiability
 result, with no successor scheduled. Laurent was opened on 2026-09-17 by user direction: the
 coefficient-space pipeline built on 2026-09-16 was recorded as exploratory
@@ -91,6 +93,15 @@ closeout does not mean the topology work is complete.
 
 The current comparison reference for these tracks is
 [baseline B0](../baselines/B0_2026-09-10.md).
+
+**Shape/frequency continuation opened on 2026-09-22.** Its
+[iteration 01](shape_frequency_continuation/iteration_01/01_results.md) starts
+from the isolated nodal Müller/Kress pipeline and existing SC-001–SC-012
+evidence. It has its own synthetic baseline and paper profiles; B0 is not a
+matched reference for its timing or recovery claims. Code and evidence remain
+in their existing locations. The latest paper-profile glider has qualified
+fields/Jacobians but stalled updates; no expensive inverse is launched by
+opening this track.
 
 ## What to do at each stage
 
