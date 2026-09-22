@@ -4,7 +4,7 @@ from typing import Optional
 import numpy as np
 
 from .forward import Acquisition, BudgetExceeded, ForwardState, Work, solve, shape_jacobian, timed
-from .geometry import FourierCurve, displaced, normal_basis, curvature_tail, integer
+from .geometry import FourierCurve, displaced, gaussian_filter, normal_basis, curvature_tail, integer
 from .schedule import Stage
 
 
@@ -25,6 +25,9 @@ class Observation:
         object.__setattr__(self, "scattered", data)
 
 
+DIRECTIONS = ("gauss_newton", "steepest_descent")
+
+
 @dataclass(frozen=True)
 class FitConfig:
     max_iterations: int = 50
@@ -36,15 +39,22 @@ class FitConfig:
     backtracks: int = 8
     filter_steps: int = 10
     rank_tolerance: float = 1e-10
-    # The reference drivers run 'sd-min(gn,sd)': the first sd_iter=50 updates of
-    # every frequency propose steepest descent alone, and only later iterations
-    # also offer Gauss-Newton. 0 offers both from the first update.
-    steepest_descent_iterations: int = 0
+    # Which proposals the search may use, in the reference's `optim_type` sense:
+    # ('gauss_newton',) is 'gn', ('steepest_descent',) is 'sd' — what the
+    # transmission driver uses — and both is 'min(gn,sd)'. The reference's
+    # 'sd-min(gn,sd)' phase, steepest descent for the first sd_iter updates of a
+    # frequency, is expressed by a strategy issuing two decisions rather than by
+    # a counter here: a counter would depend on how updates are grouped into
+    # chunks, so the same trajectory driven one update at a time would differ.
+    directions: tuple = ("gauss_newton", "steepest_descent")
 
     def __post_init__(self):
-        for name in ("max_iterations", "backtracks", "filter_steps",
-                     "steepest_descent_iterations"):
+        for name in ("max_iterations", "backtracks", "filter_steps"):
             integer(getattr(self, name), name, minimum=0)
+        chosen = tuple(self.directions)
+        if not chosen or len(set(chosen)) != len(chosen) or not set(chosen) <= set(DIRECTIONS):
+            raise ValueError(f"directions must be a non-repeating subset of {DIRECTIONS}.")
+        object.__setattr__(self, "directions", chosen)
         for name in ("residual_tolerance", "step_tolerance", "gradient_tolerance", "projection_tolerance", "rank_tolerance"):
             value = getattr(self, name)
             if not np.isfinite(value) or value <= 0:
@@ -174,16 +184,32 @@ def optimise_step(state, *, config=None, work=None, iteration=1):
         # adjoint has arbitrary magnitude and is not a usable step.
         curvature_along = float(np.linalg.norm(matrix @ gradient))
         sd = -gradient * (np.linalg.norm(gradient) / curvature_along) ** 2 if curvature_along else -gradient
-        directions = (("steepest_descent", sd),) if iteration <= config.steepest_descent_iterations \
-            else (("gauss_newton", gn), ("steepest_descent", sd))
-        accepted = None
-        for filtering in range(config.filter_steps + 1):
-            for backtrack in range(config.backtracks + 1):
-                candidates = []
-                for label, direction in directions:
+        proposals = dict(gauss_newton=gn, steepest_descent=sd)
+
+        def search(label):
+            """Weaken this one direction until it is admissible and decreasing.
+
+            The reference filters each direction to admissibility on its own and
+            only then compares the survivors' residuals, so a direction needing
+            a stronger filter is still reachable when the other succeeds early.
+            """
+            direction = proposals[label]
+            weakened = None
+            for filtering in range(config.filter_steps + 1):
+                # Eq.19 damps each harmonic monotonically in the level, so once
+                # a level leaves the update unchanged every later one does too
+                # and would rebuild the identical candidate. Stopping there is
+                # exact, not a tolerance: the reference simply pays for the
+                # repeats. It matters when a direction is hopeless, where the
+                # sweep would otherwise re-solve the same geometry ~6 times.
+                previous, weakened = weakened, gaussian_filter(direction, filtering)
+                if previous is not None and np.array_equal(weakened, previous):
+                    break
+                for backtrack in range(config.backtracks + 1):
                     work.check()
                     step = 0.5 ** backtrack
-                    trial = dict(iteration=iteration, direction=label, filter_index=filtering, step=step)
+                    trial = dict(iteration=iteration, direction=label,
+                                 filter_index=filtering, step=step)
                     trials.append(trial)
                     try:
                         with timed(work, "geometry_proposals"):
@@ -207,16 +233,15 @@ def optimise_step(state, *, config=None, work=None, iteration=1):
                         trial["relative_residual"] = candidate_error
                         trial["status"] = "decreasing" if candidate_error < error else "nondecreasing"
                         if candidate_error < error:
-                            candidates.append((candidate_error, candidate, forward, trial))
+                            return candidate_error, candidate, forward, trial
                     except (ValueError, FloatingPointError, np.linalg.LinAlgError) as exc:
                         trial.update(status="invalid", detail=str(exc))
-                if candidates:
-                    accepted = min(candidates, key=lambda item: item[0])
-                    break
-            if accepted is not None:
-                break
-        if accepted is None:
+            return None
+
+        candidates = [found for found in map(search, config.directions) if found]
+        if not candidates:
             return stopped("no_acceptable_step")
+        accepted = min(candidates, key=lambda item: item[0])
         error, shape, current, trial = accepted
         trial["status"] = "accepted"
         record = dict(iteration=iteration, relative_residual=error,

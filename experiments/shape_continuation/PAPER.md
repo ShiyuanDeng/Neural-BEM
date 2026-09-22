@@ -36,11 +36,22 @@ between operations; it cannot interrupt an in-flight solve. This is an interface
 check, not a reconstruction. Budget or qualification failures remain in the
 output directory. Each checkpoint includes all trials and accepted states.
 
-`--mode run` is the future campaign entry point. It requires explicit
+`--mode run` is the campaign entry point. It requires explicit
 `--max-forwards` and `--max-seconds`; the budget covers both contrasts unless
 `--contrast 0.33` or `--contrast 10` selects one. `--k-stop` selects an endpoint
 on the fixed grid. No large run is performed by the default command. These runs
 start from the unit circle; checkpoint resume is not implemented in this harness.
+
+`--profile` selects which reading of the settings to run — `paper` (§4's
+prose), `driver` (the authors' transmission driver) or `scaled` (the driver with
+the interior wavenumber restored in its band rule). They differ substantially;
+see [Two readings of the settings](#two-readings-of-the-settings). For example:
+
+```bash
+$PY -m experiments.shape_continuation.paper --mode run --profile driver \
+  --contrast 0.33 --k-stop 5 --max-forwards 8000 --max-seconds 3600 \
+  --output /tmp/figure1-driver
+```
 
 ## Profile and fidelity audit
 
@@ -59,7 +70,8 @@ start from the unit circle; checkpoint resume is not implemented in this harness
 | Gaussian filter | Harmonic `n` of `h` damped by `exp(-(n/M)²/sigma)`, `sigma=10^(1-level)`, 10 levels | **(code)** `update_inverse_iterate`; eq.19 instead writes the stored-curve band and `sigma²` |
 | Added halvings | Disabled (`backtracks=0`) | `filter_type='gauss-conv'`, not `'step_length'` |
 | Curvature band / tail | `max(20, M)` / energy `0.01` | **(code)** `n_curv = max(n_curv_min, M)` with driver `n_curv_min=20`; `eps_curv=0.1` bounds an amplitude ratio, so our energy fraction is its square |
-| Direction offered | Gauss-Newton and steepest descent from the first update | Drivers use `'sd-min(gn,sd)'` with `sd_iter=50`; `FitConfig.steepest_descent_iterations` exposes that and defaults to 0 here |
+| Direction offered | `FitConfig.directions`, the reference's `optim_type` | `paper` profile compares both ('min(gn,sd)'); `driver` profile uses steepest descent alone, which is what the transmission driver runs |
+| Filter search order | Each direction filtered to admissibility independently, then survivors compared | **(code)** the reference's two loops; a joint sweep stopping at the first success skips a better candidate on the first contrast-10 update |
 
 The old `schedule.paper_stage` is the previously qualified pilot and is
 unchanged. It puts `max(k,ki)` in **both** storage and quadrature estimates. The
@@ -103,14 +115,42 @@ Remaining differences requiring care in any comparison:
   Jacobian** check (`1e-6`). Failed qualification rolls back that stage and stops
   with evidence saved; it does not silently advance to the next frequency.
 
+## Two readings of the settings
+
+§4's prose and the authors' transmission driver
+(`tests/driver_charlie_transmission.m`, the penetrable configuration that
+matches Figure 1) disagree on every control that affects accuracy. Both are
+selectable, and neither is a recovered Figure 1 input:
+
+| Control | `--profile paper` (§4 prose) | `--profile driver` |
+|---|---|---|
+| Optimizer | Gauss-Newton and steepest descent compared | steepest descent alone (`optim_type='sd'`) |
+| Update band M | `floor(3 max(k,ki))` | `floor(2 k L / 2π)` from the current perimeter, no `ki` |
+| Inverse points/wavelength | 70 (§2 "in all our examples") | 30 (`nppw`) |
+| Update tolerance | `1e-5` (§4) | `1e-3` (`eps_upd`) |
+| Iteration cap | 50 (§4) | 100 (`maxit`) |
+
+The band rules diverge sharply with contrast: at `ki²/k² = 10`, k=5 the prose
+rule asks for 47 update modes and the driver rule for 10. The driver profile is
+therefore the far more conservative reading.
+
 ## Area scoring
 
 `metrics.area_error(truth, recovered)` approximates each boundary by a polygon
 and reports `area(truth symmetric_difference recovered) / area(truth)`, using
 Shapely/GEOS clipping. §4 says “set difference” without specifying a direction;
-the reference driver sums both one-sided differences, confirming the symmetric
+the reference drivers sum both one-sided differences, confirming the symmetric
 interpretation, and we save missing and excess area separately.
 This is not an exact Wasserstein distance, nor the absolute difference of areas.
+
+**Whether Figure 1 plots this normalized quantity is unverified.** §4 defines
+`εΓ = δA/A` and the figure's axis is labelled `εΓ`, but every driver in the
+reference repository computes the raw `area(pdiff1) + area(pdiff2)` and nothing
+there ever divides by the true area (2.6215 for this glider). The raw reading is
+the more likely one on physical grounds: under the normalized reading the
+published k=1 point, 0.781, is worse than the unit circle the run starts from
+(0.361), after a stage that runs to its iteration cap under an enforced residual
+decrease. Comparisons against Figure 1 report both readings.
 
 Scoring uses 4096 and 8192 vertices by default, increasing for large stored bands,
 and saves the absolute change in the normalized score. That is a refinement

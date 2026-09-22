@@ -18,6 +18,21 @@ from .schedule import Stage, paper_wavenumbers
 
 SOURCE = "https://arxiv.org/html/2210.11607v1"
 
+# The authors' transmission driver, tests/driver_charlie_transmission.m, runs
+# optim_type='sd', use_lscaled_modes, nppw=30, eps_upd=1e-3 and maxit=100. Those
+# differ from §4's prose on every count, so both readings are selectable and
+# neither is presented as the recovered Figure 1 input.
+PROFILES = {
+    "paper": dict(update_band_rule="paper", inverse_points_per_wavelength=70.,
+                  config=FitConfig(backtracks=0, curvature_tail_tolerance=1e-2)),
+    "driver": dict(update_band_rule="driver", inverse_points_per_wavelength=30.,
+                   config=FitConfig(backtracks=0, curvature_tail_tolerance=1e-2,
+                                    directions=("steepest_descent",),
+                                    max_iterations=100, step_tolerance=1e-3)),
+}
+# The driver profile with the interior wavenumber restored in its band rule.
+PROFILES["scaled"] = dict(PROFILES["driver"], update_band_rule="scaled")
+
 
 def even_at_least(value):
     return 2 * int(np.ceil(value / 2))
@@ -29,6 +44,15 @@ class Figure1Case:
     k_stop: float = 30.
     inverse_points_per_wavelength: float = 70.
     data_points_per_wavelength: float = 100.
+    # "paper" is §4's text rule floor(3 max(k,ki)). "driver" is what the
+    # authors' transmission driver actually runs: use_lscaled_modes, giving
+    # floor(c k L / 2pi) from the current perimeter with c=2 and no interior
+    # wavenumber. "scaled" combines them, floor(c max(k,ki) L / 2pi), taking
+    # arclength scaling from the code and the interior wavenumber from the
+    # prose; it equals "driver" whenever ki <= k. The three disagree by more
+    # than 4x at contrast 10, so this is a declared, switchable interpretation.
+    update_band_rule: str = "paper"
+    driver_band_factor: float = 2.
     # Reference `update_geom` bounds |tail|_2/|all|_2 by eps_curv=0.1 over
     # |n| > max(n_curv_min, M), with n_curv_min=20 in the authors' drivers.
     # Our gate is the energy fraction, hence the squared tolerance below.
@@ -40,10 +64,13 @@ class Figure1Case:
             raise ValueError("Figure 1 contrasts are ki²/k² = 0.33 and 10.")
         if self.k_stop not in paper_wavenumbers():
             raise ValueError("k_stop must belong to the paper grid 1:0.25:30.")
-        for value in (self.inverse_points_per_wavelength, self.data_points_per_wavelength):
+        for value in (self.inverse_points_per_wavelength, self.data_points_per_wavelength,
+                      self.driver_band_factor):
             if not np.isfinite(value) or value <= 0:
-                raise ValueError("Resolution factors must be positive.")
+                raise ValueError("Resolution and band factors must be positive.")
         integer(self.minimum_curvature_modes, "minimum_curvature_modes")
+        if self.update_band_rule not in ("paper", "driver", "scaled"):
+            raise ValueError("update_band_rule must be 'paper', 'driver' or 'scaled'.")
 
     @property
     def wavenumbers(self):
@@ -60,7 +87,9 @@ class Figure1Case:
         """
         length = shape.nodes(grid_size(shape.band)).perimeter
         largest = k * max(1., np.sqrt(self.contrast))
-        modes = int(np.floor(3 * largest))
+        scale = dict(paper=None, driver=k, scaled=largest)[self.update_band_rule]
+        modes = max(1, int(np.floor(3 * largest)) if scale is None
+                    else int(np.floor(self.driver_band_factor * scale * length / (2*np.pi))))
         storage = max(shape.band, modes,
                       int(np.ceil(self.inverse_points_per_wavelength * length * k / (2*np.pi))))
         nodes = even_at_least(max(64, 2 * (storage + 1),
@@ -192,6 +221,9 @@ def main(argv=None):
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--contrast", type=float, choices=(.33, 10.))
     parser.add_argument("--k-stop", type=float)
+    parser.add_argument("--profile", choices=tuple(PROFILES), default="paper",
+                        help="'paper' follows §4's prose; 'driver' follows the authors' "
+                             "transmission driver. See PAPER.md for the differences.")
     parser.add_argument("--max-forwards", type=int)
     parser.add_argument("--max-seconds", type=float)
     args = parser.parse_args(argv)
@@ -207,7 +239,7 @@ def main(argv=None):
             if not np.isfinite(args.max_seconds) or args.max_seconds <= 0:
                 raise ValueError("max_seconds must be positive.")
         cases = [Figure1Case(c, k_stop=1. if args.mode == "smoke" else (
-            args.k_stop if args.k_stop is not None else 30.))
+            args.k_stop if args.k_stop is not None else 30.), **PROFILES[args.profile])
             for c in ((args.contrast,) if args.contrast is not None else (.33, 10.))]
     except ValueError as exc:
         parser.error(str(exc))

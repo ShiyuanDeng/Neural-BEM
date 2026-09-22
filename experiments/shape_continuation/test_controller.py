@@ -6,8 +6,8 @@ import pytest
 
 from .continuation import Decision, FixedSchedule, Qualification, ResolutionGate, run_adaptive
 from .forward import Acquisition, Work, solve
-from .geometry import FourierCurve, reparameterize
-from .inverse import FitConfig, Observation, fit_frequency, optimise_step, prepare_state
+from .geometry import FourierCurve, gaussian_filter, reparameterize
+from .inverse import FitConfig, Observation, fit_frequency, fit_prepared, optimise_step, prepare_state
 from .schedule import Stage
 from .test_pipeline import circle_series
 
@@ -204,3 +204,82 @@ def test_resolution_gate_reuses_coarse_solve_and_checks_jacobian():
     check = ResolutionGate()(state, Work())
     assert not check.passed
     assert check.diagnostics["field_relative"] < 1e-6 < check.diagnostics["jacobian_relative"]
+
+
+def test_direction_policy_does_not_depend_on_how_updates_are_chunked():
+    """A per-frequency iteration counter would make these two paths differ."""
+    shape, observation, stage = problem()
+    config = FitConfig(max_iterations=2, directions=("steepest_descent",),
+                       residual_tolerance=1e-14, step_tolerance=1e-14)
+    whole_work, split_work = Work(), Work()
+    state = prepare_state(shape, observation, stage, 1.44, work=whole_work)
+    whole, report = fit_prepared(state, config=config, work=whole_work)
+    split = prepare_state(shape, observation, stage, 1.44, work=split_work)
+    single = replace(config, max_iterations=1)
+    trials = []
+    for _ in range(2):
+        split, chunk = fit_prepared(split, config=single, work=split_work)
+        trials.extend(chunk.trials)
+    assert {t["direction"] for t in report.trials} == {"steepest_descent"}
+    assert [t["direction"] for t in trials] == [t["direction"] for t in report.trials]
+    assert np.array_equal(whole.shape.coefficients, split.shape.coefficients)
+    assert counters(whole_work) == counters(split_work)
+
+
+def test_each_direction_is_filtered_to_admissibility_independently(monkeypatch):
+    """The reference compares survivors; it does not stop at the first success.
+
+    Gauss-Newton is searched first, so the first distinct coefficient vector
+    reaching `displaced` is its proposal. Refusing that one at weak filters
+    leaves steepest descent succeeding immediately at level 0; the joint search
+    this replaced would have stopped there and never revisited Gauss-Newton.
+    """
+    from . import inverse
+    real, seen = inverse.displaced, []
+
+    def refuse_weak_gauss_newton(curve, coefficients, *args, **kwargs):
+        key = id(coefficients)
+        if key not in seen:
+            seen.append(key)
+        if seen.index(key) == 0 and kwargs["filter_index"] < 2:
+            raise ValueError("Controlled rejection of a weakly filtered proposal.")
+        return real(curve, coefficients, *args, **kwargs)
+
+    monkeypatch.setattr(inverse, "displaced", refuse_weak_gauss_newton)
+    shape, observation, stage = problem()
+    work = Work()
+    state = prepare_state(shape, observation, stage, 1.44, work=work)
+    step = optimise_step(state, config=FitConfig(backtracks=0), work=work)
+    assert step.accepted
+    attempted = {}
+    for trial in step.trials:
+        attempted.setdefault(trial["direction"], []).append(trial["filter_index"])
+    assert attempted["steepest_descent"] == [0]        # succeeded straight away
+    assert attempted["gauss_newton"] == [0, 1, 2]      # still searched past it
+    assert [t["status"] for t in step.trials if t["direction"] == "gauss_newton"][:2] \
+        == ["invalid", "invalid"]
+
+
+def test_filter_sweep_stops_once_the_update_stops_changing():
+    """Saturated Gaussian levels rebuild an identical candidate; skip them."""
+    coefficients = np.arange(1., 8.)
+    saturated = [level for level in range(11)
+                 if np.array_equal(gaussian_filter(coefficients, level),
+                                   gaussian_filter(coefficients, level + 1))]
+    assert saturated, "the filter must saturate within the configured levels"
+    shape, observation, stage = problem()
+    work = Work()
+    state = prepare_state(shape, observation, stage, 1.44, work=work)
+    # Refuse every proposal so both directions sweep to the end of the search.
+    from . import inverse
+    real = inverse.displaced
+    try:
+        inverse.optimise_step.__globals__["displaced"] = \
+            lambda *a, **k: (_ for _ in ()).throw(ValueError("refused"))
+        step = optimise_step(state, config=FitConfig(backtracks=0), work=work)
+    finally:
+        inverse.optimise_step.__globals__["displaced"] = real
+    assert step.stop_reason == "no_acceptable_step"
+    levels = [t["filter_index"] for t in step.trials if t["direction"] == "gauss_newton"]
+    assert levels == list(range(len(levels)))
+    assert max(levels) <= saturated[0] + 1 < 10   # stopped early, not at filter_steps

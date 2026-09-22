@@ -1,5 +1,13 @@
 # SC-013 — Figure 1 glider recovered on the paper profile
 
+> **Partly superseded by [SC-014](../SC-014-figure1-calibration/README.md).**
+> A [Codex review](../review-20260922/) showed the candidate search stopped at
+> the first admissible direction instead of filtering each one independently as
+> the reference does. The contrast-0.33 ladder below is **unaffected** — it was
+> re-run under the corrected search and reproduces decision for decision — but
+> the contrast-10 ladder is superseded. SC-014 also shows that the profile used
+> here, §4's prose rule, is not the configuration that produced Figure 1.
+
 Run on 2026-09-22 at source `c5077ab6b3928fe29a83bf3cf917f595e4d9dc56` plus the
 uncommitted changes described below. Both bundles audit with **no source hash
 mismatches**. This supersedes [SC-012](../SC-012-paper-glider-k2/README.md)'s
