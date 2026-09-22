@@ -20,6 +20,7 @@ failures remain below; these cases do not establish general robustness.
 | [SC-008 glider extension](SC-008-glider-extension/README.md) | Reaches k=12 with 522 additional forwards (2022 cumulative); held-out error 9.98e-6 and conservative relative boundary-error bound 0.001803. |
 | [SC-010 step/controller refactor](SC-010-step-controller/README.md) | Fixed trajectories and trials remain bitwise/exactly identical; a 13-decision adaptive ellipse example passes all gates. |
 | [SC-011 paper preparation](SC-011-paper-preparation/README.md) | Actual Figure 1 contrasts and audited settings; zero-solve full plan; two one-update smoke cases pass resolution checks in 2.85 s total. No expensive inverse run. |
+| [SC-012 user-run paper glider](SC-012-paper-glider-k2/README.md) | Contrast .33 reaches k=2 in 16.42 s / 231 forwards; all resolution checks pass, but last two stages accept no updates. Final area error 15.7%; not converged recovery. |
 | [SC-009 conservative scoring](SC-009-conservative-scoring/summary.json) | Ellipse regression with the shape gate applied to the continuous-boundary error upper bound. |
 
 Each run retains its source hashes, command, observations, states and rejected
