@@ -10,6 +10,8 @@ Reference: [On the robustness of inverse scattering for penetrable,
 homogeneous objects with complicated boundary, Inverse Problems 39 (2023)
 035004](https://doi.org/10.1088/1361-6420/acb2ec),
 [author manuscript, §2.1 and §4](https://arxiv.org/html/2210.11607v1).
+The same manuscript is stored in the documentation as a
+[local PDF](../../docs/reference/papers/borges_rachh_greengard_2210.11607v1.pdf).
 
 ## Scope and file/API map
 

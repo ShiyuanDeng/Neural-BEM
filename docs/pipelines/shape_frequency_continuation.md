@@ -7,6 +7,10 @@ It follows the boundary-inversion structure in Borges, Rachh and Greengard,
 with complicated boundary*, Inverse Problems 39 (2023) 035004,
 [DOI](https://doi.org/10.1088/1361-6420/acb2ec).
 
+The complete paper is stored locally as the
+[24-page arXiv v1 PDF](../reference/papers/borges_rachh_greengard_2210.11607v1.pdf),
+with [source and version details](../reference/papers/README.md).
+
 ```text
 Cartesian Fourier curve, parameterized by arclength
     → ordered boundary nodes

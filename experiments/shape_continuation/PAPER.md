@@ -5,6 +5,10 @@ Greengard, §4.1 / Figure 1](https://arxiv.org/html/2210.11607v1#S4.SS1).
 The volume inverse and other figures are outside this profile. This is a
 reproducible approximation with an explicit audit, not an exact replication.
 
+The manuscript used for this audit is available as a
+[local PDF](../../docs/reference/papers/borges_rachh_greengard_2210.11607v1.pdf)
+([source and version details](../../docs/reference/papers/README.md)).
+
 ## Commands
 
 From the repository root:
