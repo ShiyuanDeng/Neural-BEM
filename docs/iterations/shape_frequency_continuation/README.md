@@ -13,11 +13,11 @@ iteration 02**, which replicates the paper's Figure 1 boundary inverse.
 
 | Item | State |
 |---|---|
-| Active cycle | [Iteration 02 — the paper profile recovers the glider](iteration_02/01_results.md) |
+| Active cycle | [Iteration 03 — what actually reproduces Figure 1](iteration_03/01_results.md) |
 | Stage | Results available; no successor experiment proposed or approved |
 | Working implementation | [Isolated continuation package](../../../experiments/shape_continuation/README.md) |
-| Latest run | [SC-013](../../../results/validation/shape_continuation/SC-013-paper-glider-recovery/README.md): both Figure 1 contrasts recover the glider; area error 0.849% at k=5 and 0.297% at k=3, but 2.5x–26x below the published curve rather than matching it |
-| Next research decision | Calibrate against the published Figure 1 before anything else: rerun η=10 to k=3 with the drivers' L-scaled `floor(2kL/2π)` update band and see whether the error curve lands on the printed one |
+| Latest run | [SC-014](../../../results/validation/shape_continuation/SC-014-figure1-calibration/README.md): five arms against the digitized figure. Contrast 0.33 replicates over k∈[1,5] on the authors' driver configuration; contrast 10 is bracketed, not matched |
+| Next research decision | Extend the calibrated contrast-0.33 driver arm toward k=10, identify the contrast-10 band rule inside its bracket, or start the adaptive comparison on the calibrated baseline. None proposed or approved |
 | Current constraint | None active. The user's 2026-09-22 instruction to make the paper's algorithm work authorized the code changes and runs in iteration 02 |
 | Checkout | Existing `feature/shape-frequency-continuation` branch; no new branch or worktree |
 | Owner / independent reviewer | Claude / unassigned |
@@ -40,7 +40,7 @@ A proposed next diagnostic is not an executed result.
   [reference implementation](../../reference/papers/README.md#reference-implementation)
   that settles what the manuscript states loosely.
 - [Qualification index](../../../results/validation/shape_continuation/README.md):
-  SC-001 through SC-013, with raw measurements, scripts, checkpoints and failures.
+  SC-001 through SC-014, with raw measurements, scripts, checkpoints and failures.
 
 This directory owns the research interpretation and decisions. Follow the
 [shared iteration convention](../README.md): results open a cycle, proposals
@@ -53,4 +53,5 @@ the next cycle. Code and run artifacts retain their current locations.
 |---|---|
 | Pre-track work | SC-001–SC-012 built and qualified the inverse/controller, prepared the paper profiles and recorded the first actual-contrast ladder. Original evidence remains under `results/validation/shape_continuation/`. |
 | [01](iteration_01/01_results.md) | Why does the resolved paper-profile inverse stop accepting updates, and what should be fixed or measured before adaptive continuation comparisons? Results recorded; its proposed step-halving diagnostic was never run. |
-| [02](iteration_02/01_results.md) | Answered: the trust-region band excluded the update's own highest harmonic. Four settings were corrected against the authors' code, and SC-013 recovers the Figure 1 glider at both contrasts. The fixed ladder is now a usable baseline for adaptive comparisons. |
+| [02](iteration_02/01_results.md) | Answered: the trust-region band excluded the update's own highest harmonic. Four settings were corrected against the authors' code, and SC-013 recovers the Figure 1 glider at both contrasts — but 2.5x-26x below the published curve. Its [review](iteration_02/02_proposals/01_codex_review_resolution.md) found two defects in the candidate search. |
+| [03](iteration_03/01_results.md) | Answered: we were reading the wrong axis and running the wrong settings. SC-014 replicates contrast 0.33 over k∈[1,5] on the authors' transmission-driver configuration; contrast 10 is bracketed. The calibrated baseline for adaptive comparisons is the driver profile, not §4's prose. |

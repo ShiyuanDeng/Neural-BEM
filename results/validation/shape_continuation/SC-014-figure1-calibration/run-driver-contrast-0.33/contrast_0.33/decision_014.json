@@ -1,0 +1,204 @@
+{
+  "index": 14,
+  "decision": {
+    "stage": {
+      "wavenumber": 4.5,
+      "update_modes": 9,
+      "curve_modes": 147,
+      "nodes": 296,
+      "curvature_modes": 20
+    },
+    "config": {
+      "max_iterations": 100,
+      "residual_tolerance": 1e-05,
+      "step_tolerance": 0.001,
+      "gradient_tolerance": 1e-10,
+      "curvature_tail_tolerance": 0.01,
+      "projection_tolerance": 1e-07,
+      "backtracks": 0,
+      "filter_steps": 10,
+      "rank_tolerance": 1e-10,
+      "directions": [
+        "steepest_descent"
+      ]
+    },
+    "reason": "paper fixed frequency ladder"
+  },
+  "committed": true,
+  "stop_reason": "small_step",
+  "relative_residual": 0.012280276878893855,
+  "history": [
+    {
+      "iteration": 0,
+      "relative_residual": 0.013117109264849144,
+      "system_residual": 1.129176595981247e-15,
+      "gradient_inf": 0.004974215917755826,
+      "jacobian_rank": 19,
+      "singular_values": [
+        3.474678228255638,
+        2.2325799513047246,
+        2.139611508718261,
+        2.0627855192808684,
+        1.9900911040180886,
+        1.9475210656826663,
+        1.7956538646499771,
+        1.740686625179506,
+        1.6628441976999033,
+        1.5924862506002384,
+        1.5771819842695978,
+        1.4291347256679445,
+        1.404594615593083,
+        1.2078578076824473,
+        1.1171999573994935,
+        0.8731861188314088,
+        0.8080746361027548,
+        0.5693689537129516,
+        0.5467449243575644
+      ],
+      "base_curvature_tail": 0.0018011328104458302
+    },
+    {
+      "iteration": 1,
+      "relative_residual": 0.012661170677575414,
+      "direction": "steepest_descent",
+      "step": 1.0,
+      "filter_index": 0,
+      "curvature_tail": 0.0019040907208754086,
+      "projection_error": 1.7717274219594696e-13,
+      "coefficient_step_norm": 0.0019312120648708102,
+      "update_norm": 0.0019312120648708102,
+      "rms_displacement": 0.0015057125150610639,
+      "maximum_displacement": 0.002749275442959232,
+      "system_residual": 1.1451580961068513e-15,
+      "gradient_inf": 0.008124339247568238,
+      "jacobian_rank": 19,
+      "singular_values": [
+        3.477678615047175,
+        2.23540423401965,
+        2.1406553679193068,
+        2.0664305664908036,
+        1.9908943174868907,
+        1.9490558908165627,
+        1.794452794897843,
+        1.7423127459565784,
+        1.6644966782470578,
+        1.5922173571165172,
+        1.5778813770219224,
+        1.4288634816175376,
+        1.4050192227298355,
+        1.2070220143395762,
+        1.1159923913368857,
+        0.8729327914407894,
+        0.8055482071382624,
+        0.5696535662797829,
+        0.5453187449337346
+      ],
+      "base_curvature_tail": 0.0019040907208754086
+    },
+    {
+      "iteration": 2,
+      "relative_residual": 0.012280276878893855,
+      "direction": "steepest_descent",
+      "step": 1.0,
+      "filter_index": 0,
+      "curvature_tail": 0.001919507442638376,
+      "projection_error": 1.3752522212927576e-13,
+      "coefficient_step_norm": 0.0010134626587394537,
+      "update_norm": 0.0010134626587394537,
+      "rms_displacement": 0.000949404036234558,
+      "maximum_displacement": 0.0014603380907676684,
+      "system_residual": 1.1376323716567723e-15
+    }
+  ],
+  "trials": [
+    {
+      "iteration": 1,
+      "direction": "steepest_descent",
+      "filter_index": 0,
+      "step": 1.0,
+      "projection_error": 1.7717274219594696e-13,
+      "rms_displacement": 0.0015057125150610639,
+      "maximum_displacement": 0.002749275442959232,
+      "update_norm": 0.0019312120648708102,
+      "coefficient_step_norm": 0.0019312120648708102,
+      "curvature_tail": 0.0019040907208754086,
+      "relative_residual": 0.012661170677575414,
+      "status": "accepted"
+    },
+    {
+      "iteration": 2,
+      "direction": "steepest_descent",
+      "filter_index": 0,
+      "step": 1.0,
+      "projection_error": 1.3752522212927576e-13,
+      "rms_displacement": 0.000949404036234558,
+      "maximum_displacement": 0.0014603380907676684,
+      "update_norm": 0.0010134626587394537,
+      "coefficient_step_norm": 0.0010134626587394537,
+      "curvature_tail": 0.001919507442638376,
+      "relative_residual": 0.012280276878893855,
+      "status": "accepted"
+    }
+  ],
+  "qualification": {
+    "passed": true,
+    "diagnostics": {
+      "nodes": 296,
+      "fine_nodes": 592,
+      "field_relative": 1.1013670229803218e-15,
+      "jacobian_relative": 1.571286276373035e-15,
+      "tolerance": 1e-06
+    }
+  },
+  "work_before": {
+    "attempted": 190,
+    "completed": 190,
+    "failed": 0,
+    "jacobians": 156,
+    "factorizations": 190,
+    "rhs_columns": 9790,
+    "seconds": {
+      "assembly": 49.03354818583466,
+      "receiver_operator": 2.709085880080238,
+      "factorization": 3.5563384415581822,
+      "forward_solve": 0.7574364845640957,
+      "initial_geometry": 0.017299690283834934,
+      "reciprocal_solve": 1.3116098458413035,
+      "jacobian_contraction": 0.0898374451790005,
+      "least_squares": 0.021016696700826287,
+      "curvature_checks": 0.20771722914651036,
+      "geometry_proposals": 0.5222958333324641
+    }
+  },
+  "work_after": {
+    "attempted": 194,
+    "completed": 194,
+    "failed": 0,
+    "jacobians": 160,
+    "factorizations": 194,
+    "rhs_columns": 10150,
+    "seconds": {
+      "assembly": 50.79246780788526,
+      "receiver_operator": 2.8035368823911995,
+      "factorization": 3.650771936867386,
+      "forward_solve": 0.7881944878026843,
+      "initial_geometry": 0.019713106099516153,
+      "reciprocal_solve": 1.4303529516328126,
+      "jacobian_contraction": 0.0995689679402858,
+      "least_squares": 0.021915118908509612,
+      "curvature_checks": 0.2136321698781103,
+      "geometry_proposals": 0.5390542382374406
+    }
+  },
+  "area_error": {
+    "relative_symmetric_difference": 0.056861715363010726,
+    "relative_missing_area": 0.02813192234108067,
+    "relative_excess_area": 0.02872979302193005,
+    "true_polygon_area": 2.6215394968005152,
+    "recovered_polygon_area": 2.6231068384043326,
+    "samples": 16384,
+    "coarse_samples": 8192,
+    "coarse_relative_symmetric_difference": 0.05686158089319131,
+    "refinement_absolute_change": 1.344698194183369e-07
+  }
+}

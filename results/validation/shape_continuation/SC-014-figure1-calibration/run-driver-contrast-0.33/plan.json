@@ -1,0 +1,348 @@
+{
+  "status": "plan_only",
+  "forward_solves": 0,
+  "paper": "https://arxiv.org/html/2210.11607v1",
+  "target": "Figure 1 boundary inverse; no volume inverse",
+  "snapshots": [
+    1.0,
+    5.0,
+    10.0
+  ],
+  "exact_replication": false,
+  "audit": "experiments/shape_continuation/PAPER.md",
+  "cases": [
+    {
+      "settings": {
+        "contrast": 0.33,
+        "k_stop": 5.0,
+        "inverse_points_per_wavelength": 30.0,
+        "data_points_per_wavelength": 100.0,
+        "update_band_rule": "driver",
+        "driver_band_factor": 2.0,
+        "minimum_curvature_modes": 20,
+        "config": {
+          "max_iterations": 100,
+          "residual_tolerance": 1e-05,
+          "step_tolerance": 0.001,
+          "gradient_tolerance": 1e-10,
+          "curvature_tail_tolerance": 0.01,
+          "projection_tolerance": 1e-07,
+          "backtracks": 0,
+          "filter_steps": 10,
+          "rank_tolerance": 1e-10,
+          "directions": [
+            "steepest_descent"
+          ]
+        }
+      },
+      "stages": [
+        {
+          "initial_circle_stage": {
+            "wavenumber": 1.0,
+            "update_modes": 2,
+            "curve_modes": 30,
+            "nodes": 64,
+            "curvature_modes": 20
+          },
+          "directions": 10,
+          "receivers": 10,
+          "receiver_radius": 10.0,
+          "reference_nodes": [
+            114,
+            228
+          ],
+          "single_inverse_matrix_bytes": 262144,
+          "single_fine_reference_matrix_bytes": 3326976
+        },
+        {
+          "initial_circle_stage": {
+            "wavenumber": 1.25,
+            "update_modes": 2,
+            "curve_modes": 38,
+            "nodes": 78,
+            "curvature_modes": 20
+          },
+          "directions": 12,
+          "receivers": 12,
+          "receiver_radius": 10.0,
+          "reference_nodes": [
+            144,
+            288
+          ],
+          "single_inverse_matrix_bytes": 389376,
+          "single_fine_reference_matrix_bytes": 5308416
+        },
+        {
+          "initial_circle_stage": {
+            "wavenumber": 1.5,
+            "update_modes": 3,
+            "curve_modes": 45,
+            "nodes": 92,
+            "curvature_modes": 20
+          },
+          "directions": 15,
+          "receivers": 15,
+          "receiver_radius": 10.0,
+          "reference_nodes": [
+            172,
+            344
+          ],
+          "single_inverse_matrix_bytes": 541696,
+          "single_fine_reference_matrix_bytes": 7573504
+        },
+        {
+          "initial_circle_stage": {
+            "wavenumber": 1.75,
+            "update_modes": 3,
+            "curve_modes": 53,
+            "nodes": 108,
+            "curvature_modes": 20
+          },
+          "directions": 17,
+          "receivers": 17,
+          "receiver_radius": 10.0,
+          "reference_nodes": [
+            200,
+            400
+          ],
+          "single_inverse_matrix_bytes": 746496,
+          "single_fine_reference_matrix_bytes": 10240000
+        },
+        {
+          "initial_circle_stage": {
+            "wavenumber": 2.0,
+            "update_modes": 4,
+            "curve_modes": 60,
+            "nodes": 122,
+            "curvature_modes": 20
+          },
+          "directions": 20,
+          "receivers": 20,
+          "receiver_radius": 10.0,
+          "reference_nodes": [
+            228,
+            456
+          ],
+          "single_inverse_matrix_bytes": 952576,
+          "single_fine_reference_matrix_bytes": 13307904
+        },
+        {
+          "initial_circle_stage": {
+            "wavenumber": 2.25,
+            "update_modes": 4,
+            "curve_modes": 68,
+            "nodes": 138,
+            "curvature_modes": 20
+          },
+          "directions": 22,
+          "receivers": 22,
+          "receiver_radius": 10.0,
+          "reference_nodes": [
+            256,
+            512
+          ],
+          "single_inverse_matrix_bytes": 1218816,
+          "single_fine_reference_matrix_bytes": 16777216
+        },
+        {
+          "initial_circle_stage": {
+            "wavenumber": 2.5,
+            "update_modes": 5,
+            "curve_modes": 75,
+            "nodes": 152,
+            "curvature_modes": 20
+          },
+          "directions": 25,
+          "receivers": 25,
+          "receiver_radius": 10.0,
+          "reference_nodes": [
+            286,
+            572
+          ],
+          "single_inverse_matrix_bytes": 1478656,
+          "single_fine_reference_matrix_bytes": 20939776
+        },
+        {
+          "initial_circle_stage": {
+            "wavenumber": 2.75,
+            "update_modes": 5,
+            "curve_modes": 83,
+            "nodes": 168,
+            "curvature_modes": 20
+          },
+          "directions": 27,
+          "receivers": 27,
+          "receiver_radius": 10.0,
+          "reference_nodes": [
+            314,
+            628
+          ],
+          "single_inverse_matrix_bytes": 1806336,
+          "single_fine_reference_matrix_bytes": 25240576
+        },
+        {
+          "initial_circle_stage": {
+            "wavenumber": 3.0,
+            "update_modes": 6,
+            "curve_modes": 90,
+            "nodes": 182,
+            "curvature_modes": 20
+          },
+          "directions": 30,
+          "receivers": 30,
+          "receiver_radius": 10.0,
+          "reference_nodes": [
+            342,
+            684
+          ],
+          "single_inverse_matrix_bytes": 2119936,
+          "single_fine_reference_matrix_bytes": 29942784
+        },
+        {
+          "initial_circle_stage": {
+            "wavenumber": 3.25,
+            "update_modes": 6,
+            "curve_modes": 98,
+            "nodes": 198,
+            "curvature_modes": 20
+          },
+          "directions": 32,
+          "receivers": 32,
+          "receiver_radius": 10.0,
+          "reference_nodes": [
+            370,
+            740
+          ],
+          "single_inverse_matrix_bytes": 2509056,
+          "single_fine_reference_matrix_bytes": 35046400
+        },
+        {
+          "initial_circle_stage": {
+            "wavenumber": 3.5,
+            "update_modes": 7,
+            "curve_modes": 105,
+            "nodes": 212,
+            "curvature_modes": 20
+          },
+          "directions": 35,
+          "receivers": 35,
+          "receiver_radius": 10.0,
+          "reference_nodes": [
+            400,
+            800
+          ],
+          "single_inverse_matrix_bytes": 2876416,
+          "single_fine_reference_matrix_bytes": 40960000
+        },
+        {
+          "initial_circle_stage": {
+            "wavenumber": 3.75,
+            "update_modes": 7,
+            "curve_modes": 113,
+            "nodes": 228,
+            "curvature_modes": 20
+          },
+          "directions": 37,
+          "receivers": 37,
+          "receiver_radius": 10.0,
+          "reference_nodes": [
+            428,
+            856
+          ],
+          "single_inverse_matrix_bytes": 3326976,
+          "single_fine_reference_matrix_bytes": 46895104
+        },
+        {
+          "initial_circle_stage": {
+            "wavenumber": 4.0,
+            "update_modes": 8,
+            "curve_modes": 120,
+            "nodes": 242,
+            "curvature_modes": 20
+          },
+          "directions": 40,
+          "receivers": 40,
+          "receiver_radius": 10.0,
+          "reference_nodes": [
+            456,
+            912
+          ],
+          "single_inverse_matrix_bytes": 3748096,
+          "single_fine_reference_matrix_bytes": 53231616
+        },
+        {
+          "initial_circle_stage": {
+            "wavenumber": 4.25,
+            "update_modes": 8,
+            "curve_modes": 128,
+            "nodes": 258,
+            "curvature_modes": 20
+          },
+          "directions": 42,
+          "receivers": 42,
+          "receiver_radius": 10.0,
+          "reference_nodes": [
+            484,
+            968
+          ],
+          "single_inverse_matrix_bytes": 4260096,
+          "single_fine_reference_matrix_bytes": 59969536
+        },
+        {
+          "initial_circle_stage": {
+            "wavenumber": 4.5,
+            "update_modes": 9,
+            "curve_modes": 135,
+            "nodes": 272,
+            "curvature_modes": 20
+          },
+          "directions": 45,
+          "receivers": 45,
+          "receiver_radius": 10.0,
+          "reference_nodes": [
+            512,
+            1024
+          ],
+          "single_inverse_matrix_bytes": 4734976,
+          "single_fine_reference_matrix_bytes": 67108864
+        },
+        {
+          "initial_circle_stage": {
+            "wavenumber": 4.75,
+            "update_modes": 9,
+            "curve_modes": 143,
+            "nodes": 288,
+            "curvature_modes": 20
+          },
+          "directions": 47,
+          "receivers": 47,
+          "receiver_radius": 10.0,
+          "reference_nodes": [
+            542,
+            1084
+          ],
+          "single_inverse_matrix_bytes": 5308416,
+          "single_fine_reference_matrix_bytes": 75203584
+        },
+        {
+          "initial_circle_stage": {
+            "wavenumber": 5.0,
+            "update_modes": 10,
+            "curve_modes": 150,
+            "nodes": 302,
+            "curvature_modes": 20
+          },
+          "directions": 50,
+          "receivers": 50,
+          "receiver_radius": 10.0,
+          "reference_nodes": [
+            570,
+            1140
+          ],
+          "single_inverse_matrix_bytes": 5837056,
+          "single_fine_reference_matrix_bytes": 83174400
+        }
+      ]
+    }
+  ]
+}

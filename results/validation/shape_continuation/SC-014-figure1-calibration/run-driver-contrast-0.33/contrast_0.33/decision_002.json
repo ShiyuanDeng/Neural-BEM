@@ -1,0 +1,138 @@
+{
+  "index": 2,
+  "decision": {
+    "stage": {
+      "wavenumber": 1.5,
+      "update_modes": 2,
+      "curve_modes": 41,
+      "nodes": 84,
+      "curvature_modes": 20
+    },
+    "config": {
+      "max_iterations": 100,
+      "residual_tolerance": 1e-05,
+      "step_tolerance": 0.001,
+      "gradient_tolerance": 1e-10,
+      "curvature_tail_tolerance": 0.01,
+      "projection_tolerance": 1e-07,
+      "backtracks": 0,
+      "filter_steps": 10,
+      "rank_tolerance": 1e-10,
+      "directions": [
+        "steepest_descent"
+      ]
+    },
+    "reason": "paper fixed frequency ladder"
+  },
+  "committed": true,
+  "stop_reason": "small_step",
+  "relative_residual": 0.0772502335629884,
+  "history": [
+    {
+      "iteration": 0,
+      "relative_residual": 0.07726771851994176,
+      "system_residual": 7.086074258088801e-16,
+      "gradient_inf": 0.0023375223184163635,
+      "jacobian_rank": 5,
+      "singular_values": [
+        1.9691691325467624,
+        1.1709597333090762,
+        1.1663149570557962,
+        0.718115748533431,
+        0.7180347495183911
+      ],
+      "base_curvature_tail": 2.864529480085871e-23
+    },
+    {
+      "iteration": 1,
+      "relative_residual": 0.0772502335629884,
+      "direction": "steepest_descent",
+      "step": 1.0,
+      "filter_index": 0,
+      "curvature_tail": 2.869342503477906e-23,
+      "projection_error": 1.6392246515987586e-15,
+      "coefficient_step_norm": 0.0009453322967268618,
+      "update_norm": 0.0009453322967268618,
+      "rms_displacement": 0.0008678524861299135,
+      "maximum_displacement": 0.0011789436176144468,
+      "system_residual": 6.896978700896373e-16
+    }
+  ],
+  "trials": [
+    {
+      "iteration": 1,
+      "direction": "steepest_descent",
+      "filter_index": 0,
+      "step": 1.0,
+      "projection_error": 1.6392246515987586e-15,
+      "rms_displacement": 0.0008678524861299135,
+      "maximum_displacement": 0.0011789436176144468,
+      "update_norm": 0.0009453322967268618,
+      "coefficient_step_norm": 0.0009453322967268618,
+      "curvature_tail": 2.869342503477906e-23,
+      "relative_residual": 0.0772502335629884,
+      "status": "accepted"
+    }
+  ],
+  "qualification": {
+    "passed": true,
+    "diagnostics": {
+      "nodes": 84,
+      "fine_nodes": 168,
+      "field_relative": 1.3081527281265181e-15,
+      "jacobian_relative": 7.779474686657652e-16,
+      "tolerance": 1e-06
+    }
+  },
+  "work_before": {
+    "attempted": 47,
+    "completed": 47,
+    "failed": 0,
+    "jacobians": 13,
+    "factorizations": 47,
+    "rhs_columns": 1292,
+    "seconds": {
+      "assembly": 31.524652135092765,
+      "receiver_operator": 1.5999232768081129,
+      "factorization": 2.9091771750245243,
+      "forward_solve": 0.4887341985013336,
+      "initial_geometry": 0.0028663550037890673,
+      "reciprocal_solve": 0.018159525468945503,
+      "jacobian_contraction": 0.00038045854307711124,
+      "least_squares": 0.00036631221882998943,
+      "curvature_checks": 0.008177145384252071,
+      "geometry_proposals": 0.01717431517317891
+    }
+  },
+  "work_after": {
+    "attempted": 50,
+    "completed": 50,
+    "failed": 0,
+    "jacobians": 16,
+    "factorizations": 50,
+    "rhs_columns": 1382,
+    "seconds": {
+      "assembly": 31.596567262196913,
+      "receiver_operator": 1.6077431270387024,
+      "factorization": 2.9116518502123654,
+      "forward_solve": 0.48972156550735235,
+      "initial_geometry": 0.003620733041316271,
+      "reciprocal_solve": 0.02616796735674143,
+      "jacobian_contraction": 0.0005491955671459436,
+      "least_squares": 0.0004208022728562355,
+      "curvature_checks": 0.009282969404011965,
+      "geometry_proposals": 0.019620296079665422
+    }
+  },
+  "area_error": {
+    "relative_symmetric_difference": 0.2983838199824537,
+    "relative_missing_area": 0.1550449797703931,
+    "relative_excess_area": 0.14333884021206061,
+    "true_polygon_area": 2.6215389205033555,
+    "recovered_polygon_area": 2.5908508200423386,
+    "samples": 8192,
+    "coarse_samples": 4096,
+    "coarse_relative_symmetric_difference": 0.2983832445512471,
+    "refinement_absolute_change": 5.754312066286182e-07
+  }
+}

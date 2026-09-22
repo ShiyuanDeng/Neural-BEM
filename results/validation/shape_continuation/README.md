@@ -7,10 +7,11 @@ The implementation is on `feature/shape-frequency-continuation`. Current
 controls cover the forward physics, normal derivative, geometry, filtered-step
 stopping, single-frequency recovery, warm starts, policy handoffs, cache reuse, qualification rollback and import
 isolation and paper-profile/area-scoring controls: **72 tests pass** with the existing Kress isolation/block tests.
-The ellipse and extended glider pass the declared recovery gates, and
-[SC-013](SC-013-paper-glider-recovery/README.md) recovers the paper's §4.1
-glider at both Figure 1 contrasts. Earlier failures remain below; these cases
-do not establish general robustness.
+The ellipse and extended glider pass the declared recovery gates.
+[SC-014](SC-014-figure1-calibration/README.md) reproduces the published Figure 1
+error curve at contrast 0.33 over k in [1,5], using the authors' own
+transmission-driver settings; contrast 10 is bracketed, not matched. Earlier
+failures remain below; these cases do not establish general robustness.
 
 | Qualification | Finding |
 |---|---|
@@ -26,7 +27,8 @@ do not establish general robustness.
 | [SC-010 step/controller refactor](SC-010-step-controller/README.md) | Fixed trajectories and trials remain bitwise/exactly identical; a 13-decision adaptive ellipse example passes all gates. |
 | [SC-011 paper preparation](SC-011-paper-preparation/README.md) | Actual Figure 1 contrasts and audited settings; zero-solve full plan; two one-update smoke cases pass resolution checks in 2.85 s total. No expensive inverse run. |
 | [SC-012 user-run paper glider](SC-012-paper-glider-k2/README.md) | Contrast .33 reaches k=2 in 16.42 s / 231 forwards; all resolution checks pass, but last two stages accept no updates. Final area error 15.7%; not converged recovery. |
-| [SC-013 Figure 1 recovery](SC-013-paper-glider-recovery/README.md) | Four settings corrected against the authors' code. Both contrasts recover the glider: area error 0.849% at k=5 (η=.33) and 0.297% at k=3 (η=10). Supersedes the SC-012 stall. Digitized Figure 1 shows these run 2.5x–26x **below** the published curve, so the published values are not reproduced. |
+| [SC-013 Figure 1 recovery](SC-013-paper-glider-recovery/README.md) | Four settings corrected against the authors' code. Both contrasts recover the glider: area error 0.849% at k=5 (η=.33) and 0.297% at k=3 (η=10). Supersedes the SC-012 stall. Digitized Figure 1 shows these run 2.5x–26x **below** the published curve. Partly superseded by SC-014. |
+| [SC-014 Figure 1 calibration](SC-014-figure1-calibration/README.md) | Five arms against the digitized figure. The published axis is the **raw** area difference, and the update band is the driver's `floor(2kL/2π)`. Contrast 0.33 replicates over k∈[1,5] (log10 RMS 0.117); contrast 10 is bracketed between the prose and driver band rules, not matched. |
 | [SC-009 conservative scoring](SC-009-conservative-scoring/summary.json) | Ellipse regression with the shape gate applied to the continuous-boundary error upper bound. |
 
 Each run retains its source hashes, command, observations, states and rejected

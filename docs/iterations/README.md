@@ -107,14 +107,21 @@ implementation and directed that the paper's algorithm be made to work. The
 trust-region band had excluded the update's own highest harmonic; with that and
 three further settings corrected against the authors' code,
 [SC-013](../../results/validation/shape_continuation/SC-013-paper-glider-recovery/README.md)
-recovers the Figure 1 glider at both contrasts — area error 0.849% at k=5 for
-η=0.33 and 0.297% at k=3 for η=10. The **published error values are not
-reproduced**: a digitization of Figure 1 puts these 2.5x–26x below the printed
-curve, so this is an internally consistent fixed-ladder baseline rather than a
-calibrated reproduction, and the leading explanation (update-band width) has a
-recorded discriminating check. This is §4.1 only: the paper's harder shapes,
-higher frequencies, noise and any adaptive-policy benefit remain untested, and
-no successor experiment is proposed or approved.
+recovers the Figure 1 glider at both contrasts, but 2.5x-26x below the printed
+curve rather than matching it. A Codex review of that work found two defects in
+the candidate search and listed the transmission drivers the reading had missed.
+[Iteration 03](shape_frequency_continuation/iteration_03/01_results.md) closes
+the calibration question with
+[SC-014](../../results/validation/shape_continuation/SC-014-figure1-calibration/README.md):
+the published axis is the **raw** area difference rather than §4's normalized
+`εΓ`, and the update band is the driver's `floor(2kL/2π)` with no interior
+wavenumber. On the authors' own transmission-driver settings, **contrast 0.33
+reproduces the published curve over k in [1,5]** (log10 RMS 0.117 of the ratio);
+contrast 10 is bracketed between two band rules, not matched. The calibrated
+fixed-ladder baseline for any adaptive comparison is therefore the driver
+profile, not §4's prose. This remains §4.1 only: the paper's harder shapes,
+noise, k>5 and any adaptive-policy benefit are untested, and no successor
+experiment is proposed or approved.
 
 ## What to do at each stage
 

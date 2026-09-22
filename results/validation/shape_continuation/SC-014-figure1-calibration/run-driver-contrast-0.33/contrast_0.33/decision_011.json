@@ -1,0 +1,196 @@
+{
+  "index": 11,
+  "decision": {
+    "stage": {
+      "wavenumber": 3.75,
+      "update_modes": 7,
+      "curve_modes": 117,
+      "nodes": 236,
+      "curvature_modes": 20
+    },
+    "config": {
+      "max_iterations": 100,
+      "residual_tolerance": 1e-05,
+      "step_tolerance": 0.001,
+      "gradient_tolerance": 1e-10,
+      "curvature_tail_tolerance": 0.01,
+      "projection_tolerance": 1e-07,
+      "backtracks": 0,
+      "filter_steps": 10,
+      "rank_tolerance": 1e-10,
+      "directions": [
+        "steepest_descent"
+      ]
+    },
+    "reason": "paper fixed frequency ladder"
+  },
+  "committed": true,
+  "stop_reason": "small_step",
+  "relative_residual": 0.02570123664216023,
+  "history": [
+    {
+      "iteration": 0,
+      "relative_residual": 0.026020786897330436,
+      "system_residual": 1.1295675590554193e-15,
+      "gradient_inf": 0.002686162284564999,
+      "jacobian_rank": 15,
+      "singular_values": [
+        2.912816903154,
+        1.9352820620440325,
+        1.9165187831980992,
+        1.712787223221821,
+        1.7078611400372705,
+        1.586727038915717,
+        1.5394854909471614,
+        1.4375902129034253,
+        1.385765057992603,
+        1.192233505927423,
+        1.1769945520803655,
+        0.9225867800080035,
+        0.8671605123649507,
+        0.5929112190560005,
+        0.5715804680720663
+      ],
+      "base_curvature_tail": 0.00011563751950732281
+    },
+    {
+      "iteration": 1,
+      "relative_residual": 0.025797347554701183,
+      "direction": "steepest_descent",
+      "step": 1.0,
+      "filter_index": 0,
+      "curvature_tail": 0.00011871512588896264,
+      "projection_error": 6.305424916340069e-15,
+      "coefficient_step_norm": 0.001943640383299139,
+      "update_norm": 0.001943640383299139,
+      "rms_displacement": 0.0014880387186318976,
+      "maximum_displacement": 0.0038774282485534747,
+      "system_residual": 1.1308224871988883e-15,
+      "gradient_inf": 0.004482669004498916,
+      "jacobian_rank": 15,
+      "singular_values": [
+        2.9135073789590415,
+        1.9358045024497192,
+        1.9172609606757873,
+        1.7134978926787572,
+        1.7077026768024375,
+        1.5873735316131303,
+        1.5392317116304068,
+        1.4367904396282472,
+        1.386248168058442,
+        1.1909874722533227,
+        1.1765671235943689,
+        0.9227906586207543,
+        0.8659991359386829,
+        0.5925705617353033,
+        0.5713428039348742
+      ],
+      "base_curvature_tail": 0.00011871512588896264
+    },
+    {
+      "iteration": 2,
+      "relative_residual": 0.02570123664216023,
+      "direction": "steepest_descent",
+      "step": 1.0,
+      "filter_index": 0,
+      "curvature_tail": 0.00012018236580785797,
+      "projection_error": 4.8840350038879275e-15,
+      "coefficient_step_norm": 0.0009008373154463942,
+      "update_norm": 0.0009008373154463942,
+      "rms_displacement": 0.0008261071623137064,
+      "maximum_displacement": 0.001673931315447355,
+      "system_residual": 1.1339359479931244e-15
+    }
+  ],
+  "trials": [
+    {
+      "iteration": 1,
+      "direction": "steepest_descent",
+      "filter_index": 0,
+      "step": 1.0,
+      "projection_error": 6.305424916340069e-15,
+      "rms_displacement": 0.0014880387186318976,
+      "maximum_displacement": 0.0038774282485534747,
+      "update_norm": 0.001943640383299139,
+      "coefficient_step_norm": 0.001943640383299139,
+      "curvature_tail": 0.00011871512588896264,
+      "relative_residual": 0.025797347554701183,
+      "status": "accepted"
+    },
+    {
+      "iteration": 2,
+      "direction": "steepest_descent",
+      "filter_index": 0,
+      "step": 1.0,
+      "projection_error": 4.8840350038879275e-15,
+      "rms_displacement": 0.0008261071623137064,
+      "maximum_displacement": 0.001673931315447355,
+      "update_norm": 0.0009008373154463942,
+      "coefficient_step_norm": 0.0009008373154463942,
+      "curvature_tail": 0.00012018236580785797,
+      "relative_residual": 0.02570123664216023,
+      "status": "accepted"
+    }
+  ],
+  "qualification": {
+    "passed": true,
+    "diagnostics": {
+      "nodes": 236,
+      "fine_nodes": 472,
+      "field_relative": 1.1344641105559303e-15,
+      "jacobian_relative": 1.814953622812414e-15,
+      "tolerance": 1e-06
+    }
+  },
+  "work_before": {
+    "attempted": 150,
+    "completed": 150,
+    "failed": 0,
+    "jacobians": 116,
+    "factorizations": 150,
+    "rhs_columns": 6566,
+    "seconds": {
+      "assembly": 39.928875885671005,
+      "receiver_operator": 2.1809533410705626,
+      "factorization": 3.193823570618406,
+      "forward_solve": 0.6073854747228324,
+      "initial_geometry": 0.012407616479322314,
+      "reciprocal_solve": 0.6680712113156915,
+      "jacobian_contraction": 0.03442967287264764,
+      "least_squares": 0.01016375538893044,
+      "curvature_checks": 0.13768858928233385,
+      "geometry_proposals": 0.33406293275766075
+    }
+  },
+  "work_after": {
+    "attempted": 154,
+    "completed": 154,
+    "failed": 0,
+    "jacobians": 120,
+    "factorizations": 154,
+    "rhs_columns": 6862,
+    "seconds": {
+      "assembly": 41.00759713444859,
+      "receiver_operator": 2.2415524690877646,
+      "factorization": 3.2437904672697186,
+      "forward_solve": 0.6241542906500399,
+      "initial_geometry": 0.013629769440740347,
+      "reciprocal_solve": 0.7417913572862744,
+      "jacobian_contraction": 0.03885306301526725,
+      "least_squares": 0.010615366511046886,
+      "curvature_checks": 0.14107059803791344,
+      "geometry_proposals": 0.34247644362039864
+    }
+  },
+  "area_error": {
+    "relative_symmetric_difference": 0.10859072010308804,
+    "relative_missing_area": 0.05457120138211998,
+    "relative_excess_area": 0.05401951872096805,
+    "true_polygon_area": 2.6215389205033555,
+    "recovered_polygon_area": 2.62009266293536,
+    "samples": 8192,
+    "coarse_samples": 4096,
+    "coarse_relative_symmetric_difference": 0.10858978660650823,
+    "refinement_absolute_change": 9.334965798135642e-07
+  }
+}
