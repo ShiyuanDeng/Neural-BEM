@@ -122,6 +122,14 @@ def curvature_tail(curve, band):
     return float(np.sum(energy[np.abs(modes) > band]) / np.sum(energy))
 
 
+@dataclass(frozen=True)
+class CurveStep:
+    shape: FourierCurve
+    projection_error: float
+    rms_displacement: float
+    maximum_displacement: float
+
+
 def displaced(curve, coefficients, storage_band, *, filter_index=0, step=1.0,
               projection_tolerance=1e-7):
     """Normal update, optional eq. 19 filter of Cartesian displacement, refit."""
@@ -139,7 +147,10 @@ def displaced(curve, coefficients, storage_band, *, filter_index=0, step=1.0,
     # Keep the product h*n well resolved before changing its parameterization.
     updated = FourierCurve.from_samples(curve.values(count) + delta, count // 2 - 1)
     # Avoid oversampling this already dense temporary Fourier interpolant.
-    return _refit_samples(updated, storage_band, count, projection_tolerance)
+    shape, projection = _refit_samples(updated, storage_band, count, projection_tolerance)
+    # Measure physical motion after filtering, before the arclength gauge changes.
+    rms = np.sqrt(np.sum(np.abs(delta) ** 2 * nodes.arc_length_weights) / nodes.perimeter)
+    return CurveStep(shape, projection, float(rms), float(np.max(np.abs(delta))))
 
 
 def _refit_samples(curve, band, count, tolerance):

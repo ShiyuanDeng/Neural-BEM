@@ -85,14 +85,47 @@ def test_normal_shape_jacobian_matches_rebuilt_forward(nodes):
     tangent = jac @ direction
     errors = []
     for step in (2e-3, 1e-3):
-        plus, _ = displaced(curve, direction, 32, step=step)
-        minus, _ = displaced(curve, direction, 32, step=-step)
+        plus = displaced(curve, direction, 32, step=step).shape
+        minus = displaced(curve, direction, 32, step=-step).shape
         # Resolve the refitted geometry more finely for the FD control.
         fd = (solve(plus, 2., 1.44, acquisition, 128).prediction
               - solve(minus, 2., 1.44, acquisition, 128).prediction) / (2 * step)
         errors.append(np.linalg.norm(fd - tangent) / np.linalg.norm(tangent))
     assert errors[-1] < 2e-5
     assert errors[-1] < errors[0] * .8 + 1e-7
+
+
+def test_step_size_measures_physical_filtered_motion_before_reparameterization():
+    circle = FourierCurve.circle()
+    coefficients = np.zeros(9)
+    coefficients[4] = .01
+    plain = displaced(circle, coefficients, 32)
+    filtered = displaced(circle, coefficients, 32, filter_index=3)
+    assert plain.rms_displacement == pytest.approx(.01 / np.sqrt(2), rel=1e-13)
+    assert plain.maximum_displacement == pytest.approx(.01, rel=1e-13)
+    # The Cartesian displacement has modes -3 and 5. The Gaussian suppresses
+    # both: a raw coefficient norm of .01 would miss that motion is negligible.
+    assert filtered.rms_displacement < 1e-12
+    assert filtered.maximum_displacement < 1e-12
+    assert np.max(np.abs(filtered.shape.values(1024) - circle.values(1024))) < 1e-10
+
+
+def test_inverse_stops_on_small_filtered_motion(monkeypatch):
+    from . import inverse
+    def require_filter(*args, **kwargs):
+        if kwargs["filter_index"] < 2:
+            raise ValueError("Controlled feasibility rejection of unfiltered proposals.")
+        return displaced(*args, **kwargs)
+    monkeypatch.setattr(inverse, "displaced", require_filter)
+    acquisition = Acquisition.ring(10, 10)
+    observation = Observation(1., acquisition, circle_series(.8, 1., 1.44, acquisition))
+    result = fit_frequency(FourierCurve.circle(), observation, Stage(1., 3, 16, 64, 2), 1.44,
+        config=FitConfig(step_tolerance=.15, backtracks=0, max_iterations=3))
+    last = result.history[-1]
+    assert result.stop_reason == "small_step"
+    assert len(result.states) == 2 and last["filter_index"] == 2
+    assert last["rms_displacement"] < .15 < last["coefficient_step_norm"]
+    assert result.relative_residual > 1e-5  # The stop does not claim a data fit.
 
 
 def test_single_frequency_inverse_recovers_circle_and_preserves_observations():

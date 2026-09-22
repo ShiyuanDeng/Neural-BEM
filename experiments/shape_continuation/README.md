@@ -2,7 +2,8 @@
 
 Implementation started 2026-09-22 under the user's explicit instruction to
 replicate the algorithm in Borges, Rachh and Greengard, or build the inverse
-until its continuation scheme can be implemented. Existing branch only.
+until its continuation scheme can be implemented. Continued on the user-authorized
+`feature/shape-frequency-continuation` branch, with committed/pushed checkpoints.
 Owner: Codex. Independent reviewer: unassigned.
 
 Reference: [On the robustness of inverse scattering for penetrable,
@@ -35,8 +36,9 @@ runtime selector, modal compression, or experimental Laurent solver is used.
 - `test_pipeline.py`: independent circle series, derivative convergence,
   geometry/reparameterization, recovery, continuation and import isolation.
 
-Validation is bounded to unit/derivative checks and short synthetic smoke
-recoveries (at most 600 forward evaluations and 10 minutes per smoke run).
+Validation is bounded to unit/derivative checks, short synthetic smoke
+recoveries, and a glider ladder through k=8 (1500 inverse forward evaluations
+and 10 minutes of inverse work per run).
 The 117-frequency paper campaign and adaptive-policy comparisons are not
 part of this implementation qualification. Truth generates observations and
 scores the result; it is absent from the optimizer interface.
@@ -150,6 +152,10 @@ Differences that matter:
   tolerances `1e-5` and 50-iteration default are retained; the CLI bounds the
   pilot at 20 iterations per frequency. Stops distinguish data fit, stationarity,
   small step, no admissible decreasing step, iteration limit, and work limit.
+  Step size is the arclength-weighted RMS physical displacement after Gaussian
+  filtering, measured before reparameterization changes the point labels.
+  Maximum displacement and the raw coefficient norm are retained as diagnostics.
+  A small filtered step can end a stage without asserting stationarity or a fit.
 - The default smoke run fixes storage and forward resolution. The optional
   wavelength-scaled policy and N/2N stage checks support longer ladders. A
   failed stage check stops with saved state; there is no hidden solver switch

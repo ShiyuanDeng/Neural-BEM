@@ -113,11 +113,16 @@ def fit_frequency(initial, observation, stage, contrast, *, config=None, work=No
                         trials.append(trial)
                         try:
                             with timed(work, "geometry_proposals"):
-                                candidate, projection = displaced(shape, direction, stage.curve_modes,
+                                proposal = displaced(shape, direction, stage.curve_modes,
                                     filter_index=filtering, step=step, projection_tolerance=config.projection_tolerance)
+                            candidate = proposal.shape
+                            trial.update(projection_error=proposal.projection_error,
+                                rms_displacement=proposal.rms_displacement,
+                                maximum_displacement=proposal.maximum_displacement,
+                                coefficient_step_norm=float(np.linalg.norm(step * direction)))
                             with timed(work, "curvature_checks"):
                                 tail = curvature_tail(candidate, stage.curvature_modes)
-                            trial.update(curvature_tail=tail, projection_error=projection)
+                            trial.update(curvature_tail=tail)
                             if tail > config.curvature_tail_tolerance:
                                 trial["status"] = "curvature_refused"
                                 continue
@@ -127,7 +132,7 @@ def fit_frequency(initial, observation, stage, contrast, *, config=None, work=No
                             trial["relative_residual"] = candidate_error
                             trial["status"] = "decreasing" if candidate_error < error else "nondecreasing"
                             if candidate_error < error:
-                                candidates.append((candidate_error, candidate, forward, trial, step * direction))
+                                candidates.append((candidate_error, candidate, forward, trial))
                         except (ValueError, FloatingPointError, np.linalg.LinAlgError) as exc:
                             trial.update(status="invalid", detail=str(exc))
                     if candidates:
@@ -138,19 +143,19 @@ def fit_frequency(initial, observation, stage, contrast, *, config=None, work=No
             if accepted is None:
                 reason = "no_acceptable_step"
                 break
-            error, shape, current, trial, coefficient_step = accepted
+            error, shape, current, trial = accepted
             states.append(shape)
             trial["status"] = "accepted"
             history.append(dict(iteration=iteration, relative_residual=error,
                 direction=trial["direction"], step=trial["step"], filter_index=trial["filter_index"],
                 curvature_tail=trial["curvature_tail"], projection_error=trial["projection_error"],
-                coefficient_step_norm=float(np.linalg.norm(coefficient_step)),
+                coefficient_step_norm=trial["coefficient_step_norm"],
+                rms_displacement=trial["rms_displacement"], maximum_displacement=trial["maximum_displacement"],
                 system_residual=current.system_residual))
             if error <= config.residual_tolerance:
                 reason = "data_fit"
                 break
-            # A filtered coefficient norm would not describe the actual update.
-            if trial["filter_index"] == 0 and np.linalg.norm(coefficient_step) <= config.step_tolerance:
+            if trial["rms_displacement"] <= config.step_tolerance:
                 reason = "small_step"
                 break
     except BudgetExceeded:

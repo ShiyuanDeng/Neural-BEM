@@ -50,6 +50,8 @@ def main():
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--contrast", type=float, default=1.44)
     parser.add_argument("--max-iterations", type=int, default=20)
+    parser.add_argument("--backtracks", type=int, default=8,
+                        help="Step halvings before stronger filtering; 0 follows the paper's filter sequence.")
     parser.add_argument("--k-start", type=float, default=1.)
     parser.add_argument("--k-stop", type=float, default=2.)
     parser.add_argument("--k-step", type=float, default=.25)
@@ -92,7 +94,7 @@ def run(args):
         return paper_stage(k, args.contrast, shape.nodes(grid_size(shape.band)).perimeter,
             previous_curve_modes=max(args.curve_modes, previous.curve_modes if previous else 1),
             points_per_wavelength=args.points_per_wavelength, minimum_nodes=args.nodes)
-    config = FitConfig(max_iterations=args.max_iterations)
+    config = FitConfig(max_iterations=args.max_iterations, backtracks=args.backtracks)
     observation_work = Work(max_forwards=2 * len(waves), max_seconds=args.max_seconds)
     observations, qualifications = [], []
     for k in waves:
