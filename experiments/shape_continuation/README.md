@@ -20,6 +20,8 @@ runtime selector, modal compression, or experimental Laurent solver is used.
 
 - `geometry.py`: Cartesian Fourier curve storage, arclength reparameterization,
   scalar Fourier normal updates, Gaussian filtering, curvature-energy gate.
+- `validation.py`: conservative spatial pruning of polygon intersection checks,
+  qualified against the all-pairs reference at identical samples/tolerances.
 - `forward.py`: plane-wave acquisition, full receiver/illumination matrix,
   dense nodal Müller/Kress solves, reciprocal shape Jacobian.
 - `inverse.py`: one-frequency real least squares, GN/SD candidate evaluation,
@@ -28,6 +30,7 @@ runtime selector, modal compression, or experimental Laurent solver is used.
   including the paper's fixed frequency grid and §4 update-mode rule.
 - `run.py`: bounded synthetic recovery demonstration and saved provenance.
 - `metrics.py`: evaluation-only boundary distances; no inverse dependency.
+- `benchmark.py`: inverse-only replay timing from saved observations.
 - `test_pipeline.py`: independent circle series, derivative convergence,
   geometry/reparameterization, recovery, continuation and import isolation.
 
@@ -136,6 +139,10 @@ Differences that matter:
 ## Qualification and remaining work
 
 See the [saved qualification](../../results/validation/shape_continuation/README.md).
+The [cleanup/profile qualification](../../results/validation/shape_continuation/SC-002-profile-after/README.md)
+reduced this ellipse inverse from 19.66 s to 0.835 s by accelerating the geometry
+checks. Every saved accepted state is bitwise unchanged. This is measured at
+128 Kress nodes and is not a high-frequency performance claim.
 This establishes a small working inverse and continuation interface. It does
 not establish robustness for gliders/cavities, high contrast, noisy/limited
 aperture observations, unknown material, or multiple components.

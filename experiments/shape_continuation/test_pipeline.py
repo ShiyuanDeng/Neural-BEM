@@ -13,6 +13,7 @@ from .geometry import FourierCurve, curvature_tail, normal_basis, reparameterize
 from .inverse import FitConfig, Observation, fit_frequency, run_continuation
 from .schedule import Stage, paper_stage, paper_wavenumbers
 from .metrics import boundary_distance, points_to_polygon_distance
+from .validation import self_intersections
 
 
 def ellipse(a=1.0, b=0.8):
@@ -176,3 +177,29 @@ def test_cartesian_real_and_complex_fourier_forms_are_equivalent():
     shape = FourierCurve(coefficients)
     expected = fourier_curve(cosine, sine, component_id="algebra").evaluate(2 * np.pi * np.arange(64) / 64).points
     assert np.allclose(shape.values(64), expected[:, 0] + 1j * expected[:, 1], atol=1e-13)
+
+
+def test_spatial_intersection_pruning_matches_all_pairs_reference():
+    from ordered_boundary import sampled_self_intersection_count
+    rng = np.random.default_rng(873)
+    polygons = [rng.normal(size=(n, 2)) for n in (3, 4, 8, 31, 64) for _ in range(8)]
+    polygons += [np.array(p, float) for p in (
+        [[0, 0], [1, 1], [0, 1], [1, 0]],
+        [[0, 0], [2, 0], [1, 0], [1, 1]],
+        [[0, 0], [1, 0], [1, 0], [1, 1], [0, 1]],
+        [[0, 0], [0, 0], [0, 0]],
+        [[0, 0], [1, 0], [.5, 1e-13], [.5, 1]],
+        [[0, 0], [1, 0], [.5, 1e-10], [.5, 1]],
+    )]
+    for polygon in polygons:
+        for scale, offset in ((1., 0.), (1e-3, 0.), (2., 1e6)):
+            points = polygon * scale + offset
+            for tolerance in (0., 1e-12, 1e-6):
+                assert self_intersections(points, tolerance) == sampled_self_intersection_count(
+                    points, relative_tolerance=tolerance)
+
+
+def test_dense_geometry_checks_keep_the_same_sample_resolution():
+    from .geometry import grid_size
+    curve, _ = reparameterize(ellipse(), 48)
+    assert curve.validate().num_nodes == grid_size(48) == 2048

@@ -2,7 +2,7 @@
 from dataclasses import dataclass, field
 import numpy as np
 
-from .forward import Acquisition, BudgetExceeded, Work, solve, shape_jacobian
+from .forward import Acquisition, BudgetExceeded, Work, solve, shape_jacobian, timed
 from .geometry import FourierCurve, displaced, normal_basis, curvature_tail, reparameterize, integer
 from .schedule import Stage
 
@@ -72,7 +72,8 @@ def fit_frequency(initial, observation, stage, contrast, *, config=None, work=No
         raise ValueError("A stage may not silently discard stored shape modes.")
     padding = stage.curve_modes - initial.band
     shape = FourierCurve(np.pad(initial.coefficients, (padding, padding)))
-    shape.validate()
+    with timed(work, "initial_geometry"):
+        shape.validate()
     scale = float(np.linalg.norm(observation.scattered)) or 1.0
     history, trials = [], []
     states = [shape]
@@ -91,7 +92,8 @@ def fit_frequency(initial, observation, stage, contrast, *, config=None, work=No
             residual = real_stack((current.prediction - observation.scattered).ravel()) / scale
             gradient = matrix.T @ residual
             gradient_norm = float(np.linalg.norm(gradient, ord=np.inf))
-            gn, _, rank, singular = np.linalg.lstsq(matrix, -residual, rcond=config.rank_tolerance)
+            with timed(work, "least_squares"):
+                gn, _, rank, singular = np.linalg.lstsq(matrix, -residual, rcond=config.rank_tolerance)
             history[-1].update(gradient_inf=gradient_norm, jacobian_rank=int(rank),
                                singular_values=singular.tolist())
             if gradient_norm <= config.gradient_tolerance:
@@ -110,9 +112,11 @@ def fit_frequency(initial, observation, stage, contrast, *, config=None, work=No
                         trial = dict(iteration=iteration, direction=label, filter_index=filtering, step=step)
                         trials.append(trial)
                         try:
-                            candidate, projection = displaced(shape, direction, stage.curve_modes,
-                                filter_index=filtering, step=step, projection_tolerance=config.projection_tolerance)
-                            tail = curvature_tail(candidate, stage.curvature_modes)
+                            with timed(work, "geometry_proposals"):
+                                candidate, projection = displaced(shape, direction, stage.curve_modes,
+                                    filter_index=filtering, step=step, projection_tolerance=config.projection_tolerance)
+                            with timed(work, "curvature_checks"):
+                                tail = curvature_tail(candidate, stage.curvature_modes)
                             trial.update(curvature_tail=tail, projection_error=projection)
                             if tail > config.curvature_tail_tolerance:
                                 trial["status"] = "curvature_refused"
@@ -167,7 +171,8 @@ def run_continuation(initial, observations, stages, contrast, *, config=None, wo
         raise ValueError("Stored curve bandwidth cannot decrease in this baseline.")
     config = FitConfig() if config is None else config
     work = Work() if work is None else work
-    shape, _ = reparameterize(initial, stages[0].curve_modes, tolerance=config.projection_tolerance)
+    with timed(work, "initial_geometry"):
+        shape, _ = reparameterize(initial, stages[0].curve_modes, tolerance=config.projection_tolerance)
     results = []
     for observation, stage in zip(observations, stages):
         result = fit_frequency(shape, observation, stage, contrast, config=config, work=work)

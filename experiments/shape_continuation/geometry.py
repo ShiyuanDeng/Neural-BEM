@@ -5,7 +5,8 @@ import operator
 import numpy as np
 from scipy.interpolate import CubicSpline
 
-from ordered_boundary import PeriodicCurve2D, sampled_self_intersection_count
+from ordered_boundary import PeriodicCurve2D
+from .validation import self_intersections
 
 
 def integer(value, name, minimum=1):
@@ -76,7 +77,7 @@ class FourierCurve:
         curve = self.nodes(grid_size(self.band))
         if curve.signed_area <= 0 or np.min(curve.speeds) < 1e-6 * np.mean(curve.speeds):
             raise ValueError("Curve must be regular and counterclockwise.")
-        if sampled_self_intersection_count(curve.points):
+        if self_intersections(curve.points):
             raise ValueError("Curve self-intersects.")
         return curve
 
@@ -95,20 +96,7 @@ def arclength_angles(curve):
 def reparameterize(curve, band, *, tolerance=1e-7):
     """Refit uniform-arclength samples; refuse excessive Cartesian truncation."""
     count = grid_size(max(curve.band, band))
-    nodes = curve.nodes(count)
-    angles, _ = arclength_angles(nodes)
-    inverse = CubicSpline(np.r_[angles, 2 * np.pi], np.r_[nodes.parameters, 2 * np.pi])
-    theta = inverse(nodes.parameters)
-    periodic = CubicSpline(np.r_[nodes.parameters, 2 * np.pi],
-                           np.r_[curve.values(count), curve.values(count)[0]], bc_type="periodic")
-    target = periodic(theta)
-    result = FourierCurve.from_samples(target, band)
-    error = float(np.max(np.abs(result.values(count) - target)))
-    scale = nodes.perimeter / (2 * np.pi)
-    if error > tolerance * scale:
-        raise ValueError(f"Arclength projection unresolved: {error / scale:.3g} relative.")
-    result.validate()
-    return result, error
+    return _refit_samples(curve, band, count, tolerance)
 
 
 def normal_basis(curve, band):
@@ -154,7 +142,7 @@ def _refit_samples(curve, band, count, tolerance):
     nodes = curve.nodes(count)
     if nodes.signed_area <= 0 or np.min(nodes.speeds) < 1e-6 * np.mean(nodes.speeds):
         raise ValueError("Invalid displaced curve.")
-    if sampled_self_intersection_count(nodes.points):
+    if self_intersections(nodes.points):
         raise ValueError("Displaced curve self-intersects.")
     angles, _ = arclength_angles(nodes)
     inverse = CubicSpline(np.r_[angles, 2 * np.pi], np.r_[nodes.parameters, 2 * np.pi])
@@ -164,6 +152,6 @@ def _refit_samples(curve, band, count, tolerance):
     result = FourierCurve.from_samples(target, band)
     error = float(np.max(np.abs(result.values(count) - target)))
     if error > tolerance * nodes.perimeter / (2 * np.pi):
-        raise ValueError("Updated curve exceeds the Cartesian projection tolerance.")
+        raise ValueError(f"Arclength projection unresolved: {error / (nodes.perimeter / (2*np.pi)):.3g} relative.")
     result.validate()
     return result, error

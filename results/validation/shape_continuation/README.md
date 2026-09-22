@@ -6,6 +6,11 @@ No branch/worktree was created. No independent review is claimed.
 
 [Implementation and exact algorithm differences](../../../experiments/shape_continuation/README.md).
 
+**Subsequent cleanup/profile:** [SC-002](SC-002-profile-after/README.md) reduces
+inverse-only runtime from 19.66 s to 0.835 s on the saved ellipse, with bitwise
+identical accepted states and 34 passing tests. The original SC-001 records
+below remain unchanged.
+
 ## Evidence
 
 - New pipeline plus existing Kress isolation and block controls: **32 tests

@@ -1,5 +1,6 @@
 """Equal-density transmission, dimensionless k, plane waves, full aperture."""
 from dataclasses import dataclass, field
+from contextlib import contextmanager
 from time import perf_counter
 
 import numpy as np
@@ -52,6 +53,7 @@ class Work:
     jacobians: int = 0
     factorizations: int = 0
     rhs_columns: int = 0
+    seconds: dict = field(default_factory=dict)
     started: float = field(default_factory=perf_counter, repr=False)
 
     def check(self):
@@ -59,8 +61,19 @@ class Work:
             raise BudgetExceeded("Forward/time budget exhausted.")
 
     def summary(self):
-        return {name: getattr(self, name) for name in
-                ("attempted", "completed", "failed", "jacobians", "factorizations", "rhs_columns")}
+        counters = {name: getattr(self, name) for name in
+                    ("attempted", "completed", "failed", "jacobians", "factorizations", "rhs_columns")}
+        return dict(counters, seconds=dict(self.seconds))
+
+
+@contextmanager
+def timed(work, name):
+    started = perf_counter()
+    try:
+        yield
+    finally:
+        if work is not None:
+            work.seconds[name] = work.seconds.get(name, 0.0) + perf_counter() - started
 
 
 @dataclass
@@ -96,17 +109,21 @@ def solve(shape, wavenumber, contrast, acquisition, nodes, *, work=None):
         # Explicit scope prevents ambient acceleration/device contexts changing the model.
         with execution(kernels="reference", device="cpu"):
             ki = wavenumber * np.sqrt(contrast)
-            system = build_muller_system(curve, wavenumber, ki)
-            receiver = build_exterior_receiver_operator(curve, acquisition.receivers, wavenumber)
+            with timed(work, "assembly"):
+                system = build_muller_system(curve, wavenumber, ki)
+            with timed(work, "receiver_operator"):
+                receiver = build_exterior_receiver_operator(curve, acquisition.receivers, wavenumber)
             field = np.exp(1j * wavenumber * (curve.points @ acquisition.directions.T))
             normal = 1j * wavenumber * (curve.normals @ acquisition.directions.T) * field
             rhs = np.vstack((field, normal))
-            factors = lu_factor(system.system_matrix)
+            with timed(work, "factorization"):
+                factors = lu_factor(system.system_matrix)
             if work is not None:
                 work.factorizations += 1
                 work.rhs_columns += rhs.shape[1]
-            traces, residual = _solve(system.system_matrix, factors, rhs)
-            prediction = receiver.apply_state(traces)
+            with timed(work, "forward_solve"):
+                traces, residual = _solve(system.system_matrix, factors, rhs)
+                prediction = receiver.apply_state(traces)
         if not np.isfinite(prediction).all():
             raise FloatingPointError("Nonfinite scattered field.")
     except Exception:
@@ -133,13 +150,15 @@ def shape_jacobian(state, normal_displacements, *, work=None):
             raise BudgetExceeded("Time budget exhausted before Jacobian.")
         work.jacobians += 1
         work.rhs_columns += len(state.acquisition.receivers)
-    with execution(kernels="reference", device="cpu"):
-        d, n = kress_incident_trace_on_boundary(state.curve, state.acquisition.receivers, state.wavenumber)
-    reciprocal, _ = _solve(state.matrix, state.factors, np.concatenate((d, n), axis=1).T)
+    with timed(work, "reciprocal_solve"):
+        with execution(kernels="reference", device="cpu"):
+            d, n = kress_incident_trace_on_boundary(state.curve, state.acquisition.receivers, state.wavenumber)
+        reciprocal, _ = _solve(state.matrix, state.factors, np.concatenate((d, n), axis=1).T)
     count = state.curve.num_nodes
-    value = (state.interior_wavenumber ** 2 - state.wavenumber ** 2) * np.einsum(
-        "nr,np,nd,n->drp", reciprocal[:count], h, state.traces[:count],
-        state.curve.arc_length_weights, optimize=True)
+    with timed(work, "jacobian_contraction"):
+        value = (state.interior_wavenumber ** 2 - state.wavenumber ** 2) * np.einsum(
+            "nr,np,nd,n->drp", reciprocal[:count], h, state.traces[:count],
+            state.curve.arc_length_weights, optimize=True)
     if not np.isfinite(value).all():
         raise FloatingPointError("Nonfinite shape Jacobian.")
     return value
