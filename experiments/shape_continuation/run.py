@@ -13,9 +13,9 @@ from time import perf_counter
 import numpy as np
 
 from .forward import Acquisition, Work, solve
-from .geometry import FourierCurve
+from .geometry import FourierCurve, grid_size
 from .inverse import FitConfig, Observation, run_continuation
-from .schedule import Stage
+from .schedule import Stage, paper_stage
 from .metrics import boundary_distance
 
 
@@ -50,7 +50,27 @@ def main():
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--contrast", type=float, default=1.44)
     parser.add_argument("--max-iterations", type=int, default=20)
+    parser.add_argument("--k-start", type=float, default=1.)
+    parser.add_argument("--k-stop", type=float, default=2.)
+    parser.add_argument("--k-step", type=float, default=.25)
+    parser.add_argument("--curve-modes", type=int, default=48)
+    parser.add_argument("--nodes", type=int, default=128)
+    parser.add_argument("--data-nodes", type=int, default=512)
+    parser.add_argument("--resolution", choices=("fixed", "paper"), default="fixed")
+    parser.add_argument("--points-per-wavelength", type=float, default=20.)
+    parser.add_argument("--verify-stages", action="store_true")
+    parser.add_argument("--max-forwards", type=int, default=550)
+    parser.add_argument("--max-seconds", type=float, default=600.)
     args = parser.parse_args()
+    if not 0 < args.k_start <= args.k_stop or not np.isfinite(args.k_step) or args.k_step <= 0:
+        parser.error("Require 0 < k-start <= k-stop and a positive finite k-step.")
+    intervals = (args.k_stop - args.k_start) / args.k_step
+    if not np.isfinite(intervals) or not np.isclose(intervals, round(intervals)):
+        parser.error("The frequency range must be a whole number of k-step intervals.")
+    if args.data_nodes < 32 or args.data_nodes % 4:
+        parser.error("data-nodes must be a multiple of four and at least 32.")
+    if args.max_forwards < 1 or not np.isfinite(args.max_seconds) or args.max_seconds <= 0:
+        parser.error("Work budgets must be positive.")
     args.output.mkdir(parents=True, exist_ok=False)
     try:
         run(args)
@@ -64,20 +84,23 @@ def run(args):
     (args.output / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
     started = perf_counter()
     truth, initial = fixture(args.scene), FourierCurve.circle()
-    # Fixed pilot settings; no target-derived choice of modes, resolution, or stages.
-    waves = (1.0, 1.25, 1.5, 1.75, 2.0)
-    stages = [Stage(k, max(1, int(3 * k * max(1, np.sqrt(args.contrast)))), 48, 128,
-                    int(np.ceil(2 * k))) for k in waves]
+    # Resolutions depend only on declared controls and the current iterate.
+    waves = args.k_start + args.k_step * np.arange(round((args.k_stop-args.k_start)/args.k_step) + 1)
+    stages = [Stage(k, max(1, int(3 * k * max(1, np.sqrt(args.contrast)))), args.curve_modes, args.nodes,
+                    int(np.ceil(2 * k))) for k in waves] if args.resolution == "fixed" else None
+    def stage_policy(shape, k, previous):
+        return paper_stage(k, args.contrast, shape.nodes(grid_size(shape.band)).perimeter,
+            previous_curve_modes=max(args.curve_modes, previous.curve_modes if previous else 1),
+            points_per_wavelength=args.points_per_wavelength, minimum_nodes=args.nodes)
     config = FitConfig(max_iterations=args.max_iterations)
-    observation_work = Work(max_forwards=30)
-    work = Work(max_forwards=550, max_seconds=600)
+    observation_work = Work(max_forwards=2 * len(waves), max_seconds=args.max_seconds)
     observations, qualifications = [], []
     for k in waves:
         acquisition = Acquisition.ring(int(10 * k), int(10 * k))
-        coarse = solve(truth, k, args.contrast, acquisition, 256, work=observation_work).prediction
-        fine = solve(truth, k, args.contrast, acquisition, 512, work=observation_work).prediction
+        coarse = solve(truth, k, args.contrast, acquisition, args.data_nodes // 2, work=observation_work).prediction
+        fine = solve(truth, k, args.contrast, acquisition, args.data_nodes, work=observation_work).prediction
         error = relative(coarse, fine)
-        qualifications.append(dict(wavenumber=k, nodes=[256, 512], relative_difference=error))
+        qualifications.append(dict(wavenumber=k, nodes=[args.data_nodes // 2, args.data_nodes], relative_difference=error))
         observations.append(Observation(k, acquisition, fine))
     arrays = dict(truth=truth.coefficients, initial=initial.coefficients)
     for i, observation in enumerate(observations):
@@ -88,10 +111,42 @@ def run(args):
     if max(q["relative_difference"] for q in qualifications) > 1e-7:
         (args.output / "summary.json").write_text(json.dumps(dict(status="unqualified_observations", qualification=qualifications), indent=2))
         raise RuntimeError("Observation refinement gate failed; inverse not run.")
-    result = run_continuation(initial, observations, stages, args.contrast, config=config, work=work)
+    phase_seconds = dict(observation_generation=perf_counter()-started)
+    work = Work(max_forwards=args.max_forwards, max_seconds=args.max_seconds)
+    evaluation_work = Work(max_forwards=4 * len(waves) + 2, max_seconds=3 * args.max_seconds)
+    stage_checks = []
+    def checkpoint(index, result):
+        np.savez_compressed(args.output / f"checkpoint_{index:03d}.npz", shape=result.shape.coefficients)
+        record = dict(stage=asdict(result.stage), stop_reason=result.stop_reason,
+                      relative_residual=result.relative_residual, work=work.summary(),
+                      history=result.history, trials=result.trials)
+        path = args.output / f"checkpoint_{index:03d}.json"
+        path.write_text(json.dumps(record, indent=2) + "\n")
+        if args.verify_stages and result.stop_reason != "budget_exhausted":
+            observation = observations[index]
+            low = solve(result.shape, observation.wavenumber, args.contrast, observation.acquisition,
+                        result.stage.nodes, work=evaluation_work).prediction
+            high = solve(result.shape, observation.wavenumber, args.contrast, observation.acquisition,
+                         2 * result.stage.nodes, work=evaluation_work).prediction
+            check = dict(wavenumber=observation.wavenumber, nodes=result.stage.nodes,
+                         relative_difference=relative(low, high))
+            stage_checks.append(check)
+            record["resolution_check"] = check
+            path.write_text(json.dumps(record, indent=2) + "\n")
+            if check["relative_difference"] > 1e-6:
+                raise RuntimeError(f"Stage k={observation.wavenumber:g} failed forward refinement; checkpoint retained.")
+        print(json.dumps({"k": result.stage.wavenumber, "nodes": result.stage.nodes,
+              "curve_modes": result.stage.curve_modes, "residual": result.relative_residual,
+              "stop": result.stop_reason, "forward_evaluations": work.attempted}), flush=True)
+    inverse_started = perf_counter()
+    result = run_continuation(initial, observations, stages if stages is not None else stage_policy,
+        args.contrast, config=config, work=work, on_stage=checkpoint)
+    phase_seconds["inverse_including_stage_checks"] = perf_counter() - inverse_started
     # Preserve the run before endpoint scoring or plotting, including budget stops.
     summary = dict(scene=args.scene, contrast=args.contrast, config=asdict(config),
-        planned_stages=[asdict(s) for s in stages], observation_qualification=qualifications,
+        planned_stages=[asdict(s) for s in stages] if stages is not None else None,
+        requested_wavenumbers=waves.tolist(), resolution_policy=args.resolution,
+        stage_resolution_checks=stage_checks, observation_qualification=qualifications,
         stages=[dict(stage=asdict(r.stage), stop_reason=r.stop_reason,
                      relative_residual=r.relative_residual, history=r.history, trials=r.trials) for r in result],
         inverse_work=work.summary(), observation_work=observation_work.summary())
@@ -101,19 +156,21 @@ def run(args):
         for i, r in enumerate(result) for j, state in enumerate(r.states)})
     (args.output / "summary.json").write_text(json.dumps(summary, indent=2) + "\n")
     final = result[-1].shape
-    evaluation_work = Work(max_forwards=20)
+    evaluation_started = perf_counter()
+    endpoint_nodes = result[-1].stage.nodes
     resolutions = []
     for observation in observations:
-        low = solve(final, observation.wavenumber, args.contrast, observation.acquisition, 128, work=evaluation_work).prediction
-        high = solve(final, observation.wavenumber, args.contrast, observation.acquisition, 256, work=evaluation_work).prediction
+        low = solve(final, observation.wavenumber, args.contrast, observation.acquisition, endpoint_nodes, work=evaluation_work).prediction
+        high = solve(final, observation.wavenumber, args.contrast, observation.acquisition, 2*endpoint_nodes, work=evaluation_work).prediction
         resolutions.append(dict(wavenumber=observation.wavenumber,
             relative_difference=relative(low, high), common_frequency_error=relative(high, observation.scattered)))
     acquisition = Acquisition.ring(23, 29)
     angle = .071
     rotation = np.array([[np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)]])
     holdout = Acquisition(acquisition.directions @ rotation.T, acquisition.receivers @ rotation.T)
-    prediction = solve(final, 1.625, args.contrast, holdout, 256, work=evaluation_work).prediction
-    target = solve(truth, 1.625, args.contrast, holdout, 512, work=evaluation_work).prediction
+    holdout_k = args.k_start + (np.floor(.625 * (len(waves)-1)) + .5) * args.k_step
+    prediction = solve(final, holdout_k, args.contrast, holdout, 2*endpoint_nodes, work=evaluation_work).prediction
+    target = solve(truth, holdout_k, args.contrast, holdout, args.data_nodes, work=evaluation_work).prediction
     # A sampled Hausdorff metric with its discretization bound explicitly saved.
     # This is not the paper's symmetric-area score.
     boundary_error, sampling_bound = boundary_distance(truth, final)
@@ -123,9 +180,12 @@ def run(args):
         boundary_sampling_bound=float(sampling_bound),
         relative_boundary_error=float(boundary_error / radius),
         relative_area_difference=float(abs(final.nodes(8192).signed_area / truth.nodes(8192).signed_area - 1)),
-        evaluation_work=evaluation_work.summary(), elapsed_seconds=perf_counter() - started)
+        evaluation_work=evaluation_work.summary(), holdout_wavenumber=holdout_k,
+        elapsed_seconds=perf_counter() - started)
+    phase_seconds["endpoint_scoring"] = perf_counter() - evaluation_started
+    summary["phase_seconds"] = phase_seconds
     summary["qualification"] = dict(
-        all_stages_completed=len(result) == len(stages),
+        all_stages_completed=len(result) == len(waves) and all(r.stop_reason != "budget_exhausted" for r in result),
         endpoint_resolution=max(r["relative_difference"] for r in resolutions) <= 1e-6,
         holdout=summary["holdout_relative_error"] <= 1e-3,
         shape=summary["relative_boundary_error"] <= 1e-2)

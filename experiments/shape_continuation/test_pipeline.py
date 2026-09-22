@@ -224,3 +224,18 @@ def test_blocked_reciprocal_contraction_matches_literal_identity():
     expected = (state.interior_wavenumber**2 - state.wavenumber**2) * np.einsum(
         'nr,np,nd,n->drp', reciprocal, h, state.traces[:64], state.curve.arc_length_weights)
     assert np.allclose(shape_jacobian(state, h), expected, rtol=2e-13, atol=2e-13)
+
+
+def test_stage_policy_and_checkpoints_receive_only_current_geometry_and_stage():
+    acquisition = Acquisition.ring(6, 7)
+    observations = [Observation(k, acquisition, circle_series(.9, k, 1.44, acquisition)) for k in (1., 1.25)]
+    called, saved = [], []
+    def policy(shape, k, previous):
+        called.append((shape.band, k, previous))
+        return Stage(k, 3, 16 if previous is None else 20, 64, 3)
+    result = run_continuation(FourierCurve.circle(), observations, policy, 1.44,
+                              on_stage=lambda index, stage: saved.append((index, stage)))
+    assert len(called) == len(result) == len(saved) == 2
+    assert called[0][2] is None and called[1][2] is result[0].stage
+    assert saved[-1] == (1, result[-1])
+    assert result[-1].relative_residual < 1e-5

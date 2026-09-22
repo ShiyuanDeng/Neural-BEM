@@ -79,18 +79,39 @@ The library requires NumPy and SciPy; the demo plot also uses Matplotlib.
 No neural or old inverse package is imported, even during forward evaluation.
 `run_continuation(initial, observations, stages, contrast)` is the orchestration
 entry point; `fit_frequency(...)` is the independent one-frequency operation.
+`stages` can be a fixed list or a callable receiving the current shape,
+next wavenumber and previous stage. `on_stage` receives each completed result
+for checkpointing. Neither interface supplies true geometry or evaluation data.
 Observations own immutable complex data and acquisition arrays. `Stage` owns
 the wavenumber, normal update band, curve storage band, Kress nodes, and
 curvature band. The `Work` object enforces evaluation caps before new work and
 checks elapsed time between operations; it cannot interrupt an in-flight solve.
 
-The demo uses `k=1,1.25,1.5,1.75,2`, a unit-circle start, contrast `ki²/k²=1.44`,
+By default the demo uses `k=1,1.25,1.5,1.75,2`, a unit-circle start, contrast `ki²/k²=1.44`,
 and 48 stored curve modes / 128 Kress nodes. It generates observations at
 512 nodes after a 256/512 check, uses `floor(10*k)` incident directions and
 receivers, and evaluates the endpoint at doubled resolution and at an unused
 frequency/acquisition. Synthetic reference generation and scoring have separate
-work counters and never enter the inverse. The 550 inverse + 30 observation +
-20 evaluation forward caps total at most 600 per invocation.
+work counters and never enter the inverse. With five stages, caps are 550
+inverse + 10 observation + 22 evaluation solves (the latter includes optional
+stage checks). Numerical work budgets and the frequency interval are explicit
+CLI controls for subsequent qualifications; they are not silently extended.
+
+For the wavelength-scaled resolution policy and checked stage handoffs:
+
+```bash
+$PY -m experiments.shape_continuation.run --scene glider --resolution paper \
+  --verify-stages --k-stop 8 --max-iterations 50 --max-forwards 1500 \
+  --max-seconds 600 --output /tmp/continuation-glider-new
+```
+
+This computes stage storage and quadrature from the current iterate's perimeter
+and the declared points-per-wavelength setting. `--curve-modes` and `--nodes`
+are minimum values in this policy; they are fixed values under `--resolution
+fixed`. Every stage saves geometry, history, rejected trials, stop reason and
+work counters before its optional N/2N check. A failed check stops the run with
+the checkpoint retained. The run also records observation-generation, inverse
+(including requested stage checks) and endpoint-scoring wall times separately.
 
 `paper_wavenumbers()` supplies the full 117-stage grid. `paper_stage(...)`
 supplies an explicit resolution proposal using the current perimeter and
@@ -129,10 +150,11 @@ Differences that matter:
   tolerances `1e-5` and 50-iteration default are retained; the CLI bounds the
   pilot at 20 iterations per frequency. Stops distinguish data fit, stationarity,
   small step, no admissible decreasing step, iteration limit, and work limit.
-- The smoke run fixes storage and forward resolution, with independent endpoint
-  checks. It does not automatically refine N when a new high-frequency trial
-  is underresolved. The full paper schedule needs per-stage qualification before
-  a high-frequency or sharp-cavity campaign.
+- The default smoke run fixes storage and forward resolution. The optional
+  wavelength-scaled policy and N/2N stage checks support longer ladders. A
+  failed stage check stops with saved state; there is no hidden solver switch
+  or unbounded automatic refinement. Reference observations must separately
+  pass the `data-nodes/2` versus `data-nodes` gate before inversion begins.
 - Boundary errors use symmetric vertex-to-segment distance with sampling
   resolution recorded, and area-size difference. The paper's symmetric-area
   reconstruction metric is not implemented. No volume inverse is implemented.

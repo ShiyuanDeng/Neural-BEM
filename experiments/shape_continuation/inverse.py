@@ -159,22 +159,33 @@ def fit_frequency(initial, observation, stage, contrast, *, config=None, work=No
 
 
 def run_continuation(initial, observations, stages, contrast, *, config=None, work=None, on_stage=None):
-    """Warm-start ordered single-frequency objectives; no hidden cumulative fit."""
-    observations, stages = tuple(observations), tuple(stages)
-    if len(observations) != len(stages) or not stages:
+    """Warm-start single-frequency fits with an explicit list or stage policy.
+
+    A policy receives (current_shape, next_wavenumber, previous_stage). It may
+    choose resolutions but cannot access truth/evaluation data or alter a fit.
+    """
+    observations = tuple(observations)
+    policy = stages if callable(stages) else None
+    stages = None if policy else tuple(stages)
+    if not observations or (stages is not None and len(observations) != len(stages)):
         raise ValueError("One observation is required per nonempty stage list.")
-    if any(b.wavenumber <= a.wavenumber for a, b in zip(stages, stages[1:])):
+    if any(b.wavenumber <= a.wavenumber for a, b in zip(observations, observations[1:])):
         raise ValueError("Baseline continuation requires strictly increasing wavenumbers.")
-    if any(a.wavenumber != b.wavenumber for a, b in zip(observations, stages)):
+    if stages is not None and any(a.wavenumber != b.wavenumber for a, b in zip(observations, stages)):
         raise ValueError("Observations must match the stage order.")
-    if any(b.curve_modes < a.curve_modes for a, b in zip(stages, stages[1:])):
+    if stages is not None and any(b.curve_modes < a.curve_modes for a, b in zip(stages, stages[1:])):
         raise ValueError("Stored curve bandwidth cannot decrease in this baseline.")
     config = FitConfig() if config is None else config
     work = Work() if work is None else work
-    with timed(work, "initial_geometry"):
-        shape, _ = reparameterize(initial, stages[0].curve_modes, tolerance=config.projection_tolerance)
+    shape = initial
     results = []
-    for observation, stage in zip(observations, stages):
+    for index, observation in enumerate(observations):
+        stage = policy(shape, observation.wavenumber, results[-1].stage if results else None) if policy else stages[index]
+        if stage.wavenumber != observation.wavenumber or stage.curve_modes < shape.band:
+            raise ValueError("Stage policy must preserve frequency and stored geometry.")
+        if index == 0:
+            with timed(work, "initial_geometry"):
+                shape, _ = reparameterize(shape, stage.curve_modes, tolerance=config.projection_tolerance)
         result = fit_frequency(shape, observation, stage, contrast, config=config, work=work)
         results.append(result)
         shape = result.shape

@@ -27,7 +27,8 @@ def main():
         parser.error("repeats must be positive")
     args.output.mkdir(parents=True, exist_ok=False)
     saved = json.loads((args.pilot / "summary.json").read_text())
-    stages = [Stage(**s) for s in saved["planned_stages"]]
+    stage_records = saved["planned_stages"] or [r["stage"] for r in saved["stages"]]
+    stages = [Stage(**s) for s in stage_records]
     config = FitConfig(**saved["config"])
     with np.load(args.pilot / "inputs.npz") as arrays:
         initial = FourierCurve(arrays["initial"])
