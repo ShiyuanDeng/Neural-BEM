@@ -1,9 +1,10 @@
 """Single-frequency GN/SD normal updates and explicit continuation handoffs."""
 from dataclasses import dataclass, field
+from typing import Optional
 import numpy as np
 
-from .forward import Acquisition, BudgetExceeded, Work, solve, shape_jacobian, timed
-from .geometry import FourierCurve, displaced, normal_basis, curvature_tail, reparameterize, integer
+from .forward import Acquisition, BudgetExceeded, ForwardState, Work, solve, shape_jacobian, timed
+from .geometry import FourierCurve, displaced, normal_basis, curvature_tail, integer
 from .schedule import Stage
 
 
@@ -62,113 +63,211 @@ def real_stack(array):
     return np.concatenate((array.real, array.imag), axis=0)
 
 
-def fit_frequency(initial, observation, stage, contrast, *, config=None, work=None):
-    """Optimizer sees one observation, never truth or evaluation observations."""
-    config = FitConfig() if config is None else config
-    work = Work() if work is None else work
+@dataclass(frozen=True)
+class OptimizerState:
+    """One physical state. Retune through prepare_state; never mutate its arrays."""
+    shape: FourierCurve
+    observation: Observation
+    stage: Stage
+    contrast: float
+    forward: ForwardState = field(repr=False)
+    relative_residual: float
+
+    @property
+    def data_scale(self):
+        return float(np.linalg.norm(self.observation.scattered)) or 1.0
+
+
+@dataclass(frozen=True)
+class StepResult:
+    state: OptimizerState
+    accepted: bool
+    stop_reason: Optional[str]  # None means another update is allowed.
+    diagnostics: dict  # Evaluated at the INPUT state, not the accepted endpoint.
+    trials: list
+    accepted_record: Optional[dict] = None
+
+
+def _pad_shape(shape, stage):
+    if shape.band > stage.curve_modes:
+        raise ValueError("A stage may not silently discard stored shape modes.")
+    padding = stage.curve_modes - shape.band
+    return FourierCurve(np.pad(shape.coefficients, (padding, padding))) if padding else shape
+
+
+def _same_curve(first, second):
+    band = max(first.band, second.band)
+    return np.array_equal(np.pad(first.coefficients, (band-first.band,) * 2),
+                          np.pad(second.coefficients, (band-second.band,) * 2))
+
+
+def prepare_state(shape, observation, stage, contrast, *, cached=None, work=None):
+    """Prepare or reuse physics; M/C/K-padding changes alone need no new solve.
+
+    Geometry is supplied in its current gauge. The continuation drivers refit
+    their initial curve once; accepted updates already refit by arclength.
+    Cache matching is exact and includes shape, k, contrast, acquisition and N.
+    Data-only changes reuse the prediction but recompute its residual.
+    """
     if stage.wavenumber != observation.wavenumber:
         raise ValueError("Stage and observation wavenumbers differ.")
-    if initial.band > stage.curve_modes:
-        raise ValueError("A stage may not silently discard stored shape modes.")
-    padding = stage.curve_modes - initial.band
-    shape = FourierCurve(np.pad(initial.coefficients, (padding, padding)))
+    if not np.isfinite(contrast) or contrast <= 0:
+        raise ValueError("Contrast must be positive.")
+    if (cached is not None and shape is cached.shape and observation is cached.observation
+            and stage == cached.stage and contrast == cached.contrast):
+        return cached
+    shape = _pad_shape(shape, stage)
     with timed(work, "initial_geometry"):
         shape.validate()
+    reuse = (cached is not None and stage.wavenumber == cached.stage.wavenumber
+        and stage.nodes == cached.stage.nodes and contrast == cached.contrast
+        and _same_curve(shape, cached.shape)
+        and np.array_equal(observation.acquisition.directions, cached.observation.acquisition.directions)
+        and np.array_equal(observation.acquisition.receivers, cached.observation.acquisition.receivers))
+    forward = cached.forward if reuse else solve(shape, stage.wavenumber, contrast,
+                                                observation.acquisition, stage.nodes, work=work)
     scale = float(np.linalg.norm(observation.scattered)) or 1.0
-    history, trials = [], []
-    states = [shape]
-    reason, error = "iteration_limit", float("nan")
+    error = float(np.linalg.norm(forward.prediction - observation.scattered) / scale)
+    return OptimizerState(shape, observation, stage, float(contrast), forward, error)
+
+
+def optimise_step(state, *, config=None, work=None, iteration=1):
+    """Attempt at most ONE accepted update, retaining its computed forward state.
+
+    All rejected trials and input-state diagnostics are returned. A small-step,
+    data-fit or other local stop is a report to the caller, not a prohibition on
+    retuning the state/configuration and trying another strategy.
+    """
+    config = FitConfig() if config is None else config
+    work = Work() if work is None else work
+    integer(iteration, "iteration")
+    shape, observation, stage = state.shape, state.observation, state.stage
+    current, error, scale = state.forward, state.relative_residual, state.data_scale
+    diagnostics, trials = {}, []
+    def stopped(reason):
+        return StepResult(state, False, reason, diagnostics, trials)
+    if error <= config.residual_tolerance:
+        return stopped("data_fit")
     try:
-        current = solve(shape, stage.wavenumber, contrast, observation.acquisition, stage.nodes, work=work)
-        error = float(np.linalg.norm(current.prediction - observation.scattered) / scale)
-        history.append(dict(iteration=0, relative_residual=error, system_residual=current.system_residual))
-        for iteration in range(1, config.max_iterations + 1):
-            if error <= config.residual_tolerance:
-                reason = "data_fit"
-                break
-            basis = normal_basis(current.curve, stage.update_modes)
-            complex_j = shape_jacobian(current, basis, work=work).reshape(-1, basis.shape[1])
-            matrix = real_stack(complex_j) / scale
-            residual = real_stack((current.prediction - observation.scattered).ravel()) / scale
-            gradient = matrix.T @ residual
-            gradient_norm = float(np.linalg.norm(gradient, ord=np.inf))
-            with timed(work, "least_squares"):
-                gn, _, rank, singular = np.linalg.lstsq(matrix, -residual, rcond=config.rank_tolerance)
-            history[-1].update(gradient_inf=gradient_norm, jacobian_rank=int(rank),
-                               singular_values=singular.tolist())
-            if gradient_norm <= config.gradient_tolerance:
-                reason = "stationary"
-                break
-            # Paper eq.18 is unscaled J* residual. Evaluate in the same raw-data
-            # coordinates; normalized gradient above is only for diagnostics.
-            sd = -gradient * scale ** 2
-            accepted = None
-            for filtering in range(config.filter_steps + 1):
-                for backtrack in range(config.backtracks + 1):
-                    candidates = []
-                    for label, direction in (("gauss_newton", gn), ("steepest_descent", sd)):
-                        work.check()
-                        step = 0.5 ** backtrack
-                        trial = dict(iteration=iteration, direction=label, filter_index=filtering, step=step)
-                        trials.append(trial)
-                        try:
-                            with timed(work, "geometry_proposals"):
-                                proposal = displaced(shape, direction, stage.curve_modes,
-                                    filter_index=filtering, step=step, projection_tolerance=config.projection_tolerance)
-                            candidate = proposal.shape
-                            trial.update(projection_error=proposal.projection_error,
-                                rms_displacement=proposal.rms_displacement,
-                                maximum_displacement=proposal.maximum_displacement,
-                                coefficient_step_norm=float(np.linalg.norm(step * direction)))
-                            with timed(work, "curvature_checks"):
-                                tail = curvature_tail(candidate, stage.curvature_modes)
-                            trial.update(curvature_tail=tail)
-                            if tail > config.curvature_tail_tolerance:
-                                trial["status"] = "curvature_refused"
-                                continue
-                            forward = solve(candidate, stage.wavenumber, contrast,
-                                            observation.acquisition, stage.nodes, work=work)
-                            candidate_error = float(np.linalg.norm(forward.prediction - observation.scattered) / scale)
-                            trial["relative_residual"] = candidate_error
-                            trial["status"] = "decreasing" if candidate_error < error else "nondecreasing"
-                            if candidate_error < error:
-                                candidates.append((candidate_error, candidate, forward, trial))
-                        except (ValueError, FloatingPointError, np.linalg.LinAlgError) as exc:
-                            trial.update(status="invalid", detail=str(exc))
-                    if candidates:
-                        accepted = min(candidates, key=lambda item: item[0])
-                        break
-                if accepted is not None:
+        basis = normal_basis(current.curve, stage.update_modes)
+        complex_j = shape_jacobian(current, basis, work=work).reshape(-1, basis.shape[1])
+        matrix = real_stack(complex_j) / scale
+        residual = real_stack((current.prediction - observation.scattered).ravel()) / scale
+        gradient = matrix.T @ residual
+        gradient_norm = float(np.linalg.norm(gradient, ord=np.inf))
+        with timed(work, "least_squares"):
+            gn, _, rank, singular = np.linalg.lstsq(matrix, -residual, rcond=config.rank_tolerance)
+        diagnostics.update(gradient_inf=gradient_norm, jacobian_rank=int(rank),
+                           singular_values=singular.tolist())
+        if gradient_norm <= config.gradient_tolerance:
+            return stopped("stationary")
+        # Paper eq.18 uses the raw-data gradient; normalization above serves LS
+        # conditioning and diagnostics, and must not rescale the SD proposal.
+        sd = -gradient * scale ** 2
+        accepted = None
+        for filtering in range(config.filter_steps + 1):
+            for backtrack in range(config.backtracks + 1):
+                candidates = []
+                for label, direction in (("gauss_newton", gn), ("steepest_descent", sd)):
+                    work.check()
+                    step = 0.5 ** backtrack
+                    trial = dict(iteration=iteration, direction=label, filter_index=filtering, step=step)
+                    trials.append(trial)
+                    try:
+                        with timed(work, "geometry_proposals"):
+                            proposal = displaced(shape, direction, stage.curve_modes,
+                                filter_index=filtering, step=step, projection_tolerance=config.projection_tolerance)
+                        candidate = proposal.shape
+                        trial.update(projection_error=proposal.projection_error,
+                            rms_displacement=proposal.rms_displacement,
+                            maximum_displacement=proposal.maximum_displacement,
+                            coefficient_step_norm=float(np.linalg.norm(step * direction)))
+                        with timed(work, "curvature_checks"):
+                            tail = curvature_tail(candidate, stage.curvature_modes)
+                        trial.update(curvature_tail=tail)
+                        if tail > config.curvature_tail_tolerance:
+                            trial["status"] = "curvature_refused"
+                            continue
+                        forward = solve(candidate, stage.wavenumber, state.contrast,
+                                        observation.acquisition, stage.nodes, work=work)
+                        candidate_error = float(np.linalg.norm(forward.prediction - observation.scattered) / scale)
+                        trial["relative_residual"] = candidate_error
+                        trial["status"] = "decreasing" if candidate_error < error else "nondecreasing"
+                        if candidate_error < error:
+                            candidates.append((candidate_error, candidate, forward, trial))
+                    except (ValueError, FloatingPointError, np.linalg.LinAlgError) as exc:
+                        trial.update(status="invalid", detail=str(exc))
+                if candidates:
+                    accepted = min(candidates, key=lambda item: item[0])
                     break
-            if accepted is None:
-                reason = "no_acceptable_step"
+            if accepted is not None:
                 break
-            error, shape, current, trial = accepted
-            states.append(shape)
-            trial["status"] = "accepted"
-            history.append(dict(iteration=iteration, relative_residual=error,
-                direction=trial["direction"], step=trial["step"], filter_index=trial["filter_index"],
-                curvature_tail=trial["curvature_tail"], projection_error=trial["projection_error"],
-                coefficient_step_norm=trial["coefficient_step_norm"],
-                rms_displacement=trial["rms_displacement"], maximum_displacement=trial["maximum_displacement"],
-                system_residual=current.system_residual))
-            if error <= config.residual_tolerance:
-                reason = "data_fit"
-                break
-            if trial["rms_displacement"] <= config.step_tolerance:
-                reason = "small_step"
-                break
+        if accepted is None:
+            return stopped("no_acceptable_step")
+        error, shape, current, trial = accepted
+        trial["status"] = "accepted"
+        record = dict(iteration=iteration, relative_residual=error,
+            direction=trial["direction"], step=trial["step"], filter_index=trial["filter_index"],
+            curvature_tail=trial["curvature_tail"], projection_error=trial["projection_error"],
+            coefficient_step_norm=trial["coefficient_step_norm"],
+            rms_displacement=trial["rms_displacement"], maximum_displacement=trial["maximum_displacement"],
+            system_residual=current.system_residual)
+        updated = OptimizerState(shape, observation, stage, state.contrast, current, error)
+        reason = "data_fit" if error <= config.residual_tolerance else (
+            "small_step" if trial["rms_displacement"] <= config.step_tolerance else None)
+        return StepResult(updated, True, reason, diagnostics, trials, record)
     except BudgetExceeded:
-        reason = "budget_exhausted"
-    return FitResult(shape, stage, reason, error, history, trials, states)
+        if trials and "status" not in trials[-1]:
+            trials[-1]["status"] = "budget_exhausted"
+        return stopped("budget_exhausted")
+
+
+def fit_prepared(state, *, config=None, work=None):
+    """Run a fixed-stage chunk; return (live cached state, lightweight report).
+
+    max_iterations=1 hands control back after every update. Reports contain
+    coefficient histories, never dense forward matrices or factorizations.
+    """
+    config = FitConfig() if config is None else config
+    work = Work() if work is None else work
+    history = [dict(iteration=0, relative_residual=state.relative_residual,
+                    system_residual=state.forward.system_residual)]
+    trials, states = [], [state.shape]
+    reason = "iteration_limit"
+    for iteration in range(1, config.max_iterations + 1):
+        step = optimise_step(state, config=config, work=work, iteration=iteration)
+        history[-1].update(step.diagnostics)
+        trials.extend(step.trials)
+        state = step.state
+        if step.accepted:
+            history.append(step.accepted_record)
+            states.append(state.shape)
+        if step.stop_reason is not None:
+            reason = step.stop_reason
+            break
+    return state, FitResult(state.shape, state.stage, reason, state.relative_residual,
+                            history, trials, states)
+
+
+def fit_frequency(initial, observation, stage, contrast, *, config=None, work=None):
+    """Compatibility convenience for a fresh single-frequency fit."""
+    work = Work() if work is None else work
+    try:
+        state = prepare_state(initial, observation, stage, contrast, work=work)
+    except BudgetExceeded:
+        shape = _pad_shape(initial, stage)
+        return FitResult(shape, stage, "budget_exhausted", float("nan"), states=[shape])
+    return fit_prepared(state, config=config, work=work)[1]
 
 
 def run_continuation(initial, observations, stages, contrast, *, config=None, work=None, on_stage=None):
-    """Warm-start single-frequency fits with an explicit list or stage policy.
+    """Compatibility adapter for a strictly increasing fixed frequency ladder.
 
-    A policy receives (current_shape, next_wavenumber, previous_stage). It may
-    choose resolutions but cannot access truth/evaluation data or alter a fit.
+    A stage callback receives (shape, next_wavenumber, previous_stage).
+    General strategies use continuation.run_adaptive with full decision history.
     """
+    from .continuation import Decision, run_adaptive
+
     observations = tuple(observations)
     policy = stages if callable(stages) else None
     stages = None if policy else tuple(stages)
@@ -181,21 +280,19 @@ def run_continuation(initial, observations, stages, contrast, *, config=None, wo
     if stages is not None and any(b.curve_modes < a.curve_modes for a, b in zip(stages, stages[1:])):
         raise ValueError("Stored curve bandwidth cannot decrease in this baseline.")
     config = FitConfig() if config is None else config
-    work = Work() if work is None else work
-    shape = initial
-    results = []
-    for index, observation in enumerate(observations):
-        stage = policy(shape, observation.wavenumber, results[-1].stage if results else None) if policy else stages[index]
-        if stage.wavenumber != observation.wavenumber or stage.curve_modes < shape.band:
-            raise ValueError("Stage policy must preserve frequency and stored geometry.")
-        if index == 0:
-            with timed(work, "initial_geometry"):
-                shape, _ = reparameterize(shape, stage.curve_modes, tolerance=config.projection_tolerance)
-        result = fit_frequency(shape, observation, stage, contrast, config=config, work=work)
-        results.append(result)
-        shape = result.shape
+    def strategy(context):
+        index = len(context.history)
+        if index == len(observations):
+            return None
+        k = observations[index].wavenumber
+        previous = context.history[-1].result.stage if index else None
+        stage = policy(context.shape, k, previous) if policy else stages[index]
+        if stage.wavenumber != k:
+            raise ValueError("Stage policy must preserve frequency.")
+        return Decision(stage, config, "fixed frequency ladder")
+    def checkpoint(record):
         if on_stage is not None:
-            on_stage(len(results) - 1, result)
-        if result.stop_reason == "budget_exhausted":
-            break
-    return results
+            on_stage(record.index, record.result)
+    result = run_adaptive(initial, observations, contrast, strategy, work=work,
+                          max_decisions=len(observations), on_decision=checkpoint)
+    return [record.result for record in result.history]

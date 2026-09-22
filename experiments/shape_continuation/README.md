@@ -25,8 +25,10 @@ runtime selector, modal compression, or experimental Laurent solver is used.
   qualified against the all-pairs reference at identical samples/tolerances.
 - `forward.py`: plane-wave acquisition, full receiver/illumination matrix,
   dense nodal Müller/Kress solves, reciprocal shape Jacobian.
-- `inverse.py`: one-frequency real least squares, GN/SD candidate evaluation,
-  explicit feasibility and stopping, and stage-to-stage warm starts.
+- `inverse.py`: cached optimizer state, one GN/SD update, fixed-stage chunks,
+  explicit feasibility/stopping, and compatibility entry points.
+- `continuation.py`: decisions from full history, shared budgets, optional
+  qualification/rollback, and an N/2N field plus Jacobian gate.
 - `schedule.py`: explicit independent update/curve/quadrature resolutions,
   including the paper's fixed frequency grid and §4 update-mode rule.
 - `run.py`: bounded synthetic recovery demonstration and saved provenance.
@@ -79,11 +81,15 @@ $PY -m experiments.shape_continuation.run --scene ellipse --output /tmp/continua
 
 The library requires NumPy and SciPy; the demo plot also uses Matplotlib.
 No neural or old inverse package is imported, even during forward evaluation.
-`run_continuation(initial, observations, stages, contrast)` is the orchestration
-entry point; `fit_frequency(...)` is the independent one-frequency operation.
-`stages` can be a fixed list or a callable receiving the current shape,
-next wavenumber and previous stage. `on_stage` receives each completed result
-for checkpointing. Neither interface supplies true geometry or evaluation data.
+`run_adaptive(initial, observations, contrast, strategy)` is the general
+controller. `prepare_state` and `optimise_step` expose one update with a retained
+forward state; `fit_prepared` groups updates without losing that cache.
+`fit_frequency(...)` remains a convenient fresh one-frequency fit.
+`run_continuation(initial, observations, stages, contrast)` is a compatibility
+adapter over the same controller for an increasing frequency ladder. Its
+`stages` argument remains a list or callback `(shape, next_k, previous_stage)`,
+and `on_stage` remains available for checkpointing. No optimizer/controller
+interface supplies true geometry or evaluation data.
 Observations own immutable complex data and acquisition arrays. `Stage` owns
 the wavenumber, normal update band, curve storage band, Kress nodes, and
 curvature band. The `Work` object enforces evaluation caps before new work and
@@ -220,12 +226,93 @@ still needs verified author curvature/filter settings, the complete
 frequency/resolution settings, and comparisons on the paper's harder shapes.
 
 For subsequent adaptive experiments, keep geometry/solver/optimizer fixed.
-The current stage-policy callback chooses update, storage, curvature and
-quadrature resolutions along a prescribed increasing frequency list. An adaptive
-controller can call `fit_frequency` directly to repeat a frequency or choose the
-next available observation; repetition is deliberately outside the fixed-ladder
-runner. Record the decision, data residual,
-gradient, singular spectrum, curvature tail, projection error, and work.
 Frequency jumps must select observations that actually exist; held-out data and
 true boundary errors remain scoring inputs only. Small steps are not stationarity
 certificates. Residuals at different frequencies are different objectives.
+
+## Adaptive controller contract
+
+```python
+from experiments.shape_continuation.continuation import Decision, run_adaptive
+from experiments.shape_continuation.inverse import FitConfig
+
+# A strategy is just a callable: no inheritance, registry, or solver changes.
+def strategy(context):
+    # context.shape: last committed curve
+    # context.history: all decisions, accepted/rejected trajectories and checks
+    # context.available_wavenumbers: frequencies with measured data
+    # context.work: cumulative counters and timings
+    stage = choose_next_stage(context)  # experiment-specific rule
+    if stage is None:
+        return None
+    return Decision(stage, FitConfig(max_iterations=1), reason="record the rule")
+
+result = run_adaptive(initial, observations, contrast, strategy,
+                      work=work, max_decisions=200, on_decision=save_checkpoint)
+```
+
+`choose_next_stage` and `save_checkpoint` are user-supplied functions in this
+sketch. A decision controls frequency **k**, normal-update modes **M**, curvature
+band **C**, curve storage **K**, quadrature **N**, and all `FitConfig` settings.
+`max_iterations=1` returns control after at most one accepted update; a larger
+value requests a fixed-stage chunk. Zero permits a resolution-only decision.
+The controller permits repeated, skipped, or revisited available frequencies.
+`FixedSchedule(stages, config)` supplies the simple fixed-list policy.
+
+The execution flow is:
+
+```text
+shape = refit initial curve by arclength once, at the first decision's K
+live_state = empty
+history = []
+repeat:
+    decision = strategy(shape, full history, available frequencies, work)
+    if decision is STOP: finish
+    enforce decision limit
+    state = prepare_state(shape, data[k], decision, cached=live_state)
+    repeat up to decision.max_iterations:
+        form normal Fourier basis and Jacobian using state's existing LU
+        compute GN and SD directions
+        search filter strengths and step halvings:
+            reject invalid geometry, unresolved refits, excessive curvature tail
+            solve valid candidates; accept the best decreasing GN/SD candidate
+            at the first successful search level
+        retain accepted candidate's already-computed forward state
+        record diagnostics and every trial; stop chunk on local stopping rule
+    optionally qualify endpoint (e.g. field AND Jacobian at N/2N)
+    if qualification passes: commit endpoint and its live state
+    else: retain previous curve and cache
+    append decision, chunk report, qualification, commit flag and work counters
+    checkpoint; stop globally if shared budget exhausted
+```
+
+The strategy actually selects the first decision before the initial refit.
+Local stops (`data_fit`, `small_step`, `stationary`, `no_acceptable_step`,
+`iteration_limit`) are evidence for the strategy; only the controller's
+`policy_stop`, `decision_limit`, or `budget_exhausted` ends the run. The same
+`Work` instance charges all decisions and optional checks; time limits are
+checked between operations, not by interrupting an in-flight solve.
+
+Changing M, C, tolerances, or zero-padding K reuses the current physical solve.
+Changing the curve, k, contrast, acquisition, or N rebuilds it. A data-only
+change reuses the prediction and recomputes its residual through `prepare_state`.
+Cache matching is exact. Reducing stored K requires an explicit, separately
+qualified projection; the controller refuses silent truncation. Input arrays
+and policy history must be treated as read-only.
+
+Use `qualify=ResolutionGate(tolerance=1e-6)` to require both fields and the full
+normal Jacobian to agree at N/2N. This reuses the current N-node LU and adds one
+2N solve plus two Jacobians. A failed check rolls back the **whole decision**;
+the next policy call sees the rejected report and last committed curve. Budget
+exhaustion before/during qualification also rolls back the unqualified chunk.
+Without a gate, accepted partial progress is retained on budget exhaustion.
+The initial curve is supplied by the caller; rollback does not certify it.
+
+Each decision record contains its reason/settings, full `FitResult`, commit
+flag, check diagnostics and work snapshots. A rejected report's endpoint may
+therefore differ from `context.shape`. Gradient/rank/singular-value diagnostics
+belong to the **input** of each update; they are not recomputed at its endpoint.
+Reports retain coefficient histories, never dense matrices or factorizations.
+Only the current live cache and transient candidate work retain dense arrays.
+This is continuation infrastructure, not a claim that any adaptive rule is
+more robust or faster than the fixed ladder.

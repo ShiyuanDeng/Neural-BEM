@@ -181,6 +181,7 @@ import sys
 from experiments.shape_continuation.geometry import FourierCurve
 from experiments.shape_continuation.forward import Acquisition, solve
 from experiments.shape_continuation.inverse import run_continuation
+from experiments.shape_continuation.continuation import run_adaptive
 solve(FourierCurve.circle(), 1., 1.44, Acquisition.ring(2,3), 32)
 forbidden = ('sdf_inverse', 'sdf_to_ordered_boundary', 'gpr_bem_mod', 'gpr_bem_ref',
              'torch', 'solver_select', 'experiments.modal_muller_research')

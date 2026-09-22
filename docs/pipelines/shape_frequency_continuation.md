@@ -32,13 +32,24 @@ The experiment controls have distinct jobs:
 | `Stage.curve_modes` | Resolves Cartesian curve storage and arclength refitting. Insufficient storage rejects a proposal rather than silently smoothing it. |
 | `Stage.nodes` | Resolves nodal Müller/Kress quadrature, independently of the update band. |
 
-`fit_frequency` is the experiment unit: it receives a current curve, one
-immutable observation, and a stage, then returns the curve, stop reason,
-accepted states, residual/gradient/rank history, and every rejected trial.
-`run_continuation` supplies a fixed increasing frequency ladder and allows a
-policy to choose stage resolutions. An adaptive controller that repeats a
-frequency can call `fit_frequency` directly. This keeps policy experiments
-outside the physical solver and one-frequency optimizer.
+`optimise_step` is the experiment unit: it attempts one accepted update and
+retains the candidate's already-computed forward state and LU. `prepare_state`
+reuses that solve when only M/C, tolerances, or zero-padded K change; changes to
+geometry, frequency, acquisition, material or N rebuild it. `fit_prepared`
+groups updates into a chunk; `fit_frequency` prepares a fresh one-frequency fit.
+
+`run_adaptive` asks a plain callable strategy for `Decision(Stage, FitConfig,
+reason)`, or `None` to finish. The strategy sees the current committed curve,
+full decision history, available frequencies and cumulative work. It may repeat
+or revisit frequencies and alter harmonics/resolution between updates by using
+`max_iterations=1`. One work budget spans the whole run, including optional
+N/2N qualification. Failed qualification rolls back the entire decision while
+preserving its rejected trajectory for the next strategy call. Decision records
+do not retain dense physics caches. The existing `run_continuation` API is now
+an adapter over this controller, preserving the increasing-ladder baseline.
+
+See the [controller contract and pseudocode](../../experiments/shape_continuation/README.md#adaptive-controller-contract)
+for cache rules, stopping semantics, diagnostics and checkpoint hooks.
 
 The synthetic harness saves stage checkpoints, can resume a saved run with an
 explicit new budget, and qualifies both fields and normal Jacobians at N/2N.
