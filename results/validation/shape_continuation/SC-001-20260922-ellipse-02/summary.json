@@ -1,0 +1,610 @@
+{
+  "scene": "ellipse",
+  "contrast": 1.44,
+  "config": {
+    "max_iterations": 20,
+    "residual_tolerance": 1e-05,
+    "step_tolerance": 1e-05,
+    "gradient_tolerance": 1e-10,
+    "curvature_tail_tolerance": 0.1,
+    "projection_tolerance": 1e-07,
+    "backtracks": 8,
+    "filter_steps": 10,
+    "rank_tolerance": 1e-10
+  },
+  "planned_stages": [
+    {
+      "wavenumber": 1.0,
+      "update_modes": 3,
+      "curve_modes": 48,
+      "nodes": 128,
+      "curvature_modes": 2
+    },
+    {
+      "wavenumber": 1.25,
+      "update_modes": 4,
+      "curve_modes": 48,
+      "nodes": 128,
+      "curvature_modes": 3
+    },
+    {
+      "wavenumber": 1.5,
+      "update_modes": 5,
+      "curve_modes": 48,
+      "nodes": 128,
+      "curvature_modes": 3
+    },
+    {
+      "wavenumber": 1.75,
+      "update_modes": 6,
+      "curve_modes": 48,
+      "nodes": 128,
+      "curvature_modes": 4
+    },
+    {
+      "wavenumber": 2.0,
+      "update_modes": 7,
+      "curve_modes": 48,
+      "nodes": 128,
+      "curvature_modes": 4
+    }
+  ],
+  "observation_qualification": [
+    {
+      "wavenumber": 1.0,
+      "nodes": [
+        256,
+        512
+      ],
+      "relative_difference": 2.019160439327398e-15
+    },
+    {
+      "wavenumber": 1.25,
+      "nodes": [
+        256,
+        512
+      ],
+      "relative_difference": 2.07931441158531e-15
+    },
+    {
+      "wavenumber": 1.5,
+      "nodes": [
+        256,
+        512
+      ],
+      "relative_difference": 1.7258901546240795e-15
+    },
+    {
+      "wavenumber": 1.75,
+      "nodes": [
+        256,
+        512
+      ],
+      "relative_difference": 1.6531952911610445e-15
+    },
+    {
+      "wavenumber": 2.0,
+      "nodes": [
+        256,
+        512
+      ],
+      "relative_difference": 1.6482416895814953e-15
+    }
+  ],
+  "stages": [
+    {
+      "stage": {
+        "wavenumber": 1.0,
+        "update_modes": 3,
+        "curve_modes": 48,
+        "nodes": 128,
+        "curvature_modes": 2
+      },
+      "stop_reason": "small_step",
+      "relative_residual": 0.00031050023665493297,
+      "history": [
+        {
+          "iteration": 0,
+          "relative_residual": 0.15899552052622767,
+          "system_residual": 5.718283319878933e-16,
+          "gradient_inf": 0.24821906466740803,
+          "jacobian_rank": 7,
+          "singular_values": [
+            1.6990928576105981,
+            0.9682697427379539,
+            0.9682697427379536,
+            0.5076177769108805,
+            0.5076177769108803,
+            0.1635442775936215,
+            0.16354427759362142
+          ]
+        },
+        {
+          "iteration": 1,
+          "relative_residual": 0.011541200404817653,
+          "direction": "gauss_newton",
+          "step": 1.0,
+          "filter_index": 0,
+          "curvature_tail": 0.0038835093938880305,
+          "projection_error": 7.836054430118855e-13,
+          "coefficient_step_norm": 0.13592200465135534,
+          "system_residual": 5.538892880274939e-16,
+          "gradient_inf": 0.0037388685781007793,
+          "jacobian_rank": 7,
+          "singular_values": [
+            1.7233262479649851,
+            0.9301634255450639,
+            0.8510632182383142,
+            0.4239661923055552,
+            0.41189239166223607,
+            0.12264691935513414,
+            0.12222121884999214
+          ]
+        },
+        {
+          "iteration": 2,
+          "relative_residual": 0.00036025181172712596,
+          "direction": "gauss_newton",
+          "step": 1.0,
+          "filter_index": 0,
+          "curvature_tail": 0.003642014220250151,
+          "projection_error": 5.890642286388831e-13,
+          "coefficient_step_norm": 0.02633635407053168,
+          "system_residual": 5.688672296737478e-16,
+          "gradient_inf": 0.00012305170803391914,
+          "jacobian_rank": 7,
+          "singular_values": [
+            1.7331722818940452,
+            0.9421754064336443,
+            0.8425105445471645,
+            0.4340316165212361,
+            0.4141394714897451,
+            0.12475657743390453,
+            0.12391623874400638
+          ]
+        },
+        {
+          "iteration": 3,
+          "relative_residual": 0.00031050025171269714,
+          "direction": "gauss_newton",
+          "step": 1.0,
+          "filter_index": 0,
+          "curvature_tail": 0.003628358586640753,
+          "projection_error": 2.8094620854678027e-14,
+          "coefficient_step_norm": 0.0003578212115204448,
+          "system_residual": 5.629574799438031e-16,
+          "gradient_inf": 3.396887160502585e-08,
+          "jacobian_rank": 7,
+          "singular_values": [
+            1.7330814048146537,
+            0.9420182957280607,
+            0.8425210205977175,
+            0.43387442827710815,
+            0.41405729411029124,
+            0.12470924813066492,
+            0.12387293407582298
+          ]
+        },
+        {
+          "iteration": 4,
+          "relative_residual": 0.00031050023665493297,
+          "direction": "gauss_newton",
+          "step": 1.0,
+          "filter_index": 0,
+          "curvature_tail": 0.003628361918334445,
+          "projection_error": 1.4744405024507577e-14,
+          "coefficient_step_norm": 6.98895376746549e-07,
+          "system_residual": 5.583542289862938e-16
+        }
+      ],
+      "trials": [
+        {
+          "iteration": 1,
+          "direction": "gauss_newton",
+          "filter_index": 0,
+          "step": 1.0,
+          "curvature_tail": 0.0038835093938880305,
+          "projection_error": 7.836054430118855e-13,
+          "relative_residual": 0.011541200404817653,
+          "status": "accepted"
+        },
+        {
+          "iteration": 1,
+          "direction": "steepest_descent",
+          "filter_index": 0,
+          "step": 1.0,
+          "curvature_tail": 2.510421587043844e-07,
+          "projection_error": 1.4277943991114016e-14,
+          "relative_residual": 0.053403783092693294,
+          "status": "decreasing"
+        },
+        {
+          "iteration": 2,
+          "direction": "gauss_newton",
+          "filter_index": 0,
+          "step": 1.0,
+          "curvature_tail": 0.003642014220250151,
+          "projection_error": 5.890642286388831e-13,
+          "relative_residual": 0.00036025181172712596,
+          "status": "accepted"
+        },
+        {
+          "iteration": 2,
+          "direction": "steepest_descent",
+          "filter_index": 0,
+          "step": 1.0,
+          "curvature_tail": 0.0038852467085505834,
+          "projection_error": 1.7971644121161953e-14,
+          "relative_residual": 0.010375257526389849,
+          "status": "decreasing"
+        },
+        {
+          "iteration": 3,
+          "direction": "gauss_newton",
+          "filter_index": 0,
+          "step": 1.0,
+          "curvature_tail": 0.003628358586640753,
+          "projection_error": 2.8094620854678027e-14,
+          "relative_residual": 0.00031050025171269714,
+          "status": "accepted"
+        },
+        {
+          "iteration": 3,
+          "direction": "steepest_descent",
+          "filter_index": 0,
+          "step": 1.0,
+          "curvature_tail": 0.0036408592016081032,
+          "projection_error": 2.789931039240757e-14,
+          "relative_residual": 0.0003390733820746,
+          "status": "decreasing"
+        },
+        {
+          "iteration": 4,
+          "direction": "gauss_newton",
+          "filter_index": 0,
+          "step": 1.0,
+          "curvature_tail": 0.003628361918334445,
+          "projection_error": 1.4744405024507577e-14,
+          "relative_residual": 0.00031050023665493297,
+          "status": "accepted"
+        },
+        {
+          "iteration": 4,
+          "direction": "steepest_descent",
+          "filter_index": 0,
+          "step": 1.0,
+          "curvature_tail": 0.003628358566240788,
+          "projection_error": 1.4823406889376778e-14,
+          "relative_residual": 0.0003105002501190286,
+          "status": "decreasing"
+        }
+      ]
+    },
+    {
+      "stage": {
+        "wavenumber": 1.25,
+        "update_modes": 4,
+        "curve_modes": 48,
+        "nodes": 128,
+        "curvature_modes": 3
+      },
+      "stop_reason": "data_fit",
+      "relative_residual": 3.9030239379778975e-06,
+      "history": [
+        {
+          "iteration": 0,
+          "relative_residual": 0.0008330038711922999,
+          "system_residual": 6.241113051823983e-16,
+          "gradient_inf": 8.814716965652015e-05,
+          "jacobian_rank": 9,
+          "singular_values": [
+            1.6573454885667902,
+            1.0166090516569777,
+            0.9693014117194106,
+            0.6833651029962883,
+            0.6682899175898619,
+            0.2629263552103564,
+            0.2607484756305767,
+            0.07473206187760967,
+            0.07261637418768346
+          ]
+        },
+        {
+          "iteration": 1,
+          "relative_residual": 4.154426245913394e-05,
+          "direction": "gauss_newton",
+          "step": 1.0,
+          "filter_index": 0,
+          "curvature_tail": 0.0038633155124516336,
+          "projection_error": 8.029806511197657e-14,
+          "coefficient_step_norm": 0.01087670396973222,
+          "system_residual": 6.168694605878955e-16,
+          "gradient_inf": 4.4302026983096215e-05,
+          "jacobian_rank": 9,
+          "singular_values": [
+            1.6574301995904548,
+            1.0170689396800139,
+            0.9689142438507224,
+            0.6888416849147793,
+            0.6618750798663543,
+            0.2644696487850384,
+            0.2598441104363536,
+            0.07280316456605204,
+            0.07265377481422831
+          ]
+        },
+        {
+          "iteration": 2,
+          "relative_residual": 3.9030239379778975e-06,
+          "direction": "gauss_newton",
+          "step": 1.0,
+          "filter_index": 0,
+          "curvature_tail": 0.00426054801649656,
+          "projection_error": 4.830418429370811e-15,
+          "coefficient_step_norm": 0.00029682462786108165,
+          "system_residual": 6.490638794212286e-16
+        }
+      ],
+      "trials": [
+        {
+          "iteration": 1,
+          "direction": "gauss_newton",
+          "filter_index": 0,
+          "step": 1.0,
+          "curvature_tail": 0.0038633155124516336,
+          "projection_error": 8.029806511197657e-14,
+          "relative_residual": 4.154426245913394e-05,
+          "status": "accepted"
+        },
+        {
+          "iteration": 1,
+          "direction": "steepest_descent",
+          "filter_index": 0,
+          "step": 1.0,
+          "curvature_tail": 0.0035644737188374564,
+          "projection_error": 8.440616121040728e-15,
+          "relative_residual": 0.0008217444569609956,
+          "status": "decreasing"
+        },
+        {
+          "iteration": 2,
+          "direction": "gauss_newton",
+          "filter_index": 0,
+          "step": 1.0,
+          "curvature_tail": 0.00426054801649656,
+          "projection_error": 4.830418429370811e-15,
+          "relative_residual": 3.9030239379778975e-06,
+          "status": "accepted"
+        },
+        {
+          "iteration": 2,
+          "direction": "steepest_descent",
+          "filter_index": 0,
+          "step": 1.0,
+          "curvature_tail": 0.0038664893700105785,
+          "projection_error": 4.9764255174920805e-15,
+          "relative_residual": 4.0909442431057845e-05,
+          "status": "decreasing"
+        }
+      ]
+    },
+    {
+      "stage": {
+        "wavenumber": 1.5,
+        "update_modes": 5,
+        "curve_modes": 48,
+        "nodes": 128,
+        "curvature_modes": 3
+      },
+      "stop_reason": "data_fit",
+      "relative_residual": 2.1194621428504248e-06,
+      "history": [
+        {
+          "iteration": 0,
+          "relative_residual": 1.0831327731299966e-05,
+          "system_residual": 5.902758125227372e-16,
+          "gradient_inf": 1.0591987527930063e-06,
+          "jacobian_rank": 11,
+          "singular_values": [
+            1.9223326787095414,
+            1.0080722624153868,
+            0.9781886815782234,
+            0.9435412084832726,
+            0.933279950861697,
+            0.47774714200434854,
+            0.4683281369588682,
+            0.16145990468700475,
+            0.16095421519094077,
+            0.04337141563886813,
+            0.0433517491140015
+          ]
+        },
+        {
+          "iteration": 1,
+          "relative_residual": 2.1194621428504248e-06,
+          "direction": "gauss_newton",
+          "step": 1.0,
+          "filter_index": 0,
+          "curvature_tail": 0.004236579132814864,
+          "projection_error": 3.833084183753514e-15,
+          "coefficient_step_norm": 0.00023924270323651188,
+          "system_residual": 5.908576212248409e-16
+        }
+      ],
+      "trials": [
+        {
+          "iteration": 1,
+          "direction": "gauss_newton",
+          "filter_index": 0,
+          "step": 1.0,
+          "curvature_tail": 0.004236579132814864,
+          "projection_error": 3.833084183753514e-15,
+          "relative_residual": 2.1194621428504248e-06,
+          "status": "accepted"
+        },
+        {
+          "iteration": 1,
+          "direction": "steepest_descent",
+          "filter_index": 0,
+          "step": 1.0,
+          "curvature_tail": 0.004260232914115726,
+          "projection_error": 3.9506627632986034e-15,
+          "relative_residual": 1.0665475724797722e-05,
+          "status": "decreasing"
+        }
+      ]
+    },
+    {
+      "stage": {
+        "wavenumber": 1.75,
+        "update_modes": 6,
+        "curve_modes": 48,
+        "nodes": 128,
+        "curvature_modes": 4
+      },
+      "stop_reason": "data_fit",
+      "relative_residual": 5.6082865084458594e-06,
+      "history": [
+        {
+          "iteration": 0,
+          "relative_residual": 5.6082865084458594e-06,
+          "system_residual": 6.057109380447824e-16
+        }
+      ],
+      "trials": []
+    },
+    {
+      "stage": {
+        "wavenumber": 2.0,
+        "update_modes": 7,
+        "curve_modes": 48,
+        "nodes": 128,
+        "curvature_modes": 4
+      },
+      "stop_reason": "data_fit",
+      "relative_residual": 7.313528526812218e-07,
+      "history": [
+        {
+          "iteration": 0,
+          "relative_residual": 1.2664132081074874e-05,
+          "system_residual": 6.84328748696047e-16,
+          "gradient_inf": 2.1469715055609126e-06,
+          "jacobian_rank": 15,
+          "singular_values": [
+            2.3132226877737105,
+            1.1619407862497508,
+            1.122092312802701,
+            1.0247911578029394,
+            0.9566284675066142,
+            0.9083277082601952,
+            0.8842896304403653,
+            0.4850484302917612,
+            0.48215652850723006,
+            0.18367146910927917,
+            0.18350947017897,
+            0.05612521144731671,
+            0.05611588120454525,
+            0.01464027987002372,
+            0.01462809716486658
+          ]
+        },
+        {
+          "iteration": 1,
+          "relative_residual": 7.313528526812218e-07,
+          "direction": "gauss_newton",
+          "step": 1.0,
+          "filter_index": 0,
+          "curvature_tail": 0.0002967854548655178,
+          "projection_error": 3.4201356859385445e-15,
+          "coefficient_step_norm": 0.00022332152180090978,
+          "system_residual": 6.731333805595829e-16
+        }
+      ],
+      "trials": [
+        {
+          "iteration": 1,
+          "direction": "gauss_newton",
+          "filter_index": 0,
+          "step": 1.0,
+          "curvature_tail": 0.0002967854548655178,
+          "projection_error": 3.4201356859385445e-15,
+          "relative_residual": 7.313528526812218e-07,
+          "status": "accepted"
+        },
+        {
+          "iteration": 1,
+          "direction": "steepest_descent",
+          "filter_index": 0,
+          "step": 1.0,
+          "curvature_tail": 0.00016947967651236305,
+          "projection_error": 3.084742237080508e-15,
+          "relative_residual": 1.2112138997689456e-05,
+          "status": "decreasing"
+        }
+      ]
+    }
+  ],
+  "inverse_work": {
+    "attempted": 21,
+    "completed": 21,
+    "failed": 0,
+    "jacobians": 8,
+    "factorizations": 21,
+    "rhs_columns": 371
+  },
+  "observation_work": {
+    "attempted": 10,
+    "completed": 10,
+    "failed": 0,
+    "jacobians": 0,
+    "factorizations": 10,
+    "rhs_columns": 148
+  },
+  "endpoint_resolution": [
+    {
+      "wavenumber": 1.0,
+      "relative_difference": 1.9779345150340336e-15,
+      "common_frequency_error": 2.61021087256499e-08
+    },
+    {
+      "wavenumber": 1.25,
+      "relative_difference": 2.3640886446140435e-15,
+      "common_frequency_error": 5.140038565602059e-08
+    },
+    {
+      "wavenumber": 1.5,
+      "relative_difference": 2.0144337042203183e-15,
+      "common_frequency_error": 1.0727563702924895e-07
+    },
+    {
+      "wavenumber": 1.75,
+      "relative_difference": 1.5980870771921473e-15,
+      "common_frequency_error": 2.7094934321061895e-07
+    },
+    {
+      "wavenumber": 2.0,
+      "relative_difference": 1.5379949006399373e-15,
+      "common_frequency_error": 7.31352852631964e-07
+    }
+  ],
+  "holdout_relative_error": 1.6739324889336085e-07,
+  "sampled_boundary_hausdorff": 0.00047564225058187494,
+  "boundary_sampling_bound": 0.00040266993452854274,
+  "relative_boundary_error": 0.0005189682421453799,
+  "relative_area_difference": 2.9027090064914773e-08,
+  "evaluation_work": {
+    "attempted": 12,
+    "completed": 12,
+    "failed": 0,
+    "jacobians": 0,
+    "factorizations": 12,
+    "rhs_columns": 194
+  },
+  "elapsed_seconds": 23.942536877002567,
+  "qualification": {
+    "all_stages_completed": true,
+    "endpoint_resolution": true,
+    "holdout": true,
+    "shape": true
+  }
+}

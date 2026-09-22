@@ -15,6 +15,13 @@ recovered all 16 workers; its two hard scenes took **17m29s / 21m32s** with this
 Research code for homogeneous full-space 2-D TMz dielectric transmission,
 neural implicit geometry, boundary-element forward modeling, and inversion.
 
+**Isolated continuation research (2026-09-22):**
+[Shape and frequency continuation](docs/pipelines/shape_frequency_continuation.md)
+uses Cartesian Fourier geometry, arclength normal updates, plane waves and
+dense nodal Müller/Kress. It has no dependency on the old inverse drivers and
+provides a small qualified baseline for reproducing the Borges–Rachh–Greengard
+continuation algorithm. Existing production defaults are unchanged.
+
 **The three current inverse pipelines are Implicit MLP + Method B, Explicit
 Cartesian Fourier, and Explicit Radial Fourier.** The implicit pipeline updates neural weights with the Kress
 adjoint; Method B supplies the MLP's boundary to the physical solver. Its
