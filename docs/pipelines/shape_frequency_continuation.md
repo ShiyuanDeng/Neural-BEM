@@ -67,3 +67,10 @@ owns measurements. The pilot is a single-component, known-contrast,
 lossless/equal-density, full-aperture problem in dimensionless coordinates.
 It is ready for controlled continuation development; the paper's complete
 high-frequency and complicated-boundary results have not been reproduced.
+
+The [Figure 1 preparation and audit](../../experiments/shape_continuation/PAPER.md)
+now supplies the actual glider contrasts (0.33 and 10), an explicit paper
+frequency/resolution profile, and evaluation-only polygon set-difference error.
+Its default command produces a plan with zero solves. Smoke is fixed to one
+update at k=1 per contrast under shared small work caps; a campaign run requires
+explicit budgets. No expensive paper inverse has been run for this preparation.

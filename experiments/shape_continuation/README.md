@@ -32,7 +32,8 @@ runtime selector, modal compression, or experimental Laurent solver is used.
 - `schedule.py`: explicit independent update/curve/quadrature resolutions,
   including the paper's fixed frequency grid and §4 update-mode rule.
 - `run.py`: bounded synthetic recovery demonstration and saved provenance.
-- `metrics.py`: evaluation-only boundary distances; no inverse dependency.
+- `metrics.py`: evaluation-only boundary distances and polygon area differences.
+- `paper.py`: audited Figure 1 profiles, zero-solve plan, capped smoke and explicit-budget runs.
 - `benchmark.py`: inverse-only replay timing from saved observations.
 - `resolution.py`: independent field/Jacobian convergence and timing screen.
 - `test_pipeline.py`: independent circle series, derivative convergence,
@@ -80,6 +81,12 @@ $PY -m experiments.shape_continuation.run --scene ellipse --output /tmp/continua
 ```
 
 The library requires NumPy and SciPy; the demo plot also uses Matplotlib.
+The [paper harness and fidelity audit](PAPER.md) additionally use Shapely only
+for polygon area scoring. Its default command does no numerical solves:
+
+```bash
+$PY -m experiments.shape_continuation.paper --output /tmp/figure1-plan
+```
 No neural or old inverse package is imported, even during forward evaluation.
 `run_adaptive(initial, observations, contrast, strategy)` is the general
 controller. `prepare_state` and `optimise_step` expose one update with a retained
@@ -195,8 +202,10 @@ Differences that matter:
   resolution recorded. A conservative continuous-curve error bound includes
   half-edge sampling and Fourier second-derivative interpolation bounds; the
   shape gate uses the error plus this bound. Area-size difference is also saved.
-  The paper's symmetric-area
-  reconstruction metric is not implemented. No volume inverse is implemented.
+  `metrics.area_error` now supplies the paper harness's polygon symmetric-area
+  score, both directed area differences, and an N/2N polygon-refinement check.
+  The interpretation of the paper's set difference is documented in
+  [the audit](PAPER.md#area-scoring). No volume inverse is implemented.
 
 ## Qualification and remaining work
 
@@ -222,8 +231,10 @@ or multiple components.
 
 The `glider` fixture matches the paper's listed radial coefficients, but the
 short `k<=2` demo is not its reconstruction campaign. Full paper replication
-still needs verified author curvature/filter settings, the complete
-frequency/resolution settings, and comparisons on the paper's harder shapes.
+still needs verified author curvature/filter settings and comparisons on the
+paper's harder shapes. [Figure 1 preparation](PAPER.md) supplies the two actual
+contrasts and an explicit frequency/resolution profile; its small smoke is not
+a reproduction of the published reconstructions.
 
 For subsequent adaptive experiments, keep geometry/solver/optimizer fixed.
 Frequency jumps must select observations that actually exist; held-out data and

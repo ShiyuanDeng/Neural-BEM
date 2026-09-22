@@ -34,7 +34,7 @@ def circle_series(radius, k, contrast, acquisition):
                      receiver * np.exp(1j * theta[:, None] * modes), 1j ** modes * a)
 
 
-@pytest.mark.parametrize("k,contrast", [(1.0, 1.44), (3.0, 0.33), (2.0, 4.0)])
+@pytest.mark.parametrize("k,contrast", [(1.0, 1.44), (3.0, 0.33), (2.0, 4.0), (1.0, 10.0)])
 def test_plane_wave_forward_matches_independent_circle_series(k, contrast):
     acquisition = Acquisition.ring(7, 11)
     result = solve(FourierCurve.circle(0.85), k, contrast, acquisition, 96)
@@ -182,10 +182,12 @@ from experiments.shape_continuation.geometry import FourierCurve
 from experiments.shape_continuation.forward import Acquisition, solve
 from experiments.shape_continuation.inverse import run_continuation
 from experiments.shape_continuation.continuation import run_adaptive
+from experiments.shape_continuation.paper import Figure1Case
 solve(FourierCurve.circle(), 1., 1.44, Acquisition.ring(2,3), 32)
 forbidden = ('sdf_inverse', 'sdf_to_ordered_boundary', 'gpr_bem_mod', 'gpr_bem_ref',
              'torch', 'solver_select', 'experiments.modal_muller_research')
 assert not any(name == f or name.startswith(f+'.') for name in sys.modules for f in forbidden)
+assert 'shapely' not in sys.modules  # Area scoring is evaluation-only and lazy.
 """
     environment = dict(os.environ, PYTHONPATH=f"{root / 'solvers'}:{root}")
     subprocess.run([sys.executable, "-c", code], env=environment, cwd=root, check=True, capture_output=True)
