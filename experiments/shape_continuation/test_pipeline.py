@@ -103,8 +103,9 @@ def test_step_size_measures_physical_filtered_motion_before_reparameterization()
     filtered = displaced(circle, coefficients, 32, filter_index=3)
     assert plain.rms_displacement == pytest.approx(.01 / np.sqrt(2), rel=1e-13)
     assert plain.maximum_displacement == pytest.approx(.01, rel=1e-13)
-    # The Cartesian displacement has modes -3 and 5. The Gaussian suppresses
-    # both: a raw coefficient norm of .01 would miss that motion is negligible.
+    # The update is a single cos(4t) harmonic at the band edge, which the
+    # Gaussian removes: a raw coefficient norm of .01 would miss that the
+    # resulting motion is negligible.
     assert filtered.rms_displacement < 1e-12
     assert filtered.maximum_displacement < 1e-12
     assert np.max(np.abs(filtered.shape.values(1024) - circle.values(1024))) < 1e-10
@@ -118,13 +119,16 @@ def test_inverse_stops_on_small_filtered_motion(monkeypatch):
         return displaced(*args, **kwargs)
     monkeypatch.setattr(inverse, "displaced", require_filter)
     acquisition = Acquisition.ring(10, 10)
-    observation = Observation(1., acquisition, circle_series(.8, 1., 1.44, acquisition))
-    result = fit_frequency(FourierCurve.circle(), observation, Stage(1., 3, 16, 64, 2), 1.44,
-        config=FitConfig(step_tolerance=.15, backtracks=0, max_iterations=3))
+    # An elliptical target needs a cos(2t) update, which the filter does damp;
+    # the mean radius already matches, so no undamped constant term hides that.
+    observation = Observation(1., acquisition,
+                              solve(ellipse(), 1., 1.44, acquisition, 128).prediction)
+    result = fit_frequency(FourierCurve.circle(.9), observation, Stage(1., 3, 16, 64, 2), 1.44,
+        config=FitConfig(step_tolerance=.01, backtracks=0, max_iterations=3))
     last = result.history[-1]
     assert result.stop_reason == "small_step"
     assert len(result.states) == 2 and last["filter_index"] == 2
-    assert last["rms_displacement"] < .15 < last["coefficient_step_norm"]
+    assert last["update_norm"] < .01 < last["coefficient_step_norm"]
     assert result.relative_residual > 1e-5  # The stop does not claim a data fit.
 
 

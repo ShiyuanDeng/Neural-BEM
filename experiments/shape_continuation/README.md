@@ -14,7 +14,10 @@ homogeneous objects with complicated boundary, Inverse Problems 39 (2023)
 035004](https://doi.org/10.1088/1361-6420/acb2ec),
 [author manuscript, §2.1 and §4](https://arxiv.org/html/2210.11607v1).
 The same manuscript is stored in the documentation as a
-[local PDF](../../docs/reference/papers/borges_rachh_greengard_2210.11607v1.pdf).
+[local PDF](../../docs/reference/papers/borges_rachh_greengard_2210.11607v1.pdf),
+alongside the authors'
+[reference implementation](../../docs/reference/papers/README.md#reference-implementation),
+which settles several settings the prose leaves loose.
 
 ## Scope and file/API map
 
@@ -171,7 +174,7 @@ Implemented: general Cartesian Fourier geometry in an arclength gauge;
 Fourier normal displacements; single-frequency recursive linearization;
 plane waves and the full receiver matrix; known equal-density contrast;
 curvature-spectrum admissibility; GN and SD candidates; Gaussian filtering
-of the Cartesian displacement; warm starts with nondecreasing storage band.
+of the normal update; warm starts with nondecreasing storage band.
 
 Differences that matter:
 
@@ -184,19 +187,29 @@ Differences that matter:
   exact derivative of every underresolved finite matrix.
 - Real-stacked least squares uses an SVD rank cutoff, not explicit normal
   equations. Candidate selection uses the stacked residual 2-norm consistently.
-- Both GN and raw SD candidates are evaluated. Backtracking and an explicit
-  residual-decrease requirement are added before increasing the Gaussian
-  filter level. This is a safeguarded adaptation of the paper's GN/SD/filter
-  procedure, not a claim of identical author code or textbook Powell dogleg.
-- The curvature tail tolerance `0.1`, rank threshold `1e-10`, projection
-  tolerance `1e-7`, and backtracking controls are declared pilot choices. They
-  are not presented as recovered author settings. The paper's residual/step
+- Both GN and SD candidates are evaluated. SD is scaled to the Cauchy point
+  `t = |J*r|²/|J J*r|²`, as in the authors' code; eq.18 names only the
+  direction, whose raw magnitude is not a usable step. The residual-decrease
+  requirement matches that code, which exits its filter loop only on a
+  non-increasing residual. Backtracking is ours and is off in the paper profile.
+- `geometry.gaussian_filter` damps harmonic `n` of the **normal update** by
+  `exp(-(n/M)²/sigma)` with `sigma = 10^(1-level)`, following
+  `update_inverse_iterate`. Eq.19 instead writes the stored-curve band and
+  `sigma²`; read that way the first levels are no-ops and the rest collapse the
+  update to a translation, leaving the search no intermediate strength.
+- The curvature tail tolerance, rank threshold `1e-10`, projection
+  tolerance `1e-7`, and backtracking controls were declared pilot choices. The
+  tolerance now has a source: the authors' drivers set `eps_curv=0.1` on an
+  amplitude ratio over `|n| > max(20, M)`, so the paper profile uses the
+  equivalent energy fraction `0.01` on that band. The paper's residual/step
   tolerances `1e-5` and 50-iteration default are retained; the CLI bounds the
   pilot at 20 iterations per frequency. Stops distinguish data fit, stationarity,
   small step, no admissible decreasing step, iteration limit, and work limit.
   Step size is the arclength-weighted RMS physical displacement after Gaussian
   filtering, measured before reparameterization changes the point labels.
-  Maximum displacement and the raw coefficient norm are retained as diagnostics.
+  Maximum displacement, the raw coefficient norm, and `update_norm` (the
+  filtered update's 2-norm, which is the reference code's own step measure)
+  are retained as diagnostics.
   A small filtered step can end a stage without asserting stationarity or a fit.
 - The default smoke run fixes storage and forward resolution. The optional
   wavelength-scaled policy and N/2N stage checks support longer ladders. A

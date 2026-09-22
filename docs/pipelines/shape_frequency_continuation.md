@@ -11,7 +11,10 @@ with complicated boundary*, Inverse Problems 39 (2023) 035004,
 
 The complete paper is stored locally as the
 [24-page arXiv v1 PDF](../reference/papers/borges_rachh_greengard_2210.11607v1.pdf),
-with [source and version details](../reference/papers/README.md).
+with [source and version details](../reference/papers/README.md). The authors'
+[reference implementation](../reference/papers/README.md#reference-implementation)
+is read, not vendored; it settles the filter, steepest-descent scaling and
+trust-region band that the manuscript states loosely.
 
 ```text
 Cartesian Fourier curve, parameterized by arclength
@@ -75,8 +78,10 @@ It is ready for controlled continuation development; the paper's complete
 high-frequency and complicated-boundary results have not been reproduced.
 
 The [Figure 1 preparation and audit](../../experiments/shape_continuation/PAPER.md)
-now supplies the actual glider contrasts (0.33 and 10), an explicit paper
+supplies the actual glider contrasts (0.33 and 10), an explicit paper
 frequency/resolution profile, and evaluation-only polygon set-difference error.
 Its default command produces a plan with zero solves. Smoke is fixed to one
 update at k=1 per contrast under shared small work caps; a campaign run requires
-explicit budgets. No expensive paper inverse has been run for this preparation.
+explicit budgets. The §4.1 boundary inverse now recovers the glider along the
+paper's ladder; [SC-013](../../results/validation/shape_continuation/SC-013-paper-glider-recovery/README.md)
+owns those measurements and their limits.

@@ -36,9 +36,14 @@ class FitConfig:
     backtracks: int = 8
     filter_steps: int = 10
     rank_tolerance: float = 1e-10
+    # The reference drivers run 'sd-min(gn,sd)': the first sd_iter=50 updates of
+    # every frequency propose steepest descent alone, and only later iterations
+    # also offer Gauss-Newton. 0 offers both from the first update.
+    steepest_descent_iterations: int = 0
 
     def __post_init__(self):
-        for name in ("max_iterations", "backtracks", "filter_steps"):
+        for name in ("max_iterations", "backtracks", "filter_steps",
+                     "steepest_descent_iterations"):
             integer(getattr(self, name), name, minimum=0)
         for name in ("residual_tolerance", "step_tolerance", "gradient_tolerance", "projection_tolerance", "rank_tolerance"):
             value = getattr(self, name)
@@ -157,18 +162,25 @@ def optimise_step(state, *, config=None, work=None, iteration=1):
         gradient_norm = float(np.linalg.norm(gradient, ord=np.inf))
         with timed(work, "least_squares"):
             gn, _, rank, singular = np.linalg.lstsq(matrix, -residual, rcond=config.rank_tolerance)
+        with timed(work, "curvature_checks"):
+            base_tail = curvature_tail(shape, stage.curvature_modes)
         diagnostics.update(gradient_inf=gradient_norm, jacobian_rank=int(rank),
-                           singular_values=singular.tolist())
+                           singular_values=singular.tolist(), base_curvature_tail=base_tail)
         if gradient_norm <= config.gradient_tolerance:
             return stopped("stationary")
-        # Paper eq.18 uses the raw-data gradient; normalization above serves LS
-        # conditioning and diagnostics, and must not rescale the SD proposal.
-        sd = -gradient * scale ** 2
+        # Eq.18 names only the direction J*(u_meas - F). The reference code
+        # scales it to the Cauchy point, t = |J*r|^2 / |J J*r|^2, which is
+        # invariant to the residual normalization applied above; the unscaled
+        # adjoint has arbitrary magnitude and is not a usable step.
+        curvature_along = float(np.linalg.norm(matrix @ gradient))
+        sd = -gradient * (np.linalg.norm(gradient) / curvature_along) ** 2 if curvature_along else -gradient
+        directions = (("steepest_descent", sd),) if iteration <= config.steepest_descent_iterations \
+            else (("gauss_newton", gn), ("steepest_descent", sd))
         accepted = None
         for filtering in range(config.filter_steps + 1):
             for backtrack in range(config.backtracks + 1):
                 candidates = []
-                for label, direction in (("gauss_newton", gn), ("steepest_descent", sd)):
+                for label, direction in directions:
                     work.check()
                     step = 0.5 ** backtrack
                     trial = dict(iteration=iteration, direction=label, filter_index=filtering, step=step)
@@ -181,6 +193,7 @@ def optimise_step(state, *, config=None, work=None, iteration=1):
                         trial.update(projection_error=proposal.projection_error,
                             rms_displacement=proposal.rms_displacement,
                             maximum_displacement=proposal.maximum_displacement,
+                            update_norm=proposal.update_norm,
                             coefficient_step_norm=float(np.linalg.norm(step * direction)))
                         with timed(work, "curvature_checks"):
                             tail = curvature_tail(candidate, stage.curvature_modes)
@@ -209,7 +222,7 @@ def optimise_step(state, *, config=None, work=None, iteration=1):
         record = dict(iteration=iteration, relative_residual=error,
             direction=trial["direction"], step=trial["step"], filter_index=trial["filter_index"],
             curvature_tail=trial["curvature_tail"], projection_error=trial["projection_error"],
-            coefficient_step_norm=trial["coefficient_step_norm"],
+            coefficient_step_norm=trial["coefficient_step_norm"], update_norm=trial["update_norm"],
             rms_displacement=trial["rms_displacement"], maximum_displacement=trial["maximum_displacement"],
             system_residual=current.system_residual)
         updated = OptimizerState(shape, observation, stage, state.contrast, current, error)

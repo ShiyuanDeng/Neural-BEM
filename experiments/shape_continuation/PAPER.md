@@ -7,7 +7,11 @@ reproducible approximation with an explicit audit, not an exact replication.
 
 The manuscript used for this audit is available as a
 [local PDF](../../docs/reference/papers/borges_rachh_greengard_2210.11607v1.pdf)
-([source and version details](../../docs/reference/papers/README.md)).
+([source and version details](../../docs/reference/papers/README.md)). Settings
+the manuscript leaves loose are taken from the authors'
+[reference implementation](../../docs/reference/papers/README.md#reference-implementation),
+read but not vendored. Rows below marked **(code)** follow that implementation
+where it contradicts the prose; the code is what produced the published figures.
 
 ## Commands
 
@@ -46,14 +50,16 @@ start from the unit circle; checkpoint resume is not implemented in this harness
 | Contrast | `ki²/k² = 0.33, 10` | §4.1; do not invert this ratio |
 | Frequencies | `1:0.25:30`; snapshots `1,5,10` | §4 defaults and Figure 1 snapshots; full default ladder retained |
 | Acquisition | `floor(10k)` directions and receivers, radius 10 | §4; cyclic ordering starts at zero |
-| Normal update band M | `floor(3 max(k,ki))` | §4 experimental rule |
+| Normal update band M | `floor(3 max(k,ki))` | §4 experimental rule, taken literally; the reference drivers instead set `use_lscaled_modes`, giving `floor(k·cL/2π)`, which for this glider (`L/2π = 1.137`) would be about 14% wider |
 | Curve storage K | `max(previous K, M, ceil(70 L k / 2π))` | Exterior `k` in eq.12; extra `K>=M` for storage |
 | Inverse nodes N | Even ceiling of `max(64, 70 L max(k,ki)/2π, 2(K+1))` | §2 shortest wavelength plus Kress/Fourier sampling constraint |
 | Reference data | Mean 100 points/shortest wavelength, plus doubled nodes | §4 density; exact polar fixture and doubled data used here |
 | Iteration / stopping | 50; residual and physical RMS update `1e-5` | §4 tolerances; RMS normalization is our convention |
-| Gaussian filter | Up to 10 levels, `sigma=10^(1-level)` | Eq.19; applied afresh to the Cartesian update |
-| Added halvings | Disabled (`backtracks=0`) | Follow the paper's filtering order |
-| Curvature band / tail | `ceil(2k)` / `0.1` | `c=2` from §2.1; numeric tail tolerance is our declared assumption |
+| Steepest-descent step | Cauchy point `t = |J*r|²/|J J*r|²` | **(code)** eq.18 names only the direction; the raw adjoint has arbitrary magnitude |
+| Gaussian filter | Harmonic `n` of `h` damped by `exp(-(n/M)²/sigma)`, `sigma=10^(1-level)`, 10 levels | **(code)** `update_inverse_iterate`; eq.19 instead writes the stored-curve band and `sigma²` |
+| Added halvings | Disabled (`backtracks=0`) | `filter_type='gauss-conv'`, not `'step_length'` |
+| Curvature band / tail | `max(20, M)` / energy `0.01` | **(code)** `n_curv = max(n_curv_min, M)` with driver `n_curv_min=20`; `eps_curv=0.1` bounds an amplitude ratio, so our energy fraction is its square |
+| Direction offered | Gauss-Newton and steepest descent from the first update | Drivers use `'sd-min(gn,sd)'` with `sd_iter=50`; `FitConfig.steepest_descent_iterations` exposes that and defaults to 0 here |
 
 The old `schedule.paper_stage` is the previously qualified pilot and is
 unchanged. It puts `max(k,ki)` in **both** storage and quadrature estimates. The
@@ -76,12 +82,23 @@ Remaining differences requiring care in any comparison:
   density is a mean density, rather than uniform arclength. Data must pass an
   N/2N field check (`1e-7`); the inverse uses the doubled reference data.
 - Candidate ranking uses the stacked Euclidean residual; the paper writes a
-  sum of per-illumination norms. Strict residual decrease, gradient stopping,
-  projection tolerance `1e-7`, and SVD cutoff `1e-10` remain our safeguards.
-  Disabling backtracking does not remove these differences.
-- No numerical value for `epsilon_f` was located in the manuscript. The precise
-  normalization of the update 2-norm and whether successive Gaussian filters
-  compose are also not specified sufficiently to claim identical trajectories.
+  sum of per-illumination norms, but the reference code also uses the stacked
+  norm. Requiring the residual to decrease is likewise the reference behaviour,
+  not a safeguard we added: its filter loop exits only on a non-increasing
+  residual and reverts the step otherwise. Gradient stopping, projection
+  tolerance `1e-7`, and SVD cutoff `1e-10` remain ours.
+- `epsilon_f` is `eps_curv = 0.1` in the reference drivers, applied to
+  `|tail|₂/|all|₂` of the arclength curvature spectrum. Successive filters do
+  not compose there: each level re-filters the original update.
+- The stopping step size is our arclength-weighted RMS physical displacement,
+  not the reference's `|delta|₂` over the filtered update coefficients; both are
+  compared against `1e-5`. The exact quantity is saved as `update_norm` on every
+  trial, so the difference is measurable rather than assumed. The drivers
+  loosen this to `1e-3`, which we do not adopt.
+- GN and SD are filtered together here: the search takes the first level at
+  which either is admissible and decreasing. The reference filters each
+  direction to admissibility independently, then compares. This matters only
+  when the two need different filter strengths.
 - Every completed stage must pass an added N/2N field **and full normal
   Jacobian** check (`1e-6`). Failed qualification rolls back that stage and stops
   with evidence saved; it does not silently advance to the next frequency.
@@ -91,7 +108,8 @@ Remaining differences requiring care in any comparison:
 `metrics.area_error(truth, recovered)` approximates each boundary by a polygon
 and reports `area(truth symmetric_difference recovered) / area(truth)`, using
 Shapely/GEOS clipping. §4 says “set difference” without specifying a direction;
-we use the symmetric interpretation and save missing and excess area separately.
+the reference driver sums both one-sided differences, confirming the symmetric
+interpretation, and we save missing and excess area separately.
 This is not an exact Wasserstein distance, nor the absolute difference of areas.
 
 Scoring uses 4096 and 8192 vertices by default, increasing for large stored bands,

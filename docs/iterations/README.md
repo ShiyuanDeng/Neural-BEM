@@ -99,9 +99,18 @@ The current comparison reference for these tracks is
 from the isolated nodal Müller/Kress pipeline and existing SC-001–SC-012
 evidence. It has its own synthetic baseline and paper profiles; B0 is not a
 matched reference for its timing or recovery claims. Code and evidence remain
-in their existing locations. The latest paper-profile glider has qualified
-fields/Jacobians but stalled updates; no expensive inverse is launched by
-opening this track.
+in their existing locations. Iteration 01 recorded a stalled paper-profile
+glider with qualified fields/Jacobians.
+[Iteration 02](shape_frequency_continuation/iteration_02/01_results.md) closes
+that question the same day: the user supplied the authors' reference
+implementation and directed that the paper's algorithm be made to work. The
+trust-region band had excluded the update's own highest harmonic; with that and
+three further settings corrected against the authors' code,
+[SC-013](../../results/validation/shape_continuation/SC-013-paper-glider-recovery/README.md)
+recovers the Figure 1 glider at both contrasts — area error 0.849% at k=5 for
+η=0.33 and 0.297% at k=3 for η=10. This is §4.1 only: the paper's harder shapes,
+higher frequencies, noise and any adaptive-policy benefit remain untested, and
+no successor experiment is proposed or approved.
 
 ## What to do at each stage
 

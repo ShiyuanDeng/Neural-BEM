@@ -87,7 +87,8 @@ def test_manual_steps_reproduce_whole_fit_without_repeated_initial_solves():
         if step.stop_reason is not None:
             break
     assert step.stop_reason == whole.stop_reason == "data_fit"
-    assert step.diagnostics.keys() == {"gradient_inf", "jacobian_rank", "singular_values"}
+    assert step.diagnostics.keys() == {"gradient_inf", "jacobian_rank",
+                                       "singular_values", "base_curvature_tail"}
     assert state.relative_residual == whole.relative_residual
     assert trials == whole.trials
     assert len(states) == len(whole.states)

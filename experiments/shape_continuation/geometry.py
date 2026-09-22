@@ -128,29 +128,48 @@ class CurveStep:
     projection_error: float
     rms_displacement: float
     maximum_displacement: float
+    update_norm: float = 0.0  # ||filtered h||_2: the reference's eps_upd measure.
+
+
+def gaussian_filter(coefficients, filter_index):
+    """Eq. 19 damping of the NORMAL-UPDATE harmonics (reference `update_geom`).
+
+    The reference implementation damps harmonic n of h by exp(-(n/M)^2/sigma),
+    with M the update band and sigma = 10^(1-index); index 0 leaves h alone.
+    Both the band and the power of sigma differ from the manuscript's eq.19,
+    which is written against the stored curve band. Damping the Cartesian
+    curve coefficients at the storage band instead makes the first levels
+    no-ops and the rest a pure translation, so the search loses every
+    intermediate strength. Coefficients are ordered a0, a1..aM, b1..bM.
+    """
+    coefficients = np.asarray(coefficients, float)
+    band = len(coefficients) // 2
+    if not filter_index or band == 0:
+        return coefficients
+    harmonics = np.concatenate((np.arange(band + 1), np.arange(1, band + 1)))
+    sigma = 10.0 ** (1 - integer(filter_index, "filter_index", minimum=0))
+    return coefficients * np.exp(-(harmonics / band) ** 2 / sigma)
 
 
 def displaced(curve, coefficients, storage_band, *, filter_index=0, step=1.0,
               projection_tolerance=1e-7):
-    """Normal update, optional eq. 19 filter of Cartesian displacement, refit."""
+    """Normal update, optional eq. 19 filter of the update itself, then refit."""
     coefficients = np.asarray(coefficients, float)
     if coefficients.ndim != 1 or len(coefficients) % 2 != 1 or not np.isfinite(coefficients).all():
         raise ValueError("Expected finite real normal Fourier coefficients.")
+    applied = gaussian_filter(coefficients, filter_index) * step
     count = grid_size(max(curve.band, storage_band, len(coefficients) // 2))
     nodes = curve.nodes(count)
     normal = nodes.normals[:, 0] + 1j * nodes.normals[:, 1]
-    delta = (normal_basis(nodes, len(coefficients) // 2) @ coefficients) * normal * step
-    if filter_index:
-        sigma = 10.0 ** (1 - filter_index)
-        modes = np.fft.fftfreq(count) * count
-        delta = np.fft.ifft(np.fft.fft(delta) * np.exp(-(modes / (sigma * storage_band)) ** 2))
+    delta = (normal_basis(nodes, len(applied) // 2) @ applied) * normal
     # Keep the product h*n well resolved before changing its parameterization.
     updated = FourierCurve.from_samples(curve.values(count) + delta, count // 2 - 1)
     # Avoid oversampling this already dense temporary Fourier interpolant.
     shape, projection = _refit_samples(updated, storage_band, count, projection_tolerance)
     # Measure physical motion after filtering, before the arclength gauge changes.
     rms = np.sqrt(np.sum(np.abs(delta) ** 2 * nodes.arc_length_weights) / nodes.perimeter)
-    return CurveStep(shape, projection, float(rms), float(np.max(np.abs(delta))))
+    return CurveStep(shape, projection, float(rms), float(np.max(np.abs(delta))),
+                     float(np.linalg.norm(applied)))
 
 
 def _refit_samples(curve, band, count, tolerance):

@@ -29,18 +29,21 @@ class Figure1Case:
     k_stop: float = 30.
     inverse_points_per_wavelength: float = 70.
     data_points_per_wavelength: float = 100.
-    curvature_factor: float = 2.
-    config: FitConfig = FitConfig(backtracks=0)
+    # Reference `update_geom` bounds |tail|_2/|all|_2 by eps_curv=0.1 over
+    # |n| > max(n_curv_min, M), with n_curv_min=20 in the authors' drivers.
+    # Our gate is the energy fraction, hence the squared tolerance below.
+    minimum_curvature_modes: int = 20
+    config: FitConfig = FitConfig(backtracks=0, curvature_tail_tolerance=1e-2)
 
     def __post_init__(self):
         if self.contrast not in (.33, 10.):
             raise ValueError("Figure 1 contrasts are ki²/k² = 0.33 and 10.")
         if self.k_stop not in paper_wavenumbers():
             raise ValueError("k_stop must belong to the paper grid 1:0.25:30.")
-        for value in (self.inverse_points_per_wavelength,
-                      self.data_points_per_wavelength, self.curvature_factor):
+        for value in (self.inverse_points_per_wavelength, self.data_points_per_wavelength):
             if not np.isfinite(value) or value <= 0:
-                raise ValueError("Resolution and curvature factors must be positive.")
+                raise ValueError("Resolution factors must be positive.")
+        integer(self.minimum_curvature_modes, "minimum_curvature_modes")
 
     @property
     def wavenumbers(self):
@@ -49,6 +52,9 @@ class Figure1Case:
     def stage(self, shape, k):
         """Eq.12 exterior-k storage; §2 shortest wavelength for quadrature.
 
+        The trust-region band is the reference code's max(n_curv_min, M), not
+        the manuscript's ⌈ck⌉: a band below the update's own highest harmonic
+        refuses every unfiltered Gauss-Newton step at low frequency.
         Kress also requires N > 2K. Recomputed at frequency handoffs using
         the current perimeter, not within candidate updates (declared gap).
         """
@@ -59,7 +65,8 @@ class Figure1Case:
                       int(np.ceil(self.inverse_points_per_wavelength * length * k / (2*np.pi))))
         nodes = even_at_least(max(64, 2 * (storage + 1),
             self.inverse_points_per_wavelength * length * largest / (2*np.pi)))
-        return Stage(float(k), modes, storage, nodes, int(np.ceil(self.curvature_factor * k)))
+        return Stage(float(k), modes, storage, nodes,
+                     max(self.minimum_curvature_modes, modes))
 
     def data_nodes(self, truth, k):
         # The exact polar fixture is retained; this is mean points/wavelength.
