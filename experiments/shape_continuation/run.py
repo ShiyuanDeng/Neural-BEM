@@ -12,8 +12,8 @@ from time import perf_counter
 
 import numpy as np
 
-from .forward import Acquisition, Work, solve
-from .geometry import FourierCurve, grid_size
+from .forward import Acquisition, Work, solve, shape_jacobian
+from .geometry import FourierCurve, grid_size, normal_basis
 from .inverse import FitConfig, Observation, run_continuation
 from .schedule import Stage, paper_stage
 from .metrics import boundary_distance
@@ -33,6 +33,40 @@ def relative(first, second):
     return float(np.linalg.norm(first - second) / max(np.linalg.norm(second), np.finfo(float).tiny))
 
 
+def load_restart(bundle, truth, contrast, first_wavenumber):
+    """Load a saved endpoint without importing any inverse/solver implementation."""
+    bundle = Path(bundle)
+    saved = json.loads((bundle / "summary.json").read_text())
+    if saved["contrast"] != contrast:
+        raise ValueError("Restart contrast must match its saved observations.")
+    last = saved["stages"][-1]
+    if first_wavenumber < last["stage"]["wavenumber"]:
+        raise ValueError("A restart may repeat the last frequency or advance, but not go backwards.")
+    with np.load(bundle / "inputs.npz") as arrays:
+        if not np.array_equal(truth.coefficients, arrays["truth"]):
+            raise ValueError("Restart truth/data fixture differs from the requested scene.")
+    with np.load(bundle / "states.npz") as arrays:
+        shape = FourierCurve(arrays[f"stage_{len(saved['stages']) - 1}"])
+    shape.validate()
+    record = dict(bundle=str(bundle.resolve()), last_stage=last["stage"],
+        last_stop_reason=last["stop_reason"],
+        prior_inverse_forwards=saved.get("cumulative_inverse_forwards", saved["inverse_work"]["attempted"]),
+        sha256={name: hashlib.sha256((bundle / name).read_bytes()).hexdigest()
+                for name in ("summary.json", "inputs.npz", "states.npz")})
+    return shape, record
+
+
+def check_stage_resolution(shape, stage, contrast, acquisition, work):
+    """Check both fields and the full normal Jacobian, reusing the two LUs."""
+    low = solve(shape, stage.wavenumber, contrast, acquisition, stage.nodes, work=work)
+    high = solve(shape, stage.wavenumber, contrast, acquisition, 2 * stage.nodes, work=work)
+    low_j = shape_jacobian(low, normal_basis(low.curve, stage.update_modes), work=work)
+    high_j = shape_jacobian(high, normal_basis(high.curve, stage.update_modes), work=work)
+    return dict(wavenumber=stage.wavenumber, nodes=stage.nodes,
+        relative_difference=relative(low.prediction, high.prediction),
+        jacobian_relative_difference=relative(low_j, high_j))
+
+
 def provenance():
     root = Path(__file__).resolve().parents[2]
     files = [*Path(__file__).parent.glob("*.py"), *(root / "solvers/gpr_bem_kress").glob("*.py"),
@@ -48,6 +82,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--scene", choices=("circle", "ellipse", "glider"), default="ellipse")
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--resume-from", type=Path,
+                        help="Saved run bundle; start at or after its last frequency with a fresh budget.")
     parser.add_argument("--contrast", type=float, default=1.44)
     parser.add_argument("--max-iterations", type=int, default=20)
     parser.add_argument("--backtracks", type=int, default=8,
@@ -83,16 +119,20 @@ def main():
 
 def run(args):
     manifest = provenance()
+    truth, initial = fixture(args.scene), FourierCurve.circle()
+    restart = None
+    if args.resume_from is not None:
+        initial, restart = load_restart(args.resume_from, truth, args.contrast, args.k_start)
+        manifest["restart"] = restart
     (args.output / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
     started = perf_counter()
-    truth, initial = fixture(args.scene), FourierCurve.circle()
     # Resolutions depend only on declared controls and the current iterate.
     waves = args.k_start + args.k_step * np.arange(round((args.k_stop-args.k_start)/args.k_step) + 1)
     stages = [Stage(k, max(1, int(3 * k * max(1, np.sqrt(args.contrast)))), args.curve_modes, args.nodes,
                     int(np.ceil(2 * k))) for k in waves] if args.resolution == "fixed" else None
     def stage_policy(shape, k, previous):
         return paper_stage(k, args.contrast, shape.nodes(grid_size(shape.band)).perimeter,
-            previous_curve_modes=max(args.curve_modes, previous.curve_modes if previous else 1),
+            previous_curve_modes=max(args.curve_modes, shape.band, previous.curve_modes if previous else 1),
             points_per_wavelength=args.points_per_wavelength, minimum_nodes=args.nodes)
     config = FitConfig(max_iterations=args.max_iterations, backtracks=args.backtracks)
     observation_work = Work(max_forwards=2 * len(waves), max_seconds=args.max_seconds)
@@ -126,17 +166,13 @@ def run(args):
         path.write_text(json.dumps(record, indent=2) + "\n")
         if args.verify_stages and result.stop_reason != "budget_exhausted":
             observation = observations[index]
-            low = solve(result.shape, observation.wavenumber, args.contrast, observation.acquisition,
-                        result.stage.nodes, work=evaluation_work).prediction
-            high = solve(result.shape, observation.wavenumber, args.contrast, observation.acquisition,
-                         2 * result.stage.nodes, work=evaluation_work).prediction
-            check = dict(wavenumber=observation.wavenumber, nodes=result.stage.nodes,
-                         relative_difference=relative(low, high))
+            check = check_stage_resolution(result.shape, result.stage, args.contrast,
+                                           observation.acquisition, evaluation_work)
             stage_checks.append(check)
             record["resolution_check"] = check
             path.write_text(json.dumps(record, indent=2) + "\n")
-            if check["relative_difference"] > 1e-6:
-                raise RuntimeError(f"Stage k={observation.wavenumber:g} failed forward refinement; checkpoint retained.")
+            if max(check["relative_difference"], check["jacobian_relative_difference"]) > 1e-6:
+                raise RuntimeError(f"Stage k={observation.wavenumber:g} failed field/Jacobian refinement; checkpoint retained.")
         print(json.dumps({"k": result.stage.wavenumber, "nodes": result.stage.nodes,
               "curve_modes": result.stage.curve_modes, "residual": result.relative_residual,
               "stop": result.stop_reason, "forward_evaluations": work.attempted}), flush=True)
@@ -145,7 +181,8 @@ def run(args):
         args.contrast, config=config, work=work, on_stage=checkpoint)
     phase_seconds["inverse_including_stage_checks"] = perf_counter() - inverse_started
     # Preserve the run before endpoint scoring or plotting, including budget stops.
-    summary = dict(scene=args.scene, contrast=args.contrast, config=asdict(config),
+    summary = dict(scene=args.scene, contrast=args.contrast, config=asdict(config), restart=restart,
+        cumulative_inverse_forwards=work.attempted + (restart["prior_inverse_forwards"] if restart else 0),
         planned_stages=[asdict(s) for s in stages] if stages is not None else None,
         requested_wavenumbers=waves.tolist(), resolution_policy=args.resolution,
         stage_resolution_checks=stage_checks, observation_qualification=qualifications,
@@ -201,11 +238,17 @@ def run(args):
         axes[0].plot(np.r_[z.real, z.real[0]], np.r_[z.imag, z.imag[0]], style, label=label)
     axes[0].set_aspect("equal")
     axes[0].legend()
-    for item in result:
+    colors = plt.get_cmap("viridis")(np.linspace(0, 1, len(result)))
+    for index, item in enumerate(result):
         axes[1].semilogy([r["iteration"] for r in item.history], [r["relative_residual"] for r in item.history],
-                         marker=".", label=f"k={item.stage.wavenumber:g}")
+                         marker=".", color=colors[index], label=f"k={item.stage.wavenumber:g}")
     axes[1].set(xlabel="Iteration within stage", ylabel="Relative data residual")
-    axes[1].legend()
+    if len(result) <= 8:
+        axes[1].legend()
+    else:
+        from matplotlib.colors import Normalize
+        figure.colorbar(plt.cm.ScalarMappable(norm=Normalize(result[0].stage.wavenumber,
+                         result[-1].stage.wavenumber), cmap="viridis"), ax=axes[1], label="Wavenumber k")
     figure.tight_layout()
     figure.savefig(args.output / "recovery.png", dpi=160)
     plt.close(figure)

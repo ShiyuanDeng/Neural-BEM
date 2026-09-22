@@ -272,3 +272,32 @@ def test_stage_policy_and_checkpoints_receive_only_current_geometry_and_stage():
     assert called[0][2] is None and called[1][2] is result[0].stage
     assert saved[-1] == (1, result[-1])
     assert result[-1].relative_residual < 1e-5
+
+
+def test_restart_preserves_endpoint_and_checks_problem_identity(tmp_path):
+    import json
+    from .run import load_restart
+    truth, final = ellipse(), FourierCurve.circle(.9)
+    record = dict(contrast=1.44, stages=[dict(stage=dict(wavenumber=2.), stop_reason="budget_exhausted")],
+                  inverse_work=dict(attempted=20), cumulative_inverse_forwards=35)
+    (tmp_path / "summary.json").write_text(json.dumps(record))
+    np.savez(tmp_path / "inputs.npz", truth=truth.coefficients)
+    np.savez(tmp_path / "states.npz", stage_0=final.coefficients)
+    shape, origin = load_restart(tmp_path, truth, 1.44, 2.)
+    assert np.array_equal(shape.coefficients, final.coefficients)
+    assert origin["prior_inverse_forwards"] == 35
+    assert set(origin["sha256"]) == {"summary.json", "inputs.npz", "states.npz"}
+    with pytest.raises(ValueError, match="contrast"):
+        load_restart(tmp_path, truth, 2., 2.)
+    with pytest.raises(ValueError, match="fixture"):
+        load_restart(tmp_path, final, 1.44, 2.)
+    with pytest.raises(ValueError, match="backwards"):
+        load_restart(tmp_path, truth, 1.44, 1.5)
+
+
+def test_field_convergence_alone_does_not_qualify_shape_jacobian():
+    from .run import fixture, check_stage_resolution
+    check = check_stage_resolution(fixture("glider"), Stage(8., 28, 48, 128, 16),
+                                   1.44, Acquisition.ring(16, 19), Work())
+    assert check["relative_difference"] < 1e-6
+    assert check["jacobian_relative_difference"] > 1e-6

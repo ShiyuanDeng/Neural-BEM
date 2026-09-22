@@ -1,0 +1,186 @@
+{
+  "scene": "ellipse",
+  "contrast": 1.44,
+  "config": {
+    "max_iterations": 20,
+    "residual_tolerance": 1e-05,
+    "step_tolerance": 1e-05,
+    "gradient_tolerance": 1e-10,
+    "curvature_tail_tolerance": 0.1,
+    "projection_tolerance": 1e-07,
+    "backtracks": 8,
+    "filter_steps": 10,
+    "rank_tolerance": 1e-10
+  },
+  "restart": {
+    "bundle": "/home/drdeng/Neural_SDF_BEM_AD/results/validation/shape_continuation/SC-005-ellipse-regression",
+    "last_stage": {
+      "wavenumber": 2.0,
+      "update_modes": 7,
+      "curve_modes": 48,
+      "nodes": 128,
+      "curvature_modes": 4
+    },
+    "last_stop_reason": "data_fit",
+    "prior_inverse_forwards": 21,
+    "sha256": {
+      "summary.json": "757a2407b79118487f0fbf82c74aca058410342730ae5ca5e07c21848f1892c1",
+      "inputs.npz": "626eba77dec2bd889c550b4906f0ce73fe620281fe922b674e9845bc1efb4f5d",
+      "states.npz": "a08538a21622ecda3ffae870d7bac0566357742983834fbcbd905c247b526716"
+    }
+  },
+  "cumulative_inverse_forwards": 23,
+  "planned_stages": null,
+  "requested_wavenumbers": [
+    2.0,
+    2.25
+  ],
+  "resolution_policy": "paper",
+  "stage_resolution_checks": [
+    {
+      "wavenumber": 2.0,
+      "nodes": 128,
+      "relative_difference": 1.6740662602005378e-15,
+      "jacobian_relative_difference": 1.1364801917861586e-15
+    },
+    {
+      "wavenumber": 2.25,
+      "nodes": 128,
+      "relative_difference": 1.463599009576435e-15,
+      "jacobian_relative_difference": 1.2624636963260731e-15
+    }
+  ],
+  "observation_qualification": [
+    {
+      "wavenumber": 2.0,
+      "nodes": [
+        256,
+        512
+      ],
+      "relative_difference": 1.6482416895814953e-15
+    },
+    {
+      "wavenumber": 2.25,
+      "nodes": [
+        256,
+        512
+      ],
+      "relative_difference": 1.5397538347366202e-15
+    }
+  ],
+  "stages": [
+    {
+      "stage": {
+        "wavenumber": 2.0,
+        "update_modes": 7,
+        "curve_modes": 48,
+        "nodes": 128,
+        "curvature_modes": 4
+      },
+      "stop_reason": "data_fit",
+      "relative_residual": 7.313528526916544e-07,
+      "history": [
+        {
+          "iteration": 0,
+          "relative_residual": 7.313528526916544e-07,
+          "system_residual": 6.761484087253244e-16
+        }
+      ],
+      "trials": []
+    },
+    {
+      "stage": {
+        "wavenumber": 2.25,
+        "update_modes": 8,
+        "curve_modes": 51,
+        "nodes": 128,
+        "curvature_modes": 5
+      },
+      "stop_reason": "data_fit",
+      "relative_residual": 1.9010288579616376e-06,
+      "history": [
+        {
+          "iteration": 0,
+          "relative_residual": 1.9010288579616376e-06,
+          "system_residual": 7.012126784095931e-16
+        }
+      ],
+      "trials": []
+    }
+  ],
+  "inverse_work": {
+    "attempted": 2,
+    "completed": 2,
+    "failed": 0,
+    "jacobians": 0,
+    "factorizations": 2,
+    "rhs_columns": 42,
+    "seconds": {
+      "initial_geometry": 0.0034602261148393154,
+      "assembly": 0.08394604013301432,
+      "receiver_operator": 0.006215046159923077,
+      "factorization": 0.001732352888211608,
+      "forward_solve": 0.0009227099362760782
+    }
+  },
+  "observation_work": {
+    "attempted": 4,
+    "completed": 4,
+    "failed": 0,
+    "jacobians": 0,
+    "factorizations": 4,
+    "rhs_columns": 84,
+    "seconds": {
+      "assembly": 1.6853181410115212,
+      "receiver_operator": 0.0825278121046722,
+      "factorization": 0.10040056891739368,
+      "forward_solve": 0.016394371166825294
+    }
+  },
+  "endpoint_resolution": [
+    {
+      "wavenumber": 2.0,
+      "relative_difference": 1.6740662602005378e-15,
+      "common_frequency_error": 7.313528526845016e-07
+    },
+    {
+      "wavenumber": 2.25,
+      "relative_difference": 1.463599009576435e-15,
+      "common_frequency_error": 1.9010288579997456e-06
+    }
+  ],
+  "holdout_relative_error": 1.1888105729451179e-06,
+  "sampled_boundary_hausdorff": 0.00026208471483963995,
+  "boundary_sampling_bound": 0.00040266993452854274,
+  "relative_boundary_error": 0.0002859578676770396,
+  "relative_area_difference": 2.9027090064914773e-08,
+  "evaluation_work": {
+    "attempted": 10,
+    "completed": 10,
+    "failed": 0,
+    "jacobians": 4,
+    "factorizations": 10,
+    "rhs_columns": 298,
+    "seconds": {
+      "assembly": 1.6586650107055902,
+      "receiver_operator": 0.09032330173067749,
+      "factorization": 0.07467972487211227,
+      "forward_solve": 0.01705996715463698,
+      "reciprocal_solve": 0.027030130848288536,
+      "jacobian_contraction": 0.0012403004802763462
+    }
+  },
+  "holdout_wavenumber": 2.125,
+  "elapsed_seconds": 3.883122042985633,
+  "phase_seconds": {
+    "observation_generation": 1.8877162970602512,
+    "inverse_including_stage_checks": 0.5843867999501526,
+    "endpoint_scoring": 1.4103301160503179
+  },
+  "qualification": {
+    "all_stages_completed": true,
+    "endpoint_resolution": true,
+    "holdout": true,
+    "shape": true
+  }
+}

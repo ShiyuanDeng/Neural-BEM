@@ -22,6 +22,8 @@ def main():
     parser.add_argument("--pilot", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--repeats", type=int, default=3)
+    parser.add_argument("--max-forwards", type=int, default=550)
+    parser.add_argument("--max-seconds", type=float, default=600.)
     args = parser.parse_args()
     if args.repeats < 1:
         parser.error("repeats must be positive")
@@ -37,7 +39,7 @@ def main():
             for i, s in enumerate(stages)]
     rows = []
     for repeat in range(args.repeats + 1):
-        work = Work(max_forwards=550)
+        work = Work(max_forwards=args.max_forwards, max_seconds=args.max_seconds)
         profile = cProfile.Profile() if repeat == args.repeats else None
         if profile is not None:
             profile.enable()
@@ -48,8 +50,10 @@ def main():
             profile.disable()
             buffer = io.StringIO()
             pstats.Stats(profile, stream=buffer).strip_dirs().sort_stats("cumtime").print_stats(45)
-            (args.output / "profile.txt").write_text(buffer.getvalue())
+            (args.output / "profile.txt").write_text(buffer.getvalue().rstrip() + "\n")
         row = dict(repeat=repeat, profiled=profile is not None, seconds=seconds,
+            all_stages_completed=len(results) == len(stages)
+                and all(r.stop_reason != "budget_exhausted" for r in results),
             work=work.summary(), stop_reasons=[r.stop_reason for r in results],
             residuals=[r.relative_residual for r in results],
             accepted_updates=sum(len(r.states) - 1 for r in results))

@@ -37,8 +37,8 @@ runtime selector, modal compression, or experimental Laurent solver is used.
   geometry/reparameterization, recovery, continuation and import isolation.
 
 Validation is bounded to unit/derivative checks, short synthetic smoke
-recoveries, and a glider ladder through k=8 (1500 inverse forward evaluations
-and 10 minutes of inverse work per run).
+recoveries, glider ladders through k=8, and checkpoint extensions through k=12
+(1500 inverse forward evaluations and 10 minutes of inverse work per run).
 The 117-frequency paper campaign and adaptive-policy comparisons are not
 part of this implementation qualification. Truth generates observations and
 scores the result; it is absent from the optimizer interface.
@@ -111,9 +111,33 @@ This computes stage storage and quadrature from the current iterate's perimeter
 and the declared points-per-wavelength setting. `--curve-modes` and `--nodes`
 are minimum values in this policy; they are fixed values under `--resolution
 fixed`. Every stage saves geometry, history, rejected trials, stop reason and
-work counters before its optional N/2N check. A failed check stops the run with
+work counters before its optional N/2N field and full-Jacobian checks (both
+relative differences must be at most `1e-6`). A failed check stops the run with
 the checkpoint retained. The run also records observation-generation, inverse
 (including requested stage checks) and endpoint-scoring wall times separately.
+
+`--backtracks 0` disables the added step halvings before Gaussian filtering,
+for comparisons with the paper's search sequence. The default remains 8;
+the saved filter-only glider comparison did not improve recovery.
+
+To continue a saved endpoint, use a new output directory and an explicit
+frequency range and budget, for example:
+
+```bash
+$PY -m experiments.shape_continuation.run --scene glider --resolution paper \
+  --verify-stages --resume-from results/validation/shape_continuation/SC-005-glider-filtered-step \
+  --k-start 4.75 --k-stop 12 --max-iterations 50 --max-forwards 1500 \
+  --max-seconds 600 --output /tmp/continuation-glider-extension
+```
+
+A restart may repeat the saved last frequency or advance. It checks material
+contrast and the exact synthetic truth fixture, preserves stored modes, hashes
+the parent bundle, and records cumulative inverse forward calls. Its initial
+curve is the saved endpoint, not the unit disk. The new run has a fresh,
+explicit budget; extension results must not be compared as though they had
+the original run's budget. A restart requires a bundle with saved `summary.json`,
+`inputs.npz`, and `states.npz`; an interrupted individual stage checkpoint can
+still be loaded manually through the independent `fit_frequency` API.
 
 `paper_wavenumbers()` supplies the full 117-stage grid. `paper_stage(...)`
 supplies an explicit resolution proposal using the current perimeter and
@@ -182,12 +206,15 @@ aperture observations, unknown material, or multiple components.
 
 The `glider` fixture matches the paper's listed radial coefficients, but the
 short `k<=2` demo is not its reconstruction campaign. Full paper replication
-still needs an agreed curvature tolerance/filter interpretation, the complete
+still needs verified author curvature/filter settings, the complete
 frequency/resolution settings, and comparisons on the paper's harder shapes.
 
-For subsequent adaptive experiments, keep geometry/solver/optimizer fixed and
-change only the stage policy: repeat the current frequency, increase the update
-band, increase frequency, or refine quadrature. Record the reason, data residual,
+For subsequent adaptive experiments, keep geometry/solver/optimizer fixed.
+The current stage-policy callback chooses update, storage, curvature and
+quadrature resolutions along a prescribed increasing frequency list. An adaptive
+controller can call `fit_frequency` directly to repeat a frequency or choose the
+next available observation; repetition is deliberately outside the fixed-ladder
+runner. Record the decision, data residual,
 gradient, singular spectrum, curvature tail, projection error, and work.
 Frequency jumps must select observations that actually exist; held-out data and
 true boundary errors remain scoring inputs only. Small steps are not stationarity
