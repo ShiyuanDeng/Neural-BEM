@@ -87,10 +87,54 @@ correction 4 is load-bearing there, even though it changed nothing at
 `η`=0.33. **The Gaussian filter is never reached in either ladder**, so
 correction 3 is a fidelity repair with no measurement behind it here.
 
+## How this compares to the published Figure 1
+
+[`digitize_figure1.py`](digitize_figure1.py) reads the error panels out of the
+local PDF (600 dpi render, calibrated on the printed y tick labels after
+checking their spacing is uniform to <2%, x assumed to span exactly [0,10] and
+confirmed by the recovered k values landing on the 0.25 grid to 0.006). It
+recovers 35 and 36 of the 37 plotted points; the rest overlap. Output:
+[figure1_comparison.json](figure1_comparison.json).
+
+| k | published `η`=0.33 | SC-013 | | published `η`=10 | SC-013 | |
+|---|---:|---:|---:|---:|---:|---:|
+| 1 | 0.781 | 0.159 | 4.9x | 0.716 | 0.0928 | 7.7x |
+| 2 | 0.384 | 0.157 | 2.5x | 0.175 | 0.0260 | 6.7x |
+| 3 | 0.306 | 0.0648 | 4.7x | 0.0789 | 0.00297 | **26.5x** |
+| 4 | 0.284 | 0.0274 | 10.4x | — | — | |
+| 5 | 0.141 | 0.00849 | **16.6x** | — | — | |
+
+**We are 2.5x to 26x more accurate than the published curve at every frequency
+of both contrasts.** Our `εΓ` at k=5 for `η`=0.33 is roughly what the paper
+reaches at k=10. The qualitative behaviour replicates — monotone decay in k,
+`η`=10 below `η`=0.33, and a recovered shape that matches §4.1's coefficients —
+but **the published error values are not reproduced, and beating them is not
+replication.** Treat this bundle as an internally consistent fixed-ladder
+baseline, not as a reproduction of the paper's numbers.
+
+Two leading explanations, neither tested:
+
+1. **The update band may be much wider than the authors used.** §4's text rule
+   `floor(3 max(k,ki))` is what we implement. The authors' drivers instead set
+   `use_lscaled_modes`, giving `floor(k·c·L/2π)` with `c=2` and **no `ki`** —
+   `floor(2.27k)` for this glider. At `η`=0.33, k=5 that is 11 against our 15;
+   at `η`=10, k=3 it is 6 against our 28. The error gap is largest exactly where
+   the band gap is largest, which is what this explanation predicts.
+2. **Our forward and data models share more machinery.** Observations come from
+   the same nodal Müller/Kress code at 2N after a 1e-7 N/2N check, on the exact
+   polar fixture. The paper generates at 100 points/wavelength and inverts at 70
+   with Alpert quadrature. Both are close to an inverse crime; ours is closer.
+
+The discriminating check is cheap: rerun `η`=10 to k=3 with the drivers'
+`floor(2kL/2π)` band. If the curve lands on the published one, explanation 1
+holds and the band rule should become an explicit, switchable policy before any
+baseline comparison is run on top of it.
+
 ## Limits
 
 - Two contrasts of one shape, noiseless, full aperture, known contrast, single
   component, in dimensionless coordinates. This is §4.1 only.
+- The published error values are **not** matched; see the comparison above.
 - The ladders stop at k=5 and k=3; the paper's grid runs to k=30 and its
   snapshots are k=1, 5 and 10. Cost grows as the dense `N³` with `N ∝ L k
   max(1,√η)`, so `η`=10 is the more expensive case per frequency.

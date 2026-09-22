@@ -75,6 +75,18 @@ Recovered polar coefficients match the §4.1 glider to four digits at `η`=0.33
 and five at `η`=10. `η`=10 is the better reconstruction at every shared
 frequency, the ordering Figure 1 reports.
 
+**The published error values are not reproduced.** Digitizing Figure 1's error
+panels puts our `εΓ` **2.5x to 26x below the published curve at every
+frequency of both contrasts**; our k=5 value at `η`=0.33 is roughly what the
+paper reaches at k=10. The algorithm's structure and qualitative behaviour
+replicate; its numbers do not, and being better is not replication. The two
+leading explanations — an update band much wider than the authors' drivers use,
+and a forward/data pair that shares more machinery than theirs — are recorded
+with a cheap discriminating check in
+[SC-013](../../../../results/validation/shape_continuation/SC-013-paper-glider-recovery/README.md#how-this-compares-to-the-published-figure-1).
+Until that check runs, this is an internally consistent fixed-ladder baseline,
+not a calibrated reproduction of the paper's.
+
 ## Which corrections are load-bearing
 
 Only correction 1 is demonstrated to have ended the stall: a `k ≤ 2` ladder with

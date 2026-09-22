@@ -16,8 +16,8 @@ iteration 02**, which replicates the paper's Figure 1 boundary inverse.
 | Active cycle | [Iteration 02 — the paper profile recovers the glider](iteration_02/01_results.md) |
 | Stage | Results available; no successor experiment proposed or approved |
 | Working implementation | [Isolated continuation package](../../../experiments/shape_continuation/README.md) |
-| Latest run | [SC-013](../../../results/validation/shape_continuation/SC-013-paper-glider-recovery/README.md): both Figure 1 contrasts recover the glider; area error 0.849% at k=5 and 0.297% at k=3 |
-| Next research decision | Whether to extend the ladder toward the paper's k=10 snapshot, or first test the reference's looser update tolerance against the 50-iteration stages at contrast 10 |
+| Latest run | [SC-013](../../../results/validation/shape_continuation/SC-013-paper-glider-recovery/README.md): both Figure 1 contrasts recover the glider; area error 0.849% at k=5 and 0.297% at k=3, but 2.5x–26x below the published curve rather than matching it |
+| Next research decision | Calibrate against the published Figure 1 before anything else: rerun η=10 to k=3 with the drivers' L-scaled `floor(2kL/2π)` update band and see whether the error curve lands on the printed one |
 | Current constraint | None active. The user's 2026-09-22 instruction to make the paper's algorithm work authorized the code changes and runs in iteration 02 |
 | Checkout | Existing `feature/shape-frequency-continuation` branch; no new branch or worktree |
 | Owner / independent reviewer | Claude / unassigned |

@@ -108,7 +108,11 @@ trust-region band had excluded the update's own highest harmonic; with that and
 three further settings corrected against the authors' code,
 [SC-013](../../results/validation/shape_continuation/SC-013-paper-glider-recovery/README.md)
 recovers the Figure 1 glider at both contrasts — area error 0.849% at k=5 for
-η=0.33 and 0.297% at k=3 for η=10. This is §4.1 only: the paper's harder shapes,
+η=0.33 and 0.297% at k=3 for η=10. The **published error values are not
+reproduced**: a digitization of Figure 1 puts these 2.5x–26x below the printed
+curve, so this is an internally consistent fixed-ladder baseline rather than a
+calibrated reproduction, and the leading explanation (update-band width) has a
+recorded discriminating check. This is §4.1 only: the paper's harder shapes,
 higher frequencies, noise and any adaptive-policy benefit remain untested, and
 no successor experiment is proposed or approved.
 
