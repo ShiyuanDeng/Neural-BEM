@@ -1,0 +1,1764 @@
+[
+  {
+    "index": 0,
+    "decision": {
+      "stage": {
+        "wavenumber": 1.0,
+        "update_modes": 1,
+        "curve_modes": 48,
+        "nodes": 128,
+        "curvature_modes": 2
+      },
+      "config": {
+        "max_iterations": 1,
+        "residual_tolerance": 1e-05,
+        "step_tolerance": 1e-05,
+        "gradient_tolerance": 1e-10,
+        "curvature_tail_tolerance": 0.1,
+        "projection_tolerance": 1e-07,
+        "backtracks": 8,
+        "filter_steps": 10,
+        "rank_tolerance": 1e-10
+      },
+      "reason": "start at M=1"
+    },
+    "result": {
+      "stage": {
+        "wavenumber": 1.0,
+        "update_modes": 1,
+        "curve_modes": 48,
+        "nodes": 128,
+        "curvature_modes": 2
+      },
+      "stop_reason": "iteration_limit",
+      "relative_residual": 0.05137313941128474,
+      "history": [
+        {
+          "iteration": 0,
+          "relative_residual": 0.1589955205262277,
+          "system_residual": 5.721901688163072e-16,
+          "gradient_inf": 0.24821906466740803,
+          "jacobian_rank": 3,
+          "singular_values": [
+            1.6990928576105981,
+            0.9682697427379542,
+            0.9682697427379541
+          ]
+        },
+        {
+          "iteration": 1,
+          "relative_residual": 0.05137313941128474,
+          "direction": "gauss_newton",
+          "step": 1.0,
+          "filter_index": 0,
+          "curvature_tail": 4.323644440831616e-09,
+          "projection_error": 1.5870244952428633e-13,
+          "coefficient_step_norm": 0.09204777540698275,
+          "rms_displacement": 0.08906590631825897,
+          "maximum_displacement": 0.11884577857698284,
+          "system_residual": 5.599514516065412e-16
+        }
+      ],
+      "trials": [
+        {
+          "iteration": 1,
+          "direction": "gauss_newton",
+          "filter_index": 0,
+          "step": 1.0,
+          "projection_error": 1.5870244952428633e-13,
+          "rms_displacement": 0.08906590631825897,
+          "maximum_displacement": 0.11884577857698284,
+          "coefficient_step_norm": 0.09204777540698275,
+          "curvature_tail": 4.323644440831616e-09,
+          "relative_residual": 0.05137313941128474,
+          "status": "accepted"
+        },
+        {
+          "iteration": 1,
+          "direction": "steepest_descent",
+          "filter_index": 0,
+          "step": 1.0,
+          "projection_error": 8.163159687020606e-15,
+          "rms_displacement": 0.0936688662992938,
+          "maximum_displacement": 0.10489309387077066,
+          "coefficient_step_norm": 0.09402627015701044,
+          "curvature_tail": 8.694044993704353e-12,
+          "relative_residual": 0.05676242351887926,
+          "status": "decreasing"
+        }
+      ]
+    },
+    "committed": true,
+    "qualification": {
+      "passed": true,
+      "diagnostics": {
+        "nodes": 128,
+        "fine_nodes": 256,
+        "field_relative": 2.136559078965905e-15,
+        "jacobian_relative": 6.516891143198095e-16,
+        "tolerance": 1e-06
+      }
+    },
+    "work_before": {
+      "attempted": 0,
+      "completed": 0,
+      "failed": 0,
+      "jacobians": 0,
+      "factorizations": 0,
+      "rhs_columns": 0,
+      "seconds": {}
+    },
+    "work_after": {
+      "attempted": 4,
+      "completed": 4,
+      "failed": 0,
+      "jacobians": 3,
+      "factorizations": 4,
+      "rhs_columns": 70,
+      "seconds": {
+        "initial_geometry": 0.002769435988739133,
+        "assembly": 0.16119352309033275,
+        "receiver_operator": 0.016207018168643117,
+        "factorization": 0.00905661704018712,
+        "forward_solve": 0.0017492049373686314,
+        "reciprocal_solve": 0.014373247046023607,
+        "jacobian_contraction": 9.807106107473373e-05,
+        "least_squares": 4.3289968743920326e-05,
+        "geometry_proposals": 0.004551414167508483,
+        "curvature_checks": 0.0009766791481524706
+      }
+    }
+  },
+  {
+    "index": 1,
+    "decision": {
+      "stage": {
+        "wavenumber": 1.0,
+        "update_modes": 1,
+        "curve_modes": 48,
+        "nodes": 128,
+        "curvature_modes": 2
+      },
+      "config": {
+        "max_iterations": 1,
+        "residual_tolerance": 1e-05,
+        "step_tolerance": 1e-05,
+        "gradient_tolerance": 1e-10,
+        "curvature_tail_tolerance": 0.1,
+        "projection_tolerance": 1e-07,
+        "backtracks": 8,
+        "filter_steps": 10,
+        "rank_tolerance": 1e-10
+      },
+      "reason": "continue one update at this k and M"
+    },
+    "result": {
+      "stage": {
+        "wavenumber": 1.0,
+        "update_modes": 1,
+        "curve_modes": 48,
+        "nodes": 128,
+        "curvature_modes": 2
+      },
+      "stop_reason": "iteration_limit",
+      "relative_residual": 0.051258334873968164,
+      "history": [
+        {
+          "iteration": 0,
+          "relative_residual": 0.05137313941128474,
+          "system_residual": 5.599514516065412e-16,
+          "gradient_inf": 0.0026454625889379933,
+          "jacobian_rank": 3,
+          "singular_values": [
+            1.7059611865638362,
+            0.8836125094753244,
+            0.8833770665223961
+          ]
+        },
+        {
+          "iteration": 1,
+          "relative_residual": 0.051258334873968164,
+          "direction": "gauss_newton",
+          "step": 1.0,
+          "filter_index": 0,
+          "curvature_tail": 4.975640407088865e-09,
+          "projection_error": 5.340622819896309e-15,
+          "coefficient_step_norm": 0.003538461933619421,
+          "rms_displacement": 0.002583340522534242,
+          "maximum_displacement": 0.004328833746415533,
+          "system_residual": 5.705338352844087e-16
+        }
+      ],
+      "trials": [
+        {
+          "iteration": 1,
+          "direction": "gauss_newton",
+          "filter_index": 0,
+          "step": 1.0,
+          "projection_error": 5.340622819896309e-15,
+          "rms_displacement": 0.002583340522534242,
+          "maximum_displacement": 0.004328833746415533,
+          "coefficient_step_norm": 0.003538461933619421,
+          "curvature_tail": 4.975640407088865e-09,
+          "relative_residual": 0.051258334873968164,
+          "status": "accepted"
+        },
+        {
+          "iteration": 1,
+          "direction": "steepest_descent",
+          "filter_index": 0,
+          "step": 1.0,
+          "projection_error": 5.236911533344271e-15,
+          "rms_displacement": 0.001221554401276889,
+          "maximum_displacement": 0.0019976815915084276,
+          "coefficient_step_norm": 0.0014125877383073355,
+          "curvature_tail": 4.515506020319035e-09,
+          "relative_residual": 0.05130509338009133,
+          "status": "decreasing"
+        }
+      ]
+    },
+    "committed": true,
+    "qualification": {
+      "passed": true,
+      "diagnostics": {
+        "nodes": 128,
+        "fine_nodes": 256,
+        "field_relative": 1.9073371995219764e-15,
+        "jacobian_relative": 6.424398251878788e-16,
+        "tolerance": 1e-06
+      }
+    },
+    "work_before": {
+      "attempted": 4,
+      "completed": 4,
+      "failed": 0,
+      "jacobians": 3,
+      "factorizations": 4,
+      "rhs_columns": 70,
+      "seconds": {
+        "initial_geometry": 0.002769435988739133,
+        "assembly": 0.16119352309033275,
+        "receiver_operator": 0.016207018168643117,
+        "factorization": 0.00905661704018712,
+        "forward_solve": 0.0017492049373686314,
+        "reciprocal_solve": 0.014373247046023607,
+        "jacobian_contraction": 9.807106107473373e-05,
+        "least_squares": 4.3289968743920326e-05,
+        "geometry_proposals": 0.004551414167508483,
+        "curvature_checks": 0.0009766791481524706
+      }
+    },
+    "work_after": {
+      "attempted": 7,
+      "completed": 7,
+      "failed": 0,
+      "jacobians": 6,
+      "factorizations": 7,
+      "rhs_columns": 130,
+      "seconds": {
+        "initial_geometry": 0.002769435988739133,
+        "assembly": 0.2969831533264369,
+        "receiver_operator": 0.02967290417291224,
+        "factorization": 0.016445396235212684,
+        "forward_solve": 0.0032061159145087004,
+        "reciprocal_solve": 0.028715661261230707,
+        "jacobian_contraction": 0.00019651302136480808,
+        "least_squares": 8.902396075427532e-05,
+        "geometry_proposals": 0.009251530282199383,
+        "curvature_checks": 0.001963189337402582
+      }
+    }
+  },
+  {
+    "index": 2,
+    "decision": {
+      "stage": {
+        "wavenumber": 1.0,
+        "update_modes": 1,
+        "curve_modes": 48,
+        "nodes": 128,
+        "curvature_modes": 2
+      },
+      "config": {
+        "max_iterations": 1,
+        "residual_tolerance": 1e-05,
+        "step_tolerance": 1e-05,
+        "gradient_tolerance": 1e-10,
+        "curvature_tail_tolerance": 0.1,
+        "projection_tolerance": 1e-07,
+        "backtracks": 8,
+        "filter_steps": 10,
+        "rank_tolerance": 1e-10
+      },
+      "reason": "continue one update at this k and M"
+    },
+    "result": {
+      "stage": {
+        "wavenumber": 1.0,
+        "update_modes": 1,
+        "curve_modes": 48,
+        "nodes": 128,
+        "curvature_modes": 2
+      },
+      "stop_reason": "iteration_limit",
+      "relative_residual": 0.05125808072463552,
+      "history": [
+        {
+          "iteration": 0,
+          "relative_residual": 0.051258334873968164,
+          "system_residual": 5.705338352844087e-16,
+          "gradient_inf": 0.00011348650553053149,
+          "jacobian_rank": 3,
+          "singular_values": [
+            1.7060387300092323,
+            0.8826229377328382,
+            0.8823853747766266
+          ]
+        },
+        {
+          "iteration": 1,
+          "relative_residual": 0.05125808072463552,
+          "direction": "gauss_newton",
+          "step": 1.0,
+          "filter_index": 0,
+          "curvature_tail": 4.987723833454191e-09,
+          "projection_error": 3.642919299551295e-15,
+          "coefficient_step_norm": 0.00017955146005788335,
+          "rms_displacement": 0.00012705840657767546,
+          "maximum_displacement": 0.00018641155562182287,
+          "system_residual": 5.547308503919486e-16
+        }
+      ],
+      "trials": [
+        {
+          "iteration": 1,
+          "direction": "gauss_newton",
+          "filter_index": 0,
+          "step": 1.0,
+          "projection_error": 3.642919299551295e-15,
+          "rms_displacement": 0.00012705840657767546,
+          "maximum_displacement": 0.00018641155562182287,
+          "coefficient_step_norm": 0.00017955146005788335,
+          "curvature_tail": 4.987723833454191e-09,
+          "relative_residual": 0.05125808072463552,
+          "status": "accepted"
+        },
+        {
+          "iteration": 1,
+          "direction": "steepest_descent",
+          "filter_index": 0,
+          "step": 1.0,
+          "projection_error": 3.37661150723213e-15,
+          "rms_displacement": 3.793038658764135e-05,
+          "maximum_displacement": 6.019026628101149e-05,
+          "coefficient_step_norm": 5.3093183173018164e-05,
+          "curvature_tail": 4.979223204251145e-09,
+          "relative_residual": 0.051258210510021704,
+          "status": "decreasing"
+        }
+      ]
+    },
+    "committed": true,
+    "qualification": {
+      "passed": true,
+      "diagnostics": {
+        "nodes": 128,
+        "fine_nodes": 256,
+        "field_relative": 2.0931817343843023e-15,
+        "jacobian_relative": 5.995473317937943e-16,
+        "tolerance": 1e-06
+      }
+    },
+    "work_before": {
+      "attempted": 7,
+      "completed": 7,
+      "failed": 0,
+      "jacobians": 6,
+      "factorizations": 7,
+      "rhs_columns": 130,
+      "seconds": {
+        "initial_geometry": 0.002769435988739133,
+        "assembly": 0.2969831533264369,
+        "receiver_operator": 0.02967290417291224,
+        "factorization": 0.016445396235212684,
+        "forward_solve": 0.0032061159145087004,
+        "reciprocal_solve": 0.028715661261230707,
+        "jacobian_contraction": 0.00019651302136480808,
+        "least_squares": 8.902396075427532e-05,
+        "geometry_proposals": 0.009251530282199383,
+        "curvature_checks": 0.001963189337402582
+      }
+    },
+    "work_after": {
+      "attempted": 10,
+      "completed": 10,
+      "failed": 0,
+      "jacobians": 9,
+      "factorizations": 10,
+      "rhs_columns": 190,
+      "seconds": {
+        "initial_geometry": 0.002769435988739133,
+        "assembly": 0.4324327162466943,
+        "receiver_operator": 0.04311621328815818,
+        "factorization": 0.023785339202731848,
+        "forward_solve": 0.004648921079933643,
+        "reciprocal_solve": 0.043634862173348665,
+        "jacobian_contraction": 0.0002966909669339657,
+        "least_squares": 0.00013700383715331554,
+        "geometry_proposals": 0.013865508371964097,
+        "curvature_checks": 0.0029334332793951035
+      }
+    }
+  },
+  {
+    "index": 3,
+    "decision": {
+      "stage": {
+        "wavenumber": 1.0,
+        "update_modes": 1,
+        "curve_modes": 48,
+        "nodes": 128,
+        "curvature_modes": 2
+      },
+      "config": {
+        "max_iterations": 1,
+        "residual_tolerance": 1e-05,
+        "step_tolerance": 1e-05,
+        "gradient_tolerance": 1e-10,
+        "curvature_tail_tolerance": 0.1,
+        "projection_tolerance": 1e-07,
+        "backtracks": 8,
+        "filter_steps": 10,
+        "rank_tolerance": 1e-10
+      },
+      "reason": "continue one update at this k and M"
+    },
+    "result": {
+      "stage": {
+        "wavenumber": 1.0,
+        "update_modes": 1,
+        "curve_modes": 48,
+        "nodes": 128,
+        "curvature_modes": 2
+      },
+      "stop_reason": "small_step",
+      "relative_residual": 0.05125807999977446,
+      "history": [
+        {
+          "iteration": 0,
+          "relative_residual": 0.05125808072463552,
+          "system_residual": 5.547308503919486e-16,
+          "gradient_inf": 7.466441218543759e-06,
+          "jacobian_rank": 3,
+          "singular_values": [
+            1.7060393300656067,
+            0.8826152917851348,
+            0.8823777308981119
+          ]
+        },
+        {
+          "iteration": 1,
+          "relative_residual": 0.05125807999977446,
+          "direction": "gauss_newton",
+          "step": 1.0,
+          "filter_index": 0,
+          "curvature_tail": 4.989347442823565e-09,
+          "projection_error": 2.0651342011721887e-15,
+          "coefficient_step_norm": 9.59243676313019e-06,
+          "rms_displacement": 6.7829635121286015e-06,
+          "maximum_displacement": 9.64073904009043e-06,
+          "system_residual": 5.60905395420318e-16
+        }
+      ],
+      "trials": [
+        {
+          "iteration": 1,
+          "direction": "gauss_newton",
+          "filter_index": 0,
+          "step": 1.0,
+          "projection_error": 2.0651342011721887e-15,
+          "rms_displacement": 6.7829635121286015e-06,
+          "maximum_displacement": 9.64073904009043e-06,
+          "coefficient_step_norm": 9.59243676313019e-06,
+          "curvature_tail": 4.989347442823565e-09,
+          "relative_residual": 0.05125807999977446,
+          "status": "accepted"
+        },
+        {
+          "iteration": 1,
+          "direction": "steepest_descent",
+          "filter_index": 0,
+          "step": 1.0,
+          "projection_error": 2.0471501066083613e-15,
+          "rms_displacement": 1.986346288374174e-06,
+          "maximum_displacement": 2.8606226561320336e-06,
+          "coefficient_step_norm": 2.8086274899047843e-06,
+          "curvature_tail": 4.9881994203183695e-09,
+          "relative_residual": 0.05125808037301581,
+          "status": "decreasing"
+        }
+      ]
+    },
+    "committed": true,
+    "qualification": {
+      "passed": true,
+      "diagnostics": {
+        "nodes": 128,
+        "fine_nodes": 256,
+        "field_relative": 2.0321177139743195e-15,
+        "jacobian_relative": 5.654511597800599e-16,
+        "tolerance": 1e-06
+      }
+    },
+    "work_before": {
+      "attempted": 10,
+      "completed": 10,
+      "failed": 0,
+      "jacobians": 9,
+      "factorizations": 10,
+      "rhs_columns": 190,
+      "seconds": {
+        "initial_geometry": 0.002769435988739133,
+        "assembly": 0.4324327162466943,
+        "receiver_operator": 0.04311621328815818,
+        "factorization": 0.023785339202731848,
+        "forward_solve": 0.004648921079933643,
+        "reciprocal_solve": 0.043634862173348665,
+        "jacobian_contraction": 0.0002966909669339657,
+        "least_squares": 0.00013700383715331554,
+        "geometry_proposals": 0.013865508371964097,
+        "curvature_checks": 0.0029334332793951035
+      }
+    },
+    "work_after": {
+      "attempted": 13,
+      "completed": 13,
+      "failed": 0,
+      "jacobians": 12,
+      "factorizations": 13,
+      "rhs_columns": 250,
+      "seconds": {
+        "initial_geometry": 0.002769435988739133,
+        "assembly": 0.567883423063904,
+        "receiver_operator": 0.05656737508252263,
+        "factorization": 0.03121174778789282,
+        "forward_solve": 0.006089466158300638,
+        "reciprocal_solve": 0.05802787188440561,
+        "jacobian_contraction": 0.0003960779868066311,
+        "least_squares": 0.00018510897643864155,
+        "geometry_proposals": 0.018447550013661385,
+        "curvature_checks": 0.003917810274288058
+      }
+    }
+  },
+  {
+    "index": 4,
+    "decision": {
+      "stage": {
+        "wavenumber": 1.0,
+        "update_modes": 2,
+        "curve_modes": 48,
+        "nodes": 128,
+        "curvature_modes": 2
+      },
+      "config": {
+        "max_iterations": 1,
+        "residual_tolerance": 1e-05,
+        "step_tolerance": 1e-05,
+        "gradient_tolerance": 1e-10,
+        "curvature_tail_tolerance": 0.1,
+        "projection_tolerance": 1e-07,
+        "backtracks": 8,
+        "filter_steps": 10,
+        "rank_tolerance": 1e-10
+      },
+      "reason": "increase M after local stop"
+    },
+    "result": {
+      "stage": {
+        "wavenumber": 1.0,
+        "update_modes": 2,
+        "curve_modes": 48,
+        "nodes": 128,
+        "curvature_modes": 2
+      },
+      "stop_reason": "iteration_limit",
+      "relative_residual": 0.0020726901449060744,
+      "history": [
+        {
+          "iteration": 0,
+          "relative_residual": 0.05125807999977446,
+          "system_residual": 5.60905395420318e-16,
+          "gradient_inf": 0.017305442241592844,
+          "jacobian_rank": 5,
+          "singular_values": [
+            1.7060393400167808,
+            0.8826152409103529,
+            0.8823776806546325,
+            0.4017334777983178,
+            0.4017331989076619
+          ]
+        },
+        {
+          "iteration": 1,
+          "relative_residual": 0.0020726901449060744,
+          "direction": "gauss_newton",
+          "step": 1.0,
+          "filter_index": 0,
+          "curvature_tail": 0.006126731492947127,
+          "projection_error": 7.975619203029944e-13,
+          "coefficient_step_norm": 0.12610631611999587,
+          "rms_displacement": 0.08917063129699,
+          "maximum_displacement": 0.12611188949849894,
+          "system_residual": 5.667181563911045e-16
+        }
+      ],
+      "trials": [
+        {
+          "iteration": 1,
+          "direction": "gauss_newton",
+          "filter_index": 0,
+          "step": 1.0,
+          "projection_error": 7.975619203029944e-13,
+          "rms_displacement": 0.08917063129699,
+          "maximum_displacement": 0.12611188949849894,
+          "coefficient_step_norm": 0.12610631611999587,
+          "curvature_tail": 0.006126731492947127,
+          "relative_residual": 0.0020726901449060744,
+          "status": "accepted"
+        },
+        {
+          "iteration": 1,
+          "direction": "steepest_descent",
+          "filter_index": 0,
+          "step": 1.0,
+          "projection_error": 3.0792431378842496e-15,
+          "rms_displacement": 0.005409926227247488,
+          "maximum_displacement": 0.0076509251963993745,
+          "coefficient_step_norm": 0.0076507910420112995,
+          "curvature_tail": 9.21716586700749e-08,
+          "relative_residual": 0.04821775353219441,
+          "status": "decreasing"
+        }
+      ]
+    },
+    "committed": true,
+    "qualification": {
+      "passed": true,
+      "diagnostics": {
+        "nodes": 128,
+        "fine_nodes": 256,
+        "field_relative": 2.1780106960319298e-15,
+        "jacobian_relative": 6.025481001786409e-16,
+        "tolerance": 1e-06
+      }
+    },
+    "work_before": {
+      "attempted": 13,
+      "completed": 13,
+      "failed": 0,
+      "jacobians": 12,
+      "factorizations": 13,
+      "rhs_columns": 250,
+      "seconds": {
+        "initial_geometry": 0.002769435988739133,
+        "assembly": 0.567883423063904,
+        "receiver_operator": 0.05656737508252263,
+        "factorization": 0.03121174778789282,
+        "forward_solve": 0.006089466158300638,
+        "reciprocal_solve": 0.05802787188440561,
+        "jacobian_contraction": 0.0003960779868066311,
+        "least_squares": 0.00018510897643864155,
+        "geometry_proposals": 0.018447550013661385,
+        "curvature_checks": 0.003917810274288058
+      }
+    },
+    "work_after": {
+      "attempted": 16,
+      "completed": 16,
+      "failed": 0,
+      "jacobians": 15,
+      "factorizations": 16,
+      "rhs_columns": 310,
+      "seconds": {
+        "initial_geometry": 0.003533259965479374,
+        "assembly": 0.7020981402602047,
+        "receiver_operator": 0.0700283064506948,
+        "factorization": 0.0385620417073369,
+        "forward_solve": 0.007532800314947963,
+        "reciprocal_solve": 0.07237637299112976,
+        "jacobian_contraction": 0.0005301667843014002,
+        "least_squares": 0.00023354589939117432,
+        "geometry_proposals": 0.023130438989028335,
+        "curvature_checks": 0.004906133282929659
+      }
+    }
+  },
+  {
+    "index": 5,
+    "decision": {
+      "stage": {
+        "wavenumber": 1.0,
+        "update_modes": 2,
+        "curve_modes": 48,
+        "nodes": 128,
+        "curvature_modes": 2
+      },
+      "config": {
+        "max_iterations": 1,
+        "residual_tolerance": 1e-05,
+        "step_tolerance": 1e-05,
+        "gradient_tolerance": 1e-10,
+        "curvature_tail_tolerance": 0.1,
+        "projection_tolerance": 1e-07,
+        "backtracks": 8,
+        "filter_steps": 10,
+        "rank_tolerance": 1e-10
+      },
+      "reason": "continue one update at this k and M"
+    },
+    "result": {
+      "stage": {
+        "wavenumber": 1.0,
+        "update_modes": 2,
+        "curve_modes": 48,
+        "nodes": 128,
+        "curvature_modes": 2
+      },
+      "stop_reason": "iteration_limit",
+      "relative_residual": 0.0003488197415305815,
+      "history": [
+        {
+          "iteration": 0,
+          "relative_residual": 0.0020726901449060744,
+          "system_residual": 5.667181563911045e-16,
+          "gradient_inf": 0.0035146130843522133,
+          "jacobian_rank": 5,
+          "singular_values": [
+            1.7333774596417542,
+            0.9432209860710158,
+            0.8438636062626869,
+            0.4350388440652858,
+            0.41614101233304995
+          ]
+        },
+        {
+          "iteration": 1,
+          "relative_residual": 0.0003488197415305815,
+          "direction": "gauss_newton",
+          "step": 1.0,
+          "filter_index": 0,
+          "curvature_tail": 0.006084421994400263,
+          "projection_error": 2.5181131252952343e-14,
+          "coefficient_step_norm": 0.001313110474329638,
+          "rms_displacement": 0.00125164547616394,
+          "maximum_displacement": 0.0017487911342257835,
+          "system_residual": 5.689599770771124e-16
+        }
+      ],
+      "trials": [
+        {
+          "iteration": 1,
+          "direction": "gauss_newton",
+          "filter_index": 0,
+          "step": 1.0,
+          "projection_error": 2.5181131252952343e-14,
+          "rms_displacement": 0.00125164547616394,
+          "maximum_displacement": 0.0017487911342257835,
+          "coefficient_step_norm": 0.001313110474329638,
+          "curvature_tail": 0.006084421994400263,
+          "relative_residual": 0.0003488197415305815,
+          "status": "accepted"
+        },
+        {
+          "iteration": 1,
+          "direction": "steepest_descent",
+          "filter_index": 0,
+          "step": 1.0,
+          "projection_error": 2.5414303049611712e-14,
+          "rms_displacement": 0.001321208164237876,
+          "maximum_displacement": 0.0013231886605427712,
+          "coefficient_step_norm": 0.0013212088864229387,
+          "curvature_tail": 0.006115087583925714,
+          "relative_residual": 0.000499379833505477,
+          "status": "decreasing"
+        }
+      ]
+    },
+    "committed": true,
+    "qualification": {
+      "passed": true,
+      "diagnostics": {
+        "nodes": 128,
+        "fine_nodes": 256,
+        "field_relative": 2.010427183222898e-15,
+        "jacobian_relative": 5.864898168882698e-16,
+        "tolerance": 1e-06
+      }
+    },
+    "work_before": {
+      "attempted": 16,
+      "completed": 16,
+      "failed": 0,
+      "jacobians": 15,
+      "factorizations": 16,
+      "rhs_columns": 310,
+      "seconds": {
+        "initial_geometry": 0.003533259965479374,
+        "assembly": 0.7020981402602047,
+        "receiver_operator": 0.0700283064506948,
+        "factorization": 0.0385620417073369,
+        "forward_solve": 0.007532800314947963,
+        "reciprocal_solve": 0.07237637299112976,
+        "jacobian_contraction": 0.0005301667843014002,
+        "least_squares": 0.00023354589939117432,
+        "geometry_proposals": 0.023130438989028335,
+        "curvature_checks": 0.004906133282929659
+      }
+    },
+    "work_after": {
+      "attempted": 19,
+      "completed": 19,
+      "failed": 0,
+      "jacobians": 18,
+      "factorizations": 19,
+      "rhs_columns": 370,
+      "seconds": {
+        "initial_geometry": 0.003533259965479374,
+        "assembly": 0.8365431241691113,
+        "receiver_operator": 0.08356946567073464,
+        "factorization": 0.04604177991859615,
+        "forward_solve": 0.009004284162074327,
+        "reciprocal_solve": 0.0867834510281682,
+        "jacobian_contraction": 0.0006679627113044262,
+        "least_squares": 0.0002832289319485426,
+        "geometry_proposals": 0.027900083921849728,
+        "curvature_checks": 0.005892900517210364
+      }
+    }
+  },
+  {
+    "index": 6,
+    "decision": {
+      "stage": {
+        "wavenumber": 1.0,
+        "update_modes": 2,
+        "curve_modes": 48,
+        "nodes": 128,
+        "curvature_modes": 2
+      },
+      "config": {
+        "max_iterations": 1,
+        "residual_tolerance": 1e-05,
+        "step_tolerance": 1e-05,
+        "gradient_tolerance": 1e-10,
+        "curvature_tail_tolerance": 0.1,
+        "projection_tolerance": 1e-07,
+        "backtracks": 8,
+        "filter_steps": 10,
+        "rank_tolerance": 1e-10
+      },
+      "reason": "continue one update at this k and M"
+    },
+    "result": {
+      "stage": {
+        "wavenumber": 1.0,
+        "update_modes": 2,
+        "curve_modes": 48,
+        "nodes": 128,
+        "curvature_modes": 2
+      },
+      "stop_reason": "small_step",
+      "relative_residual": 0.0003488165956691505,
+      "history": [
+        {
+          "iteration": 0,
+          "relative_residual": 0.0003488197415305815,
+          "system_residual": 5.689599770771124e-16,
+          "gradient_inf": 5.112279136298637e-07,
+          "jacobian_rank": 5,
+          "singular_values": [
+            1.733243404330696,
+            0.9417749496301876,
+            0.8426310126657307,
+            0.4333794098811739,
+            0.41466856001835467
+          ]
+        },
+        {
+          "iteration": 1,
+          "relative_residual": 0.0003488165956691505,
+          "direction": "gauss_newton",
+          "step": 1.0,
+          "filter_index": 0,
+          "curvature_tail": 0.006084225278280403,
+          "projection_error": 1.3627394063341489e-14,
+          "coefficient_step_norm": 3.4047135230602806e-06,
+          "rms_displacement": 2.411044686713212e-06,
+          "maximum_displacement": 3.5846776786398282e-06,
+          "system_residual": 5.589660958752378e-16
+        }
+      ],
+      "trials": [
+        {
+          "iteration": 1,
+          "direction": "gauss_newton",
+          "filter_index": 0,
+          "step": 1.0,
+          "projection_error": 1.3627394063341489e-14,
+          "rms_displacement": 2.411044686713212e-06,
+          "maximum_displacement": 3.5846776786398282e-06,
+          "coefficient_step_norm": 3.4047135230602806e-06,
+          "curvature_tail": 0.006084225278280403,
+          "relative_residual": 0.0003488165956691505,
+          "status": "accepted"
+        },
+        {
+          "iteration": 1,
+          "direction": "steepest_descent",
+          "filter_index": 0,
+          "step": 1.0,
+          "projection_error": 1.3483868884632291e-14,
+          "rms_displacement": 1.9420047320268593e-07,
+          "maximum_displacement": 3.3505948709390485e-07,
+          "coefficient_step_norm": 2.567055367080253e-07,
+          "curvature_tail": 0.006084407528103784,
+          "relative_residual": 0.00034881928960846774,
+          "status": "decreasing"
+        }
+      ]
+    },
+    "committed": true,
+    "qualification": {
+      "passed": true,
+      "diagnostics": {
+        "nodes": 128,
+        "fine_nodes": 256,
+        "field_relative": 2.1213832532281565e-15,
+        "jacobian_relative": 5.625490501960363e-16,
+        "tolerance": 1e-06
+      }
+    },
+    "work_before": {
+      "attempted": 19,
+      "completed": 19,
+      "failed": 0,
+      "jacobians": 18,
+      "factorizations": 19,
+      "rhs_columns": 370,
+      "seconds": {
+        "initial_geometry": 0.003533259965479374,
+        "assembly": 0.8365431241691113,
+        "receiver_operator": 0.08356946567073464,
+        "factorization": 0.04604177991859615,
+        "forward_solve": 0.009004284162074327,
+        "reciprocal_solve": 0.0867834510281682,
+        "jacobian_contraction": 0.0006679627113044262,
+        "least_squares": 0.0002832289319485426,
+        "geometry_proposals": 0.027900083921849728,
+        "curvature_checks": 0.005892900517210364
+      }
+    },
+    "work_after": {
+      "attempted": 22,
+      "completed": 22,
+      "failed": 0,
+      "jacobians": 21,
+      "factorizations": 22,
+      "rhs_columns": 430,
+      "seconds": {
+        "initial_geometry": 0.003533259965479374,
+        "assembly": 0.9715472941752523,
+        "receiver_operator": 0.0974858955014497,
+        "factorization": 0.05380361806601286,
+        "forward_solve": 0.010537982452660799,
+        "reciprocal_solve": 0.10129209607839584,
+        "jacobian_contraction": 0.0008045497816056013,
+        "least_squares": 0.00033219391480088234,
+        "geometry_proposals": 0.03263415489345789,
+        "curvature_checks": 0.006871399469673634
+      }
+    }
+  },
+  {
+    "index": 7,
+    "decision": {
+      "stage": {
+        "wavenumber": 1.0,
+        "update_modes": 3,
+        "curve_modes": 48,
+        "nodes": 128,
+        "curvature_modes": 2
+      },
+      "config": {
+        "max_iterations": 1,
+        "residual_tolerance": 1e-05,
+        "step_tolerance": 1e-05,
+        "gradient_tolerance": 1e-10,
+        "curvature_tail_tolerance": 0.1,
+        "projection_tolerance": 1e-07,
+        "backtracks": 8,
+        "filter_steps": 10,
+        "rank_tolerance": 1e-10
+      },
+      "reason": "increase M after local stop"
+    },
+    "result": {
+      "stage": {
+        "wavenumber": 1.0,
+        "update_modes": 3,
+        "curve_modes": 48,
+        "nodes": 128,
+        "curvature_modes": 2
+      },
+      "stop_reason": "small_step",
+      "relative_residual": 0.00034881385539595243,
+      "history": [
+        {
+          "iteration": 0,
+          "relative_residual": 0.0003488165956691505,
+          "system_residual": 5.589660958752378e-16,
+          "gradient_inf": 1.6683371206490388e-07,
+          "jacobian_rank": 7,
+          "singular_values": [
+            1.7332419397561125,
+            0.9420293137688852,
+            0.84265356807293,
+            0.4333776113689557,
+            0.4146679350610272,
+            0.1247391905801193,
+            0.12384113915598785
+          ]
+        },
+        {
+          "iteration": 1,
+          "relative_residual": 0.00034881385539595243,
+          "direction": "gauss_newton",
+          "step": 1.0,
+          "filter_index": 0,
+          "curvature_tail": 0.0060842217540959505,
+          "projection_error": 8.116785788574105e-15,
+          "coefficient_step_norm": 1.1118426749318164e-05,
+          "rms_displacement": 7.86191495066525e-06,
+          "maximum_displacement": 1.135600625270986e-05,
+          "system_residual": 5.601369378760152e-16
+        }
+      ],
+      "trials": [
+        {
+          "iteration": 1,
+          "direction": "gauss_newton",
+          "filter_index": 0,
+          "step": 1.0,
+          "projection_error": 8.116785788574105e-15,
+          "rms_displacement": 7.86191495066525e-06,
+          "maximum_displacement": 1.135600625270986e-05,
+          "coefficient_step_norm": 1.1118426749318164e-05,
+          "curvature_tail": 0.0060842217540959505,
+          "relative_residual": 0.00034881385539595243,
+          "status": "accepted"
+        },
+        {
+          "iteration": 1,
+          "direction": "steepest_descent",
+          "filter_index": 0,
+          "step": 1.0,
+          "projection_error": 7.939647233708024e-15,
+          "rms_displacement": 4.590367799227329e-08,
+          "maximum_displacement": 6.496989349592718e-08,
+          "coefficient_step_norm": 6.491760119614596e-08,
+          "curvature_tail": 0.0060842252367906335,
+          "relative_residual": 0.0003488165636265542,
+          "status": "decreasing"
+        }
+      ]
+    },
+    "committed": true,
+    "qualification": {
+      "passed": true,
+      "diagnostics": {
+        "nodes": 128,
+        "fine_nodes": 256,
+        "field_relative": 1.9836452712449924e-15,
+        "jacobian_relative": 6.721559610096524e-16,
+        "tolerance": 1e-06
+      }
+    },
+    "work_before": {
+      "attempted": 22,
+      "completed": 22,
+      "failed": 0,
+      "jacobians": 21,
+      "factorizations": 22,
+      "rhs_columns": 430,
+      "seconds": {
+        "initial_geometry": 0.003533259965479374,
+        "assembly": 0.9715472941752523,
+        "receiver_operator": 0.0974858955014497,
+        "factorization": 0.05380361806601286,
+        "forward_solve": 0.010537982452660799,
+        "reciprocal_solve": 0.10129209607839584,
+        "jacobian_contraction": 0.0008045497816056013,
+        "least_squares": 0.00033219391480088234,
+        "geometry_proposals": 0.03263415489345789,
+        "curvature_checks": 0.006871399469673634
+      }
+    },
+    "work_after": {
+      "attempted": 25,
+      "completed": 25,
+      "failed": 0,
+      "jacobians": 24,
+      "factorizations": 25,
+      "rhs_columns": 490,
+      "seconds": {
+        "initial_geometry": 0.004305167123675346,
+        "assembly": 1.105927127180621,
+        "receiver_operator": 0.11091638565994799,
+        "factorization": 0.06120172399096191,
+        "forward_solve": 0.012004695367068052,
+        "reciprocal_solve": 0.11562654795125127,
+        "jacobian_contraction": 0.0009732856415212154,
+        "least_squares": 0.00038536288775503635,
+        "geometry_proposals": 0.03742379508912563,
+        "curvature_checks": 0.007861968595534563
+      }
+    }
+  },
+  {
+    "index": 8,
+    "decision": {
+      "stage": {
+        "wavenumber": 1.25,
+        "update_modes": 4,
+        "curve_modes": 48,
+        "nodes": 128,
+        "curvature_modes": 3
+      },
+      "config": {
+        "max_iterations": 1,
+        "residual_tolerance": 1e-05,
+        "step_tolerance": 1e-05,
+        "gradient_tolerance": 1e-10,
+        "curvature_tail_tolerance": 0.1,
+        "projection_tolerance": 1e-07,
+        "backtracks": 8,
+        "filter_steps": 10,
+        "rank_tolerance": 1e-10
+      },
+      "reason": "advance k after local stop"
+    },
+    "result": {
+      "stage": {
+        "wavenumber": 1.25,
+        "update_modes": 4,
+        "curve_modes": 48,
+        "nodes": 128,
+        "curvature_modes": 3
+      },
+      "stop_reason": "iteration_limit",
+      "relative_residual": 5.29715935713658e-05,
+      "history": [
+        {
+          "iteration": 0,
+          "relative_residual": 0.0009334551333865875,
+          "system_residual": 6.230456330893689e-16,
+          "gradient_inf": 9.686660984075995e-05,
+          "jacobian_rank": 9,
+          "singular_values": [
+            1.657470679723501,
+            1.0166109903407339,
+            0.9694309783239629,
+            0.6827685036420382,
+            0.6691264254054725,
+            0.2629297225752564,
+            0.2607332388468986,
+            0.07525512171961232,
+            0.07262903560251362
+          ]
+        },
+        {
+          "iteration": 1,
+          "relative_residual": 5.29715935713658e-05,
+          "direction": "gauss_newton",
+          "step": 1.0,
+          "filter_index": 0,
+          "curvature_tail": 0.0040821849470317586,
+          "projection_error": 9.516424814762112e-14,
+          "coefficient_step_norm": 0.012085473178162349,
+          "rms_displacement": 0.008545787810539184,
+          "maximum_displacement": 0.012333643561344804,
+          "system_residual": 6.427090484051552e-16
+        }
+      ],
+      "trials": [
+        {
+          "iteration": 1,
+          "direction": "gauss_newton",
+          "filter_index": 0,
+          "step": 1.0,
+          "projection_error": 9.516424814762112e-14,
+          "rms_displacement": 0.008545787810539184,
+          "maximum_displacement": 0.012333643561344804,
+          "coefficient_step_norm": 0.012085473178162349,
+          "curvature_tail": 0.0040821849470317586,
+          "relative_residual": 5.29715935713658e-05,
+          "status": "accepted"
+        },
+        {
+          "iteration": 1,
+          "direction": "steepest_descent",
+          "filter_index": 0,
+          "step": 1.0,
+          "projection_error": 5.131404700436547e-15,
+          "rms_displacement": 0.00010254936942409246,
+          "maximum_displacement": 0.00014258605989126222,
+          "coefficient_step_norm": 0.00012776396765964908,
+          "curvature_tail": 0.00599403274788259,
+          "relative_residual": 0.0009209395192949099,
+          "status": "decreasing"
+        }
+      ]
+    },
+    "committed": true,
+    "qualification": {
+      "passed": true,
+      "diagnostics": {
+        "nodes": 128,
+        "fine_nodes": 256,
+        "field_relative": 2.360223172099695e-15,
+        "jacobian_relative": 7.87978174725387e-16,
+        "tolerance": 1e-06
+      }
+    },
+    "work_before": {
+      "attempted": 25,
+      "completed": 25,
+      "failed": 0,
+      "jacobians": 24,
+      "factorizations": 25,
+      "rhs_columns": 490,
+      "seconds": {
+        "initial_geometry": 0.004305167123675346,
+        "assembly": 1.105927127180621,
+        "receiver_operator": 0.11091638565994799,
+        "factorization": 0.06120172399096191,
+        "forward_solve": 0.012004695367068052,
+        "reciprocal_solve": 0.11562654795125127,
+        "jacobian_contraction": 0.0009732856415212154,
+        "least_squares": 0.00038536288775503635,
+        "geometry_proposals": 0.03742379508912563,
+        "curvature_checks": 0.007861968595534563
+      }
+    },
+    "work_after": {
+      "attempted": 29,
+      "completed": 29,
+      "failed": 0,
+      "jacobians": 27,
+      "factorizations": 29,
+      "rhs_columns": 574,
+      "seconds": {
+        "initial_geometry": 0.005075119202956557,
+        "assembly": 1.319253136171028,
+        "receiver_operator": 0.12732654064893723,
+        "factorization": 0.07006037584505975,
+        "forward_solve": 0.01404005941003561,
+        "reciprocal_solve": 0.13053794601000845,
+        "jacobian_contraction": 0.0012241746298968792,
+        "least_squares": 0.0004423069767653942,
+        "geometry_proposals": 0.0422157421708107,
+        "curvature_checks": 0.008837270550429821
+      }
+    }
+  },
+  {
+    "index": 9,
+    "decision": {
+      "stage": {
+        "wavenumber": 1.25,
+        "update_modes": 4,
+        "curve_modes": 48,
+        "nodes": 128,
+        "curvature_modes": 3
+      },
+      "config": {
+        "max_iterations": 1,
+        "residual_tolerance": 1e-05,
+        "step_tolerance": 1e-05,
+        "gradient_tolerance": 1e-10,
+        "curvature_tail_tolerance": 0.1,
+        "projection_tolerance": 1e-07,
+        "backtracks": 8,
+        "filter_steps": 10,
+        "rank_tolerance": 1e-10
+      },
+      "reason": "continue one update at this k and M"
+    },
+    "result": {
+      "stage": {
+        "wavenumber": 1.25,
+        "update_modes": 4,
+        "curve_modes": 48,
+        "nodes": 128,
+        "curvature_modes": 3
+      },
+      "stop_reason": "data_fit",
+      "relative_residual": 6.380405324312049e-07,
+      "history": [
+        {
+          "iteration": 0,
+          "relative_residual": 5.29715935713658e-05,
+          "system_residual": 6.427090484051552e-16,
+          "gradient_inf": 5.431037569262681e-05,
+          "jacobian_rank": 9,
+          "singular_values": [
+            1.657434545074723,
+            1.0170650090776374,
+            0.9689183368992543,
+            0.6887996806279612,
+            0.6619408520670312,
+            0.2646109228829608,
+            0.25970102189901817,
+            0.07280086223689397,
+            0.07266279271957206
+          ]
+        },
+        {
+          "iteration": 1,
+          "relative_residual": 6.380405324312049e-07,
+          "direction": "gauss_newton",
+          "step": 1.0,
+          "filter_index": 0,
+          "curvature_tail": 0.004622111398614418,
+          "projection_error": 6.316146995442491e-15,
+          "coefficient_step_norm": 0.0004129157524397616,
+          "rms_displacement": 0.0002922472351246889,
+          "maximum_displacement": 0.00043761659168056743,
+          "system_residual": 6.423610249866692e-16
+        }
+      ],
+      "trials": [
+        {
+          "iteration": 1,
+          "direction": "gauss_newton",
+          "filter_index": 0,
+          "step": 1.0,
+          "projection_error": 6.316146995442491e-15,
+          "rms_displacement": 0.0002922472351246889,
+          "maximum_displacement": 0.00043761659168056743,
+          "coefficient_step_norm": 0.0004129157524397616,
+          "curvature_tail": 0.004622111398614418,
+          "relative_residual": 6.380405324312049e-07,
+          "status": "accepted"
+        },
+        {
+          "iteration": 1,
+          "direction": "steepest_descent",
+          "filter_index": 0,
+          "step": 1.0,
+          "projection_error": 6.468002029373487e-15,
+          "rms_displacement": 4.45239625606994e-05,
+          "maximum_displacement": 5.844781224211021e-05,
+          "coefficient_step_norm": 4.618179374210882e-05,
+          "curvature_tail": 0.004086321839167201,
+          "relative_residual": 5.20211520146611e-05,
+          "status": "decreasing"
+        }
+      ]
+    },
+    "committed": true,
+    "qualification": {
+      "passed": true,
+      "diagnostics": {
+        "nodes": 128,
+        "fine_nodes": 256,
+        "field_relative": 2.205683038457476e-15,
+        "jacobian_relative": 7.657531184070635e-16,
+        "tolerance": 1e-06
+      }
+    },
+    "work_before": {
+      "attempted": 29,
+      "completed": 29,
+      "failed": 0,
+      "jacobians": 27,
+      "factorizations": 29,
+      "rhs_columns": 574,
+      "seconds": {
+        "initial_geometry": 0.005075119202956557,
+        "assembly": 1.319253136171028,
+        "receiver_operator": 0.12732654064893723,
+        "factorization": 0.07006037584505975,
+        "forward_solve": 0.01404005941003561,
+        "reciprocal_solve": 0.13053794601000845,
+        "jacobian_contraction": 0.0012241746298968792,
+        "least_squares": 0.0004423069767653942,
+        "geometry_proposals": 0.0422157421708107,
+        "curvature_checks": 0.008837270550429821
+      }
+    },
+    "work_after": {
+      "attempted": 32,
+      "completed": 32,
+      "failed": 0,
+      "jacobians": 30,
+      "factorizations": 32,
+      "rhs_columns": 646,
+      "seconds": {
+        "initial_geometry": 0.005075119202956557,
+        "assembly": 1.503686434123665,
+        "receiver_operator": 0.14099299092777073,
+        "factorization": 0.0781418087426573,
+        "forward_solve": 0.015682912664487958,
+        "reciprocal_solve": 0.1452750109601766,
+        "jacobian_contraction": 0.0014612076338380575,
+        "least_squares": 0.0005028389859944582,
+        "geometry_proposals": 0.0470388091634959,
+        "curvature_checks": 0.0098176384344697
+      }
+    }
+  },
+  {
+    "index": 10,
+    "decision": {
+      "stage": {
+        "wavenumber": 1.5,
+        "update_modes": 5,
+        "curve_modes": 48,
+        "nodes": 128,
+        "curvature_modes": 3
+      },
+      "config": {
+        "max_iterations": 1,
+        "residual_tolerance": 1e-05,
+        "step_tolerance": 1e-05,
+        "gradient_tolerance": 1e-10,
+        "curvature_tail_tolerance": 0.1,
+        "projection_tolerance": 1e-07,
+        "backtracks": 8,
+        "filter_steps": 10,
+        "rank_tolerance": 1e-10
+      },
+      "reason": "advance k after local stop"
+    },
+    "result": {
+      "stage": {
+        "wavenumber": 1.5,
+        "update_modes": 5,
+        "curve_modes": 48,
+        "nodes": 128,
+        "curvature_modes": 3
+      },
+      "stop_reason": "data_fit",
+      "relative_residual": 2.1298188072575697e-06,
+      "history": [
+        {
+          "iteration": 0,
+          "relative_residual": 2.1298188072575697e-06,
+          "system_residual": 5.965333711964283e-16
+        }
+      ],
+      "trials": []
+    },
+    "committed": true,
+    "qualification": {
+      "passed": true,
+      "diagnostics": {
+        "nodes": 128,
+        "fine_nodes": 256,
+        "field_relative": 1.836166840850725e-15,
+        "jacobian_relative": 7.673845224567807e-16,
+        "tolerance": 1e-06
+      }
+    },
+    "work_before": {
+      "attempted": 32,
+      "completed": 32,
+      "failed": 0,
+      "jacobians": 30,
+      "factorizations": 32,
+      "rhs_columns": 646,
+      "seconds": {
+        "initial_geometry": 0.005075119202956557,
+        "assembly": 1.503686434123665,
+        "receiver_operator": 0.14099299092777073,
+        "factorization": 0.0781418087426573,
+        "forward_solve": 0.015682912664487958,
+        "reciprocal_solve": 0.1452750109601766,
+        "jacobian_contraction": 0.0014612076338380575,
+        "least_squares": 0.0005028389859944582,
+        "geometry_proposals": 0.0470388091634959,
+        "curvature_checks": 0.0098176384344697
+      }
+    },
+    "work_after": {
+      "attempted": 34,
+      "completed": 34,
+      "failed": 0,
+      "jacobians": 32,
+      "factorizations": 34,
+      "rhs_columns": 706,
+      "seconds": {
+        "initial_geometry": 0.0058366721495985985,
+        "assembly": 1.6778280052822083,
+        "receiver_operator": 0.15243288106285036,
+        "factorization": 0.08459338871762156,
+        "forward_solve": 0.01725930254906416,
+        "reciprocal_solve": 0.15794341429136693,
+        "jacobian_contraction": 0.0017329684924334288,
+        "least_squares": 0.0005028389859944582,
+        "geometry_proposals": 0.0470388091634959,
+        "curvature_checks": 0.0098176384344697
+      }
+    }
+  },
+  {
+    "index": 11,
+    "decision": {
+      "stage": {
+        "wavenumber": 1.75,
+        "update_modes": 6,
+        "curve_modes": 48,
+        "nodes": 128,
+        "curvature_modes": 4
+      },
+      "config": {
+        "max_iterations": 1,
+        "residual_tolerance": 1e-05,
+        "step_tolerance": 1e-05,
+        "gradient_tolerance": 1e-10,
+        "curvature_tail_tolerance": 0.1,
+        "projection_tolerance": 1e-07,
+        "backtracks": 8,
+        "filter_steps": 10,
+        "rank_tolerance": 1e-10
+      },
+      "reason": "advance k after local stop"
+    },
+    "result": {
+      "stage": {
+        "wavenumber": 1.75,
+        "update_modes": 6,
+        "curve_modes": 48,
+        "nodes": 128,
+        "curvature_modes": 4
+      },
+      "stop_reason": "data_fit",
+      "relative_residual": 5.933543311654145e-06,
+      "history": [
+        {
+          "iteration": 0,
+          "relative_residual": 5.933543311654145e-06,
+          "system_residual": 6.159308636640837e-16
+        }
+      ],
+      "trials": []
+    },
+    "committed": true,
+    "qualification": {
+      "passed": true,
+      "diagnostics": {
+        "nodes": 128,
+        "fine_nodes": 256,
+        "field_relative": 1.716725849135229e-15,
+        "jacobian_relative": 8.536489909347412e-16,
+        "tolerance": 1e-06
+      }
+    },
+    "work_before": {
+      "attempted": 34,
+      "completed": 34,
+      "failed": 0,
+      "jacobians": 32,
+      "factorizations": 34,
+      "rhs_columns": 706,
+      "seconds": {
+        "initial_geometry": 0.0058366721495985985,
+        "assembly": 1.6778280052822083,
+        "receiver_operator": 0.15243288106285036,
+        "factorization": 0.08459338871762156,
+        "forward_solve": 0.01725930254906416,
+        "reciprocal_solve": 0.15794341429136693,
+        "jacobian_contraction": 0.0017329684924334288,
+        "least_squares": 0.0005028389859944582,
+        "geometry_proposals": 0.0470388091634959,
+        "curvature_checks": 0.0098176384344697
+      }
+    },
+    "work_after": {
+      "attempted": 36,
+      "completed": 36,
+      "failed": 0,
+      "jacobians": 34,
+      "factorizations": 36,
+      "rhs_columns": 774,
+      "seconds": {
+        "initial_geometry": 0.006621100241318345,
+        "assembly": 1.8668786124326289,
+        "receiver_operator": 0.1643937632907182,
+        "factorization": 0.09117227955721319,
+        "forward_solve": 0.019012008793652058,
+        "reciprocal_solve": 0.17070122226141393,
+        "jacobian_contraction": 0.002099096542224288,
+        "least_squares": 0.0005028389859944582,
+        "geometry_proposals": 0.0470388091634959,
+        "curvature_checks": 0.0098176384344697
+      }
+    }
+  },
+  {
+    "index": 12,
+    "decision": {
+      "stage": {
+        "wavenumber": 2.0,
+        "update_modes": 7,
+        "curve_modes": 48,
+        "nodes": 128,
+        "curvature_modes": 4
+      },
+      "config": {
+        "max_iterations": 1,
+        "residual_tolerance": 1e-05,
+        "step_tolerance": 1e-05,
+        "gradient_tolerance": 1e-10,
+        "curvature_tail_tolerance": 0.1,
+        "projection_tolerance": 1e-07,
+        "backtracks": 8,
+        "filter_steps": 10,
+        "rank_tolerance": 1e-10
+      },
+      "reason": "advance k after local stop"
+    },
+    "result": {
+      "stage": {
+        "wavenumber": 2.0,
+        "update_modes": 7,
+        "curve_modes": 48,
+        "nodes": 128,
+        "curvature_modes": 4
+      },
+      "stop_reason": "data_fit",
+      "relative_residual": 1.091344677011672e-06,
+      "history": [
+        {
+          "iteration": 0,
+          "relative_residual": 1.379195926495913e-05,
+          "system_residual": 6.75204141757243e-16,
+          "gradient_inf": 2.8581167593335913e-06,
+          "jacobian_rank": 15,
+          "singular_values": [
+            2.313228954378564,
+            1.161915652426669,
+            1.1221280070324764,
+            1.0248344000395577,
+            0.9565830531353584,
+            0.9081087442764701,
+            0.8845202607617287,
+            0.48509270573045343,
+            0.48213268350488825,
+            0.18367975719741678,
+            0.18350644345134276,
+            0.05612463498953129,
+            0.0561173376917869,
+            0.014665471626893155,
+            0.014628836384192207
+          ]
+        },
+        {
+          "iteration": 1,
+          "relative_residual": 1.091344677011672e-06,
+          "direction": "gauss_newton",
+          "step": 1.0,
+          "filter_index": 0,
+          "curvature_tail": 0.00040405679580685506,
+          "projection_error": 4.205771151790136e-15,
+          "coefficient_step_norm": 0.0002193563059315705,
+          "rms_displacement": 0.0001551083344145703,
+          "maximum_displacement": 0.00023921453846915657,
+          "system_residual": 6.879786110536105e-16
+        }
+      ],
+      "trials": [
+        {
+          "iteration": 1,
+          "direction": "gauss_newton",
+          "filter_index": 0,
+          "step": 1.0,
+          "projection_error": 4.205771151790136e-15,
+          "rms_displacement": 0.0001551083344145703,
+          "maximum_displacement": 0.00023921453846915657,
+          "coefficient_step_norm": 0.0002193563059315705,
+          "curvature_tail": 0.00040405679580685506,
+          "relative_residual": 1.091344677011672e-06,
+          "status": "accepted"
+        },
+        {
+          "iteration": 1,
+          "direction": "steepest_descent",
+          "filter_index": 0,
+          "step": 1.0,
+          "projection_error": 4.0229310842562066e-15,
+          "rms_displacement": 1.0863344442477306e-05,
+          "maximum_displacement": 1.900688491243015e-05,
+          "coefficient_step_norm": 1.5250954760284064e-05,
+          "curvature_tail": 0.0006161303539623734,
+          "relative_residual": 1.3498499204374271e-05,
+          "status": "decreasing"
+        }
+      ]
+    },
+    "committed": true,
+    "qualification": {
+      "passed": true,
+      "diagnostics": {
+        "nodes": 128,
+        "fine_nodes": 256,
+        "field_relative": 1.6011179514208989e-15,
+        "jacobian_relative": 1.2268472924766804e-15,
+        "tolerance": 1e-06
+      }
+    },
+    "work_before": {
+      "attempted": 36,
+      "completed": 36,
+      "failed": 0,
+      "jacobians": 34,
+      "factorizations": 36,
+      "rhs_columns": 774,
+      "seconds": {
+        "initial_geometry": 0.006621100241318345,
+        "assembly": 1.8668786124326289,
+        "receiver_operator": 0.1643937632907182,
+        "factorization": 0.09117227955721319,
+        "forward_solve": 0.019012008793652058,
+        "reciprocal_solve": 0.17070122226141393,
+        "jacobian_contraction": 0.002099096542224288,
+        "least_squares": 0.0005028389859944582,
+        "geometry_proposals": 0.0470388091634959,
+        "curvature_checks": 0.0098176384344697
+      }
+    },
+    "work_after": {
+      "attempted": 40,
+      "completed": 40,
+      "failed": 0,
+      "jacobians": 37,
+      "factorizations": 40,
+      "rhs_columns": 914,
+      "seconds": {
+        "initial_geometry": 0.007408105069771409,
+        "assembly": 2.150091190356761,
+        "receiver_operator": 0.18219437496736646,
+        "factorization": 0.09979381551966071,
+        "forward_solve": 0.02181687275879085,
+        "reciprocal_solve": 0.1868989453651011,
+        "jacobian_contraction": 0.00277516758069396,
+        "least_squares": 0.0006006539333611727,
+        "geometry_proposals": 0.05191383487544954,
+        "curvature_checks": 0.010811536340042949
+      }
+    }
+  }
+]

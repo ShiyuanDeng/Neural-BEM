@@ -75,7 +75,7 @@ From the repository root, use a fresh output directory:
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
 export PYTHONPATH=solvers:.
 PY=/home/drdeng/miniconda3/envs/EMNerf/bin/python
-$PY -m pytest -q experiments/shape_continuation/test_pipeline.py
+$PY -m pytest -q experiments/shape_continuation
 $PY -m experiments.shape_continuation.run --scene ellipse --output /tmp/continuation-ellipse-new
 ```
 
@@ -262,13 +262,14 @@ The controller permits repeated, skipped, or revisited available frequencies.
 The execution flow is:
 
 ```text
-shape = refit initial curve by arclength once, at the first decision's K
+shape = initial curve
 live_state = empty
 history = []
 repeat:
     decision = strategy(shape, full history, available frequencies, work)
     if decision is STOP: finish
     enforce decision limit
+    on first decision: refit initial curve by arclength at the chosen K
     state = prepare_state(shape, data[k], decision, cached=live_state)
     repeat up to decision.max_iterations:
         form normal Fourier basis and Jacobian using state's existing LU
@@ -286,7 +287,6 @@ repeat:
     checkpoint; stop globally if shared budget exhausted
 ```
 
-The strategy actually selects the first decision before the initial refit.
 Local stops (`data_fit`, `small_step`, `stationary`, `no_acceptable_step`,
 `iteration_limit`) are evidence for the strategy; only the controller's
 `policy_stop`, `decision_limit`, or `budget_exhausted` ends the run. The same

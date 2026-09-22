@@ -2,8 +2,8 @@
 
 The implementation is on `feature/shape-frequency-continuation`. Current
 controls cover the forward physics, normal derivative, geometry, filtered-step
-stopping, single-frequency recovery, warm starts, policy handoffs and import
-isolation: **42 tests pass** with the existing Kress isolation/block tests.
+stopping, single-frequency recovery, warm starts, policy handoffs, cache reuse, qualification rollback and import
+isolation: **57 tests pass** with the existing Kress isolation/block tests.
 The ellipse and extended glider pass the declared recovery gates. Earlier
 failures remain below; these cases do not establish general robustness.
 
@@ -18,6 +18,7 @@ failures remain below; these cases do not establish general robustness.
 | [SC-006 filter-only comparison](SC-006-glider-paper-filter/README.md) | No added backtracking: budget ends at k=7.25, but shape and prediction errors worsen. |
 | [SC-007 restart checks](SC-007-restart-smoke/README.md) | Restart preserves the problem and endpoint; field and full-Jacobian stage checks pass. |
 | [SC-008 glider extension](SC-008-glider-extension/README.md) | Reaches k=12 with 522 additional forwards (2022 cumulative); held-out error 9.98e-6 and conservative relative boundary-error bound 0.001803. |
+| [SC-010 step/controller refactor](SC-010-step-controller/README.md) | Fixed trajectories and trials remain bitwise/exactly identical; a 13-decision adaptive ellipse example passes all gates. |
 | [SC-009 conservative scoring](SC-009-conservative-scoring/summary.json) | Ellipse regression with the shape gate applied to the continuous-boundary error upper bound. |
 
 Each run retains its source hashes, command, observations, states and rejected
@@ -63,6 +64,6 @@ than being mislabeled converged. Later frequencies reach the data-fit tolerance.
 No monotonic comparison is made between different-frequency residuals. Holdout
 observations and true geometry are evaluated only after inversion.
 
-The full paper schedule (117 frequencies), hard-shape recoveries, high-contrast
-qualification and adaptive policies have not been run. The non-star-shaped test
+The full paper schedule (117 frequencies), harder-shape recoveries, high-contrast
+qualification and comparative adaptive-policy campaigns have not been run. The non-star-shaped test
 establishes geometry support, not inverse recovery of a non-star-shaped target.
