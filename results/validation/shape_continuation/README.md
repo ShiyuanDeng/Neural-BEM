@@ -3,7 +3,7 @@
 The implementation is on `feature/shape-frequency-continuation`. Current
 controls cover the forward physics, normal derivative, geometry, filtered-step
 stopping, single-frequency recovery, warm starts, policy handoffs, cache reuse, qualification rollback and import
-isolation: **57 tests pass** with the existing Kress isolation/block tests.
+isolation and paper-profile/area-scoring controls: **72 tests pass** with the existing Kress isolation/block tests.
 The ellipse and extended glider pass the declared recovery gates. Earlier
 failures remain below; these cases do not establish general robustness.
 
@@ -19,6 +19,7 @@ failures remain below; these cases do not establish general robustness.
 | [SC-007 restart checks](SC-007-restart-smoke/README.md) | Restart preserves the problem and endpoint; field and full-Jacobian stage checks pass. |
 | [SC-008 glider extension](SC-008-glider-extension/README.md) | Reaches k=12 with 522 additional forwards (2022 cumulative); held-out error 9.98e-6 and conservative relative boundary-error bound 0.001803. |
 | [SC-010 step/controller refactor](SC-010-step-controller/README.md) | Fixed trajectories and trials remain bitwise/exactly identical; a 13-decision adaptive ellipse example passes all gates. |
+| [SC-011 paper preparation](SC-011-paper-preparation/README.md) | Actual Figure 1 contrasts and audited settings; zero-solve full plan; two one-update smoke cases pass resolution checks in 2.85 s total. No expensive inverse run. |
 | [SC-009 conservative scoring](SC-009-conservative-scoring/summary.json) | Ellipse regression with the shape gate applied to the continuous-boundary error upper bound. |
 
 Each run retains its source hashes, command, observations, states and rejected

@@ -1,0 +1,95 @@
+{
+  "status": "plan_only",
+  "forward_solves": 0,
+  "paper": "https://arxiv.org/html/2210.11607v1",
+  "target": "Figure 1 boundary inverse; no volume inverse",
+  "snapshots": [
+    1.0,
+    5.0,
+    10.0
+  ],
+  "exact_replication": false,
+  "audit": "experiments/shape_continuation/PAPER.md",
+  "cases": [
+    {
+      "settings": {
+        "contrast": 0.33,
+        "k_stop": 1.0,
+        "inverse_points_per_wavelength": 70.0,
+        "data_points_per_wavelength": 100.0,
+        "curvature_factor": 2.0,
+        "config": {
+          "max_iterations": 1,
+          "residual_tolerance": 1e-05,
+          "step_tolerance": 1e-05,
+          "gradient_tolerance": 1e-10,
+          "curvature_tail_tolerance": 0.1,
+          "projection_tolerance": 1e-07,
+          "backtracks": 0,
+          "filter_steps": 10,
+          "rank_tolerance": 1e-10
+        }
+      },
+      "stages": [
+        {
+          "initial_circle_stage": {
+            "wavenumber": 1.0,
+            "update_modes": 3,
+            "curve_modes": 70,
+            "nodes": 142,
+            "curvature_modes": 2
+          },
+          "directions": 10,
+          "receivers": 10,
+          "receiver_radius": 10.0,
+          "reference_nodes": [
+            114,
+            228
+          ],
+          "single_inverse_matrix_bytes": 1290496,
+          "single_fine_reference_matrix_bytes": 3326976
+        }
+      ]
+    },
+    {
+      "settings": {
+        "contrast": 10.0,
+        "k_stop": 1.0,
+        "inverse_points_per_wavelength": 70.0,
+        "data_points_per_wavelength": 100.0,
+        "curvature_factor": 2.0,
+        "config": {
+          "max_iterations": 1,
+          "residual_tolerance": 1e-05,
+          "step_tolerance": 1e-05,
+          "gradient_tolerance": 1e-10,
+          "curvature_tail_tolerance": 0.1,
+          "projection_tolerance": 1e-07,
+          "backtracks": 0,
+          "filter_steps": 10,
+          "rank_tolerance": 1e-10
+        }
+      },
+      "stages": [
+        {
+          "initial_circle_stage": {
+            "wavenumber": 1.0,
+            "update_modes": 9,
+            "curve_modes": 70,
+            "nodes": 222,
+            "curvature_modes": 2
+          },
+          "directions": 10,
+          "receivers": 10,
+          "receiver_radius": 10.0,
+          "reference_nodes": [
+            360,
+            720
+          ],
+          "single_inverse_matrix_bytes": 3154176,
+          "single_fine_reference_matrix_bytes": 33177600
+        }
+      ]
+    }
+  ]
+}

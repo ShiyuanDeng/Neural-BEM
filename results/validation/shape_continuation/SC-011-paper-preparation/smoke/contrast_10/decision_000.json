@@ -1,0 +1,207 @@
+{
+  "index": 0,
+  "decision": {
+    "stage": {
+      "wavenumber": 1.0,
+      "update_modes": 9,
+      "curve_modes": 70,
+      "nodes": 222,
+      "curvature_modes": 2
+    },
+    "config": {
+      "max_iterations": 1,
+      "residual_tolerance": 1e-05,
+      "step_tolerance": 1e-05,
+      "gradient_tolerance": 1e-10,
+      "curvature_tail_tolerance": 0.1,
+      "projection_tolerance": 1e-07,
+      "backtracks": 0,
+      "filter_steps": 10,
+      "rank_tolerance": 1e-10
+    },
+    "reason": "paper fixed frequency ladder"
+  },
+  "committed": true,
+  "stop_reason": "iteration_limit",
+  "relative_residual": 0.14704613914605108,
+  "history": [
+    {
+      "iteration": 0,
+      "relative_residual": 0.15255871596168216,
+      "system_residual": 1.4521579867528038e-15,
+      "gradient_inf": 0.11392179526449085,
+      "jacobian_rank": 19,
+      "singular_values": [
+        1.3898360662894578,
+        0.7299675066462836,
+        0.7299675066462835,
+        0.6762098108306809,
+        0.6762098108306802,
+        0.5929024148672829,
+        0.5929024148672822,
+        0.5213145950642559,
+        0.5213145950642558,
+        0.07492680456303362,
+        0.0749231335419038,
+        0.009631435559215298,
+        0.009631435559215291,
+        0.0011063603819433333,
+        0.0011063603819432958,
+        0.00011576150166377411,
+        0.00011576150166374665,
+        1.1278336375683422e-05,
+        1.1278336375662031e-05
+      ]
+    },
+    {
+      "iteration": 1,
+      "relative_residual": 0.14704613914605108,
+      "direction": "gauss_newton",
+      "step": 1.0,
+      "filter_index": 3,
+      "curvature_tail": 2.2129051044098873e-08,
+      "projection_error": 1.9641850382783467e-15,
+      "coefficient_step_norm": 1.4891440321777734,
+      "rms_displacement": 0.00864873011246912,
+      "maximum_displacement": 0.010825472758362705,
+      "system_residual": 1.44063012401166e-15
+    }
+  ],
+  "trials": [
+    {
+      "iteration": 1,
+      "direction": "gauss_newton",
+      "filter_index": 0,
+      "step": 1.0,
+      "status": "invalid",
+      "detail": "Displaced curve self-intersects."
+    },
+    {
+      "iteration": 1,
+      "direction": "steepest_descent",
+      "filter_index": 0,
+      "step": 1.0,
+      "status": "invalid",
+      "detail": "Displaced curve self-intersects."
+    },
+    {
+      "iteration": 1,
+      "direction": "gauss_newton",
+      "filter_index": 1,
+      "step": 1.0,
+      "status": "invalid",
+      "detail": "Displaced curve self-intersects."
+    },
+    {
+      "iteration": 1,
+      "direction": "steepest_descent",
+      "filter_index": 1,
+      "step": 1.0,
+      "status": "invalid",
+      "detail": "Displaced curve self-intersects."
+    },
+    {
+      "iteration": 1,
+      "direction": "gauss_newton",
+      "filter_index": 2,
+      "step": 1.0,
+      "status": "invalid",
+      "detail": "Arclength projection unresolved: 0.0075 relative."
+    },
+    {
+      "iteration": 1,
+      "direction": "steepest_descent",
+      "filter_index": 2,
+      "step": 1.0,
+      "status": "invalid",
+      "detail": "Displaced curve self-intersects."
+    },
+    {
+      "iteration": 1,
+      "direction": "gauss_newton",
+      "filter_index": 3,
+      "step": 1.0,
+      "projection_error": 1.9641850382783467e-15,
+      "rms_displacement": 0.00864873011246912,
+      "maximum_displacement": 0.010825472758362705,
+      "coefficient_step_norm": 1.4891440321777734,
+      "curvature_tail": 2.2129051044098873e-08,
+      "relative_residual": 0.14704613914605108,
+      "status": "accepted"
+    },
+    {
+      "iteration": 1,
+      "direction": "steepest_descent",
+      "filter_index": 3,
+      "step": 1.0,
+      "projection_error": 1.9365357697989534e-15,
+      "rms_displacement": 0.19164061437767796,
+      "maximum_displacement": 0.20791467553722,
+      "coefficient_step_norm": 1.6004312195768347,
+      "curvature_tail": 4.328285320590339e-07,
+      "relative_residual": 0.2747637186224236,
+      "status": "nondecreasing"
+    }
+  ],
+  "qualification": {
+    "passed": true,
+    "diagnostics": {
+      "nodes": 222,
+      "fine_nodes": 444,
+      "field_relative": 4.9896030551299395e-16,
+      "jacobian_relative": 1.117113449463883e-15,
+      "tolerance": 1e-06
+    }
+  },
+  "work_before": {
+    "attempted": 11,
+    "completed": 11,
+    "failed": 0,
+    "jacobians": 3,
+    "factorizations": 11,
+    "rhs_columns": 140,
+    "seconds": {
+      "assembly": 1.586608479032293,
+      "receiver_operator": 0.11527334223501384,
+      "factorization": 0.15148877096362412,
+      "forward_solve": 0.01423044316470623,
+      "initial_geometry": 0.004625498317182064,
+      "reciprocal_solve": 0.018491611815989017,
+      "jacobian_contraction": 0.00021476205438375473,
+      "least_squares": 9.776884689927101e-05,
+      "geometry_proposals": 0.03195194830186665,
+      "curvature_checks": 0.005992499180138111
+    }
+  },
+  "work_after": {
+    "attempted": 15,
+    "completed": 15,
+    "failed": 0,
+    "jacobians": 6,
+    "factorizations": 15,
+    "rhs_columns": 210,
+    "seconds": {
+      "assembly": 2.2538561071269214,
+      "receiver_operator": 0.1586188382934779,
+      "factorization": 0.19055292988196015,
+      "forward_solve": 0.019368662498891354,
+      "initial_geometry": 0.00928362412378192,
+      "reciprocal_solve": 0.05913549708202481,
+      "jacobian_contraction": 0.0009629586711525917,
+      "least_squares": 0.00018105888739228249,
+      "geometry_proposals": 0.05781363183632493,
+      "curvature_checks": 0.007468463154509664
+    }
+  },
+  "area_error": {
+    "relative_symmetric_difference": 0.3529425405203468,
+    "relative_missing_area": 0.08643033055516228,
+    "relative_excess_area": 0.2665122099651845,
+    "true_polygon_area": 2.6215389205033555,
+    "recovered_polygon_area": 3.0936305762541085,
+    "samples": 8192,
+    "coarse_samples": 4096,
+    "coarse_relative_symmetric_difference": 0.3529421926357203,
+    "refinement_absolute_change": 3.47884626494821e-07
+  }
+}
