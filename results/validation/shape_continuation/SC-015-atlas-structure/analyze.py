@@ -121,6 +121,13 @@ def analyse(name):
             median_concentration=float(np.nanmedian(on_line / (2.0 / channels))),
             maximum_possible=(channels / 2.0).tolist())
     record["gauge_mixing"] = gauge_mixing(arrays["geometry"])
+    magnitude, signed, sine_fraction = gradient_maps(arrays)
+    strong = magnitude > 1e-2 * magnitude.max(axis=1, keepdims=True)
+    disputed = np.isfinite(signed) & strong
+    record["gradient"] = dict(
+        sine_fraction=sine_fraction,
+        strong_cells=int(disputed.sum()),
+        opposing_fraction=float(np.mean(signed[disputed] < 0)) if disputed.any() else None)
     record["residual"] = [s["relative_residual"] for s in summary["stages"]]
     record["effective_rank"] = [s["effective_rank"] for s in summary["stages"]]
     return record, arrays, summary, sensitivity
@@ -197,6 +204,101 @@ def figures(records, data):
     plt.close(figure)
 
 
+def gradient_maps(arrays):
+    """Per-harmonic residual gradient, as a magnitude and as a signed agreement.
+
+    The sensitivity map asks what a harmonic *could* do to the data. This asks
+    what the *current* residual wants it to do, which is a different question
+    and the one a descent step actually answers.
+
+    Sign needs care in general. Each harmonic owns a cosine and a sine column,
+    so one frequency's opinion about harmonic `p` is a 2-vector, not a number,
+    and its "sign" is a phase. The reference direction `u_p` used here is the
+    leading singular vector of all frequencies' 2-vectors for that harmonic,
+    oriented so the consensus is positive; the signed map is each frequency's
+    cosine against it.
+
+    In THIS test problem that machinery is doing nothing. The glider target has
+    a purely cosine radial profile, the initial circle is centred, and the
+    acquisition ring is symmetric, so the whole configuration is mirror
+    symmetric about the x axis and every sine component vanishes: the measured
+    `||g_sin|| / ||g_cos||` is 1e-14 on the circle and 6e-13 at the iterate.
+    The signed map is therefore exactly the sign of a scalar gradient, and its
+    values are +/-1 by that symmetry rather than by any discovered structure.
+    `sine_fraction` is returned so a run that breaks the symmetry - an
+    off-centre start, an asymmetric target - is not read with this assumption.
+    """
+    harmonics = arrays["harmonics"]
+    band = int(harmonics.max())
+    gradient = arrays["gradient"]
+    pairs = np.zeros((len(gradient), band + 1, 2))
+    pairs[:, 0, 0] = gradient[:, 0]
+    pairs[:, 1:, :] = gradient[:, 1:].reshape(len(gradient), band, 2)
+    magnitude = np.linalg.norm(pairs, axis=2)
+    signed = np.full_like(magnitude, np.nan)
+    for harmonic in range(band + 1):
+        vectors = pairs[:, harmonic, :]
+        if not np.any(np.linalg.norm(vectors, axis=1) > 0):
+            continue
+        reference = np.linalg.svd(vectors, full_matrices=False)[2][0]
+        if float(np.sum(vectors @ reference)) < 0:
+            reference = -reference
+        norms = np.linalg.norm(vectors, axis=1)
+        usable = norms > 0
+        signed[usable, harmonic] = (vectors[usable] @ reference) / norms[usable]
+    # The sign of a gradient that is numerically zero says nothing.
+    faint = magnitude < 1e-8 * magnitude.max(axis=1, keepdims=True)
+    signed[faint] = np.nan
+    cosines, sines = pairs[:, :, 0], pairs[:, 1:, 1]
+    sine_fraction = float(np.linalg.norm(sines) / max(np.linalg.norm(cosines),
+                                                      np.finfo(float).tiny))
+    return magnitude, signed, sine_fraction
+
+
+def gradient_figure(data):
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    from matplotlib.colors import LogNorm
+
+    arms = [(name, title) for name, title in
+            (("A-circle-c033-paperacq", "unit circle, contrast 0.33"),
+             ("C-circle-c10-paperacq", "unit circle, contrast 10"),
+             ("E-iterate-c033-paperacq", "mid-inversion iterate, contrast 0.33"))
+            if name in data]
+    figure, axes = plt.subplots(2, len(arms), figsize=(5.0 * len(arms), 8),
+                                squeeze=False)
+    for column, (name, title) in enumerate(arms):
+        arrays, summary, _ = data[name]
+        wavenumbers = arrays["wavenumbers"]
+        magnitude, signed, sine_fraction = gradient_maps(arrays)
+        rows = np.arange(magnitude.shape[1])
+        relative = magnitude / magnitude.max(axis=1, keepdims=True)
+        top = axes[0, column].pcolormesh(wavenumbers, rows, np.maximum(relative.T, 1e-12),
+                                         norm=LogNorm(1e-12, 1), shading="nearest",
+                                         cmap="magma")
+        axes[0, column].plot(wavenumbers, 3 * wavenumbers, "w:", lw=1.5, label="$3k$")
+        axes[0, column].set(title=f"{title}\nresidual gradient magnitude",
+                            xlabel="wavenumber $k$", ylabel="shape harmonic $p$")
+        axes[0, column].legend(fontsize=8, loc="upper left", framealpha=0.6)
+        figure.colorbar(top, ax=axes[0, column], label="$|g(k,p)|$ / peak at that $k$")
+
+        bottom = axes[1, column].pcolormesh(wavenumbers, rows, signed.T, vmin=-1, vmax=1,
+                                            shading="nearest", cmap="RdBu_r")
+        axes[1, column].plot(wavenumbers, 3 * wavenumbers, "k:", lw=1.5)
+        axes[1, column].set(
+            title=f"sign of that gradient\n(mirror symmetric here: "
+                  f"$\\|g_{{\\sin}}\\|/\\|g_{{\\cos}}\\| = {sine_fraction:.0e}$)",
+            xlabel="wavenumber $k$", ylabel="shape harmonic $p$")
+        figure.colorbar(bottom, ax=axes[1, column],
+                        label="$+1$ outward, $-1$ inward (white: no gradient)")
+    figure.suptitle("What the current residual asks of each harmonic, and which "
+                    "way each frequency wants to push it")
+    figure.tight_layout()
+    figure.savefig(HERE / "gradient.png", dpi=150)
+    plt.close(figure)
+
+
 def main():
     records, data = {}, {}
     for name in ARMS:
@@ -207,6 +309,7 @@ def main():
         data[name] = (arrays, summary, sensitivity)
     (HERE / "analysis.json").write_text(json.dumps(records, indent=2) + "\n")
     figures(records, data)
+    gradient_figure(data)
     for name, record in records.items():
         print(f"{name}: frontier slope {record['frontier']['0.01']['slope']:.2f} k"
               f" + {record['frontier']['0.01']['intercept']:.1f};"

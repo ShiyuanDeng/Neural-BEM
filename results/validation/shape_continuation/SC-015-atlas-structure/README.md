@@ -85,6 +85,39 @@ contrast and marginal at high contrast — which is what SC-013/SC-014 met as
 "contrast 10 remains unmatched", now visible as a property of the data rather
 than as a tuning failure.
 
+### The residual gradient, which is a different map
+
+`sensitivity.png` asks what a harmonic *could* do to the data. The signed
+residual gradient `g(k,p) = Re⟨J_{k,p}, C_k⁻¹ r_k⟩` asks what the *current*
+misfit wants it to do, and that is the quantity a descent step actually uses.
+They are not the same map and the literature review is explicit that conflating
+them is the main conceptual risk.
+
+![Residual gradient magnitude and sign](gradient.png)
+
+The magnitude panels (top) differ from the sensitivity map mainly by being
+noisier above the frontier: the residual weights a harmonic by how wrong the
+boundary currently is there, not only by how visible it is.
+
+The sign panels (bottom) are the part a magnitude atlas cannot produce. **In
+this test problem the sign is unambiguous, for a reason worth stating: the
+configuration is mirror symmetric.** The glider's radial profile is purely
+cosine, the initial circle is centred and the acquisition ring is symmetric, so
+every sine component vanishes — the measured `‖g_sin‖/‖g_cos‖` is 1.1×10⁻¹⁴ on
+the circle and 6.1×10⁻¹³ at the iterate. Each harmonic's gradient is therefore
+a signed scalar and the panel is exactly its sign, ±1 by symmetry rather than
+by any discovered structure. The analysis records `sine_fraction` so that a
+configuration which breaks the symmetry is not read with this assumption; the
+truth-geometry arm already shows 0.63 there, because its residual is solver
+noise rather than a real mismatch.
+
+Among cells carrying at least 1% of that frequency's peak gradient, the
+fraction pushing *against* the majority of frequencies is **27%** at contrast
+0.33 from the circle, **18%** at the mid-inversion iterate, and **40%** at
+contrast 10 — where the disagreement is also visibly unstructured, flipping
+between adjacent `k` rather than forming bands. That is the same phenomenon as
+the alignment collapse in `structure.png`, resolved per harmonic.
+
 ## What this does not establish
 
 **The harmonic axis is not gauge-invariant off the circle.** An arclength
@@ -100,6 +133,9 @@ meaning. Comparing atlas cells between iterates needs the transport question
 settled first (`atlas.transport_overlap` reports the mixing but nothing here
 corrects for it).
 
+The sign map's ±1 values are a property of a mirror-symmetric test
+configuration, not a general finding; in an asymmetric problem each cell
+carries a phase and the projection used here is a choice, not a measurement.
 The alignment collapse is measured from the unit circle and from one saved
 iterate; it is not a controlled study of distance-to-solution. No inversion
 was run in this record, and nothing here shows that any of these quantities
