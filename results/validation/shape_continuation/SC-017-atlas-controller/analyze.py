@@ -23,9 +23,28 @@ from experiments.shape_continuation.run import fixture  # noqa: E402
 ARMS = ("fixed", "band", "frequency", "full")
 
 
+def partial_summary(directory):
+    """Rebuild an arm's record from its checkpoints when it was stopped early.
+
+    A killed arm never writes `summary.json`. Scoring what it did reach is
+    better than dropping it, provided it is labelled: `stop_reason` is set to
+    `stopped_in_progress` and it carries no endpoint score.
+    """
+    trace = [json.loads(path.read_text())
+             for path in sorted(directory.glob("decision_*.json"))]
+    case, label = directory.parent.name, directory.name
+    arm = next((name for name in ARMS if label.startswith(name)), "unknown")
+    return dict(arm=arm, start=label[len(arm) + 1:], stop_reason="stopped_in_progress",
+                failure=None, decisions=len(trace),
+                highest_wavenumber=max((t["stage"]["wavenumber"] for t in trace), default=None),
+                work=trace[-1]["work_after"] if trace else {"attempted": 0},
+                scores={}, probes=[], policy_decisions=[], trace=trace)
+
+
 def trajectory(directory, truth, radius):
     """Boundary error of every committed iterate against forward solves spent."""
-    summary = json.loads((directory / "summary.json").read_text())
+    path = directory / "summary.json"
+    summary = json.loads(path.read_text()) if path.exists() else partial_summary(directory)
     points = []
     for entry in summary["trace"]:
         shot = directory / f"decision_{entry['index']:03d}.npz"
@@ -82,7 +101,7 @@ def main():
     records = {}
     for case in sorted(p for p in HERE.iterdir() if p.is_dir()):
         for directory in sorted(p for p in case.iterdir() if p.is_dir()):
-            if not (directory / "summary.json").exists():
+            if not list(directory.glob("decision_*.json")):
                 continue
             summary, points = trajectory(directory, truth, radius)
             arm, start = summary["arm"], summary["start"]
@@ -94,15 +113,17 @@ def main():
                 decisions=summary["decisions"],
                 highest_wavenumber=summary["highest_wavenumber"],
                 forwards=summary["work"]["attempted"],
-                final=summary["scores"]["relative_boundary_error"],
-                final_bound=summary["scores"]["relative_boundary_error_upper_bound"],
+                final=summary["scores"].get("relative_boundary_error",
+                                            points[-1]["relative_boundary_error"] if points else None),
+                final_bound=summary["scores"].get("relative_boundary_error_upper_bound"),
                 area=summary["scores"].get("area", {}).get("relative_symmetric_difference"),
                 holdout=summary["scores"].get("holdout_relative_error"),
                 best=min((p["relative_boundary_error"] for p in points), default=None),
                 cost_to_reach={str(t): cost_to_reach(points, t) for t in targets},
-                endpoint_resolution=endpoint_resolution(
+                endpoint_resolution=(endpoint_resolution(
                     directory, float(summary.get("contrast", 0.33)),
-                    summary["highest_wavenumber"] or 1.0),
+                    summary["highest_wavenumber"] or 1.0)
+                    if (directory / "endpoint.npz").exists() else None),
                 probe_forwards=sum(p["forwards"] for p in summary.get("probes", [])),
                 probes=len(summary.get("probes", [])),
                 bands=[d["band"] for d in summary.get("policy_decisions", [])],
@@ -118,7 +139,8 @@ def main():
         costs = " ".join(f"{record['cost_to_reach'][str(t)] or '-':>7}" for t in targets)
         print(f"{name:28s} {record['stop_reason']:18s} {str(record['highest_wavenumber']):>5s} "
               f"{record['forwards']:6d} {record['probe_forwards']:6d} "
-              f"{record['final']:8.5f} {(record['best'] or float('nan')):8.5f} {costs}")
+              f"{(record['final'] if record['final'] is not None else float('nan')):8.5f} "
+              f"{(record['best'] or float('nan')):8.5f} {costs}")
 
 
 def markdown(records, targets):
@@ -128,10 +150,11 @@ def markdown(records, targets):
     for name, record in sorted(records.items()):
         holdout = record["holdout"]
         area = record["area"]
+        final = record["final"]
         lines.append(
             f"| {record['case']} | {record['arm']} | {record['stop_reason']} "
             f"| {record['highest_wavenumber']} | {record['forwards']} "
-            f"| {record['probe_forwards']} | {record['final']:.5f} "
+            f"| {record['probe_forwards']} | {'-' if final is None else f'{final:.5f}'} "
             f"| {'-' if holdout is None else f'{holdout:.2e}'} "
             f"| {'-' if area is None else f'{area:.5f}'} |")
     lines += ["", "| Case | Arm | " + " | ".join(f"forwards to {t}" for t in targets) + " |",

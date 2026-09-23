@@ -142,13 +142,20 @@ single-frequency recursive linearization carries each stage's fit forward,
 harmonics admitted on leaked low-order content are fitted to one frequency's
 idiosyncrasies and then poison the warm start.
 
-The combined arm fails on three of four starts. On the fourth it gave the
-campaign's best result by a wide margin — boundary error 0.00183 and held-out
-prediction 3.0e-6, against 0.00928 and 1.4e-4 for the fixed ladder, for 525
-forwards against 356 — by jumping, crawling where the probes refused larger
-steps, then widening the band only once the geometry was good. **One success in
-four is not a result.** It is recorded because it locates what a corrected band
-rule would have to reproduce.
+The combined arm is erratic: across the four starts it ends at 0.00183, 0.0153,
+0.183 and 0.185. On the best it gave the campaign's best result by a wide
+margin — boundary error 0.00183 and held-out prediction 3.0e-6, against 0.00928
+and 1.4e-4 for the fixed ladder, for 525 forwards against 356 — by jumping,
+crawling where the probes refused larger steps, then widening the band only
+once the geometry was good. **One success in four, with a two-order spread, is
+not a result.** It is recorded because it locates what a corrected band rule
+would have to reproduce.
+
+**Contrast 10 was not completed.** Its partial arms, stopped when the compute
+window closed, point the other way from contrast 0.33: the measured-band arm
+was at 0.0415 where its own fixed counterpart never reached 0.1. Those are
+unfinished runs at unequal budgets, not evidence; they say the regime the
+controller was built for is the one still untested.
 
 ## Remaining differences and what is not established
 

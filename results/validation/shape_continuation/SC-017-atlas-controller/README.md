@@ -69,16 +69,18 @@ Since single-frequency recursive linearization carries each stage's fit forward
 as the next stage's warm start, harmonics admitted on that evidence are fitted
 to one frequency's own idiosyncrasies and then poison the continuation.
 
-**The combined arm does not rescue it.** `full` fails on three of four starts
-(0.183–0.185). On the fourth it produced the best result in the whole campaign
-— boundary error 0.00183, area 0.00128 and a held-out prediction error of
-3.0×10⁻⁶, a 5× better shape and a 47× better prediction than the fixed ladder,
-for 525 forwards against 356 — by jumping 1→2, crawling 2→3.25 where the
-probes refused larger steps, then jumping 3.25→6.5→8 and applying a wide band
-only once the geometry was already good. That is exactly the behaviour the
-design intended, and **one success in four is not a result**. It is recorded
-because it locates what a corrected band rule would have to reproduce, not as
-evidence that the controller works.
+**The combined arm does not rescue it, and it is erratic.** Across the four
+starts `full` ends at 0.00183, 0.0153, 0.183 and 0.185 — best-in-campaign on
+one, 1.6× worse than the fixed ladder on another, and diverged on two. The
+success (the `small` start) reached boundary error 0.00183, area 0.00128 and a
+held-out prediction error of 3.0×10⁻⁶ — a 5× better shape and a 47× better
+prediction than the fixed ladder — for 525 forwards against 356, by jumping
+1→2, crawling 2→3.25 where the probes refused larger steps, then jumping
+3.25→6.5→8 and widening the band only once the geometry was already good. That
+is exactly the behaviour the design intended, and **one success in four, with a
+spread of two orders of magnitude, is not a result.** It is recorded because it
+locates what a corrected band rule would have to reproduce, not as evidence
+that the controller works.
 
 ## Verdict
 
@@ -99,13 +101,22 @@ diagonal calls 65 columns detectable where the spectrum determines 45.
 
 ## Declared limitations
 
-- **Contrast 10 was not completed within the declared budget.** Only the
-  `driver` band rule's `fixed` arm finished; it hit the 120-decision limit with
-  a boundary error of 0.276 after reaching 0.160, having spent 108 of its 120
-  decisions refining at `k=4` without moving the residual off 0.3557. The
-  remaining contrast-10 arms are inconclusive, not negative. The refinement
-  rule — keep working at the top frequency while the previous decision accepted
-  any update — is too weak, and that is a controller defect this record owns.
+- **Contrast 10 was not completed, and its partial arms point the other way.**
+  Only the `driver` band rule's `fixed` arm finished: it hit the 120-decision
+  limit at boundary error 0.276 after reaching 0.160, having spent 108 of its
+  120 decisions refining at `k=4` without moving the residual off 0.3557. Three
+  arms were stopped in progress when the session's compute window closed and
+  are scored from their last checkpoints: `c10-unit/fixed` and
+  `c10-offset/fixed` (the §4 band rule) were at 0.0203 and 0.0150, and
+  `c10-driver-unit/band` — the *measured* band — was at 0.0415, having reached
+  0.05 in 1284 forwards where its own `fixed` counterpart never reached 0.1.
+  **None of this is a result**: they are unfinished runs at unequal budgets,
+  recorded so the question is not mistaken for answered. They do indicate that
+  contrast 10, where SC-015 measures the gradient decorrelating by `k=1.25`, is
+  the regime the controller was built for and the one still untested.
+- The refinement rule — keep working at the top frequency while the previous
+  decision accepted any update — is too weak, and that is a controller defect
+  this record owns. It must be repaired before contrast 10 is re-run.
 - One target (the SC-013 glider), one ladder (`k = 1 → 8`, `Δk = 0.25`), full
   aperture, noise-free data with a declared 10⁻³ whitening, four circular
   starts. `frequency`'s neutrality is a statement about a regime where the
@@ -120,14 +131,20 @@ diagonal calls 65 columns detectable where the spectrum determines 45.
 
 ## Measurements
 
+Rows marked `stopped_in_progress` were killed when the session's compute window
+closed; they are scored from their last committed checkpoint and carry no
+endpoint score or resolution check.
+
 | Case | Arm | Stop | k reached | Forwards | of which probes | Boundary error | Held-out | Area |
 |---|---|---|---:|---:|---:|---:|---:|---:|
 | c033-backtrack-unit | band | policy_stop | 8.0 | 992 | 118 | 0.21900 | 5.10e-02 | 0.12306 |
 | c033-backtrack-unit | fixed | policy_stop | 8.0 | 307 | 0 | 0.00927 | 1.38e-04 | 0.00439 |
 | c033-backtrack-unit | frequency | policy_stop | 8.0 | 337 | 148 | 0.00955 | 1.41e-04 | 0.00446 |
+| c033-backtrack-unit | full | stopped_in_progress | 5.0 | 981 | 0 | 0.22523 | - | - |
 | c033-large | band | policy_stop | 8.0 | 1728 | 111 | 0.18867 | 2.30e-02 | 0.09566 |
 | c033-large | fixed | policy_stop | 8.0 | 303 | 0 | 0.00926 | 1.38e-04 | 0.00439 |
 | c033-large | frequency | policy_stop | 8.0 | 332 | 147 | 0.00954 | 1.41e-04 | 0.00446 |
+| c033-large | full | stopped_in_progress | 8.0 | 1416 | 0 | 0.01525 | - | - |
 | c033-offset | band | policy_stop | 8.0 | 1227 | 110 | 0.17951 | 1.33e-02 | 0.06566 |
 | c033-offset | fixed | policy_stop | 8.0 | 413 | 0 | 0.00929 | 1.39e-04 | 0.00440 |
 | c033-offset | frequency | policy_stop | 8.0 | 469 | 161 | 0.00960 | 1.42e-04 | 0.00449 |
@@ -140,16 +157,21 @@ diagonal calls 65 columns detectable where the spectrum determines 45.
 | c033-unit | fixed | policy_stop | 8.0 | 305 | 0 | 0.00928 | 1.38e-04 | 0.00439 |
 | c033-unit | frequency | policy_stop | 8.0 | 333 | 148 | 0.00956 | 1.41e-04 | 0.00446 |
 | c033-unit | full | policy_stop | 8.0 | 1397 | 295 | 0.18450 | 1.74e-02 | 0.08927 |
+| c10-driver-unit | band | stopped_in_progress | 4.0 | 1571 | 0 | 0.04145 | - | - |
 | c10-driver-unit | fixed | decision_limit | 4.0 | 1612 | 0 | 0.27597 | 3.94e-01 | 0.17338 |
+| c10-offset | fixed | stopped_in_progress | 4.0 | 2707 | 0 | 0.01497 | - | - |
+| c10-unit | fixed | stopped_in_progress | 4.0 | 2716 | 0 | 0.02030 | - | - |
 
 | Case | Arm | forwards to 0.1 | forwards to 0.05 | forwards to 0.02 | forwards to 0.01 |
 |---|---|---:|---:|---:|---:|
 | c033-backtrack-unit | band | not reached | not reached | not reached | not reached |
 | c033-backtrack-unit | fixed | 128 | 184 | 227 | 303 |
 | c033-backtrack-unit | frequency | 143 | 253 | 313 | 325 |
+| c033-backtrack-unit | full | not reached | not reached | not reached | not reached |
 | c033-large | band | not reached | not reached | not reached | not reached |
 | c033-large | fixed | 124 | 180 | 223 | 299 |
 | c033-large | frequency | 138 | 248 | 308 | 320 |
+| c033-large | full | 904 | 963 | 1067 | not reached |
 | c033-offset | band | not reached | not reached | not reached | not reached |
 | c033-offset | fixed | 208 | 290 | 333 | 409 |
 | c033-offset | frequency | 223 | 361 | 445 | 457 |
@@ -162,7 +184,10 @@ diagonal calls 65 columns detectable where the spectrum determines 45.
 | c033-unit | fixed | 126 | 182 | 225 | 301 |
 | c033-unit | frequency | 139 | 249 | 309 | 321 |
 | c033-unit | full | not reached | not reached | not reached | not reached |
+| c10-driver-unit | band | 568 | 1284 | not reached | not reached |
 | c10-driver-unit | fixed | not reached | not reached | not reached | not reached |
+| c10-offset | fixed | 546 | 914 | 1031 | not reached |
+| c10-unit | fixed | 390 | 945 | not reached | not reached |
 
 "Forwards to X" is the cumulative forward-solve count at the first committed
 iterate whose relative boundary error reached X, so it compares arms without
