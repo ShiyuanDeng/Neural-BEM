@@ -56,6 +56,35 @@ def orthonormal_normal_basis(curve, band):
     return raw[:, order] * scale[order]
 
 
+def solver_column_order(band):
+    """Atlas column j sits at this index of the solver's `normal_basis`."""
+    band = integer(band, "atlas band", minimum=0)
+    return np.r_[0, np.ravel(np.column_stack((np.arange(1, band + 1),
+                                              np.arange(band + 1, 2 * band + 1))))]
+
+
+def orthonormal_scale(perimeter, band):
+    """Column scaling between `normal_basis` and the orthonormal basis."""
+    band = integer(band, "atlas band", minimum=0)
+    return np.r_[1 / np.sqrt(perimeter), np.repeat(np.sqrt(2 / perimeter), 2 * band)]
+
+
+def to_solver_coefficients(coefficients, perimeter):
+    """Rewrite orthonormal atlas coefficients in the solver's raw convention.
+
+    `geometry.displaced` consumes `[a0, a1..aM, b1..bM]` against the
+    unnormalised `normal_basis`; the atlas uses interleaved, unit-norm
+    columns. Only this function converts between the two.
+    """
+    coefficients = np.asarray(coefficients, float)
+    if coefficients.ndim != 1 or len(coefficients) % 2 != 1:
+        raise ValueError("Expected an odd number of atlas coefficients.")
+    band = len(coefficients) // 2
+    raw = np.zeros(2 * band + 1)
+    raw[solver_column_order(band)] = coefficients * orthonormal_scale(perimeter, band)
+    return raw
+
+
 def harmonic_index(band):
     """Harmonic number of each basis column: 0, 1, 1, 2, 2, ..."""
     band = integer(band, "atlas band", minimum=0)
@@ -195,11 +224,14 @@ def _combine_pairs(values, band):
 
 
 def cell_at(shape, observation, contrast, band, nodes, *, whitening=None,
-            work=None, keep_selection=False):
+            work=None, keep_selection=False, dense=False):
     """Build one cell: one forward solve, one Jacobian, then reductions only.
 
     The dense Jacobian is discarded before returning; only `P`-sized and
     `P x P` objects survive, so an atlas over many frequencies stays small.
+    Pass `dense=True` to also receive the forward state and Jacobian, which a
+    caller that wants to walk finite steps needs in order to avoid paying for
+    the same solve twice.
     """
     whitening = Whitening() if whitening is None else whitening
     band = integer(band, "atlas band", minimum=0)
@@ -223,10 +255,11 @@ def cell_at(shape, observation, contrast, band, nodes, *, whitening=None,
         eigenvalues = np.clip(eigenvalues, 0, None)
         leakage = _selection_leakage(jacobian, band) if keep_selection else None
     scale = float(np.linalg.norm(observation.scattered)) or 1.0
-    return AtlasCell(float(observation.wavenumber), float(sigma), int(residual.size),
+    cell = AtlasCell(float(observation.wavenumber), float(sigma), int(residual.size),
                      sensitivity, gradient, gauss_newton, eigenvalues, eigenvectors,
                      float(np.linalg.norm(residual) / scale),
                      float(0.5 * np.sum(np.abs(whitened_residual) ** 2)), leakage)
+    return (cell, state, jacobian) if dense else cell
 
 
 def _selection_leakage(jacobian, band):
