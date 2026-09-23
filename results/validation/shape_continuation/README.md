@@ -22,7 +22,7 @@ below; these cases do not establish general robustness.
 |---|---|
 | [SC-015 atlas structure](SC-015-atlas-structure/README.md) | The detectable band is 2.5k at contrast 0.33 and 2.9k at contrast 10, against the manuscript's `3max(k,ki)`; the circle's exact rank-one selection rule is destroyed off the circle; gradients at different frequencies oppose each other, measurably and without truth. |
 | [SC-016 validity horizon](SC-016-validity-horizon/README.md) | The first-order atlas predicts out to an RMS displacement of `0.12/k`, reproduced at double quadrature; the per-harmonic horizon follows the free atlas diagonal to 0.04 dex at low contrast and fails at contrast 10. |
-| [SC-017 atlas controller](SC-017-atlas-controller/README.md) | Matched-budget arms against the fixed ladder. |
+| [SC-017 atlas controller](SC-017-atlas-controller/README.md) | Matched-budget arms against the fixed ladder: atlas-chosen frequencies match it within 3% on four starts, as the measured gradient alignment predicts; the measured band rule fails on every start because the arclength harmonic axis inflates off the circle. Contrast 10 did not complete within the declared budget. |
 | [SC-002 profiling](SC-002-profile-after/README.md) | 19.66 s → 0.835 s inverse-only ellipse; identical accepted states. |
 | [SC-003 derivative resolution](SC-003-resolution-refined/README.md) | Spectral arclength integration removes a derivative error floor; field/Jacobian refinement through k=8. |
 | [SC-004 checked policy smoke](SC-004-policy-smoke/summary.json) | Wavelength-scaled stage policy and checkpoints pass the ellipse gates. |

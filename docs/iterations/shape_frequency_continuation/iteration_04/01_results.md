@@ -112,11 +112,43 @@ low contrast and marginal at high contrast. This is a data-side explanation for
 "contrast 10 remains unmatched" in SC-013/SC-014, obtained without the truth,
 and it is exactly the kind of statement a magnitude-only atlas cannot make.
 
-### 5. Driving continuation from the atlas: one component helps, one does not
+### 5. Driving continuation from the atlas: the frequency half is sound, the band half is blocked
 
-See [SC-017](../../../../results/validation/shape_continuation/SC-017-atlas-controller/README.md)
-for the matched-budget arms and the cost-against-accuracy curves. Summarised
-there rather than duplicated here.
+[SC-017](../../../../results/validation/shape_continuation/SC-017-atlas-controller/README.md)
+runs four arms that share one optimizer, solver, data set and budget and differ
+only in where their decisions come from. Probes are charged to the same budget.
+
+**Atlas-chosen frequencies are neutral at contrast 0.33, as the atlas
+predicts.** On all four starts the `frequency` arm lands within 3% of the fixed
+ladder's boundary error and within 2% of its held-out prediction, for 1.08-1.14x
+the forward solves, reaching `k=8` in 9-11 decisions instead of 29. That is the
+expected outcome given result 4: on this ladder no frequency is cycle-skipped,
+so there is nothing for a frequency policy to avoid. The diagnostic predicting
+its own null result is the useful thing a diagnostic can do when the baseline
+is already near-optimal.
+
+**The measured band rule fails reproducibly, and the reason is harmonic
+transport.** The `band` arm ends at 0.158-0.219 boundary error on every start
+against the fixed ladder's 0.0093, using 3-5x the solves, and never reaches
+0.1. A dedicated ablation rules out the obvious suspect: restoring the
+optimizer's step halvings, which matter because the Gaussian filter damps
+harmonic `n` by `exp(-(n/M)^2/sigma)` and so damps *less* for a wider band,
+changes nothing (0.219 with, 0.181 without). What does explain it is the gauge.
+The same admission rule gives band 4, 7, 12, 21 at `k = 1, 2, 4, 8` on the unit
+circle and 10, 13, 22, 35 at a mid-inversion iterate; the runs admit 3-5, 9-12,
+19-22, 35-40 — matching the circle at `k=1`, where the iterate still is a
+circle, and tracking the inflated non-circular value thereafter. Because
+single-frequency recursive linearization carries each stage's fit forward,
+harmonics admitted on leaked low-order content are fitted to one frequency's
+idiosyncrasies and then poison the warm start.
+
+The combined arm fails on three of four starts. On the fourth it gave the
+campaign's best result by a wide margin — boundary error 0.00183 and held-out
+prediction 3.0e-6, against 0.00928 and 1.4e-4 for the fixed ladder, for 525
+forwards against 356 — by jumping, crawling where the probes refused larger
+steps, then widening the band only once the geometry was good. **One success in
+four is not a result.** It is recorded because it locates what a corrected band
+rule would have to reproduce.
 
 ## Remaining differences and what is not established
 
@@ -146,8 +178,13 @@ there rather than duplicated here.
    alignment and the sensitivity monotonicity all fail together at contrast 10.
    The cheapest discriminating measurement is the interior-field structure at
    the frequencies where the sign flips.
-3. **Isolate the band/step-control interaction.** The Gaussian filter damps
-   harmonic `n` by `exp(-(n/M)^2/sigma)`, so a wider band is damped *less* at
-   the same filter level. A wider measured band and the paper profile's
-   `backtracks=0` are therefore not independent choices; an ablation is running
-   and is reported in SC-017.
+3. **Fix the refinement rule.** SC-017's top-of-ladder refinement continues
+   while the previous decision accepted any update; the contrast-10 `driver`
+   arm spent 108 of 120 decisions there without moving its residual off 0.3557,
+   and ended worse than its own best iterate. This is a controller defect, not
+   a finding about contrast 10, and it must be repaired before the contrast-10
+   arms are re-run.
+4. **Then re-run contrast 10.** Only one of its arms completed within the
+   declared budget. Contrast 10 is where result 4 predicts a frequency policy
+   should matter, so the neutral result at contrast 0.33 does not settle the
+   question the controller was built to answer.

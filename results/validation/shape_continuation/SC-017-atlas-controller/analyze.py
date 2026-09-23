@@ -109,6 +109,7 @@ def main():
                 wavenumbers=[d["wavenumber"] for d in summary.get("policy_decisions", [])],
                 trajectory=points)
     (HERE / "analysis.json").write_text(json.dumps(records, indent=2) + "\n")
+    (HERE / "results_table.md").write_text(markdown(records, targets))
     figures(records, targets)
     header = f"{'case/arm':28s} {'stop':18s} {'kmax':>5s} {'fwd':>6s} {'probe':>6s} {'final':>8s} {'best':>8s} " \
              + " ".join(f"{'c@'+str(t):>7s}" for t in targets)
@@ -118,6 +119,27 @@ def main():
         print(f"{name:28s} {record['stop_reason']:18s} {str(record['highest_wavenumber']):>5s} "
               f"{record['forwards']:6d} {record['probe_forwards']:6d} "
               f"{record['final']:8.5f} {(record['best'] or float('nan')):8.5f} {costs}")
+
+
+def markdown(records, targets):
+    """Emit the results table the record quotes, so it is never retyped."""
+    lines = ["| Case | Arm | Stop | k reached | Forwards | of which probes "
+             "| Boundary error | Held-out | Area |", "|---|---|---|---:|---:|---:|---:|---:|---:|"]
+    for name, record in sorted(records.items()):
+        holdout = record["holdout"]
+        area = record["area"]
+        lines.append(
+            f"| {record['case']} | {record['arm']} | {record['stop_reason']} "
+            f"| {record['highest_wavenumber']} | {record['forwards']} "
+            f"| {record['probe_forwards']} | {record['final']:.5f} "
+            f"| {'-' if holdout is None else f'{holdout:.2e}'} "
+            f"| {'-' if area is None else f'{area:.5f}'} |")
+    lines += ["", "| Case | Arm | " + " | ".join(f"forwards to {t}" for t in targets) + " |",
+              "|---|---|" + "---:|" * len(targets)]
+    for name, record in sorted(records.items()):
+        costs = " | ".join(str(record["cost_to_reach"][str(t)] or "not reached") for t in targets)
+        lines.append(f"| {record['case']} | {record['arm']} | {costs} |")
+    return "\n".join(lines) + "\n"
 
 
 def figures(records, targets):
