@@ -20,6 +20,9 @@ below; these cases do not establish general robustness.
 
 | Qualification | Finding |
 |---|---|
+| [SC-015 atlas structure](SC-015-atlas-structure/README.md) | The detectable band is 2.5k at contrast 0.33 and 2.9k at contrast 10, against the manuscript's `3max(k,ki)`; the circle's exact rank-one selection rule is destroyed off the circle; gradients at different frequencies oppose each other, measurably and without truth. |
+| [SC-016 validity horizon](SC-016-validity-horizon/README.md) | The first-order atlas predicts out to an RMS displacement of `0.12/k`, reproduced at double quadrature; the per-harmonic horizon follows the free atlas diagonal to 0.04 dex at low contrast and fails at contrast 10. |
+| [SC-017 atlas controller](SC-017-atlas-controller/README.md) | Matched-budget arms against the fixed ladder. |
 | [SC-002 profiling](SC-002-profile-after/README.md) | 19.66 s → 0.835 s inverse-only ellipse; identical accepted states. |
 | [SC-003 derivative resolution](SC-003-resolution-refined/README.md) | Spectral arclength integration removes a derivative error floor; field/Jacobian refinement through k=8. |
 | [SC-004 checked policy smoke](SC-004-policy-smoke/summary.json) | Wavelength-scaled stage policy and checkpoints pass the ellipse gates. |
@@ -79,6 +82,9 @@ than being mislabeled converged. Later frequencies reach the data-fit tolerance.
 No monotonic comparison is made between different-frequency residuals. Holdout
 observations and true geometry are evaluated only after inversion.
 
-The full paper schedule (117 frequencies), harder-shape recoveries, high-contrast
-qualification and comparative adaptive-policy campaigns have not been run. The non-star-shaped test
+The full paper schedule (117 frequencies), harder-shape recoveries and high-contrast
+qualification have not been run. The non-star-shaped test
 establishes geometry support, not inverse recovery of a non-star-shaped target.
+SC-015 to SC-017 add a measured characterization of the frequency/shape
+interaction and one matched-budget controller comparison built on it; they do
+not extend the recovery qualification above.
