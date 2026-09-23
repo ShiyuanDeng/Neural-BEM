@@ -51,6 +51,30 @@ def cost_to_reach(points, target):
     return None
 
 
+def endpoint_resolution(directory, contrast, wavenumber):
+    """Re-check each endpoint at N and 2N.
+
+    The campaign's own self-convergence field compared a node count with
+    itself in these runs, so the check is redone here rather than quoted.
+    Evaluation only: it touches no policy and no optimizer.
+    """
+    from experiments.shape_continuation.forward import Acquisition, Work, solve
+    from experiments.shape_continuation.geometry import grid_size
+    from experiments.shape_continuation.survey import even_at_least
+    shape = FourierCurve(np.load(directory / "endpoint.npz")["shape"])
+    perimeter = float(shape.nodes(grid_size(shape.band)).perimeter)
+    largest = wavenumber * max(1.0, np.sqrt(contrast))
+    nodes = even_at_least(max(256, 2 * (shape.band + 1) + 2,
+                              30 * perimeter * largest / (2 * np.pi)))
+    acquisition = Acquisition.ring(23, 29)
+    work = Work(max_forwards=4, max_seconds=600)
+    coarse = solve(shape, wavenumber, contrast, acquisition, nodes, work=work).prediction
+    fine = solve(shape, wavenumber, contrast, acquisition, 2 * nodes, work=work).prediction
+    difference = float(np.linalg.norm(coarse - fine) / np.linalg.norm(fine))
+    return dict(nodes=[nodes, 2 * nodes], wavenumber=wavenumber,
+                relative_difference=difference, passed=difference <= 1e-6)
+
+
 def main():
     truth = fixture("glider")
     radius = float(np.sqrt(truth.nodes(8192).signed_area / np.pi))
@@ -62,9 +86,10 @@ def main():
                 continue
             summary, points = trajectory(directory, truth, radius)
             arm, start = summary["arm"], summary["start"]
+            contrast = float(json.loads((case / "manifest.json").read_text())["arguments"]["contrast"])
+            summary["contrast"] = contrast
             records[f"{case.name}/{arm}-{start}"] = dict(
-                case=case.name, arm=arm, start=start,
-                contrast=json.loads((case / "manifest.json").read_text())["arguments"]["contrast"],
+                case=case.name, arm=arm, start=start, contrast=contrast,
                 stop_reason=summary["stop_reason"], failure=summary["failure"],
                 decisions=summary["decisions"],
                 highest_wavenumber=summary["highest_wavenumber"],
@@ -75,6 +100,9 @@ def main():
                 holdout=summary["scores"].get("holdout_relative_error"),
                 best=min((p["relative_boundary_error"] for p in points), default=None),
                 cost_to_reach={str(t): cost_to_reach(points, t) for t in targets},
+                endpoint_resolution=endpoint_resolution(
+                    directory, float(summary.get("contrast", 0.33)),
+                    summary["highest_wavenumber"] or 1.0),
                 probe_forwards=sum(p["forwards"] for p in summary.get("probes", [])),
                 probes=len(summary.get("probes", [])),
                 bands=[d["band"] for d in summary.get("policy_decisions", [])],

@@ -87,9 +87,11 @@ def score(truth, shape, observations, contrast, nodes, work):
     try:
         prediction = solve(shape, wavenumber, contrast, holdout, nodes, work=work).prediction
         target = solve(truth, wavenumber, contrast, holdout, 2 * nodes, work=work).prediction
-        coarse = solve(shape, wavenumber, contrast, holdout, nodes // 2 * 2, work=work).prediction
+        coarse = solve(shape, wavenumber, contrast, holdout,
+                       even_at_least(nodes / 2), work=work).prediction
         result.update(holdout_wavenumber=wavenumber,
                       holdout_relative_error=relative(prediction, target),
+                      holdout_nodes=[even_at_least(nodes / 2), nodes],
                       holdout_self_convergence=relative(coarse, prediction))
     except Exception as exc:
         result["holdout"] = dict(failure=str(exc))
