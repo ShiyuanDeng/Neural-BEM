@@ -46,6 +46,23 @@ runtime selector, modal compression, or experimental Laurent solver is used.
 - `resolution.py`: independent field/Jacobian convergence and timing screen.
 - `test_pipeline.py`: independent circle series, derivative convergence,
   geometry/reparameterization, recovery, continuation and import isolation.
+- `atlas.py`: frequency x shape-harmonic characterization at one geometry on an
+  `L^2(ds)`-orthonormal normal-displacement basis, with a declared data
+  whitening. Stores four separate layers -- sensitivity, signed residual
+  gradient, the full Gauss-Newton block and its spectrum -- plus the energy
+  each Jacobian column leaves off the circle's exact selection line.
+- `horizon.py`: gauge-preserving finite displacements, and the residual-free
+  measurement of where `J h` stops describing the measured change in the data.
+- `policy.py`: continuation decisions from those measurements -- the update
+  band from where detectability meets the horizon, the next frequency from
+  whether its own model delivers its promised decrease.
+- `survey.py`, `validity.py`, `campaign.py`: the drivers for SC-015, SC-016 and
+  SC-017. Probes inside a policy are charged to the same `Work` budget as the
+  inversion, so an arm that measures more has fewer solves left to optimize.
+- `test_atlas.py`, `test_horizon.py`: the conventions above, an exact circle
+  law (rotational equivariance forces each Jacobian column onto the line
+  `a+b=p` and the order table to be rank one), and that a measured horizon
+  does not move when the quadrature is refined.
 
 Validation is bounded to unit/derivative checks, short synthetic smoke
 recoveries, glider ladders through k=8, and checkpoint extensions through k=12
@@ -260,6 +277,30 @@ For subsequent adaptive experiments, keep geometry/solver/optimizer fixed.
 Frequency jumps must select observations that actually exist; held-out data and
 true boundary errors remain scoring inputs only. Small steps are not stationarity
 certificates. Residuals at different frequencies are different objectives.
+
+## Measured characterization
+
+`atlas.py`, `horizon.py` and `policy.py` add measurement, not new physics. They
+change no solver, optimizer or geometry code, and the inverse is bitwise
+unaffected when they are not used. Three conventions are fixed there once and
+should not be re-derived elsewhere:
+
+- a shape direction is a normal displacement with unit `L^2(ds)` norm on the
+  current curve, not a Cartesian Fourier coefficient of `z(t)`; rescaling the
+  basis rescales every diagonal information measure;
+- data are whitened by `C = sigma^2 I` with `sigma` from a declared
+  `Whitening`, and nothing else divides by a data norm;
+- a displaced curve used for a finite-difference measurement keeps the
+  arclength gauge and is checked against its own displacement, so a horizon
+  never depends on a reparameterization tolerance.
+
+The measurements are recorded in
+[SC-015](../../results/validation/shape_continuation/SC-015-atlas-structure/README.md),
+[SC-016](../../results/validation/shape_continuation/SC-016-validity-horizon/README.md)
+and [SC-017](../../results/validation/shape_continuation/SC-017-atlas-controller/README.md).
+The harmonic axis is not gauge-invariant off the circle; `transport_overlap`
+and the recorded order-mixing fractions say how far a cell from one iterate may
+be compared with a cell from another.
 
 ## Adaptive controller contract
 

@@ -403,6 +403,8 @@ class AtlasPolicy:
 
     @staticmethod
     def progressed(context):
+        if not context.history:
+            return False
         record = context.history[-1]
         return record.committed and any("direction" in entry for entry in record.result.history)
 
