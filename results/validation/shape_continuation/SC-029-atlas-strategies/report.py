@@ -14,7 +14,7 @@ LABELS = dict(wrong_circle="Circle",circle_to_star="Star",circle_to_c="C",kite="
 def criterion(rows, candidate, reference):
     ratios, raw, extra_stops = {}, {}, []
     for case in st.CASES:
-        a,b = rows[case,*candidate],rows[case,*reference]
+        a,b = rows[(case,*candidate)],rows[(case,*reference)]
         ea,eb = a["score"]["symmetric_rms_mm"],b["score"]["symmetric_rms_mm"]
         ratios[case] = max(ea,.01)/max(eb,.01)
         raw[case] = ea/eb
