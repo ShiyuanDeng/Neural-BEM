@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from typing import Optional
 import numpy as np
 
-from .forward import Acquisition, BudgetExceeded, ForwardState, Work, solve, shape_jacobian, timed
+from .forward import Acquisition, BudgetExceeded, ForwardState, Work, solve, shape_jacobian, timed, same_acquisition
 from .geometry import FourierCurve, displaced, gaussian_filter, normal_basis, curvature_tail, integer
 from .schedule import Stage
 
@@ -16,7 +16,7 @@ class Observation:
 
     def __post_init__(self):
         data = np.array(self.scattered, complex, copy=True)
-        expected = (len(self.acquisition.directions), len(self.acquisition.receivers))
+        expected = self.acquisition.data_shape
         if data.shape != expected or not np.isfinite(data).all():
             raise ValueError(f"Scattered data must have shape {expected} and be finite.")
         if not np.isfinite(self.wavenumber) or self.wavenumber <= 0:
@@ -137,8 +137,7 @@ def prepare_state(shape, observation, stage, contrast, *, cached=None, work=None
     reuse = (cached is not None and stage.wavenumber == cached.stage.wavenumber
         and stage.nodes == cached.stage.nodes and contrast == cached.contrast
         and _same_curve(shape, cached.shape)
-        and np.array_equal(observation.acquisition.directions, cached.observation.acquisition.directions)
-        and np.array_equal(observation.acquisition.receivers, cached.observation.acquisition.receivers))
+        and same_acquisition(observation.acquisition, cached.observation.acquisition))
     forward = cached.forward if reuse else solve(shape, stage.wavenumber, contrast,
                                                 observation.acquisition, stage.nodes, work=work)
     scale = float(np.linalg.norm(observation.scattered)) or 1.0

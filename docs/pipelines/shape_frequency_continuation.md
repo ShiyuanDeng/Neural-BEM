@@ -19,7 +19,7 @@ trust-region band that the manuscript states loosely.
 ```text
 Cartesian Fourier curve, parameterized by arclength
     → ordered boundary nodes
-    → dense nodal Müller/Kress, plane-wave illumination
+    → dense nodal Müller/Kress, plane-wave or line-source illumination
     → complex scattered fields and normal-shape Jacobian
     → single-frequency GN/SD update + geometry/curvature checks
     → reparameterize and accept only a decreasing candidate
@@ -65,10 +65,12 @@ explicit new budget, and qualifies both fields and normal Jacobians at N/2N.
 Truth and held-out observations remain evaluation inputs. A small filtered
 step means small physical movement; it does not assert stationarity or recovery.
 
-The only project dependencies are `ordered_boundary`, `gpr_bem_kress`, and its
+The core's only project dependencies are `ordered_boundary`, `gpr_bem_kress`, and its
 `periodic_kress` dependency. The former inverse drivers, SDF/MLP machinery,
 topology controller, automatic runtime selection, and modal research packages
-are absent from the import graph. Production defaults remain unchanged.
+are absent from the core import graph. The separate `legacy_cases.py` comparison
+harness imports the previous Cartesian Fourier inverse and fixture builders
+to run both methods on shared inputs. Production defaults remain unchanged.
 
 The package README owns the API, exact commands, paper-to-code differences,
 and limitations. The [qualification record](../../results/validation/shape_continuation/README.md)

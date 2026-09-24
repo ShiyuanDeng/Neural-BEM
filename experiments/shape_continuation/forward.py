@@ -38,6 +38,54 @@ class Acquisition:
             return np.column_stack((np.cos(t), np.sin(t)))
         return cls(points(illuminations), radius * points(receivers))
 
+    @property
+    def data_shape(self):
+        return (len(self.directions), len(self.receivers))
+
+
+@dataclass(frozen=True)
+class PointSourceAcquisition:
+    """Line-source illumination, optionally retaining only paired receivers.
+
+    Strength multiplies the outgoing Green function i H0^(1)(k r)/4.
+    Coordinates and wavenumber must use the same length unit. A paired scan
+    exposes only its diagonal to the inverse, never unmeasured cross pairs.
+    """
+    sources: np.ndarray
+    receivers: np.ndarray
+    strength: complex = 1.0
+    paired: bool = True
+
+    def __post_init__(self):
+        for name in ("sources", "receivers"):
+            value = np.array(getattr(self, name), dtype=float, copy=True)
+            if value.ndim != 2 or value.shape[1] != 2 or not len(value) or not np.isfinite(value).all():
+                raise ValueError(f"{name} must be a finite, nonempty (N,2) array.")
+            value.setflags(write=False)
+            object.__setattr__(self, name, value)
+        if not np.isfinite(self.strength):
+            raise ValueError("Source strength must be finite.")
+        if self.paired and len(self.sources) != len(self.receivers):
+            raise ValueError("Paired acquisition requires equally many sources and receivers.")
+        if np.any(np.linalg.norm(self.sources[:, None] - self.receivers[None, :], axis=-1) == 0):
+            raise ValueError("Sources and receivers must be distinct.")
+
+    @property
+    def data_shape(self):
+        return ((len(self.sources),) if self.paired
+                else (len(self.sources), len(self.receivers)))
+
+
+def same_acquisition(first, second):
+    if type(first) is not type(second):
+        return False
+    if not np.array_equal(first.receivers, second.receivers):
+        return False
+    if isinstance(first, PointSourceAcquisition):
+        return (np.array_equal(first.sources, second.sources)
+                and first.strength == second.strength and first.paired == second.paired)
+    return np.array_equal(first.directions, second.directions)
+
 
 class BudgetExceeded(RuntimeError):
     pass
@@ -113,8 +161,13 @@ def solve(shape, wavenumber, contrast, acquisition, nodes, *, work=None):
                 system = build_muller_system(curve, wavenumber, ki)
             with timed(work, "receiver_operator"):
                 receiver = build_exterior_receiver_operator(curve, acquisition.receivers, wavenumber)
-            field = np.exp(1j * wavenumber * (curve.points @ acquisition.directions.T))
-            normal = 1j * wavenumber * (curve.normals @ acquisition.directions.T) * field
+            if isinstance(acquisition, PointSourceAcquisition):
+                field, normal = kress_incident_trace_on_boundary(
+                    curve, acquisition.sources, wavenumber, acquisition.strength)
+                field, normal = field.T, normal.T
+            else:
+                field = np.exp(1j * wavenumber * (curve.points @ acquisition.directions.T))
+                normal = 1j * wavenumber * (curve.normals @ acquisition.directions.T) * field
             rhs = np.vstack((field, normal))
             with timed(work, "factorization"):
                 factors = lu_factor(system.system_matrix)
@@ -124,6 +177,8 @@ def solve(shape, wavenumber, contrast, acquisition, nodes, *, work=None):
             with timed(work, "forward_solve"):
                 traces, residual = _solve(system.system_matrix, factors, rhs)
                 prediction = receiver.apply_state(traces)
+                if isinstance(acquisition, PointSourceAcquisition) and acquisition.paired:
+                    prediction = np.diag(prediction).copy()
         if not np.isfinite(prediction).all():
             raise FloatingPointError("Nonfinite scattered field.")
     except Exception:
@@ -169,6 +224,9 @@ def shape_jacobian(state, normal_displacements, *, work=None):
             product = receivers @ weighted.reshape(count, -1)
             value[:, :, start:stop] = product.reshape(receivers.shape[0], stop-start, sources.shape[1]).transpose(2, 0, 1)
         value *= state.interior_wavenumber ** 2 - state.wavenumber ** 2
+        if isinstance(state.acquisition, PointSourceAcquisition) and state.acquisition.paired:
+            indices = np.arange(len(state.acquisition.sources))
+            value = value[indices, indices, :]
     if not np.isfinite(value).all():
         raise FloatingPointError("Nonfinite shape Jacobian.")
     return value

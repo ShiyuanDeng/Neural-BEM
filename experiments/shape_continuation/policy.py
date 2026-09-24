@@ -397,6 +397,12 @@ class AtlasPolicy:
         higher = self.grid[(self.grid > last) & (self.grid <= ceiling)]
         if len(higher):
             return higher
+        # A sparse measured catalog may contain no point within the preferred
+        # jump. Advance to its next available point rather than declaring the
+        # inverse finished below k_stop; no missing-frequency data is invented.
+        remaining = self.grid[(self.grid > last) & (self.grid <= self.k_stop)]
+        if len(remaining):
+            return remaining[:1]
         if last >= self.k_stop and self.refine_at_top and self.progressed(context):
             return np.array([self.k_stop])
         return np.array([])
