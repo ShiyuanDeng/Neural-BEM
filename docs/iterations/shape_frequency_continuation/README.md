@@ -14,11 +14,11 @@ provisional**, with two profile differences and plotting provenance unresolved.
 
 | Item | State |
 |---|---|
-| Active cycle | [Iteration 10 — consolidated atlas and independent analysis](iteration_10/01_results.md) |
+| Active cycle | [Iteration 11 — full-atlas gate versus inverse-space qualification](iteration_11/01_results.md) |
 | Stage | SC-026 independently audited: hashes and algebra pass; 24 distinct pathological transitions are all in stage 1, but normal-ray coverage limits the error-projection interpretation. SC-028 harness tests pass (33); the P=48 Jacobian preflight fails on C/kite/peanut. Recovery campaign gated off pending a separately recorded diagnostic |
 | Working implementation | [Continuation package](../../../experiments/shape_continuation/README.md): clean hybrid (`updates.py`, `lm_backend.py`, with opt-in physical step control), the qualified atlas (`atlas_survey.py`), the SC-023–025 drivers, and isolated legacy/SPD harnesses. Backend variant for new runs: V2 (refit gate 1e-5) |
 | Latest runs | [SC-026 atlas dataset and first analysis](../../../results/validation/shape_continuation/SC-026-atlas-dataset/ANALYSIS.md), [SC-025](../../../results/validation/shape_continuation/SC-025-band-policies/README.md), [SC-024](../../../results/validation/shape_continuation/SC-024-backend-ablations/README.md), [SC-023](../../../results/validation/shape_continuation/SC-023-conditional-candidates/README.md) |
-| Review / next decision | [SC-028](iteration_10/03_plan.md) APPROVED by the current user request to analyse, propose, test and document; execution NOT STARTED. Test M=2 in stage 1 and continuation to 2.5 GHz with extra-work controls. SC-027 Sobolev metric remains deferred |
+| Review / next decision | SC-028 closed at its failed P=48 preflight. [SC-029](iteration_11/03_plan.md) APPROVED and NOT STARTED: identical strategies, qualified for M<=19 at the unchanged tolerance; baseline replay is next |
 | Figure 1 | Unchanged from iteration 03: still provisional. The band-rule measurement bears on it but does not reproduce it |
 | Checkout | Existing `feature/shape-frequency-continuation` branch; no new branch or worktree |
 | Reviewer of latest changes | SC-020/021/022: Codex, outsider review. SC-023 to SC-025: none yet |
@@ -96,3 +96,4 @@ the next cycle. Code and run artifacts retain their current locations.
 | [09](iteration_09/01_results.md) | The review is implemented. The atlas numerics pass refinement and directional checks. SC-022's stalls were the refit gate freezing curves roughened by large early steps. No declared band rule beats the ladder. The post hoc A2 rule qualifies on development data but is not reliably better on the held-out cases (1 of 3). Roughening predicts failure; a regularity-controlled step metric is proposed. |
 
 | [10](iteration_10/01_results.md) | Consolidated SC-026 atlas independently audited. Sensitive columns are not jointly determined harmonics; normal-ray coverage is incomplete. SC-028 freezes a controlled initial-band and frequency-extension test on all six development cases. |
+| [11](iteration_11/01_results.md) | SC-028 full-atlas preflight fails on rough endpoints; every active inverse column through M=19 passes. SC-029 retains the failed gate and narrows the qualification claim before any recovery outcome. |
