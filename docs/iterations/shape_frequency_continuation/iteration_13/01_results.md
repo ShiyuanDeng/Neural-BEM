@@ -1,12 +1,5 @@
 # SC-030 — SPD-008 versus the clean hybrid
 
-**2026-09-24 interpretation amendment:** the user-requested
-[legacy baseline audit](../iteration_15/02_proposals/01_legacy_baseline_audit.md)
-confirms six successful topology-free legacy recoveries and identifies material
-optimizer/step-control differences from this direct K17 continuation arm.
-SC-030 does not establish superiority over that successful legacy algorithm.
-The measurements and exact cache-equivalence findings below are unchanged.
-
 **Complete:** all 36 fresh-process runs are retained. SPD-008 is now the
 comparison reference, and exact fit-local geometry reuse is qualified for the
 clean hybrid. The cache reduces total hybrid inversion time by 12.62%,
