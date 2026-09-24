@@ -168,8 +168,12 @@ class Ledger(p.Ledger):
             p.physical.solve_multicomponent_kress_tmz_total_field_batch = original
 
 
-def fit_stage(initial, data, nodes, solve, optimizer, floor, ledger, output):
-    """Only training data and accepted state enter this optimizer adapter."""
+def fit_stage(initial, data, nodes, solve, optimizer, floor, ledger, output, step_safeguards=None):
+    """Only training data and accepted state enter this optimizer adapter.
+
+    ``step_safeguards`` (opt-in, default None) passes legacy single-object step
+    controls to the optimizer; None leaves the call and its records unchanged.
+    """
     output.mkdir(parents=True, exist_ok=False)
     low, high = nodes
     production = p.driver.baseline._geometry_config(low)
@@ -180,7 +184,8 @@ def fit_stage(initial, data, nodes, solve, optimizer, floor, ledger, output):
                    production_nodes=low, refined_nodes=high)
     write(output/'optimizer.json',dict(config=asdict(optimizer), inverse_runtime=runtime_metadata(), **context,
           loss_change_stopping=False, cartesian_gauge=True, feasible_fd_jacobian=True,
-          minimum_component_radius_m=floor, extra_feasibility_nodes=high))
+          minimum_component_radius_m=floor, extra_feasibility_nodes=high,
+          **({} if step_safeguards is None else dict(step_safeguards=asdict(step_safeguards)))))
     write(output/'initial_state.json',p.driver.serialize_state(initial))
     current = initial
     current_loss = None
@@ -236,6 +241,9 @@ def fit_stage(initial, data, nodes, solve, optimizer, floor, ledger, output):
             append('production_candidates.jsonl',dict(base_state_sha256=state_hash(base.state),
                    candidate_state_sha256=None if candidate is None else state_hash(candidate.state),
                    production_gain=None if candidate is None else base.loss-candidate.loss, **context))
+        elif event == 'step_safeguards':
+            exposure['safeguard_'+payload['kind']+'s'] += 1
+            append('safeguards.jsonl',dict(payload, category=ledger.category, **context))
         elif event == 'feasibility_refusal':
             exposure[ledger.category+'_feasibility_refusals'] += 1
             append('feasibility.jsonl',dict(category=ledger.category, state_sha256=state_hash(payload['state']),
@@ -309,7 +317,8 @@ def fit_stage(initial, data, nodes, solve, optimizer, floor, ledger, output):
             feasible_fd_jacobian=True,loss_change_stopping=False,candidate_acceptance_callback=validate,
             jacobian_batch_callback=batch,accepted_state_callback=checkpoint,progress_callback=progress,
             diagnostic_callback=diagnostic,
-            evaluation_event_callback=lambda event:exposure.update({ledger.category+'_'+event:1}))
+            evaluation_event_callback=lambda event:exposure.update({ledger.category+'_'+event:1}),
+            **({} if step_safeguards is None else dict(step_safeguards=step_safeguards)))
         current = result.final_state
         reason = result.stop_reason
         if result.unresolved_jacobian_column_count or reason == 'infeasible_jacobian':

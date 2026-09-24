@@ -189,7 +189,11 @@ def test_insufficient_initial_quota_exposes_no_model(tmp_path,state):
 
 
 def test_training_only_interface_and_equal_frequency_objective():
-    assert set(inspect.signature(m.fit_stage).parameters)=={'initial','data','nodes','solve','optimizer','floor','ledger','output'}
+    # SC-034 adds one optimizer control, not data: an opt-in step-safeguard
+    # config whose default (None) leaves the historical call unchanged.
+    parameters=inspect.signature(m.fit_stage).parameters
+    assert set(parameters)=={'initial','data','nodes','solve','optimizer','floor','ledger','output','step_safeguards'}
+    assert parameters['step_safeguards'].default is None
     observed=np.arange(1,49).reshape(24,2).astype(complex)*(1+1j)
     predicted=observed+np.array([.1+.3j,.5+.8j])
     data=m.p.training_data(m.p.TRAIN[:2],observed)

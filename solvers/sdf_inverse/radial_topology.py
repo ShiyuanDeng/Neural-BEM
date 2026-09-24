@@ -957,6 +957,107 @@ class MultiRadialFDResult:
     unresolved_jacobian_column_count: int = 0
 
 
+@dataclass(frozen=True)
+class StepSafeguards:
+    """Opt-in step controls of the legacy single-object inverse.
+
+    This LM was written for topology work and never carried the four controls
+    that `neural_optimization.AlternatingNeuralInverseConfig` added against a
+    measured failure: a growing ripple at the highest available mode, because
+    undamped Gauss--Newton inverts the near-null column of an unresolvable
+    harmonic, a clipped or rescaled oversized step keeps that direction, and
+    an any-decrease test accepts the result.  The defaults are the legacy
+    values.  They apply to Cartesian components under the polar-angle gauge,
+    whose reduced directions are translation, uniform radius and unit radial
+    harmonics 2..K-1 (``polar_angle_gauge_tangent_basis``).
+
+    * ``curvature_penalty_weight``: a ``w * max(diag G) * m**4`` ridge on
+      radial harmonic ``m``, outside the damping multiplier, so an
+      unresolvable mode is bought at its bending cost.  It prices the step,
+      not the state, and leaves stationary points unchanged.
+    * ``minimum_damping``: floor on the carried damping.
+    * ``maximum_normal_displacement_m``: largest normal boundary move of a
+      proposed step.  The damping is raised (and then refined in log lambda)
+      until the step fits; rescaling is the fallback once the search is spent.
+    * ``armijo_coefficient``: accept only a realized decrease of at least this
+      fraction of the linear model's predicted decrease ``g . d``.
+    """
+
+    curvature_penalty_weight: float = 1.0e-4
+    minimum_damping: float = 1.0e-6
+    maximum_normal_displacement_m: float | None = 2.0e-3
+    armijo_coefficient: float = 1.0e-4
+    max_trust_region_solves: int = 8
+    trust_region_refinement_steps: int = 8
+    minimum_displacement_samples: int = 512
+
+    def __post_init__(self) -> None:
+        for name in ("curvature_penalty_weight", "minimum_damping", "armijo_coefficient"):
+            value = float(getattr(self, name))
+            if not math.isfinite(value) or value < 0.0:
+                raise ValueError(f"{name} must be finite and nonnegative.")
+            object.__setattr__(self, name, value)
+        if self.armijo_coefficient >= 1.0:
+            raise ValueError("armijo_coefficient must be smaller than one.")
+        bound = self.maximum_normal_displacement_m
+        if bound is not None:
+            bound = float(bound)
+            if not math.isfinite(bound) or bound <= 0.0:
+                raise ValueError("maximum_normal_displacement_m must be positive or None.")
+            object.__setattr__(self, "maximum_normal_displacement_m", bound)
+        for name in ("max_trust_region_solves", "trust_region_refinement_steps"):
+            value = getattr(self, name)
+            if isinstance(value, (bool, np.bool_)) or int(value) != value or value < 0:
+                raise ValueError(f"{name} must be a nonnegative integer.")
+            object.__setattr__(self, name, int(value))
+        object.__setattr__(self, "minimum_displacement_samples", _positive_integer(
+            self.minimum_displacement_samples, name="minimum_displacement_samples"))
+
+
+def gauge_radial_orders(state: MultiRadialFourierState) -> np.ndarray:
+    """Radial harmonic order of each polar-gauge direction; 0 for rigid/size."""
+    orders: list[float] = []
+    for component in state.components:
+        if not isinstance(component, CartesianFourierCurveState):
+            raise ValueError("step safeguards require Cartesian components.")
+        orders += [0.0, 0.0, 0.0] + [float(m) for m in range(2, component.maximum_mode) for _ in range(2)]
+    return np.asarray(orders, dtype=np.float64)
+
+
+def gauge_normal_displacement_operator(
+    state: MultiRadialFourierState, basis: np.ndarray, minimum_samples: int = 512
+) -> np.ndarray:
+    """Linear map from a reduced step to normal boundary moves at sample points.
+
+    The Cartesian chart is affine in its coefficients, so the displacement at
+    fixed parameter is exact; its normal component is the shape change.  Rows
+    stack every component's uniform parameter samples.
+    """
+    from .curve_updates import cartesian_fourier_displacement_basis
+
+    blocks: list[np.ndarray] = []
+    for component, component_slice in zip(state.components, state.parameter_slices):
+        if not isinstance(component, CartesianFourierCurveState):
+            raise ValueError("step safeguards require Cartesian components.")
+        modes = component.maximum_mode
+        count = max(int(minimum_samples), 64 * (modes + 1))
+        angles = 2.0 * np.pi * np.arange(count, dtype=np.float64) / count
+        orders = np.arange(modes + 1, dtype=np.float64)
+        phase = np.outer(angles, orders)
+        tangent = (-(np.sin(phase) * orders) @ component.cosine_coefficients
+                   + (np.cos(phase) * orders) @ component.sine_coefficients)
+        speed = np.linalg.norm(tangent, axis=1)
+        if not np.all(speed > 0.0):
+            raise ValueError("current curve has a vanishing parameter speed.")
+        normals = np.column_stack((tangent[:, 1], -tangent[:, 0])) / speed[:, None]
+        local = np.einsum("npd,nd->np", cartesian_fourier_displacement_basis(
+            angles, maximum_mode=modes), normals)
+        block = np.zeros((count, state.parameter_count), dtype=np.float64)
+        block[:, component_slice] = local
+        blocks.append(block)
+    return np.vstack(blocks) @ np.asarray(basis, dtype=np.float64).T
+
+
 @inverse_execution
 @fit_geometry_validation
 def run_multiradial_fd_inverse(
@@ -979,8 +1080,13 @@ def run_multiradial_fd_inverse(
     diagnostic_callback: Callable[[str, dict], None] | None = None,
     jacobian_mode: str | None = None,
     analytic_constraint_policy: str | None = None,
+    step_safeguards: StepSafeguards | None = None,
 ) -> MultiRadialFDResult:
     """Bounded LM optimizer for one fixed Fourier topology.
+
+    ``step_safeguards`` (default ``None``: the historical path, unchanged)
+    enables the legacy single-object step controls; see
+    :class:`StepSafeguards`. It requires ``cartesian_gauge``.
 
     The shared compiled runtime defaults to guarded reciprocal Cartesian
     Jacobians and reduced multi-object solves at >=256 nodes, with full-Kress
@@ -1057,6 +1163,12 @@ def run_multiradial_fd_inverse(
         raise TypeError("config must be ParameterFDConfig.")
     if config.infeasible_trial_policy != "reject":
         raise ValueError("the topology experiment requires infeasible_trial_policy='reject'.")
+    if step_safeguards is not None:
+        if not isinstance(step_safeguards, StepSafeguards):
+            raise TypeError("step_safeguards must be StepSafeguards or None.")
+        if not cartesian_gauge:
+            raise ValueError("step_safeguards require cartesian_gauge=True.")
+        gauge_radial_orders(initial_state)  # Cartesian components only.
     feasibility_configs = tuple(feasibility_geometry_configs)
     if not all(isinstance(item, OrderedSDFGeometryConfig) for item in feasibility_configs):
         raise TypeError("feasibility_geometry_configs must contain OrderedSDFGeometryConfig objects.")
@@ -1320,6 +1432,68 @@ def run_multiradial_fd_inverse(
             else np.min(np.where(np.abs(basis) > 1.0e-12,
                                  max_steps / np.maximum(np.abs(basis), 1.0e-12), np.inf), axis=1)
         )
+        penalty = motion_map = None
+        if step_safeguards is not None:
+            # Referred to the best-determined column, so the ridge is invariant
+            # to residual units and scale, as in the legacy inverse.
+            reference = float(np.max(np.diag(normal)))
+            if not math.isfinite(reference) or reference <= 0.0:
+                reference = 1.0
+            penalty = np.diag(step_safeguards.curvature_penalty_weight * reference
+                              * gauge_radial_orders(accepted_state) ** 4)
+            if step_safeguards.maximum_normal_displacement_m is not None:
+                motion_map = gauge_normal_displacement_operator(
+                    accepted_state, basis, step_safeguards.minimum_displacement_samples)
+
+        def safeguarded_step(start: float) -> tuple[np.ndarray, float, float]:
+            """Raise the damping until the normal move fits (legacy trust region).
+
+            Raising the damping shortens the step and rotates it toward steepest
+            descent; a clip or rescale would keep an unresolvable mode's
+            direction. The decade search brackets the damping, a log-lambda
+            bisection keeps the least over-damped feasible step, and rescaling
+            is the fallback once the search is spent.
+            """
+            def solve(value: float) -> np.ndarray:
+                result = np.linalg.solve(normal + value * np.diag(scaling) + penalty, -gradient)
+                if not np.all(np.isfinite(result)):
+                    raise np.linalg.LinAlgError("nonfinite safeguarded step")
+                return result
+
+            bound = step_safeguards.maximum_normal_displacement_m
+            trial, infeasible = float(start), None
+            attempted, step, maximum = trial, None, math.inf
+            for _ in range(step_safeguards.max_trust_region_solves + 1):
+                step = solve(trial)
+                if motion_map is None:
+                    return step, trial, math.nan
+                maximum = float(np.max(np.abs(motion_map @ step)))
+                if maximum <= bound:
+                    if infeasible is None:
+                        return step, trial, maximum
+                    feasible, feasible_step, feasible_maximum = trial, step, maximum
+                    for _ in range(step_safeguards.trust_region_refinement_steps):
+                        midpoint = math.sqrt(infeasible * feasible)
+                        try:
+                            midpoint_step = solve(midpoint)
+                        except np.linalg.LinAlgError:
+                            break
+                        value = float(np.max(np.abs(motion_map @ midpoint_step)))
+                        if value <= bound:
+                            feasible, feasible_step, feasible_maximum = midpoint, midpoint_step, value
+                        else:
+                            infeasible = midpoint
+                    return feasible_step, feasible, feasible_maximum
+                infeasible = attempted = trial
+                trial *= config.damping_increase
+            return step * (bound / maximum), attempted, bound
+
+        def sufficient_decrease(candidate_loss: float, predicted: float | None) -> bool:
+            """Armijo against the linear model; plain decrease without safeguards."""
+            if predicted is None or not math.isfinite(predicted) or predicted >= 0.0:
+                return True
+            return candidate_loss <= current.loss + step_safeguards.armijo_coefficient * predicted
+
         accepted_evaluation = None
         accepted_candidate = None
         accepted_step = None
@@ -1328,9 +1502,15 @@ def run_multiradial_fd_inverse(
         trial_damping = damping
         for _ in range(config.max_damping_trials):
             try:
-                proposed = np.linalg.solve(
-                    normal + trial_damping * np.diag(scaling), -gradient
-                )
+                if step_safeguards is None:
+                    proposed = np.linalg.solve(
+                        normal + trial_damping * np.diag(scaling), -gradient
+                    )
+                else:
+                    proposed, trial_damping, proposed_motion = safeguarded_step(trial_damping)
+                    if diagnostic_callback is not None:
+                        diagnostic_callback("step_safeguards", dict(kind="proposal",
+                            damping=trial_damping, maximum_normal_displacement_m=proposed_motion))
             except np.linalg.LinAlgError:
                 trial_damping *= config.damping_increase
                 continue
@@ -1342,9 +1522,12 @@ def run_multiradial_fd_inverse(
                 # gauge-fixed subspace, and the retraction would then have to
                 # recover a step the clip had bent. The per-direction bound is
                 # the tightest coefficient bound that direction can violate.
-                proposed = basis.T @ np.clip(proposed, -reduced_max_steps, reduced_max_steps)
+                reduced = np.clip(proposed, -reduced_max_steps, reduced_max_steps)
+                proposed = basis.T @ reduced
             for backtrack in range(config.max_backtracks + 1):
                 step = (0.5**backtrack) * proposed
+                predicted = (None if step_safeguards is None
+                             else float(gradient @ ((0.5**backtrack) * reduced)))
                 relative_step = float(
                     np.linalg.norm(step)
                     / max(np.linalg.norm(accepted_state.parameter_vector()), 1.0)
@@ -1365,7 +1548,13 @@ def run_multiradial_fd_inverse(
                 if diagnostic_callback is not None:
                     diagnostic_callback("candidate_evaluated", dict(base=current,
                         candidate=candidate_evaluation))
+                if (step_safeguards is not None and diagnostic_callback is not None
+                        and candidate_evaluation is not None):
+                    diagnostic_callback("step_safeguards", dict(kind="candidate", backtrack=backtrack,
+                        predicted_change=predicted, realized_change=candidate_evaluation.loss-current.loss,
+                        sufficient_decrease=sufficient_decrease(candidate_evaluation.loss, predicted)))
                 if (candidate_evaluation is not None and candidate_evaluation.loss < current.loss
+                        and sufficient_decrease(candidate_evaluation.loss, predicted)
                         and (candidate_acceptance_callback is None
                              or candidate_acceptance_callback(current, candidate_evaluation))):
                     accepted_evaluation = candidate_evaluation
@@ -1384,7 +1573,8 @@ def run_multiradial_fd_inverse(
         accepted_state = accepted_candidate
         gauge_truncation = accepted_truncation
         current = accepted_evaluation
-        damping = max(used_damping * config.damping_decrease, np.finfo(float).tiny)
+        damping = max(used_damping * config.damping_decrease, np.finfo(float).tiny
+                      if step_safeguards is None else max(step_safeguards.minimum_damping, np.finfo(float).tiny))
         if accepted_state_callback is not None:
             accepted_state_callback(iteration, current)
         matrix, basis, unresolved_columns, one_sided_new = jacobian(accepted_state)
