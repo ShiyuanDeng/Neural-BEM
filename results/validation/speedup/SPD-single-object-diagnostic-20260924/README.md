@@ -12,10 +12,45 @@ The original failing configuration started all 33 polar-gauge directions at
 number about 8.75e9, versus 1.694 at K4. Its path develops large high-order ripples while decreasing
 the training loss, then encounters geometry or quadrature guards.
 
-There is a historical implementation divergence behind this: the separate
+There is also a historical implementation divergence: the separate
 multi-component LM optimizer introduced with topology did not include the old
 single-object optimizer's curvature penalty, damping floor and shape-motion
 trust-region mechanism. SPD accelerated that multi-component optimizer.
+
+## Discussion conclusion — 2026-09-24
+
+**A properly configured SPD-008 baseline is reasonably expected to recover the
+compatible single-boundary cases.** The failed comparison does not establish
+that SPD cannot do so. This remains a working hypothesis for the full six-case
+comparison, not a completed benchmark or a guarantee that restoring safeguards
+alone will suffice.
+
+- **Demonstrated:** the current SPD fitter recovers the circle and star with a
+  low-order start and harmonic continuation to K17. Their initial physical
+  curves were unchanged. The complete legacy safeguard package has not been
+  restored and tested; the curvature-only control improved the circle but
+  reached its 900 s limit before completing the schedule.
+- **Topology successes remain valid:** substantial circle-to-star refinement
+  succeeded without those safeguards. The saved two-star run used K9 per
+  object after topology initialization and accepted 74 continuation updates,
+  reaching 0.001721 mm Hausdorff error. Different initialization and active
+  shape capacity can make the same optimizer succeed. Missing safeguards are
+  a possible robustness gap, not a proven explanation of every failure. See
+  the [SPD-006 results](../../../../docs/iterations/speedup/iteration_06/01_results.md).
+- **The divergence had a narrow justification:** the
+  [original topology plan](../../../../docs/iterations/radial_fourier_topology/iteration_01/03_plan.md#55-optimizer-choice)
+  deliberately introduced a separate optimizer to avoid disrupting the working
+  single-object route. Its first test allowed only circles. That justification
+  did not establish equivalence to the legacy optimizer for high-order recovery.
+- **Representation matters:** one boundary need not be star-shaped. The current
+  SPD polar-angle gauge requires star-shaped geometry about its center; the
+  atlas C case is explicitly non-star-shaped. Safeguards alone do not remove
+  that representation limitation.
+
+The next comparison must specify initialization, frequency and harmonic
+continuation, safeguards, final capacity and compute budgets for both methods,
+and report representation compatibility. No corrected six-case comparison or
+production solver change has been made in this investigation.
 
 ## Historical lineage checked
 
@@ -143,8 +178,9 @@ changing the stencil alone repairs the full inverse.
 
 ## Interpretation and scope
 
-The experiments establish an initialization/regularization failure in this
-full-order configuration. The numerical and geometry stops are consequences
+The experiments support an initialization/regularization diagnosis for this
+full-order configuration; they do not isolate the effect of every omitted
+safeguard. The numerical and geometry stops are consequences
 of the path it took. The successful staged runs retain the current SPD
 forward, derivative, guards and final shape capacity.
 
