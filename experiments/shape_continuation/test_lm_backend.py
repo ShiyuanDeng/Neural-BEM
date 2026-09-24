@@ -163,3 +163,22 @@ assert not any(name == f or name.startswith(f+'.') for name in sys.modules for f
 """
     environment = dict(os.environ, PYTHONPATH=f"{ROOT / 'solvers'}:{ROOT}")
     subprocess.run([sys.executable, "-c", code], env=environment, cwd=ROOT, check=True, capture_output=True)
+
+
+def test_physical_step_control_scales_to_the_maximum_normal_bound_and_keeps_direction():
+    from .lm_backend import control_step
+    update = BorgesUpdate(0.05)
+    space = update.prepare(padded_circle(1.0, 24), 8, 24)
+    rng = np.random.default_rng(5)
+    proposal = 0.01 * rng.standard_normal(17)
+    physical = BackendConfig(step_control="physical", physical_step_bound_m=0.004)
+    step = control_step(proposal, space, update, physical)
+    assert np.isclose(update.measure(space, step)["maximum_normal_m"], 0.004)
+    assert np.isclose(step @ proposal / np.linalg.norm(step) / np.linalg.norm(proposal), 1.0)
+    small = 1e-6 * proposal
+    assert np.array_equal(control_step(small, space, update, physical), small)
+    clipped = control_step(proposal, space, update, BackendConfig())
+    assert np.array_equal(clipped, np.clip(proposal, -BackendConfig().bounds(space.orders),
+                                           BackendConfig().bounds(space.orders)))
+    with pytest.raises(ValueError):
+        control_step(proposal, space, update, BackendConfig(step_control="other"))

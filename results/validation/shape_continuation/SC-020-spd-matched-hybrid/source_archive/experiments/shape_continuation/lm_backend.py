@@ -96,29 +96,11 @@ class BackendConfig:
     cross_resolution_factor: float = 5.0
     residual_floor: float = 1e-12
     domain_box: Optional[tuple] = None  # ((xmin, ymin), (xmax, ymax)) in package units
-    # "coefficient" clips each coordinate to `step_bounds_m` (SPD's rule, the
-    # default). "physical" instead scales the whole proposal so its maximum
-    # normal move is at most `physical_step_bound_m`, keeping its direction and
-    # a bound that does not grow with the band M. A shared-backend option,
-    # added after the 2026-09-24 review; runs before it used "coefficient".
-    step_control: str = "coefficient"
-    physical_step_bound_m: float = 0.006
 
     def bounds(self, orders):
         order = np.asarray(orders)
         return np.where(order == 0, self.step_bounds_m[0],
                         np.where(order == 1, self.step_bounds_m[1], self.step_bounds_m[2]))
-
-
-def control_step(proposed, space, update, config):
-    """Apply the configured step control to an LM proposal (before halving)."""
-    if config.step_control == "coefficient":
-        bound = config.bounds(space.orders)
-        return np.clip(proposed, -bound, bound)
-    if config.step_control == "physical":
-        size = update.measure(space, proposed)["maximum_normal_m"]
-        return proposed * min(1.0, config.physical_step_bound_m / size) if size > 0 else proposed
-    raise ValueError(f"Unknown step control {config.step_control!r}.")
 
 
 class Ledger:
@@ -340,11 +322,10 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None)
         matrix = objective.jacobian(evaluation, update, space)
         return space, matrix, matrix.T @ evaluation.residual
 
-    def record(iteration, evaluation, gradient, step, damping, next_damping, trial=None):
+    def record(iteration, evaluation, gradient, step, damping, trial=None):
         row = dict(iteration=iteration, loss=evaluation.loss, relative_l2=evaluation.relative_l2,
                    gradient_inf=float(np.linalg.norm(gradient, ord=np.inf)),
                    step_norm_m=float(np.linalg.norm(step)), damping=float(damping),
-                   next_damping=float(next_damping), step_m=np.asarray(step, float).tolist(),
                    coefficients=dict(real=evaluation.curve.coefficients.real.tolist(),
                                      imag=evaluation.curve.coefficients.imag.tolist()),
                    work=ledger.snapshot())
@@ -365,11 +346,12 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None)
             on_accept(0, current)
         space, matrix, gradient = gradient_frame(current)
         damping = config.initial_damping
-        record(0, current, gradient, np.zeros(matrix.shape[1]), damping, damping)
+        record(0, current, gradient, np.zeros(matrix.shape[1]), damping)
         if current.loss <= config.loss_tolerance:
             converged, stop_reason = True, "loss_tolerance"
         elif np.linalg.norm(gradient, ord=np.inf) <= config.gradient_tolerance:
             converged, stop_reason = True, "gradient_tolerance"
+        bounds = config.bounds(space.orders)
         for iteration in range(1, stage.iterations + 1):
             if converged:
                 break
@@ -383,7 +365,7 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None)
                 except np.linalg.LinAlgError:
                     trial_damping *= config.damping_increase
                     continue
-                proposed = control_step(proposed, space, update, config)
+                proposed = np.clip(proposed, -bounds, bounds)
                 for backtrack in range(config.max_backtracks + 1):
                     step = 0.5 ** backtrack * proposed
                     if np.linalg.norm(step) / scale <= config.relative_step_tolerance:
@@ -426,7 +408,8 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None)
             if on_accept is not None:
                 on_accept(iteration, current)
             space, matrix, gradient = gradient_frame(current)
-            record(iteration, current, gradient, step, used_damping, damping, trial)
+            bounds = config.bounds(space.orders)
+            record(iteration, current, gradient, step, used_damping, trial)
             if current.loss <= config.loss_tolerance:
                 converged, stop_reason = True, "loss_tolerance"
             elif np.linalg.norm(gradient, ord=np.inf) <= config.gradient_tolerance:
