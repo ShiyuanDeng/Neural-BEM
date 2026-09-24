@@ -1,12 +1,17 @@
 # SC-030: SPD-008 and the clean hybrid
 
-Status: implementation qualified; comparison pending.
+Status: implementation qualified; the 36-run comparison is running. See
+[campaign progress](campaign.json) and the [implementation review](implementation_review.md).
+
+The [first-pass checkpoint](first_pass.md) contains all eighteen initial runs.
+All six cache pairs are exact, and all hybrid endpoints/work counts replay
+SC-029. The second repetition is running; final timing ranges remain pending.
 
 - [Frozen approved contract](approved_plan.md)
 - [Source/input/environment manifest](manifest.json), with complete measured sources in `sources/`
 - [Pre-dispatch tests](pre_dispatch_tests.log): 76 passed
 - [Numerical/cache qualification](qualification/result.json): PASS, 52 units, 58.34 s
-- [Interpretation](../../../docs/iterations/shape_frequency_continuation/iteration_13/01_results.md)
+- [Interpretation](../../../../docs/iterations/shape_frequency_continuation/iteration_13/01_results.md)
 
 The fresh benchmark compares SPD-008, hybrid cache off, and hybrid cache on
 on each of the six atlas cases, with two sequential repetitions. Inputs, starts,
