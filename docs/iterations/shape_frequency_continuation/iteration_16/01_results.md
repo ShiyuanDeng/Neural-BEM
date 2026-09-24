@@ -8,6 +8,13 @@ Contract: [iteration-15 plan](../iteration_15/03_plan.md). Assessment:
 This was the user's direction: the SPD baseline could not recover single
 star-shaped objects that the legacy inverse recovers.
 
+**Amendment, 2026-09-24 (RD-2):** a saved-state audit of out-of-band bending energy
+([RD-2](02_proposals/01_band_energy_audit.md)) refines the peanut mechanism and the SC-035 sketch below.
+SPD-L's band-limited state does not keep bending energy low (0.3–0.7 mm radii on kite/C/hook). On peanut,
+both methods overshoot into a 3–4 mm feature; SPD-L reverses it, the hybrid does not. The operative
+difference is a state that stays inside the step span (reversible features). A small storage band would
+exclude the truths, so SC-035 is re-scoped to make the step and state spaces coincide.
+
 ## What changed
 
 - `StepSafeguards` (opt-in; default `None` replays SC-030 bitwise): m⁴ step

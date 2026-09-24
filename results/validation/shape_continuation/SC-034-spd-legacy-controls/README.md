@@ -87,8 +87,12 @@ Hausdorff distances and per-stage steps, are in [`tables.md`](tables.md);
   [`audit/truthmodes.txt`](audit/truthmodes.txt)). L reaches it in 7
   stage-1 steps from the 0.5 GHz data alone and takes no step afterwards.
   The hybrid, with the same data and first band (M = 3), collapses into a
-  1.9 mm corner in stage 1 (SC-031). The difference is that the hybrid limits
-  the band of each *step*, while SPD-L limits the band of the *state*.
+  1.9 mm corner in stage 1 (SC-031). The hybrid limits the band of each
+  *step*, while SPD-L limits the band of the *state*. *Refined by
+  [RD-2](../../../../docs/iterations/shape_frequency_continuation/iteration_16/02_proposals/01_band_energy_audit.md):*
+  both overshoot into a 3–4 mm feature; SPD-L reverses it because its state
+  stays inside its step span. The limited band does not by itself cap
+  bending energy.
 - **The step controls cost iterations.** With a 2 mm trust region and 22
   iterations per stage, LS uses all 22 in stage 1 on every case, and in all
   four stages on peanut. LS peanut is therefore iteration-limited
