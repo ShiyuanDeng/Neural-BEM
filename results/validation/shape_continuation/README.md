@@ -20,6 +20,7 @@ below; these cases do not establish general robustness.
 
 | Qualification | Finding |
 |---|---|
+| [SC-032 four-stage continuation](SC-032-regularizing-metric-prefix/README.md) | COMPLETE: 12 paths, no stops. R2 (Hanke + curvature) GM RMS 0.832 vs R0, worst 1.00; kite 2.98 → 1.55 mm; misses the ≤ 0.8 bar. R1 (Hanke + L²) GM 1.10. The stage-1 collapse persists in every arm. |
 | [SC-031 regularizing metric](SC-031-regularizing-metric/README.md) | COMPLETE at the stage-1 gate. Opt-in Hanke regularizing LM (L² or curvature-change metric); default replays exact. Hypothesis falsified: C/peanut still collapse to about 2 mm tightest radius with an active metric and ρ ≈ 1; stages 2–4 were not run. R2 fits stage-1 data better (development, stage 1 only). |
 | [SC-030 SPD-008 comparison](SC-030-spd008-comparison/README.md) | COMPLETE: 36 runs. All cached/off trajectories and repetitions exact; 12.62% aggregate hybrid time reduction. Hybrid RMS is lower on all six common starts; SPD has three distinct hard-stop cases and three poor completed cases. Fixed topology and native geometry/guards; no full-pipeline claim. |
 | [SC-029 strategy tests](SC-029-atlas-strategies/README.md) | COMPLETE: 36 endpoints, 31 completed schedules and five hard stops. All six baselines replay bitwise. M=2 helps C/peanut and harms kite/hook; higher frequencies have local benefits but neither strategy passes the frozen robustness criteria. Old-data extra work improves all six original-prefix cases. |

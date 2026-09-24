@@ -147,8 +147,11 @@ The user's atlas-to-inverse research brief is placed and
 there. SC-031, approved by the user, tested a regularizing metric against the
 stage-1 curvature collapse. [Iteration 14](shape_frequency_continuation/iteration_14/01_results.md)
 records that test: its hypothesis is falsified at the stage-1 gate, and the
-collapse survives both metrics. SC-032, the withheld four-stage continuation,
-is proposed and not approved.
+collapse survives both metrics. [Iteration 15](shape_frequency_continuation/iteration_15/01_results.md)
+records SC-032, the user-approved four-stage continuation. The curvature
+metric improves the hard cases without regressions (GM 0.832) but misses the
+≤ 0.8 adoption bar, so R0 stays the baseline. SC-033 (Borges' curvature-tail
+admissibility filter) is proposed and not approved.
 
 ## What to do at each stage
 

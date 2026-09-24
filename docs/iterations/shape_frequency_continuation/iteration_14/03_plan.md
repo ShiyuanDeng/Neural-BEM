@@ -4,8 +4,12 @@
 request "reply 'approve SC-032'", as proposed in [iteration 14](01_results.md).
 The approval covers implementation, the run, documentation and commit/push
 on the existing checkout, with no new branch or worktree.
-**Execution status: IN PROGRESS.** Owner: Claude (Opus 5.5). Independent
-reviewer: unassigned.
+**Execution status: COMPLETE (2026-09-24).** All 12 paths finished their
+schedules within budget (5,112 stage-B units, 19 min). R2 fails the ≤ 0.8
+bar (GM 0.832, worst 1.00), and R1 is worse than R0. The artifacts are in
+[the SC-032 bundle](../../../../results/validation/shape_continuation/SC-032-regularizing-metric-prefix/README.md),
+and the results open [iteration 15](../iteration_15/01_results.md).
+Owner: Claude (Opus 5.5). Independent reviewer: unassigned.
 
 ## Question
 
