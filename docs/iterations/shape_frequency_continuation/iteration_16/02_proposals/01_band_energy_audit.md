@@ -45,6 +45,10 @@ Peanut, state by state (tail, radius in mm):
 - SPD-L: 0 (65) → 0.00 (38) → 0.14 (15.3) → **0.485 (3.3)** → 0.34 (6.8) →
   0.27 (13.2) → 0.267 (13.5 = truth).
 
+> **Superseded in part by [RD-3](02_step_span_audit.md):** finding 3's "state outside the step span"
+> reading is withdrawn. At the collapsed peanut state, 83% of the correction is still in the M = 3 span.
+> What blocks the hybrid is finite-step validity: normal moves near a sharp feature self-intersect.
+
 ## Findings
 
 1. **No: the update band does not limit the boundary's harmonics.** At
