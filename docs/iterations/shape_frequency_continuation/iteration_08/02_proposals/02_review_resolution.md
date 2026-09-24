@@ -15,6 +15,11 @@ added.
 
 Nothing in the review is rejected.
 
+**Status, end of 2026-09-24:** every row below is implemented or resolved.
+The four recommended steps ran as SC-023 to SC-025; see
+[iteration 09](../../iteration_09/01_results.md). The durable upload of the
+dense artifacts (N3) remains the user's decision.
+
 | # | Review point | Decision | Implementation |
 |---|---|---|---|
 | 1 | A full-space step component is not a recommendation to add that harmonic | **Accept** | `atlas_survey.conditional_step(G, g, keep, λ)` solves on a declared coordinate set. A test pins it to the Schur-complement form. All band comparisons from now on use conditional solves. SC-022's observation 3 describes one joint P=48 solve, and is read that way. |
@@ -26,7 +31,7 @@ Nothing in the review is rejected.
 | 5 | An update band is a local tangent restriction; finite moves plus regauging mix harmonics | **Accept** | A test applies one Borges move h = ε cos mθ to a circle. It measures the 2m harmonic of the radial offset in the new arclength against −ε²/(2R). "Cannot reach" in the SC-020 records becomes "a measured local plateau". |
 | N1 | Atlas cells need derivative refinement and actual-update directional checks | **Resolve through a named diagnostic** (SC-023 Q0) | Representative cells (early, stalled, cavity, highest frequency) are recomputed at N=1024. They are compared column by column and in conditional steps with the stored N=512 layers. Directional finite differences are taken through the actual Borges trial. Budget ≤ 1 h. Artifacts go beside SC-023. |
 | N2 | SC-020/021 source text is not recoverable from current hashes | **Accept, done** | The exact texts were rebuilt by reversing the two logged post-run edits. The rebuilt SHA-256 values equal the recorded ones (`source_archive/check.json` in both bundles). |
-| N3 | The dense NPZ files are untracked | **Resolve through a diagnostic; durable upload deferred to the user** | One SC-022 case is regenerated from the repository and compared array by array. Zip timestamps make whole-file hashes non-reproducible. The files are 171 MB. Publishing them as a release asset or on an archive is an outward-facing upload, so the user decides. Until then, the offline claims rest on regeneration plus the comparison. |
+| N3 | The dense NPZ files are untracked | **Resolve through a diagnostic; durable upload deferred to the user** | One SC-022 case is regenerated from the repository and compared array by array. Done: the Borges star atlas regenerated from commit 5b852c0 matches bitwise in all 29 arrays, and in its whole-file hash, in 40 s. The files are 171 MB. Publishing them as a release asset or on an archive is an outward-facing upload, so the user decides. Until then, the offline claims rest on regeneration plus the comparison. |
 | N4 | K=192, the catalog and the truth-assisted diagnostics are development information | **Accept** | Circle, star, C and merge are development cases from here on. Held-out evaluation cases are declared in the [SC-023/024 plan](../03_plan.md) before any policy development. They will not be generated or run until a policy is frozen. |
 
 ## Next scientific step, as the review recommends

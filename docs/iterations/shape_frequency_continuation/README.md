@@ -14,14 +14,14 @@ provisional**, with two profile differences and plotting provenance unresolved.
 
 | Item | State |
 |---|---|
-| Active cycle | [Iteration 08 — the atlas along real trajectories](iteration_08/01_results.md) |
-| Stage | SC-022 records sensitivity, gradient, GN blocks, LM/GN steps and an evaluation-only signed-distance error proxy: 159 states, 2,679 cells. The fixed M=32 configuration fails on the tested distant starts; Borges' band ladder reaches 0.005 mm on the circle, 1.43 mm on the star and 19.4 mm on the C. Descriptive only; reviewed 2026-09-24 |
-| Working implementation | [Continuation package](../../../experiments/shape_continuation/README.md): clean hybrid (`updates.py`, `lm_backend.py`), the earlier single-frequency GN/SD path, and isolated legacy/SPD comparison harnesses |
-| Latest runs | [SC-022](../../../results/validation/shape_continuation/SC-022-atlas-survey/README.md), after the backend qualification in SC-020/021 |
-| Review / next decision | [Outsider review](iteration_08/02_proposals/01_codex_outsider_review.md): retain the hybrid and atlas; qualify the distance proxy, physical metric and conditional step interpretation before policy claims. Reproducible offline checks confirm counts/step replay and demonstrate harmonic coupling |
+| Active cycle | [Iteration 09 — the review implemented](iteration_09/01_results.md) |
+| Stage | Qualified atlas numerics (SC-023 Q0), backend ablations (SC-024) and band policies on development and held-out cases (SC-025). The frozen atlas-derived rule (A2) is not reliably better than Borges' ladder on held-out cases: it wins on the peanut and loses on the kite and hook. Roughening along the trajectory predicts failure (Spearman −0.88) |
+| Working implementation | [Continuation package](../../../experiments/shape_continuation/README.md): clean hybrid (`updates.py`, `lm_backend.py`, with opt-in physical step control), the qualified atlas (`atlas_survey.py`), the SC-023–025 drivers, and isolated legacy/SPD harnesses. Backend variant for new runs: V2 (refit gate 1e-5) |
+| Latest runs | [SC-025](../../../results/validation/shape_continuation/SC-025-band-policies/README.md), [SC-024](../../../results/validation/shape_continuation/SC-024-backend-ablations/README.md), [SC-023](../../../results/validation/shape_continuation/SC-023-conditional-candidates/README.md) |
+| Review / next decision | The [Codex review](iteration_08/02_proposals/01_codex_outsider_review.md) is fully [resolved and implemented](iteration_08/02_proposals/02_review_resolution.md). Next, proposed and not approved: [a regularity-controlled step metric (SC-026)](iteration_09/02_proposals/01_regularity_controlled_steps.md), with new held-out cases. The kite, peanut and hook are now development data |
 | Figure 1 | Unchanged from iteration 03: still provisional. The band-rule measurement bears on it but does not reproduce it |
 | Checkout | Existing `feature/shape-frequency-continuation` branch; no new branch or worktree |
-| Reviewer of latest changes | Codex, outsider review of SC-020/021/022 code and saved artifacts; 12 targeted tests rerun, no recovery campaigns rerun |
+| Reviewer of latest changes | SC-020/021/022: Codex, outsider review. SC-023 to SC-025: none yet |
 
 The user authorized autonomous development of this isolated pipeline and
 commit/push checkpoints. Iteration 04 adds a measured characterization of how
@@ -41,6 +41,10 @@ handoff only.
 
 ## Where things live
 
+- [Iteration 09 results](iteration_09/01_results.md) and the
+  [SC-026 proposal](iteration_09/02_proposals/01_regularity_controlled_steps.md).
+- [Review resolution](iteration_08/02_proposals/02_review_resolution.md) and the
+  [SC-023–025 plan with amendments A1–A2](iteration_08/03_plan.md).
 - [Outsider review, 2026-09-24](iteration_08/02_proposals/01_codex_outsider_review.md):
   verdict on SC-020/021/022, supporting derivations and literature, with a
   reproducible saved-artifact audit.
@@ -89,3 +93,4 @@ the next cycle. Code and run artifacts retain their current locations.
 | [06](iteration_06/01_results.md) | Step halving escapes a specific stall. The inherited 1% curvature gate excludes the exact star; halving plus the existing 10% default reduces training error 94.7%→8.18%, but a false protrusion remains. All four diagnostic arms still fail recovery. |
 | [07](iteration_07/01_results.md) | The hybrid passes SPD's near-truth merge case against a hash-identical SPD rerun. M=16 leaves a measured 0.050-mm high-mode error plateau: 0.076 versus 0.048 mm final error, 580 versus 256 units. M=32 reaches 0.0088 mm at 150 units. Review qualifies the plateau as local evidence and the pass as one-case qualification. |
 | [08](iteration_08/01_results.md) | Three cases × two band rules. Fixed M=32 fails under the tested settings; Borges' ladder reaches 0.005/1.43/19.4 mm on circle/star/C. Review confirms the atlas records, but full-space harmonic-step alignment is conditional on the other modes and on the signed-distance proxy. |
+| [09](iteration_09/01_results.md) | The review is implemented. The atlas numerics pass refinement and directional checks. SC-022's stalls were the refit gate freezing curves roughened by large early steps. No declared band rule beats the ladder. The post hoc A2 rule qualifies on development data but is not reliably better on the held-out cases (1 of 3). Roughening predicts failure; a regularity-controlled step metric is proposed. |

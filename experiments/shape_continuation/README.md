@@ -58,19 +58,44 @@ builders and inverse to establish a matched baseline.
   `fit_stage` runs SPD's LM rules over any update strategy with SPD's
   acceptance, numerical-regime stop, work units and quota reservation.
   `run_policy` loops a policy and calls an external endpoint hook.
+  `BackendConfig.step_control` is `"coefficient"` (SPD's per-coefficient
+  clip, the default) or `"physical"` (scale the whole step to a maximum
+  normal move); see `control_step`.
 - `spd_cases.py`, `spd_report.py`: SC-020 harness and report. These are the
   only modules that import SPD code. They cover the coordinate/unit bridge, the
   SPD-matching policy, a fresh SPD rerun, and scoring through SPD's own scorer.
 - `atlas_survey.py`: atlas layers in the backend's coordinates: sensitivity,
-  signed gradient, Gauss–Newton block, LM and truncated GN steps, and the
-  evaluation-only true error per harmonic. Stage blocks are weighted sums of
-  per-frequency layers.
+  signed gradient, Gauss–Newton block, LM and truncated GN steps. Stage blocks
+  are weighted sums of per-frequency layers.
+  - `conditional_step` solves on a declared coordinate set; this is not a
+    slice of a larger solve.
+  - `rms_weights`, `physical_norm` and `physical_cosine` give the arclength
+    Fourier mass metric.
+  - Evaluation only: `true_error` (a closest-distance proxy),
+    `normal_ray_error` (the exact current-normal move to the truth) and
+    `symmetric_rms_distance`.
 - `atlas_cases.py`: SC-022 cases and oracle-checked frequency catalogs,
   fixed-schedule trajectories under a declared band rule (`fixed32` or
   `borges`), and the parallel atlas over every accepted state.
+- `conditional_study.py`, `conditional_rules.py`: SC-023.
+  - Q0 numerical qualification: atlas refinement, directional checks and the
+    refit-gate record.
+  - The offline candidate table: conditional steps, geometry-only trials and
+    evaluation-only gains.
+  - The declared truth-free band rules and their evaluation.
+- `ablation_cases.py`: SC-024(a), shared-backend variants (step control,
+  refit gate, iteration cap) of SC-022's trajectories.
+- `probe_cases.py`: SC-024(b), rule-chosen steps executed at recorded states.
+- `policy_cases.py`: SC-025, band policies (ladder, fixed32, progress, and the
+  A2 `parsimonious` atlas rule) on development and declared held-out cases.
 - `test_atlas_survey.py`: the stage step assembled from per-frequency layers
-  equals the backend's proposal; checks the GN step algebra and the
-  true-error decomposition.
+  equals the backend's proposal. Also checked:
+  - the GN step algebra and the Schur-complement conditional step;
+  - the mass metric;
+  - normal-ray exactness on offset circles;
+  - the doubled harmonic created by one Borges move.
+- `test_policies.py`: the declared band rules, regret evaluation, the
+  progress controller, the band-policy loop and the held-out truths.
 - `test_lm_backend.py`: the residual map is bitwise equal to SPD's; the
   acceptance rule equals SPD's; the Jacobian matches differences through the
   actual trial; accepted states decrease monotonically; the quota ends a stage

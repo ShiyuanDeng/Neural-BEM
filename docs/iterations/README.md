@@ -123,6 +123,16 @@ The plotting convention, Figure 1 band rule and paper-matched baseline are
 **not established**. The user's current request corrects the write-up and adds
 these verdicts without changing numerical settings or rerunning the inverse.
 The paper's harder shapes, noise, k>5 and adaptive-policy benefit remain untested.
+Iterations 04–09 (through 2026-09-24) are summarized in the
+[track README](shape_frequency_continuation/README.md):
+- a frequency × shape-harmonic atlas;
+- the clean Borges-update/SPD-LM hybrid, qualified against SPD (SC-020/021);
+- trajectory atlases (SC-022) and their Codex review.
+
+[Iteration 09](shape_frequency_continuation/iteration_09/01_results.md)
+implements that review. The atlas-derived band policy is not reliably better
+than Borges' ladder on held-out cases; a regularity-controlled step metric is
+proposed and not approved.
 
 ## What to do at each stage
 
