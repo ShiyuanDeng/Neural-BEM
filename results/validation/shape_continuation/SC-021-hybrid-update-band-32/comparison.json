@@ -1,0 +1,705 @@
+{
+  "summary": {
+    "spd": {
+      "status": "COMPLETED_SCHEDULE",
+      "recovered": true,
+      "work_units": 256,
+      "attempted_calls": 210,
+      "active_wall_seconds": 143.95510843209922,
+      "elapsed_seconds": 143.95720913191326,
+      "final_state_sha256": "19e029bde3a10cbb6bc95e205b048c1d3120cae43b55366919112ccf36008838",
+      "reproduces_top025": true
+    },
+    "hybrid": {
+      "status": "COMPLETED_SCHEDULE",
+      "recovered": true,
+      "work_units": 150,
+      "elapsed_seconds": 58.70413311198354,
+      "solves": 120,
+      "reciprocal_batches": 30,
+      "trial_status": {
+        "accepted": 10
+      }
+    },
+    "normal_error_spectrum_mm": {
+      "handoff": {
+        "maximum": 0.5541032705043994,
+        "within_update_band": 0.3698284195670032,
+        "beyond_update_band": 0.04960399594239192
+      },
+      "spd_final": {
+        "maximum": 0.04770588289144151,
+        "within_update_band": 0.01303443317029575,
+        "beyond_update_band": 0.01814099105182837
+      },
+      "hybrid_stage_1": {
+        "maximum": 0.02306099560308053,
+        "within_update_band": 0.016627778954604717,
+        "beyond_update_band": 0.0035509740428726145
+      },
+      "hybrid_stage_2": {
+        "maximum": 0.01288936063836927,
+        "within_update_band": 0.006236383536272484,
+        "beyond_update_band": 0.001560894942699212
+      },
+      "hybrid_stage_3": {
+        "maximum": 0.01129069696171785,
+        "within_update_band": 0.006126073803684718,
+        "beyond_update_band": 0.00125614229682832
+      },
+      "hybrid_stage_4": {
+        "maximum": 0.00878463447399709,
+        "within_update_band": 0.005713949629806662,
+        "beyond_update_band": 0.0022013162235101566
+      }
+    },
+    "normal_error_spectrum_split_at_M32_mm": {
+      "handoff": {
+        "maximum": 0.5541032705043994,
+        "within_update_band": 0.3731398201017174,
+        "beyond_update_band": 0.0005394324222085279
+      },
+      "spd_final": {
+        "maximum": 0.04770588289144151,
+        "within_update_band": 0.022294184837626033,
+        "beyond_update_band": 0.0014004737909682373
+      },
+      "hybrid_stage_1": {
+        "maximum": 0.02306099560308053,
+        "within_update_band": 0.016991030182826116,
+        "beyond_update_band": 0.0006303514437538338
+      },
+      "hybrid_stage_2": {
+        "maximum": 0.01288936063836927,
+        "within_update_band": 0.00639777650538853,
+        "beyond_update_band": 0.0006303399247493392
+      },
+      "hybrid_stage_3": {
+        "maximum": 0.01129069696171785,
+        "within_update_band": 0.00622168403412252,
+        "beyond_update_band": 0.0006303344331529027
+      },
+      "hybrid_stage_4": {
+        "maximum": 0.00878463447399709,
+        "within_update_band": 0.006090785689906366,
+        "beyond_update_band": 0.0006303516221035161
+      }
+    }
+  },
+  "spd_stages": [
+    {
+      "stage": 1,
+      "outcome": "NORMAL_OPTIMIZER_RETURN",
+      "stop": "loss_tolerance",
+      "accepted": 16,
+      "loss": 5.78758447780429e-15,
+      "units": 80,
+      "score": {
+        "aggregate_objectives_by_nodes": {
+          "256": {
+            "1": 5.787584477804294e-15,
+            "2": 3.615782592111387e-14,
+            "3": 2.759370807348227e-11,
+            "4": 3.23049877975275e-09
+          },
+          "512": {
+            "1": 5.787584522683792e-15,
+            "2": 3.6157826207991395e-14,
+            "3": 2.759370807179147e-11,
+            "4": 3.2304987798920127e-09
+          }
+        },
+        "evaluation_errors": [
+          0.0005280431513968484,
+          0.002743997360227791
+        ],
+        "gates": {
+          "boundary": true,
+          "count": true,
+          "evaluation": true,
+          "iou": true,
+          "original_training": true
+        },
+        "geometry": {
+          "component_count": 1,
+          "final_maximum_modes": [
+            17
+          ],
+          "matched_components": [
+            {
+              "hausdorff_m": 2.959345919821624e-05,
+              "recovered_component": "t001.merge1",
+              "truth_component": "truth.connected"
+            }
+          ],
+          "maximum_matched_hausdorff_m": 2.959345919821624e-05,
+          "truth_component_count": 1,
+          "union_iou": 0.9998000799680128
+        },
+        "maximum_evaluation_error": 0.002743997360227791,
+        "numerical_checks": {
+          "evaluation_discrepancy": [
+            6.667528750387495e-14,
+            1.9655120764966517e-13
+          ],
+          "training_discrepancy": [
+            3.1775241464297454e-15,
+            3.706096872236164e-15,
+            2.3993582903235178e-14,
+            1.0059912615568366e-13
+          ]
+        },
+        "numerically_qualified": true,
+        "original_gates_pass": true,
+        "state_sha256": "107e48feb4993acce6d148a2df770a8488ed47d3b115c6b6c85dfd5504a3b902",
+        "training_errors": [
+          1.0758795957432961e-07,
+          3.6476860581277827e-07,
+          1.2861478030378813e-05,
+          0.0001602449000458528
+        ]
+      }
+    },
+    {
+      "stage": 2,
+      "outcome": "NORMAL_OPTIMIZER_RETURN",
+      "stop": "gradient_tolerance",
+      "accepted": 1,
+      "loss": 1.692160280814814e-14,
+      "units": 16,
+      "score": {
+        "aggregate_objectives_by_nodes": {
+          "256": {
+            "1": 5.586954384529765e-15,
+            "2": 1.692160280814814e-14,
+            "3": 1.764525093863953e-11,
+            "4": 2.803849672993361e-09
+          },
+          "512": {
+            "1": 5.586954447704912e-15,
+            "2": 1.69216028932244e-14,
+            "3": 1.764525094879798e-11,
+            "4": 2.8038496729109503e-09
+          }
+        },
+        "evaluation_errors": [
+          0.0005227705794707721,
+          0.0027682168546677827
+        ],
+        "gates": {
+          "boundary": true,
+          "count": true,
+          "evaluation": true,
+          "iou": true,
+          "original_training": true
+        },
+        "geometry": {
+          "component_count": 1,
+          "final_maximum_modes": [
+            17
+          ],
+          "matched_components": [
+            {
+              "hausdorff_m": 2.8371795606563005e-05,
+              "recovered_component": "t001.merge1",
+              "truth_component": "truth.connected"
+            }
+          ],
+          "maximum_matched_hausdorff_m": 2.8371795606563005e-05,
+          "truth_component_count": 1,
+          "union_iou": 0.9998000799680128
+        },
+        "maximum_evaluation_error": 0.0027682168546677827,
+        "numerical_checks": {
+          "evaluation_discrepancy": [
+            5.715241776397363e-14,
+            1.9120489009362653e-13
+          ],
+          "training_discrepancy": [
+            2.5809315976514696e-15,
+            3.2706335235124898e-15,
+            2.363401702061542e-14,
+            6.795025486035326e-14
+          ]
+        },
+        "numerically_qualified": true,
+        "original_gates_pass": true,
+        "state_sha256": "93e619e29b7c787623de9733f9d450ef6acf5a6dfc2eea4d9abf92d49b109af0",
+        "training_errors": [
+          1.0570671168572895e-07,
+          2.377235846050782e-07,
+          1.0286098350745777e-05,
+          0.000149415279933462
+        ]
+      }
+    },
+    {
+      "stage": 3,
+      "outcome": "NORMAL_OPTIMIZER_RETURN",
+      "stop": "gradient_tolerance",
+      "accepted": 2,
+      "loss": 4.016864166911394e-13,
+      "units": 36,
+      "score": {
+        "aggregate_objectives_by_nodes": {
+          "256": {
+            "1": 1.108946512369833e-14,
+            "2": 7.604960168590176e-14,
+            "3": 4.0168641669113936e-13,
+            "4": 8.025531442140051e-10
+          },
+          "512": {
+            "1": 1.1089465111790443e-14,
+            "2": 7.604960142978142e-14,
+            "3": 4.016864163630159e-13,
+            "4": 8.025531443497697e-10
+          }
+        },
+        "evaluation_errors": [
+          0.00041834713498704347,
+          0.0030463774729945587
+        ],
+        "gates": {
+          "boundary": true,
+          "count": true,
+          "evaluation": true,
+          "iou": true,
+          "original_training": true
+        },
+        "geometry": {
+          "component_count": 1,
+          "final_maximum_modes": [
+            17
+          ],
+          "matched_components": [
+            {
+              "hausdorff_m": 2.6672465220351966e-05,
+              "recovered_component": "t001.merge1",
+              "truth_component": "truth.connected"
+            }
+          ],
+          "maximum_matched_hausdorff_m": 2.6672465220351966e-05,
+          "truth_component_count": 1,
+          "union_iou": 0.9998000799680128
+        },
+        "maximum_evaluation_error": 0.0030463774729945587,
+        "numerical_checks": {
+          "evaluation_discrepancy": [
+            5.234888307132089e-14,
+            1.3693799110722193e-13
+          ],
+          "training_discrepancy": [
+            2.4483774356624734e-15,
+            3.478795300504187e-15,
+            2.212022332824429e-14,
+            7.210582952885317e-14
+          ]
+        },
+        "numerically_qualified": true,
+        "original_gates_pass": true,
+        "state_sha256": "7e271ce38d1451da07a79bfee79c3fe51eeee2cf9b97c317a21fd737e50a38eb",
+        "training_errors": [
+          1.4892592193295594e-07,
+          5.31055058817393e-07,
+          1.4511788630141254e-06,
+          8.011251485442196e-05
+        ]
+      }
+    },
+    {
+      "stage": 4,
+      "outcome": "NORMAL_OPTIMIZER_RETURN",
+      "stop": "gradient_tolerance",
+      "accepted": 3,
+      "loss": 4.652150268358777e-13,
+      "units": 64,
+      "score": {
+        "aggregate_objectives_by_nodes": {
+          "256": {
+            "1": 4.9577873272852623e-14,
+            "2": 1.5791694396818015e-13,
+            "3": 3.800093270472418e-13,
+            "4": 4.652150268358776e-13
+          },
+          "512": {
+            "1": 4.957787339560818e-14,
+            "2": 1.5791694441903543e-13,
+            "3": 3.800093250422572e-13,
+            "4": 4.65215019705041e-13
+          }
+        },
+        "evaluation_errors": [
+          1.266431625145502e-05,
+          0.0036185070379696053
+        ],
+        "gates": {
+          "boundary": true,
+          "count": true,
+          "evaluation": true,
+          "iou": true,
+          "original_training": true
+        },
+        "geometry": {
+          "component_count": 1,
+          "final_maximum_modes": [
+            17
+          ],
+          "matched_components": [
+            {
+              "hausdorff_m": 4.783640580567224e-05,
+              "recovered_component": "t001.merge1",
+              "truth_component": "truth.connected"
+            }
+          ],
+          "maximum_matched_hausdorff_m": 4.783640580567224e-05,
+          "truth_component_count": 1,
+          "union_iou": 0.9990013980427401
+        },
+        "maximum_evaluation_error": 0.0036185070379696053,
+        "numerical_checks": {
+          "evaluation_discrepancy": [
+            4.7942332910974685e-14,
+            1.8024409770692912e-13
+          ],
+          "training_discrepancy": [
+            2.424319834996448e-15,
+            3.0756811200042335e-15,
+            2.5240860239350065e-14,
+            7.775090453438224e-14
+          ]
+        },
+        "numerically_qualified": true,
+        "original_gates_pass": true,
+        "state_sha256": "19e029bde3a10cbb6bc95e205b048c1d3120cae43b55366919112ccf36008838",
+        "training_errors": [
+          3.1489005508465387e-07,
+          7.297342193462804e-07,
+          1.283895701596279e-06,
+          1.200693219513954e-06
+        ]
+      }
+    }
+  ],
+  "hybrid_stages": [
+    {
+      "stage": 1,
+      "outcome": "NORMAL_OPTIMIZER_RETURN",
+      "stop": "loss_tolerance",
+      "accepted": 5,
+      "loss": 8.309757235941304e-15,
+      "units": 18,
+      "score": {
+        "state_sha256": "b912b6e3ee36194341746039c8d3ece0cf244ea184c1c813ef38510f7fb133d3",
+        "geometry": {
+          "component_count": 1,
+          "truth_component_count": 1,
+          "matched_components": [
+            {
+              "recovered_component": "hybrid.merge",
+              "truth_component": "truth.connected",
+              "hausdorff_m": 2.3273489382095187e-05
+            }
+          ],
+          "maximum_matched_hausdorff_m": 2.3273489382095187e-05,
+          "union_iou": 0.9990013980427401,
+          "final_maximum_modes": [
+            96
+          ]
+        },
+        "training_errors": [
+          1.289166953049195e-07,
+          5.322375884775209e-06,
+          0.00010352142432201581,
+          0.0005750474070236923
+        ],
+        "evaluation_errors": [
+          0.0009748671564880325,
+          0.004604228687128703
+        ],
+        "maximum_evaluation_error": 0.004604228687128703,
+        "gates": {
+          "count": true,
+          "boundary": true,
+          "iou": true,
+          "original_training": true,
+          "evaluation": true
+        },
+        "original_gates_pass": true,
+        "numerical_checks": {
+          "training_discrepancy": [
+            3.36764068179816e-15,
+            3.654112450268442e-15,
+            1.8748346304486164e-14,
+            4.309364039522897e-14
+          ],
+          "evaluation_discrepancy": [
+            1.0161168112790451e-13,
+            1.8777743538659707e-13
+          ]
+        },
+        "numerically_qualified": true,
+        "aggregate_objectives_by_nodes": {
+          "256": {
+            "1": 8.309757199273845e-15,
+            "2": 7.086076140702308e-12,
+            "3": 1.7908382663334224e-09,
+            "4": 4.267806874074286e-08
+          },
+          "512": {
+            "1": 8.309757164170726e-15,
+            "2": 7.086076143291258e-12,
+            "3": 1.790838266372002e-09,
+            "4": 4.2678068740363006e-08
+          }
+        },
+        "spd_admissible_without_radius_floor": {
+          "256": true,
+          "512": true
+        }
+      },
+      "trials": {
+        "accepted": 5
+      }
+    },
+    {
+      "stage": 2,
+      "outcome": "NORMAL_OPTIMIZER_RETURN",
+      "stop": "loss_tolerance",
+      "accepted": 2,
+      "loss": 1.0101480021913207e-15,
+      "units": 18,
+      "score": {
+        "state_sha256": "8712ac54184d1ecb319bc7974c015ed9a6ccbf82a12235506470083ecfa4fc97",
+        "geometry": {
+          "component_count": 1,
+          "truth_component_count": 1,
+          "matched_components": [
+            {
+              "recovered_component": "hybrid.merge",
+              "truth_component": "truth.connected",
+              "hausdorff_m": 1.3020241207400342e-05
+            }
+          ],
+          "maximum_matched_hausdorff_m": 1.3020241207400342e-05,
+          "union_iou": 0.9990013980427401,
+          "final_maximum_modes": [
+            96
+          ]
+        },
+        "training_errors": [
+          2.7973880571634105e-08,
+          5.707936665743861e-08,
+          1.7947424232035911e-06,
+          3.7111506213150246e-05
+        ],
+        "evaluation_errors": [
+          0.00015738323484821288,
+          0.002042445223860859
+        ],
+        "maximum_evaluation_error": 0.002042445223860859,
+        "gates": {
+          "count": true,
+          "boundary": true,
+          "iou": true,
+          "original_training": true,
+          "evaluation": true
+        },
+        "original_gates_pass": true,
+        "numerical_checks": {
+          "training_discrepancy": [
+            3.814186095684864e-15,
+            5.167551404003341e-15,
+            2.0141816432493933e-14,
+            4.582013791833869e-14
+          ],
+          "evaluation_discrepancy": [
+            1.0339378155024084e-13,
+            1.8255512449246665e-13
+          ]
+        },
+        "numerically_qualified": true,
+        "aggregate_objectives_by_nodes": {
+          "256": {
+            "1": 3.912689858742008e-16,
+            "2": 1.0101480133433627e-15,
+            "3": 5.375234933329954e-13,
+            "4": 1.7256112929455423e-10
+          },
+          "512": {
+            "1": 3.91268997118024e-16,
+            "2": 1.0101480230625908e-15,
+            "3": 5.375234929564915e-13,
+            "4": 1.7256112929580353e-10
+          }
+        },
+        "spd_admissible_without_radius_floor": {
+          "256": true,
+          "512": true
+        }
+      },
+      "trials": {
+        "accepted": 2
+      }
+    },
+    {
+      "stage": 3,
+      "outcome": "NORMAL_OPTIMIZER_RETURN",
+      "stop": "loss_tolerance",
+      "accepted": 1,
+      "loss": 4.0673330024653e-15,
+      "units": 18,
+      "score": {
+        "state_sha256": "ce22df1ad4d971a5e70a2bfffb511f943a9ac66b6c897ad00e927b79f8dc0613",
+        "geometry": {
+          "component_count": 1,
+          "truth_component_count": 1,
+          "matched_components": [
+            {
+              "recovered_component": "hybrid.merge",
+              "truth_component": "truth.connected",
+              "hausdorff_m": 1.144240284302608e-05
+            }
+          ],
+          "maximum_matched_hausdorff_m": 1.144240284302608e-05,
+          "union_iou": 0.9990013980427401,
+          "final_maximum_modes": [
+            96
+          ]
+        },
+        "training_errors": [
+          3.551434235926263e-08,
+          8.132685834324877e-08,
+          1.2856387810680193e-07,
+          1.4250482479146532e-05
+        ],
+        "evaluation_errors": [
+          9.964681723363508e-05,
+          0.002159065018169605
+        ],
+        "maximum_evaluation_error": 0.002159065018169605,
+        "gates": {
+          "count": true,
+          "boundary": true,
+          "iou": true,
+          "original_training": true,
+          "evaluation": true
+        },
+        "original_gates_pass": true,
+        "numerical_checks": {
+          "training_discrepancy": [
+            2.4527609082949977e-15,
+            4.0865088382241814e-15,
+            2.0159315693106005e-14,
+            4.256801001880059e-14
+          ],
+          "evaluation_discrepancy": [
+            1.0505666274510728e-13,
+            1.7205680667033387e-13
+          ]
+        },
+        "numerically_qualified": true,
+        "aggregate_objectives_by_nodes": {
+          "256": {
+            "1": 6.306342480525538e-16,
+            "2": 1.9688316063766023e-15,
+            "3": 4.067332776810158e-15,
+            "4": 2.5387581842286803e-11
+          },
+          "512": {
+            "1": 6.30634256605458e-16,
+            "2": 1.968831600298442e-15,
+            "3": 4.067332859175732e-15,
+            "4": 2.538758186070217e-11
+          }
+        },
+        "spd_admissible_without_radius_floor": {
+          "256": true,
+          "512": true
+        }
+      },
+      "trials": {
+        "accepted": 1
+      }
+    },
+    {
+      "stage": 4,
+      "outcome": "NORMAL_OPTIMIZER_RETURN",
+      "stop": "loss_tolerance",
+      "accepted": 2,
+      "loss": 9.066660833086077e-15,
+      "units": 36,
+      "score": {
+        "state_sha256": "fde27b34b40e1bbaea631069f2fbe7d2c82dc10452713b56172ad4da5d01a06c",
+        "geometry": {
+          "component_count": 1,
+          "truth_component_count": 1,
+          "matched_components": [
+            {
+              "recovered_component": "hybrid.merge",
+              "truth_component": "truth.connected",
+              "hausdorff_m": 8.847358503995677e-06
+            }
+          ],
+          "maximum_matched_hausdorff_m": 8.847358503995677e-06,
+          "union_iou": 0.9990013980427401,
+          "final_maximum_modes": [
+            96
+          ]
+        },
+        "training_errors": [
+          2.6685851914450017e-08,
+          6.432392814949248e-08,
+          1.7917550070173477e-07,
+          1.8862588500416075e-07
+        ],
+        "evaluation_errors": [
+          9.90623896231667e-06,
+          0.001976383945243059
+        ],
+        "maximum_evaluation_error": 0.001976383945243059,
+        "gates": {
+          "count": true,
+          "boundary": true,
+          "iou": true,
+          "original_training": true,
+          "evaluation": true
+        },
+        "original_gates_pass": true,
+        "numerical_checks": {
+          "training_discrepancy": [
+            2.7757911002087092e-15,
+            4.5384002225762096e-15,
+            1.9408619310182562e-14,
+            3.961035921676659e-14
+          ],
+          "evaluation_discrepancy": [
+            8.733897722077432e-14,
+            2.375666869187602e-13
+          ]
+        },
+        "numerically_qualified": true,
+        "aggregate_objectives_by_nodes": {
+          "256": {
+            "1": 3.5606736467956625e-16,
+            "2": 1.2124256165387506e-15,
+            "3": 6.158927190817426e-15,
+            "4": 9.066661004731975e-15
+          },
+          "512": {
+            "1": 3.560673461999778e-16,
+            "2": 1.2124256062452566e-15,
+            "3": 6.158927079449731e-15,
+            "4": 9.066660871287657e-15
+          }
+        },
+        "spd_admissible_without_radius_floor": {
+          "256": true,
+          "512": true
+        }
+      },
+      "trials": {
+        "accepted": 2
+      }
+    }
+  ]
+}
