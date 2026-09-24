@@ -9,6 +9,39 @@ Owner: Codex. Independent reviewer: unassigned.
 [Research iterations and current handoff](../../docs/iterations/shape_frequency_continuation/README.md)
 record the experimental questions and decisions; this page owns the working API.
 
+The current SPD comparison reference is **SPD-008**: compiled runtime,
+real-Bessel CPU kernels and certified exact geometry reuse. The historical
+SC-020/021 driver and results retain their original settings; they are not
+timings of this reference. The [SC-030 contract](../../docs/iterations/shape_frequency_continuation/iteration_12/03_plan.md)
+defines the six-case comparison and its cache-off hybrid control.
+
+The clean hybrid supports the same opt-in, bounded, fit-local validation cache:
+
+```python
+from ordered_boundary.validation_cache import geometry_validation
+
+snapshots = []
+with geometry_validation("cache", on_fit=snapshots.append):
+    result = run_policy(initial, policy, contrast, update, config, ledger)
+```
+
+Each `fit_stage` creates a fresh cache, released even after an exception.
+Complete ordered point arrays and tolerances key both the hybrid's spatial
+intersection test and the shared forward adapters' intersection tests.
+Numerical predicates, derivative calculations, trial geometry and acceptance
+rules are unchanged. No selection context means the original uncached path.
+Pair-separation certification has no work to save on these single interfaces.
+The callback's generic `num_nodes` field is unset for the hybrid API; read the
+production/refined resolutions from its `FitStage` records.
+
+`spd008_comparison.py` runs the approved fixed-topology comparison using the
+existing two stage fitters. Use `prepare`, then `qualify`, then `campaign`, each
+with `--output results/validation/shape_continuation/SC-030-spd008-comparison`,
+under the EMNerf Python environment with `PYTHONPATH=solvers:.` and
+`OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1`. It freezes sources
+and inputs, checks them before/after each worker, and keeps scoring outside
+the inversion timer and training-only fit interfaces.
+
 Reference: [On the robustness of inverse scattering for penetrable,
 homogeneous objects with complicated boundary, Inverse Problems 39 (2023)
 035004](https://doi.org/10.1088/1361-6420/acb2ec),

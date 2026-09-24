@@ -14,11 +14,11 @@ provisional**, with two profile differences and plotting provenance unresolved.
 
 | Item | State |
 |---|---|
-| Active cycle | [Iteration 12 — testing the atlas strategies](iteration_12/01_results.md) |
-| Stage | SC-029 COMPLETE: 36 endpoints, 31 completed schedules, 3 numerical stops and 2 time stops. Neither strategy passes the frozen robustness criteria; all six baselines replay bitwise |
+| Active cycle | [Iteration 13 — SPD-008 versus the clean hybrid](iteration_13/01_results.md) |
+| Stage | SC-030 implementation qualified: exact cache reuse, 76 tests, forward/start agreement and identical first-stage trajectories. Six-case comparison pending under the [approved contract](iteration_12/03_plan.md) |
 | Working implementation | [Continuation package](../../../experiments/shape_continuation/README.md): clean hybrid (`updates.py`, `lm_backend.py`, with opt-in physical step control), the atlas (`atlas_survey.py`, `atlas_dataset.py`; full P=48 qualification is limited at rough states), SC-023–025 drivers, and isolated SC-028/029 strategy and legacy/SPD harnesses. Backend variant for new runs: V2 (refit gate 1e-5) |
 | Latest runs | [SC-029 strategy comparison](../../../results/validation/shape_continuation/SC-029-atlas-strategies/README.md), [SC-028 failed preflight](../../../results/validation/shape_continuation/SC-028-atlas-strategies/README.md), [SC-026 atlas dataset and first analysis](../../../results/validation/shape_continuation/SC-026-atlas-dataset/ANALYSIS.md), [SC-025](../../../results/validation/shape_continuation/SC-025-band-policies/README.md), [SC-024](../../../results/validation/shape_continuation/SC-024-backend-ablations/README.md), [SC-023](../../../results/validation/shape_continuation/SC-023-conditional-candidates/README.md) |
-| Review / next decision | Read the [completed comparison and next questions](iteration_12/01_results.md). Extra work on old data improves every baseline case; smaller first bands and higher frequencies have case-dependent benefits and failures. No successor is scheduled and no default changes |
+| Review / next decision | Compare the clean fixed ladder with SPD-008 on the six common starts, and measure the cache improvement separately. SC-029's [strategy conclusions](iteration_12/01_results.md) remain unchanged; no new adaptive policy is being tested |
 | Figure 1 | Unchanged from iteration 03: still provisional. The band-rule measurement bears on it but does not reproduce it |
 | Checkout | Existing `feature/shape-frequency-continuation` branch; no new branch or worktree |
 | Reviewer of latest changes | SC-020/021/022: Codex, outsider review. SC-023 to SC-025: none yet. SC-026 independently audited by Codex; SC-028/029 independent reviewer unassigned |
