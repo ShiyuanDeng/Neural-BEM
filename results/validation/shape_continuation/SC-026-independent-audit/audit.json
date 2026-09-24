@@ -1,0 +1,152 @@
+{
+  "dataset_commit": "9b8918c54928ed492b479f7f693fcbeb4c113237",
+  "passed": true,
+  "artifact_hashes": {
+    "cells/wrong_circle.npz": true,
+    "evaluation/wrong_circle_EVALUATION_ONLY.npz": true,
+    "cells/circle_to_star.npz": true,
+    "evaluation/circle_to_star_EVALUATION_ONLY.npz": true,
+    "cells/circle_to_c.npz": true,
+    "evaluation/circle_to_c_EVALUATION_ONLY.npz": true,
+    "cells/kite.npz": true,
+    "evaluation/kite_EVALUATION_ONLY.npz": true,
+    "cells/peanut.npz": true,
+    "evaluation/peanut_EVALUATION_ONLY.npz": true,
+    "cells/hook.npz": true,
+    "evaluation/hook_EVALUATION_ONLY.npz": true
+  },
+  "input_hashes": {
+    "SC-022-atlas-survey/inputs/wrong_circle/observations.json": true,
+    "SC-022-atlas-survey/inputs/wrong_circle/truth.json": true,
+    "SC-022-atlas-survey/inputs/circle_to_star/observations.json": true,
+    "SC-022-atlas-survey/inputs/circle_to_star/truth.json": true,
+    "SC-022-atlas-survey/inputs/circle_to_c/observations.json": true,
+    "SC-022-atlas-survey/inputs/circle_to_c/truth.json": true,
+    "SC-025-band-policies/inputs/kite/observations.json": true,
+    "SC-025-band-policies/inputs/kite/truth.json": true,
+    "SC-025-band-policies/inputs/peanut/observations.json": true,
+    "SC-025-band-policies/inputs/peanut/truth.json": true,
+    "SC-025-band-policies/inputs/hook/observations.json": true,
+    "SC-025-band-policies/inputs/hook/truth.json": true
+  },
+  "unique_states": 1286,
+  "state_records": 2066,
+  "records_by_source": {
+    "SC024": 926,
+    "SC022": 159,
+    "SC025": 981
+  },
+  "cases": {
+    "wrong_circle": {
+      "states": 192,
+      "occurrences": 332,
+      "rough_radius_lt_4mm": 143,
+      "ray_coverage_min": 0.6622314453125,
+      "ray_coverage_below_99pct": 153,
+      "ray_misaligned_max": 0.04417598269022719
+    },
+    "circle_to_star": {
+      "states": 149,
+      "occurrences": 296,
+      "rough_radius_lt_4mm": 76,
+      "ray_coverage_min": 0.7314453125,
+      "ray_coverage_below_99pct": 84,
+      "ray_misaligned_max": 0.1668701171875
+    },
+    "circle_to_c": {
+      "states": 581,
+      "occurrences": 887,
+      "rough_radius_lt_4mm": 415,
+      "ray_coverage_min": 0.7344970703125,
+      "ray_coverage_below_99pct": 532,
+      "ray_misaligned_max": 0.1768798828125
+    },
+    "kite": {
+      "states": 163,
+      "occurrences": 234,
+      "rough_radius_lt_4mm": 155,
+      "ray_coverage_min": 0.5067138671875,
+      "ray_coverage_below_99pct": 142,
+      "ray_misaligned_max": 0.15017893660531698
+    },
+    "peanut": {
+      "states": 88,
+      "occurrences": 166,
+      "rough_radius_lt_4mm": 69,
+      "ray_coverage_min": 0.8245849609375,
+      "ray_coverage_below_99pct": 29,
+      "ray_misaligned_max": 0.05322265625
+    },
+    "hook": {
+      "states": 113,
+      "occurrences": 151,
+      "rough_radius_lt_4mm": 28,
+      "ray_coverage_min": 0.7969970703125,
+      "ray_coverage_below_99pct": 27,
+      "ray_misaligned_max": 0.262939453125
+    }
+  },
+  "independently_recomputed_SC022_relative_error": {
+    "gauss_newton": 1.6222222708437512e-16,
+    "gradient": 4.448107302402072e-16,
+    "loss": 0.0
+  },
+  "steps_occurrences": 1875,
+  "unique_transitions": 1280,
+  "unique_transition_by_case": {
+    "wrong_circle": {
+      "unique_steps": 191,
+      "pathological": 6,
+      "pathological_by_stage": {
+        "1": 6
+      }
+    },
+    "circle_to_star": {
+      "unique_steps": 148,
+      "pathological": 0,
+      "pathological_by_stage": {}
+    },
+    "circle_to_c": {
+      "unique_steps": 580,
+      "pathological": 13,
+      "pathological_by_stage": {
+        "1": 13
+      }
+    },
+    "kite": {
+      "unique_steps": 162,
+      "pathological": 0,
+      "pathological_by_stage": {}
+    },
+    "peanut": {
+      "unique_steps": 87,
+      "pathological": 4,
+      "pathological_by_stage": {
+        "1": 4
+      }
+    },
+    "hook": {
+      "unique_steps": 112,
+      "pathological": 1,
+      "pathological_by_stage": {
+        "1": 1
+      }
+    }
+  },
+  "unique_transition_spearman_sensitivity_vs_error_ratio": -0.48231763693914353,
+  "next_frequency_agreement_by_case": {
+    "wrong_circle": 1.0,
+    "circle_to_star": 0.9493243243243243,
+    "circle_to_c": 0.971815107102593,
+    "kite": 1.0,
+    "peanut": 0.9578313253012049,
+    "hook": 1.0
+  },
+  "next_frequency_agreement_case_mean": 0.9798284594546871,
+  "notes": [
+    "No p-values: repeated states and related trajectories are not independent observations.",
+    "Frontier uses individual Jacobian column norms, not conditional joint identifiability.",
+    "Original noise threshold is sigma=0.001 per real normalized component, not per-channel relative noise.",
+    "Ray-layer shares need coverage/misalignment checks; geometric endpoint metrics remain primary."
+  ]
+}

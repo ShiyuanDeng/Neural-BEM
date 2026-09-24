@@ -14,11 +14,11 @@ provisional**, with two profile differences and plotting provenance unresolved.
 
 | Item | State |
 |---|---|
-| Active cycle | [Iteration 09 — the review implemented](iteration_09/01_results.md) |
-| Stage | Qualified atlas numerics (SC-023 Q0), backend ablations (SC-024) and band policies on development and held-out cases (SC-025). The frozen atlas-derived rule (A2) is not reliably better than Borges' ladder on held-out cases: it wins on the peanut and loses on the kite and hook. Roughening along the trajectory predicts failure (Spearman −0.88) |
+| Active cycle | [Iteration 10 — consolidated atlas and independent analysis](iteration_10/01_results.md) |
+| Stage | SC-026 independently audited: hashes and algebra pass; 24 distinct pathological transitions are all in stage 1, but normal-ray coverage limits the error-projection interpretation. SC-028 analysis and frozen plan complete; implementation next |
 | Working implementation | [Continuation package](../../../experiments/shape_continuation/README.md): clean hybrid (`updates.py`, `lm_backend.py`, with opt-in physical step control), the qualified atlas (`atlas_survey.py`), the SC-023–025 drivers, and isolated legacy/SPD harnesses. Backend variant for new runs: V2 (refit gate 1e-5) |
 | Latest runs | [SC-026 atlas dataset and first analysis](../../../results/validation/shape_continuation/SC-026-atlas-dataset/ANALYSIS.md), [SC-025](../../../results/validation/shape_continuation/SC-025-band-policies/README.md), [SC-024](../../../results/validation/shape_continuation/SC-024-backend-ablations/README.md), [SC-023](../../../results/validation/shape_continuation/SC-023-conditional-candidates/README.md) |
-| Review / next decision | The [Codex review](iteration_08/02_proposals/01_codex_outsider_review.md) is fully [resolved and implemented](iteration_08/02_proposals/02_review_resolution.md). Next, proposed and not approved: [a regularity-controlled step metric (SC-027)](iteration_09/02_proposals/01_regularity_controlled_steps.md), with new held-out cases. The kite, peanut and hook are now development data |
+| Review / next decision | [SC-028](iteration_10/03_plan.md) APPROVED by the current user request to analyse, propose, test and document; execution NOT STARTED. Test M=2 in stage 1 and continuation to 2.5 GHz with extra-work controls. SC-027 Sobolev metric remains deferred |
 | Figure 1 | Unchanged from iteration 03: still provisional. The band-rule measurement bears on it but does not reproduce it |
 | Checkout | Existing `feature/shape-frequency-continuation` branch; no new branch or worktree |
 | Reviewer of latest changes | SC-020/021/022: Codex, outsider review. SC-023 to SC-025: none yet |
@@ -94,3 +94,5 @@ the next cycle. Code and run artifacts retain their current locations.
 | [07](iteration_07/01_results.md) | The hybrid passes SPD's near-truth merge case against a hash-identical SPD rerun. M=16 leaves a measured 0.050-mm high-mode error plateau: 0.076 versus 0.048 mm final error, 580 versus 256 units. M=32 reaches 0.0088 mm at 150 units. Review qualifies the plateau as local evidence and the pass as one-case qualification. |
 | [08](iteration_08/01_results.md) | Three cases × two band rules. Fixed M=32 fails under the tested settings; Borges' ladder reaches 0.005/1.43/19.4 mm on circle/star/C. Review confirms the atlas records, but full-space harmonic-step alignment is conditional on the other modes and on the signed-distance proxy. |
 | [09](iteration_09/01_results.md) | The review is implemented. The atlas numerics pass refinement and directional checks. SC-022's stalls were the refit gate freezing curves roughened by large early steps. No declared band rule beats the ladder. The post hoc A2 rule qualifies on development data but is not reliably better on the held-out cases (1 of 3). Roughening predicts failure; a regularity-controlled step metric is proposed. |
+
+| [10](iteration_10/01_results.md) | Consolidated SC-026 atlas independently audited. Sensitive columns are not jointly determined harmonics; normal-ray coverage is incomplete. SC-028 freezes a controlled initial-band and frequency-extension test on all six development cases. |
