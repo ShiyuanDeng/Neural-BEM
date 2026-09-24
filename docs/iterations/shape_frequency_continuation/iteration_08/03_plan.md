@@ -284,3 +284,51 @@ backend variant (coefficient clip, gate 1e-5, λ from the LM state):
 
 The held-out cases have not been generated or run with any arm when this
 amendment is written.
+
+## A1 outcome and Amendment A2, 2026-09-24 — parsimony, and the last development amendment
+
+**A1 outcome, as declared: not qualified**
+(`SC-023-conditional-candidates/amendment_a1.json`).
+
+What went right:
+- `controlled` has median regret ≈0 in every setting.
+- Within a decision it orders bands correctly, with Spearman 0.84–0.97,
+  positive in 96–97% of decisions.
+
+What failed:
+- Its mean gain is below the ladder's in the G2 settings (0.042 against
+  0.118 with physical control; 0.072 against 0.146 with coefficient
+  control).
+- Its positive-gain fraction is lower under G2: 0.94 against 0.97–0.98.
+
+The declared margin (0.05 below the ladder's median regret) also cannot be
+met under G1, where the ladder's median regret is 0.005. That is a flaw of
+the gate's design; it does not change the verdict.
+
+**Where the tail comes from.** Under the SC-025 backend setting
+(coefficient control, G2), 72 of 1,269 decisions lose more than 5%. All but
+two are near-converged Borges wrong-circle or star states. There, many bands
+drive the stage loss down by 99.8–100%, and the strict maximum picks a wide
+band that fits the few stage frequencies while making the geometry 2–8×
+worse. This is under-determination, the case that model-selection practice
+handles with a parsimony tolerance (Hastie, Tibshirani & Friedman, *The
+Elements of Statistical Learning*, §7.10, the one-standard-error rule).
+
+**Rule A2, `parsimonious`: the smallest band whose controlled-step decrease
+is at least 0.9 of the best band's.** The tolerance matches the knee rule's
+0.9. The feature is A1's, unchanged.
+
+**The gate is recalibrated for A2 only** (A1's verdict stands). A2
+qualifies if, at λ=1e-3, in each of physical/G1, physical/G2 and
+coefficient/G2, all three hold:
+- (i) its median gain is at least the ladder's;
+- (ii) its mean gain is at least the ladder's, which guards the tail;
+- (iii) its positive-gain fraction is at least the ladder's minus 0.02.
+
+**A2 is the last development amendment.** Whatever its verdict, SC-025
+then runs its held-out cases:
+- with the A2 rule as the `atlas` arm, if it qualifies;
+- without an atlas arm, if it does not.
+
+No further rule is tuned on these development data before the held-out
+runs.
