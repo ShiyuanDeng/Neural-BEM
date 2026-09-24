@@ -18,7 +18,7 @@ provisional**, with two profile differences and plotting provenance unresolved.
 | Stage | Qualified atlas numerics (SC-023 Q0), backend ablations (SC-024) and band policies on development and held-out cases (SC-025). The frozen atlas-derived rule (A2) is not reliably better than Borges' ladder on held-out cases: it wins on the peanut and loses on the kite and hook. Roughening along the trajectory predicts failure (Spearman −0.88) |
 | Working implementation | [Continuation package](../../../experiments/shape_continuation/README.md): clean hybrid (`updates.py`, `lm_backend.py`, with opt-in physical step control), the qualified atlas (`atlas_survey.py`), the SC-023–025 drivers, and isolated legacy/SPD harnesses. Backend variant for new runs: V2 (refit gate 1e-5) |
 | Latest runs | [SC-025](../../../results/validation/shape_continuation/SC-025-band-policies/README.md), [SC-024](../../../results/validation/shape_continuation/SC-024-backend-ablations/README.md), [SC-023](../../../results/validation/shape_continuation/SC-023-conditional-candidates/README.md) |
-| Review / next decision | The [Codex review](iteration_08/02_proposals/01_codex_outsider_review.md) is fully [resolved and implemented](iteration_08/02_proposals/02_review_resolution.md). Next, proposed and not approved: [a regularity-controlled step metric (SC-026)](iteration_09/02_proposals/01_regularity_controlled_steps.md), with new held-out cases. The kite, peanut and hook are now development data |
+| Review / next decision | The [Codex review](iteration_08/02_proposals/01_codex_outsider_review.md) is fully [resolved and implemented](iteration_08/02_proposals/02_review_resolution.md). Next, proposed and not approved: [a regularity-controlled step metric (SC-027)](iteration_09/02_proposals/01_regularity_controlled_steps.md), with new held-out cases. The kite, peanut and hook are now development data |
 | Figure 1 | Unchanged from iteration 03: still provisional. The band-rule measurement bears on it but does not reproduce it |
 | Checkout | Existing `feature/shape-frequency-continuation` branch; no new branch or worktree |
 | Reviewer of latest changes | SC-020/021/022: Codex, outsider review. SC-023 to SC-025: none yet |
@@ -42,7 +42,7 @@ handoff only.
 ## Where things live
 
 - [Iteration 09 results](iteration_09/01_results.md) and the
-  [SC-026 proposal](iteration_09/02_proposals/01_regularity_controlled_steps.md).
+  [SC-027 proposal](iteration_09/02_proposals/01_regularity_controlled_steps.md).
 - [Review resolution](iteration_08/02_proposals/02_review_resolution.md) and the
   [SC-023–025 plan with amendments A1–A2](iteration_08/03_plan.md).
 - [Outsider review, 2026-09-24](iteration_08/02_proposals/01_codex_outsider_review.md):

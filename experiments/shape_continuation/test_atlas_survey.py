@@ -113,3 +113,21 @@ def test_one_normal_move_on_a_circle_creates_the_doubled_harmonic_in_the_new_arc
     assert np.isclose(abs(2 * spectrum[m]), eps, rtol=1e-3)
     assert np.isclose(2 * spectrum[2 * m].real, -eps ** 2 / (2 * R), rtol=0.01)  # -cos(2m phi)
     assert np.isclose(spectrum[0].real, eps ** 2 / (2 * R), rtol=0.01)
+
+
+def test_dataset_jacobian_reproduces_the_atlas_cell_blocks(tmp_path):
+    from . import atlas_dataset as ds
+    contrast = .5
+    truth = FourierCurve.circle(1.05)
+    obs = observations(truth, (1.0, 1.6), contrast)
+    ds._W.update(catalogs=dict(toy=obs), truths=dict(toy=truth), contrast=contrast)
+    curve = padded_circle(1.0, 8)
+    path = ds.compute(("toy", ds.curve_key(curve.coefficients), curve.coefficients, str(tmp_path)))
+    stored = np.load(path)
+    for j, o in enumerate(obs):
+        reference = cell(curve, o, contrast, ds.NODES, ds.P, 0.05)
+        J, r = stored["jacobian"][j], stored["residual"][j]
+        assert np.allclose(J.T @ J, reference.gauss_newton, rtol=1e-12, atol=1e-12 * np.abs(reference.gauss_newton).max())
+        assert np.allclose(J.T @ r, reference.gradient, rtol=1e-12, atol=1e-12 * np.abs(reference.gradient).max())
+        assert np.isclose(stored["loss"][j], reference.loss, rtol=1e-14)
+    assert abs(float(stored["symmetric_rms_m"]) - 0.05 * 0.05) < 1e-6 * 0.05

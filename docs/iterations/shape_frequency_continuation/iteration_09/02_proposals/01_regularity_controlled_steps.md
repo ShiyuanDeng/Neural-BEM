@@ -1,4 +1,4 @@
-# Proposal — a regularity-controlled step metric (SC-026, not approved)
+# Proposal — a regularity-controlled step metric (SC-027, not approved)
 
 2026-09-24. Owner: Claude. Status: **proposed; needs the user's go-ahead**,
 because it opens a successor experiment.
