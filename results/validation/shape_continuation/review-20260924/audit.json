@@ -1,0 +1,1675 @@
+{
+  "scope": "Saved-artifact audit and analytic circle geometry; no physics solves",
+  "audit_script_sha256": "7eb7073f3b02f384797347ca762d40ce29e1f9297c9312ea6cefebed8ab6deaa",
+  "reused_step_consistency_script_sha256": "c98a2aa22107e3caa95f276fc0365c4f60d2ad2a4869a4d3a07f1305e196572f",
+  "numpy_version": "2.0.2",
+  "reviewed_commit": "5b852c045740a3acdfb80d19fd4fb98ffc069997",
+  "bundles": {
+    "SC-020-spd-matched-hybrid": {
+      "stored_verification": {
+        "status": "PASS",
+        "criteria": {
+          "spd_reference_reproduced": true,
+          "hybrid_schedule_complete": true,
+          "hybrid_every_endpoint_qualified": true,
+          "hybrid_final_gates": {
+            "count": true,
+            "boundary": true,
+            "iou": true,
+            "original_training": true,
+            "evaluation": true
+          },
+          "hybrid_final_gates_pass": true
+        },
+        "inputs_unchanged": true,
+        "sources_changed_since_preparation": [
+          "experiments/shape_continuation/spd_report.py"
+        ],
+        "note": "Sources changed after preparation must be report-only; numerical modules are hash-frozen."
+      },
+      "input_hashes_match": true,
+      "recorded_sources_changed_now": [
+        "experiments/shape_continuation/lm_backend.py",
+        "experiments/shape_continuation/spd_cases.py"
+      ],
+      "work_units": {
+        "spd": 256,
+        "hybrid": 580
+      }
+    },
+    "SC-021-hybrid-update-band-32": {
+      "stored_verification": {
+        "status": "PASS",
+        "criteria": {
+          "spd_reference_reproduced": true,
+          "hybrid_schedule_complete": true,
+          "hybrid_every_endpoint_qualified": true,
+          "hybrid_final_gates": {
+            "count": true,
+            "boundary": true,
+            "iou": true,
+            "original_training": true,
+            "evaluation": true
+          },
+          "hybrid_final_gates_pass": true
+        },
+        "inputs_unchanged": true,
+        "sources_changed_since_preparation": [],
+        "note": "Sources changed after preparation must be report-only; numerical modules are hash-frozen."
+      },
+      "input_hashes_match": true,
+      "recorded_sources_changed_now": [
+        "experiments/shape_continuation/lm_backend.py"
+      ],
+      "work_units": {
+        "spd": 256,
+        "hybrid": 150
+      }
+    }
+  },
+  "trajectories": {
+    "borges/wrong_circle": {
+      "states": 14,
+      "unique_curves": 11,
+      "cells": 209,
+      "atlas_hash_matches": true,
+      "truth_hash_matches": true,
+      "consistency": {
+        "checked_steps": 10,
+        "maximum_relative_difference": 3.056179810903523e-15
+      },
+      "hausdorff_m": 5.071604570370965e-06,
+      "work_units": 87,
+      "stages": [
+        {
+          "stage": "stage_1",
+          "accepted": 5,
+          "stop": "gradient_tolerance",
+          "hausdorff_m": 0.0009158550189129901
+        },
+        {
+          "stage": "stage_2",
+          "accepted": 2,
+          "stop": "no_decreasing_step",
+          "hausdorff_m": 0.0003039472576616064
+        },
+        {
+          "stage": "stage_3",
+          "accepted": 2,
+          "stop": "no_decreasing_step",
+          "hausdorff_m": 4.756732692718182e-05
+        },
+        {
+          "stage": "stage_4",
+          "accepted": 1,
+          "stop": "no_decreasing_step",
+          "hausdorff_m": 5.071604570370965e-06
+        }
+      ],
+      "initial_median_raw_step_coefficient_norm_mm": 728.1349152439043,
+      "initial_median_raw_step_physical_rms_mm": 514.9096157946585,
+      "first_last_spectral_rank_at_relative_1e_10": [
+        [
+          17,
+          19,
+          22,
+          25,
+          27,
+          29,
+          31,
+          33,
+          34,
+          38,
+          40,
+          42,
+          44,
+          46,
+          47,
+          47,
+          47,
+          47,
+          48
+        ],
+        [
+          16,
+          18,
+          22,
+          24,
+          26,
+          27,
+          29,
+          31,
+          33,
+          34,
+          35,
+          37,
+          39,
+          39,
+          41,
+          41,
+          45,
+          47,
+          47
+        ]
+      ],
+      "final_stage_alignment": {
+        "coefficient_cosine": 0.9006280765501593,
+        "physical_rms_cosine": 0.9006280520281519
+      },
+      "damping_range": [
+        2.4299999999999996e-06,
+        0.001
+      ],
+      "accepted_step_model_gains": [
+        {
+          "stage": 1,
+          "iteration": 1,
+          "predicted": 0.35312322063871404,
+          "actual": 0.494682295113966,
+          "ratio": 1.4008772751313436
+        },
+        {
+          "stage": 1,
+          "iteration": 2,
+          "predicted": 0.10130347398314955,
+          "actual": 0.11302269974651416,
+          "ratio": 1.1156843423288123
+        },
+        {
+          "stage": 1,
+          "iteration": 3,
+          "predicted": 0.0037250501945908458,
+          "actual": 0.003728224420151164,
+          "ratio": 1.0008521296075223
+        },
+        {
+          "stage": 1,
+          "iteration": 4,
+          "predicted": 1.3199121121118631e-05,
+          "actual": 1.3203055190611164e-05,
+          "ratio": 1.0002980554126621
+        },
+        {
+          "stage": 1,
+          "iteration": 5,
+          "predicted": 4.957515721382026e-11,
+          "actual": 4.9590483348021077e-11,
+          "ratio": 1.0003091494825669
+        },
+        {
+          "stage": 2,
+          "iteration": 1,
+          "predicted": 2.8871096176599334e-05,
+          "actual": 2.8876277871933938e-05,
+          "ratio": 1.0001794769170838
+        },
+        {
+          "stage": 2,
+          "iteration": 2,
+          "predicted": 8.099905874270705e-10,
+          "actual": 8.100159713429932e-10,
+          "ratio": 1.000031338531974
+        },
+        {
+          "stage": 3,
+          "iteration": 1,
+          "predicted": 1.270288260139173e-05,
+          "actual": 1.2704230542994977e-05,
+          "ratio": 1.0001061130489468
+        },
+        {
+          "stage": 3,
+          "iteration": 2,
+          "predicted": 6.890159154635949e-10,
+          "actual": 6.890195554793974e-10,
+          "ratio": 1.0000052829197712
+        },
+        {
+          "stage": 4,
+          "iteration": 1,
+          "predicted": 1.4884629758580423e-07,
+          "actual": 1.4884993753720918e-07,
+          "ratio": 1.0000244544302679
+        }
+      ]
+    },
+    "borges/circle_to_star": {
+      "states": 22,
+      "unique_curves": 19,
+      "cells": 361,
+      "atlas_hash_matches": true,
+      "truth_hash_matches": true,
+      "consistency": {
+        "checked_steps": 18,
+        "maximum_relative_difference": 1.4894501454693518e-13
+      },
+      "hausdorff_m": 0.00142535481241034,
+      "work_units": 139,
+      "stages": [
+        {
+          "stage": "stage_1",
+          "accepted": 9,
+          "stop": "no_decreasing_step",
+          "hausdorff_m": 0.012899743262152564
+        },
+        {
+          "stage": "stage_2",
+          "accepted": 5,
+          "stop": "no_decreasing_step",
+          "hausdorff_m": 0.0015131858114068545
+        },
+        {
+          "stage": "stage_3",
+          "accepted": 2,
+          "stop": "no_decreasing_step",
+          "hausdorff_m": 0.0014202873341474275
+        },
+        {
+          "stage": "stage_4",
+          "accepted": 2,
+          "stop": "no_decreasing_step",
+          "hausdorff_m": 0.00142535481241034
+        }
+      ],
+      "initial_median_raw_step_coefficient_norm_mm": 2316.2941568431943,
+      "initial_median_raw_step_physical_rms_mm": 1637.8823714405728,
+      "first_last_spectral_rank_at_relative_1e_10": [
+        [
+          17,
+          19,
+          22,
+          25,
+          27,
+          29,
+          31,
+          33,
+          34,
+          38,
+          40,
+          42,
+          44,
+          46,
+          47,
+          47,
+          47,
+          47,
+          48
+        ],
+        [
+          24,
+          27,
+          30,
+          34,
+          38,
+          43,
+          45,
+          47,
+          47,
+          47,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48
+        ]
+      ],
+      "final_stage_alignment": {
+        "coefficient_cosine": 0.07777985155517486,
+        "physical_rms_cosine": 0.07804022683456027
+      },
+      "damping_range": [
+        1.9682999999999992e-08,
+        0.001
+      ],
+      "accepted_step_model_gains": [
+        {
+          "stage": 1,
+          "iteration": 1,
+          "predicted": 0.3576779544078826,
+          "actual": 0.5102226756730281,
+          "ratio": 1.426486227024183
+        },
+        {
+          "stage": 1,
+          "iteration": 2,
+          "predicted": 0.11039120155503879,
+          "actual": 0.13085319460242947,
+          "ratio": 1.1853589122969077
+        },
+        {
+          "stage": 1,
+          "iteration": 3,
+          "predicted": 0.007058547808574247,
+          "actual": 0.00760257859434362,
+          "ratio": 1.0770740385307755
+        },
+        {
+          "stage": 1,
+          "iteration": 4,
+          "predicted": 0.00013795124830581342,
+          "actual": 0.0001533871395453055,
+          "ratio": 1.111893813423663
+        },
+        {
+          "stage": 1,
+          "iteration": 5,
+          "predicted": 2.743028113311667e-06,
+          "actual": 3.2671709537727793e-06,
+          "ratio": 1.191081833218367
+        },
+        {
+          "stage": 1,
+          "iteration": 6,
+          "predicted": 1.1777440382886078e-07,
+          "actual": 1.4578073970639843e-07,
+          "ratio": 1.2377964563355714
+        },
+        {
+          "stage": 1,
+          "iteration": 7,
+          "predicted": 6.897738361773862e-09,
+          "actual": 8.62507053755665e-09,
+          "ratio": 1.2504200775946186
+        },
+        {
+          "stage": 1,
+          "iteration": 8,
+          "predicted": 4.352716977642032e-10,
+          "actual": 5.456359916840292e-10,
+          "ratio": 1.253552653404111
+        },
+        {
+          "stage": 1,
+          "iteration": 9,
+          "predicted": 2.7974830648965927e-11,
+          "actual": 3.50903060948593e-11,
+          "ratio": 1.2543527621375037
+        },
+        {
+          "stage": 2,
+          "iteration": 1,
+          "predicted": 0.009993445396594157,
+          "actual": 0.015975779642544676,
+          "ratio": 1.5986258000658455
+        },
+        {
+          "stage": 2,
+          "iteration": 2,
+          "predicted": 0.005903227495710865,
+          "actual": 0.005467815302804085,
+          "ratio": 0.9262416714884968
+        },
+        {
+          "stage": 2,
+          "iteration": 3,
+          "predicted": 0.0005870597220140211,
+          "actual": 0.0005860688544769623,
+          "ratio": 0.9983121520691977
+        },
+        {
+          "stage": 2,
+          "iteration": 4,
+          "predicted": 1.4806910551683918e-06,
+          "actual": 1.4821173691589876e-06,
+          "ratio": 1.000963275887713
+        },
+        {
+          "stage": 2,
+          "iteration": 5,
+          "predicted": 2.378482454065953e-11,
+          "actual": 2.3833225602094122e-11,
+          "ratio": 1.0020349555806833
+        },
+        {
+          "stage": 3,
+          "iteration": 1,
+          "predicted": 2.838176735594334e-05,
+          "actual": 2.847062178743545e-05,
+          "ratio": 1.0031306870491101
+        },
+        {
+          "stage": 3,
+          "iteration": 2,
+          "predicted": 1.0217630709042238e-09,
+          "actual": 1.0255666143363333e-09,
+          "ratio": 1.0037225297531487
+        },
+        {
+          "stage": 4,
+          "iteration": 1,
+          "predicted": 1.1429004065044544e-06,
+          "actual": 1.1473767862693197e-06,
+          "ratio": 1.0039166840254754
+        },
+        {
+          "stage": 4,
+          "iteration": 2,
+          "predicted": 9.329096420214413e-11,
+          "actual": 9.461485745775684e-11,
+          "ratio": 1.014191012676684
+        }
+      ],
+      "final_star_space_dependence_examples": [
+        {
+          "frequency_hz": 750000000.0,
+          "space": "full_P48",
+          "damping": 8.999999999999999e-05,
+          "pair15_proxy_cosine": 0.9522050779449932,
+          "pair15_amplitude_mm": 0.45183144281770254
+        },
+        {
+          "frequency_hz": 750000000.0,
+          "space": "current_M9_plus_pair15",
+          "damping": 8.999999999999999e-05,
+          "pair15_proxy_cosine": -0.998326129373734,
+          "pair15_amplitude_mm": 1.3519690735629764
+        },
+        {
+          "frequency_hz": 750000000.0,
+          "space": "contiguous_M15",
+          "damping": 8.999999999999999e-05,
+          "pair15_proxy_cosine": 0.9999724635691947,
+          "pair15_amplitude_mm": 0.5026991893364049
+        },
+        {
+          "frequency_hz": 1000000000.0,
+          "space": "full_P48",
+          "damping": 8.999999999999999e-05,
+          "pair15_proxy_cosine": 0.8641542847243198,
+          "pair15_amplitude_mm": 0.5732739311559693
+        },
+        {
+          "frequency_hz": 1000000000.0,
+          "space": "current_M9_plus_pair15",
+          "damping": 8.999999999999999e-05,
+          "pair15_proxy_cosine": -0.5514217340420136,
+          "pair15_amplitude_mm": 1.236130850471271
+        },
+        {
+          "frequency_hz": 1000000000.0,
+          "space": "contiguous_M15",
+          "damping": 8.999999999999999e-05,
+          "pair15_proxy_cosine": 0.9993279347890702,
+          "pair15_amplitude_mm": 0.6401532628518972
+        },
+        {
+          "frequency_hz": 1250000000.0,
+          "space": "full_P48",
+          "damping": 8.999999999999999e-05,
+          "pair15_proxy_cosine": 0.9936165374847464,
+          "pair15_amplitude_mm": 0.49871562013876275
+        },
+        {
+          "frequency_hz": 1250000000.0,
+          "space": "current_M9_plus_pair15",
+          "damping": 8.999999999999999e-05,
+          "pair15_proxy_cosine": 0.9661231505892184,
+          "pair15_amplitude_mm": 0.4171137974399733
+        },
+        {
+          "frequency_hz": 1250000000.0,
+          "space": "contiguous_M15",
+          "damping": 8.999999999999999e-05,
+          "pair15_proxy_cosine": 0.4019536048735124,
+          "pair15_amplitude_mm": 1.0418354893374961
+        }
+      ]
+    },
+    "borges/circle_to_c": {
+      "states": 58,
+      "unique_curves": 55,
+      "cells": 1045,
+      "atlas_hash_matches": true,
+      "truth_hash_matches": true,
+      "consistency": {
+        "checked_steps": 2,
+        "maximum_relative_difference": 1.1912746773296129e-16
+      },
+      "hausdorff_m": 0.019428896397605692,
+      "work_units": 386,
+      "stages": [
+        {
+          "stage": "stage_1",
+          "accepted": 10,
+          "stop": "no_decreasing_step",
+          "hausdorff_m": 0.03285507404374987
+        },
+        {
+          "stage": "stage_2",
+          "accepted": 22,
+          "stop": "maximum_iterations",
+          "hausdorff_m": 0.019915511771524758
+        },
+        {
+          "stage": "stage_3",
+          "accepted": 22,
+          "stop": "maximum_iterations",
+          "hausdorff_m": 0.019428896397605692
+        },
+        {
+          "stage": "stage_4",
+          "accepted": 0,
+          "stop": "no_decreasing_step",
+          "hausdorff_m": 0.019428896397605692
+        }
+      ],
+      "initial_median_raw_step_coefficient_norm_mm": 595.359786560094,
+      "initial_median_raw_step_physical_rms_mm": 421.018438396788,
+      "first_last_spectral_rank_at_relative_1e_10": [
+        [
+          17,
+          19,
+          22,
+          25,
+          27,
+          29,
+          31,
+          33,
+          34,
+          38,
+          40,
+          42,
+          44,
+          46,
+          47,
+          47,
+          47,
+          47,
+          48
+        ],
+        [
+          21,
+          25,
+          29,
+          32,
+          34,
+          36,
+          38,
+          41,
+          44,
+          46,
+          47,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48
+        ]
+      ],
+      "final_stage_alignment": {
+        "coefficient_cosine": 0.006815268646869864,
+        "physical_rms_cosine": 0.007115519232325115
+      },
+      "damping_range": [
+        3.138105960899997e-15,
+        31.381059608999983
+      ],
+      "accepted_step_model_gains": [
+        {
+          "stage": 1,
+          "iteration": 1,
+          "predicted": 0.40388113351715926,
+          "actual": 0.6718558146780153,
+          "ratio": 1.6634988835136337
+        },
+        {
+          "stage": 1,
+          "iteration": 2,
+          "predicted": 0.2990967963158682,
+          "actual": 0.5285631577896668,
+          "ratio": 1.7671976574147763
+        },
+        {
+          "stage": 1,
+          "iteration": 3,
+          "predicted": 0.1617789617976805,
+          "actual": 0.19572583762796597,
+          "ratio": 1.2098349220014106
+        },
+        {
+          "stage": 1,
+          "iteration": 4,
+          "predicted": 0.032635866553137396,
+          "actual": 0.034020113638286165,
+          "ratio": 1.042414902110687
+        },
+        {
+          "stage": 1,
+          "iteration": 5,
+          "predicted": 0.014570492413582442,
+          "actual": 0.014861081035620949,
+          "ratio": 1.0199436377158828
+        },
+        {
+          "stage": 1,
+          "iteration": 6,
+          "predicted": 0.013509126256859393,
+          "actual": 0.0137709651453575,
+          "ratio": 1.0193823703709302
+        },
+        {
+          "stage": 1,
+          "iteration": 7,
+          "predicted": 0.006345379121396068,
+          "actual": 0.006405145622682795,
+          "ratio": 1.0094189015570716
+        },
+        {
+          "stage": 1,
+          "iteration": 8,
+          "predicted": 0.0030739048347250587,
+          "actual": 0.003088190103463312,
+          "ratio": 1.0046472709814813
+        },
+        {
+          "stage": 1,
+          "iteration": 9,
+          "predicted": 0.0015127299506796374,
+          "actual": 0.001516222616283841,
+          "ratio": 1.0023088493770052
+        },
+        {
+          "stage": 1,
+          "iteration": 10,
+          "predicted": 0.001497814245736496,
+          "actual": 0.0015012613552839726,
+          "ratio": 1.0023014266003203
+        },
+        {
+          "stage": 2,
+          "iteration": 1,
+          "predicted": 0.0066927319780312146,
+          "actual": 0.006810968467837797,
+          "ratio": 1.0176664014328816
+        },
+        {
+          "stage": 2,
+          "iteration": 2,
+          "predicted": 0.006615744066777266,
+          "actual": 0.006733962767701079,
+          "ratio": 1.017869297803928
+        },
+        {
+          "stage": 2,
+          "iteration": 3,
+          "predicted": 0.01288761639826454,
+          "actual": 0.013352967278767336,
+          "ratio": 1.0361083745917097
+        },
+        {
+          "stage": 2,
+          "iteration": 4,
+          "predicted": 0.006366242544329094,
+          "actual": 0.006482112923106048,
+          "ratio": 1.0182007483959543
+        },
+        {
+          "stage": 2,
+          "iteration": 5,
+          "predicted": 0.006280751804889987,
+          "actual": 0.006395294445815103,
+          "ratio": 1.0182370907947575
+        },
+        {
+          "stage": 2,
+          "iteration": 6,
+          "predicted": 0.006192457052076175,
+          "actual": 0.006305426718861862,
+          "ratio": 1.0182431086458341
+        },
+        {
+          "stage": 2,
+          "iteration": 7,
+          "predicted": 0.006100938969761572,
+          "actual": 0.006212125766554055,
+          "ratio": 1.0182245384429454
+        },
+        {
+          "stage": 2,
+          "iteration": 8,
+          "predicted": 0.006005805402045577,
+          "actual": 0.006115029258540017,
+          "ratio": 1.0181863795415746
+        },
+        {
+          "stage": 2,
+          "iteration": 9,
+          "predicted": 0.005906705848102716,
+          "actual": 0.006013807891771195,
+          "ratio": 1.0181322798904708
+        },
+        {
+          "stage": 2,
+          "iteration": 10,
+          "predicted": 0.005803330605276218,
+          "actual": 0.005908163138026834,
+          "ratio": 1.0180642013838235
+        },
+        {
+          "stage": 2,
+          "iteration": 11,
+          "predicted": 0.005695407487526705,
+          "actual": 0.005797824574819949,
+          "ratio": 1.0179823985408494
+        },
+        {
+          "stage": 2,
+          "iteration": 12,
+          "predicted": 0.005582700453180436,
+          "actual": 0.005682550769505815,
+          "ratio": 1.0178856661149525
+        },
+        {
+          "stage": 2,
+          "iteration": 13,
+          "predicted": 0.005465011313468126,
+          "actual": 0.005562134208325603,
+          "ratio": 1.0177717646472433
+        },
+        {
+          "stage": 2,
+          "iteration": 14,
+          "predicted": 0.002690524109793937,
+          "actual": 0.0027143446478692518,
+          "ratio": 1.0088534936329334
+        },
+        {
+          "stage": 2,
+          "iteration": 15,
+          "predicted": 0.00265917513574026,
+          "actual": 0.00268262741524522,
+          "ratio": 1.0088193813148119
+        },
+        {
+          "stage": 2,
+          "iteration": 16,
+          "predicted": 0.002627169118284026,
+          "actual": 0.0026502416773839244,
+          "ratio": 1.0087822892478915
+        },
+        {
+          "stage": 2,
+          "iteration": 17,
+          "predicted": 0.0025945020347550103,
+          "actual": 0.002617183354525432,
+          "ratio": 1.008742070527057
+        },
+        {
+          "stage": 2,
+          "iteration": 18,
+          "predicted": 0.0025611716369812365,
+          "actual": 0.0025834502435775064,
+          "ratio": 1.008698599607533
+        },
+        {
+          "stage": 2,
+          "iteration": 19,
+          "predicted": 0.0012682321262054278,
+          "actual": 0.0012737318340881876,
+          "ratio": 1.0043365151923844
+        },
+        {
+          "stage": 2,
+          "iteration": 20,
+          "predicted": 0.0012596569560728997,
+          "actual": 0.0012651045167903496,
+          "ratio": 1.0043246383002824
+        },
+        {
+          "stage": 2,
+          "iteration": 21,
+          "predicted": 0.001250999159529586,
+          "actual": 0.0012563938820331078,
+          "ratio": 1.0043123310374968
+        },
+        {
+          "stage": 2,
+          "iteration": 22,
+          "predicted": 0.0012422589271560301,
+          "actual": 0.0012476001322571373,
+          "ratio": 1.0042995908375842
+        },
+        {
+          "stage": 3,
+          "iteration": 1,
+          "predicted": 0.0003043304529706076,
+          "actual": 0.0003045792630710642,
+          "ratio": 1.0008175655706748
+        },
+        {
+          "stage": 3,
+          "iteration": 2,
+          "predicted": 0.00041371160644153906,
+          "actual": 0.00041420361637309333,
+          "ratio": 1.0011892582269717
+        },
+        {
+          "stage": 3,
+          "iteration": 3,
+          "predicted": 0.0003332960437531923,
+          "actual": 0.00033359553039052914,
+          "ratio": 1.0008985604328344
+        },
+        {
+          "stage": 3,
+          "iteration": 4,
+          "predicted": 0.00047794373146873957,
+          "actual": 0.00047854459536203486,
+          "ratio": 1.0012571854252568
+        },
+        {
+          "stage": 3,
+          "iteration": 5,
+          "predicted": 0.00018227446437987687,
+          "actual": 0.00018236433647664252,
+          "ratio": 1.0004930591735457
+        },
+        {
+          "stage": 3,
+          "iteration": 6,
+          "predicted": 0.000263599688888729,
+          "actual": 0.00026378259491041667,
+          "ratio": 1.0006938779877121
+        },
+        {
+          "stage": 3,
+          "iteration": 7,
+          "predicted": 0.00019943800630884074,
+          "actual": 0.0001995460508142366,
+          "ratio": 1.0005417448128144
+        },
+        {
+          "stage": 3,
+          "iteration": 8,
+          "predicted": 0.0002907543580964129,
+          "actual": 0.00029097720643853076,
+          "ratio": 1.0007664488456058
+        },
+        {
+          "stage": 3,
+          "iteration": 9,
+          "predicted": 0.00021789940961996858,
+          "actual": 0.00021802897201231297,
+          "ratio": 1.0005945972619676
+        },
+        {
+          "stage": 3,
+          "iteration": 10,
+          "predicted": 0.00016029760001771994,
+          "actual": 0.00016036542051089953,
+          "ratio": 1.0004230911328185
+        },
+        {
+          "stage": 3,
+          "iteration": 11,
+          "predicted": 0.00022134398522414677,
+          "actual": 0.0002214717852115078,
+          "ratio": 1.0005773817943668
+        },
+        {
+          "stage": 3,
+          "iteration": 12,
+          "predicted": 0.00017669521764137683,
+          "actual": 0.0001767777672827403,
+          "ratio": 1.0004671866192272
+        },
+        {
+          "stage": 3,
+          "iteration": 13,
+          "predicted": 0.00012248464968482773,
+          "actual": 0.00012252379392088675,
+          "ratio": 1.0003195848309134
+        },
+        {
+          "stage": 3,
+          "iteration": 14,
+          "predicted": 9.739388716551752e-05,
+          "actual": 9.741901283190357e-05,
+          "ratio": 1.000257979911443
+        },
+        {
+          "stage": 3,
+          "iteration": 15,
+          "predicted": 0.0001356191930632031,
+          "actual": 0.00013566721321428554,
+          "ratio": 1.0003540807904678
+        },
+        {
+          "stage": 3,
+          "iteration": 16,
+          "predicted": 0.00010730901317052024,
+          "actual": 0.0001073395833301738,
+          "ratio": 1.0002848797016237
+        },
+        {
+          "stage": 3,
+          "iteration": 17,
+          "predicted": 0.00015010578222618336,
+          "actual": 0.00015016465062915596,
+          "ratio": 1.0003921794490493
+        },
+        {
+          "stage": 3,
+          "iteration": 18,
+          "predicted": 0.00011813212515553988,
+          "actual": 0.00011816926423895147,
+          "ratio": 1.0003143859755566
+        },
+        {
+          "stage": 3,
+          "iteration": 19,
+          "predicted": 8.305345870284295e-05,
+          "actual": 8.30714919110298e-05,
+          "ratio": 1.0002171277207295
+        },
+        {
+          "stage": 3,
+          "iteration": 20,
+          "predicted": 0.00012998467874397867,
+          "actual": 0.00013002976869458394,
+          "ratio": 1.0003468866564964
+        },
+        {
+          "stage": 3,
+          "iteration": 21,
+          "predicted": 9.188915942969293e-05,
+          "actual": 9.191125352855933e-05,
+          "ratio": 1.0002404429315006
+        },
+        {
+          "stage": 3,
+          "iteration": 22,
+          "predicted": 6.251654764842919e-05,
+          "actual": 6.252670433870566e-05,
+          "ratio": 1.000162464030061
+        }
+      ]
+    },
+    "fixed32/wrong_circle": {
+      "states": 26,
+      "unique_curves": 23,
+      "cells": 437,
+      "atlas_hash_matches": true,
+      "truth_hash_matches": true,
+      "consistency": {
+        "checked_steps": 1,
+        "maximum_relative_difference": 1.5899733205426868e-25
+      },
+      "hausdorff_m": 0.02626345807878836,
+      "work_units": 87,
+      "stages": [
+        {
+          "stage": "stage_1",
+          "accepted": 22,
+          "stop": "maximum_iterations",
+          "hausdorff_m": 0.02626345807878836
+        },
+        {
+          "stage": "stage_2",
+          "accepted": 0,
+          "stop": "no_decreasing_step",
+          "hausdorff_m": 0.02626345807878836
+        },
+        {
+          "stage": "stage_3",
+          "accepted": 0,
+          "stop": "no_decreasing_step",
+          "hausdorff_m": 0.02626345807878836
+        },
+        {
+          "stage": "stage_4",
+          "accepted": 0,
+          "stop": "no_decreasing_step",
+          "hausdorff_m": 0.02626345807878836
+        }
+      ],
+      "initial_median_raw_step_coefficient_norm_mm": 728.1349152439043,
+      "initial_median_raw_step_physical_rms_mm": 514.9096157946585,
+      "first_last_spectral_rank_at_relative_1e_10": [
+        [
+          17,
+          19,
+          22,
+          25,
+          27,
+          29,
+          31,
+          33,
+          34,
+          38,
+          40,
+          42,
+          44,
+          46,
+          47,
+          47,
+          47,
+          47,
+          48
+        ],
+        [
+          22,
+          28,
+          30,
+          34,
+          35,
+          39,
+          43,
+          47,
+          47,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48
+        ]
+      ],
+      "final_stage_alignment": {
+        "coefficient_cosine": -0.0006117019820602869,
+        "physical_rms_cosine": 0.0015422088261278818
+      },
+      "damping_range": [
+        8.099999999999999e-06,
+        4304.672099999999
+      ],
+      "accepted_step_model_gains": [
+        {
+          "stage": 1,
+          "iteration": 1,
+          "predicted": 0.3532013732242215,
+          "actual": 0.493368373606621,
+          "ratio": 1.3968472690320426
+        },
+        {
+          "stage": 1,
+          "iteration": 2,
+          "predicted": 0.0031680833917026472,
+          "actual": 0.0031802531148241164,
+          "ratio": 1.0038413518890765
+        },
+        {
+          "stage": 1,
+          "iteration": 3,
+          "predicted": 0.002700914590493733,
+          "actual": 0.0028718193784093293,
+          "ratio": 1.063276635446793
+        },
+        {
+          "stage": 1,
+          "iteration": 4,
+          "predicted": 0.0013891834846976024,
+          "actual": 0.0014281426247437917,
+          "ratio": 1.0280446323148378
+        },
+        {
+          "stage": 1,
+          "iteration": 5,
+          "predicted": 0.0013219538789697477,
+          "actual": 0.0013806655112273136,
+          "ratio": 1.0444127690016858
+        },
+        {
+          "stage": 1,
+          "iteration": 6,
+          "predicted": 0.00011201350935066138,
+          "actual": 0.00011128329835592699,
+          "ratio": 0.9934810452867033
+        },
+        {
+          "stage": 1,
+          "iteration": 7,
+          "predicted": 4.384009764684464e-05,
+          "actual": 4.374222759789825e-05,
+          "ratio": 0.9977675677245343
+        },
+        {
+          "stage": 1,
+          "iteration": 8,
+          "predicted": 3.128900273657355e-05,
+          "actual": 3.124485278314937e-05,
+          "ratio": 0.9985889625886805
+        },
+        {
+          "stage": 1,
+          "iteration": 9,
+          "predicted": 1.0870605665972529e-05,
+          "actual": 1.0865519792790934e-05,
+          "ratio": 0.9995321444510203
+        },
+        {
+          "stage": 1,
+          "iteration": 10,
+          "predicted": 7.3533574744469135e-06,
+          "actual": 7.351088123289107e-06,
+          "ratio": 0.9996913857152065
+        },
+        {
+          "stage": 1,
+          "iteration": 11,
+          "predicted": 6.151397435964794e-06,
+          "actual": 6.149777146427504e-06,
+          "ratio": 0.9997365981382025
+        },
+        {
+          "stage": 1,
+          "iteration": 12,
+          "predicted": 2.0712855124745866e-06,
+          "actual": 2.071106256204547e-06,
+          "ratio": 0.9999134565133777
+        },
+        {
+          "stage": 1,
+          "iteration": 13,
+          "predicted": 2.771144116629431e-06,
+          "actual": 2.7708269664805663e-06,
+          "ratio": 0.9998855526325889
+        },
+        {
+          "stage": 1,
+          "iteration": 14,
+          "predicted": 2.3126245324540284e-06,
+          "actual": 2.3124020250980815e-06,
+          "ratio": 0.9999037857841494
+        },
+        {
+          "stage": 1,
+          "iteration": 15,
+          "predicted": 1.5476448587534863e-06,
+          "actual": 1.547546345667672e-06,
+          "ratio": 0.9999363464523161
+        },
+        {
+          "stage": 1,
+          "iteration": 16,
+          "predicted": 2.0678392222672543e-06,
+          "actual": 2.067664352775611e-06,
+          "ratio": 0.9999154337098551
+        },
+        {
+          "stage": 1,
+          "iteration": 17,
+          "predicted": 1.7259967955674335e-06,
+          "actual": 1.725874773525482e-06,
+          "ratio": 0.9999293034365621
+        },
+        {
+          "stage": 1,
+          "iteration": 18,
+          "predicted": 1.1533531873532025e-06,
+          "actual": 1.1532989896284596e-06,
+          "ratio": 0.9999530085620456
+        },
+        {
+          "stage": 1,
+          "iteration": 19,
+          "predicted": 9.617025473633647e-07,
+          "actual": 9.616647528437605e-07,
+          "ratio": 0.9999607004060582
+        },
+        {
+          "stage": 1,
+          "iteration": 20,
+          "predicted": 1.2843106296534944e-06,
+          "actual": 1.2842436065557683e-06,
+          "ratio": 0.9999478139507852
+        },
+        {
+          "stage": 1,
+          "iteration": 21,
+          "predicted": 1.0709702963730456e-06,
+          "actual": 1.0709235377104331e-06,
+          "ratio": 0.999956339907119
+        },
+        {
+          "stage": 1,
+          "iteration": 22,
+          "predicted": 7.152481646154454e-07,
+          "actual": 7.152274257710145e-07,
+          "ratio": 0.9999710046869648
+        }
+      ]
+    },
+    "fixed32/circle_to_star": {
+      "states": 9,
+      "unique_curves": 6,
+      "cells": 114,
+      "atlas_hash_matches": true,
+      "truth_hash_matches": true,
+      "consistency": {
+        "checked_steps": 0,
+        "maximum_relative_difference": null
+      },
+      "hausdorff_m": 0.033727158450949445,
+      "work_units": 41,
+      "stages": [
+        {
+          "stage": "stage_1",
+          "accepted": 4,
+          "stop": "no_decreasing_step",
+          "hausdorff_m": 0.03440291803236857
+        },
+        {
+          "stage": "stage_2",
+          "accepted": 1,
+          "stop": "no_decreasing_step",
+          "hausdorff_m": 0.033727158450949445
+        },
+        {
+          "stage": "stage_3",
+          "accepted": 0,
+          "stop": "no_decreasing_step",
+          "hausdorff_m": 0.033727158450949445
+        },
+        {
+          "stage": "stage_4",
+          "accepted": 0,
+          "stop": "no_decreasing_step",
+          "hausdorff_m": 0.033727158450949445
+        }
+      ],
+      "initial_median_raw_step_coefficient_norm_mm": 2316.2941568431943,
+      "initial_median_raw_step_physical_rms_mm": 1637.8823714405728,
+      "first_last_spectral_rank_at_relative_1e_10": [
+        [
+          17,
+          19,
+          22,
+          25,
+          27,
+          29,
+          31,
+          33,
+          34,
+          38,
+          40,
+          42,
+          44,
+          46,
+          47,
+          47,
+          47,
+          47,
+          48
+        ],
+        [
+          24,
+          30,
+          34,
+          38,
+          43,
+          47,
+          47,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48
+        ]
+      ],
+      "final_stage_alignment": {
+        "coefficient_cosine": 0.0013502171132017905,
+        "physical_rms_cosine": 0.001921227458697896
+      },
+      "damping_range": [
+        8.099999999999999e-06,
+        0.03
+      ],
+      "accepted_step_model_gains": [
+        {
+          "stage": 1,
+          "iteration": 1,
+          "predicted": 0.2657919121005137,
+          "actual": 0.31448672584848325,
+          "ratio": 1.1832065293602867
+        },
+        {
+          "stage": 1,
+          "iteration": 2,
+          "predicted": 0.004570354443660936,
+          "actual": 0.00474958776537493,
+          "ratio": 1.0392165036483307
+        },
+        {
+          "stage": 1,
+          "iteration": 3,
+          "predicted": 0.005248202180852417,
+          "actual": 0.005622292142150487,
+          "ratio": 1.0712796398475086
+        },
+        {
+          "stage": 1,
+          "iteration": 4,
+          "predicted": 0.0028470839309304597,
+          "actual": 0.0030084996094824623,
+          "ratio": 1.0566950895961995
+        },
+        {
+          "stage": 2,
+          "iteration": 1,
+          "predicted": 0.0028099105799484097,
+          "actual": 0.0029702688133902977,
+          "ratio": 1.0570688030381494
+        }
+      ]
+    },
+    "fixed32/circle_to_c": {
+      "states": 30,
+      "unique_curves": 27,
+      "cells": 513,
+      "atlas_hash_matches": true,
+      "truth_hash_matches": true,
+      "consistency": {
+        "checked_steps": 1,
+        "maximum_relative_difference": 1.0251800951754666e-25
+      },
+      "hausdorff_m": 0.04776473019038455,
+      "work_units": 301,
+      "stages": [
+        {
+          "stage": "stage_1",
+          "accepted": 4,
+          "stop": "no_decreasing_step",
+          "hausdorff_m": 0.04807592670398583
+        },
+        {
+          "stage": "stage_2",
+          "accepted": 0,
+          "stop": "no_decreasing_step",
+          "hausdorff_m": 0.04807592670398583
+        },
+        {
+          "stage": "stage_3",
+          "accepted": 0,
+          "stop": "no_decreasing_step",
+          "hausdorff_m": 0.04807592670398583
+        },
+        {
+          "stage": "stage_4",
+          "accepted": 22,
+          "stop": "maximum_iterations",
+          "hausdorff_m": 0.04776473019038455
+        }
+      ],
+      "initial_median_raw_step_coefficient_norm_mm": 595.359786560094,
+      "initial_median_raw_step_physical_rms_mm": 421.018438396788,
+      "first_last_spectral_rank_at_relative_1e_10": [
+        [
+          17,
+          19,
+          22,
+          25,
+          27,
+          29,
+          31,
+          33,
+          34,
+          38,
+          40,
+          42,
+          44,
+          46,
+          47,
+          47,
+          47,
+          47,
+          48
+        ],
+        [
+          25,
+          30,
+          34,
+          37,
+          40,
+          44,
+          47,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48
+        ]
+      ],
+      "final_stage_alignment": {
+        "coefficient_cosine": -0.025829727467528582,
+        "physical_rms_cosine": -0.02264429842167416
+      },
+      "damping_range": [
+        2.6999999999999996e-05,
+        1968.3
+      ],
+      "accepted_step_model_gains": [
+        {
+          "stage": 1,
+          "iteration": 1,
+          "predicted": 0.4053206612567653,
+          "actual": 0.6890179610071216,
+          "ratio": 1.6999329836053876
+        },
+        {
+          "stage": 1,
+          "iteration": 2,
+          "predicted": 0.003250689314536669,
+          "actual": 0.0034749588837290624,
+          "ratio": 1.0689913884385962
+        },
+        {
+          "stage": 1,
+          "iteration": 3,
+          "predicted": 0.007081491899825218,
+          "actual": 0.00820395440533539,
+          "ratio": 1.15850650136843
+        },
+        {
+          "stage": 1,
+          "iteration": 4,
+          "predicted": 0.003629131139336633,
+          "actual": 0.003850945114518556,
+          "ratio": 1.0611204077961394
+        },
+        {
+          "stage": 4,
+          "iteration": 1,
+          "predicted": 0.0013545947731643253,
+          "actual": 0.001458130758261289,
+          "ratio": 1.0764331792415707
+        },
+        {
+          "stage": 4,
+          "iteration": 2,
+          "predicted": 0.001371421742415568,
+          "actual": 0.0014707826707692773,
+          "ratio": 1.0724510376936993
+        },
+        {
+          "stage": 4,
+          "iteration": 3,
+          "predicted": 0.00016367368128263277,
+          "actual": 0.00016821991263682445,
+          "ratio": 1.0277761905186285
+        },
+        {
+          "stage": 4,
+          "iteration": 4,
+          "predicted": 6.80260845849483e-05,
+          "actual": 6.87529048859492e-05,
+          "ratio": 1.0106844353226487
+        },
+        {
+          "stage": 4,
+          "iteration": 5,
+          "predicted": 2.3090218161291123e-05,
+          "actual": 2.3171555753598305e-05,
+          "ratio": 1.0035225995587835
+        },
+        {
+          "stage": 4,
+          "iteration": 6,
+          "predicted": 3.0976090406165345e-05,
+          "actual": 3.11212246085768e-05,
+          "ratio": 1.0046853621780032
+        },
+        {
+          "stage": 4,
+          "iteration": 7,
+          "predicted": 2.573335643677623e-05,
+          "actual": 2.5832285572291447e-05,
+          "ratio": 1.0038443930063408
+        },
+        {
+          "stage": 4,
+          "iteration": 8,
+          "predicted": 1.7273183651196385e-05,
+          "actual": 1.7317313693032688e-05,
+          "ratio": 1.0025548296554612
+        },
+        {
+          "stage": 4,
+          "iteration": 9,
+          "predicted": 1.154884859175842e-05,
+          "actual": 1.1568444169718362e-05,
+          "ratio": 1.0016967559843089
+        },
+        {
+          "stage": 4,
+          "iteration": 10,
+          "predicted": 1.922542790298708e-05,
+          "actual": 1.927951304991904e-05,
+          "ratio": 1.0028132090065758
+        },
+        {
+          "stage": 4,
+          "iteration": 11,
+          "predicted": 2.571605375227946e-05,
+          "actual": 2.5812168548688952e-05,
+          "ratio": 1.0037375406559403
+        },
+        {
+          "stage": 4,
+          "iteration": 12,
+          "predicted": 2.1421007478571504e-05,
+          "actual": 2.1487051862667528e-05,
+          "ratio": 1.003083159564838
+        },
+        {
+          "stage": 4,
+          "iteration": 13,
+          "predicted": 1.433161508806092e-05,
+          "actual": 1.4360941828495122e-05,
+          "ratio": 1.0020462969633224
+        },
+        {
+          "stage": 4,
+          "iteration": 14,
+          "predicted": 1.1925483076661232e-05,
+          "actual": 1.1945680294056515e-05,
+          "ratio": 1.0016936183855571
+        },
+        {
+          "stage": 4,
+          "iteration": 15,
+          "predicted": 1.5950438416055773e-05,
+          "actual": 1.5986425893621536e-05,
+          "ratio": 1.0022562061698277
+        },
+        {
+          "stage": 4,
+          "iteration": 16,
+          "predicted": 2.6539920979181865e-05,
+          "actual": 2.6639024336749806e-05,
+          "ratio": 1.0037341240633564
+        },
+        {
+          "stage": 4,
+          "iteration": 17,
+          "predicted": 1.777057992194445e-05,
+          "actual": 1.78145844087485e-05,
+          "ratio": 1.00247625496733
+        },
+        {
+          "stage": 4,
+          "iteration": 18,
+          "predicted": 1.4781277167394026e-05,
+          "actual": 1.4811525275826298e-05,
+          "ratio": 1.0020463798959807
+        },
+        {
+          "stage": 4,
+          "iteration": 19,
+          "predicted": 1.97841150495419e-05,
+          "actual": 1.9838044651443454e-05,
+          "ratio": 1.0027259041795151
+        },
+        {
+          "stage": 4,
+          "iteration": 20,
+          "predicted": 1.6452181466740107e-05,
+          "actual": 1.648921011387916e-05,
+          "ratio": 1.0022506831215003
+        },
+        {
+          "stage": 4,
+          "iteration": 21,
+          "predicted": 2.2029521417989415e-05,
+          "actual": 2.2095563130819507e-05,
+          "ratio": 1.0029978732436813
+        },
+        {
+          "stage": 4,
+          "iteration": 22,
+          "predicted": 1.8314350035367578e-05,
+          "actual": 1.835963747809366e-05,
+          "ratio": 1.002472784599979
+        }
+      ]
+    }
+  },
+  "sc022_integrity": {
+    "input_hashes_match": true,
+    "recorded_sources_changed_now": []
+  },
+  "circle_distance_proxy_counterexample": {
+    "initial_radius_m": 0.065,
+    "target_radius_m": 0.05,
+    "offset_m": [
+      -0.02,
+      0.02
+    ],
+    "proxy_minus_normal_ray_rms_mm": 1.6976163228095138,
+    "proxy_minus_normal_ray_max_mm": 3.144411429547765,
+    "after_proxy_move_max_distance_to_circle_mm": 2.6545070693939357,
+    "after_exact_normal_move_max_distance_m": 2.7755575615628914e-17
+  },
+  "totals": {
+    "states": 159,
+    "unique_curves_within_runs": 141,
+    "cells": 2679,
+    "checked_first_trial_steps": 32,
+    "maximum_step_replay_relative_error": 1.4894501454693518e-13
+  }
+}

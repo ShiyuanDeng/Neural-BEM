@@ -4,7 +4,32 @@
 after the user moved the focus to the atlas. The user chose the cases:
 wrong circle, circle to star, and a new non-star C. Records are in
 [SC-022](../../../../results/validation/shape_continuation/SC-022-atlas-survey/README.md).
-No independent review is claimed.
+No independent review was claimed at execution.
+
+## Outsider review added 2026-09-24
+
+The [Codex review](02_proposals/01_codex_outsider_review.md) accepts the
+descriptive atlas and confirms its counts, local artifact hashes and step
+replay. It qualifies the interpretations below:
+
+- The recorded LM steps are damped but unclipped; they are not unregularized.
+  Per-frequency inversion has 48 real data rows for 97 real coefficients.
+- A component of the full-band step is conditional on the other allowed
+  directions. At the final star and 0.75 GHz, p=15's alignment with the error
+  proxy changes from +0.952 to −0.998 when solving only for the existing M=9
+  space plus that pair. This is an offline model check, not a recovery trial.
+- The “true error” layer is a signed closest-distance proxy. It is not
+  generally the displacement needed along the current normal. Whole-vector
+  norms and cosines also need the physical Fourier mass metric.
+- The M=32 failures concern the tested clipping, damping, starts and retry
+  limits; they do not establish that this band cannot work from distant starts.
+
+The audit additionally finds positive model decrease for all 135 accepted
+steps, with actual/predicted ratios 0.926–1.767. This supports local models
+on accepted steps, not unexecuted atlas recommendations. The review gives
+derivations, literature, reproducible checks and the resulting next questions.
+Original observations below remain the execution record, read with these
+qualifications.
 
 ## What exists now
 

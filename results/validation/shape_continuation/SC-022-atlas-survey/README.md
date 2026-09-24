@@ -3,6 +3,15 @@
 [Plan and amendment](../../../../docs/iterations/shape_frequency_continuation/iteration_07/03_plan.md) ·
 [results note](../../../../docs/iterations/shape_frequency_continuation/iteration_08/01_results.md).
 
+**2026-09-24 outsider review:** [verdict and derivations](../../../../docs/iterations/shape_frequency_continuation/iteration_08/02_proposals/01_codex_outsider_review.md)
+and [reproducible audit](../review-20260924/README.md). Counts, local NPZ hashes
+and step replay are confirmed. Read “true error” below as a signed-distance
+proxy and “raw LM” as damped but unclipped. Full-space step components are
+conditional on the other allowed modes; the review demonstrates a p=15 sign
+reversal under a restricted solve. Coefficient norms differ from physical RMS
+displacements. These qualifications change interpretation, not the stored
+measurements or figures.
+
 This is a descriptive record. It covers three single-object cases chosen by
 the user, run on SPD's acquisition and schedule. For each case the atlas is
 evaluated at every accepted state of the trajectory, over a 19-frequency

@@ -5,7 +5,18 @@
 built, with a first test using SPD's policy against SPD. The
 [frozen plan](../iteration_06/03_plan.md) was executed as
 [SC-020](../../../../results/validation/shape_continuation/SC-020-spd-matched-hybrid/README.md)
-on the existing branch. No independent review is claimed.
+on the existing branch. No independent review was claimed at execution.
+
+## Outsider review added 2026-09-24
+
+The [Codex review](../iteration_08/02_proposals/01_codex_outsider_review.md)
+accepts the frozen near-truth pass and the M=32 improvement. It does not treat
+them as general recovery parity with SPD. The out-of-band plateau below is
+an observed local effect: finite normal moves and regauging can mix harmonics,
+so “cannot reach” is not a global unreachability theorem. Matching coefficient
+bounds also does not match physical step bounds across different spaces.
+Exact source availability for replay and the remaining far-start comparison
+are identified separately. Original measurements below are retained.
 
 ## What was built
 

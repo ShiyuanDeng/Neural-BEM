@@ -1,5 +1,10 @@
 # SC-021 — SC-020 with update band M=32
 
+**2026-09-24 review:** the [outsider verdict](../../../../docs/iterations/shape_frequency_continuation/iteration_08/02_proposals/01_codex_outsider_review.md)
+accepts the measured improvement on this handoff. It remains a development
+ablation, with no general M=32 robustness or coordinate-system advantage
+established. Original results are unchanged.
+
 One change from [SC-020](../SC-020-spd-matched-hybrid/README.md): the
 hybrid's update band M is 32 instead of 16. The inputs, SPD-matching
 schedule, LM, acceptance, storage K=96, step bounds and scorer are unchanged.

@@ -1,6 +1,12 @@
 # SC-020 — clean hybrid under SPD's policy, against SPD
 
 **PASS** under the [frozen plan](../../../../docs/iterations/shape_frequency_continuation/iteration_06/03_plan.md).
+
+**2026-09-24 review:** the [outsider verdict](../../../../docs/iterations/shape_frequency_continuation/iteration_08/02_proposals/01_codex_outsider_review.md)
+accepts this near-truth pass. It qualifies the spectral-floor explanation as
+local evidence, not permanent unreachability, and records the current source
+availability limitation for historical replay. Original results are unchanged.
+
 The hybrid combines Borges' normal move with an arclength refit on every
 trial, an SPD-style LM backend and the package's nodal Müller physics. On
 SPD's only single-object case (the merge ellipse continuation) it:
