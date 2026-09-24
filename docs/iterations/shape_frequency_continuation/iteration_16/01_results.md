@@ -92,7 +92,9 @@ star-shaped objects that the legacy inverse recovers.
 
 - **Rule outcome:** H1 passes, so LS qualifies as the SC SPD comparison
   reference.
-- **Recommended amendment (not applied; the user decides).** Adopt **L**
+- **Adopted by the user (2026-09-24, verbatim: "ladder as baseline yes"):** **SPD-L** is the SC
+  SPD comparison reference. The recommendation it answers follows.
+- **Recommended amendment.** Adopt **L**
   ("SPD-L": the SPD fitter with the K 4/6/8/10 ladder, no step controls) as
   the reference instead. Its RMS is lower than LS's on every case, and it costs
   fewer units on circle, star and peanut (kite: 869 against 372, both stopped). From now on, SC recovery claims on circle, star, peanut

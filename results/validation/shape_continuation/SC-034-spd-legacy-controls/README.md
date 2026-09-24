@@ -107,7 +107,7 @@ Hausdorff distances and per-stage steps, are in [`tables.md`](tables.md);
 
 - **H1: PASS.** By the pre-declared rule LS qualifies as the SC SPD comparison
   reference.
-- **Recommended amendment (not applied; the user decides).** Use **L** as that
+- **Amendment adopted by the user** ("ladder as baseline yes", 2026-09-24). Use **L** as that
   reference. Its RMS is lower than LS's on every case, at lower cost except on kite. The
   four step controls stay available (opt-in) but are not part of the baseline.
 - **Per-case classes, as pre-declared on LS:** kite *open* (8.63 > 2.98 mm);

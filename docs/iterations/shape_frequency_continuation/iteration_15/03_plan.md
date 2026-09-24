@@ -9,7 +9,7 @@
 - **Execution status:** `COMPLETE` (2026-09-24). 18/18 fits; qualification replay PASS. H1 **PASS**.
   Results: [SC-034 bundle](../../../../results/validation/shape_continuation/SC-034-spd-legacy-controls/README.md),
   [iteration 16](../iteration_16/01_results.md). The ablation favours arm L over LS; the recommended
-  amendment (adopt L) awaits the user's decision.
+  amendment (adopt L) was adopted by the user ("ladder as baseline yes").
 - **Owner:** Claude. **Reviewer:** unassigned.
 
 ## Question and hypotheses
