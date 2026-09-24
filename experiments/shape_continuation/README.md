@@ -22,17 +22,20 @@ which settles several settings the prose leaves loose.
 ## Scope and file/API map
 
 This is a new, isolated single-interface inverse, justified by the user's
-request to remove legacy inverse dependencies. The only project dependencies
+request to remove legacy inverse dependencies. The core's only project dependencies
 are `ordered_boundary` and public `gpr_bem_kress` forward APIs. No existing
 numerical code or defaults are changed. No MLP, SDF, topology controller,
-runtime selector, modal compression, or experimental Laurent solver is used.
+runtime selector, modal compression, or experimental Laurent solver is used by
+the core. The separate legacy comparison harness imports the previous fixture
+builders and inverse to establish a matched baseline.
 
 - `geometry.py`: Cartesian Fourier curve storage, arclength reparameterization,
   scalar Fourier normal updates, Gaussian filtering, curvature-energy gate.
 - `validation.py`: conservative spatial pruning of polygon intersection checks,
   qualified against the all-pairs reference at identical samples/tolerances.
-- `forward.py`: plane-wave acquisition, full receiver/illumination matrix,
-  dense nodal Müller/Kress solves, reciprocal shape Jacobian.
+- `forward.py`: plane-wave acquisition and optional line-source acquisition
+  with paired or full receiver sampling, dense nodal Müller/Kress solves,
+  reciprocal shape Jacobian.
 - `inverse.py`: cached optimizer state, one GN/SD update, fixed-stage chunks,
   explicit feasibility/stopping, and compatibility entry points.
 - `continuation.py`: decisions from full history, shared budgets, optional
@@ -43,6 +46,38 @@ runtime selector, modal compression, or experimental Laurent solver is used.
 - `metrics.py`: evaluation-only boundary distances and polygon area differences.
 - `paper.py`: audited Figure 1 profiles, zero-solve plan, capped smoke and explicit-budget runs.
 - `benchmark.py`: inverse-only replay timing from saved observations.
+- `legacy_cases.py`: matched regression against the previous explicit Cartesian
+  Fourier inverse on its circle/star targets and circle/ellipse/star starts.
+  Only this comparison harness imports the previous inverse drivers.
+- `updates.py`: replaceable geometry updates. `BorgesUpdate` owns the
+  normal-distance coordinates in metres, the velocities the Jacobian uses, the
+  physical step metric, and the sample–move–arclength-refit trial with stable
+  refusal reasons. It never sees data.
+- `lm_backend.py`: the clean hybrid backend. `FitStage` is one policy decision
+  (frequency set, weights, M, K, N, refined N, iterations, quota).
+  `fit_stage` runs SPD's LM rules over any update strategy with SPD's
+  acceptance, numerical-regime stop, work units and quota reservation.
+  `run_policy` loops a policy and calls an external endpoint hook.
+- `spd_cases.py`, `spd_report.py`: SC-020 harness and report. These are the
+  only modules that import SPD code. They cover the coordinate/unit bridge, the
+  SPD-matching policy, a fresh SPD rerun, and scoring through SPD's own scorer.
+- `atlas_survey.py`: atlas layers in the backend's coordinates: sensitivity,
+  signed gradient, Gauss–Newton block, LM and truncated GN steps, and the
+  evaluation-only true error per harmonic. Stage blocks are weighted sums of
+  per-frequency layers.
+- `atlas_cases.py`: SC-022 cases and oracle-checked frequency catalogs,
+  fixed-schedule trajectories under a declared band rule (`fixed32` or
+  `borges`), and the parallel atlas over every accepted state.
+- `test_atlas_survey.py`: the stage step assembled from per-frequency layers
+  equals the backend's proposal; checks the GN step algebra and the
+  true-error decomposition.
+- `test_lm_backend.py`: the residual map is bitwise equal to SPD's; the
+  acceptance rule equals SPD's; the Jacobian matches differences through the
+  actual trial; accepted states decrease monotonically; the quota ends a stage
+  normally; import isolation holds.
+- `test_point_sources.py`: independent old Mie/Nyström oracle agreement,
+  paired line-source derivative checks, cache invalidation, sparse frequency
+  catalogs, curve-coordinate conversion and terminal progress checks.
 - `resolution.py`: independent field/Jacobian convergence and timing screen.
 - `test_pipeline.py`: independent circle series, derivative convergence,
   geometry/reparameterization, recovery, continuation and import isolation.

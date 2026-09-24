@@ -1,0 +1,119 @@
+"""Atlas layers along trajectories, in the clean backend's update coordinates.
+
+Coordinates are the backend's: real Fourier coefficients (metres) of the
+normal distance h in the current normalized arclength, ordered
+`[a0, a1..aP, b1..bP]`. Each frequency is normalized as a single-frequency
+stage would be (weight 1), so the stage objective's Gauss-Newton block and
+gradient are exactly the weighted sums of these per-frequency layers.
+
+Layers per (state, k): sensitivity, signed gradient, Gauss-Newton block and
+spectrum, the LM step at a declared damping and a truncated GN step. The
+true-error layer is evaluation-only: it needs the truth and must never be
+passed to any fitting, step or policy code.
+"""
+from dataclasses import dataclass
+
+import numpy as np
+
+from .forward import solve, shape_jacobian
+from .geometry import normal_basis, grid_size, integer
+from .lm_backend import normalize
+
+
+@dataclass(frozen=True)
+class Cell:
+    """One frequency at one state. Arrays are indexed by update coordinate."""
+    wavenumber: float
+    loss: float  # 0.5 ||r||^2 with this frequency's own normalization
+    relative_residual: float
+    gradient: np.ndarray  # J^T r
+    gauss_newton: np.ndarray  # J^T J (P x P, symmetric)
+    system_residual: float
+
+    @property
+    def sensitivity(self):
+        return np.sqrt(np.clip(np.diag(self.gauss_newton), 0, None))
+
+    def eigen(self):
+        values, vectors = np.linalg.eigh(self.gauss_newton)
+        order = np.argsort(values)[::-1]
+        return np.clip(values[order], 0, None), vectors[:, order]
+
+
+def orders(band):
+    """Harmonic order of each coordinate: 0, 1..P, 1..P."""
+    band = integer(band, "band", minimum=0)
+    harmonics = np.arange(1, band + 1)
+    return np.concatenate(([0], harmonics, harmonics))
+
+
+def cell(curve, observation, contrast, nodes, band, length_unit_m, *, floor=1e-12):
+    """One forward solve and one reciprocal Jacobian at one frequency."""
+    state = solve(curve, observation.wavenumber, contrast, observation.acquisition, nodes)
+    basis = normal_basis(state.curve, band) / length_unit_m
+    jacobian = shape_jacobian(state, basis)  # paired: (pairs, coordinates)
+    observed = np.asarray(observation.scattered)[:, None]
+    rows = normalize(jacobian[:, None, :], observed, (1.0,), floor)
+    residual = normalize((state.prediction - observation.scattered)[:, None], observed, (1.0,), floor)
+    gram = rows.T @ rows
+    return Cell(float(observation.wavenumber), 0.5 * float(residual @ residual),
+                float(np.linalg.norm(state.prediction - observation.scattered)
+                      / np.linalg.norm(observation.scattered)),
+                rows.T @ residual, 0.5 * (gram + gram.T), float(state.system_residual))
+
+
+def lm_step(gauss_newton, gradient, damping, floor=1.0):
+    """The backend's LM proposal before clipping: -(G + lambda diag(max(diag G, floor)))^-1 g."""
+    scaling = np.maximum(np.diag(gauss_newton), floor)
+    return np.linalg.solve(gauss_newton + damping * np.diag(scaling), -gradient)
+
+
+def gn_step(gauss_newton, gradient, relative_cutoff=1e-10):
+    """Truncated Gauss-Newton step; its predicted decrease is 0.5 g^T H^+ g."""
+    values, vectors = np.linalg.eigh(gauss_newton)
+    keep = values > relative_cutoff * max(values.max(), np.finfo(float).tiny)
+    projected = vectors[:, keep].T @ gradient
+    return -(vectors[:, keep] @ (projected / values[keep])), float(0.5 * np.sum(projected ** 2 / values[keep]))
+
+
+def stage_sum(cells, weights):
+    """Stage objective block and gradient as weighted sums of per-frequency layers."""
+    gauss_newton = sum(w * c.gauss_newton for c, w in zip(cells, weights))
+    gradient = sum(w * c.gradient for c, w in zip(cells, weights))
+    return gauss_newton, gradient
+
+
+def pair_magnitude(values, band):
+    """Combine cos/sin coordinates of each harmonic in quadrature: (P+1,)."""
+    values = np.asarray(values, float)
+    head = np.abs(values[..., :1])
+    tail = np.sqrt(values[..., 1:band + 1] ** 2 + values[..., band + 1:] ** 2)
+    return np.concatenate((head, tail), axis=-1)
+
+
+# --- evaluation only -------------------------------------------------------
+
+def true_error(curve, truth_points, band, length_unit_m, count=None):
+    """EVALUATION ONLY. Signed closest-point error of the truth, per harmonic.
+
+    `h_true(s) = -signed_distance_to_truth(point)`, positive where the truth
+    lies outside the current curve, so it is the normal move that would reach
+    the truth to first order. Returned coefficients use the backend ordering
+    and metres; `beyond` is the RMS of what band P cannot express.
+    """
+    from matplotlib.path import Path as Polygon
+    from .metrics import points_to_polygon_distance
+    count = count or grid_size(max(curve.band, band))
+    nodes = curve.nodes(count)
+    polygon = np.column_stack((np.real(truth_points), np.imag(truth_points)))
+    distance = points_to_polygon_distance(nodes.points, polygon)
+    inside = Polygon(polygon).contains_points(nodes.points)
+    h = np.where(inside, distance, -distance) * length_unit_m
+    basis = normal_basis(nodes, band)
+    weights = nodes.arc_length_weights
+    gram = basis.T @ (weights[:, None] * basis)
+    coefficients = np.linalg.solve(gram, basis.T @ (weights * h))
+    remainder = h - basis @ coefficients
+    rms = lambda x: float(np.sqrt(np.sum(weights * x ** 2) / np.sum(weights)))
+    return coefficients, dict(rms_m=rms(h), beyond_band_rms_m=rms(remainder),
+                              maximum_m=float(np.max(np.abs(h))))
