@@ -144,8 +144,11 @@ remains unexecuted; the closeout schedules no new campaign.
 SC-030: SPD-008 is the SPD reference, and exact cache reuse is qualified for the hybrid.
 The user's atlas-to-inverse research brief is placed and
 [reviewed](shape_frequency_continuation/iteration_13/02_proposals/02_state_reconciliation_and_SC-031.md)
-there. SC-031, a regularizing-metric test aimed at the stage-1 curvature
-collapse, is proposed and **not approved**.
+there. SC-031, approved by the user, tested a regularizing metric against the
+stage-1 curvature collapse. [Iteration 14](shape_frequency_continuation/iteration_14/01_results.md)
+records that test: its hypothesis is falsified at the stage-1 gate, and the
+collapse survives both metrics. SC-032, the withheld four-stage continuation,
+is proposed and not approved.
 
 ## What to do at each stage
 

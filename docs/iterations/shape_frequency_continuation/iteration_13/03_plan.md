@@ -5,7 +5,11 @@ explicit request "say 'approve SC-031' to start it". This authorizes
 implementation, qualification, the gated two-stage run, documentation and
 commit/push milestones on the existing `feature/shape-frequency-continuation`
 checkout. It creates no branch or worktree and authorizes no other ID.
-**Execution status: IN PROGRESS.**
+**Execution status: COMPLETE at the stage-1 gate (2026-09-24).** Qualification
+passed (exact default replays, 16 tests). R2 ended stage 1 at 2.09/2.24 mm
+on C/peanut, so the gate withheld stage B and H is falsified. The artifacts
+are in [the SC-031 bundle](../../../../results/validation/shape_continuation/SC-031-regularizing-metric/README.md),
+and the results open [iteration 14](../iteration_14/01_results.md).
 Owner: Claude (Opus 5.5). Independent reviewer: unassigned.
 
 This plan consolidates the [review and proposal](02_proposals/02_state_reconciliation_and_SC-031.md),
