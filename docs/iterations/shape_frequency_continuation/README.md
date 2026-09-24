@@ -15,13 +15,13 @@ provisional**, with two profile differences and plotting provenance unresolved.
 | Item | State |
 |---|---|
 | Active cycle | [Iteration 12 — testing the atlas strategies](iteration_12/01_results.md) |
-| Stage | SC-029 IN PROGRESS: 12/12 four-stage paths complete, all six baselines replay bitwise. M=2 first stage improves C/peanut and worsens kite/hook; it fails the robustness gate. The 24 frequency/extra-work suffixes are next |
-| Working implementation | [Continuation package](../../../experiments/shape_continuation/README.md): clean hybrid (`updates.py`, `lm_backend.py`, with opt-in physical step control), the qualified atlas (`atlas_survey.py`), the SC-023–025 drivers, and isolated legacy/SPD harnesses. Backend variant for new runs: V2 (refit gate 1e-5) |
-| Latest runs | [SC-026 atlas dataset and first analysis](../../../results/validation/shape_continuation/SC-026-atlas-dataset/ANALYSIS.md), [SC-025](../../../results/validation/shape_continuation/SC-025-band-policies/README.md), [SC-024](../../../results/validation/shape_continuation/SC-024-backend-ablations/README.md), [SC-023](../../../results/validation/shape_continuation/SC-023-conditional-candidates/README.md) |
-| Review / next decision | Execute the remaining frozen [SC-029 comparison](iteration_11/03_plan.md). Keep the original failed P=48 qualification; the inverse-space preflight passes through M=19. No default promotion or fresh-case claim |
+| Stage | SC-029 COMPLETE: 36 endpoints, 31 completed schedules, 3 numerical stops and 2 time stops. Neither strategy passes the frozen robustness criteria; all six baselines replay bitwise |
+| Working implementation | [Continuation package](../../../experiments/shape_continuation/README.md): clean hybrid (`updates.py`, `lm_backend.py`, with opt-in physical step control), the atlas (`atlas_survey.py`, `atlas_dataset.py`; full P=48 qualification is limited at rough states), SC-023–025 drivers, and isolated SC-028/029 strategy and legacy/SPD harnesses. Backend variant for new runs: V2 (refit gate 1e-5) |
+| Latest runs | [SC-029 strategy comparison](../../../results/validation/shape_continuation/SC-029-atlas-strategies/README.md), [SC-028 failed preflight](../../../results/validation/shape_continuation/SC-028-atlas-strategies/README.md), [SC-026 atlas dataset and first analysis](../../../results/validation/shape_continuation/SC-026-atlas-dataset/ANALYSIS.md), [SC-025](../../../results/validation/shape_continuation/SC-025-band-policies/README.md), [SC-024](../../../results/validation/shape_continuation/SC-024-backend-ablations/README.md), [SC-023](../../../results/validation/shape_continuation/SC-023-conditional-candidates/README.md) |
+| Review / next decision | Read the [completed comparison and next questions](iteration_12/01_results.md). Extra work on old data improves every baseline case; smaller first bands and higher frequencies have case-dependent benefits and failures. No successor is scheduled and no default changes |
 | Figure 1 | Unchanged from iteration 03: still provisional. The band-rule measurement bears on it but does not reproduce it |
 | Checkout | Existing `feature/shape-frequency-continuation` branch; no new branch or worktree |
-| Reviewer of latest changes | SC-020/021/022: Codex, outsider review. SC-023 to SC-025: none yet |
+| Reviewer of latest changes | SC-020/021/022: Codex, outsider review. SC-023 to SC-025: none yet. SC-026 independently audited by Codex; SC-028/029 independent reviewer unassigned |
 
 The user authorized autonomous development of this isolated pipeline and
 commit/push checkpoints. Iteration 04 adds a measured characterization of how
@@ -41,6 +41,11 @@ handoff only.
 
 ## Where things live
 
+- [Iteration 12 closeout](iteration_12/01_results.md): all 36 strategy endpoints,
+  decisions and next questions; [SC-029 evidence](../../../results/validation/shape_continuation/SC-029-atlas-strategies/README.md).
+- [Independent consolidated-atlas audit](iteration_10/01_results.md),
+  [strategy proposals](iteration_10/02_proposals/01_atlas_strategies.md), and
+  [SC-029 frozen contract](iteration_11/03_plan.md).
 - [Iteration 09 results](iteration_09/01_results.md) and the
   [SC-027 proposal](iteration_09/02_proposals/01_regularity_controlled_steps.md).
 - [Review resolution](iteration_08/02_proposals/02_review_resolution.md) and the
@@ -70,7 +75,7 @@ handoff only.
   [reference implementation](../../reference/papers/README.md#reference-implementation)
   used to audit the numerical conventions. Figure 1's exact provenance is open.
 - [Qualification index](../../../results/validation/shape_continuation/README.md):
-  SC-001 through SC-022, with raw measurements, scripts, checkpoints and failures.
+  SC-001 through SC-029, with raw measurements, scripts, checkpoints and failures.
 - [Literature review and reading map](Atlas-Driven%20Adaptive%20Continuation%20in%20Inverse%20Scattering_%20Literature%20Review%20and%20Pre-Coding%20Reading%20M.pdf):
   the user-supplied survey that set iteration 04's experiment design, with its
   own stated search cutoff and verification limits.
@@ -96,4 +101,4 @@ the next cycle. Code and run artifacts retain their current locations.
 | [09](iteration_09/01_results.md) | The review is implemented. The atlas numerics pass refinement and directional checks. SC-022's stalls were the refit gate freezing curves roughened by large early steps. No declared band rule beats the ladder. The post hoc A2 rule qualifies on development data but is not reliably better on the held-out cases (1 of 3). Roughening predicts failure; a regularity-controlled step metric is proposed. |
 | [10](iteration_10/01_results.md) | Consolidated SC-026 atlas independently audited. Sensitive columns are not jointly determined harmonics; normal-ray coverage is incomplete. SC-028 freezes a controlled initial-band and frequency-extension test on all six development cases. |
 | [11](iteration_11/01_results.md) | SC-028 full-atlas preflight fails on rough endpoints; every active inverse column through M=19 passes. SC-029 retains the failed gate and narrows the qualification claim before any recovery outcome. |
-| [12](iteration_12/01_results.md) | SC-029: the initial-band comparison is complete and exposes a tradeoff; frequency-extension and matched extra-work controls are pending. |
+| [12](iteration_12/01_results.md) | SC-029 complete: 36 endpoints, five hard stops. Neither first-band protection nor added frequencies passes the robustness criteria. Extra work on old data improves all six baseline cases; local frequency benefits depend on the prefix. |

@@ -38,6 +38,9 @@ $PY -m experiments.shape_continuation.atlas_strategy_tests qualify --output <fre
 ```
 
 The numerical sources and input hashes used by this result are in
-[`manifest.json`](manifest.json). A separately scoped active-band diagnostic
-may determine whether the failure concerns the proposed inverse space; it
-cannot turn this P=48 gate into a pass.
+[`manifest.json`](manifest.json); the [verbatim frozen plan](frozen_plan.txt)
+retains its original hash while the live plan's execution status is updated.
+The [separately scoped active-band diagnostic](../SC-028-active-band-diagnostic/README.md)
+subsequently qualified the actual inverse space and led to
+[SC-029](../SC-029-atlas-strategies/README.md). It does not turn this P=48
+gate into a pass.

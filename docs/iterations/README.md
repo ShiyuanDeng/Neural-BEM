@@ -131,8 +131,15 @@ Iterations 04–09 (through 2026-09-24) are summarized in the
 
 [Iteration 09](shape_frequency_continuation/iteration_09/01_results.md)
 implements that review. The atlas-derived band policy is not reliably better
-than Borges' ladder on held-out cases; a regularity-controlled step metric is
-proposed and not approved.
+than Borges' ladder on the then-held-out cases.
+[Iterations 10–12](shape_frequency_continuation/iteration_12/01_results.md)
+independently audit the consolidated atlas and complete the user-requested
+strategy tests: 36 endpoints, including five hard stops. A smaller first
+band helps C/peanut and harms kite/hook; higher frequencies have local
+benefits but neither strategy passes the frozen robustness criteria.
+Extra work on the original data improves all six baseline cases. All six
+are now development data. The separate SC-027 regularity-metric proposal
+remains unexecuted; the closeout schedules no new campaign.
 
 ## What to do at each stage
 

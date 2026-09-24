@@ -6,9 +6,10 @@
   requests analysis, proposed strategies, then tests and documented results,
   with commit/push at each milestone. That instruction authorizes this
   bounded follow-up and supersedes the older per-ID pause for this scope.
-- **Execution status: NOT STARTED.** This plan is frozen before recovery
-  outcomes. Its checkpoints are dataset analysis/plan, qualified harness,
-  then executed results.
+- **Execution status: COMPLETE at the failed qualification gate.** No
+  recovery arm was dispatched. The original prospective contract is
+  preserved byte-for-byte in [the frozen snapshot](../../../../results/validation/shape_continuation/SC-028-atlas-strategies/frozen_plan.txt),
+  matching the manifest hash. See [iteration 11](../iteration_11/01_results.md).
 - **Checkout:** existing `feature/shape-frequency-continuation`; no new
   branch or worktree. Claude's completed source is `9b8918c`.
 

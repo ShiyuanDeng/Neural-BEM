@@ -4,7 +4,10 @@
 
 **Approval status: APPROVED** under the current user request to analyse,
 propose, test and document the atlas strategies. **Execution status:
-NOT STARTED** at this freeze. Existing branch; commit/push milestones.
+COMPLETE**: all 36 endpoints recorded, including five hard stops.
+The [closeout](../iteration_12/01_results.md) reports all frozen comparisons.
+The original prospective plan is preserved in [the frozen snapshot](../../../../results/validation/shape_continuation/SC-029-atlas-strategies/frozen_plan.txt),
+matching its manifest hash. Existing branch; commit/push milestones.
 
 ## Contract
 

@@ -88,6 +88,12 @@ builders and inverse to establish a matched baseline.
 - `probe_cases.py`: SC-024(b), rule-chosen steps executed at recorded states.
 - `policy_cases.py`: SC-025, band policies (ladder, fixed32, progress, and the
   A2 `parsimonious` atlas rule) on development and declared held-out cases.
+- `atlas_dataset.py`: SC-026's consolidated normalized Jacobians and residuals
+  over 1,286 unique states, with separately stored evaluation-only layers.
+- `atlas_strategy_tests.py`: SC-028/029's isolated initial-band and frequency
+  comparison using the existing `fit_stage` API, fixed budgets and saved
+  prefix reuse. The [run record](../../results/validation/shape_continuation/SC-029-atlas-strategies/README.md)
+  distinguishes the failed P=48 preflight from the M<=19 inverse-space gate.
 - `test_atlas_survey.py`: the stage step assembled from per-frequency layers
   equals the backend's proposal. Also checked:
   - the GN step algebra and the Schur-complement conditional step;

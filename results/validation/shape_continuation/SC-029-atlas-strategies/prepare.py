@@ -11,9 +11,19 @@ def main():
               (st.source_folder(c)/n for n in ("observations.json","truth.json","oracle_check.json"))}
     for c in st.CASES:
         assert st.sc.read(st.source_folder(c)/"oracle_check.json")["passed"]
+    reference=st.sc.read(st.ad.BASE/"SC-028-atlas-strategies/manifest.json")
+    if st.sc.source_hashes()!=reference["source_sha256"] or inputs!=reference["inputs"]:
+        raise RuntimeError("Cannot reuse numerical qualification after source or input changes")
     base = st.ad.BASE / "SC-028-atlas-strategies/qualification.json"
     diag = st.ad.BASE / "SC-028-active-band-diagnostic/diagnostic.json"
     fields, active = st.sc.read(base), st.sc.read(diag)
+    assert len(fields["rows"])==len(active["rows"])==2*len(st.CASES)
+    assert {(d["case"],d["frequency_hz"]) for d in active["rows"]}=={
+        (c,f) for c in st.CASES for f in (1.5e9,2.5e9)}
+    recorded=st.ad.BASE/"SC-029-atlas-strategies/manifest.json"
+    if recorded.exists():
+        for path,expected in st.sc.read(recorded)["qualification_evidence"].items():
+            assert st.ad.digest(st.sc.ROOT/path)==expected, f"Qualification evidence changed: {path}"
     rows = []
     for f,d in zip(fields["rows"],active["rows"]):
         assert (f["case"],f["frequency_hz"]) == (d["case"],d["frequency_hz"])
@@ -24,8 +34,12 @@ def main():
         st.ad.BASE/"SC-025-band-policies/runs/ladder"/c/"result.json" for c in st.CASES]]
     plan = st.sc.ROOT / "docs/iterations/shape_frequency_continuation/iteration_11/03_plan.md"
     assert not (output / "manifest.json").exists(), "Use a fresh bundle"
+    original_plan=recorded.with_name("frozen_plan.txt")
+    if recorded.exists():
+        assert st.ad.digest(original_plan)==st.sc.read(recorded)["plan_sha256"]
+    (output/"frozen_plan.txt").write_bytes((original_plan if recorded.exists() else plan).read_bytes())
     st.sc.write(output / "manifest.json", dict(experiment="SC-029",source_sha256=st.sc.source_hashes(),inputs=inputs,
-        plan=str(plan.relative_to(st.sc.ROOT)),plan_sha256=st.ad.digest(plan),
+        plan=str(plan.relative_to(st.sc.ROOT)),plan_sha256=st.ad.digest(output/"frozen_plan.txt"),
         qualification_evidence={str(p.relative_to(st.sc.ROOT)):st.ad.digest(p) for p in evidence},
         cases=st.CASES,prefixes=st.PREFIXES,suffixes=st.SUFFIXES,extra_frequencies_hz=st.EXTRA_HZ,
         prefix_cap=st.PREFIX_CAP,path_cap=st.PATH_CAP,path_seconds=st.PATH_SECONDS))
