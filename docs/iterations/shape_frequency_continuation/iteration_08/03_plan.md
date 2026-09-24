@@ -229,3 +229,58 @@ Representability at K is reported, and is not used to change K.
 Each experiment gets a fresh bundle with a manifest, source hashes, inputs,
 configurations, per-run histories, evaluation files and a README. Failed
 arms stay in the comparison.
+
+## Amendment A1, 2026-09-24 — a post hoc rule from the SC-024(b) probes
+
+**Observed, before this amendment** (SC-024 `probes/`, 110 executed
+rule-chosen steps at 24 recorded states):
+- The Gauss–Newton model predicts the realized decrease of steps that were
+  never executed well: realized/predicted has median 1.04, and 85% lie
+  within ±20%.
+- **The data decrease of the step the backend would actually take ranks
+  bands like the geometric gain.** Within a state it is positive in all 21
+  states with at least three executed bands (median Spearman +1.0). By eye,
+  its maximum sits at the oracle band at about 20 of the 22 states that
+  have an oracle.
+- SC-023's `predicted_fraction` is the model decrease of the *raw*
+  conditional step, before step control and halving. It grows with the band
+  by construction, which is why it ranked bands backwards (−0.27).
+
+**The rule, labelled post hoc.** Call it `controlled`. At each decision it
+chooses the band whose executed step, computed truth-free, has the largest
+model decrease:
+- the conditional LM step at λ;
+- then the decision's step control (clip or physical 6 mm);
+- then halving to the first trial the decision's refit gate admits
+  (geometry only, as recorded in SC-023's `halving` column).
+
+Ties go to the smaller band, and a band with no admissible halving
+contributes 0. The step-control budget is what penalizes bands whose
+direction spends displacement on weakly determined harmonics. A
+trust-region reading of the same idea is standard: compare subspaces by the
+model decrease each achieves within a physical step bound (Nocedal & Wright,
+*Numerical Optimization*, ch. 4; Conn, Gould & Toint, *Trust-Region
+Methods*, 2000).
+
+**Evaluation, fixed now.**
+- Compute the rule's feature for every SC-023 decision from the stored
+  blocks and the recorded halvings. No new solves and no new trials.
+- Apply the plan's SC-023 qualification gate unchanged. In addition, apply
+  the same criteria under coefficient control with gate G2, the backend
+  that SC-025 uses.
+- The rule qualifies only if it passes both.
+
+These are development data, and the probe states are among them, so a pass
+is development evidence only.
+
+**If it qualifies**, it is frozen as SC-025's `atlas` arm, with SC-025's
+backend variant (coefficient clip, gate 1e-5, λ from the LM state):
+- At each stage start, fresh P=48 cells at the stage's frequencies give G
+  and g; they are charged to the ledger.
+- The rule's feature is computed with the backend's own control and gate at
+  λ = 1e-3.
+- The arm runs on the development cases and then the held-out cases, with
+  the other arms unchanged.
+
+The held-out cases have not been generated or run with any arm when this
+amendment is written.
