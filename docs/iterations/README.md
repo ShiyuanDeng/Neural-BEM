@@ -140,6 +140,12 @@ benefits but neither strategy passes the frozen robustness criteria.
 Extra work on the original data improves all six baseline cases. All six
 are now development data. The separate SC-027 regularity-metric proposal
 remains unexecuted; the closeout schedules no new campaign.
+[Iteration 13](shape_frequency_continuation/iteration_13/01_results.md) closes
+SC-030: SPD-008 is the SPD reference, and exact cache reuse is qualified for the hybrid.
+The user's atlas-to-inverse research brief is placed and
+[reviewed](shape_frequency_continuation/iteration_13/02_proposals/02_state_reconciliation_and_SC-031.md)
+there. SC-031, a regularizing-metric test aimed at the stage-1 curvature
+collapse, is proposed and **not approved**.
 
 ## What to do at each stage
 
