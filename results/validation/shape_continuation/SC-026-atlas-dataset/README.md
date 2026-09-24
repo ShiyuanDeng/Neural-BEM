@@ -20,7 +20,7 @@ arms.
 | `evaluation/<case>_EVALUATION_ONLY.npz` (local) | The normal-ray error per harmonic (exact current-normal move to the truth), with its beyond-48 RMS, coverage and misalignment; the closest-distance proxy; symmetric RMS and Hausdorff distances; tightest curvature radius; refit error at K=192; speed ratio; perimeter |
 | `index.json` | Every unique state, with each place it occurs: bundle, run, stage, iteration, band, loss, damping. Plus its distance and radius |
 | `manifest.json`, `summary.json` | Source and input hashes, the file SHA-256 values, the build time |
-| `analyze.py` and its outputs | The first analysis (added in the next commit) |
+| `analyze.py`, `analysis*.json`, `analysis.png`, `ANALYSIS.md` | The [first analysis](ANALYSIS.md) |
 
 **Conventions** (as in SC-022):
 - Coordinates are a0, a1…a48, b1…b48, in metres, of the normal distance in
