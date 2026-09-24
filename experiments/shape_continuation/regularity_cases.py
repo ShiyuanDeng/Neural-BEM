@@ -2,6 +2,8 @@
 
 Frozen contract: docs/iterations/shape_frequency_continuation/iteration_13/03_plan.md.
 Phases: prepare -> qualify -> stage-a -> gate -> (stage-b | score-a) -> report.
+SC-032 (iteration_14/03_plan.md) continues SC-031's stage-A checkpoints in a
+fresh bundle: prepare-continuation -> continue.
 Run with the EMNerf interpreter, PYTHONPATH=solvers:. and one BLAS thread per
 worker. The fitting path receives observations, its start and settings only;
 truth enters `ast.score` after a path returns.
@@ -11,6 +13,7 @@ from concurrent.futures import ProcessPoolExecutor
 from dataclasses import asdict, replace
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 import time
@@ -34,6 +37,11 @@ PLAN = sc.ROOT / "docs/iterations/shape_frequency_continuation/iteration_13/03_p
 TEST = sc.ROOT / "pytest/shape_continuation/test_regularizing_metric.py"
 R0 = sc.ROOT / "results/validation/shape_continuation/SC-029-atlas-strategies/runs/baseline"
 THREADS = ("OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "MKL_NUM_THREADS")
+CONTINUATION_PLAN = sc.ROOT / "docs/iterations/shape_frequency_continuation/iteration_14/03_plan.md"
+CONTINUATION_OUTPUT = sc.ROOT / "results/validation/shape_continuation/SC-032-regularizing-metric-prefix"
+CONTINUATION_UNITS = 10000
+DRIVER = "experiments/shape_continuation/regularity_cases.py"
+HEAVY_FIRST = ("circle_to_c", "peanut", "kite", "hook", "circle_to_star", "wrong_circle")
 
 
 def sources():
@@ -71,7 +79,7 @@ def verify(output):
         raise RuntimeError("Frozen numerical sources changed")
     if any(sc.digest(sc.ROOT / p) != h for p, h in manifest["input_sha256"].items()):
         raise RuntimeError("Frozen input changed")
-    if sc.digest(PLAN) != manifest["plan_sha256"]:
+    if sc.digest(sc.ROOT / manifest.get("plan", str(PLAN.relative_to(sc.ROOT)))) != manifest["plan_sha256"]:
         raise RuntimeError("Frozen plan changed")
 
 
@@ -112,6 +120,36 @@ def restored(snapshot, cap, seconds):
     ledger.solves, ledger.reciprocal, ledger.failed = (dict(snapshot[k]) for k in
                                                        ("solves", "reciprocal_batches", "failed"))
     return ledger
+
+
+def prepare_continuation(output, source):
+    """SC-032: a fresh bundle seeded with hashed copies of SC-031's stage-A records."""
+    parent = sc.read(source / "manifest.json")
+    current = sources()
+    changed = sorted(k for k in set(parent["source_sha256"]) | set(current)
+                     if parent["source_sha256"].get(k) != current.get(k))
+    if changed != [DRIVER]:
+        raise RuntimeError(f"Numerical sources differ from the resumed experiment: {changed}")
+    if sc.read(source / "gate.json")["released"]:
+        raise RuntimeError("SC-031 already released its own stage B")
+    output.mkdir(parents=True, exist_ok=False)
+    copied = {}
+    for arm in ARMS:
+        for case in CASES:
+            for name in ("configuration.json", "stage_1_history.json", "stage_a.json"):
+                origin, target = source / "runs" / arm / case / name, output / "runs" / arm / case / name
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(origin, target)
+                copied[str(origin.relative_to(sc.ROOT))] = sc.digest(origin)
+    sc.write(output / "manifest.json", dict(experiment="SC-032", parent_experiment="SC-031",
+        parent_manifest_sha256=sc.digest(source / "manifest.json"), source_sha256=current,
+        input_sha256=parent["input_sha256"], plan=str(CONTINUATION_PLAN.relative_to(sc.ROOT)),
+        plan_sha256=sc.digest(CONTINUATION_PLAN), copied_stage_a_sha256=copied, cases=CASES, arms=ARMS,
+        prefix_cap=PREFIX_CAP, prefix_seconds=PREFIX_SECONDS, campaign_units=CONTINUATION_UNITS,
+        stage_b_allocation_per_path=CONTINUATION_UNITS // (len(ARMS) * len(CASES)), workers=MAX_WORKERS,
+        reference=str(R0.relative_to(sc.ROOT)),
+        parent_commit=subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip(),
+        command=sys.argv, prepared=time.strftime("%Y-%m-%dT%H:%M:%S%z")))
 
 
 # --- qualification ---------------------------------------------------------
@@ -263,12 +301,24 @@ def dispatch(function, jobs, workers):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("phase", choices=("prepare", "qualify", "stage-a", "gate", "stage-b", "score-a"))
-    parser.add_argument("--output", type=Path, default=OUTPUT)
+    parser.add_argument("phase", choices=("prepare", "qualify", "stage-a", "gate", "stage-b", "score-a",
+                                          "prepare-continuation", "continue"))
+    parser.add_argument("--output", type=Path, default=None)
+    parser.add_argument("--source", type=Path, default=OUTPUT, help="SC-031 bundle to continue")
     parser.add_argument("--workers", type=int, default=MAX_WORKERS)
     args = parser.parse_args()
     if not 1 <= args.workers <= MAX_WORKERS:
         parser.error(f"The frozen plan allows 1-{MAX_WORKERS} workers")
+    if args.output is None:
+        args.output = CONTINUATION_OUTPUT if args.phase in ("prepare-continuation", "continue") else OUTPUT
+    if args.phase == "prepare-continuation":
+        return prepare_continuation(args.output, args.source)
+    if args.phase == "continue":
+        manifest = sc.read(args.output / "manifest.json")
+        if not all(os.environ.get(k) == "1" for k in THREADS):
+            parser.error("Set one BLAS thread per worker")
+        return dispatch(stage_b, [(args.output, a, c, manifest["stage_b_allocation_per_path"])
+                                  for c in HEAVY_FIRST for a in ARMS], args.workers)
     if args.phase != "prepare" and not all(os.environ.get(k) == "1" for k in THREADS):
         parser.error("Set one BLAS thread per worker")
     if args.phase == "prepare":
