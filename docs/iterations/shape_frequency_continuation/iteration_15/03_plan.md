@@ -6,7 +6,10 @@
   least we are not fixing sc toward a solved issue." The assessment finds five
   controls convincing, and this contract adds them and measures the result.
   SC-033 remains `PROPOSED — NOT APPROVED FOR EXECUTION`.
-- **Execution status:** `NOT STARTED`.
+- **Execution status:** `COMPLETE` (2026-09-24). 18/18 fits; qualification replay PASS. H1 **PASS**.
+  Results: [SC-034 bundle](../../../../results/validation/shape_continuation/SC-034-spd-legacy-controls/README.md),
+  [iteration 16](../iteration_16/01_results.md). The ablation favours arm L over LS; the recommended
+  amendment (adopt L) awaits the user's decision.
 - **Owner:** Claude. **Reviewer:** unassigned.
 
 ## Question and hypotheses

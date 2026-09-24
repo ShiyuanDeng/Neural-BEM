@@ -152,6 +152,10 @@ records SC-032, the user-approved four-stage continuation. The curvature
 metric improves the hard cases without regressions (GM 0.832) but misses the
 ≤ 0.8 adoption bar, so R0 stays the baseline. SC-033 (Borges' curvature-tail
 admissibility filter) is proposed and not approved.
+[Iteration 16](shape_frequency_continuation/iteration_16/01_results.md) records SC-034, a
+user-directed repair of the SPD comparison baseline. A low-order SPD ladder recovers circle, star
+and peanut to ≤ 3.3e-5 mm, where SC-030's SPD arm had failed. The four legacy step controls do not
+help. SC-035 (band-limited hybrid state) is proposed.
 
 ## What to do at each stage
 

@@ -1,0 +1,101 @@
+{
+  "bands": [
+    4,
+    6,
+    8,
+    10
+  ],
+  "step_safeguards": null,
+  "optimizer_template": {
+    "max_iterations": 22,
+    "finite_difference_steps": 0.0001,
+    "max_steps": [
+      0.018,
+      0.018,
+      0.012,
+      0.012,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.012,
+      0.012,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003,
+      0.003
+    ],
+    "initial_damping": 0.001,
+    "damping_increase": 10.0,
+    "damping_decrease": 0.3,
+    "max_damping_trials": 5,
+    "max_backtracks": 7,
+    "gradient_tolerance": 1e-07,
+    "loss_tolerance": 1e-14,
+    "relative_step_tolerance": 1e-07,
+    "max_parameters": 64,
+    "infeasible_trial_policy": "reject"
+  },
+  "nodes": [
+    512,
+    1024
+  ],
+  "minimum_component_radius_m": 0.008,
+  "runtime": {
+    "profile": "compiled",
+    "jacobian": "auto",
+    "kernels": "real_bessel",
+    "device": "cpu",
+    "analytic_constraint_policy": "fd_compatible",
+    "shape_derivative": "reciprocal",
+    "reciprocal_min_nodes": 128,
+    "continuation_backend": "compiled",
+    "continuation_readiness": true
+  },
+  "geometry_validation": "certified",
+  "kernels": "real_bessel",
+  "gauge": "polar_angle",
+  "frequencies_hz": [
+    500000000.0,
+    750000000.0,
+    1000000000.0,
+    1250000000.0
+  ],
+  "stage_plan": [
+    [
+      1,
+      1000
+    ],
+    [
+      2,
+      1250
+    ],
+    [
+      3,
+      1750
+    ],
+    [
+      4,
+      4000
+    ]
+  ],
+  "solve": {
+    "assembly": {
+      "self_assembly": {
+        "near_argument": 0.75,
+        "series_terms": 24,
+        "measure_overlap": true,
+        "maximum_overlap_pairs": 256,
+        "target_chunk_size": 64
+      },
+      "minimum_clearance_in_weights": 2.0,
+      "minimum_absolute_clearance": 0.01
+    },
+    "compute_condition_number": false,
+    "minimum_field_point_clearance_in_weights": 2.0
+  }
+}
