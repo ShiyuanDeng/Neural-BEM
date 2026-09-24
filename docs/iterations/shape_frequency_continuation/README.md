@@ -15,13 +15,13 @@ provisional**, with two profile differences and plotting provenance unresolved.
 | Item | State |
 |---|---|
 | Active cycle | [Iteration 13 — SPD-008 versus the clean hybrid](iteration_13/01_results.md) |
-| Stage | SC-030 implementation qualified: exact cache reuse, 76 tests, forward/start agreement and identical first-stage trajectories. Six-case comparison running under the [approved contract](iteration_12/03_plan.md) |
-| Working implementation | [Continuation package](../../../experiments/shape_continuation/README.md): clean hybrid (`updates.py`, `lm_backend.py`, with opt-in physical step control), the atlas (`atlas_survey.py`, `atlas_dataset.py`; full P=48 qualification is limited at rough states), SC-023–025 drivers, and isolated SC-028/029 strategy and legacy/SPD harnesses. Backend variant for new runs: V2 (refit gate 1e-5) |
-| Latest runs | [SC-029 strategy comparison](../../../results/validation/shape_continuation/SC-029-atlas-strategies/README.md), [SC-028 failed preflight](../../../results/validation/shape_continuation/SC-028-atlas-strategies/README.md), [SC-026 atlas dataset and first analysis](../../../results/validation/shape_continuation/SC-026-atlas-dataset/ANALYSIS.md), [SC-025](../../../results/validation/shape_continuation/SC-025-band-policies/README.md), [SC-024](../../../results/validation/shape_continuation/SC-024-backend-ablations/README.md), [SC-023](../../../results/validation/shape_continuation/SC-023-conditional-candidates/README.md) |
-| Review / next decision | Compare the clean fixed ladder with SPD-008 on the six common starts, and measure the cache improvement separately. SC-029's [strategy conclusions](iteration_12/01_results.md) remain unchanged; no new adaptive policy is being tested |
+| Stage | **SC-030 COMPLETE:** 36 runs, exact cache/repetition agreement, lower hybrid RMS on all six common starts; 12.62% aggregate hybrid time reduction. Native SPD stops on three cases and stagnates on the other three; this is fixed-topology continuation, not a full topology rerun |
+| Working implementation | [Continuation package](../../../experiments/shape_continuation/README.md): clean hybrid (`updates.py`, `lm_backend.py`, with opt-in physical step control), the atlas (`atlas_survey.py`, `atlas_dataset.py`; full P=48 qualification is limited at rough states), SC-023–025 drivers, and isolated SC-028/029 strategy and legacy/SPD harnesses. Backend variant for new runs: V2 (refit gate 1e-5), fixed M=3/5/7/9 ladder and qualified exact validation cache; SPD comparison reference: SPD-008 |
+| Latest runs | [SC-030 SPD-008 comparison](../../../results/validation/shape_continuation/SC-030-spd008-comparison/README.md), [SC-029 strategy comparison](../../../results/validation/shape_continuation/SC-029-atlas-strategies/README.md), [SC-028 failed preflight](../../../results/validation/shape_continuation/SC-028-atlas-strategies/README.md), [SC-026 atlas dataset and first analysis](../../../results/validation/shape_continuation/SC-026-atlas-dataset/ANALYSIS.md), [SC-025](../../../results/validation/shape_continuation/SC-025-band-policies/README.md), [SC-024](../../../results/validation/shape_continuation/SC-024-backend-ablations/README.md), [SC-023](../../../results/validation/shape_continuation/SC-023-conditional-candidates/README.md) |
+| Review / next decision | Use SPD-008 as the reference and exact cache reuse for new clean-hybrid runs. Keep the fixed ladder; SC-029's [strategy conclusions](iteration_12/01_results.md) remain unchanged. No successor or default change; independent review unassigned |
 | Figure 1 | Unchanged from iteration 03: still provisional. The band-rule measurement bears on it but does not reproduce it |
 | Checkout | Existing `feature/shape-frequency-continuation` branch; no new branch or worktree |
-| Reviewer of latest changes | SC-020/021/022: Codex, outsider review. SC-023 to SC-025: none yet. SC-026 independently audited by Codex; SC-028/029 independent reviewer unassigned |
+| Reviewer of latest changes | SC-020/021/022: Codex, outsider review. SC-023 to SC-025: none yet. SC-026 independently audited by Codex; SC-028/029 independent reviewer unassigned; SC-030 owner review by Codex, independent reviewer unassigned |
 
 The user authorized autonomous development of this isolated pipeline and
 commit/push checkpoints. Iteration 04 adds a measured characterization of how
@@ -41,6 +41,7 @@ handoff only.
 
 ## Where things live
 
+- [Iteration 13 closeout](iteration_13/01_results.md): SPD-008 versus the clean hybrid on all six common starts; [SC-030 evidence](../../../results/validation/shape_continuation/SC-030-spd008-comparison/README.md).
 - [Iteration 12 closeout](iteration_12/01_results.md): all 36 strategy endpoints,
   decisions and next questions; [SC-029 evidence](../../../results/validation/shape_continuation/SC-029-atlas-strategies/README.md).
 - [Independent consolidated-atlas audit](iteration_10/01_results.md),
@@ -75,7 +76,7 @@ handoff only.
   [reference implementation](../../reference/papers/README.md#reference-implementation)
   used to audit the numerical conventions. Figure 1's exact provenance is open.
 - [Qualification index](../../../results/validation/shape_continuation/README.md):
-  SC-001 through SC-029, with raw measurements, scripts, checkpoints and failures.
+  SC-001 through SC-030, with raw measurements, scripts, checkpoints and failures.
 - [Literature review and reading map](Atlas-Driven%20Adaptive%20Continuation%20in%20Inverse%20Scattering_%20Literature%20Review%20and%20Pre-Coding%20Reading%20M.pdf):
   the user-supplied survey that set iteration 04's experiment design, with its
   own stated search cutoff and verification limits.
@@ -102,3 +103,4 @@ the next cycle. Code and run artifacts retain their current locations.
 | [10](iteration_10/01_results.md) | Consolidated SC-026 atlas independently audited. Sensitive columns are not jointly determined harmonics; normal-ray coverage is incomplete. SC-028 freezes a controlled initial-band and frequency-extension test on all six development cases. |
 | [11](iteration_11/01_results.md) | SC-028 full-atlas preflight fails on rough endpoints; every active inverse column through M=19 passes. SC-029 retains the failed gate and narrows the qualification claim before any recovery outcome. |
 | [12](iteration_12/01_results.md) | SC-029 complete: 36 endpoints, five hard stops. Neither first-band protection nor added frequencies passes the robustness criteria. Extra work on old data improves all six baseline cases; local frequency benefits depend on the prefix. |
+| [13](iteration_13/01_results.md) | SC-030 complete: 36 runs. Exact reuse cuts hybrid inversion time 12.62% with identical trajectories; the fixed ladder has lower RMS error on all six common starts. SPD hard-stops on three cases and completes the other three with large errors. Native geometry/guards differ; this is not a full topology comparison. |

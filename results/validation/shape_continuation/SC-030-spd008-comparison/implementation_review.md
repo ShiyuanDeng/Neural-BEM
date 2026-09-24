@@ -45,7 +45,10 @@ its old merge observations and geometry are not used as these fits' data/start.
 Truth and the other 15 catalog frequencies enter only post-run scoring. Reading
 input bytes to verify their hashes does not supply truth to either optimizer.
 
-Both physical starts agree exactly on the checked grid. Both use 512/1024
+The input-circle bridges agree exactly on the preflight grid. The additional
+[actual-start audit](actual_start_audit.json) compares saved iteration-zero
+states after native initialization and the hybrid arclength refit: differences
+are at roundoff (below 1e-14 m), not a different initial boundary. Both use 512/1024
 production/refined nodes and the same prediction tolerances. A decreasing
 candidate that leaves the refined numerical regime remains a hard stop in both
 methods, not an opportunity to relax a guard or quietly increase resolution.
@@ -66,6 +69,11 @@ documented sampling/interpolation bound. The common field evaluator is the
 package forward at 1024 nodes: it is outside fitting and selection, but shares
 the hybrid's forward implementation. It is not an independent third physics
 implementation. The cross-implementation start check is reported separately.
+Catalog residuals outside the four training frequencies are diagnostics at
+1024 nodes; this experiment does not independently refine all nineteen endpoint
+frequencies. The primary geometry-error comparison does not depend on those
+field scores. Endpoint training-resolution flags remain separate from the
+checks made on each accepted step's active frequencies.
 
 ## Exact cache
 

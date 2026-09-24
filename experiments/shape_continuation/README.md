@@ -13,7 +13,11 @@ The current SPD comparison reference is **SPD-008**: compiled runtime,
 real-Bessel CPU kernels and certified exact geometry reuse. The historical
 SC-020/021 driver and results retain their original settings; they are not
 timings of this reference. The [SC-030 contract](../../docs/iterations/shape_frequency_continuation/iteration_12/03_plan.md)
-defines the six-case comparison and its cache-off hybrid control.
+defines the six-case comparison and its cache-off hybrid control. The
+[completed SC-030 comparison](../../docs/iterations/shape_frequency_continuation/iteration_13/01_results.md)
+qualifies exact reuse for new clean-hybrid runs: 12.62% aggregate inversion-time
+reduction, identical cached/off trajectories and 76 pre-dispatch tests. Keep
+the fixed M=3/5/7/9 ladder as the baseline; no adaptive policy is promoted.
 
 The clean hybrid supports the same opt-in, bounded, fit-local validation cache:
 
@@ -36,8 +40,9 @@ production/refined resolutions from its `FitStage` records.
 
 `spd008_comparison.py` runs the approved fixed-topology comparison using the
 existing two stage fitters. Use `prepare`, then `qualify`, then `campaign`, each
-with `--output results/validation/shape_continuation/SC-030-spd008-comparison`,
-under the EMNerf Python environment with `PYTHONPATH=solvers:.` and
+with the same `--output <fresh-output-directory>`; preserve the existing
+[SC-030 evidence](../../results/validation/shape_continuation/SC-030-spd008-comparison/README.md).
+Run under the EMNerf Python environment with `PYTHONPATH=solvers:.` and
 `OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1`. It freezes sources
 and inputs, checks them before/after each worker, and keeps scoring outside
 the inversion timer and training-only fit interfaces.
