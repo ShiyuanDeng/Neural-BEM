@@ -14,7 +14,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from .geometry import FourierCurve, displaced, grid_size, normal_basis, reparameterize, integer
+from .geometry import FourierCurve, arclength_angles, displaced, grid_size, normal_basis, reparameterize, integer
 
 
 class UpdateRefused(ValueError):
@@ -111,6 +111,36 @@ class BorgesUpdate:
         weights = nodes.arc_length_weights
         return dict(maximum_normal_m=float(np.max(np.abs(h))),
                     rms_normal_m=float(np.sqrt(np.sum(h**2 * weights) / np.sum(weights))))
+
+    def metric(self, space, kind, smoothing_m=None):
+        """Step metric in update coordinates; ``a @ R @ a`` is in m^2 (SC-031, opt-in).
+
+        ``"mass"``: W = (1/P) int b_i b_j ds, the mean-square normal move, which
+        is diag(1, 1/2, ...) on a circle. ``"curvature"``: W + l^4 (1/P) int
+        K_i K_j ds, where K_i = -(b_i,ss + kappa^2 b_i) is the linearized
+        curvature change per metre of coefficient i (outward normal, convex
+        kappa > 0, physical arclength s). ``smoothing_m`` is l in metres.
+        Both are covariant under a shift of the arclength origin.
+        """
+        nodes = space.curve.nodes(grid_size(max(space.curve.band, space.update_modes)))
+        basis = normal_basis(nodes, space.update_modes)
+        weights = nodes.arc_length_weights / np.sum(nodes.arc_length_weights)
+        mass = basis.T @ (weights[:, None] * basis)
+        if kind == "mass":
+            return mass
+        if kind != "curvature":
+            raise ValueError(f"Unknown step metric {kind!r}.")
+        if smoothing_m is None or not np.isfinite(smoothing_m) or smoothing_m <= 0:
+            raise ValueError("The curvature metric needs a positive smoothing length in metres.")
+        angles, _ = arclength_angles(nodes)
+        harmonics = np.arange(1, space.update_modes + 1)
+        phase = angles[:, None] * harmonics
+        scale = (2 * np.pi / (nodes.perimeter * self.length_unit_m)) ** 2
+        second = np.column_stack((np.zeros(len(angles)), -np.cos(phase) * harmonics**2,
+                                  -np.sin(phase) * harmonics**2)) * scale
+        kappa = nodes.curvatures / self.length_unit_m
+        change = -(second + kappa[:, None] ** 2 * basis)
+        return mass + smoothing_m**4 * (change.T @ (weights[:, None] * change))
 
     def trial(self, space, coefficients):
         a = self._checked(space, coefficients)

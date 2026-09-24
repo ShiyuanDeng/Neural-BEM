@@ -104,6 +104,28 @@ class BackendConfig:
     # added after the 2026-09-24 review; runs before it used "coefficient".
     step_control: str = "coefficient"
     physical_step_bound_m: float = 0.006
+    # SC-031 opt-in regularizing LM (defaults reproduce V2 bitwise).
+    # damping_rule "schedule": first damping of an iteration carries over
+    # (initial_damping, then x damping_decrease after success). "hanke": it
+    # solves ||r + J d(lam)|| = hanke_ratio ||r|| each iteration (Hanke 1997),
+    # falling back to a Gauss-Newton floor when unattainable. metric
+    # "marquardt": max(diag G, scaling_floor); "mass"/"curvature": the
+    # update's physical step metric, with smoothing length
+    # 1 / (detectability_factor * exterior wavenumber of the stage's highest
+    # frequency). log_model adds pred = -g.d - d.G.d/2 to every trial record.
+    damping_rule: str = "schedule"
+    hanke_ratio: float = 0.7
+    metric: str = "marquardt"
+    detectability_factor: float = 2.5
+    log_model: bool = False
+
+    def __post_init__(self):
+        if self.damping_rule not in ("schedule", "hanke"):
+            raise ValueError(f"Unknown damping rule {self.damping_rule!r}.")
+        if self.metric not in ("marquardt", "mass", "curvature"):
+            raise ValueError(f"Unknown step metric {self.metric!r}.")
+        if not 0 < self.hanke_ratio < 1 or not self.detectability_factor > 0:
+            raise ValueError("hanke_ratio must lie in (0, 1) and detectability_factor must be positive.")
 
     def bounds(self, orders):
         order = np.asarray(orders)
@@ -120,6 +142,38 @@ def control_step(proposed, space, update, config):
         size = update.measure(space, proposed)["maximum_normal_m"]
         return proposed * min(1.0, config.physical_step_bound_m / size) if size > 0 else proposed
     raise ValueError(f"Unknown step control {config.step_control!r}.")
+
+
+def hanke_damping(matrix, residual, metric, ratio, floor=1e-12):
+    """Hanke's regularizing-LM parameter in the metric R (Inverse Problems 13, 1997).
+
+    Returns (lam, attainable) with ||r + J d(lam)|| = ratio ||r|| for
+    d(lam) = -(J^T J + lam R)^{-1} J^T r. The linearized residual rises
+    monotonically from its Gauss-Newton value (lam = 0) to ||r||; if the
+    Gauss-Newton value already exceeds ratio ||r||, return the floor
+    ``floor`` x the mean eigenvalue of the R-scaled Gauss-Newton matrix.
+    """
+    from scipy.optimize import brentq
+    factor = np.linalg.cholesky(metric)
+    scaled = np.linalg.solve(factor, np.asarray(matrix).T).T  # J C^{-T}, R = C C^T
+    u, singular, _ = np.linalg.svd(scaled, full_matrices=False)
+    projection = u.T @ residual
+    total = float(residual @ residual)
+    outside = max(total - float(projection @ projection), 0.0)
+    power = singular**2
+    lowest = floor * float(np.mean(power)) if power.size and np.mean(power) > 0 else floor
+    target = ratio**2 * total
+
+    def excess(log_lam):
+        lam = np.exp(log_lam)
+        return outside + float(np.sum((lam / (power + lam))**2 * projection**2)) - target
+
+    if excess(np.log(lowest)) >= 0:
+        return lowest, False
+    high = max(float(np.max(power)), lowest) * 10
+    while excess(np.log(high)) < 0:
+        high *= 10
+    return float(np.exp(brentq(excess, np.log(lowest), np.log(high), xtol=1e-13, rtol=1e-15))), True
 
 
 class Ledger:
@@ -362,6 +416,15 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None)
         history.append(row)
 
     scale = max(float(np.linalg.norm(curve.coefficients) * update.length_unit_m), 1.0)
+    smoothing = None
+    if config.metric == "curvature":
+        smoothing = update.length_unit_m / (config.detectability_factor *
+                                            max(o.wavenumber for o in stage.observations))
+
+    def damping_matrix(space, normal):
+        if config.metric == "marquardt":
+            return np.diag(np.maximum(np.diag(normal), config.scaling_floor))
+        return update.metric(space, config.metric, smoothing)
     try:
         if not admissible(curve):
             raise NumericalFailure("initial state leaves the geometry domain")
@@ -382,12 +445,16 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None)
             if converged:
                 break
             normal = matrix.T @ matrix
-            scaling = np.maximum(np.diag(normal), config.scaling_floor)
+            damped = damping_matrix(space, normal)
             accepted = None
             trial_damping = damping
+            rule = None
+            if config.damping_rule == "hanke":
+                trial_damping, attainable = hanke_damping(matrix, current.residual, damped, config.hanke_ratio)
+                rule = dict(hanke_lambda=float(trial_damping), hanke_attainable=bool(attainable))
             for _ in range(config.max_damping_trials):
                 try:
-                    proposed = np.linalg.solve(normal + trial_damping * np.diag(scaling), -gradient)
+                    proposed = np.linalg.solve(normal + trial_damping * damped, -gradient)
                 except np.linalg.LinAlgError:
                     trial_damping *= config.damping_increase
                     continue
@@ -398,6 +465,9 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None)
                         continue
                     trial = dict(iteration=iteration, damping=float(trial_damping), backtrack=backtrack,
                                  step_norm_m=float(np.linalg.norm(step)))
+                    if config.log_model:
+                        trial.update(predicted_decrease=float(-(gradient @ step) - 0.5 * step @ normal @ step),
+                                     **(rule or {}))
                     trials.append(trial)
                     try:
                         candidate_curve, geometry = update.trial(space, step)
