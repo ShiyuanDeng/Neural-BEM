@@ -141,9 +141,16 @@ builders and inverse to establish a matched baseline.
   velocity, the actual-trial derivative and the refusals. Not adopted: see the
   [SC-036 record](../../results/validation/shape_continuation/SC-036-matched-finite-paths/README.md).
   SC-035's centred state-band update stays isolated in its result bundle.
-- `render_videos.py`: side-by-side videos of the six development cases
-  (original hybrid, SC-035 state band, SPD-L) from saved accepted states, with
-  no field solves; see the [video index](../../results/validation/shape_continuation/videos/README.md).
+- `pipeline_video.py`: one video per development scene through the current
+  pipeline (SC-035 state band, then SC-038's release), each frame showing the
+  saved state and its atlas; see the [video index](../../results/validation/shape_continuation/videos/README.md).
+  `atlas_video.py` holds the atlas: per frequency and ripple order, the
+  misfit removable beyond lower orders within a trusted step (QR of the
+  relative Jacobian from SC-039-format traces), and the resolution frontier.
+  `test_atlas_video.py` checks that maths. Both renderers stop unless every
+  atlas reproduces its run's saved loss.
+- `render_videos.py`: the earlier side-by-side comparison (original hybrid,
+  SC-035 state band, SPD-L), now written to `videos/three_method_comparison/`.
 - `trajectory_atlas.py`: SC-039's raw boundary data along every saved
   trajectory (forward/reciprocal traces, node geometry, full 24x24 prediction
   at 19 frequencies on 512/1024 nodes), and the later-atlas helpers `load`,

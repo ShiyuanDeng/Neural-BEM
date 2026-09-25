@@ -1,44 +1,80 @@
-# Six development cases: inversion videos
+# Six development scenes: the current pipeline, with its atlas
 
-Each video shows three inversions side by side, from the common start circle
-through stages 1–4 (0.5 GHz, then 0.75, 1.0 and 1.25 GHz added one per stage)
-to the final states:
+One video per scene, each following one trajectory through the current
+pipeline. Every video is 414 frames (34.5 s at 12 fps), so they play in step
+side by side. No new field solves; every saved accepted state is shown.
 
-- **Original hybrid**: SC-029's baseline (normal steps, K=192), which SC-036
-  replays bitwise.
-- **State band**: the SC-035 low arm (K 8/12/16/20, then a K=192 release stage).
-  It was run on peanut, C, star and kite only, so the circle and hook panels
-  say so.
-- **SPD-L**: SC-034's arm L, the adopted SPD reference. Its state is a Cartesian
-  Fourier curve with band K 4/6/8/10 whose parameter is fixed to the polar angle,
-  so it selects K directly and only holds star-shaped curves.
+| # | Scene | Video | Final frame | Final RMS (mm) | Ends |
+|---|---|---|---|---:|---|
+| 1 | Circle | [1_circle.mp4](1_circle.mp4) | [png](frames/1_circle_final.png) | 0.00024 | completed schedule |
+| 2 | Star | [2_star.mp4](2_star.mp4) | [png](frames/2_star_final.png) | 0.142 | completed schedule; tips too blunt |
+| 3 | C (not star-shaped) | [3_c.mp4](3_c.mp4) | [png](frames/3_c_final.png) | 0.0241 | completed schedule |
+| 4 | Kite | [4_kite.mp4](4_kite.mp4) | [png](frames/4_kite_final.png) | 0.110 | wall-clock limit; spurious sharp point |
+| 5 | Peanut | [5_peanut.mp4](5_peanut.mp4) | [png](frames/5_peanut_final.png) | 0.0104 | completed schedule |
+| 6 | Hook (not star-shaped) | [6_hook.mp4](6_hook.mp4) | [png](frames/6_hook_final.png) | 0.0297 | completed schedule |
 
-Every saved accepted state is shown, with no interpolation and no new field
-solves. A panel holds its last state when a run takes no step in a stage or
-has stopped. The dashed target and the RMS readout are evaluation only; the
-RMS uses the same metric as each run's saved score. Rendering stops unless
-every video ends at the scored endpoint and reproduces its recorded RMS.
+**Pipeline** (the same on every scene): SC-035's state band, stages 1–4 at
+0.5 → 1.25 GHz with update band M 3/5/7/9 and storage band K 8/12/16/20; then
+SC-038's release, all 19 frequencies (0.25–2.5 GHz) with M 11/15/19 and
+K=192. C and kite come from SC-038 (kite on its recorded 768/1536-node path).
+Circle, star, peanut and hook come from
+[SC-040](../SC-040-six-scene-pipeline/README.md), which also records Hausdorff
+errors, curvature radii and audits.
 
-| Case | Video | Final frame | Original hybrid RMS (mm) | State band RMS (mm) | SPD-L RMS (mm) |
-|---|---|---|---:|---:|---:|
-| Circle | [wrong_circle.mp4](wrong_circle.mp4) | [png](wrong_circle_final.png) | 0.0026 | not run | 7.6e-6 |
-| Star | [circle_to_star.mp4](circle_to_star.mp4) | [png](circle_to_star_final.png) | 0.522 | 0.607 | 3.3e-5 |
-| C (not star-shaped) | [circle_to_c.mp4](circle_to_c.mp4) | [png](circle_to_c_final.png) | 3.20 | 0.472 | 10.1, hard stop |
-| Kite | [kite.mp4](kite.mp4) | [png](kite_final.png) | 2.98 | 0.574 | 1.25, hard stop |
-| Peanut | [peanut.mp4](peanut.mp4) | [png](peanut_final.png) | 2.94 | 0.141 | 1.2e-5 |
-| Hook (not star-shaped) | [hook.mp4](hook.mp4) | [png](hook_final.png) | 0.525 | not run | 9.36, hard stop |
+![Star, final state](frames/2_star_final.png)
 
-SPD-L's hard stops are `UNRESOLVED_DERIVATIVE`; its polar-angle parameter
-cannot represent C or hook. All other runs complete their schedules. Playback time is
-not solve time. These are development cases, not a generalization test.
+## How to read a frame
 
-![Peanut, final states](peanut_final.png)
+- **Left**: the accepted state (orange) against the target (dashed), with the
+  RMS error. The target is used only for display.
+- **Heatmap**: columns are the 19 frequencies, rows are ripple orders m
+  (normal ripples around the outline, by arclength). A cell's colour is how
+  much of that frequency's misfit order m could still remove, beyond all
+  lower orders, with a step no larger than the linear model trusts (0.12/k).
+- **Amber box**: what each update uses. Its columns are the frequencies it
+  fits together; its height is the orders it may move (|m| ≤ M). The left
+  column is those frequencies combined, as one update sees them.
+- **Hatched, above the white line**: finer than the data resolve at 0.01% of
+  their size. The data are noise-free and the fits reach about that level, so
+  it is the resolution these runs actually use.
+- **Strip**: what the outline itself holds at each order, with its storage band
+  K. The small bars above it sum orders 25–192.
 
-Rebuild all six (about a minute, EMNerf, repository root):
+What the atlas says at each stage's end (`frames/manifest.json` → `stage_ends`):
+
+- Outside star, every stage ends with at least 81% of the removable misfit
+  at M+1…M+3. The band is the limit, and each next stage raises it. Only two
+  stage ends have more than 5% inside the box: kite's last (below), and
+  circle's last, where the misfit is already about 4e-8.
+- **Star** is the exception that explains its blunt tips. Its content sits at
+  multiples of 5, so at M=11 and M=15 almost nothing waits at M+1…M+3 (4% and
+  1%). At M=19, 95% waits at m=20–22, below the white line: the data resolve
+  it, but the schedule ends one order short.
+- **Kite's** last stage ends with 96% *inside* the box. It stopped on its
+  wall-clock limit, not on its band.
+
+These are development scenes, not a generalization test. The SPD-L baseline
+recovers circle, star and peanut to about 1e-5 mm but cannot represent C or
+hook (see the comparison below).
+
+## Checks
+
+- Each atlas reproduces the loss the run saved at that state to within 1e-15
+  relative (every state that has a saved loss).
+- Every video ends at the recorded endpoint and reproduces its recorded RMS.
+- Recomputed on twice the nodes, no displayed value changes by more than
+  1.0e-3 dex (on log₁₀ values), and no frontier moves.
+
+## Earlier comparison
+
+[`three_method_comparison/`](three_method_comparison/README.md) keeps the
+earlier videos: original hybrid, SC-035 state band and SPD-L side by side, plus
+the hybrid-versus-state-band atlas rows.
+
+## Rebuild
+
+EMNerf, repository root, about a minute:
 
 ```bash
-PYTHONPATH=solvers:. python -m experiments.shape_continuation.render_videos
+PYTHONPATH=solvers:. python -m experiments.shape_continuation.pipeline_video
 ```
-
-[`manifest.json`](manifest.json) records the renderer and input hashes, the
-number of accepted states per panel, and each video's ffprobe check.

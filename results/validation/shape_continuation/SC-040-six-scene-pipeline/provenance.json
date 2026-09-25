@@ -1,0 +1,26 @@
+{
+ "finding": "Each worker ended on its own frozen-source assertion AFTER writing result.json and audit.json.",
+ "cause": "The assertion hashes every experiments/shape_continuation/*.py. During the run the renderer files below were edited or added for the videos. None of them is imported by the inverse, its scoring or its audit.",
+ "changed": {
+  "experiments/shape_continuation/render_videos.py": {
+   "before": "d26bd59091b9b5055fa4c2fe4bb151d684c575692ff28a148d7f9dab5cd96310",
+   "after": "309d4a3030e3d964ce8516d9d673d6aec19f6354356a12f518e55642b87c34b7"
+  },
+  "experiments/shape_continuation/atlas_video.py": {
+   "before": "a326bb0dc09d085b40c590501d71d182d27b3211ac58a17a07dd53d8b75bc842",
+   "after": "002e06cbfa389d43351dba8fa22678ba2d55539b04b67a6b378b06b13c51ccf7"
+  }
+ },
+ "added": {
+  "experiments/shape_continuation/pipeline_video.py": "979af4979d25868447895ae44cd983787470b5560404c2e532277d57885ec603"
+ },
+ "numerical_modules_checked": [
+  "experiments/shape_continuation/atlas_cases.py",
+  "experiments/shape_continuation/atlas_strategy_tests.py",
+  "experiments/shape_continuation/spd_cases.py",
+  "experiments/shape_continuation/trajectory_atlas.py",
+  "experiments/shape_continuation/finite_path_study.py",
+  "experiments/shape_continuation/lm_backend.py"
+ ],
+ "all_changes_are_renderers": true
+}

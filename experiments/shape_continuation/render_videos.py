@@ -28,7 +28,7 @@ from . import atlas_strategy_tests as ast, spd_cases as sc
 from .atlas_survey import symmetric_rms_distance
 
 RESULTS = sc.ROOT / 'results/validation/shape_continuation'
-OUTPUT = RESULTS / 'videos'
+OUTPUT = RESULTS / 'videos' / 'three_method_comparison'
 FPS = 12
 NAMES = dict(wrong_circle='Circle', circle_to_star='Star', circle_to_c='C (not star-shaped)',
              kite='Kite', peanut='Peanut', hook='Hook (not star-shaped)')
