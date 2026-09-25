@@ -1,34 +1,40 @@
 # Overnight briefing — 25 September 2026
 
-**In progress:** three bounded studies following the new atlas/geometry brief,
-with no approval pauses or branch/worktree creation. Work remains on the
-existing `feature/shape-frequency-continuation` branch. The final kite and
-non-star C comparisons are still running; this briefing will be finalized
-when all dispatched work is accounted for.
+**Complete:** three bounded studies (SC-036, SC-035, SC-037) followed the new
+atlas/geometry brief, without approval pauses or new branches or worktrees.
+Work remains on the existing `feature/shape-frequency-continuation` branch.
+All dispatched work finished and nothing is running. The Codex session was
+interrupted at 02:22 BST, before it finalized this briefing and committed.
+Claude committed its files unchanged (`33d9866`), then corrected the stale
+in-progress wording in the handoff and indexes. No result was changed.
 
-The substantive finding so far is that controlling the intermediate boundary
-can help much more than changing the finite path alone. A centred state-band
+The substantive finding is that controlling the intermediate boundary can
+help much more than changing the finite path alone. A centred state-band
 restriction with the derivative of the complete trial construction reduces
-peanut RMS error from **2.944 to 0.1415 mm**, and non-star C error from
-**3.20 to 0.4717 mm**, using the same solver and observations. It also exposes
-a real tradeoff: star error increases from 0.522 to 0.607 mm. A wider later
-state ladder restores star to 0.530 mm but increases C to 0.602 mm, missing its
-predeclared 25% protection limit (27.6% increase). No threshold was retuned.
+peanut RMS error from **2.944 to 0.1415 mm**, non-star C from **3.20 to
+0.4717 mm**, and kite from **2.983 to 0.574 mm** (iteration-limited). It uses
+the same solver and observations. It also exposes a real tradeoff: star error
+increases from 0.522 to 0.607 mm. A wider later state ladder restores star to
+0.530 mm but increases C to 0.602 mm, missing its predeclared 25% protection
+limit (27.6% increase). No threshold was retuned.
 
 What changed:
 
 - **SC-036:** implemented and tested ray and normal paths with identical
   initial normal velocities. Early peanut steps obtain 3.15x more actual
   decrease through the ray path, but both paths fail at the final collapsed
-  peanut state. Complete outcomes are case-dependent; local feasibility does
-  not establish recovery.
+  peanut state. Complete outcomes are case-dependent (normal → ray: peanut
+  2.944 → 1.739, star 0.522 → 0.240, kite 2.983 → 6.165, C 3.202 → 12.177 mm).
+  Local feasibility does not establish recovery; the ray path is not adopted.
 - **SC-035:** implemented a zero-preserving, deliberately projected state
   update and differentiated the entire construction. The low K ladder is
   8/12/16/20, followed by a same-data release to 192. Its matched high-K
-  controls use the same construction. They differ from the old hybrid and
-  their numerical stops are retained.
+  controls use the same construction. They differ from the old hybrid, and
+  their numerical stops (peanut, C, kite) are retained. The final release
+  adds almost no reconstruction value.
 - **SC-037:** tested one wider later ladder, 8/16/32/64/192, from identical
   saved stage-one prefixes. This is a fixed comparison, not a parameter sweep.
+  Its adoption gate fails on C alone.
 - Corrected RD-4's degree-only curvature-radius guarantee. Truncated arclength
   fits need a speed-dependent bound; the K=8 kite is a concrete counterexample
   to the old claim. Coordinate controls distinguish changes of basis from
@@ -40,15 +46,26 @@ There is no demonstrated superior atlas-driven controller, no conformal
 inverse, and no new-shape/noise generalization claim. SPD-L remains much more
 accurate on the star-shaped peanut; its chart cannot represent the C.
 
-Checks so far: 30 regression tests pass; all ten matched-path derivatives
-pass; all four projected-update qualification cells and all eight actual
-pilot endpoint derivative audits pass. Completed original-normal replays are
-bitwise identical. Source/input hashes agree. One reporting TypeError and a
-SIGTERM interruption are preserved; completed results were kept and only
-unfinished comparisons restarted. Runtime observations overlap in execution,
-so no isolated wall-clock speedup is claimed.
+Checks: 30 regression tests pass during the run, and the full 152-test
+shape-continuation suite passes afterwards. All ten matched-path derivatives
+pass. All four projected-update qualification cells, all eight actual pilot
+endpoint derivative audits and all four final low-K endpoint audits pass.
+Original-normal replays are bitwise identical. Source/input hashes agree. One
+reporting TypeError and a SIGTERM interruption are preserved; completed
+results were kept and only unfinished comparisons restarted. Runtime
+observations overlap in execution, so no isolated wall-clock speedup is
+claimed. SC-035–037 have no independent review yet.
+
+Next decision (yours): nothing is proposed or dispatched. Iteration 19
+recommends freezing one explicit state-family policy and testing a narrower
+claim on genuinely new shapes, starts and noise, rather than enlarging the
+atlas or tuning these four development cases.
 
 Evidence: [SC-036](../../results/validation/shape_continuation/SC-036-matched-finite-paths/README.md),
 [SC-035](../../results/validation/shape_continuation/SC-035-state-band/README.md),
+[SC-037](../../results/validation/shape_continuation/SC-037-later-state-release/README.md),
 [coordinate review](../../results/validation/shape_continuation/SC-036-coordinate-review/README.md),
+iterations [17](../iterations/shape_frequency_continuation/iteration_17/01_results.md),
+[18](../iterations/shape_frequency_continuation/iteration_18/01_results.md) and
+[19](../iterations/shape_frequency_continuation/iteration_19/01_results.md),
 [current research handoff](../iterations/shape_frequency_continuation/README.md).

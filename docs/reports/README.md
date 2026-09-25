@@ -10,6 +10,7 @@ historical context.
 
 | Report | Scope |
 |---|---|
+| [overnight_2026-09-25.md](overnight_2026-09-25.md) | Shape-continuation briefing: SC-036 matched finite paths, SC-035 centred state band, SC-037 later release; state restriction helps peanut/C/kite with a star tradeoff; no method promoted |
 | [implicit_mlp_adjoint_2026-09-07.md](implicit_mlp_adjoint_2026-09-07.md) | Direct neural Kress-adjoint implementation and gradient validation; bounded early runs and all three new 12-pair circle/ellipse/star cases fail recovery acceptance |
 | [architecture_snapshot_2026-09-06.md](architecture_snapshot_2026-09-06.md) | Detailed implementation snapshot before the documentation cleanup |
 | [inverse_development_through_2026-09-06.md](inverse_development_through_2026-09-06.md) | Chronological inverse implementation and corrective experiments |

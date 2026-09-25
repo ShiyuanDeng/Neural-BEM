@@ -133,6 +133,14 @@ builders and inverse to establish a matched baseline.
   comparison using the existing `fit_stage` API, fixed budgets and saved
   prefix reuse. The [run record](../../results/validation/shape_continuation/SC-029-atlas-strategies/README.md)
   distinguishes the failed P=48 preflight from the M<=19 inverse-space gate.
+- `finite_paths.py`: SC-036's opt-in `RayUpdate`, a finite ray path about the
+  current parameter-mean centre with exactly `BorgesUpdate`'s normal velocity,
+  Jacobian and metric; non-star states are refused, or use the normal path
+  only with `fallback=True`. `finite_path_study.py` is the matched replay
+  screen; `test_finite_paths.py` checks circle equivalence, identical normal
+  velocity, the actual-trial derivative and the refusals. Not adopted: see the
+  [SC-036 record](../../results/validation/shape_continuation/SC-036-matched-finite-paths/README.md).
+  SC-035's centred state-band update stays isolated in its result bundle.
 - `test_atlas_survey.py`: the stage step assembled from per-frequency layers
   equals the backend's proposal. Also checked:
   - the GN step algebra and the Schur-complement conditional step;

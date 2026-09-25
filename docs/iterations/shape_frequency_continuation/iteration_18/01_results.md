@@ -12,7 +12,7 @@ projection controls stop on numerical refinement in stage two (2.5606 and
 8.9509 mm). Those are hard stops, not stationary solutions. The low-K arm
 retains the full derivative, same solver, same data and same update-band rule.
 A correction based only on finite ray paths improves peanut less and harms
-kite; SC-036's complete campaign is still running.
+kite and C; SC-036's complete campaign is in [iteration 17](../iteration_17/01_results.md).
 
 The sharp-detail star control regresses: 0.6067 mm low K against 0.5222 high K.
 The final K=192 release/repeat takes no step in either arm. Thus a final release

@@ -4,9 +4,11 @@
 requires exact constant speed and does not hold for a general truncated
 arclength fit. A measured K=8 kite fit violates the stated nominal bound.
 [The correction and derivative requirement](04_state_band_qualification.md)
-give the speed-dependent bound and the centred-projection pilot now executing
-under the user's autonomous instruction. Original measurements/proposal are
-preserved below; “not approved” records the earlier proposal status.
+give the speed-dependent bound. The centred-projection test ran under the user's
+autonomous instruction as SC-035 ([iteration 18](../../iteration_18/01_results.md))
+and SC-037 ([iteration 19](../../iteration_19/01_results.md)). Original
+measurements/proposal are preserved below; “not approved” records the earlier
+proposal status.
 
 2026-09-24. Author: Claude (Opus 5.5). A review diagnostic for the user's
 question: "what if we restrict K anyways? … the true ellipse requires many

@@ -14,19 +14,20 @@ provisional**, with two profile differences and plotting provenance unresolved.
 
 | Item | State |
 |---|---|
-| Active cycle | [Iteration 17 — SC-036 matched finite paths; SC-035 centred state-band pilot](iteration_17/01_results.md) |
-| Stage | **RUNNING, 2026-09-25.** SC-036 passed its matched-path screen (early peanut: 3.15x actual decrease); eight full inverses dispatched. SC-035 full-construction derivative checks pass; its separate eight-path stage-1 pilot is running under a binding continuation gate. No method promoted |
-| Working implementation | Existing V2 hybrid and fixed M=3/5/7/9 ladder remain the reference. `finite_paths.py` adds an opt-in ray path with exactly the same normal tangent space. SC-035's isolated bundle implements a centred arclength projection and its complete geometry derivative. The Müller/Kress solver and production defaults are unchanged. **SPD comparison reference: SPD-L** (K 4/6/8/10, no step controls) |
-| Latest runs | [SC-036 screen and conditional inverses](../../../results/validation/shape_continuation/SC-036-matched-finite-paths/), [SC-035 state-band pilot](../../../results/validation/shape_continuation/SC-035-state-band/), [SC-034 SPD-L](../../../results/validation/shape_continuation/SC-034-spd-legacy-controls/README.md) |
-| Review / next decision | The user's 2026-09-25 instruction authorizes autonomous iterations under the [new brief](../../atlas_geometry_high_level_next_steps.md); no per-iteration approval holds remain in this scope. Compare complete recovery before attributing a benefit. RD-3's finite-step explanation is a hypothesis being tested. [SC-035 review](iteration_16/02_proposals/04_state_band_qualification.md) corrects RD-4's unconditional storage-band radius bound; the corrected bound needs minimum and maximum parametrization speeds. Conformal inversion remains conditional |
+| Active cycle | [Iteration 19 — SC-037, an earlier state-band release](iteration_19/01_results.md), after [iteration 17 — SC-036 matched finite paths](iteration_17/01_results.md) and [iteration 18 — SC-035 centred state band](iteration_18/01_results.md) |
+| Stage | **SC-035/036/037 COMPLETE, 2026-09-25; the autonomous run stopped with nothing dispatched.** SC-036: a ray path with the same first-order normal velocity changes finite progress causally but case-dependently (normal → ray RMS: peanut 2.944 → 1.739, star 0.522 → 0.240, kite 2.983 → 6.165, C 3.202 → 12.177 mm); not adopted. SC-035: the low state band K 8/12/16/20 with the complete-construction derivative reaches peanut 0.1415, C 0.4717, kite 0.5743 mm (original hybrid 2.944 / 3.202 / 2.983), but star regresses 0.522 → 0.607 mm; the matched K=192 controls hard-stop on three cases. SC-037: K 8/16/32/64/192 restores star to 0.5305 mm, but C rises to 0.6021 mm and fails the frozen 25% gate (27.65%). No method promoted; these are development cases |
+| Working implementation | Existing V2 hybrid and fixed M=3/5/7/9 ladder remain the reference. `finite_paths.py` adds an opt-in ray path with exactly the same normal tangent space (SC-036; not adopted). SC-035's isolated bundle (`state_update.py`) implements the centred arclength projection and its complete geometry derivative; SC-037 reuses it unchanged. The Müller/Kress solver and production defaults are unchanged. **SPD comparison reference: SPD-L** (K 4/6/8/10, no step controls) |
+| Latest runs | [SC-037 later state release](../../../results/validation/shape_continuation/SC-037-later-state-release/README.md), [SC-035 state band](../../../results/validation/shape_continuation/SC-035-state-band/README.md), [SC-036 matched finite paths](../../../results/validation/shape_continuation/SC-036-matched-finite-paths/README.md), [SC-036 coordinate review](../../../results/validation/shape_continuation/SC-036-coordinate-review/README.md), [SC-034 SPD-L](../../../results/validation/shape_continuation/SC-034-spd-legacy-controls/README.md) |
+| Review / next decision | **The user's decision.** The autonomous iterations under the user's 2026-09-25 instruction and the [new brief](../../atlas_geometry_high_level_next_steps.md) stopped after SC-037; the [overnight briefing](../../reports/overnight_2026-09-25.md) summarizes them. Iteration 19 recommends freezing one explicit state-family policy and testing a narrower claim on genuinely new shapes, starts and noise, not enlarging the atlas or tuning these four cases. No successor is proposed or approved. The [SC-035 review](iteration_16/02_proposals/04_state_band_qualification.md) corrects RD-4's storage-band radius bound, which needs the minimum and maximum parametrization speeds. Conformal inversion remains conditional |
 | Figure 1 | Unchanged from iteration 03: still provisional. The band-rule measurement bears on it but does not reproduce it |
 | Checkout | Existing `feature/shape-frequency-continuation` branch; no new branch or worktree |
-| Reviewer of latest changes | SC-020/021/022: Codex, outsider review. SC-023 to SC-025: none yet. SC-026 independently audited by Codex; SC-028/029 independent reviewer unassigned; SC-030 owner review by Codex, independent reviewer unassigned |
+| Reviewer of latest changes | SC-020/021/022: Codex, outsider review. SC-023 to SC-025: none yet. SC-026 independently audited by Codex; SC-028/029 independent reviewer unassigned; SC-030 owner review by Codex, independent reviewer unassigned; SC-035/036/037 owner Codex, independent reviewer unassigned |
 
 The user authorized autonomous development of this isolated pipeline and
 commit/push checkpoints. On 2026-09-25 the user explicitly extended execution
 through successive bounded iterations until substantive results or research
-blockers, requesting a morning briefing. Branch/worktree restrictions remain. Iteration 04 adds a measured characterization of how
+blockers, requesting a morning briefing. Branch/worktree restrictions remain.
+Iteration 04 adds a measured characterization of how
 each frequency acts on each shape harmonic, where that characterization stops
 being predictive, and one matched-budget test of driving continuation from it.
 Its positive findings are measurements at fixed geometries; its controller
@@ -43,6 +44,17 @@ handoff only.
 
 ## Where things live
 
+- [Iteration 19 results](iteration_19/01_results.md): SC-037, one wider later
+  state ladder; [SC-037 evidence](../../../results/validation/shape_continuation/SC-037-later-state-release/README.md) and [plan](iteration_18/03_plan.md).
+- [Iteration 18 results](iteration_18/01_results.md): SC-035, the centred
+  state-band restriction; [SC-035 evidence](../../../results/validation/shape_continuation/SC-035-state-band/README.md),
+  [plan](iteration_17/03_plan.md) and [derivative/speed review](iteration_16/02_proposals/04_state_band_qualification.md).
+- [Iteration 17 results](iteration_17/01_results.md): SC-036, matched normal
+  and ray finite paths; [SC-036 evidence](../../../results/validation/shape_continuation/SC-036-matched-finite-paths/README.md),
+  [coordinate review](../../../results/validation/shape_continuation/SC-036-coordinate-review/README.md) and [plan](iteration_16/03_plan.md).
+- [Atlas/geometry research brief](../../atlas_geometry_high_level_next_steps.md): the
+  user's 2026-09-25 brief that set iterations 17–19, and the
+  [overnight briefing](../../reports/overnight_2026-09-25.md) that reports them.
 - [Iteration 16 results](iteration_16/01_results.md): SC-034, the SPD comparison fitter with
   the legacy controls and the ladder; [SC-034 evidence](../../../results/validation/shape_continuation/SC-034-spd-legacy-controls/README.md),
   [assessment](iteration_15/02_proposals/01_spd_legacy_controls.md) and [plan](iteration_15/03_plan.md).
@@ -89,7 +101,7 @@ handoff only.
   [reference implementation](../../reference/papers/README.md#reference-implementation)
   used to audit the numerical conventions. Figure 1's exact provenance is open.
 - [Qualification index](../../../results/validation/shape_continuation/README.md):
-  SC-001 through SC-030, with raw measurements, scripts, checkpoints and failures.
+  SC-001 through SC-037, with raw measurements, scripts, checkpoints and failures.
 - [Literature review and reading map](Atlas-Driven%20Adaptive%20Continuation%20in%20Inverse%20Scattering_%20Literature%20Review%20and%20Pre-Coding%20Reading%20M.pdf):
   the user-supplied survey that set iteration 04's experiment design, with its
   own stated search cutoff and verification limits.
@@ -120,3 +132,6 @@ the next cycle. Code and run artifacts retain their current locations.
 | [14](iteration_14/01_results.md) | SC-031: Hanke regularizing LM with an L² or curvature-change metric does not avoid the stage-1 collapse (C/peanut ≈ 2 mm), although the metric is active and ρ ≈ 1. The gate withheld stages 2–4. R2 fits stage-1 data much better; SC-032 (withheld stage B) is proposed. |
 | [15](iteration_15/01_results.md) | SC-032: the curvature metric (R2) improves kite/peanut/C with no case worse (GM 0.832), but misses the ≤ 0.8 bar; Hanke + L² is worse than R0; the collapse remains. R0 stays the baseline. SC-033 (Borges eq. 13 admissibility filter) is proposed. |
 | [16](iteration_16/01_results.md) | SC-034 (user-directed): restoring the legacy controls fixes SC-030's SPD baseline. The ladder is the operative control: SPD-L recovers circle, star and peanut to ≤ 3.3e-5 mm and kite to 1.25 mm; the step controls do not help. The hybrid's peanut collapse is not a property of the 0.5 GHz data. SC-035 (band-limited hybrid state) is proposed. |
+| [17](iteration_17/01_results.md) | SC-036: a ray path with the same first-order normal velocity allows larger useful steps at early peanut/kite corners (3.15x decrease at peanut state 3), yet both paths fail at the terminal peanut corner. Full inverses are mixed: peanut and star improve, kite and C worsen. Coordinate controls separate changes of basis from different physical subspaces. The ray path is not adopted. |
+| [18](iteration_18/01_results.md) | SC-035: a centred state band K 8/12/16/20 with the complete-construction derivative cuts peanut/C/kite RMS to 0.14/0.47/0.57 mm (original hybrid 2.94/3.20/2.98); star regresses 16%. The matched K=192 controls hard-stop on three cases. A final K=192 release adds almost nothing. |
+| [19](iteration_19/01_results.md) | SC-037: the wider ladder K 8/16/32/64/192 restores star (0.53 mm) but C worsens 27.65% against SC-035, failing the frozen 25% gate. The timing of the release is a case-dependent prior. The autonomous run stops; the next step is the user's decision. |
