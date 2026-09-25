@@ -56,10 +56,18 @@ results were kept and only unfinished comparisons restarted. Runtime
 observations overlap in execution, so no isolated wall-clock speedup is
 claimed. SC-035–037 have no independent review yet.
 
-Next decision (yours): nothing is proposed or dispatched. Iteration 19
-recommends freezing one explicit state-family policy and testing a narrower
-claim on genuinely new shapes, starts and noise, rather than enlarging the
-atlas or tuning these four development cases.
+At the overnight closeout, nothing further was dispatched. Iteration 19
+recommended freezing one explicit state-family policy for new-shape/start/noise
+tests. Standing autonomous authorization remained valid.
+
+**Later user-requested follow-up — SC-038:** the old final K release kept M=9
+and only four frequencies. Releasing M=11/15/19 on all 19 frequencies now
+reaches C **0.0241 mm** and kite **0.1096 mm**, versus matched M=9 controls
+**0.4895 / 0.5518 mm**. Kite required a denser-grid replay, remains time-limited,
+and has a sharp feature (sampled radius 0.091 mm versus truth 2.138 mm). All
+numerical audits pass. This qualifies the original release interpretation;
+it does not make kite a complete regularity success.
+[Full result and figures](../../results/validation/shape_continuation/SC-038-update-band-release/README.md).
 
 Evidence: [SC-036](../../results/validation/shape_continuation/SC-036-matched-finite-paths/README.md),
 [SC-035](../../results/validation/shape_continuation/SC-035-state-band/README.md),

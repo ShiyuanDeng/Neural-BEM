@@ -20,6 +20,7 @@ below; these cases do not establish general robustness.
 
 | Qualification | Finding |
 |---|---|
+| [SC-038 update-band release](SC-038-update-band-release/README.md) | COMPLETE. All 19 frequencies, K=192, M=11/15/19 vs M=9 repeats: C 0.489494 → 0.024100 mm; kite 0.551755 → 0.109571 mm. Kite needs 768/1536 nodes, is time-limited and still too sharp (radius 0.09078 mm vs truth 2.13789). All numerical/provenance audits pass. 3,052 new inverse + 822 audit + 133 scoring units, all attempts included. |
 | [Six-case inversion videos](videos/README.md) | Rendering only, no solves: original hybrid, SC-035 state band (4 cases) and SPD-L side by side on all six development cases, every saved accepted state, ending at each run's scored endpoint. |
 | [SC-037 later state release](SC-037-later-state-release/README.md) | COMPLETE; adoption gate FAIL. One wider ladder K 8/16/32/64/192 from SC-035's saved K=8 prefixes: star 0.5305 mm (1.6% above the high-K control), peanut 0.1491, kite 0.5537, C 0.6021 mm. C is 27.65% worse than SC-035 low K, beyond the frozen 25%. 1,429 inverse units. |
 | [SC-035 centred state band](SC-035-state-band/README.md) | COMPLETE: 8 paths. `T_z(a)=z+P_K[A(z+h n)-A(z)]` with its complete derivative; derivative qualification and all endpoint audits pass. Low K 8/12/16/20 → 192: peanut 0.1415, C 0.4717, kite 0.5743 mm (iteration-limited), star 0.6067 mm (16% worse than K=192). The matched K=192 controls hard-stop on peanut, C and kite. |

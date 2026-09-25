@@ -14,14 +14,14 @@ provisional**, with two profile differences and plotting provenance unresolved.
 
 | Item | State |
 |---|---|
-| Active cycle | [Iteration 19 — SC-037, an earlier state-band release](iteration_19/01_results.md), after [iteration 17 — SC-036 matched finite paths](iteration_17/01_results.md) and [iteration 18 — SC-035 centred state band](iteration_18/01_results.md) |
-| Stage | **SC-035/036/037 COMPLETE, 2026-09-25; the autonomous run stopped with nothing dispatched.** SC-036: a ray path with the same first-order normal velocity changes finite progress causally but case-dependently (normal → ray RMS: peanut 2.944 → 1.739, star 0.522 → 0.240, kite 2.983 → 6.165, C 3.202 → 12.177 mm); not adopted. SC-035: the low state band K 8/12/16/20 with the complete-construction derivative reaches peanut 0.1415, C 0.4717, kite 0.5743 mm (original hybrid 2.944 / 3.202 / 2.983), but star regresses 0.522 → 0.607 mm; the matched K=192 controls hard-stop on three cases. SC-037: K 8/16/32/64/192 restores star to 0.5305 mm, but C rises to 0.6021 mm and fails the frozen 25% gate (27.65%). No method promoted; these are development cases |
-| Working implementation | Existing V2 hybrid and fixed M=3/5/7/9 ladder remain the reference. `finite_paths.py` adds an opt-in ray path with exactly the same normal tangent space (SC-036; not adopted). SC-035's isolated bundle (`state_update.py`) implements the centred arclength projection and its complete geometry derivative; SC-037 reuses it unchanged. The Müller/Kress solver and production defaults are unchanged. **SPD comparison reference: SPD-L** (K 4/6/8/10, no step controls) |
-| Latest runs | [SC-037 later state release](../../../results/validation/shape_continuation/SC-037-later-state-release/README.md), [SC-035 state band](../../../results/validation/shape_continuation/SC-035-state-band/README.md), [SC-036 matched finite paths](../../../results/validation/shape_continuation/SC-036-matched-finite-paths/README.md), [SC-036 coordinate review](../../../results/validation/shape_continuation/SC-036-coordinate-review/README.md), [SC-034 SPD-L](../../../results/validation/shape_continuation/SC-034-spd-legacy-controls/README.md) |
-| Review / next decision | **The user's decision.** The autonomous iterations under the user's 2026-09-25 instruction and the [new brief](../../atlas_geometry_high_level_next_steps.md) stopped after SC-037; the [overnight briefing](../../reports/overnight_2026-09-25.md) summarizes them. Iteration 19 recommends freezing one explicit state-family policy and testing a narrower claim on genuinely new shapes, starts and noise, not enlarging the atlas or tuning these four cases. No successor is proposed or approved. The [SC-035 review](iteration_16/02_proposals/04_state_band_qualification.md) corrects RD-4's storage-band radius bound, which needs the minimum and maximum parametrization speeds. Conformal inversion remains conditional |
+| Active cycle | [Iteration 20 — SC-038 update-band release](iteration_20/01_results.md), following the completed SC-035/036/037 studies |
+| Stage | **SC-038 COMPLETE, 2026-09-25.** All 19 frequencies with M=11/15/19, K=192: C RMS 0.024100 mm versus matched M=9 0.489494; kite 0.109571 versus 0.551755. Kite required a 768/1536-node replay and remains time-limited, with a spurious sharp feature (minimum sampled radius 0.09078 mm; truth 2.13789). All numerical/provenance audits pass; no method promoted or further run dispatched |
+| Working implementation | Existing V2 hybrid and fixed M=3/5/7/9 ladder remain the reference. `finite_paths.py` adds an opt-in ray path with exactly the same normal tangent space (SC-036; not adopted). SC-035's isolated bundle (`state_update.py`) implements the centred arclength projection and its complete geometry derivative; SC-037 and SC-038 reuse it unchanged. SC-038 adds an isolated all-frequency M-release test and a kite resolution follow-up. The Müller/Kress solver and production defaults are unchanged. **SPD comparison reference: SPD-L** (K 4/6/8/10, no step controls) |
+| Latest runs | [SC-038 update-band release](../../../results/validation/shape_continuation/SC-038-update-band-release/README.md), [SC-037 state ladder](../../../results/validation/shape_continuation/SC-037-later-state-release/README.md), [SC-035 state band](../../../results/validation/shape_continuation/SC-035-state-band/README.md), [SC-036 finite paths](../../../results/validation/shape_continuation/SC-036-matched-finite-paths/README.md) |
+| Review / next decision | The user's requested C/kite M-release test is complete. A larger update space helps both saved states, while kite's regularity and convergence remain unresolved. The M=9/four-frequency release conclusion is explicitly qualified. No follow-up is dispatched; standing autonomous authorization remains valid and no per-iteration approval hold applies. Conformal inversion remains conditional |
 | Figure 1 | Unchanged from iteration 03: still provisional. The band-rule measurement bears on it but does not reproduce it |
 | Checkout | Existing `feature/shape-frequency-continuation` branch; no new branch or worktree |
-| Reviewer of latest changes | SC-020/021/022: Codex, outsider review. SC-023 to SC-025: none yet. SC-026 independently audited by Codex; SC-028/029 independent reviewer unassigned; SC-030 owner review by Codex, independent reviewer unassigned; SC-035/036/037 owner Codex, independent reviewer unassigned |
+| Reviewer of latest changes | SC-020/021/022: Codex, outsider review. SC-023 to SC-025: none yet. SC-026 independently audited by Codex; SC-028/029 independent reviewer unassigned; SC-030 owner review by Codex, independent reviewer unassigned; SC-035/036/037/038 owner Codex, independent reviewer unassigned |
 
 The user authorized autonomous development of this isolated pipeline and
 commit/push checkpoints. On 2026-09-25 the user explicitly extended execution
@@ -44,6 +44,10 @@ handoff only.
 
 ## Where things live
 
+- **SC-038 complete (2026-09-25), directly requested by the user:**
+  [Iteration 20 results](iteration_20/01_results.md),
+  [small M-release ladder on all frequencies](iteration_19/03_plan.md),
+  with [C/kite matched controls and evidence](../../../results/validation/shape_continuation/SC-038-update-band-release/README.md).
 - [Iteration 19 results](iteration_19/01_results.md): SC-037, one wider later
   state ladder; [SC-037 evidence](../../../results/validation/shape_continuation/SC-037-later-state-release/README.md) and [plan](iteration_18/03_plan.md).
 - [Iteration 18 results](iteration_18/01_results.md): SC-035, the centred
@@ -101,7 +105,7 @@ handoff only.
   [reference implementation](../../reference/papers/README.md#reference-implementation)
   used to audit the numerical conventions. Figure 1's exact provenance is open.
 - [Qualification index](../../../results/validation/shape_continuation/README.md):
-  SC-001 through SC-037, with raw measurements, scripts, checkpoints and failures.
+  SC-001 through SC-038, with raw measurements, scripts, checkpoints and failures.
 - [Literature review and reading map](Atlas-Driven%20Adaptive%20Continuation%20in%20Inverse%20Scattering_%20Literature%20Review%20and%20Pre-Coding%20Reading%20M.pdf):
   the user-supplied survey that set iteration 04's experiment design, with its
   own stated search cutoff and verification limits.
@@ -135,3 +139,4 @@ the next cycle. Code and run artifacts retain their current locations.
 | [17](iteration_17/01_results.md) | SC-036: a ray path with the same first-order normal velocity allows larger useful steps at early peanut/kite corners (3.15x decrease at peanut state 3), yet both paths fail at the terminal peanut corner. Full inverses are mixed: peanut and star improve, kite and C worsen. Coordinate controls separate changes of basis from different physical subspaces. The ray path is not adopted. |
 | [18](iteration_18/01_results.md) | SC-035: a centred state band K 8/12/16/20 with the complete-construction derivative cuts peanut/C/kite RMS to 0.14/0.47/0.57 mm (original hybrid 2.94/3.20/2.98); star regresses 16%. The matched K=192 controls hard-stop on three cases. A final K=192 release adds almost nothing. |
 | [19](iteration_19/01_results.md) | SC-037: the wider ladder K 8/16/32/64/192 restores star (0.53 mm) but C worsens 27.65% against SC-035, failing the frozen 25% gate. The timing of the release is a case-dependent prior. The autonomous run stops; the next step is the user's decision. |
+| [20](iteration_20/01_results.md) | SC-038: all-frequency M=11/15/19 release reduces C RMS 0.4895 → 0.0241 and kite 0.5518 → 0.1096 mm against matched M=9 controls. Kite needs a denser-grid replay, is time-limited, and retains a sharp feature (0.0908 mm radius versus truth 2.138). All audits pass; no default promoted. |

@@ -17,6 +17,11 @@ M=3/5/7/9, cumulative frequencies, LM settings and acceptance checks remain the
 same. No curvature or clearance prior is added. The high-K control is this
 same centred construction, not a relabeling of the original Borges hybrid.
 
+**Scope of the release conclusion:** the final stage here keeps M=9 and the
+original four frequencies. It does not test releasing the update bandwidth.
+The user-requested [SC-038 follow-up](../SC-038-update-band-release/README.md)
+tests M=11/15/19 with all 19 frequencies and matched M=9 controls.
+
 The pure-normal preprojection and the final candidate must both be valid.
 The trial's numerical gate checks grid refinement; the intentional change
 from projection is recorded separately. This is an explicit method change,

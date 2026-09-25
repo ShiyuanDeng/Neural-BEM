@@ -21,6 +21,10 @@ against the original hybrid on peanut/C/kite. No universal winner or
 production-default change is claimed. The final release adds almost no
 reconstruction value here either.
 
+That final-release statement is specific to M=9 and the original four
+frequencies. [SC-038](../SC-038-update-band-release/README.md) separately tests
+a later M=11/15/19 update-band release on all 19 available frequencies.
+
 ![Tighter versus wider later state restriction](boundaries.png)
 
 Interpretation: temporary coarse-stage bias can be affected by when capacity
