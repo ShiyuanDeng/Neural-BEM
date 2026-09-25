@@ -36,7 +36,7 @@ circle (branches include their parent's prefix):
 | E | SC-037 wider ladder (K 8/16/32/64/192), branching from B after stage 1 | star, C, kite, peanut |
 | F | SC-038 released M (11/15/19, all 19 frequencies), branching from B's stage 4. Kite follows the selected 768/1536-node M=15 replay and the M=19 completion; its stopped 512-node M=15 attempt is a separate branch | C, kite |
 | G | SC-038 M=9 control, and kite's unchanged 768/1536 replay | C, kite |
-| H | SPD-L, SC-034 arm L (radial K 4/6/8/10), including stage checkpoints absent from a hard-stopped trajectory log | all six |
+| H | SPD-L, SC-034 arm L (Cartesian K 4/6/8/10, polar-angle parameter), including stage checkpoints absent from a hard-stopped trajectory log | all six |
 
 Where a run's recorded endpoint (result or checkpoint) is not its last history
 row, as after a wall-limit hard stop, it is appended. Consecutive repeats of a

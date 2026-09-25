@@ -9,7 +9,9 @@ to the final states:
 - **State band**: the SC-035 low arm (K 8/12/16/20, then a K=192 release stage).
   It was run on peanut, C, star and kite only, so the circle and hook panels
   say so.
-- **SPD-L**: SC-034's arm L (radial K 4/6/8/10), the adopted SPD reference.
+- **SPD-L**: SC-034's arm L, the adopted SPD reference. Its state is a Cartesian
+  Fourier curve with band K 4/6/8/10 whose parameter is fixed to the polar angle,
+  so it selects K directly and only holds star-shaped curves.
 
 Every saved accepted state is shown, with no interpolation and no new field
 solves. A panel holds its last state when a run takes no step in a stage or
@@ -26,8 +28,8 @@ every video ends at the scored endpoint and reproduces its recorded RMS.
 | Peanut | [peanut.mp4](peanut.mp4) | [png](peanut_final.png) | 2.94 | 0.141 | 1.2e-5 |
 | Hook (not star-shaped) | [hook.mp4](hook.mp4) | [png](hook_final.png) | 0.525 | not run | 9.36, hard stop |
 
-SPD-L's hard stops are `UNRESOLVED_DERIVATIVE`; its radial chart cannot
-represent C or hook. All other runs complete their schedules. Playback time is
+SPD-L's hard stops are `UNRESOLVED_DERIVATIVE`; its polar-angle parameter
+cannot represent C or hook. All other runs complete their schedules. Playback time is
 not solve time. These are development cases, not a generalization test.
 
 ![Peanut, final states](peanut_final.png)

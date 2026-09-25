@@ -39,7 +39,7 @@ stop; its last accepted state is included.
 | F_released_m_512_attempt | SC-038 kite's stopped 512-node M=15 attempt | kite 64* |
 | G_fixed_m9 | SC-038 M=9 control on 19 frequencies | C 25, kite 62 |
 | G_fixed_m9_dense_replay | its unchanged 768/1536 replay | kite 62 |
-| H_spd_l | SPD-L, SC-034 arm L (radial K 4/6/8/10) | circle 6, star 14, C 8*, kite 50*, peanut 8, hook 8* |
+| H_spd_l | SPD-L, SC-034 arm L (Cartesian K 4/6/8/10, polar-angle parameter) | circle 6, star 14, C 8*, kite 50*, peanut 8, hook 8* |
 
 That is 34 trajectories, 1,209 trajectory steps and 867 distinct shots; 15
 kite shots also carry 768/1536-node data.

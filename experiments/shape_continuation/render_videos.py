@@ -5,7 +5,7 @@ Each video shows three inversions side by side, stage by stage:
 - the original hybrid (SC-029 baseline, which SC-036 replays bitwise);
 - the SC-035 low state band, K 8/12/16/20 then a K=192 release stage
   (run on peanut, C, star and kite only);
-- SPD-L (SC-034 arm L, radial K 4/6/8/10).
+- SPD-L (SC-034 arm L): Cartesian band K 4/6/8/10 with t fixed to the polar angle.
 
 Every saved accepted state is shown exactly once or held; nothing is
 interpolated. The target and the RMS readout are evaluation only. The final
@@ -101,7 +101,7 @@ def spd_l(case):
     folder = RESULTS / 'SC-034-spd-legacy-controls/runs/L' / case
     result = sc.read(folder / 'result.json')
     files = sorted(folder.glob('stage_*/trajectory.jsonl'))
-    track = Track('SPD-L (SC-034: radial K 4/6/8/10)', '#2a78d6', digest_all(files + [folder / 'result.json']),
+    track = Track('SPD-L (SC-034: Cartesian K 4/6/8/10, polar-angle t)', '#2a78d6', digest_all(files + [folder / 'result.json']),
                   result['status'], result['reason'], result['score']['symmetric_rms_mm'],
                   ast.curve_from(result['final_curve']))
     driver = sc.spd_modules()[0].p.driver
@@ -111,7 +111,7 @@ def spd_l(case):
             row = json.loads(line)
             component = driver.deserialize_state(row['state']).components[0]
             track.add(sc.from_cartesian(component), 0 if not track.states else stage,
-                      f"stage {stage} · radial K={component.maximum_mode} · step {row['iteration']}")
+                      f"stage {stage} · K={component.maximum_mode} · step {row['iteration']}")
         # As in TOP-025's renderer: a hard stop can leave the stage's last
         # accepted state in its checkpoint but not in the trajectory log.
         checkpoint = path.parent / 'accepted_state.json'
@@ -119,7 +119,7 @@ def spd_l(case):
             track.sources[str(checkpoint.relative_to(sc.ROOT))] = sc.digest(checkpoint)
             component = driver.deserialize_state(sc.read(checkpoint)['state']).components[0]
             track.add(sc.from_cartesian(component), stage,
-                      f"stage {stage} · radial K={component.maximum_mode} · accepted checkpoint")
+                      f"stage {stage} · K={component.maximum_mode} · accepted checkpoint")
     return track
 
 
