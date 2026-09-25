@@ -144,6 +144,12 @@ builders and inverse to establish a matched baseline.
 - `render_videos.py`: side-by-side videos of the six development cases
   (original hybrid, SC-035 state band, SPD-L) from saved accepted states, with
   no field solves; see the [video index](../../results/validation/shape_continuation/videos/README.md).
+- `trajectory_atlas.py`: SC-039's raw boundary data along every saved
+  trajectory (forward/reciprocal traces, node geometry, full 24x24 prediction
+  at 19 frequencies on 512/1024 nodes), and the later-atlas helpers `load`,
+  `jacobian`, `cartesian_velocities` and `normal_velocities`, which rebuild
+  `shape_jacobian` in any coordinates without solves. `test_trajectory_atlas.py`
+  checks the contraction against `shape_jacobian` and the Cartesian circle law.
 - `test_atlas_survey.py`: the stage step assembled from per-frequency layers
   equals the backend's proposal. Also checked:
   - the GN step algebra and the Schur-complement conditional step;

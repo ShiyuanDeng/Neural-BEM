@@ -20,6 +20,7 @@ below; these cases do not establish general robustness.
 
 | Qualification | Finding |
 |---|---|
+| [SC-039 trajectory atlas data](SC-039-trajectory-atlas-data/README.md) | COMPLETE: data only. Traces, node geometry and full 24x24 predictions at 19 frequencies on 512/1024 nodes for 867 accepted states of 34 trajectories (hybrid, SC-035–038, SPD-L) and 6 truths; 40.6 GB outside Git. Stored traces reproduce `shape_jacobian` to 9.6e-16; 1,114 saved losses rebuilt bitwise; 46 shots need 1024 nodes. |
 | [SC-038 update-band release](SC-038-update-band-release/README.md) | COMPLETE. All 19 frequencies, K=192, M=11/15/19 vs M=9 repeats: C 0.489494 → 0.024100 mm; kite 0.551755 → 0.109571 mm. Kite needs 768/1536 nodes, is time-limited and still too sharp (radius 0.09078 mm vs truth 2.13789). All numerical/provenance audits pass. 3,052 new inverse + 822 audit + 133 scoring units, all attempts included. |
 | [Six-case inversion videos](videos/README.md) | Rendering only, no solves: original hybrid, SC-035 state band (4 cases) and SPD-L side by side on all six development cases, every saved accepted state, ending at each run's scored endpoint. |
 | [SC-037 later state release](SC-037-later-state-release/README.md) | COMPLETE; adoption gate FAIL. One wider ladder K 8/16/32/64/192 from SC-035's saved K=8 prefixes: star 0.5305 mm (1.6% above the high-K control), peanut 0.1491, kite 0.5537, C 0.6021 mm. C is 27.65% worse than SC-035 low K, beyond the frozen 25%. 1,429 inverse units. |
