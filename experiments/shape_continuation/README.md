@@ -9,8 +9,9 @@ Owner: Codex. Independent reviewer: unassigned.
 [Research iterations and current handoff](../../docs/iterations/shape_frequency_continuation/README.md)
 record the experimental questions and decisions; this page owns the working API.
 
-The current SPD comparison reference is **SPD-008**: compiled runtime,
-real-Bessel CPU kernels and certified exact geometry reuse. The historical
+The current SPD comparison reference is **SPD-L**: SPD-008 compiled runtime,
+real-Bessel CPU kernels and certified exact geometry reuse, with the K=4/6/8/10
+state ladder and no legacy step controls (adopted after SC-034). The historical
 SC-020/021 driver and results retain their original settings; they are not
 timings of this reference. The [SC-030 contract](../../docs/iterations/shape_frequency_continuation/iteration_12/03_plan.md)
 defines the six-case comparison and its cache-off hybrid control. The

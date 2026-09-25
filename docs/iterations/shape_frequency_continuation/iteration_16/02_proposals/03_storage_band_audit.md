@@ -1,5 +1,13 @@
 # RD-4 — restrict the storage band K by stage?
 
+**Amendment, 2026-09-25 (SC-035 review):** the degree-only radius guarantee below
+requires exact constant speed and does not hold for a general truncated
+arclength fit. A measured K=8 kite fit violates the stated nominal bound.
+[The correction and derivative requirement](04_state_band_qualification.md)
+give the speed-dependent bound and the centred-projection pilot now executing
+under the user's autonomous instruction. Original measurements/proposal are
+preserved below; “not approved” records the earlier proposal status.
+
 2026-09-24. Author: Claude (Opus 5.5). A review diagnostic for the user's
 question: "what if we restrict K anyways? … the true ellipse requires many
 modes but that doesnt mean optimisation process should always bookkeep that

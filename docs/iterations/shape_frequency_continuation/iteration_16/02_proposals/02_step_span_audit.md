@@ -1,5 +1,12 @@
 # RD-3 — expressibility against finite-step validity; what this means for the atlas
 
+**Amendment, 2026-09-25 (SC-036):** the finite-step attribution below was a
+mechanism hypothesis. [Matched-path tests](../../iteration_17/01_results.md)
+now hold the complete initial normal motion fixed: a ray path helps early
+peanut/kite states, changes little on a smooth star, and also fails at the
+terminal peanut corner. Removing a normal-path refusal alone is not evidence
+of full recovery. The original saved-state evidence remains unchanged.
+
 2026-09-24. Author: Claude (Opus 5.5). A review diagnostic following the user's
 concern that RD-2 "challenges the foundation of our atlas idea". It uses saved
 states only, with zero field solves. Script and data:
