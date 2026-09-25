@@ -20,6 +20,7 @@ below; these cases do not establish general robustness.
 
 | Qualification | Finding |
 |---|---|
+| [Six-case inversion videos](videos/README.md) | Rendering only, no solves: original hybrid, SC-035 state band (4 cases) and SPD-L side by side on all six development cases, every saved accepted state, ending at each run's scored endpoint. |
 | [SC-037 later state release](SC-037-later-state-release/README.md) | COMPLETE; adoption gate FAIL. One wider ladder K 8/16/32/64/192 from SC-035's saved K=8 prefixes: star 0.5305 mm (1.6% above the high-K control), peanut 0.1491, kite 0.5537, C 0.6021 mm. C is 27.65% worse than SC-035 low K, beyond the frozen 25%. 1,429 inverse units. |
 | [SC-035 centred state band](SC-035-state-band/README.md) | COMPLETE: 8 paths. `T_z(a)=z+P_K[A(z+h n)-A(z)]` with its complete derivative; derivative qualification and all endpoint audits pass. Low K 8/12/16/20 → 192: peanut 0.1415, C 0.4717, kite 0.5743 mm (iteration-limited), star 0.6067 mm (16% worse than K=192). The matched K=192 controls hard-stop on peanut, C and kite. |
 | [SC-036 matched finite paths](SC-036-matched-finite-paths/README.md) | COMPLETE: 5-state screen (131 units) and 8 full inverses. A ray path with the same normal velocity gives 3.15x the refined decrease at peanut state 3, and both paths fail at the terminal peanut state. Full inverses normal → ray: peanut 2.944 → 1.739, star 0.522 → 0.240, kite 2.983 → 6.165, C 3.202 → 12.177 mm. Normal arms replay SC-029 bitwise. |

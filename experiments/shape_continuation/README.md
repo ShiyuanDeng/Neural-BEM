@@ -141,6 +141,9 @@ builders and inverse to establish a matched baseline.
   velocity, the actual-trial derivative and the refusals. Not adopted: see the
   [SC-036 record](../../results/validation/shape_continuation/SC-036-matched-finite-paths/README.md).
   SC-035's centred state-band update stays isolated in its result bundle.
+- `render_videos.py`: side-by-side videos of the six development cases
+  (original hybrid, SC-035 state band, SPD-L) from saved accepted states, with
+  no field solves; see the [video index](../../results/validation/shape_continuation/videos/README.md).
 - `test_atlas_survey.py`: the stage step assembled from per-frequency layers
   equals the backend's proposal. Also checked:
   - the GN step algebra and the Schur-complement conditional step;
