@@ -12,6 +12,16 @@ provisional**, with two profile differences and plotting provenance unresolved.
 
 ## Current handoff
 
+**Active extension, 2026-09-26:** following review of Claude's `b946d57`, the
+user authorized execution and successive iterations (“go then. dont stop
+until you hit every wall”). **SC-042 RUNNING**: matched none/once/boundary/cap
+state strategies, frozen at `921325e`; [contract](iteration_23/03_plan.md) and
+[live bundle](../../../results/validation/shape_continuation/SC-042-state-strategies/README.md).
+SC-043 prospective band decisions is implemented but not released; SC-044
+fresh-shape/noise protocol is frozen before observations are generated.
+The SC-041 closeout below remains the last completed comparison. No branch,
+worktree or default changes are authorized by this extension.
+
 **2026-09-26: SC-041 COMPLETE**, directly authorized by the user's `go` after
 the atlas/theory review. The [closeout](iteration_23/01_results.md) qualifies
 band release on the star and exposes finite-step and geometry failures on the
