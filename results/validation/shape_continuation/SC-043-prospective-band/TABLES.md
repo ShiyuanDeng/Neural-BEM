@@ -1,6 +1,6 @@
 # SC-043 — prospective band decisions
 
-15/18 terminal paths; 0 exceptions; 3 pending.
+16/18 terminal paths; 0 exceptions; 2 pending.
 
 | Case | Rule | Bands | RMS mm | Hausdorff mm | Work (diagnostic) | Outcome | Audit |
 |---|---|---|---:|---:|---:|---|---|
@@ -13,6 +13,7 @@
 | hook | atlas | [25, 31, 31] | 0.0027153 | 0.0083806 | 684 (228) | COMPLETED_SCHEDULE | True |
 | hook | fixed | [25, 31, 37] | 0.0020533 | 0.0054345 | 646 (0) | COMPLETED_SCHEDULE | True |
 | hook | stagnation | [19, 25, 31] | 0.0022539 | 0.0060843 | 570 (0) | COMPLETED_SCHEDULE | True |
+| kite | fixed | [28, 34, 40] | 0.034606 | 0.17058 | 798 (0) | COMPLETED_SCHEDULE | True |
 | peanut | atlas | [25, 25, 31] | 0.0025435 | 0.0081787 | 646 (228) | COMPLETED_SCHEDULE | True |
 | peanut | fixed | [25, 31, 37] | 0.0024278 | 0.0074445 | 418 (0) | COMPLETED_SCHEDULE | True |
 | peanut | stagnation | [19, 25, 25] | 0.0034569 | 0.0098256 | 646 (0) | COMPLETED_SCHEDULE | True |
@@ -20,7 +21,7 @@
 | wrong_circle | fixed | [25, 31, 37] | 0.00024467 | 0.00036579 | 114 (0) | COMPLETED_SCHEDULE | True |
 | wrong_circle | stagnation | [19, 25, 31] | 0.00024467 | 0.00036579 | 114 (0) | COMPLETED_SCHEDULE | True |
 
-Evidence checks: 200/200.
+Evidence checks: 213/213.
 
 Exceptions remain in the 18-path denominator. An unqualified diagnostic blocks that policy; it is not a missing successful replicate.
 Reported geometric means use available scored pairs. The superiority gate requires all six cases against both controls.
@@ -57,6 +58,9 @@ Supplementary common-work comparisons use the last accepted state affordable at 
 | hook | stagnation | 1 | 19→19 | — | 0.000% | 0 / 38 | no_decreasing_step |
 | hook | stagnation | 2 | 19→25 | — | 99.984% | 0 / 266 | None |
 | hook | stagnation | 3 | 25→31 | — | 98.545% | 0 / 266 | None |
+| kite | fixed | 1 | 22→28 | — | 94.731% | 0 / 266 | None |
+| kite | fixed | 2 | 28→34 | — | 30.217% | 0 / 247 | None |
+| kite | fixed | 3 | 34→40 | — | 5.544% | 0 / 285 | None |
 | peanut | atlas | 1 | 19→25 | 95.396% | 97.258% | 76 / 152 | None |
 | peanut | atlas | 2 | 25→25 | 3.732% | 78.870% | 76 / 152 | None |
 | peanut | atlas | 3 | 25→31 | 13.192% | 67.129% | 76 / 114 | loss_tolerance |
@@ -77,3 +81,4 @@ Supplementary common-work comparisons use the last accepted state affordable at 
 | wrong_circle | stagnation | 3 | 25→31 | — | 0.000% | 0 / 38 | loss_tolerance |
 
 The forecast compares two optimal linearized directions at the declared test radius. The subsequent fit runs multiple damped LM steps, so its total decrease is not a calibration test of that single forecast. A retained band followed by poor improvement is evidence about this decision rule, not proof that all higher modes are unobservable.
+Trial counts and work after the last accepted state are retained in the machine-readable block records. That work includes derivative and qualification checks, not just avoidable rejected trials.

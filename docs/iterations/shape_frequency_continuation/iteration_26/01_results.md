@@ -83,3 +83,67 @@ Improving a global curvature extremum does not prove every feature improves.
 
 Final endpoint tables, complete costs, sampling refinement and evidence
 checks will be added when all 18 paths have returned.
+
+The fixed kite is complete and passes its endpoint audit (114 units).
+Its RMS/Hausdorff is 0.034606/0.170575 mm after 798 fitting units. Its
+minimum radius is 1.12489 mm at a flank where the nearby truth has radius
+20.368 mm; the two true-tip neighborhoods have reconstructed radii
+2.925/2.992 mm versus truth 2.138 mm. Intrinsic curvature energy above
+order 64 remains 31.35%, versus truth 0.250%. The sharp artifact and blunt
+true tips remain distinct errors after cleanup and wider M release.
+
+Its final M40 block illustrates a remaining finite-step obstruction after
+cleanup: the first trial predicts 98.2% loss reduction, but production-grid
+loss is about 209 times the initial value. Backtracking to 1/16 produces
+an accepted decrease. The block uses 285 units for 5.54% net improvement,
+with one accepted, eight nondecreasing and one interrupted trial record.
+The rejected full step was not checked on the refined grid; this is a
+saved fitting observation, not a separately qualified finite-step probe.
+The available local directions and an accurately differentiated update do
+not alone guarantee a useful finite step at the nominal test radius.
+
+## Implications for the research claim
+
+The completed state-treatment studies support a useful practical repair.
+SC-042's one-off cleanup reduces a known kite flank artifact; recurrent
+cleanup and a permanent cap do not provide a meaningful additional geometry
+advantage on those starts. SC-044 transfers stabilization to one noisy C
+trajectory, with most other RMS comparisons tied. These are useful results,
+but filtering and curvature control are established ingredients. They do
+not by themselves establish a new reconstruction principle.
+
+The prospective diagnostic claim has reached a different obstruction: its
+qualified predictions have not earned superiority over fixed escalation
+under the frozen criterion. This rejects the tested rule and accounting
+model. It does not prove that diagnostics can never help, nor justify
+retuning the 10% threshold on the same six shapes.
+For a revised diagnostic, the missing target is the improvement that the
+solver can actually accept for a given total cost. Predicting removable
+linearized residual alone omits finite-step shrinkage and rejected work.
+The saved kite trials identify that gap; they do not yet supply a validated
+replacement rule. Existing paid trial information is a reasonable source
+for a new hypothesis, with any reuse implemented and charged prospectively.
+
+The next discriminating question is whether geometry treatment improves
+noise-stable reconstruction beyond simply avoiding a numerical stop.
+A focused comparison should separate an unchanged geometry strategy with
+explicitly charged quadrature adaptation from a regularized strategy at
+the same accuracy gates, then include the closest established filtering
+and intrinsic-curvature controls. Sharp-feature feasibility must be checked
+on development cases before new shapes and noise are released. An inherited
+curvature threshold has already excluded the exact star in iteration 06;
+renaming or repeating that constraint would not answer the question.
+
+This is a hypothesis for a separate experiment, not a new result or a
+production change. Broader noise, acquisition and physical-model mismatch
+remain untested. If the project retains an adaptive-continuation claim,
+it still needs a prospective action that adds decision value on full
+reconstructions with charged costs and untouched evaluation data. Changing
+frequencies could change the cost directly, but this campaign uses all
+frequencies, and the earlier SC-017 frequency-controller result is also a
+necessary baseline. A larger atlas alone is not the missing evidence.
+
+For publication, the current defensible wording is a qualified mechanism
+and strategy assessment. A general superior controller, an observability
+limit, or novelty of filtering/constrained least squares is unsupported.
+See the [primary-source claim review](../iteration_24/02_claims_review.md).

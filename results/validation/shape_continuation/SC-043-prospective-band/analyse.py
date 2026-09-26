@@ -1,5 +1,6 @@
 """No-solve audit of prospective decisions and comparison with both simple rules."""
 import importlib.util
+from collections import Counter
 from pathlib import Path
 import numpy as np
 
@@ -46,6 +47,7 @@ def main():
         prior_stagnated=r.initial_stagnated(d['case'])
         for choice,stage in zip(decisions,d['stages']):
             accepted=[s for s in progress if s['block']==stage['block']]
+            saved=r.c.sc.read(p.parent/f"block_{stage['block']}.json")
             initial,final=stage['initial_loss'],stage['final_loss']
             blocks.append(dict(case=d['case'],policy=d['policy'],block=stage['block'],
                 low=choice['low'],high=choice['high'],selected=choice['selected'],
@@ -57,6 +59,9 @@ def main():
                 prior_stagnated=choice.get('prior_stagnated'),
                 diagnostic_qualified=choice.get('qualification',{}).get('passed'),
                 diagnostic_units=stage['diagnostic_units'],fit_units=stage['units'],
+                accepted_steps=sum(s['iteration']>0 for s in accepted),
+                work_after_last_accepted_state=stage['total_units']-accepted[-1]['total_units'] if accepted else None,
+                trial_status_counts=dict(Counter(t.get('status','interrupted_before_status') for t in saved['trials'])),
                 initial_loss=initial,final_loss=final,
                 actual_fractional_decrease=(initial-final)/initial if initial else 0.,
                 outcome=stage['outcome'],stop=stage['stop']))
@@ -154,7 +159,9 @@ def main():
         lines.append(f"| {s['case']} | {s['policy']} | {s['block']} | {s['low']}→{s['selected']} | {predicted} | {s['actual_fractional_decrease']:.3%} | {s['diagnostic_units']} / {s['fit_units']} | {s['stop']} |")
     lines+=['', 'The forecast compares two optimal linearized directions at the declared test radius. '
             'The subsequent fit runs multiple damped LM steps, so its total decrease is not a calibration test of that single forecast. '
-            'A retained band followed by poor improvement is evidence about this decision rule, not proof that all higher modes are unobservable.', '']
+            'A retained band followed by poor improvement is evidence about this decision rule, not proof that all higher modes are unobservable.',
+            'Trial counts and work after the last accepted state are retained in the machine-readable block records. '
+            'That work includes derivative and qualification checks, not just avoidable rejected trials.', '']
     (HERE/'TABLES.md').write_text('\n'.join(lines))
     print({'completed':len(rows),'aggregate':aggregate,'checks_passed':all(x['passed'] for x in checks)})
 
