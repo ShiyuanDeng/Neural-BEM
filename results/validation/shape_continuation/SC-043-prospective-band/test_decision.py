@@ -19,6 +19,12 @@ def test_release_requires_material_increment_not_just_larger_space():
     assert not r.choose(0., 1e-16, 1e-16)
 
 
+def test_stagnation_uses_last_progress_after_large_early_gain():
+    assert r.stagnation_flag([1., .1, .099], None)
+    assert not r.stagnation_flag([1., .1, .05], None)
+    assert r.stagnation_flag([1.], None)
+
+
 def test_complete_physical_metric_subspace_matches_separate_preparation():
     curve, stages, config, _, _ = r.c.stages_for('circle_to_star', 'cap')
     curve, _ = r.c.treatment(curve, 'cap', 0)

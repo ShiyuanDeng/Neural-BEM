@@ -36,12 +36,6 @@ def choose(low_gain, high_gain, loss):
     return bool(high_gain-low_gain >= .10*loss and loss > 1e-14)
 
 
-def stagnation_flag(losses, stop):
-    if stop in ('gradient_tolerance', 'relative_step_tolerance', 'no_decreasing_step') or len(losses)<2:
-        return True
-    return (losses[-2]-losses[-1])/max(losses[-2],1e-30)<.05
-
-
 def sources():
     return dict(c.sources(), **{str(p.relative_to(c.sc.ROOT)):c.sc.digest(p) for p in (Path(__file__), PLAN)})
 
@@ -163,8 +157,8 @@ def worker(job):
             curve = result.curve
             last_stage = stage
             total += ledger.units
-            recent_losses = [s['loss'] for s in accepted if s['block']==block+1]
-            stagnated = stagnation_flag(recent_losses, result.stop_reason)
+            decrease = (result.initial_loss-result.final_loss)/max(result.initial_loss, 1e-30)
+            stagnated = decrease < .05 or result.stop_reason in ('gradient_tolerance', 'relative_step_tolerance', 'no_decreasing_step')
             row = dict(block=block+1, M=m, outcome=result.outcome, stop=result.stop_reason,
                 initial_loss=result.initial_loss, final_loss=result.final_loss, units=ledger.units,
                 diagnostic_units=decision['diagnostic_units'], total_units=total, detail=result.detail)
