@@ -35,7 +35,7 @@ What this does and does not show:
 - The release takes circle, C, peanut and hook to 0.03 mm or better, and star
   and kite to about 0.1 mm.
 - **Star** completes its schedule (every stage ends on `no_decreasing_step`)
-  with blunted tips: tightest radius 8.99 mm against the target's 5.11 mm, and
+  with minimum radius 8.99 mm against the target's 5.11 mm, and
   the largest remaining catalog residual of the six.
 - **Kite** is SC-038's endpoint. It hit its wall-clock limit while still
   improving, and it has a spurious sharp feature (radius 0.091 mm against
@@ -44,6 +44,11 @@ What this does and does not show:
   1e-5 mm, far better than this pipeline on those three. Its polar-angle
   parameter cannot represent C or hook, and it stops early on kite. These are
   development scenes, not a generalization test.
+
+2026-09-26 feature clarification: the star's 5.11 mm minimum radius occurs
+at a concave valley. Its five convex tips have radius 10.42 mm. The global
+minimum-radius comparison above does not, by itself, measure tip blunting.
+SC-042/043 `regularity.json` records tip-local measurements separately.
 
 ## Runs
 

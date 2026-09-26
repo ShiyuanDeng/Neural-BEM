@@ -32,8 +32,11 @@ and endpoint audit.
 
 Star M=25 cuts RMS 66.5% against M=19 and 56.7% against M=22, at 33.3%
 more inverse work than M=22. Its accepted actual/predicted decrease ratios
-are 1.002, 0.996 and 0.995. The tips remain blunt: minimum radius 7.00 mm
-versus truth 5.11 mm, despite a 99.94% data-loss reduction.
+are 1.002, 0.996 and 0.995. The minimum radius remains 7.00 mm
+versus truth 5.11 mm, despite a 99.94% data-loss reduction. Feature
+clarification (2026-09-26): the truth minimum is at a concave valley; the
+convex-tip radius is 10.42 mm. This global statistic does not establish
+tip blunting. SC-042/043 measure the five tips separately after fitting.
 
 Kite starts at RMS 0.10957 mm and minimum radius 0.09078 mm (truth 2.13789
 mm). M=22 lowers RMS 33.3% from that start and 28.6% against the M=19

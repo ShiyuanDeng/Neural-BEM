@@ -21,8 +21,11 @@ audits; both kite arms stop before convergence.
 2. **Use capacity to nominate a band, then test a finite update.** Star's
    M=19 forecast is negligible; M=22/25 forecast about 95%/99% reduction.
    Finite probes agree closely. Continuation reaches RMS 0.142/0.110/0.0476
-   mm at M=19/22/25, supporting release on this endpoint. M=25 still leaves
-   blunt tips (7.00 mm minimum radius against truth 5.11 mm).
+   mm at M=19/22/25, supporting release on this endpoint. M=25 still has
+   minimum radius 7.00 mm against truth 5.11 mm. The latter occurs at a
+   concave valley, whereas the truth's convex-tip radius is 10.42 mm;
+   this global statistic alone does not measure tip blunting (feature
+   clarification from the SC-042/043 post-fit diagnostics).
 3. **Do not identify a physical RMS radius with finite validity.** Kite M=19
    forecasts 90% reduction, yet its full probe increases loss to 16.4 times
    the starting value. M=22 forecasts 99.8%, yet its full probe self-intersects.

@@ -71,3 +71,11 @@ adaptation from geometry regularization. If noisy reconstructions reach the
 discrepancy while geometry remains poor, investigate stability and data
 coverage before extending the noiseless fitting ladder. None of those
 outcomes alone establishes an information-theoretic limit.
+
+Post-fit feature clarification during SC-043: the star's 5.1136 mm truth
+minimum radius is at a concave valley; its convex tips have radius 10.4167
+mm. Earlier text used the global minimum as evidence of blunt tips. That
+inference is not justified by the statistic. The numerical values are
+unchanged, and the current regularity reports localize all five tips
+separately. Local feature preservation must be tested at matched features,
+not inferred from a global curvature extremum at an unspecified location.

@@ -138,6 +138,13 @@ measurable. This uses truth only to judge the cap, not to pick it for a run.
 
 ## Proposed next steps (for the owner)
 
+Owner clarification, 2026-09-26: the original recommendations below are
+preserved. "Unobservable" is not established by the truncated atlas;
+SC-042 distinguishes accumulated state content from intrinsic curvature.
+The star's quoted 5.11 mm truth minimum is at a concave valley, not a convex
+tip (tip radius 10.42 mm). SC-042/043 now record tip-local measurements
+separately. Neither clarification changes the original numerical results.
+
 1. **Keep the state band from accumulating unobservable content.** Either tie
    K to the update band (e.g. K = max(48, 2M)) or low-pass the state to such a
    K at each stage boundary. On kite either one removes the artefact that sets

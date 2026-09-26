@@ -5,12 +5,12 @@
 | Study | Terminal paths | Qualified scored paths | Fitting + diagnostics, unique | Endpoint audits |
 |---|---:|---:|---:|---:|
 | [SC-042-state-strategies](SC-042-state-strategies/README.md) | 24/24 | 21 | 19874 | 2663 |
-| [SC-043-prospective-band](SC-043-prospective-band/README.md) | 1/18 | 1 | 114 | 114 |
+| [SC-043-prospective-band](SC-043-prospective-band/README.md) | 8/18 | 8 | 4066 | 912 |
 | [SC-044-noisy-fresh-cases](SC-044-noisy-fresh-cases/README.md) | 18/18 | 16 | 10924 | 2169 |
 | [SC-045 independent timeout qualifications](SC-045-timeout-qualification/README.md) | 5/5 audits | 4 | 0 | 456 |
 | [SC-046 lost-result recovery](SC-046-lost-audit-recovery/README.md) | 1/1 audit | 1 | 0 | 114 |
 
-Data generation: 76 fields. Total recorded work for terminal records: 36504 units.
+Data generation: 76 fields. Total recorded work for terminal records: 41254 units.
 The lost SC-045 ledger contributes up to 130 additional unrecorded units. Its stored zero denotes missing accounting, not free computation.
 Work in running paths is omitted from this snapshot. Interrupted-call costs may be only partially recorded.
 SC-044 includes six shared prefix paths; each method is charged its full prefix in complete-path comparisons.

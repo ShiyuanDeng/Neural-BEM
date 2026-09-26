@@ -12,48 +12,30 @@ provisional**, with two profile differences and plotting provenance unresolved.
 
 ## Current handoff
 
-**Active extension, 2026-09-26:** following review of Claude's `b946d57`, the
-user authorized execution and successive iterations (“go then. dont stop
-until you hit every wall”). **SC-042 COMPLETE, 24/24**: matched none/once/boundary/cap
-state strategies, frozen at `921325e`; [contract](iteration_23/03_plan.md) and
-[live bundle](../../../results/validation/shape_continuation/SC-042-state-strategies/README.md).
-One-off cleanup passes its development gate; the three cleanup strategies
-give essentially tied geometry. The unchanged kite hits a numerical gate;
-three original endpoint audits time out and remain flagged.
-SC-043 prospective band decisions is running. **SC-044 COMPLETE, 18/18**:
-cleanup and the cap avoid one noisy-C numerical stop and reduce local
-artifacts, while most RMS comparisons tie. The [fresh-case closeout](iteration_25/01_results.md)
-records the scope and failures. The [claims review](iteration_24/02_claims_review.md)
-records the close prior art and the evidence each claim still needs.
-Five endpoint audits timed out during severe host memory pressure. Their
-original failures are retained; [SC-045](../../../results/validation/shape_continuation/SC-045-timeout-qualification/README.md)
-records separate, serial qualifications of the identical returned states
-with unchanged tolerances and ceilings.
-The first SC-045 result was lost to a missing output directory; its execution
-failure and cost uncertainty remain recorded. [SC-046](../../../results/validation/shape_continuation/SC-046-lost-audit-recovery/README.md)
-records one separately charged recovery after the other four audits. All
-five originally timed-out endpoints now have separate passing numerical
-evidence; original gates and failed attempts remain unchanged.
-The [SC-042 closeout](iteration_24/01_results.md) records the completed comparison.
-The SC-041 closeout below is the preceding comparison. No branch
-or worktree was created, and no production defaults have changed.
-
-**2026-09-26: SC-041 COMPLETE**, directly authorized by the user's `go` after
-the atlas/theory review. The [closeout](iteration_23/01_results.md) qualifies
-band release on the star and exposes finite-step and geometry failures on the
-kite. The older QR video score is explicitly labelled heuristic. No production
-default changes; the bounded comparison is closed.
+**2026-09-26 strategy campaign:** the user authorized successive controlled
+experiments after review of Claude's `b946d57`. SC-042 and SC-044 are complete;
+SC-043 is running. No production default, branch or worktree has changed.
+The [campaign accounting](../../../results/validation/shape_continuation/STRATEGY_CAMPAIGN.md)
+retains all original stops, timeouts and separately charged qualifications.
 
 | Item | State |
 |---|---|
-| Active cycle | [Iteration 23 — SC-041: atlas predictions against finite updates](iteration_23/01_results.md), after [iteration 22 — six-scene pipeline](iteration_22/01_results.md) |
-| Stage | **SC-041 COMPLETE, 2026-09-26.** Star M=19/22/25 RMS 0.142/0.110/0.0476 mm; kite M=19/22 RMS 0.1023/0.0730 mm. All five endpoint audits pass. Kite M=22 retains a sharper point (radius 0.0817 mm) and stops at the numerical gate; M=19 is time-limited. The nominal RMS radius fails to ensure finite validity. 2,634 total work units. SC-040 remains the six-scene pipeline/video reference. |
-| Working implementation | Existing V2 hybrid and fixed M=3/5/7/9 ladder remain the reference. `finite_paths.py` adds an opt-in ray path with exactly the same normal tangent space (SC-036; not adopted). SC-035's isolated bundle (`state_update.py`) implements the centred arclength projection and its complete geometry derivative; SC-037 and SC-038 reuse it unchanged. SC-038 adds an isolated all-frequency M-release test and a kite resolution follow-up. The Müller/Kress solver and production defaults are unchanged. **SPD comparison reference: SPD-L** (K 4/6/8/10, no step controls) |
-| Latest runs | [SC-041 atlas decisions](../../../results/validation/shape_continuation/SC-041-atlas-decisions/README.md), [SC-040 six-scene pipeline](../../../results/validation/shape_continuation/SC-040-six-scene-pipeline/README.md), [six-scene videos](../../../results/validation/shape_continuation/videos/README.md), [SC-039 trajectory atlas data](../../../results/validation/shape_continuation/SC-039-trajectory-atlas-data/README.md), [SC-038 update-band release](../../../results/validation/shape_continuation/SC-038-update-band-release/README.md), [SC-037 state ladder](../../../results/validation/shape_continuation/SC-037-later-state-release/README.md), [SC-035 state band](../../../results/validation/shape_continuation/SC-035-state-band/README.md), [SC-036 finite paths](../../../results/validation/shape_continuation/SC-036-matched-finite-paths/README.md) |
-| Review / next decision | Complete-update fitting capacity can nominate band releases; finite-step and numerical checks remain necessary. Star M=25 is now tested and helps. Kite's sharp point persists despite lower RMS; regularity and finite-step reliability remain unresolved. The opt-in `action_atlas.py` is a diagnostic, not an adopted controller. No further experiment launched; conformal inversion remains conditional |
-| Figure 1 | Unchanged from iteration 03: still provisional. The band-rule measurement bears on it but does not reproduce it |
-| Checkout | Existing `feature/shape-frequency-continuation` branch; no new branch or worktree |
-| Reviewer of latest changes | SC-041 owner Codex; independent reviewer unassigned. SC-020/021/022: Codex, outsider review. SC-023 to SC-025: none yet. SC-026 independently audited by Codex; SC-028/029 independent reviewer unassigned; SC-030 owner review by Codex, independent reviewer unassigned; SC-035/036/037/038 owner Codex, independent reviewer unassigned |
+| Active cycle | SC-043: prospective band decisions versus fixed and stagnation controls, with diagnostic costs charged. [Frozen contract and progress](../../../results/validation/shape_continuation/SC-043-prospective-band/README.md). |
+| State treatment | [Iteration 24 / SC-042](iteration_24/01_results.md): 24/24 development suffixes. One-off cleanup repairs the kite artifact and passes its development gate; recurrent cleanup and a cap give essentially tied geometry. Common-work aggregate improvement is much smaller than terminal improvement. |
+| Fresh shapes and noise | [Iteration 25 / SC-044](iteration_25/01_results.md): six common prefixes and 18 suffix paths on two fixed new shapes. Cleanup/cap avoid one noisy-C numerical stop and suppress some local artifacts; most RMS comparisons tie. Original transfer gates retain two audit timeouts. |
+| Endpoint follow-ups | All five originally timed-out endpoints have separately passing unchanged audits in [SC-045](../../../results/validation/shape_continuation/SC-045-timeout-qualification/README.md) and [SC-046](../../../results/validation/shape_continuation/SC-046-lost-audit-recovery/README.md). The first SC-045 result was lost to an output error; its failed record and uncertain cost remain. |
+| Claims and next decision | [Reviewer constraints](iteration_24/02_claims_review.md) and [conditions for another useful iteration](iteration_24/03_next_decisions.md). Filtering, normal-band restriction, curvature control and constrained least squares have close prior art. Prospective decision value remains under test. |
+| Working implementation | Existing V2 hybrid and fixed M=3/5/7/9 prefix remain the reference; SPD-L is the comparison reference where star-shaped geometry applies. SC-035's centred projected update is reused unchanged in the isolated studies. SC-036's alternate finite path is not adopted. Müller/Kress and production defaults are unchanged. |
+| Figure 1 | Still provisional from iteration 03; strategy comparisons do not resolve the profile and plotting-provenance differences. |
+| Checkout | Existing `feature/shape-frequency-continuation`; no new branch or worktree. |
+| Review | Current campaign owner: Codex. Independent reviewer unassigned. The campaign is an owner assessment of the prior work, not an independent review of its own implementation. |
+
+The [SC-041 closeout](iteration_23/01_results.md) is the preceding comparison.
+Its complete-update forecasts nominate useful star releases, while kite
+shows that a nominal physical radius does not ensure finite validity. The
+historical capped QR display remains a heuristic. Current feature checks
+also clarify that the star's 5.11 mm truth minimum is at a concave valley,
+not a convex tip; its convex-tip radius is 10.42 mm.
 
 The user authorized autonomous development of this isolated pipeline and
 commit/push checkpoints. On 2026-09-25 the user explicitly extended execution
@@ -75,6 +57,12 @@ against SPD on SPD's single-object case. The test covers one near-truth
 handoff only.
 
 ## Where things live
+
+- **Current campaign:** [SC-042 state treatments](iteration_24/01_results.md),
+  [SC-044 fresh shapes and noise](iteration_25/01_results.md),
+  [SC-043 prospective policies](../../../results/validation/shape_continuation/SC-043-prospective-band/README.md),
+  and [combined accounting](../../../results/validation/shape_continuation/STRATEGY_CAMPAIGN.md).
+
 
 - **SC-041 complete (2026-09-26):** [iteration 23 results](iteration_23/01_results.md),
   [contract](iteration_22/03_plan.md), [evidence and comparison figure](../../../results/validation/shape_continuation/SC-041-atlas-decisions/README.md);
@@ -184,3 +172,5 @@ the next cycle. Code and run artifacts retain their current locations.
 | [21](iteration_21/01_results.md) | SC-039: raw boundary data (traces, geometry, full predictions; 19 frequencies, 512/1024 nodes) at all 867 accepted states of 34 trajectories plus 6 truths. Stored traces reproduce `shape_jacobian` to 1e-15 in any basis; 1,114 saved losses rebuilt bitwise. Data only. |
 | [22](iteration_22/01_results.md) | SC-040: current pipeline on all six scenes with atlas videos. Star ends at 0.142 mm RMS with blunt tips; all four new endpoint audits pass. The historical QR display is subsequently qualified as heuristic in SC-041. |
 | [23](iteration_23/01_results.md) | SC-041: complete-update forecasts nominate useful star M=22/25 releases; M=25 reaches 0.0476 mm RMS. Kite M=22 reaches 0.0730 mm but sharpens its point and stops at numerical qualification. Nominal RMS radius does not ensure finite validity; five endpoint audits pass, no controller promoted. |
+| [24](iteration_24/01_results.md) | SC-042: 24 matched state-treatment suffixes. Initial cleanup repairs the kite artifact; recurrent cleanup/cap give essentially tied geometry. One-off development gate passes, with common-work RMS ratio 0.9846; three original timeouts retain separate later qualifications. |
+| [25](iteration_25/01_results.md) | SC-044: six prefixes and 18 fresh-shape/noise suffixes. Cleanup/cap avoid one noisy-C numerical stop, with common-work RMS ratios 0.909/0.908; most datasets tie. Local curvature artifacts remain. Original transfer gates retain two separately qualified audit timeouts. |
