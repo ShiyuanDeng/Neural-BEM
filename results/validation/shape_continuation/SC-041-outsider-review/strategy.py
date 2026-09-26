@@ -8,6 +8,7 @@ only `curve_modes`. Truth is used only for post-hoc scoring.
 
     python strategy.py release K     # SC-038 M 11/15/19 from the SC-035 K=20 endpoint
     python strategy.py refit K       # SC-041 kite M=22 endpoint, low-passed to K, one M=22 stage at K
+    python strategy.py refit K case M  # the same for another SC-041 arm (e.g. circle_to_star 25)
     python strategy.py continue K    # release_K's last state, remaining M=19 stage (as SC-038 remaining_m19)
 """
 import importlib.util
@@ -47,8 +48,8 @@ def dump(obj, **kw):
     return json.dumps(obj, default=lambda o: o.tolist() if hasattr(o, 'tolist') else str(o), **kw)
 
 
-def main(mode, K):
-    label = f'{mode}_K{K}'
+def main(mode, K, case='kite', M=22):
+    label = f'{mode}_K{K}' if case == 'kite' else f'{mode}_{case}_M{M}_K{K}'
     folder = HERE/'strategies'/label
     folder.mkdir(parents=True, exist_ok=False)
     if mode == 'release':
@@ -56,10 +57,10 @@ def main(mode, K):
         curve, _ = sc038.prefix('kite')                  # SC-035 stage 4, K=20
         source = 'SC-035 kite low stage_4 endpoint (K=20)'
     elif mode == 'refit':
-        stage, config, _ = sc041.setup('kite', 22)
-        stages = [replace(stage, label='refit_M22')]
-        curve = ast.curve_from(json.loads((RESULTS/'SC-041-atlas-decisions/runs/kite/M22/result.json').read_text())['curve'])
-        source = 'SC-041 kite M=22 endpoint'
+        stage, config, _ = sc041.setup(case, M)
+        stages = [replace(stage, label=f'refit_M{M}')]
+        curve = ast.curve_from(json.loads((RESULTS/f'SC-041-atlas-decisions/runs/{case}/M{M}/result.json').read_text())['curve'])
+        source = f'SC-041 {case} M={M} endpoint'
     elif mode == 'continue':
         stages, config, _ = sc038.schedules('kite', 'release_m')
         stages = [replace(stages[-1], label='remaining_m19')]
@@ -76,7 +77,7 @@ def main(mode, K):
         source += f', low-passed to K={K}'
     update = sc038.ProjectedUpdate(sc.LENGTH)
     record = dict(label=label, K=K, source=source, stage_seconds=STAGE_SECONDS, stages=[stage_record(s) for s in stages],
-                  initial_score=sc041.geometry_score('kite', curve), results=[])
+                  initial_score=sc041.geometry_score(case, curve), results=[])
     states = []
     for stage in stages:
         ledger = Ledger(cap=STAGE_UNITS, seconds=STAGE_SECONDS)
@@ -98,7 +99,7 @@ def main(mode, K):
         curve = result.curve
         row = dict(stage=stage.label, M=stage.update_modes, outcome=result.outcome, stop=result.stop_reason,
                    detail=result.detail, initial_loss=result.initial_loss, final_loss=result.final_loss,
-                   units=ledger.units, seconds=time.time()-started, score=sc041.geometry_score('kite', curve),
+                   units=ledger.units, seconds=time.time()-started, score=sc041.geometry_score(case, curve),
                    curve=ast.curve_record(curve))
         record['results'].append(row)
         print(label, stage.label, row['outcome'], row['stop'], f"loss {row['final_loss']:.4g}",
@@ -110,4 +111,4 @@ def main(mode, K):
 
 
 if __name__ == '__main__':
-    main(sys.argv[1], int(sys.argv[2]))
+    main(sys.argv[1], int(sys.argv[2]), *[f(a) for f, a in zip((str, int), sys.argv[3:5])])
