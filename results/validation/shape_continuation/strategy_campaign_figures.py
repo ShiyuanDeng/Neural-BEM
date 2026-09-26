@@ -101,6 +101,8 @@ def band_policies():
         if case=='wrong_circle':
             ax.set_ylim(1e-4,1e-3)
             ax.text(.5,.92,'Below 0.01 mm comparison floor',transform=ax.transAxes,ha='center',fontsize=9)
+        else:
+            ax.axhline(.01,color='#AAAAAA',ls='--',lw=.8,label='Comparison floor (0.01 mm)')
         ax.grid(alpha=.2)
     finish(fig,axes,folder,'geometry_by_work',f'SC-043: prospective rules with diagnostics charged — {count}/18 scored paths')
 

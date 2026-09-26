@@ -38,6 +38,9 @@ def main():
             (d['outcome']!='COMPLETED_SCHEDULE' or len(d['stages'])==3))))
         checks.append(dict(case=d['case'],policy=d['policy'],check='last_accepted_endpoint',passed=bool(
             progress and progress[-1]['curve']==d['curve'])))
+        checks.append(dict(case=d['case'],policy=d['policy'],check='audit_receipt',passed=bool(
+            d['audit_passed']==audit['passed'] and d['audit_units']==audit['work']['work_units']
+            and d['audit_units']<=130)))
         previous_total=0
         previous_m=None
         prior_stagnated=r.initial_stagnated(d['case'])
@@ -47,6 +50,10 @@ def main():
             blocks.append(dict(case=d['case'],policy=d['policy'],block=stage['block'],
                 low=choice['low'],high=choice['high'],selected=choice['selected'],
                 release=choice['release'],incremental_predicted_fraction=choice.get('incremental_fraction'),
+                low_constraint_active=choice.get('low_prediction',{}).get('constraint_active'),
+                high_constraint_active=choice.get('high_prediction',{}).get('constraint_active'),
+                high_norm_over_radius=(choice['high_prediction']['physical_norm']/choice['high_prediction']['radius'])
+                    if 'high_prediction' in choice else None,
                 prior_stagnated=choice.get('prior_stagnated'),
                 diagnostic_qualified=choice.get('qualification',{}).get('passed'),
                 diagnostic_units=stage['diagnostic_units'],fit_units=stage['units'],

@@ -48,6 +48,12 @@ def main():
     recovery=dict(complete=recovered is not None,passed=recovered['passed'] if recovered else None,
         additional_units=recovered['work']['work_units'] if recovered else 0,
         path=str(recovery_path.relative_to(ROOT)),row=recovered)
+    later_passed={d['source'] for d in replay_rows if d['passed']}
+    if recovered and recovered['passed']:later_passed.add(recovered['source'])
+    for study in studies:
+        extra={str(Path(d['path']).parent) for d in study['failures']
+               if not d['audit_passed'] and str(Path(d['path']).parent) in later_passed}
+        study['qualified_endpoints_including_separate_followups']=study['qualified_paths']+len(extra)
     result=dict(studies=studies,data_generation_units=data_units,
         independent_timeout_qualification=replay,
         lost_audit_recovery=recovery,
@@ -58,7 +64,7 @@ def main():
     (ROOT/'strategy_campaign_summary.json').write_text(json.dumps(result,indent=2)+'\n')
     lines=['# Strategy campaign — status and solve accounting','',
            '**COMPLETE**' if result['complete'] else '**RUNNING — incomplete comparisons are provisional.**','',
-           '| Study | Terminal paths | Qualified scored paths | Fitting + diagnostics, unique | Endpoint audits |',
+           '| Study | Terminal paths | Original endpoint audit passes | Fitting + diagnostics, unique | Endpoint audits |',
            '|---|---:|---:|---:|---:|']
     for d in studies:
         lines.append(f"| [{d['study']}]({d['study']}/README.md) | {d['terminal_paths']}/{d['planned_paths']} | {d['qualified_paths']} | {d['unique_inverse_and_diagnostic_units']} | {d['audit_units']} |")
@@ -69,6 +75,9 @@ def main():
             'Work in running paths is omitted from this snapshot. Interrupted-call costs may be only partially recorded.',
             'SC-044 includes six shared prefix paths; each method is charged its full prefix in complete-path comparisons.',
             'Field and reciprocal units are a declared accounting convention, not identical floating-point cost. Numerical grids vary by case; host timing is uncontrolled.','',
+            f"Including separate unchanged-endpoint qualifications, {sum(d['qualified_endpoints_including_separate_followups'] for d in studies)} "
+            f"of {sum(d['scored_paths'] for d in studies)} returned scored endpoints have passing numerical evidence. "
+            'This count does not alter original flags or any frozen strategy gate.','',
             '[Reviewer constraints on novelty](../../../docs/iterations/shape_frequency_continuation/iteration_24/02_claims_review.md).',
             '[Conditions for a useful next iteration](../../../docs/iterations/shape_frequency_continuation/iteration_24/03_next_decisions.md).',
             '[Environment](strategy_campaign_environment.json). [Machine-readable summary](strategy_campaign_summary.json).','',
