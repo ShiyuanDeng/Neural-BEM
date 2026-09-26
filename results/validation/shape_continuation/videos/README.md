@@ -1,5 +1,16 @@
 # Six development scenes: the current pipeline, with its atlas
 
+**2026-09-26 qualification (SC-041):** the existing videos and numbers below
+are preserved historical artifacts. Their "removable misfit" is a
+componentwise-capped QR score, not guaranteed loss reduction within a physical
+step bound. Their ideal normal-ripple derivative differs from the current
+projected solver's derivative. The white line uses an assumed display threshold,
+not a measured noise floor or recoverability certificate. Consequently the
+historical statements "the band is the limit" are local hypotheses. See the
+[SC-041 results](../SC-041-atlas-decisions/README.md)
+for complete-construction predictions and finite-update tests. Future rendering
+uses corrected labels; the stored videos have not been overwritten.
+
 One video per scene, each following one trajectory through the current
 pipeline. Every video is 414 frames (34.5 s at 12 fps), so they play in step
 side by side. No new field solves; every saved accepted state is shown.

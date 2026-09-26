@@ -1,0 +1,32 @@
+PREDICT circle_to_star 19 {'predicted_decrease': 6.351363880293268e-13, 'decrease_fraction': 4.295782205218768e-07, 'initial_loss': 1.478511613688715e-06, 'linear_loss': 1.4785109785523266e-06, 'physical_norm': 3.658060146740091e-08, 'radius': 0.0009349888821790809, 'constraint_active': False, 'numerical_rank': 39}
+PREDICT circle_to_star 22 {'predicted_decrease': 1.4010585713730657e-06, 'decrease_fraction': 0.9476141806404801, 'initial_loss': 1.478511613688715e-06, 'linear_loss': 7.745304231564939e-08, 'physical_norm': 7.628996395009535e-05, 'radius': 0.0009349888821790809, 'constraint_active': False, 'numerical_rank': 45}
+PREDICT circle_to_star 25 {'predicted_decrease': 1.4669898236956556e-06, 'decrease_fraction': 0.9922071697737199, 'initial_loss': 1.478511613688715e-06, 'linear_loss': 1.1521789993059332e-08, 'physical_norm': 0.00013621855990153599, 'radius': 0.0009349888821790809, 'constraint_active': False, 'numerical_rank': 51}
+PREDICT kite 19 {'predicted_decrease': 7.998351572277438e-09, 'decrease_fraction': 0.8967737294944741, 'initial_loss': 8.919029749886004e-09, 'linear_loss': 9.206781776085664e-10, 'physical_norm': 0.00014964619568270306, 'radius': 0.0009349888821790809, 'constraint_active': False, 'numerical_rank': 39}
+PREDICT kite 22 {'predicted_decrease': 8.90189218628155e-09, 'decrease_fraction': 0.998078539472898, 'initial_loss': 8.919029749886004e-09, 'linear_loss': 1.7137563604454013e-11, 'physical_norm': 8.457020580931672e-05, 'radius': 0.0009349888821790809, 'constraint_active': False, 'numerical_rank': 45}
+PROBE circle_to_star 19 1.0 False 1.0060519467778957 None
+PROBE circle_to_star 19 0.5 False 1.0020143909854344 None
+PROBE circle_to_star 19 0.25 False 1.0008583255527903 None
+PROBE circle_to_star 19 0.125 False 1.0003959331648673 None
+PROBE kite 19 1.0 False -17.179186255458696 None
+PROBE circle_to_star 22 1.0 True 1.000453557434982 None
+PROBE kite 19 0.5 False -1.6585381034191695 None
+PROBE kite 19 0.25 False 0.11581325693643843 None
+PROBE circle_to_star 25 1.0 True 1.000719056692729 None
+SCREEN circle_to_star True 494 
+PROBE kite 19 0.125 True 0.5912990467480799 None
+PROBE kite 22 1.0 False None self_intersection: Displaced curve self-intersects.
+PROBE kite 22 0.5 True 0.5308350809399265 None
+SCREEN kite True 380 
+DONE circle_to_star 19 NORMAL_OPTIMIZER_RETURN no_decreasing_step {'rms_mm': 0.14198067047255272, 'hausdorff_mm': 0.45850831079880155, 'hausdorff_upper_mm': 0.48953095836023847, 'tightest_radius_mm': 8.988761041861418, 'tightest_radius_fine_mm': 8.988740264205763} 38
+DONE circle_to_star 22 NORMAL_OPTIMIZER_RETURN no_decreasing_step {'rms_mm': 0.10981108897435547, 'hausdorff_mm': 0.31701901893761086, 'hausdorff_upper_mm': 0.3480440900036139, 'tightest_radius_mm': 8.236056368245015, 'tightest_radius_fine_mm': 8.236049664289585} 171
+DONE circle_to_star 25 NORMAL_OPTIMIZER_RETURN gradient_tolerance {'rms_mm': 0.04755371774918523, 'hausdorff_mm': 0.1386874807388902, 'hausdorff_upper_mm': 0.16971808371917999, 'tightest_radius_mm': 7.002234109895163, 'tightest_radius_fine_mm': 7.002234109895162} 228
+DONE kite 19 TRIAL_WALL_LIMIT None {'rms_mm': 0.10228622292387492, 'hausdorff_mm': 0.4679722265933266, 'hausdorff_upper_mm': 0.4900903859221435, 'tightest_radius_mm': 0.10136158749114058, 'tightest_radius_fine_mm': 0.10063917562553745} 430
+DONE kite 22 NUMERICAL_FAILURE None {'rms_mm': 0.07304061198600824, 'hausdorff_mm': 0.3417622442793983, 'hausdorff_upper_mm': 0.36395399914841686, 'tightest_radius_mm': 0.08169678385986824, 'tightest_radius_fine_mm': 0.0816967838598684} 323
+Traceback (most recent call last):
+  File "/home/drdeng/Neural_SDF_BEM_AD/results/validation/shape_continuation/SC-041-atlas-decisions/run.py", line 335, in <module>
+    run() if args.action == 'run' else summarize()
+  File "/home/drdeng/Neural_SDF_BEM_AD/results/validation/shape_continuation/SC-041-atlas-decisions/run.py", line 325, in run
+    rows = summarize()
+  File "/home/drdeng/Neural_SDF_BEM_AD/results/validation/shape_continuation/SC-041-atlas-decisions/run.py", line 273, in summarize
+    if trial['status'] == 'accepted':
+KeyError: 'status'

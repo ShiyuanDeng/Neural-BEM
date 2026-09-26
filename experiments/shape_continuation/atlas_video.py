@@ -1,4 +1,10 @@
-"""Atlas videos: what the data can still change, under the inverse videos. No field solves.
+"""Descriptive normal-ripple atlas videos. No field solves.
+
+SC-041 qualification: the componentwise-capped QR score below is a heuristic,
+not achievable loss reduction under a physical trust region. The normal basis
+also differs from ProjectedUpdate's complete derivative. Decision predictions
+use action_atlas.py with the complete Jacobian and metric instead. Historical
+score keys and arithmetic are retained for artifact reproducibility.
 
 At every accepted state that `render_videos` shows for the original hybrid and
 the SC-035 state band, SC-039's stored traces give each catalog frequency's
@@ -6,15 +12,13 @@ relative Jacobian A_f (paired data, each frequency scaled by its own data norm)
 with respect to arclength normal ripples of unit RMS, orders 0..30, and the
 relative residual r_f of the stored prediction.
 
-- Heatmap cell (f, m): the part of r_f that ripple order m removes beyond all
-  lower orders (QR of A_f with columns in order of m), capped at what a step of
-  the linearization horizon 0.12/k moves (iteration 04, SC-016).
-- White line: above it, even that step moves the data by less than a declared
-  1% noise (conditional sensitivity x horizon < noise). Hatched.
-- Amber box: what each update uses. Its columns are the stage's frequencies,
-  all stacked into one Levenberg-Marquardt step (`lm_backend.jacobian`); its
-  height is the ripple orders the step may move, |m| <= M. The left column is
-  those frequencies together, with the runs' equal weights.
+- Heatmap cell (f, m): a capped QR projection score, conditional on preceding
+  columns, with the empirical scale 0.12/k (iteration 04, SC-016).
+- White line: first crossing below a declared display level. Hatching is not
+  a proof that all higher orders are invisible.
+- Amber box: active frequencies and nominal normal-coordinate band. The left
+  column combines those frequencies with the runs' equal weights; the basis
+  is not the complete projected-update derivative.
 - Strip: the state itself, its Cartesian coefficients read as ripple order
   (order m from c_{1+m} and c_{1-m}; exact for ripples on a circle), with the
   storage band K. Small bars above it combine the orders beyond the heatmap.
@@ -78,8 +82,11 @@ def per_order(values, combine):
 
 
 def removable(A, r, amplitude):
-    """Squared residual each ripple order removes beyond all lower orders with a step of at most
-    `amplitude` mm, and each order's conditional sensitivity |R_mm| (RMS over cosine/sine)."""
+    """Legacy capped QR projection score and diagonal sensitivity, grouped by order.
+
+    The caps do not bound the norm of a joint physical step and the squared
+    correction is not the loss decrease. This is not a decision certificate.
+    """
     Q, R = np.linalg.qr(A)
     n = min(A.shape)
     q, c = np.zeros(A.shape[1]), np.zeros(A.shape[1])
@@ -292,21 +299,21 @@ class Panel:
             data = ', '.join(f'{GHZ[f]:g}' for f in a['active'])
             step = '' if a['stage'] == 0 else f" · step {a['iteration']}"
             self.detail.set_text(f"{where} · data {data} GHz · M={a['M']} · K={a['K']}{step}")
-        misfit = f"misfit {a['misfit']:.2g}" + (' (below noise)' if a['misfit'] < self.noise else '')
-        self.readout.set_text(f"{misfit} · removable: {100 * a['inside']:.0f}% inside box, "
+        misfit = f"misfit {a['misfit']:.2g}" + (' (below display level)' if a['misfit'] < self.noise else '')
+        self.readout.set_text(f"{misfit} · QR score: {100 * a['inside']:.0f}% inside box, "
                               f"{100 * a['near']:.0f}% just above")
 
 
 GUIDE = [
     ('How to read', True),
-    ('Colour: misfit that ripple order m could still remove at that frequency, beyond lower orders, '
-     'with a step small enough to trust.', False),
-    ('Amber box: the frequencies each update uses together (columns) and the orders it may move (|m| ≤ M). '
-     'Left column: those frequencies combined.', False),
-    ('Hatched, above the white line: finer than the data resolves at 1% noise.', False),
-    ('Bright inside the box: the band is not the limit; steps are blocked.', False),
-    ('Dark inside, bright just above: the band is the limit; raise M.', False),
-    ('Just above is hatched: these frequencies are used up; add one.', False),
+    ('Colour: capped QR residual score in ideal normal ripples; lower orders enter first. '
+     'This is a local heuristic, not achievable loss reduction.', False),
+    ('Amber box: active frequencies and nominal update band. Projected solver motions differ. '
+     'Left column combines active frequencies.', False),
+    ('White line: first sensitivity crossing at an assumed 1% level; not a recovery limit.', False),
+    ('Bright inside: test the implemented update and its finite-step validity.', False),
+    ('Bright above: test extra update freedom on the same data.', False),
+    ('Hatching alone does not justify adding frequencies.', False),
     ('Strip: what the outline holds per order; dashed line K is its storage band; small bars: orders above 24.', False),
 ]
 
@@ -320,7 +327,7 @@ def guide(fig):
     cb.set_ticklabels(['1e-4', '1e-3', '0.01', '0.1', '1'])
     cb.ax.tick_params(labelsize=7.5, colors=MUTED)
     cb.outline.set_edgecolor(SPINE)
-    cb.set_label('removable misfit (fraction of data)', fontsize=8, color=MUTED, labelpad=4)
+    cb.set_label('QR score (relative data units)', fontsize=8, color=MUTED, labelpad=4)
     cb.ax.yaxis.set_label_position('left')
     fig.text(x0 + SLOT / 2, .955, 'SPD-L: no atlas row', ha='center', fontsize=10.5, color=MUTED)
     fig.text(x0 + SLOT / 2, .915, 'its update space is polar-angle coefficients, not ripple orders', ha='center',

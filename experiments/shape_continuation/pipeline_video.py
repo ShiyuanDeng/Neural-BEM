@@ -50,14 +50,14 @@ STAGE_GHZ = ('0.5', '0.5, 0.75', '0.5, 0.75, 1.0', '0.5, 0.75, 1.0, 1.25')
 NOISE, LOW = 1e-4, -6
 GUIDE = [
     ('How to read', True),
-    ('Colour: misfit that ripple order m could still remove at that frequency, beyond lower orders, '
-     'with a step small enough to trust.', False),
-    ('Amber box: the frequencies each update uses together (columns) and the orders it may move (|m| ≤ M). '
-     'Left column: those frequencies combined.', False),
-    ('Hatched, above the white line: finer than the data resolve at 0.01% of their size.', False),
-    ('Bright inside the box: the band is not the limit; steps are blocked or unfinished.', False),
-    ('Dark inside, bright just above: the band is the limit; raise M.', False),
-    ('Just above is hatched: these frequencies are used up; add one.', False),
+    ('Colour: capped QR residual score in ideal normal ripples; lower orders enter first. '
+     'Not achievable finite-step loss reduction.', False),
+    ('Amber box: active frequencies and nominal update band. Projected solver motions differ. '
+     'Left column combines active frequencies.', False),
+    ('White line: first sensitivity crossing at an assumed 0.01% level; not a recovery limit.', False),
+    ('Bright inside: test the implemented update and finite-step validity.', False),
+    ('Bright above: test extra update freedom on the same data.', False),
+    ('Hatching alone does not justify adding frequencies.', False),
     ('Strip: what the outline holds per order; dashed line K is its storage band; small bars: orders above 24.', False),
 ]
 
@@ -174,7 +174,7 @@ def render(case, trajectory, output):
     cb.set_ticklabels(['1e-6', '1e-5', '1e-4', '1e-3', '0.01', '0.1', '1'])
     cb.ax.tick_params(labelsize=7.5, colors=av.MUTED)
     cb.outline.set_edgecolor(av.SPINE)
-    cb.set_label('removable misfit (fraction of data)', fontsize=8, color=av.MUTED, labelpad=4)
+    cb.set_label('QR score (relative data units)', fontsize=8, color=av.MUTED, labelpad=4)
     cb.ax.yaxis.set_label_position('left')
     y = .8
     for text, bold in GUIDE:

@@ -14,7 +14,7 @@ def test_removable_without_cap_is_the_sequential_projection():
     assert sensitivity[24] > 0 and np.all(sensitivity[25:] == 0)    # 48 rows: order 24's cosine is the last new column
 
 
-def test_cap_limits_each_order_to_a_trusted_step():
+def test_legacy_cap_arithmetic_is_preserved_without_a_physical_step_claim():
     A = np.diag([1.0, 1e-3, 1e-3] + [1e-6] * (2 * av.BAND - 2))
     r = np.ones(len(A))
     d, _ = av.removable(A, r, amplitude=10.0)

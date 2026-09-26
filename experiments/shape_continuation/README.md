@@ -9,6 +9,16 @@ Owner: Codex. Independent reviewer: unassigned.
 [Research iterations and current handoff](../../docs/iterations/shape_frequency_continuation/README.md)
 record the experimental questions and decisions; this page owns the working API.
 
+`action_atlas.predict(J, r, G, radius)` is SC-041's opt-in decision diagnostic.
+Pass the residual Jacobian of the **complete trial construction** and its
+physical normal-displacement mass metric. It returns one constrained
+least-squares step and its predicted loss decrease. It does not assume a
+noise model, prove a finite validity radius, or replace the LM fitter.
+`descent_lower_bound` exposes the conditional Taylor-remainder bound; the
+caller must justify any prospective remainder estimate. The older video
+heatmap remains a descriptive, componentwise-capped QR score and is labelled
+accordingly. See the [SC-041 contract](../../docs/iterations/shape_frequency_continuation/iteration_22/03_plan.md).
+
 The current SPD comparison reference is **SPD-L**: SPD-008 compiled runtime,
 real-Bessel CPU kernels and certified exact geometry reuse, with the K=4/6/8/10
 state ladder and no legacy step controls (adopted after SC-034). The historical
@@ -145,9 +155,11 @@ builders and inverse to establish a matched baseline.
   pipeline (SC-035 state band, then SC-038's release), each frame showing the
   saved state and its atlas; see the [video index](../../results/validation/shape_continuation/videos/README.md).
   `atlas_video.py` holds the atlas: per frequency and ripple order, the
-  misfit removable beyond lower orders within a trusted step (QR of the
-  relative Jacobian from SC-039-format traces), and the resolution frontier.
-  `test_atlas_video.py` checks that maths. Both renderers stop unless every
+  heuristic QR misfit score from ideal normal ripples, with an assumed display
+  threshold. Its componentwise caps do not establish a physical joint-step
+  bound or a stable recovery frontier; use `action_atlas.py` for the corrected
+  complete-update diagnostic. `test_atlas_video.py` checks the preserved score
+  algebra. Both renderers stop unless every
   atlas reproduces its run's saved loss.
 - `render_videos.py`: the earlier side-by-side comparison (original hybrid,
   SC-035 state band, SPD-L), now written to `videos/three_method_comparison/`.
