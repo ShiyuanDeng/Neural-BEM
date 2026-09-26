@@ -57,3 +57,20 @@ percentile over the spurious-feature states (reported with their count).
 Controls: the regenerated shot key equals the recorded key where one
 exists; on 2 test states the 2×-grid ρ(s) changes by < 0.02 in max abs.
 No prior, noise level, order limit or threshold is changed after results.
+
+## Follow-up control, written after the frozen verdict (FAIL, inverted) and before running it
+
+Result that prompted it: spurious sharpest points sit at the 0–10th percentile
+of ρ (best-determined locations) in all 13 spurious states. Confound: field
+enhancement near a sharp feature can itself raise local sensitivity.
+
+Control: compute ρ(s) on the **truth** curve (no artefact) for kite (768
+nodes) and deep_c (512 nodes), both priors, same noise convention. For each
+spurious state above, map its sharpest point to the nearest truth arclength
+position and report the percentile of truth-ρ there.
+
+Read-out fixed now: if the median percentile is ≤ 25 under both priors, the
+artefact sites are intrinsically high-information for this acquisition
+(the inversion is not caused by the artefact itself). If ≥ 50 under either,
+the inversion is attributed to the artefact's own field enhancement.
+Otherwise inconclusive.
