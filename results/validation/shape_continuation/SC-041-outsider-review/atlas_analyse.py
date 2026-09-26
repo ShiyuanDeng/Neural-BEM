@@ -30,7 +30,9 @@ def joint_orders(a, active, wavenumbers):
     amplitude = av.horizon_mm(max(wavenumbers[f] for f in active), sc.LENGTH)
     d, _ = av.removable(A, r, amplitude)
     Q, R = np.linalg.qr(A)
-    q, c = Q.T@r, np.abs(np.diag(R))
+    n = min(A.shape)                        # as `removable`: columns beyond the rank carry nothing
+    q, c = np.zeros(A.shape[1]), np.zeros(A.shape[1])
+    q[:n], c[:n] = Q.T@r, np.abs(np.diag(R))
     return dict(d=d, q=av.per_order(q**2, np.add), cap=av.per_order((c*amplitude)**2, np.add), misfit=np.linalg.norm(r))
 
 
@@ -64,10 +66,12 @@ def main():
     wavenumbers = np.array([o.wavenumber for o in ast.catalog_only('kite')])
     truths = {c: ast.curve_from(sc.read(ast.source_folder(c)/'truth.json')) for c in ('kite', 'circle_to_star')}
     truth_pts = {c: t.nodes(65536).points for c, t in truths.items()}
-    rows, controls = [], dict(C1=[], C2=[], C3=[], failed=[])
+    rows, controls = [], dict(C1=[], C2=[], C3=[], failed=[], missing=[])
     for s in index:
-        if 'traceback' in s or 'misfit' not in s:
+        if 'traceback' in s:
             controls['failed'].append(s['id']); continue
+        if 'misfit' not in s:
+            controls['missing'].append(s['id']); continue
         a = dict(np.load(LOCAL/f"{s['id']:03d}.npz"))
         curve = FourierCurve(a['coefficients'])
         j = joint_orders(a, s['active'], wavenumbers)
@@ -201,7 +205,7 @@ def main():
                          peak_agrees_within_2=float(np.mean([abs(r['Q5_heat_peak']-r['Q5_error_peak']) <= 2 for r in sel])),
                          median_error_energy_gt30_share=float(np.median([r['error_energy_gt30']/(r['error_energy_gt30']+r['error_energy_le30']) for r in sel])))
 
-    report = dict(plan='atlas_plan.md', states=len(rows), controls_passed=ok, failed=controls['failed'],
+    report = dict(plan='atlas_plan.md', states=len(rows), controls_passed=ok, failed=controls['failed'], missing=controls['missing'],
                   C2_worst=max(v for _, v in controls['C2']), C3_worst=max(v for _, v in controls['C3']),
                   Q1=q1, Q2=q2, Q3=q3, Q4=q4, Q5=q5)
     (HERE/'atlas_analysis.json').write_text(json.dumps(dict(report, rows=[{k: v for k, v in r.items()
