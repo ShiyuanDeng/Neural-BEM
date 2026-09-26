@@ -281,12 +281,12 @@ percentile of ρ (median 8.3 / 6.9 under the two priors; kite 8.6–10.4, deep C
 high-information for this acquisition.** The kite site is already the most
 informative region at SC-035 stage 4 (K=20), before the feature forms.
 
-**Reading.** Spurious features in this pipeline do not fill data-blind
-regions. They form where a small boundary displacement buys the largest data
-change, consistent with part 2's finding that kite's feature absorbs misfit:
-residual misfit from elsewhere is compensated most cheaply at the
-acquisition's most sensitive boundary locations. The site is predictable
-from the information map before the feature exists.
+**Reading (corrected by part 5).** Spurious features in this pipeline do not
+fill regions that are undetermined at the ripple scale (orders ≤ 128): those
+sites are among the best determined in the linearized posterior. Part 5
+shows this is *not* the same as high pointwise sensitivity; at the same sites
+the pointwise Fisher density is among the lowest. The earlier sentence "where
+a small displacement buys the largest data change" is withdrawn.
 
 **Scope.** Two shapes (effectively two independent sites; the 13 states share
 them), one acquisition, noiseless and 1%-noise data, linearized posterior,
@@ -300,3 +300,37 @@ sensitivity, so misfit cannot be absorbed cheaply at high-information sites)
 reduces spurious features without the sharp-feature cost SC-042 found for a
 state cap, compared against the established filtered-resampling and
 curvature-spectrum baselines.
+
+## Part 5 — sensitivity-weighted metric and prospective site prediction ([frozen plan](infometric_plan.md), [runner](infometric.py), [P1](infometric_P1.json), [measures](infometric_measures.json))
+
+**Stopped early as uninformative, after kite's three arms and before the
+remaining 12.** No setting was changed; the stop and its reason are recorded.
+
+- **The frozen sensitivity weight is almost uniform.** w(s) = sqrt(F/F̄)
+  spans 0.94–1.07 on kite and 0.88–1.12 on deep C: the pointwise Fisher
+  density F varies only 1.29× and 1.61× along the boundary. The
+  sensitivity-weighted metric is therefore nearly the mass metric.
+- **Under Hanke damping at this budget the step metric is inert.** On kite's
+  first release stage (M=11, 1,200 s wall limit, reached by all arms) the
+  mass, sensitivity and curvature arms end at loss 7.378e-5, 7.378e-5 and
+  7.377e-5 (curve coefficients within 2e-5). The regularizing damping is also
+  much slower than the default schedule (SC-038 reached 6.7e-6 at M=11).
+- **P1 (prospective site prediction): fail, 0 of 2.** Deviation: my A0 arms
+  stopped before any artefact formed, so P1 was scored on the existing paths
+  that start from the same entry states (kite: SC-035 K=20 entry → SC-041
+  M22 endpoint; deep C clean: SC-044 prefix → SC-044 `none` endpoint). The
+  artefact sites lie at the **6.1th and 0.2th** percentile of entry-state F,
+  not in its top 10%.
+- **Two notions of information diverge.** Along the boundary at those entry
+  states, F correlates *positively* with part 4's posterior ratio (Spearman
+  0.50 / 0.58 on kite, 0.37 / 0.74 on deep C, white / decaying prior): the
+  pointwise most sensitive places are the least determined at ripple scale.
+  A plausible reading, not tested here: where the fields oscillate fast, the
+  sensitivity to smooth ripples cancels.
+
+**Consequence for the direction.** Sensitivity weighting as frozen cannot
+work here (too little contrast, and the metric does not steer under Hanke
+damping). What survives is an empirical regularity on two sites: artefacts
+form where pointwise sensitivity is lowest and ripple-scale determination is
+highest at the entry state. It was found after the fact and is not a result
+until it predicts sites on shapes it has not seen.
