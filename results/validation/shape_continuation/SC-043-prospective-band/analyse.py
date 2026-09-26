@@ -13,6 +13,8 @@ def main():
     r.verify()
     rows=[]
     checks=[]
+    failures=[dict(path=str(p.relative_to(HERE)),**r.c.sc.read(p))
+              for p in sorted((HERE/'runs').glob('*/*/failure.json'))]
     for p in sorted((HERE/'runs').glob('*/*/result.json')):
         d=r.c.sc.read(p)
         decisions=r.c.sc.read(p.parent/'decisions.json')['rows']
@@ -42,21 +44,39 @@ def main():
                 hausdorff_ratio=max(a['score']['hausdorff_mm'],.01)/max(b['score']['hausdorff_mm'],.01),
                 work_ratio=a['units']/b['units'],atlas_audit=a['audit_passed'],
                 additional_failure=a['outcome']!='COMPLETED_SCHEDULE' and b['outcome']=='COMPLETED_SCHEDULE'))
+    terminal=set(index)|{(s['case'],s['policy']) for s in failures}
+    pending=[dict(case=case,policy=policy) for case in r.c.CASES for policy in r.POLICIES
+             if (case,policy) not in terminal]
     aggregate={}
     for baseline in ('fixed','stagnation'):
         subset=[s for s in comparisons if s['baseline']==baseline]
         if subset:
             gm=float(np.exp(np.mean(np.log([s['rms_ratio'] for s in subset]))))
+            worst=max(max(s['rms_ratio'],s['hausdorff_ratio']) for s in subset)
+            additional=sum(s['additional_failure'] for s in subset)
             aggregate[baseline]=dict(cases=len(subset),rms_gm_ratio=gm,
-                worst_geometry_ratio=max(max(s['rms_ratio'],s['hausdorff_ratio']) for s in subset),
-                additional_failures=sum(s['additional_failure'] for s in subset))
+                worst_geometry_ratio=worst,additional_failures=additional,
+                gate_passed=len(subset)==6 and gm<=.8 and worst<=1.25 and not additional
+                and all(s['atlas_audit'] for s in subset))
+    diagnostic_failure_units=sum(sum(d['diagnostic_units'] for d in f.get('decisions',[])) for f in failures)
     r.c.write(HERE/'analysis.json',dict(rows=rows,comparisons=comparisons,aggregate=aggregate,
-        checks=checks,checks_passed=all(x['passed'] for x in checks),complete=len(rows)==18))
-    lines=['# SC-043 — prospective band decisions','','| Case | Rule | Bands | RMS mm | Hausdorff mm | Work (diagnostic) | Outcome | Audit |',
+        failures=failures,pending=pending,terminal=len(terminal),planned=18,
+        recorded_failure_units=sum(f.get('total_units',0) for f in failures),
+        diagnostic_failure_units=diagnostic_failure_units,
+        superior_rule_gate_passed=len(aggregate)==2 and all(s['gate_passed'] for s in aggregate.values()),
+        checks=checks,checks_passed=all(x['passed'] for x in checks),complete=len(terminal)==18))
+    lines=['# SC-043 — prospective band decisions','',
+           f'{len(terminal)}/18 terminal paths; {len(failures)} exceptions; {len(pending)} pending.','',
+           '| Case | Rule | Bands | RMS mm | Hausdorff mm | Work (diagnostic) | Outcome | Audit |',
            '|---|---|---|---:|---:|---:|---|---|']
     for s in rows:
         lines.append(f"| {s['case']} | {s['policy']} | {s['bands']} | {s['score']['rms_mm']:.5g} | {s['score']['hausdorff_mm']:.5g} | {s['units']} ({s['diagnostic_units']}) | {s['outcome']} | {s['audit_passed']} |")
+    for s in failures:
+        diagnostic=sum(d['diagnostic_units'] for d in s.get('decisions',[]))
+        lines.append(f"| {s['case']} | {s['policy']} | — | — | — | {s.get('total_units',0)} ({diagnostic}) | EXCEPTION | False |")
     lines+=['',f"Evidence checks: {sum(x['passed'] for x in checks)}/{len(checks)}.",'']
+    lines+=['Exceptions remain in the 18-path denominator. An unqualified diagnostic blocks that policy; it is not a missing successful replicate.',
+            'Reported geometric means use available scored pairs. The superiority gate requires all six cases against both controls.', '']
     (HERE/'TABLES.md').write_text('\n'.join(lines))
     print({'completed':len(rows),'aggregate':aggregate,'checks_passed':all(x['passed'] for x in checks)})
 

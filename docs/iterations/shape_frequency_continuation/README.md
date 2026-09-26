@@ -17,10 +17,12 @@ user authorized execution and successive iterations (“go then. dont stop
 until you hit every wall”). **SC-042 RUNNING**: matched none/once/boundary/cap
 state strategies, frozen at `921325e`; [contract](iteration_23/03_plan.md) and
 [live bundle](../../../results/validation/shape_continuation/SC-042-state-strategies/README.md).
-SC-043 prospective band decisions is implemented but not released; SC-044
-fresh-shape/noise protocol is frozen before observations are generated.
-The SC-041 closeout below remains the last completed comparison. No branch,
-worktree or default changes are authorized by this extension.
+SC-043 prospective band decisions is frozen and queued behind SC-042;
+SC-044's two fixed fresh targets passed data qualification and their clean
+and noisy full-pipeline fits are running. The [claims review](iteration_24/02_claims_review.md)
+records the close prior art and the evidence each claim still needs.
+The SC-041 closeout below remains the last completed comparison. No branch
+or worktree was created, and no production defaults have changed.
 
 **2026-09-26: SC-041 COMPLETE**, directly authorized by the user's `go` after
 the atlas/theory review. The [closeout](iteration_23/01_results.md) qualifies

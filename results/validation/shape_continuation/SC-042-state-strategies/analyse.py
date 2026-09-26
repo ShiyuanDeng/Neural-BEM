@@ -13,6 +13,8 @@ def main():
     r.verify()
     rows, comparisons, checks = [], [], []
     data = {}
+    failures = [dict(path=str(p.relative_to(HERE)), **r.sc.read(p))
+                for p in sorted((HERE/'runs').glob('*/*/failure.json'))]
     for p in sorted((HERE/'runs').glob('*/*/result.json')):
         result = r.sc.read(p)
         case, arm = result['case'], result['arm']
@@ -56,28 +58,41 @@ def main():
         a, b = [[s for s in states if s['stage'] == states[0]['stage']] for states in (once, boundary)]
         checks.append(dict(case=case, check='once_boundary_first_stage_identical',
             passed=len(a) == len(b) and all(x['loss'] == y['loss'] and x['curve'] == y['curve'] for x, y in zip(a, b))))
+    terminal = set(data) | {(d['case'], d['arm']) for d in failures}
+    pending = [dict(case=case, arm=arm) for case in r.CASES for arm in r.ARMS
+               if (case, arm) not in terminal]
     aggregate = {}
     for arm in r.ARMS[1:]:
         selected = [row for row in comparisons if row['arm'] == arm]
         if selected:
             gm = float(np.exp(np.mean(np.log([s['ratios']['rms_mm'] for s in selected]))))
             worst = max(v for s in selected for v in s['ratios'].values())
+            common_ratios = [max(s['common_scores'][arm]['score']['rms_mm'], .01)/
+                             max(s['common_scores']['none']['score']['rms_mm'], .01)
+                             for s in selected if s['common_scores'][arm] and s['common_scores']['none']]
             aggregate[arm] = dict(cases=len(selected), rms_geometric_mean_ratio=gm, worst_ratio=worst,
+                common_work_rms_geometric_mean_ratio=float(np.exp(np.mean(np.log(common_ratios)))) if common_ratios else None,
                 development_gate_passed=len(selected) == 6 and gm <= 1 and worst <= 1.25
                 and all(s['audit_passed'] and not s['additional_failure'] for s in selected))
     r.write(HERE/'analysis.json', dict(rows=rows, comparisons=comparisons, aggregate=aggregate,
-            checks=checks, checks_passed=all(c['passed'] for c in checks), complete=len(rows) == 24))
+            failures=failures, pending=pending, planned=24, terminal=len(terminal),
+            inverse_units=sum(s['units'] for s in rows), audit_units=sum(d['audit_units'] for d in data.values()),
+            checks=checks, checks_passed=all(c['passed'] for c in checks), complete=len(terminal) == 24))
     lines = ['# SC-042 — matched state treatment', '',
-             'Rebuilt by `analyse.py` from JSON. Partial until all 24 paths return.', '',
+             f'Rebuilt by `analyse.py` from JSON. {len(terminal)}/24 terminal paths; {len(failures)} exceptions; {len(pending)} pending.', '',
              '| Case | Arm | RMS mm | Hausdorff mm | Radius mm | Loss | Work | Outcome | Audit |',
              '|---|---|---:|---:|---:|---:|---:|---|---|']
     for row in rows:
         lines.append(f"| {row['case']} | {row['arm']} | {row['rms_mm']:.5g} | {row['hausdorff_mm']:.5g} | "
                      f"{row['tightest_radius_fine_mm']:.5g} | {row['loss']:.4g} | {row['units']} | {row['outcome']} | {row['audit_passed']} |")
+    for row in failures:
+        lines.append(f"| {row['case']} | {row['arm']} | — | — | — | — | — | EXCEPTION | False |")
     lines += ['', f"Evidence checks: {sum(c['passed'] for c in checks)}/{len(checks)}.", '',
               'The four interventions have the same allowance; actual work can differ. Cleanup can',
               'increase the loss at a stage boundary. Last returned states are scored, not best-truth iterates.',
               'Common-work checkpoints and floored comparisons are in `analysis.json`.', '']
+    lines += ['Exceptions remain in the 24-path denominator and prevent an arm from passing its six-case gate.',
+              'Geometric means describe available scored pairs; they are provisional until the full denominator is resolved.', '']
     (HERE/'TABLES.md').write_text('\n'.join(lines))
     print({'completed':len(rows), 'checks_passed':all(c['passed'] for c in checks), 'aggregate':aggregate})
 
