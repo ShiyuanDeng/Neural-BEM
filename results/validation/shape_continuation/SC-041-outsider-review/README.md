@@ -1,4 +1,4 @@
-# SC-041 outsider review — kite's worst error is a spurious flank feature, and a band cap removes it
+# SC-041 outsider review — kite's worst error is a spurious flank feature, and removing high-band content fixes it
 
 2026-09-26. Reviewer: Claude, outside SC-041's authorship. Reviewed
 [SC-041](../SC-041-atlas-decisions/README.md) at `204d93af`.
@@ -97,11 +97,16 @@ end at `TRIAL_WALL_LIMIT`; unit counts are comparable, wall time is not.
 | Refit M=22, **K=32** | M=22 end low-passed | 1.61e-9 | 0.0671 | 0.219 | 3.41 | +394 |
 | Refit M=22, **K=64** | M=22 end low-passed | 1.46e-9 | 0.0666 | 0.216 | 1.07 | +396 |
 | **M=28, K=64** | K=64 refit end | **6.99e-10** | **0.0537** | **0.162** | 1.21 | +357 |
-| M=28, K=192 (matched control) | K=64 refit end | KITE192_PENDING |
+| M=28, K=192 (matched control) | K=64 refit end | 6.87e-10 | 0.0537 | 0.158 | 1.16 | +356 |
 
 - Along the release path the K=32 state matches the K=192 control stage by
   stage in loss (M=11: 6.748e-6 both; RMS 0.4216 vs 0.4212 mm) and never
   forms the feature (1.73 mm vs 0.77 mm at M=11).
+- **The matched M=28 control is decisive in the other direction:** from the
+  same clean start, K=192 performs the same as K=64 over ~5 steps. What
+  helps is removing the accumulated high-band content once (the low-pass
+  refits) and, over the long release path, the cap keeping it from building
+  up. A clean state does not re-grow the feature within a few steps at K=192.
 - At M=28/K=64 the best accepted state had RMS 0.0384 mm; the last is 0.0537
   mm with 1% lower loss. At loss ~1e-9 the data no longer order shapes that
   differ by a few hundredths of a millimetre.
@@ -133,10 +138,14 @@ measurable. This uses truth only to judge the cap, not to pick it for a run.
 
 ## Proposed next steps (for the owner)
 
-1. **Tie the state band to the update band** (e.g. K = max(48, 2M)) instead
-   of K=192 whenever M rises. On kite it removes the one artefact that sets
-   the worst-case error, at no measurable cost on star. Test it as a frozen,
-   matched experiment on all six scenes before any default changes.
+1. **Keep the state band from accumulating unobservable content.** Either tie
+   K to the update band (e.g. K = max(48, 2M)) or low-pass the state to such a
+   K at each stage boundary. On kite either one removes the artefact that sets
+   the worst-case error; on star it costs nothing measurable. The M=28
+   control shows a one-off clean-up already captures most of the gain over a
+   few steps, so compare "cap throughout" against "low-pass at stage
+   boundaries" in a frozen, matched experiment on all six scenes before any
+   default changes.
 2. **Keep raising M on star** (M=25 → 37 cut RMS 62%) with the cap; watch
    whether the tip radius (6.07 vs 5.11 mm) keeps improving.
 3. **Add noise before tuning further.** Every loss here is 10^16–10^20 times
