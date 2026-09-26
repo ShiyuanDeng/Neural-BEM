@@ -8,6 +8,7 @@ only `curve_modes`. Truth is used only for post-hoc scoring.
 
     python strategy.py release K     # SC-038 M 11/15/19 from the SC-035 K=20 endpoint
     python strategy.py refit K       # SC-041 kite M=22 endpoint, low-passed to K, one M=22 stage at K
+    python strategy.py continue K    # release_K's last state, remaining M=19 stage (as SC-038 remaining_m19)
 """
 import importlib.util
 import json
@@ -59,6 +60,12 @@ def main(mode, K):
         stages = [replace(stage, label='refit_M22')]
         curve = ast.curve_from(json.loads((RESULTS/'SC-041-atlas-decisions/runs/kite/M22/result.json').read_text())['curve'])
         source = 'SC-041 kite M=22 endpoint'
+    elif mode == 'continue':
+        stages, config, _ = sc038.schedules('kite', 'release_m')
+        stages = [replace(stages[-1], label='remaining_m19')]
+        states = json.loads((HERE/'strategies'/f'release_K{K}'/'accepted.json').read_text())['states']
+        curve = ast.curve_from(states[-1]['curve'])
+        source = f"release_K{K} last accepted state ({states[-1]['stage']} iteration {states[-1]['iteration']})"
     else:
         raise ValueError(mode)
     stages = [replace(s, curve_modes=K, nodes=768, refined_nodes=1536, quota=STAGE_UNITS) for s in stages]
