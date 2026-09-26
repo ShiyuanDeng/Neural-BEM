@@ -21,6 +21,10 @@ SC-043 prospective band decisions is frozen and queued behind SC-042;
 SC-044's two fixed fresh targets passed data qualification and their clean
 and noisy full-pipeline fits are running. The [claims review](iteration_24/02_claims_review.md)
 records the close prior art and the evidence each claim still needs.
+Five endpoint audits timed out during severe host memory pressure. Their
+original failures are retained; [SC-045](../../../results/validation/shape_continuation/SC-045-timeout-qualification/README.md)
+freezes separate, serial qualifications of the identical returned states
+with unchanged tolerances and ceilings, before SC-043 starts.
 The SC-041 closeout below remains the last completed comparison. No branch
 or worktree was created, and no production defaults have changed.
 

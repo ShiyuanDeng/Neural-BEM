@@ -1,0 +1,21 @@
+{
+  "passed": false,
+  "traceback": "Traceback (most recent call last):\n  File \"/home/drdeng/Neural_SDF_BEM_AD/results/validation/shape_continuation/SC-042-state-strategies/run.py\", line 126, in audit\n    plus, minus = [fine.production(update.trial(space, s*1e-7*direction)[0], 'audit_fd') for s in (1, -1)]\n  File \"/home/drdeng/Neural_SDF_BEM_AD/results/validation/shape_continuation/SC-042-state-strategies/run.py\", line 126, in <listcomp>\n    plus, minus = [fine.production(update.trial(space, s*1e-7*direction)[0], 'audit_fd') for s in (1, -1)]\n  File \"/home/drdeng/Neural_SDF_BEM_AD/experiments/shape_continuation/lm_backend.py\", line 323, in production\n    return self._predict(curve, self.stage.nodes, category, keep=True)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/experiments/shape_continuation/lm_backend.py\", line 306, in _predict\n    self.ledger.reserve(1)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/experiments/shape_continuation/lm_backend.py\", line 210, in reserve\n    raise TrialWallLimit(\"hard wall limit\")\nexperiments.shape_continuation.lm_backend.TrialWallLimit: hard wall limit\n",
+  "work": {
+    "work_units": 100,
+    "stage": null,
+    "stage_units": 100,
+    "stage_quota": null,
+    "cap": 130,
+    "solves": {
+      "None:audit_base": 19,
+      "None:audit_fine": 19,
+      "None:audit_fd": 24
+    },
+    "reciprocal_batches": {
+      "None:derivative": 38
+    },
+    "failed": {},
+    "seconds": 1067.0089316570666
+  }
+}

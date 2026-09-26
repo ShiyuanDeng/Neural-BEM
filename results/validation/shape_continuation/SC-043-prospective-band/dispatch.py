@@ -28,6 +28,9 @@ def main():
     print('Slot-aware policy queue: waiting for all 24 state-treatment paths.',flush=True)
     while not all(terminal(state/case/arm) for case in r.c.CASES for arm in r.c.ARMS):
         time.sleep(5)
+    qualification=HERE.parent/'SC-045-timeout-qualification/summary.json'
+    print('Waiting for the separately recorded timeout qualifications.',flush=True)
+    while not qualification.exists():time.sleep(5)
     pending=[(case,policy) for case in r.c.CASES for policy in r.POLICIES
              if not (HERE/'runs'/case/policy).exists()]
     active=[]
@@ -48,10 +51,15 @@ def main():
         fresh_done=sum(terminal(fresh/case/profile/arm) for case in ('asymmetric_lobes','deep_c')
                        for profile in ('clean','noise_seed_0','noise_seed_1') for arm in ('none','boundary','cap'))
         reserve=2 if fresh_done<18 else 0
-        slots=max(0,6-reserve-len(active))
-        for _ in range(min(slots,len(pending))):
-            job=pending.pop(0)
-            print('LAUNCH',*job,'noise_reserved',reserve,flush=True)
+        weight=lambda job: 3 if job[0]=='kite' else 1
+        while pending and len(active)+reserve<6:
+            used=reserve+sum(weight(job) for _,job in active)
+            candidates=[i for i,job in enumerate(pending) if used+weight(job)<=8]
+            meminfo=dict(line.split(':',1) for line in Path('/proc/meminfo').read_text().splitlines())
+            available_kib=int(meminfo['MemAvailable'].split()[0])
+            if not candidates or available_kib<12*1024**2:break
+            job=pending.pop(candidates[0])
+            print('LAUNCH',*job,'noise_reserved',reserve,'memory_weight',used+weight(job),flush=True)
             process=subprocess.Popen([sys.executable,'-u',str(Path(__file__).resolve()),*job])
             active.append((process,job))
         if pending or active:time.sleep(5)

@@ -29,8 +29,9 @@ PYTHONPATH=solvers:. python results/validation/shape_continuation/SC-043-prospec
 ```
 
 The runner never overwrites a run directory. The current host has
-the same frozen jobs queued through `dispatch.py` after SC-042. It shares at
-most six numerical workers with SC-044 and fills freed slots; do not launch
+the same frozen jobs queued through `dispatch.py` after SC-042 and the separate
+SC-045 timeout-qualification follow-up. It shares at most six numerical workers
+with SC-044, limits simultaneous heavy kite jobs, and fills freed slots; do not launch
 a duplicate while the queue is active. Analyses consume
 portable JSON. All hashed sources and inputs are tracked in Git.
 
