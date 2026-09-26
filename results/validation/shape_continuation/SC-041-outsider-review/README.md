@@ -1,4 +1,4 @@
-# SC-041 outsider review — kite's worst error is a spurious flank feature
+# SC-041 outsider review — kite's worst error is a spurious flank feature, and a band cap removes it
 
 2026-09-26. Reviewer: Claude, outside SC-041's authorship. Reviewed
 [SC-041](../SC-041-atlas-decisions/README.md) at `204d93af`.
@@ -15,7 +15,8 @@
 - `audit.py` **cannot run from a clean clone**. It hashes two gitignored inputs
   (`SC-040.../shots/9bd992a34579a9d6282e.npz`, `SC-039.../shots/23740fc8e74e07ef38f2.npz`)
   and the five local `M*_model.npz`. The 61-check record is therefore
-  unverifiable outside the author's machine; 15 checks depend on those arrays.
+  unverifiable outside the author's machine; 16 checks depend on those arrays
+  (`inputs_preserved` and three per arm).
   The JSON-only checks all hold.
 - The SC-041 kite M=22 endpoint loss reproduces here to 1.3e-12 relative with
   the unchanged SC-041 objective (768 nodes, 19 frequencies).
@@ -78,7 +79,73 @@ Refined (1536-node) losses agree: truth 6.8e-29, endpoint 2.7113e-9.
 (truth loss is machine zero). That is an inverse crime: it makes the feature
 diagnosis sharp, but none of these runs says anything about noisy data.
 
-STRATEGIES_PLACEHOLDER
+## Strategies tried ([runner](strategy.py), [records](strategies/))
+
+Not frozen in advance; exploratory, one run per arm, truth used only for
+scoring. Each arm changes the curve band K (and, where stated, raises M) and
+otherwise keeps the SC-038/SC-041 backend, catalogue, weights, tolerances and
+768/1536 nodes. Stages had 2,400 s wall limits (controls: 900 s), so most
+end at `TRIAL_WALL_LIMIT`; unit counts are comparable, wall time is not.
+
+**Kite — the cap removes the feature without losing data fit.**
+
+| Arm | Start | Loss | RMS (mm) | Hausdorff (mm) | Min radius (mm) | Units |
+|---|---|---:|---:|---:|---:|---:|
+| SC-038/040 path to M=19, K=192 (control) | SC-035 K=20 | 8.92e-9 | 0.1096 | 0.445 | 0.091 | on disk |
+| Same M 11/15/19 path, **K=32** | SC-035 K=20 | 1.07e-8 | 0.1158 | **0.300** | **3.61** | 285+358+400 |
+| SC-041 M=22, K=192 (control) | SC-040 end | 2.71e-9 | 0.0730 | 0.342 | 0.082 | 323 |
+| Refit M=22, **K=32** | M=22 end low-passed | 1.61e-9 | 0.0671 | 0.219 | 3.41 | +394 |
+| Refit M=22, **K=64** | M=22 end low-passed | 1.46e-9 | 0.0666 | 0.216 | 1.07 | +396 |
+| **M=28, K=64** | K=64 refit end | **6.99e-10** | **0.0537** | **0.162** | 1.21 | +357 |
+| M=28, K=192 (matched control) | K=64 refit end | KITE192_PENDING |
+
+- Along the release path the K=32 state matches the K=192 control stage by
+  stage in loss (M=11: 6.748e-6 both; RMS 0.4216 vs 0.4212 mm) and never
+  forms the feature (1.73 mm vs 0.77 mm at M=11).
+- At M=28/K=64 the best accepted state had RMS 0.0384 mm; the last is 0.0537
+  mm with 1% lower loss. At loss ~1e-9 the data no longer order shapes that
+  differ by a few hundredths of a millimetre.
+
+**Star — the cap is harmless; raising M is what helps.**
+
+| Arm | Loss | RMS (mm) | Hausdorff (mm) | Min radius (mm, truth 5.11) | Units |
+|---|---:|---:|---:|---:|---:|
+| SC-041 M=25, K=192 (control) | 9.20e-10 | 0.0476 | 0.139 | 7.00 | 228 |
+| Refit M=25, **K=64** | 9.20e-10 | 0.0476 | 0.139 | 7.00 | +38 (no-op) |
+| M=31, K=64 | 5.48e-11 | 0.0336 | 0.084 | 6.49 | +321 |
+| M=37, K=64 | 4.01e-12 | **0.0181** | **0.047** | 6.07 | +318 |
+
+The star M=25 endpoint has no content above K=64, so the cap changes nothing;
+the gains come from M. No K=192 control was run at M=31/37 for star.
+
+**How restrictive is a cap?** Under arclength parameterization (what the
+updates maintain) the truths need these bands for a given worst-case error
+(16,384 samples; floor ≈0.01 mm is sampling):
+
+| Case | K=16 | K=32 | K=48 | K=64 |
+|---|---:|---:|---:|---:|
+| star | 0.48 | 0.11 | 0.03 | 0.015 |
+| kite | 0.39 | 0.083 | 0.023 | 0.011 |
+| C, peanut, hook | ≤0.085 | ≤0.014 | floor | floor |
+
+So K=32 would cap kite/star Hausdorff near 0.1 mm; K=64 costs nothing
+measurable. This uses truth only to judge the cap, not to pick it for a run.
+
+## Proposed next steps (for the owner)
+
+1. **Tie the state band to the update band** (e.g. K = max(48, 2M)) instead
+   of K=192 whenever M rises. On kite it removes the one artefact that sets
+   the worst-case error, at no measurable cost on star. Test it as a frozen,
+   matched experiment on all six scenes before any default changes.
+2. **Keep raising M on star** (M=25 → 37 cut RMS 62%) with the cap; watch
+   whether the tip radius (6.07 vs 5.11 mm) keeps improving.
+3. **Add noise before tuning further.** Every loss here is 10^16–10^20 times
+   the truth's machine-zero loss; differences at loss ~1e-9 are
+   inverse-crime precision. Settle the noise model before optimizing
+   sub-0.05 mm behaviour.
+4. **Make audits reproducible from Git**: commit (or content-address and
+   publish) the two SC-039/SC-040 input shots and the five model NPZ files,
+   or split `audit.py` into Git-only and local checks.
 
 ## Reproduction
 
@@ -89,6 +156,10 @@ scikit-image and pytest installed:
 PYTHONPATH=solvers:. python results/validation/shape_continuation/SC-041-outsider-review/kite_feature_survey.py  # geometry only
 PYTHONPATH=solvers:. python results/validation/shape_continuation/SC-041-outsider-review/plot.py
 PYTHONPATH=solvers:. python results/validation/shape_continuation/SC-041-outsider-review/probe.py                # 171 units, ~21 min on 4 threads
-PYTHONPATH=solvers:. python results/validation/shape_continuation/SC-041-outsider-review/strategy.py release 32
-PYTHONPATH=solvers:. python results/validation/shape_continuation/SC-041-outsider-review/strategy.py refit 32
+S=results/validation/shape_continuation/SC-041-outsider-review/strategy.py
+PYTHONPATH=solvers:. python $S release 32 && PYTHONPATH=solvers:. python $S continue 32
+PYTHONPATH=solvers:. python $S refit 32;  PYTHONPATH=solvers:. python $S refit 64
+PYTHONPATH=solvers:. python $S from:refit_K64 64 kite 28;  PYTHONPATH=solvers:. python $S from:refit_K64 192 kite 28
+PYTHONPATH=solvers:. python $S refit 64 circle_to_star 25;  PYTHONPATH=solvers:. python $S refit 64 circle_to_star 31 25
+PYTHONPATH=solvers:. python $S from:refit_circle_to_star_M31_K64_from_M25 64 circle_to_star 37
 ```
