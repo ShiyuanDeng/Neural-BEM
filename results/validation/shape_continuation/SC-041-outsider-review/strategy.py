@@ -6,7 +6,8 @@ SC-035 stage-4 K=20 endpoint (before the feature exists), keeps every backend se
 frequency weight, tolerance and node count (768/1536) of the dense kite stages, and changes
 only `curve_modes`. Truth is used only for post-hoc scoring.
 
-    python strategy.py K [label]
+    python strategy.py release K     # SC-038 M 11/15/19 from the SC-035 K=20 endpoint
+    python strategy.py refit K       # SC-041 kite M=22 endpoint, low-passed to K, one M=22 stage at K
 """
 import importlib.util
 import json
@@ -37,27 +38,31 @@ from experiments.shape_continuation.geometry import FourierCurve
 from experiments.shape_continuation.lm_backend import Ledger, fit_stage, stage_record, NORMAL_RETURN, STAGE_QUOTA
 from ordered_boundary.validation_cache import geometry_validation
 
-STAGE_SECONDS = 900
+STAGE_SECONDS = 2400     # control stages had 900 s; units (1500) are the binding cap here
 STAGE_UNITS = 1500
 
 
-def main(K, label=None, start=None):
-    label = label or f'K{K}'
+def main(mode, K):
+    label = f'{mode}_K{K}'
     folder = HERE/'strategies'/label
     folder.mkdir(parents=True, exist_ok=False)
-    stages, config, _ = sc038.schedules('kite', 'release_m')
-    stages = [replace(s, curve_modes=K, nodes=768, refined_nodes=1536, quota=STAGE_UNITS) for s in stages]
-    if start is None:
+    if mode == 'release':
+        stages, config, _ = sc038.schedules('kite', 'release_m')
         curve, _ = sc038.prefix('kite')                  # SC-035 stage 4, K=20
         source = 'SC-035 kite low stage_4 endpoint (K=20)'
+    elif mode == 'refit':
+        stage, config, _ = sc041.setup('kite', 22)
+        stages = [replace(stage, label='refit_M22')]
+        curve = ast.curve_from(json.loads((RESULTS/'SC-041-atlas-decisions/runs/kite/M22/result.json').read_text())['curve'])
+        source = 'SC-041 kite M=22 endpoint'
     else:
-        curve, source = start
+        raise ValueError(mode)
+    stages = [replace(s, curve_modes=K, nodes=768, refined_nodes=1536, quota=STAGE_UNITS) for s in stages]
     if curve.band < K:
         curve = sc038.resize(curve, K)
     elif curve.band > K:
-        c = np.array(curve.coefficients)[curve.band-K:curve.band+K+1]
-        curve = FourierCurve(c)
-        source += f', truncated to K={K}'
+        curve = FourierCurve(np.array(curve.coefficients)[curve.band-K:curve.band+K+1])
+        source += f', low-passed to K={K}'
     update = sc038.ProjectedUpdate(sc.LENGTH)
     record = dict(label=label, K=K, source=source, stage_seconds=STAGE_SECONDS, stages=[stage_record(s) for s in stages],
                   initial_score=sc041.geometry_score('kite', curve), results=[])
@@ -93,4 +98,4 @@ def main(K, label=None, start=None):
 
 
 if __name__ == '__main__':
-    main(int(sys.argv[1]), *sys.argv[2:3])
+    main(sys.argv[1], int(sys.argv[2]))
