@@ -31,7 +31,9 @@ PYTHONPATH=solvers:. python results/validation/shape_continuation/SC-043-prospec
 The runner never overwrites a run directory. The current host has
 the same frozen jobs queued through `dispatch.py` after SC-042 and the separate
 SC-045 timeout-qualification follow-up and SC-046 lost-result recovery. It shares at most six numerical workers
-with SC-044, allows only one heavy kite job at a time, and fills freed slots; do not launch
+with SC-044 and allows one heavy kite job alongside other paths. The
+[resource-only tail amendment](scheduling_tail.md) permits two kite paths
+only after all other PDE paths finish, with a memory admission gate. Do not launch
 a duplicate while the queue is active. Analyses consume
 portable JSON. All hashed sources and inputs are tracked in Git.
 

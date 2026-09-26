@@ -55,16 +55,20 @@ def main():
                        for profile in ('clean','noise_seed_0','noise_seed_1') for arm in ('none','boundary','cap'))
         reserve=2 if fresh_done<18 else 0
         # A serial kite audit was observed above 17 GiB before its final
-        # allocations. Do not overlap two such paths on this 64 GB host.
+        # allocations. Do not overlap two alongside other PDE jobs.
         weight=lambda job: 5 if job[0]=='kite' else 1
         while pending and len(active)+reserve<6:
             used=reserve+sum(weight(job) for _,job in active)
-            candidates=[i for i,job in enumerate(pending) if used+weight(job)<=8]
             meminfo=dict(line.split(':',1) for line in Path('/proc/meminfo').read_text().splitlines())
             available_kib=int(meminfo['MemAvailable'].split()[0])
+            kite_only_tail=(reserve==0 and len(active)==1 and active[0][1][0]=='kite'
+                and all(job[0]=='kite' for job in pending) and available_kib>=28*1024**2)
+            candidates=[i for i,job in enumerate(pending) if used+weight(job)<=8
+                        or (kite_only_tail and job[0]=='kite')]
             if not candidates or available_kib<12*1024**2:break
             job=pending.pop(candidates[0])
-            print('LAUNCH',*job,'noise_reserved',reserve,'memory_weight',used+weight(job),flush=True)
+            print('LAUNCH',*job,'noise_reserved',reserve,'memory_weight',used+weight(job),
+                  'isolated_kite_pair',kite_only_tail,flush=True)
             process=subprocess.Popen([sys.executable,'-u',str(Path(__file__).resolve()),*job])
             active.append((process,job))
         if pending or active:time.sleep(5)
