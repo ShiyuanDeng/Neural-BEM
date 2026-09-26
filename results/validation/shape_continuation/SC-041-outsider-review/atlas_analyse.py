@@ -103,7 +103,7 @@ def main():
     for r in rows:
         segments.setdefault((r['track'], r['stage']), []).append(r)
     for seg in segments.values():
-        seg.sort(key=lambda r: r['iteration'])
+        seg.sort(key=lambda r: r['id'])            # index order is chronological
 
     # Q1 drain order and spill.
     drain_m, drain_f, drain_step, spill = [], [], [], []

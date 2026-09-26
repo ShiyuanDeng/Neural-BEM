@@ -172,3 +172,35 @@ PYTHONPATH=solvers:. python $S from:refit_K64 64 kite 28;  PYTHONPATH=solvers:. 
 PYTHONPATH=solvers:. python $S refit 64 circle_to_star 25;  PYTHONPATH=solvers:. python $S refit 64 circle_to_star 31 25
 PYTHONPATH=solvers:. python $S from:refit_circle_to_star_M31_K64_from_M25 64 circle_to_star 37
 ```
+
+## Part 2 — what the atlas heatmap tracks ([frozen plan](atlas_plan.md), [analysis](atlas_analyse.py), [JSON](atlas_analysis.json))
+
+Part 1's strategies were tried before the atlas itself was analysed. Part 2
+recomputes the historical atlas (`atlas_video.py` maths, unchanged) for 79
+states: all 25 star pipeline states, kite's stage-4 end and every K=192
+release state, SC-041's accepted states and this review's K=64 runs
+([collector](atlas_collect.py), [index](atlas_index.json)). Shots are
+regenerated with the SC-039 solver calls. Controls: every regenerated shot
+key matches (C1); saved losses reproduce to ≤3.7e-10 relative (C2); the
+2×-grid heat changes by ≤1.6e-5 dex on 6 states (C3).
+
+| Question | Answer |
+|---|---|
+| Q1 How does colour drain in the amber box? | Mostly at once: 64% of the 241 box cells that dim 1 dex do so on the stage's first accepted step. Weak high-orders-first tendency (Spearman ρ = −0.23 against order), none by frequency (ρ = −0.09). Draining inside raises the colour just outside the box on only 33% of steps (40 pairs). |
+| Q2 Does dimmer mean closer? | It tracks the **loss**, not the geometry. Sign agreement with ΔRMS / ΔHausdorff: star 53% / 57% (30 pairs); kite before the flank feature 71% / 71% (7 pairs); kite after it 74% / **39%** (23 pairs). |
+| Q3 Removed or no longer seen? | Removed: 111 of 111 box cells that dim 1 dex over a stage do so through the residual projection \|q\|, not through lost sensitivity. |
+| Q4 Does the atlas see kite's flank feature? | No. 93% (M=22 end) and 92% (M=19 end) of its energy lies above order 30, beyond the atlas. Its ≤30 part is still data-active: it alone moves each frequency's data by 1.3–2.1× the remaining residual at M=22, i.e. the feature absorbs misfit (consistent with the probe's 2.4× loss rise when it is removed). |
+| Q5 Is the colour where the error is? | Partly. Cosine between heat and truth-error energy by order: star 0.66, kite before the feature 0.14, after 0.66; same peak order (±2) in 46%, 10%, 75% of states. |
+
+**Reading.** The heatmap is a loss-side instrument: its colour drains
+because misfit is fitted, and it says where more misfit could be fitted.
+It does not say whether the shape is converging, and it cannot see the
+high-order feature that sets kite's worst-case error. A rule of the form
+"release until the box is dark" would reproduce SC-041's kite behaviour:
+better data fit, worse worst-case geometry. Any controller needs a separate
+geometry-side read-out: content above order 30, curvature, or the data
+signature of the high-band part of the state.
+
+**Scope.** Two trajectories plus their continuations; noiseless data; the
+historical capped score (SC-041 already labels it a heuristic); kite
+before-feature has only 7 pairs. No strategy was run in this part.
