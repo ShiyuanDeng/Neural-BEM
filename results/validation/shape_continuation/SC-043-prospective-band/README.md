@@ -28,9 +28,10 @@ PYTHONPATH=solvers:. python results/validation/shape_continuation/SC-043-prospec
 PYTHONPATH=solvers:. python results/validation/shape_continuation/SC-043-prospective-band/analyse.py
 ```
 
-The runner never overwrites a run directory. The current host has this
-command queued after SC-042, sharing at most six numerical workers with
-SC-044; do not launch a duplicate while the queue is active. Analyses consume
+The runner never overwrites a run directory. The current host has
+the same frozen jobs queued through `dispatch.py` after SC-042. It shares at
+most six numerical workers with SC-044 and fills freed slots; do not launch
+a duplicate while the queue is active. Analyses consume
 portable JSON. All hashed sources and inputs are tracked in Git.
 
 The one preflight revision is preserved in `preflight_v1/` and described in

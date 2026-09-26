@@ -1,5 +1,6 @@
 """Rebuild comparisons and evidence checks from portable JSON, without solves."""
 import importlib.util
+from collections import Counter
 from pathlib import Path
 import numpy as np
 
@@ -11,7 +12,7 @@ spec.loader.exec_module(r)
 
 def main():
     r.verify()
-    rows, comparisons, checks = [], [], []
+    rows, comparisons, checks, stage_diagnostics = [], [], [], []
     data = {}
     failures = [dict(path=str(p.relative_to(HERE)), **r.sc.read(p))
                 for p in sorted((HERE/'runs').glob('*/*/failure.json'))]
@@ -29,6 +30,13 @@ def main():
             and all(s['work']['work_units'] <= r.QUOTA for s in result['stages']))))
         for stage in result['stages']:
             accepted = [s for s in progress if s['stage'] == stage['stage']]
+            saved=r.sc.read(p.parent/f"{stage['stage']}.json")
+            after_last=stage['work']['work_units']-accepted[-1]['stage_units'] if accepted else None
+            stage_diagnostics.append(dict(case=case,arm=arm,stage=stage['stage'],M=stage['M'],
+                outcome=stage['outcome'],stop=stage['stop'],accepted_steps=sum(s['iteration']>0 for s in accepted),
+                work_after_last_accepted_state=after_last,
+                trial_status_counts=dict(Counter(t.get('status','interrupted_before_status') for t in saved['trials'])),
+                qualification_note='Work after the last accepted state includes derivative and rejected-trial checks; it is not all avoidable work.'))
             checks.append(dict(case=case, arm=arm, stage=stage['stage'], check='within_stage_decrease',
                 passed=all(b['loss'] < a['loss'] for a, b in zip(accepted, accepted[1:]))))
         checks.append(dict(case=case, arm=arm, check='last_accepted_endpoint', passed=bool(
@@ -75,7 +83,7 @@ def main():
                 development_gate_passed=len(selected) == 6 and gm <= 1 and worst <= 1.25
                 and all(s['audit_passed'] and not s['additional_failure'] for s in selected))
     r.write(HERE/'analysis.json', dict(rows=rows, comparisons=comparisons, aggregate=aggregate,
-            failures=failures, pending=pending, planned=24, terminal=len(terminal),
+            failures=failures, pending=pending, planned=24, terminal=len(terminal),stage_diagnostics=stage_diagnostics,
             inverse_units=sum(s['units'] for s in rows), audit_units=sum(d['audit_units'] for d in data.values()),
             checks=checks, checks_passed=all(c['passed'] for c in checks), complete=len(terminal) == 24))
     lines = ['# SC-042 — matched state treatment', '',

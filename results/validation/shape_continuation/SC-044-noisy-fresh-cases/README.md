@@ -1,6 +1,6 @@
 # SC-044 — full reconstructions on two fixed fresh shapes with noise
 
-**RUNNING, 2026-09-26.** Data qualification complete; inverse outcomes pending.
+**RUNNING, 2026-09-26.** Data and all six prefixes qualified; suffixes running.
 [Frozen contract](plan.md), [source/input hashes](manifest.json),
 [available outcome table](TABLES.md), [fixed target outlines](targets.svg).
 
@@ -20,8 +20,16 @@ prefixes block their suffixes and stay in the denominator. Noise stopping
 uses the declared variance and a 1.1-squared discrepancy factor; truth never
 chooses the iterate, cutoff or stopping time.
 
-This is two independent target shapes with repeated noise draws, not six
-independent targets. The observations share the governing model with the
+All six prefix paths completed their schedules and passed their field,
+Jacobian and full-trial derivative audits. Their unique fitting work is
+1,766 units. Prefix audits use each prefix's final four-frequency objective;
+the suffix and its endpoint audit use all 19 frequencies.
+
+This is two distinct target shapes with repeated noise draws, not six
+independent targets. The same two seeds are used for both shapes, so their
+standardized noise patterns are shared across targets as well as methods;
+frequency-dependent amplitudes follow each target's signal norm. The
+observations share the governing model with the
 inverse. The study tests transfer to new shapes and measurement noise;
 material, calibration and experimental model mismatch remain untested.
 

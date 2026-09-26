@@ -58,7 +58,7 @@ def main():
             gm=float(np.exp(np.mean(np.log([s['rms_ratio'] for s in selected]))))
             worst=max(max(s['rms_ratio'],s['hausdorff_ratio']) for s in selected)
             extra=sum(s['candidate_outcome'] not in successful and s['baseline_outcome'] in successful for s in selected)
-            aggregate[arm]=dict(datasets=len(selected),independent_shapes=len({s['case'] for s in selected}),
+            aggregate[arm]=dict(datasets=len(selected),distinct_shapes=len({s['case'] for s in selected}),
                 rms_gm_ratio=gm,worst_geometry_ratio=worst,additional_failures=extra,
                 transfer_gate_passed=len(selected)==6 and gm<1 and worst<=1.25 and not extra
                 and all(s['candidate_audit'] for s in selected))

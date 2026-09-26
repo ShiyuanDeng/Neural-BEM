@@ -12,7 +12,7 @@ r=importlib.util.module_from_spec(spec)
 spec.loader.exec_module(r)
 
 
-def measure(curve,target,count=16384):
+def measure(curve,target,count=16384,case=None):
     nodes=curve.nodes(count)
     s,_=arclength_angles(nodes)
     uniform=2*np.pi*np.arange(count)/count
@@ -27,7 +27,7 @@ def measure(curve,target,count=16384):
     sharpest=int(np.argmax(np.abs(nodes.curvatures)))
     true=target.nodes(count)
     distance,j=cKDTree(true.points).query(nodes.points[sharpest])
-    return dict(minimum_radius_mm=float(50/max(abs(nodes.curvatures))),
+    result=dict(minimum_radius_mm=float(50/max(abs(nodes.curvatures))),
         speed_max_over_min=float(max(nodes.speeds)/min(nodes.speeds)),
         curvature_arclength_tail_above_64=tail(64),
         curvature_arclength_order_for_95pct_energy=int(np.searchsorted(np.cumsum(by_order),.95*by_order.sum())),
@@ -35,6 +35,17 @@ def measure(curve,target,count=16384):
         sharpest_point_mm=(50*nodes.points[sharpest]).tolist(),
         sharpest_point_to_truth_mm=float(50*distance),
         truth_radius_near_sharpest_mm=float(50/max(abs(true.curvatures[j]),1e-30)))
+    if case in ('kite','circle_to_star'):
+        # These analytic targets have respectively two and five convex tips.
+        k=true.curvatures
+        peaks=np.flatnonzero((k>.95*k.max()) & (k>=np.roll(k,1)) & (k>=np.roll(k,-1)))
+        assert len(peaks)==(2 if case=='kite' else 5)
+        distances,indices=cKDTree(nodes.points).query(true.points[peaks])
+        result['convex_tips']=dict(truth_points_mm=(50*true.points[peaks]).tolist(),
+            point_to_curve_mm=(50*distances).tolist(),
+            reconstructed_radius_mm=(50/np.maximum(abs(nodes.curvatures[indices]),1e-30)).tolist(),
+            true_radius_mm=(50/k[peaks]).tolist())
+    return result
 
 
 def main():
@@ -43,12 +54,12 @@ def main():
     for case in r.CASES:
         target=r.ast.curve_from(r.sc.read(r.ast.source_folder(case)/'truth.json'))
         for name,curve in (('truth',target),('start',r.start_record(case)[0])):
-            rows.append(dict(case=case,arm=name,**measure(curve,target)))
+            rows.append(dict(case=case,arm=name,**measure(curve,target,case=case)))
         for arm in r.ARMS:
             path=HERE/'runs'/case/arm/'result.json'
             if path.exists():
                 result=r.sc.read(path)
-                rows.append(dict(case=case,arm=arm,**measure(r.ast.curve_from(result['curve']),target)))
+                rows.append(dict(case=case,arm=arm,**measure(r.ast.curve_from(result['curve']),target,case=case)))
     r.write(HERE/'regularity.json',dict(rows=rows,count=16384,
         interpretation='Curvature spectrum is evaluated in uniform arclength. Stored-coefficient energy depends on the curve parameterization. Neither statistic is an observability test. Nearest-truth feature localization is sampled, not a certified distance.'))
     print({'rows':len(rows)})

@@ -99,6 +99,28 @@ def band_policies():
     finish(fig,axes,folder,'geometry_by_work',f'SC-043: prospective rules with diagnostics charged — {count}/18 scored paths')
 
 
+def kite_feature():
+    folder=ROOT/'SC-042-state-strategies'
+    fig,axes=plt.subplots(1,2,figsize=(11,5))
+    truth=c.sc.read(c.ast.source_folder('kite')/'truth.json')
+    initial=c.start_record('kite')[0]
+    nodes=initial.nodes(16384)
+    point=50*nodes.points[np.argmax(abs(nodes.curvatures))]
+    for ax in axes.flat:
+        curve(ax,truth,color='black',lw=2,label='Truth')
+        curve(ax,c.ast.curve_record(initial),color='#AAAAAA',ls=':',lw=1.5,label='Start')
+        for arm in c.ARMS:
+            result=read(folder/'runs'/'kite'/arm/'result.json')
+            if result:
+                curve(ax,result['curve'],color=COLORS[arm],lw=1.3,label=LABELS[arm])
+        ax.set(xlabel='x / mm',ylabel='y / mm',aspect='equal')
+        ax.grid(alpha=.15)
+    axes[0].set_title('Whole boundary')
+    axes[1].set(xlim=(point[0]-1.2,point[0]+1.2),ylim=(point[1]-1.2,point[1]+1.2),
+                title='Flank artifact\nZoom fixed at initial curvature maximum')
+    finish(fig,axes,folder,'kite_feature','SC-042: kite boundary and flank artifact')
+
+
 def fresh_shapes():
     folder=ROOT/'SC-044-noisy-fresh-cases'
     fig,axes=plt.subplots(2,3,figsize=(13,8))
@@ -119,5 +141,6 @@ def fresh_shapes():
 if __name__=='__main__':
     c.verify()
     state_strategies()
+    kite_feature()
     band_policies()
     fresh_shapes()
