@@ -83,6 +83,10 @@ was subsequently lost to a missing output directory: the failed execution
 and up to 130 unrecorded work units remain recorded. A separately frozen
 [SC-046 recovery](../../../../results/validation/shape_continuation/SC-046-lost-audit-recovery/README.md)
 supplies one additional attempt without rewriting either original failure.
+All five timeout endpoints now have separate passing qualifications. SC-045
+records four passes and the lost-output failure; SC-046 recovers the remaining
+kite/boundary qualification. Additional measured work is 570 units, with up
+to 130 unrecorded units from the lost attempt. Original gate flags stay fixed.
 
 ## Consequence for iteration and novelty
 

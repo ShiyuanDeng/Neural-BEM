@@ -1,6 +1,6 @@
 # SC-043 — prospective action diagnostic versus simple release rules
 
-**QUEUED, 2026-09-26.** No performance conclusion yet.
+**RUNNING, 2026-09-26.** No complete performance conclusion yet.
 [Frozen contract](plan.md), [source/input hashes](manifest.json),
 [available outcome table](TABLES.md).
 

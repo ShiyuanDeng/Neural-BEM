@@ -49,4 +49,5 @@ none, 32.2% for once, 29.9% for boundary and 30.1% for the K64 cap. The truth
 has 0.250% there. Thus even the permanently capped curve retains substantial
 intrinsic high-band curvature. This is an evaluation diagnostic; it is not
 a new rejection threshold applied to the frozen paths. The boundary and cap
-original endpoint audits timed out, with separate SC-045 qualification pending.
+original endpoint audits timed out. Separate SC-045/046 qualifications pass;
+the original failed flags and the SC-045 output failure remain recorded.

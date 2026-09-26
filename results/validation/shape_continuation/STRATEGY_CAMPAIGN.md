@@ -5,12 +5,12 @@
 | Study | Terminal paths | Qualified scored paths | Fitting + diagnostics, unique | Endpoint audits |
 |---|---:|---:|---:|---:|
 | [SC-042-state-strategies](SC-042-state-strategies/README.md) | 24/24 | 21 | 19874 | 2663 |
-| [SC-043-prospective-band](SC-043-prospective-band/README.md) | 0/18 | 0 | 0 | 0 |
-| [SC-044-noisy-fresh-cases](SC-044-noisy-fresh-cases/README.md) | 16/18 | 14 | 10012 | 1941 |
+| [SC-043-prospective-band](SC-043-prospective-band/README.md) | 1/18 | 1 | 114 | 114 |
+| [SC-044-noisy-fresh-cases](SC-044-noisy-fresh-cases/README.md) | 18/18 | 16 | 10924 | 2169 |
 | [SC-045 independent timeout qualifications](SC-045-timeout-qualification/README.md) | 5/5 audits | 4 | 0 | 456 |
-| [SC-046 lost-result recovery](SC-046-lost-audit-recovery/README.md) | 0/1 audit | 0 | 0 | 0 |
+| [SC-046 lost-result recovery](SC-046-lost-audit-recovery/README.md) | 1/1 audit | 1 | 0 | 114 |
 
-Data generation: 76 fields. Total recorded work for terminal records: 35022 units.
+Data generation: 76 fields. Total recorded work for terminal records: 36504 units.
 The lost SC-045 ledger contributes up to 130 additional unrecorded units. Its stored zero denotes missing accounting, not free computation.
 Work in running paths is omitted from this snapshot. Interrupted-call costs may be only partially recorded.
 SC-044 includes six shared prefix paths; each method is charged its full prefix in complete-path comparisons.
@@ -25,7 +25,7 @@ Post-fit checks: [doubled metric sampling](strategy_metric_refinement.json), [fr
 ## Retained stopped or unqualified paths
 
 - [SC-042-state-strategies/runs/circle_to_c/boundary/result.json](SC-042-state-strategies/runs/circle_to_c/boundary/result.json): COMPLETED_SCHEDULE; original endpoint audit False. Independent [SC-045 qualification](SC-045-timeout-qualification/audits/3.json): True (original flag unchanged).
-- [SC-042-state-strategies/runs/kite/boundary/result.json](SC-042-state-strategies/runs/kite/boundary/result.json): COMPLETED_SCHEDULE; original endpoint audit False. Independent [SC-045 qualification](SC-045-timeout-qualification/audits/1.json): False (original flag unchanged).
+- [SC-042-state-strategies/runs/kite/boundary/result.json](SC-042-state-strategies/runs/kite/boundary/result.json): COMPLETED_SCHEDULE; original endpoint audit False. Independent [SC-045 qualification](SC-045-timeout-qualification/audits/1.json): False (original flag unchanged). Separate [SC-046 lost-result recovery](SC-046-lost-audit-recovery/result.json): True.
 - [SC-042-state-strategies/runs/kite/cap/result.json](SC-042-state-strategies/runs/kite/cap/result.json): COMPLETED_SCHEDULE; original endpoint audit False. Independent [SC-045 qualification](SC-045-timeout-qualification/audits/2.json): True (original flag unchanged).
 - [SC-042-state-strategies/runs/kite/none/result.json](SC-042-state-strategies/runs/kite/none/result.json): NUMERICAL_FAILURE; original endpoint audit True.
 - [SC-044-noisy-fresh-cases/runs/asymmetric_lobes/clean/cap/result.json](SC-044-noisy-fresh-cases/runs/asymmetric_lobes/clean/cap/result.json): COMPLETED_SCHEDULE; original endpoint audit False. Independent [SC-045 qualification](SC-045-timeout-qualification/audits/4.json): True (original flag unchanged).

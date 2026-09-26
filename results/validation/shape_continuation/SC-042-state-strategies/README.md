@@ -38,9 +38,11 @@ intrinsic-curvature measurements](mechanism.md).
 
 The kite boundary/cap and C boundary endpoint audits hit their wall limits
 during a host memory-pressure event. Their failed original flags remain.
-[SC-045](../SC-045-timeout-qualification/README.md) records independent serial
-qualifications of the identical endpoints with the original tolerances and
-ceilings. These are qualification timeouts, not observed tolerance violations.
+[SC-045](../SC-045-timeout-qualification/README.md) and its separately charged
+[SC-046 lost-result recovery](../SC-046-lost-audit-recovery/README.md) now
+provide passing serial qualifications of the identical endpoints with the
+original tolerances and ceilings. The original timeouts and SC-045 output
+failure remain recorded; they are not observed tolerance violations.
 
 All fitting inputs and starting curves are committed JSON. Each arm preserves
 its configuration, intentional cleanup jumps, all accepted states, trial and

@@ -1,6 +1,6 @@
 # SC-044 — fresh shapes and measurement noise
 
-16/18 terminal suffix paths; 0 prefix/suffix exceptions; 2 pending.
+18/18 terminal suffix paths; 0 prefix/suffix exceptions; 0 pending.
 
 | Shape | Data | State strategy | RMS mm | Hausdorff mm | Complete path work | Outcome | Audit |
 |---|---|---|---:|---:|---:|---|---|
@@ -19,10 +19,12 @@
 | deep_c | noise_seed_0 | boundary | 0.15805 | 0.59938 | 905 | DISCREPANCY_REACHED | True |
 | deep_c | noise_seed_0 | cap | 0.15768 | 0.59823 | 905 | DISCREPANCY_REACHED | True |
 | deep_c | noise_seed_0 | none | 0.35351 | 1.6091 | 829 | NUMERICAL_FAILURE | True |
+| deep_c | noise_seed_1 | boundary | 0.10727 | 0.62631 | 898 | DISCREPANCY_REACHED | True |
+| deep_c | noise_seed_1 | cap | 0.10699 | 0.57651 | 898 | DISCREPANCY_REACHED | True |
 | deep_c | noise_seed_1 | none | 0.10769 | 0.70304 | 898 | DISCREPANCY_REACHED | True |
 
-Unique prefix work: 1766; suffix work: 8246.
-Saved-evidence checks: 95/95.
+Unique prefix work: 1766; suffix work: 9158.
+Saved-evidence checks: 107/107.
 Each complete path is charged its shared prefix. Two noise draws are repeated measurements of the same two shapes, not additional independent targets.
 
 The JSON also reports the last accepted states within a common work allowance for each paired comparison. This post-fit analysis does not select the best truth iterate or change the original endpoint gate. Intermediate common-work states have the original fitting acceptance checks, not a new endpoint audit.

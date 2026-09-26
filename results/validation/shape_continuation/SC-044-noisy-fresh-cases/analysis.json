@@ -288,6 +288,44 @@
     {
       "case": "deep_c",
       "profile": "noise_seed_1",
+      "arm": "boundary",
+      "outcome": "DISCREPANCY_REACHED",
+      "score": {
+        "rms_mm": 0.10727164079048022,
+        "hausdorff_mm": 0.6263060691591713,
+        "hausdorff_upper_mm": 0.6574948846001061,
+        "tightest_radius_mm": 1.7627144222792936
+      },
+      "suffix_units": 456,
+      "prefix_units": 442,
+      "complete_path_units": 898,
+      "audit_passed": true,
+      "audit_failure_kind": null,
+      "loss": 5.212983058788965e-05,
+      "discrepancy_target": 6.0491954744163205e-05
+    },
+    {
+      "case": "deep_c",
+      "profile": "noise_seed_1",
+      "arm": "cap",
+      "outcome": "DISCREPANCY_REACHED",
+      "score": {
+        "rms_mm": 0.10698581127074464,
+        "hausdorff_mm": 0.5765097080371867,
+        "hausdorff_upper_mm": 0.6076418876255496,
+        "tightest_radius_mm": 2.315319789498263
+      },
+      "suffix_units": 456,
+      "prefix_units": 442,
+      "complete_path_units": 898,
+      "audit_passed": true,
+      "audit_failure_kind": null,
+      "loss": 5.213023715373975e-05,
+      "discrepancy_target": 6.0491954744163205e-05
+    },
+    {
+      "case": "deep_c",
+      "profile": "noise_seed_1",
       "arm": "none",
       "outcome": "DISCREPANCY_REACHED",
       "score": {
@@ -1673,45 +1711,112 @@
       "baseline_outcome": "NUMERICAL_FAILURE",
       "candidate_outcome": "DISCREPANCY_REACHED",
       "candidate_audit": true
+    },
+    {
+      "case": "deep_c",
+      "profile": "noise_seed_1",
+      "arm": "boundary",
+      "comparable": true,
+      "common_work": {
+        "suffix_ceiling": 456,
+        "complete_path_ceiling": 898,
+        "endpoints": [
+          {
+            "arm": "none",
+            "accepted_at_suffix_units": 437,
+            "score": {
+              "rms_mm": 0.10769350035640589,
+              "hausdorff_mm": 0.7030383266324045,
+              "hausdorff_upper_mm": 0.7343090939324466,
+              "tightest_radius_mm": 0.8868340927161911
+            }
+          },
+          {
+            "arm": "boundary",
+            "accepted_at_suffix_units": 437,
+            "score": {
+              "rms_mm": 0.10727164079048022,
+              "hausdorff_mm": 0.6263060691591713,
+              "hausdorff_upper_mm": 0.6574948846001061,
+              "tightest_radius_mm": 1.7627144222792936
+            }
+          }
+        ],
+        "rms_ratio": 0.9960827759843487,
+        "hausdorff_ratio": 0.8908562242391744
+      },
+      "rms_ratio": 0.9960827759843487,
+      "hausdorff_ratio": 0.8908562242391744,
+      "baseline_outcome": "DISCREPANCY_REACHED",
+      "candidate_outcome": "DISCREPANCY_REACHED",
+      "candidate_audit": true
+    },
+    {
+      "case": "deep_c",
+      "profile": "noise_seed_1",
+      "arm": "cap",
+      "comparable": true,
+      "common_work": {
+        "suffix_ceiling": 456,
+        "complete_path_ceiling": 898,
+        "endpoints": [
+          {
+            "arm": "none",
+            "accepted_at_suffix_units": 437,
+            "score": {
+              "rms_mm": 0.10769350035640589,
+              "hausdorff_mm": 0.7030383266324045,
+              "hausdorff_upper_mm": 0.7343090939324466,
+              "tightest_radius_mm": 0.8868340927161911
+            }
+          },
+          {
+            "arm": "cap",
+            "accepted_at_suffix_units": 437,
+            "score": {
+              "rms_mm": 0.10698581127074464,
+              "hausdorff_mm": 0.5765097080371867,
+              "hausdorff_upper_mm": 0.6076418876255496,
+              "tightest_radius_mm": 2.315319789498263
+            }
+          }
+        ],
+        "rms_ratio": 0.993428674123144,
+        "hausdorff_ratio": 0.8200260017098963
+      },
+      "rms_ratio": 0.993428674123144,
+      "hausdorff_ratio": 0.8200260017098963,
+      "baseline_outcome": "DISCREPANCY_REACHED",
+      "candidate_outcome": "DISCREPANCY_REACHED",
+      "candidate_audit": true
     }
   ],
   "aggregate": {
     "boundary": {
-      "datasets": 5,
+      "datasets": 6,
       "distinct_shapes": 2,
-      "rms_gm_ratio": 0.8504829099974365,
+      "rms_gm_ratio": 0.8731802371372458,
       "worst_geometry_ratio": 1.0000042006169951,
       "additional_failures": 0,
-      "common_work_rms_gm_ratio": 0.8923889925841194,
+      "common_work_rms_gm_ratio": 0.9088894778932868,
       "transfer_gate_passed": false
     },
     "cap": {
-      "datasets": 5,
+      "datasets": 6,
       "distinct_shapes": 2,
-      "rms_gm_ratio": 0.8501398619881302,
+      "rms_gm_ratio": 0.8724986534059054,
       "worst_geometry_ratio": 1.0000587912983416,
       "additional_failures": 0,
-      "common_work_rms_gm_ratio": 0.8922812631178625,
+      "common_work_rms_gm_ratio": 0.9083940056200659,
       "transfer_gate_passed": false
     }
   },
   "failures": [],
-  "pending": [
-    {
-      "case": "deep_c",
-      "profile": "noise_seed_1",
-      "arm": "boundary"
-    },
-    {
-      "case": "deep_c",
-      "profile": "noise_seed_1",
-      "arm": "cap"
-    }
-  ],
-  "terminal": 16,
+  "pending": [],
+  "terminal": 18,
   "planned": 18,
   "unique_prefix_units": 1766,
-  "suffix_units": 8246,
+  "suffix_units": 9158,
   "checks": [
     {
       "case": "asymmetric_lobes",
@@ -2375,6 +2480,94 @@
     {
       "case": "deep_c",
       "profile": "noise_seed_1",
+      "arm": "boundary",
+      "check": "last_accepted_state",
+      "passed": true
+    },
+    {
+      "case": "deep_c",
+      "profile": "noise_seed_1",
+      "arm": "boundary",
+      "check": "shared_prefix_state",
+      "passed": true
+    },
+    {
+      "case": "deep_c",
+      "profile": "noise_seed_1",
+      "arm": "boundary",
+      "stage": "release_M11",
+      "check": "within_stage_descent",
+      "passed": true
+    },
+    {
+      "case": "deep_c",
+      "profile": "noise_seed_1",
+      "arm": "boundary",
+      "stage": "release_M19",
+      "check": "within_stage_descent",
+      "passed": true
+    },
+    {
+      "case": "deep_c",
+      "profile": "noise_seed_1",
+      "arm": "boundary",
+      "check": "work",
+      "passed": true
+    },
+    {
+      "case": "deep_c",
+      "profile": "noise_seed_1",
+      "arm": "boundary",
+      "check": "discrepancy",
+      "passed": true
+    },
+    {
+      "case": "deep_c",
+      "profile": "noise_seed_1",
+      "arm": "cap",
+      "check": "last_accepted_state",
+      "passed": true
+    },
+    {
+      "case": "deep_c",
+      "profile": "noise_seed_1",
+      "arm": "cap",
+      "check": "shared_prefix_state",
+      "passed": true
+    },
+    {
+      "case": "deep_c",
+      "profile": "noise_seed_1",
+      "arm": "cap",
+      "stage": "release_M11",
+      "check": "within_stage_descent",
+      "passed": true
+    },
+    {
+      "case": "deep_c",
+      "profile": "noise_seed_1",
+      "arm": "cap",
+      "stage": "release_M19",
+      "check": "within_stage_descent",
+      "passed": true
+    },
+    {
+      "case": "deep_c",
+      "profile": "noise_seed_1",
+      "arm": "cap",
+      "check": "work",
+      "passed": true
+    },
+    {
+      "case": "deep_c",
+      "profile": "noise_seed_1",
+      "arm": "cap",
+      "check": "discrepancy",
+      "passed": true
+    },
+    {
+      "case": "deep_c",
+      "profile": "noise_seed_1",
       "arm": "none",
       "check": "last_accepted_state",
       "passed": true
@@ -2418,5 +2611,5 @@
     }
   ],
   "checks_passed": true,
-  "complete": false
+  "complete": true
 }

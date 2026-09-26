@@ -140,7 +140,8 @@ def fresh_shapes():
                 if result is None or 'curve' not in result:continue
                 count+=1
                 curve(ax,result['curve'],color=COLORS[arm],lw=1,label=LABELS[arm])
-            ax.set(title=f'{case.replace("_"," ")} / {profile}',xlabel='x / mm',ylabel='y / mm',aspect='equal')
+            label={'clean':'clean','noise_seed_0':'1% noise, draw 0','noise_seed_1':'1% noise, draw 1'}[profile]
+            ax.set(title=f'{case.replace("_"," ")} / {label}',xlabel='x / mm',ylabel='y / mm',aspect='equal')
     finish(fig,axes,folder,'geometry',f'SC-044: two fixed new shapes, paired noise draws — {count}/18 scored paths')
 
 
