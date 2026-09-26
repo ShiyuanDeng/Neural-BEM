@@ -249,3 +249,54 @@ declared prior on regularity (which SC-042 found harms true sharp features
 when applied as a cap) or more discriminating data (acquisition, frequencies).
 This agrees with the closeout's "capacity, regularity and information"
 distinction; it does not by itself say which to add.
+
+## Part 4 — where do spurious features form? ([frozen plan + control](uncertainty_plan.md), [script](uncertainty.py), [JSON](uncertainty.json), [control](uncertainty_control.json))
+
+**Direction chosen.** Regularity priors (filters, curvature spectra, curvature
+penalties) have close prior art, so this part asks about **information**
+instead: is the boundary undetermined, for this acquisition and a declared 1%
+noise, where spurious features form? Truth-free quantity: the linearized
+posterior-to-prior standard-deviation ratio ρ(s) of the normal displacement,
+from the Hadamard Jacobian for arclength ripples of orders 0..128, under two
+declared priors. Tested on the 18 untouched SC-044 final states, with 5
+development states as a screen.
+
+**Frozen verdict: FAIL — inverted.** The hypothesis "artefacts form where the
+data are blind" is rejected. The opposite holds:
+
+| | White prior | Decaying prior |
+|---|---:|---:|
+| Median along-boundary correlation, ρ(s) vs \|error\| (18 test states) | −0.41 | −0.15 |
+| States with positive correlation | 0 / 18 | 6 / 18 |
+| Spurious sharpest points: percentile of ρ there (9 test states; 4 kite screen states) | median 0.0 (all ≤ 1.4) | median 0.5 (all ≤ 10) |
+
+Every spurious sharpest point (13 of 13) sits among the **best-determined**
+~10% of the boundary. Lobes have no spurious sharpest point in any profile.
+
+**Control (pre-registered after the verdict).** Field enhancement at a sharp
+feature could itself raise local sensitivity. On the **true** boundaries (no
+artefact), the sites where artefacts later form are already at the 5.5–10.4th
+percentile of ρ (median 8.3 / 6.9 under the two priors; kite 8.6–10.4, deep C
+5.5–9.0). Pre-registered read-out: **the artefact sites are intrinsically
+high-information for this acquisition.** The kite site is already the most
+informative region at SC-035 stage 4 (K=20), before the feature forms.
+
+**Reading.** Spurious features in this pipeline do not fill data-blind
+regions. They form where a small boundary displacement buys the largest data
+change, consistent with part 2's finding that kite's feature absorbs misfit:
+residual misfit from elsewhere is compensated most cheaply at the
+acquisition's most sensitive boundary locations. The site is predictable
+from the information map before the feature exists.
+
+**Scope.** Two shapes (effectively two independent sites; the 13 states share
+them), one acquisition, noiseless and 1%-noise data, linearized posterior,
+two priors. It is a mechanism finding, not yet a method.
+
+**Next step this points to.** A prospective test of the mechanism's two
+consequences, frozen before running: (1) on fresh shapes, the information map
+at an early state predicts where artefacts will form; (2) an
+information-equalized update metric (displacements weighted by local data
+sensitivity, so misfit cannot be absorbed cheaply at high-information sites)
+reduces spurious features without the sharp-feature cost SC-042 found for a
+state cap, compared against the established filtered-resampling and
+curvature-spectrum baselines.
