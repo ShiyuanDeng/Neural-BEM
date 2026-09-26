@@ -10,6 +10,7 @@ only `curve_modes`. Truth is used only for post-hoc scoring.
     python strategy.py refit K       # SC-041 kite M=22 endpoint, low-passed to K, one M=22 stage at K
     python strategy.py refit K case M  # the same for another SC-041 arm (e.g. circle_to_star 25);
                                      # optional 5th argument: start from SC-041's M=<that> endpoint
+    python strategy.py from:LABEL K case M   # a strategy arm's last state, one stage at M and K
     python strategy.py continue K    # release_K's last state, remaining M=19 stage (as SC-038 remaining_m19)
 """
 import importlib.util
@@ -52,6 +53,8 @@ def dump(obj, **kw):
 def main(mode, K, case='kite', M=22, start_M=None):
     start_M = M if start_M is None else start_M
     label = f'{mode}_K{K}' if case == 'kite' else f'{mode}_{case}_M{M}_K{K}' + ('' if start_M == M else f'_from_M{start_M}')
+    if mode.startswith('from:'):
+        label = f"raise_{case}_M{M}_K{K}_from_{mode.split(':', 1)[1]}"
     folder = HERE/'strategies'/label
     folder.mkdir(parents=True, exist_ok=False)
     if mode == 'release':
@@ -63,6 +66,12 @@ def main(mode, K, case='kite', M=22, start_M=None):
         stages = [replace(stage, label=f'refit_M{M}')]
         curve = ast.curve_from(json.loads((RESULTS/f'SC-041-atlas-decisions/runs/{case}/M{start_M}/result.json').read_text())['curve'])
         source = f'SC-041 {case} M={start_M} endpoint'
+    elif mode.startswith('from:'):                        # from:<strategy label>, one M stage at K
+        stage, config, _ = sc041.setup(case, M)
+        stages = [replace(stage, label=f'raise_M{M}')]
+        origin = mode.split(':', 1)[1]
+        curve = ast.curve_from(json.loads((HERE/'strategies'/origin/'accepted.json').read_text())['states'][-1]['curve'])
+        source = f'{origin} last accepted state'
     elif mode == 'continue':
         stages, config, _ = sc038.schedules('kite', 'release_m')
         stages = [replace(stages[-1], label='remaining_m19')]
