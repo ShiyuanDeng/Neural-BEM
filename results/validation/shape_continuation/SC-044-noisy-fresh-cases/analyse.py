@@ -25,9 +25,11 @@ def main():
         if prefix is None:
             prefix=next((f for f in failures if f['case']==d['case'] and f['profile']==d['profile'] and f['arm']=='prefix'),{'total_units':0})
         last=d.get('stages',[{}])[-1]
+        audit=r.c.sc.read(p.parent/'audit.json') if (p.parent/'audit.json').exists() else {}
+        audit_reason=None if audit.get('passed') else 'wall_limit' if 'TrialWallLimit' in audit.get('traceback','') else 'exception' if audit.get('traceback') else 'tolerance_disagreement' if audit else 'not_attempted'
         row=dict(case=d['case'],profile=d['profile'],arm=d['arm'],outcome=d['outcome'],score=d.get('score'),
             suffix_units=d['total_units'],prefix_units=prefix['total_units'],
-            complete_path_units=prefix['total_units']+d['total_units'],audit_passed=d.get('audit_passed',False),
+            complete_path_units=prefix['total_units']+d['total_units'],audit_passed=d.get('audit_passed',False),audit_failure_kind=audit_reason,
             loss=last.get('final_loss'),discrepancy_target=last.get('discrepancy_target'))
         rows.append(row)
         if 'stages' in d:

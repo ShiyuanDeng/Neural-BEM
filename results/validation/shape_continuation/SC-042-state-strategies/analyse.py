@@ -20,10 +20,12 @@ def main():
         result = r.sc.read(p)
         case, arm = result['case'], result['arm']
         data[case, arm] = result
+        audit=r.sc.read(p.parent/'audit.json')
+        audit_reason=None if audit['passed'] else 'wall_limit' if 'TrialWallLimit' in audit.get('traceback','') else 'exception' if audit.get('traceback') else 'tolerance_disagreement'
         progress = r.sc.read(p.parent/'progress.json')['states']
         rows.append(dict(case=case, arm=arm, outcome=result['outcome'],
             loss=result['stages'][-1]['final_loss'], **result['score'], units=result['total_units'],
-            audit_passed=result['audit_passed']))
+            audit_passed=result['audit_passed'],audit_failure_kind=audit_reason))
         checks.append(dict(case=case, arm=arm, check='stage_and_path_budget', passed=bool(
             result['total_units'] == sum(s['work']['work_units'] for s in result['stages'])
             and result['total_units'] <= 3*r.QUOTA

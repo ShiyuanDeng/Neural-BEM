@@ -12,19 +12,33 @@ spec.loader.exec_module(r)
 def main():
     r.verify()
     rows=[]
+    blocks=[]
     checks=[]
     failures=[dict(path=str(p.relative_to(HERE)),**r.c.sc.read(p))
               for p in sorted((HERE/'runs').glob('*/*/failure.json'))]
     for p in sorted((HERE/'runs').glob('*/*/result.json')):
         d=r.c.sc.read(p)
         decisions=r.c.sc.read(p.parent/'decisions.json')['rows']
+        audit=r.c.sc.read(p.parent/'audit.json')
+        audit_reason=None if audit.get('passed') else 'wall_limit' if 'TrialWallLimit' in audit.get('traceback','') else 'exception' if audit.get('traceback') else 'tolerance_disagreement'
         rows.append(dict(case=d['case'],policy=d['policy'],outcome=d['outcome'],score=d['score'],
             units=d['total_units'],diagnostic_units=sum(s['diagnostic_units'] for s in d['stages']),
-            audit_passed=d['audit_passed'],bands=[s['M'] for s in d['stages']],loss=d['stages'][-1]['final_loss']))
+            audit_passed=d['audit_passed'],audit_failure_kind=audit_reason,
+            bands=[s['M'] for s in d['stages']],loss=d['stages'][-1]['final_loss']))
         checks.append(dict(case=d['case'],policy=d['policy'],check='charged_diagnostics',passed=bool(
             d['total_units']==sum(s['units']+s['diagnostic_units'] for s in d['stages'])
             and all(s['units']+s['diagnostic_units']<=r.QUOTA for s in d['stages']))))
         for choice,stage in zip(decisions,d['stages']):
+            initial,final=stage['initial_loss'],stage['final_loss']
+            blocks.append(dict(case=d['case'],policy=d['policy'],block=stage['block'],
+                low=choice['low'],high=choice['high'],selected=choice['selected'],
+                release=choice['release'],incremental_predicted_fraction=choice.get('incremental_fraction'),
+                prior_stagnated=choice.get('prior_stagnated'),
+                diagnostic_qualified=choice.get('qualification',{}).get('passed'),
+                diagnostic_units=stage['diagnostic_units'],fit_units=stage['units'],
+                initial_loss=initial,final_loss=final,
+                actual_fractional_decrease=(initial-final)/initial if initial else 0.,
+                outcome=stage['outcome'],stop=stage['stop']))
             valid=stage['M']==choice['selected']
             if d['policy']=='atlas':
                 low,high=choice['low_prediction'],choice['high_prediction']
@@ -59,7 +73,7 @@ def main():
                 gate_passed=len(subset)==6 and gm<=.8 and worst<=1.25 and not additional
                 and all(s['atlas_audit'] for s in subset))
     diagnostic_failure_units=sum(sum(d['diagnostic_units'] for d in f.get('decisions',[])) for f in failures)
-    r.c.write(HERE/'analysis.json',dict(rows=rows,comparisons=comparisons,aggregate=aggregate,
+    r.c.write(HERE/'analysis.json',dict(rows=rows,blocks=blocks,comparisons=comparisons,aggregate=aggregate,
         failures=failures,pending=pending,terminal=len(terminal),planned=18,
         recorded_failure_units=sum(f.get('total_units',0) for f in failures),
         diagnostic_failure_units=diagnostic_failure_units,
@@ -77,6 +91,16 @@ def main():
     lines+=['',f"Evidence checks: {sum(x['passed'] for x in checks)}/{len(checks)}.",'']
     lines+=['Exceptions remain in the 18-path denominator. An unqualified diagnostic blocks that policy; it is not a missing successful replicate.',
             'Reported geometric means use available scored pairs. The superiority gate requires all six cases against both controls.', '']
+    lines+=['## Decisions and subsequent fitting','',
+            '| Case | Rule | Block | Choice | Extra predicted gain / loss | Fitting loss decrease | Diagnostic / fitting work | Stop |',
+            '|---|---|---:|---|---:|---:|---:|---|']
+    for s in blocks:
+        gain=s['incremental_predicted_fraction']
+        predicted='—' if gain is None else f'{gain:.3%}'
+        lines.append(f"| {s['case']} | {s['policy']} | {s['block']} | {s['low']}→{s['selected']} | {predicted} | {s['actual_fractional_decrease']:.3%} | {s['diagnostic_units']} / {s['fit_units']} | {s['stop']} |")
+    lines+=['', 'The forecast compares two optimal linearized directions at the declared test radius. '
+            'The subsequent fit runs multiple damped LM steps, so its total decrease is not a calibration test of that single forecast. '
+            'A retained band followed by poor improvement is evidence about this decision rule, not proof that all higher modes are unobservable.', '']
     (HERE/'TABLES.md').write_text('\n'.join(lines))
     print({'completed':len(rows),'aggregate':aggregate,'checks_passed':all(x['passed'] for x in checks)})
 

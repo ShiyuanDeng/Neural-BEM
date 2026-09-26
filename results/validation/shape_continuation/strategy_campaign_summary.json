@@ -1,0 +1,144 @@
+{
+  "studies": [
+    {
+      "study": "SC-042-state-strategies",
+      "planned_paths": 24,
+      "terminal_paths": 19,
+      "scored_paths": 19,
+      "qualified_paths": 16,
+      "outcome_counts": {
+        "COMPLETED_SCHEDULE": 18,
+        "NUMERICAL_FAILURE": 1
+      },
+      "complete": false,
+      "unique_inverse_and_diagnostic_units": 15523,
+      "audit_units": 2093,
+      "shared_prefix_count": 0,
+      "shared_prefix_inverse_units": 0,
+      "shared_prefix_audit_units": 0,
+      "failures": [
+        {
+          "path": "SC-042-state-strategies/runs/circle_to_c/boundary/result.json",
+          "outcome": "COMPLETED_SCHEDULE",
+          "audit_passed": false
+        },
+        {
+          "path": "SC-042-state-strategies/runs/kite/boundary/result.json",
+          "outcome": "COMPLETED_SCHEDULE",
+          "audit_passed": false
+        },
+        {
+          "path": "SC-042-state-strategies/runs/kite/cap/result.json",
+          "outcome": "COMPLETED_SCHEDULE",
+          "audit_passed": false
+        },
+        {
+          "path": "SC-042-state-strategies/runs/kite/none/result.json",
+          "outcome": "NUMERICAL_FAILURE",
+          "audit_passed": true
+        }
+      ],
+      "failure_cost_note": "Exception costs include only recorded units; an interrupted call may have additional unrecorded work.",
+      "frozen_gate_results": {
+        "once": {
+          "cases": 4,
+          "rms_geometric_mean_ratio": 0.8747603982819919,
+          "worst_ratio": 1.000053568423225,
+          "common_work_rms_geometric_mean_ratio": 0.977000016667955,
+          "development_gate_passed": false
+        },
+        "boundary": {
+          "cases": 4,
+          "rms_geometric_mean_ratio": 0.8748595555570889,
+          "worst_ratio": 1.0012513947933828,
+          "common_work_rms_geometric_mean_ratio": 0.9769891467182563,
+          "development_gate_passed": false
+        },
+        "cap": {
+          "cases": 4,
+          "rms_geometric_mean_ratio": 0.8751509728038973,
+          "worst_ratio": 1.005594489050667,
+          "common_work_rms_geometric_mean_ratio": 0.9773439064920497,
+          "development_gate_passed": false
+        }
+      }
+    },
+    {
+      "study": "SC-043-prospective-band",
+      "planned_paths": 18,
+      "terminal_paths": 0,
+      "scored_paths": 0,
+      "qualified_paths": 0,
+      "outcome_counts": {},
+      "complete": false,
+      "unique_inverse_and_diagnostic_units": 0,
+      "audit_units": 0,
+      "shared_prefix_count": 0,
+      "shared_prefix_inverse_units": 0,
+      "shared_prefix_audit_units": 0,
+      "failures": [],
+      "failure_cost_note": "Exception costs include only recorded units; an interrupted call may have additional unrecorded work.",
+      "frozen_gate_results": {}
+    },
+    {
+      "study": "SC-044-noisy-fresh-cases",
+      "planned_paths": 18,
+      "terminal_paths": 9,
+      "scored_paths": 9,
+      "qualified_paths": 7,
+      "outcome_counts": {
+        "COMPLETED_SCHEDULE": 3,
+        "DISCREPANCY_REACHED": 6
+      },
+      "complete": false,
+      "unique_inverse_and_diagnostic_units": 5642,
+      "audit_units": 1143,
+      "shared_prefix_count": 6,
+      "shared_prefix_inverse_units": 1766,
+      "shared_prefix_audit_units": 144,
+      "failures": [
+        {
+          "path": "SC-044-noisy-fresh-cases/runs/asymmetric_lobes/clean/cap/result.json",
+          "outcome": "COMPLETED_SCHEDULE",
+          "audit_passed": false
+        },
+        {
+          "path": "SC-044-noisy-fresh-cases/runs/asymmetric_lobes/noise_seed_0/boundary/result.json",
+          "outcome": "DISCREPANCY_REACHED",
+          "audit_passed": false
+        }
+      ],
+      "failure_cost_note": "Exception costs include only recorded units; an interrupted call may have additional unrecorded work.",
+      "frozen_gate_results": {
+        "boundary": {
+          "datasets": 3,
+          "distinct_shapes": 1,
+          "rms_gm_ratio": 1.0000013977808668,
+          "worst_geometry_ratio": 1.0000042006169951,
+          "additional_failures": 0,
+          "transfer_gate_passed": false
+        },
+        "cap": {
+          "datasets": 3,
+          "distinct_shapes": 1,
+          "rms_gm_ratio": 1.0000009333537656,
+          "worst_geometry_ratio": 1.0000587912983416,
+          "additional_failures": 0,
+          "transfer_gate_passed": false
+        }
+      }
+    }
+  ],
+  "data_generation_units": 76,
+  "independent_timeout_qualification": {
+    "planned": 5,
+    "returned": 0,
+    "passed": 0,
+    "complete": false,
+    "additional_units": 0,
+    "rows": []
+  },
+  "total_recorded_unique_work_units": 24477,
+  "complete": false,
+  "accounting": "A work unit is one frequency forward evaluation or reciprocal batch. Shared fresh-case prefixes are counted once here and charged to every complete path in SC-044 comparisons. Grid sizes vary by case; elapsed time is not a controlled speed benchmark."
+}

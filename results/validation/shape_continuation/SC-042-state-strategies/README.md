@@ -12,6 +12,12 @@ slots. The six-worker host ceiling is shared with SC-044. No result is
 promoted from intermediate accepted states. [Current tables](TABLES.md)
 remain provisional until all 24 paths terminate.
 
+The kite boundary/cap and C boundary endpoint audits hit their wall limits
+during a host memory-pressure event. Their failed original flags remain.
+[SC-045](../SC-045-timeout-qualification/README.md) records independent serial
+qualifications of the identical endpoints with the original tolerances and
+ceilings. These are qualification timeouts, not observed tolerance violations.
+
 All fitting inputs and starting curves are committed JSON. Each arm preserves
 its configuration, intentional cleanup jumps, all accepted states, trial and
 acceptance histories, endpoint numerical audit and post-run geometry scores.

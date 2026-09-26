@@ -25,6 +25,11 @@ Jacobian and full-trial derivative audits. Their unique fitting work is
 1,766 units. Prefix audits use each prefix's final four-frequency objective;
 the suffix and its endpoint audit use all 19 frequencies.
 
+The lobed clean/cap and noise-seed-0/boundary endpoint audits timed out during
+severe host memory pressure. Their original failures remain; separate
+[SC-045 qualifications](../SC-045-timeout-qualification/README.md) reuse the
+exact returned shapes and unchanged audit settings, with additional cost.
+
 This is two distinct target shapes with repeated noise draws, not six
 independent targets. The same two seeds are used for both shapes, so their
 standardized noise patterns are shared across targets as well as methods;
