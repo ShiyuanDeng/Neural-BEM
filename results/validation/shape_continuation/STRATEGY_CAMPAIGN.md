@@ -6,10 +6,12 @@
 |---|---:|---:|---:|---:|
 | [SC-042-state-strategies](SC-042-state-strategies/README.md) | 24/24 | 21 | 19874 | 2663 |
 | [SC-043-prospective-band](SC-043-prospective-band/README.md) | 0/18 | 0 | 0 | 0 |
-| [SC-044-noisy-fresh-cases](SC-044-noisy-fresh-cases/README.md) | 11/18 | 9 | 7390 | 1371 |
-| [SC-045 independent timeout qualifications](SC-045-timeout-qualification/README.md) | 0/5 audits | 0 | 0 | 0 |
+| [SC-044-noisy-fresh-cases](SC-044-noisy-fresh-cases/README.md) | 16/18 | 14 | 10012 | 1941 |
+| [SC-045 independent timeout qualifications](SC-045-timeout-qualification/README.md) | 5/5 audits | 4 | 0 | 456 |
+| [SC-046 lost-result recovery](SC-046-lost-audit-recovery/README.md) | 0/1 audit | 0 | 0 | 0 |
 
-Data generation: 76 fields. Total recorded work for terminal records: 31374 units.
+Data generation: 76 fields. Total recorded work for terminal records: 35022 units.
+The lost SC-045 ledger contributes up to 130 additional unrecorded units. Its stored zero denotes missing accounting, not free computation.
 Work in running paths is omitted from this snapshot. Interrupted-call costs may be only partially recorded.
 SC-044 includes six shared prefix paths; each method is charged its full prefix in complete-path comparisons.
 Field and reciprocal units are a declared accounting convention, not identical floating-point cost. Numerical grids vary by case; host timing is uncontrolled.
@@ -22,9 +24,10 @@ Post-fit checks: [doubled metric sampling](strategy_metric_refinement.json), [fr
 
 ## Retained stopped or unqualified paths
 
-- [SC-042-state-strategies/runs/circle_to_c/boundary/result.json](SC-042-state-strategies/runs/circle_to_c/boundary/result.json): COMPLETED_SCHEDULE; original endpoint audit False.
-- [SC-042-state-strategies/runs/kite/boundary/result.json](SC-042-state-strategies/runs/kite/boundary/result.json): COMPLETED_SCHEDULE; original endpoint audit False.
-- [SC-042-state-strategies/runs/kite/cap/result.json](SC-042-state-strategies/runs/kite/cap/result.json): COMPLETED_SCHEDULE; original endpoint audit False.
+- [SC-042-state-strategies/runs/circle_to_c/boundary/result.json](SC-042-state-strategies/runs/circle_to_c/boundary/result.json): COMPLETED_SCHEDULE; original endpoint audit False. Independent [SC-045 qualification](SC-045-timeout-qualification/audits/3.json): True (original flag unchanged).
+- [SC-042-state-strategies/runs/kite/boundary/result.json](SC-042-state-strategies/runs/kite/boundary/result.json): COMPLETED_SCHEDULE; original endpoint audit False. Independent [SC-045 qualification](SC-045-timeout-qualification/audits/1.json): False (original flag unchanged).
+- [SC-042-state-strategies/runs/kite/cap/result.json](SC-042-state-strategies/runs/kite/cap/result.json): COMPLETED_SCHEDULE; original endpoint audit False. Independent [SC-045 qualification](SC-045-timeout-qualification/audits/2.json): True (original flag unchanged).
 - [SC-042-state-strategies/runs/kite/none/result.json](SC-042-state-strategies/runs/kite/none/result.json): NUMERICAL_FAILURE; original endpoint audit True.
-- [SC-044-noisy-fresh-cases/runs/asymmetric_lobes/clean/cap/result.json](SC-044-noisy-fresh-cases/runs/asymmetric_lobes/clean/cap/result.json): COMPLETED_SCHEDULE; original endpoint audit False.
-- [SC-044-noisy-fresh-cases/runs/asymmetric_lobes/noise_seed_0/boundary/result.json](SC-044-noisy-fresh-cases/runs/asymmetric_lobes/noise_seed_0/boundary/result.json): DISCREPANCY_REACHED; original endpoint audit False.
+- [SC-044-noisy-fresh-cases/runs/asymmetric_lobes/clean/cap/result.json](SC-044-noisy-fresh-cases/runs/asymmetric_lobes/clean/cap/result.json): COMPLETED_SCHEDULE; original endpoint audit False. Independent [SC-045 qualification](SC-045-timeout-qualification/audits/4.json): True (original flag unchanged).
+- [SC-044-noisy-fresh-cases/runs/asymmetric_lobes/noise_seed_0/boundary/result.json](SC-044-noisy-fresh-cases/runs/asymmetric_lobes/noise_seed_0/boundary/result.json): DISCREPANCY_REACHED; original endpoint audit False. Independent [SC-045 qualification](SC-045-timeout-qualification/audits/5.json): True (original flag unchanged).
+- [SC-044-noisy-fresh-cases/runs/deep_c/noise_seed_0/none/result.json](SC-044-noisy-fresh-cases/runs/deep_c/noise_seed_0/none/result.json): NUMERICAL_FAILURE; original endpoint audit True.

@@ -1,6 +1,6 @@
 # SC-046 — separate recovery of one lost audit result
 
-**QUEUED, 2026-09-26.** [Frozen contract](plan.md), [manifest](manifest.json),
+**RUNNING, 2026-09-26.** [Frozen contract](plan.md), [manifest](manifest.json),
 [output-writer preflight](preflight.json).
 
 SC-045's first result was lost to a missing output directory after the

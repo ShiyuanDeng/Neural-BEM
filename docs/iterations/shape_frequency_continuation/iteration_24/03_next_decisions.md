@@ -42,6 +42,16 @@ not a retroactive discount on these runs. Its forecasts concern an optimal
 linearized step; the ensuing multi-step LM decrease is not a direct
 forecast-calibration measurement.
 
+There is also a structural limit to this particular decision problem. Under
+the declared reciprocal-batch accounting, adding normal-basis columns does
+not add a charged frequency batch: both choices still use the same 19
+frequencies and grids. The atlas must earn its overhead through better
+trajectories or fewer rejected trials; retaining a smaller M does not itself
+save those field evaluations. Changing the frequency set could affect that
+cost directly, but SC-043 does not test such a decision. This distinction is
+part of interpreting the frozen cost model, not a reason to discount its
+diagnostic work after the results arrive.
+
 **Capacity, regularity and information.** Increasing M changes available
 normal directions; changing K changes the stored curve and projected tangent
 map; changing quadrature changes numerical fidelity. Noise and acquisition

@@ -1,0 +1,35 @@
+Waiting for SC-042; independent audits will run serially in fresh processes.
+AUDIT SC-042-state-strategies/runs/kite/boundary
+Traceback (most recent call last):
+  File "/home/drdeng/Neural_SDF_BEM_AD/results/validation/shape_continuation/SC-045-timeout-qualification/run.py", line 101, in <module>
+    if __name__=='__main__':main()
+  File "/home/drdeng/Neural_SDF_BEM_AD/results/validation/shape_continuation/SC-045-timeout-qualification/run.py", line 87, in main
+    c.write(output,dict(source=target,original_audit_passed=False,**result))
+  File "/home/drdeng/Neural_SDF_BEM_AD/results/validation/shape_continuation/SC-042-state-strategies/run.py", line 36, in write
+    sc.write(temp, value)
+  File "/home/drdeng/Neural_SDF_BEM_AD/experiments/shape_continuation/spd_cases.py", line 56, in write
+    path.write_text(json.dumps(portable(value), indent=2, allow_nan=False) + "\n")
+  File "/home/drdeng/miniconda3/envs/EMNerf/lib/python3.9/pathlib.py", line 1213, in write_text
+    with self.open(mode='w', encoding=encoding, errors=errors) as f:
+  File "/home/drdeng/miniconda3/envs/EMNerf/lib/python3.9/pathlib.py", line 1180, in open
+    return io.open(self, mode, buffering, encoding, errors, newline,
+  File "/home/drdeng/miniconda3/envs/EMNerf/lib/python3.9/pathlib.py", line 1038, in _opener
+    return self._accessor.open(self, flags, mode)
+FileNotFoundError: [Errno 2] No such file or directory: '/home/drdeng/Neural_SDF_BEM_AD/results/validation/shape_continuation/SC-045-timeout-qualification/audits/1.json.tmp'
+Traceback (most recent call last):
+  File "/home/drdeng/Neural_SDF_BEM_AD/results/validation/shape_continuation/SC-045-timeout-qualification/run.py", line 101, in <module>
+    if __name__=='__main__':main()
+  File "/home/drdeng/Neural_SDF_BEM_AD/results/validation/shape_continuation/SC-045-timeout-qualification/run.py", line 95, in main
+    subprocess.run([sys.executable,'-u',str(Path(__file__).resolve()),'audit',str(index)],check=True)
+  File "/home/drdeng/miniconda3/envs/EMNerf/lib/python3.9/subprocess.py", line 528, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/home/drdeng/miniconda3/envs/EMNerf/bin/python', '-u', '/home/drdeng/Neural_SDF_BEM_AD/results/validation/shape_continuation/SC-045-timeout-qualification/run.py', 'audit', '0']' returned non-zero exit status 1.
+Waiting for SC-042; independent audits will run serially in fresh processes.
+AUDIT SC-042-state-strategies/runs/kite/cap
+DONE SC-042-state-strategies/runs/kite/cap True 114
+AUDIT SC-042-state-strategies/runs/circle_to_c/boundary
+DONE SC-042-state-strategies/runs/circle_to_c/boundary True 114
+AUDIT SC-044-noisy-fresh-cases/runs/asymmetric_lobes/clean/cap
+DONE SC-044-noisy-fresh-cases/runs/asymmetric_lobes/clean/cap True 114
+AUDIT SC-044-noisy-fresh-cases/runs/asymmetric_lobes/noise_seed_0/boundary
+DONE SC-044-noisy-fresh-cases/runs/asymmetric_lobes/noise_seed_0/boundary True 114

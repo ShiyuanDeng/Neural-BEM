@@ -78,7 +78,11 @@ flags remain false and prevent those arms passing their original gates.
 [SC-045](../../../../results/validation/shape_continuation/SC-045-timeout-qualification/README.md)
 records one separate serial qualification of each identical endpoint, with
 unchanged tests and limits and all additional work charged. Its outcome is
-pending at this closeout's initial writing.
+pending at this closeout's initial writing. SC-045's first numerical result
+was subsequently lost to a missing output directory: the failed execution
+and up to 130 unrecorded work units remain recorded. A separately frozen
+[SC-046 recovery](../../../../results/validation/shape_continuation/SC-046-lost-audit-recovery/README.md)
+supplies one additional attempt without rewriting either original failure.
 
 ## Consequence for iteration and novelty
 

@@ -1,6 +1,6 @@
 # SC-045 — qualify unchanged endpoints after audit timeouts
 
-**RUNNING, 2026-09-26.** [Frozen follow-up contract](plan.md),
+**COMPLETE, 2026-09-26: four qualified endpoints, one lost-result execution failure.** [Frozen follow-up contract](plan.md),
 [source and endpoint hashes](manifest.json), [host pressure snapshot](host_pressure.json).
 
 Five original audits retain their `TrialWallLimit` failures. This separate
@@ -20,7 +20,10 @@ an output failure, not a numerical pass or tolerance failure. Its actual cost
 is unknown, bounded by 130 units; a stored zero denotes missing measured
 accounting and must not be interpreted as zero computation. The traceback
 remains in `run.log`. Creating the directory fixes subsequent output without
-changing frozen numerical code. The remaining four original attempts continue.
+changing frozen numerical code. The remaining four original attempts passed,
+each costing 114 units: kite/cap, development-C/boundary, lobed-clean/cap and
+lobed-noise-0/boundary. Their measured total is 456 units, plus up to 130
+unrecorded units from the first attempt. [Summary](summary.json).
 
 [SC-046](../SC-046-lost-audit-recovery/README.md) freezes one separately charged
 recovery of this lost result. The first SC-045 failure remains unchanged.
@@ -31,5 +34,5 @@ PYTHONPATH=solvers:. python results/validation/shape_continuation/SC-045-timeout
 PYTHONPATH=solvers:. python results/validation/shape_continuation/SC-045-timeout-qualification/run.py
 ```
 
-The current host has this sequence queued. Existing follow-up records are
-never overwritten; a failed follow-up remains failed.
+This sequence has terminated. Existing follow-up records are never
+overwritten; the failed first follow-up remains failed.

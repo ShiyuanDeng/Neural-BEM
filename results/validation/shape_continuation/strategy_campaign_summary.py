@@ -41,11 +41,19 @@ def main():
     followup=ROOT/'SC-045-timeout-qualification'
     replay_rows=[dict(path=str(p.relative_to(ROOT)),**read(p)) for p in sorted((followup/'audits').glob('*.json'))]
     replay=dict(planned=5,returned=len(replay_rows),passed=sum(d['passed'] for d in replay_rows),
-        complete=len(replay_rows)==5,additional_units=sum(d['work']['work_units'] for d in replay_rows),rows=replay_rows)
+        complete=len(replay_rows)==5,additional_units=sum(d['work']['work_units'] for d in replay_rows),
+        unrecorded_units_upper_bound=sum(d['work'].get('unrecorded_work_units_upper_bound',0) for d in replay_rows),rows=replay_rows)
+    recovery_path=ROOT/'SC-046-lost-audit-recovery/result.json'
+    recovered=read(recovery_path) if recovery_path.exists() else None
+    recovery=dict(complete=recovered is not None,passed=recovered['passed'] if recovered else None,
+        additional_units=recovered['work']['work_units'] if recovered else 0,
+        path=str(recovery_path.relative_to(ROOT)),row=recovered)
     result=dict(studies=studies,data_generation_units=data_units,
         independent_timeout_qualification=replay,
-        total_recorded_unique_work_units=data_units+replay['additional_units']+sum(d['unique_inverse_and_diagnostic_units']+d['audit_units'] for d in studies),
-        complete=all(d['complete'] for d in studies) and replay['complete'],
+        lost_audit_recovery=recovery,
+        total_recorded_unique_work_units=data_units+replay['additional_units']+recovery['additional_units']+sum(d['unique_inverse_and_diagnostic_units']+d['audit_units'] for d in studies),
+        unrecorded_work_units_upper_bound=replay['unrecorded_units_upper_bound'],
+        complete=all(d['complete'] for d in studies) and replay['complete'] and recovery['complete'],
         accounting='A work unit is one frequency forward evaluation or reciprocal batch. Shared fresh-case prefixes are counted once here and charged to every complete path in SC-044 comparisons. Grid sizes vary by case; elapsed time is not a controlled speed benchmark.')
     (ROOT/'strategy_campaign_summary.json').write_text(json.dumps(result,indent=2)+'\n')
     lines=['# Strategy campaign — status and solve accounting','',
@@ -55,7 +63,9 @@ def main():
     for d in studies:
         lines.append(f"| [{d['study']}]({d['study']}/README.md) | {d['terminal_paths']}/{d['planned_paths']} | {d['qualified_paths']} | {d['unique_inverse_and_diagnostic_units']} | {d['audit_units']} |")
     lines.append(f"| [SC-045 independent timeout qualifications](SC-045-timeout-qualification/README.md) | {replay['returned']}/5 audits | {replay['passed']} | 0 | {replay['additional_units']} |")
+    lines.append(f"| [SC-046 lost-result recovery](SC-046-lost-audit-recovery/README.md) | {int(recovery['complete'])}/1 audit | {int(bool(recovery['passed']))} | 0 | {recovery['additional_units']} |")
     lines+=['',f"Data generation: {data_units} fields. Total recorded work for terminal records: {result['total_recorded_unique_work_units']} units.",
+            f"The lost SC-045 ledger contributes up to {replay['unrecorded_units_upper_bound']} additional unrecorded units. Its stored zero denotes missing accounting, not free computation.",
             'Work in running paths is omitted from this snapshot. Interrupted-call costs may be only partially recorded.',
             'SC-044 includes six shared prefix paths; each method is charged its full prefix in complete-path comparisons.',
             'Field and reciprocal units are a declared accounting convention, not identical floating-point cost. Numerical grids vary by case; host timing is uncontrolled.','',
@@ -71,6 +81,8 @@ def main():
     for f in failures:
         match=next((r for r in replay_rows if r['source']==str(Path(f['path']).parent)),None)
         extra='' if match is None else f" Independent [SC-045 qualification]({match['path']}): {match['passed']} (original flag unchanged)."
+        if recovered and recovered['source']==str(Path(f['path']).parent):
+            extra+=f" Separate [SC-046 lost-result recovery]({recovery['path']}): {recovery['passed']}."
         lines.append(f"- [{f['path']}]({f['path']}): {f['outcome']}; original endpoint audit {f['audit_passed']}.{extra}")
     if not failures:lines.append('None among returned paths.')
     (ROOT/'STRATEGY_CAMPAIGN.md').write_text('\n'.join(lines)+'\n')

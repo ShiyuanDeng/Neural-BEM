@@ -48,6 +48,16 @@ def main():
             loss=last.get('final_loss'),discrepancy_target=last.get('discrepancy_target'))
         rows.append(row)
         if 'stages' in d:
+            states=r.c.sc.read(p.parent/'accepted.json')['states']
+            config=r.c.sc.read(p.parent/'configuration.json')
+            checks.append(dict(case=d['case'],profile=d['profile'],arm=d['arm'],check='last_accepted_state',
+                passed=bool(states and states[-1]['curve']==d['curve'])))
+            checks.append(dict(case=d['case'],profile=d['profile'],arm=d['arm'],check='shared_prefix_state',
+                passed=config['initial']==prefix['curve']))
+            for label in dict.fromkeys(s['stage'] for s in states):
+                losses=[s['loss'] for s in states if s['stage']==label]
+                checks.append(dict(case=d['case'],profile=d['profile'],arm=d['arm'],stage=label,
+                    check='within_stage_descent',passed=all(b<=a for a,b in zip(losses,losses[1:]))))
             checks.append(dict(case=d['case'],profile=d['profile'],arm=d['arm'],check='work',passed=bool(
                 d['total_units']==sum(s['units'] for s in d['stages']) and all(s['units']<=380 for s in d['stages']))))
             if d['outcome']=='DISCREPANCY_REACHED':
@@ -63,7 +73,24 @@ def main():
                 candidate=index.get((case,profile,arm))
                 if candidate is None:continue
                 valid=bool(baseline['score'] and candidate['score'])
+                common=None
+                if valid:
+                    ceiling=min(baseline['suffix_units'],candidate['suffix_units'])
+                    endpoints=[]
+                    for label in ('none',arm):
+                        states=r.c.sc.read(HERE/'runs'/case/profile/label/'accepted.json')['states']
+                        eligible=[s for s in states if s['total_units']<=ceiling]
+                        if not eligible:break
+                        state=eligible[-1]
+                        endpoints.append(dict(arm=label,accepted_at_suffix_units=state['total_units'],
+                            score=r.score(case,r.c.ast.curve_from(state['curve']))))
+                    if len(endpoints)==2:
+                        a,b=[s['score'] for s in endpoints]
+                        common=dict(suffix_ceiling=ceiling,complete_path_ceiling=ceiling+baseline['prefix_units'],
+                            endpoints=endpoints,rms_ratio=max(b['rms_mm'],.01)/max(a['rms_mm'],.01),
+                            hausdorff_ratio=max(b['hausdorff_mm'],.01)/max(a['hausdorff_mm'],.01))
                 comparisons.append(dict(case=case,profile=profile,arm=arm,comparable=valid,
+                    common_work=common,
                     rms_ratio=max(candidate['score']['rms_mm'],.01)/max(baseline['score']['rms_mm'],.01) if valid else None,
                     hausdorff_ratio=max(candidate['score']['hausdorff_mm'],.01)/max(baseline['score']['hausdorff_mm'],.01) if valid else None,
                     baseline_outcome=baseline['outcome'],candidate_outcome=candidate['outcome'],candidate_audit=candidate['audit_passed']))
@@ -75,8 +102,10 @@ def main():
             gm=float(np.exp(np.mean(np.log([s['rms_ratio'] for s in selected]))))
             worst=max(max(s['rms_ratio'],s['hausdorff_ratio']) for s in selected)
             extra=sum(s['candidate_outcome'] not in successful and s['baseline_outcome'] in successful for s in selected)
+            common=[s['common_work']['rms_ratio'] for s in selected if s['common_work'] is not None]
             aggregate[arm]=dict(datasets=len(selected),distinct_shapes=len({s['case'] for s in selected}),
                 rms_gm_ratio=gm,worst_geometry_ratio=worst,additional_failures=extra,
+                common_work_rms_gm_ratio=float(np.exp(np.mean(np.log(common)))) if common else None,
                 transfer_gate_passed=len(selected)==6 and gm<1 and worst<=1.25 and not extra
                 and all(s['candidate_audit'] for s in selected))
     unique_prefix=sum(d['total_units'] for d in prefixes.values())+sum(f['total_units'] for f in failures if f['arm']=='prefix')
@@ -101,7 +130,11 @@ def main():
     for s in failures:
         lines.append(f"| {s['case']} | {s['profile']} | {s['arm']} | — | — | — | EXCEPTION | False |")
     lines+=['',f'Unique prefix work: {unique_prefix}; suffix work: {suffix}.',
+            f"Saved-evidence checks: {sum(s['passed'] for s in checks)}/{len(checks)}.",
             'Each complete path is charged its shared prefix. Two noise draws are repeated measurements of the same two shapes, not additional independent targets.','',
+            'The JSON also reports the last accepted states within a common work allowance for each paired comparison. '
+            'This post-fit analysis does not select the best truth iterate or change the original endpoint gate. '
+            'Intermediate common-work states have the original fitting acceptance checks, not a new endpoint audit.','',
             'Post-fit observation check: the two realized noise losses are '
             +', '.join(f"{s['actual_over_expected']:.4f}× expected ({s['truth_loss_over_discrepancy']:.4f}× the discrepancy threshold)"
                        for s in noise_diagnostics if s['case']==r.CASES[0])
