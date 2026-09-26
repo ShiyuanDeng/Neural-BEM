@@ -1,6 +1,6 @@
 """Part 6 (predict_plan.md): entry-state maps committed before each suffix; then score.
 
-    python predict.py run          # prefix -> maps -> commit prediction -> suffix, per shape
+    python predict.py run [shape ...] # prefix -> maps -> commit prediction -> suffix, per shape
     python predict.py score
 """
 from concurrent.futures import ProcessPoolExecutor, wait, FIRST_COMPLETED
@@ -83,7 +83,7 @@ def prepare_and_prefix(case):
                       F=Fu.tolist(), rho_white=maps['P1_white_1mm'].tolist(),
                       bottom10_F=(pct(Fu) < .10).tolist(), bottom10_rho=(pct(maps['P1_white_1mm']) < .10).tolist())
         PRED.mkdir(exist_ok=True)
-        (PRED/f'{case}.json').write_text(json.dumps(record) + '\n')
+        (PRED/f'{case}.json').write_text(json.dumps(record, default=lambda o: o.tolist()) + '\n')
         return dict(case=case, prediction=str(PRED/f'{case}.json'))
     except Exception:
         return dict(case=case, failed=traceback.format_exc())
@@ -110,10 +110,10 @@ def commit(path, case):
     return head
 
 
-def run():
+def run(shapes=SHAPES):
     log = {}
-    with ProcessPoolExecutor(3) as pool:
-        pending = {pool.submit(prepare_and_prefix, k): ('prefix', k) for k in SHAPES}
+    with ProcessPoolExecutor(len(shapes)) as pool:
+        pending = {pool.submit(prepare_and_prefix, k): ('prefix', k) for k in shapes}
         while pending:
             done, _ = wait(pending, return_when=FIRST_COMPLETED)
             for f in done:
@@ -130,7 +130,7 @@ def run():
                 else:
                     log[case]['suffix_outcome'] = row.get('outcome')
                     print('SUFFIX DONE', case, row.get('outcome'), row.get('score'), flush=True)
-    (HERE/'predict_log.json').write_text(json.dumps(log, indent=1) + '\n')
+    (HERE/f"predict_log_{'_'.join(shapes)}.json").write_text(json.dumps(log, indent=1) + '\n')
 
 
 def score():
@@ -164,4 +164,4 @@ def score():
 
 
 if __name__ == '__main__':
-    run() if sys.argv[1] == 'run' else score()
+    run(tuple(sys.argv[2:]) or SHAPES) if sys.argv[1] == 'run' else score()
