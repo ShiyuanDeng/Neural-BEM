@@ -31,3 +31,14 @@ Cleanup is a deterministic reset in the current stored parameterization.
 The candidate strategy may temporarily raise loss; all such jumps are saved.
 No truth-guided selection or unrecorded reversion is allowed. A later
 noise-aware strategy would need its own data-side acceptance of the reset.
+
+The centred construction also deserves a parameterization qualification:
+`T_z(0)=z`, not `A(z)`. It preserves the existing zero-step state instead of
+resetting it to uniform arclength. The returned unchanged kite has a sampled
+maximum/minimum parameter-speed ratio of 3.03. Thus a cutoff in its stored
+Cartesian coefficients is parameterization dependent; it is not an intrinsic
+curvature-band constraint. `regularity.py` separately evaluates curvature
+on a uniform-arclength grid and labels stored-coordinate energy explicitly.
+Its diagnostics are post-fit measurements, never policy inputs. The kite's
+sharpest point still lies where the nearby truth has about 18 mm radius,
+confirming that the 0.093 mm returned radius describes the flank artifact.

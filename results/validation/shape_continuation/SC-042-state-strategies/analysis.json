@@ -51,6 +51,19 @@
       "tightest_radius_fine_mm": 6.065139219875691,
       "units": 1159,
       "audit_passed": true
+    },
+    {
+      "case": "kite",
+      "arm": "none",
+      "outcome": "NUMERICAL_FAILURE",
+      "loss": 4.817016510234569e-10,
+      "rms_mm": 0.04761749222057212,
+      "hausdorff_mm": 0.3158436402171575,
+      "hausdorff_upper_mm": 0.33805494219278615,
+      "tightest_radius_mm": 0.09345356388349993,
+      "tightest_radius_fine_mm": 0.09325983534829832,
+      "units": 760,
+      "audit_passed": true
     }
   ],
   "comparisons": [
@@ -231,21 +244,107 @@
       "cases": 1,
       "rms_geometric_mean_ratio": 0.9998329021699913,
       "worst_ratio": 1.000053568423225,
+      "common_work_rms_geometric_mean_ratio": 0.9998329021699913,
       "development_gate_passed": false
     },
     "boundary": {
       "cases": 1,
       "rms_geometric_mean_ratio": 0.9998728878857323,
       "worst_ratio": 1.0012513947933828,
+      "common_work_rms_geometric_mean_ratio": 0.9998728878857323,
       "development_gate_passed": false
     },
     "cap": {
       "cases": 1,
       "rms_geometric_mean_ratio": 1.000765669478442,
       "worst_ratio": 1.005594489050667,
+      "common_work_rms_geometric_mean_ratio": 1.000765669478442,
       "development_gate_passed": false
     }
   },
+  "failures": [],
+  "pending": [
+    {
+      "case": "kite",
+      "arm": "once"
+    },
+    {
+      "case": "kite",
+      "arm": "boundary"
+    },
+    {
+      "case": "kite",
+      "arm": "cap"
+    },
+    {
+      "case": "wrong_circle",
+      "arm": "none"
+    },
+    {
+      "case": "wrong_circle",
+      "arm": "once"
+    },
+    {
+      "case": "wrong_circle",
+      "arm": "boundary"
+    },
+    {
+      "case": "wrong_circle",
+      "arm": "cap"
+    },
+    {
+      "case": "circle_to_c",
+      "arm": "none"
+    },
+    {
+      "case": "circle_to_c",
+      "arm": "once"
+    },
+    {
+      "case": "circle_to_c",
+      "arm": "boundary"
+    },
+    {
+      "case": "circle_to_c",
+      "arm": "cap"
+    },
+    {
+      "case": "peanut",
+      "arm": "none"
+    },
+    {
+      "case": "peanut",
+      "arm": "once"
+    },
+    {
+      "case": "peanut",
+      "arm": "boundary"
+    },
+    {
+      "case": "peanut",
+      "arm": "cap"
+    },
+    {
+      "case": "hook",
+      "arm": "none"
+    },
+    {
+      "case": "hook",
+      "arm": "once"
+    },
+    {
+      "case": "hook",
+      "arm": "boundary"
+    },
+    {
+      "case": "hook",
+      "arm": "cap"
+    }
+  ],
+  "planned": 24,
+  "terminal": 5,
+  "inverse_units": 5396,
+  "audit_units": 570,
   "checks": [
     {
       "case": "circle_to_star",
@@ -376,6 +475,32 @@
     {
       "case": "circle_to_star",
       "arm": "once",
+      "check": "last_accepted_endpoint",
+      "passed": true
+    },
+    {
+      "case": "kite",
+      "arm": "none",
+      "check": "stage_and_path_budget",
+      "passed": true
+    },
+    {
+      "case": "kite",
+      "arm": "none",
+      "stage": "stage_1_M22",
+      "check": "within_stage_decrease",
+      "passed": true
+    },
+    {
+      "case": "kite",
+      "arm": "none",
+      "stage": "stage_2_M28",
+      "check": "within_stage_decrease",
+      "passed": true
+    },
+    {
+      "case": "kite",
+      "arm": "none",
       "check": "last_accepted_endpoint",
       "passed": true
     },
