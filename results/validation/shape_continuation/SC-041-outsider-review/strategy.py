@@ -42,6 +42,10 @@ STAGE_SECONDS = 2400     # control stages had 900 s; units (1500) are the bindin
 STAGE_UNITS = 1500
 
 
+def dump(obj, **kw):
+    return json.dumps(obj, default=lambda o: o.tolist() if hasattr(o, 'tolist') else str(o), **kw)
+
+
 def main(mode, K):
     label = f'{mode}_K{K}'
     folder = HERE/'strategies'/label
@@ -74,7 +78,7 @@ def main(mode, K):
         def checkpoint(i, value, stage=stage, ledger=ledger):
             states.append(dict(stage=stage.label, M=stage.update_modes, iteration=i, loss=value.loss,
                                curve=ast.curve_record(value.curve), work=ledger.snapshot()))
-            (folder/'accepted.json').write_text(json.dumps(dict(states=states)) + '\n')
+            (folder/'accepted.json').write_text(dump(dict(states=states)) + '\n')
 
         started = time.time()
         try:
@@ -82,6 +86,7 @@ def main(mode, K):
                 result = fit_stage(curve, stage, ac.contrast(), update, config, ledger, on_accept=checkpoint)
         except Exception:
             record['results'].append(dict(stage=stage.label, traceback=traceback.format_exc()))
+            print(label, stage.label, 'FAILED', traceback.format_exc(), flush=True)
             break
         curve = result.curve
         row = dict(stage=stage.label, M=stage.update_modes, outcome=result.outcome, stop=result.stop_reason,
@@ -91,10 +96,10 @@ def main(mode, K):
         record['results'].append(row)
         print(label, stage.label, row['outcome'], row['stop'], f"loss {row['final_loss']:.4g}",
               {k: round(v, 5) for k, v in row['score'].items()}, row['units'], flush=True)
-        (folder/'result.json').write_text(json.dumps(record, indent=1) + '\n')
+        (folder/'result.json').write_text(dump(record, indent=1) + '\n')
         if result.outcome not in (NORMAL_RETURN, STAGE_QUOTA):
             break
-    (folder/'result.json').write_text(json.dumps(record, indent=1) + '\n')
+    (folder/'result.json').write_text(dump(record, indent=1) + '\n')
 
 
 if __name__ == '__main__':

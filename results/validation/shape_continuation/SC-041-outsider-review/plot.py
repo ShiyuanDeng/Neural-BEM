@@ -49,7 +49,7 @@ for n, ((K, M), i) in enumerate(sorted(labels.items(), key=lambda kv: kv[1])):
     ax.axvline(i, color='0.85', lw=0.8)
     ax.text(i+0.4, 60 if n % 2 == 0 else 25, f"K={K}\nM={M}", fontsize=6, va='top')
 ax.set_xlabel('accepted state (SC-040 kite trajectory, then SC-041 M=19, M=22)', fontsize=8)
-ax.set_ylabel('mm'); ax.set_title('The feature appears at the K=20 → 192 release'); ax.legend(fontsize=7, loc='lower left')
+ax.set_ylabel('mm'); ax.set_title('The feature sharpens as M rises on K=192'); ax.legend(fontsize=7, loc='lower left')
 fig.tight_layout()
 fig.savefig(HERE/'kite_feature.svg')
 fig.savefig(HERE/'kite_feature.png', dpi=110)
