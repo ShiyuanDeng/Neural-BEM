@@ -8,7 +8,8 @@ only `curve_modes`. Truth is used only for post-hoc scoring.
 
     python strategy.py release K     # SC-038 M 11/15/19 from the SC-035 K=20 endpoint
     python strategy.py refit K       # SC-041 kite M=22 endpoint, low-passed to K, one M=22 stage at K
-    python strategy.py refit K case M  # the same for another SC-041 arm (e.g. circle_to_star 25)
+    python strategy.py refit K case M  # the same for another SC-041 arm (e.g. circle_to_star 25);
+                                     # optional 5th argument: start from SC-041's M=<that> endpoint
     python strategy.py continue K    # release_K's last state, remaining M=19 stage (as SC-038 remaining_m19)
 """
 import importlib.util
@@ -48,8 +49,9 @@ def dump(obj, **kw):
     return json.dumps(obj, default=lambda o: o.tolist() if hasattr(o, 'tolist') else str(o), **kw)
 
 
-def main(mode, K, case='kite', M=22):
-    label = f'{mode}_K{K}' if case == 'kite' else f'{mode}_{case}_M{M}_K{K}'
+def main(mode, K, case='kite', M=22, start_M=None):
+    start_M = M if start_M is None else start_M
+    label = f'{mode}_K{K}' if case == 'kite' else f'{mode}_{case}_M{M}_K{K}' + ('' if start_M == M else f'_from_M{start_M}')
     folder = HERE/'strategies'/label
     folder.mkdir(parents=True, exist_ok=False)
     if mode == 'release':
@@ -59,8 +61,8 @@ def main(mode, K, case='kite', M=22):
     elif mode == 'refit':
         stage, config, _ = sc041.setup(case, M)
         stages = [replace(stage, label=f'refit_M{M}')]
-        curve = ast.curve_from(json.loads((RESULTS/f'SC-041-atlas-decisions/runs/{case}/M{M}/result.json').read_text())['curve'])
-        source = f'SC-041 {case} M={M} endpoint'
+        curve = ast.curve_from(json.loads((RESULTS/f'SC-041-atlas-decisions/runs/{case}/M{start_M}/result.json').read_text())['curve'])
+        source = f'SC-041 {case} M={start_M} endpoint'
     elif mode == 'continue':
         stages, config, _ = sc038.schedules('kite', 'release_m')
         stages = [replace(stages[-1], label='remaining_m19')]
@@ -111,4 +113,4 @@ def main(mode, K, case='kite', M=22):
 
 
 if __name__ == '__main__':
-    main(sys.argv[1], int(sys.argv[2]), *[f(a) for f, a in zip((str, int), sys.argv[3:5])])
+    main(sys.argv[1], int(sys.argv[2]), *[f(a) for f, a in zip((str, int, int), sys.argv[3:6])])
