@@ -44,3 +44,23 @@ Across-state ρ mixes stages: the loss and many signals fall along a whole
 trajectory, so a high across-state ρ can reflect "later is better" rather
 than a signal that can steer. The pairwise agreement is the steering-relevant
 number; it is reported beside ρ, not merged into it.
+
+## Amendment, before any computation (same day)
+
+The strategy campaign (SC-042..SC-046) landed on the branch while this plan
+was being written. Its closeout asks for "a prospective, truth-free
+intervention trigger", evaluated away from the development cases. So:
+
+- **Screen** (development): the 79 states above, all six signals S0–S6.
+  Each signal's verdict there only decides whether it goes forward.
+- **Test** (untouched): every accepted state in SC-044 (`runs/*/*/*/accepted.json`,
+  two fresh shapes × clean + two noise draws, prefix and three suffix
+  treatments; 392 states), scored against `inputs/<case>/truth.json`.
+  Only the geometry signals S1–S4 and S6 are evaluated there (no field
+  solves); S0 and S5 need atlas arrays and are screen-only.
+- A signal passes the test if, on **both** SC-044 shapes pooled over data
+  profiles, ρ ≥ 0.6 against Hausdorff and pairwise ΔHausdorff agreement ≥ 70%.
+  Results are reported per shape × data profile as well; no threshold or
+  cutoff is changed after seeing SC-044.
+- SC-044 pairs are consecutive accepted states within one stage of one path.
+  The cutoff Kc = max(48, 2M) is unchanged; M is the state's recorded M.
