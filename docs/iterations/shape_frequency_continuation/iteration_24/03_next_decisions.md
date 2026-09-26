@@ -64,3 +64,13 @@ The closest established filter/resampling and curvature-constrained methods
 remain mandatory comparators for a method-level novelty claim; see the
 [claims review](02_claims_review.md). No current result licenses claiming
 filtering, frequency continuation, or constrained least squares as new.
+
+## Decision after completion
+
+[Iteration 26](../iteration_26/01_results.md) closes the campaign. The atlas
+fails against the two cheap controls under the frozen criterion, with every
+policy endpoint qualified. The negative-result branch of this framework
+therefore applies. Preserve the simple state-treatment baseline, isolate
+numerical adaptation from regularization, and require any new diagnostic
+to predict useful accepted progress at charged cost. No additional threshold
+sweep or production change is launched from these outcomes.

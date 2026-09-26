@@ -1,6 +1,7 @@
 """No-solve audit of prospective decisions and comparison with both simple rules."""
 import importlib.util
 from collections import Counter
+from itertools import combinations
 from pathlib import Path
 import numpy as np
 
@@ -54,6 +55,8 @@ def main():
                 release=choice['release'],incremental_predicted_fraction=choice.get('incremental_fraction'),
                 low_constraint_active=choice.get('low_prediction',{}).get('constraint_active'),
                 high_constraint_active=choice.get('high_prediction',{}).get('constraint_active'),
+                low_norm_over_radius=(choice['low_prediction']['physical_norm']/choice['low_prediction']['radius'])
+                    if 'low_prediction' in choice else None,
                 high_norm_over_radius=(choice['high_prediction']['physical_norm']/choice['high_prediction']['radius'])
                     if 'high_prediction' in choice else None,
                 prior_stagnated=choice.get('prior_stagnated'),
@@ -111,6 +114,12 @@ def main():
         if all((case,policy) in initial_curves for policy in r.POLICIES):
             checks.append(dict(case=case,check='identical_policy_starts',passed=all(
                 initial_curves[case,policy]==initial_curves[case,'fixed'] for policy in r.POLICIES)))
+            for first,second in combinations(r.POLICIES,2):
+                if index[case,first]['bands'][0]!=index[case,second]['bands'][0]:continue
+                a,b=[[s for s in trajectories[case,policy] if s['block']==1] for policy in (first,second)]
+                checks.append(dict(case=case,policies=[first,second],check='matched_initial_fit_prefix',
+                    compared_states=min(len(a),len(b)),passed=bool(a and b and all(
+                        x['curve']==y['curve'] and x['loss']==y['loss'] for x,y in zip(a,b)))))
     terminal=set(index)|{(s['case'],s['policy']) for s in failures}
     pending=[dict(case=case,policy=policy) for case in r.c.CASES for policy in r.POLICIES
              if (case,policy) not in terminal]

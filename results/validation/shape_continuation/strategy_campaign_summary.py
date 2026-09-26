@@ -72,7 +72,8 @@ def main():
     lines.append(f"| [SC-046 lost-result recovery](SC-046-lost-audit-recovery/README.md) | {int(recovery['complete'])}/1 audit | {int(bool(recovery['passed']))} | 0 | {recovery['additional_units']} |")
     lines+=['',f"Data generation: {data_units} fields. Total recorded work for terminal records: {result['total_recorded_unique_work_units']} units.",
             f"The lost SC-045 ledger contributes up to {replay['unrecorded_units_upper_bound']} additional unrecorded units. Its stored zero denotes missing accounting, not free computation.",
-            'Work in running paths is omitted from this snapshot. Interrupted-call costs may be only partially recorded.',
+            ('All declared comparison and follow-up paths have terminal records. Completion does not imply that a strategy gate passed.'
+             if result['complete'] else 'Work in running paths is omitted from this snapshot. Interrupted-call costs may be only partially recorded.'),
             'SC-044 includes six shared prefix paths; each method is charged its full prefix in complete-path comparisons.',
             'Field and reciprocal units are a declared accounting convention, not identical floating-point cost. Numerical grids vary by case; host timing is uncontrolled.','',
             f"Including separate unchanged-endpoint qualifications, {sum(d['qualified_endpoints_including_separate_followups'] for d in studies)} "
@@ -80,6 +81,7 @@ def main():
             'This count does not alter original flags or any frozen strategy gate.','',
             '[Reviewer constraints on novelty](../../../docs/iterations/shape_frequency_continuation/iteration_24/02_claims_review.md).',
             '[Conditions for a useful next iteration](../../../docs/iterations/shape_frequency_continuation/iteration_24/03_next_decisions.md).',
+            '[Prospective policy results and research implications](../../../docs/iterations/shape_frequency_continuation/iteration_26/01_results.md).',
             '[Environment](strategy_campaign_environment.json). [Machine-readable summary](strategy_campaign_summary.json).','',
             'Post-fit checks: [doubled metric sampling](strategy_metric_refinement.json), '
             '[fresh-case local errors and intrinsic curvature](strategy_feature_errors.json), '

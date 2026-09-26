@@ -1,25 +1,26 @@
 # Strategy campaign — status and solve accounting
 
-**RUNNING — incomplete comparisons are provisional.**
+**COMPLETE**
 
 | Study | Terminal paths | Original endpoint audit passes | Fitting + diagnostics, unique | Endpoint audits |
 |---|---:|---:|---:|---:|
 | [SC-042-state-strategies](SC-042-state-strategies/README.md) | 24/24 | 21 | 19874 | 2663 |
-| [SC-043-prospective-band](SC-043-prospective-band/README.md) | 16/18 | 16 | 9158 | 1824 |
+| [SC-043-prospective-band](SC-043-prospective-band/README.md) | 18/18 | 18 | 10792 | 2052 |
 | [SC-044-noisy-fresh-cases](SC-044-noisy-fresh-cases/README.md) | 18/18 | 16 | 10924 | 2169 |
 | [SC-045 independent timeout qualifications](SC-045-timeout-qualification/README.md) | 5/5 audits | 4 | 0 | 456 |
 | [SC-046 lost-result recovery](SC-046-lost-audit-recovery/README.md) | 1/1 audit | 1 | 0 | 114 |
 
-Data generation: 76 fields. Total recorded work for terminal records: 47258 units.
+Data generation: 76 fields. Total recorded work for terminal records: 49120 units.
 The lost SC-045 ledger contributes up to 130 additional unrecorded units. Its stored zero denotes missing accounting, not free computation.
-Work in running paths is omitted from this snapshot. Interrupted-call costs may be only partially recorded.
+All declared comparison and follow-up paths have terminal records. Completion does not imply that a strategy gate passed.
 SC-044 includes six shared prefix paths; each method is charged its full prefix in complete-path comparisons.
 Field and reciprocal units are a declared accounting convention, not identical floating-point cost. Numerical grids vary by case; host timing is uncontrolled.
 
-Including separate unchanged-endpoint qualifications, 58 of 58 returned scored endpoints have passing numerical evidence. This count does not alter original flags or any frozen strategy gate.
+Including separate unchanged-endpoint qualifications, 60 of 60 returned scored endpoints have passing numerical evidence. This count does not alter original flags or any frozen strategy gate.
 
 [Reviewer constraints on novelty](../../../docs/iterations/shape_frequency_continuation/iteration_24/02_claims_review.md).
 [Conditions for a useful next iteration](../../../docs/iterations/shape_frequency_continuation/iteration_24/03_next_decisions.md).
+[Prospective policy results and research implications](../../../docs/iterations/shape_frequency_continuation/iteration_26/01_results.md).
 [Environment](strategy_campaign_environment.json). [Machine-readable summary](strategy_campaign_summary.json).
 
 Post-fit checks: [doubled metric sampling](strategy_metric_refinement.json), [fresh-case local errors and intrinsic curvature](strategy_feature_errors.json), [development-case regularity](SC-042-state-strategies/regularity.json). These descriptive diagnostics do not replace the frozen gates.

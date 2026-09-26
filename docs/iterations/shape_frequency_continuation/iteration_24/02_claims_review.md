@@ -79,3 +79,19 @@ inference is not justified by the statistic. The numerical values are
 unchanged, and the current regularity reports localize all five tips
 separately. Local feature preservation must be tested at matched features,
 not inferred from a global curvature extremum at an unspecified location.
+
+## Final outcome addendum
+
+The campaign is complete. SC-042 supports one-off repair on development
+starts; recurrent restrictions add little there. SC-044 shows selective
+stabilization on one noisy C trajectory, with residual local artifacts.
+SC-043 completes all 18 paths and audits but fails its controller gate:
+RMS geometric-mean ratios 1.11301 versus fixed and 1.00512 versus stagnation.
+Its kite error is 88%/68% worse, and all 36 low/high radius constraints are
+inactive. The qualified diagnostic has not earned decision superiority.
+
+Retain the mechanism findings and simple regularization baselines. The
+next diagnostic hypothesis must concern accepted finite progress and total
+cost, with untouched full-pipeline/noise evaluation. The current results do
+not establish adaptive frequency selection or an observability limit.
+[Complete policy results and integrated reviewer decision](../iteration_26/01_results.md).

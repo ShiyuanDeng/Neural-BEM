@@ -93,7 +93,8 @@ material, calibration and experimental mismatch are untested.
 
 The result favors retaining a simple stabilization baseline, noise-aware
 stopping and explicit local-feature evaluation. It does not establish a new
-filtering principle or a general robust continuation method. The still-running
-SC-043 study tests the separate prospective diagnostic claim; see the
+filtering principle or a general robust continuation method. The completed
+[SC-043 study](../iteration_26/01_results.md) rejects its frozen prospective
+diagnostic rule as superior to both cheap controls; see the
 [reviewer constraints](../iteration_24/02_claims_review.md) and
 [conditions for further iteration](../iteration_24/03_next_decisions.md).

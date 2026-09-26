@@ -13,18 +13,20 @@ provisional**, with two profile differences and plotting provenance unresolved.
 ## Current handoff
 
 **2026-09-26 strategy campaign:** the user authorized successive controlled
-experiments after review of Claude's `b946d57`. SC-042 and SC-044 are complete;
-SC-043 is running. No production default, branch or worktree has changed.
+experiments after review of Claude's `b946d57`. **SC-042/043/044 are complete:
+60 comparison paths plus six shared fresh-case prefixes.** All returned
+endpoints have passing original or separate numerical qualifications. No
+production default, branch or worktree has changed.
 The [campaign accounting](../../../results/validation/shape_continuation/STRATEGY_CAMPAIGN.md)
 retains all original stops, timeouts and separately charged qualifications.
 
 | Item | State |
 |---|---|
-| Active cycle | SC-043: prospective band decisions versus fixed and stagnation controls, with diagnostic costs charged. [Frozen contract and progress](../../../results/validation/shape_continuation/SC-043-prospective-band/README.md). |
+| Latest cycle | [Iteration 26 / SC-043](iteration_26/01_results.md): COMPLETE, 18/18 policy paths and audits. Atlas RMS geometric-mean ratios 1.11301 versus fixed and 1.00512 versus stagnation; both superiority gates fail. Kite RMS is 88%/68% worse despite qualified diagnostics. |
 | State treatment | [Iteration 24 / SC-042](iteration_24/01_results.md): 24/24 development suffixes. One-off cleanup repairs the kite artifact and passes its development gate; recurrent cleanup and a cap give essentially tied geometry. Common-work aggregate improvement is much smaller than terminal improvement. |
 | Fresh shapes and noise | [Iteration 25 / SC-044](iteration_25/01_results.md): six common prefixes and 18 suffix paths on two fixed new shapes. Cleanup/cap avoid one noisy-C numerical stop and suppress some local artifacts; most RMS comparisons tie. Original transfer gates retain two audit timeouts. |
 | Endpoint follow-ups | All five originally timed-out endpoints have separately passing unchanged audits in [SC-045](../../../results/validation/shape_continuation/SC-045-timeout-qualification/README.md) and [SC-046](../../../results/validation/shape_continuation/SC-046-lost-audit-recovery/README.md). The first SC-045 result was lost to an output error; its failed record and uncertain cost remain. |
-| Claims and next decision | [Reviewer constraints](iteration_24/02_claims_review.md) and [conditions for another useful iteration](iteration_24/03_next_decisions.md). Filtering, normal-band restriction, curvature control and constrained least squares have close prior art. Prospective decision value remains under test. |
+| Claims and next decision | [Reviewer constraints](iteration_24/02_claims_review.md) and [conditions for another useful iteration](iteration_24/03_next_decisions.md). Filtering, normal-band restriction, curvature control and constrained least squares have close prior art. The tested prospective rule fails; a replacement must predict accepted finite progress at charged cost. No threshold retuning or production promotion follows from this result. |
 | Working implementation | Existing V2 hybrid and fixed M=3/5/7/9 prefix remain the reference; SPD-L is the comparison reference where star-shaped geometry applies. SC-035's centred projected update is reused unchanged in the isolated studies. SC-036's alternate finite path is not adopted. Müller/Kress and production defaults are unchanged. |
 | Figure 1 | Still provisional from iteration 03; strategy comparisons do not resolve the profile and plotting-provenance differences. |
 | Checkout | Existing `feature/shape-frequency-continuation`; no new branch or worktree. |
@@ -60,7 +62,7 @@ handoff only.
 
 - **Current campaign:** [SC-042 state treatments](iteration_24/01_results.md),
   [SC-044 fresh shapes and noise](iteration_25/01_results.md),
-  [SC-043 prospective policies](../../../results/validation/shape_continuation/SC-043-prospective-band/README.md),
+  [SC-043 prospective policies](iteration_26/01_results.md),
   and [combined accounting](../../../results/validation/shape_continuation/STRATEGY_CAMPAIGN.md).
 
 
@@ -170,7 +172,8 @@ the next cycle. Code and run artifacts retain their current locations.
 | [19](iteration_19/01_results.md) | SC-037: the wider ladder K 8/16/32/64/192 restores star (0.53 mm) but C worsens 27.65% against SC-035, failing the frozen 25% gate. The timing of the release is a case-dependent prior. The autonomous run stops; the next step is the user's decision. |
 | [20](iteration_20/01_results.md) | SC-038: all-frequency M=11/15/19 release reduces C RMS 0.4895 → 0.0241 and kite 0.5518 → 0.1096 mm against matched M=9 controls. Kite needs a denser-grid replay, is time-limited, and retains a sharp feature (0.0908 mm radius versus truth 2.138). All audits pass; no default promoted. |
 | [21](iteration_21/01_results.md) | SC-039: raw boundary data (traces, geometry, full predictions; 19 frequencies, 512/1024 nodes) at all 867 accepted states of 34 trajectories plus 6 truths. Stored traces reproduce `shape_jacobian` to 1e-15 in any basis; 1,114 saved losses rebuilt bitwise. Data only. |
-| [22](iteration_22/01_results.md) | SC-040: current pipeline on all six scenes with atlas videos. Star ends at 0.142 mm RMS with blunt tips; all four new endpoint audits pass. The historical QR display is subsequently qualified as heuristic in SC-041. |
+| [22](iteration_22/01_results.md) | SC-040: current pipeline on all six scenes with atlas videos. Star ends at 0.142 mm RMS; all four new endpoint audits pass. The historical QR display is subsequently qualified as heuristic in SC-041. |
 | [23](iteration_23/01_results.md) | SC-041: complete-update forecasts nominate useful star M=22/25 releases; M=25 reaches 0.0476 mm RMS. Kite M=22 reaches 0.0730 mm but sharpens its point and stops at numerical qualification. Nominal RMS radius does not ensure finite validity; five endpoint audits pass, no controller promoted. |
 | [24](iteration_24/01_results.md) | SC-042: 24 matched state-treatment suffixes. Initial cleanup repairs the kite artifact; recurrent cleanup/cap give essentially tied geometry. One-off development gate passes, with common-work RMS ratio 0.9846; three original timeouts retain separate later qualifications. |
 | [25](iteration_25/01_results.md) | SC-044: six prefixes and 18 fresh-shape/noise suffixes. Cleanup/cap avoid one noisy-C numerical stop, with common-work RMS ratios 0.909/0.908; most datasets tie. Local curvature artifacts remain. Original transfer gates retain two separately qualified audit timeouts. |
+| [26](iteration_26/01_results.md) | SC-043: all 18 prospective policy paths and audits complete. Atlas RMS GM ratios 1.11301 versus fixed and 1.00512 versus stagnation, with 1,368 diagnostic units; both superiority gates fail. Kite stays at M22 and is 88%/68% worse in RMS. All radius constraints are inactive. The full campaign closes at 49,120 recorded units plus up to 130 unrecorded from the retained lost audit. |
