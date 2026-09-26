@@ -1,6 +1,6 @@
 # SC-044 — fresh shapes and measurement noise
 
-9/18 terminal suffix paths; 0 prefix/suffix exceptions; 9 pending.
+11/18 terminal suffix paths; 0 prefix/suffix exceptions; 7 pending.
 
 | Shape | Data | State strategy | RMS mm | Hausdorff mm | Complete path work | Outcome | Audit |
 |---|---|---|---:|---:|---:|---|---|
@@ -13,6 +13,10 @@
 | asymmetric_lobes | noise_seed_1 | boundary | 0.11338 | 0.33304 | 384 | DISCREPANCY_REACHED | True |
 | asymmetric_lobes | noise_seed_1 | cap | 0.11338 | 0.33306 | 384 | DISCREPANCY_REACHED | True |
 | asymmetric_lobes | noise_seed_1 | none | 0.11338 | 0.33304 | 384 | DISCREPANCY_REACHED | True |
+| deep_c | clean | boundary | 0.07327 | 0.38461 | 1343 | COMPLETED_SCHEDULE | True |
+| deep_c | clean | none | 0.073616 | 0.48202 | 1343 | COMPLETED_SCHEDULE | True |
 
-Unique prefix work: 1766; suffix work: 3876.
+Unique prefix work: 1766; suffix work: 5624.
 Each complete path is charged its shared prefix. Two noise draws are repeated measurements of the same two shapes, not additional independent targets.
+
+Post-fit observation check: the two realized noise losses are 1.0584× expected (0.8747× the discrepancy threshold), 1.0388× expected (0.8585× the discrepancy threshold). These ratios match across shapes because standardized draws are shared. Both truths lie inside the declared discrepancy; these truth residuals never choose the fitting stop.

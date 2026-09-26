@@ -42,3 +42,11 @@ on a uniform-arclength grid and labels stored-coordinate energy explicitly.
 Its diagnostics are post-fit measurements, never policy inputs. The kite's
 sharpest point still lies where the nearby truth has about 18 mm radius,
 confirming that the 0.093 mm returned radius describes the flank artifact.
+
+The full returned kite comparison makes the distinction quantitative. The
+fraction of uniform-arclength curvature energy above order 64 is 95.0% for
+none, 32.2% for once, 29.9% for boundary and 30.1% for the K64 cap. The truth
+has 0.250% there. Thus even the permanently capped curve retains substantial
+intrinsic high-band curvature. This is an evaluation diagnostic; it is not
+a new rejection threshold applied to the frozen paths. The boundary and cap
+original endpoint audits timed out, with separate SC-045 qualification pending.

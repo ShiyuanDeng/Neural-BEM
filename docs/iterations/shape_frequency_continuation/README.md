@@ -14,10 +14,13 @@ provisional**, with two profile differences and plotting provenance unresolved.
 
 **Active extension, 2026-09-26:** following review of Claude's `b946d57`, the
 user authorized execution and successive iterations (“go then. dont stop
-until you hit every wall”). **SC-042 RUNNING**: matched none/once/boundary/cap
+until you hit every wall”). **SC-042 COMPLETE, 24/24**: matched none/once/boundary/cap
 state strategies, frozen at `921325e`; [contract](iteration_23/03_plan.md) and
 [live bundle](../../../results/validation/shape_continuation/SC-042-state-strategies/README.md).
-SC-043 prospective band decisions is frozen and queued behind SC-042;
+One-off cleanup passes its development gate; the three cleanup strategies
+give essentially tied geometry. The unchanged kite hits a numerical gate;
+three original endpoint audits time out and remain flagged.
+SC-043 prospective band decisions is frozen and queued behind SC-045;
 SC-044's two fixed fresh targets passed data qualification and their clean
 and noisy full-pipeline fits are running. The [claims review](iteration_24/02_claims_review.md)
 records the close prior art and the evidence each claim still needs.
@@ -25,7 +28,7 @@ Five endpoint audits timed out during severe host memory pressure. Their
 original failures are retained; [SC-045](../../../results/validation/shape_continuation/SC-045-timeout-qualification/README.md)
 freezes separate, serial qualifications of the identical returned states
 with unchanged tolerances and ceilings, before SC-043 starts.
-The SC-041 closeout below remains the last completed comparison. No branch
+The SC-041 closeout below is the preceding comparison. No branch
 or worktree was created, and no production defaults have changed.
 
 **2026-09-26: SC-041 COMPLETE**, directly authorized by the user's `go` after

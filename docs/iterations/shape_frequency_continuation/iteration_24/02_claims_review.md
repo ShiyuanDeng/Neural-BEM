@@ -32,6 +32,20 @@ Gauss–Newton reconstruction. It addresses a different formulation; it is
 evidence against a broad claim that curvature regularization itself is new,
 not an interchangeable experimental comparator.
 
+[Askham–Borges–Hoskins–Rachh (2023)](https://arxiv.org/abs/2308.00559)
+already studies cavity failures and random walks in frequency for sound-soft
+obstacles. Its authors report partial robustness gains and persistent hard
+cases. Thus nonmonotone continuation and cavity sensitivity are also prior
+art; a future frequency policy needs a closer comparison than a monotone
+schedule alone. The physics differs from this penetrable-object campaign.
+
+A focused update search on 2026-09-26 also checked the primary record of
+[Tsang et al. (December 2025)](https://arxiv.org/abs/2512.10123), which combines
+a differentiable forward model with learned inverse-medium reconstruction
+and increasing-frequency refinement. It is broader context if the project
+returns to neural geometry, rather than a matched comparator for the present
+classical boundary policy. This search is not an exhaustive priority review.
+
 ## What the present work can honestly claim
 
 | Proposed claim | Current defensible scope | Evidence still required |

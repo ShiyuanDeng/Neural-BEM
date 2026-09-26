@@ -170,6 +170,78 @@
       "audit_failure_kind": null,
       "loss": 4.999544197985129e-05,
       "discrepancy_target": 6.0494328131037946e-05
+    },
+    {
+      "case": "deep_c",
+      "profile": "clean",
+      "arm": "boundary",
+      "outcome": "COMPLETED_SCHEDULE",
+      "score": {
+        "rms_mm": 0.07326972970959898,
+        "hausdorff_mm": 0.38460939076074296,
+        "hausdorff_upper_mm": 0.4179882235937779,
+        "tightest_radius_mm": 2.268428262436899
+      },
+      "suffix_units": 874,
+      "prefix_units": 469,
+      "complete_path_units": 1343,
+      "audit_passed": true,
+      "audit_failure_kind": null,
+      "loss": 3.839752655490767e-08,
+      "discrepancy_target": 1e-14
+    },
+    {
+      "case": "deep_c",
+      "profile": "clean",
+      "arm": "none",
+      "outcome": "COMPLETED_SCHEDULE",
+      "score": {
+        "rms_mm": 0.0736160187692879,
+        "hausdorff_mm": 0.48202442500253045,
+        "hausdorff_upper_mm": 0.5155380213813958,
+        "tightest_radius_mm": 0.8350552087561066
+      },
+      "suffix_units": 874,
+      "prefix_units": 469,
+      "complete_path_units": 1343,
+      "audit_passed": true,
+      "audit_failure_kind": null,
+      "loss": 3.5903296546261006e-08,
+      "discrepancy_target": 1e-14
+    }
+  ],
+  "noise_diagnostics": [
+    {
+      "case": "asymmetric_lobes",
+      "profile": "noise_seed_0",
+      "expected_loss": 4.9970878079596776e-05,
+      "truth_noise_loss": 5.2888894562839866e-05,
+      "actual_over_expected": 1.0583943407717409,
+      "truth_loss_over_discrepancy": 0.8747060667535047
+    },
+    {
+      "case": "asymmetric_lobes",
+      "profile": "noise_seed_1",
+      "expected_loss": 4.999531250499003e-05,
+      "truth_noise_loss": 5.1936382232239396e-05,
+      "actual_over_expected": 1.0388250343880865,
+      "truth_loss_over_discrepancy": 0.8585330862711457
+    },
+    {
+      "case": "deep_c",
+      "profile": "noise_seed_0",
+      "expected_loss": 4.9987775616789295e-05,
+      "truth_noise_loss": 5.290677882057735e-05,
+      "actual_over_expected": 1.0583943407717398,
+      "truth_loss_over_discrepancy": 0.8747060667535037
+    },
+    {
+      "case": "deep_c",
+      "profile": "noise_seed_1",
+      "expected_loss": 4.9993351028234035e-05,
+      "truth_noise_loss": 5.19343446010809e-05,
+      "actual_over_expected": 1.0388250343880865,
+      "truth_loss_over_discrepancy": 0.8585330862711458
     }
   ],
   "prefixes": [
@@ -1182,13 +1254,24 @@
       "baseline_outcome": "DISCREPANCY_REACHED",
       "candidate_outcome": "DISCREPANCY_REACHED",
       "candidate_audit": true
+    },
+    {
+      "case": "deep_c",
+      "profile": "clean",
+      "arm": "boundary",
+      "comparable": true,
+      "rms_ratio": 0.995296009408303,
+      "hausdorff_ratio": 0.7979043608811398,
+      "baseline_outcome": "COMPLETED_SCHEDULE",
+      "candidate_outcome": "COMPLETED_SCHEDULE",
+      "candidate_audit": true
     }
   ],
   "aggregate": {
     "boundary": {
-      "datasets": 3,
-      "distinct_shapes": 1,
-      "rms_gm_ratio": 1.0000013977808668,
+      "datasets": 4,
+      "distinct_shapes": 2,
+      "rms_gm_ratio": 0.998822969286051,
       "worst_geometry_ratio": 1.0000042006169951,
       "additional_failures": 0,
       "transfer_gate_passed": false
@@ -1207,16 +1290,6 @@
     {
       "case": "deep_c",
       "profile": "clean",
-      "arm": "none"
-    },
-    {
-      "case": "deep_c",
-      "profile": "clean",
-      "arm": "boundary"
-    },
-    {
-      "case": "deep_c",
-      "profile": "clean",
       "arm": "cap"
     },
     {
@@ -1250,10 +1323,10 @@
       "arm": "cap"
     }
   ],
-  "terminal": 9,
+  "terminal": 11,
   "planned": 18,
   "unique_prefix_units": 1766,
-  "suffix_units": 3876,
+  "suffix_units": 5624,
   "checks": [
     {
       "case": "asymmetric_lobes",
@@ -1358,6 +1431,20 @@
       "profile": "noise_seed_1",
       "arm": "none",
       "check": "discrepancy",
+      "passed": true
+    },
+    {
+      "case": "deep_c",
+      "profile": "clean",
+      "arm": "boundary",
+      "check": "work",
+      "passed": true
+    },
+    {
+      "case": "deep_c",
+      "profile": "clean",
+      "arm": "none",
+      "check": "work",
       "passed": true
     }
   ],

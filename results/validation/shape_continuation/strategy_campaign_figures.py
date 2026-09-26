@@ -71,6 +71,9 @@ def state_strategies():
                         color=COLORS[arm],zorder=5)
         ax.set(title=f'{case.replace("_"," ")} ({completed}/4)',xlabel='x / mm',ylabel='y / mm',aspect='equal')
         pax.set(title=case.replace('_',' '),xlabel='Fitting work units',ylabel='Boundary RMS / mm',yscale='log')
+        if case=='wrong_circle':
+            pax.set_ylim(1e-4,1e-3)
+            pax.text(.5,.92,'Below 0.01 mm comparison floor',transform=pax.transAxes,ha='center',fontsize=9)
         pax.grid(alpha=.2)
     finish(fig,axes,folder,'geometry',f'SC-042: matched state strategies — {count}/24 scored paths')
     finish(progress,paxes,folder,'geometry_by_work',f'SC-042: geometry against charged fitting work — {count}/24; × = stopped or audit failed')
@@ -95,6 +98,9 @@ def band_policies():
             bad=result['outcome']!='COMPLETED_SCHEDULE' or not result['audit_passed']
             ax.scatter([result['total_units']],[result['score']['rms_mm']],marker='x' if bad else 'o',s=35,color=COLORS[policy])
         ax.set(title=case.replace('_',' '),xlabel='Fitting + diagnostic work',ylabel='Boundary RMS / mm',yscale='log')
+        if case=='wrong_circle':
+            ax.set_ylim(1e-4,1e-3)
+            ax.text(.5,.92,'Below 0.01 mm comparison floor',transform=ax.transAxes,ha='center',fontsize=9)
         ax.grid(alpha=.2)
     finish(fig,axes,folder,'geometry_by_work',f'SC-043: prospective rules with diagnostics charged — {count}/18 scored paths')
 
@@ -138,9 +144,31 @@ def fresh_shapes():
     finish(fig,axes,folder,'geometry',f'SC-044: two fixed new shapes, paired noise draws — {count}/18 scored paths')
 
 
+def cavity_feature():
+    folder=ROOT/'SC-044-noisy-fresh-cases'
+    base=read(folder/'runs/deep_c/clean/none/result.json')
+    if base is None:return
+    nodes=c.ast.curve_from(base['curve']).nodes(16384)
+    point=50*nodes.points[np.argmax(abs(nodes.curvatures))]
+    fig,axes=plt.subplots(1,2,figsize=(11,5))
+    for ax in axes:
+        curve(ax,read(folder/'inputs/deep_c/truth.json'),color='black',lw=2,label='Truth')
+        for arm in ('none','boundary','cap'):
+            result=read(folder/'runs/deep_c/clean'/arm/'result.json')
+            if result:
+                curve(ax,result['curve'],color=COLORS[arm],lw=1.4,label=LABELS[arm])
+        ax.set(xlabel='x / mm',ylabel='y / mm',aspect='equal')
+        ax.grid(alpha=.15)
+    axes[0].set_title('Whole boundary, clean data')
+    axes[1].set(xlim=(point[0]-4,point[0]+4),ylim=(point[1]-4,point[1]+4),
+                title='Post-fit diagnostic zoom\nUnfiltered endpoint curvature maximum')
+    finish(fig,axes,folder,'cavity_feature','SC-044: local artifact on the deeper C')
+
+
 if __name__=='__main__':
     c.verify()
     state_strategies()
     kite_feature()
     band_policies()
     fresh_shapes()
+    cavity_feature()

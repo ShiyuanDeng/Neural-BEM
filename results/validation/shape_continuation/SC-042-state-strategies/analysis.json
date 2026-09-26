@@ -113,6 +113,62 @@
       "audit_failure_kind": null
     },
     {
+      "case": "hook",
+      "arm": "boundary",
+      "outcome": "COMPLETED_SCHEDULE",
+      "loss": 3.932566504063443e-15,
+      "rms_mm": 0.002102524194090439,
+      "hausdorff_mm": 0.005863055096955994,
+      "hausdorff_upper_mm": 0.034513342945178216,
+      "tightest_radius_mm": 11.71569860968725,
+      "tightest_radius_fine_mm": 11.715698609687239,
+      "units": 893,
+      "audit_passed": true,
+      "audit_failure_kind": null
+    },
+    {
+      "case": "hook",
+      "arm": "cap",
+      "outcome": "COMPLETED_SCHEDULE",
+      "loss": 3.9325849355854196e-15,
+      "rms_mm": 0.0021025259032750577,
+      "hausdorff_mm": 0.00586318546231342,
+      "hausdorff_upper_mm": 0.03451347693973516,
+      "tightest_radius_mm": 11.715723065984108,
+      "tightest_radius_fine_mm": 11.71572306598411,
+      "units": 893,
+      "audit_passed": true,
+      "audit_failure_kind": null
+    },
+    {
+      "case": "hook",
+      "arm": "none",
+      "outcome": "COMPLETED_SCHEDULE",
+      "loss": 3.932603326906468e-15,
+      "rms_mm": 0.002102535830904264,
+      "hausdorff_mm": 0.005875584460976207,
+      "hausdorff_upper_mm": 0.03452592552890078,
+      "tightest_radius_mm": 11.716149907445287,
+      "tightest_radius_fine_mm": 11.716149907445287,
+      "units": 893,
+      "audit_passed": true,
+      "audit_failure_kind": null
+    },
+    {
+      "case": "hook",
+      "arm": "once",
+      "outcome": "COMPLETED_SCHEDULE",
+      "loss": 3.932595185268682e-15,
+      "rms_mm": 0.002102527230361263,
+      "hausdorff_mm": 0.005862632263519469,
+      "hausdorff_upper_mm": 0.03451294399767936,
+      "tightest_radius_mm": 11.715840068662546,
+      "tightest_radius_fine_mm": 11.715840068662533,
+      "units": 893,
+      "audit_passed": true,
+      "audit_failure_kind": null
+    },
+    {
       "case": "kite",
       "arm": "boundary",
       "outcome": "COMPLETED_SCHEDULE",
@@ -178,6 +234,20 @@
       "hausdorff_upper_mm": 0.02752068766817583,
       "tightest_radius_mm": 14.055062306927855,
       "tightest_radius_fine_mm": 14.0550259168181,
+      "units": 779,
+      "audit_passed": true,
+      "audit_failure_kind": null
+    },
+    {
+      "case": "peanut",
+      "arm": "cap",
+      "outcome": "COMPLETED_SCHEDULE",
+      "loss": 4.680222888469324e-15,
+      "rms_mm": 0.002335783242744269,
+      "hausdorff_mm": 0.00729143063594311,
+      "hausdorff_upper_mm": 0.02752072867805048,
+      "tightest_radius_mm": 14.055088825031106,
+      "tightest_radius_fine_mm": 14.055052518997767,
       "units": 779,
       "audit_passed": true,
       "audit_failure_kind": null
@@ -951,56 +1021,377 @@
       },
       "additional_failure": false,
       "audit_passed": true
+    },
+    {
+      "case": "peanut",
+      "arm": "once",
+      "ratios": {
+        "rms_mm": 1.0,
+        "hausdorff_mm": 1.0
+      },
+      "common_inverse_units": 779,
+      "common_scores": {
+        "none": {
+          "units": 760,
+          "loss": 4.680223030759887e-15,
+          "score": {
+            "rms_mm": 0.0023357834394772702,
+            "hausdorff_mm": 0.007290976120890326,
+            "hausdorff_upper_mm": 0.02752027465949151,
+            "tightest_radius_mm": 14.055057794872564,
+            "tightest_radius_fine_mm": 14.055020556222443
+          }
+        },
+        "once": {
+          "units": 760,
+          "loss": 4.6802230445662555e-15,
+          "score": {
+            "rms_mm": 0.002335783223953527,
+            "hausdorff_mm": 0.007291311095386293,
+            "hausdorff_upper_mm": 0.027520609342064,
+            "tightest_radius_mm": 14.055076187770918,
+            "tightest_radius_fine_mm": 14.055039807547441
+          }
+        },
+        "boundary": {
+          "units": 760,
+          "loss": 4.680223092753374e-15,
+          "score": {
+            "rms_mm": 0.002335783249466722,
+            "hausdorff_mm": 0.007291389491165401,
+            "hausdorff_upper_mm": 0.02752068766817583,
+            "tightest_radius_mm": 14.055062306927855,
+            "tightest_radius_fine_mm": 14.0550259168181
+          }
+        },
+        "cap": {
+          "units": 760,
+          "loss": 4.680222888469324e-15,
+          "score": {
+            "rms_mm": 0.002335783242744269,
+            "hausdorff_mm": 0.00729143063594311,
+            "hausdorff_upper_mm": 0.02752072867805048,
+            "tightest_radius_mm": 14.055088825031106,
+            "tightest_radius_fine_mm": 14.055052518997767
+          }
+        }
+      },
+      "additional_failure": false,
+      "audit_passed": true
+    },
+    {
+      "case": "peanut",
+      "arm": "boundary",
+      "ratios": {
+        "rms_mm": 1.0,
+        "hausdorff_mm": 1.0
+      },
+      "common_inverse_units": 779,
+      "common_scores": {
+        "none": {
+          "units": 760,
+          "loss": 4.680223030759887e-15,
+          "score": {
+            "rms_mm": 0.0023357834394772702,
+            "hausdorff_mm": 0.007290976120890326,
+            "hausdorff_upper_mm": 0.02752027465949151,
+            "tightest_radius_mm": 14.055057794872564,
+            "tightest_radius_fine_mm": 14.055020556222443
+          }
+        },
+        "once": {
+          "units": 760,
+          "loss": 4.6802230445662555e-15,
+          "score": {
+            "rms_mm": 0.002335783223953527,
+            "hausdorff_mm": 0.007291311095386293,
+            "hausdorff_upper_mm": 0.027520609342064,
+            "tightest_radius_mm": 14.055076187770918,
+            "tightest_radius_fine_mm": 14.055039807547441
+          }
+        },
+        "boundary": {
+          "units": 760,
+          "loss": 4.680223092753374e-15,
+          "score": {
+            "rms_mm": 0.002335783249466722,
+            "hausdorff_mm": 0.007291389491165401,
+            "hausdorff_upper_mm": 0.02752068766817583,
+            "tightest_radius_mm": 14.055062306927855,
+            "tightest_radius_fine_mm": 14.0550259168181
+          }
+        },
+        "cap": {
+          "units": 760,
+          "loss": 4.680222888469324e-15,
+          "score": {
+            "rms_mm": 0.002335783242744269,
+            "hausdorff_mm": 0.00729143063594311,
+            "hausdorff_upper_mm": 0.02752072867805048,
+            "tightest_radius_mm": 14.055088825031106,
+            "tightest_radius_fine_mm": 14.055052518997767
+          }
+        }
+      },
+      "additional_failure": false,
+      "audit_passed": true
+    },
+    {
+      "case": "peanut",
+      "arm": "cap",
+      "ratios": {
+        "rms_mm": 1.0,
+        "hausdorff_mm": 1.0
+      },
+      "common_inverse_units": 779,
+      "common_scores": {
+        "none": {
+          "units": 760,
+          "loss": 4.680223030759887e-15,
+          "score": {
+            "rms_mm": 0.0023357834394772702,
+            "hausdorff_mm": 0.007290976120890326,
+            "hausdorff_upper_mm": 0.02752027465949151,
+            "tightest_radius_mm": 14.055057794872564,
+            "tightest_radius_fine_mm": 14.055020556222443
+          }
+        },
+        "once": {
+          "units": 760,
+          "loss": 4.6802230445662555e-15,
+          "score": {
+            "rms_mm": 0.002335783223953527,
+            "hausdorff_mm": 0.007291311095386293,
+            "hausdorff_upper_mm": 0.027520609342064,
+            "tightest_radius_mm": 14.055076187770918,
+            "tightest_radius_fine_mm": 14.055039807547441
+          }
+        },
+        "boundary": {
+          "units": 760,
+          "loss": 4.680223092753374e-15,
+          "score": {
+            "rms_mm": 0.002335783249466722,
+            "hausdorff_mm": 0.007291389491165401,
+            "hausdorff_upper_mm": 0.02752068766817583,
+            "tightest_radius_mm": 14.055062306927855,
+            "tightest_radius_fine_mm": 14.0550259168181
+          }
+        },
+        "cap": {
+          "units": 760,
+          "loss": 4.680222888469324e-15,
+          "score": {
+            "rms_mm": 0.002335783242744269,
+            "hausdorff_mm": 0.00729143063594311,
+            "hausdorff_upper_mm": 0.02752072867805048,
+            "tightest_radius_mm": 14.055088825031106,
+            "tightest_radius_fine_mm": 14.055052518997767
+          }
+        }
+      },
+      "additional_failure": false,
+      "audit_passed": true
+    },
+    {
+      "case": "hook",
+      "arm": "once",
+      "ratios": {
+        "rms_mm": 1.0,
+        "hausdorff_mm": 1.0
+      },
+      "common_inverse_units": 893,
+      "common_scores": {
+        "none": {
+          "units": 893,
+          "loss": 3.932603326906468e-15,
+          "score": {
+            "rms_mm": 0.002102535830904264,
+            "hausdorff_mm": 0.005875584460976207,
+            "hausdorff_upper_mm": 0.03452592552890078,
+            "tightest_radius_mm": 11.716149907445287,
+            "tightest_radius_fine_mm": 11.716149907445287
+          }
+        },
+        "once": {
+          "units": 893,
+          "loss": 3.932595185268682e-15,
+          "score": {
+            "rms_mm": 0.002102527230361263,
+            "hausdorff_mm": 0.005862632263519469,
+            "hausdorff_upper_mm": 0.03451294399767936,
+            "tightest_radius_mm": 11.715840068662546,
+            "tightest_radius_fine_mm": 11.715840068662533
+          }
+        },
+        "boundary": {
+          "units": 893,
+          "loss": 3.932566504063443e-15,
+          "score": {
+            "rms_mm": 0.002102524194090439,
+            "hausdorff_mm": 0.005863055096955994,
+            "hausdorff_upper_mm": 0.034513342945178216,
+            "tightest_radius_mm": 11.71569860968725,
+            "tightest_radius_fine_mm": 11.715698609687239
+          }
+        },
+        "cap": {
+          "units": 893,
+          "loss": 3.9325849355854196e-15,
+          "score": {
+            "rms_mm": 0.0021025259032750577,
+            "hausdorff_mm": 0.00586318546231342,
+            "hausdorff_upper_mm": 0.03451347693973516,
+            "tightest_radius_mm": 11.715723065984108,
+            "tightest_radius_fine_mm": 11.71572306598411
+          }
+        }
+      },
+      "additional_failure": false,
+      "audit_passed": true
+    },
+    {
+      "case": "hook",
+      "arm": "boundary",
+      "ratios": {
+        "rms_mm": 1.0,
+        "hausdorff_mm": 1.0
+      },
+      "common_inverse_units": 893,
+      "common_scores": {
+        "none": {
+          "units": 893,
+          "loss": 3.932603326906468e-15,
+          "score": {
+            "rms_mm": 0.002102535830904264,
+            "hausdorff_mm": 0.005875584460976207,
+            "hausdorff_upper_mm": 0.03452592552890078,
+            "tightest_radius_mm": 11.716149907445287,
+            "tightest_radius_fine_mm": 11.716149907445287
+          }
+        },
+        "once": {
+          "units": 893,
+          "loss": 3.932595185268682e-15,
+          "score": {
+            "rms_mm": 0.002102527230361263,
+            "hausdorff_mm": 0.005862632263519469,
+            "hausdorff_upper_mm": 0.03451294399767936,
+            "tightest_radius_mm": 11.715840068662546,
+            "tightest_radius_fine_mm": 11.715840068662533
+          }
+        },
+        "boundary": {
+          "units": 893,
+          "loss": 3.932566504063443e-15,
+          "score": {
+            "rms_mm": 0.002102524194090439,
+            "hausdorff_mm": 0.005863055096955994,
+            "hausdorff_upper_mm": 0.034513342945178216,
+            "tightest_radius_mm": 11.71569860968725,
+            "tightest_radius_fine_mm": 11.715698609687239
+          }
+        },
+        "cap": {
+          "units": 893,
+          "loss": 3.9325849355854196e-15,
+          "score": {
+            "rms_mm": 0.0021025259032750577,
+            "hausdorff_mm": 0.00586318546231342,
+            "hausdorff_upper_mm": 0.03451347693973516,
+            "tightest_radius_mm": 11.715723065984108,
+            "tightest_radius_fine_mm": 11.71572306598411
+          }
+        }
+      },
+      "additional_failure": false,
+      "audit_passed": true
+    },
+    {
+      "case": "hook",
+      "arm": "cap",
+      "ratios": {
+        "rms_mm": 1.0,
+        "hausdorff_mm": 1.0
+      },
+      "common_inverse_units": 893,
+      "common_scores": {
+        "none": {
+          "units": 893,
+          "loss": 3.932603326906468e-15,
+          "score": {
+            "rms_mm": 0.002102535830904264,
+            "hausdorff_mm": 0.005875584460976207,
+            "hausdorff_upper_mm": 0.03452592552890078,
+            "tightest_radius_mm": 11.716149907445287,
+            "tightest_radius_fine_mm": 11.716149907445287
+          }
+        },
+        "once": {
+          "units": 893,
+          "loss": 3.932595185268682e-15,
+          "score": {
+            "rms_mm": 0.002102527230361263,
+            "hausdorff_mm": 0.005862632263519469,
+            "hausdorff_upper_mm": 0.03451294399767936,
+            "tightest_radius_mm": 11.715840068662546,
+            "tightest_radius_fine_mm": 11.715840068662533
+          }
+        },
+        "boundary": {
+          "units": 893,
+          "loss": 3.932566504063443e-15,
+          "score": {
+            "rms_mm": 0.002102524194090439,
+            "hausdorff_mm": 0.005863055096955994,
+            "hausdorff_upper_mm": 0.034513342945178216,
+            "tightest_radius_mm": 11.71569860968725,
+            "tightest_radius_fine_mm": 11.715698609687239
+          }
+        },
+        "cap": {
+          "units": 893,
+          "loss": 3.9325849355854196e-15,
+          "score": {
+            "rms_mm": 0.0021025259032750577,
+            "hausdorff_mm": 0.00586318546231342,
+            "hausdorff_upper_mm": 0.03451347693973516,
+            "tightest_radius_mm": 11.715723065984108,
+            "tightest_radius_fine_mm": 11.71572306598411
+          }
+        }
+      },
+      "additional_failure": false,
+      "audit_passed": true
     }
   ],
   "aggregate": {
     "once": {
-      "cases": 4,
-      "rms_geometric_mean_ratio": 0.8747603982819919,
+      "cases": 6,
+      "rms_geometric_mean_ratio": 0.914659414943004,
       "worst_ratio": 1.000053568423225,
-      "common_work_rms_geometric_mean_ratio": 0.977000016667955,
-      "development_gate_passed": false
+      "common_work_rms_geometric_mean_ratio": 0.9846072910609153,
+      "development_gate_passed": true
     },
     "boundary": {
-      "cases": 4,
-      "rms_geometric_mean_ratio": 0.8748595555570889,
+      "cases": 6,
+      "rms_geometric_mean_ratio": 0.9147285336198094,
       "worst_ratio": 1.0012513947933828,
-      "common_work_rms_geometric_mean_ratio": 0.9769891467182563,
+      "common_work_rms_geometric_mean_ratio": 0.9845999879893422,
       "development_gate_passed": false
     },
     "cap": {
-      "cases": 4,
-      "rms_geometric_mean_ratio": 0.8751509728038973,
+      "cases": 6,
+      "rms_geometric_mean_ratio": 0.9149316541262692,
       "worst_ratio": 1.005594489050667,
-      "common_work_rms_geometric_mean_ratio": 0.9773439064920497,
+      "common_work_rms_geometric_mean_ratio": 0.9848383224917929,
       "development_gate_passed": false
     }
   },
   "failures": [],
-  "pending": [
-    {
-      "case": "peanut",
-      "arm": "cap"
-    },
-    {
-      "case": "hook",
-      "arm": "none"
-    },
-    {
-      "case": "hook",
-      "arm": "once"
-    },
-    {
-      "case": "hook",
-      "arm": "boundary"
-    },
-    {
-      "case": "hook",
-      "arm": "cap"
-    }
-  ],
+  "pending": [],
   "planned": 24,
-  "terminal": 19,
+  "terminal": 24,
   "stage_diagnostics": [
     {
       "case": "circle_to_c",
@@ -1339,6 +1730,174 @@
       "qualification_note": "Work after the last accepted state includes derivative and rejected-trial checks; it is not all avoidable work."
     },
     {
+      "case": "hook",
+      "arm": "boundary",
+      "stage": "stage_1_M19",
+      "M": 19,
+      "outcome": "NORMAL_OPTIMIZER_RETURN",
+      "stop": "no_decreasing_step",
+      "accepted_steps": 0,
+      "work_after_last_accepted_state": 19,
+      "trial_status_counts": {},
+      "qualification_note": "Work after the last accepted state includes derivative and rejected-trial checks; it is not all avoidable work."
+    },
+    {
+      "case": "hook",
+      "arm": "boundary",
+      "stage": "stage_2_M25",
+      "M": 25,
+      "outcome": "NORMAL_OPTIMIZER_RETURN",
+      "stop": "gradient_tolerance",
+      "accepted_steps": 4,
+      "work_after_last_accepted_state": 19,
+      "trial_status_counts": {
+        "accepted": 4
+      },
+      "qualification_note": "Work after the last accepted state includes derivative and rejected-trial checks; it is not all avoidable work."
+    },
+    {
+      "case": "hook",
+      "arm": "boundary",
+      "stage": "stage_3_M31",
+      "M": 31,
+      "outcome": "STAGE_QUOTA_REACHED",
+      "stop": null,
+      "accepted_steps": 6,
+      "work_after_last_accepted_state": 0,
+      "trial_status_counts": {
+        "accepted": 6,
+        "nondecreasing": 2,
+        "acceptance_margin": 4
+      },
+      "qualification_note": "Work after the last accepted state includes derivative and rejected-trial checks; it is not all avoidable work."
+    },
+    {
+      "case": "hook",
+      "arm": "cap",
+      "stage": "stage_1_M19",
+      "M": 19,
+      "outcome": "NORMAL_OPTIMIZER_RETURN",
+      "stop": "no_decreasing_step",
+      "accepted_steps": 0,
+      "work_after_last_accepted_state": 19,
+      "trial_status_counts": {},
+      "qualification_note": "Work after the last accepted state includes derivative and rejected-trial checks; it is not all avoidable work."
+    },
+    {
+      "case": "hook",
+      "arm": "cap",
+      "stage": "stage_2_M25",
+      "M": 25,
+      "outcome": "NORMAL_OPTIMIZER_RETURN",
+      "stop": "gradient_tolerance",
+      "accepted_steps": 4,
+      "work_after_last_accepted_state": 19,
+      "trial_status_counts": {
+        "accepted": 4
+      },
+      "qualification_note": "Work after the last accepted state includes derivative and rejected-trial checks; it is not all avoidable work."
+    },
+    {
+      "case": "hook",
+      "arm": "cap",
+      "stage": "stage_3_M31",
+      "M": 31,
+      "outcome": "STAGE_QUOTA_REACHED",
+      "stop": null,
+      "accepted_steps": 6,
+      "work_after_last_accepted_state": 0,
+      "trial_status_counts": {
+        "accepted": 6,
+        "nondecreasing": 2,
+        "acceptance_margin": 4
+      },
+      "qualification_note": "Work after the last accepted state includes derivative and rejected-trial checks; it is not all avoidable work."
+    },
+    {
+      "case": "hook",
+      "arm": "none",
+      "stage": "stage_1_M19",
+      "M": 19,
+      "outcome": "NORMAL_OPTIMIZER_RETURN",
+      "stop": "no_decreasing_step",
+      "accepted_steps": 0,
+      "work_after_last_accepted_state": 19,
+      "trial_status_counts": {},
+      "qualification_note": "Work after the last accepted state includes derivative and rejected-trial checks; it is not all avoidable work."
+    },
+    {
+      "case": "hook",
+      "arm": "none",
+      "stage": "stage_2_M25",
+      "M": 25,
+      "outcome": "NORMAL_OPTIMIZER_RETURN",
+      "stop": "gradient_tolerance",
+      "accepted_steps": 4,
+      "work_after_last_accepted_state": 19,
+      "trial_status_counts": {
+        "accepted": 4
+      },
+      "qualification_note": "Work after the last accepted state includes derivative and rejected-trial checks; it is not all avoidable work."
+    },
+    {
+      "case": "hook",
+      "arm": "none",
+      "stage": "stage_3_M31",
+      "M": 31,
+      "outcome": "STAGE_QUOTA_REACHED",
+      "stop": null,
+      "accepted_steps": 6,
+      "work_after_last_accepted_state": 0,
+      "trial_status_counts": {
+        "accepted": 6,
+        "nondecreasing": 2,
+        "acceptance_margin": 4
+      },
+      "qualification_note": "Work after the last accepted state includes derivative and rejected-trial checks; it is not all avoidable work."
+    },
+    {
+      "case": "hook",
+      "arm": "once",
+      "stage": "stage_1_M19",
+      "M": 19,
+      "outcome": "NORMAL_OPTIMIZER_RETURN",
+      "stop": "no_decreasing_step",
+      "accepted_steps": 0,
+      "work_after_last_accepted_state": 19,
+      "trial_status_counts": {},
+      "qualification_note": "Work after the last accepted state includes derivative and rejected-trial checks; it is not all avoidable work."
+    },
+    {
+      "case": "hook",
+      "arm": "once",
+      "stage": "stage_2_M25",
+      "M": 25,
+      "outcome": "NORMAL_OPTIMIZER_RETURN",
+      "stop": "gradient_tolerance",
+      "accepted_steps": 4,
+      "work_after_last_accepted_state": 19,
+      "trial_status_counts": {
+        "accepted": 4
+      },
+      "qualification_note": "Work after the last accepted state includes derivative and rejected-trial checks; it is not all avoidable work."
+    },
+    {
+      "case": "hook",
+      "arm": "once",
+      "stage": "stage_3_M31",
+      "M": 31,
+      "outcome": "STAGE_QUOTA_REACHED",
+      "stop": null,
+      "accepted_steps": 6,
+      "work_after_last_accepted_state": 0,
+      "trial_status_counts": {
+        "accepted": 6,
+        "nondecreasing": 2,
+        "acceptance_margin": 4
+      },
+      "qualification_note": "Work after the last accepted state includes derivative and rejected-trial checks; it is not all avoidable work."
+    },
+    {
       "case": "kite",
       "arm": "boundary",
       "stage": "stage_1_M22",
@@ -1546,6 +2105,51 @@
     {
       "case": "peanut",
       "arm": "boundary",
+      "stage": "stage_3_M31",
+      "M": 31,
+      "outcome": "NORMAL_OPTIMIZER_RETURN",
+      "stop": "loss_tolerance",
+      "accepted_steps": 1,
+      "work_after_last_accepted_state": 19,
+      "trial_status_counts": {
+        "accepted": 1
+      },
+      "qualification_note": "Work after the last accepted state includes derivative and rejected-trial checks; it is not all avoidable work."
+    },
+    {
+      "case": "peanut",
+      "arm": "cap",
+      "stage": "stage_1_M19",
+      "M": 19,
+      "outcome": "NORMAL_OPTIMIZER_RETURN",
+      "stop": "no_decreasing_step",
+      "accepted_steps": 0,
+      "work_after_last_accepted_state": 76,
+      "trial_status_counts": {
+        "acceptance_margin": 1
+      },
+      "qualification_note": "Work after the last accepted state includes derivative and rejected-trial checks; it is not all avoidable work."
+    },
+    {
+      "case": "peanut",
+      "arm": "cap",
+      "stage": "stage_2_M25",
+      "M": 25,
+      "outcome": "STAGE_QUOTA_REACHED",
+      "stop": null,
+      "accepted_steps": 4,
+      "work_after_last_accepted_state": 57,
+      "trial_status_counts": {
+        "accepted": 4,
+        "nondecreasing": 2,
+        "acceptance_margin": 6,
+        "interrupted_before_status": 1
+      },
+      "qualification_note": "Work after the last accepted state includes derivative and rejected-trial checks; it is not all avoidable work."
+    },
+    {
+      "case": "peanut",
+      "arm": "cap",
       "stage": "stage_3_M31",
       "M": 31,
       "outcome": "NORMAL_OPTIMIZER_RETURN",
@@ -1792,8 +2396,8 @@
       "qualification_note": "Work after the last accepted state includes derivative and rejected-trial checks; it is not all avoidable work."
     }
   ],
-  "inverse_units": 15523,
-  "audit_units": 2093,
+  "inverse_units": 19874,
+  "audit_units": 2663,
   "checks": [
     {
       "case": "circle_to_c",
@@ -2060,6 +2664,138 @@
       "passed": true
     },
     {
+      "case": "hook",
+      "arm": "boundary",
+      "check": "stage_and_path_budget",
+      "passed": true
+    },
+    {
+      "case": "hook",
+      "arm": "boundary",
+      "stage": "stage_1_M19",
+      "check": "within_stage_decrease",
+      "passed": true
+    },
+    {
+      "case": "hook",
+      "arm": "boundary",
+      "stage": "stage_2_M25",
+      "check": "within_stage_decrease",
+      "passed": true
+    },
+    {
+      "case": "hook",
+      "arm": "boundary",
+      "stage": "stage_3_M31",
+      "check": "within_stage_decrease",
+      "passed": true
+    },
+    {
+      "case": "hook",
+      "arm": "boundary",
+      "check": "last_accepted_endpoint",
+      "passed": true
+    },
+    {
+      "case": "hook",
+      "arm": "cap",
+      "check": "stage_and_path_budget",
+      "passed": true
+    },
+    {
+      "case": "hook",
+      "arm": "cap",
+      "stage": "stage_1_M19",
+      "check": "within_stage_decrease",
+      "passed": true
+    },
+    {
+      "case": "hook",
+      "arm": "cap",
+      "stage": "stage_2_M25",
+      "check": "within_stage_decrease",
+      "passed": true
+    },
+    {
+      "case": "hook",
+      "arm": "cap",
+      "stage": "stage_3_M31",
+      "check": "within_stage_decrease",
+      "passed": true
+    },
+    {
+      "case": "hook",
+      "arm": "cap",
+      "check": "last_accepted_endpoint",
+      "passed": true
+    },
+    {
+      "case": "hook",
+      "arm": "none",
+      "check": "stage_and_path_budget",
+      "passed": true
+    },
+    {
+      "case": "hook",
+      "arm": "none",
+      "stage": "stage_1_M19",
+      "check": "within_stage_decrease",
+      "passed": true
+    },
+    {
+      "case": "hook",
+      "arm": "none",
+      "stage": "stage_2_M25",
+      "check": "within_stage_decrease",
+      "passed": true
+    },
+    {
+      "case": "hook",
+      "arm": "none",
+      "stage": "stage_3_M31",
+      "check": "within_stage_decrease",
+      "passed": true
+    },
+    {
+      "case": "hook",
+      "arm": "none",
+      "check": "last_accepted_endpoint",
+      "passed": true
+    },
+    {
+      "case": "hook",
+      "arm": "once",
+      "check": "stage_and_path_budget",
+      "passed": true
+    },
+    {
+      "case": "hook",
+      "arm": "once",
+      "stage": "stage_1_M19",
+      "check": "within_stage_decrease",
+      "passed": true
+    },
+    {
+      "case": "hook",
+      "arm": "once",
+      "stage": "stage_2_M25",
+      "check": "within_stage_decrease",
+      "passed": true
+    },
+    {
+      "case": "hook",
+      "arm": "once",
+      "stage": "stage_3_M31",
+      "check": "within_stage_decrease",
+      "passed": true
+    },
+    {
+      "case": "hook",
+      "arm": "once",
+      "check": "last_accepted_endpoint",
+      "passed": true
+    },
+    {
       "case": "kite",
       "arm": "boundary",
       "check": "stage_and_path_budget",
@@ -2214,6 +2950,39 @@
     {
       "case": "peanut",
       "arm": "boundary",
+      "check": "last_accepted_endpoint",
+      "passed": true
+    },
+    {
+      "case": "peanut",
+      "arm": "cap",
+      "check": "stage_and_path_budget",
+      "passed": true
+    },
+    {
+      "case": "peanut",
+      "arm": "cap",
+      "stage": "stage_1_M19",
+      "check": "within_stage_decrease",
+      "passed": true
+    },
+    {
+      "case": "peanut",
+      "arm": "cap",
+      "stage": "stage_2_M25",
+      "check": "within_stage_decrease",
+      "passed": true
+    },
+    {
+      "case": "peanut",
+      "arm": "cap",
+      "stage": "stage_3_M31",
+      "check": "within_stage_decrease",
+      "passed": true
+    },
+    {
+      "case": "peanut",
+      "arm": "cap",
       "check": "last_accepted_endpoint",
       "passed": true
     },
@@ -2434,8 +3203,18 @@
       "case": "circle_to_c",
       "check": "once_boundary_first_stage_identical",
       "passed": true
+    },
+    {
+      "case": "peanut",
+      "check": "once_boundary_first_stage_identical",
+      "passed": true
+    },
+    {
+      "case": "hook",
+      "check": "once_boundary_first_stage_identical",
+      "passed": true
     }
   ],
   "checks_passed": true,
-  "complete": false
+  "complete": true
 }

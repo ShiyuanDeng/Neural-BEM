@@ -13,6 +13,21 @@ def main():
     r.verify()
     rows=[]
     checks=[]
+    noise_diagnostics=[]
+    for case in r.CASES:
+        clean=r.c.sc.read(HERE/'inputs'/case/'clean.json')
+        clean=np.array(clean['observed_real'])+1j*np.array(clean['observed_imag'])
+        for profile in r.PROFILES:
+            if profile=='clean':continue
+            data=r.c.sc.read(HERE/'inputs'/case/f'{profile}.json')
+            observed=np.array(data['observed_real'])+1j*np.array(data['observed_imag'])
+            sigma=np.array(data['sigma_real_imag'])
+            raw=(np.linalg.norm(observed,axis=0)/sigma)**2
+            expected=observed.size/raw.sum()
+            truth_loss=.5*np.sum(abs((observed-clean)/sigma)**2)/raw.sum()
+            noise_diagnostics.append(dict(case=case,profile=profile,expected_loss=float(expected),
+                truth_noise_loss=float(truth_loss),actual_over_expected=float(truth_loss/expected),
+                truth_loss_over_discrepancy=float(truth_loss/(1.1**2*expected))))
     prefixes={}
     failures=[dict(path=str(p.relative_to(HERE)),**r.c.sc.read(p)) for p in sorted((HERE/'runs').glob('*/*/*/failure.json'))]
     for p in sorted((HERE/'runs').glob('*/*/prefix/result.json')):
@@ -69,7 +84,8 @@ def main():
     terminal=set(index)|{(f['case'],f['profile'],f['arm']) for f in failures if f['arm']!='prefix'}
     pending=[dict(case=case,profile=profile,arm=arm) for case in r.CASES for profile in r.PROFILES for arm in r.ARMS
              if (case,profile,arm) not in terminal]
-    r.c.write(HERE/'analysis.json',dict(rows=rows,prefixes=list(prefixes.values()),comparisons=comparisons,aggregate=aggregate,failures=failures,
+    r.c.write(HERE/'analysis.json',dict(rows=rows,noise_diagnostics=noise_diagnostics,
+        prefixes=list(prefixes.values()),comparisons=comparisons,aggregate=aggregate,failures=failures,
         pending=pending,terminal=len(terminal),planned=18,
         unique_prefix_units=unique_prefix,suffix_units=suffix,checks=checks,checks_passed=all(s['passed'] for s in checks),
         complete=len(terminal)==18))
@@ -85,7 +101,12 @@ def main():
     for s in failures:
         lines.append(f"| {s['case']} | {s['profile']} | {s['arm']} | — | — | — | EXCEPTION | False |")
     lines+=['',f'Unique prefix work: {unique_prefix}; suffix work: {suffix}.',
-            'Each complete path is charged its shared prefix. Two noise draws are repeated measurements of the same two shapes, not additional independent targets.','']
+            'Each complete path is charged its shared prefix. Two noise draws are repeated measurements of the same two shapes, not additional independent targets.','',
+            'Post-fit observation check: the two realized noise losses are '
+            +', '.join(f"{s['actual_over_expected']:.4f}× expected ({s['truth_loss_over_discrepancy']:.4f}× the discrepancy threshold)"
+                       for s in noise_diagnostics if s['case']==r.CASES[0])
+            +'. These ratios match across shapes because standardized draws are shared. '
+            'Both truths lie inside the declared discrepancy; these truth residuals never choose the fitting stop.','']
     (HERE/'TABLES.md').write_text('\n'.join(lines))
     print({'completed':len(rows),'failures':len(failures),'unique_prefix_units':unique_prefix,'suffix_units':suffix})
 

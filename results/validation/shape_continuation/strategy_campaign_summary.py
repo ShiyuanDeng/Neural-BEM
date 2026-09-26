@@ -60,7 +60,12 @@ def main():
             'SC-044 includes six shared prefix paths; each method is charged its full prefix in complete-path comparisons.',
             'Field and reciprocal units are a declared accounting convention, not identical floating-point cost. Numerical grids vary by case; host timing is uncontrolled.','',
             '[Reviewer constraints on novelty](../../../docs/iterations/shape_frequency_continuation/iteration_24/02_claims_review.md).',
+            '[Conditions for a useful next iteration](../../../docs/iterations/shape_frequency_continuation/iteration_24/03_next_decisions.md).',
             '[Environment](strategy_campaign_environment.json). [Machine-readable summary](strategy_campaign_summary.json).','',
+            'Post-fit checks: [doubled metric sampling](strategy_metric_refinement.json), '
+            '[fresh-case local errors and intrinsic curvature](strategy_feature_errors.json), '
+            '[development-case regularity](SC-042-state-strategies/regularity.json). '
+            'These descriptive diagnostics do not replace the frozen gates.','',
             '## Retained stopped or unqualified paths','']
     failures=[f for d in studies for f in d['failures']]
     for f in failures:

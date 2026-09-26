@@ -13,6 +13,9 @@ ROOT=Path(__file__).resolve().parent
 spec=importlib.util.spec_from_file_location('feature_common',ROOT/'SC-044-noisy-fresh-cases/run.py')
 r=importlib.util.module_from_spec(spec)
 spec.loader.exec_module(r)
+spec=importlib.util.spec_from_file_location('feature_regularity',ROOT/'SC-042-state-strategies/regularity.py')
+regularity=importlib.util.module_from_spec(spec)
+spec.loader.exec_module(regularity)
 
 
 def measure(target,recovered,case,count):
@@ -45,8 +48,11 @@ def main():
         fine=measure(target,recovered,d['case'],16384)
         change=max(abs(fine[key][metric]-coarse[key][metric]) for key in fine for metric in ('rms_mm','maximum_mm'))
         rows.append(dict(case=d['case'],profile=d['profile'],arm=d['arm'],regions=fine,
+            regularity=regularity.measure(recovered,target),
             maximum_sampling_change_mm=change))
-    r.c.write(ROOT/'strategy_feature_errors.json',dict(rows=rows,samples=16384,coarse_samples=8192,
+    truths={case:regularity.measure(target,target) for case in r.CASES
+            for target in [r.c.ast.curve_from(r.c.sc.read(r.HERE/'inputs'/case/'truth.json'))]}
+    r.c.write(ROOT/'strategy_feature_errors.json',dict(rows=rows,truth_regularity=truths,samples=16384,coarse_samples=8192,
         post_hoc=True,used_for_selection=False,
         definition='One-sided truth-to-reconstruction polygon distance, weighted by truth arclength. '
         'Deep-C cavity wall: undo rotation -0.4 rad, radius <0.7, polar angle within +/-110 degrees. '
