@@ -211,3 +211,41 @@ signature of the high-band part of the state.
 **Scope.** Two trajectories plus their continuations; noiseless data; the
 historical capped score (SC-041 already labels it a heuristic); kite
 before-feature has only 7 pairs. No strategy was run in this part.
+
+## Part 3 — a truth-free geometry trigger? ([frozen plan + amendment](signal_plan.md), [script](signals.py), [JSON](signals.json))
+
+The campaign closeout asks for "a prospective, truth-free intervention
+trigger". Five truth-free signals were screened on the 79 development states
+and tested on all 392 accepted states of the untouched SC-044 reconstructions
+(two fresh shapes; clean and two noise draws). No field solves.
+
+**No geometry signal passes, on the screen or the test.** Pass required
+Spearman ρ ≥ 0.6 against Hausdorff and ≥ 70% step-wise sign agreement on both
+cases.
+
+| Signal | Screen ρ vs Hausdorff (star / kite) | Test ρ (lobes / deep C) | Test step agreement (lobes / deep C) |
+|---|---:|---:|---:|
+| S1 high-band RMS (above max(48, 2M)) | −0.56 / −0.18 | −0.89 / −0.81 | 17% / 13% |
+| S3 1 / minimum radius | −0.97 / +0.07 | −0.96 / +0.23 | 29% / 50% |
+| S4 curvature roughness | −0.98 / +0.06 | −0.97 / +0.15 | 30% / 53% |
+| S6 loss (baseline) | +0.96 / +0.97 | +0.74 / +0.88 | 78% / 75% |
+
+Screen-only: atlas box heat ρ +0.67 / +0.60 but step agreement 57% / 47%;
+high-band data signature ρ −0.61 / −0.76.
+
+**Why they fail.** Roughness and high-band content are *anti*-correlated with
+error: as a fit improves it acquires detail, true and spurious alike, so
+"rougher" mostly means "further along". Kite, where the artefact grows while
+the rest improves, is the case where the two cancel (ρ ≈ 0). On SC-044
+suffixes only (the none/boundary/cap treatments), the pattern holds: ρ −0.42
+to −0.87, agreement 25–46%.
+
+**Consequence.** A trigger cannot be read off the state's shape alone. And
+part 2 showed kite's artefact is data-supported (its low-order shadow absorbs
+misfit; removing it raised loss 2.4×), so a data-support test would not flag
+it either at this noise-free loss level. Distinguishing spurious from true
+detail here needs information the current data and state do not carry: a
+declared prior on regularity (which SC-042 found harms true sharp features
+when applied as a cap) or more discriminating data (acquisition, frequencies).
+This agrees with the closeout's "capacity, regularity and information"
+distinction; it does not by itself say which to add.
