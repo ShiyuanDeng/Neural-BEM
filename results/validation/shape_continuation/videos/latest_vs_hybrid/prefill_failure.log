@@ -1,0 +1,42 @@
+concurrent.futures.process._RemoteTraceback:
+"""
+Traceback (most recent call last):
+  File "/home/drdeng/miniconda3/envs/EMNerf/lib/python3.9/concurrent/futures/process.py", line 246, in _process_worker
+    r = call_item.fn(*call_item.args, **call_item.kwargs)
+  File "/home/drdeng/miniconda3/envs/EMNerf/lib/python3.9/concurrent/futures/process.py", line 205, in _process_chunk
+    return [fn(*args) for args in chunk]
+  File "/home/drdeng/miniconda3/envs/EMNerf/lib/python3.9/concurrent/futures/process.py", line 205, in <listcomp>
+    return [fn(*args) for args in chunk]
+  File "/home/drdeng/Neural_SDF_BEM_AD/results/validation/shape_continuation/videos/latest_vs_hybrid/prefill_tail.py", line 41, in worker
+    result = module.prepare_case(('kite', 'fixed', str(folder)))
+  File "/home/drdeng/Neural_SDF_BEM_AD/results/validation/shape_continuation/videos/latest_vs_hybrid/render.py", line 222, in prepare_case
+    write(output / 'prepared' / (case + '.json'), result)
+  File "/home/drdeng/Neural_SDF_BEM_AD/results/validation/shape_continuation/videos/latest_vs_hybrid/prefill_tail.py", line 37, in atomic_write
+    original_write(temp, value)
+  File "/home/drdeng/Neural_SDF_BEM_AD/results/validation/shape_continuation/videos/latest_vs_hybrid/render.py", line 45, in write
+    sc.write(path, value)
+  File "/home/drdeng/Neural_SDF_BEM_AD/experiments/shape_continuation/spd_cases.py", line 56, in write
+    path.write_text(json.dumps(portable(value), indent=2, allow_nan=False) + "\n")
+  File "/home/drdeng/miniconda3/envs/EMNerf/lib/python3.9/pathlib.py", line 1213, in write_text
+    with self.open(mode='w', encoding=encoding, errors=errors) as f:
+  File "/home/drdeng/miniconda3/envs/EMNerf/lib/python3.9/pathlib.py", line 1180, in open
+    return io.open(self, mode, buffering, encoding, errors, newline,
+  File "/home/drdeng/miniconda3/envs/EMNerf/lib/python3.9/pathlib.py", line 1038, in _opener
+    return self._accessor.open(self, flags, mode)
+FileNotFoundError: [Errno 2] No such file or directory: '/home/drdeng/Neural_SDF_BEM_AD/results/validation/shape_continuation/videos/latest_vs_hybrid/prefill/phase11_step1/prepared/kite.json.prefill11_1.tmp'
+"""
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/drdeng/Neural_SDF_BEM_AD/results/validation/shape_continuation/videos/latest_vs_hybrid/prefill_tail.py", line 48, in <module>
+    rows = list(pool.map(worker, positions))
+  File "/home/drdeng/miniconda3/envs/EMNerf/lib/python3.9/concurrent/futures/process.py", line 562, in _chain_from_iterable_of_lists
+    for element in iterable:
+  File "/home/drdeng/miniconda3/envs/EMNerf/lib/python3.9/concurrent/futures/_base.py", line 609, in result_iterator
+    yield fs.pop().result()
+  File "/home/drdeng/miniconda3/envs/EMNerf/lib/python3.9/concurrent/futures/_base.py", line 446, in result
+    return self.__get_result()
+  File "/home/drdeng/miniconda3/envs/EMNerf/lib/python3.9/concurrent/futures/_base.py", line 391, in __get_result
+    raise self._exception
+FileNotFoundError: [Errno 2] No such file or directory: '/home/drdeng/Neural_SDF_BEM_AD/results/validation/shape_continuation/videos/latest_vs_hybrid/prefill/phase11_step1/prepared/kite.json.prefill11_1.tmp'

@@ -1,5 +1,11 @@
 # Six development scenes: the current pipeline, with its atlas
 
+**Latest comparison, 27 September:** [fixed release with initial cleanup versus
+original hybrid](latest_vs_hybrid/README.md), in the established boundary,
+heatmap and shape-harmonic layout. It follows all six histories through their
+SC-043 fixed endpoints. The earlier single-trajectory videos below remain
+unchanged.
+
 **2026-09-26 qualification (SC-041):** the existing videos and numbers below
 are preserved historical artifacts. Their "removable misfit" is a
 componentwise-capped QR score, not guaranteed loss reduction within a physical
