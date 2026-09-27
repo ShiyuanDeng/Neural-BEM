@@ -3,6 +3,8 @@
 Neither selection nor cache state is process-global. Solver callers outside an
 explicit cache/fit context keep the reference path, including endpoint scoring.
 No coefficient rounding or displayed geometry identifier is used as a key.
+Threads that copy the caller's context share its cache; one lock serializes
+lookups and computations, so each key is computed once as in a serial fit.
 """
 from collections import Counter, OrderedDict
 from contextlib import contextmanager
@@ -11,6 +13,7 @@ from dataclasses import fields, is_dataclass
 from functools import wraps
 import operator
 import sys
+import threading
 from time import perf_counter
 
 import numpy as np
@@ -50,8 +53,13 @@ class ValidationCache:
         self.counts, self.seconds, self.compute_seconds = Counter(), Counter(), Counter()
         self._entries = OrderedDict()
         self.retained_bytes = self.peak_bytes = 0
+        self.lock = threading.RLock()
 
     def memoize(self, kind, key_factory, compute):
+        with self.lock:
+            return self._memoize(kind, key_factory, compute)
+
+    def _memoize(self, kind, key_factory, compute):
         started = perf_counter()
         self.counts[kind+'.requests'] += 1
         try:
@@ -84,6 +92,10 @@ class ValidationCache:
             self.seconds[kind] += perf_counter()-started
 
     def snapshot(self):
+        with self.lock:
+            return self._snapshot()
+
+    def _snapshot(self):
         return dict(mode=self.mode, max_bytes=self.max_bytes, counts=dict(self.counts),
                     seconds=dict(self.seconds), compute_seconds=dict(self.compute_seconds),
                     retained_bytes=self.retained_bytes, peak_bytes=self.peak_bytes,
@@ -159,11 +171,13 @@ def validation_timed(kind):
             if cache is None:
                 return function(*args, **kwargs)
             started = perf_counter()
-            cache.counts[kind+'.calls'] += 1
+            with cache.lock:
+                cache.counts[kind+'.calls'] += 1
             try:
                 return function(*args, **kwargs)
             finally:
-                cache.seconds[kind] += perf_counter()-started
+                with cache.lock:
+                    cache.seconds[kind] += perf_counter()-started
         return wrapped
     return decorate
 

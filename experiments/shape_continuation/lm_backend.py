@@ -21,7 +21,7 @@ from typing import Optional
 import numpy as np
 from ordered_boundary.validation_cache import fit_geometry_validation
 
-from .forward import solve, shape_jacobian
+from .forward import ordered_calls, solve, shape_jacobian
 from .geometry import FourierCurve, grid_size, integer
 from .updates import UpdateRefused
 
@@ -302,17 +302,23 @@ class Objective:
     def _predict(self, curve, nodes, category, keep):
         self.ledger.reserve(self.count)
         forwards, columns = [], []
-        for observation in self.stage.observations:
-            self.ledger.reserve(1)
-            self.ledger.charge("solve", category)
-            try:
-                state = solve(curve, observation.wavenumber, self.contrast, observation.acquisition, nodes)
-            except (ValueError, FloatingPointError, np.linalg.LinAlgError):
-                self.ledger.fail(category)
-                return None
-            columns.append(state.prediction)
-            if keep:
-                forwards.append(state)
+
+        def predict(observation):
+            state = solve(curve, observation.wavenumber, self.contrast, observation.acquisition, nodes)
+            return state if keep else state.prediction  # release discarded systems early
+
+        with ordered_calls(predict, self.stage.observations) as calls:
+            for call in calls:
+                self.ledger.reserve(1)
+                self.ledger.charge("solve", category)
+                try:
+                    value = call()
+                except (ValueError, FloatingPointError, np.linalg.LinAlgError):
+                    self.ledger.fail(category)
+                    return None
+                columns.append(value.prediction if keep else value)
+                if keep:
+                    forwards.append(value)
         prediction = np.column_stack(columns)
         residual = normalize(prediction - self.observed, self.observed, self.stage.weights,
                              self.config.residual_floor)
@@ -331,10 +337,12 @@ class Objective:
     def jacobian(self, evaluation, update, space):
         """Residual Jacobian (rows as `normalize`) with respect to update coordinates."""
         blocks = []
-        for forward in evaluation.forwards:
-            self.ledger.reserve(1)
-            self.ledger.charge("reciprocal", "derivative")
-            blocks.append(shape_jacobian(forward, update.velocities(space, forward.curve)))
+        with ordered_calls(lambda forward: shape_jacobian(forward, update.velocities(space, forward.curve)),
+                           evaluation.forwards) as calls:
+            for call in calls:
+                self.ledger.reserve(1)
+                self.ledger.charge("reciprocal", "derivative")
+                blocks.append(call())
         derivative = np.stack(blocks, axis=1)  # (pairs, frequencies, directions)
         return normalize(derivative, self.observed, self.stage.weights, self.config.residual_floor)
 

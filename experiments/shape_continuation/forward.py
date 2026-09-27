@@ -1,6 +1,10 @@
 """Equal-density transmission, dimensionless k, plane waves, full aperture."""
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from contextlib import contextmanager
+from contextvars import copy_context
+from functools import partial
+import os
 from time import perf_counter
 
 import numpy as np
@@ -8,6 +12,7 @@ from scipy.linalg import lu_factor, lu_solve
 
 from gpr_bem_kress import (build_muller_system, build_exterior_receiver_operator,
                            kress_incident_trace_on_boundary)
+from gpr_bem_kress import cuda_assembly
 from gpr_bem_kress.execution import execution
 from ordered_boundary import OrderedBoundary2D
 from gpr_bem_kress.multicomponent import (
@@ -138,6 +143,42 @@ def timed(work, name):
             work.seconds[name] = work.seconds.get(name, 0.0) + perf_counter() - started
 
 
+def frequency_threads(threads=None):
+    """Threads for independent frequency systems: SC_FREQUENCY_THREADS, default 8."""
+    count = int(os.environ.get("SC_FREQUENCY_THREADS", "8") if threads is None else threads)
+    if count < 1:
+        raise ValueError("Frequency threads must be positive.")
+    return count
+
+
+@contextmanager
+def ordered_calls(function, items, threads=None):
+    """Deferred ``function(item)`` calls, to be consumed strictly in order (SPD-010).
+
+    With one thread each call runs when it is consumed, exactly as a loop.
+    Otherwise a thread pool starts every call; consuming one waits for it and
+    re-raises its exception. A consumer that stops early cancels calls not yet
+    started and discards the rest, so ledger charges and failures keep their
+    serial order. Each call runs in a copy of the caller's context, so an
+    active fit-local geometry-validation cache is shared (it is thread-safe).
+    With one BLAS thread each solve is deterministic, so values do not depend
+    on the thread count.
+    """
+    items = list(items)
+    count = min(frequency_threads(threads), len(items))
+    if count <= 1:
+        yield [partial(function, item) for item in items]
+        return
+    pool = ThreadPoolExecutor(count)
+    futures = [pool.submit(copy_context().run, function, item) for item in items]
+    try:
+        yield [future.result for future in futures]
+    finally:
+        for future in futures:
+            future.cancel()
+        pool.shutdown(wait=True)
+
+
 @dataclass
 class ForwardState:
     curve: object
@@ -151,9 +192,20 @@ class ForwardState:
     system_residual: float
 
 
+def forward_backend():
+    """Dense-system backend: SC_FORWARD_BACKEND=cpu (reference, default) or cuda (SPD-011, opt-in)."""
+    value = os.environ.get("SC_FORWARD_BACKEND", "cpu")
+    if value not in ("cpu", "cuda"):
+        raise ValueError("SC_FORWARD_BACKEND must be 'cpu' or 'cuda'.")
+    return value
+
+
 def _solve(matrix, factors, rhs):
-    solution = lu_solve(factors, rhs)
-    residual = np.linalg.norm(matrix @ solution - rhs) / max(np.linalg.norm(rhs), np.finfo(float).tiny)
+    if isinstance(factors, cuda_assembly.DeviceFactors):
+        solution, residual = factors.solve(rhs)
+    else:
+        solution = lu_solve(factors, rhs)
+        residual = np.linalg.norm(matrix @ solution - rhs) / max(np.linalg.norm(rhs), np.finfo(float).tiny)
     if not np.isfinite(solution).all() or residual > 1e-10:
         raise FloatingPointError("Unqualified dense Müller solve.")
     return solution, float(residual)
@@ -172,8 +224,11 @@ def solve(shape, wavenumber, contrast, acquisition, nodes, *, work=None):
         # Explicit scope prevents ambient acceleration/device contexts changing the model.
         with execution(kernels="reference", device="cpu"):
             ki = wavenumber * np.sqrt(contrast)
+            # The CUDA backend covers single periodic curves with real wavenumbers; others stay on CPU.
+            device = forward_backend() == "cuda" and cuda_assembly.supported(curve, wavenumber, ki)
             with timed(work, "assembly"):
-                system = assemble(curve, wavenumber, ki)
+                matrix = (cuda_assembly.build_muller_matrix(curve, wavenumber, ki) if device
+                          else assemble(curve, wavenumber, ki).system_matrix)
             with timed(work, "receiver_operator"):
                 receiver = receivers(curve, acquisition.receivers, wavenumber)
             if isinstance(acquisition, PointSourceAcquisition):
@@ -185,12 +240,12 @@ def solve(shape, wavenumber, contrast, acquisition, nodes, *, work=None):
                 normal = 1j * wavenumber * (curve.normals @ acquisition.directions.T) * field
             rhs = np.vstack((field, normal))
             with timed(work, "factorization"):
-                factors = lu_factor(system.system_matrix)
+                factors = cuda_assembly.DeviceFactors(matrix) if device else lu_factor(matrix)
             if work is not None:
                 work.factorizations += 1
                 work.rhs_columns += rhs.shape[1]
             with timed(work, "forward_solve"):
-                traces, residual = _solve(system.system_matrix, factors, rhs)
+                traces, residual = _solve(matrix, factors, rhs)
                 prediction = receiver.apply_state(traces)
                 if isinstance(acquisition, PointSourceAcquisition) and acquisition.paired:
                     prediction = np.diag(prediction).copy()
@@ -202,7 +257,7 @@ def solve(shape, wavenumber, contrast, acquisition, nodes, *, work=None):
         raise
     if work is not None:
         work.completed += 1
-    return ForwardState(curve, wavenumber, ki, acquisition, system.system_matrix,
+    return ForwardState(curve, wavenumber, ki, acquisition, matrix,
                         factors, traces, prediction, residual)
 
 

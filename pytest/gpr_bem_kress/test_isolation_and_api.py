@@ -57,9 +57,10 @@ def test_kress_does_not_depend_on_oracle_archived_or_sdf_numerics() -> None:
     findings = {
         str(path.relative_to(REPOSITORY_ROOT)): sorted(
             (_absolute_import_roots(path) & FORBIDDEN_NUMERICAL_PACKAGES)
-            # These two optional paths use function-local Torch imports. The
+            # These optional paths use function-local Torch imports. The
             # subprocess test below still forbids loading it on the CPU path.
-            - ({"torch"} if path.name in {"execution.py", "geometry_pullback.py"} else set())
+            - ({"torch"} if path.name in {"execution.py", "geometry_pullback.py", "cuda_assembly.py"}
+               else set())
         )
         for path in sources
     }
