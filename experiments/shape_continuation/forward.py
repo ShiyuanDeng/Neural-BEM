@@ -1,7 +1,7 @@
 """Equal-density transmission, dimensionless k, plane waves, full aperture."""
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 from contextvars import copy_context
 from functools import partial
 import os
@@ -15,6 +15,7 @@ from gpr_bem_kress import (build_muller_system, build_exterior_receiver_operator
 from gpr_bem_kress import cuda_assembly
 from gpr_bem_kress.execution import execution
 from ordered_boundary import OrderedBoundary2D
+from ordered_boundary.validation_cache import current_validation_cache, validation_cache
 from gpr_bem_kress.multicomponent import (
     build_multicomponent_muller_system,
     build_multicomponent_exterior_receiver_operator,
@@ -221,11 +222,13 @@ def solve(shape, wavenumber, contrast, acquisition, nodes, *, work=None):
     try:
         curve = shape.nodes(nodes)
         assemble, receivers, incident = _operators(curve)
+        ki = wavenumber * np.sqrt(contrast)
+        # The CUDA backend covers single periodic curves with real wavenumbers; others stay on CPU.
+        device = forward_backend() == "cuda" and cuda_assembly.supported(curve, wavenumber, ki)
+        # Outside a fit cache, a CUDA solve validates its boundary once for all three builders (exact reuse).
+        local = device and current_validation_cache() is None
         # Explicit scope prevents ambient acceleration/device contexts changing the model.
-        with execution(kernels="reference", device="cpu"):
-            ki = wavenumber * np.sqrt(contrast)
-            # The CUDA backend covers single periodic curves with real wavenumbers; others stay on CPU.
-            device = forward_backend() == "cuda" and cuda_assembly.supported(curve, wavenumber, ki)
+        with (validation_cache("cache") if local else nullcontext()), execution(kernels="reference", device="cpu"):
             with timed(work, "assembly"):
                 matrix = (cuda_assembly.build_muller_matrix(curve, wavenumber, ki) if device
                           else assemble(curve, wavenumber, ki).system_matrix)
