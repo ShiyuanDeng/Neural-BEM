@@ -1,0 +1,192 @@
+<title>Atlas Along Trajectories</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#f5f7f9; --panel:#ffffff; --ink:#15202b; --muted:#5a6675; --faint:#d9dfe6; --grid:#e7ebf0;
+  --amber:#c98400; --amber-soft:rgba(201,132,0,.14);
+  --h0:#cde2fb; --h1:#9ec5f4; --h2:#6da7ec; --h3:#3987e5; --h4:#256abf; --h5:#184f95; --h6:#0d366b;
+  --font:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif; --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  color-scheme:dark; --bg:#12161b; --panel:#1a1f26; --ink:#e8edf2; --muted:#9aa6b3; --faint:#2c343e; --grid:#252c35;
+  --amber:#f0b429; --amber-soft:rgba(240,180,41,.16);
+  --h0:#16233a; --h1:#104281; --h2:#1c5cab; --h3:#3987e5; --h4:#6da7ec; --h5:#9ec5f4; --h6:#cde2fb;}}
+:root[data-theme="dark"]{
+  color-scheme:dark; --bg:#12161b; --panel:#1a1f26; --ink:#e8edf2; --muted:#9aa6b3; --faint:#2c343e; --grid:#252c35;
+  --amber:#f0b429; --amber-soft:rgba(240,180,41,.16);
+  --h0:#16233a; --h1:#104281; --h2:#1c5cab; --h3:#3987e5; --h4:#6da7ec; --h5:#9ec5f4; --h6:#cde2fb;}
+html,body{background:var(--bg);color:var(--ink)}
+body{font-family:var(--font);font-size:14px;line-height:1.5;padding-inline:16px}
+.wrap{max-width:1240px;margin:0 auto;padding-block:20px 32px;display:grid;gap:16px}
+header{display:grid;gap:6px}
+h1{font-size:22px;font-weight:700;margin:0;letter-spacing:-.01em;text-wrap:balance}
+.lede{color:var(--muted);max-width:78ch;margin:0}
+.tracks{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.tracks button{font:inherit;font-size:13px;border:1px solid var(--faint);background:var(--panel);color:var(--ink);padding:6px 12px;border-radius:6px;cursor:pointer}
+.tracks button[aria-pressed="true"]{border-color:var(--amber);box-shadow:inset 0 0 0 1px var(--amber)}
+.tracks button:focus-visible,.controls button:focus-visible,input[type=range]:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+.grid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);gap:16px}
+@media (max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--panel);border:1px solid var(--faint);border-radius:8px;padding:12px;display:grid;gap:8px;min-width:0}
+.label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+#cube{height:560px;width:100%}
+@media (max-width:600px){#cube{height:420px}}
+.controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.controls button{font:inherit;font-size:13px;border:1px solid var(--faint);background:var(--bg);color:var(--ink);padding:4px 10px;border-radius:6px;cursor:pointer;min-width:64px}
+#step{flex:1;min-width:160px;accent-color:var(--amber)}
+.state{font-family:var(--mono);font-size:12.5px;color:var(--ink)}
+dl{display:grid;grid-template-columns:auto 1fr;gap:3px 14px;margin:0;font-variant-numeric:tabular-nums}
+dt{color:var(--muted);font-size:12.5px} dd{margin:0;font-family:var(--mono);font-size:12.5px}
+#flat{height:250px;width:100%} .spark{height:150px;width:100%}
+.note{color:var(--muted);font-size:12.5px;margin:0;max-width:90ch}
+.key{display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:12.5px;color:var(--muted)}
+.swatch{display:inline-block;width:14px;height:10px;border:2px solid var(--amber);border-radius:2px;vertical-align:-1px;margin-right:6px}
+.ramp{display:inline-block;width:90px;height:10px;border-radius:2px;vertical-align:-1px;margin:0 6px;background:linear-gradient(90deg,var(--h0),var(--h2),var(--h4),var(--h6))}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+<header>
+  <h1>Atlas along trajectories</h1>
+  <p class="lede">Each slice is one accepted state's atlas: 19 frequencies across, ripple orders 0–24 deep, stacked in trajectory order. The amber prism is what each update was allowed to use (active frequencies × orders 0…M), so you can watch the schedule widen it while the colour inside drains.</p>
+  <div class="tracks" id="tracks" role="group" aria-label="Trajectory"></div>
+</header>
+
+<div class="grid">
+  <section class="panel" aria-label="3D atlas">
+    <div class="label">Stacked atlas · drag to rotate, scroll to zoom</div>
+    <div id="cube"></div>
+    <div class="controls">
+      <button id="play" type="button" aria-label="Play through states">Play</button>
+      <input id="step" type="range" min="0" max="0" value="0" aria-label="Accepted state">
+      <span class="state" id="stepLabel"></span>
+    </div>
+    <div class="key"><span><span class="swatch"></span>update box (frequencies × orders ≤ M; drawn to order 24 when M is larger)</span><span>removable misfit, log₁₀<span class="ramp"></span>−4 … 0</span></div>
+  </section>
+
+  <aside class="panel" aria-label="Selected state">
+    <div class="label">Selected state</div>
+    <dl id="facts"></dl>
+    <div class="label">Its atlas</div>
+    <div id="flat"></div>
+    <div class="label">Loss (log)</div>
+    <div id="loss" class="spark"></div>
+    <div class="label">Hausdorff error to truth, mm</div>
+    <div id="haus" class="spark"></div>
+  </aside>
+</div>
+
+<p class="note">Colour is the historical capped-QR score from <code>atlas_video.py</code>, recomputed here with the unchanged code (part 2 of the SC-041 outsider review). It shows where the fit could still remove misfit. Part 2 found it tracks the loss, not the geometry: compare the fading colour with the Hausdorff panel, and note that kite's flank artefact lives above order 30, outside this view. Truth enters only the Hausdorff panel.</p>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.35.2/plotly.min.js"></script>
+<script>
+const DATA = __DATA__;
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const $ = id => document.getElementById(id);
+let key = 'star', idx = 0, timer = null;
+
+function theme(){
+  return {ink:css('--ink'),muted:css('--muted'),grid:css('--grid'),panel:css('--panel'),amber:css('--amber'),
+    scale:[[0,css('--h0')],[.2,css('--h1')],[.4,css('--h2')],[.6,css('--h3')],[.75,css('--h4')],[.88,css('--h5')],[1,css('--h6')]]};
+}
+const track = () => DATA.tracks[key];
+const orders = [...Array(DATA.orders+1).keys()];
+
+function box(s){
+  const g = s.active.map(i => DATA.ghz[i]);
+  return {x0:Math.min(...g)-0.0625, x1:Math.max(...g)+0.0625, y0:-0.5, y1:Math.min(s.M, DATA.orders)+0.5};
+}
+function stageName(s){ return s.track.includes('SC041') || s.track.startsWith('review') ? s.track.replace('review/','review ').replace('SC041/','SC-041 ') : s.stage; }
+function shortName(s){
+  if(s.track.startsWith('review')) return 'review · M'+s.M;
+  if(s.track.includes('SC041')) return 'SC-041 · M'+s.M;
+  const m = s.stage.match(/^(stage|release|dense|remaining)_?(m?\d+)?/);
+  const tag = {stage:'stage', release:'release', dense:'dense', remaining:'final'}[m?m[1]:''] || s.stage;
+  return tag+' · M'+s.M; }
+
+function drawCube(){
+  const t = theme(), states = track().states;
+  const traces = states.map((s,k) => ({
+    type:'surface', x:DATA.ghz, y:orders, z:orders.map(()=>DATA.ghz.map(()=>k)), surfacecolor:s.heat,
+    cmin:DATA.low, cmax:0, colorscale:t.scale, showscale:false, opacity:k===idx?1:0.14,
+    hovertemplate:'%{x:.3f} GHz · order %{y}<br>log₁₀ removable %{surfacecolor:.2f}<extra>state '+k+'</extra>'
+  }));
+  // amber prism: a rectangle where the box changes, and the four edges joining consecutive boxes
+  const X=[],Y=[],Z=[], same=(a,b)=>a.x0===b.x0&&a.x1===b.x1&&a.y1===b.y1;
+  states.forEach((s,k)=>{const b=box(s); if(k>0&&k<states.length-1&&same(b,box(states[k-1])))return;
+    X.push(b.x0,b.x1,b.x1,b.x0,b.x0,null); Y.push(b.y0,b.y0,b.y1,b.y1,b.y0,null); Z.push(k,k,k,k,k,null);});
+  for(const [cx,cy] of [['x0','y0'],['x1','y0'],['x1','y1'],['x0','y1']]){
+    states.forEach((s,k)=>{const b=box(s); X.push(b[cx]); Y.push(b[cy]); Z.push(k);}); X.push(null);Y.push(null);Z.push(null);
+  }
+  traces.push({type:'scatter3d',mode:'lines',x:X,y:Y,z:Z,line:{color:t.amber,width:2},opacity:0.55,hoverinfo:'skip'});
+  traces.push(Object.assign({type:'scatter3d',mode:'lines',line:{color:t.amber,width:6},hoverinfo:'skip'},current()));
+  const starts = states.map((s,k)=>k).filter(k=>k===0||stageName(states[k])!==stageName(states[k-1]));
+  const axis = (title,extra={}) => Object.assign({title:{text:title,font:{size:12,color:t.muted}},color:t.muted,gridcolor:t.grid,zerolinecolor:t.grid,backgroundcolor:t.panel,showbackground:true,tickfont:{size:10,color:t.muted}},extra);
+  Plotly.react('cube', traces, {
+    paper_bgcolor:t.panel, margin:{l:0,r:0,t:0,b:0}, showlegend:false, font:{family:'Public Sans, system-ui, sans-serif',color:t.ink},
+    scene:{xaxis:axis('frequency, GHz'), yaxis:axis('ripple order m'),
+      zaxis:axis('accepted state',{tickvals:starts,ticktext:starts.map(k=>shortName(states[k])),tickfont:{size:9,color:t.muted}}),
+      aspectmode:'manual', aspectratio:{x:1.1,y:1,z:1.5}, camera:{eye:{x:1.7,y:-1.6,z:0.9}}}
+  }, {displaylogo:false, responsive:true, modeBarButtonsToRemove:['toImage']});
+}
+
+function current(){ const b=box(track().states[idx]);
+  return {x:[b.x0,b.x1,b.x1,b.x0,b.x0], y:[b.y0,b.y0,b.y1,b.y1,b.y0], z:[idx,idx,idx,idx,idx]}; }
+function highlight(){
+  const n = track().states.length, c = current();
+  Plotly.restyle('cube', {opacity:[...Array(n).keys()].map(k=>k===idx?1:0.14)}, [...Array(n).keys()]);
+  Plotly.restyle('cube', {x:[c.x], y:[c.y], z:[c.z]}, [n+1]);
+}
+
+function drawSide(){
+  const t = theme(), states = track().states, s = states[idx], b = box(s);
+  const fmt = (v,d=4) => Number(v).toPrecision(d);
+  $('facts').innerHTML = [
+    ['Stage', stageName(s).replace('_',' ')+(s.iteration!==undefined?' · step '+s.iteration:'')],
+    ['Update band M', s.M], ['Active frequencies', s.active.length+' of 19'],
+    ['Removable inside box', (100*s.inside).toFixed(1)+'%'], ['Loss', Number(s.loss).toExponential(3)],
+    ['RMS to truth', fmt(s.rms)+' mm'], ['Hausdorff to truth', fmt(s.hausdorff)+' mm'], ['Tightest radius', fmt(s.radius)+' mm']
+  ].map(([k,v])=>`<dt>${k}</dt><dd>${v}</dd>`).join('');
+  $('stepLabel').textContent = `state ${idx+1} / ${states.length}`;
+  Plotly.react('flat', [{type:'heatmap', x:DATA.ghz, y:orders, z:s.heat, zmin:DATA.low, zmax:0, colorscale:t.scale, showscale:false,
+      xgap:1, ygap:1, hovertemplate:'%{x:.3f} GHz · order %{y}<br>log₁₀ removable %{z:.2f}<extra></extra>'}],
+    {paper_bgcolor:t.panel, plot_bgcolor:t.panel, margin:{l:34,r:6,t:4,b:30}, font:{size:10,color:t.muted,family:'Public Sans, system-ui, sans-serif'},
+     xaxis:{title:{text:'GHz',font:{size:10}},gridcolor:t.grid}, yaxis:{title:{text:'order',font:{size:10}},gridcolor:t.grid},
+     shapes:[{type:'rect',x0:b.x0,x1:b.x1,y0:b.y0,y1:b.y1,line:{color:t.amber,width:2},fillcolor:'rgba(0,0,0,0)'}]},
+    {displayModeBar:false, responsive:true});
+  const xs = states.map((_,k)=>k+1);
+  const spark = (id, ys, log, unit) => Plotly.react(id, [
+      {x:xs, y:ys, mode:'lines', line:{color:css('--h4'),width:2}, hovertemplate:'state %{x}: %{y:.3g}'+unit+'<extra></extra>'},
+      {x:[idx+1], y:[ys[idx]], mode:'markers', marker:{size:9,color:t.amber,line:{color:t.panel,width:2}}, hoverinfo:'skip'}],
+    {paper_bgcolor:t.panel, plot_bgcolor:t.panel, margin:{l:44,r:8,t:4,b:24}, showlegend:false, font:{size:10,color:t.muted,family:'Public Sans, system-ui, sans-serif'},
+     xaxis:{gridcolor:t.grid,zeroline:false}, yaxis:{type:log?'log':'linear',gridcolor:t.grid,zeroline:false,exponentformat:'e'}},
+    {displayModeBar:false, responsive:true});
+  spark('loss', states.map(s=>s.loss), true, '');
+  spark('haus', states.map(s=>s.hausdorff), false, ' mm');
+}
+
+function select(k){ idx = k; $('step').value = k; highlight(); drawSide(); }
+function load(k){
+  key = k; idx = 0; stop();
+  document.querySelectorAll('#tracks button').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.key===k)));
+  $('step').max = track().states.length-1; $('step').value = 0;
+  drawCube(); drawSide();
+}
+function stop(){ if(timer){clearInterval(timer); timer=null; $('play').textContent='Play';} }
+$('play').onclick = () => {
+  if(timer){ stop(); return; }
+  $('play').textContent='Pause';
+  timer = setInterval(()=>{ const n = track().states.length; select((idx+1)%n); if(idx===n-1) stop(); }, 700);
+};
+$('step').oninput = e => select(+e.target.value);
+Object.entries(DATA.tracks).forEach(([k,v])=>{
+  const b = document.createElement('button'); b.type='button'; b.dataset.key=k; b.textContent=v.title; b.onclick=()=>load(k);
+  $('tracks').appendChild(b);
+});
+if(window.Plotly){ load('star'); }
+else { const s=document.createElement('script'); s.src='https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js'; s.onload=()=>load('star'); document.head.appendChild(s); }
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', ()=>{ drawCube(); drawSide(); });
+new MutationObserver(()=>{ drawCube(); drawSide(); }).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+</script>
