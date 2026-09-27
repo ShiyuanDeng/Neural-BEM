@@ -46,7 +46,7 @@ def archive(study, case, arm):
 
 
 def load(path, name):
-    sys.path[:0] = [str(ROOT), str(ROOT / 'solvers'), str(SC047)]
+    sys.path[:0] = [str(ROOT), str(ROOT / 'solvers'), str(SC047), str(SC048)]
     spec = importlib.util.spec_from_file_location(name, path)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
