@@ -334,3 +334,55 @@ damping). What survives is an empirical regularity on two sites: artefacts
 form where pointwise sensitivity is lowest and ripple-scale determination is
 highest at the entry state. It was found after the fact and is not a result
 until it predicts sites on shapes it has not seen.
+
+## Part 6 — do entry-state maps predict artefact sites on unseen shapes? ([frozen plan](predict_plan.md), [runner](predict.py), [score](predict_score.json), [confound check](predict_confound.json))
+
+Three unseen shapes (hooked_tip, fresh_a, fresh_b), unchanged SC-044 `none`
+pipeline. Each shape's entry-state maps were committed to Git **before** its
+suffix started (`1728c600`, `323eab2d`, `9917657b`).
+
+| Shape | Final RMS / Hausdorff (mm) | Sharpest point spurious? | Percentile of pointwise F there | Percentile of posterior ratio ρ there |
+|---|---|---|---:|---:|
+| hooked_tip | 0.324 / 0.842 | yes (0.19 mm vs truth ≈ 1.9 mm tip elsewhere) | 67.5 | 1.4 |
+| fresh_a | 0.035 / 0.085 | no (4.08 mm, a true feature) | 6.4 | 0.3 |
+| fresh_b | 0.032 / 0.202 | yes (0.79 mm) | 38.5 | 0.9 |
+
+**Frozen verdicts.** Primary (pointwise F, bottom 10%): **refuted**, both
+counting sites outside the bottom 25%. Secondary (ρ, bottom 10%):
+**supported**, 2/2 (chance ≈ 1%).
+
+**But ρ adds little beyond the entry shape itself.** ρ is strongly
+anti-correlated with the entry state's curvature (Spearman −0.63, −0.79,
+−0.72), and the entry state's sharpest point already sits at ρ's 0.07th,
+0.59th and 0.85th percentile. fresh_a's genuine sharp feature is also in ρ's
+bottom 1%. The supported prediction therefore amounts to "sharp features,
+true or spurious, grow where the entry shape is already most curved"; ρ was
+not compared against that trivial predictor, and on these shapes it does
+not distinguish spurious from true features.
+
+**Where this leaves the information direction.** No truth-free quantity
+tested in parts 3–6 separates spurious from true sharp features. The
+defensible findings of this review remain mechanistic: the atlas tracks data
+fit rather than geometry (part 2); kite's artefact is invisible to the atlas
+yet absorbs misfit (parts 1–2); shape roughness is anti-correlated with error
+along trajectories (part 3); and spurious sharpening concentrates at
+features already present at the suffix entry (part 6).
+
+## Verdict on the multi-object / topology roadmap ([document](../../../../docs/GPR_next_steps_multi_object_topology.md))
+
+Sound and appropriately cautious. Sequencing fixed-count two-object
+qualification before diagnostic-only topology, and topology actions only
+after that, is right, as are its prior-art boundaries and its insistence on
+finite accepted progress over linearised forecasts. The conditional-information
+block S₁|₂ is the right object-resolved quantity.
+
+Three cautions from this review. (1) Parts 2–6 found atlas and information
+maps track loss, not geometry, and did not identify spurious features. An
+object-resolved atlas should be expected to face the same limit and be judged
+on geometry and cost from the start. (2) Its "data-preserving repair"
+priority assumes artefacts lie in weak-data directions; kite's does not
+(removing it raised loss 2.4×), so a bounded-prediction-change repair may be
+unable to remove it. (3) Single-object behaviour under noise is still not
+settled. That is cheaper to resolve than coupled two-object physics and
+should come first. The document's baseline commit (`a122882`) is an
+intermediate commit of this review, before parts 5–6.
