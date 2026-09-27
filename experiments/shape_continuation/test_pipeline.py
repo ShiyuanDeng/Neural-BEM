@@ -178,7 +178,9 @@ def test_budget_exhaustion_and_schedule_validation():
     assert stage.nodes > 2 * stage.curve_modes
 
 
-def test_clean_import_and_forward_never_load_legacy_inverse_or_torch():
+@pytest.mark.parametrize("backend", ["cpu", "auto"])
+def test_clean_import_and_forward_never_load_legacy_inverse_or_torch(backend):
+    """The CPU reference never loads torch; the SPD-012 auto default may load only torch."""
     root = Path(__file__).resolve().parents[2]
     code = """
 import sys
@@ -189,12 +191,13 @@ from experiments.shape_continuation.continuation import run_adaptive
 from experiments.shape_continuation.paper import Figure1Case
 solve(FourierCurve.circle(), 1., 1.44, Acquisition.ring(2,3), 32)
 forbidden = ('sdf_inverse', 'sdf_to_ordered_boundary', 'gpr_bem_mod', 'gpr_bem_ref',
-             'torch', 'solver_select', 'experiments.modal_muller_research')
+             'solver_select', 'experiments.modal_muller_research') + (('torch',) if sys.argv[1] == 'cpu' else ())
 assert not any(name == f or name.startswith(f+'.') for name in sys.modules for f in forbidden)
 assert 'shapely' not in sys.modules  # Area scoring is evaluation-only and lazy.
 """
-    environment = dict(os.environ, PYTHONPATH=f"{root / 'solvers'}:{root}")
-    subprocess.run([sys.executable, "-c", code], env=environment, cwd=root, check=True, capture_output=True)
+    environment = dict(os.environ, PYTHONPATH=f"{root / 'solvers'}:{root}", SC_FORWARD_BACKEND=backend)
+    subprocess.run([sys.executable, "-c", code, backend], env=environment, cwd=root, check=True,
+                   capture_output=True)
 
 
 def test_geometry_metric_uses_segments_and_not_parameter_phase():
@@ -271,11 +274,11 @@ def test_spectral_arclength_has_no_spline_integration_error_floor():
 
 def test_blocked_reciprocal_contraction_matches_literal_identity():
     from gpr_bem_kress import kress_incident_trace_on_boundary
-    from scipy.linalg import lu_solve
+    from .forward import _solve  # backend-neutral: SciPy or device LU factors
     state = solve(ellipse(), 2., 1.44, Acquisition.ring(5, 7), 64)
     h = normal_basis(state.curve, 4)
     d, n = kress_incident_trace_on_boundary(state.curve, state.acquisition.receivers, state.wavenumber)
-    reciprocal = lu_solve(state.factors, np.concatenate((d, n), axis=1).T)[:64]
+    reciprocal = _solve(state.matrix, state.factors, np.concatenate((d, n), axis=1).T)[0][:64]
     expected = (state.interior_wavenumber**2 - state.wavenumber**2) * np.einsum(
         'nr,np,nd,n->drp', reciprocal, h, state.traces[:64], state.curve.arc_length_weights)
     assert np.allclose(shape_jacobian(state, h), expected, rtol=2e-13, atol=2e-13)

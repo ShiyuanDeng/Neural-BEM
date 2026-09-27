@@ -191,14 +191,33 @@ class ForwardState:
     traces: np.ndarray
     prediction: np.ndarray  # (illumination, receiver)
     system_residual: float
+    backend: str = "cpu"  # "cuda", "cpu", or "cpu-fallback" after device out-of-memory
 
 
 def forward_backend():
-    """Dense-system backend: SC_FORWARD_BACKEND=cpu (reference, default) or cuda (SPD-011, opt-in)."""
-    value = os.environ.get("SC_FORWARD_BACKEND", "cpu")
-    if value not in ("cpu", "cuda"):
-        raise ValueError("SC_FORWARD_BACKEND must be 'cpu' or 'cuda'.")
+    """Dense-system backend from SC_FORWARD_BACKEND: auto (default), cpu or cuda.
+
+    ``auto`` (SPD-012) uses the qualified CUDA assembly (SPD-011/013) when torch
+    sees a device and the CPU reference otherwise; ``cpu`` pins the reference.
+    """
+    value = os.environ.get("SC_FORWARD_BACKEND", "auto")
+    if value not in ("auto", "cpu", "cuda"):
+        raise ValueError("SC_FORWARD_BACKEND must be 'auto', 'cpu' or 'cuda'.")
+    if value == "auto":
+        return "cuda" if cuda_assembly.available() else "cpu"
+    if value == "cuda" and not cuda_assembly.available():
+        raise RuntimeError("SC_FORWARD_BACKEND=cuda, but torch sees no CUDA device.")
     return value
+
+
+def _dense_system(curve, wavenumber, ki, assemble, device, fallback, work):
+    """System matrix and LU factors; device states keep host matrices and host LU factors."""
+    with timed(work, "assembly"):
+        matrix = (cuda_assembly.build_system_matrix(curve, wavenumber, ki) if device
+                  else assemble(curve, wavenumber, ki).system_matrix)
+    with timed(work, "factorization"):
+        factors = cuda_assembly.DeviceFactors(matrix, fallback=fallback) if device else lu_factor(matrix)
+    return (factors.host if device else matrix), factors
 
 
 def _solve(matrix, factors, rhs):
@@ -225,13 +244,21 @@ def solve(shape, wavenumber, contrast, acquisition, nodes, *, work=None):
         ki = wavenumber * np.sqrt(contrast)
         # The CUDA backend covers single curves and ordered multi-component boundaries with real wavenumbers.
         device = forward_backend() == "cuda" and cuda_assembly.supported(curve, wavenumber, ki)
+        fallback = device and os.environ.get("SC_FORWARD_BACKEND", "auto") == "auto"
+        backend = "cuda" if device else "cpu"
         # Outside a fit cache, a CUDA solve validates its boundary once for all three builders (exact reuse).
         local = device and current_validation_cache() is None
         # Explicit scope prevents ambient acceleration/device contexts changing the model.
         with (validation_cache("cache") if local else nullcontext()), execution(kernels="reference", device="cpu"):
-            with timed(work, "assembly"):
-                matrix = (cuda_assembly.build_system_matrix(curve, wavenumber, ki) if device
-                          else assemble(curve, wavenumber, ki).system_matrix)
+            try:
+                matrix, factors = _dense_system(curve, wavenumber, ki, assemble, device, fallback, work)
+            except Exception as exc:
+                # Under auto, device out-of-memory falls back to the CPU reference for this solve.
+                if not (fallback and cuda_assembly.out_of_memory(exc)):
+                    raise
+                cuda_assembly.record_fallback("forward assembly")
+                backend = "cpu-fallback"
+                matrix, factors = _dense_system(curve, wavenumber, ki, assemble, False, False, work)
             with timed(work, "receiver_operator"):
                 receiver = receivers(curve, acquisition.receivers, wavenumber)
             if isinstance(acquisition, PointSourceAcquisition):
@@ -242,10 +269,6 @@ def solve(shape, wavenumber, contrast, acquisition, nodes, *, work=None):
                 field = np.exp(1j * wavenumber * (curve.points @ acquisition.directions.T))
                 normal = 1j * wavenumber * (curve.normals @ acquisition.directions.T) * field
             rhs = np.vstack((field, normal))
-            with timed(work, "factorization"):
-                factors = cuda_assembly.DeviceFactors(matrix) if device else lu_factor(matrix)
-            if device:
-                matrix = factors.host  # retained states keep host matrices and host LU factors
             if work is not None:
                 work.factorizations += 1
                 work.rhs_columns += rhs.shape[1]
@@ -263,7 +286,7 @@ def solve(shape, wavenumber, contrast, acquisition, nodes, *, work=None):
     if work is not None:
         work.completed += 1
     return ForwardState(curve, wavenumber, ki, acquisition, matrix,
-                        factors, traces, prediction, residual)
+                        factors, traces, prediction, residual, backend)
 
 
 def shape_jacobian(state, normal_displacements, *, work=None):

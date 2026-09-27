@@ -13,6 +13,12 @@ THREADS = (1, 3, 8)
 WAVENUMBERS = (.8, 1.0, 1.25, 1.5, 1.8)
 
 
+@pytest.fixture(autouse=True)
+def cpu_reference(monkeypatch):
+    """SPD-010's exactness claims are about the CPU reference; CUDA tests opt in explicitly."""
+    monkeypatch.setenv("SC_FORWARD_BACKEND", "cpu")
+
+
 def record(ledger):
     snapshot = ledger.snapshot()
     snapshot.pop("seconds")

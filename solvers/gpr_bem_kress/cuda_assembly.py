@@ -16,8 +16,11 @@ diagnostic of the CPU builder is not computed. Torch is imported lazily.
 """
 from __future__ import annotations
 
+from collections import Counter
 from functools import lru_cache
+import sys
 import threading
+import warnings
 
 import numpy as np
 
@@ -126,6 +129,40 @@ template <typename T> void cephes_bessel012(T x, T& j0, T& y0, T& j1, T& y1, T& 
 
 _initialization = threading.Lock()
 _device_work = threading.Lock()
+_fallbacks = Counter()
+
+
+@lru_cache(maxsize=None)
+def available():
+    """Whether torch can use a CUDA device in this process."""
+    try:
+        import torch
+    except ImportError:
+        return False
+    return bool(torch.cuda.is_available())
+
+
+def out_of_memory(exc):
+    """Whether ``exc`` is a device out-of-memory error; never imports torch."""
+    torch = sys.modules.get("torch")
+    return torch is not None and isinstance(exc, torch.OutOfMemoryError)
+
+
+def record_fallback(kind):
+    """Count one CPU fallback after device out-of-memory, release cached blocks, and warn."""
+    with _initialization:
+        _fallbacks[kind] += 1
+    torch = sys.modules.get("torch")
+    if torch is not None:
+        torch.cuda.empty_cache()
+    warnings.warn(f"CUDA out of memory during {kind}; this call used the CPU reference instead.",
+                  RuntimeWarning, stacklevel=3)
+
+
+def fallback_counts():
+    """CPU fallbacks after device out-of-memory in this process, by kind."""
+    with _initialization:
+        return dict(_fallbacks)
 
 
 @lru_cache(maxsize=None)
@@ -381,11 +418,14 @@ class DeviceFactors:
     ``host`` keeps the system matrix in host memory, as on the CPU path. The
     first solve uses the device matrix and factors it was built with; the
     factors then move to host memory too. Later solves (reciprocal Jacobians)
-    upload both for one call, so retained states hold no device memory.
+    upload both for one call, so retained states hold no device memory. With
+    ``fallback``, a device out-of-memory error solves on the host from the
+    same LU factors.
     """
 
-    def __init__(self, matrix):
+    def __init__(self, matrix, *, fallback=False):
         import torch
+        self.fallback = bool(fallback)
         _ready(matrix.device)
         with _device_work:
             lu, pivots, info = torch.linalg.lu_factor_ex(matrix)
@@ -410,6 +450,27 @@ class DeviceFactors:
 
     def solve(self, rhs):
         """Return ``(solution, relative residual)``; host complex arrays in and out."""
+        try:
+            return self._solve_device(rhs)
+        except Exception as exc:
+            if not (self.fallback and out_of_memory(exc)):
+                raise
+            record_fallback("reciprocal solve")
+            return self._solve_host(rhs)
+
+    def _solve_host(self, rhs):
+        from scipy.linalg import lu_solve
+        with self._lock:
+            if self._resident is not None:
+                resident, self._resident = self._resident, None
+                self._offloaded = (resident[1].cpu().numpy(), resident[2].cpu().numpy())
+            lu, pivots = self._offloaded
+        # Torch returns LAPACK getrf pivots (one-based); SciPy expects zero-based.
+        solution = lu_solve((lu, pivots.astype(np.int64) - 1), np.asarray(rhs, dtype=np.complex128))
+        residual = np.linalg.norm(self.host @ solution - rhs) / max(np.linalg.norm(rhs), np.finfo(float).tiny)
+        return solution, float(residual)
+
+    def _solve_device(self, rhs):
         import torch
         matrix, lu, pivots = self._operands()
         b = torch.as_tensor(np.ascontiguousarray(rhs, dtype=np.complex128), device=self.device)
@@ -423,5 +484,5 @@ class DeviceFactors:
         return (solution[:, 0] if column else solution), residual
 
 
-__all__ = ["DeviceFactors", "bessel012", "build_muller_matrix", "build_multicomponent_muller_matrix",
-           "build_system_matrix", "supported"]
+__all__ = ["DeviceFactors", "available", "bessel012", "build_muller_matrix", "build_multicomponent_muller_matrix",
+           "build_system_matrix", "fallback_counts", "out_of_memory", "record_fallback", "supported"]

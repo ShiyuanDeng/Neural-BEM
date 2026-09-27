@@ -246,6 +246,19 @@ $PY -m pytest -q experiments/shape_continuation
 $PY -m experiments.shape_continuation.run --scene ellipse --output /tmp/continuation-ellipse-new
 ```
 
+**Runtime backends (SPD-010–013, 27 September).** Forward solves use the
+qualified CUDA Kress assembly by default whenever torch sees a GPU. That covers
+single curves and multi-object boundaries with real wavenumbers. Independent
+frequencies run on `SC_FREQUENCY_THREADS` threads (default 8). Set
+`SC_FORWARD_BACKEND=cpu` to pin the original SciPy reference: it reproduces
+archived runs bit for bit and never imports torch. `cuda` requires a GPU. The
+default `auto` otherwise uses the CPU, and it retries a solve on the CPU after a
+device out-of-memory error, with a warning; `ForwardState.backend` records
+which backend ran. CUDA results match the reference to round-off, not
+bit-identically. See [SPD-011](../../results/validation/speedup/SPD-011-20260927-cuda-assembly/README.md)
+and [SPD-013](../../results/validation/speedup/SPD-013-20260927-cuda-multicomponent/README.md).
+Keep outer workers × threads at or below the core count.
+
 The library requires NumPy and SciPy; the demo plot also uses Matplotlib.
 The [paper harness and fidelity audit](PAPER.md) additionally use Shapely only
 for polygon area scoring. Its default command does no numerical solves:
