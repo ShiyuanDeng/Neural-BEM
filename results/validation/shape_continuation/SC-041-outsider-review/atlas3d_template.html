@@ -43,14 +43,14 @@ dt{color:var(--muted);font-size:12.5px} dd{margin:0;font-family:var(--mono);font
 .note{color:var(--muted);font-size:12.5px;margin:0;max-width:90ch}
 .key{display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:12.5px;color:var(--muted)}
 .swatch{display:inline-block;width:14px;height:10px;border:2px solid var(--amber);border-radius:2px;vertical-align:-1px;margin-right:6px}
-.ramp{display:inline-block;width:90px;height:10px;border-radius:2px;vertical-align:-1px;margin:0 6px;background:linear-gradient(90deg,var(--h0),var(--h2),var(--h4),var(--h6))}
+.ramp{display:inline-block;width:90px;height:10px;border-radius:2px;vertical-align:-1px;margin:0 6px;background:linear-gradient(90deg,#0a1628,#123a6b,#2a78d6,#9cc7f2,#f2f8fe);border:1px solid var(--faint)}
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
 </style>
 
 <div class="wrap">
 <header>
   <h1>Atlas along trajectories</h1>
-  <p class="lede">Each card is one accepted state's atlas (19 frequencies from 0.25 GHz on the left to 2.5 GHz on the right, ripple orders 0–24 up), taken at stage ends and laid out left to right along the trajectory. The amber box on each card is what the update was allowed to use (active frequencies × orders 0…M); the line joining the boxes shows the schedule widening it while the colour inside drains.</p>
+  <p class="lede">Each card is one accepted state's atlas (19 frequencies from 0.25 GHz on the left to 2.5 GHz on the right, ripple orders 0–24 up), taken at stage ends and laid out left to right along the trajectory. The amber box on each card is what the update was allowed to use (active frequencies × orders 0…M); the line joining the boxes shows the schedule widening it while the brightness inside fades.</p>
   <div class="tracks" id="tracks" role="group" aria-label="Trajectory"></div>
 </header>
 
@@ -63,7 +63,7 @@ dt{color:var(--muted);font-size:12.5px} dd{margin:0;font-family:var(--mono);font
       <input id="step" type="range" min="0" max="0" value="0" aria-label="Accepted state">
       <span class="state" id="stepLabel"></span>
     </div>
-    <div class="key"><span><span class="swatch"></span>update box (frequencies × orders ≤ M; drawn to order 24 when M is larger)</span><span>removable misfit, log₁₀<span class="ramp"></span>−4 … 0</span></div>
+    <div class="key"><span><span class="swatch"></span>update box (frequencies × orders ≤ M; drawn to order 24 when M is larger)</span><span>removable misfit, log₁₀: −4 (little left)<span class="ramp"></span>0 (bright = more to remove)</span></div>
   </section>
 
   <div class="below">
@@ -88,7 +88,8 @@ const gx = (k,g) => k*PITCH + (g-0.25)/2.25*W;   // spacing between states along
 
 function theme(){
   return {ink:css('--ink'),muted:css('--muted'),grid:css('--grid'),panel:css('--panel'),amber:css('--amber'),
-    scale:[[0,css('--h0')],[.2,css('--h1')],[.4,css('--h2')],[.6,css('--h3')],[.75,css('--h4')],[.88,css('--h5')],[1,css('--h6')]]};
+    // the atlas videos' own map (atlas_video.CMAP): dark = little left to remove, bright = potential
+    scale:[[0,'#0a1628'],[.25,'#123a6b'],[.5,'#2a78d6'],[.75,'#9cc7f2'],[1,'#f2f8fe']]};
 }
 const track = () => DATA.tracks[key];
 const MAXCARDS = 8;
