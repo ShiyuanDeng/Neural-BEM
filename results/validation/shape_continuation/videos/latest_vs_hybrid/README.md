@@ -62,6 +62,8 @@ the storage band, not a guaranteed geometric resolution.
 
 ## Verification and reproduction
 
+**Faster preparation, 27 September:** prefixing the command below with `SC_FORWARD_BACKEND=cuda` runs the same diagnostics on the GPU, 5.1–7.0× faster per case. Frontier indices are identical, and displayed heat agrees within 1.6e-8 in log10. See [SPD-011](../../../speedup/SPD-011-20260927-cuda-assembly/README.md#gate-4-video-preparation). The committed records above were prepared on the CPU.
+
 The renderer checks the common start, exact linkage between saved prefixes,
 the explicit K64 intervention, final geometry and recorded RMS. Each heatmap's
 active-frequency residual must reproduce the saved objective. Every state is

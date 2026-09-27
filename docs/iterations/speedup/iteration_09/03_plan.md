@@ -1,6 +1,6 @@
 # SPD-010 and SPD-011: frequency threads and an opt-in CUDA Kress backend
 
-2026-09-27. **Approval status: APPROVED.** I asked the user to reply "approve SPD-010", "approve SPD-011", or both; I had recommended both, in order. The user replied, verbatim: "go". **Execution status: IN PROGRESS.** The results go in [01_results.md](01_results.md) once written.
+2026-09-27. **Approval status: APPROVED.** I asked the user to reply "approve SPD-010", "approve SPD-011", or both; I had recommended both, in order. The user replied, verbatim: "go". **Execution status: COMPLETE / PASS.** See the [results](01_results.md), including two retained CUDA out-of-memory attempts.
 
 Owner: Claude Code. There is no independent reviewer. Work stays on the existing checkout and branch `feature/shape-frequency-continuation`; no new branch or worktree.
 

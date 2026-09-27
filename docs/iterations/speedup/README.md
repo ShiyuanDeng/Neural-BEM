@@ -76,13 +76,20 @@ renumber, move or supersede any Boundary–BIE iteration.
 
 ## Current handoff
 
-Updated 2026-09-17.
+Updated 2026-09-27.
+
+**Shape-continuation pipeline, 2026-09-27.** [Iteration 09](iteration_09/01_results.md) adds two options.
+
+- **SPD-010.** Threaded frequency solves, `SC_FREQUENCY_THREADS`, default 8. SC-043 replays are bit-identical and 4.96–5.59× faster.
+- **SPD-011.** An opt-in CUDA single-interface Kress backend, `SC_FORWARD_BACKEND=cuda`. All six SC-043 runs match the archive's outcomes, units and accepted steps, with endpoint RMS within 2.2e-9 and runs 6.8–13.6× faster. Video preparation is 5.1–7.0× faster with zero frontier changes.
+
+The topology-pipeline rows below are unchanged.
 
 | Item | Current state |
 |---|---|
-| Active iteration | Iteration 08 — [SPD-008 exact geometry acceleration](iteration_08/01_results.md) |
+| Active iteration | Iteration 09: [SPD-010 frequency threads and SPD-011 CUDA Kress backend](iteration_09/01_results.md), for the shape-continuation pipeline |
 | Stage | **SPD-008 APPROVED / COMPLETE** under the [plan](iteration_07/03_plan.md). Exact geometry reuse and the boolean certificate are qualified opt-in; SPD-007 compiled + reciprocal + readiness remains the default |
-| Approved experiment IDs | **SPD-001**, **SPD-002**, **SPD-004**, **SPD-005**, **SPD-006**, **SPD-007**, **SPD-008** (direct “yes” to implementation and validation, 2026-09-17) |
+| Approved experiment IDs | **SPD-001**, **SPD-002**, **SPD-004**, **SPD-005**, **SPD-006**, **SPD-007**, **SPD-008** (direct “yes” to implementation and validation, 2026-09-17); **SPD-010**, **SPD-011** (the user replied “go” to the request to approve them, 2026-09-27) |
 | Next expected action | Review isolated timing confirmation and all-twelve-scene default qualification, or another exact geometry optimization. No successor run is scheduled. SPD-009 remains separate and unexecuted |
 | Owner / reviewer | Codex `/root` / self-review; no independent reviewer claimed |
 | Dependencies | SPD-008: 144 tests pass (one CUDA skip), 456 replay decisions agree, 3.65x/3.56x stencil gains, and 16/16 full workers recover with exactly matched trajectories, endpoints and work. Current/archived source/input hashes verify; all 618 artifacts from the completed TOP-025 compiled campaign remain intact |
