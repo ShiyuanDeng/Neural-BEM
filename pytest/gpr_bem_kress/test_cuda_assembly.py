@@ -73,3 +73,17 @@ def test_device_factors_solve_with_the_residual_guard():
     assert np.linalg.norm(solution - reference) <= 1e-12 * np.linalg.norm(reference)
     vector, _ = cuda_assembly.DeviceFactors(matrix).solve(rhs[:, 0])
     assert vector.shape == (256,) and np.allclose(vector, solution[:, 0], rtol=0, atol=1e-12)
+
+
+def test_factors_release_the_device_matrix_and_keep_a_host_copy():
+    curve = _curve(128)
+    matrix = cuda_assembly.build_muller_matrix(curve, 5.0, 8.0)
+    factors = cuda_assembly.DeviceFactors(matrix)
+    reference = matrix.cpu().numpy()
+    del matrix
+    rhs = np.ones((256, 2), complex)
+    first, first_residual = factors.solve(rhs)
+    assert factors._device_matrix is None and isinstance(factors.host, np.ndarray)
+    assert np.array_equal(factors.host, reference) and not factors.host.flags.writeable
+    second, second_residual = factors.solve(rhs)  # residual check from the uploaded host matrix
+    assert np.array_equal(first, second) and first_residual == second_residual < 1e-13

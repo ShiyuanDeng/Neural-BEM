@@ -59,7 +59,7 @@ def main(out):
                 gpu, gpu_jac, gpu_seconds = backend_states(curve, catalog, nodes, 'cuda', basis)
                 assert all(isinstance(s.factors, cuda_assembly.DeviceFactors) for s in gpu)
                 # CPU states hold the reference build_muller_system matrix; GPU states hold the device one.
-                matrix = [float(np.max(np.abs(g.matrix.cpu().numpy() - c.matrix)) / np.max(np.abs(c.matrix)))
+                matrix = [float(np.max(np.abs(g.matrix - c.matrix)) / np.max(np.abs(c.matrix)))
                           for g, c in zip(gpu, cpu)]
                 row = dict(case=case, curve=label, nodes=nodes, frequencies=len(catalog),
                     matrix_max_relative=max(matrix),

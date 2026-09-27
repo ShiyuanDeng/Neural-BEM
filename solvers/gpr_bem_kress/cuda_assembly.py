@@ -123,6 +123,7 @@ template <typename T> void cephes_bessel012(T x, T& j0, T& y0, T& j1, T& y1, T& 
 
 
 _initialization = threading.Lock()
+_device_work = threading.Lock()
 
 
 @lru_cache(maxsize=None)
@@ -226,89 +227,103 @@ def build_muller_matrix(curve, k_exterior, k_interior, *, config=None, device="c
     interior = validate_wavenumber(k_interior, name="k_interior")
     count = adapter.num_nodes
     diagonal_log, diagonal_remainder = _diagonal_split_limits(adapter, exterior, interior)
-    as_tensor = lambda values: torch.tensor(np.asarray(values), device=device)  # copies read-only arrays
+    # One device assembly at a time per process bounds transient device memory.
+    with _device_work:
+        as_tensor = lambda values: torch.tensor(np.asarray(values), device=device)  # copies read-only arrays
 
-    points, normals = as_tensor(adapter.points), as_tensor(adapter.normals)
-    dx = points[:, None, 0] - points[None, :, 0]
-    dy = points[:, None, 1] - points[None, :, 1]
-    distance = torch.sqrt(dx * dx + dy * dy)
-    target_projection = dx * normals[:, None, 0] + dy * normals[:, None, 1]
-    source_projection = dx * normals[None, :, 0] + dy * normals[None, :, 1]
-    normal_dot = normals[:, None, 0] * normals[None, :, 0] + normals[:, None, 1] * normals[None, :, 1]
-    off_diagonal = ~torch.eye(count, dtype=torch.bool, device=device)
-    maximum_wave = max(abs(exterior), abs(interior))
-    near = off_diagonal & (maximum_wave * distance <= settings.near_argument)
-    direct = off_diagonal & ~near
+        points, normals = as_tensor(adapter.points), as_tensor(adapter.normals)
+        dx = points[:, None, 0] - points[None, :, 0]
+        dy = points[:, None, 1] - points[None, :, 1]
+        distance = torch.sqrt(dx * dx + dy * dy)
+        target_projection = dx * normals[:, None, 0] + dy * normals[:, None, 1]
+        source_projection = dx * normals[None, :, 0] + dy * normals[None, :, 1]
+        normal_dot = normals[:, None, 0] * normals[None, :, 0] + normals[:, None, 1] * normals[None, :, 1]
+        off_diagonal = ~torch.eye(count, dtype=torch.bool, device=device)
+        maximum_wave = max(abs(exterior), abs(interior))
+        near = off_diagonal & (maximum_wave * distance <= settings.near_argument)
+        direct = off_diagonal & ~near
 
-    radial = [torch.zeros((count, count), dtype=torch.complex128, device=device) for _ in range(6)]
-    for mask, values in ((near, lambda r: _series(r, exterior, interior, settings.series_terms)),
-                         (direct, lambda r: _direct(r, exterior, interior))):
-        if bool(mask.any()):
-            for destination, source in zip(radial, values(distance[mask])):
-                destination[mask] = source
-    green, radial_first, radial_anisotropy, green_log, radial_first_log, radial_anisotropy_log = radial
-    safe = torch.where(off_diagonal, distance, torch.ones_like(distance))
-    projection_product = target_projection * source_projection / safe ** 2
-    kernels = dict(
-        V=(green, green_log),
-        K=(-radial_first * source_projection, -radial_first_log * source_projection),
-        Kp=(radial_first * target_projection, radial_first_log * target_projection),
-        T=(-radial_first * normal_dot - radial_anisotropy * projection_product,
-           -radial_first_log * normal_dot - radial_anisotropy_log * projection_product),
-    )
+        radial = [torch.zeros((count, count), dtype=torch.complex128, device=device) for _ in range(6)]
+        for mask, values in ((near, lambda r: _series(r, exterior, interior, settings.series_terms)),
+                             (direct, lambda r: _direct(r, exterior, interior))):
+            if bool(mask.any()):
+                for destination, source in zip(radial, values(distance[mask])):
+                    destination[mask] = source
+        green, radial_first, radial_anisotropy, green_log, radial_first_log, radial_anisotropy_log = radial
+        safe = torch.where(off_diagonal, distance, torch.ones_like(distance))
+        projection_product = target_projection * source_projection / safe ** 2
+        kernels = dict(
+            V=(green, green_log),
+            K=(-radial_first * source_projection, -radial_first_log * source_projection),
+            Kp=(radial_first * target_projection, radial_first_log * target_projection),
+            T=(-radial_first * normal_dot - radial_anisotropy * projection_product,
+               -radial_first_log * normal_dot - radial_anisotropy_log * projection_product),
+        )
 
-    offsets = (torch.arange(count, device=device)[:, None] - torch.arange(count, device=device)[None, :]) % count
-    kress_by_offset = kress_log_weights(count)
-    log_by_offset = np.zeros(count, dtype=np.float64)
-    log_by_offset[1:] = np.log(4.0 * np.sin(np.pi * np.arange(1, count) / count) ** 2)
-    weight_rows = as_tensor(kress_by_offset)[offsets]
-    log_rows = as_tensor(log_by_offset)[offsets]
-    source_speed = as_tensor(adapter.theta_speeds)[None, :]
-    diagonal = torch.arange(count, device=device)
-    blocks = {}
-    for name, (kernel, logarithmic) in kernels.items():
-        zero = torch.zeros((), dtype=torch.complex128, device=device)
-        kernel_grid = torch.where(off_diagonal, kernel, zero)
-        logarithmic_grid = torch.where(off_diagonal, logarithmic, zero)
-        rows = source_speed * (adapter.theta_step * kernel_grid + 0.5 * logarithmic_grid * (
-            weight_rows - adapter.theta_step * log_rows))
-        rows[diagonal, diagonal] = as_tensor(
-            kress_by_offset[0] * diagonal_log[name] + adapter.theta_step * diagonal_remainder[name])
-        blocks[name] = rows
+        offsets = (torch.arange(count, device=device)[:, None] - torch.arange(count, device=device)[None, :]) % count
+        kress_by_offset = kress_log_weights(count)
+        log_by_offset = np.zeros(count, dtype=np.float64)
+        log_by_offset[1:] = np.log(4.0 * np.sin(np.pi * np.arange(1, count) / count) ** 2)
+        weight_rows = as_tensor(kress_by_offset)[offsets]
+        log_rows = as_tensor(log_by_offset)[offsets]
+        source_speed = as_tensor(adapter.theta_speeds)[None, :]
+        diagonal = torch.arange(count, device=device)
+        blocks = {}
+        for name, (kernel, logarithmic) in kernels.items():
+            zero = torch.zeros((), dtype=torch.complex128, device=device)
+            kernel_grid = torch.where(off_diagonal, kernel, zero)
+            logarithmic_grid = torch.where(off_diagonal, logarithmic, zero)
+            rows = source_speed * (adapter.theta_step * kernel_grid + 0.5 * logarithmic_grid * (
+                weight_rows - adapter.theta_step * log_rows))
+            rows[diagonal, diagonal] = as_tensor(
+                kress_by_offset[0] * diagonal_log[name] + adapter.theta_step * diagonal_remainder[name])
+            blocks[name] = rows
 
-    matrix = torch.empty((2 * count, 2 * count), dtype=torch.complex128, device=device)
-    matrix[:count, :count] = -blocks["K"]
-    matrix[:count, count:] = blocks["V"]
-    matrix[count:, :count] = -blocks["T"]
-    matrix[count:, count:] = blocks["Kp"]
-    identity = torch.arange(2 * count, device=device)
-    matrix[identity, identity] += 1.0
-    if not bool(torch.isfinite(matrix).all()):
-        raise FloatingPointError("CUDA Müller system composition produced non-finite entries.")
-    return matrix
+        matrix = torch.empty((2 * count, 2 * count), dtype=torch.complex128, device=device)
+        matrix[:count, :count] = -blocks["K"]
+        matrix[:count, count:] = blocks["V"]
+        matrix[count:, :count] = -blocks["T"]
+        matrix[count:, count:] = blocks["Kp"]
+        identity = torch.arange(2 * count, device=device)
+        matrix[identity, identity] += 1.0
+        if not bool(torch.isfinite(matrix).all()):
+            raise FloatingPointError("CUDA Müller system composition produced non-finite entries.")
+        return matrix
 
 
 class DeviceFactors:
-    """LU factors of a device system, solving host right-hand sides with the residual guard."""
+    """Device LU factors that solve host right-hand sides with the residual guard.
+
+    Only the factors stay on the device; ``host`` keeps the system matrix in
+    host memory as on the CPU path. The first solve reuses the device matrix it
+    was built from; later solves upload ``host`` for their residual check.
+    Retained states therefore hold one factor array of device memory each.
+    """
 
     def __init__(self, matrix):
         import torch
         _ready(matrix.device)
-        self.matrix = matrix
-        self.lu, self.pivots, info = torch.linalg.lu_factor_ex(matrix)
-        if int(info) != 0:
-            raise FloatingPointError("Singular dense Müller system.")
+        with _device_work:
+            self.lu, self.pivots, info = torch.linalg.lu_factor_ex(matrix)
+            if int(info) != 0:
+                raise FloatingPointError("Singular dense Müller system.")
+        self.host = matrix.cpu().numpy()
+        self.host.setflags(write=False)
+        self._device_matrix = matrix
 
     def solve(self, rhs):
         """Return ``(solution, relative residual)``; host complex arrays in and out."""
         import torch
-        b = torch.as_tensor(np.ascontiguousarray(rhs, dtype=np.complex128), device=self.matrix.device)
+        matrix, self._device_matrix = self._device_matrix, None
+        if matrix is None:
+            matrix = torch.tensor(self.host, device=self.lu.device)
+        b = torch.as_tensor(np.ascontiguousarray(rhs, dtype=np.complex128), device=self.lu.device)
         column = b.ndim == 1
         if column:
             b = b[:, None]
         x = torch.linalg.lu_solve(self.lu, self.pivots, b)
-        residual = float(torch.linalg.norm(self.matrix @ x - b)) / max(float(torch.linalg.norm(b)),
-                                                                       np.finfo(float).tiny)
+        residual = float(torch.linalg.norm(matrix @ x - b)) / max(float(torch.linalg.norm(b)),
+                                                                  np.finfo(float).tiny)
         solution = x.cpu().numpy()
         return (solution[:, 0] if column else solution), residual
 

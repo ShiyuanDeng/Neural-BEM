@@ -1,0 +1,18 @@
+{
+  "passed": false,
+  "traceback": "Traceback (most recent call last):\n  File \"/home/drdeng/Neural_SDF_BEM_AD/results/validation/shape_continuation/SC-042-state-strategies/run.py\", line 115, in audit\n    b = fine.production(curve, 'audit_fine')\n  File \"/home/drdeng/Neural_SDF_BEM_AD/experiments/shape_continuation/lm_backend.py\", line 329, in production\n    return self._predict(curve, self.stage.nodes, category, keep=True)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/experiments/shape_continuation/lm_backend.py\", line 315, in _predict\n    value = call()\n  File \"/home/drdeng/miniconda3/envs/EMNerf/lib/python3.9/concurrent/futures/_base.py\", line 439, in result\n    return self.__get_result()\n  File \"/home/drdeng/miniconda3/envs/EMNerf/lib/python3.9/concurrent/futures/_base.py\", line 391, in __get_result\n    raise self._exception\n  File \"/home/drdeng/miniconda3/envs/EMNerf/lib/python3.9/concurrent/futures/thread.py\", line 58, in run\n    result = self.fn(*self.args, **self.kwargs)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/experiments/shape_continuation/lm_backend.py\", line 307, in predict\n    state = solve(curve, observation.wavenumber, self.contrast, observation.acquisition, nodes)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/experiments/shape_continuation/forward.py\", line 233, in solve\n    matrix = (cuda_assembly.build_muller_matrix(curve, wavenumber, ki) if device\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/gpr_bem_kress/cuda_assembly.py\", line 256, in build_muller_matrix\n    T=(-radial_first * normal_dot - radial_anisotropy * projection_product,\ntorch.OutOfMemoryError: CUDA out of memory. Tried to allocate 36.00 MiB. GPU 0 has a total capacity of 31.36 GiB of which 57.69 MiB is free. Process 3408475 has 4.40 GiB memory in use. Process 3408478 has 4.93 GiB memory in use. Process 3408473 has 2.76 GiB memory in use. Process 3408474 has 4.85 GiB memory in use. Process 3408477 has 4.51 GiB memory in use. Including non-PyTorch memory, this process has 9.00 GiB memory in use. Of the allocated memory 7.94 GiB is allocated by PyTorch, and 191.99 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)\n",
+  "work": {
+    "work_units": 37,
+    "stage": null,
+    "stage_units": 37,
+    "stage_quota": null,
+    "cap": 130,
+    "solves": {
+      "None:audit_base": 19,
+      "None:audit_fine": 18
+    },
+    "reciprocal_batches": {},
+    "failed": {},
+    "seconds": 4.284850429045036
+  }
+}

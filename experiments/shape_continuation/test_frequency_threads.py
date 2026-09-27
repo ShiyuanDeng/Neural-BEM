@@ -136,6 +136,7 @@ def test_cuda_backend_objective_agrees_with_the_cpu_reference(monkeypatch):
         ledger.begin_stage("s", None)
         objective = Objective(fit, contrast, BackendConfig(), ledger)
         production = objective.production(curve, "initial_objective")
+        assert all(isinstance(state.matrix, np.ndarray) for state in production.forwards)
         space = update.prepare(curve, fit.update_modes, fit.curve_modes)
         results[backend] = (production.prediction, objective.jacobian(production, update, space),
                             objective.refined(curve).prediction, record(ledger))
