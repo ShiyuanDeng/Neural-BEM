@@ -19,8 +19,7 @@ sys.path[:0] = [str(ROOT), str(ROOT / 'solvers')]
 from experiments.shape_continuation import atlas_cases as ac, atlas_strategy_tests as ast, atlas_video as av  # noqa: E402
 from experiments.shape_continuation import spd_cases as sc  # noqa: E402
 from experiments.shape_continuation.forward import ordered_calls, shape_jacobian, solve  # noqa: E402
-from gpr_bem_kress import build_muller_system, cuda_assembly  # noqa: E402
-from gpr_bem_kress.execution import execution  # noqa: E402
+from gpr_bem_kress import cuda_assembly  # noqa: E402
 from ordered_boundary.validation_cache import validation_cache  # noqa: E402
 
 CASES = ('wrong_circle', 'circle_to_star', 'circle_to_c', 'kite', 'peanut', 'hook')
@@ -59,14 +58,9 @@ def main(out):
                 cpu, cpu_jac, cpu_seconds = backend_states(curve, catalog, nodes, 'cpu', basis)
                 gpu, gpu_jac, gpu_seconds = backend_states(curve, catalog, nodes, 'cuda', basis)
                 assert all(isinstance(s.factors, cuda_assembly.DeviceFactors) for s in gpu)
-                matrix = []
-                for state in cpu:
-                    with execution(kernels='reference', device='cpu'):
-                        reference = build_muller_system(state.curve, state.wavenumber,
-                                                        state.interior_wavenumber).system_matrix
-                    device = cuda_assembly.build_muller_matrix(state.curve, state.wavenumber,
-                                                               state.interior_wavenumber).cpu().numpy()
-                    matrix.append(float(np.max(np.abs(device - reference)) / np.max(np.abs(reference))))
+                # CPU states hold the reference build_muller_system matrix; GPU states hold the device one.
+                matrix = [float(np.max(np.abs(g.matrix.cpu().numpy() - c.matrix)) / np.max(np.abs(c.matrix)))
+                          for g, c in zip(gpu, cpu)]
                 row = dict(case=case, curve=label, nodes=nodes, frequencies=len(catalog),
                     matrix_max_relative=max(matrix),
                     prediction_max_relative=max(relative(g.prediction, c.prediction) for g, c in zip(gpu, cpu)),
