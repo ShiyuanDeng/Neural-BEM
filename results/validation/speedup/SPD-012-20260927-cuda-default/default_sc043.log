@@ -1,0 +1,14 @@
+STAGE wrong_circle fixed {'block': 1, 'M': 25, 'outcome': 'NORMAL_OPTIMIZER_RETURN', 'stop': 'loss_tolerance', 'initial_loss': 9.726006950110424e-16, 'final_loss': 9.726006950110424e-16, 'units': 38, 'diagnostic_units': 0, 'total_units': 38, 'detail': None}
+STAGE wrong_circle fixed {'block': 2, 'M': 31, 'outcome': 'NORMAL_OPTIMIZER_RETURN', 'stop': 'loss_tolerance', 'initial_loss': 9.726006950110424e-16, 'final_loss': 9.726006950110424e-16, 'units': 38, 'diagnostic_units': 0, 'total_units': 76, 'detail': None}
+STAGE wrong_circle fixed {'block': 3, 'M': 37, 'outcome': 'NORMAL_OPTIMIZER_RETURN', 'stop': 'loss_tolerance', 'initial_loss': 9.726006950110424e-16, 'final_loss': 9.726006950110424e-16, 'units': 38, 'diagnostic_units': 0, 'total_units': 114, 'detail': None}
+DONE wrong_circle fixed {'rms_mm': 0.0002446741088764662, 'hausdorff_mm': 0.00036579068811256975, 'hausdorff_upper_mm': 0.019625033083572295, 'tightest_radius_mm': 49.946307695814134, 'tightest_radius_fine_mm': 49.946307695814156} True
+STAGE peanut fixed {'block': 1, 'M': 25, 'outcome': 'STAGE_QUOTA_REACHED', 'stop': None, 'initial_loss': 3.491334590108746e-12, 'final_loss': 2.6371828586147932e-14, 'units': 266, 'diagnostic_units': 0, 'total_units': 266, 'detail': 'next complete batch and endpoint reserve exceed the stage quota'}
+STAGE peanut fixed {'block': 2, 'M': 31, 'outcome': 'NORMAL_OPTIMIZER_RETURN', 'stop': 'loss_tolerance', 'initial_loss': 2.6371828586147932e-14, 'final_loss': 6.566944233889824e-15, 'units': 114, 'diagnostic_units': 0, 'total_units': 380, 'detail': None}
+STAGE peanut fixed {'block': 3, 'M': 37, 'outcome': 'NORMAL_OPTIMIZER_RETURN', 'stop': 'loss_tolerance', 'initial_loss': 6.566944233889824e-15, 'final_loss': 6.566944233889824e-15, 'units': 38, 'diagnostic_units': 0, 'total_units': 418, 'detail': None}
+DONE peanut fixed {'rms_mm': 0.0024277975044535924, 'hausdorff_mm': 0.007444522307488141, 'hausdorff_upper_mm': 0.02767384771892894, 'tightest_radius_mm': 14.091680006742221, 'tightest_radius_fine_mm': 14.091680006742221} True
+wrong_circle DIFFERENT 254.7 s -> 17.2 s (14.78x)
+peanut DIFFERENT 652.0 s -> 35.5 s (18.38x)
+IDENTICAL 32387 values in 18 files
+wrong_circle PASS 254.7 -> 17.2 s (14.8x) rms rel 0.0e+00 units (114, 114) accepted (3, 3) 
+peanut PASS 652.0 -> 35.5 s (18.4x) rms rel 2.2e-09 units (418, 418) accepted (7, 7) 
+PASSED

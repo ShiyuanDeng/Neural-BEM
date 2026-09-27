@@ -6,7 +6,7 @@
 2. Port the two-object runs (SC-047/048) to the GPU.
 3. Speed up the geometry check.
 
-The user replied, verbatim: "yes for first two". That approves items 1 and 2, recorded here as SPD-012 and SPD-013. Item 3 is not approved. **Execution status: IN PROGRESS.**
+The user replied, verbatim: "yes for first two". That approves items 1 and 2, recorded here as SPD-012 and SPD-013. Item 3 is not approved. **Execution status: COMPLETE / PASS.** See the [results](01_results.md).
 
 Owner: Claude Code. There is no independent reviewer. The work stays on the existing checkout and branch, `feature/shape-frequency-continuation`.
 
