@@ -26,11 +26,12 @@ h1{font-size:22px;font-weight:700;margin:0;letter-spacing:-.01em;text-wrap:balan
 .tracks button{font:inherit;font-size:13px;border:1px solid var(--faint);background:var(--panel);color:var(--ink);padding:6px 12px;border-radius:6px;cursor:pointer}
 .tracks button[aria-pressed="true"]{border-color:var(--amber);box-shadow:inset 0 0 0 1px var(--amber)}
 .tracks button:focus-visible,.controls button:focus-visible,input[type=range]:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
-.grid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);gap:16px}
-@media (max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
-.panel{background:var(--panel);border:1px solid var(--faint);border-radius:8px;padding:12px;display:grid;gap:8px;min-width:0}
+.grid{display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
+.below{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr) minmax(0,1.2fr);gap:16px}
+@media (max-width:900px){.below{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--panel);border:1px solid var(--faint);border-radius:8px;padding:12px;display:grid;gap:8px;min-width:0;align-content:start}
 .label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
-#cube{height:600px;width:100%}
+#cube{height:620px;width:100%}
 @media (max-width:600px){#cube{height:420px}}
 .controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .controls button{font:inherit;font-size:13px;border:1px solid var(--faint);background:var(--bg);color:var(--ink);padding:4px 10px;border-radius:6px;cursor:pointer;min-width:64px}
@@ -49,13 +50,13 @@ dt{color:var(--muted);font-size:12.5px} dd{margin:0;font-family:var(--mono);font
 <div class="wrap">
 <header>
   <h1>Atlas along trajectories</h1>
-  <p class="lede">Each card is one accepted state's atlas (19 frequencies across, ripple orders 0–24 up), laid out left to right in trajectory order. The amber prism is what each update was allowed to use (active frequencies × orders 0…M), so you can watch the schedule widen it while the colour inside drains.</p>
+  <p class="lede">Each card is one accepted state's atlas (19 frequencies from 0.25 GHz on the left to 2.5 GHz on the right, ripple orders 0–24 up), taken at stage ends and laid out left to right along the trajectory. The amber box on each card is what the update was allowed to use (active frequencies × orders 0…M); the line joining the boxes shows the schedule widening it while the colour inside drains.</p>
   <div class="tracks" id="tracks" role="group" aria-label="Trajectory"></div>
 </header>
 
 <div class="grid">
   <section class="panel" aria-label="3D atlas">
-    <div class="label">Atlas cards along the trajectory · drag to rotate, scroll to zoom</div>
+    <div class="label">Snapshots along the trajectory (stage ends, at most 8) · drag to rotate, scroll to zoom</div>
     <div id="cube"></div>
     <div class="controls">
       <button id="play" type="button" aria-label="Play through states">Play</button>
@@ -65,16 +66,12 @@ dt{color:var(--muted);font-size:12.5px} dd{margin:0;font-family:var(--mono);font
     <div class="key"><span><span class="swatch"></span>update box (frequencies × orders ≤ M; drawn to order 24 when M is larger)</span><span>removable misfit, log₁₀<span class="ramp"></span>−4 … 0</span></div>
   </section>
 
-  <aside class="panel" aria-label="Selected state">
-    <div class="label">Selected state</div>
-    <dl id="facts"></dl>
-    <div class="label">Its atlas</div>
-    <div id="flat"></div>
-    <div class="label">Loss (log)</div>
-    <div id="loss" class="spark"></div>
-    <div class="label">Hausdorff error to truth, mm</div>
-    <div id="haus" class="spark"></div>
-  </aside>
+  <div class="below">
+    <section class="panel" aria-label="Selected state"><div class="label">Selected snapshot</div><dl id="facts"></dl></section>
+    <section class="panel" aria-label="Its atlas"><div class="label">Its atlas</div><div id="flat"></div></section>
+    <section class="panel" aria-label="Progress"><div class="label">Loss (log), every accepted state</div><div id="loss" class="spark"></div>
+      <div class="label">Hausdorff error to truth, mm</div><div id="haus" class="spark"></div></section>
+  </div>
 </div>
 
 <p class="note">Colour is the historical capped-QR score from <code>atlas_video.py</code>, recomputed here with the unchanged code (part 2 of the SC-041 outsider review). It shows where the fit could still remove misfit. Part 2 found it tracks the loss, not the geometry: compare the fading colour with the Hausdorff panel, and note that kite's flank artefact lives above order 30, outside this view. Truth enters only the Hausdorff panel.</p>
@@ -86,13 +83,20 @@ const DATA = {"ghz":[0.25,0.375,0.5,0.625,0.75,0.875,1.0,1.125,1.25,1.375,1.5,1.
 const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const $ = id => document.getElementById(id);
 let key = 'star', idx = 0, timer = null;
-const GAP = 2.5, FADE = 0.85;   // spacing between states along x, opacity of unselected cards
+const PITCH = 1.3, W = 1;   // card pitch and width along x (card height = orders)
+const gx = (k,g) => k*PITCH + (g-0.25)/2.25*W;   // spacing between states along x, opacity of unselected cards
 
 function theme(){
   return {ink:css('--ink'),muted:css('--muted'),grid:css('--grid'),panel:css('--panel'),amber:css('--amber'),
     scale:[[0,css('--h0')],[.2,css('--h1')],[.4,css('--h2')],[.6,css('--h3')],[.75,css('--h4')],[.88,css('--h5')],[1,css('--h6')]]};
 }
 const track = () => DATA.tracks[key];
+const MAXCARDS = 8;
+function snaps(){ const st = track().states;
+  const ends = st.map((s,k)=>k).filter(k => k===0 || k===st.length-1 || stageName(st[k])!==stageName(st[k+1]));
+  if(ends.length <= MAXCARDS) return ends;
+  const pick = new Set(); for(let i=0;i<MAXCARDS;i++) pick.add(ends[Math.round(i*(ends.length-1)/(MAXCARDS-1))]);
+  return [...pick]; }
 const orders = [...Array(DATA.orders+1).keys()];
 
 function box(s){
@@ -108,44 +112,41 @@ function shortName(s){
   return tag+' · M'+s.M; }
 
 function drawCube(){
-  const t = theme(), states = track().states;
-  const Ygrid = orders.map(()=>DATA.ghz), Zgrid = orders.map(o=>DATA.ghz.map(()=>o));
+  const t = theme(), all = track().states, S = snaps(), states = S.map(k=>all[k]);
   const traces = states.map((s,k) => ({
-    type:'surface', x:orders.map(()=>DATA.ghz.map(()=>k*GAP)), y:Ygrid, z:Zgrid, surfacecolor:s.heat,
-    cmin:DATA.low, cmax:0, colorscale:t.scale, showscale:false, opacity:k===idx?1:FADE,
-    lighting:{ambient:1,diffuse:0,specular:0,roughness:1,fresnel:0},
-    hovertemplate:'%{y:.3f} GHz · order %{z}<br>log₁₀ removable %{surfacecolor:.2f}<extra>state '+(k+1)+'</extra>'
+    type:'surface', x:orders.map(()=>DATA.ghz.map(g=>gx(k,g))), y:orders.map(()=>DATA.ghz.map(()=>0)), z:orders.map(o=>DATA.ghz.map(()=>o)),
+    surfacecolor:s.heat, cmin:DATA.low, cmax:0, colorscale:t.scale, showscale:false, opacity:1,
+    lighting:{ambient:1,diffuse:0,specular:0,roughness:1,fresnel:0}, customdata:orders.map(()=>DATA.ghz),
+    hovertemplate:'%{customdata:.3f} GHz · order %{z}<br>log₁₀ removable %{surfacecolor:.2f}<extra>'+shortName(s)+'</extra>'
   }));
-  // amber prism: a rectangle where the box changes, and the four edges joining consecutive boxes
-  const X=[],Y=[],Z=[], same=(a,b)=>a.x0===b.x0&&a.x1===b.x1&&a.y1===b.y1;
-  states.forEach((s,k)=>{const b=box(s); if(k>0&&k<states.length-1&&same(b,box(states[k-1])))return;
-    Y.push(b.x0,b.x1,b.x1,b.x0,b.x0,null); Z.push(b.y0,b.y0,b.y1,b.y1,b.y0,null); X.push(k*GAP,k*GAP,k*GAP,k*GAP,k*GAP,null);});
-  for(const [cx,cy] of [['x0','y0'],['x1','y0'],['x1','y1'],['x0','y1']]){
-    states.forEach((s,k)=>{const b=box(s); Y.push(b[cx]); Z.push(b[cy]); X.push(k*GAP);}); X.push(null);Y.push(null);Z.push(null);
-  }
-  traces.push({type:'scatter3d',mode:'lines',x:X,y:Y,z:Z,line:{color:t.amber,width:2},opacity:0.55,hoverinfo:'skip'});
-  traces.push(Object.assign({type:'scatter3d',mode:'lines',line:{color:t.amber,width:6},hoverinfo:'skip'},current()));
-  const starts = states.map((s,k)=>k).filter(k=>k===0||stageName(states[k])!==stageName(states[k-1]));
+  // amber box on every card, joined card to card by its top edge
+  const X=[],Y=[],Z=[];
+  states.forEach((s,k)=>{const b=box(s), x0=gx(k,b.x0), x1=gx(k,b.x1);
+    X.push(x0,x1,x1,x0,x0,null); Y.push(-0.02,-0.02,-0.02,-0.02,-0.02,null); Z.push(b.y0,b.y0,b.y1,b.y1,b.y0,null);});
+  states.forEach((s,k)=>{const b=box(s); X.push(gx(k,b.x0),gx(k,b.x1)); Y.push(-0.02,-0.02); Z.push(b.y1,b.y1);});
+  X.push(null);Y.push(null);Z.push(null);
+  traces.push({type:'scatter3d',mode:'lines',x:X,y:Y,z:Z,line:{color:t.amber,width:3},hoverinfo:'skip'});
+  traces.push(Object.assign({type:'scatter3d',mode:'lines',line:{color:t.amber,width:7},hoverinfo:'skip'},current()));
+  const starts = states.map((s,k)=>k);
   const axis = (title,extra={}) => Object.assign({title:{text:title,font:{size:12,color:t.muted}},color:t.muted,gridcolor:t.grid,zerolinecolor:t.grid,backgroundcolor:t.panel,showbackground:true,tickfont:{size:10,color:t.muted}},extra);
   Plotly.react('cube', traces, {
     paper_bgcolor:t.panel, margin:{l:0,r:0,t:0,b:0}, showlegend:false, font:{family:'Public Sans, system-ui, sans-serif',color:t.ink},
-    scene:{xaxis:axis('accepted state along the trajectory →',{tickvals:starts.map(k=>k*GAP),ticktext:starts.map(k=>shortName(states[k])),tickfont:{size:9,color:t.muted},showbackground:false}),
-      yaxis:axis('frequency, GHz'), zaxis:axis('ripple order m'),
-      aspectmode:'manual', aspectratio:{x:Math.max(2.2, states.length*0.11), y:0.8, z:0.8},
-      camera:{eye:{x:-2.3,y:-1.45,z:0.55}, center:{x:0,y:0,z:-0.05}}}
+    scene:{xaxis:axis('',{tickvals:states.map((s,k)=>gx(k,1.375)),ticktext:states.map(s=>shortName(s)),tickfont:{size:10,color:t.muted},showbackground:false,showgrid:false}),
+      yaxis:axis('',{showticklabels:false,showgrid:false,showbackground:false,range:[-1,1]}), zaxis:axis('ripple order m',{range:[-0.5,24.5]}),
+      aspectmode:'manual', aspectratio:{x:states.length*PITCH*0.42, y:0.35, z:0.42},
+      camera:{eye:{x:0.35,y:-2.4,z:0.7}, center:{x:0,y:0,z:0}, projection:{type:'orthographic'}}}
   }, {displaylogo:false, responsive:true, modeBarButtonsToRemove:['toImage']});
 }
 
-function current(){ const b=box(track().states[idx]);
-  const x=idx*GAP; return {y:[b.x0,b.x1,b.x1,b.x0,b.x0], z:[b.y0,b.y0,b.y1,b.y1,b.y0], x:[x,x,x,x,x]}; }
+function current(){ const b=box(track().states[snaps()[idx]]);
+  const x0=gx(idx,b.x0), x1=gx(idx,b.x1); return {x:[x0,x1,x1,x0,x0], y:[-0.03,-0.03,-0.03,-0.03,-0.03], z:[b.y0,b.y0,b.y1,b.y1,b.y0]}; }
 function highlight(){
-  const n = track().states.length, c = current();
-  Plotly.restyle('cube', {opacity:[...Array(n).keys()].map(k=>k===idx?1:FADE)}, [...Array(n).keys()]);
+  const n = snaps().length, c = current();
   Plotly.restyle('cube', {x:[c.x], y:[c.y], z:[c.z]}, [n+1]);
 }
 
 function drawSide(){
-  const t = theme(), states = track().states, s = states[idx], b = box(s);
+  const t = theme(), states = track().states, at = snaps()[idx], s = states[at], b = box(s);
   const fmt = (v,d=4) => Number(v).toPrecision(d);
   $('facts').innerHTML = [
     ['Stage', stageName(s).replace('_',' ')+(s.iteration!==undefined?' · step '+s.iteration:'')],
@@ -153,7 +154,7 @@ function drawSide(){
     ['Removable inside box', (100*s.inside).toFixed(1)+'%'], ['Loss', Number(s.loss).toExponential(3)],
     ['RMS to truth', fmt(s.rms)+' mm'], ['Hausdorff to truth', fmt(s.hausdorff)+' mm'], ['Tightest radius', fmt(s.radius)+' mm']
   ].map(([k,v])=>`<dt>${k}</dt><dd>${v}</dd>`).join('');
-  $('stepLabel').textContent = `state ${idx+1} / ${states.length}`;
+  $('stepLabel').textContent = `snapshot ${idx+1} / ${snaps().length} · state ${at+1} of ${states.length}`;
   Plotly.react('flat', [{type:'heatmap', x:DATA.ghz, y:orders, z:s.heat, zmin:DATA.low, zmax:0, colorscale:t.scale, showscale:false,
       xgap:1, ygap:1, hovertemplate:'%{x:.3f} GHz · order %{y}<br>log₁₀ removable %{z:.2f}<extra></extra>'}],
     {paper_bgcolor:t.panel, plot_bgcolor:t.panel, margin:{l:34,r:6,t:4,b:30}, font:{size:10,color:t.muted,family:'Public Sans, system-ui, sans-serif'},
@@ -163,7 +164,7 @@ function drawSide(){
   const xs = states.map((_,k)=>k+1);
   const spark = (id, ys, log, unit) => Plotly.react(id, [
       {x:xs, y:ys, mode:'lines', line:{color:css('--h4'),width:2}, hovertemplate:'state %{x}: %{y:.3g}'+unit+'<extra></extra>'},
-      {x:[idx+1], y:[ys[idx]], mode:'markers', marker:{size:9,color:t.amber,line:{color:t.panel,width:2}}, hoverinfo:'skip'}],
+      {x:[at+1], y:[ys[at]], mode:'markers', marker:{size:9,color:t.amber,line:{color:t.panel,width:2}}, hoverinfo:'skip'}],
     {paper_bgcolor:t.panel, plot_bgcolor:t.panel, margin:{l:44,r:8,t:4,b:24}, showlegend:false, font:{size:10,color:t.muted,family:'Public Sans, system-ui, sans-serif'},
      xaxis:{gridcolor:t.grid,zeroline:false}, yaxis:{type:log?'log':'linear',gridcolor:t.grid,zeroline:false,exponentformat:'e'}},
     {displayModeBar:false, responsive:true});
@@ -175,14 +176,14 @@ function select(k){ idx = k; $('step').value = k; highlight(); drawSide(); }
 function load(k){
   key = k; idx = 0; stop();
   document.querySelectorAll('#tracks button').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.key===k)));
-  $('step').max = track().states.length-1; $('step').value = 0;
+  $('step').max = snaps().length-1; $('step').value = 0;
   drawCube(); drawSide();
 }
 function stop(){ if(timer){clearInterval(timer); timer=null; $('play').textContent='Play';} }
 $('play').onclick = () => {
   if(timer){ stop(); return; }
   $('play').textContent='Pause';
-  timer = setInterval(()=>{ const n = track().states.length; select((idx+1)%n); if(idx===n-1) stop(); }, 700);
+  timer = setInterval(()=>{ const n = snaps().length; select((idx+1)%n); if(idx===n-1) stop(); }, 900);
 };
 $('step').oninput = e => select(+e.target.value);
 Object.entries(DATA.tracks).forEach(([k,v])=>{
