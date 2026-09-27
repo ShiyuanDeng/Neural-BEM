@@ -107,12 +107,19 @@ candidate refinement comparisons, more controls and independent noise draws.
 
 ## Work and reproduction
 
-Runs are sequential with one BLAS/OpenMP thread. Frequency solves and
+Comparison arms run sequentially with one BLAS/OpenMP thread. Ancillary
+regression/report generation overlaps the final diagnostics and follow-up;
+no timing superiority is inferred. Frequency solves and
 reciprocal batches are both charged to strategy ledgers. Topology records
 also retain grid evaluation timings, RHS counts and separate refinement
 ledgers. Geometry projection counts and timings remain in update records.
 Raw wall times are observations from one run per arm, not repeated timing
 benchmarks. Report generation and geometry-only scoring are separate.
+The closeout accounting totals 4,936 frequency forward/reciprocal batches plus
+eight independent cylinder-series evaluations. This includes 368 coupled
+qualification, 72 atlas, eight strategy data-generation, 3,904 strategy-path
+and 584 topology batches. Different quadratures and object counts do not have
+equal FLOP costs. Test-suite work is separate from the experiment ledgers.
 
 `preflight_serialization_error.log` preserves an initial JSON encoding failure
 before any qualification solve. The serializer was corrected before the

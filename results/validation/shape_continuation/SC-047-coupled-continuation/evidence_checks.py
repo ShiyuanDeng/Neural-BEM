@@ -61,7 +61,18 @@ def main():
         check(row['refinement']['audit']['passed'], name + ': shape endpoint qualified')
         for phase in ('before', 'after'):
             check(row[phase]['finite_birth_refinement'] <= 1e-6, name + '/' + phase + ': finite birth qualified')
-    result = dict(passed=True, checks=len(checks), strategy_units=units, labels=checks)
+    qualification = read(HERE / 'qualification.json')
+    accounting = dict(
+        coupled_qualification=qualification['work']['attempted'] + qualification['work']['jacobians'],
+        independent_series_solves=qualification['independent_multicylinder_frequency_solves'],
+        atlas=read(HERE / 'atlas.json')['work']['work_units'],
+        strategy_input_generation=read(HERE / 'input_work.json')['attempted'],
+        strategy_paths=units,
+        topology=topology['work']['rhs_columns'] // 24,
+        note='Frequency forward and reciprocal batches; varying node/component counts mean these are not equal FLOP costs. Tests and geometry-only reporting are separate.')
+    accounting['frequency_batch_units'] = sum(accounting[k] for k in (
+        'coupled_qualification', 'atlas', 'strategy_input_generation', 'strategy_paths', 'topology'))
+    result = dict(passed=True, checks=len(checks), strategy_units=units, accounting=accounting, labels=checks)
     (HERE / 'evidence_checks.json').write_text(json.dumps(result, indent=2) + '\n')
     print(json.dumps({k: v for k, v in result.items() if k != 'labels'}))
 
