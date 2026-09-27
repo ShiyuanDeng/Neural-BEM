@@ -6,7 +6,7 @@ import pytest
 
 from .forward import solve, shape_jacobian
 from .geometry import FourierCurve
-from .multi_object import MultiCurve, MultiUpdate, conditional_information
+from .multi_object import MultiCurve, MultiUpdate, conditional_information, insertion_response
 from .test_lm_backend import acquisition
 from .updates import BorgesUpdate
 
@@ -82,3 +82,21 @@ def test_conditional_information_projection_identity_and_covariance():
     changed = conditional_information((j1 @ scale, j2), (scale.T @ g1 @ scale, g2))
     np.testing.assert_allclose(result[0]["conditional_singular_values"],
                                changed[0]["conditional_singular_values"], rtol=1e-12)
+
+
+def test_current_scene_insertion_response_area_scaling_and_strength():
+    scene, _ = pair()
+    scan = acquisition(8)
+    location = .2 + 1.5j
+    base = solve(scene, 1.3, .4, scan, 96)
+    q = insertion_response(base, [[location.real, location.imag]])[:, 0]
+    errors = []
+    for radius in (.004, .002, .001):
+        disk = FourierCurve(np.pad(FourierCurve.circle(radius, location).coefficients, (15, 15)))
+        trial = MultiCurve((*scene.components, disk), (*scene.ids, "probe"))
+        fd = (solve(trial, 1.3, .4, scan, 96).prediction - base.prediction) / (np.pi * radius**2)
+        errors.append(np.linalg.norm(fd - q) / np.linalg.norm(q))
+    assert errors[-1] < errors[0] and errors[-1] < 1e-3
+    twice = solve(scene, 1.3, .4, replace(scan, strength=2 + 1j), 96)
+    np.testing.assert_allclose(insertion_response(twice, [[location.real, location.imag]])[:, 0],
+                               (2 + 1j) * q, rtol=1e-12)

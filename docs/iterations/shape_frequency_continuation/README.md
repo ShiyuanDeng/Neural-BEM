@@ -12,6 +12,17 @@ provisional**, with two profile differences and plotting provenance unresolved.
 
 ## Current handoff
 
+**2026-09-27 coupled follow-through:** Claude's final review and
+[multi-object/topology roadmap](../../GPR_next_steps_multi_object_topology.md)
+were pulled after the requested one-hour wait. [SC-047 / iteration 27](iteration_27/01_results.md)
+qualifies the coupled non-star-shaped forward and complete derivative. All 12
+local reconstruction endpoints pass numerical audits; worst-object RMS falls
+from 3.81 mm to 0.74–1.03 mm. Conditional selection fails all four superiority
+gates. The current-scene topological derivative passes finite-insertion checks,
+but false births and a misplaced missing-object minimum withhold topology
+actions. [SC-048's frozen follow-up](iteration_27/03_plan.md) tests compact exact
+global motions against simple normal-band controls. No default changes.
+
 **2026-09-26 strategy campaign:** the user authorized successive controlled
 experiments after review of Claude's `b946d57`. **SC-042/043/044 are complete:
 60 comparison paths plus six shared fresh-case prefixes.** All returned
@@ -22,7 +33,8 @@ retains all original stops, timeouts and separately charged qualifications.
 
 | Item | State |
 |---|---|
-| Latest cycle | [Iteration 26 / SC-043](iteration_26/01_results.md): COMPLETE, 18/18 policy paths and audits. Atlas RMS geometric-mean ratios 1.11301 versus fixed and 1.00512 versus stagnation; both superiority gates fail. Kite RMS is 88%/68% worse despite qualified diagnostics. |
+| Latest completed cycle | [Iteration 27 / SC-047](iteration_27/01_results.md): coupled physics PASS, 12/12 local endpoint audits; conditional selector not superior; topological derivative qualified but action gate fails. |
+| Prior strategy decision | [Iteration 26 / SC-043](iteration_26/01_results.md): COMPLETE, 18/18 policy paths and audits. Atlas RMS geometric-mean ratios 1.11301 versus fixed and 1.00512 versus stagnation; both superiority gates fail. Kite RMS is 88%/68% worse despite qualified diagnostics. |
 | State treatment | [Iteration 24 / SC-042](iteration_24/01_results.md): 24/24 development suffixes. One-off cleanup repairs the kite artifact and passes its development gate; recurrent cleanup and a cap give essentially tied geometry. Common-work aggregate improvement is much smaller than terminal improvement. |
 | Fresh shapes and noise | [Iteration 25 / SC-044](iteration_25/01_results.md): six common prefixes and 18 suffix paths on two fixed new shapes. Cleanup/cap avoid one noisy-C numerical stop and suppress some local artifacts; most RMS comparisons tie. Original transfer gates retain two audit timeouts. |
 | Endpoint follow-ups | All five originally timed-out endpoints have separately passing unchanged audits in [SC-045](../../../results/validation/shape_continuation/SC-045-timeout-qualification/README.md) and [SC-046](../../../results/validation/shape_continuation/SC-046-lost-audit-recovery/README.md). The first SC-045 result was lost to an output error; its failed record and uncertain cost remain. |
@@ -59,6 +71,10 @@ against SPD on SPD's single-object case. The test covers one near-truth
 handoff only.
 
 ## Where things live
+
+- **Coupled follow-through:** [SC-047 results](iteration_27/01_results.md),
+  [evidence and figures](../../../results/validation/shape_continuation/SC-047-coupled-continuation/README.md),
+  and [SC-048 contract](iteration_27/03_plan.md).
 
 - **Current campaign:** [SC-042 state treatments](iteration_24/01_results.md),
   [SC-044 fresh shapes and noise](iteration_25/01_results.md),
@@ -177,3 +193,4 @@ the next cycle. Code and run artifacts retain their current locations.
 | [24](iteration_24/01_results.md) | SC-042: 24 matched state-treatment suffixes. Initial cleanup repairs the kite artifact; recurrent cleanup/cap give essentially tied geometry. One-off development gate passes, with common-work RMS ratio 0.9846; three original timeouts retain separate later qualifications. |
 | [25](iteration_25/01_results.md) | SC-044: six prefixes and 18 fresh-shape/noise suffixes. Cleanup/cap avoid one noisy-C numerical stop, with common-work RMS ratios 0.909/0.908; most datasets tie. Local curvature artifacts remain. Original transfer gates retain two separately qualified audit timeouts. |
 | [26](iteration_26/01_results.md) | SC-043: all 18 prospective policy paths and audits complete. Atlas RMS GM ratios 1.11301 versus fixed and 1.00512 versus stagnation, with 1,368 diagnostic units; both superiority gates fail. Kite stays at M22 and is 88%/68% worse in RMS. All radius constraints are inactive. The full campaign closes at 49,120 recorded units plus up to 130 unrecorded from the retained lost audit. |
+| [27](iteration_27/01_results.md) | SC-047: coupled non-star-shaped physics and complete derivative qualify; 12 local endpoints pass, with worst RMS 0.74–1.03 mm from 3.81 mm. Conditional object selection loses its cost/accuracy gate. Current-scene topological response qualifies, but false births and failed localization withhold actions. |

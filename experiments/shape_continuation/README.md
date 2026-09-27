@@ -529,3 +529,33 @@ Reports retain coefficient histories, never dense matrices or factorizations.
 Only the current live cache and transient candidate work retain dense arrays.
 This is continuation infrastructure, not a claim that any adaptive rule is
 more robust or faster than the fixed ladder.
+
+## Opt-in coupled Cartesian objects (SC-047)
+
+`multi_object.MultiCurve` wraps a nonempty tuple of `FourierCurve` objects and
+distinct component IDs. Its curves currently share one state band K. Pass it
+to `forward.solve` with N **per component**; the existing coupled Müller/Kress
+solver assembles the full scene. The single-curve dispatch is preserved.
+
+`MultiUpdate(existing_update, active=(0,))` moves only object 0 while every
+object remains in the forward problem. With `active=None`, all objects move.
+An optional `modes=(M0, M1, ...)` supplies object-specific update bands;
+otherwise the `FitStage.update_modes` value applies to every active object.
+The adapter delegates finite trials and complete-trial velocities to the
+injected single-object update. Use it with the existing `lm_backend.fit_stage`.
+SC-047 injects the qualified SC-035 centred projected update, retaining its
+geometry-refinement checks. The metric sums per-object RMS displacement
+squared; it is not a perimeter-weighted global RMS.
+
+`conditional_information` reports physically scaled individual and conditional
+spectra, with a common absolute rank threshold. `insertion_response` evaluates
+the paired small-disk data response per unit package area from both current-scene
+total fields. Its output must pass through the same residual normalization and
+weights as the objective; it does not accept a topology change.
+
+The [SC-047 bundle](../../results/validation/shape_continuation/SC-047-coupled-continuation/README.md)
+contains the frozen plan, independent-circle/finite-difference checks, paired
+object-selection comparison, topology controls, source hashes and reproduction
+instructions. The extension supports local fixed-count experiments with
+non-star-shaped components; arbitrary-count recovery and production promotion
+remain separate research decisions.

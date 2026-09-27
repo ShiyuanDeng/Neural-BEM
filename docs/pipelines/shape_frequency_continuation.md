@@ -79,6 +79,17 @@ lossless/equal-density, full-aperture problem in dimensionless coordinates.
 It is ready for controlled continuation development; the paper's complete
 high-frequency and complicated-boundary results have not been reproduced.
 
+The opt-in [SC-047 coupled extension](../../results/validation/shape_continuation/SC-047-coupled-continuation/README.md)
+adds `MultiCurve` and `MultiUpdate` for disjoint general Cartesian components.
+It reuses the existing multi-component Müller assembly and the same LM backend;
+freezing an object's geometry retains its scattering interactions. State band K
+is shared in this first adapter, while update bandwidth and active objects may
+differ. N is per component. The independent-circle and complete-trial
+derivative qualification passed for an ellipse/C pair at two separations.
+Its fixed-count strategy and diagnostic-only topology evidence have their own
+frozen contract; this does not replace the single-object defaults or connect
+the old polar-gauge topology controller to the new core.
+
 The [Figure 1 preparation and audit](../../experiments/shape_continuation/PAPER.md)
 supplies the actual glider contrasts (0.33 and 10), an explicit paper
 frequency/resolution profile, and evaluation-only polygon set-difference error.

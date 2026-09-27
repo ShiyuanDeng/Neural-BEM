@@ -9,6 +9,20 @@ from scipy.linalg import lu_factor, lu_solve
 from gpr_bem_kress import (build_muller_system, build_exterior_receiver_operator,
                            kress_incident_trace_on_boundary)
 from gpr_bem_kress.execution import execution
+from ordered_boundary import OrderedBoundary2D
+from gpr_bem_kress.multicomponent import (
+    build_multicomponent_muller_system,
+    build_multicomponent_exterior_receiver_operator,
+    multicomponent_incident_trace_on_boundary,
+)
+
+
+def _operators(curve):
+    if isinstance(curve, OrderedBoundary2D):
+        return (build_multicomponent_muller_system,
+                build_multicomponent_exterior_receiver_operator,
+                multicomponent_incident_trace_on_boundary)
+    return build_muller_system, build_exterior_receiver_operator, kress_incident_trace_on_boundary
 
 
 @dataclass(frozen=True)
@@ -154,15 +168,16 @@ def solve(shape, wavenumber, contrast, acquisition, nodes, *, work=None):
         work.attempted += 1
     try:
         curve = shape.nodes(nodes)
+        assemble, receivers, incident = _operators(curve)
         # Explicit scope prevents ambient acceleration/device contexts changing the model.
         with execution(kernels="reference", device="cpu"):
             ki = wavenumber * np.sqrt(contrast)
             with timed(work, "assembly"):
-                system = build_muller_system(curve, wavenumber, ki)
+                system = assemble(curve, wavenumber, ki)
             with timed(work, "receiver_operator"):
-                receiver = build_exterior_receiver_operator(curve, acquisition.receivers, wavenumber)
+                receiver = receivers(curve, acquisition.receivers, wavenumber)
             if isinstance(acquisition, PointSourceAcquisition):
-                field, normal = kress_incident_trace_on_boundary(
+                field, normal = incident(
                     curve, acquisition.sources, wavenumber, acquisition.strength)
                 field, normal = field.T, normal.T
             else:
@@ -207,7 +222,8 @@ def shape_jacobian(state, normal_displacements, *, work=None):
         work.rhs_columns += len(state.acquisition.receivers)
     with timed(work, "reciprocal_solve"):
         with execution(kernels="reference", device="cpu"):
-            d, n = kress_incident_trace_on_boundary(state.curve, state.acquisition.receivers, state.wavenumber)
+            incident = _operators(state.curve)[2]
+            d, n = incident(state.curve, state.acquisition.receivers, state.wavenumber)
         reciprocal, _ = _solve(state.matrix, state.factors, np.concatenate((d, n), axis=1).T)
     count = state.curve.num_nodes
     with timed(work, "jacobian_contraction"):
