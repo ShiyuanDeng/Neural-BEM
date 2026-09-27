@@ -30,7 +30,7 @@ h1{font-size:22px;font-weight:700;margin:0;letter-spacing:-.01em;text-wrap:balan
 @media (max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
 .panel{background:var(--panel);border:1px solid var(--faint);border-radius:8px;padding:12px;display:grid;gap:8px;min-width:0}
 .label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
-#cube{height:560px;width:100%}
+#cube{height:600px;width:100%}
 @media (max-width:600px){#cube{height:420px}}
 .controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .controls button{font:inherit;font-size:13px;border:1px solid var(--faint);background:var(--bg);color:var(--ink);padding:4px 10px;border-radius:6px;cursor:pointer;min-width:64px}
@@ -49,13 +49,13 @@ dt{color:var(--muted);font-size:12.5px} dd{margin:0;font-family:var(--mono);font
 <div class="wrap">
 <header>
   <h1>Atlas along trajectories</h1>
-  <p class="lede">Each slice is one accepted state's atlas: 19 frequencies across, ripple orders 0–24 deep, stacked in trajectory order. The amber prism is what each update was allowed to use (active frequencies × orders 0…M), so you can watch the schedule widen it while the colour inside drains.</p>
+  <p class="lede">Each card is one accepted state's atlas (19 frequencies across, ripple orders 0–24 up), laid out left to right in trajectory order. The amber prism is what each update was allowed to use (active frequencies × orders 0…M), so you can watch the schedule widen it while the colour inside drains.</p>
   <div class="tracks" id="tracks" role="group" aria-label="Trajectory"></div>
 </header>
 
 <div class="grid">
   <section class="panel" aria-label="3D atlas">
-    <div class="label">Stacked atlas · drag to rotate, scroll to zoom</div>
+    <div class="label">Atlas cards along the trajectory · drag to rotate, scroll to zoom</div>
     <div id="cube"></div>
     <div class="controls">
       <button id="play" type="button" aria-label="Play through states">Play</button>
@@ -86,6 +86,7 @@ const DATA = {"ghz":[0.25,0.375,0.5,0.625,0.75,0.875,1.0,1.125,1.25,1.375,1.5,1.
 const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const $ = id => document.getElementById(id);
 let key = 'star', idx = 0, timer = null;
+const GAP = 2.5, FADE = 0.85;   // spacing between states along x, opacity of unselected cards
 
 function theme(){
   return {ink:css('--ink'),muted:css('--muted'),grid:css('--grid'),panel:css('--panel'),amber:css('--amber'),
@@ -108,17 +109,19 @@ function shortName(s){
 
 function drawCube(){
   const t = theme(), states = track().states;
+  const Ygrid = orders.map(()=>DATA.ghz), Zgrid = orders.map(o=>DATA.ghz.map(()=>o));
   const traces = states.map((s,k) => ({
-    type:'surface', x:DATA.ghz, y:orders, z:orders.map(()=>DATA.ghz.map(()=>k)), surfacecolor:s.heat,
-    cmin:DATA.low, cmax:0, colorscale:t.scale, showscale:false, opacity:k===idx?1:0.14,
-    hovertemplate:'%{x:.3f} GHz · order %{y}<br>log₁₀ removable %{surfacecolor:.2f}<extra>state '+k+'</extra>'
+    type:'surface', x:orders.map(()=>DATA.ghz.map(()=>k*GAP)), y:Ygrid, z:Zgrid, surfacecolor:s.heat,
+    cmin:DATA.low, cmax:0, colorscale:t.scale, showscale:false, opacity:k===idx?1:FADE,
+    lighting:{ambient:1,diffuse:0,specular:0,roughness:1,fresnel:0},
+    hovertemplate:'%{y:.3f} GHz · order %{z}<br>log₁₀ removable %{surfacecolor:.2f}<extra>state '+(k+1)+'</extra>'
   }));
   // amber prism: a rectangle where the box changes, and the four edges joining consecutive boxes
   const X=[],Y=[],Z=[], same=(a,b)=>a.x0===b.x0&&a.x1===b.x1&&a.y1===b.y1;
   states.forEach((s,k)=>{const b=box(s); if(k>0&&k<states.length-1&&same(b,box(states[k-1])))return;
-    X.push(b.x0,b.x1,b.x1,b.x0,b.x0,null); Y.push(b.y0,b.y0,b.y1,b.y1,b.y0,null); Z.push(k,k,k,k,k,null);});
+    Y.push(b.x0,b.x1,b.x1,b.x0,b.x0,null); Z.push(b.y0,b.y0,b.y1,b.y1,b.y0,null); X.push(k*GAP,k*GAP,k*GAP,k*GAP,k*GAP,null);});
   for(const [cx,cy] of [['x0','y0'],['x1','y0'],['x1','y1'],['x0','y1']]){
-    states.forEach((s,k)=>{const b=box(s); X.push(b[cx]); Y.push(b[cy]); Z.push(k);}); X.push(null);Y.push(null);Z.push(null);
+    states.forEach((s,k)=>{const b=box(s); Y.push(b[cx]); Z.push(b[cy]); X.push(k*GAP);}); X.push(null);Y.push(null);Z.push(null);
   }
   traces.push({type:'scatter3d',mode:'lines',x:X,y:Y,z:Z,line:{color:t.amber,width:2},opacity:0.55,hoverinfo:'skip'});
   traces.push(Object.assign({type:'scatter3d',mode:'lines',line:{color:t.amber,width:6},hoverinfo:'skip'},current()));
@@ -126,17 +129,18 @@ function drawCube(){
   const axis = (title,extra={}) => Object.assign({title:{text:title,font:{size:12,color:t.muted}},color:t.muted,gridcolor:t.grid,zerolinecolor:t.grid,backgroundcolor:t.panel,showbackground:true,tickfont:{size:10,color:t.muted}},extra);
   Plotly.react('cube', traces, {
     paper_bgcolor:t.panel, margin:{l:0,r:0,t:0,b:0}, showlegend:false, font:{family:'Public Sans, system-ui, sans-serif',color:t.ink},
-    scene:{xaxis:axis('frequency, GHz'), yaxis:axis('ripple order m'),
-      zaxis:axis('accepted state',{tickvals:starts,ticktext:starts.map(k=>shortName(states[k])),tickfont:{size:9,color:t.muted}}),
-      aspectmode:'manual', aspectratio:{x:1.1,y:1,z:1.5}, camera:{eye:{x:1.7,y:-1.6,z:0.9}}}
+    scene:{xaxis:axis('accepted state along the trajectory →',{tickvals:starts.map(k=>k*GAP),ticktext:starts.map(k=>shortName(states[k])),tickfont:{size:9,color:t.muted},showbackground:false}),
+      yaxis:axis('frequency, GHz'), zaxis:axis('ripple order m'),
+      aspectmode:'manual', aspectratio:{x:Math.max(2.2, states.length*0.11), y:0.8, z:0.8},
+      camera:{eye:{x:-2.3,y:-1.45,z:0.55}, center:{x:0,y:0,z:-0.05}}}
   }, {displaylogo:false, responsive:true, modeBarButtonsToRemove:['toImage']});
 }
 
 function current(){ const b=box(track().states[idx]);
-  return {x:[b.x0,b.x1,b.x1,b.x0,b.x0], y:[b.y0,b.y0,b.y1,b.y1,b.y0], z:[idx,idx,idx,idx,idx]}; }
+  const x=idx*GAP; return {y:[b.x0,b.x1,b.x1,b.x0,b.x0], z:[b.y0,b.y0,b.y1,b.y1,b.y0], x:[x,x,x,x,x]}; }
 function highlight(){
   const n = track().states.length, c = current();
-  Plotly.restyle('cube', {opacity:[...Array(n).keys()].map(k=>k===idx?1:0.14)}, [...Array(n).keys()]);
+  Plotly.restyle('cube', {opacity:[...Array(n).keys()].map(k=>k===idx?1:FADE)}, [...Array(n).keys()]);
   Plotly.restyle('cube', {x:[c.x], y:[c.y], z:[c.z]}, [n+1]);
 }
 
