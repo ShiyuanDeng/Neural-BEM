@@ -87,3 +87,33 @@ def test_factors_release_device_memory_after_the_first_solve():
     assert np.array_equal(factors.host, reference) and not factors.host.flags.writeable
     second, second_residual = factors.solve(rhs)  # residual check from the uploaded host matrix
     assert np.array_equal(first, second) and first_residual == second_residual < 1e-13
+
+
+def _two_component_boundary(nodes):
+    from ordered_boundary import OrderedBoundary2D
+    first = ellipse((-0.06, 0.01), 0.04, 0.025, rotation=0.2, component_id="left").discretize(
+        nodes, require_even=True)
+    second = circle((0.07, -0.02), 0.03, component_id="right").discretize(nodes, require_even=True)
+    return OrderedBoundary2D((first, second))
+
+
+@pytest.mark.parametrize("nodes, k_exterior", [(64, 3.0), (128, 20.0)])
+def test_multicomponent_device_system_matches_the_reference_builder(nodes, k_exterior):
+    from gpr_bem_kress.multicomponent import build_multicomponent_muller_system
+    boundary = _two_component_boundary(nodes)
+    k_interior = 1.4 * k_exterior
+    with execution(kernels="reference", device="cpu"):
+        reference = build_multicomponent_muller_system(boundary, k_exterior, k_interior).system_matrix
+    matrix = cuda_assembly.build_multicomponent_muller_matrix(boundary, k_exterior, k_interior).cpu().numpy()
+    assert np.max(np.abs(matrix - reference)) <= 1e-14 * np.max(np.abs(reference))
+    assert np.array_equal(cuda_assembly.build_system_matrix(boundary, k_exterior, k_interior).cpu().numpy(), matrix)
+
+
+def test_multicomponent_device_assembly_keeps_the_clearance_guard():
+    from ordered_boundary import OrderedBoundary2D
+    from gpr_bem_kress.multicomponent import MultiComponentKressGeometryError
+    touching = OrderedBoundary2D((
+        circle((-0.0301, 0.0), 0.03, component_id="a").discretize(64, require_even=True),
+        circle((0.0301, 0.0), 0.03, component_id="b").discretize(64, require_even=True)))
+    with pytest.raises(MultiComponentKressGeometryError):
+        cuda_assembly.build_multicomponent_muller_matrix(touching, 3.0, 4.0)

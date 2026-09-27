@@ -143,3 +143,23 @@ def test_cuda_backend_objective_agrees_with_the_cpu_reference(monkeypatch):
     for cpu, cuda in zip(results["cpu"][:3], results["cuda"][:3]):
         assert np.linalg.norm(cuda - cpu) <= 1e-12 * np.linalg.norm(cpu)
     assert results["cuda"][3] == results["cpu"][3]
+
+
+def test_cuda_backend_matches_the_cpu_reference_for_two_objects(monkeypatch):
+    torch = pytest.importorskip("torch")
+    if not torch.cuda.is_available():
+        pytest.skip("CUDA is unavailable")
+    from gpr_bem_kress.cuda_assembly import DeviceFactors
+    from .forward import shape_jacobian, solve
+    from .test_lm_backend import acquisition
+    from .test_multi_object import pair
+    scene, update = pair()
+    space = update.prepare(scene, 2, 16)
+    results = {}
+    for backend in ("cpu", "cuda"):
+        monkeypatch.setenv("SC_FORWARD_BACKEND", backend)
+        state = solve(scene, 1.3, .4, acquisition(8), 128)
+        assert isinstance(state.factors, DeviceFactors) == (backend == "cuda")
+        results[backend] = (state.prediction, shape_jacobian(state, update.velocities(space, state.curve)))
+    for cpu, cuda in zip(results["cpu"], results["cuda"]):
+        assert np.linalg.norm(cuda - cpu) <= 1e-12 * np.linalg.norm(cpu)

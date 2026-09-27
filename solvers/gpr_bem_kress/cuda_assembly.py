@@ -8,6 +8,8 @@ Cephes j0/y0/j1/y1 that SciPy uses (``xsf/cephes/j0.h``, ``j1.h``). Order two
 uses the stable recurrence for Y; for J it uses the recurrence at x >= 2 and
 the power series below.
 
+``build_multicomponent_muller_matrix`` (SPD-013) places these self blocks and
+the smooth exterior cross-component kernels into the multi-component system.
 Only distinct, real, positive wavenumbers are supported; use ``supported`` to
 keep the CPU reference otherwise. The sampled series/direct overlap
 diagnostic of the CPU builder is not computed. Torch is imported lazily.
@@ -153,14 +155,18 @@ def bessel012(x):
 
 
 def supported(curve, k_exterior, k_interior):
-    """Whether this backend reproduces ``build_muller_system`` for the inputs."""
-    from ordered_boundary import PeriodicCurve2D
+    """Whether this backend reproduces the CPU system for the inputs.
+
+    Single ``PeriodicCurve2D`` interfaces (SPD-011) and ``OrderedBoundary2D``
+    multi-component boundaries (SPD-013) with distinct real positive wavenumbers.
+    """
+    from ordered_boundary import OrderedBoundary2D, PeriodicCurve2D
     try:
         exterior, interior = complex(k_exterior), complex(k_interior)
     except TypeError:
         return False
-    return (isinstance(curve, PeriodicCurve2D) and exterior.imag == 0 and interior.imag == 0
-            and exterior.real > 0 and interior.real > 0 and exterior != interior)
+    return (isinstance(curve, (PeriodicCurve2D, OrderedBoundary2D)) and exterior.imag == 0
+            and interior.imag == 0 and exterior.real > 0 and interior.real > 0 and exterior != interior)
 
 
 def _series(radius, k_exterior, k_interior, terms):
@@ -216,79 +222,157 @@ def _direct(radius, k_exterior, k_interior):
             real(scale * delta_j0), real(-scale * delta_j1 / radius), real(scale * delta_j2)]
 
 
+def _tensor(values, device):
+    import torch
+    return torch.tensor(np.asarray(values), device=device)  # copies read-only arrays
+
+
+def _difference_blocks(adapter, exterior, interior, settings, device):
+    """Device ``build_muller_difference_blocks`` V, K, Kp, T for one component (weighted)."""
+    import torch
+    count = adapter.num_nodes
+    diagonal_log, diagonal_remainder = _diagonal_split_limits(adapter, exterior, interior)
+    points, normals = _tensor(adapter.points, device), _tensor(adapter.normals, device)
+    dx = points[:, None, 0] - points[None, :, 0]
+    dy = points[:, None, 1] - points[None, :, 1]
+    distance = torch.sqrt(dx * dx + dy * dy)
+    target_projection = dx * normals[:, None, 0] + dy * normals[:, None, 1]
+    source_projection = dx * normals[None, :, 0] + dy * normals[None, :, 1]
+    normal_dot = normals[:, None, 0] * normals[None, :, 0] + normals[:, None, 1] * normals[None, :, 1]
+    off_diagonal = ~torch.eye(count, dtype=torch.bool, device=device)
+    maximum_wave = max(abs(exterior), abs(interior))
+    near = off_diagonal & (maximum_wave * distance <= settings.near_argument)
+    direct = off_diagonal & ~near
+
+    radial = [torch.zeros((count, count), dtype=torch.complex128, device=device) for _ in range(6)]
+    for mask, values in ((near, lambda r: _series(r, exterior, interior, settings.series_terms)),
+                         (direct, lambda r: _direct(r, exterior, interior))):
+        if bool(mask.any()):
+            for destination, source in zip(radial, values(distance[mask])):
+                destination[mask] = source
+    green, radial_first, radial_anisotropy, green_log, radial_first_log, radial_anisotropy_log = radial
+    safe = torch.where(off_diagonal, distance, torch.ones_like(distance))
+    projection_product = target_projection * source_projection / safe ** 2
+    kernels = dict(
+        V=(green, green_log),
+        K=(-radial_first * source_projection, -radial_first_log * source_projection),
+        Kp=(radial_first * target_projection, radial_first_log * target_projection),
+        T=(-radial_first * normal_dot - radial_anisotropy * projection_product,
+           -radial_first_log * normal_dot - radial_anisotropy_log * projection_product),
+    )
+
+    offsets = (torch.arange(count, device=device)[:, None] - torch.arange(count, device=device)[None, :]) % count
+    kress_by_offset = kress_log_weights(count)
+    log_by_offset = np.zeros(count, dtype=np.float64)
+    log_by_offset[1:] = np.log(4.0 * np.sin(np.pi * np.arange(1, count) / count) ** 2)
+    weight_rows = _tensor(kress_by_offset, device)[offsets]
+    log_rows = _tensor(log_by_offset, device)[offsets]
+    source_speed = _tensor(adapter.theta_speeds, device)[None, :]
+    diagonal = torch.arange(count, device=device)
+    blocks = {}
+    for name, (kernel, logarithmic) in kernels.items():
+        zero = torch.zeros((), dtype=torch.complex128, device=device)
+        kernel_grid = torch.where(off_diagonal, kernel, zero)
+        logarithmic_grid = torch.where(off_diagonal, logarithmic, zero)
+        rows = source_speed * (adapter.theta_step * kernel_grid + 0.5 * logarithmic_grid * (
+            weight_rows - adapter.theta_step * log_rows))
+        rows[diagonal, diagonal] = _tensor(
+            kress_by_offset[0] * diagonal_log[name] + adapter.theta_step * diagonal_remainder[name], device)
+        blocks[name] = rows
+    return blocks
+
+
+def _cross_blocks(target, source, k_exterior, device):
+    """Device ``multicomponent._exterior_cross_blocks_from_adapters`` V, K, Kp, T (weighted)."""
+    import torch
+    wave = float(k_exterior.real)
+    targets, target_normals = _tensor(target.points, device), _tensor(target.normals, device)
+    sources, source_normals = _tensor(source.points, device), _tensor(source.normals, device)
+    dx = targets[:, None, 0] - sources[None, :, 0]
+    dy = targets[:, None, 1] - sources[None, :, 1]
+    radius = torch.sqrt(dx * dx + dy * dy)
+    if bool((radius <= 0.0).any()):
+        raise FloatingPointError("cross-component kernel evaluation requires positive distances.")
+    target_projection = dx * target_normals[:, None, 0] + dy * target_normals[:, None, 1]
+    source_projection = dx * source_normals[None, :, 0] + dy * source_normals[None, :, 1]
+    normal_dot = (target_normals[:, None, 0] * source_normals[None, :, 0]
+                  + target_normals[:, None, 1] * source_normals[None, :, 1])
+    j0, y0, j1, y1, j2, y2 = bessel012(wave * radius)
+    green = 0.25j * torch.complex(j0, y0)
+    radial_first = -0.25j * wave * torch.complex(j1, y1) / radius
+    radial_anisotropy = 0.25j * wave ** 2 * torch.complex(j2, y2)
+    projection_product = target_projection * source_projection / radius ** 2
+    weights = _tensor(source.arc_length_weights, device)[None, :]
+    return dict(V=green * weights, K=-radial_first * source_projection * weights,
+                Kp=radial_first * target_projection * weights,
+                T=(-radial_first * normal_dot - radial_anisotropy * projection_product) * weights)
+
+
+def _compose(blocks, count, device):
+    import torch
+    matrix = torch.empty((2 * count, 2 * count), dtype=torch.complex128, device=device)
+    matrix[:count, :count] = -blocks["K"]
+    matrix[:count, count:] = blocks["V"]
+    matrix[count:, :count] = -blocks["T"]
+    matrix[count:, count:] = blocks["Kp"]
+    identity = torch.arange(2 * count, device=device)
+    matrix[identity, identity] += 1.0
+    if not bool(torch.isfinite(matrix).all()):
+        raise FloatingPointError("CUDA Müller system composition produced non-finite entries.")
+    return matrix
+
+
 def build_muller_matrix(curve, k_exterior, k_interior, *, config=None, device="cuda"):
     """Device ``[[I-dK, dV], [-dT, I+dKp]]``, as ``build_muller_system(...).system_matrix``."""
-    import torch
+    from ordered_boundary import PeriodicCurve2D
     settings = MullerAssemblyConfig() if config is None else config
-    if not supported(curve, k_exterior, k_interior):
+    if not isinstance(curve, PeriodicCurve2D) or not supported(curve, k_exterior, k_interior):
         raise ValueError("CUDA Kress assembly needs one periodic curve and distinct real positive wavenumbers.")
     adapter = adapt_periodic_curve(curve)
     exterior = validate_wavenumber(k_exterior, name="k_exterior")
     interior = validate_wavenumber(k_interior, name="k_interior")
-    count = adapter.num_nodes
-    diagonal_log, diagonal_remainder = _diagonal_split_limits(adapter, exterior, interior)
     # One device assembly at a time per process bounds transient device memory.
     with _device_work:
-        as_tensor = lambda values: torch.tensor(np.asarray(values), device=device)  # copies read-only arrays
+        blocks = _difference_blocks(adapter, exterior, interior, settings, device)
+        return _compose(blocks, adapter.num_nodes, device)
 
-        points, normals = as_tensor(adapter.points), as_tensor(adapter.normals)
-        dx = points[:, None, 0] - points[None, :, 0]
-        dy = points[:, None, 1] - points[None, :, 1]
-        distance = torch.sqrt(dx * dx + dy * dy)
-        target_projection = dx * normals[:, None, 0] + dy * normals[:, None, 1]
-        source_projection = dx * normals[None, :, 0] + dy * normals[None, :, 1]
-        normal_dot = normals[:, None, 0] * normals[None, :, 0] + normals[:, None, 1] * normals[None, :, 1]
-        off_diagonal = ~torch.eye(count, dtype=torch.bool, device=device)
-        maximum_wave = max(abs(exterior), abs(interior))
-        near = off_diagonal & (maximum_wave * distance <= settings.near_argument)
-        direct = off_diagonal & ~near
 
-        radial = [torch.zeros((count, count), dtype=torch.complex128, device=device) for _ in range(6)]
-        for mask, values in ((near, lambda r: _series(r, exterior, interior, settings.series_terms)),
-                             (direct, lambda r: _direct(r, exterior, interior))):
-            if bool(mask.any()):
-                for destination, source in zip(radial, values(distance[mask])):
-                    destination[mask] = source
-        green, radial_first, radial_anisotropy, green_log, radial_first_log, radial_anisotropy_log = radial
-        safe = torch.where(off_diagonal, distance, torch.ones_like(distance))
-        projection_product = target_projection * source_projection / safe ** 2
-        kernels = dict(
-            V=(green, green_log),
-            K=(-radial_first * source_projection, -radial_first_log * source_projection),
-            Kp=(radial_first * target_projection, radial_first_log * target_projection),
-            T=(-radial_first * normal_dot - radial_anisotropy * projection_product,
-               -radial_first_log * normal_dot - radial_anisotropy_log * projection_product),
-        )
+def build_multicomponent_muller_matrix(boundary, k_exterior, k_interior, *, config=None, device="cuda"):
+    """Device ``build_multicomponent_muller_system(...).system_matrix`` (SPD-013).
 
-        offsets = (torch.arange(count, device=device)[:, None] - torch.arange(count, device=device)[None, :]) % count
-        kress_by_offset = kress_log_weights(count)
-        log_by_offset = np.zeros(count, dtype=np.float64)
-        log_by_offset[1:] = np.log(4.0 * np.sin(np.pi * np.arange(1, count) / count) ** 2)
-        weight_rows = as_tensor(kress_by_offset)[offsets]
-        log_rows = as_tensor(log_by_offset)[offsets]
-        source_speed = as_tensor(adapter.theta_speeds)[None, :]
-        diagonal = torch.arange(count, device=device)
-        blocks = {}
-        for name, (kernel, logarithmic) in kernels.items():
-            zero = torch.zeros((), dtype=torch.complex128, device=device)
-            kernel_grid = torch.where(off_diagonal, kernel, zero)
-            logarithmic_grid = torch.where(off_diagonal, logarithmic, zero)
-            rows = source_speed * (adapter.theta_step * kernel_grid + 0.5 * logarithmic_grid * (
-                weight_rows - adapter.theta_step * log_rows))
-            rows[diagonal, diagonal] = as_tensor(
-                kress_by_offset[0] * diagonal_log[name] + adapter.theta_step * diagonal_remainder[name])
-            blocks[name] = rows
+    Self blocks are the single-interface Kress exterior-minus-interior blocks;
+    cross blocks are the ordinary exterior trapezoid kernels. The CPU
+    ``adapt_multicomponent_boundary`` topology and clearance validation runs first.
+    """
+    import torch
+    from ordered_boundary import OrderedBoundary2D
+    from .multicomponent import MultiComponentAssemblyConfig, adapt_multicomponent_boundary
+    settings = MultiComponentAssemblyConfig() if config is None else config
+    if not isinstance(boundary, OrderedBoundary2D) or not supported(boundary, k_exterior, k_interior):
+        raise ValueError("CUDA multicomponent assembly needs an ordered boundary and distinct real "
+                         "positive wavenumbers.")
+    adapter = adapt_multicomponent_boundary(boundary, config=settings)
+    exterior = validate_wavenumber(k_exterior, name="k_exterior")
+    interior = validate_wavenumber(k_interior, name="k_interior")
+    count = boundary.num_nodes
+    with _device_work:
+        blocks = {name: torch.zeros((count, count), dtype=torch.complex128, device=device)
+                  for name in ("V", "K", "Kp", "T")}
+        pieces = tuple(zip(adapter.component_adapters, boundary.component_slices))
+        for target_index, (target, rows) in enumerate(pieces):
+            for source_index, (source, columns) in enumerate(pieces):
+                part = (_difference_blocks(target, exterior, interior, settings.self_assembly, device)
+                        if target_index == source_index else _cross_blocks(target, source, exterior, device))
+                for name, values in part.items():
+                    blocks[name][rows, columns] = values
+        return _compose(blocks, count, device)
 
-        matrix = torch.empty((2 * count, 2 * count), dtype=torch.complex128, device=device)
-        matrix[:count, :count] = -blocks["K"]
-        matrix[:count, count:] = blocks["V"]
-        matrix[count:, :count] = -blocks["T"]
-        matrix[count:, count:] = blocks["Kp"]
-        identity = torch.arange(2 * count, device=device)
-        matrix[identity, identity] += 1.0
-        if not bool(torch.isfinite(matrix).all()):
-            raise FloatingPointError("CUDA Müller system composition produced non-finite entries.")
-        return matrix
+
+def build_system_matrix(curve, k_exterior, k_interior, *, device="cuda"):
+    """Device system matrix for either a single curve or an ordered multi-component boundary."""
+    from ordered_boundary import OrderedBoundary2D
+    builder = build_multicomponent_muller_matrix if isinstance(curve, OrderedBoundary2D) else build_muller_matrix
+    return builder(curve, k_exterior, k_interior, device=device)
 
 
 class DeviceFactors:
@@ -339,4 +423,5 @@ class DeviceFactors:
         return (solution[:, 0] if column else solution), residual
 
 
-__all__ = ["DeviceFactors", "bessel012", "build_muller_matrix", "supported"]
+__all__ = ["DeviceFactors", "bessel012", "build_muller_matrix", "build_multicomponent_muller_matrix",
+           "build_system_matrix", "supported"]
