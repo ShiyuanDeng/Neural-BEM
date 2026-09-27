@@ -245,7 +245,7 @@ def solve(shape, wavenumber, contrast, acquisition, nodes, *, work=None):
             with timed(work, "factorization"):
                 factors = cuda_assembly.DeviceFactors(matrix) if device else lu_factor(matrix)
             if device:
-                matrix = factors.host  # states keep host matrices; only LU factors stay on the device
+                matrix = factors.host  # retained states keep host matrices and host LU factors
             if work is not None:
                 work.factorizations += 1
                 work.rhs_columns += rhs.shape[1]

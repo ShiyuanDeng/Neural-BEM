@@ -292,36 +292,47 @@ def build_muller_matrix(curve, k_exterior, k_interior, *, config=None, device="c
 
 
 class DeviceFactors:
-    """Device LU factors that solve host right-hand sides with the residual guard.
+    """LU factors from the device that solve host right-hand sides with the residual guard.
 
-    Only the factors stay on the device; ``host`` keeps the system matrix in
-    host memory as on the CPU path. The first solve reuses the device matrix it
-    was built from; later solves upload ``host`` for their residual check.
-    Retained states therefore hold one factor array of device memory each.
+    ``host`` keeps the system matrix in host memory, as on the CPU path. The
+    first solve uses the device matrix and factors it was built with; the
+    factors then move to host memory too. Later solves (reciprocal Jacobians)
+    upload both for one call, so retained states hold no device memory.
     """
 
     def __init__(self, matrix):
         import torch
         _ready(matrix.device)
         with _device_work:
-            self.lu, self.pivots, info = torch.linalg.lu_factor_ex(matrix)
+            lu, pivots, info = torch.linalg.lu_factor_ex(matrix)
             if int(info) != 0:
                 raise FloatingPointError("Singular dense Müller system.")
+        self.device = matrix.device
         self.host = matrix.cpu().numpy()
         self.host.setflags(write=False)
-        self._device_matrix = matrix
+        self._resident = (matrix, lu, pivots)
+        self._offloaded = None
+        self._lock = threading.Lock()
+
+    def _operands(self):
+        import torch
+        with self._lock:
+            resident, self._resident = self._resident, None
+            if resident is not None:
+                self._offloaded = (resident[1].cpu().numpy(), resident[2].cpu().numpy())
+                return resident
+            lu, pivots = self._offloaded
+        return tuple(torch.tensor(v, device=self.device) for v in (self.host, lu, pivots))
 
     def solve(self, rhs):
         """Return ``(solution, relative residual)``; host complex arrays in and out."""
         import torch
-        matrix, self._device_matrix = self._device_matrix, None
-        if matrix is None:
-            matrix = torch.tensor(self.host, device=self.lu.device)
-        b = torch.as_tensor(np.ascontiguousarray(rhs, dtype=np.complex128), device=self.lu.device)
+        matrix, lu, pivots = self._operands()
+        b = torch.as_tensor(np.ascontiguousarray(rhs, dtype=np.complex128), device=self.device)
         column = b.ndim == 1
         if column:
             b = b[:, None]
-        x = torch.linalg.lu_solve(self.lu, self.pivots, b)
+        x = torch.linalg.lu_solve(lu, pivots, b)
         residual = float(torch.linalg.norm(matrix @ x - b)) / max(float(torch.linalg.norm(b)),
                                                                   np.finfo(float).tiny)
         solution = x.cpu().numpy()
