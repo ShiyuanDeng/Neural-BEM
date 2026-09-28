@@ -53,9 +53,21 @@ def spatial_self_intersection_count(points, cross_tolerance, length_tolerance, *
     length-padded box, so sqrt(2)*length_tolerance covers the extra distance.
     The largest segment length bounds both cases. The padding also covers
     roundoff in midpoint construction, including translated coordinates.
+
+    This geometric bound assumes the orientation tolerance dominates rounding
+    error. Below a conservative 8*eps*longest_segment*diameter threshold, use
+    the dense reference: it can count spurious proper crossings between remote
+    collinear segments, and exact agreement includes those floating-point cases.
     """
     if (not np.isfinite(cross_tolerance) or not np.isfinite(length_tolerance)
             or cross_tolerance < 0 or length_tolerance < 0):
+        return fallback(points, cross_tolerance, length_tolerance)
+    with np.errstate(over="ignore", invalid="ignore"):
+        deltas = np.roll(points, -1, axis=0) - points
+        diameter = float(np.linalg.norm(np.ptp(points, axis=0)))
+        longest = float(np.max(np.linalg.norm(deltas, axis=1)))
+        orientation_roundoff = 8 * np.finfo(float).eps * longest * diameter
+    if not cross_tolerance >= orientation_roundoff:
         return fallback(points, cross_tolerance, length_tolerance)
     pairs = _candidate_pairs(points, length_tolerance)
     if pairs is None:

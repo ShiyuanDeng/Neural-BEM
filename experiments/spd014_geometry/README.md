@@ -67,3 +67,5 @@ its diagnostic function. Neither historical evidence nor display caches are
 overwritten. The comparator includes all non-timing fields, not only endpoints.
 Source and observation hashes, work counters and geometry computation counts
 accompany timing. Threaded/nested geometry timers cannot be summed as wall time.
+
+Post-review: [sub-roundoff fallback amendment](../../results/validation/speedup/SPD-014-amendment-20260928/README.md). Below the orientation roundoff guard the implementation uses the dense checker to preserve its floating-point counts. Original timings predate this amendment.

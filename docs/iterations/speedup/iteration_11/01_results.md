@@ -3,7 +3,7 @@
 2026-09-27. **COMPLETE / PASS; qualified opt-in** under the
 [approved contract](../iteration_10/03_spd014_plan.md). The user replied
 "you have my approval" to the remaining geometry follow-up. Owner: Codex;
-self-review only. Implementation began after SPD-012/013 completed at clean
+subsequently reviewed by Claude on 2026-09-28. Implementation began after SPD-012/013 completed at clean
 commit `e3bc5e5d`, with no competing numerical workers.
 
 Exact spatial pruning and independent diagnostic-batch caching reduce the
@@ -59,3 +59,7 @@ manifest-staging amendment. The [usage guide](../../../../experiments/spd014_geo
 shows the scoped backend and diagnostic-cache APIs. All approved stages passed
 their gates and stayed within budget. No default promotion or successor
 numerical run is scheduled.
+
+## Review amendment, 2026-09-28
+
+The [post-qualification amendment](../../../../results/validation/speedup/SPD-014-amendment-20260928/README.md) fixes the sub-roundoff orientation edge case and records 375 passing tests plus 783 exact fuzz comparisons. Historical timings and receipts are preserved. All 36 saved geometry-screen counts were zero; nonzero counts rely on synthetic coverage. The video speedup requires the explicit SPD-014 cache/backend wrapper, not an ordinary renderer command.

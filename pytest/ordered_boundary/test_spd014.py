@@ -56,6 +56,31 @@ def test_resolved_absolute_tolerances_keep_dense_predicate_semantics():
                 assert _self_intersection_count(polygon, cross, length) == expected
 
 
+@pytest.mark.parametrize('vertices,stride', [(5, 2), (9, 4)])
+@pytest.mark.parametrize('tolerance', [0., 1e-20])
+def test_subdivided_stars_below_orientation_roundoff_use_reference(
+        monkeypatch, vertices, stride, tolerance):
+    corners = np.exp(2j*np.pi*stride*np.arange(vertices)/vertices)
+    t = np.linspace(0, 1, 40, endpoint=False)
+    samples = np.concatenate([a+(b-a)*t for a, b in zip(corners, np.roll(corners, -1))])
+    points = np.column_stack((samples.real, samples.imag))
+    def unexpected_tree(*args):
+        raise AssertionError('Sub-roundoff orientations require dense fallback')
+    monkeypatch.setattr(spatial, '_make_tree', unexpected_tree)
+    expected = count(points, 'reference', tolerance)
+    assert expected > 0
+    assert count(points, 'spatial', tolerance) == expected
+
+
+def test_production_tolerance_still_uses_spatial_pruning(monkeypatch):
+    theta = np.linspace(0, 2*np.pi, 512, endpoint=False)
+    points = np.column_stack((np.cos(theta), np.sin(theta)))
+    def unexpected_fallback(*args):
+        raise AssertionError('Production tolerance should permit pruning')
+    assert spatial.spatial_self_intersection_count(
+        points, 1e-12, 1e-12, fallback=unexpected_fallback) == 0
+
+
 def test_dense_candidates_fall_back_before_materializing_pairs(monkeypatch):
     rng = np.random.default_rng(14)
     polygon = rng.normal(size=(512, 2))
