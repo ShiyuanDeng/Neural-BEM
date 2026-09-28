@@ -34,6 +34,7 @@ The [research implementation principles](implementation_principles.md), adopted 
 | **Boundary–BIE** | *Which properties of smooth-boundary representations improve the BIE inverse?* | [`boundary_bie/README.md`](boundary_bie/README.md) |
 | **Laurent** | *What does a node-free Laurent/Fourier coefficient representation give the inverse, and what does it cost?* | [`laurent/README.md`](laurent/README.md) |
 | **Modal compression** | *What can modal compression offer in physical sensitivities, accuracy control, memory and repeated work?* | [`modal_compression/README.md`](modal_compression/README.md) |
+| **Modal atlas** | *What does the modal structure of the boundary wavefields explain about how data become shape information?* Opened 2026-09-28; MA-001 complete | [`modal_atlas/README.md`](modal_atlas/README.md) |
 | **Speed-up** | *How can the complete inverse reach the required reconstruction quality with less time and fewer failed attempts?* | [`speedup/README.md`](speedup/README.md) |
 | Experiments | What can the observations identify, and which formulations improve the inverse? Closed exploratory screen | [`experiments/README.md`](experiments/README.md) |
 | Radial Fourier topology | The cycle that built the automatic controller | [`radial_fourier_topology/README.md`](radial_fourier_topology/README.md) |
