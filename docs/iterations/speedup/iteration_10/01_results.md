@@ -31,3 +31,9 @@ These are shared-host observations under the new default. All six SC-043 single-
 ## Not done
 
 Accelerating the O(N²) boundary self-intersection validation was item 3 of the proposal. It was not approved, and it is now the main CPU-side cost of a GPU solve.
+
+**Subsequent approval, 2026-09-27:** after Codex's geometry investigation, the
+user replied "you have my approval" to the bounded follow-up. That work is
+recorded separately as [SPD-014](03_spd014_plan.md), now complete in
+[iteration 11](../iteration_11/01_results.md); it does not change the scope
+or results of SPD-012/013 above.

@@ -22,6 +22,23 @@ MODES = ('reference', 'cache', 'certified')
 DEFAULT_MAX_BYTES = 16 * 1024 * 1024
 _active = ContextVar('geometry_validation_cache', default=None)
 _fit_selection = ContextVar('geometry_validation_fit_selection', default=None)
+_intersection_backend = ContextVar('sampled_intersection_backend', default='reference')
+
+
+def current_intersection_backend():
+    return _intersection_backend.get()
+
+
+@contextmanager
+def intersection_validation(backend='reference'):
+    """Opt-in exact spatial pruning; independent from validation-cache policy."""
+    if backend not in ('reference', 'spatial'):
+        raise ValueError("Intersection backend must be 'reference' or 'spatial'.")
+    token = _intersection_backend.set(backend)
+    try:
+        yield
+    finally:
+        _intersection_backend.reset(token)
 
 
 def array_key(values):
@@ -186,6 +203,7 @@ def cached_self_intersections(function):
     @wraps(function)
     def wrapped(points, cross_tolerance, length_tolerance):
         return memoized_validation('self_intersection',
-            lambda: (array_key(points), array_key([cross_tolerance, length_tolerance])),
+            lambda: (current_intersection_backend(), array_key(points),
+                     array_key([cross_tolerance, length_tolerance])),
             lambda: function(points, cross_tolerance, length_tolerance))
     return wrapped

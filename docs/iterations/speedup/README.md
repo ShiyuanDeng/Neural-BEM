@@ -85,20 +85,36 @@ Updated 2026-09-27.
 
 - **SPD-012/013.** [Iteration 10](iteration_10/01_results.md) makes CUDA the default (`auto`; `SC_FORWARD_BACKEND=cpu` pins the bit-exact reference) and ports the two-object assembly. SC-047/048 runs keep their outcomes and are 4.0× faster; default-mode GPU replays are deterministic.
 
-The topology-pipeline rows below are unchanged.
+- **SPD-014 — COMPLETE / PASS; qualified opt-in.** [Iteration 11](iteration_11/01_results.md)
+  closes the user-approved geometry follow-up. Spatial pruning plus independent
+  diagnostic caching saves 7.1% across six SC-043 CUDA continuation workers and
+  53.6% in video preparation (2.16x), with exact non-timing results and work.
+  Four-arm diagnostic time falls 60.7%; 370 regression/harness tests pass.
+  The dense checker remains the default and pathological-case fallback.
+
+**Timing-scope clarification:** SPD-010–014 replay the SC-043 continuation
+suffixes from saved intermediate shapes. Their historical CPU-versus-CUDA
+ratios do not measure full reconstructions from the original circles. The
+fresh circle-start [SC-049 test](../shape_frequency_continuation/iteration_29/01_results.md)
+stops with a retained recovery failure.
+
+The earlier topology-pipeline results remain available below; SPD-014 measures
+the six single-object shape-continuation development cases.
 
 | Item | Current state |
 |---|---|
-| Active iteration | Iteration 10: [SPD-012 CUDA default and SPD-013 CUDA two-object assembly](iteration_10/01_results.md), following [iteration 09](iteration_09/01_results.md) (SPD-010/011), for the shape-continuation pipeline |
-| Stage | **SPD-008 APPROVED / COMPLETE** under the [plan](iteration_07/03_plan.md). Exact geometry reuse and the boolean certificate are qualified opt-in; SPD-007 compiled + reciprocal + readiness remains the default |
-| Approved experiment IDs | **SPD-001**, **SPD-002**, **SPD-004**, **SPD-005**, **SPD-006**, **SPD-007**, **SPD-008** (direct “yes” to implementation and validation, 2026-09-17); **SPD-010**, **SPD-011** (the user replied “go” to the request to approve them, 2026-09-27); **SPD-012**, **SPD-013** (the user replied “yes for first two”, 2026-09-27) |
-| Next expected action | Review isolated timing confirmation and all-twelve-scene default qualification, or another exact geometry optimization. No successor run is scheduled. SPD-009 remains separate and unexecuted |
+| Active iteration | Iteration 11: [SPD-014 exact geometry acceleration](iteration_11/01_results.md), following SPD-010–013, for the shape-continuation pipeline |
+| Stage | **SPD-014 COMPLETE / PASS**, qualified opt-in under its [contract](iteration_10/03_spd014_plan.md). The earlier SPD-008 topology optimization remains qualified opt-in |
+| Approved experiment IDs | **SPD-001**, **SPD-002**, **SPD-004**, **SPD-005**, **SPD-006**, **SPD-007**, **SPD-008** (direct “yes” to implementation and validation, 2026-09-17); **SPD-010**, **SPD-011** (the user replied “go” to the request to approve them, 2026-09-27); **SPD-012**, **SPD-013** (the user replied “yes for first two”, 2026-09-27); **SPD-014** (the user replied “you have my approval” to the geometry follow-up, 2026-09-27) |
+| Next expected action | Review the completed SPD-014 evidence and scoped usage. No successor run or default promotion is scheduled. SPD-009 remains separate and unexecuted |
 | Owner / reviewer | Codex `/root` / self-review; no independent reviewer claimed |
-| Dependencies | SPD-008: 144 tests pass (one CUDA skip), 456 replay decisions agree, 3.65x/3.56x stencil gains, and 16/16 full workers recover with exactly matched trajectories, endpoints and work. Current/archived source/input hashes verify; all 618 artifacts from the completed TOP-025 compiled campaign remain intact |
-| Evidence limits | SPD-008 measures four noiseless scenes, two workers per arm/scene, mutually sequential CPU workers and one BLAS thread. Post-run LAU-001 artifact timestamps indicate another 31.30 s screen overlapped the last worker; other pilot/test timings are unavailable. Wall times are shared-host observations, not isolated evidence. Geometry acceleration remains opt-in; no all-scene, noisy-data or GPU speedup claim |
-| Git scope | Existing checkout, branch `feature/ordered-boundary-nystrom`. Ask the user explicitly before any new branch or worktree, even in full-access mode |
+| SPD-014 evidence | 370 regression/harness tests; 36 saved-geometry and 54 extreme-scale exact comparisons; all 96 diagnostic hashes, 54 paired inverse files and six video pairs agree exactly. Frozen sources and 559 inputs verify |
+| SPD-014 timing limits | Six development scenes, one full pair per scene, two diagnostic repeats; sequential CUDA workers on a shared RTX 5090 host. No noisy-data, multicomponent-performance or all-topology claim |
+| Earlier SPD-008 evidence | 144 tests pass (one CUDA skip), 456 replay decisions agree, and 16/16 full workers recover with exactly matched trajectories, endpoints and work. Its closeout records all 618 preserved TOP-025 artifacts |
+| Earlier SPD-008 timing limits | Four noiseless scenes, two workers per arm/scene, mutually sequential CPU workers and one BLAS thread. LAU-001 artifact timestamps indicate a 31.30 s screen overlapped the last worker; other pilot/test timings are unavailable. Shared-host observations, with no all-scene, noisy-data or GPU speedup claim |
+| Git scope | SPD-010–014 used the existing `feature/shape-frequency-continuation` checkout. The user’s preferred branch remains `feature/ordered-boundary-nystrom`; no branch/worktree was created. Ask explicitly before creating either |
 
-### Current default: compiled + reciprocal + readiness
+### Topology-pipeline default: compiled + reciprocal + readiness
 
 [SPD-007](iteration_07/01_results.md) promotes the qualified setup to the normal
 full pipeline. No extra flag is needed. `compiled` supplies guarded reciprocal
@@ -109,7 +125,7 @@ compiled states retain their validated fallbacks. `--inverse-runtime fast`,
 `reciprocal`, and `reference` retain the comparison paths without readiness.
 An explicit environment setting or Python context still overrides the default.
 
-### Latest result: exact geometry acceleration halves the hard-scene runtime
+### Earlier topology result: exact geometry acceleration halves the hard-scene runtime
 
 [SPD-008](iteration_08/01_results.md) caches exact component reports and sampled
 self-intersection counts within each fit, then uses a conservative separation
@@ -284,8 +300,9 @@ overlapping numerical work would invalidate both runs' machine-load conditions.
 
 ## Reading order
 
-1. This handoff.
-   For current next work, read the [SPD-008 results](iteration_08/01_results.md),
+1. This handoff, the [SPD-014 closeout](iteration_11/01_results.md), and the
+   [SPD-012/013 CUDA baseline](iteration_10/01_results.md).
+   For earlier topology work, read the [SPD-008 results](iteration_08/01_results.md),
    the [SPD-006 results and profile](iteration_06/01_results.md),
    the [concrete geometry follow-up](iteration_05/02_proposals/02_geometry_cost_followup.md),
    then the [SPD-005 results and profile](iteration_05/01_results.md),
@@ -349,3 +366,6 @@ Three additional rules specific to this track:
 | 06 | Compiled Kress continuation in complete inverse workers | [SPD-006 closeout](iteration_06/01_results.md): all 16 workers recover; 4.5%/5.6% additional hard-case time reductions, with geometry/constraint work still the next priority |
 | 07 | Promote the qualified full-pipeline default | [SPD-007](iteration_07/01_results.md): compiled + reciprocal + readiness, with comparison profiles and fallback/reporting checks |
 | 08 | Exact fit-local geometry validation and pair certification | [SPD-008](iteration_08/01_results.md): 16/16 recovered workers, exact paired results/work, 50.5%/54.5% hard-scene time reductions; qualified opt-in |
+| 09 | Frequency threading and CUDA single-interface assembly | [SPD-010/011](iteration_09/01_results.md): matched shape-continuation and video comparisons |
+| 10 | CUDA default and two-object assembly | [SPD-012/013](iteration_10/01_results.md): default dispatch and matched two-object qualification |
+| 11 | Spatial geometry pruning and diagnostic caching | [SPD-014](iteration_11/01_results.md): exact paired results, 7.1% inverse saving and qualified opt-in |

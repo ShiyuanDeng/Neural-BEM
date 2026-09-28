@@ -11,7 +11,8 @@ import numpy as np
 from ._array_utils import cross2d
 from .boundary_parameterization import OrderedBoundaryParameterization2D
 from .parameterization import PeriodicParameterization2D
-from .validation_cache import cached_self_intersections
+from .validation_cache import cached_self_intersections, current_intersection_backend
+from .spatial_validation import spatial_self_intersection_count
 
 
 @dataclass(frozen=True)
@@ -585,6 +586,17 @@ def _point_on_segment_matrix(
 
 @cached_self_intersections
 def _self_intersection_count(
+    points: np.ndarray,
+    cross_tolerance: float,
+    length_tolerance: float,
+) -> int:
+    if current_intersection_backend() == 'spatial':
+        return spatial_self_intersection_count(
+            points, cross_tolerance, length_tolerance, fallback=_dense_self_intersection_count)
+    return _dense_self_intersection_count(points, cross_tolerance, length_tolerance)
+
+
+def _dense_self_intersection_count(
     points: np.ndarray,
     cross_tolerance: float,
     length_tolerance: float,

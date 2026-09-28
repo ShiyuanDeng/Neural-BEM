@@ -12,6 +12,14 @@ provisional**, with two profile differences and plotting provenance unresolved.
 
 ## Current handoff
 
+**SC-049 COMPLETE / NOT RECOVERED, 2026-09-27:** the user-requested
+[far-circle-to-C trial](iteration_29/01_results.md) stops in stage 1 after
+seven accepted steps. Boundary RMS worsens from 168.76 to 188.37 mm despite
+lower fitting loss; a subsequent candidate fails field refinement. The main
+attempt takes 21.43 s including audits and initial/final atlases. CPU controls
+reproduce the endpoint discrepancies. This is a new initialization of the
+existing C target, not an unseen shape. No restart or retuning followed.
+
 **2026-09-27 coupled follow-through:** Claude's final review and
 [multi-object/topology roadmap](../../GPR_next_steps_multi_object_topology.md)
 were pulled after the requested one-hour wait. [SC-047 / iteration 27](iteration_27/01_results.md)
@@ -36,7 +44,8 @@ retains all original stops, timeouts and separately charged qualifications.
 
 | Item | State |
 |---|---|
-| Latest completed cycle | [Iteration 28 / SC-048](iteration_28/01_results.md): compact M5 wins the one clean local screen; exact global enrichment fails the frozen gate. Transfers withheld, no retuning. |
+| Latest completed cycle | [Iteration 29 / SC-049](iteration_29/01_results.md): distant-circle initialization fails in stage 1; numerical failure and wrong location retained. No successor run scheduled. |
+| Prior coupled enrichment | [Iteration 28 / SC-048](iteration_28/01_results.md): compact M5 wins the one clean local screen; exact global enrichment fails the frozen gate. Transfers withheld, no retuning. |
 | Coupled and topology qualification | [Iteration 27 / SC-047](iteration_27/01_results.md): coupled physics PASS, 12/12 local endpoint audits; conditional selector not superior; topological derivative qualified but action gate fails. |
 | Prior strategy decision | [Iteration 26 / SC-043](iteration_26/01_results.md): COMPLETE, 18/18 policy paths and audits. Atlas RMS geometric-mean ratios 1.11301 versus fixed and 1.00512 versus stagnation; both superiority gates fail. Kite RMS is 88%/68% worse despite qualified diagnostics. |
 | State treatment | [Iteration 24 / SC-042](iteration_24/01_results.md): 24/24 development suffixes. One-off cleanup repairs the kite artifact and passes its development gate; recurrent cleanup and a cap give essentially tied geometry. Common-work aggregate improvement is much smaller than terminal improvement. |
@@ -75,6 +84,9 @@ against SPD on SPD's single-object case. The test covers one near-truth
 handoff only.
 
 ## Where things live
+
+- **Fresh distant initialization:** [SC-049 results](iteration_29/01_results.md),
+  [geometry, atlases and raw evidence](../../../results/validation/shape_continuation/SC-049-far-circle-to-c/README.md).
 
 - **Coupled follow-through:** [SC-047 results](iteration_27/01_results.md),
   [evidence and figures](../../../results/validation/shape_continuation/SC-047-coupled-continuation/README.md),
@@ -200,3 +212,4 @@ the next cycle. Code and run artifacts retain their current locations.
 | [26](iteration_26/01_results.md) | SC-043: all 18 prospective policy paths and audits complete. Atlas RMS GM ratios 1.11301 versus fixed and 1.00512 versus stagnation, with 1,368 diagnostic units; both superiority gates fail. Kite stays at M22 and is 88%/68% worse in RMS. All radius constraints are inactive. The full campaign closes at 49,120 recorded units plus up to 130 unrecorded from the retained lost audit. |
 | [27](iteration_27/01_results.md) | SC-047: coupled non-star-shaped physics and complete derivative qualify; 12 local endpoints pass, with worst RMS 0.74–1.03 mm from 3.81 mm. Conditional object selection loses its cost/accuracy gate. Current-scene topological response qualifies, but false births and failed localization withhold actions. |
 | [28](iteration_28/01_results.md) | SC-048: one intrinsically perturbed close pair, three qualified endpoints. M5 / M9 / global enrichment RMS 0.705 / 2.72 / 3.58 mm from 3.90 mm. Global enrichment fails its primary gate; transfer cases are withheld without retuning. |
+| [29](iteration_29/01_results.md) | SC-049: one full far-circle-to-C attempt. Seven accepted updates worsen geometric error; the next candidate fails field refinement. CPU controls reproduce the endpoint discrepancy. Initial atlas qualifies; returned atlas does not. No recovery or restart. |
