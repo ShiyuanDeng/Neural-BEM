@@ -22,18 +22,21 @@ MODES = ('reference', 'cache', 'certified')
 DEFAULT_MAX_BYTES = 16 * 1024 * 1024
 _active = ContextVar('geometry_validation_cache', default=None)
 _fit_selection = ContextVar('geometry_validation_fit_selection', default=None)
-_intersection_backend = ContextVar('sampled_intersection_backend', default='reference')
+_intersection_backend = ContextVar('sampled_intersection_backend', default=None)
 
 
 def current_intersection_backend():
-    return _intersection_backend.get()
+    return _intersection_backend.get() or 'reference'
 
 
 @contextmanager
-def intersection_validation(backend='reference'):
-    """Opt-in exact spatial pruning; independent from validation-cache policy."""
+def intersection_validation(backend='reference', *, if_unset=False):
+    """Select exact pruning; ``if_unset`` preserves an explicit caller selection."""
     if backend not in ('reference', 'spatial'):
         raise ValueError("Intersection backend must be 'reference' or 'spatial'.")
+    if if_unset and _intersection_backend.get() is not None:
+        yield
+        return
     token = _intersection_backend.set(backend)
     try:
         yield

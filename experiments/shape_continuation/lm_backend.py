@@ -23,6 +23,7 @@ from ordered_boundary.validation_cache import fit_geometry_validation
 
 from .forward import ordered_calls, solve, shape_jacobian
 from .geometry import FourierCurve, grid_size, integer
+from .geometry_runtime import geometry_validated
 from .updates import UpdateRefused
 
 NORMAL_RETURN = "NORMAL_OPTIMIZER_RETURN"
@@ -299,6 +300,7 @@ class Objective:
         self.refined_cache = {}
         self.count = len(stage.observations)
 
+    @geometry_validated
     def _predict(self, curve, nodes, category, keep):
         self.ledger.reserve(self.count)
         forwards, columns = [], []
@@ -334,6 +336,7 @@ class Objective:
             self.refined_cache[key] = self._predict(curve, self.stage.refined_nodes, "acceptance_validation", keep=False)
         return self.refined_cache[key]
 
+    @geometry_validated
     def jacobian(self, evaluation, update, space):
         """Residual Jacobian (rows as `normalize`) with respect to update coordinates."""
         blocks = []
@@ -366,11 +369,13 @@ class StageResult:
 
 
 @fit_geometry_validation
+@geometry_validated
 def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None):
     """Run one stage, optionally under a fit-local ``geometry_validation`` cache.
 
-    The default is unchanged. Use ``geometry_validation('cache', on_fit=...)``
-    for exact reuse of hybrid and shared forward-geometry predicates. The
+    Exact reuse and spatial intersection checks are enabled by default. Use
+    ``SC_GEOMETRY_RUNTIME=reference`` for pre-integration execution, or
+    ``geometry_validation('cache', on_fit=...)`` to collect cache diagnostics. The
     generic cache callback's ``num_nodes`` is unset for this stage interface;
     resolutions remain available in the caller's FitStage record.
     """

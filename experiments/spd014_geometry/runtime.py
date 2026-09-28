@@ -2,9 +2,10 @@
 from contextlib import contextmanager
 from contextvars import ContextVar
 from functools import wraps
+from experiments.shape_continuation.geometry_runtime import geometry_runtime
 
 from ordered_boundary.validation_cache import (
-    current_validation_cache, intersection_validation, validation_cache,
+    current_validation_cache, validation_cache,
 )
 
 ARMS = ('reference', 'cache', 'spatial', 'both')
@@ -23,7 +24,7 @@ def geometry_acceleration(arm='both'):
         raise ValueError('SPD-014 arm must be one of '+repr(ARMS))
     token = _cache_batches.set(arm in ('cache', 'both'))
     try:
-        with intersection_validation('spatial' if arm in ('spatial', 'both') else 'reference'):
+        with geometry_runtime(arm):
             yield
     finally:
         _cache_batches.reset(token)

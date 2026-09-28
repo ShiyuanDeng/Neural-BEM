@@ -41,6 +41,7 @@ from gpr_bem_kress.execution import execution
 from . import atlas_cases as ac, atlas_strategy_tests as ast, spd_cases as sc
 from .forward import PointSourceAcquisition, _solve, same_acquisition, shape_jacobian, solve
 from .geometry import FourierCurve, normal_basis
+from .geometry_runtime import geometry_validated
 from .lm_backend import normalize, relative_columns
 
 RESULTS = sc.ROOT / 'results/validation/shape_continuation'
@@ -275,6 +276,7 @@ def geometry(nodes):
                 weights=nodes.arc_length_weights, curvatures=nodes.curvatures, speeds=nodes.speeds)
 
 
+@geometry_validated
 def compute(curve, grids, observations, contrast):
     """Every catalog frequency on every grid: traces, reciprocal traces and full predictions."""
     arrays, record = {}, dict(grids=sorted(grids), forward_residual={}, reciprocal_residual={}, seconds={})

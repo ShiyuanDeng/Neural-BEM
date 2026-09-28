@@ -30,7 +30,8 @@ qualifies exact reuse for new clean-hybrid runs: 12.62% aggregate inversion-time
 reduction, identical cached/off trajectories and 76 pre-dispatch tests. Keep
 the fixed M=3/5/7/9 ladder as the baseline; no adaptive policy is promoted.
 
-The clean hybrid supports the same opt-in, bounded, fit-local validation cache:
+The native geometry runtime now enables exact spatial checks and bounded,
+fit-local validation reuse by default (SPD-015). Collect cache diagnostics with:
 
 ```python
 from ordered_boundary.validation_cache import geometry_validation
@@ -44,10 +45,46 @@ Each `fit_stage` creates a fresh cache, released even after an exception.
 Complete ordered point arrays and tolerances key both the hybrid's spatial
 intersection test and the shared forward adapters' intersection tests.
 Numerical predicates, derivative calculations, trial geometry and acceptance
-rules are unchanged. No selection context means the original uncached path.
+rules are unchanged. `SC_GEOMETRY_RUNTIME=reference` retains the pre-integration
+execution path. Existing explicit validation-cache contexts retain their policy.
 Pair-separation certification has no work to save on these single interfaces.
 The callback's generic `num_nodes` field is unset for the hybrid API; read the
 production/refined resolutions from its `FitStage` records.
+
+`SC_GEOMETRY_RUNTIME=reference|cache|spatial|both` selects the geometry runtime;
+the default is `both`. It is independent of `SC_FORWARD_BACKEND` and
+`SC_FREQUENCY_THREADS`. A Python override is context-local:
+
+```python
+from experiments.shape_continuation.geometry_runtime import geometry_runtime, geometry_batch
+
+with geometry_runtime('reference'):
+    result = run_policy(initial, policy, contrast, update, config, ledger)
+
+with geometry_batch():
+    # Share exact checks across a custom complete diagnostic, then clear them.
+    ...
+```
+
+Native solves, Jacobians, fit stages, objectives, atlas construction and raw
+trajectory diagnostics use bounded scopes automatically. Separate objective or
+endpoint calls create fresh caches; no run-global cache is introduced. The
+shared ordered-boundary API outside this pipeline keeps its reference default.
+Explicit intersection selections take precedence, including the dense checker
+used for comparisons and the pathological/sub-roundoff fallback.
+
+For latest-versus-hybrid videos, use the native entry point with a fresh output
+directory; it wraps each complete diagnostic batch while keeping the archived
+renderer unchanged:
+
+```bash
+PYTHONPATH=solvers:. python -m experiments.shape_continuation.latest_video \
+  --policy fixed --workers 1 --prepare-only --output <fresh-output-directory>
+```
+
+Drop `--prepare-only` to encode the same rendered content. Historical direct
+renderer commands gain native solver pruning, but need this entry point (or an
+explicit `geometry_batch`) for cross-frequency diagnostic cache reuse.
 
 `spd008_comparison.py` runs the approved fixed-topology comparison using the
 existing two stage fitters. Use `prepare`, then `qualify`, then `campaign`, each

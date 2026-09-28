@@ -7,6 +7,14 @@ See the [results and limits](../../results/validation/speedup/SPD-014-20260927-g
 The matched worker timings begin at saved intermediate shapes, not at the
 original circles. They measure complete SC-043 continuation suffixes.
 
+**Native integration, 2026-09-28:** [SPD-015](../spd015_default_geometry/README.md)
+adds this acceleration to shape-continuation's ordinary fit, objective and
+diagnostic calls, controlled by `SC_GEOMETRY_RUNTIME` (default `both`). Its
+reference setting retains the pre-integration execution path. SPD-014's original
+qualification and timing receipts remain historical; use SPD-015's fresh evidence
+for the native default. The shared ordered-boundary API still defaults to dense
+checks outside the shape-continuation scopes.
+
 Approved follow-up to SPD-011's remaining geometry cost. The candidate retains
 all polygon nodes, orientation/touching tolerances and intersection counts. It
 uses the existing shape-continuation KD-tree idea in the shared Kress validation

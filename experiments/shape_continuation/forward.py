@@ -16,6 +16,7 @@ from gpr_bem_kress import cuda_assembly
 from gpr_bem_kress.execution import execution
 from ordered_boundary import OrderedBoundary2D
 from ordered_boundary.validation_cache import current_validation_cache, validation_cache
+from .geometry_runtime import geometry_validated
 from gpr_bem_kress.multicomponent import (
     build_multicomponent_muller_system,
     build_multicomponent_exterior_receiver_operator,
@@ -231,6 +232,7 @@ def _solve(matrix, factors, rhs):
     return solution, float(residual)
 
 
+@geometry_validated
 def solve(shape, wavenumber, contrast, acquisition, nodes, *, work=None):
     """contrast=ki²/k²; geometry and all lengths are in one declared unit."""
     if not np.isfinite(wavenumber) or wavenumber <= 0 or not np.isfinite(contrast) or contrast <= 0:
@@ -289,6 +291,7 @@ def solve(shape, wavenumber, contrast, acquisition, nodes, *, work=None):
                         factors, traces, prediction, residual, backend)
 
 
+@geometry_validated
 def shape_jacobian(state, normal_displacements, *, work=None):
     """Continuous Hadamard derivative with Kress traces and periodic quadrature.
 

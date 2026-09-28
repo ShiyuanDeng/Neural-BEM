@@ -12,6 +12,15 @@ provisional**, with two profile differences and plotting provenance unresolved.
 
 ## Current handoff
 
+**SPD-015 COMPLETE / NATIVE GEOMETRY DEFAULT, 2026-09-28:**
+[Speedup iteration 12](../speedup/iteration_12/01_results.md) integrates amended
+spatial checks and bounded fit/objective/diagnostic caches. Fresh matched SC-043
+suffixes use 7.1% less time; video preparation uses 53.5% less time, with exact
+non-timing outputs and work. Set `SC_GEOMETRY_RUNTIME=reference` to retain the
+previous execution path. The [native API](../../../experiments/shape_continuation/README.md)
+documents the controls and accelerated video entry point. This changes execution
+only; the SC-050 reconstruction-policy result below remains a separate decision.
+
 **SC-050 COMPLETE / LOCALIZATION SUCCEEDS, 2026-09-28:** after the requested
 one-hour wait and Claude's SPD-014 review, [iteration 30](iteration_30/02_results.md)
 tests six strategies on the failed far-circle-to-C start. Data-only circle

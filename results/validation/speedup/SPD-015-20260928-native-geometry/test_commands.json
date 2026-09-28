@@ -1,0 +1,45 @@
+[
+  {
+    "log": "regression.log",
+    "passed": 374,
+    "command": [
+      "env",
+      "OPENBLAS_NUM_THREADS=1",
+      "OMP_NUM_THREADS=1",
+      "MKL_NUM_THREADS=1",
+      "PYTHONPATH=solvers:.",
+      "/home/drdeng/miniconda3/envs/EMNerf/bin/python",
+      "-m",
+      "pytest",
+      "-q",
+      "experiments/shape_continuation",
+      "pytest/ordered_boundary",
+      "pytest/gpr_bem_kress",
+      "pytest/sdf_inverse/test_spd008.py",
+      "pytest/sdf_inverse/test_spd008_experiment.py",
+      "experiments/spd014_geometry/test_run.py"
+    ]
+  },
+  {
+    "log": "cpu_tests.log",
+    "passed": 65,
+    "command": [
+      "env",
+      "OPENBLAS_NUM_THREADS=1",
+      "OMP_NUM_THREADS=1",
+      "MKL_NUM_THREADS=1",
+      "PYTHONPATH=solvers:.",
+      "SC_FORWARD_BACKEND=cpu",
+      "/home/drdeng/miniconda3/envs/EMNerf/bin/python",
+      "-m",
+      "pytest",
+      "-q",
+      "experiments/shape_continuation/test_geometry_runtime.py",
+      "experiments/shape_continuation/test_lm_backend.py",
+      "experiments/shape_continuation/test_multi_object.py",
+      "experiments/shape_continuation/test_point_sources.py",
+      "pytest/ordered_boundary/test_spd014.py",
+      "experiments/spd015_default_geometry/test_run.py"
+    ]
+  }
+]

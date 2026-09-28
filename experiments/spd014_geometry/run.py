@@ -73,12 +73,12 @@ def environment():
                     ['git', 'status', '--porcelain', '--untracked-files=no'], cwd=ROOT, text=True).splitlines(),
                 host=platform.node(), python=sys.version, cpus=os.cpu_count(), load=os.getloadavg(),
                 gpu=gpu, numpy=np.__version__,
-                env={k: os.environ.get(k) for k in ('SC_FORWARD_BACKEND', 'SC_FREQUENCY_THREADS',
+                env={k: os.environ.get(k) for k in ('SC_FORWARD_BACKEND', 'SC_FREQUENCY_THREADS', 'SC_GEOMETRY_RUNTIME',
                      'OPENBLAS_NUM_THREADS', 'OMP_NUM_THREADS', 'MKL_NUM_THREADS')},
                 processes=subprocess.check_output(['ps', '-eo', 'pid,ppid,pcpu,comm'], text=True))
 
 
-def freeze(folder):
+def freeze(folder, *, plan=None, scope='SPD-014', extra_sources=()):
     folder.mkdir(parents=True, exist_ok=False)
     paths = set()
     for root in ('solvers/ordered_boundary', 'solvers/gpr_bem_kress',
@@ -87,7 +87,8 @@ def freeze(folder):
     archived = read(ARCHIVE/'manifest.json')
     paths.update(ROOT/p for p in archived['sources'] if (ROOT/p).is_file())
     paths.update((REPLAY, RENDER, ROOT/'pytest/ordered_boundary/test_spd014.py'))
-    plan = ROOT/'docs/iterations/speedup/iteration_10/03_spd014_plan.md'
+    paths.update(extra_sources)
+    plan = plan or ROOT/'docs/iterations/speedup/iteration_10/03_spd014_plan.md'
     (folder/'approved_plan.md').write_bytes(plan.read_bytes())
     inputs = dict(archived['inputs'])
     for case in CASES:
@@ -102,7 +103,7 @@ def freeze(folder):
         for p in sorted(paths):
             archive.add(p, arcname=str(p.relative_to(ROOT)), recursive=False)
     write(folder/'manifest.json', dict(sources={str(p.relative_to(ROOT)): digest(p) for p in sorted(paths)},
-         inputs=inputs, environment=environment(), approved_scope='SPD-014',
+         inputs=inputs, environment=environment(), approved_scope=scope,
          plan_sha256=digest(folder/'approved_plan.md'), source_archive_sha256=digest(folder/'sources.tar.gz'),
          created=time.time()))
 
@@ -295,7 +296,7 @@ def compare_video(first, second, case):
     return dict(passed=equal, all_non_timing_equal=equal)
 
 
-def campaign(folder, kind):
+def campaign(folder, kind, *, worker_module='experiments.spd014_geometry.run'):
     for prerequisite in ('geometry', 'batches'):
         if not read(folder/prerequisite/'result.json')['passed']:
             raise RuntimeError(prerequisite+' qualification failed')
@@ -319,7 +320,7 @@ def campaign(folder, kind):
                 raise TimeoutError('Campaign budget exhausted before '+case+'/'+arm)
             dest = out/case/arm
             dest.mkdir(parents=True, exist_ok=False)
-            command = [sys.executable, '-m', 'experiments.spd014_geometry.run', kind+'-worker',
+            command = [sys.executable, '-m', worker_module, kind+'-worker',
                        str(folder), '--output', str(dest), '--case', case, '--arm', arm]
             write(dest/'command.json', dict(command=command, environment=environment(), reserve_units=expected))
             with (dest/'run.log').open('w') as log:

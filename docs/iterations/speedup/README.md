@@ -76,7 +76,7 @@ renumber, move or supersede any Boundary–BIE iteration.
 
 ## Current handoff
 
-Updated 2026-09-27.
+Updated 2026-09-28.
 
 **Shape-continuation pipeline, 2026-09-27.** [Iteration 09](iteration_09/01_results.md) adds two options.
 
@@ -90,29 +90,39 @@ Updated 2026-09-27.
   diagnostic caching saves 7.1% across six SC-043 CUDA continuation workers and
   53.6% in video preparation (2.16x), with exact non-timing results and work.
   Four-arm diagnostic time falls 60.7%; 370 regression/harness tests pass.
-  The dense checker remains the default and pathological-case fallback.
+  At qualification the dense checker remained the default. It remains the
+  pathological-case fallback; SPD-015 below integrates the native default.
 
-**Timing-scope clarification:** SPD-010–014 replay the SC-043 continuation
+- **SPD-015 — COMPLETE / PASS; native geometry default.**
+  [Iteration 12](iteration_12/01_results.md) integrates the amended spatial
+  predicate and bounded validation caches into shape-continuation's ordinary
+  calls. Fresh replays save 7.1% in continuation, 60.6% in diagnostic batches
+  and 53.5% in video preparation, with exact non-timing results and work.
+  `SC_GEOMETRY_RUNTIME=reference` retains the previous execution path.
+
+**Timing-scope clarification:** SPD-010–015 replay the SC-043 continuation
 suffixes from saved intermediate shapes. Their historical CPU-versus-CUDA
 ratios do not measure full reconstructions from the original circles. The
 fresh circle-start [SC-049 test](../shape_frequency_continuation/iteration_29/01_results.md)
 stops with a retained recovery failure.
 
-The earlier topology-pipeline results remain available below; SPD-014 measures
+The earlier topology-pipeline results remain available below; SPD-014/015 measure
 the six single-object shape-continuation development cases.
 
 | Item | Current state |
 |---|---|
-| Active iteration | Iteration 11: [SPD-014 exact geometry acceleration](iteration_11/01_results.md), following SPD-010–013, for the shape-continuation pipeline |
-| Stage | **SPD-014 COMPLETE / PASS**, qualified opt-in under its [contract](iteration_10/03_spd014_plan.md). The earlier SPD-008 topology optimization remains qualified opt-in |
-| Approved experiment IDs | **SPD-001**, **SPD-002**, **SPD-004**, **SPD-005**, **SPD-006**, **SPD-007**, **SPD-008** (direct “yes” to implementation and validation, 2026-09-17); **SPD-010**, **SPD-011** (the user replied “go” to the request to approve them, 2026-09-27); **SPD-012**, **SPD-013** (the user replied “yes for first two”, 2026-09-27); **SPD-014** (the user replied “you have my approval” to the geometry follow-up, 2026-09-27) |
-| Next expected action | Review the completed SPD-014 evidence and scoped usage. No successor run or default promotion is scheduled. SPD-009 remains separate and unexecuted |
+| Active iteration | Iteration 12: [SPD-015 native geometry default](iteration_12/01_results.md), following the SPD-014 qualification and review amendment |
+| Stage | **SPD-015 COMPLETE / PASS**, native shape-continuation default under its [contract](iteration_12/03_plan.md). The earlier SPD-008 topology optimization remains qualified opt-in |
+| Approved experiment IDs | **SPD-001**, **SPD-002**, **SPD-004**, **SPD-005**, **SPD-006**, **SPD-007**, **SPD-008** (direct “yes” to implementation and validation, 2026-09-17); **SPD-010**, **SPD-011** (the user replied “go” to the request to approve them, 2026-09-27); **SPD-012**, **SPD-013** (the user replied “yes for first two”, 2026-09-27); **SPD-014** (the user replied “you have my approval” to the geometry follow-up, 2026-09-27); **SPD-015** (the user requested “integrate and validate the speedups”, then selected the current shape-continuation pipeline, 2026-09-28) |
+| Next expected action | Use the native default and retain the explicit reference setting for comparisons. No successor campaign is scheduled. SPD-009 remains separate and unexecuted |
 | Owner / reviewer | Codex `/root` / self-review; no independent reviewer claimed |
+| SPD-015 evidence | 374 broad tests plus a passing 65-test CPU-focused/native-harness run (overlapping coverage); 36 geometry comparisons, 96 diagnostic hashes, 54 paired inverse files and six video pairs agree exactly. All 234 sources and 559 inputs verify |
+| SPD-015 timing limits | Six saved continuation suffixes, one inverse/video pair per scene and two diagnostic repeats; sequential CUDA workers on a shared RTX 5090 host. No original-circle, noisy-data, multicomponent-performance or topology-default claim |
 | SPD-014 evidence | 370 regression/harness tests; 36 saved-geometry and 54 extreme-scale exact comparisons; all 96 diagnostic hashes, 54 paired inverse files and six video pairs agree exactly. Frozen sources and 559 inputs verify |
 | SPD-014 timing limits | Six development scenes, one full pair per scene, two diagnostic repeats; sequential CUDA workers on a shared RTX 5090 host. No noisy-data, multicomponent-performance or all-topology claim |
 | Earlier SPD-008 evidence | 144 tests pass (one CUDA skip), 456 replay decisions agree, and 16/16 full workers recover with exactly matched trajectories, endpoints and work. Its closeout records all 618 preserved TOP-025 artifacts |
 | Earlier SPD-008 timing limits | Four noiseless scenes, two workers per arm/scene, mutually sequential CPU workers and one BLAS thread. LAU-001 artifact timestamps indicate a 31.30 s screen overlapped the last worker; other pilot/test timings are unavailable. Shared-host observations, with no all-scene, noisy-data or GPU speedup claim |
-| Git scope | SPD-010–014 used the existing `feature/shape-frequency-continuation` checkout. The user’s preferred branch remains `feature/ordered-boundary-nystrom`; no branch/worktree was created. Ask explicitly before creating either |
+| Git scope | SPD-010–015 used the existing `feature/shape-frequency-continuation` checkout; the user explicitly selected that pipeline for SPD-015. The user’s general preferred branch remains `feature/ordered-boundary-nystrom`; no branch/worktree was created. Ask explicitly before creating either |
 
 ### Topology-pipeline default: compiled + reciprocal + readiness
 
@@ -300,7 +310,8 @@ overlapping numerical work would invalidate both runs' machine-load conditions.
 
 ## Reading order
 
-1. This handoff, the [SPD-014 closeout](iteration_11/01_results.md), and the
+1. This handoff, the [SPD-015 native integration](iteration_12/01_results.md),
+   the [SPD-014 closeout](iteration_11/01_results.md), and the
    [SPD-012/013 CUDA baseline](iteration_10/01_results.md).
    For earlier topology work, read the [SPD-008 results](iteration_08/01_results.md),
    the [SPD-006 results and profile](iteration_06/01_results.md),
@@ -369,5 +380,6 @@ Three additional rules specific to this track:
 | 09 | Frequency threading and CUDA single-interface assembly | [SPD-010/011](iteration_09/01_results.md): matched shape-continuation and video comparisons |
 | 10 | CUDA default and two-object assembly | [SPD-012/013](iteration_10/01_results.md): default dispatch and matched two-object qualification |
 | 11 | Spatial geometry pruning and diagnostic caching | [SPD-014](iteration_11/01_results.md): exact paired results, 7.1% inverse saving and qualified opt-in |
+| 12 | Native shape-continuation geometry default | [SPD-015](iteration_12/01_results.md): integrated scopes, exact paired results, 7.1% continuation and 53.5% video-preparation savings |
 
 Review follow-up, 2026-09-28: [Claude review response](iteration_11/03_review_response.md) records the sub-roundoff fallback fix, qualification scope corrections, and preserved pre/post-amendment commits.

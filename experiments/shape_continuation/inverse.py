@@ -6,6 +6,7 @@ import numpy as np
 from .forward import Acquisition, BudgetExceeded, ForwardState, Work, solve, shape_jacobian, timed, same_acquisition
 from .geometry import FourierCurve, displaced, gaussian_filter, normal_basis, curvature_tail, integer
 from .schedule import Stage
+from .geometry_runtime import geometry_validated
 
 
 @dataclass(frozen=True)
@@ -259,6 +260,7 @@ def optimise_step(state, *, config=None, work=None, iteration=1):
         return stopped("budget_exhausted")
 
 
+@geometry_validated
 def fit_prepared(state, *, config=None, work=None):
     """Run a fixed-stage chunk; return (live cached state, lightweight report).
 

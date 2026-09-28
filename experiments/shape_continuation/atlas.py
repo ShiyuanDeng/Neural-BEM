@@ -30,6 +30,7 @@ import numpy as np
 
 from .forward import Acquisition, Work, solve, shape_jacobian, timed
 from .geometry import FourierCurve, arclength_angles, grid_size, integer
+from .geometry_runtime import geometry_validated
 
 
 def orthonormal_normal_basis(curve, band):
@@ -285,6 +286,7 @@ def _selection_leakage(jacobian, band):
     return np.where(energy > 0, 1.0 - on_line / np.where(energy > 0, energy, 1.0), np.nan)
 
 
+@geometry_validated
 def build(shape, observations, contrast, band, node_rule, *, whitening=None,
           work=None, wavenumbers=None, keep_selection=False, progress=None):
     """Atlas over the supplied observations at one geometry.
