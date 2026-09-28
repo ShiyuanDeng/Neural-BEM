@@ -36,6 +36,8 @@ plt.rcParams.update({'font.family': 'DejaVu Sans', 'font.size': 13, 'axes.edgeco
                      'axes.spines.right': False, 'legend.frameon': False})
 from matplotlib.colors import LinearSegmentedColormap
 HEAT = LinearSegmentedColormap.from_list('seq', SEQ)
+# atlas heat: the videos' own map (atlas_video.CMAP): dark = little left to remove, bright = potential
+ATLAS = LinearSegmentedColormap.from_list('atlas', ['#0a1628', '#123a6b', '#2a78d6', '#9cc7f2', '#f2f8fe'])
 
 
 def slide(title, subtitle=None):
@@ -124,17 +126,17 @@ def error_along_boundary():
 # 3 ------------------------------------------------------------------------------------------ atlas filmstrip
 def filmstrip():
     data = read(REVIEW/'atlas3d.json')
-    fig = slide('The atlas along a trajectory', 'Removable misfit by frequency (x) and ripple order (y) at stage ends. '
-                'Amber: the update band each stage may use. Colour drains as the band widens.')
+    fig = slide('The atlas along a trajectory', 'Removable misfit by frequency (x) and ripple order (y) at stage ends; bright = more left to remove.\n'
+                'Amber: the update band each stage may use. Brightness fades as the band widens.')
     for row, key in enumerate(('star', 'kite')):
         st = data['tracks'][key]['states']
         ends = [k for k in range(len(st)) if k == 0 or k == len(st)-1 or st[k]['track'] + st[k]['stage'] != st[k+1]['track'] + st[k+1]['stage']]
         pick = sorted({ends[round(i*(len(ends)-1)/7)] for i in range(8)}) if len(ends) > 8 else ends
-        fig.text(.04, .835 - row*.40, {'star': 'Star', 'kite': 'Kite, into the flank artefact'}[key], fontsize=13, fontweight='bold', color=BLUE)
+        fig.text(.04, .80 - row*.415, {'star': 'Star', 'kite': 'Kite, into the flank artefact'}[key], fontsize=13, fontweight='bold', color=BLUE)
         for j, k in enumerate(pick):
             s = st[k]
-            ax = fig.add_axes([.045 + j*.113, .46 - row*.40, .1, .27])
-            ax.imshow(np.array(s['heat']), origin='lower', aspect='auto', cmap=HEAT, vmin=data['low'], vmax=0,
+            ax = fig.add_axes([.045 + j*.113, .47 - row*.415, .1, .24])
+            ax.imshow(np.array(s['heat']), origin='lower', aspect='auto', cmap=ATLAS, vmin=data['low'], vmax=0,
                       extent=[.25-.0625, 2.5+.0625, -.5, data['orders']+.5])
             g = [data['ghz'][i] for i in s['active']]
             ax.add_patch(Rectangle((min(g)-.0625, -.5), max(g)-min(g)+.125, min(s['M'], data['orders'])+1, fill=False, ec=AMBER, lw=2.2))
@@ -143,8 +145,8 @@ def filmstrip():
             name = s['track'].split('/')[-1] if s['track'].startswith(('SC041', 'review')) else s['stage']
             ax.set_title(f"{name.replace('_', ' ')}\nM={s['M']} · loss {s['loss']:.0e}", fontsize=9.5)
             ax.set_xlabel(f"H {s['hausdorff']:.2f} mm", fontsize=10, color=MUTED)
-    cax = fig.add_axes([.94, .2, .012, .5])
-    fig.colorbar(plt.cm.ScalarMappable(cmap=HEAT, norm=plt.Normalize(data['low'], 0)), cax=cax).set_label('log₁₀ removable misfit')
+    cax = fig.add_axes([.935, .2, .012, .5])
+    fig.colorbar(plt.cm.ScalarMappable(cmap=ATLAS, norm=plt.Normalize(data['low'], 0)), cax=cax).set_label('log₁₀ removable misfit (bright = more)', fontsize=11)
     save(fig, '03_atlas_filmstrip', 'Historical capped-QR atlas (atlas_video.py), recomputed for these states in outsider-review part 2. H = Hausdorff to truth.')
 
 
