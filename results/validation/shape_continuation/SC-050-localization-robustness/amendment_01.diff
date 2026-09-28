@@ -1,0 +1,90 @@
+--- original/run.py
++++ amended/run.py
+@@ -77,10 +77,13 @@
+ 
+ def verify(require_inputs=True):
+     m=sc.read(HERE/'manifest.json')
+-    for kind in ('sources','inputs'):
+-        for path,digest in m.get(kind,{}).items():
++    current=m['amendments'][-1] if m.get('amendments') else m
++    for mapping in (current['sources'],m.get('inputs',{})):
++        for path,digest in mapping.items():
+             assert sc.digest(sc.ROOT/path)==digest, 'Frozen file changed: '+path
+     assert sc.digest(HERE/'sources.tar.gz')==m['archive_sha256']
++    for amendment in m.get('amendments',[]):
++        assert sc.digest(HERE/amendment['archive'])==amendment['archive_sha256']
+     if require_inputs:
+         assert m.get('inputs_sealed'), 'Inputs not sealed'
+ 
+@@ -183,6 +186,13 @@
+     return stages,config
+ 
+ 
++def circle_exterior_clearance(parameters_m,catalog):
++    """Exact circular-domain precheck using known acquisition coordinates only."""
++    points=np.concatenate([getattr(o.acquisition,key) for o in catalog for key in ('sources','receivers')])
++    physical=points*sc.LENGTH+np.array([sc.CENTER.real,sc.CENTER.imag])
++    return float(np.min(np.linalg.norm(physical-parameters_m[:2],axis=1))-parameters_m[2])
++
++
+ def localize(catalog,folder):
+     started=time.perf_counter()
+     obs=catalog[:3]
+@@ -201,18 +211,34 @@
+             return np.inf
+         if units+6>2000 or time.perf_counter()-started>600:
+             raise RuntimeError('Localization budget exhausted')
+-        curve=FourierCurve.circle(x[2]/sc.LENGTH,(complex(*x[:2])-sc.CENTER)/sc.LENGTH)
+         nodes=(128,256) if grid else (512,1024)
+-        a,b=[predictions(curve,obs,n) for n in nodes]
+-        units+=6
+-        disc=ac.relative(a,b)
+-        passed=bool(np.all(np.isfinite(disc)) and max(disc)<=1e-7)
+-        loss=.5*float(np.mean((np.linalg.norm(b-observed,axis=0)/norms)**2))
+-        record=dict(parameters_m=x,loss=loss,qualified=passed,field_relative=disc,nodes=nodes,units=units)
++        clearance=circle_exterior_clearance(x,obs)
++        record=dict(parameters_m=x,loss=None,qualified=False,nodes=nodes,exterior_clearance_m=clearance)
++        loss=np.inf
++        if clearance<=32*np.finfo(float).eps:
++            record.update(reason='source_or_receiver_not_exterior',attempted_units=0)
++        else:
++            curve=FourierCurve.circle(x[2]/sc.LENGTH,(complex(*x[:2])-sc.CENTER)/sc.LENGTH)
++            before=units
++            try:
++                values=[]
++                for n in nodes:
++                    units+=len(obs)  # charge dispatched batches, including failures
++                    values.append(predictions(curve,obs,n))
++                a,b=values
++                disc=ac.relative(a,b)
++                passed=bool(np.all(np.isfinite(disc)) and max(disc)<=1e-7)
++                value=.5*float(np.mean((np.linalg.norm(b-observed,axis=0)/norms)**2))
++                record.update(loss=value,qualified=passed,field_relative=disc,
++                              reason='qualified' if passed else 'resolution_disagreement')
++                if passed:
++                    loss=value
++            except (ValueError,FloatingPointError,np.linalg.LinAlgError) as exc:
++                record.update(reason='forward_refused',detail=str(exc))
++            record['attempted_units']=units-before
++        record['units']=units
+         records.append(record)
+         write(folder/'localization_progress.json',dict(rows=records,units=units,seconds=time.perf_counter()-started))
+-        if not passed:
+-            raise RuntimeError('Localization candidate failed numerical qualification')
+         cache[key]=loss
+         return loss
+     grid=[]
+@@ -220,8 +246,12 @@
+         for y in np.linspace(.28,.72,9):
+             for r in (.025,.045,.065):
+                 p=np.array([x,y,r]);grid.append((evaluate(p,True),p))
+-    _,best=min(grid,key=lambda row:row[0])
++    grid_loss,best=min(grid,key=lambda row:row[0])
++    if not np.isfinite(grid_loss):
++        raise RuntimeError('No admissible, qualified grid candidate')
+     value=evaluate(best)
++    if not np.isfinite(value):
++        raise RuntimeError('Selected grid candidate failed 512/1024 qualification')
+     steps=np.array([.02,.02,.0075])
+     for iteration in range(12):
+         neighbors=[(evaluate(best+sign*steps[j]*np.eye(3)[j]),best+sign*steps[j]*np.eye(3)[j])

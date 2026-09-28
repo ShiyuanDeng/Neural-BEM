@@ -369,3 +369,5 @@ Three additional rules specific to this track:
 | 09 | Frequency threading and CUDA single-interface assembly | [SPD-010/011](iteration_09/01_results.md): matched shape-continuation and video comparisons |
 | 10 | CUDA default and two-object assembly | [SPD-012/013](iteration_10/01_results.md): default dispatch and matched two-object qualification |
 | 11 | Spatial geometry pruning and diagnostic caching | [SPD-014](iteration_11/01_results.md): exact paired results, 7.1% inverse saving and qualified opt-in |
+
+Review follow-up, 2026-09-28: [Claude review response](iteration_11/03_review_response.md) records the sub-roundoff fallback fix, qualification scope corrections, and preserved pre/post-amendment commits.

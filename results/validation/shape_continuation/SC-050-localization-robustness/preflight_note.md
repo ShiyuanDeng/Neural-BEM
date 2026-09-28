@@ -1,0 +1,1 @@
+A configuration-only preflight confirmed exact baseline schedule/config equality with SC-049. Source archiving then failed because the test imported run.py using a relative path. No manifest, input data, or reconstruction existed. Path normalization was fixed before freeze; the incomplete archive is retained.

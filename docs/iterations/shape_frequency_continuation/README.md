@@ -12,13 +12,24 @@ provisional**, with two profile differences and plotting provenance unresolved.
 
 ## Current handoff
 
+**SC-050 COMPLETE / LOCALIZATION SUCCEEDS, 2026-09-28:** after the requested
+one-hour wait and Claude's SPD-014 review, [iteration 30](iteration_30/02_results.md)
+tests six strategies on the failed far-circle-to-C start. Data-only circle
+localization repairs the failure; the selected localization + 0.25 GHz warm-up
+policy reaches 0.00131 mm RMS in 93.03 s of localization/fitting. It recovers
+5/5 clean transfers and one fixed 1% noise case, versus 0/6 for the baseline.
+All successful endpoints pass independent field/Jacobian/FD audits. Sources,
+input qualification, two disclosed acquisition-domain setup corrections, all
+18 comparisons and two setup failures are preserved. No default promotion.
+
 **SC-049 COMPLETE / NOT RECOVERED, 2026-09-27:** the user-requested
 [far-circle-to-C trial](iteration_29/01_results.md) stops in stage 1 after
 seven accepted steps. Boundary RMS worsens from 168.76 to 188.37 mm despite
 lower fitting loss; a subsequent candidate fails field refinement. The main
 attempt takes 21.43 s including audits and initial/final atlases. CPU controls
 reproduce the endpoint discrepancies. This is a new initialization of the
-existing C target, not an unseen shape. No restart or retuning followed.
+existing C target, not an unseen shape. The original failure is preserved;
+SC-050 is a separate, subsequently authorized strategy comparison.
 
 **2026-09-27 coupled follow-through:** Claude's final review and
 [multi-object/topology roadmap](../../GPR_next_steps_multi_object_topology.md)
@@ -44,7 +55,8 @@ retains all original stops, timeouts and separately charged qualifications.
 
 | Item | State |
 |---|---|
-| Latest completed cycle | [Iteration 29 / SC-049](iteration_29/01_results.md): distant-circle initialization fails in stage 1; numerical failure and wrong location retained. No successor run scheduled. |
+| Latest completed cycle | [Iteration 30 / SC-050](iteration_30/02_results.md): localization repairs the far-C failure; frozen-policy transfer recovers 5/5 clean cases and one fixed noise case. Noisy RMS 0.220 mm; defaults unchanged. |
+| Far-start failure control | [Iteration 29 / SC-049](iteration_29/01_results.md): distant-circle initialization fails in stage 1; exact accepted-state replay retained in SC-050. |
 | Prior coupled enrichment | [Iteration 28 / SC-048](iteration_28/01_results.md): compact M5 wins the one clean local screen; exact global enrichment fails the frozen gate. Transfers withheld, no retuning. |
 | Coupled and topology qualification | [Iteration 27 / SC-047](iteration_27/01_results.md): coupled physics PASS, 12/12 local endpoint audits; conditional selector not superior; topological derivative qualified but action gate fails. |
 | Prior strategy decision | [Iteration 26 / SC-043](iteration_26/01_results.md): COMPLETE, 18/18 policy paths and audits. Atlas RMS geometric-mean ratios 1.11301 versus fixed and 1.00512 versus stagnation; both superiority gates fail. Kite RMS is 88%/68% worse despite qualified diagnostics. |
