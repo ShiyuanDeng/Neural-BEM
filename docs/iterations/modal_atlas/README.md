@@ -14,11 +14,11 @@ cited as starting evidence.
 
 | Item | State |
 |---|---|
-| Latest cycle | [Iteration 04 / MA-003](iteration_04/01_results.md): the exterior band and dense Mie localization recover none of the four high-contrast failures (G1 fails; transfer withheld). The contrast-4 C stalls in a wrong basin. Evaluation-only probes: complex-frequency damping `k(1 + iγ)` restores the resonance-shortened horizons and fixes the 13.3 circle localization. |
+| Latest cycle | [Iteration 06 / MA-005](iteration_06/01_results.md): **both gates pass.** A damped start `k(1 + 0.25i)` plus fixed stages up to the measured observable frontier (DF) recovers 7 of 8 transfer attempts at contrasts 4 and 13.3, where frozen SC-050 recovers 0 (6 of 6 against 0 of 6 excluding `opposite_c`, which repeats the development C's data). Development: 11 of 12. At contrast 0.5 DF equals D, which matches SC-050 to within 0.001 mm. The 13.3 original C remains unsolved. |
 | Review of the vision | [Independent review](iteration_01/02_proposals/02_independent_review.md). §5.1 is gauge-dependent. The resonance mechanism does not apply to the contrast-0.5 benchmark. |
 | Current code check | [MA-001R](../../../results/validation/modal_atlas/MA-001R/README.md), 2026-09-29: Part B re-run on `feature/shape-frequency-continuation` at `032092cd` (CUDA default). Integer quantities identical; continuous ones agree to round-off. |
 | Code | `experiments/modal_atlas/` (isolated; no production or continuation code changed). Imported unchanged from `claude/magical-meitner-11naoj` on 2026-09-29. |
-| Next | [MA-004 plan](iteration_04/03_plan.md): damped (Laplace–Fourier) localization and prefix, then undamped stages; development gate, then transfer. |
+| Next | Proposed, not run ([iteration 06](iteration_06/01_results.md#proposed-next-steps-not-run)): independent review; noise-aware frontier; realistic damped noise; the 13.3 C; unknown permittivity. |
 
 ## Cycle history
 
@@ -28,3 +28,5 @@ cited as starting evidence.
 | [02](iteration_02/01_results.md) | MA-001 complete: circle (Mie) and 11 qualified BIE states. MA-001R reproduces Part B on current code; [MA-002 planned](iteration_02/03_plan.md). |
 | [03](iteration_03/01_results.md) | MA-002 complete: denser-than-host targets break the frozen pipeline; diagnosis; [MA-003 planned](iteration_03/03_plan.md). |
 | [04](iteration_04/01_results.md) | MA-003 complete: G1 fails; wrong-basin mechanism; damping probes; [MA-004 planned](iteration_04/03_plan.md). |
+| [05](iteration_05/01_results.md) | MA-004 complete: damping repairs 2 of 4 (G1 fails); the 13.3 star is limited by the final band; [MA-005 planned](iteration_05/03_plan.md). |
+| [06](iteration_06/01_results.md) | MA-005 complete: G1 and G2 pass; DF 7/8 transfer against 0/8 frozen. |

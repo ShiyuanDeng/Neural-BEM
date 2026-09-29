@@ -170,3 +170,10 @@ MA-003's repairs (exterior band, dense Mie localization) did not recover
 the failures, so this page's "resonance … does not cause the failures" was
 too strong. See the [MA-003 results](../iteration_04/01_results.md#amendment-to-ma-002).
 The measurements above are unchanged.
+
+## Amendment, 2026-09-29 (after MA-004)
+
+"The frontier is insensitive to contrast" holds at the prefix frequencies
+measured here (0.5–1.0 GHz). At the top catalog frequencies the 1% frontier
+grows with contrast: 34 at contrast 0.5, 55 at 4 and 84 at 13.3, at 2.5 GHz
+on the star truth. See the [MA-004 results](../iteration_05/01_results.md#3-the-133-star-is-limited-by-the-final-band).
