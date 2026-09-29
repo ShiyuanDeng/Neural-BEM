@@ -78,3 +78,13 @@ these two report files.
   signal should face a matched test against the fixed and stagnation controls.
 - Items 1, 4 and 5 were measured on the older code. They would need a quick
   re-check before being relied on with the current backend.
+
+## Amendment, 2026-09-29
+
+The MA-001 code, docs and evidence were imported unchanged onto
+`feature/shape-frequency-continuation` (`experiments/modal_atlas/`,
+`docs/iterations/modal_atlas/`, `results/validation/modal_atlas/MA-001/`).
+[MA-001R](../../results/validation/modal_atlas/MA-001R/README.md) re-ran Part B
+on the current code (`032092cd`, CUDA default). Every integer quantity is
+identical and continuous quantities agree to round-off, so findings 1, 4 and 5
+no longer need the re-check this note asked for.
