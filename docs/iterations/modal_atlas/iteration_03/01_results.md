@@ -163,3 +163,10 @@ to 7×, but does not cause it.
 Mechanisms 1 and 2 are distinct and each has a one-change repair motivated by
 the diagnosis. [MA-003](03_plan.md) tests them separately and together
 against the frozen policy, then on untouched scenes.
+
+## Amendment, 2026-09-29 (after MA-003)
+
+MA-003's repairs (exterior band, dense Mie localization) did not recover
+the failures, so this page's "resonance … does not cause the failures" was
+too strong. See the [MA-003 results](../iteration_04/01_results.md#amendment-to-ma-002).
+The measurements above are unchanged.
