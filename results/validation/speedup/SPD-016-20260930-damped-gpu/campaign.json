@@ -1,0 +1,90 @@
+{
+  "started_utc": "2026-09-30T13:54:58.437686+00:00",
+  "environment": {
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1",
+    "SC_FREQUENCY_THREADS": "4",
+    "SC_FORWARD_BACKEND": "cuda"
+  },
+  "gpu": "name, memory.total [MiB], memory.used [MiB], utilization.gpu [%]\nNVIDIA GeForce RTX 5090, 32607 MiB, 802 MiB, 0 %\n",
+  "load": [
+    0.1767578125,
+    0.21044921875,
+    0.3359375
+  ],
+  "concurrency": "one worker at a time",
+  "commands": [
+    {
+      "name": "qualification",
+      "command": [
+        "/home/drdeng/miniconda3/envs/EMNerf/bin/python",
+        "-u",
+        "/home/drdeng/Neural_SDF_BEM_AD/results/validation/speedup/SPD-016-20260930-damped-gpu/scripts/qualify.py"
+      ],
+      "start_utc": "2026-09-30T13:54:58.471702+00:00",
+      "returncode": 0,
+      "end_utc": "2026-09-30T13:57:56.961175+00:00"
+    },
+    {
+      "name": "accelerated_0.5_shifted_star",
+      "command": [
+        "/home/drdeng/miniconda3/envs/EMNerf/bin/python",
+        "-u",
+        "/home/drdeng/Neural_SDF_BEM_AD/results/validation/speedup/SPD-016-20260930-damped-gpu/scripts/replay.py",
+        "accelerated",
+        "0.5",
+        "shifted_star",
+        "/home/drdeng/Neural_SDF_BEM_AD/results/validation/speedup/SPD-016-20260930-damped-gpu/runs"
+      ],
+      "start_utc": "2026-09-30T13:57:56.961460+00:00",
+      "returncode": 0,
+      "end_utc": "2026-09-30T13:59:39.820695+00:00"
+    },
+    {
+      "name": "baseline_0.5_shifted_star",
+      "command": [
+        "/home/drdeng/miniconda3/envs/EMNerf/bin/python",
+        "-u",
+        "/home/drdeng/Neural_SDF_BEM_AD/results/validation/speedup/SPD-016-20260930-damped-gpu/scripts/replay.py",
+        "baseline",
+        "0.5",
+        "shifted_star",
+        "/home/drdeng/Neural_SDF_BEM_AD/results/validation/speedup/SPD-016-20260930-damped-gpu/runs"
+      ],
+      "start_utc": "2026-09-30T13:59:39.821013+00:00",
+      "returncode": 0,
+      "end_utc": "2026-09-30T14:03:46.448529+00:00"
+    },
+    {
+      "name": "accelerated_13.3_new_asymmetric",
+      "command": [
+        "/home/drdeng/miniconda3/envs/EMNerf/bin/python",
+        "-u",
+        "/home/drdeng/Neural_SDF_BEM_AD/results/validation/speedup/SPD-016-20260930-damped-gpu/scripts/replay.py",
+        "accelerated",
+        "13.3",
+        "new_asymmetric",
+        "/home/drdeng/Neural_SDF_BEM_AD/results/validation/speedup/SPD-016-20260930-damped-gpu/runs"
+      ],
+      "start_utc": "2026-09-30T14:03:46.449120+00:00",
+      "returncode": 0,
+      "end_utc": "2026-09-30T14:06:11.710076+00:00"
+    },
+    {
+      "name": "baseline_13.3_new_asymmetric",
+      "command": [
+        "/home/drdeng/miniconda3/envs/EMNerf/bin/python",
+        "-u",
+        "/home/drdeng/Neural_SDF_BEM_AD/results/validation/speedup/SPD-016-20260930-damped-gpu/scripts/replay.py",
+        "baseline",
+        "13.3",
+        "new_asymmetric",
+        "/home/drdeng/Neural_SDF_BEM_AD/results/validation/speedup/SPD-016-20260930-damped-gpu/runs"
+      ],
+      "start_utc": "2026-09-30T14:06:11.710388+00:00",
+      "returncode": 0,
+      "end_utc": "2026-09-30T14:12:49.447898+00:00"
+    }
+  ]
+}

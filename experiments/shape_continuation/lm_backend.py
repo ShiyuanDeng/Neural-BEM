@@ -294,8 +294,9 @@ def inside_box(curve, box):
 class Objective:
     """Stage objective at production and refined nodes; refined values cached."""
 
-    def __init__(self, stage, contrast, config, ledger):
+    def __init__(self, stage, contrast, config, ledger, *, physics=None):
         self.stage, self.contrast, self.config, self.ledger = stage, float(contrast), config, ledger
+        self.physics = physics
         self.observed = np.column_stack([o.scattered for o in stage.observations])
         self.refined_cache = {}
         self.count = len(stage.observations)
@@ -306,10 +307,13 @@ class Objective:
         forwards, columns = [], []
 
         def predict(observation):
-            state = solve(curve, observation.wavenumber, self.contrast, observation.acquisition, nodes)
+            state = (solve(curve, observation.wavenumber, self.contrast, observation.acquisition, nodes)
+                     if self.physics is None else
+                     self.physics.evaluate(curve, observation, self.contrast, nodes))
             return state if keep else state.prediction  # release discarded systems early
 
-        with ordered_calls(predict, self.stage.observations) as calls:
+        calls_for = ordered_calls if self.physics is None else self.physics.ordered_calls
+        with calls_for(predict, self.stage.observations) as calls:
             for call in calls:
                 self.ledger.reserve(1)
                 self.ledger.charge("solve", category)
@@ -340,8 +344,10 @@ class Objective:
     def jacobian(self, evaluation, update, space):
         """Residual Jacobian (rows as `normalize`) with respect to update coordinates."""
         blocks = []
-        with ordered_calls(lambda forward: shape_jacobian(forward, update.velocities(space, forward.curve)),
-                           evaluation.forwards) as calls:
+        derivative_for = (lambda forward: shape_jacobian(forward, update.velocities(space, forward.curve))
+                          if self.physics is None else self.physics.derivative(forward, update, space))
+        calls_for = ordered_calls if self.physics is None else self.physics.ordered_calls
+        with calls_for(derivative_for, evaluation.forwards) as calls:
             for call in calls:
                 self.ledger.reserve(1)
                 self.ledger.charge("reciprocal", "derivative")
@@ -370,7 +376,7 @@ class StageResult:
 
 @fit_geometry_validation
 @geometry_validated
-def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None):
+def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None, physics=None):
     """Run one stage, optionally under a fit-local ``geometry_validation`` cache.
 
     Exact reuse and spatial intersection checks are enabled by default. Use
@@ -382,7 +388,7 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None)
     started = perf_counter()
     if curve.band != stage.curve_modes:
         raise ValueError("Pass the curve at the stage storage band.")
-    objective = Objective(stage, contrast, config, ledger)
+    objective = Objective(stage, contrast, config, ledger, physics=physics)
     m = objective.count
     history, trials, checks = [], [], []
     accepted_steps, converged, stop_reason, outcome, detail = 0, False, "maximum_iterations", NORMAL_RETURN, None

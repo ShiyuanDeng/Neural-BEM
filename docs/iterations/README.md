@@ -29,6 +29,7 @@ The [research implementation principles](implementation_principles.md), adopted 
 
 | Track | Organised around | Handoff |
 |---|---|---|
+| **Cleaned interfaces** | *How can one cumulative SC/MA inverse retain all-36 performance with clear stage policies and interchangeable forward solvers?* | [`cleaned_interfaces/README.md`](cleaned_interfaces/README.md) |
 | **Shape/frequency continuation** | *How should shape harmonics and frequency steps adapt in a qualified nodal inverse?* | [`shape_frequency_continuation/README.md`](shape_frequency_continuation/README.md) |
 | **Topology** | *How can the inverse choose and execute topology changes more reliably?* | [`topology/README.md`](topology/README.md) |
 | **Boundary–BIE** | *Which properties of smooth-boundary representations improve the BIE inverse?* | [`boundary_bie/README.md`](boundary_bie/README.md) |

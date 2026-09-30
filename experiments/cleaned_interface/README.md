@@ -1,0 +1,196 @@
+# Cleaned inverse interface (CI-001)
+
+One maintained, truth-free SC/MA continuation runner. The **all-36 retention
+result is pending**. Historical recovery is 34/36 from several archived
+strategies; it is not a result for this implementation.
+
+## Run the 36 configurations
+
+From the repository root, using the existing EMNerf environment:
+
+```bash
+export PYTHONPATH=solvers:.
+export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
+CI_PY=/home/drdeng/miniconda3/envs/EMNerf/bin/python
+
+"$CI_PY" -m experiments.cleaned_interface inventory
+"$CI_PY" -m experiments.cleaned_interface plan --cases modal__c4__development_c
+"$CI_PY" -m experiments.cleaned_interface prepare
+"$CI_PY" -m experiments.cleaned_interface spd-pairs --device auto
+"$CI_PY" -m experiments.cleaned_interface augment --device auto --allow-new-damped-data
+"$CI_PY" -m experiments.cleaned_interface run --solver nodal_kress --device auto --frequency-threads 4 --workers 1
+"$CI_PY" -m experiments.cleaned_interface report
+```
+
+The output defaults to `results/validation/cleaned_interfaces/CI-001`.
+Use `--output PATH` consistently for another campaign. Preparation only freezes
+sources, input references, comparison tolerances and the policy; it does not
+fit or synthesize observations. `spd-pairs` runs the two original SPD-016 D
+pairs through the extracted interfaces, checks their accepted states and
+decisions against each other and the archived reference, and measures the
+original 20% saving gate. Inspect its `passed` result before the larger run.
+These are four bounded attempts, separate from the 36 configurations.
+
+`augment` generates and qualifies the **16 missing complex-frequency catalogs**
+at 1024/2048 nodes. This changes their observation contract explicitly. All
+original real observations and noise draws remain byte-for-byte unchanged;
+noisy damped samples use a separately recorded independent Gaussian draw.
+The 20 existing damped catalogs are reused. Augmentation checkpoints each
+catalog, then seals hashes; fitting refuses an incomplete augmentation.
+Generation is serial, with independent frequencies threaded.
+
+`run` always starts each case from its prescribed original circle. It never
+starts from a saved reconstruction. All 36 configurations, including the two
+known contrast-13.3 C failures, are retained in `comparison.json` and
+`comparison.csv`. `--cases ID ...` selects a subset for diagnosis, without
+changing the algorithm. `--workers 1` is the conservative default; process
+workers use spawn so CUDA is not inherited through fork. Stage progress is
+printed, and accepted states and decisions are saved as the run proceeds.
+
+Completed results can be resumed with the same command and settings. An
+incomplete case directory is preserved and refused rather than overwritten.
+Use another campaign directory for a rerun. A changed frozen source or input
+also requires a new campaign.
+
+## Public interface
+
+```python
+from experiments.cleaned_interface import Problem, Observation, Execution
+from experiments.cleaned_interface.runner import fit
+
+result = fit(
+    problem,  # original curve, real/damped observations, acquisition, contrast, units
+    solver="nodal_kress",
+    execution=Execution(device="auto", frequency_threads=4, acceleration="spd016"),
+    output="path/to/one-run",
+)
+```
+
+`Problem` has no scene ID, target, benchmark path or historical strategy.
+Only the benchmark layer loads targets, for explicit observation generation
+and scoring after fitting and numerical audit return.
+
+The solver contract is in [physics.py](physics.py). Predictions carry an
+opaque handle; the optimizer passes that handle back for derivatives through
+the **complete projected geometry trial**. The selected service also owns
+localization qualification, its exact-disk landscape service, frontier
+diagnostics, resolution profiles/refinement and numerical audit evaluations.
+The runner never reads traces, matrices, factors or modal coefficients.
+Register a qualified implementation with `register_backend(name, factory)`;
+then the same `solver=name` selection covers the whole run.
+
+`modal_muller` currently raises a capability error **before fitting**. A native
+modal assembler with a qualified complete-trial derivative is the next
+integration, as specified in the brief. There is no silent nodal replacement.
+
+Solver selection is independent of `device=cpu|auto|cuda`, frequency threads
+and geometry execution. `cpu` is explicit CPU execution. `auto` records CPU
+fallbacks for unavailable CUDA, arguments outside the SPD-016 ray table, and
+device out-of-memory. Explicit `cuda` fails for these unsupported conditions
+instead of changing the requested execution. Device solve OOM can reuse host
+LU under `auto`; the receipt records those fallbacks too. `acceleration=reference`
+retains the current real-frequency CUDA/thread/cache path and uses reference
+damped CPU/Mie evaluation. It is the matched execution control, not the old
+serial CPU baseline. Pair it with `device=auto` or `cpu`.
+
+## Executable policy
+
+[policy.py](policy.py) is the single definition of `cumulative_sc_ma/1.0.0`.
+The CLI plan, `plan.md`, `plan.json`, and resolved `decisions.json` come from
+its operation objects. Static fits list actual frequencies/wavenumbers,
+damping, weights, bands, accuracy profile, optimizer settings, budgets,
+stopping rules and transitions. Adaptive frontier stages show their formula,
+inputs, threshold and possible bands before running, then their measured
+value and resolved stages during execution.
+
+The noiseless path preserves the archived MA-004/005 semantics:
+
+1. Audit the original circle on the full real catalog.
+2. Localize using the first three damped frequencies, exact Mie grid and
+   coordinate refinement; qualify with the selected backend.
+3. Damped 0.25 GHz warm-up, then four damped prefix stages with
+   `M=floor(3*max(real(k_exterior)))` and `K_geometry=2*M+2`.
+4. Explicit real-frequency stage-four handoff.
+5. Full real-catalog releases `M=11,15,19,25,31,37`, `K_geometry=192`.
+   Before M25, crop coefficients to 64 and zero-pad to 192, without a refit.
+6. Measure the paired-Jacobian 1% frontier at the highest real frequency;
+   append `43,49,...,91` while below the frontier and the next band is <=95.
+   This preserves the original arithmetic progression, including its ceiling.
+7. Independently audit the returned curve after every exit, then score outside
+   the inverse. Hard stops and numerical refusals remain explicit outcomes.
+
+Declared noise invokes the same rule on every configuration: inverse-variance
+whitening, SC-044's `1.1² * expected_noise_loss` discrepancy threshold,
+recurrent coefficient cleanup before full-catalog releases, and no further
+release/tail once the full real catalog reaches that discrepancy. This is a
+**policy change relative to DF**, proposed to retain earlier noise handling;
+its reconstruction benefit is not established by the interface tests.
+There are no scene-specific historical fallbacks or truth-based decisions.
+
+M is the shape-update band; K_geometry is Cartesian storage; K_trace is a
+backend-internal physics cutoff. Nodal/coefficient workspace resolution is a
+separate backend profile. The LM compatibility structure still names its two
+opaque resolution tokens `nodes` and `refined_nodes`; only the nodal service
+interprets them as node counts.
+
+The fit cap is 13,412 SPD units and 1,800 seconds, including localization and
+frontier diagnostics. Audits each have a separate 300-second limit. Caps are
+checked before complete batches; a running numerical call may finish after
+the wall limit. Preserve both the original optimizer ledger and the service's
+actual attempted/completed/failed calls, including speculative frequency work.
+
+## Compare evidence
+
+The frozen comparison contract reports every configuration separately:
+recovery, boundary RMS, Hausdorff upper bound, all-frequency residuals,
+numerical audit, stopping outcome, work and runtime. Geometry retention uses
+an additive `max(0.02 mm, 5% of reference)` allowance; residual retention uses
+`max(1e-6, 5% of each reference residual)`. These are predeclared engineering
+gates, not equivalence claims between different algorithms. Same-backend
+extraction and SPD controls have separate, tighter tolerances. The two known
+failures retain their actual errors and are compared too.
+
+The report includes exact historical source/input hashes and complete
+predecessor references. Historical suffix costs are identified. Missing
+full-path costs remain unknown; overlapping cumulative records are not added
+twice. Archived host timings cannot establish a runtime pass.
+
+For a runtime claim, run three independent full-path reference/candidate pairs
+with identical hardware, device, threads, workers, policy and observations.
+Use `--acceleration reference` for the current real-CUDA/thread/cache baseline
+and `--acceleration spd016` for the candidate. Reuse exact augmented input
+bytes in each prepared campaign:
+
+```bash
+"$CI_PY" -m experiments.cleaned_interface augment --output NEW_OUTPUT \
+  --reuse-from results/validation/cleaned_interfaces/CI-001 --allow-new-damped-data
+"$CI_PY" -m experiments.cleaned_interface compare-execution \
+  --references REF1 REF2 REF3 --candidates RUN1 RUN2 RUN3 --matched-host-load
+```
+
+The last flag attests comparable external host load; hardware, software,
+thread settings, source/input hashes, observations, accepted decisions and
+work are checked. Every case must retain quality and have a median runtime
+ratio <=1.20. The report marks requirement 1 satisfied only after both the
+all-36 numerical and matched runtime gates pass. The two-pair SPD speedup
+alone cannot qualify the full DF path or all 36 configurations.
+
+## Implementation and checks
+
+| Responsibility | Maintained code |
+|---|---|
+| Inputs without truth | `problem.py` |
+| Policy, plans, adaptive rules | `policy.py` |
+| Complete projected update and exact cleanup | `geometry.py` (extracted SC-035/042) |
+| Optimizer | shared `shape_continuation/lm_backend.py`, explicit service hook |
+| Backend and work diagnostics | `physics.py` |
+| Localization | `localization.py`, `mie_grid.py` |
+| Damped CUDA assembly | `damped_cuda.py`, explicit radial-kernel argument in Kress |
+| Interpretation, checkpoints, audits | `runner.py` |
+| Frozen inputs, generation, scoring, comparisons | `benchmark.py`, `qualification.py` |
+
+There are no result-folder Python imports or process-global solver/contrast
+patches in the maintained path. Archived scripts and evidence remain in place.
+The SPD-016 field-table extension is intentionally not selected. See
+[implementation evidence](../../results/validation/cleaned_interfaces/CI-001-implementation/README.md)
+for focused checks and the remaining all-36/pair qualification work.

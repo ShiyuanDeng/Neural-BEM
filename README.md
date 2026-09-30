@@ -22,6 +22,12 @@ dense nodal Müller/Kress. It has no dependency on the old inverse drivers and
 provides a small qualified baseline for reproducing the Borges–Rachh–Greengard
 continuation algorithm. Existing production defaults are unchanged.
 
+**Cleaned SC/MA interface (2026-09-30):**
+[`experiments/cleaned_interface`](experiments/cleaned_interface/README.md)
+provides one cumulative policy, readable stage plans, an explicit solver
+service, and the selected SPD execution improvements. Focused CPU/CUDA checks
+pass; all-36 reconstruction and matched runtime retention await the campaign.
+
 **The three current inverse pipelines are Implicit MLP + Method B, Explicit
 Cartesian Fourier, and Explicit Radial Fourier.** The implicit pipeline updates neural weights with the Kress
 adjoint; Method B supplies the MLP's boundary to the physical solver. Its

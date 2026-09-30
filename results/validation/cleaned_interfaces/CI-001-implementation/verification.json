@@ -1,0 +1,91 @@
+{
+  "status": "IMPLEMENTED_FOCUSED_CHECKS_PASS_ALL36_PENDING",
+  "tests": {
+    "tests": 61,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "test_command": "env PYTHONPATH=solvers:. OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 /home/drdeng/miniconda3/envs/EMNerf/bin/python -m pytest experiments/cleaned_interface/test_interface.py experiments/shape_continuation/test_lm_backend.py experiments/shape_continuation/test_frequency_threads.py experiments/shape_continuation/test_backend_default.py experiments/shape_continuation/test_geometry_runtime.py pytest/gpr_bem_kress/test_cuda_assembly.py -q --junitxml=results/validation/cleaned_interfaces/CI-001-implementation/tests.xml",
+  "hardware": "NVIDIA GeForce RTX 5090",
+  "torch": "2.8.0+cu128",
+  "cases": 36,
+  "existing_damped": 20,
+  "missing_damped": 16,
+  "noiseless_stages_exactly_match": 12,
+  "archive_comparison_parser_self_checks": 2,
+  "full_inverse_cases_run": 0,
+  "spd_pairs_run": 0,
+  "new_benchmark_catalogs_generated": 0,
+  "source_sha256": {
+    "experiments/cleaned_interface/__init__.py": "304a50c31351310170a7e0132eeb966b60b6fd63bcfbc07ea54b17c9e5bb9322",
+    "experiments/cleaned_interface/__main__.py": "26c34e34c94e711ed35abe8b018a3fe677d32ea4dcb506083ec14500bb0adcf9",
+    "experiments/cleaned_interface/benchmark.py": "9a296f2674c35585a1dcc0529fadf2d59adcccffdd183cf9a86123b641370c7d",
+    "experiments/cleaned_interface/damped_cuda.py": "23ede4c7a38d8f268f45bdb252e1e924ece2365025ecd3fa6a20153259778353",
+    "experiments/cleaned_interface/geometry.py": "1c4e65cec2666ddf987eabe5c4d50b545a3146bba045e92386a41a4449a292c3",
+    "experiments/cleaned_interface/io.py": "1e80a5dfbe2f108d04cf7fb1435ba5b74164d616a19ec685bf101d90e4937f4e",
+    "experiments/cleaned_interface/localization.py": "1226e11a526b4b7c2208a2eaeca70d1c876d4f13bf8019df8f5216e10013582a",
+    "experiments/cleaned_interface/mie_grid.py": "226bcc9dde60ece6f6a84d8da854f8f4c2157f96450f0313a48860d8ae1975b6",
+    "experiments/cleaned_interface/physics.py": "6fab351934436b599440c66283916b5b249097ada559dbf8dd70c33fcd20fecc",
+    "experiments/cleaned_interface/policy.py": "e88d0cbebfe37f2dc06136f5c5b247f0c7be243153a45320f37ce88f381f1526",
+    "experiments/cleaned_interface/problem.py": "c6d0ee2799b1a0492af7acca007e1870588017e8981ec2f07208a0794827ae9a",
+    "experiments/cleaned_interface/qualification.py": "6f290148f3b569a3016eb1ce6a160bb96a1d16c7c138cb61c5dd92f3ee180a22",
+    "experiments/cleaned_interface/runner.py": "5844b270334b78e879f50e33a78c9e2611b15513b6f8002fd08db5c6c79de48c",
+    "experiments/cleaned_interface/test_interface.py": "87790e81f5040f41a57244395064ef379a39a29a194f2bc3018f38227fb42f91",
+    "experiments/shape_continuation/forward.py": "7e7e60f0a6093b383653bea7ab1b5a5712464c48feb18d1c2a802ddc57fc8c3d",
+    "experiments/shape_continuation/lm_backend.py": "22667f056b777dbd435c8f50a3ac690a426aa6f6ea7a0de4daad01dbce7facf5",
+    "solvers/gpr_bem_kress/cuda_assembly.py": "527510cfedae58bcd866b6c64053c0cd402557e769459445961ee37cf04d001e"
+  },
+  "test_receipt_sha256": "3e4edb2a83f4e8d9b058d5f4b4a83fd67c22554aaa770e991dc74584a6d112b5",
+  "branch": "feature/shape-frequency-continuation",
+  "base_commit": "143dda8752cb34b9d6c1a33170a9cf9f9eb3b115",
+  "comparison_contract": {
+    "geometry_absolute_mm": 0.02,
+    "geometry_relative": 0.05,
+    "residual_absolute": 1e-06,
+    "residual_relative": 0.05,
+    "recovery": {
+      "rms_mm": 1.0,
+      "hausdorff_upper_mm": 2.0,
+      "residual": 0.003,
+      "noise_multiple": 3.0
+    },
+    "same_backend": {
+      "prediction_relative": 1e-10,
+      "jacobian_relative": 1e-08,
+      "accepted_curve_absolute": 1e-09,
+      "loss_relative": 1e-07,
+      "loss_absolute": 1e-14,
+      "decisions_equal": true,
+      "work_equal": true
+    },
+    "spd016": {
+      "prediction_relative": 1e-09,
+      "jacobian_relative": 1e-07,
+      "minimum_pair_saving": 0.2
+    },
+    "runtime": {
+      "max_ratio": 1.2,
+      "repeats": 3,
+      "statistic": "median",
+      "required_match": [
+        "hardware",
+        "device",
+        "frequency_threads",
+        "BLAS threads",
+        "worker count",
+        "source/input hashes",
+        "full original-start path",
+        "comparable host load"
+      ],
+      "archived_runtime_comparable": false
+    },
+    "status": "Frozen proposed numerical gates; all-36 retention and matched runtime remain to be measured"
+  },
+  "limitations": [
+    "No all-36 recovery or runtime claim",
+    "Noise rules are shared policy changes requiring campaign validation",
+    "Native modal_muller not implemented; explicit capability error",
+    "Historical source hash manifests remain immutable; use new CI-001 snapshots for changed shared code"
+  ]
+}

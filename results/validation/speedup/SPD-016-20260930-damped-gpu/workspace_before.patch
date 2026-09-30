@@ -1,0 +1,148 @@
+diff --git a/docs/iterations/modal_atlas/README.md b/docs/iterations/modal_atlas/README.md
+index 7c48f169..567854bf 100644
+--- a/docs/iterations/modal_atlas/README.md
++++ b/docs/iterations/modal_atlas/README.md
+@@ -12,6 +12,11 @@ cited as starting evidence.
+ 
+ ## Current handoff
+ 
++For the current inverse lineage and the exact 36-configuration scope, see
++[the consolidated pipeline guide](../../pipelines/shape_frequency_continuation.md#current-inverse-across-the-36-configurations-2026-09-30).
++MA-005 DF is the newest successful inverse extension; the 34/36 SC-051
++reference result combines four strategies and does not validate DF on all 36.
++
+ | Item | State |
+ |---|---|
+ | Latest cycle | [Iteration 07 / MA-006](iteration_07/01_results.md): **COMPLETE, 9/10 cells qualify.** Persistent modal Müller matrices, both traces, acquisition maps and selected derivatives now accompany the cutoff analysis. Relative to projection, reduced solves require a larger tested cutoff in 1/9 data/J cases and 3/9 local-update cases. Exact Schur correction restores the reference. This is a projected-Nyström control, shape band P=12; no deployed adaptive K_u or inverse-speedup claim. |
+diff --git a/docs/iterations/shape_frequency_continuation/README.md b/docs/iterations/shape_frequency_continuation/README.md
+index 23cc6633..5c45b4ca 100644
+--- a/docs/iterations/shape_frequency_continuation/README.md
++++ b/docs/iterations/shape_frequency_continuation/README.md
+@@ -12,6 +12,10 @@ provisional**, with two profile differences and plotting provenance unresolved.
+ 
+ ## Current handoff
+ 
++For the current inverse lineage and the exact 36-configuration scope, see
++[the consolidated pipeline guide](../../pipelines/shape_frequency_continuation.md#current-inverse-across-the-36-configurations-2026-09-30).
++MA-005 DF builds on SC-050; no single policy has been validated on all 36.
++
+ **SC-051 COMPLETE / FREQUENCY-ONLY FULL BANDS LOSE, 2026-09-30:**
+ [Iteration 31](iteration_31/01_results.md) compares M=K=255 from the first
+ frequency on all 41 current SC/modal-atlas configurations. Single-object
+diff --git a/docs/pipelines/shape_frequency_continuation.md b/docs/pipelines/shape_frequency_continuation.md
+index 5a5b9b95..44fa3aca 100644
+--- a/docs/pipelines/shape_frequency_continuation.md
++++ b/docs/pipelines/shape_frequency_continuation.md
+@@ -1,5 +1,112 @@
+ # Isolated shape and frequency continuation
+ 
++The proposed cleanup is governed by the user's
++[requirements and clarification](inverse_cleanup_requirements.md): one
++cumulative implementation must retain performance on all 36 configurations,
++with readable stage policies and a single forward-backend selection. The
++historical reference strategies below are regression evidence, not separate
++algorithms to copy into the cleaned pipeline.
++
++## Current inverse across the 36 configurations (2026-09-30)
++
++**The newest successful inverse extension is MA-005's DF policy, built on
++SC-050 and the SC LM backend. There is no single policy validated across all
++36 configurations.** MA-006 is a later operator-atlas study, not a replacement
++inverse. SC-051 is the latest all-configuration comparison; its full-band,
++frequency-only arm recovers 0/36 single-object configurations.
++
++The reported **34/36** comes from four preselected reference strategies:
++
++| Panel | Configurations | Archived reference | Recovered |
++|---|---:|---|---:|
++| Core shapes | 6 | SC-043 fixed band release, including its predecessor path | 6/6 |
++| Fresh shapes and noise draws | 6 | SC-044 recurrent state cleanup | 6/6 |
++| Far initializations | 7 | SC-050 localization + low-frequency warm-up | 7/7 |
++| Higher contrasts | 17 | MA-005 damped start + frontier tail (DF) | 15/17 |
++
++The authoritative case inventory is the
++[SC-051 manifest](../../results/validation/shape_continuation/SC-051-frequency-only/manifest.json):
++select panels `core`, `fresh`, `far`, and `modal`; exclude the four `coupled`
++and one `intrinsic` entries. These are 36 configurations, including shared
++targets with different starts, contrasts and noise draws, rather than 36
++independent shapes. The contrasts are 0.5 (19 configurations), 2 (3), 4 (7),
++and 13.3 (7). The
++[comparison and endpoint gates](../../results/validation/shape_continuation/SC-051-frequency-only/README.md)
++define recovery and retain every failure.
++
++### Candidate to consolidate: MA-005 DF
++
++The same algorithm is used throughout MA-005's 20 development/transfer
++configurations; 18 recover. Its stages are:
++
++1. Localize a circle from low-frequency damped observations using a dense
++   exact-Mie search and BIE qualification.
++2. Fit the 0.25 GHz warm-up and four prefix stages at
++   `k * (1 + 0.25i)`, using the exterior-wavenumber band rule for the four
++   prefix stages.
++3. Return to real-frequency data with an undamped fourth-stage pass.
++4. Release the update band through `M = 11, 15, 19, 25, 31, 37`, using all
++   19 real frequencies from 0.25 to 2.5 GHz. Apply the inherited one-time
++   state cleanup before `M = 25`.
++5. Measure the 1% paired-Jacobian column-norm frontier at the current curve
++   and highest frequency. Append `M = 43, 49, ...` up to the measured
++   frontier, capped at 95, if the preceding schedule completed.
++6. Audit the endpoint independently and score geometry only after fitting.
++
++The representation remains Cartesian Fourier geometry with projected scalar
++normal updates, nodal Müller/Kress physics, and the SC LM fitter. The late
++state storage band is `K = 192`; the frontier controls update band `M`, not
++the trace cutoff studied in MA-006.
++
++The implementation is split across:
++
++| Responsibility | Source |
++|---|---|
++| DF tail and campaign entry point | [`experiments/modal_atlas/frontier_tail.py`](../../experiments/modal_atlas/frontier_tail.py) |
++| Damped localization, prefix, real-data handoff and fitting loop | [`experiments/modal_atlas/damped_screen.py`](../../experiments/modal_atlas/damped_screen.py) |
++| Complex-frequency forward solve | [`experiments/modal_atlas/damped.py`](../../experiments/modal_atlas/damped.py) |
++| SC-050 schedule, localization baseline and audits | [`SC-050-localization-robustness/run.py`](../../results/validation/shape_continuation/SC-050-localization-robustness/run.py) |
++| Shared numerical fitter | [`experiments/shape_continuation/lm_backend.py`](../../experiments/shape_continuation/lm_backend.py) |
++
++`contrast_screen.sc050()` dynamically imports the SC-050 result-folder
++driver, which in turn loads SC-049 and older SC helpers. This is why the
++latest inverse spans both tracks and archived result directories. The
++existing MA-005 CLI runs its frozen experiment and uses its fixed output
++paths; it is not a general all-36 runner.
++
++### What remains for one cumulative all-36 pipeline
++
++MA-005 DF is the latest inverse extension to examine when extracting the
++cumulative algorithm. The cleanup must retain the earlier SC capabilities and
++verify the latest implementation across all 36 configurations. Applying DF
++unchanged everywhere is not an established retention result; the
++[requirements](inverse_cleanup_requirements.md) govern the integration and
++regression checks.
++
++- DF covers the 17 modal configurations and three of the seven far cases
++  at contrast 0.5. The other 16 configurations have no DF run: six core,
++  six fresh/noisy, and four remaining far cases.
++- DF requires observations at complex frequencies in addition to the
++  stored real-frequency measurements. The existing MA-004 input mapping
++  supplies these for the 20 DF cases. Extending it requires qualified
++  damped inputs for the remaining configurations. MA-004 generated these
++  synthetically from the targets; its noisy damped data use an independent
++  noise draw, not a transform of the saved noisy real-frequency samples.
++  Preserve that distinction when defining a common benchmark.
++- The original C at contrast 13.3 remains unrecovered from both starts
++  (`development_c` and `opposite_c`), with about 6.396 mm RMS. Consolidation
++  alone does not resolve this failure.
++- The tail ignores the noise level and worsens geometric accuracy on the
++  two reported noisy transfer cases, although both still pass recovery.
++  A noise-aware tail would be a new policy requiring a separate test.
++
++See [MA-005 results and limitations](../iterations/modal_atlas/iteration_06/01_results.md)
++and the [MA current handoff](../iterations/modal_atlas/README.md). The older
++API and paper-reproduction description below documents the foundation; it
++does not supersede this current campaign reconciliation.
++
++## Core API and paper-reproduction foundation
++
+ The working research entry point is
+ [`experiments/shape_continuation`](../../experiments/shape_continuation/README.md).
+ Research cycles and the current handoff are in

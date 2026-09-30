@@ -264,7 +264,7 @@ def _tensor(values, device):
     return torch.tensor(np.asarray(values), device=device)  # copies read-only arrays
 
 
-def _difference_blocks(adapter, exterior, interior, settings, device):
+def _difference_blocks(adapter, exterior, interior, settings, device, *, direct_kernel=None):
     """Device ``build_muller_difference_blocks`` V, K, Kp, T for one component (weighted)."""
     import torch
     count = adapter.num_nodes
@@ -283,7 +283,7 @@ def _difference_blocks(adapter, exterior, interior, settings, device):
 
     radial = [torch.zeros((count, count), dtype=torch.complex128, device=device) for _ in range(6)]
     for mask, values in ((near, lambda r: _series(r, exterior, interior, settings.series_terms)),
-                         (direct, lambda r: _direct(r, exterior, interior))):
+                         (direct, lambda r: (_direct if direct_kernel is None else direct_kernel)(r, exterior, interior))):
         if bool(mask.any()):
             for destination, source in zip(radial, values(distance[mask])):
                 destination[mask] = source
@@ -426,6 +426,7 @@ class DeviceFactors:
     def __init__(self, matrix, *, fallback=False):
         import torch
         self.fallback = bool(fallback)
+        self.fallback_count = 0
         _ready(matrix.device)
         with _device_work:
             lu, pivots, info = torch.linalg.lu_factor_ex(matrix)
@@ -455,6 +456,8 @@ class DeviceFactors:
         except Exception as exc:
             if not (self.fallback and out_of_memory(exc)):
                 raise
+            with self._lock:
+                self.fallback_count += 1
             record_fallback("reciprocal solve")
             return self._solve_host(rhs)
 

@@ -76,7 +76,17 @@ renumber, move or supersede any Boundary–BIE iteration.
 
 ## Current handoff
 
-Updated 2026-09-28.
+Updated 2026-09-30.
+
+**SPD-016 — COMPLETE / PASS; experimental damped speedups.**
+[Iteration 13](iteration_13/01_results.md) resumes Claude's interrupted work and
+qualifies Mie-grid recurrence/GPU contraction plus complex-frequency GPU assembly.
+Two complete MA-004 D attempts take 245.45 -> 101.11 s and 396.52 -> 143.95 s
+(2.43–2.75x), preserving recovery, decisions and work. All 51 numerical records
+pass; the optional field-table extension is accurate but adds no consistent
+saving and is not selected. Existing solver and experiment sources are untouched.
+The [evidence](../../../results/validation/speedup/SPD-016-20260930-damped-gpu/README.md)
+preserves the original failed scratch runs and all six successful fresh attempts.
 
 **Shape-continuation pipeline, 2026-09-27.** [Iteration 09](iteration_09/01_results.md) adds two options.
 
@@ -111,11 +121,12 @@ the six single-object shape-continuation development cases.
 
 | Item | Current state |
 |---|---|
-| Active iteration | Iteration 12: [SPD-015 native geometry default](iteration_12/01_results.md), following the SPD-014 qualification and review amendment |
-| Stage | **SPD-015 COMPLETE / PASS**, native shape-continuation default under its [contract](iteration_12/03_plan.md). The earlier SPD-008 topology optimization remains qualified opt-in |
-| Approved experiment IDs | **SPD-001**, **SPD-002**, **SPD-004**, **SPD-005**, **SPD-006**, **SPD-007**, **SPD-008** (direct “yes” to implementation and validation, 2026-09-17); **SPD-010**, **SPD-011** (the user replied “go” to the request to approve them, 2026-09-27); **SPD-012**, **SPD-013** (the user replied “yes for first two”, 2026-09-27); **SPD-014** (the user replied “you have my approval” to the geometry follow-up, 2026-09-27); **SPD-015** (the user requested “integrate and validate the speedups”, then selected the current shape-continuation pipeline, 2026-09-28) |
-| Next expected action | Use the native default and retain the explicit reference setting for comparisons. No successor campaign is scheduled. SPD-009 remains separate and unexecuted |
+| Active iteration | Iteration 13: [SPD-016 damped speedup results](iteration_13/01_results.md) |
+| Stage | **SPD-016 COMPLETE / PASS**, qualified bundle-local grid-plus-assembly prototype; SPD-015 remains the native default |
+| Approved experiment IDs | **SPD-001**, **SPD-002**, **SPD-004**, **SPD-005**, **SPD-006**, **SPD-007**, **SPD-008** (direct “yes” to implementation and validation, 2026-09-17); **SPD-010**, **SPD-011** (the user replied “go” to the request to approve them, 2026-09-27); **SPD-012**, **SPD-013** (the user replied “yes for first two”, 2026-09-27); **SPD-014** (the user replied “you have my approval” to the geometry follow-up, 2026-09-27); **SPD-015** (the user requested “integrate and validate the speedups”, then selected the current shape-continuation pipeline, 2026-09-28); **SPD-016** (the user asked to continue the interrupted damped speedup investigation, 2026-09-30) |
+| Next expected action | Use SPD-016 evidence to inform later integration after file organisation; no production change or successor campaign is scheduled. SPD-009 remains separate and unexecuted |
 | Owner / reviewer | Codex `/root` / self-review; no independent reviewer claimed |
+| SPD-016 evidence and limits | 51 numerical records plus five fallback checks pass; all six D attempts recover with matched decisions and work. 163 reference hashes verify. Two noiseless development scenes, one run per arm/scene, shared RTX 5090; no DF-tail, multicomponent or production-default claim |
 | SPD-015 evidence | 374 broad tests plus a passing 65-test CPU-focused/native-harness run (overlapping coverage); 36 geometry comparisons, 96 diagnostic hashes, 54 paired inverse files and six video pairs agree exactly. All 234 sources and 559 inputs verify |
 | SPD-015 timing limits | Six saved continuation suffixes, one inverse/video pair per scene and two diagnostic repeats; sequential CUDA workers on a shared RTX 5090 host. No original-circle, noisy-data, multicomponent-performance or topology-default claim |
 | SPD-014 evidence | 370 regression/harness tests; 36 saved-geometry and 54 extreme-scale exact comparisons; all 96 diagnostic hashes, 54 paired inverse files and six video pairs agree exactly. Frozen sources and 559 inputs verify |

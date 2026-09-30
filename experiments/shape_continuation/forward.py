@@ -195,13 +195,13 @@ class ForwardState:
     backend: str = "cpu"  # "cuda", "cpu", or "cpu-fallback" after device out-of-memory
 
 
-def forward_backend():
+def forward_backend(selection=None):
     """Dense-system backend from SC_FORWARD_BACKEND: auto (default), cpu or cuda.
 
     ``auto`` (SPD-012) uses the qualified CUDA assembly (SPD-011/013) when torch
     sees a device and the CPU reference otherwise; ``cpu`` pins the reference.
     """
-    value = os.environ.get("SC_FORWARD_BACKEND", "auto")
+    value = os.environ.get("SC_FORWARD_BACKEND", "auto") if selection is None else selection
     if value not in ("auto", "cpu", "cuda"):
         raise ValueError("SC_FORWARD_BACKEND must be 'auto', 'cpu' or 'cuda'.")
     if value == "auto":
@@ -233,7 +233,7 @@ def _solve(matrix, factors, rhs):
 
 
 @geometry_validated
-def solve(shape, wavenumber, contrast, acquisition, nodes, *, work=None):
+def solve(shape, wavenumber, contrast, acquisition, nodes, *, work=None, execution_backend=None):
     """contrast=ki²/k²; geometry and all lengths are in one declared unit."""
     if not np.isfinite(wavenumber) or wavenumber <= 0 or not np.isfinite(contrast) or contrast <= 0:
         raise ValueError("Wavenumber and contrast must be positive.")
@@ -245,8 +245,11 @@ def solve(shape, wavenumber, contrast, acquisition, nodes, *, work=None):
         assemble, receivers, incident = _operators(curve)
         ki = wavenumber * np.sqrt(contrast)
         # The CUDA backend covers single curves and ordered multi-component boundaries with real wavenumbers.
-        device = forward_backend() == "cuda" and cuda_assembly.supported(curve, wavenumber, ki)
-        fallback = device and os.environ.get("SC_FORWARD_BACKEND", "auto") == "auto"
+        selected = os.environ.get("SC_FORWARD_BACKEND", "auto") if execution_backend is None else execution_backend
+        device = forward_backend(selected) == "cuda" and cuda_assembly.supported(curve, wavenumber, ki)
+        if execution_backend == "cuda" and not device:
+            raise ValueError("Explicit CUDA execution does not support this geometry/wavenumber.")
+        fallback = device and selected == "auto"
         backend = "cuda" if device else "cpu"
         # Outside a fit cache, a CUDA solve validates its boundary once for all three builders (exact reuse).
         local = device and current_validation_cache() is None

@@ -1,0 +1,18 @@
+/home/drdeng/Neural_SDF_BEM_AD/results/validation/speedup/SPD-016-20260930-damped-gpu/scripts/mie_grid.py:55: UserWarning: The given NumPy array is not writable, and PyTorch does not support non-writable tensors. This means writing to this tensor will result in undefined behavior. You may want to copy the array to protect its data or make it writable before converting it to a tensor. This type of warning will be suppressed for the rest of this program. (Triggered internally at /pytorch/torch/csrc/utils/tensor_numpy.cpp:203.)
+  diff = pred - torch.as_tensor(obs, device=device)[None, None, :]
+LOCALIZED shifted_star [0.4665, 0.5375, 0.05] units 6
+STAGE D 0.5 shifted_star warmup_025_damped NORMAL_OPTIMIZER_RETURN 0.00013653941968778266 9
+STAGE D 0.5 shifted_star stage_1_damped NORMAL_OPTIMIZER_RETURN 0.0032999193993646925 53
+STAGE D 0.5 shifted_star stage_2_damped NORMAL_OPTIMIZER_RETURN 2.2355475542583713e-06 89
+STAGE D 0.5 shifted_star stage_3_damped NORMAL_OPTIMIZER_RETURN 5.876709502543358e-06 116
+STAGE D 0.5 shifted_star stage_4_damped NORMAL_OPTIMIZER_RETURN 3.5686914758495325e-06 152
+STAGE D 0.5 shifted_star stage_4_undamped NORMAL_OPTIMIZER_RETURN 1.08940853114628e-05 200
+STAGE D 0.5 shifted_star release_M11 NORMAL_OPTIMIZER_RETURN 0.0004516852808493896 428
+STAGE D 0.5 shifted_star release_M15 NORMAL_OPTIMIZER_RETURN 1.9684634362703448e-06 599
+STAGE D 0.5 shifted_star release_M19 NORMAL_OPTIMIZER_RETURN 1.6552039435187245e-06 770
+STAGE D 0.5 shifted_star fixed_M25 NORMAL_OPTIMIZER_RETURN 8.930779595001648e-10 998
+STAGE D 0.5 shifted_star fixed_M31 STAGE_QUOTA_REACHED 5.5919736556668934e-11 1264
+STAGE D 0.5 shifted_star fixed_M37 STAGE_QUOTA_REACHED 4.108890648091325e-12 1530
+RESULT D 0.5 shifted_star COMPLETED_SCHEDULE True {'rms_mm': 0.018240856737932513, 'hausdorff_mm': 0.051162261143213365, 'hausdorff_upper_mm': 0.08219983751793239}
+WALL_SECONDS 108.04150591604412
+SUMMARY {"mode": "fields", "contrast": 0.5, "scene": "shifted_star", "outcome": "COMPLETED_SCHEDULE", "recovered": true, "metrics": {"rms_mm": 0.018240856737932513, "hausdorff_mm": 0.051162261143213365, "hausdorff_upper_mm": 0.08219983751793239}, "units": 1536, "seconds": 107.80592322698794, "counters": {"table_calls": 544, "reference_calls": 5480}}

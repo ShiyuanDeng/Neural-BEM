@@ -12,6 +12,14 @@ cited as starting evidence.
 
 ## Current handoff
 
+For the current inverse lineage and the exact 36-configuration scope, see
+[the consolidated pipeline guide](../../pipelines/shape_frequency_continuation.md#current-inverse-across-the-36-configurations-2026-09-30).
+MA-005 DF is the newest successful inverse extension; the 34/36 SC-051
+reference result combines four strategies and does not validate DF on all 36.
+
+The new [Cleaned interfaces track](../cleaned_interfaces/README.md) owns the
+user's requirements and the cumulative-pipeline cleanup plan.
+
 | Item | State |
 |---|---|
 | Latest cycle | [Iteration 07 / MA-006](iteration_07/01_results.md): **COMPLETE, 9/10 cells qualify.** Persistent modal Müller matrices, both traces, acquisition maps and selected derivatives now accompany the cutoff analysis. Relative to projection, reduced solves require a larger tested cutoff in 1/9 data/J cases and 3/9 local-update cases. Exact Schur correction restores the reference. This is a projected-Nyström control, shape band P=12; no deployed adaptive K_u or inverse-speedup claim. |

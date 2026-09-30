@@ -12,6 +12,13 @@ provisional**, with two profile differences and plotting provenance unresolved.
 
 ## Current handoff
 
+For the current inverse lineage and the exact 36-configuration scope, see
+[the consolidated pipeline guide](../../pipelines/shape_frequency_continuation.md#current-inverse-across-the-36-configurations-2026-09-30).
+MA-005 DF builds on SC-050; no single policy has been validated on all 36.
+
+The new [Cleaned interfaces track](../cleaned_interfaces/README.md) owns the
+user's requirements and the cumulative-pipeline cleanup plan.
+
 **SC-051 COMPLETE / FREQUENCY-ONLY FULL BANDS LOSE, 2026-09-30:**
 [Iteration 31](iteration_31/01_results.md) compares M=K=255 from the first
 frequency on all 41 current SC/modal-atlas configurations. Single-object
