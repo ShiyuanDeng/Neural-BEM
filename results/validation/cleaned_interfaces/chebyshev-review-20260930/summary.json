@@ -1,0 +1,108 @@
+{
+  "verdict": "Kernel fix independently supported; finite Parseval certificates disproved.",
+  "replays": [
+    {
+      "stage": "stage_2_damped",
+      "trials": 25,
+      "accepted_steps": 10,
+      "trials_equal": true,
+      "accepted_indices_equal": true,
+      "stage_work_equal": true,
+      "same_exit": true,
+      "solves": 104,
+      "reciprocal_batches": 22,
+      "endpoint_maximum_difference_units": 2.9581396198148772e-12,
+      "endpoint_maximum_difference_metres": 1.4790698099074388e-13,
+      "coefficient_difference": 1.158949856136383e-12,
+      "final_loss": 0.00437656710722917,
+      "archived_loss": 0.004376567107229278,
+      "final_loss_relative": 2.475797344914099e-14
+    },
+    {
+      "stage": "release_M11",
+      "trials": 7,
+      "accepted_steps": 7,
+      "trials_equal": true,
+      "accepted_indices_equal": true,
+      "stage_work_equal": true,
+      "same_exit": true,
+      "solves": 304,
+      "reciprocal_batches": 152,
+      "endpoint_maximum_difference_units": 1.508881970536631e-12,
+      "endpoint_maximum_difference_metres": 7.544409852683155e-14,
+      "coefficient_difference": 9.976697820939415e-13,
+      "final_loss": 0.009759024799210021,
+      "archived_loss": 0.009759024799226725,
+      "final_loss_relative": 1.7116308370646038e-12
+    },
+    {
+      "stage": "fixed_M43",
+      "trials": 1,
+      "accepted_steps": 1,
+      "trials_equal": true,
+      "accepted_indices_equal": true,
+      "stage_work_equal": true,
+      "same_exit": true,
+      "solves": 76,
+      "reciprocal_batches": 38,
+      "endpoint_maximum_difference_units": 1.7563817543718917e-13,
+      "endpoint_maximum_difference_metres": 8.781908771859459e-15,
+      "coefficient_difference": 5.763736402237419e-14,
+      "final_loss": 2.472356556561334e-11,
+      "archived_loss": 2.4723566206044884e-11,
+      "final_loss_relative": 2.5903687972395062e-08
+    }
+  ],
+  "all_replay_decisions_and_work_match": true,
+  "all_endpoints_below_pdf_6e_minus13_units": false,
+  "full_backend_qualification": false,
+  "matched_runtime_claim": false,
+  "baseline_native_tests": {
+    "passed": 30,
+    "seconds": 8.11
+  },
+  "git_head": "1723dbee92058f85490a5caa79dfd1287eddc39e",
+  "environment": {
+    "python": "3.9.25",
+    "numpy": "2.0.2",
+    "scipy": "1.13.1",
+    "blas_threads": 1,
+    "frequency_threads": 1,
+    "device": "cpu",
+    "timing_limitation": "Some independent processes ran concurrently."
+  },
+  "pdf_sha256": "9880f8f695f462eb0240021f936393b722c524b57a0b115e348deb73e5f8d950",
+  "numerical_source_hashes": {
+    "experiments/modal_muller_research/coefficient_operator.py": "973a844f7ac29d2c7023de86b83010b7a99a39b10608d9739e5f26cd65d7fece",
+    "experiments/modal_muller_research/coefficient_fields.py": "b4344c255acbe3d7233ae3dbdb86663ebdf758f001df854263575a02ad3d6dd5",
+    "experiments/modal_muller_research/modal.py": "5ed47a3a23792a65717cfc3d23646e24db970522baf005c63f7d9b710fcf905b",
+    "experiments/shape_continuation/forward.py": "7e7e60f0a6093b383653bea7ab1b5a5712464c48feb18d1c2a802ddc57fc8c3d",
+    "experiments/shape_continuation/geometry.py": "f7302ebb445b226acd3c4cafb68047f31cfef85654959c2c1f319a897983578a",
+    "experiments/shape_continuation/updates.py": "66106909f583bfd26adf97e344984dbf51d50e0f267a80ce6fa772f0a1287c50",
+    "experiments/shape_continuation/lm_backend.py": "22667f056b777dbd435c8f50a3ac690a426aa6f6ea7a0de4daad01dbce7facf5",
+    "experiments/cleaned_interface/geometry.py": "1c4e65cec2666ddf987eabe5c4d50b545a3146bba045e92386a41a4449a292c3",
+    "solvers/gpr_bem_kress/system.py": "a9ea01d58680a4656f502aa166894aa816d6f8ce3fcafa4474b89c01453df4e0",
+    "solvers/gpr_bem_kress/operators.py": "d212790ce939a5c8b2acf3c4456fd5a0bd12a8201eaffefa8f2d672dfa93245a"
+  },
+  "available_review_source_versions": {
+    "e4e314919e4385080b2eb8858e7f6fc222575182674ca22c8d78c441a95479e8": "replay.py",
+    "c3c66f7ca180056b3ef0fc3853fc3da999cc73e7818d362b3cba6e54821a9af9": "summarize.py",
+    "96b2807f5cd366c42bee6e0f380142f850d7e04090c479786eb194bf69396af1": "verify.py",
+    "d1af032f845f2ce764e8284a4b6d5f2edbb6dda6c5647f778a1188a0587ad619": "integration_checks.py",
+    "edb69e21e03e8951337b6d9225476f11a0fbbfaf32b13b47a0a45d6f9a40e975": "directional_check.py",
+    "aaa3fa36b983e433f1bc6a23d57d8b3db15137f6166f8f0d53a5f1ba7749e017": "source_versions/verify_before_counterexample_extension.py"
+  },
+  "receipt_hashes": {
+    "integration_scalar.json": "0eed337fd65d722136a788620a5f9a255d6f75e3ee9f7a38756f0847fd9865bb",
+    "replay_release_M11.json": "93090d7b46f865f5e6133d79de1240d958920fde9c24301b4c4e8988f31485fd",
+    "integration_c.json": "5da5daeced0a751be3260005bf9632fbb57c819540b3b8b0ba7cea2dcacaf792",
+    "replay_fixed_M43.json": "de6cd9b9afe03f3089c1cde8bbd06fee6ebb6613bfae85d35ba33dafc82061a4",
+    "claims.json": "8dabcb62d9cdc3bd14c73f8df9e529a3adb36202094a45576ff76262df1278ba",
+    "integration_endpoint.json": "b1d3160c08b37e268d33d18f91cf08cbc375e9b811b592e38c317be7c9d09e13",
+    "directional.json": "d86d8076e36a16cfe493faf1d1e2c1e65cbd1ab3922e7f112be610c4e1945cb7",
+    "star.json": "2ab1c11cd47214dafdfce9754f9f684ae9305c08d44987e0b9a7adcc8a56c098",
+    "replay_stage_2_damped.json": "89e3522a7f3ac938ffd2100090095010e5c0fed08c703655f6dd2e189e408623",
+    "c.json": "71b6a5e5d7afce273b8451c68f8681b1ee086c9a02b5b476482c171f26c2ae78",
+    "integration_damped.json": "a850de665f13b22e79ebf9960271ae1808c54a6461939f19f2c4152c28e8d8f7"
+  }
+}

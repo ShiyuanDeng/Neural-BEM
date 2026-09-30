@@ -1,0 +1,3197 @@
+{
+  "status": "COMPLETE",
+  "rows": [
+    {
+      "method": "nodal_cuda",
+      "resolution_token": 512,
+      "cold_geometry_forward_seconds": 0.029681174084544182,
+      "retained_factor_jacobian_seconds": 0.013997449073940516,
+      "cold_forward_plus_jacobian_seconds": 0.0436786231584847,
+      "same_geometry_forward_seconds": 0.029263186967000365,
+      "native_geometry_setup_seconds": null,
+      "relative_fields": 2.7251206231845243e-14,
+      "worst_frequency_fields": 2.7251206231845243e-14,
+      "relative_jacobian": 7.350934748538575e-14,
+      "worst_jacobian_column": 1.3045316914785573e-13,
+      "receipt": {
+        "solver": "nodal_kress",
+        "execution": {
+          "device": "cuda",
+          "frequency_threads": 4,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "counts": {
+          "evaluation_attempts": 4,
+          "evaluations": 4,
+          "failed_evaluations": 0,
+          "derivative_attempts": 1,
+          "derivatives": 1,
+          "failed_derivatives": 0,
+          "disk_batches": 0,
+          "ray_table_setup": 1
+        },
+        "devices": {
+          "cuda": 3,
+          "cuda-damped": 1
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "evaluations": 0.5833115130662918,
+          "ray_table_setup": 0.0034855338744819164,
+          "derivative_attempts": 0.0,
+          "derivatives": 0.013944152975454926
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "ray": {
+          "gamma": 0.25,
+          "lo": 0.01,
+          "hi": 100.0,
+          "panels": 111,
+          "degree": 24
+        },
+        "retained_device_state": "one ray table; matrix and reusable LU factors retained on host"
+      },
+      "fixture": "C_real_2.5GHz",
+      "repetition": 0,
+      "oracle_nodes": 2048
+    },
+    {
+      "method": "nodal_cpu",
+      "resolution_token": 512,
+      "cold_geometry_forward_seconds": 0.7139692478813231,
+      "retained_factor_jacobian_seconds": 0.013812851859256625,
+      "cold_forward_plus_jacobian_seconds": 0.7277820997405797,
+      "same_geometry_forward_seconds": 0.7106633931398392,
+      "native_geometry_setup_seconds": null,
+      "relative_fields": 1.7400839392848547e-14,
+      "worst_frequency_fields": 1.7400839392848547e-14,
+      "relative_jacobian": 3.4354259016227554e-14,
+      "worst_jacobian_column": 6.24969964304986e-14,
+      "receipt": {
+        "solver": "nodal_kress",
+        "execution": {
+          "device": "cpu",
+          "frequency_threads": 1,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "counts": {
+          "evaluation_attempts": 3,
+          "evaluations": 3,
+          "failed_evaluations": 0,
+          "derivative_attempts": 2,
+          "derivatives": 2,
+          "failed_derivatives": 0,
+          "disk_batches": 0
+        },
+        "devices": {
+          "cpu": 3
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "evaluations": 14.687729764962569,
+          "derivative_attempts": 0.0,
+          "derivatives": 0.15497717214748263
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "ray": {
+          "gamma": 0.25,
+          "lo": 0.01,
+          "hi": 100.0,
+          "panels": 111,
+          "degree": 24
+        },
+        "retained_device_state": "one ray table; matrix and reusable LU factors retained on host"
+      },
+      "fixture": "C_real_2.5GHz",
+      "repetition": 0,
+      "oracle_nodes": 2048
+    },
+    {
+      "method": "modal_cpu",
+      "resolution_token": 512,
+      "cold_geometry_forward_seconds": 0.8329112650826573,
+      "retained_factor_jacobian_seconds": 0.0019233471248298883,
+      "cold_forward_plus_jacobian_seconds": 0.8348346122074872,
+      "same_geometry_forward_seconds": 0.08965350803919137,
+      "native_geometry_setup_seconds": 0.60378996306099,
+      "relative_fields": 1.3732602169553874e-08,
+      "worst_frequency_fields": 1.3732602169553874e-08,
+      "relative_jacobian": 9.11275753799746e-08,
+      "worst_jacobian_column": 8.134145369526403e-07,
+      "receipt": {
+        "counts": {
+          "geometry_builds": 1,
+          "evaluations": 2,
+          "derivatives": 1,
+          "wave_builds": 1
+        },
+        "device": "cpu",
+        "frequency_threads": 1,
+        "coefficient_bandwidth": 128,
+        "trace_cutoff": 64
+      },
+      "fixture": "C_real_2.5GHz",
+      "repetition": 0,
+      "oracle_nodes": 2048
+    },
+    {
+      "method": "nodal_cuda",
+      "resolution_token": 1024,
+      "cold_geometry_forward_seconds": 0.10379797592759132,
+      "retained_factor_jacobian_seconds": 0.035316612804308534,
+      "cold_forward_plus_jacobian_seconds": 0.13911458873189986,
+      "same_geometry_forward_seconds": 0.10275196400471032,
+      "native_geometry_setup_seconds": null,
+      "relative_fields": 2.5958114016684013e-14,
+      "worst_frequency_fields": 2.5958114016684013e-14,
+      "relative_jacobian": 7.22962626565251e-14,
+      "worst_jacobian_column": 8.830495928945668e-14,
+      "receipt": {
+        "solver": "nodal_kress",
+        "execution": {
+          "device": "cuda",
+          "frequency_threads": 4,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "counts": {
+          "evaluation_attempts": 6,
+          "evaluations": 6,
+          "failed_evaluations": 0,
+          "derivative_attempts": 2,
+          "derivatives": 2,
+          "failed_derivatives": 0,
+          "disk_batches": 0,
+          "ray_table_setup": 1
+        },
+        "devices": {
+          "cuda": 5,
+          "cuda-damped": 1
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "evaluations": 0.7896977772470564,
+          "ray_table_setup": 0.0034855338744819164,
+          "derivative_attempts": 0.0,
+          "derivatives": 0.04918726813048124
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "ray": {
+          "gamma": 0.25,
+          "lo": 0.01,
+          "hi": 100.0,
+          "panels": 111,
+          "degree": 24
+        },
+        "retained_device_state": "one ray table; matrix and reusable LU factors retained on host"
+      },
+      "fixture": "C_real_2.5GHz",
+      "repetition": 0,
+      "oracle_nodes": 2048
+    },
+    {
+      "method": "modal_cpu",
+      "resolution_token": 1024,
+      "cold_geometry_forward_seconds": 0.8382920022122562,
+      "retained_factor_jacobian_seconds": 0.0022822259925305843,
+      "cold_forward_plus_jacobian_seconds": 0.8405742282047868,
+      "same_geometry_forward_seconds": 0.09642301010899246,
+      "native_geometry_setup_seconds": 0.6013686920050532,
+      "relative_fields": 1.5724849384781974e-12,
+      "worst_frequency_fields": 1.5724849384781974e-12,
+      "relative_jacobian": 4.514185243461548e-12,
+      "worst_jacobian_column": 8.78607314212457e-12,
+      "receipt": {
+        "counts": {
+          "geometry_builds": 1,
+          "evaluations": 2,
+          "derivatives": 1,
+          "wave_builds": 1
+        },
+        "device": "cpu",
+        "frequency_threads": 1,
+        "coefficient_bandwidth": 128,
+        "trace_cutoff": 96
+      },
+      "fixture": "C_real_2.5GHz",
+      "repetition": 0,
+      "oracle_nodes": 2048
+    },
+    {
+      "method": "nodal_cpu",
+      "resolution_token": 1024,
+      "cold_geometry_forward_seconds": 2.9889479249250144,
+      "retained_factor_jacobian_seconds": 0.04045981401577592,
+      "cold_forward_plus_jacobian_seconds": 3.0294077389407903,
+      "same_geometry_forward_seconds": 2.9747948930598795,
+      "native_geometry_setup_seconds": null,
+      "relative_fields": 2.0792058429883876e-14,
+      "worst_frequency_fields": 2.0792058429883876e-14,
+      "relative_jacobian": 6.379789893493398e-14,
+      "worst_jacobian_column": 8.854529614608178e-14,
+      "receipt": {
+        "solver": "nodal_kress",
+        "execution": {
+          "device": "cpu",
+          "frequency_threads": 1,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "counts": {
+          "evaluation_attempts": 5,
+          "evaluations": 5,
+          "failed_evaluations": 0,
+          "derivative_attempts": 3,
+          "derivatives": 3,
+          "failed_derivatives": 0,
+          "disk_batches": 0
+        },
+        "devices": {
+          "cpu": 5
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "evaluations": 20.65124995307997,
+          "derivative_attempts": 0.0,
+          "derivatives": 0.19534802995622158
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "ray": {
+          "gamma": 0.25,
+          "lo": 0.01,
+          "hi": 100.0,
+          "panels": 111,
+          "degree": 24
+        },
+        "retained_device_state": "one ray table; matrix and reusable LU factors retained on host"
+      },
+      "fixture": "C_real_2.5GHz",
+      "repetition": 0,
+      "oracle_nodes": 2048
+    },
+    {
+      "method": "nodal_cuda",
+      "resolution_token": 512,
+      "cold_geometry_forward_seconds": 0.03181563410907984,
+      "retained_factor_jacobian_seconds": 0.01466035796329379,
+      "cold_forward_plus_jacobian_seconds": 0.04647599207237363,
+      "same_geometry_forward_seconds": 0.02918669511564076,
+      "native_geometry_setup_seconds": null,
+      "relative_fields": 2.7251206231845243e-14,
+      "worst_frequency_fields": 2.7251206231845243e-14,
+      "relative_jacobian": 7.350934748538575e-14,
+      "worst_jacobian_column": 1.3045316914785573e-13,
+      "receipt": {
+        "solver": "nodal_kress",
+        "execution": {
+          "device": "cuda",
+          "frequency_threads": 4,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "counts": {
+          "evaluation_attempts": 8,
+          "evaluations": 8,
+          "failed_evaluations": 0,
+          "derivative_attempts": 3,
+          "derivatives": 3,
+          "failed_derivatives": 0,
+          "disk_batches": 0,
+          "ray_table_setup": 1
+        },
+        "devices": {
+          "cuda": 7,
+          "cuda-damped": 1
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "evaluations": 0.8505568944383413,
+          "ray_table_setup": 0.0034855338744819164,
+          "derivative_attempts": 0.0,
+          "derivatives": 0.06380251003429294
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "ray": {
+          "gamma": 0.25,
+          "lo": 0.01,
+          "hi": 100.0,
+          "panels": 111,
+          "degree": 24
+        },
+        "retained_device_state": "one ray table; matrix and reusable LU factors retained on host"
+      },
+      "fixture": "C_real_2.5GHz",
+      "repetition": 1,
+      "oracle_nodes": 2048
+    },
+    {
+      "method": "nodal_cpu",
+      "resolution_token": 1024,
+      "cold_geometry_forward_seconds": 2.9867164939641953,
+      "retained_factor_jacobian_seconds": 0.042924607871100307,
+      "cold_forward_plus_jacobian_seconds": 3.0296411018352956,
+      "same_geometry_forward_seconds": 3.0036408111918718,
+      "native_geometry_setup_seconds": null,
+      "relative_fields": 2.0792058429883876e-14,
+      "worst_frequency_fields": 2.0792058429883876e-14,
+      "relative_jacobian": 6.379789893493398e-14,
+      "worst_jacobian_column": 8.854529614608178e-14,
+      "receipt": {
+        "solver": "nodal_kress",
+        "execution": {
+          "device": "cpu",
+          "frequency_threads": 1,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "counts": {
+          "evaluation_attempts": 7,
+          "evaluations": 7,
+          "failed_evaluations": 0,
+          "derivative_attempts": 4,
+          "derivatives": 4,
+          "failed_derivatives": 0,
+          "disk_batches": 0
+        },
+        "devices": {
+          "cpu": 7
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "evaluations": 26.641380477230996,
+          "derivative_attempts": 0.0,
+          "derivatives": 0.23817606316879392
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "ray": {
+          "gamma": 0.25,
+          "lo": 0.01,
+          "hi": 100.0,
+          "panels": 111,
+          "degree": 24
+        },
+        "retained_device_state": "one ray table; matrix and reusable LU factors retained on host"
+      },
+      "fixture": "C_real_2.5GHz",
+      "repetition": 1,
+      "oracle_nodes": 2048
+    },
+    {
+      "method": "modal_cpu",
+      "resolution_token": 1024,
+      "cold_geometry_forward_seconds": 0.8514906798955053,
+      "retained_factor_jacobian_seconds": 0.002256185980513692,
+      "cold_forward_plus_jacobian_seconds": 0.853746865876019,
+      "same_geometry_forward_seconds": 0.0985206519253552,
+      "native_geometry_setup_seconds": 0.6103953069541603,
+      "relative_fields": 1.5724849384781974e-12,
+      "worst_frequency_fields": 1.5724849384781974e-12,
+      "relative_jacobian": 4.514185243461548e-12,
+      "worst_jacobian_column": 8.78607314212457e-12,
+      "receipt": {
+        "counts": {
+          "geometry_builds": 1,
+          "evaluations": 2,
+          "derivatives": 1,
+          "wave_builds": 1
+        },
+        "device": "cpu",
+        "frequency_threads": 1,
+        "coefficient_bandwidth": 128,
+        "trace_cutoff": 96
+      },
+      "fixture": "C_real_2.5GHz",
+      "repetition": 1,
+      "oracle_nodes": 2048
+    },
+    {
+      "method": "nodal_cuda",
+      "resolution_token": 1024,
+      "cold_geometry_forward_seconds": 0.10345117491669953,
+      "retained_factor_jacobian_seconds": 0.03209207789041102,
+      "cold_forward_plus_jacobian_seconds": 0.13554325280711055,
+      "same_geometry_forward_seconds": 0.10291108000092208,
+      "native_geometry_setup_seconds": null,
+      "relative_fields": 2.5958114016684013e-14,
+      "worst_frequency_fields": 2.5958114016684013e-14,
+      "relative_jacobian": 7.22962626565251e-14,
+      "worst_jacobian_column": 8.830495928945668e-14,
+      "receipt": {
+        "solver": "nodal_kress",
+        "execution": {
+          "device": "cuda",
+          "frequency_threads": 4,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "counts": {
+          "evaluation_attempts": 10,
+          "evaluations": 10,
+          "failed_evaluations": 0,
+          "derivative_attempts": 4,
+          "derivatives": 4,
+          "failed_derivatives": 0,
+          "disk_batches": 0,
+          "ray_table_setup": 1
+        },
+        "devices": {
+          "cuda": 9,
+          "cuda-damped": 1
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "evaluations": 1.0567600594367832,
+          "ray_table_setup": 0.0034855338744819164,
+          "derivative_attempts": 0.0,
+          "derivatives": 0.09582761791534722
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "ray": {
+          "gamma": 0.25,
+          "lo": 0.01,
+          "hi": 100.0,
+          "panels": 111,
+          "degree": 24
+        },
+        "retained_device_state": "one ray table; matrix and reusable LU factors retained on host"
+      },
+      "fixture": "C_real_2.5GHz",
+      "repetition": 1,
+      "oracle_nodes": 2048
+    },
+    {
+      "method": "modal_cpu",
+      "resolution_token": 512,
+      "cold_geometry_forward_seconds": 0.837511899182573,
+      "retained_factor_jacobian_seconds": 0.0019714299123734236,
+      "cold_forward_plus_jacobian_seconds": 0.8394833290949464,
+      "same_geometry_forward_seconds": 0.09025804582051933,
+      "native_geometry_setup_seconds": 0.6062454162165523,
+      "relative_fields": 1.3732602169553874e-08,
+      "worst_frequency_fields": 1.3732602169553874e-08,
+      "relative_jacobian": 9.11275753799746e-08,
+      "worst_jacobian_column": 8.134145369526403e-07,
+      "receipt": {
+        "counts": {
+          "geometry_builds": 1,
+          "evaluations": 2,
+          "derivatives": 1,
+          "wave_builds": 1
+        },
+        "device": "cpu",
+        "frequency_threads": 1,
+        "coefficient_bandwidth": 128,
+        "trace_cutoff": 64
+      },
+      "fixture": "C_real_2.5GHz",
+      "repetition": 1,
+      "oracle_nodes": 2048
+    },
+    {
+      "method": "nodal_cpu",
+      "resolution_token": 512,
+      "cold_geometry_forward_seconds": 0.7117116441950202,
+      "retained_factor_jacobian_seconds": 0.013368002139031887,
+      "cold_forward_plus_jacobian_seconds": 0.7250796463340521,
+      "same_geometry_forward_seconds": 0.7090781040024012,
+      "native_geometry_setup_seconds": null,
+      "relative_fields": 1.7400839392848547e-14,
+      "worst_frequency_fields": 1.7400839392848547e-14,
+      "relative_jacobian": 3.4354259016227554e-14,
+      "worst_jacobian_column": 6.24969964304986e-14,
+      "receipt": {
+        "solver": "nodal_kress",
+        "execution": {
+          "device": "cpu",
+          "frequency_threads": 1,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "counts": {
+          "evaluation_attempts": 9,
+          "evaluations": 9,
+          "failed_evaluations": 0,
+          "derivative_attempts": 5,
+          "derivatives": 5,
+          "failed_derivatives": 0,
+          "disk_batches": 0
+        },
+        "devices": {
+          "cpu": 9
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "evaluations": 28.06195848621428,
+          "derivative_attempts": 0.0,
+          "derivatives": 0.25146008329465985
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "ray": {
+          "gamma": 0.25,
+          "lo": 0.01,
+          "hi": 100.0,
+          "panels": 111,
+          "degree": 24
+        },
+        "retained_device_state": "one ray table; matrix and reusable LU factors retained on host"
+      },
+      "fixture": "C_real_2.5GHz",
+      "repetition": 1,
+      "oracle_nodes": 2048
+    },
+    {
+      "method": "modal_cpu",
+      "resolution_token": 512,
+      "cold_geometry_forward_seconds": 0.8451055851764977,
+      "retained_factor_jacobian_seconds": 0.001929810969159007,
+      "cold_forward_plus_jacobian_seconds": 0.8470353961456567,
+      "same_geometry_forward_seconds": 0.09175489493645728,
+      "native_geometry_setup_seconds": 0.6051737989764661,
+      "relative_fields": 1.3732602169553874e-08,
+      "worst_frequency_fields": 1.3732602169553874e-08,
+      "relative_jacobian": 9.11275753799746e-08,
+      "worst_jacobian_column": 8.134145369526403e-07,
+      "receipt": {
+        "counts": {
+          "geometry_builds": 1,
+          "evaluations": 2,
+          "derivatives": 1,
+          "wave_builds": 1
+        },
+        "device": "cpu",
+        "frequency_threads": 1,
+        "coefficient_bandwidth": 128,
+        "trace_cutoff": 64
+      },
+      "fixture": "C_real_2.5GHz",
+      "repetition": 2,
+      "oracle_nodes": 2048
+    },
+    {
+      "method": "nodal_cuda",
+      "resolution_token": 1024,
+      "cold_geometry_forward_seconds": 0.10555142187513411,
+      "retained_factor_jacobian_seconds": 0.03273392119444907,
+      "cold_forward_plus_jacobian_seconds": 0.13828534306958318,
+      "same_geometry_forward_seconds": 0.10571025987155735,
+      "native_geometry_setup_seconds": null,
+      "relative_fields": 2.5958114016684013e-14,
+      "worst_frequency_fields": 2.5958114016684013e-14,
+      "relative_jacobian": 7.22962626565251e-14,
+      "worst_jacobian_column": 8.830495928945668e-14,
+      "receipt": {
+        "solver": "nodal_kress",
+        "execution": {
+          "device": "cuda",
+          "frequency_threads": 4,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "counts": {
+          "evaluation_attempts": 12,
+          "evaluations": 12,
+          "failed_evaluations": 0,
+          "derivative_attempts": 5,
+          "derivatives": 5,
+          "failed_derivatives": 0,
+          "disk_batches": 0,
+          "ray_table_setup": 1
+        },
+        "devices": {
+          "cuda": 11,
+          "cuda-damped": 1
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "evaluations": 1.2678593285381794,
+          "ray_table_setup": 0.0034855338744819164,
+          "derivative_attempts": 0.0,
+          "derivatives": 0.12849569483660161
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "ray": {
+          "gamma": 0.25,
+          "lo": 0.01,
+          "hi": 100.0,
+          "panels": 111,
+          "degree": 24
+        },
+        "retained_device_state": "one ray table; matrix and reusable LU factors retained on host"
+      },
+      "fixture": "C_real_2.5GHz",
+      "repetition": 2,
+      "oracle_nodes": 2048
+    },
+    {
+      "method": "modal_cpu",
+      "resolution_token": 1024,
+      "cold_geometry_forward_seconds": 0.8523650940041989,
+      "retained_factor_jacobian_seconds": 0.0022764948662370443,
+      "cold_forward_plus_jacobian_seconds": 0.854641588870436,
+      "same_geometry_forward_seconds": 0.09838189906440675,
+      "native_geometry_setup_seconds": 0.614268050994724,
+      "relative_fields": 1.5724849384781974e-12,
+      "worst_frequency_fields": 1.5724849384781974e-12,
+      "relative_jacobian": 4.514185243461548e-12,
+      "worst_jacobian_column": 8.78607314212457e-12,
+      "receipt": {
+        "counts": {
+          "geometry_builds": 1,
+          "evaluations": 2,
+          "derivatives": 1,
+          "wave_builds": 1
+        },
+        "device": "cpu",
+        "frequency_threads": 1,
+        "coefficient_bandwidth": 128,
+        "trace_cutoff": 96
+      },
+      "fixture": "C_real_2.5GHz",
+      "repetition": 2,
+      "oracle_nodes": 2048
+    },
+    {
+      "method": "nodal_cpu",
+      "resolution_token": 1024,
+      "cold_geometry_forward_seconds": 2.984952979022637,
+      "retained_factor_jacobian_seconds": 0.04104553093202412,
+      "cold_forward_plus_jacobian_seconds": 3.025998509954661,
+      "same_geometry_forward_seconds": 3.000825386028737,
+      "native_geometry_setup_seconds": null,
+      "relative_fields": 2.0792058429883876e-14,
+      "worst_frequency_fields": 2.0792058429883876e-14,
+      "relative_jacobian": 6.379789893493398e-14,
+      "worst_jacobian_column": 8.854529614608178e-14,
+      "receipt": {
+        "solver": "nodal_kress",
+        "execution": {
+          "device": "cpu",
+          "frequency_threads": 1,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "counts": {
+          "evaluation_attempts": 11,
+          "evaluations": 11,
+          "failed_evaluations": 0,
+          "derivative_attempts": 6,
+          "derivatives": 6,
+          "failed_derivatives": 0,
+          "disk_batches": 0
+        },
+        "devices": {
+          "cpu": 11
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "evaluations": 34.047505816211924,
+          "derivative_attempts": 0.0,
+          "derivatives": 0.29241406125947833
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "ray": {
+          "gamma": 0.25,
+          "lo": 0.01,
+          "hi": 100.0,
+          "panels": 111,
+          "degree": 24
+        },
+        "retained_device_state": "one ray table; matrix and reusable LU factors retained on host"
+      },
+      "fixture": "C_real_2.5GHz",
+      "repetition": 2,
+      "oracle_nodes": 2048
+    },
+    {
+      "method": "nodal_cuda",
+      "resolution_token": 512,
+      "cold_geometry_forward_seconds": 0.02974021597765386,
+      "retained_factor_jacobian_seconds": 0.014749706955626607,
+      "cold_forward_plus_jacobian_seconds": 0.04448992293328047,
+      "same_geometry_forward_seconds": 0.029076468897983432,
+      "native_geometry_setup_seconds": null,
+      "relative_fields": 2.7251206231845243e-14,
+      "worst_frequency_fields": 2.7251206231845243e-14,
+      "relative_jacobian": 7.350934748538575e-14,
+      "worst_jacobian_column": 1.3045316914785573e-13,
+      "receipt": {
+        "solver": "nodal_kress",
+        "execution": {
+          "device": "cuda",
+          "frequency_threads": 4,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "counts": {
+          "evaluation_attempts": 14,
+          "evaluations": 14,
+          "failed_evaluations": 0,
+          "derivative_attempts": 6,
+          "derivatives": 6,
+          "failed_derivatives": 0,
+          "disk_batches": 0,
+          "ray_table_setup": 1
+        },
+        "devices": {
+          "cuda": 13,
+          "cuda-damped": 1
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "evaluations": 1.3265405006241053,
+          "ray_table_setup": 0.0034855338744819164,
+          "derivative_attempts": 0.0,
+          "derivatives": 0.14319814695045352
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "ray": {
+          "gamma": 0.25,
+          "lo": 0.01,
+          "hi": 100.0,
+          "panels": 111,
+          "degree": 24
+        },
+        "retained_device_state": "one ray table; matrix and reusable LU factors retained on host"
+      },
+      "fixture": "C_real_2.5GHz",
+      "repetition": 2,
+      "oracle_nodes": 2048
+    },
+    {
+      "method": "nodal_cpu",
+      "resolution_token": 512,
+      "cold_geometry_forward_seconds": 0.7088720968458802,
+      "retained_factor_jacobian_seconds": 0.013490441953763366,
+      "cold_forward_plus_jacobian_seconds": 0.7223625387996435,
+      "same_geometry_forward_seconds": 0.7100966938305646,
+      "native_geometry_setup_seconds": null,
+      "relative_fields": 1.7400839392848547e-14,
+      "worst_frequency_fields": 1.7400839392848547e-14,
+      "relative_jacobian": 3.4354259016227554e-14,
+      "worst_jacobian_column": 6.24969964304986e-14,
+      "receipt": {
+        "solver": "nodal_kress",
+        "execution": {
+          "device": "cpu",
+          "frequency_threads": 1,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "counts": {
+          "evaluation_attempts": 13,
+          "evaluations": 13,
+          "failed_evaluations": 0,
+          "derivative_attempts": 7,
+          "derivatives": 7,
+          "failed_derivatives": 0,
+          "disk_batches": 0
+        },
+        "devices": {
+          "cpu": 13
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "evaluations": 35.4662612893153,
+          "derivative_attempts": 0.0,
+          "derivatives": 0.3058196632191539
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "ray": {
+          "gamma": 0.25,
+          "lo": 0.01,
+          "hi": 100.0,
+          "panels": 111,
+          "degree": 24
+        },
+        "retained_device_state": "one ray table; matrix and reusable LU factors retained on host"
+      },
+      "fixture": "C_real_2.5GHz",
+      "repetition": 2,
+      "oracle_nodes": 2048
+    },
+    {
+      "method": "nodal_cuda",
+      "resolution_token": 512,
+      "cold_geometry_forward_seconds": 0.04108253587037325,
+      "retained_factor_jacobian_seconds": 0.016010819002985954,
+      "cold_forward_plus_jacobian_seconds": 0.0570933548733592,
+      "same_geometry_forward_seconds": 0.0363382229115814,
+      "native_geometry_setup_seconds": null,
+      "relative_fields": 1.4094031587968148e-15,
+      "worst_frequency_fields": 1.4094031587968148e-15,
+      "relative_jacobian": 2.074333312555875e-15,
+      "worst_jacobian_column": 9.949023372737253e-14,
+      "receipt": {
+        "solver": "nodal_kress",
+        "execution": {
+          "device": "cuda",
+          "frequency_threads": 4,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "counts": {
+          "evaluation_attempts": 16,
+          "evaluations": 16,
+          "failed_evaluations": 0,
+          "derivative_attempts": 7,
+          "derivatives": 7,
+          "failed_derivatives": 0,
+          "disk_batches": 0,
+          "ray_table_setup": 1
+        },
+        "devices": {
+          "cuda": 13,
+          "cuda-damped": 3
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "evaluations": 1.4038199624046683,
+          "ray_table_setup": 0.0034855338744819164,
+          "derivative_attempts": 0.0,
+          "derivatives": 0.15915109892375767
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "ray": {
+          "gamma": 0.25,
+          "lo": 0.01,
+          "hi": 100.0,
+          "panels": 111,
+          "degree": 24
+        },
+        "retained_device_state": "one ray table; matrix and reusable LU factors retained on host"
+      },
+      "fixture": "C_damped_1GHz",
+      "repetition": 0,
+      "oracle_nodes": 2048
+    },
+    {
+      "method": "nodal_cpu",
+      "resolution_token": 512,
+      "cold_geometry_forward_seconds": 0.8627182689961046,
+      "retained_factor_jacobian_seconds": 0.014707270078361034,
+      "cold_forward_plus_jacobian_seconds": 0.8774255390744656,
+      "same_geometry_forward_seconds": 0.8390660979785025,
+      "native_geometry_setup_seconds": null,
+      "relative_fields": 1.110082354774232e-15,
+      "worst_frequency_fields": 1.110082354774232e-15,
+      "relative_jacobian": 1.8991936148537185e-15,
+      "worst_jacobian_column": 8.918279852124091e-14,
+      "receipt": {
+        "solver": "nodal_kress",
+        "execution": {
+          "device": "cpu",
+          "frequency_threads": 1,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "counts": {
+          "evaluation_attempts": 16,
+          "evaluations": 16,
+          "failed_evaluations": 0,
+          "derivative_attempts": 9,
+          "derivatives": 9,
+          "failed_derivatives": 0,
+          "disk_batches": 0
+        },
+        "devices": {
+          "cpu": 13,
+          "cpu-damped": 3
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "evaluations": 52.18083720328286,
+          "derivative_attempts": 0.0,
+          "derivatives": 0.47010854398831725
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "ray": {
+          "gamma": 0.25,
+          "lo": 0.01,
+          "hi": 100.0,
+          "panels": 111,
+          "degree": 24
+        },
+        "retained_device_state": "one ray table; matrix and reusable LU factors retained on host"
+      },
+      "fixture": "C_damped_1GHz",
+      "repetition": 0,
+      "oracle_nodes": 2048
+    },
+    {
+      "method": "modal_cpu",
+      "resolution_token": 512,
+      "cold_geometry_forward_seconds": 0.852279094979167,
+      "retained_factor_jacobian_seconds": 0.0020761170890182257,
+      "cold_forward_plus_jacobian_seconds": 0.8543552120681852,
+      "same_geometry_forward_seconds": 0.08916909503750503,
+      "native_geometry_setup_seconds": 0.6225673339795321,
+      "relative_fields": 1.1922342653028896e-13,
+      "worst_frequency_fields": 1.1922342653028896e-13,
+      "relative_jacobian": 1.347900512152282e-13,
+      "worst_jacobian_column": 2.0882811874720273e-12,
+      "receipt": {
+        "counts": {
+          "geometry_builds": 1,
+          "evaluations": 2,
+          "derivatives": 1,
+          "wave_builds": 1
+        },
+        "device": "cpu",
+        "frequency_threads": 1,
+        "coefficient_bandwidth": 128,
+        "trace_cutoff": 64
+      },
+      "fixture": "C_damped_1GHz",
+      "repetition": 0,
+      "oracle_nodes": 2048
+    },
+    {
+      "method": "nodal_cuda",
+      "resolution_token": 1024,
+      "cold_geometry_forward_seconds": 0.12807704112492502,
+      "retained_factor_jacobian_seconds": 0.03408749308437109,
+      "cold_forward_plus_jacobian_seconds": 0.1621645342092961,
+      "same_geometry_forward_seconds": 0.12443984299898148,
+      "native_geometry_setup_seconds": null,
+      "relative_fields": 1.0509965429432696e-15,
+      "worst_frequency_fields": 1.0509965429432696e-15,
+      "relative_jacobian": 1.7552051185710888e-15,
+      "worst_jacobian_column": 6.138211657332998e-14,
+      "receipt": {
+        "solver": "nodal_kress",
+        "execution": {
+          "device": "cuda",
+          "frequency_threads": 4,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "counts": {
+          "evaluation_attempts": 18,
+          "evaluations": 18,
+          "failed_evaluations": 0,
+          "derivative_attempts": 8,
+          "derivatives": 8,
+          "failed_derivatives": 0,
+          "disk_batches": 0,
+          "ray_table_setup": 1
+        },
+        "devices": {
+          "cuda": 13,
+          "cuda-damped": 5
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "evaluations": 1.6561738974414766,
+          "ray_table_setup": 0.0034855338744819164,
+          "derivative_attempts": 0.0,
+          "derivatives": 0.19316985085606575
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "ray": {
+          "gamma": 0.25,
+          "lo": 0.01,
+          "hi": 100.0,
+          "panels": 111,
+          "degree": 24
+        },
+        "retained_device_state": "one ray table; matrix and reusable LU factors retained on host"
+      },
+      "fixture": "C_damped_1GHz",
+      "repetition": 0,
+      "oracle_nodes": 2048
+    },
+    {
+      "method": "modal_cpu",
+      "resolution_token": 1024,
+      "cold_geometry_forward_seconds": 0.8262419870588928,
+      "retained_factor_jacobian_seconds": 0.002452491084113717,
+      "cold_forward_plus_jacobian_seconds": 0.8286944781430066,
+      "same_geometry_forward_seconds": 0.0952575400006026,
+      "native_geometry_setup_seconds": 0.5864498009905219,
+      "relative_fields": 1.1986404915087204e-13,
+      "worst_frequency_fields": 1.1986404915087204e-13,
+      "relative_jacobian": 1.3558725306299277e-13,
+      "worst_jacobian_column": 2.0824730850064332e-12,
+      "receipt": {
+        "counts": {
+          "geometry_builds": 1,
+          "evaluations": 2,
+          "derivatives": 1,
+          "wave_builds": 1
+        },
+        "device": "cpu",
+        "frequency_threads": 1,
+        "coefficient_bandwidth": 128,
+        "trace_cutoff": 96
+      },
+      "fixture": "C_damped_1GHz",
+      "repetition": 0,
+      "oracle_nodes": 2048
+    },
+    {
+      "method": "nodal_cpu",
+      "resolution_token": 1024,
+      "cold_geometry_forward_seconds": 3.4778471500612795,
+      "retained_factor_jacobian_seconds": 0.04251307900995016,
+      "cold_forward_plus_jacobian_seconds": 3.5203602290712297,
+      "same_geometry_forward_seconds": 3.4867208269424736,
+      "native_geometry_setup_seconds": null,
+      "relative_fields": 1.0101187351943558e-15,
+      "worst_frequency_fields": 1.0101187351943558e-15,
+      "relative_jacobian": 1.7144120151522468e-15,
+      "worst_jacobian_column": 5.806922375929313e-14,
+      "receipt": {
+        "solver": "nodal_kress",
+        "execution": {
+          "device": "cpu",
+          "frequency_threads": 1,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "counts": {
+          "evaluation_attempts": 18,
+          "evaluations": 18,
+          "failed_evaluations": 0,
+          "derivative_attempts": 10,
+          "derivatives": 10,
+          "failed_derivatives": 0,
+          "disk_batches": 0
+        },
+        "devices": {
+          "cpu": 13,
+          "cpu-damped": 5
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "evaluations": 59.14517785841599,
+          "derivative_attempts": 0.0,
+          "derivatives": 0.5125339811202139
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "ray": {
+          "gamma": 0.25,
+          "lo": 0.01,
+          "hi": 100.0,
+          "panels": 111,
+          "degree": 24
+        },
+        "retained_device_state": "one ray table; matrix and reusable LU factors retained on host"
+      },
+      "fixture": "C_damped_1GHz",
+      "repetition": 0,
+      "oracle_nodes": 2048
+    },
+    {
+      "method": "nodal_cuda",
+      "resolution_token": 512,
+      "cold_geometry_forward_seconds": 0.0406454699113965,
+      "retained_factor_jacobian_seconds": 0.015792789170518517,
+      "cold_forward_plus_jacobian_seconds": 0.05643825908191502,
+      "same_geometry_forward_seconds": 0.03566871001385152,
+      "native_geometry_setup_seconds": null,
+      "relative_fields": 1.4094031587968148e-15,
+      "worst_frequency_fields": 1.4094031587968148e-15,
+      "relative_jacobian": 2.074333312555875e-15,
+      "worst_jacobian_column": 9.949023372737253e-14,
+      "receipt": {
+        "solver": "nodal_kress",
+        "execution": {
+          "device": "cuda",
+          "frequency_threads": 4,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "counts": {
+          "evaluation_attempts": 20,
+          "evaluations": 20,
+          "failed_evaluations": 0,
+          "derivative_attempts": 9,
+          "derivatives": 9,
+          "failed_derivatives": 0,
+          "disk_batches": 0,
+          "ray_table_setup": 1
+        },
+        "devices": {
+          "cuda": 13,
+          "cuda-damped": 7
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "evaluations": 1.7323356396518648,
+          "ray_table_setup": 0.0034855338744819164,
+          "derivative_attempts": 0.0,
+          "derivatives": 0.2089155458379537
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "ray": {
+          "gamma": 0.25,
+          "lo": 0.01,
+          "hi": 100.0,
+          "panels": 111,
+          "degree": 24
+        },
+        "retained_device_state": "one ray table; matrix and reusable LU factors retained on host"
+      },
+      "fixture": "C_damped_1GHz",
+      "repetition": 1,
+      "oracle_nodes": 2048
+    },
+    {
+      "method": "nodal_cpu",
+      "resolution_token": 1024,
+      "cold_geometry_forward_seconds": 3.51062632096,
+      "retained_factor_jacobian_seconds": 0.04547745012678206,
+      "cold_forward_plus_jacobian_seconds": 3.556103771086782,
+      "same_geometry_forward_seconds": 3.5085764629766345,
+      "native_geometry_setup_seconds": null,
+      "relative_fields": 1.0101187351943558e-15,
+      "worst_frequency_fields": 1.0101187351943558e-15,
+      "relative_jacobian": 1.7144120151522468e-15,
+      "worst_jacobian_column": 5.806922375929313e-14,
+      "receipt": {
+        "solver": "nodal_kress",
+        "execution": {
+          "device": "cpu",
+          "frequency_threads": 1,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "counts": {
+          "evaluation_attempts": 20,
+          "evaluations": 20,
+          "failed_evaluations": 0,
+          "derivative_attempts": 11,
+          "derivatives": 11,
+          "failed_derivatives": 0,
+          "disk_batches": 0
+        },
+        "devices": {
+          "cpu": 13,
+          "cpu-damped": 7
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "evaluations": 66.16415415960364,
+          "derivative_attempts": 0.0,
+          "derivatives": 0.5579154910519719
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "ray": {
+          "gamma": 0.25,
+          "lo": 0.01,
+          "hi": 100.0,
+          "panels": 111,
+          "degree": 24
+        },
+        "retained_device_state": "one ray table; matrix and reusable LU factors retained on host"
+      },
+      "fixture": "C_damped_1GHz",
+      "repetition": 1,
+      "oracle_nodes": 2048
+    },
+    {
+      "method": "modal_cpu",
+      "resolution_token": 1024,
+      "cold_geometry_forward_seconds": 0.814826998161152,
+      "retained_factor_jacobian_seconds": 0.002480844035744667,
+      "cold_forward_plus_jacobian_seconds": 0.8173078421968967,
+      "same_geometry_forward_seconds": 0.09448998491279781,
+      "native_geometry_setup_seconds": 0.5771953978110105,
+      "relative_fields": 1.1986404915087204e-13,
+      "worst_frequency_fields": 1.1986404915087204e-13,
+      "relative_jacobian": 1.3558725306299277e-13,
+      "worst_jacobian_column": 2.0824730850064332e-12,
+      "receipt": {
+        "counts": {
+          "geometry_builds": 1,
+          "evaluations": 2,
+          "derivatives": 1,
+          "wave_builds": 1
+        },
+        "device": "cpu",
+        "frequency_threads": 1,
+        "coefficient_bandwidth": 128,
+        "trace_cutoff": 96
+      },
+      "fixture": "C_damped_1GHz",
+      "repetition": 1,
+      "oracle_nodes": 2048
+    },
+    {
+      "method": "nodal_cuda",
+      "resolution_token": 1024,
+      "cold_geometry_forward_seconds": 0.1277250440325588,
+      "retained_factor_jacobian_seconds": 0.03408185997977853,
+      "cold_forward_plus_jacobian_seconds": 0.16180690401233733,
+      "same_geometry_forward_seconds": 0.12541756895370781,
+      "native_geometry_setup_seconds": null,
+      "relative_fields": 1.0509965429432696e-15,
+      "worst_frequency_fields": 1.0509965429432696e-15,
+      "relative_jacobian": 1.7552051185710888e-15,
+      "worst_jacobian_column": 6.138211657332998e-14,
+      "receipt": {
+        "solver": "nodal_kress",
+        "execution": {
+          "device": "cuda",
+          "frequency_threads": 4,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "counts": {
+          "evaluation_attempts": 22,
+          "evaluations": 22,
+          "failed_evaluations": 0,
+          "derivative_attempts": 10,
+          "derivatives": 10,
+          "failed_derivatives": 0,
+          "disk_batches": 0,
+          "ray_table_setup": 1
+        },
+        "devices": {
+          "cuda": 13,
+          "cuda-damped": 9
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "evaluations": 1.9853098045568913,
+          "ray_table_setup": 0.0034855338744819164,
+          "derivative_attempts": 0.0,
+          "derivatives": 0.24291943875141442
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "ray": {
+          "gamma": 0.25,
+          "lo": 0.01,
+          "hi": 100.0,
+          "panels": 111,
+          "degree": 24
+        },
+        "retained_device_state": "one ray table; matrix and reusable LU factors retained on host"
+      },
+      "fixture": "C_damped_1GHz",
+      "repetition": 1,
+      "oracle_nodes": 2048
+    },
+    {
+      "method": "modal_cpu",
+      "resolution_token": 512,
+      "cold_geometry_forward_seconds": 0.8111431710422039,
+      "retained_factor_jacobian_seconds": 0.0021816410589963198,
+      "cold_forward_plus_jacobian_seconds": 0.8133248121012002,
+      "same_geometry_forward_seconds": 0.09053277084603906,
+      "native_geometry_setup_seconds": 0.5801477890927345,
+      "relative_fields": 1.1922342653028896e-13,
+      "worst_frequency_fields": 1.1922342653028896e-13,
+      "relative_jacobian": 1.347900512152282e-13,
+      "worst_jacobian_column": 2.0882811874720273e-12,
+      "receipt": {
+        "counts": {
+          "geometry_builds": 1,
+          "evaluations": 2,
+          "derivatives": 1,
+          "wave_builds": 1
+        },
+        "device": "cpu",
+        "frequency_threads": 1,
+        "coefficient_bandwidth": 128,
+        "trace_cutoff": 64
+      },
+      "fixture": "C_damped_1GHz",
+      "repetition": 1,
+      "oracle_nodes": 2048
+    },
+    {
+      "method": "nodal_cpu",
+      "resolution_token": 512,
+      "cold_geometry_forward_seconds": 0.836114016128704,
+      "retained_factor_jacobian_seconds": 0.014561127871274948,
+      "cold_forward_plus_jacobian_seconds": 0.8506751439999789,
+      "same_geometry_forward_seconds": 0.839010720839724,
+      "native_geometry_setup_seconds": null,
+      "relative_fields": 1.110082354774232e-15,
+      "worst_frequency_fields": 1.110082354774232e-15,
+      "relative_jacobian": 1.8991936148537185e-15,
+      "worst_jacobian_column": 8.918279852124091e-14,
+      "receipt": {
+        "solver": "nodal_kress",
+        "execution": {
+          "device": "cpu",
+          "frequency_threads": 1,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "counts": {
+          "evaluation_attempts": 22,
+          "evaluations": 22,
+          "failed_evaluations": 0,
+          "derivative_attempts": 12,
+          "derivatives": 12,
+          "failed_derivatives": 0,
+          "disk_batches": 0
+        },
+        "devices": {
+          "cpu": 13,
+          "cpu-damped": 9
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "evaluations": 67.83905368368141,
+          "derivative_attempts": 0.0,
+          "derivatives": 0.5723867099732161
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "ray": {
+          "gamma": 0.25,
+          "lo": 0.01,
+          "hi": 100.0,
+          "panels": 111,
+          "degree": 24
+        },
+        "retained_device_state": "one ray table; matrix and reusable LU factors retained on host"
+      },
+      "fixture": "C_damped_1GHz",
+      "repetition": 1,
+      "oracle_nodes": 2048
+    },
+    {
+      "method": "modal_cpu",
+      "resolution_token": 512,
+      "cold_geometry_forward_seconds": 0.8049090290442109,
+      "retained_factor_jacobian_seconds": 0.0020696870051324368,
+      "cold_forward_plus_jacobian_seconds": 0.8069787160493433,
+      "same_geometry_forward_seconds": 0.0882950269151479,
+      "native_geometry_setup_seconds": 0.5745286929886788,
+      "relative_fields": 1.1922342653028896e-13,
+      "worst_frequency_fields": 1.1922342653028896e-13,
+      "relative_jacobian": 1.347900512152282e-13,
+      "worst_jacobian_column": 2.0882811874720273e-12,
+      "receipt": {
+        "counts": {
+          "geometry_builds": 1,
+          "evaluations": 2,
+          "derivatives": 1,
+          "wave_builds": 1
+        },
+        "device": "cpu",
+        "frequency_threads": 1,
+        "coefficient_bandwidth": 128,
+        "trace_cutoff": 64
+      },
+      "fixture": "C_damped_1GHz",
+      "repetition": 2,
+      "oracle_nodes": 2048
+    },
+    {
+      "method": "nodal_cuda",
+      "resolution_token": 1024,
+      "cold_geometry_forward_seconds": 0.12675693188793957,
+      "retained_factor_jacobian_seconds": 0.03421795601025224,
+      "cold_forward_plus_jacobian_seconds": 0.1609748878981918,
+      "same_geometry_forward_seconds": 0.12539139692671597,
+      "native_geometry_setup_seconds": null,
+      "relative_fields": 1.0509965429432696e-15,
+      "worst_frequency_fields": 1.0509965429432696e-15,
+      "relative_jacobian": 1.7552051185710888e-15,
+      "worst_jacobian_column": 6.138211657332998e-14,
+      "receipt": {
+        "solver": "nodal_kress",
+        "execution": {
+          "device": "cuda",
+          "frequency_threads": 4,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "counts": {
+          "evaluation_attempts": 24,
+          "evaluations": 24,
+          "failed_evaluations": 0,
+          "derivative_attempts": 11,
+          "derivatives": 11,
+          "failed_derivatives": 0,
+          "disk_batches": 0,
+          "ray_table_setup": 1
+        },
+        "devices": {
+          "cuda": 13,
+          "cuda-damped": 11
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "evaluations": 2.237286359537393,
+          "ray_table_setup": 0.0034855338744819164,
+          "derivative_attempts": 0.0,
+          "derivatives": 0.2770673567429185
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "ray": {
+          "gamma": 0.25,
+          "lo": 0.01,
+          "hi": 100.0,
+          "panels": 111,
+          "degree": 24
+        },
+        "retained_device_state": "one ray table; matrix and reusable LU factors retained on host"
+      },
+      "fixture": "C_damped_1GHz",
+      "repetition": 2,
+      "oracle_nodes": 2048
+    },
+    {
+      "method": "modal_cpu",
+      "resolution_token": 1024,
+      "cold_geometry_forward_seconds": 0.8088211009744555,
+      "retained_factor_jacobian_seconds": 0.0024110099766403437,
+      "cold_forward_plus_jacobian_seconds": 0.8112321109510958,
+      "same_geometry_forward_seconds": 0.09608737891539931,
+      "native_geometry_setup_seconds": 0.573603669879958,
+      "relative_fields": 1.1986404915087204e-13,
+      "worst_frequency_fields": 1.1986404915087204e-13,
+      "relative_jacobian": 1.3558725306299277e-13,
+      "worst_jacobian_column": 2.0824730850064332e-12,
+      "receipt": {
+        "counts": {
+          "geometry_builds": 1,
+          "evaluations": 2,
+          "derivatives": 1,
+          "wave_builds": 1
+        },
+        "device": "cpu",
+        "frequency_threads": 1,
+        "coefficient_bandwidth": 128,
+        "trace_cutoff": 96
+      },
+      "fixture": "C_damped_1GHz",
+      "repetition": 2,
+      "oracle_nodes": 2048
+    },
+    {
+      "method": "nodal_cpu",
+      "resolution_token": 1024,
+      "cold_geometry_forward_seconds": 3.484486527973786,
+      "retained_factor_jacobian_seconds": 0.042804224882274866,
+      "cold_forward_plus_jacobian_seconds": 3.527290752856061,
+      "same_geometry_forward_seconds": 3.4909720811992884,
+      "native_geometry_setup_seconds": null,
+      "relative_fields": 1.0101187351943558e-15,
+      "worst_frequency_fields": 1.0101187351943558e-15,
+      "relative_jacobian": 1.7144120151522468e-15,
+      "worst_jacobian_column": 5.806922375929313e-14,
+      "receipt": {
+        "solver": "nodal_kress",
+        "execution": {
+          "device": "cpu",
+          "frequency_threads": 1,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "counts": {
+          "evaluation_attempts": 24,
+          "evaluations": 24,
+          "failed_evaluations": 0,
+          "derivative_attempts": 13,
+          "derivatives": 13,
+          "failed_derivatives": 0,
+          "disk_batches": 0
+        },
+        "devices": {
+          "cpu": 13,
+          "cpu-damped": 11
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "evaluations": 74.81427911575884,
+          "derivative_attempts": 0.0,
+          "derivatives": 0.6150955769699067
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "ray": {
+          "gamma": 0.25,
+          "lo": 0.01,
+          "hi": 100.0,
+          "panels": 111,
+          "degree": 24
+        },
+        "retained_device_state": "one ray table; matrix and reusable LU factors retained on host"
+      },
+      "fixture": "C_damped_1GHz",
+      "repetition": 2,
+      "oracle_nodes": 2048
+    },
+    {
+      "method": "nodal_cuda",
+      "resolution_token": 512,
+      "cold_geometry_forward_seconds": 0.040871429024264216,
+      "retained_factor_jacobian_seconds": 0.016053856117650867,
+      "cold_forward_plus_jacobian_seconds": 0.05692528514191508,
+      "same_geometry_forward_seconds": 0.037493926007300615,
+      "native_geometry_setup_seconds": null,
+      "relative_fields": 1.4094031587968148e-15,
+      "worst_frequency_fields": 1.4094031587968148e-15,
+      "relative_jacobian": 2.074333312555875e-15,
+      "worst_jacobian_column": 9.949023372737253e-14,
+      "receipt": {
+        "solver": "nodal_kress",
+        "execution": {
+          "device": "cuda",
+          "frequency_threads": 4,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "counts": {
+          "evaluation_attempts": 26,
+          "evaluations": 26,
+          "failed_evaluations": 0,
+          "derivative_attempts": 12,
+          "derivatives": 12,
+          "failed_derivatives": 0,
+          "disk_batches": 0,
+          "ray_table_setup": 1
+        },
+        "devices": {
+          "cuda": 13,
+          "cuda-damped": 13
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "evaluations": 2.3155040454585105,
+          "ray_table_setup": 0.0034855338744819164,
+          "derivative_attempts": 0.0,
+          "derivatives": 0.2930631476920098
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "ray": {
+          "gamma": 0.25,
+          "lo": 0.01,
+          "hi": 100.0,
+          "panels": 111,
+          "degree": 24
+        },
+        "retained_device_state": "one ray table; matrix and reusable LU factors retained on host"
+      },
+      "fixture": "C_damped_1GHz",
+      "repetition": 2,
+      "oracle_nodes": 2048
+    },
+    {
+      "method": "nodal_cpu",
+      "resolution_token": 512,
+      "cold_geometry_forward_seconds": 0.8311429300811142,
+      "retained_factor_jacobian_seconds": 0.01430750684812665,
+      "cold_forward_plus_jacobian_seconds": 0.8454504369292408,
+      "same_geometry_forward_seconds": 0.8369014800991863,
+      "native_geometry_setup_seconds": null,
+      "relative_fields": 1.110082354774232e-15,
+      "worst_frequency_fields": 1.110082354774232e-15,
+      "relative_jacobian": 1.8991936148537185e-15,
+      "worst_jacobian_column": 8.918279852124091e-14,
+      "receipt": {
+        "solver": "nodal_kress",
+        "execution": {
+          "device": "cpu",
+          "frequency_threads": 1,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "counts": {
+          "evaluation_attempts": 26,
+          "evaluations": 26,
+          "failed_evaluations": 0,
+          "derivative_attempts": 14,
+          "derivatives": 14,
+          "failed_derivatives": 0,
+          "disk_batches": 0
+        },
+        "devices": {
+          "cpu": 13,
+          "cpu-damped": 13
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "evaluations": 76.48209645668976,
+          "derivative_attempts": 0.0,
+          "derivatives": 0.6293194000609219
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "ray": {
+          "gamma": 0.25,
+          "lo": 0.01,
+          "hi": 100.0,
+          "panels": 111,
+          "degree": 24
+        },
+        "retained_device_state": "one ray table; matrix and reusable LU factors retained on host"
+      },
+      "fixture": "C_damped_1GHz",
+      "repetition": 2,
+      "oracle_nodes": 2048
+    },
+    {
+      "method": "nodal_cuda",
+      "resolution_token": 512,
+      "cold_geometry_forward_seconds": 0.038734442088752985,
+      "retained_factor_jacobian_seconds": 0.02096605789847672,
+      "cold_forward_plus_jacobian_seconds": 0.059700499987229705,
+      "same_geometry_forward_seconds": 0.02953667496331036,
+      "native_geometry_setup_seconds": null,
+      "relative_fields": 1.879794841763491e-14,
+      "worst_frequency_fields": 1.879794841763491e-14,
+      "relative_jacobian": 6.173010113877884e-14,
+      "worst_jacobian_column": 8.67435705544645e-13,
+      "receipt": {
+        "solver": "nodal_kress",
+        "execution": {
+          "device": "cuda",
+          "frequency_threads": 4,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "counts": {
+          "evaluation_attempts": 28,
+          "evaluations": 28,
+          "failed_evaluations": 0,
+          "derivative_attempts": 13,
+          "derivatives": 13,
+          "failed_derivatives": 0,
+          "disk_batches": 0,
+          "ray_table_setup": 1
+        },
+        "devices": {
+          "cuda": 15,
+          "cuda-damped": 13
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "evaluations": 2.383634855505079,
+          "ray_table_setup": 0.0034855338744819164,
+          "derivative_attempts": 0.0,
+          "derivatives": 0.3139657445717603
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "ray": {
+          "gamma": 0.25,
+          "lo": 0.01,
+          "hi": 100.0,
+          "panels": 111,
+          "degree": 24
+        },
+        "retained_device_state": "one ray table; matrix and reusable LU factors retained on host"
+      },
+      "fixture": "DF_endpoint_real_2.5GHz",
+      "repetition": 0,
+      "oracle_nodes": 2048
+    },
+    {
+      "method": "nodal_cpu",
+      "resolution_token": 512,
+      "cold_geometry_forward_seconds": 0.711901661939919,
+      "retained_factor_jacobian_seconds": 0.01889295014552772,
+      "cold_forward_plus_jacobian_seconds": 0.7307946120854467,
+      "same_geometry_forward_seconds": 0.7087982820812613,
+      "native_geometry_setup_seconds": null,
+      "relative_fields": 1.8179542168371113e-14,
+      "worst_frequency_fields": 1.8179542168371113e-14,
+      "relative_jacobian": 5.890829456275998e-14,
+      "worst_jacobian_column": 4.107537296879985e-13,
+      "receipt": {
+        "solver": "nodal_kress",
+        "execution": {
+          "device": "cpu",
+          "frequency_threads": 1,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "counts": {
+          "evaluation_attempts": 29,
+          "evaluations": 29,
+          "failed_evaluations": 0,
+          "derivative_attempts": 16,
+          "derivatives": 16,
+          "failed_derivatives": 0,
+          "disk_batches": 0
+        },
+        "devices": {
+          "cpu": 16,
+          "cpu-damped": 13
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "evaluations": 91.04555661184713,
+          "derivative_attempts": 0.0,
+          "derivatives": 0.8116622290108353
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "ray": {
+          "gamma": 0.25,
+          "lo": 0.01,
+          "hi": 100.0,
+          "panels": 111,
+          "degree": 24
+        },
+        "retained_device_state": "one ray table; matrix and reusable LU factors retained on host"
+      },
+      "fixture": "DF_endpoint_real_2.5GHz",
+      "repetition": 0,
+      "oracle_nodes": 2048
+    },
+    {
+      "method": "modal_cpu",
+      "resolution_token": 512,
+      "cold_geometry_forward_seconds": 7.812863373197615,
+      "retained_factor_jacobian_seconds": 0.003768984926864505,
+      "cold_forward_plus_jacobian_seconds": 7.81663235812448,
+      "same_geometry_forward_seconds": 0.22597086802124977,
+      "native_geometry_setup_seconds": 5.65718850097619,
+      "relative_fields": 1.574302590905839e-10,
+      "worst_frequency_fields": 1.574302590905839e-10,
+      "relative_jacobian": 8.718165186879329e-08,
+      "worst_jacobian_column": 1.3390600459325564e-05,
+      "receipt": {
+        "counts": {
+          "geometry_builds": 1,
+          "evaluations": 2,
+          "derivatives": 1,
+          "wave_builds": 1
+        },
+        "device": "cpu",
+        "frequency_threads": 1,
+        "coefficient_bandwidth": 160,
+        "trace_cutoff": 96
+      },
+      "fixture": "DF_endpoint_real_2.5GHz",
+      "repetition": 0,
+      "oracle_nodes": 2048
+    },
+    {
+      "method": "nodal_cuda",
+      "resolution_token": 1024,
+      "cold_geometry_forward_seconds": 0.1030389170628041,
+      "retained_factor_jacobian_seconds": 0.04518415196798742,
+      "cold_forward_plus_jacobian_seconds": 0.14822306903079152,
+      "same_geometry_forward_seconds": 0.10228799213655293,
+      "native_geometry_setup_seconds": null,
+      "relative_fields": 1.932232647938263e-14,
+      "worst_frequency_fields": 1.932232647938263e-14,
+      "relative_jacobian": 5.990398565816446e-14,
+      "worst_jacobian_column": 4.51605139580309e-13,
+      "receipt": {
+        "solver": "nodal_kress",
+        "execution": {
+          "device": "cuda",
+          "frequency_threads": 4,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "counts": {
+          "evaluation_attempts": 30,
+          "evaluations": 30,
+          "failed_evaluations": 0,
+          "derivative_attempts": 14,
+          "derivatives": 14,
+          "failed_derivatives": 0,
+          "disk_batches": 0,
+          "ray_table_setup": 1
+        },
+        "devices": {
+          "cuda": 17,
+          "cuda-damped": 13
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "evaluations": 2.5888066075276583,
+          "ray_table_setup": 0.0034855338744819164,
+          "derivative_attempts": 0.0,
+          "derivatives": 0.35906673059798777
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "ray": {
+          "gamma": 0.25,
+          "lo": 0.01,
+          "hi": 100.0,
+          "panels": 111,
+          "degree": 24
+        },
+        "retained_device_state": "one ray table; matrix and reusable LU factors retained on host"
+      },
+      "fixture": "DF_endpoint_real_2.5GHz",
+      "repetition": 0,
+      "oracle_nodes": 2048
+    },
+    {
+      "method": "modal_cpu",
+      "resolution_token": 1024,
+      "cold_geometry_forward_seconds": 7.894153647124767,
+      "retained_factor_jacobian_seconds": 0.004306281916797161,
+      "cold_forward_plus_jacobian_seconds": 7.8984599290415645,
+      "same_geometry_forward_seconds": 0.23237319104373455,
+      "native_geometry_setup_seconds": 5.726059864042327,
+      "relative_fields": 1.7625801975658454e-12,
+      "worst_frequency_fields": 1.7625801975658454e-12,
+      "relative_jacobian": 5.1588185478146046e-12,
+      "worst_jacobian_column": 1.348787793314055e-10,
+      "receipt": {
+        "counts": {
+          "geometry_builds": 1,
+          "evaluations": 2,
+          "derivatives": 1,
+          "wave_builds": 1
+        },
+        "device": "cpu",
+        "frequency_threads": 1,
+        "coefficient_bandwidth": 160,
+        "trace_cutoff": 128
+      },
+      "fixture": "DF_endpoint_real_2.5GHz",
+      "repetition": 0,
+      "oracle_nodes": 2048
+    },
+    {
+      "method": "nodal_cpu",
+      "resolution_token": 1024,
+      "cold_geometry_forward_seconds": 2.9903598041273654,
+      "retained_factor_jacobian_seconds": 0.05337942694313824,
+      "cold_forward_plus_jacobian_seconds": 3.0437392310705036,
+      "same_geometry_forward_seconds": 2.9798554519657046,
+      "native_geometry_setup_seconds": null,
+      "relative_fields": 1.6784525346193276e-14,
+      "worst_frequency_fields": 1.6784525346193276e-14,
+      "relative_jacobian": 5.1413942836259886e-14,
+      "worst_jacobian_column": 3.0973886576211105e-13,
+      "receipt": {
+        "solver": "nodal_kress",
+        "execution": {
+          "device": "cpu",
+          "frequency_threads": 1,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "counts": {
+          "evaluation_attempts": 31,
+          "evaluations": 31,
+          "failed_evaluations": 0,
+          "derivative_attempts": 17,
+          "derivatives": 17,
+          "failed_derivatives": 0,
+          "disk_batches": 0
+        },
+        "devices": {
+          "cpu": 18,
+          "cpu-damped": 13
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "evaluations": 97.01554736495018,
+          "derivative_attempts": 0.0,
+          "derivatives": 0.864948962116614
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "ray": {
+          "gamma": 0.25,
+          "lo": 0.01,
+          "hi": 100.0,
+          "panels": 111,
+          "degree": 24
+        },
+        "retained_device_state": "one ray table; matrix and reusable LU factors retained on host"
+      },
+      "fixture": "DF_endpoint_real_2.5GHz",
+      "repetition": 0,
+      "oracle_nodes": 2048
+    },
+    {
+      "method": "nodal_cuda",
+      "resolution_token": 512,
+      "cold_geometry_forward_seconds": 0.034242305904626846,
+      "retained_factor_jacobian_seconds": 0.021093760151416063,
+      "cold_forward_plus_jacobian_seconds": 0.05533606605604291,
+      "same_geometry_forward_seconds": 0.029188585001975298,
+      "native_geometry_setup_seconds": null,
+      "relative_fields": 1.879794841763491e-14,
+      "worst_frequency_fields": 1.879794841763491e-14,
+      "relative_jacobian": 6.173010113877884e-14,
+      "worst_jacobian_column": 8.67435705544645e-13,
+      "receipt": {
+        "solver": "nodal_kress",
+        "execution": {
+          "device": "cuda",
+          "frequency_threads": 4,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "counts": {
+          "evaluation_attempts": 32,
+          "evaluations": 32,
+          "failed_evaluations": 0,
+          "derivative_attempts": 15,
+          "derivatives": 15,
+          "failed_derivatives": 0,
+          "disk_batches": 0,
+          "ray_table_setup": 1
+        },
+        "devices": {
+          "cuda": 19,
+          "cuda-damped": 13
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "evaluations": 2.652098154416308,
+          "ray_table_setup": 0.0034855338744819164,
+          "derivative_attempts": 0.0,
+          "derivatives": 0.3800944737158716
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "ray": {
+          "gamma": 0.25,
+          "lo": 0.01,
+          "hi": 100.0,
+          "panels": 111,
+          "degree": 24
+        },
+        "retained_device_state": "one ray table; matrix and reusable LU factors retained on host"
+      },
+      "fixture": "DF_endpoint_real_2.5GHz",
+      "repetition": 1,
+      "oracle_nodes": 2048
+    },
+    {
+      "method": "nodal_cpu",
+      "resolution_token": 1024,
+      "cold_geometry_forward_seconds": 2.983556223101914,
+      "retained_factor_jacobian_seconds": 0.05447386601008475,
+      "cold_forward_plus_jacobian_seconds": 3.0380300891119987,
+      "same_geometry_forward_seconds": 2.979845993919298,
+      "native_geometry_setup_seconds": null,
+      "relative_fields": 1.6784525346193276e-14,
+      "worst_frequency_fields": 1.6784525346193276e-14,
+      "relative_jacobian": 5.1413942836259886e-14,
+      "worst_jacobian_column": 3.0973886576211105e-13,
+      "receipt": {
+        "solver": "nodal_kress",
+        "execution": {
+          "device": "cpu",
+          "frequency_threads": 1,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "counts": {
+          "evaluation_attempts": 33,
+          "evaluations": 33,
+          "failed_evaluations": 0,
+          "derivative_attempts": 18,
+          "derivatives": 18,
+          "failed_derivatives": 0,
+          "disk_batches": 0
+        },
+        "devices": {
+          "cpu": 20,
+          "cpu-damped": 13
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "evaluations": 102.97872968367301,
+          "derivative_attempts": 0.0,
+          "derivatives": 0.9193300190381706
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "ray": {
+          "gamma": 0.25,
+          "lo": 0.01,
+          "hi": 100.0,
+          "panels": 111,
+          "degree": 24
+        },
+        "retained_device_state": "one ray table; matrix and reusable LU factors retained on host"
+      },
+      "fixture": "DF_endpoint_real_2.5GHz",
+      "repetition": 1,
+      "oracle_nodes": 2048
+    },
+    {
+      "method": "modal_cpu",
+      "resolution_token": 1024,
+      "cold_geometry_forward_seconds": 7.833264043089002,
+      "retained_factor_jacobian_seconds": 0.004279962973669171,
+      "cold_forward_plus_jacobian_seconds": 7.8375440060626715,
+      "same_geometry_forward_seconds": 0.23198479693382978,
+      "native_geometry_setup_seconds": 5.663338063983247,
+      "relative_fields": 1.7625801975658454e-12,
+      "worst_frequency_fields": 1.7625801975658454e-12,
+      "relative_jacobian": 5.1588185478146046e-12,
+      "worst_jacobian_column": 1.348787793314055e-10,
+      "receipt": {
+        "counts": {
+          "geometry_builds": 1,
+          "evaluations": 2,
+          "derivatives": 1,
+          "wave_builds": 1
+        },
+        "device": "cpu",
+        "frequency_threads": 1,
+        "coefficient_bandwidth": 160,
+        "trace_cutoff": 128
+      },
+      "fixture": "DF_endpoint_real_2.5GHz",
+      "repetition": 1,
+      "oracle_nodes": 2048
+    },
+    {
+      "method": "nodal_cuda",
+      "resolution_token": 1024,
+      "cold_geometry_forward_seconds": 0.10425718501210213,
+      "retained_factor_jacobian_seconds": 0.0459092790260911,
+      "cold_forward_plus_jacobian_seconds": 0.15016646403819323,
+      "same_geometry_forward_seconds": 0.1021678859833628,
+      "native_geometry_setup_seconds": null,
+      "relative_fields": 1.932232647938263e-14,
+      "worst_frequency_fields": 1.932232647938263e-14,
+      "relative_jacobian": 5.990398565816446e-14,
+      "worst_jacobian_column": 4.51605139580309e-13,
+      "receipt": {
+        "solver": "nodal_kress",
+        "execution": {
+          "device": "cuda",
+          "frequency_threads": 4,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "counts": {
+          "evaluation_attempts": 34,
+          "evaluations": 34,
+          "failed_evaluations": 0,
+          "derivative_attempts": 16,
+          "derivatives": 16,
+          "failed_derivatives": 0,
+          "disk_batches": 0,
+          "ray_table_setup": 1
+        },
+        "devices": {
+          "cuda": 21,
+          "cuda-damped": 13
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "evaluations": 2.858364454470575,
+          "ray_table_setup": 0.0034855338744819164,
+          "derivative_attempts": 0.0,
+          "derivatives": 0.4259214827325195
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "ray": {
+          "gamma": 0.25,
+          "lo": 0.01,
+          "hi": 100.0,
+          "panels": 111,
+          "degree": 24
+        },
+        "retained_device_state": "one ray table; matrix and reusable LU factors retained on host"
+      },
+      "fixture": "DF_endpoint_real_2.5GHz",
+      "repetition": 1,
+      "oracle_nodes": 2048
+    },
+    {
+      "method": "modal_cpu",
+      "resolution_token": 512,
+      "cold_geometry_forward_seconds": 7.83139592804946,
+      "retained_factor_jacobian_seconds": 0.0038751191459596157,
+      "cold_forward_plus_jacobian_seconds": 7.83527104719542,
+      "same_geometry_forward_seconds": 0.22828849009238183,
+      "native_geometry_setup_seconds": 5.671657485887408,
+      "relative_fields": 1.574302590905839e-10,
+      "worst_frequency_fields": 1.574302590905839e-10,
+      "relative_jacobian": 8.718165186879329e-08,
+      "worst_jacobian_column": 1.3390600459325564e-05,
+      "receipt": {
+        "counts": {
+          "geometry_builds": 1,
+          "evaluations": 2,
+          "derivatives": 1,
+          "wave_builds": 1
+        },
+        "device": "cpu",
+        "frequency_threads": 1,
+        "coefficient_bandwidth": 160,
+        "trace_cutoff": 96
+      },
+      "fixture": "DF_endpoint_real_2.5GHz",
+      "repetition": 1,
+      "oracle_nodes": 2048
+    },
+    {
+      "method": "nodal_cpu",
+      "resolution_token": 512,
+      "cold_geometry_forward_seconds": 0.7109267781488597,
+      "retained_factor_jacobian_seconds": 0.020917017944157124,
+      "cold_forward_plus_jacobian_seconds": 0.7318437960930169,
+      "same_geometry_forward_seconds": 0.7060098960064352,
+      "native_geometry_setup_seconds": null,
+      "relative_fields": 1.8179542168371113e-14,
+      "worst_frequency_fields": 1.8179542168371113e-14,
+      "relative_jacobian": 5.890829456275998e-14,
+      "worst_jacobian_column": 4.107537296879985e-13,
+      "receipt": {
+        "solver": "nodal_kress",
+        "execution": {
+          "device": "cpu",
+          "frequency_threads": 1,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "counts": {
+          "evaluation_attempts": 35,
+          "evaluations": 35,
+          "failed_evaluations": 0,
+          "derivative_attempts": 19,
+          "derivatives": 19,
+          "failed_derivatives": 0,
+          "disk_batches": 0
+        },
+        "devices": {
+          "cpu": 22,
+          "cpu-damped": 13
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "evaluations": 104.39544678363018,
+          "derivative_attempts": 0.0,
+          "derivatives": 0.9401580400299281
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "ray": {
+          "gamma": 0.25,
+          "lo": 0.01,
+          "hi": 100.0,
+          "panels": 111,
+          "degree": 24
+        },
+        "retained_device_state": "one ray table; matrix and reusable LU factors retained on host"
+      },
+      "fixture": "DF_endpoint_real_2.5GHz",
+      "repetition": 1,
+      "oracle_nodes": 2048
+    },
+    {
+      "method": "modal_cpu",
+      "resolution_token": 512,
+      "cold_geometry_forward_seconds": 7.83344379090704,
+      "retained_factor_jacobian_seconds": 0.003822722937911749,
+      "cold_forward_plus_jacobian_seconds": 7.837266513844952,
+      "same_geometry_forward_seconds": 0.2252899999730289,
+      "native_geometry_setup_seconds": 5.681501511018723,
+      "relative_fields": 1.574302590905839e-10,
+      "worst_frequency_fields": 1.574302590905839e-10,
+      "relative_jacobian": 8.718165186879329e-08,
+      "worst_jacobian_column": 1.3390600459325564e-05,
+      "receipt": {
+        "counts": {
+          "geometry_builds": 1,
+          "evaluations": 2,
+          "derivatives": 1,
+          "wave_builds": 1
+        },
+        "device": "cpu",
+        "frequency_threads": 1,
+        "coefficient_bandwidth": 160,
+        "trace_cutoff": 96
+      },
+      "fixture": "DF_endpoint_real_2.5GHz",
+      "repetition": 2,
+      "oracle_nodes": 2048
+    },
+    {
+      "method": "nodal_cuda",
+      "resolution_token": 1024,
+      "cold_geometry_forward_seconds": 0.11660646204836667,
+      "retained_factor_jacobian_seconds": 0.04603594611398876,
+      "cold_forward_plus_jacobian_seconds": 0.16264240816235542,
+      "same_geometry_forward_seconds": 0.10200037690810859,
+      "native_geometry_setup_seconds": null,
+      "relative_fields": 1.932232647938263e-14,
+      "worst_frequency_fields": 1.932232647938263e-14,
+      "relative_jacobian": 5.990398565816446e-14,
+      "worst_jacobian_column": 4.51605139580309e-13,
+      "receipt": {
+        "solver": "nodal_kress",
+        "execution": {
+          "device": "cuda",
+          "frequency_threads": 4,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "counts": {
+          "evaluation_attempts": 36,
+          "evaluations": 36,
+          "failed_evaluations": 0,
+          "derivative_attempts": 17,
+          "derivatives": 17,
+          "failed_derivatives": 0,
+          "disk_batches": 0,
+          "ray_table_setup": 1
+        },
+        "devices": {
+          "cuda": 23,
+          "cuda-damped": 13
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "evaluations": 3.076813297579065,
+          "ray_table_setup": 0.0034855338744819164,
+          "derivative_attempts": 0.0,
+          "derivatives": 0.4718756265938282
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "ray": {
+          "gamma": 0.25,
+          "lo": 0.01,
+          "hi": 100.0,
+          "panels": 111,
+          "degree": 24
+        },
+        "retained_device_state": "one ray table; matrix and reusable LU factors retained on host"
+      },
+      "fixture": "DF_endpoint_real_2.5GHz",
+      "repetition": 2,
+      "oracle_nodes": 2048
+    },
+    {
+      "method": "modal_cpu",
+      "resolution_token": 1024,
+      "cold_geometry_forward_seconds": 7.830099440878257,
+      "retained_factor_jacobian_seconds": 0.004366728011518717,
+      "cold_forward_plus_jacobian_seconds": 7.834466168889776,
+      "same_geometry_forward_seconds": 0.23242977797053754,
+      "native_geometry_setup_seconds": 5.668056024005637,
+      "relative_fields": 1.7625801975658454e-12,
+      "worst_frequency_fields": 1.7625801975658454e-12,
+      "relative_jacobian": 5.1588185478146046e-12,
+      "worst_jacobian_column": 1.348787793314055e-10,
+      "receipt": {
+        "counts": {
+          "geometry_builds": 1,
+          "evaluations": 2,
+          "derivatives": 1,
+          "wave_builds": 1
+        },
+        "device": "cpu",
+        "frequency_threads": 1,
+        "coefficient_bandwidth": 160,
+        "trace_cutoff": 128
+      },
+      "fixture": "DF_endpoint_real_2.5GHz",
+      "repetition": 2,
+      "oracle_nodes": 2048
+    },
+    {
+      "method": "nodal_cpu",
+      "resolution_token": 1024,
+      "cold_geometry_forward_seconds": 2.9881971038412303,
+      "retained_factor_jacobian_seconds": 0.05478326790034771,
+      "cold_forward_plus_jacobian_seconds": 3.042980371741578,
+      "same_geometry_forward_seconds": 2.9804496120195836,
+      "native_geometry_setup_seconds": null,
+      "relative_fields": 1.6784525346193276e-14,
+      "worst_frequency_fields": 1.6784525346193276e-14,
+      "relative_jacobian": 5.1413942836259886e-14,
+      "worst_jacobian_column": 3.0973886576211105e-13,
+      "receipt": {
+        "solver": "nodal_kress",
+        "execution": {
+          "device": "cpu",
+          "frequency_threads": 1,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "counts": {
+          "evaluation_attempts": 37,
+          "evaluations": 37,
+          "failed_evaluations": 0,
+          "derivative_attempts": 20,
+          "derivatives": 20,
+          "failed_derivatives": 0,
+          "disk_batches": 0
+        },
+        "devices": {
+          "cpu": 24,
+          "cpu-damped": 13
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "evaluations": 110.36386922979727,
+          "derivative_attempts": 0.0,
+          "derivatives": 0.9948439879808575
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "ray": {
+          "gamma": 0.25,
+          "lo": 0.01,
+          "hi": 100.0,
+          "panels": 111,
+          "degree": 24
+        },
+        "retained_device_state": "one ray table; matrix and reusable LU factors retained on host"
+      },
+      "fixture": "DF_endpoint_real_2.5GHz",
+      "repetition": 2,
+      "oracle_nodes": 2048
+    },
+    {
+      "method": "nodal_cuda",
+      "resolution_token": 512,
+      "cold_geometry_forward_seconds": 0.03488546400330961,
+      "retained_factor_jacobian_seconds": 0.021612613927572966,
+      "cold_forward_plus_jacobian_seconds": 0.05649807793088257,
+      "same_geometry_forward_seconds": 0.02948966179974377,
+      "native_geometry_setup_seconds": null,
+      "relative_fields": 1.879794841763491e-14,
+      "worst_frequency_fields": 1.879794841763491e-14,
+      "relative_jacobian": 6.173010113877884e-14,
+      "worst_jacobian_column": 8.67435705544645e-13,
+      "receipt": {
+        "solver": "nodal_kress",
+        "execution": {
+          "device": "cuda",
+          "frequency_threads": 4,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "counts": {
+          "evaluation_attempts": 38,
+          "evaluations": 38,
+          "failed_evaluations": 0,
+          "derivative_attempts": 18,
+          "derivatives": 18,
+          "failed_derivatives": 0,
+          "disk_batches": 0,
+          "ray_table_setup": 1
+        },
+        "devices": {
+          "cuda": 25,
+          "cuda-damped": 13
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "evaluations": 3.1410443703643978,
+          "ray_table_setup": 0.0034855338744819164,
+          "derivative_attempts": 0.0,
+          "derivatives": 0.49342019064351916
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "ray": {
+          "gamma": 0.25,
+          "lo": 0.01,
+          "hi": 100.0,
+          "panels": 111,
+          "degree": 24
+        },
+        "retained_device_state": "one ray table; matrix and reusable LU factors retained on host"
+      },
+      "fixture": "DF_endpoint_real_2.5GHz",
+      "repetition": 2,
+      "oracle_nodes": 2048
+    },
+    {
+      "method": "nodal_cpu",
+      "resolution_token": 512,
+      "cold_geometry_forward_seconds": 0.7099051591940224,
+      "retained_factor_jacobian_seconds": 0.01878143404610455,
+      "cold_forward_plus_jacobian_seconds": 0.728686593240127,
+      "same_geometry_forward_seconds": 0.7082926980219781,
+      "native_geometry_setup_seconds": null,
+      "relative_fields": 1.8179542168371113e-14,
+      "worst_frequency_fields": 1.8179542168371113e-14,
+      "relative_jacobian": 5.890829456275998e-14,
+      "worst_jacobian_column": 4.107537296879985e-13,
+      "receipt": {
+        "solver": "nodal_kress",
+        "execution": {
+          "device": "cpu",
+          "frequency_threads": 1,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "counts": {
+          "evaluation_attempts": 39,
+          "evaluations": 39,
+          "failed_evaluations": 0,
+          "derivative_attempts": 21,
+          "derivatives": 21,
+          "failed_derivatives": 0,
+          "disk_batches": 0
+        },
+        "devices": {
+          "cpu": 26,
+          "cpu-damped": 13
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "evaluations": 111.78185159480199,
+          "derivative_attempts": 0.0,
+          "derivatives": 1.0135389168281108
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "ray": {
+          "gamma": 0.25,
+          "lo": 0.01,
+          "hi": 100.0,
+          "panels": 111,
+          "degree": 24
+        },
+        "retained_device_state": "one ray table; matrix and reusable LU factors retained on host"
+      },
+      "fixture": "DF_endpoint_real_2.5GHz",
+      "repetition": 2,
+      "oracle_nodes": 2048
+    }
+  ],
+  "medians": [
+    {
+      "fixture": "C_real_2.5GHz",
+      "method": "nodal_cuda",
+      "resolution_token": 512,
+      "medians": {
+        "cold_geometry_forward_seconds": 0.02974021597765386,
+        "retained_factor_jacobian_seconds": 0.01466035796329379,
+        "cold_forward_plus_jacobian_seconds": 0.04448992293328047,
+        "same_geometry_forward_seconds": 0.02918669511564076
+      },
+      "ranges": {
+        "cold_geometry_forward_seconds": [
+          0.029681174084544182,
+          0.03181563410907984
+        ],
+        "retained_factor_jacobian_seconds": [
+          0.013997449073940516,
+          0.014749706955626607
+        ],
+        "cold_forward_plus_jacobian_seconds": [
+          0.0436786231584847,
+          0.04647599207237363
+        ],
+        "same_geometry_forward_seconds": [
+          0.029076468897983432,
+          0.029263186967000365
+        ]
+      },
+      "worst_fields": 2.7251206231845243e-14,
+      "worst_jacobian": 7.350934748538575e-14,
+      "modal_setup_median": null
+    },
+    {
+      "fixture": "C_real_2.5GHz",
+      "method": "nodal_cpu",
+      "resolution_token": 512,
+      "medians": {
+        "cold_geometry_forward_seconds": 0.7117116441950202,
+        "retained_factor_jacobian_seconds": 0.013490441953763366,
+        "cold_forward_plus_jacobian_seconds": 0.7250796463340521,
+        "same_geometry_forward_seconds": 0.7100966938305646
+      },
+      "ranges": {
+        "cold_geometry_forward_seconds": [
+          0.7088720968458802,
+          0.7139692478813231
+        ],
+        "retained_factor_jacobian_seconds": [
+          0.013368002139031887,
+          0.013812851859256625
+        ],
+        "cold_forward_plus_jacobian_seconds": [
+          0.7223625387996435,
+          0.7277820997405797
+        ],
+        "same_geometry_forward_seconds": [
+          0.7090781040024012,
+          0.7106633931398392
+        ]
+      },
+      "worst_fields": 1.7400839392848547e-14,
+      "worst_jacobian": 3.4354259016227554e-14,
+      "modal_setup_median": null
+    },
+    {
+      "fixture": "C_real_2.5GHz",
+      "method": "modal_cpu",
+      "resolution_token": 512,
+      "medians": {
+        "cold_geometry_forward_seconds": 0.837511899182573,
+        "retained_factor_jacobian_seconds": 0.001929810969159007,
+        "cold_forward_plus_jacobian_seconds": 0.8394833290949464,
+        "same_geometry_forward_seconds": 0.09025804582051933
+      },
+      "ranges": {
+        "cold_geometry_forward_seconds": [
+          0.8329112650826573,
+          0.8451055851764977
+        ],
+        "retained_factor_jacobian_seconds": [
+          0.0019233471248298883,
+          0.0019714299123734236
+        ],
+        "cold_forward_plus_jacobian_seconds": [
+          0.8348346122074872,
+          0.8470353961456567
+        ],
+        "same_geometry_forward_seconds": [
+          0.08965350803919137,
+          0.09175489493645728
+        ]
+      },
+      "worst_fields": 1.3732602169553874e-08,
+      "worst_jacobian": 9.11275753799746e-08,
+      "modal_setup_median": 0.6051737989764661
+    },
+    {
+      "fixture": "C_real_2.5GHz",
+      "method": "nodal_cuda",
+      "resolution_token": 1024,
+      "medians": {
+        "cold_geometry_forward_seconds": 0.10379797592759132,
+        "retained_factor_jacobian_seconds": 0.03273392119444907,
+        "cold_forward_plus_jacobian_seconds": 0.13828534306958318,
+        "same_geometry_forward_seconds": 0.10291108000092208
+      },
+      "ranges": {
+        "cold_geometry_forward_seconds": [
+          0.10345117491669953,
+          0.10555142187513411
+        ],
+        "retained_factor_jacobian_seconds": [
+          0.03209207789041102,
+          0.035316612804308534
+        ],
+        "cold_forward_plus_jacobian_seconds": [
+          0.13554325280711055,
+          0.13911458873189986
+        ],
+        "same_geometry_forward_seconds": [
+          0.10275196400471032,
+          0.10571025987155735
+        ]
+      },
+      "worst_fields": 2.5958114016684013e-14,
+      "worst_jacobian": 7.22962626565251e-14,
+      "modal_setup_median": null
+    },
+    {
+      "fixture": "C_real_2.5GHz",
+      "method": "modal_cpu",
+      "resolution_token": 1024,
+      "medians": {
+        "cold_geometry_forward_seconds": 0.8514906798955053,
+        "retained_factor_jacobian_seconds": 0.0022764948662370443,
+        "cold_forward_plus_jacobian_seconds": 0.853746865876019,
+        "same_geometry_forward_seconds": 0.09838189906440675
+      },
+      "ranges": {
+        "cold_geometry_forward_seconds": [
+          0.8382920022122562,
+          0.8523650940041989
+        ],
+        "retained_factor_jacobian_seconds": [
+          0.002256185980513692,
+          0.0022822259925305843
+        ],
+        "cold_forward_plus_jacobian_seconds": [
+          0.8405742282047868,
+          0.854641588870436
+        ],
+        "same_geometry_forward_seconds": [
+          0.09642301010899246,
+          0.0985206519253552
+        ]
+      },
+      "worst_fields": 1.5724849384781974e-12,
+      "worst_jacobian": 4.514185243461548e-12,
+      "modal_setup_median": 0.6103953069541603
+    },
+    {
+      "fixture": "C_real_2.5GHz",
+      "method": "nodal_cpu",
+      "resolution_token": 1024,
+      "medians": {
+        "cold_geometry_forward_seconds": 2.9867164939641953,
+        "retained_factor_jacobian_seconds": 0.04104553093202412,
+        "cold_forward_plus_jacobian_seconds": 3.0294077389407903,
+        "same_geometry_forward_seconds": 3.000825386028737
+      },
+      "ranges": {
+        "cold_geometry_forward_seconds": [
+          2.984952979022637,
+          2.9889479249250144
+        ],
+        "retained_factor_jacobian_seconds": [
+          0.04045981401577592,
+          0.042924607871100307
+        ],
+        "cold_forward_plus_jacobian_seconds": [
+          3.025998509954661,
+          3.0296411018352956
+        ],
+        "same_geometry_forward_seconds": [
+          2.9747948930598795,
+          3.0036408111918718
+        ]
+      },
+      "worst_fields": 2.0792058429883876e-14,
+      "worst_jacobian": 6.379789893493398e-14,
+      "modal_setup_median": null
+    },
+    {
+      "fixture": "C_damped_1GHz",
+      "method": "nodal_cuda",
+      "resolution_token": 512,
+      "medians": {
+        "cold_geometry_forward_seconds": 0.040871429024264216,
+        "retained_factor_jacobian_seconds": 0.016010819002985954,
+        "cold_forward_plus_jacobian_seconds": 0.05692528514191508,
+        "same_geometry_forward_seconds": 0.0363382229115814
+      },
+      "ranges": {
+        "cold_geometry_forward_seconds": [
+          0.0406454699113965,
+          0.04108253587037325
+        ],
+        "retained_factor_jacobian_seconds": [
+          0.015792789170518517,
+          0.016053856117650867
+        ],
+        "cold_forward_plus_jacobian_seconds": [
+          0.05643825908191502,
+          0.0570933548733592
+        ],
+        "same_geometry_forward_seconds": [
+          0.03566871001385152,
+          0.037493926007300615
+        ]
+      },
+      "worst_fields": 1.4094031587968148e-15,
+      "worst_jacobian": 2.074333312555875e-15,
+      "modal_setup_median": null
+    },
+    {
+      "fixture": "C_damped_1GHz",
+      "method": "nodal_cpu",
+      "resolution_token": 512,
+      "medians": {
+        "cold_geometry_forward_seconds": 0.836114016128704,
+        "retained_factor_jacobian_seconds": 0.014561127871274948,
+        "cold_forward_plus_jacobian_seconds": 0.8506751439999789,
+        "same_geometry_forward_seconds": 0.839010720839724
+      },
+      "ranges": {
+        "cold_geometry_forward_seconds": [
+          0.8311429300811142,
+          0.8627182689961046
+        ],
+        "retained_factor_jacobian_seconds": [
+          0.01430750684812665,
+          0.014707270078361034
+        ],
+        "cold_forward_plus_jacobian_seconds": [
+          0.8454504369292408,
+          0.8774255390744656
+        ],
+        "same_geometry_forward_seconds": [
+          0.8369014800991863,
+          0.8390660979785025
+        ]
+      },
+      "worst_fields": 1.110082354774232e-15,
+      "worst_jacobian": 1.8991936148537185e-15,
+      "modal_setup_median": null
+    },
+    {
+      "fixture": "C_damped_1GHz",
+      "method": "modal_cpu",
+      "resolution_token": 512,
+      "medians": {
+        "cold_geometry_forward_seconds": 0.8111431710422039,
+        "retained_factor_jacobian_seconds": 0.0020761170890182257,
+        "cold_forward_plus_jacobian_seconds": 0.8133248121012002,
+        "same_geometry_forward_seconds": 0.08916909503750503
+      },
+      "ranges": {
+        "cold_geometry_forward_seconds": [
+          0.8049090290442109,
+          0.852279094979167
+        ],
+        "retained_factor_jacobian_seconds": [
+          0.0020696870051324368,
+          0.0021816410589963198
+        ],
+        "cold_forward_plus_jacobian_seconds": [
+          0.8069787160493433,
+          0.8543552120681852
+        ],
+        "same_geometry_forward_seconds": [
+          0.0882950269151479,
+          0.09053277084603906
+        ]
+      },
+      "worst_fields": 1.1922342653028896e-13,
+      "worst_jacobian": 1.347900512152282e-13,
+      "modal_setup_median": 0.5801477890927345
+    },
+    {
+      "fixture": "C_damped_1GHz",
+      "method": "nodal_cuda",
+      "resolution_token": 1024,
+      "medians": {
+        "cold_geometry_forward_seconds": 0.1277250440325588,
+        "retained_factor_jacobian_seconds": 0.03408749308437109,
+        "cold_forward_plus_jacobian_seconds": 0.16180690401233733,
+        "same_geometry_forward_seconds": 0.12539139692671597
+      },
+      "ranges": {
+        "cold_geometry_forward_seconds": [
+          0.12675693188793957,
+          0.12807704112492502
+        ],
+        "retained_factor_jacobian_seconds": [
+          0.03408185997977853,
+          0.03421795601025224
+        ],
+        "cold_forward_plus_jacobian_seconds": [
+          0.1609748878981918,
+          0.1621645342092961
+        ],
+        "same_geometry_forward_seconds": [
+          0.12443984299898148,
+          0.12541756895370781
+        ]
+      },
+      "worst_fields": 1.0509965429432696e-15,
+      "worst_jacobian": 1.7552051185710888e-15,
+      "modal_setup_median": null
+    },
+    {
+      "fixture": "C_damped_1GHz",
+      "method": "modal_cpu",
+      "resolution_token": 1024,
+      "medians": {
+        "cold_geometry_forward_seconds": 0.814826998161152,
+        "retained_factor_jacobian_seconds": 0.002452491084113717,
+        "cold_forward_plus_jacobian_seconds": 0.8173078421968967,
+        "same_geometry_forward_seconds": 0.0952575400006026
+      },
+      "ranges": {
+        "cold_geometry_forward_seconds": [
+          0.8088211009744555,
+          0.8262419870588928
+        ],
+        "retained_factor_jacobian_seconds": [
+          0.0024110099766403437,
+          0.002480844035744667
+        ],
+        "cold_forward_plus_jacobian_seconds": [
+          0.8112321109510958,
+          0.8286944781430066
+        ],
+        "same_geometry_forward_seconds": [
+          0.09448998491279781,
+          0.09608737891539931
+        ]
+      },
+      "worst_fields": 1.1986404915087204e-13,
+      "worst_jacobian": 1.3558725306299277e-13,
+      "modal_setup_median": 0.5771953978110105
+    },
+    {
+      "fixture": "C_damped_1GHz",
+      "method": "nodal_cpu",
+      "resolution_token": 1024,
+      "medians": {
+        "cold_geometry_forward_seconds": 3.484486527973786,
+        "retained_factor_jacobian_seconds": 0.042804224882274866,
+        "cold_forward_plus_jacobian_seconds": 3.527290752856061,
+        "same_geometry_forward_seconds": 3.4909720811992884
+      },
+      "ranges": {
+        "cold_geometry_forward_seconds": [
+          3.4778471500612795,
+          3.51062632096
+        ],
+        "retained_factor_jacobian_seconds": [
+          0.04251307900995016,
+          0.04547745012678206
+        ],
+        "cold_forward_plus_jacobian_seconds": [
+          3.5203602290712297,
+          3.556103771086782
+        ],
+        "same_geometry_forward_seconds": [
+          3.4867208269424736,
+          3.5085764629766345
+        ]
+      },
+      "worst_fields": 1.0101187351943558e-15,
+      "worst_jacobian": 1.7144120151522468e-15,
+      "modal_setup_median": null
+    },
+    {
+      "fixture": "DF_endpoint_real_2.5GHz",
+      "method": "nodal_cuda",
+      "resolution_token": 512,
+      "medians": {
+        "cold_geometry_forward_seconds": 0.03488546400330961,
+        "retained_factor_jacobian_seconds": 0.021093760151416063,
+        "cold_forward_plus_jacobian_seconds": 0.05649807793088257,
+        "same_geometry_forward_seconds": 0.02948966179974377
+      },
+      "ranges": {
+        "cold_geometry_forward_seconds": [
+          0.034242305904626846,
+          0.038734442088752985
+        ],
+        "retained_factor_jacobian_seconds": [
+          0.02096605789847672,
+          0.021612613927572966
+        ],
+        "cold_forward_plus_jacobian_seconds": [
+          0.05533606605604291,
+          0.059700499987229705
+        ],
+        "same_geometry_forward_seconds": [
+          0.029188585001975298,
+          0.02953667496331036
+        ]
+      },
+      "worst_fields": 1.879794841763491e-14,
+      "worst_jacobian": 6.173010113877884e-14,
+      "modal_setup_median": null
+    },
+    {
+      "fixture": "DF_endpoint_real_2.5GHz",
+      "method": "nodal_cpu",
+      "resolution_token": 512,
+      "medians": {
+        "cold_geometry_forward_seconds": 0.7109267781488597,
+        "retained_factor_jacobian_seconds": 0.01889295014552772,
+        "cold_forward_plus_jacobian_seconds": 0.7307946120854467,
+        "same_geometry_forward_seconds": 0.7082926980219781
+      },
+      "ranges": {
+        "cold_geometry_forward_seconds": [
+          0.7099051591940224,
+          0.711901661939919
+        ],
+        "retained_factor_jacobian_seconds": [
+          0.01878143404610455,
+          0.020917017944157124
+        ],
+        "cold_forward_plus_jacobian_seconds": [
+          0.728686593240127,
+          0.7318437960930169
+        ],
+        "same_geometry_forward_seconds": [
+          0.7060098960064352,
+          0.7087982820812613
+        ]
+      },
+      "worst_fields": 1.8179542168371113e-14,
+      "worst_jacobian": 5.890829456275998e-14,
+      "modal_setup_median": null
+    },
+    {
+      "fixture": "DF_endpoint_real_2.5GHz",
+      "method": "modal_cpu",
+      "resolution_token": 512,
+      "medians": {
+        "cold_geometry_forward_seconds": 7.83139592804946,
+        "retained_factor_jacobian_seconds": 0.003822722937911749,
+        "cold_forward_plus_jacobian_seconds": 7.83527104719542,
+        "same_geometry_forward_seconds": 0.22597086802124977
+      },
+      "ranges": {
+        "cold_geometry_forward_seconds": [
+          7.812863373197615,
+          7.83344379090704
+        ],
+        "retained_factor_jacobian_seconds": [
+          0.003768984926864505,
+          0.0038751191459596157
+        ],
+        "cold_forward_plus_jacobian_seconds": [
+          7.81663235812448,
+          7.837266513844952
+        ],
+        "same_geometry_forward_seconds": [
+          0.2252899999730289,
+          0.22828849009238183
+        ]
+      },
+      "worst_fields": 1.574302590905839e-10,
+      "worst_jacobian": 8.718165186879329e-08,
+      "modal_setup_median": 5.671657485887408
+    },
+    {
+      "fixture": "DF_endpoint_real_2.5GHz",
+      "method": "nodal_cuda",
+      "resolution_token": 1024,
+      "medians": {
+        "cold_geometry_forward_seconds": 0.10425718501210213,
+        "retained_factor_jacobian_seconds": 0.0459092790260911,
+        "cold_forward_plus_jacobian_seconds": 0.15016646403819323,
+        "same_geometry_forward_seconds": 0.1021678859833628
+      },
+      "ranges": {
+        "cold_geometry_forward_seconds": [
+          0.1030389170628041,
+          0.11660646204836667
+        ],
+        "retained_factor_jacobian_seconds": [
+          0.04518415196798742,
+          0.04603594611398876
+        ],
+        "cold_forward_plus_jacobian_seconds": [
+          0.14822306903079152,
+          0.16264240816235542
+        ],
+        "same_geometry_forward_seconds": [
+          0.10200037690810859,
+          0.10228799213655293
+        ]
+      },
+      "worst_fields": 1.932232647938263e-14,
+      "worst_jacobian": 5.990398565816446e-14,
+      "modal_setup_median": null
+    },
+    {
+      "fixture": "DF_endpoint_real_2.5GHz",
+      "method": "modal_cpu",
+      "resolution_token": 1024,
+      "medians": {
+        "cold_geometry_forward_seconds": 7.833264043089002,
+        "retained_factor_jacobian_seconds": 0.004306281916797161,
+        "cold_forward_plus_jacobian_seconds": 7.8375440060626715,
+        "same_geometry_forward_seconds": 0.23237319104373455
+      },
+      "ranges": {
+        "cold_geometry_forward_seconds": [
+          7.830099440878257,
+          7.894153647124767
+        ],
+        "retained_factor_jacobian_seconds": [
+          0.004279962973669171,
+          0.004366728011518717
+        ],
+        "cold_forward_plus_jacobian_seconds": [
+          7.834466168889776,
+          7.8984599290415645
+        ],
+        "same_geometry_forward_seconds": [
+          0.23198479693382978,
+          0.23242977797053754
+        ]
+      },
+      "worst_fields": 1.7625801975658454e-12,
+      "worst_jacobian": 5.1588185478146046e-12,
+      "modal_setup_median": 5.668056024005637
+    },
+    {
+      "fixture": "DF_endpoint_real_2.5GHz",
+      "method": "nodal_cpu",
+      "resolution_token": 1024,
+      "medians": {
+        "cold_geometry_forward_seconds": 2.9881971038412303,
+        "retained_factor_jacobian_seconds": 0.05447386601008475,
+        "cold_forward_plus_jacobian_seconds": 3.042980371741578,
+        "same_geometry_forward_seconds": 2.9798554519657046
+      },
+      "ranges": {
+        "cold_geometry_forward_seconds": [
+          2.983556223101914,
+          2.9903598041273654
+        ],
+        "retained_factor_jacobian_seconds": [
+          0.05337942694313824,
+          0.05478326790034771
+        ],
+        "cold_forward_plus_jacobian_seconds": [
+          3.0380300891119987,
+          3.0437392310705036
+        ],
+        "same_geometry_forward_seconds": [
+          2.979845993919298,
+          2.9804496120195836
+        ]
+      },
+      "worst_fields": 1.6784525346193276e-14,
+      "worst_jacobian": 5.1413942836259886e-14,
+      "modal_setup_median": null
+    }
+  ],
+  "qualifications": [
+    {
+      "fixture": "C_real_2.5GHz",
+      "oracle_nodes": 2048,
+      "geometry_update_preparation_seconds": 0.10700211394578218,
+      "K": 24,
+      "M": 24,
+      "contrast": 13.3,
+      "frequencies_hz": [
+        2500000000.0
+      ],
+      "damping": 0.0
+    },
+    {
+      "fixture": "C_damped_1GHz",
+      "oracle_nodes": 2048,
+      "geometry_update_preparation_seconds": 0.10684257792308927,
+      "K": 24,
+      "M": 24,
+      "contrast": 13.3,
+      "frequencies_hz": [
+        1000000000.0
+      ],
+      "damping": 0.25
+    },
+    {
+      "fixture": "DF_endpoint_real_2.5GHz",
+      "oracle_nodes": 2048,
+      "geometry_update_preparation_seconds": 2.2759572460781783,
+      "K": 192,
+      "M": 67,
+      "contrast": 13.3,
+      "frequencies_hz": [
+        2500000000.0
+      ],
+      "damping": 0.0
+    }
+  ],
+  "initialization_seconds": 0.5813932339660823,
+  "gpu_before": "name, memory.total [MiB], memory.used [MiB], utilization.gpu [%]\nNVIDIA GeForce RTX 5090, 32607 MiB, 741 MiB, 0 %",
+  "gpu_after": "name, memory.total [MiB], memory.used [MiB], utilization.gpu [%]\nNVIDIA GeForce RTX 5090, 32607 MiB, 2879 MiB, 0 %",
+  "git_head": "1723dbee92058f85490a5caa79dfd1287eddc39e",
+  "environment": {
+    "python": "3.9.25",
+    "numpy": "2.0.2",
+    "scipy": "1.13.1",
+    "torch": "2.8.0+cu128",
+    "gpu": "NVIDIA GeForce RTX 5090",
+    "blas_threads": 1,
+    "nodal_cuda_frequency_threads": 4,
+    "modal_frequency_threads": 1,
+    "cpu_nodal_frequency_threads": 1
+  },
+  "protocol": "Sequential methods and repetitions, rotated/reversed order; GPU synchronization at timing boundaries; fresh native geometry per repetition; persistent CUDA runtime/ray table; geometry update preparation excluded from both physics timings and reported separately; same-geometry timing retains native geometry/waves but rebuilds matrices and LU for both methods.",
+  "source_hashes": {
+    "/home/drdeng/Neural_SDF_BEM_AD/results/validation/cleaned_interfaces/modal-versus-cleaned-kress-20260930/benchmark.py": "f03ca37a3b5f7c9a9f3345804aa73fd2cf92f9f0cc13a99706f00dc906d9d2c4",
+    "results/validation/cleaned_interfaces/chebyshev-review-20260930/replay.py": "e4e314919e4385080b2eb8858e7f6fc222575182674ca22c8d78c441a95479e8",
+    "results/validation/cleaned_interfaces/chebyshev-review-20260930/integration_checks.py": "d1af032f845f2ce764e8284a4b6d5f2edbb6dda6c5647f778a1188a0587ad619",
+    "results/validation/cleaned_interfaces/chebyshev-review-20260930/verify.py": "96b2807f5cd366c42bee6e0f380142f850d7e04090c479786eb194bf69396af1",
+    "experiments/cleaned_interface/physics.py": "6fab351934436b599440c66283916b5b249097ada559dbf8dd70c33fcd20fecc",
+    "experiments/cleaned_interface/damped_cuda.py": "23ede4c7a38d8f268f45bdb252e1e924ece2365025ecd3fa6a20153259778353",
+    "experiments/shape_continuation/forward.py": "7e7e60f0a6093b383653bea7ab1b5a5712464c48feb18d1c2a802ddc57fc8c3d",
+    "solvers/gpr_bem_kress/cuda_assembly.py": "527510cfedae58bcd866b6c64053c0cd402557e769459445961ee37cf04d001e"
+  }
+}
