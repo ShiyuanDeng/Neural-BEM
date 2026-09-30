@@ -1,0 +1,45 @@
+{
+  "python": "/home/drdeng/miniconda3/envs/EMNerf/bin/python",
+  "backend": "cuda (required, not auto)",
+  "gpu": "NVIDIA GeForce RTX 5090, 32607 MiB",
+  "environment": {
+    "PYTHONPATH": "solvers:.",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1",
+    "SC_FREQUENCY_THREADS": "4",
+    "SC_FORWARD_BACKEND": "cuda",
+    "MPLCONFIGDIR": "/tmp/sc051-mpl"
+  },
+  "primary": "core__wrong_circle in one worker; remaining 40 configurations in three workers",
+  "controls": "Initially two workers; abrupt pool termination during kite post-fit audit. Four endpoints preserved, kite audit recovered on the unchanged endpoint, then peanut and hook resumed with one worker.",
+  "reference_scoring": "one process, four independent-frequency threads; 47 endpoint receipts",
+  "overlap": "Primary, control, and reference jobs overlap; wall times are shared-host measurements, not isolated speed benchmarks.",
+  "commands": [
+    "python -m experiments.shape_continuation.frequency_only run --workers 1 --cases core__wrong_circle",
+    "python -m experiments.shape_continuation.frequency_only run --workers 3 --cases <all other manifest IDs>",
+    "python -m experiments.shape_continuation.frequency_only_report references",
+    "python -m experiments.shape_continuation.frequency_only_resolution run --workers 2",
+    "python -m experiments.shape_continuation.frequency_only_recover_audit",
+    "python -m experiments.shape_continuation.frequency_only_resolution run --workers 1"
+  ],
+  "interruption": {
+    "exception": "concurrent.futures.process.BrokenProcessPool",
+    "root_cause": "not established",
+    "lost_audit_units_upper_bound": 126,
+    "lost_audit_seconds": null,
+    "changed_fitting_parameters": false,
+    "recovery_receipt": "resolution_1024/runs/core__kite/audit_recovery.json"
+  },
+  "targeted_validation": {
+    "command": "python -m pytest -q experiments/shape_continuation/test_lm_backend.py experiments/shape_continuation/test_multi_object.py",
+    "backend": "cpu",
+    "outcome": "15 passed in 6.40s"
+  },
+  "completed": {
+    "primary_cases": 41,
+    "resolution_controls": 6,
+    "reference_scoring_receipts": 47,
+    "evidence_assertions": 2641
+  }
+}

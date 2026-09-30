@@ -14,11 +14,12 @@ cited as starting evidence.
 
 | Item | State |
 |---|---|
-| Latest cycle | [Iteration 06 / MA-005](iteration_06/01_results.md): **both gates pass.** A damped start `k(1 + 0.25i)` plus fixed stages up to the measured observable frontier (DF) recovers 7 of 8 transfer attempts at contrasts 4 and 13.3, where frozen SC-050 recovers 0 (6 of 6 against 0 of 6 excluding `opposite_c`, which repeats the development C's data). Development: 11 of 12. At contrast 0.5 DF equals D, which matches SC-050 to within 0.001 mm. The 13.3 original C remains unsolved. |
+| Latest cycle | [Iteration 07 / MA-006](iteration_07/01_results.md): **COMPLETE, 9/10 cells qualify.** Persistent modal Müller matrices, both traces, acquisition maps and selected derivatives now accompany the cutoff analysis. Relative to projection, reduced solves require a larger tested cutoff in 1/9 data/J cases and 3/9 local-update cases. Exact Schur correction restores the reference. This is a projected-Nyström control, shape band P=12; no deployed adaptive K_u or inverse-speedup claim. |
+| Previous inverse result | [Iteration 06 / MA-005](iteration_06/01_results.md): both gates pass; DF 7/8 transfer (D alone also 7/8), versus frozen 0/8. Excluding repeated development data gives 6/6 versus 0/6. Development 11/12. The original C at contrast 13.3 remains unsolved. These results concern damping and update band M, not trace cutoff K_u. |
 | Review of the vision | [Independent review](iteration_01/02_proposals/02_independent_review.md). §5.1 is gauge-dependent. The resonance mechanism does not apply to the contrast-0.5 benchmark. |
 | Current code check | [MA-001R](../../../results/validation/modal_atlas/MA-001R/README.md), 2026-09-29: Part B re-run on `feature/shape-frequency-continuation` at `032092cd` (CUDA default). Integer quantities identical; continuous ones agree to round-off. |
-| Code | `experiments/modal_atlas/` (isolated; no production or continuation code changed). Imported unchanged from `claude/magical-meitner-11naoj` on 2026-09-29. |
-| Next | Proposed, not run ([iteration 06](iteration_06/01_results.md#proposed-next-steps-not-run)): independent review; noise-aware frontier; realistic damped noise; the 13.3 C; unknown permittivity. |
+| Code | `experiments/modal_atlas/` (isolated; no production or continuation code changed). MA-001 was imported unchanged from `claude/magical-meitner-11naoj` on 2026-09-29. MA-006 adds `operator_atlas.py`, its tests and read-back/plotting report; earlier hash-pinned sources remain unchanged. |
+| Next | No successor launched. [MA-006 closeout](iteration_07/01_results.md) identifies affordable cutoff-error estimation and qualification at active M=37–85 as the next numerical questions. The independent MA-005 proposals remain unexecuted. |
 
 ## Cycle history
 
@@ -30,3 +31,4 @@ cited as starting evidence.
 | [04](iteration_04/01_results.md) | MA-003 complete: G1 fails; wrong-basin mechanism; damping probes; [MA-004 planned](iteration_04/03_plan.md). |
 | [05](iteration_05/01_results.md) | MA-004 complete: damping repairs 2 of 4 (G1 fails); the 13.3 star is limited by the final band; [MA-005 planned](iteration_05/03_plan.md). |
 | [06](iteration_06/01_results.md) | MA-005 complete: G1 and G2 pass; DF 7/8 transfer against 0/8 frozen. |
+| [07](iteration_07/01_results.md) | MA-006 complete: operator atlas and projection/reduced/Schur cutoff screen; 9/10 cells qualify, omitted-mode feedback changes usable cutoffs in high-contrast cases. |

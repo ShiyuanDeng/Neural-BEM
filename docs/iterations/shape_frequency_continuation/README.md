@@ -12,6 +12,18 @@ provisional**, with two profile differences and plotting provenance unresolved.
 
 ## Current handoff
 
+**SC-051 COMPLETE / FREQUENCY-ONLY FULL BANDS LOSE, 2026-09-30:**
+[Iteration 31](iteration_31/01_results.md) compares M=K=255 from the first
+frequency on all 41 current SC/modal-atlas configurations. Single-object
+recovery is 0/36 versus 34/36 for the preselected established strategies;
+vanilla RMS is worse in all 41 cases. Nineteen vanilla endpoint audits pass,
+but none passes the geometry thresholds. Six doubled-resolution controls,
+the explicit SC-043 stagnation comparator, failed attempts and the unchanged
+kite audit recovery are retained in the [report](../../../results/validation/shape_continuation/SC-051-frequency-only/README.md).
+This is an end-to-end strategy comparison at finite resolution, not an
+isolated causal test of M/K or a claim about infinite bandwidth. No defaults
+changed; no successor experiment is scheduled.
+
 **SPD-015 COMPLETE / NATIVE GEOMETRY DEFAULT, 2026-09-28:**
 [Speedup iteration 12](../speedup/iteration_12/01_results.md) integrates amended
 spatial checks and bounded fit/objective/diagnostic caches. Fresh matched SC-043
@@ -64,7 +76,8 @@ retains all original stops, timeouts and separately charged qualifications.
 
 | Item | State |
 |---|---|
-| Latest completed cycle | [Iteration 30 / SC-050](iteration_30/02_results.md): localization repairs the far-C failure; frozen-policy transfer recovers 5/5 clean cases and one fixed noise case. Noisy RMS 0.220 mm; defaults unchanged. |
+| Latest completed cycle | [Iteration 31 / SC-051](iteration_31/01_results.md): frequency-only full bands recover 0/36 single-object configurations versus 34/36; higher RMS in all 41 SC/modal-atlas cases. Six mesh-resolution controls retained; defaults unchanged. |
+| Far-start strategy | [Iteration 30 / SC-050](iteration_30/02_results.md): localization repairs the far-C failure; frozen-policy transfer recovers 5/5 clean cases and one fixed noise case. Noisy RMS 0.220 mm. |
 | Far-start failure control | [Iteration 29 / SC-049](iteration_29/01_results.md): distant-circle initialization fails in stage 1; exact accepted-state replay retained in SC-050. |
 | Prior coupled enrichment | [Iteration 28 / SC-048](iteration_28/01_results.md): compact M5 wins the one clean local screen; exact global enrichment fails the frozen gate. Transfers withheld, no retuning. |
 | Coupled and topology qualification | [Iteration 27 / SC-047](iteration_27/01_results.md): coupled physics PASS, 12/12 local endpoint audits; conditional selector not superior; topological derivative qualified but action gate fails. |
@@ -190,7 +203,7 @@ handoff only.
   [reference implementation](../../reference/papers/README.md#reference-implementation)
   used to audit the numerical conventions. Figure 1's exact provenance is open.
 - [Qualification index](../../../results/validation/shape_continuation/README.md):
-  SC-001 through SC-041, with raw measurements, scripts, checkpoints and failures.
+  evidence through SC-051, with raw measurements, scripts, checkpoints and failures.
 - [Literature review and reading map](Atlas-Driven%20Adaptive%20Continuation%20in%20Inverse%20Scattering_%20Literature%20Review%20and%20Pre-Coding%20Reading%20M.pdf):
   the user-supplied survey that set iteration 04's experiment design, with its
   own stated search cutoff and verification limits.
@@ -234,3 +247,5 @@ the next cycle. Code and run artifacts retain their current locations.
 | [27](iteration_27/01_results.md) | SC-047: coupled non-star-shaped physics and complete derivative qualify; 12 local endpoints pass, with worst RMS 0.74–1.03 mm from 3.81 mm. Conditional object selection loses its cost/accuracy gate. Current-scene topological response qualifies, but false births and failed localization withhold actions. |
 | [28](iteration_28/01_results.md) | SC-048: one intrinsically perturbed close pair, three qualified endpoints. M5 / M9 / global enrichment RMS 0.705 / 2.72 / 3.58 mm from 3.90 mm. Global enrichment fails its primary gate; transfer cases are withheld without retuning. |
 | [29](iteration_29/01_results.md) | SC-049: one full far-circle-to-C attempt. Seven accepted updates worsen geometric error; the next candidate fails field refinement. CPU controls reproduce the endpoint discrepancy. Initial atlas qualifies; returned atlas does not. No recovery or restart. |
+| [30](iteration_30/02_results.md) | SC-050: data-only localization plus 0.25 GHz warm-up repairs the far-C failure and recovers all six transfer configurations. Eighteen comparisons and two setup failures retained; no default promoted. |
+| [31](iteration_31/01_results.md) | SC-051: frequency-only M=K=255 on 41 SC/modal-atlas configurations. Single-object recovery 0/36 versus 34/36; vanilla RMS loses all 41 comparisons, including coupled local cases. Six doubled-resolution controls, explicit stagnation comparison, and audit interruption accounting retained. |
