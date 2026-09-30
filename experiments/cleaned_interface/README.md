@@ -82,9 +82,9 @@ The runner never reads traces, matrices, factors or modal coefficients.
 Register a qualified implementation with `register_backend(name, factory)`;
 then the same `solver=name` selection covers the whole run.
 
-`modal_muller` currently raises a capability error **before fitting**. A native
-modal assembler with a qualified complete-trial derivative is the next
-integration, as specified in the brief. There is no silent nodal replacement.
+`modal_muller` is the node-free alternative (next section). Until `register()`
+is called, `make_backend('modal_muller')` still raises a capability error
+**before fitting**. There is no silent nodal replacement.
 
 Solver selection is independent of `device=cpu|auto|cuda`, frequency threads
 and geometry execution. `cpu` is explicit CPU execution. `auto` records CPU
@@ -95,6 +95,72 @@ LU under `auto`; the receipt records those fallbacks too. `acceleration=referenc
 retains the current real-frequency CUDA/thread/cache path and uses reference
 damped CPU/Mie evaluation. It is the matched execution control, not the old
 serial CPU baseline. Pair it with `device=auto` or `cpu`.
+
+## Modal Müller service
+
+[modal_muller.py](modal_muller.py) implements the same contract as
+`NodalKress` with the node-free Chebyshev Müller discretization: Fourier–Galerkin
+traces `|m| <= K_trace` and no boundary nodes in the operator. It is the clean
+rewrite of the prototype that the
+[independent review](../../docs/iterations/cleaned_interfaces/node_free_modal_muller_review.md)
+checked. Registration is explicit, so CI-001's frozen sources stay unchanged:
+
+```python
+from experiments.cleaned_interface.modal_muller import register
+register()
+result = fit(problem, solver='modal_muller', execution=Execution(device='auto', frequency_threads=4))
+```
+
+From the command line, use the same subcommands through the modal entry point,
+with a new prepared campaign directory:
+
+```bash
+"$CI_PY" -m experiments.cleaned_interface.modal_muller run --solver modal_muller --output NEW_CAMPAIGN ...
+```
+
+| Stage | Code | Depends on k | Retained |
+|---|---|---|---|
+| geometry | `modal_geometry.ModalGeometry`: Δ, R, W, \|W\|², normal products; certified log\|W\|²; Chebyshev T_n(R) and regular-wave arrays | no | per curve and window, LRU of 4 |
+| waves | `modal_operator.point_kernels`: Graf source/receiver coefficients | yes | receiver RHS in the handle |
+| assembly | `modal_operator.muller_matrix`: six radial functions → V, K, T (Maue), K′ = K transposed | yes | T_n arrays extended lazily |
+| factorization / fields | dense LU, traces, paired receiver data | yes | LU in the handle |
+| jacobian | `modal_operator.hadamard`: 2π(k_i²−k_e²) Σ_m w_m (u ũ)_{−m}, with w = Re(V conj N) from SC-035 coefficient velocities | yes | none |
+
+Each stage is timed separately in `receipt()['stage_seconds']`. On the
+19-frequency K=192 catalog, a new geometry costs 4.3 s on one core and 2.2 s
+with four frequency threads. The review prototype took 46.6 s, CUDA Kress
+takes 0.45 s, and CPU Kress 13.5 s. Per-frequency assembly (0.12 s) is now
+the largest cost, followed by geometry preparation (1.4 s once per curve).
+
+**Resolution.** Tokens are `8*K_trace`. The factor only satisfies the shared
+`FitStage` guard `nodes > 2*K_geometry`. `K_trace = max(64, 32*ceil(K_geometry/64))`
+in production (64 for the damped prefix, 96 at K_geometry = 192). Refinement
+adds 32. The coefficient window is `K_trace + 64`, so LM acceptance and audits
+refine the trace cutoff and the window together. These are the cutoffs the
+three replayed stages qualified (64/96 and 96/128).
+
+**Error control.** Each approximation has an explicit rule. When a rule fails,
+the service raises `ValueError`, and LM records it as a numerical refusal.
+
+- log|W|² is a Chebyshev series on `[beta, Lambda]`. Lambda is the coefficient
+  triangle bound. beta must be certified by the complete coefficient residual
+  `r = ||1 - |W|² v||_1 < 1`, which gives `|W|² >= (1-r)/||v||_1`. This replaces
+  the prototype's assumed `beta = 0.05` and the finite-Parseval test that the
+  review disproved. A crossing or touching curve fails the certificate.
+  Clockwise curves are refused from the exact signed area.
+- The radial degree is where every later Chebyshev coefficient falls below
+  1e-15 of the coefficient sum. The Graf order uses the rigorous |J_l| bound
+  (DLMF 10.14.4) with exact |H_l|. Sources and receivers must lie outside the
+  coefficient bounding circle. The regular-wave series is refused when its
+  cancellation `eps*I0(|k| rho)` exceeds 1e-9.
+
+**Limits.** Forward and derivative run on the CPU (`device=cuda` is refused;
+`auto` still uses CUDA for the Mie grid). The service supports one
+equal-density curve and paired point sources only. Damped fields keep a
+roughly 6e-9 floor at 2.5 GHz, but the policy damps only up to 1.25 GHz, where
+agreement is 1e-13. Accuracy, stage replays and matched timings are in
+[the service evidence](../../results/validation/cleaned_interfaces/modal-muller-service-20260930/README.md).
+No 36-case campaign has run with this backend.
 
 ## Executable policy
 
@@ -187,6 +253,7 @@ alone cannot qualify the full DF path or all 36 configurations.
 | Complete projected update and exact cleanup | `geometry.py` (extracted SC-035/042) |
 | Optimizer | shared `shape_continuation/lm_backend.py`, explicit service hook |
 | Backend and work diagnostics | `physics.py` |
+| Modal Müller backend | `modal_muller.py` (service), `modal_geometry.py`, `modal_operator.py`; tests in `test_modal_muller.py` |
 | Localization | `localization.py`, `mie_grid.py` |
 | Damped CUDA assembly | `damped_cuda.py`, explicit radial-kernel argument in Kress |
 | Interpretation, checkpoints, audits | `runner.py` |
