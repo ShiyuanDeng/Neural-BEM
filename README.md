@@ -26,7 +26,9 @@ continuation algorithm. Existing production defaults are unchanged.
 [`experiments/cleaned_interface`](experiments/cleaned_interface/README.md)
 provides one cumulative policy, readable stage plans, an explicit solver
 service, and the selected SPD execution improvements. Focused CPU/CUDA checks
-pass; all-36 reconstruction and matched runtime retention await the campaign.
+pass. The [all-36 campaign](docs/iterations/cleaned_interfaces/iteration_03/01_results.md)
+passes 28/36 (recovery 34/36). Seven noisy cases fail the residual gate after the
+discrepancy stop; matched runtime retention is not established.
 
 **The three current inverse pipelines are Implicit MLP + Method B, Explicit
 Cartesian Fourier, and Explicit Radial Fourier.** The implicit pipeline updates neural weights with the Kress

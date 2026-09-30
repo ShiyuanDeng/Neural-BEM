@@ -13,20 +13,20 @@ implementation first, with the 36-scene campaign to be run by the user.
 
 | Item | State |
 |---|---|
-| Current cycle | Iteration 02 / CI-001 implementation; all-36 validation pending |
+| Current cycle | [Iteration 03 / CI-001 campaign](iteration_03/01_results.md): **36/36 complete, 28 pass the frozen contract; requirement 1 not satisfied.** Recovery 34/36 (the same two contrast-13.3 C failures as the references). Seven noisy cases fail the per-frequency residual gate after the declared discrepancy stop; one of them (`asymmetric_lobes seed 0`) also regresses in geometry. `circle_to_star` has a noiseless residual shortfall. Runtime retention not established |
 | User requirements | [Three requirements and the cumulative-pipeline clarification](iteration_01/02_proposals/01_user_requirements.md) |
 | Plan | [CI-001 — restore clean inverse interfaces and verify retention](iteration_01/03_plan.md) |
 | SPD integration | [Assessment](iteration_01/02_proposals/02_spd_integration_review.md): preserve SPD-010–015 and integrate SPD-016 grid-plus-assembly through maintained interfaces; field-table extension not selected |
-| Approval status | User authorized implementation and focused validation; user will run the 36 configurations |
-| Execution status | Maintained package implemented; bounded CPU/CUDA checks executed; no all-36 fits or new benchmark observations generated |
-| Implementation | [`experiments/cleaned_interface`](../../../experiments/cleaned_interface/README.md); [current results and limits](iteration_02/01_results.md) |
+| Approval status | User authorized implementation and focused validation, and ran the 36 configurations on 2026-09-30. CI-002 has not been approved |
+| Execution status | SPD pairs pass (59.6% and 64.0% time saving, identical decisions); 16 damped catalogs augmented and sealed; all 36 fits and audits complete; no matched runtime pairs |
+| Implementation | [`experiments/cleaned_interface`](../../../experiments/cleaned_interface/README.md); [implementation checks](iteration_02/01_results.md); [build re-verification and campaign review](../../../results/validation/cleaned_interfaces/CI-001-campaign-review/README.md) |
 | Starting evidence | [Current pipeline inventory](../../pipelines/shape_frequency_continuation.md), [SC handoff](../shape_frequency_continuation/README.md), [MA handoff](../modal_atlas/README.md), [SPD handoff](../speedup/README.md) |
-| Next validation | Run the two SPD extraction pairs, explicitly augment 16 missing damped catalogs, then run all 36 original starts and inspect every regression |
+| Next validation | Proposed, not run: declare a CI-002 noise-aware residual gate before any rerun; test one more release after the discrepancy stop; locate the `circle_to_star` divergence from SC-043; run three matched runtime pairs |
 | Following step | Qualify a modal Müller backend through the interface established by CI-001 |
 
 The target is one maintained cumulative implementation. Historical algorithms
 supply regression evidence; they are not separate production paths selected
-by scene identity. No all-36 retention result is claimed yet.
+by scene identity. CI-001 does not establish all-36 retention (28/36).
 
 ## Cycle history
 
@@ -34,6 +34,7 @@ by scene identity. No all-36 retention result is claimed yet.
 |---|---|
 | [01](iteration_01/03_plan.md) | Original requirements and proposed plan, preserved as the pre-implementation record |
 | [02](iteration_02/01_results.md) | Implementation and focused checks; reconstruction/runtime retention remains unestablished |
+| [03](iteration_03/01_results.md) | All-36 campaign: 28/36 pass, recovery 34/36; noise-stop residual regressions; runtime not established |
 
 Follow the [shared iteration workflow](../README.md). Iteration 02 records
-measured implementation checks separately from the pending inverse campaign.
+the implementation checks; iteration 03 records the inverse campaign.

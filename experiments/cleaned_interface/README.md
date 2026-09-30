@@ -1,8 +1,11 @@
 # Cleaned inverse interface (CI-001)
 
-One maintained, truth-free SC/MA continuation runner. The **all-36 retention
-result is pending**. Historical recovery is 34/36 from several archived
-strategies; it is not a result for this implementation.
+One maintained, truth-free SC/MA continuation runner. **The CI-001 campaign
+passes 28 of 36 configurations under the frozen contract**, and recovery is 34/36,
+the same as the archived strategies. Seven noisy cases fail the residual gate after the
+discrepancy stop, and one noiseless case falls short on residuals. See the
+[campaign results](../../docs/iterations/cleaned_interfaces/iteration_03/01_results.md).
+Runtime retention is not established.
 
 ## Run the 36 configurations
 
@@ -193,4 +196,6 @@ There are no result-folder Python imports or process-global solver/contrast
 patches in the maintained path. Archived scripts and evidence remain in place.
 The SPD-016 field-table extension is intentionally not selected. See
 [implementation evidence](../../results/validation/cleaned_interfaces/CI-001-implementation/README.md)
-for focused checks and the remaining all-36/pair qualification work.
+for the focused checks, and the
+[campaign review](../../results/validation/cleaned_interfaces/CI-001-campaign-review/README.md)
+for the all-36 regressions and build re-verification.

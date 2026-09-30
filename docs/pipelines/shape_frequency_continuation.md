@@ -13,10 +13,11 @@ owns the [CI-001 plan](../iterations/cleaned_interfaces/iteration_01/03_plan.md)
 The maintained implementation now lives in
 [`experiments/cleaned_interface`](../../experiments/cleaned_interface/README.md).
 It extracts one cumulative policy, explicit physics services and the selected
-SPD accelerations. Focused interface checks do not establish all-36 retention;
-the [implementation handoff](../iterations/cleaned_interfaces/iteration_02/01_results.md)
-keeps that campaign, the noise-policy changes and the additional damped-input
-contract explicit. The historical inventory below is preserved as the
+SPD accelerations. Its [all-36 campaign](../iterations/cleaned_interfaces/iteration_03/01_results.md)
+passes 28/36 under the frozen contract, with recovery 34/36. It reproduces the
+MA-005 DF modal references; the noise-policy change causes seven residual
+regressions. The [implementation handoff](../iterations/cleaned_interfaces/iteration_02/01_results.md)
+keeps the noise-policy changes and the additional damped-input contract explicit. The historical inventory below is preserved as the
 starting evidence, not a dispatcher inside the new runner.
 
 ## Current inverse across the 36 configurations (2026-09-30)
