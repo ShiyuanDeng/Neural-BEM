@@ -146,11 +146,20 @@ For comparison, the review prototype took 46.6 s at production. For a single
 cold frequency, CUDA Kress remains faster (0.03 s against 0.09 s at K=192).
 
 **Resolution.** Tokens are `8*K_trace`. The factor only satisfies the shared
-`FitStage` guard `nodes > 2*K_geometry`. `K_trace = max(64, 32*ceil(K_geometry/64))`
-in production (64 for the damped prefix, 96 at K_geometry = 192). Refinement
-adds 32. The coefficient window is `K_trace + 64`, so LM acceptance and audits
-refine the trace cutoff and the window together. These are the cutoffs the
-three replayed stages qualified (64/96 and 96/128).
+`FitStage` guard `nodes > 2*K_geometry`.
+
+- Production uses `K_trace = max(64, 32*(ceil(K_geometry/64)+1))`: 64 for the
+  damped prefix, 128 at K_geometry = 192.
+- Refinement adds 32.
+- The coefficient window is `K_trace + 64`, so LM acceptance and audits refine
+  the trace cutoff and the window together.
+
+The profile was raised by one step after
+[CI-001-modal](../../results/validation/cleaned_interfaces/CI-001-modal-review/README.md).
+There, the earlier production level (96 at K_geometry 192) was off by up to
+9e-8 at contrast 13.3 and 2.5 GHz from M49 upward. That is within 2× of LM's
+1e-7 production/refined tolerance. 128 gives ≤ 3.8e-10, and 160 gives
+≤ 1.1e-12.
 
 **Error control.** Each approximation has an explicit rule. When a rule fails,
 the service raises `ValueError`, and LM records it as a numerical refusal.
@@ -162,10 +171,17 @@ the service raises `ValueError`, and LM records it as a numerical refusal.
   review disproved. A crossing or touching curve fails the certificate.
   Clockwise curves are refused from the exact signed area.
 - The radial degree is where every later Chebyshev coefficient falls below
-  1e-15 of the coefficient sum. The Graf order uses the rigorous |J_l| bound
-  (DLMF 10.14.4) with exact |H_l|. Sources and receivers must lie outside the
-  coefficient bounding circle. The regular-wave series is refused when its
-  cancellation `eps*I0(|k| rho)` exceeds 1e-9.
+  1e-15 of the coefficient sum.
+- The Graf order uses the rigorous |J_l| bound (DLMF 10.14.4), with |H_l|
+  from a scaled forward recurrence and a recurrence-based geometric tail. It
+  has no fixed cap below 1024 orders.
+- Row l of the regular waves is divided by `(k rho/2)^l/l!`, and H_l(kd) is
+  multiplied by it. Orders of 250 and more therefore neither underflow nor
+  overflow. SciPy's `hankel1` itself loses accuracy near its range limit
+  (1e-5 at order 120, x = 1.3).
+- Sources and receivers must lie outside the coefficient bounding circle.
+- The regular-wave series is refused when its cancellation `eps*I0(|k| rho)`
+  exceeds 1e-9.
 
 **Limits.** The service supports one equal-density curve and paired point
 sources only. Damped fields keep a roughly 6e-9 floor at 2.5 GHz, but the
@@ -175,13 +191,13 @@ the CPU path to the method's own floor (≤ 2.7e-12 on real fields); against
 [CPU service](../../results/validation/cleaned_interfaces/modal-muller-service-20260930/README.md) and
 [CUDA execution](../../results/validation/cleaned_interfaces/modal-muller-cuda-20261001/README.md).
 The [all-36 campaign](../../results/validation/cleaned_interfaces/CI-001-modal-review/README.md)
-found two open limits:
+found two limits:
 
-- Graf sources and receivers are refused when the curve's bounding circle
-  about `z_0` comes within ρ/d ≳ 0.78 of the acquisition. The order cap is
-  128, and the unscaled Hankel factor overflows.
-- The production K_trace (96 at K_geometry 192) is too coarse for contrast
-  13.3 at 2.5 GHz with M ≥ 49.
+- Graf refusal near the acquisition;
+- a coarse production profile at contrast 13.3.
+
+Both were fixed afterwards
+([fix bundle](../../results/validation/cleaned_interfaces/modal-muller-fixes-20261001/README.md)).
 
 ## Executable policy
 

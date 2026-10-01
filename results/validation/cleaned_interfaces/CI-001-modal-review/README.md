@@ -19,6 +19,10 @@ modal-only defects:**
 **Neither defect is a policy or optimizer difference. Both are in the
 service, and both are fixable.**
 
+**Follow-up (same day):** both fixes were implemented. Seven of the nine
+cases now match nodal, and the two contrast-13.3 C cases still stop
+earlier. See the [fix bundle](../modal-muller-fixes-20261001/README.md).
+
 ## Outcome against nodal CI-001
 
 | | Modal | Nodal |

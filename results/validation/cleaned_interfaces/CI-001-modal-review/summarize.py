@@ -1,18 +1,20 @@
 """Compare the modal_muller all-36 campaign (CI-001-modal) with the nodal CI-001 campaign.
 
 Run from the repository root after ``report --output .../CI-001-modal``:
-``python results/validation/cleaned_interfaces/CI-001-modal-review/summarize.py``.
-Reads both campaign directories; writes ``summary.json`` beside this script.
+``python results/validation/cleaned_interfaces/CI-001-modal-review/summarize.py [CAMPAIGN OUTPUT]``.
+Reads both campaign directories; writes ``summary.json`` beside this script, or
+compares another modal campaign directory and writes OUTPUT.
 """
 import json
 from pathlib import Path
+import sys
 
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[4]
-MODAL = ROOT/'results/validation/cleaned_interfaces/CI-001-modal'
+MODAL = ROOT/(sys.argv[1] if len(sys.argv) > 1 else 'results/validation/cleaned_interfaces/CI-001-modal')
 NODAL = ROOT/'results/validation/cleaned_interfaces/CI-001'
-OUT = Path(__file__).with_name('summary.json')
+OUT = Path(sys.argv[2]).resolve() if len(sys.argv) > 2 else Path(__file__).with_name('summary.json')
 
 
 def read(path):
@@ -32,6 +34,16 @@ def divergence(modal, nodal):
     if len(a) != len(b):
         return dict(index=min(len(a), len(b)), modal=a[len(b):][:1], nodal=b[len(a):][:1])
     return None
+
+
+def discrepancy(run):
+    """Largest LM production/refined prediction discrepancy over every stage of one case."""
+    values = []
+    for path in Path(run).glob('*.json'):
+        record = read(path)
+        if isinstance(record, dict):
+            values += [max(c['prediction_discrepancy']) for c in record.get('acceptance_checks') or []]
+    return max(values, default=None)
 
 
 def frontier(result):
@@ -66,6 +78,7 @@ def main():
             localization_m=(m.get('localization') or {}).get('parameters_m'),
             nodal_localization_m=(n.get('localization') or {}).get('parameters_m'),
             stage_divergence=divergence(m, n), stages=len(stages(m)), nodal_stages=len(stages(n)),
+            resolution_discrepancy=discrepancy(MODAL/'runs'/case), nodal_resolution_discrepancy=discrepancy(NODAL/'runs'/case),
             final_audit=m.get('final_audit_passed'), detail=(m.get('detail') or '')[-600:] or None,
             physics=dict(devices=receipt.get('devices'), fallbacks=receipt.get('fallback_reasons'),
                          failed_evaluations=receipt.get('counts', {}).get('failed_evaluations'),

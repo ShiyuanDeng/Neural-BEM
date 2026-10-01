@@ -137,7 +137,7 @@ class ModalMuller:
 
     def resolution_profile(self, storage_band):
         s = self.settings
-        production = max(s.trace_minimum, s.trace_step*int(np.ceil(storage_band/64)))
+        production = max(s.trace_minimum, s.trace_step*(int(np.ceil(storage_band/64))+1))
         refined = production+s.trace_step
         return dict(production=token(production), refined=token(refined), kind='modal_muller',
                     nodal_resolution=None, token='8*K_trace', K_trace=production, K_trace_refined=refined,

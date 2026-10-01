@@ -13,7 +13,7 @@ from . import physics
 from .geometry import ProjectedUpdate, resize
 from .modal_geometry import ModalGeometry
 from .modal_muller import ModalMuller, ModalSettings, register, token
-from .modal_operator import muller_matrix, radial_functions
+from .modal_operator import muller_matrix, radial_functions, scaled_hankel
 from .physics import Execution, NodalKress
 from .problem import Observation
 
@@ -71,6 +71,27 @@ def test_matrix_matches_projected_nodal_oracle_at_high_contrast():
     matrix, info = muller_matrix(ModalGeometry(curve, 128), K25, ki, cutoff)
     assert relative(matrix, oracle[np.ix_(index, index)]) < 1e-12
     assert info['amplification'] < 10
+
+
+def test_scaled_hankel_matches_high_precision_beyond_float_range():
+    mp = pytest.importorskip('mpmath')
+    mp.mp.dps = 40
+    for x, scale in ((.45, .17), (1.3, .1), (4.5, 2.2), (3+.5j, 1.7), (26.+.3j, 3.)):
+        t = scaled_hankel(np.array([x]), scale, 260)[:, 0]
+        for order in (0, 1, 40, 150, 260):  # H_260(0.45) is far beyond float64
+            want = complex(mp.hankel1(order, mp.mpc(x))*mp.mpc(scale)**order/mp.factorial(order))
+            assert abs(t[order]-want) <= 1e-13*abs(want)
+
+
+def test_graf_reaches_offset_start_near_the_acquisition():
+    """CI-001-modal refused this start (rho/d=0.87 needs ~248 orders); Kress 1024 is the oracle."""
+    p = b.fitting_problem(next(r for r in b.descriptors() if r['id'] == 'modal__c4__opposite_c'), b.DEFAULT_OUTPUT)
+    curve = FourierCurve.circle(1.3, 3.6-2.8j)
+    nodal = NodalKress(Execution(device='cpu', frequency_threads=1))
+    for o in (p.real[0], p.real[-1]):
+        prediction = modal().evaluate(curve, o, p.contrast, token(64))
+        assert prediction.diagnostics['graf_order'] > 200
+        assert relative(prediction.prediction, nodal.evaluate(curve, o, p.contrast, 1024).prediction) < 1e-11
 
 
 def test_certificate_refuses_crossing_and_clockwise_curves_and_accepts_the_c():
@@ -177,9 +198,9 @@ def test_registration_profile_and_capabilities(monkeypatch):
     register()
     backend = physics.make_backend('modal_muller', Execution(device='cpu'))
     assert isinstance(backend, ModalMuller)
-    assert [backend.resolution_profile(k)['K_trace'] for k in (1, 20, 64, 192)] == [64, 64, 64, 96]
+    assert [backend.resolution_profile(k)['K_trace'] for k in (1, 20, 64, 128, 192)] == [64, 64, 64, 96, 128]
     profile = backend.resolution_profile(192)
-    assert profile['refined'] == backend.refine_resolution(profile['production']) == token(128)
+    assert profile['refined'] == backend.refine_resolution(profile['production']) == token(160)
     p = b.fitting_problem(next(r for r in b.descriptors() if r['id'] == 'modal__c4__development_c'), b.DEFAULT_OUTPUT)
     FitStage('token_guard', p.real, (1/19,)*19, (1e-7,)*19, 67, 192, profile['production'], profile['refined'], 1)
     with pytest.raises(ValueError, match='multiples'):
