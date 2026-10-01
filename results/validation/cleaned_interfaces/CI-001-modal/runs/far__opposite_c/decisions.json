@@ -1,0 +1,66 @@
+{
+  "policy": "cumulative_sc_ma",
+  "version": "1.0.0",
+  "decisions": [
+    {
+      "index": 0,
+      "operation": {
+        "operation": "audit",
+        "label": "initial_audit",
+        "purpose": "Qualify the prescribed original start",
+        "entry": "before localization",
+        "transition": "localize if qualified; otherwise final failure",
+        "details": {
+          "scope": "all real frequencies, complete-trial Jacobian/FD",
+          "seconds": 300.0
+        }
+      },
+      "reason": "original start refused",
+      "passed": false
+    },
+    {
+      "index": 1,
+      "operation": {
+        "operation": "audit",
+        "label": "final_audit",
+        "purpose": "Qualify the returned endpoint independently",
+        "entry": "every exit, including a hard stop or refusal",
+        "transition": "return unscored curve and diagnostics",
+        "details": {
+          "scope": "all real frequencies; last actual M; field/column Jacobian/complete-trial FD",
+          "field_tolerances": "1e-5 at <=0.5 GHz; 1e-7 otherwise",
+          "jacobian_tolerance": 0.001,
+          "fd_tolerance": 0.001,
+          "fd_step_m": 1e-07,
+          "fd_seed": 42001,
+          "seconds": 300.0,
+          "backend": "selected solver"
+        }
+      },
+      "reason": "fit returned; audit endpoint",
+      "outcome": "EXCEPTION"
+    },
+    {
+      "index": 2,
+      "operation": {
+        "operation": "audit",
+        "label": "final_audit",
+        "purpose": "Qualify the returned endpoint independently",
+        "entry": "every exit, including a hard stop or refusal",
+        "transition": "return unscored curve and diagnostics",
+        "details": {
+          "scope": "all real frequencies; last actual M; field/column Jacobian/complete-trial FD",
+          "field_tolerances": "1e-5 at <=0.5 GHz; 1e-7 otherwise",
+          "jacobian_tolerance": 0.001,
+          "fd_tolerance": 0.001,
+          "fd_step_m": 1e-07,
+          "fd_seed": 42001,
+          "seconds": 300.0,
+          "backend": "selected solver"
+        }
+      },
+      "reason": "endpoint refused",
+      "passed": false
+    }
+  ]
+}

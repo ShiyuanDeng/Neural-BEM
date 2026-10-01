@@ -174,7 +174,14 @@ the CPU path to the method's own floor (≤ 2.7e-12 on real fields); against
 2048-node Kress, its error stays within 2× of the CPU's. Evidence:
 [CPU service](../../results/validation/cleaned_interfaces/modal-muller-service-20260930/README.md) and
 [CUDA execution](../../results/validation/cleaned_interfaces/modal-muller-cuda-20261001/README.md).
-No inverse case or campaign has run with this backend.
+The [all-36 campaign](../../results/validation/cleaned_interfaces/CI-001-modal-review/README.md)
+found two open limits:
+
+- Graf sources and receivers are refused when the curve's bounding circle
+  about `z_0` comes within ρ/d ≳ 0.78 of the acquisition. The order cap is
+  128, and the unscaled Hankel factor overflows.
+- The production K_trace (96 at K_geometry 192) is too coarse for contrast
+  13.3 at 2.5 GHz with M ≥ 49.
 
 ## Executable policy
 
