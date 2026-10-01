@@ -1,0 +1,92 @@
+nodal core__wrong_circle max r 1.0 COMPLETED_SCHEDULE
+nodal core__circle_to_star max r 1.0916 COMPLETED_SCHEDULE
+nodal core__circle_to_c max r 1.1543 COMPLETED_SCHEDULE
+nodal core__kite max r 1.0779 COMPLETED_SCHEDULE
+nodal core__peanut max r 1.0116 COMPLETED_SCHEDULE
+nodal core__hook max r 1.182 COMPLETED_SCHEDULE
+A core__wrong_circle max r 1.0 COMPLETED_SCHEDULE
+A core__circle_to_star max r 1.4198 COMPLETED_SCHEDULE
+A core__circle_to_c max r 21.3041 NUMERICAL_FAILURE
+A core__kite max r 3914.5946 NUMERICAL_FAILURE
+A core__peanut max r 1.9371 COMPLETED_SCHEDULE
+A core__hook max r 288.2472 NUMERICAL_FAILURE
+B core__wrong_circle max r 1.0 COMPLETED_SCHEDULE
+B core__circle_to_star max r 1.2055 COMPLETED_SCHEDULE
+B core__circle_to_c max r 12.1033 COMPLETED_SCHEDULE
+B core__kite max r 1.7 COMPLETED_SCHEDULE
+B core__peanut max r 1.0872 COMPLETED_SCHEDULE
+B core__hook max r 12.8693 NUMERICAL_FAILURE
+{
+  "A": {
+    "drift_flags": {
+      "core__wrong_circle": [],
+      "core__circle_to_star": [
+        "speed_ratio>1.1x nodal"
+      ],
+      "core__circle_to_c": [
+        "speed_ratio>1.5",
+        "speed_ratio>1.1x nodal",
+        "log_degree>1.3x nodal at stage_2_damped"
+      ],
+      "core__kite": [
+        "speed_ratio>1.5",
+        "speed_ratio>1.1x nodal",
+        "log_degree>1.3x nodal at stage_2_damped"
+      ],
+      "core__peanut": [
+        "speed_ratio>1.5",
+        "speed_ratio>1.1x nodal"
+      ],
+      "core__hook": [
+        "speed_ratio>1.5",
+        "speed_ratio>1.1x nodal"
+      ]
+    },
+    "drifts": true,
+    "matches": 2,
+    "match": {
+      "core__wrong_circle": false,
+      "core__circle_to_star": true,
+      "core__circle_to_c": false,
+      "core__kite": false,
+      "core__peanut": true,
+      "core__hook": false
+    },
+    "qualifies": false
+  },
+  "B": {
+    "drift_flags": {
+      "core__wrong_circle": [],
+      "core__circle_to_star": [
+        "speed_ratio>1.1x nodal"
+      ],
+      "core__circle_to_c": [
+        "speed_ratio>1.5",
+        "speed_ratio>1.1x nodal",
+        "log_degree>1.3x nodal at stage_2_damped"
+      ],
+      "core__kite": [
+        "speed_ratio>1.5",
+        "speed_ratio>1.1x nodal"
+      ],
+      "core__peanut": [],
+      "core__hook": [
+        "speed_ratio>1.5",
+        "speed_ratio>1.1x nodal",
+        "log_degree>1.3x nodal at stage_2_damped"
+      ]
+    },
+    "drifts": true,
+    "matches": 3,
+    "match": {
+      "core__wrong_circle": false,
+      "core__circle_to_star": true,
+      "core__circle_to_c": false,
+      "core__kite": true,
+      "core__peanut": true,
+      "core__hook": false
+    },
+    "qualifies": false
+  },
+  "outcome": "keep the nodal trial map"
+}

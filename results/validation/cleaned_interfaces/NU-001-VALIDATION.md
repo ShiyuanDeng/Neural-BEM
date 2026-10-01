@@ -1,6 +1,8 @@
-# NU-001 validation to run on the CUDA host
+# NU-001 CUDA validation
 
-Status (2026-10-01): **all code is committed; only the 12 runs and the write-up remain.**
+Status (2026-10-01): **complete.** All 12 runs finished on the RTX 5090; the
+[iteration 09 results](../../../docs/iterations/cleaned_interfaces/iteration_09/01_results.md)
+record the decision, drift table, timing split, and separate post-hoc audit.
 Plan and pre-registered decision rules:
 [iteration 08 plan](../../../docs/iterations/cleaned_interfaces/iteration_08/03_plan.md).
 
@@ -15,8 +17,9 @@ the unchanged CI-001 schedule, LM, clips and `nodal_kress` physics:
 | `NU-001-B` | B | `NormalUpdate(tangential=True)` — arm A plus the HLS tangential term |
 | `CI-001` (archived, not rerun) | nodal | `ProjectedUpdate` |
 
-Both campaign directories are already prepared and committed (frozen sources,
-sealed augmentation copied from CI-001, `arm.json`). They contain no runs.
+Both campaign directories were prepared before execution (frozen sources,
+sealed augmentation copied from CI-001, `arm.json`). Their six runs each are
+now recorded under `runs/`.
 
 ## Commands
 
@@ -44,7 +47,7 @@ prints `FAILED <arm> <case>` to the terminal. Expected wall time is about
 Keep `PARALLEL=1`, the default. The nodal Kress audit peaks at about 9 GB per
 case with either update.
 
-## Before pushing, check
+## Completion checks
 
 - `NU-001-drift/drift.json` contains `decision` (it is omitted if any of the
   12 runs is missing).
@@ -52,9 +55,9 @@ case with either update.
 - `verify` refuses a campaign whose frozen sources differ from the committed
   ones. Do not edit `experiments/` or `solvers/` before the run.
 
-Then commit and push `NU-001-A/`, `NU-001-B/`, `NU-001-drift/` and
-`NU-001-logs/`. The iteration-09 write-up (verdict, drift table, timing split)
-follows from those files.
+These checks passed for `NU-001-A/`, `NU-001-B/`, `NU-001-drift/` and
+`NU-001-logs/`. Both campaign seals pass `verify`, and every run's physics
+receipt includes CUDA work.
 
 ## Known before the run
 
@@ -64,9 +67,9 @@ nodal (RMS 7.58e-6 mm, residuals 5e-14), but its final audit failed the
 per-column Jacobian gate. The failing columns (a37, b37, b36) have norms about
 1e-14 of the largest column, so their production/refined relative error (4%)
 is roundoff. The absolute error is 1.4e-15 of the largest column, as in the
-nodal arm. The pre-registered rules count this as a mismatch. A post-hoc audit
-with an absolute column floor will be reported separately and labelled as
-such. The GPU run is expected to reproduce this case.
+nodal arm. The pre-registered rules count this as a mismatch. The GPU run
+reproduced the audit failure; the iteration 09 results report an
+absolute-column-floor calculation separately as a post-hoc diagnostic.
 
 ## Deviation from the plan's execution section
 

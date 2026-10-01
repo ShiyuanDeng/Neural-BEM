@@ -1,0 +1,26 @@
+{
+  "passed": false,
+  "traceback": "Traceback (most recent call last):\n  File \"/home/drdeng/Neural_SDF_BEM_AD/experiments/cleaned_interface/n_update.py\", line 270, in validate\n    FourierCurve(coefficients).validate()\n  File \"/home/drdeng/Neural_SDF_BEM_AD/experiments/shape_continuation/geometry.py\", line 81, in validate\n    raise ValueError(\"Curve self-intersects.\")\nValueError: Curve self-intersects.\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"/home/drdeng/Neural_SDF_BEM_AD/experiments/cleaned_interface/runner.py\", line 65, in audit\n    plus, minus = [fine.production(update.trial(space, sign*1e-7*direction)[0], 'audit_fd')\n  File \"/home/drdeng/Neural_SDF_BEM_AD/experiments/cleaned_interface/runner.py\", line 65, in <listcomp>\n    plus, minus = [fine.production(update.trial(space, sign*1e-7*direction)[0], 'audit_fd')\n  File \"/home/drdeng/Neural_SDF_BEM_AD/experiments/cleaned_interface/n_update.py\", line 289, in trial\n    checks = self.validate(space, delta, coefficients)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/experiments/cleaned_interface/n_update.py\", line 273, in validate\n    raise _refusal(exc) from exc\nexperiments.shape_continuation.updates.UpdateRefused: self_intersection: Curve self-intersects.\n",
+  "work": {
+    "work_units": 76,
+    "stage": null,
+    "stage_units": 76,
+    "stage_quota": null,
+    "cap": 130,
+    "solves": {
+      "None:audit_base": 19,
+      "None:audit_fine": 19
+    },
+    "reciprocal_batches": {
+      "None:derivative": 38
+    },
+    "failed": {},
+    "seconds": 2.9340208573266864
+  },
+  "seconds": 2.93402107572183,
+  "solver": "nodal_kress",
+  "update_modes": 15,
+  "storage_band": 192,
+  "production_resolution": 512,
+  "refined_resolution": 1024
+}
