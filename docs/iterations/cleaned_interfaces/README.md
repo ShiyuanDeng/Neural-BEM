@@ -13,7 +13,7 @@ implementation first, with the 36-scene campaign to be run by the user.
 
 | Item | State |
 |---|---|
-| Current cycle | [Iteration 07](iteration_07/01_results.md): modal fixes ([bundle](../../../results/validation/cleaned_interfaces/modal-muller-fixes-20261001/README.md)). The scaled Graf factorization and the 128/160 profile remove both CI-001-modal failure classes. **7 of the 9 affected cases now pass and match nodal; the 2 contrast-13.3 C cases, which nodal does not recover either, stop earlier (`fixed_M31` against `fixed_M43`).** The other 27 have not been rerun. [Iteration 06](iteration_06/01_results.md): CI-001-modal 19/36 (nodal 28/36). [Iteration 03 / CI-001](iteration_03/01_results.md): nodal 28/36; requirement 1 not satisfied |
+| Current cycle | [Iteration 08](iteration_08/03_plan.md): NU-001, the coefficient-space normal update, pre-registered against nodal CI-001 on the six core configurations ([proposal](iteration_08/02_proposals/01_coefficient_space_update.md), [review against the code](iteration_08/02_proposals/02_review_against_code.md), [control](../../../results/validation/cleaned_interfaces/NU-001-control/README.md)). The nodal path already drifts to r_σ 1.06–1.17, and its basis is not cos(mα)σ (control: up to 66% off). [Iteration 07](iteration_07/01_results.md): modal fixes ([bundle](../../../results/validation/cleaned_interfaces/modal-muller-fixes-20261001/README.md)). The scaled Graf factorization and the 128/160 profile remove both CI-001-modal failure classes. **7 of the 9 affected cases now pass and match nodal; the 2 contrast-13.3 C cases, which nodal does not recover either, stop earlier (`fixed_M31` against `fixed_M43`).** The other 27 have not been rerun. [Iteration 06](iteration_06/01_results.md): CI-001-modal 19/36 (nodal 28/36). [Iteration 03 / CI-001](iteration_03/01_results.md): nodal 28/36; requirement 1 not satisfied |
 | User requirements | [Three requirements and the cumulative-pipeline clarification](iteration_01/02_proposals/01_user_requirements.md) |
 | Plan | [CI-001 — restore clean inverse interfaces and verify retention](iteration_01/03_plan.md) |
 | SPD integration | [Assessment](iteration_01/02_proposals/02_spd_integration_review.md): preserve SPD-010–015 and integrate SPD-016 grid-plus-assembly through maintained interfaces; field-table extension not selected |
@@ -45,6 +45,7 @@ by scene identity. CI-001 does not establish all-36 retention (28/36).
 | [05](iteration_05/01_results.md) | Modal Müller on CUDA: 1.7× (production) and 5× (refined) faster than CUDA Kress on the 19-frequency catalog; replays reproduced; field gate missed at the method floor; no inverse run |
 | [06](iteration_06/01_results.md) | All-36 modal campaign: 19/36 pass (nodal 28); 27 identical to nodal at ~3× less wall time; Graf refusal (7) and production resolution (2) identified |
 | [07](iteration_07/01_results.md) | Modal fixes: scaled Graf plus a finer profile; 7/9 affected cases now match nodal; the C stop needs a curve-adaptive cutoff |
+| [08](iteration_08/03_plan.md) | NU-001 plan: coefficient normal update (arms A/B), exact derivative, tiered validity; control done; six-case runs pre-registered |
 
 Follow the [shared iteration workflow](../README.md). Iteration 02 records
 the implementation checks; iteration 03 records the inverse campaign.

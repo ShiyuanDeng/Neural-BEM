@@ -199,6 +199,39 @@ found two limits:
 Both were fixed afterwards
 ([fix bundle](../../results/validation/cleaned_interfaces/modal-muller-fixes-20261001/README.md)).
 
+## Coefficient normal update (NU-001)
+
+[n_update.py](n_update.py) is an alternative geometry update with the same
+step coordinates as `ProjectedUpdate`. It moves the Laurent coefficients
+directly:
+
+```text
+z_new = z + P_K[sum_q a_q (phi_q N + psi_q z')] / (sigma_0 L_unit),   N = sum_j j z_j w^j
+```
+
+- φ_q are the θ-harmonics 1, cos mθ, sin mθ; σ₀ = L/2π.
+- ψ = 0 in arm A. Arm B (`tangential=True`) adds the band-limited
+  Hou–Lowengrub–Shelley tangential term, which holds the speed profile to first
+  order.
+- The trial is affine in a, so the shape directions are exact coefficient
+  arrays. There are no splines, no finite differences and no
+  reparameterization; the speed ratio is monitored, not restored.
+- Validity is tiered: exact signed area; an optional incremental |W|²
+  certificate; a Bernstein bound on min|z′|²; then the baseline sampled test.
+
+It is not wired into `fit`. [n_update_audit.py](n_update_audit.py) substitutes
+it for one run without touching CI-001 frozen sources, and also holds the
+pre-run control and the drift report:
+
+```bash
+python -m experiments.cleaned_interface.n_update_audit control --output DIR
+python -m experiments.cleaned_interface.n_update_audit prepare --arm A --output CAMPAIGN
+python -m experiments.cleaned_interface.n_update_audit run --output CAMPAIGN --cases core__kite
+python -m experiments.cleaned_interface.n_update_audit drift --campaigns CI-001 NU-001-A NU-001-B --output DIR
+```
+
+Plan and decision rules: [iteration 08](../../docs/iterations/cleaned_interfaces/iteration_08/03_plan.md).
+
 ## Executable policy
 
 [policy.py](policy.py) is the single definition of `cumulative_sc_ma/1.0.0`.
