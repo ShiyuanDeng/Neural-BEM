@@ -1,0 +1,74 @@
+{
+  "passed": true,
+  "refinement_relative": [
+    2.2627313548857873e-15,
+    1.5215590425581919e-15,
+    1.8047012014775354e-15,
+    1.7260965363728566e-15,
+    1.6825429121812193e-15,
+    2.3098471046724468e-15,
+    2.9116879889494974e-15,
+    2.9631050600945294e-15,
+    2.8103578253832947e-15,
+    3.1005634473932216e-15,
+    2.985941151583032e-15,
+    2.790517402537874e-15,
+    3.1047339194366436e-15,
+    3.598185886134034e-15,
+    3.475895680181893e-15,
+    3.088434591614282e-15,
+    3.748528701394214e-15,
+    3.570348478612906e-15,
+    2.942961788078222e-15
+  ],
+  "nodes": [
+    1024,
+    2048
+  ],
+  "work_units": 38,
+  "seconds": 11.310986227123067,
+  "source_real": "results/validation/shape_continuation/SC-022-atlas-survey/inputs/wrong_circle/observations.json",
+  "truth": "results/validation/shape_continuation/SC-022-atlas-survey/inputs/wrong_circle/truth.json",
+  "original_real_sha256": "bb27402abcb9ece048109c2bfc102ebf8039b1a141424e410e7da1f2220ed286",
+  "observations_sha256": "6b89897250a16ff6edf068c5f00d5b66f8042ad31d018a510bdadcb176e480b1",
+  "contract": "new synthetic damped observations; original real measurements unchanged",
+  "physics": {
+    "solver": "nodal_kress",
+    "execution": {
+      "device": "auto",
+      "frequency_threads": 4,
+      "acceleration": "spd016",
+      "geometry": "both",
+      "resolution": 512
+    },
+    "counts": {
+      "evaluation_attempts": 38,
+      "evaluations": 38,
+      "failed_evaluations": 0,
+      "derivative_attempts": 0,
+      "derivatives": 0,
+      "failed_derivatives": 0,
+      "disk_batches": 0,
+      "ray_table_setup": 1
+    },
+    "devices": {
+      "cuda-damped": 38
+    },
+    "fallback_reasons": {},
+    "seconds": {
+      "evaluation_attempts": 0.0,
+      "ray_table_setup": 0.09473872603848577,
+      "evaluations": 42.02224833215587
+    },
+    "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+    "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+    "ray": {
+      "gamma": 0.25,
+      "lo": 0.01,
+      "hi": 100.0,
+      "panels": 111,
+      "degree": 24
+    },
+    "retained_device_state": "one ray table; matrix and reusable LU factors retained on host"
+  }
+}

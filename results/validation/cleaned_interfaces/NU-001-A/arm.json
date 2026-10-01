@@ -1,0 +1,40 @@
+{
+  "experiment": "NU-001",
+  "arm": "A",
+  "update": "NormalUpdate",
+  "tangential": false,
+  "construction": "z + P_K[g_a N], g_a=h_a(theta)/sigma_0; exact affine trial and derivative",
+  "update_settings": {
+    "name": "coefficient_normal",
+    "length_unit_m": 0.05,
+    "tangential": false,
+    "construction": "z + P_K[sum_q a_q (phi_q N + psi_q z')]/(sigma_0 L_unit)",
+    "coordinates": "real Fourier coefficients (m) of h in the curve parameter theta; normal move h sigma/sigma_0 before the crop",
+    "gauge": "none: parameter theta kept; speed ratio monitored, never restored",
+    "tangential_term": "none",
+    "validity": "area -> incremental certificate (optional) -> Bernstein regularity -> sampled FourierCurve.validate",
+    "certificate_window": 64,
+    "regularity_factor": 1e-06,
+    "regularity_oversampling": 32
+  },
+  "cases": [
+    "core__wrong_circle",
+    "core__circle_to_star",
+    "core__circle_to_c",
+    "core__kite",
+    "core__peanut",
+    "core__hook"
+  ],
+  "policy_changes": {
+    "fit_seconds": [
+      1800.0,
+      14400.0
+    ],
+    "audit_seconds": [
+      300.0,
+      3600.0
+    ],
+    "reason": "CPU host without CUDA; identical in all three arms; unit caps unchanged"
+  },
+  "certificate_window": 64
+}

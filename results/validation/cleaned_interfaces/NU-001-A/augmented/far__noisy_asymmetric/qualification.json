@@ -1,0 +1,74 @@
+{
+  "passed": true,
+  "refinement_relative": [
+    2.6443208978705416e-15,
+    2.0897886343953565e-15,
+    2.8081065771457857e-15,
+    1.9692050409376488e-15,
+    2.5798913570371997e-15,
+    2.0204643265616035e-15,
+    3.026142019695008e-15,
+    2.658871171014481e-15,
+    3.5683437110337194e-15,
+    3.2064779740760466e-15,
+    3.0481251371518e-15,
+    3.5073252162034623e-15,
+    4.1698659233567136e-15,
+    2.8311661265352055e-15,
+    3.572043254792901e-15,
+    2.616283891301693e-15,
+    3.564489219351102e-15,
+    3.156807794055628e-15,
+    4.080250452075011e-15
+  ],
+  "nodes": [
+    1024,
+    2048
+  ],
+  "work_units": 38,
+  "seconds": 10.05684528592974,
+  "source_real": "results/validation/shape_continuation/SC-050-localization-robustness/inputs/noisy_asymmetric/observations.json",
+  "truth": "results/validation/shape_continuation/SC-050-localization-robustness/inputs/noisy_asymmetric/truth.json",
+  "original_real_sha256": "d3143ef57619c2a709da822a168788c96b445bb3330ffa38a0127bc446208019",
+  "observations_sha256": "d7cb0eaa89e02ec4befd93d50ae095abe0de77dc2906935f1c4f3796910e09e3",
+  "contract": "new synthetic damped observations; original real measurements unchanged",
+  "physics": {
+    "solver": "nodal_kress",
+    "execution": {
+      "device": "auto",
+      "frequency_threads": 4,
+      "acceleration": "spd016",
+      "geometry": "both",
+      "resolution": 512
+    },
+    "counts": {
+      "evaluation_attempts": 608,
+      "evaluations": 608,
+      "failed_evaluations": 0,
+      "derivative_attempts": 0,
+      "derivatives": 0,
+      "failed_derivatives": 0,
+      "disk_batches": 0,
+      "ray_table_setup": 1
+    },
+    "devices": {
+      "cuda-damped": 608
+    },
+    "fallback_reasons": {},
+    "seconds": {
+      "evaluation_attempts": 0.0,
+      "ray_table_setup": 0.09473872603848577,
+      "evaluations": 601.9331038666423
+    },
+    "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+    "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+    "ray": {
+      "gamma": 0.25,
+      "lo": 0.01,
+      "hi": 100.0,
+      "panels": 111,
+      "degree": 24
+    },
+    "retained_device_state": "one ray table; matrix and reusable LU factors retained on host"
+  }
+}
