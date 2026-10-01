@@ -111,6 +111,13 @@ register()
 result = fit(problem, solver='modal_muller', execution=Execution(device='auto', frequency_threads=4))
 ```
 
+`device` has the same meaning as for Kress. `cpu` is the unchanged reference
+path. `auto` runs geometry preparation and assembly on CUDA through
+[modal_cuda.py](modal_cuda.py), and falls back to the CPU after device
+out-of-memory with a recorded reason. `cuda` fails instead of falling back.
+Scalar Bessel/Hankel values, Graf waves, LU, fields and the Jacobian always
+run on the CPU, so handles hold no device memory.
+
 From the command line, use the same subcommands through the modal entry point,
 with a new prepared campaign directory:
 
@@ -120,17 +127,23 @@ with a new prepared campaign directory:
 
 | Stage | Code | Depends on k | Retained |
 |---|---|---|---|
-| geometry | `modal_geometry.ModalGeometry`: Δ, R, W, \|W\|², normal products; certified log\|W\|²; Chebyshev T_n(R) and regular-wave arrays | no | per curve and window, LRU of 4 |
-| waves | `modal_operator.point_kernels`: Graf source/receiver coefficients | yes | receiver RHS in the handle |
-| assembly | `modal_operator.muller_matrix`: six radial functions → V, K, T (Maue), K′ = K transposed | yes | T_n arrays extended lazily |
+| geometry | `modal_geometry.ModalGeometry` (CUDA: `modal_cuda.DeviceModalGeometry`): Δ, R, W, \|W\|², normal products; certified log\|W\|²; Chebyshev T_n(R) and regular-wave arrays | no | per curve, window and device, LRU of 4 |
+| waves | `modal_operator.point_kernels`: regular waves once per k, Graf source/receiver coefficients (CPU) | yes | receiver RHS in the handle |
+| assembly | `modal_operator.muller_matrix` (CUDA: `modal_cuda.muller_matrix`): six radial functions → V, K, T (Maue), K′ = K transposed | yes | T_n arrays extended lazily |
 | factorization / fields | dense LU, traces, paired receiver data | yes | LU in the handle |
 | jacobian | `modal_operator.hadamard`: 2π(k_i²−k_e²) Σ_m w_m (u ũ)_{−m}, with w = Re(V conj N) from SC-035 coefficient velocities | yes | none |
 
 Each stage is timed separately in `receipt()['stage_seconds']`. On the
-19-frequency K=192 catalog, a new geometry costs 4.3 s on one core and 2.2 s
-with four frequency threads. The review prototype took 46.6 s, CUDA Kress
-takes 0.45 s, and CPU Kress 13.5 s. Per-frequency assembly (0.12 s) is now
-the largest cost, followed by geometry preparation (1.4 s once per curve).
+19-frequency K=192 catalog with four frequency threads, a new geometry costs:
+
+| Execution | Production | Refined |
+|---|---:|---:|
+| Modal CUDA | 0.26 s | 0.34 s |
+| CUDA Kress (N=512 / N=1024) | 0.44 s | 1.73 s |
+| Modal CPU | 2.1 s | 3.3 s |
+
+For comparison, the review prototype took 46.6 s at production. For a single
+cold frequency, CUDA Kress remains faster (0.03 s against 0.09 s at K=192).
 
 **Resolution.** Tokens are `8*K_trace`. The factor only satisfies the shared
 `FitStage` guard `nodes > 2*K_geometry`. `K_trace = max(64, 32*ceil(K_geometry/64))`
@@ -154,13 +167,14 @@ the service raises `ValueError`, and LM records it as a numerical refusal.
   coefficient bounding circle. The regular-wave series is refused when its
   cancellation `eps*I0(|k| rho)` exceeds 1e-9.
 
-**Limits.** Forward and derivative run on the CPU (`device=cuda` is refused;
-`auto` still uses CUDA for the Mie grid). The service supports one
-equal-density curve and paired point sources only. Damped fields keep a
-roughly 6e-9 floor at 2.5 GHz, but the policy damps only up to 1.25 GHz, where
-agreement is 1e-13. Accuracy, stage replays and matched timings are in
-[the service evidence](../../results/validation/cleaned_interfaces/modal-muller-service-20260930/README.md).
-No 36-case campaign has run with this backend.
+**Limits.** The service supports one equal-density curve and paired point
+sources only. Damped fields keep a roughly 6e-9 floor at 2.5 GHz, but the
+policy damps only up to 1.25 GHz, where agreement is 1e-13. CUDA agrees with
+the CPU path to the method's own floor (≤ 2.7e-12 on real fields); against
+2048-node Kress, its error stays within 2× of the CPU's. Evidence:
+[CPU service](../../results/validation/cleaned_interfaces/modal-muller-service-20260930/README.md) and
+[CUDA execution](../../results/validation/cleaned_interfaces/modal-muller-cuda-20261001/README.md).
+No inverse case or campaign has run with this backend.
 
 ## Executable policy
 
@@ -253,7 +267,7 @@ alone cannot qualify the full DF path or all 36 configurations.
 | Complete projected update and exact cleanup | `geometry.py` (extracted SC-035/042) |
 | Optimizer | shared `shape_continuation/lm_backend.py`, explicit service hook |
 | Backend and work diagnostics | `physics.py` |
-| Modal Müller backend | `modal_muller.py` (service), `modal_geometry.py`, `modal_operator.py`; tests in `test_modal_muller.py` |
+| Modal Müller backend | `modal_muller.py` (service), `modal_geometry.py`, `modal_operator.py`, `modal_cuda.py`; tests in `test_modal_muller.py` |
 | Localization | `localization.py`, `mie_grid.py` |
 | Damped CUDA assembly | `damped_cuda.py`, explicit radial-kernel argument in Kress |
 | Interpretation, checkpoints, audits | `runner.py` |

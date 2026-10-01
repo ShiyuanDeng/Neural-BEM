@@ -132,6 +132,9 @@ None of this is inverse-campaign runtime.
 
 ## Reproduce
 
+These receipts are pinned to commit `88f5ee1b`. The source-hash check in
+`summarize.py` applies at that commit; the CUDA work after it changed
+`modal_muller.py` and `modal_operator.py`, with CPU outputs bitwise unchanged.
 Run from the repository root in EMNerf, with the service, replays and
 benchmark run sequentially for timing:
 

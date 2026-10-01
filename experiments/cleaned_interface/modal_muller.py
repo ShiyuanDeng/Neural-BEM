@@ -16,8 +16,14 @@ nodal counts; the service never samples nodes. The coefficient window is
 K_trace+window_margin, so a refined token raises both the trace cutoff and the
 window. Log, radial, Graf and wave-series lengths are chosen from explicit
 error bounds or coefficient decay. When a bound fails, the service raises
-ValueError, and LM records a numerical refusal. Forward and derivative run on
-the CPU; Execution.device only selects the shared exact-Mie localization grid.
+ValueError, and LM records a numerical refusal.
+
+Execution.device selects where geometry preparation and assembly run.
+``cpu`` is the reference path. ``auto`` uses CUDA when available and falls back
+to the CPU after device out-of-memory, recording it. ``cuda`` fails instead of
+falling back. On CUDA, geometry preparation and assembly run in modal_cuda.
+Scalar Bessel/Hankel values, Graf waves, LU, fields and the Jacobian stay on the
+CPU, so handles hold no device memory.
 
 Selecting ``solver='modal_muller'`` needs ``register()``, or
 ``python -m experiments.cleaned_interface.modal_muller <command> --solver modal_muller``.
@@ -34,6 +40,7 @@ from scipy.linalg import lu_factor, lu_solve
 
 from experiments.shape_continuation import forward as F
 from experiments.shape_continuation.geometry import FourierCurve
+from gpr_bem_kress import cuda_assembly as CA
 from .modal_geometry import ModalGeometry, real_product
 from .modal_operator import hadamard, muller_matrix, point_kernels
 from .physics import NodalKress, Prediction, register_backend
@@ -119,9 +126,14 @@ class ModalMuller:
         if any(not isinstance(o.acquisition, F.PointSourceAcquisition) or not o.acquisition.paired
                for o in (*problem.real, *problem.damped)):
             raise ValueError('The modal Hadamard contraction and CI-001 localization require paired point sources.')
-        if self.execution.device == 'cuda':
-            raise RuntimeError('modal_muller forward and derivative run on the CPU; '
-                               'use device=cpu or auto (auto still uses CUDA for the Mie grid).')
+        if self.execution.device == 'cuda' and not CA.available():
+            raise RuntimeError('Explicit CUDA execution requested, but no CUDA device is available.')
+
+    def _device(self):
+        selected = self.execution.device
+        if selected == 'cuda' and not CA.available():
+            raise RuntimeError('Explicit CUDA execution requested, but no CUDA device is available.')
+        return 'cuda' if selected != 'cpu' and CA.available() else 'cpu'
 
     def resolution_profile(self, storage_band):
         s = self.settings
@@ -140,8 +152,8 @@ class ModalMuller:
     def ordered_calls(self, function, items):
         return F.ordered_calls(function, items, threads=self.execution.frequency_threads)
 
-    def _geometry(self, curve, window):
-        key = (curve.coefficients.tobytes(), window)
+    def _geometry(self, curve, window, device):
+        key = (curve.coefficients.tobytes(), window, device)
         with self._lock:
             slot = self._geometries.get(key)
             if slot is None:
@@ -153,11 +165,43 @@ class ModalMuller:
                 self._counts['geometry_cache_hits'] += 1
         with slot[0]:
             if slot[1] is None:
+                options = dict(log_tolerance=self.settings.log_tolerance, max_log_degree=self.settings.max_log_degree)
                 with self._stage('geometry'):
-                    slot[1] = ModalGeometry(curve, window, log_tolerance=self.settings.log_tolerance,
-                                            max_log_degree=self.settings.max_log_degree,
-                                            workers=self.execution.frequency_threads)
+                    if device == 'cpu':
+                        slot[1] = ModalGeometry(curve, window, workers=self.execution.frequency_threads, **options)
+                    else:
+                        from .modal_cuda import DeviceModalGeometry
+                        with CA._device_work:
+                            slot[1] = DeviceModalGeometry(curve, window, device=device, **options)
             return slot[1]
+
+    def _matrix(self, curve, window, k, ki, cutoff):
+        """Geometry and assembly on the selected device; auto retries on the CPU after OOM."""
+        device = self._device()
+        if device == 'cpu':
+            geometry = self._geometry(curve, window, 'cpu')
+            with self._stage('assembly'):
+                return geometry, (*muller_matrix(geometry, k, ki, cutoff, tolerance=self.settings.radial_tolerance,
+                                                 basis_workers=self.execution.frequency_threads), 'cpu-modal',
+                                  'CUDA unavailable' if self.execution.device == 'auto' else None)
+        from . import modal_cuda
+        try:
+            geometry = self._geometry(curve, window, device)
+            with self._stage('assembly'), CA._device_work:
+                return geometry, (*modal_cuda.muller_matrix(geometry, k, ki, cutoff,
+                                                            tolerance=self.settings.radial_tolerance),
+                                  'cuda-modal', None)
+        except Exception as exc:
+            if self.execution.device != 'auto' or not CA.out_of_memory(exc):
+                raise
+            with self._lock:
+                self._geometries.pop((curve.coefficients.tobytes(), window, device), None)
+            CA.record_fallback('modal geometry/assembly')
+        geometry = self._geometry(curve, window, 'cpu')
+        with self._stage('assembly'):
+            return geometry, (*muller_matrix(geometry, k, ki, cutoff, tolerance=self.settings.radial_tolerance,
+                                             basis_workers=self.execution.frequency_threads),
+                              'cpu-modal', 'modal CUDA OOM')
 
     def evaluate(self, curve, observation, contrast, resolution):
         started = perf_counter()
@@ -167,7 +211,8 @@ class ModalMuller:
         except Exception:
             self._record('failed_evaluations', perf_counter()-started)
             raise
-        self._record('evaluations', perf_counter()-started, 'cpu-modal')
+        self._record('evaluations', perf_counter()-started, prediction.diagnostics['device'],
+                     prediction.diagnostics['fallback'])
         return prediction
 
     def _evaluate(self, curve, observation, contrast, cutoff):
@@ -180,14 +225,10 @@ class ModalMuller:
         if not isinstance(acquisition, F.PointSourceAcquisition) or not acquisition.paired:
             raise ValueError('modal_muller supports paired point-source acquisition only.')
         ki = k*np.sqrt(contrast)
-        geometry = self._geometry(curve, cutoff+s.window_margin)
+        geometry, (matrix, radial, device, fallback) = self._matrix(curve, cutoff+s.window_margin, k, ki, cutoff)
         with self._stage('waves'):
             options = dict(tolerance=s.graf_tolerance, series_loss=s.series_loss)
-            sources = point_kernels(geometry, k, acquisition.sources, **options)
-            receivers = point_kernels(geometry, k, acquisition.receivers, **options)
-        with self._stage('assembly'):
-            matrix, radial = muller_matrix(geometry, k, ki, cutoff, tolerance=s.radial_tolerance,
-                                           basis_workers=self.execution.frequency_threads)
+            sources, receivers = point_kernels(geometry, k, (acquisition.sources, acquisition.receivers), **options)
         with self._stage('factorization'):
             factors = lu_factor(matrix, check_finite=True)
         with self._stage('fields'):
@@ -203,8 +244,8 @@ class ModalMuller:
         state = ModalState(k, ki, acquisition, cutoff, curve.coefficients.copy(), factors, traces,
                            np.vstack((receivers[0][test], receivers[1][test])))
         interval = geometry.log_interval
-        return Prediction(prediction, dict(solver=self.name, device='cpu-modal', resolution=token(cutoff),
-            K_trace=cutoff, window=window, system_residual=residual, fallback=None, log_degree=interval['degree'],
+        return Prediction(prediction, dict(solver=self.name, device=device, resolution=token(cutoff),
+            K_trace=cutoff, window=window, system_residual=residual, fallback=fallback, log_degree=interval['degree'],
             log_lower=interval['lower'], log_upper=interval['upper'], radial_upper=geometry.radial_upper,
             **radial, graf_order=max(sources[2]['graf_order'], receivers[2]['graf_order']),
             series_terms=sources[2]['series_terms'], series_loss=sources[2]['series_loss']), state)
@@ -275,9 +316,11 @@ class ModalMuller:
                 localization_model='exact homogeneous disk Mie series, qualified by selected backend',
                 discretization='Fourier-Galerkin traces |m|<=K_trace; Chebyshev radial and log|W|^2 '
                                'expansions on window K_trace+margin; Graf sources/receivers; no boundary nodes',
-                execution_note='forward and derivative on CPU; Execution.device/acceleration select only the Mie grid; '
-                               'Execution.resolution is the nodal minimum and is not used',
-                retained_state=f'up to {self.settings.cached_geometries} prepared geometries; LU factors in handles')
+                execution_note='Execution.device selects geometry preparation and assembly (modal_cuda on CUDA); '
+                               'scalar kernels, Graf waves, LU, fields and Jacobian on the CPU; '
+                               'Execution.acceleration selects only the Mie grid; Execution.resolution is not used',
+                retained_state=f'up to {self.settings.cached_geometries} prepared geometries per device '
+                               '(device arrays for CUDA); LU factors on the host in handles')
 
 
 def register():

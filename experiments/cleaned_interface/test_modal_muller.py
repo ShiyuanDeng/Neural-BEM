@@ -185,8 +185,13 @@ def test_registration_profile_and_capabilities(monkeypatch):
     with pytest.raises(ValueError, match='multiples'):
         backend.evaluate(FourierCurve.circle(), p.real[0], p.contrast, 100)
     backend.validate(p)
-    with pytest.raises(RuntimeError, match='CPU'):
+    monkeypatch.setattr(physics.CA, 'available', lambda: False)
+    with pytest.raises(RuntimeError, match='Explicit CUDA'):
         ModalMuller(Execution(device='cuda')).validate(p)
+    with pytest.raises(RuntimeError, match='Explicit CUDA'):
+        ModalMuller(Execution(device='cuda')).evaluate(FourierCurve.circle(), p.real[0], p.contrast, token(64))
+    assert ModalMuller(Execution(device='auto')).evaluate(
+        FourierCurve.circle(), p.real[0], p.contrast, token(64)).diagnostics['fallback'] == 'CUDA unavailable'
     with pytest.raises(ValueError, match='material'):
         backend.validate(replace(p, material='variable_density'))
     with pytest.raises(ValueError, match='Graf'):
@@ -231,3 +236,65 @@ def test_runner_end_to_end_with_modal_service_on_nodal_data(tmp_path):
     receipt = result['physics']
     assert receipt['solver'] == 'modal_muller' and receipt['counts']['failed_evaluations'] == 0
     assert set(receipt['devices']) == {'cpu-modal', 'cpu-mie'}
+
+
+def cuda_or_skip():
+    torch = pytest.importorskip('torch')
+    if not torch.cuda.is_available():
+        pytest.skip('CUDA unavailable')
+    return torch
+
+
+@pytest.mark.parametrize('frequency,damping', [(1e9, 0.), (1e9, .25), (2.5e9, 0.)])
+def test_cuda_matches_cpu_and_keeps_handles_on_host(frequency, damping):
+    cuda_or_skip()
+    curve, scan, update = c_curve(), b.acquisition(), ProjectedUpdate(.05)
+    space = update.prepare(curve, 12, 24)
+    k = K25*frequency/2.5e9*(1+1j*damping)
+    observation = Observation(k if damping else k.real, scan, np.ones(24, complex), frequency)
+    cpu, gpu = modal(), ModalMuller(Execution(device='cuda', frequency_threads=1))
+    a, c = [service.evaluate(curve, observation, 13.3, token(96)) for service in (cpu, gpu)]
+    assert c.diagnostics['device'] == 'cuda-modal' and gpu.receipt()['devices'] == {'cuda-modal': 1}
+    assert relative(c.prediction, a.prediction) < 1e-11
+    assert relative(gpu.derivative(c, update, space), cpu.derivative(a, update, space)) < 1e-10
+    assert all(isinstance(v, np.ndarray) for v in (*c._handle.factors, c._handle.traces, c._handle.reciprocal_rhs))
+    if frequency == 1e9 and not damping:
+        reference = F.solve(curve, k.real, 13.3, scan, 1024, execution_backend='cpu')
+        assert relative(c.prediction, reference.prediction) < 1e-11
+
+
+def test_cuda_oom_falls_back_under_auto_and_fails_explicitly(monkeypatch):
+    torch = cuda_or_skip()
+    from . import modal_cuda
+
+    def exhausted(*args, **kwargs):
+        raise torch.OutOfMemoryError('simulated modal assembly OOM')
+    monkeypatch.setattr(modal_cuda, 'muller_matrix', exhausted)
+    curve, scan = c_curve(12), b.acquisition()
+    observation = Observation(K25*.4, scan, np.ones(24, complex), 1e9)
+    expected = modal().evaluate(curve, observation, 13.3, token(64)).prediction
+    auto = ModalMuller(Execution(device='auto', frequency_threads=1))
+    import warnings
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore', RuntimeWarning)
+        got = auto.evaluate(curve, observation, 13.3, token(64))
+    np.testing.assert_array_equal(got.prediction, expected)
+    assert got.diagnostics['fallback'] == 'modal CUDA OOM' and auto.receipt()['fallback_reasons']
+    with pytest.raises(torch.OutOfMemoryError):
+        ModalMuller(Execution(device='cuda', frequency_threads=1)).evaluate(curve, observation, 13.3, token(64))
+
+
+def test_cuda_lm_stage_reproduces_cpu_decisions():
+    cuda_or_skip()
+    scan = b.acquisition()
+    values = F.solve(FourierCurve.circle(1.0), 1.2, 4., scan, 512, execution_backend='cpu').prediction
+    stage = FitStage('equivalence', (Observation(1.2, scan, values, .5e9),), (1.,), (1e-5,), 3, 8, token(64), token(96), 3, 300)
+    rows = []
+    for device in ('cpu', 'cuda'):
+        ledger = Ledger(cap=400, seconds=300)
+        ledger.begin_stage(stage.label, stage.quota)
+        rows.append(fit_stage(resize(FourierCurve.circle(1.03, .01j), 8), stage, 4., ProjectedUpdate(.05),
+                              BackendConfig(), ledger, physics=ModalMuller(Execution(device=device, frequency_threads=3))))
+    a, c = rows
+    assert [t['status'] for t in a.trials] == [t['status'] for t in c.trials] and a.accepted_steps == c.accepted_steps
+    assert np.max(np.abs(a.curve.coefficients-c.curve.coefficients)) < 1e-11

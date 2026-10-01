@@ -152,15 +152,22 @@ def graf_order(k, radius, distance, tolerance, maximum=128):
     return max(int(converged[0])-1, 1), float(ratio)
 
 
-def point_kernels(geometry, k, points, *, tolerance=1e-16, series_loss=1e-9, workers=1):
-    """Coefficients (window x points) of the incident trace and flux of G_k(. - point)."""
+def point_kernels(geometry, k, point_sets, *, tolerance=1e-16, series_loss=1e-9, workers=1):
+    """Coefficients (window x points) of the incident trace and flux of G_k(. - point).
+
+    Regular waves depend only on k, so they are built once, at the largest
+    Graf order any point set needs. Each set then keeps its own orders.
+    """
     waves = geometry.waves
-    offset = points[:, 0]+1j*points[:, 1]-waves.center
-    distance = np.abs(offset)
-    if np.any(distance <= waves.radius):
-        raise ValueError('Graf expansion requires every source and receiver outside the '
-                         'coefficient bounding circle of the curve.')
-    order, ratio = graf_order(k, waves.radius, distance, tolerance)
+    sets = []
+    for points in point_sets:
+        offset = points[:, 0]+1j*points[:, 1]-waves.center
+        distance = np.abs(offset)
+        if np.any(distance <= waves.radius):
+            raise ValueError('Graf expansion requires every source and receiver outside the '
+                             'coefficient bounding circle of the curve.')
+        sets.append((offset, distance, *graf_order(k, waves.radius, distance, tolerance)))
+    order = max(row[2] for row in sets)
     x = abs(k)*waves.radius
     terms = series_terms(x, tolerance)
     loss = float(EPS*i0e(x)*np.exp(x))
@@ -179,10 +186,14 @@ def point_kernels(geometry, k, points, *, tolerance=1e-16, series_loss=1e-9, wor
     flux = k/2*(geometry.normal_multiplier(functions[:-2], workers)
                 -geometry.conjugate_normal_multiplier(functions[2:], workers))
     values = functions[1:-1]
-    orders = np.arange(-order, order+1)
-    graf = .25j*hankel1(orders[:, None], k*distance[None, :])*np.exp(-1j*orders[:, None]*np.angle(offset)[None, :])
-    return values.T@graf, flux.T@graf, dict(graf_order=order, graf_ratio=ratio, series_terms=terms,
-                                             series_loss=loss)
+    result = []
+    for offset, distance, own, ratio in sets:
+        rows = slice(order-own, order+own+1)
+        orders = np.arange(-own, own+1)
+        graf = .25j*hankel1(orders[:, None], k*distance[None, :])*np.exp(-1j*orders[:, None]*np.angle(offset)[None, :])
+        result.append((values[rows].T@graf, flux[rows].T@graf,
+                       dict(graf_order=own, graf_ratio=ratio, series_terms=terms, series_loss=loss)))
+    return result
 
 
 def hadamard(traces, reciprocal, weights, cutoff, factor):

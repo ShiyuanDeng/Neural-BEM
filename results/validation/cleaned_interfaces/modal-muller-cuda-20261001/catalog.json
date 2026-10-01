@@ -1,0 +1,2126 @@
+{
+  "status": "COMPLETE",
+  "rows": [
+    {
+      "method": "nodal_cuda",
+      "level": "production",
+      "resolution_token": 512,
+      "new_geometry_forward_seconds": 0.6188281089998782,
+      "jacobian_seconds": 0.22362226783297956,
+      "new_geometry_forward_plus_jacobian_seconds": 0.8424503768328577,
+      "same_geometry_forward_seconds": 0.521438336931169,
+      "relative_fields": 1.6457139610553798e-14,
+      "worst_frequency_fields": 1.1164387172931753e-13,
+      "relative_jacobian": 7.65169701186372e-14,
+      "worst_jacobian_column": 1.1233387322180128e-12,
+      "receipt": {
+        "solver": "nodal_kress",
+        "execution": {
+          "device": "cuda",
+          "frequency_threads": 4,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "counts": {
+          "evaluation_attempts": 40,
+          "evaluations": 40,
+          "failed_evaluations": 0,
+          "derivative_attempts": 19,
+          "derivatives": 19,
+          "failed_derivatives": 0,
+          "disk_batches": 0,
+          "ray_table_setup": 1
+        },
+        "devices": {
+          "cuda": 39,
+          "cuda-damped": 1
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "evaluations": 4.739210631465539,
+          "ray_table_setup": 0.003475961973890662,
+          "derivative_attempts": 0.0,
+          "derivatives": 0.8304052075836807
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "ray": {
+          "gamma": 0.25,
+          "lo": 0.01,
+          "hi": 100.0,
+          "panels": 111,
+          "degree": 24
+        },
+        "retained_device_state": "one ray table; matrix and reusable LU factors retained on host"
+      },
+      "fixture": "DF_endpoint_catalog19",
+      "repetition": 0
+    },
+    {
+      "method": "modal_cpu_t4",
+      "level": "production",
+      "resolution_token": 768,
+      "new_geometry_forward_seconds": 2.211602680850774,
+      "jacobian_seconds": 0.021825148025527596,
+      "new_geometry_forward_plus_jacobian_seconds": 2.2334278288763016,
+      "same_geometry_forward_seconds": 0.7984202541410923,
+      "relative_fields": 2.8128028663151337e-11,
+      "worst_frequency_fields": 1.5766351250788948e-10,
+      "relative_jacobian": 2.962065172468091e-08,
+      "worst_jacobian_column": 1.2114304924052277e-05,
+      "receipt": {
+        "solver": "modal_muller",
+        "execution": {
+          "device": "cpu",
+          "frequency_threads": 4,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "settings": {
+          "trace_minimum": 64,
+          "trace_step": 32,
+          "window_margin": 64,
+          "log_tolerance": 1e-16,
+          "radial_tolerance": 1e-15,
+          "graf_tolerance": 1e-16,
+          "series_loss": 1e-09,
+          "max_log_degree": 4000,
+          "cached_geometries": 4
+        },
+        "counts": {
+          "evaluation_attempts": 38,
+          "evaluations": 38,
+          "failed_evaluations": 0,
+          "derivative_attempts": 19,
+          "derivatives": 19,
+          "failed_derivatives": 0,
+          "disk_batches": 0,
+          "geometry_cache_hits": 37,
+          "geometry": 1,
+          "assembly": 38,
+          "waves": 38,
+          "factorization": 38,
+          "fields": 38,
+          "jacobian": 19
+        },
+        "devices": {
+          "cpu-modal": 38
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "geometry": 1.1299858088605106,
+          "assembly": 6.42395291547291,
+          "waves": 0.49806744046509266,
+          "factorization": 0.12810308719053864,
+          "fields": 0.0650869095697999,
+          "evaluations": 11.641522428952157,
+          "derivative_attempts": 0.0,
+          "jacobian": 0.03592171217314899,
+          "derivatives": 0.03608827479183674
+        },
+        "stage_seconds": {
+          "geometry": 1.1299858088605106,
+          "waves": 0.49806744046509266,
+          "assembly": 6.42395291547291,
+          "factorization": 0.12810308719053864,
+          "fields": 0.0650869095697999,
+          "jacobian": 0.03592171217314899
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "discretization": "Fourier-Galerkin traces |m|<=K_trace; Chebyshev radial and log|W|^2 expansions on window K_trace+margin; Graf sources/receivers; no boundary nodes",
+        "execution_note": "Execution.device selects geometry preparation and assembly (modal_cuda on CUDA); scalar kernels, Graf waves, LU, fields and Jacobian on the CPU; Execution.acceleration selects only the Mie grid; Execution.resolution is not used",
+        "retained_state": "up to 4 prepared geometries per device (device arrays for CUDA); LU factors on the host in handles"
+      },
+      "fixture": "DF_endpoint_catalog19",
+      "repetition": 0
+    },
+    {
+      "method": "modal_cuda_t1",
+      "level": "production",
+      "resolution_token": 768,
+      "new_geometry_forward_seconds": 0.4683310620021075,
+      "jacobian_seconds": 0.03900975803844631,
+      "new_geometry_forward_plus_jacobian_seconds": 0.5073408200405538,
+      "same_geometry_forward_seconds": 0.2727921118494123,
+      "relative_fields": 2.811421215680391e-11,
+      "worst_frequency_fields": 1.5758147223713196e-10,
+      "relative_jacobian": 2.9620651241591878e-08,
+      "worst_jacobian_column": 1.2114305193813558e-05,
+      "receipt": {
+        "solver": "modal_muller",
+        "execution": {
+          "device": "cuda",
+          "frequency_threads": 1,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "settings": {
+          "trace_minimum": 64,
+          "trace_step": 32,
+          "window_margin": 64,
+          "log_tolerance": 1e-16,
+          "radial_tolerance": 1e-15,
+          "graf_tolerance": 1e-16,
+          "series_loss": 1e-09,
+          "max_log_degree": 4000,
+          "cached_geometries": 4
+        },
+        "counts": {
+          "evaluation_attempts": 38,
+          "evaluations": 38,
+          "failed_evaluations": 0,
+          "derivative_attempts": 19,
+          "derivatives": 19,
+          "failed_derivatives": 0,
+          "disk_batches": 0,
+          "geometry_cache_hits": 37,
+          "geometry": 1,
+          "assembly": 38,
+          "waves": 38,
+          "factorization": 38,
+          "fields": 38,
+          "jacobian": 19
+        },
+        "devices": {
+          "cuda-modal": 38
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "geometry": 0.047030773013830185,
+          "assembly": 0.158233875175938,
+          "waves": 0.39046082622371614,
+          "factorization": 0.10203717206604779,
+          "fields": 0.04036347893998027,
+          "evaluations": 0.7408754420466721,
+          "derivative_attempts": 0.0,
+          "jacobian": 0.01768433442339301,
+          "derivatives": 0.01778883091174066
+        },
+        "stage_seconds": {
+          "geometry": 0.047030773013830185,
+          "waves": 0.39046082622371614,
+          "assembly": 0.158233875175938,
+          "factorization": 0.10203717206604779,
+          "fields": 0.04036347893998027,
+          "jacobian": 0.01768433442339301
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "discretization": "Fourier-Galerkin traces |m|<=K_trace; Chebyshev radial and log|W|^2 expansions on window K_trace+margin; Graf sources/receivers; no boundary nodes",
+        "execution_note": "Execution.device selects geometry preparation and assembly (modal_cuda on CUDA); scalar kernels, Graf waves, LU, fields and Jacobian on the CPU; Execution.acceleration selects only the Mie grid; Execution.resolution is not used",
+        "retained_state": "up to 4 prepared geometries per device (device arrays for CUDA); LU factors on the host in handles"
+      },
+      "fixture": "DF_endpoint_catalog19",
+      "repetition": 0
+    },
+    {
+      "method": "modal_cuda_t4",
+      "level": "production",
+      "resolution_token": 768,
+      "new_geometry_forward_seconds": 0.2655149269849062,
+      "jacobian_seconds": 0.019547716015949845,
+      "new_geometry_forward_plus_jacobian_seconds": 0.28506264300085604,
+      "same_geometry_forward_seconds": 0.12155741802416742,
+      "relative_fields": 2.811421215680391e-11,
+      "worst_frequency_fields": 1.5758147223713196e-10,
+      "relative_jacobian": 2.9620651241591878e-08,
+      "worst_jacobian_column": 1.2114305193813558e-05,
+      "receipt": {
+        "solver": "modal_muller",
+        "execution": {
+          "device": "cuda",
+          "frequency_threads": 4,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "settings": {
+          "trace_minimum": 64,
+          "trace_step": 32,
+          "window_margin": 64,
+          "log_tolerance": 1e-16,
+          "radial_tolerance": 1e-15,
+          "graf_tolerance": 1e-16,
+          "series_loss": 1e-09,
+          "max_log_degree": 4000,
+          "cached_geometries": 4
+        },
+        "counts": {
+          "evaluation_attempts": 38,
+          "evaluations": 38,
+          "failed_evaluations": 0,
+          "derivative_attempts": 19,
+          "derivatives": 19,
+          "failed_derivatives": 0,
+          "disk_batches": 0,
+          "geometry_cache_hits": 37,
+          "geometry": 1,
+          "assembly": 38,
+          "waves": 38,
+          "factorization": 38,
+          "fields": 38,
+          "jacobian": 19
+        },
+        "devices": {
+          "cuda-modal": 38
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "geometry": 0.047146673081442714,
+          "assembly": 0.3241927588824183,
+          "waves": 0.7276088644284755,
+          "factorization": 0.12281372677534819,
+          "fields": 0.05741957318969071,
+          "evaluations": 1.4177373021375388,
+          "derivative_attempts": 0.0,
+          "jacobian": 0.025125966174528003,
+          "derivatives": 0.02528258040547371
+        },
+        "stage_seconds": {
+          "geometry": 0.047146673081442714,
+          "waves": 0.7276088644284755,
+          "assembly": 0.3241927588824183,
+          "factorization": 0.12281372677534819,
+          "fields": 0.05741957318969071,
+          "jacobian": 0.025125966174528003
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "discretization": "Fourier-Galerkin traces |m|<=K_trace; Chebyshev radial and log|W|^2 expansions on window K_trace+margin; Graf sources/receivers; no boundary nodes",
+        "execution_note": "Execution.device selects geometry preparation and assembly (modal_cuda on CUDA); scalar kernels, Graf waves, LU, fields and Jacobian on the CPU; Execution.acceleration selects only the Mie grid; Execution.resolution is not used",
+        "retained_state": "up to 4 prepared geometries per device (device arrays for CUDA); LU factors on the host in handles"
+      },
+      "fixture": "DF_endpoint_catalog19",
+      "repetition": 0
+    },
+    {
+      "method": "nodal_cuda",
+      "level": "refined",
+      "resolution_token": 1024,
+      "new_geometry_forward_seconds": 1.7267620828934014,
+      "jacobian_seconds": 0.5169828198850155,
+      "new_geometry_forward_plus_jacobian_seconds": 2.243744902778417,
+      "same_geometry_forward_seconds": 1.728066431824118,
+      "relative_fields": 1.137376662127449e-14,
+      "worst_frequency_fields": 5.223060031083381e-14,
+      "relative_jacobian": 4.3408274844771646e-14,
+      "worst_jacobian_column": 6.700057198903912e-13,
+      "receipt": {
+        "solver": "nodal_kress",
+        "execution": {
+          "device": "cuda",
+          "frequency_threads": 4,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "counts": {
+          "evaluation_attempts": 78,
+          "evaluations": 78,
+          "failed_evaluations": 0,
+          "derivative_attempts": 38,
+          "derivatives": 38,
+          "failed_derivatives": 0,
+          "disk_batches": 0,
+          "ray_table_setup": 1
+        },
+        "devices": {
+          "cuda": 77,
+          "cuda-damped": 1
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "evaluations": 17.778153469320387,
+          "ray_table_setup": 0.003475961973890662,
+          "derivative_attempts": 0.0,
+          "derivatives": 2.7697916394099593
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "ray": {
+          "gamma": 0.25,
+          "lo": 0.01,
+          "hi": 100.0,
+          "panels": 111,
+          "degree": 24
+        },
+        "retained_device_state": "one ray table; matrix and reusable LU factors retained on host"
+      },
+      "fixture": "DF_endpoint_catalog19",
+      "repetition": 0
+    },
+    {
+      "method": "modal_cpu_t4",
+      "level": "refined",
+      "resolution_token": 1024,
+      "new_geometry_forward_seconds": 3.2756074159406126,
+      "jacobian_seconds": 0.023813346168026328,
+      "new_geometry_forward_plus_jacobian_seconds": 3.299420762108639,
+      "same_geometry_forward_seconds": 1.5694877919740975,
+      "relative_fields": 3.842262207085295e-13,
+      "worst_frequency_fields": 1.784411868118964e-12,
+      "relative_jacobian": 2.552723747941487e-12,
+      "worst_jacobian_column": 3.2287836182846145e-11,
+      "receipt": {
+        "solver": "modal_muller",
+        "execution": {
+          "device": "cpu",
+          "frequency_threads": 4,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "settings": {
+          "trace_minimum": 64,
+          "trace_step": 32,
+          "window_margin": 64,
+          "log_tolerance": 1e-16,
+          "radial_tolerance": 1e-15,
+          "graf_tolerance": 1e-16,
+          "series_loss": 1e-09,
+          "max_log_degree": 4000,
+          "cached_geometries": 4
+        },
+        "counts": {
+          "evaluation_attempts": 38,
+          "evaluations": 38,
+          "failed_evaluations": 0,
+          "derivative_attempts": 19,
+          "derivatives": 19,
+          "failed_derivatives": 0,
+          "disk_batches": 0,
+          "geometry_cache_hits": 37,
+          "geometry": 1,
+          "assembly": 38,
+          "waves": 38,
+          "factorization": 38,
+          "fields": 38,
+          "jacobian": 19
+        },
+        "devices": {
+          "cpu-modal": 38
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "geometry": 1.3686051999684423,
+          "assembly": 12.33989811851643,
+          "waves": 0.5319220561068505,
+          "factorization": 0.25819261209107935,
+          "fields": 0.09116629417985678,
+          "evaluations": 18.70293446443975,
+          "derivative_attempts": 0.0,
+          "jacobian": 0.038436774630099535,
+          "derivatives": 0.038612577598541975
+        },
+        "stage_seconds": {
+          "geometry": 1.3686051999684423,
+          "waves": 0.5319220561068505,
+          "assembly": 12.33989811851643,
+          "factorization": 0.25819261209107935,
+          "fields": 0.09116629417985678,
+          "jacobian": 0.038436774630099535
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "discretization": "Fourier-Galerkin traces |m|<=K_trace; Chebyshev radial and log|W|^2 expansions on window K_trace+margin; Graf sources/receivers; no boundary nodes",
+        "execution_note": "Execution.device selects geometry preparation and assembly (modal_cuda on CUDA); scalar kernels, Graf waves, LU, fields and Jacobian on the CPU; Execution.acceleration selects only the Mie grid; Execution.resolution is not used",
+        "retained_state": "up to 4 prepared geometries per device (device arrays for CUDA); LU factors on the host in handles"
+      },
+      "fixture": "DF_endpoint_catalog19",
+      "repetition": 0
+    },
+    {
+      "method": "modal_cuda_t1",
+      "level": "refined",
+      "resolution_token": 1024,
+      "new_geometry_forward_seconds": 0.6504501148592681,
+      "jacobian_seconds": 0.04915499803610146,
+      "new_geometry_forward_plus_jacobian_seconds": 0.6996051128953695,
+      "same_geometry_forward_seconds": 0.39480229699984193,
+      "relative_fields": 2.6069758191931786e-13,
+      "worst_frequency_fields": 1.2187460254352581e-12,
+      "relative_jacobian": 1.7414307809246188e-12,
+      "worst_jacobian_column": 3.198887223787913e-11,
+      "receipt": {
+        "solver": "modal_muller",
+        "execution": {
+          "device": "cuda",
+          "frequency_threads": 1,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "settings": {
+          "trace_minimum": 64,
+          "trace_step": 32,
+          "window_margin": 64,
+          "log_tolerance": 1e-16,
+          "radial_tolerance": 1e-15,
+          "graf_tolerance": 1e-16,
+          "series_loss": 1e-09,
+          "max_log_degree": 4000,
+          "cached_geometries": 4
+        },
+        "counts": {
+          "evaluation_attempts": 38,
+          "evaluations": 38,
+          "failed_evaluations": 0,
+          "derivative_attempts": 19,
+          "derivatives": 19,
+          "failed_derivatives": 0,
+          "disk_batches": 0,
+          "geometry_cache_hits": 37,
+          "geometry": 1,
+          "assembly": 38,
+          "waves": 38,
+          "factorization": 38,
+          "fields": 38,
+          "jacobian": 19
+        },
+        "devices": {
+          "cuda-modal": 38
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "geometry": 0.07168221287429333,
+          "assembly": 0.24036046606488526,
+          "waves": 0.4372857199050486,
+          "factorization": 0.22255955380387604,
+          "fields": 0.06986569659784436,
+          "evaluations": 1.0449825467076153,
+          "derivative_attempts": 0.0,
+          "jacobian": 0.02747721946798265,
+          "derivatives": 0.027590011712163687
+        },
+        "stage_seconds": {
+          "geometry": 0.07168221287429333,
+          "waves": 0.4372857199050486,
+          "assembly": 0.24036046606488526,
+          "factorization": 0.22255955380387604,
+          "fields": 0.06986569659784436,
+          "jacobian": 0.02747721946798265
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "discretization": "Fourier-Galerkin traces |m|<=K_trace; Chebyshev radial and log|W|^2 expansions on window K_trace+margin; Graf sources/receivers; no boundary nodes",
+        "execution_note": "Execution.device selects geometry preparation and assembly (modal_cuda on CUDA); scalar kernels, Graf waves, LU, fields and Jacobian on the CPU; Execution.acceleration selects only the Mie grid; Execution.resolution is not used",
+        "retained_state": "up to 4 prepared geometries per device (device arrays for CUDA); LU factors on the host in handles"
+      },
+      "fixture": "DF_endpoint_catalog19",
+      "repetition": 0
+    },
+    {
+      "method": "modal_cuda_t4",
+      "level": "refined",
+      "resolution_token": 1024,
+      "new_geometry_forward_seconds": 0.342103609116748,
+      "jacobian_seconds": 0.023216234985738993,
+      "new_geometry_forward_plus_jacobian_seconds": 0.36531984410248697,
+      "same_geometry_forward_seconds": 0.1555894110351801,
+      "relative_fields": 2.6069758191931786e-13,
+      "worst_frequency_fields": 1.2187460254352581e-12,
+      "relative_jacobian": 1.7414307809246188e-12,
+      "worst_jacobian_column": 3.198887223787913e-11,
+      "receipt": {
+        "solver": "modal_muller",
+        "execution": {
+          "device": "cuda",
+          "frequency_threads": 4,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "settings": {
+          "trace_minimum": 64,
+          "trace_step": 32,
+          "window_margin": 64,
+          "log_tolerance": 1e-16,
+          "radial_tolerance": 1e-15,
+          "graf_tolerance": 1e-16,
+          "series_loss": 1e-09,
+          "max_log_degree": 4000,
+          "cached_geometries": 4
+        },
+        "counts": {
+          "evaluation_attempts": 38,
+          "evaluations": 38,
+          "failed_evaluations": 0,
+          "derivative_attempts": 19,
+          "derivatives": 19,
+          "failed_derivatives": 0,
+          "disk_batches": 0,
+          "geometry_cache_hits": 37,
+          "geometry": 1,
+          "assembly": 38,
+          "waves": 38,
+          "factorization": 38,
+          "fields": 38,
+          "jacobian": 19
+        },
+        "devices": {
+          "cuda-modal": 38
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "geometry": 0.07415062398649752,
+          "assembly": 0.4162503338884562,
+          "waves": 0.7659961299505085,
+          "factorization": 0.2645895725581795,
+          "fields": 0.0949982707388699,
+          "evaluations": 1.8426738877315074,
+          "derivative_attempts": 0.0,
+          "jacobian": 0.04455165332183242,
+          "derivatives": 0.04484262503683567
+        },
+        "stage_seconds": {
+          "geometry": 0.07415062398649752,
+          "waves": 0.7659961299505085,
+          "assembly": 0.4162503338884562,
+          "factorization": 0.2645895725581795,
+          "fields": 0.0949982707388699,
+          "jacobian": 0.04455165332183242
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "discretization": "Fourier-Galerkin traces |m|<=K_trace; Chebyshev radial and log|W|^2 expansions on window K_trace+margin; Graf sources/receivers; no boundary nodes",
+        "execution_note": "Execution.device selects geometry preparation and assembly (modal_cuda on CUDA); scalar kernels, Graf waves, LU, fields and Jacobian on the CPU; Execution.acceleration selects only the Mie grid; Execution.resolution is not used",
+        "retained_state": "up to 4 prepared geometries per device (device arrays for CUDA); LU factors on the host in handles"
+      },
+      "fixture": "DF_endpoint_catalog19",
+      "repetition": 0
+    },
+    {
+      "method": "nodal_cuda",
+      "level": "production",
+      "resolution_token": 512,
+      "new_geometry_forward_seconds": 0.43463082588277757,
+      "jacobian_seconds": 0.20413649501278996,
+      "new_geometry_forward_plus_jacobian_seconds": 0.6387673208955675,
+      "same_geometry_forward_seconds": 0.4365758940111846,
+      "relative_fields": 1.6457139610553798e-14,
+      "worst_frequency_fields": 1.1164387172931753e-13,
+      "relative_jacobian": 7.65169701186372e-14,
+      "worst_jacobian_column": 1.1233387322180128e-12,
+      "receipt": {
+        "solver": "nodal_kress",
+        "execution": {
+          "device": "cuda",
+          "frequency_threads": 4,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "counts": {
+          "evaluation_attempts": 116,
+          "evaluations": 116,
+          "failed_evaluations": 0,
+          "derivative_attempts": 57,
+          "derivatives": 57,
+          "failed_derivatives": 0,
+          "disk_batches": 0,
+          "ray_table_setup": 1
+        },
+        "devices": {
+          "cuda": 115,
+          "cuda-damped": 1
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "evaluations": 21.007121509872377,
+          "ray_table_setup": 0.003475961973890662,
+          "derivative_attempts": 0.0,
+          "derivatives": 3.5272717331536114
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "ray": {
+          "gamma": 0.25,
+          "lo": 0.01,
+          "hi": 100.0,
+          "panels": 111,
+          "degree": 24
+        },
+        "retained_device_state": "one ray table; matrix and reusable LU factors retained on host"
+      },
+      "fixture": "DF_endpoint_catalog19",
+      "repetition": 1
+    },
+    {
+      "method": "modal_cuda_t4",
+      "level": "refined",
+      "resolution_token": 1024,
+      "new_geometry_forward_seconds": 0.3478689610492438,
+      "jacobian_seconds": 0.023882733890786767,
+      "new_geometry_forward_plus_jacobian_seconds": 0.3717516949400306,
+      "same_geometry_forward_seconds": 0.14272025786340237,
+      "relative_fields": 2.6069758191931786e-13,
+      "worst_frequency_fields": 1.2187460254352581e-12,
+      "relative_jacobian": 1.7414307809246188e-12,
+      "worst_jacobian_column": 3.198887223787913e-11,
+      "receipt": {
+        "solver": "modal_muller",
+        "execution": {
+          "device": "cuda",
+          "frequency_threads": 4,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "settings": {
+          "trace_minimum": 64,
+          "trace_step": 32,
+          "window_margin": 64,
+          "log_tolerance": 1e-16,
+          "radial_tolerance": 1e-15,
+          "graf_tolerance": 1e-16,
+          "series_loss": 1e-09,
+          "max_log_degree": 4000,
+          "cached_geometries": 4
+        },
+        "counts": {
+          "evaluation_attempts": 38,
+          "evaluations": 38,
+          "failed_evaluations": 0,
+          "derivative_attempts": 19,
+          "derivatives": 19,
+          "failed_derivatives": 0,
+          "disk_batches": 0,
+          "geometry_cache_hits": 37,
+          "geometry": 1,
+          "assembly": 38,
+          "waves": 38,
+          "factorization": 38,
+          "fields": 38,
+          "jacobian": 19
+        },
+        "devices": {
+          "cuda-modal": 38
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "geometry": 0.07213558186776936,
+          "assembly": 0.40338189876638353,
+          "waves": 0.7664539110846817,
+          "factorization": 0.2545235608704388,
+          "fields": 0.09139860421419144,
+          "evaluations": 1.8076988537795842,
+          "derivative_attempts": 0.0,
+          "jacobian": 0.03775951755233109,
+          "derivatives": 0.03792659682221711
+        },
+        "stage_seconds": {
+          "geometry": 0.07213558186776936,
+          "waves": 0.7664539110846817,
+          "assembly": 0.40338189876638353,
+          "factorization": 0.2545235608704388,
+          "fields": 0.09139860421419144,
+          "jacobian": 0.03775951755233109
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "discretization": "Fourier-Galerkin traces |m|<=K_trace; Chebyshev radial and log|W|^2 expansions on window K_trace+margin; Graf sources/receivers; no boundary nodes",
+        "execution_note": "Execution.device selects geometry preparation and assembly (modal_cuda on CUDA); scalar kernels, Graf waves, LU, fields and Jacobian on the CPU; Execution.acceleration selects only the Mie grid; Execution.resolution is not used",
+        "retained_state": "up to 4 prepared geometries per device (device arrays for CUDA); LU factors on the host in handles"
+      },
+      "fixture": "DF_endpoint_catalog19",
+      "repetition": 1
+    },
+    {
+      "method": "modal_cuda_t1",
+      "level": "refined",
+      "resolution_token": 1024,
+      "new_geometry_forward_seconds": 0.6505453330464661,
+      "jacobian_seconds": 0.048223676858469844,
+      "new_geometry_forward_plus_jacobian_seconds": 0.698769009904936,
+      "same_geometry_forward_seconds": 0.39486167510040104,
+      "relative_fields": 2.6069758191931786e-13,
+      "worst_frequency_fields": 1.2187460254352581e-12,
+      "relative_jacobian": 1.7414307809246188e-12,
+      "worst_jacobian_column": 3.198887223787913e-11,
+      "receipt": {
+        "solver": "modal_muller",
+        "execution": {
+          "device": "cuda",
+          "frequency_threads": 1,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "settings": {
+          "trace_minimum": 64,
+          "trace_step": 32,
+          "window_margin": 64,
+          "log_tolerance": 1e-16,
+          "radial_tolerance": 1e-15,
+          "graf_tolerance": 1e-16,
+          "series_loss": 1e-09,
+          "max_log_degree": 4000,
+          "cached_geometries": 4
+        },
+        "counts": {
+          "evaluation_attempts": 38,
+          "evaluations": 38,
+          "failed_evaluations": 0,
+          "derivative_attempts": 19,
+          "derivatives": 19,
+          "failed_derivatives": 0,
+          "disk_batches": 0,
+          "geometry_cache_hits": 37,
+          "geometry": 1,
+          "assembly": 38,
+          "waves": 38,
+          "factorization": 38,
+          "fields": 38,
+          "jacobian": 19
+        },
+        "devices": {
+          "cuda-modal": 38
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "geometry": 0.07163050980307162,
+          "assembly": 0.24089019233360887,
+          "waves": 0.4358178225811571,
+          "factorization": 0.2231279695406556,
+          "fields": 0.07041079481132329,
+          "evaluations": 1.0451275911182165,
+          "derivative_attempts": 0.0,
+          "jacobian": 0.026959541952237487,
+          "derivatives": 0.0270682021509856
+        },
+        "stage_seconds": {
+          "geometry": 0.07163050980307162,
+          "waves": 0.4358178225811571,
+          "assembly": 0.24089019233360887,
+          "factorization": 0.2231279695406556,
+          "fields": 0.07041079481132329,
+          "jacobian": 0.026959541952237487
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "discretization": "Fourier-Galerkin traces |m|<=K_trace; Chebyshev radial and log|W|^2 expansions on window K_trace+margin; Graf sources/receivers; no boundary nodes",
+        "execution_note": "Execution.device selects geometry preparation and assembly (modal_cuda on CUDA); scalar kernels, Graf waves, LU, fields and Jacobian on the CPU; Execution.acceleration selects only the Mie grid; Execution.resolution is not used",
+        "retained_state": "up to 4 prepared geometries per device (device arrays for CUDA); LU factors on the host in handles"
+      },
+      "fixture": "DF_endpoint_catalog19",
+      "repetition": 1
+    },
+    {
+      "method": "modal_cpu_t4",
+      "level": "refined",
+      "resolution_token": 1024,
+      "new_geometry_forward_seconds": 3.3030018319841474,
+      "jacobian_seconds": 0.027978840051218867,
+      "new_geometry_forward_plus_jacobian_seconds": 3.3309806720353663,
+      "same_geometry_forward_seconds": 1.5601696651428938,
+      "relative_fields": 3.842262207085295e-13,
+      "worst_frequency_fields": 1.784411868118964e-12,
+      "relative_jacobian": 2.552723747941487e-12,
+      "worst_jacobian_column": 3.2287836182846145e-11,
+      "receipt": {
+        "solver": "modal_muller",
+        "execution": {
+          "device": "cpu",
+          "frequency_threads": 4,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "settings": {
+          "trace_minimum": 64,
+          "trace_step": 32,
+          "window_margin": 64,
+          "log_tolerance": 1e-16,
+          "radial_tolerance": 1e-15,
+          "graf_tolerance": 1e-16,
+          "series_loss": 1e-09,
+          "max_log_degree": 4000,
+          "cached_geometries": 4
+        },
+        "counts": {
+          "evaluation_attempts": 38,
+          "evaluations": 38,
+          "failed_evaluations": 0,
+          "derivative_attempts": 19,
+          "derivatives": 19,
+          "failed_derivatives": 0,
+          "disk_batches": 0,
+          "geometry_cache_hits": 37,
+          "geometry": 1,
+          "assembly": 38,
+          "waves": 38,
+          "factorization": 38,
+          "fields": 38,
+          "jacobian": 19
+        },
+        "devices": {
+          "cpu-modal": 38
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "geometry": 1.3282319391146302,
+          "assembly": 12.418805819004774,
+          "waves": 0.5526888654567301,
+          "factorization": 0.29110916913487017,
+          "fields": 0.10377113614231348,
+          "evaluations": 18.68518333067186,
+          "derivative_attempts": 0.0,
+          "jacobian": 0.05943174380809069,
+          "derivatives": 0.059578472981229424
+        },
+        "stage_seconds": {
+          "geometry": 1.3282319391146302,
+          "waves": 0.5526888654567301,
+          "assembly": 12.418805819004774,
+          "factorization": 0.29110916913487017,
+          "fields": 0.10377113614231348,
+          "jacobian": 0.05943174380809069
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "discretization": "Fourier-Galerkin traces |m|<=K_trace; Chebyshev radial and log|W|^2 expansions on window K_trace+margin; Graf sources/receivers; no boundary nodes",
+        "execution_note": "Execution.device selects geometry preparation and assembly (modal_cuda on CUDA); scalar kernels, Graf waves, LU, fields and Jacobian on the CPU; Execution.acceleration selects only the Mie grid; Execution.resolution is not used",
+        "retained_state": "up to 4 prepared geometries per device (device arrays for CUDA); LU factors on the host in handles"
+      },
+      "fixture": "DF_endpoint_catalog19",
+      "repetition": 1
+    },
+    {
+      "method": "nodal_cuda",
+      "level": "refined",
+      "resolution_token": 1024,
+      "new_geometry_forward_seconds": 1.7201399658806622,
+      "jacobian_seconds": 0.4767772168852389,
+      "new_geometry_forward_plus_jacobian_seconds": 2.196917182765901,
+      "same_geometry_forward_seconds": 1.7080478200223297,
+      "relative_fields": 1.137376662127449e-14,
+      "worst_frequency_fields": 5.223060031083381e-14,
+      "relative_jacobian": 4.3408274844771646e-14,
+      "worst_jacobian_column": 6.700057198903912e-13,
+      "receipt": {
+        "solver": "nodal_kress",
+        "execution": {
+          "device": "cuda",
+          "frequency_threads": 4,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "counts": {
+          "evaluation_attempts": 154,
+          "evaluations": 154,
+          "failed_evaluations": 0,
+          "derivative_attempts": 76,
+          "derivatives": 76,
+          "failed_derivatives": 0,
+          "disk_batches": 0,
+          "ray_table_setup": 1
+        },
+        "devices": {
+          "cuda": 153,
+          "cuda-damped": 1
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "evaluations": 34.027084505651146,
+          "ray_table_setup": 0.003475961973890662,
+          "derivative_attempts": 0.0,
+          "derivatives": 5.428503676317632
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "ray": {
+          "gamma": 0.25,
+          "lo": 0.01,
+          "hi": 100.0,
+          "panels": 111,
+          "degree": 24
+        },
+        "retained_device_state": "one ray table; matrix and reusable LU factors retained on host"
+      },
+      "fixture": "DF_endpoint_catalog19",
+      "repetition": 1
+    },
+    {
+      "method": "modal_cuda_t4",
+      "level": "production",
+      "resolution_token": 768,
+      "new_geometry_forward_seconds": 0.25251118815504014,
+      "jacobian_seconds": 0.019548170967027545,
+      "new_geometry_forward_plus_jacobian_seconds": 0.2720593591220677,
+      "same_geometry_forward_seconds": 0.11999836005270481,
+      "relative_fields": 2.811421215680391e-11,
+      "worst_frequency_fields": 1.5758147223713196e-10,
+      "relative_jacobian": 2.9620651241591878e-08,
+      "worst_jacobian_column": 1.2114305193813558e-05,
+      "receipt": {
+        "solver": "modal_muller",
+        "execution": {
+          "device": "cuda",
+          "frequency_threads": 4,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "settings": {
+          "trace_minimum": 64,
+          "trace_step": 32,
+          "window_margin": 64,
+          "log_tolerance": 1e-16,
+          "radial_tolerance": 1e-15,
+          "graf_tolerance": 1e-16,
+          "series_loss": 1e-09,
+          "max_log_degree": 4000,
+          "cached_geometries": 4
+        },
+        "counts": {
+          "evaluation_attempts": 38,
+          "evaluations": 38,
+          "failed_evaluations": 0,
+          "derivative_attempts": 19,
+          "derivatives": 19,
+          "failed_derivatives": 0,
+          "disk_batches": 0,
+          "geometry_cache_hits": 37,
+          "geometry": 1,
+          "assembly": 38,
+          "waves": 38,
+          "factorization": 38,
+          "fields": 38,
+          "jacobian": 19
+        },
+        "devices": {
+          "cuda-modal": 38
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "geometry": 0.047187638003379107,
+          "assembly": 0.3071260389406234,
+          "waves": 0.6933140475302935,
+          "factorization": 0.12507148878648877,
+          "fields": 0.06099480506964028,
+          "evaluations": 1.3777799799572676,
+          "derivative_attempts": 0.0,
+          "jacobian": 0.0384636907838285,
+          "derivatives": 0.0386254764162004
+        },
+        "stage_seconds": {
+          "geometry": 0.047187638003379107,
+          "waves": 0.6933140475302935,
+          "assembly": 0.3071260389406234,
+          "factorization": 0.12507148878648877,
+          "fields": 0.06099480506964028,
+          "jacobian": 0.0384636907838285
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "discretization": "Fourier-Galerkin traces |m|<=K_trace; Chebyshev radial and log|W|^2 expansions on window K_trace+margin; Graf sources/receivers; no boundary nodes",
+        "execution_note": "Execution.device selects geometry preparation and assembly (modal_cuda on CUDA); scalar kernels, Graf waves, LU, fields and Jacobian on the CPU; Execution.acceleration selects only the Mie grid; Execution.resolution is not used",
+        "retained_state": "up to 4 prepared geometries per device (device arrays for CUDA); LU factors on the host in handles"
+      },
+      "fixture": "DF_endpoint_catalog19",
+      "repetition": 1
+    },
+    {
+      "method": "modal_cuda_t1",
+      "level": "production",
+      "resolution_token": 768,
+      "new_geometry_forward_seconds": 0.47148990794084966,
+      "jacobian_seconds": 0.0385845759883523,
+      "new_geometry_forward_plus_jacobian_seconds": 0.510074483929202,
+      "same_geometry_forward_seconds": 0.27494928683154285,
+      "relative_fields": 2.811421215680391e-11,
+      "worst_frequency_fields": 1.5758147223713196e-10,
+      "relative_jacobian": 2.9620651241591878e-08,
+      "worst_jacobian_column": 1.2114305193813558e-05,
+      "receipt": {
+        "solver": "modal_muller",
+        "execution": {
+          "device": "cuda",
+          "frequency_threads": 1,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "settings": {
+          "trace_minimum": 64,
+          "trace_step": 32,
+          "window_margin": 64,
+          "log_tolerance": 1e-16,
+          "radial_tolerance": 1e-15,
+          "graf_tolerance": 1e-16,
+          "series_loss": 1e-09,
+          "max_log_degree": 4000,
+          "cached_geometries": 4
+        },
+        "counts": {
+          "evaluation_attempts": 38,
+          "evaluations": 38,
+          "failed_evaluations": 0,
+          "derivative_attempts": 19,
+          "derivatives": 19,
+          "failed_derivatives": 0,
+          "disk_batches": 0,
+          "geometry_cache_hits": 37,
+          "geometry": 1,
+          "assembly": 38,
+          "waves": 38,
+          "factorization": 38,
+          "fields": 38,
+          "jacobian": 19
+        },
+        "devices": {
+          "cuda-modal": 38
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "geometry": 0.04696396295912564,
+          "assembly": 0.16099273040890694,
+          "waves": 0.39196752570569515,
+          "factorization": 0.10274993954226375,
+          "fields": 0.040686440421268344,
+          "evaluations": 0.7461833867710084,
+          "derivative_attempts": 0.0,
+          "jacobian": 0.017372937873005867,
+          "derivatives": 0.017476462060585618
+        },
+        "stage_seconds": {
+          "geometry": 0.04696396295912564,
+          "waves": 0.39196752570569515,
+          "assembly": 0.16099273040890694,
+          "factorization": 0.10274993954226375,
+          "fields": 0.040686440421268344,
+          "jacobian": 0.017372937873005867
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "discretization": "Fourier-Galerkin traces |m|<=K_trace; Chebyshev radial and log|W|^2 expansions on window K_trace+margin; Graf sources/receivers; no boundary nodes",
+        "execution_note": "Execution.device selects geometry preparation and assembly (modal_cuda on CUDA); scalar kernels, Graf waves, LU, fields and Jacobian on the CPU; Execution.acceleration selects only the Mie grid; Execution.resolution is not used",
+        "retained_state": "up to 4 prepared geometries per device (device arrays for CUDA); LU factors on the host in handles"
+      },
+      "fixture": "DF_endpoint_catalog19",
+      "repetition": 1
+    },
+    {
+      "method": "modal_cpu_t4",
+      "level": "production",
+      "resolution_token": 768,
+      "new_geometry_forward_seconds": 1.9850188859272748,
+      "jacobian_seconds": 0.02053795917890966,
+      "new_geometry_forward_plus_jacobian_seconds": 2.0055568451061845,
+      "same_geometry_forward_seconds": 0.7519832768011838,
+      "relative_fields": 2.8128028663151337e-11,
+      "worst_frequency_fields": 1.5766351250788948e-10,
+      "relative_jacobian": 2.962065172468091e-08,
+      "worst_jacobian_column": 1.2114304924052277e-05,
+      "receipt": {
+        "solver": "modal_muller",
+        "execution": {
+          "device": "cpu",
+          "frequency_threads": 4,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "settings": {
+          "trace_minimum": 64,
+          "trace_step": 32,
+          "window_margin": 64,
+          "log_tolerance": 1e-16,
+          "radial_tolerance": 1e-15,
+          "graf_tolerance": 1e-16,
+          "series_loss": 1e-09,
+          "max_log_degree": 4000,
+          "cached_geometries": 4
+        },
+        "counts": {
+          "evaluation_attempts": 38,
+          "evaluations": 38,
+          "failed_evaluations": 0,
+          "derivative_attempts": 19,
+          "derivatives": 19,
+          "failed_derivatives": 0,
+          "disk_batches": 0,
+          "geometry_cache_hits": 37,
+          "geometry": 1,
+          "assembly": 38,
+          "waves": 38,
+          "factorization": 38,
+          "fields": 38,
+          "jacobian": 19
+        },
+        "devices": {
+          "cpu-modal": 38
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "geometry": 1.0019874388817698,
+          "assembly": 5.9210275078658015,
+          "waves": 0.4640409902203828,
+          "factorization": 0.11843145359307528,
+          "fields": 0.05314003303647041,
+          "evaluations": 10.575988994212821,
+          "derivative_attempts": 0.0,
+          "jacobian": 0.035019996808841825,
+          "derivatives": 0.03518949495628476
+        },
+        "stage_seconds": {
+          "geometry": 1.0019874388817698,
+          "waves": 0.4640409902203828,
+          "assembly": 5.9210275078658015,
+          "factorization": 0.11843145359307528,
+          "fields": 0.05314003303647041,
+          "jacobian": 0.035019996808841825
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "discretization": "Fourier-Galerkin traces |m|<=K_trace; Chebyshev radial and log|W|^2 expansions on window K_trace+margin; Graf sources/receivers; no boundary nodes",
+        "execution_note": "Execution.device selects geometry preparation and assembly (modal_cuda on CUDA); scalar kernels, Graf waves, LU, fields and Jacobian on the CPU; Execution.acceleration selects only the Mie grid; Execution.resolution is not used",
+        "retained_state": "up to 4 prepared geometries per device (device arrays for CUDA); LU factors on the host in handles"
+      },
+      "fixture": "DF_endpoint_catalog19",
+      "repetition": 1
+    },
+    {
+      "method": "modal_cuda_t1",
+      "level": "production",
+      "resolution_token": 768,
+      "new_geometry_forward_seconds": 0.46466935193166137,
+      "jacobian_seconds": 0.03880605404265225,
+      "new_geometry_forward_plus_jacobian_seconds": 0.5034754059743136,
+      "same_geometry_forward_seconds": 0.2732055380474776,
+      "relative_fields": 2.811421215680391e-11,
+      "worst_frequency_fields": 1.5758147223713196e-10,
+      "relative_jacobian": 2.9620651241591878e-08,
+      "worst_jacobian_column": 1.2114305193813558e-05,
+      "receipt": {
+        "solver": "modal_muller",
+        "execution": {
+          "device": "cuda",
+          "frequency_threads": 1,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "settings": {
+          "trace_minimum": 64,
+          "trace_step": 32,
+          "window_margin": 64,
+          "log_tolerance": 1e-16,
+          "radial_tolerance": 1e-15,
+          "graf_tolerance": 1e-16,
+          "series_loss": 1e-09,
+          "max_log_degree": 4000,
+          "cached_geometries": 4
+        },
+        "counts": {
+          "evaluation_attempts": 38,
+          "evaluations": 38,
+          "failed_evaluations": 0,
+          "derivative_attempts": 19,
+          "derivatives": 19,
+          "failed_derivatives": 0,
+          "disk_batches": 0,
+          "geometry_cache_hits": 37,
+          "geometry": 1,
+          "assembly": 38,
+          "waves": 38,
+          "factorization": 38,
+          "fields": 38,
+          "jacobian": 19
+        },
+        "devices": {
+          "cuda-modal": 38
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "geometry": 0.046981232007965446,
+          "assembly": 0.15780521580018103,
+          "waves": 0.3886964051052928,
+          "factorization": 0.10125865042209625,
+          "fields": 0.04018856235779822,
+          "evaluations": 0.7376238349825144,
+          "derivative_attempts": 0.0,
+          "jacobian": 0.017409209860488772,
+          "derivatives": 0.017516352236270905
+        },
+        "stage_seconds": {
+          "geometry": 0.046981232007965446,
+          "waves": 0.3886964051052928,
+          "assembly": 0.15780521580018103,
+          "factorization": 0.10125865042209625,
+          "fields": 0.04018856235779822,
+          "jacobian": 0.017409209860488772
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "discretization": "Fourier-Galerkin traces |m|<=K_trace; Chebyshev radial and log|W|^2 expansions on window K_trace+margin; Graf sources/receivers; no boundary nodes",
+        "execution_note": "Execution.device selects geometry preparation and assembly (modal_cuda on CUDA); scalar kernels, Graf waves, LU, fields and Jacobian on the CPU; Execution.acceleration selects only the Mie grid; Execution.resolution is not used",
+        "retained_state": "up to 4 prepared geometries per device (device arrays for CUDA); LU factors on the host in handles"
+      },
+      "fixture": "DF_endpoint_catalog19",
+      "repetition": 2
+    },
+    {
+      "method": "modal_cuda_t4",
+      "level": "production",
+      "resolution_token": 768,
+      "new_geometry_forward_seconds": 0.2612538649700582,
+      "jacobian_seconds": 0.022613185923546553,
+      "new_geometry_forward_plus_jacobian_seconds": 0.28386705089360476,
+      "same_geometry_forward_seconds": 0.11215410893782973,
+      "relative_fields": 2.811421215680391e-11,
+      "worst_frequency_fields": 1.5758147223713196e-10,
+      "relative_jacobian": 2.9620651241591878e-08,
+      "worst_jacobian_column": 1.2114305193813558e-05,
+      "receipt": {
+        "solver": "modal_muller",
+        "execution": {
+          "device": "cuda",
+          "frequency_threads": 4,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "settings": {
+          "trace_minimum": 64,
+          "trace_step": 32,
+          "window_margin": 64,
+          "log_tolerance": 1e-16,
+          "radial_tolerance": 1e-15,
+          "graf_tolerance": 1e-16,
+          "series_loss": 1e-09,
+          "max_log_degree": 4000,
+          "cached_geometries": 4
+        },
+        "counts": {
+          "evaluation_attempts": 38,
+          "evaluations": 38,
+          "failed_evaluations": 0,
+          "derivative_attempts": 19,
+          "derivatives": 19,
+          "failed_derivatives": 0,
+          "disk_batches": 0,
+          "geometry_cache_hits": 37,
+          "geometry": 1,
+          "assembly": 38,
+          "waves": 38,
+          "factorization": 38,
+          "fields": 38,
+          "jacobian": 19
+        },
+        "devices": {
+          "cuda-modal": 38
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "geometry": 0.0476408249232918,
+          "assembly": 0.28671649587340653,
+          "waves": 0.723400219110772,
+          "factorization": 0.12247137422673404,
+          "fields": 0.05679740197956562,
+          "evaluations": 1.3764282159972936,
+          "derivative_attempts": 0.0,
+          "jacobian": 0.034490425139665604,
+          "derivatives": 0.034664016449823976
+        },
+        "stage_seconds": {
+          "geometry": 0.0476408249232918,
+          "waves": 0.723400219110772,
+          "assembly": 0.28671649587340653,
+          "factorization": 0.12247137422673404,
+          "fields": 0.05679740197956562,
+          "jacobian": 0.034490425139665604
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "discretization": "Fourier-Galerkin traces |m|<=K_trace; Chebyshev radial and log|W|^2 expansions on window K_trace+margin; Graf sources/receivers; no boundary nodes",
+        "execution_note": "Execution.device selects geometry preparation and assembly (modal_cuda on CUDA); scalar kernels, Graf waves, LU, fields and Jacobian on the CPU; Execution.acceleration selects only the Mie grid; Execution.resolution is not used",
+        "retained_state": "up to 4 prepared geometries per device (device arrays for CUDA); LU factors on the host in handles"
+      },
+      "fixture": "DF_endpoint_catalog19",
+      "repetition": 2
+    },
+    {
+      "method": "nodal_cuda",
+      "level": "refined",
+      "resolution_token": 1024,
+      "new_geometry_forward_seconds": 1.7254028331954032,
+      "jacobian_seconds": 0.5173551919870079,
+      "new_geometry_forward_plus_jacobian_seconds": 2.242758025182411,
+      "same_geometry_forward_seconds": 1.7222638719249517,
+      "relative_fields": 1.137376662127449e-14,
+      "worst_frequency_fields": 5.223060031083381e-14,
+      "relative_jacobian": 4.3408274844771646e-14,
+      "worst_jacobian_column": 6.700057198903912e-13,
+      "receipt": {
+        "solver": "nodal_kress",
+        "execution": {
+          "device": "cuda",
+          "frequency_threads": 4,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "counts": {
+          "evaluation_attempts": 192,
+          "evaluations": 192,
+          "failed_evaluations": 0,
+          "derivative_attempts": 95,
+          "derivatives": 95,
+          "failed_derivatives": 0,
+          "disk_batches": 0,
+          "ray_table_setup": 1
+        },
+        "devices": {
+          "cuda": 191,
+          "cuda-damped": 1
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "evaluations": 46.997717062942684,
+          "ray_table_setup": 0.003475961973890662,
+          "derivative_attempts": 0.0,
+          "derivatives": 7.3824427702929825
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "ray": {
+          "gamma": 0.25,
+          "lo": 0.01,
+          "hi": 100.0,
+          "panels": 111,
+          "degree": 24
+        },
+        "retained_device_state": "one ray table; matrix and reusable LU factors retained on host"
+      },
+      "fixture": "DF_endpoint_catalog19",
+      "repetition": 2
+    },
+    {
+      "method": "modal_cpu_t4",
+      "level": "refined",
+      "resolution_token": 1024,
+      "new_geometry_forward_seconds": 3.203106986125931,
+      "jacobian_seconds": 0.02078413194976747,
+      "new_geometry_forward_plus_jacobian_seconds": 3.2238911180756986,
+      "same_geometry_forward_seconds": 1.557136318879202,
+      "relative_fields": 3.842262207085295e-13,
+      "worst_frequency_fields": 1.784411868118964e-12,
+      "relative_jacobian": 2.552723747941487e-12,
+      "worst_jacobian_column": 3.2287836182846145e-11,
+      "receipt": {
+        "solver": "modal_muller",
+        "execution": {
+          "device": "cpu",
+          "frequency_threads": 4,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "settings": {
+          "trace_minimum": 64,
+          "trace_step": 32,
+          "window_margin": 64,
+          "log_tolerance": 1e-16,
+          "radial_tolerance": 1e-15,
+          "graf_tolerance": 1e-16,
+          "series_loss": 1e-09,
+          "max_log_degree": 4000,
+          "cached_geometries": 4
+        },
+        "counts": {
+          "evaluation_attempts": 38,
+          "evaluations": 38,
+          "failed_evaluations": 0,
+          "derivative_attempts": 19,
+          "derivatives": 19,
+          "failed_derivatives": 0,
+          "disk_batches": 0,
+          "geometry_cache_hits": 37,
+          "geometry": 1,
+          "assembly": 38,
+          "waves": 38,
+          "factorization": 38,
+          "fields": 38,
+          "jacobian": 19
+        },
+        "devices": {
+          "cpu-modal": 38
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "geometry": 1.2868668988812715,
+          "assembly": 12.215312366141006,
+          "waves": 0.5659964182414114,
+          "factorization": 0.2660477466415614,
+          "fields": 0.09895585291087627,
+          "evaluations": 18.299697206821293,
+          "derivative_attempts": 0.0,
+          "jacobian": 0.035698824329301715,
+          "derivatives": 0.03586458112113178
+        },
+        "stage_seconds": {
+          "geometry": 1.2868668988812715,
+          "waves": 0.5659964182414114,
+          "assembly": 12.215312366141006,
+          "factorization": 0.2660477466415614,
+          "fields": 0.09895585291087627,
+          "jacobian": 0.035698824329301715
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "discretization": "Fourier-Galerkin traces |m|<=K_trace; Chebyshev radial and log|W|^2 expansions on window K_trace+margin; Graf sources/receivers; no boundary nodes",
+        "execution_note": "Execution.device selects geometry preparation and assembly (modal_cuda on CUDA); scalar kernels, Graf waves, LU, fields and Jacobian on the CPU; Execution.acceleration selects only the Mie grid; Execution.resolution is not used",
+        "retained_state": "up to 4 prepared geometries per device (device arrays for CUDA); LU factors on the host in handles"
+      },
+      "fixture": "DF_endpoint_catalog19",
+      "repetition": 2
+    },
+    {
+      "method": "modal_cuda_t1",
+      "level": "refined",
+      "resolution_token": 1024,
+      "new_geometry_forward_seconds": 0.6492194160819054,
+      "jacobian_seconds": 0.0479124269913882,
+      "new_geometry_forward_plus_jacobian_seconds": 0.6971318430732936,
+      "same_geometry_forward_seconds": 0.39504734613001347,
+      "relative_fields": 2.6069758191931786e-13,
+      "worst_frequency_fields": 1.2187460254352581e-12,
+      "relative_jacobian": 1.7414307809246188e-12,
+      "worst_jacobian_column": 3.198887223787913e-11,
+      "receipt": {
+        "solver": "modal_muller",
+        "execution": {
+          "device": "cuda",
+          "frequency_threads": 1,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "settings": {
+          "trace_minimum": 64,
+          "trace_step": 32,
+          "window_margin": 64,
+          "log_tolerance": 1e-16,
+          "radial_tolerance": 1e-15,
+          "graf_tolerance": 1e-16,
+          "series_loss": 1e-09,
+          "max_log_degree": 4000,
+          "cached_geometries": 4
+        },
+        "counts": {
+          "evaluation_attempts": 38,
+          "evaluations": 38,
+          "failed_evaluations": 0,
+          "derivative_attempts": 19,
+          "derivatives": 19,
+          "failed_derivatives": 0,
+          "disk_batches": 0,
+          "geometry_cache_hits": 37,
+          "geometry": 1,
+          "assembly": 38,
+          "waves": 38,
+          "factorization": 38,
+          "fields": 38,
+          "jacobian": 19
+        },
+        "devices": {
+          "cuda-modal": 38
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "geometry": 0.07171265687793493,
+          "assembly": 0.24050050880759954,
+          "waves": 0.43447552528232336,
+          "factorization": 0.22426183824427426,
+          "fields": 0.06984779890626669,
+          "evaluations": 1.04399502906017,
+          "derivative_attempts": 0.0,
+          "jacobian": 0.026838765712454915,
+          "derivatives": 0.026947706006467342
+        },
+        "stage_seconds": {
+          "geometry": 0.07171265687793493,
+          "waves": 0.43447552528232336,
+          "assembly": 0.24050050880759954,
+          "factorization": 0.22426183824427426,
+          "fields": 0.06984779890626669,
+          "jacobian": 0.026838765712454915
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "discretization": "Fourier-Galerkin traces |m|<=K_trace; Chebyshev radial and log|W|^2 expansions on window K_trace+margin; Graf sources/receivers; no boundary nodes",
+        "execution_note": "Execution.device selects geometry preparation and assembly (modal_cuda on CUDA); scalar kernels, Graf waves, LU, fields and Jacobian on the CPU; Execution.acceleration selects only the Mie grid; Execution.resolution is not used",
+        "retained_state": "up to 4 prepared geometries per device (device arrays for CUDA); LU factors on the host in handles"
+      },
+      "fixture": "DF_endpoint_catalog19",
+      "repetition": 2
+    },
+    {
+      "method": "modal_cuda_t4",
+      "level": "refined",
+      "resolution_token": 1024,
+      "new_geometry_forward_seconds": 0.3299300139769912,
+      "jacobian_seconds": 0.024981153896078467,
+      "new_geometry_forward_plus_jacobian_seconds": 0.35491116787306964,
+      "same_geometry_forward_seconds": 0.14561709109693766,
+      "relative_fields": 2.6069758191931786e-13,
+      "worst_frequency_fields": 1.2187460254352581e-12,
+      "relative_jacobian": 1.7414307809246188e-12,
+      "worst_jacobian_column": 3.198887223787913e-11,
+      "receipt": {
+        "solver": "modal_muller",
+        "execution": {
+          "device": "cuda",
+          "frequency_threads": 4,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "settings": {
+          "trace_minimum": 64,
+          "trace_step": 32,
+          "window_margin": 64,
+          "log_tolerance": 1e-16,
+          "radial_tolerance": 1e-15,
+          "graf_tolerance": 1e-16,
+          "series_loss": 1e-09,
+          "max_log_degree": 4000,
+          "cached_geometries": 4
+        },
+        "counts": {
+          "evaluation_attempts": 38,
+          "evaluations": 38,
+          "failed_evaluations": 0,
+          "derivative_attempts": 19,
+          "derivatives": 19,
+          "failed_derivatives": 0,
+          "disk_batches": 0,
+          "geometry_cache_hits": 37,
+          "geometry": 1,
+          "assembly": 38,
+          "waves": 38,
+          "factorization": 38,
+          "fields": 38,
+          "jacobian": 19
+        },
+        "devices": {
+          "cuda-modal": 38
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "geometry": 0.07216208311729133,
+          "assembly": 0.40232174820266664,
+          "waves": 0.7127724268939346,
+          "factorization": 0.26913304161280394,
+          "fields": 0.090232526184991,
+          "evaluations": 1.764944543596357,
+          "derivative_attempts": 0.0,
+          "jacobian": 0.04944103118032217,
+          "derivatives": 0.04961625416763127
+        },
+        "stage_seconds": {
+          "geometry": 0.07216208311729133,
+          "waves": 0.7127724268939346,
+          "assembly": 0.40232174820266664,
+          "factorization": 0.26913304161280394,
+          "fields": 0.090232526184991,
+          "jacobian": 0.04944103118032217
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "discretization": "Fourier-Galerkin traces |m|<=K_trace; Chebyshev radial and log|W|^2 expansions on window K_trace+margin; Graf sources/receivers; no boundary nodes",
+        "execution_note": "Execution.device selects geometry preparation and assembly (modal_cuda on CUDA); scalar kernels, Graf waves, LU, fields and Jacobian on the CPU; Execution.acceleration selects only the Mie grid; Execution.resolution is not used",
+        "retained_state": "up to 4 prepared geometries per device (device arrays for CUDA); LU factors on the host in handles"
+      },
+      "fixture": "DF_endpoint_catalog19",
+      "repetition": 2
+    },
+    {
+      "method": "nodal_cuda",
+      "level": "production",
+      "resolution_token": 512,
+      "new_geometry_forward_seconds": 0.42583015211857855,
+      "jacobian_seconds": 0.22148006316274405,
+      "new_geometry_forward_plus_jacobian_seconds": 0.6473102152813226,
+      "same_geometry_forward_seconds": 0.451608075061813,
+      "relative_fields": 1.6457139610553798e-14,
+      "worst_frequency_fields": 1.1164387172931753e-13,
+      "relative_jacobian": 7.65169701186372e-14,
+      "worst_jacobian_column": 1.1233387322180128e-12,
+      "receipt": {
+        "solver": "nodal_kress",
+        "execution": {
+          "device": "cuda",
+          "frequency_threads": 4,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "counts": {
+          "evaluation_attempts": 230,
+          "evaluations": 230,
+          "failed_evaluations": 0,
+          "derivative_attempts": 114,
+          "derivatives": 114,
+          "failed_derivatives": 0,
+          "disk_batches": 0,
+          "ray_table_setup": 1
+        },
+        "devices": {
+          "cuda": 229,
+          "cuda-damped": 1
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "evaluations": 50.25491755944677,
+          "ray_table_setup": 0.003475961973890662,
+          "derivative_attempts": 0.0,
+          "derivatives": 8.19924639374949
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "ray": {
+          "gamma": 0.25,
+          "lo": 0.01,
+          "hi": 100.0,
+          "panels": 111,
+          "degree": 24
+        },
+        "retained_device_state": "one ray table; matrix and reusable LU factors retained on host"
+      },
+      "fixture": "DF_endpoint_catalog19",
+      "repetition": 2
+    },
+    {
+      "method": "modal_cpu_t4",
+      "level": "production",
+      "resolution_token": 768,
+      "new_geometry_forward_seconds": 2.0604240230750293,
+      "jacobian_seconds": 0.018876297865062952,
+      "new_geometry_forward_plus_jacobian_seconds": 2.079300320940092,
+      "same_geometry_forward_seconds": 0.7581401891075075,
+      "relative_fields": 2.8128028663151337e-11,
+      "worst_frequency_fields": 1.5766351250788948e-10,
+      "relative_jacobian": 2.962065172468091e-08,
+      "worst_jacobian_column": 1.2114304924052277e-05,
+      "receipt": {
+        "solver": "modal_muller",
+        "execution": {
+          "device": "cpu",
+          "frequency_threads": 4,
+          "acceleration": "spd016",
+          "geometry": "both",
+          "resolution": 512
+        },
+        "settings": {
+          "trace_minimum": 64,
+          "trace_step": 32,
+          "window_margin": 64,
+          "log_tolerance": 1e-16,
+          "radial_tolerance": 1e-15,
+          "graf_tolerance": 1e-16,
+          "series_loss": 1e-09,
+          "max_log_degree": 4000,
+          "cached_geometries": 4
+        },
+        "counts": {
+          "evaluation_attempts": 38,
+          "evaluations": 38,
+          "failed_evaluations": 0,
+          "derivative_attempts": 19,
+          "derivatives": 19,
+          "failed_derivatives": 0,
+          "disk_batches": 0,
+          "geometry_cache_hits": 37,
+          "geometry": 1,
+          "assembly": 38,
+          "waves": 38,
+          "factorization": 38,
+          "fields": 38,
+          "jacobian": 19
+        },
+        "devices": {
+          "cpu-modal": 38
+        },
+        "fallback_reasons": {},
+        "seconds": {
+          "evaluation_attempts": 0.0,
+          "geometry": 1.0182518491055816,
+          "assembly": 6.099080827785656,
+          "waves": 0.46915864292532206,
+          "factorization": 0.1146269110031426,
+          "fields": 0.062053862726315856,
+          "evaluations": 10.827063297852874,
+          "derivative_attempts": 0.0,
+          "jacobian": 0.027144261868670583,
+          "derivatives": 0.027314159320667386
+        },
+        "stage_seconds": {
+          "geometry": 1.0182518491055816,
+          "waves": 0.46915864292532206,
+          "assembly": 6.099080827785656,
+          "factorization": 0.1146269110031426,
+          "fields": 0.062053862726315856,
+          "jacobian": 0.027144261868670583
+        },
+        "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+        "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+        "discretization": "Fourier-Galerkin traces |m|<=K_trace; Chebyshev radial and log|W|^2 expansions on window K_trace+margin; Graf sources/receivers; no boundary nodes",
+        "execution_note": "Execution.device selects geometry preparation and assembly (modal_cuda on CUDA); scalar kernels, Graf waves, LU, fields and Jacobian on the CPU; Execution.acceleration selects only the Mie grid; Execution.resolution is not used",
+        "retained_state": "up to 4 prepared geometries per device (device arrays for CUDA); LU factors on the host in handles"
+      },
+      "fixture": "DF_endpoint_catalog19",
+      "repetition": 2
+    }
+  ],
+  "medians": [
+    {
+      "fixture": "DF_endpoint_catalog19",
+      "method": "nodal_cuda",
+      "level": "production",
+      "resolution_token": 512,
+      "medians": {
+        "new_geometry_forward_seconds": 0.43463082588277757,
+        "jacobian_seconds": 0.22148006316274405,
+        "new_geometry_forward_plus_jacobian_seconds": 0.6473102152813226,
+        "same_geometry_forward_seconds": 0.451608075061813
+      },
+      "ranges": {
+        "new_geometry_forward_seconds": [
+          0.42583015211857855,
+          0.6188281089998782
+        ],
+        "jacobian_seconds": [
+          0.20413649501278996,
+          0.22362226783297956
+        ],
+        "new_geometry_forward_plus_jacobian_seconds": [
+          0.6387673208955675,
+          0.8424503768328577
+        ],
+        "same_geometry_forward_seconds": [
+          0.4365758940111846,
+          0.521438336931169
+        ]
+      },
+      "worst_fields": 1.1164387172931753e-13,
+      "worst_jacobian": 7.65169701186372e-14,
+      "repetitions": 3
+    },
+    {
+      "fixture": "DF_endpoint_catalog19",
+      "method": "modal_cpu_t4",
+      "level": "production",
+      "resolution_token": 768,
+      "medians": {
+        "new_geometry_forward_seconds": 2.0604240230750293,
+        "jacobian_seconds": 0.02053795917890966,
+        "new_geometry_forward_plus_jacobian_seconds": 2.079300320940092,
+        "same_geometry_forward_seconds": 0.7581401891075075
+      },
+      "ranges": {
+        "new_geometry_forward_seconds": [
+          1.9850188859272748,
+          2.211602680850774
+        ],
+        "jacobian_seconds": [
+          0.018876297865062952,
+          0.021825148025527596
+        ],
+        "new_geometry_forward_plus_jacobian_seconds": [
+          2.0055568451061845,
+          2.2334278288763016
+        ],
+        "same_geometry_forward_seconds": [
+          0.7519832768011838,
+          0.7984202541410923
+        ]
+      },
+      "worst_fields": 1.5766351250788948e-10,
+      "worst_jacobian": 2.962065172468091e-08,
+      "repetitions": 3
+    },
+    {
+      "fixture": "DF_endpoint_catalog19",
+      "method": "modal_cuda_t1",
+      "level": "production",
+      "resolution_token": 768,
+      "medians": {
+        "new_geometry_forward_seconds": 0.4683310620021075,
+        "jacobian_seconds": 0.03880605404265225,
+        "new_geometry_forward_plus_jacobian_seconds": 0.5073408200405538,
+        "same_geometry_forward_seconds": 0.2732055380474776
+      },
+      "ranges": {
+        "new_geometry_forward_seconds": [
+          0.46466935193166137,
+          0.47148990794084966
+        ],
+        "jacobian_seconds": [
+          0.0385845759883523,
+          0.03900975803844631
+        ],
+        "new_geometry_forward_plus_jacobian_seconds": [
+          0.5034754059743136,
+          0.510074483929202
+        ],
+        "same_geometry_forward_seconds": [
+          0.2727921118494123,
+          0.27494928683154285
+        ]
+      },
+      "worst_fields": 1.5758147223713196e-10,
+      "worst_jacobian": 2.9620651241591878e-08,
+      "repetitions": 3
+    },
+    {
+      "fixture": "DF_endpoint_catalog19",
+      "method": "modal_cuda_t4",
+      "level": "production",
+      "resolution_token": 768,
+      "medians": {
+        "new_geometry_forward_seconds": 0.2612538649700582,
+        "jacobian_seconds": 0.019548170967027545,
+        "new_geometry_forward_plus_jacobian_seconds": 0.28386705089360476,
+        "same_geometry_forward_seconds": 0.11999836005270481
+      },
+      "ranges": {
+        "new_geometry_forward_seconds": [
+          0.25251118815504014,
+          0.2655149269849062
+        ],
+        "jacobian_seconds": [
+          0.019547716015949845,
+          0.022613185923546553
+        ],
+        "new_geometry_forward_plus_jacobian_seconds": [
+          0.2720593591220677,
+          0.28506264300085604
+        ],
+        "same_geometry_forward_seconds": [
+          0.11215410893782973,
+          0.12155741802416742
+        ]
+      },
+      "worst_fields": 1.5758147223713196e-10,
+      "worst_jacobian": 2.9620651241591878e-08,
+      "repetitions": 3
+    },
+    {
+      "fixture": "DF_endpoint_catalog19",
+      "method": "nodal_cuda",
+      "level": "refined",
+      "resolution_token": 1024,
+      "medians": {
+        "new_geometry_forward_seconds": 1.7254028331954032,
+        "jacobian_seconds": 0.5169828198850155,
+        "new_geometry_forward_plus_jacobian_seconds": 2.242758025182411,
+        "same_geometry_forward_seconds": 1.7222638719249517
+      },
+      "ranges": {
+        "new_geometry_forward_seconds": [
+          1.7201399658806622,
+          1.7267620828934014
+        ],
+        "jacobian_seconds": [
+          0.4767772168852389,
+          0.5173551919870079
+        ],
+        "new_geometry_forward_plus_jacobian_seconds": [
+          2.196917182765901,
+          2.243744902778417
+        ],
+        "same_geometry_forward_seconds": [
+          1.7080478200223297,
+          1.728066431824118
+        ]
+      },
+      "worst_fields": 5.223060031083381e-14,
+      "worst_jacobian": 4.3408274844771646e-14,
+      "repetitions": 3
+    },
+    {
+      "fixture": "DF_endpoint_catalog19",
+      "method": "modal_cpu_t4",
+      "level": "refined",
+      "resolution_token": 1024,
+      "medians": {
+        "new_geometry_forward_seconds": 3.2756074159406126,
+        "jacobian_seconds": 0.023813346168026328,
+        "new_geometry_forward_plus_jacobian_seconds": 3.299420762108639,
+        "same_geometry_forward_seconds": 1.5601696651428938
+      },
+      "ranges": {
+        "new_geometry_forward_seconds": [
+          3.203106986125931,
+          3.3030018319841474
+        ],
+        "jacobian_seconds": [
+          0.02078413194976747,
+          0.027978840051218867
+        ],
+        "new_geometry_forward_plus_jacobian_seconds": [
+          3.2238911180756986,
+          3.3309806720353663
+        ],
+        "same_geometry_forward_seconds": [
+          1.557136318879202,
+          1.5694877919740975
+        ]
+      },
+      "worst_fields": 1.784411868118964e-12,
+      "worst_jacobian": 2.552723747941487e-12,
+      "repetitions": 3
+    },
+    {
+      "fixture": "DF_endpoint_catalog19",
+      "method": "modal_cuda_t1",
+      "level": "refined",
+      "resolution_token": 1024,
+      "medians": {
+        "new_geometry_forward_seconds": 0.6504501148592681,
+        "jacobian_seconds": 0.048223676858469844,
+        "new_geometry_forward_plus_jacobian_seconds": 0.698769009904936,
+        "same_geometry_forward_seconds": 0.39486167510040104
+      },
+      "ranges": {
+        "new_geometry_forward_seconds": [
+          0.6492194160819054,
+          0.6505453330464661
+        ],
+        "jacobian_seconds": [
+          0.0479124269913882,
+          0.04915499803610146
+        ],
+        "new_geometry_forward_plus_jacobian_seconds": [
+          0.6971318430732936,
+          0.6996051128953695
+        ],
+        "same_geometry_forward_seconds": [
+          0.39480229699984193,
+          0.39504734613001347
+        ]
+      },
+      "worst_fields": 1.2187460254352581e-12,
+      "worst_jacobian": 1.7414307809246188e-12,
+      "repetitions": 3
+    },
+    {
+      "fixture": "DF_endpoint_catalog19",
+      "method": "modal_cuda_t4",
+      "level": "refined",
+      "resolution_token": 1024,
+      "medians": {
+        "new_geometry_forward_seconds": 0.342103609116748,
+        "jacobian_seconds": 0.023882733890786767,
+        "new_geometry_forward_plus_jacobian_seconds": 0.36531984410248697,
+        "same_geometry_forward_seconds": 0.14561709109693766
+      },
+      "ranges": {
+        "new_geometry_forward_seconds": [
+          0.3299300139769912,
+          0.3478689610492438
+        ],
+        "jacobian_seconds": [
+          0.023216234985738993,
+          0.024981153896078467
+        ],
+        "new_geometry_forward_plus_jacobian_seconds": [
+          0.35491116787306964,
+          0.3717516949400306
+        ],
+        "same_geometry_forward_seconds": [
+          0.14272025786340237,
+          0.1555894110351801
+        ]
+      },
+      "worst_fields": 1.2187460254352581e-12,
+      "worst_jacobian": 1.7414307809246188e-12,
+      "repetitions": 3
+    }
+  ],
+  "fixtures": [
+    {
+      "fixture": "DF_endpoint_catalog19",
+      "oracle_nodes": 1024,
+      "K": 192,
+      "M": 67,
+      "contrast": 13.3,
+      "frequencies_hz": [
+        250000000.0,
+        375000000.0,
+        500000000.0,
+        625000000.0,
+        750000000.0,
+        875000000.0,
+        1000000000.0,
+        1125000000.0,
+        1250000000.0,
+        1375000000.0,
+        1500000000.0,
+        1625000000.0,
+        1750000000.0,
+        1875000000.0,
+        2000000000.0,
+        2125000000.0,
+        2250000000.0,
+        2375000000.0,
+        2500000000.0
+      ],
+      "damping": 0.0
+    }
+  ],
+  "initialization_seconds": 0.79872119682841,
+  "gpu_before": "name, memory.total [MiB], memory.used [MiB], utilization.gpu [%]\nNVIDIA GeForce RTX 5090, 32607 MiB, 751 MiB, 0 %",
+  "gpu_after": "name, memory.total [MiB], memory.used [MiB], utilization.gpu [%]\nNVIDIA GeForce RTX 5090, 32607 MiB, 2879 MiB, 0 %",
+  "git_head": "88f5ee1bdacc10bde25cea3fe200b374b67d7fde",
+  "environment": {
+    "python": "3.9.25",
+    "numpy": "2.0.2",
+    "scipy": "1.13.1",
+    "torch": "2.8.0+cu128",
+    "gpu": "NVIDIA GeForce RTX 5090",
+    "blas_threads": 1,
+    "nodal_cuda_frequency_threads": 4
+  },
+  "protocol": "sequential; rotated/reversed order; CUDA synchronized; cold modal geometry per repetition; CUDA context, ray table and cuFFT plans warmed before timing; geometry-update preparation excluded",
+  "source_hashes": {
+    "/home/drdeng/Neural_SDF_BEM_AD/results/validation/cleaned_interfaces/modal-muller-cuda-20261001/benchmark.py": "98dfe2cc00f2252542f427313334b5d0f74268a613bbffead871fa0c1dc8db0a",
+    "results/validation/cleaned_interfaces/modal-versus-cleaned-kress-20260930/benchmark.py": "f03ca37a3b5f7c9a9f3345804aa73fd2cf92f9f0cc13a99706f00dc906d9d2c4",
+    "experiments/cleaned_interface/modal_cuda.py": "d12a630bc5c6f1f692424c53ecb3ee74bdcad9bcceb34f73eeaef0f860ffbe14",
+    "experiments/cleaned_interface/modal_geometry.py": "37270ea463aabef49a89ea1010088ce8154fd8aaa826279c0b569e03c4a4ee9b",
+    "experiments/cleaned_interface/modal_muller.py": "76ddc33299e02063ea66c188e5ff53d372c5a9c6acb5ed9cda96c6fb71a7895e",
+    "experiments/cleaned_interface/modal_operator.py": "b416bd1d7bcbe6b96641208b7d36676d071b916d51ee302058f0aa373784c3e2",
+    "experiments/cleaned_interface/physics.py": "6fab351934436b599440c66283916b5b249097ada559dbf8dd70c33fcd20fecc",
+    "experiments/cleaned_interface/damped_cuda.py": "23ede4c7a38d8f268f45bdb252e1e924ece2365025ecd3fa6a20153259778353"
+  }
+}
