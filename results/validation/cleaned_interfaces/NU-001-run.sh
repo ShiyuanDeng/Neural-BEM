@@ -8,16 +8,16 @@ export PYTHONPATH=solvers:. OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THR
 BASE=results/validation/cleaned_interfaces
 LOGS=${LOGS:-$BASE/NU-001-logs}
 mkdir -p "$LOGS"
-# Longest CI-001 cases first, alternating arms.
+# Shortest CI-001 cases first, alternating arms, so complete pairs land early.
 jobs=()
-for case in core__kite core__circle_to_star core__hook core__circle_to_c core__peanut core__wrong_circle; do
+for case in core__wrong_circle core__peanut core__circle_to_c core__hook core__circle_to_star core__kite; do
   for arm in A B; do jobs+=("$arm $case"); done
 done
-# Two cases at a time with two frequency threads each: four single-thread
-# cases (about 3.7 GB each) were OOM-killed on the 16 GB host.
-printf '%s\n' "${jobs[@]}" | xargs -P "${PARALLEL:-2}" -L 1 bash -c \
+# One case at a time with four frequency threads: the nodal Kress audit alone
+# peaks at about 9 GB (any update), so concurrent cases are OOM-killed on 16 GB.
+printf '%s\n' "${jobs[@]}" | xargs -P "${PARALLEL:-1}" -L 1 bash -c \
   'python -m experiments.cleaned_interface.n_update_audit run --output '"$BASE"'/NU-001-$0 --cases $1 \
-     --device auto --frequency-threads '"${FREQUENCY_THREADS:-2}"' > '"$LOGS"'/$0__$1.log 2>&1 || echo "FAILED $0 $1"'
+     --device auto --frequency-threads '"${FREQUENCY_THREADS:-4}"' > '"$LOGS"'/$0__$1.log 2>&1 || echo "FAILED $0 $1"'
 for arm in A B; do
   python -m experiments.cleaned_interface.n_update_audit report --output "$BASE/NU-001-$arm" > "$LOGS/report_$arm.json"
 done
