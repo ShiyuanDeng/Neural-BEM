@@ -1,0 +1,279 @@
+{
+  "scene": "far-two-stars",
+  "initializer": "current",
+  "controller": {
+    "inspection_center": [
+      0.5,
+      0.5
+    ],
+    "inspection_radius_m": 0.2,
+    "raster_size": 121,
+    "boundary_buffer_m": 0.006,
+    "minimum_component_radius_m": 0.008,
+    "maximum_birth_radius_m": 0.065,
+    "birth_radius_grid_m": null,
+    "split_seed_radius_factors": [
+      1.0
+    ],
+    "maximum_events": 7,
+    "maximum_cycles": 10,
+    "fixed_iterations": 22,
+    "candidate_refinement_iterations": 3,
+    "candidates_refined_per_group": 1,
+    "include_simplest_candidate": false,
+    "refined_feasibility_guard": true,
+    "feasible_fd_jacobian": true,
+    "bandwidth_promotion": false,
+    "relative_error_tolerance": 0.003,
+    "acceptance_absolute_margin": 1e-10,
+    "acceptance_relative_margin": 1e-05,
+    "cross_resolution_factor": 5.0,
+    "maximum_candidates_per_type": 48,
+    "contour_modes": 8,
+    "chart": "cartesian"
+  },
+  "original_frozen_budget": true,
+  "controller_policy": "H",
+  "status": "COMPLETED",
+  "stop_reason": "topology_stationary",
+  "work": {
+    "totals": {
+      "evaluation_count": 289,
+      "forward_evaluation_count": 222,
+      "forward_frequency_solve_count": 222,
+      "td_evaluation_count": 8,
+      "td_frequency_solve_count": 8,
+      "analytic_base_frequency_solve_count": 90,
+      "factorization_count": 90,
+      "derivative_assembly_count": 661,
+      "tangent_solve_count": 661,
+      "analytic_primal_rhs_count": 2160,
+      "reciprocal_frequency_solve_count": 0,
+      "reciprocal_rhs_count": 0,
+      "reciprocal_contraction_count": 0,
+      "compiled_frequency_batch_count": 0,
+      "compiled_local_factorization_count": 0,
+      "compiled_local_rhs_count": 0,
+      "compiled_local_cache_hit_count": 0,
+      "compiled_reduced_solve_count": 0,
+      "compiled_reduced_rhs_count": 0,
+      "compiled_fallback_count": 0,
+      "bie_frequency_solve_count": 320
+    },
+    "stages": {
+      "fixed_refinement": {
+        "evaluation_count": 54,
+        "forward_frequency_solve_count": 54,
+        "forward_evaluation_count": 54,
+        "analytic_base_frequency_solve_count": 54,
+        "factorization_count": 54,
+        "analytic_primal_rhs_count": 1296,
+        "derivative_assembly_count": 329,
+        "tangent_solve_count": 329
+      },
+      "production_base": {
+        "evaluation_count": 4,
+        "forward_frequency_solve_count": 4,
+        "forward_evaluation_count": 4
+      },
+      "topological_derivative": {
+        "td_evaluation_count": 8,
+        "td_frequency_solve_count": 8
+      },
+      "refined_base": {
+        "evaluation_count": 4,
+        "forward_frequency_solve_count": 4,
+        "forward_evaluation_count": 4
+      },
+      "candidate_raw": {
+        "evaluation_count": 148,
+        "forward_frequency_solve_count": 81,
+        "forward_evaluation_count": 81
+      },
+      "candidate_refinement": {
+        "evaluation_count": 38,
+        "forward_frequency_solve_count": 38,
+        "forward_evaluation_count": 38,
+        "analytic_base_frequency_solve_count": 36,
+        "factorization_count": 36,
+        "analytic_primal_rhs_count": 864,
+        "derivative_assembly_count": 332,
+        "tangent_solve_count": 332
+      },
+      "candidate_acceptance": {
+        "evaluation_count": 41,
+        "forward_frequency_solve_count": 41,
+        "forward_evaluation_count": 41
+      }
+    }
+  },
+  "final_state": [
+    {
+      "component_id": "t001.birth",
+      "chart": "cartesian",
+      "parameters": [
+        0.5500783785503234,
+        0.4300013262710808,
+        0.030920540489615945,
+        -1.150709021136372e-18,
+        8.963005326417057e-19,
+        0.030920540489615952
+      ],
+      "maximum_mode": 1
+    },
+    {
+      "component_id": "t003.birth",
+      "chart": "cartesian",
+      "parameters": [
+        0.6100336587067358,
+        0.5399518369750689,
+        0.029950532871489598,
+        -1.0137223724896377e-18,
+        7.896000515542988e-19,
+        0.029950532871489598
+      ],
+      "maximum_mode": 1
+    }
+  ],
+  "events": [
+    {
+      "cycle": 0,
+      "kind": "birth",
+      "parents": [],
+      "children": [
+        "t001.birth"
+      ],
+      "before_ids": [
+        "initial.circle"
+      ],
+      "after_ids": [
+        "initial.circle",
+        "t001.birth"
+      ],
+      "production_before": 0.5796783901123319,
+      "production_after": 0.36511393052203484,
+      "refined_before": 0.5796783901123307,
+      "refined_after": 0.36511393052203284,
+      "construction": "exterior_td_region; radius=0.024592",
+      "candidate_refinement_steps": 3,
+      "raw_birth_radius_m": 0.02459245379682983
+    },
+    {
+      "cycle": 1,
+      "kind": "death",
+      "parents": [
+        "initial.circle"
+      ],
+      "children": [],
+      "before_ids": [
+        "initial.circle",
+        "t001.birth"
+      ],
+      "after_ids": [
+        "t001.birth"
+      ],
+      "production_before": 0.36425947645353157,
+      "production_after": 0.18553140197324797,
+      "refined_before": 0.3642594764535338,
+      "refined_after": 0.18553140197324827,
+      "construction": "leave_one_component_out",
+      "candidate_refinement_steps": 3
+    },
+    {
+      "cycle": 2,
+      "kind": "birth",
+      "parents": [],
+      "children": [
+        "t003.birth"
+      ],
+      "before_ids": [
+        "t001.birth"
+      ],
+      "after_ids": [
+        "t001.birth",
+        "t003.birth"
+      ],
+      "production_before": 0.18553027168801592,
+      "production_after": 9.21948794917021e-05,
+      "refined_before": 0.1855302716880158,
+      "refined_after": 9.219487949170027e-05,
+      "construction": "exterior_td_region; radius=0.024376",
+      "candidate_refinement_steps": 3,
+      "raw_birth_radius_m": 0.024375775971438328
+    }
+  ],
+  "trajectory_checks": {
+    "monotone_accepted_states": true,
+    "all_event_margins_pass": true
+  },
+  "endpoint": {
+    "geometry": {
+      "component_count": 2,
+      "truth_component_count": 2,
+      "matched_components": [
+        {
+          "recovered_component": "t001.birth",
+          "truth_component": "truth.star5",
+          "hausdorff_m": 0.007595101726757269
+        },
+        {
+          "recovered_component": "t003.birth",
+          "truth_component": "truth.star7",
+          "hausdorff_m": 0.0067044201263781735
+        }
+      ],
+      "maximum_matched_hausdorff_m": 0.007595101726757269,
+      "union_iou": 0.746843853820598,
+      "final_maximum_modes": [
+        1,
+        1
+      ]
+    },
+    "training_relative": 0.013579015588666457,
+    "holdout_relative": [
+      0.46809613956496754,
+      1.0031442224182887
+    ],
+    "gates": {
+      "correct_count": true,
+      "boundary": false,
+      "overlap": false,
+      "training": false,
+      "holdout": false
+    },
+    "passed": false,
+    "audit_work": {
+      "totals": {
+        "evaluation_count": 2,
+        "forward_evaluation_count": 2,
+        "forward_frequency_solve_count": 3,
+        "td_evaluation_count": 0,
+        "td_frequency_solve_count": 0,
+        "analytic_base_frequency_solve_count": 0,
+        "factorization_count": 0,
+        "derivative_assembly_count": 0,
+        "tangent_solve_count": 0,
+        "analytic_primal_rhs_count": 0,
+        "reciprocal_frequency_solve_count": 0,
+        "reciprocal_rhs_count": 0,
+        "reciprocal_contraction_count": 0,
+        "compiled_frequency_batch_count": 0,
+        "compiled_local_factorization_count": 0,
+        "compiled_local_rhs_count": 0,
+        "compiled_local_cache_hit_count": 0,
+        "compiled_reduced_solve_count": 0,
+        "compiled_reduced_rhs_count": 0,
+        "compiled_fallback_count": 0,
+        "bie_frequency_solve_count": 3
+      },
+      "stages": {
+        "unscoped": {
+          "evaluation_count": 2,
+          "forward_frequency_solve_count": 3,
+          "forward_evaluation_count": 2
+        }
+      }
+    }
+  },
+  "wall_seconds": 112.38997427374125
+}

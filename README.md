@@ -15,6 +15,12 @@ recovered all 16 workers; its two hard scenes took **17m29s / 21m32s** with this
 Research code for homogeneous full-space 2-D TMz dielectric transmission,
 neural implicit geometry, boundary-element forward modeling, and inversion.
 
+**Exploratory results (2026-10-02):** [ten-priority research report](docs/reports/exploration_2026-10-02.md)
+includes a 108-case shape-sensitivity atlas and TOP-009 finite-path audit,
+measured Fresnel inversions, TE/lossy derivatives, initialization and frequency
+controls, independent transient/half-space checks, sphere IBIM and Algoim.
+These are opt-in experiments with their numerical limits recorded.
+
 **Isolated continuation research (2026-09-22):**
 [Shape and frequency continuation](docs/pipelines/shape_frequency_continuation.md)
 uses Cartesian Fourier geometry, arclength normal updates, plane waves and
@@ -181,7 +187,10 @@ since removing that restriction was a reason for adopting the Cartesian
 chart. See the Cartesian pipeline's representation limits. The separate automatic
 topology controller chooses birth, death, split and merge from data without a
 supplied object count; its evidence is bounded to the recorded synthetic cases.
-Layered ground and 3-D inversion are outside the current implementation.
+The maintained inverse remains full-space and two-dimensional. Separate
+[half-space forward](results/halfspace/README.md) and
+[3-D scalar sphere](results/ibim3d/README.md) experiments are available;
+layered-ground and 3-D inversion are not implemented.
 
 ## Repository layout
 

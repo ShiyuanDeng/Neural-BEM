@@ -1,0 +1,281 @@
+{
+  "scene": "far-two-circles",
+  "initializer": "current",
+  "controller": {
+    "inspection_center": [
+      0.5,
+      0.5
+    ],
+    "inspection_radius_m": 0.2,
+    "raster_size": 121,
+    "boundary_buffer_m": 0.006,
+    "minimum_component_radius_m": 0.008,
+    "maximum_birth_radius_m": 0.065,
+    "birth_radius_grid_m": null,
+    "split_seed_radius_factors": [
+      1.0
+    ],
+    "maximum_events": 7,
+    "maximum_cycles": 2,
+    "fixed_iterations": 6,
+    "candidate_refinement_iterations": 2,
+    "candidates_refined_per_group": 1,
+    "include_simplest_candidate": false,
+    "refined_feasibility_guard": true,
+    "feasible_fd_jacobian": true,
+    "bandwidth_promotion": false,
+    "relative_error_tolerance": 0.003,
+    "acceptance_absolute_margin": 1e-10,
+    "acceptance_relative_margin": 1e-05,
+    "cross_resolution_factor": 5.0,
+    "maximum_candidates_per_type": 12,
+    "contour_modes": 8,
+    "chart": "cartesian"
+  },
+  "original_frozen_budget": false,
+  "status": "COMPLETED",
+  "stop_reason": "maximum_cycles",
+  "work": {
+    "totals": {
+      "evaluation_count": 99,
+      "forward_evaluation_count": 70,
+      "forward_frequency_solve_count": 70,
+      "td_evaluation_count": 4,
+      "td_frequency_solve_count": 4,
+      "analytic_base_frequency_solve_count": 26,
+      "factorization_count": 26,
+      "derivative_assembly_count": 166,
+      "tangent_solve_count": 166,
+      "analytic_primal_rhs_count": 624,
+      "reciprocal_frequency_solve_count": 0,
+      "reciprocal_rhs_count": 0,
+      "reciprocal_contraction_count": 0,
+      "compiled_frequency_batch_count": 0,
+      "compiled_local_factorization_count": 0,
+      "compiled_local_rhs_count": 0,
+      "compiled_local_cache_hit_count": 0,
+      "compiled_reduced_solve_count": 0,
+      "compiled_reduced_rhs_count": 0,
+      "compiled_fallback_count": 0,
+      "bie_frequency_solve_count": 100
+    },
+    "stages": {
+      "fixed_refinement": {
+        "evaluation_count": 14,
+        "forward_frequency_solve_count": 14,
+        "forward_evaluation_count": 14,
+        "analytic_base_frequency_solve_count": 14,
+        "factorization_count": 14,
+        "analytic_primal_rhs_count": 336,
+        "derivative_assembly_count": 91,
+        "tangent_solve_count": 91
+      },
+      "production_base": {
+        "evaluation_count": 2,
+        "forward_frequency_solve_count": 2,
+        "forward_evaluation_count": 2
+      },
+      "topological_derivative": {
+        "td_evaluation_count": 4,
+        "td_frequency_solve_count": 4
+      },
+      "refined_base": {
+        "evaluation_count": 2,
+        "forward_frequency_solve_count": 2,
+        "forward_evaluation_count": 2
+      },
+      "candidate_raw": {
+        "evaluation_count": 52,
+        "forward_frequency_solve_count": 23,
+        "forward_evaluation_count": 23
+      },
+      "candidate_refinement": {
+        "evaluation_count": 12,
+        "forward_frequency_solve_count": 12,
+        "forward_evaluation_count": 12,
+        "analytic_base_frequency_solve_count": 12,
+        "factorization_count": 12,
+        "analytic_primal_rhs_count": 288,
+        "derivative_assembly_count": 75,
+        "tangent_solve_count": 75
+      },
+      "candidate_acceptance": {
+        "evaluation_count": 17,
+        "forward_frequency_solve_count": 17,
+        "forward_evaluation_count": 17
+      }
+    }
+  },
+  "final_state": [
+    {
+      "component_id": "initial.circle",
+      "chart": "cartesian",
+      "parameters": [
+        0.40194918578618355,
+        0.5651844770951595,
+        0.10482331126532474,
+        0.0020349410581264613,
+        3.1265773115634797e-19,
+        -1.31527594358379e-18,
+        -0.0021186544624625693,
+        -0.002034941058126476,
+        0.0020349410581264916,
+        0.10906062019024991,
+        -9.944727018642226e-19,
+        1.215277133412265e-17,
+        0.00203494105812648,
+        -0.0021186544624625645
+      ],
+      "maximum_mode": 3
+    },
+    {
+      "component_id": "t001.birth",
+      "chart": "cartesian",
+      "parameters": [
+        0.6191772348757306,
+        0.5306237235195118,
+        0.03260705029895423,
+        -9.957719015577533e-19,
+        7.756182226454326e-19,
+        0.03260705029895423
+      ],
+      "maximum_mode": 1
+    },
+    {
+      "component_id": "t002.birth",
+      "chart": "cartesian",
+      "parameters": [
+        0.5553592507270982,
+        0.42023981214413114,
+        0.02976843218388497,
+        -9.412078740926565e-19,
+        7.331176721311537e-19,
+        0.02976843218388497
+      ],
+      "maximum_mode": 1
+    }
+  ],
+  "events": [
+    {
+      "cycle": 0,
+      "kind": "birth",
+      "parents": [],
+      "children": [
+        "t001.birth"
+      ],
+      "before_ids": [
+        "initial.circle"
+      ],
+      "after_ids": [
+        "initial.circle",
+        "t001.birth"
+      ],
+      "production_before": 0.5125730989123369,
+      "production_after": 0.30451451493306514,
+      "refined_before": 0.5125730989123385,
+      "refined_after": 0.3045145149330653,
+      "construction": "exterior_td_region; radius=0.027131",
+      "candidate_refinement_steps": 2,
+      "raw_birth_radius_m": 0.02713100830783894
+    },
+    {
+      "cycle": 1,
+      "kind": "birth",
+      "parents": [],
+      "children": [
+        "t002.birth"
+      ],
+      "before_ids": [
+        "initial.circle",
+        "t001.birth"
+      ],
+      "after_ids": [
+        "initial.circle",
+        "t001.birth",
+        "t002.birth"
+      ],
+      "production_before": 0.3037430471420788,
+      "production_after": 0.15972405502700263,
+      "refined_before": 0.3037430471420772,
+      "refined_after": 0.15972405502700282,
+      "construction": "exterior_td_region; radius=0.024592",
+      "candidate_refinement_steps": 2,
+      "raw_birth_radius_m": 0.02459245379682983
+    }
+  ],
+  "trajectory_checks": {
+    "monotone_accepted_states": true,
+    "all_event_margins_pass": true
+  },
+  "endpoint": {
+    "geometry": {
+      "component_count": 3,
+      "truth_component_count": 2,
+      "matched_components": [
+        {
+          "recovered_component": "t001.birth",
+          "truth_component": "truth.B",
+          "hausdorff_m": 0.012591355430335346
+        },
+        {
+          "recovered_component": "t002.birth",
+          "truth_component": "truth.A",
+          "hausdorff_m": 0.015366324268585058
+        }
+      ],
+      "maximum_matched_hausdorff_m": 0.015366324268585058,
+      "union_iou": 0.1237239067499619,
+      "final_maximum_modes": [
+        3,
+        1,
+        1
+      ]
+    },
+    "training_relative": 0.5651974080390015,
+    "holdout_relative": [
+      3.506889258824749,
+      2.108282653153432
+    ],
+    "gates": {
+      "correct_count": false,
+      "boundary": false,
+      "overlap": false,
+      "training": false,
+      "holdout": false
+    },
+    "passed": false,
+    "audit_work": {
+      "totals": {
+        "evaluation_count": 2,
+        "forward_evaluation_count": 2,
+        "forward_frequency_solve_count": 3,
+        "td_evaluation_count": 0,
+        "td_frequency_solve_count": 0,
+        "analytic_base_frequency_solve_count": 0,
+        "factorization_count": 0,
+        "derivative_assembly_count": 0,
+        "tangent_solve_count": 0,
+        "analytic_primal_rhs_count": 0,
+        "reciprocal_frequency_solve_count": 0,
+        "reciprocal_rhs_count": 0,
+        "reciprocal_contraction_count": 0,
+        "compiled_frequency_batch_count": 0,
+        "compiled_local_factorization_count": 0,
+        "compiled_local_rhs_count": 0,
+        "compiled_local_cache_hit_count": 0,
+        "compiled_reduced_solve_count": 0,
+        "compiled_reduced_rhs_count": 0,
+        "compiled_fallback_count": 0,
+        "bie_frequency_solve_count": 3
+      },
+      "stages": {
+        "unscoped": {
+          "evaluation_count": 2,
+          "forward_frequency_solve_count": 3,
+          "forward_evaluation_count": 2
+        }
+      }
+    }
+  },
+  "wall_seconds": 29.924888015259057
+}

@@ -130,7 +130,7 @@ records source hashes and exposes both allocation controls. See the
 
 ## Representation and physical-model restrictions
 
-The physical model is homogeneous full-space 2-D TMz dielectric transmission
+The maintained inverse's physical model is homogeneous full-space 2-D TMz dielectric transmission
 with free-space Hankel kernels. The topology demonstrations are noiseless,
 same-material, and use a 24-position paired ring acquisition at 0.5 GHz for
 topology decisions.
@@ -147,9 +147,15 @@ topology decisions.
   optimisation grounds — parameter drift along data-invisible directions,
   degraded quadrature, stalled shape progress — not on expressiveness grounds.
   See [B0 §7](baselines/B0_2026-09-10.md#7-representation-scope-the-distinction-that-matters-most).
-- Not implemented: air/ground interface, 3-D inverse, per-component unknown
+- Not implemented in this topology pipeline: air/ground interface, 3-D inverse, per-component unknown
   materials, nested holes, touching or intersecting boundaries, and noise
   handling.
+
+The [October 2 exploratory report](reports/exploration_2026-10-02.md) records
+separate opt-in TE/passive-loss forward and shape-derivative APIs, measured
+Fresnel inversions, a Sommerfeld half-space forward solver, and a sphere-only
+3-D scalar IBIM control. Their validation and restrictions are independent of
+the topology pipeline above; they have not been substituted into its policy.
 
 `ordered_boundary` owns smooth continuous producers and immutable even-node
 curve data. Method B fits Cartesian coordinate Fourier series to an extracted,

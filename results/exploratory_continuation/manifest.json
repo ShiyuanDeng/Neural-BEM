@@ -1,0 +1,762 @@
+{
+  "git_head": "15611d94397b7389e8eb80a9eb20c5fc01949f45",
+  "source_sha256": {
+    "experiments/exploratory_continuation/run.py": "e1f94138c4b0772dcd6f25900d9fb07b02ea6f18aa1248032ef1b4ceeabfc4c8",
+    "experiments/exploratory_continuation/retry_caps.py": "270aa067de971d28269ddd649175036cea7042dbf61ba2da19956d3278c35ce6",
+    "experiments/exploratory_continuation/lsm_control.py": "d910b74e62b22a3fb47c71601042b166e80dc12e92f807253251fb6b73132d3e",
+    "experiments/exploratory_continuation/frozen_candidate.py": "c748c1d2af10a7ce68ea1d0fc06b805caeef549c102158998a9aef455c44b285",
+    "experiments/exploratory_continuation/campaign.py": "6de459a93e999af68f4e10bbe006400004cfa667924438536c3a38c10367fb92",
+    "experiments/exploratory_continuation/report.py": "0cea7fea6118163330e80121c8c2a80bc8ac8ca6efbc98b7abf8f5515c0526aa",
+    "experiments/exploratory_continuation/test_controls.py": "4e5fcce5b726f05d4d823642613cca81c72dece7638442f0a1ea34c9a07476ba",
+    "experiments/exploratory_continuation/paths.py": "3b7eab049430ba3e42fcf51a7953510847d102b6722905e2a4cb49f92e93858d",
+    "experiments/exploratory_continuation/resolution_diagnostic.py": "c829ec16dd606dbdac2071468532127f14a4c50304fb6a0babdcd98ae347a98f",
+    "experiments/exploratory_continuation/__init__.py": "5e0e645548b9e85bc6b47a7d0f7b1718f429e85cd1c7d7f46433e40ead405198",
+    "experiments/exploratory_continuation/indicators.py": "44f30da795f6d4c1a2dfc8ebd0ad487eabe166d02d827fa48a893dd2dd6b3f6d",
+    "config/topology_scenes_v1.json": "dfc6dd998599526222c405ed4a146a53a76775bfefff24e38142283531941dc5",
+    "run_topology_scene_benchmark.py": "620f47106b0f86406044d16693a0f7dcf57a6f0c8752bcc81f42d95f08be42ce",
+    "experiments/shape_continuation/lm_backend.py": "22667f056b777dbd435c8f50a3ac690a426aa6f6ea7a0de4daad01dbce7facf5",
+    "experiments/shape_continuation/multi_object.py": "bb1ad7c08dcea4f32162706aa2f3007c075c7f07b1672328af0b82f174354502",
+    "experiments/shape_continuation/forward.py": "7e7e60f0a6093b383653bea7ab1b5a5712464c48feb18d1c2a802ddc57fc8c3d",
+    "solvers/sdf_inverse/radial_topology.py": "f992cd7f1cf034eb5d6ce3377c1948617005ea44077fb90fca5a45b40bffaa20",
+    "solvers/sdf_inverse/topology_controller.py": "58dd5f7f4a90224855137ff907f4d508e7c60d8ea4bca4f58bd8cd6b3796fbb5"
+  },
+  "original_spec": {
+    "version": "topology-scenes-v1",
+    "training_frequencies_hz": [
+      500000000
+    ],
+    "holdout_frequencies_hz": [
+      1500000000,
+      2500000000
+    ],
+    "oracle_nodes": 256,
+    "oracle_check_nodes": 512,
+    "oracle_relative_tolerance": 1e-05,
+    "production_nodes": 64,
+    "refined_nodes": 128,
+    "geometry_samples": 1024,
+    "iou_grid_size": 401,
+    "iou_bounds": [
+      [
+        0.2,
+        0.2
+      ],
+      [
+        0.8,
+        0.8
+      ]
+    ],
+    "gates": {
+      "maximum_matched_hausdorff_m": 0.001,
+      "minimum_union_iou": 0.9,
+      "maximum_refined_training_relative_l2": 0.003,
+      "maximum_holdout_relative_l2": 0.05
+    },
+    "controller": {
+      "chart": "cartesian",
+      "raster_size": 121,
+      "fixed_iterations": 22,
+      "candidate_refinement_iterations": 3,
+      "maximum_cycles": 10,
+      "maximum_events": 7,
+      "maximum_candidates_per_type": 48,
+      "relative_error_tolerance": 0.003,
+      "candidates_refined_per_group": 1
+    },
+    "scenes": [
+      {
+        "id": "repeated-birth",
+        "group": "original",
+        "title": "Empty start \u2192 three circles",
+        "truth": [
+          {
+            "kind": "circle",
+            "center": [
+              0.43,
+              0.455
+            ],
+            "radius": 0.028,
+            "component_id": "truth.A"
+          },
+          {
+            "kind": "circle",
+            "center": [
+              0.58,
+              0.46
+            ],
+            "radius": 0.03,
+            "component_id": "truth.B"
+          },
+          {
+            "kind": "circle",
+            "center": [
+              0.505,
+              0.6
+            ],
+            "radius": 0.027,
+            "component_id": "truth.C"
+          }
+        ],
+        "initial": []
+      },
+      {
+        "id": "death",
+        "group": "original",
+        "title": "Remove a spurious circle",
+        "truth": [
+          {
+            "kind": "circle",
+            "center": [
+              0.44,
+              0.5
+            ],
+            "radius": 0.033,
+            "component_id": "truth.A"
+          },
+          {
+            "kind": "circle",
+            "center": [
+              0.56,
+              0.5
+            ],
+            "radius": 0.033,
+            "component_id": "truth.B"
+          }
+        ],
+        "initial": [
+          {
+            "center": [
+              0.44,
+              0.5
+            ],
+            "cosine": [
+              0.033,
+              0
+            ],
+            "sine": [
+              0,
+              0
+            ],
+            "component_id": "initial.A"
+          },
+          {
+            "center": [
+              0.56,
+              0.5
+            ],
+            "cosine": [
+              0.033,
+              0
+            ],
+            "sine": [
+              0,
+              0
+            ],
+            "component_id": "initial.B"
+          },
+          {
+            "center": [
+              0.5,
+              0.62
+            ],
+            "cosine": [
+              0.023,
+              0
+            ],
+            "sine": [
+              0,
+              0
+            ],
+            "component_id": "spurious"
+          }
+        ]
+      },
+      {
+        "id": "split",
+        "group": "original",
+        "title": "Peanut \u2192 two circles",
+        "truth": [
+          {
+            "kind": "circle",
+            "center": [
+              0.44,
+              0.5
+            ],
+            "radius": 0.033,
+            "component_id": "truth.A"
+          },
+          {
+            "kind": "circle",
+            "center": [
+              0.56,
+              0.5
+            ],
+            "radius": 0.033,
+            "component_id": "truth.B"
+          }
+        ],
+        "initial": [
+          {
+            "center": [
+              0.5,
+              0.5
+            ],
+            "cosine": [
+              0.067,
+              0,
+              0.035
+            ],
+            "sine": [
+              0,
+              0,
+              0
+            ],
+            "component_id": "parent"
+          }
+        ]
+      },
+      {
+        "id": "merge",
+        "group": "original",
+        "title": "Two circles \u2192 one ellipse",
+        "truth": [
+          {
+            "kind": "ellipse",
+            "center": [
+              0.5,
+              0.5
+            ],
+            "semi_major": 0.092,
+            "semi_minor": 0.039,
+            "rotation": 0,
+            "component_id": "truth.connected"
+          }
+        ],
+        "initial": [
+          {
+            "center": [
+              0.45,
+              0.5
+            ],
+            "cosine": [
+              0.033,
+              0
+            ],
+            "sine": [
+              0,
+              0
+            ],
+            "component_id": "left"
+          },
+          {
+            "center": [
+              0.55,
+              0.5
+            ],
+            "cosine": [
+              0.033,
+              0
+            ],
+            "sine": [
+              0,
+              0
+            ],
+            "component_id": "right"
+          }
+        ]
+      },
+      {
+        "id": "mixed",
+        "group": "original",
+        "title": "Split a peanut and remove a circle",
+        "truth": [
+          {
+            "kind": "circle",
+            "center": [
+              0.44,
+              0.5
+            ],
+            "radius": 0.033,
+            "component_id": "truth.A"
+          },
+          {
+            "kind": "circle",
+            "center": [
+              0.56,
+              0.5
+            ],
+            "radius": 0.033,
+            "component_id": "truth.B"
+          }
+        ],
+        "initial": [
+          {
+            "center": [
+              0.5,
+              0.5
+            ],
+            "cosine": [
+              0.067,
+              0,
+              0.035
+            ],
+            "sine": [
+              0,
+              0,
+              0
+            ],
+            "component_id": "parent"
+          },
+          {
+            "center": [
+              0.5,
+              0.65
+            ],
+            "cosine": [
+              0.023,
+              0
+            ],
+            "sine": [
+              0,
+              0
+            ],
+            "component_id": "spurious"
+          }
+        ]
+      },
+      {
+        "id": "far-two-circles",
+        "group": "new",
+        "title": "Distant large circle \u2192 two circles",
+        "truth": [
+          {
+            "kind": "circle",
+            "center": [
+              0.55,
+              0.43
+            ],
+            "radius": 0.034,
+            "component_id": "truth.A"
+          },
+          {
+            "kind": "circle",
+            "center": [
+              0.61,
+              0.53
+            ],
+            "radius": 0.036,
+            "component_id": "truth.B"
+          }
+        ],
+        "initial": [
+          {
+            "center": [
+              0.4,
+              0.57
+            ],
+            "cosine": [
+              0.075,
+              0,
+              0
+            ],
+            "sine": [
+              0,
+              0,
+              0
+            ],
+            "component_id": "initial.circle"
+          }
+        ]
+      },
+      {
+        "id": "far-ellipse-star",
+        "group": "new",
+        "title": "Distant large circle \u2192 ellipse + star",
+        "truth": [
+          {
+            "kind": "ellipse",
+            "center": [
+              0.55,
+              0.43
+            ],
+            "semi_major": 0.045,
+            "semi_minor": 0.026,
+            "rotation": 0.55,
+            "component_id": "truth.ellipse"
+          },
+          {
+            "kind": "star",
+            "center": [
+              0.61,
+              0.53
+            ],
+            "mean_radius": 0.036,
+            "amplitude": 0.24,
+            "lobes": 5,
+            "rotation": 0.2,
+            "component_id": "truth.star"
+          }
+        ],
+        "initial": [
+          {
+            "center": [
+              0.4,
+              0.57
+            ],
+            "cosine": [
+              0.075,
+              0,
+              0
+            ],
+            "sine": [
+              0,
+              0,
+              0
+            ],
+            "component_id": "initial.circle"
+          }
+        ]
+      },
+      {
+        "id": "central-ellipse-star",
+        "group": "new",
+        "title": "Central circle \u2192 ellipse + star",
+        "truth": [
+          {
+            "kind": "ellipse",
+            "center": [
+              0.445,
+              0.445
+            ],
+            "semi_major": 0.045,
+            "semi_minor": 0.026,
+            "rotation": 0.55,
+            "component_id": "truth.ellipse"
+          },
+          {
+            "kind": "star",
+            "center": [
+              0.555,
+              0.555
+            ],
+            "mean_radius": 0.036,
+            "amplitude": 0.24,
+            "lobes": 5,
+            "rotation": 0.2,
+            "component_id": "truth.star"
+          }
+        ],
+        "initial": [
+          {
+            "center": [
+              0.5,
+              0.5
+            ],
+            "cosine": [
+              0.05,
+              0,
+              0
+            ],
+            "sine": [
+              0,
+              0,
+              0
+            ],
+            "component_id": "initial.circle"
+          }
+        ]
+      },
+      {
+        "id": "enclosing-ellipse-star",
+        "group": "new",
+        "title": "Enclosing circle \u2192 ellipse + star",
+        "truth": [
+          {
+            "kind": "ellipse",
+            "center": [
+              0.445,
+              0.445
+            ],
+            "semi_major": 0.045,
+            "semi_minor": 0.026,
+            "rotation": 0.55,
+            "component_id": "truth.ellipse"
+          },
+          {
+            "kind": "star",
+            "center": [
+              0.555,
+              0.555
+            ],
+            "mean_radius": 0.036,
+            "amplitude": 0.24,
+            "lobes": 5,
+            "rotation": 0.2,
+            "component_id": "truth.star"
+          }
+        ],
+        "initial": [
+          {
+            "center": [
+              0.5,
+              0.5
+            ],
+            "cosine": [
+              0.13,
+              0,
+              0
+            ],
+            "sine": [
+              0,
+              0,
+              0
+            ],
+            "component_id": "initial.circle"
+          }
+        ]
+      },
+      {
+        "id": "empty-ellipse-star",
+        "group": "new",
+        "title": "Empty start \u2192 ellipse + star",
+        "truth": [
+          {
+            "kind": "ellipse",
+            "center": [
+              0.55,
+              0.43
+            ],
+            "semi_major": 0.045,
+            "semi_minor": 0.026,
+            "rotation": 0.55,
+            "component_id": "truth.ellipse"
+          },
+          {
+            "kind": "star",
+            "center": [
+              0.61,
+              0.53
+            ],
+            "mean_radius": 0.036,
+            "amplitude": 0.24,
+            "lobes": 5,
+            "rotation": 0.2,
+            "component_id": "truth.star"
+          }
+        ],
+        "initial": []
+      },
+      {
+        "id": "far-two-stars",
+        "group": "new",
+        "title": "Distant large circle \u2192 5- and 7-lobed stars",
+        "truth": [
+          {
+            "kind": "star",
+            "center": [
+              0.55,
+              0.43
+            ],
+            "mean_radius": 0.031,
+            "amplitude": 0.24,
+            "lobes": 5,
+            "rotation": 0.4,
+            "component_id": "truth.star5"
+          },
+          {
+            "kind": "star",
+            "center": [
+              0.61,
+              0.54
+            ],
+            "mean_radius": 0.03,
+            "amplitude": 0.22,
+            "lobes": 7,
+            "rotation": -0.15,
+            "component_id": "truth.star7"
+          }
+        ],
+        "initial": [
+          {
+            "center": [
+              0.4,
+              0.57
+            ],
+            "cosine": [
+              0.075,
+              0,
+              0
+            ],
+            "sine": [
+              0,
+              0,
+              0
+            ],
+            "component_id": "initial.circle"
+          }
+        ]
+      },
+      {
+        "id": "far-three-shapes",
+        "group": "new",
+        "title": "Distant large circle \u2192 ellipse + star + circle",
+        "truth": [
+          {
+            "kind": "ellipse",
+            "center": [
+              0.49,
+              0.43
+            ],
+            "semi_major": 0.038,
+            "semi_minor": 0.022,
+            "rotation": -0.4,
+            "component_id": "truth.ellipse"
+          },
+          {
+            "kind": "star",
+            "center": [
+              0.62,
+              0.45
+            ],
+            "mean_radius": 0.027,
+            "amplitude": 0.22,
+            "lobes": 5,
+            "rotation": 0.25,
+            "component_id": "truth.star"
+          },
+          {
+            "kind": "circle",
+            "center": [
+              0.56,
+              0.59
+            ],
+            "radius": 0.024,
+            "component_id": "truth.circle"
+          }
+        ],
+        "initial": [
+          {
+            "center": [
+              0.4,
+              0.57
+            ],
+            "cosine": [
+              0.075,
+              0,
+              0
+            ],
+            "sine": [
+              0,
+              0,
+              0
+            ],
+            "component_id": "initial.circle"
+          }
+        ]
+      }
+    ]
+  },
+  "known_contract_changes": {
+    "controller_primary": {
+      "directory": "controller_full",
+      "policy": "H for both arms",
+      "frozen_budgets": {
+        "chart": "cartesian",
+        "raster_size": 121,
+        "fixed_iterations": 22,
+        "candidate_refinement_iterations": 3,
+        "maximum_cycles": 10,
+        "maximum_events": 7,
+        "maximum_candidates_per_type": 48,
+        "relative_error_tolerance": 0.003,
+        "candidates_refined_per_group": 1
+      },
+      "extra_policy_flags": {
+        "refined_feasibility_guard": true,
+        "feasible_fd_jacobian": true
+      },
+      "workers": 4,
+      "per_job_timeout_seconds": 600,
+      "timeout_origin": "Original benchmark run_topology_scene_benchmark.py declared per-run cap",
+      "passed_requires_completed_job": true
+    },
+    "controller_pilots": {
+      "directories": [
+        "controller",
+        "controller_guarded"
+      ],
+      "maximum_cycles": 2,
+      "fixed_iterations": 6,
+      "candidate_refinement_iterations": 2,
+      "maximum_candidates_per_type": 12,
+      "policy": "A then H",
+      "timeout_seconds": [
+        120,
+        180
+      ]
+    },
+    "continuation_primary": {
+      "training_frequencies_hz": [
+        250000000.0,
+        375000000.0,
+        500000000.0,
+        750000000.0,
+        1000000000.0
+      ],
+      "topology": "fixed-count TD initialization",
+      "curve_modes": 24,
+      "nodes": 64,
+      "refined_nodes": 128,
+      "updates_per_visit": 2,
+      "work_cap": 160,
+      "scif_upward_probability": 0.603,
+      "seeds": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "maximum_path_visits": 32
+    },
+    "continuation_supplement": {
+      "work_cap": 512,
+      "rerun_pure_work_stops": 16,
+      "reused_deterministic_endpoints": 80,
+      "accounting": "Both effective96-path and actual original-plus-replay totals saved; all failed attempts charged"
+    },
+    "resolution_diagnostic": {
+      "separate_from_primary": true,
+      "node_pairs": [
+        [
+          64,
+          128
+        ],
+        [
+          128,
+          256
+        ],
+        [
+          256,
+          512
+        ]
+      ],
+      "frozen_proposal_nodes": [
+        256,
+        512,
+        1024
+      ],
+      "same_candidate_fine_relative_change": 4.669679680952428e-06
+    }
+  },
+  "shared_heldout_frequencies_hz": [
+    1500000000.0,
+    2500000000.0
+  ],
+  "cpu_only": true,
+  "blas_threads": 1,
+  "wall_comparison_controlled": false
+}

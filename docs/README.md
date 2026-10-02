@@ -1,5 +1,12 @@
 # Project dashboard
 
+**October 2 exploratory results:** [ranked research report](reports/exploration_2026-10-02.md)
+links the shape-sensitivity atlas, measured Fresnel inversions, TE/lossy
+validation, initialization/continuation comparisons, time-domain and
+half-space checks, sphere IBIM and Algoim experiments. The TOP-009 audit
+finds a large finite-deformation effect; a local near-null explanation is
+not supported. These are opt-in research additions.
+
 **Latest topology results:** [TOP-025 all-scene videos](../results/validation/topology/TOP-025-20260915-210356-all-scenes-current/README.md) and [iteration 18](iterations/topology/iteration_18/01_results.md): 7/12 scenes pass all gates.
 
 Updated 2026-09-16. This page is the entry point: current baseline, current

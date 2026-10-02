@@ -1,0 +1,283 @@
+{
+  "scene": "far-two-circles",
+  "initializer": "current",
+  "controller": {
+    "inspection_center": [
+      0.5,
+      0.5
+    ],
+    "inspection_radius_m": 0.2,
+    "raster_size": 121,
+    "boundary_buffer_m": 0.006,
+    "minimum_component_radius_m": 0.008,
+    "maximum_birth_radius_m": 0.065,
+    "birth_radius_grid_m": null,
+    "split_seed_radius_factors": [
+      1.0
+    ],
+    "maximum_events": 7,
+    "maximum_cycles": 10,
+    "fixed_iterations": 22,
+    "candidate_refinement_iterations": 3,
+    "candidates_refined_per_group": 1,
+    "include_simplest_candidate": false,
+    "refined_feasibility_guard": true,
+    "feasible_fd_jacobian": true,
+    "bandwidth_promotion": false,
+    "relative_error_tolerance": 0.003,
+    "acceptance_absolute_margin": 1e-10,
+    "acceptance_relative_margin": 1e-05,
+    "cross_resolution_factor": 5.0,
+    "maximum_candidates_per_type": 48,
+    "contour_modes": 8,
+    "chart": "cartesian"
+  },
+  "original_frozen_budget": true,
+  "controller_policy": "H",
+  "status": "COMPLETED",
+  "stop_reason": "recovered",
+  "work": {
+    "totals": {
+      "evaluation_count": 302,
+      "forward_evaluation_count": 237,
+      "forward_frequency_solve_count": 237,
+      "td_evaluation_count": 6,
+      "td_frequency_solve_count": 6,
+      "analytic_base_frequency_solve_count": 102,
+      "factorization_count": 102,
+      "derivative_assembly_count": 930,
+      "tangent_solve_count": 930,
+      "analytic_primal_rhs_count": 2448,
+      "reciprocal_frequency_solve_count": 0,
+      "reciprocal_rhs_count": 0,
+      "reciprocal_contraction_count": 0,
+      "compiled_frequency_batch_count": 0,
+      "compiled_local_factorization_count": 0,
+      "compiled_local_rhs_count": 0,
+      "compiled_local_cache_hit_count": 0,
+      "compiled_reduced_solve_count": 0,
+      "compiled_reduced_rhs_count": 0,
+      "compiled_fallback_count": 0,
+      "bie_frequency_solve_count": 345
+    },
+    "stages": {
+      "fixed_refinement": {
+        "evaluation_count": 70,
+        "forward_frequency_solve_count": 70,
+        "forward_evaluation_count": 70,
+        "analytic_base_frequency_solve_count": 70,
+        "factorization_count": 70,
+        "analytic_primal_rhs_count": 1680,
+        "derivative_assembly_count": 558,
+        "tangent_solve_count": 558
+      },
+      "production_base": {
+        "evaluation_count": 4,
+        "forward_frequency_solve_count": 4,
+        "forward_evaluation_count": 4
+      },
+      "topological_derivative": {
+        "td_evaluation_count": 6,
+        "td_frequency_solve_count": 6
+      },
+      "refined_base": {
+        "evaluation_count": 3,
+        "forward_frequency_solve_count": 3,
+        "forward_evaluation_count": 3
+      },
+      "candidate_raw": {
+        "evaluation_count": 124,
+        "forward_frequency_solve_count": 59,
+        "forward_evaluation_count": 59
+      },
+      "candidate_refinement": {
+        "evaluation_count": 66,
+        "forward_frequency_solve_count": 66,
+        "forward_evaluation_count": 66,
+        "analytic_base_frequency_solve_count": 32,
+        "factorization_count": 32,
+        "analytic_primal_rhs_count": 768,
+        "derivative_assembly_count": 372,
+        "tangent_solve_count": 372
+      },
+      "candidate_acceptance": {
+        "evaluation_count": 35,
+        "forward_frequency_solve_count": 35,
+        "forward_evaluation_count": 35
+      }
+    }
+  },
+  "final_state": [
+    {
+      "component_id": "t001.birth",
+      "chart": "cartesian",
+      "parameters": [
+        0.6100000063975022,
+        0.5300000047877593,
+        0.035999994427860095,
+        -2.061307984279721e-18,
+        1.6055765708901652e-18,
+        0.035999994427860095
+      ],
+      "maximum_mode": 1
+    },
+    {
+      "component_id": "t002.birth",
+      "chart": "cartesian",
+      "parameters": [
+        0.5499999858883518,
+        0.4300000079808599,
+        0.03399994787018711,
+        -1.710673197451576e-18,
+        1.332463090049962e-18,
+        0.03399994787018711
+      ],
+      "maximum_mode": 1
+    }
+  ],
+  "events": [
+    {
+      "cycle": 0,
+      "kind": "birth",
+      "parents": [],
+      "children": [
+        "t001.birth"
+      ],
+      "before_ids": [
+        "initial.circle"
+      ],
+      "after_ids": [
+        "initial.circle",
+        "t001.birth"
+      ],
+      "production_before": 0.50958120995413,
+      "production_after": 0.3060348590441069,
+      "refined_before": 0.509581209954128,
+      "refined_after": 0.30603485904411276,
+      "construction": "exterior_td_region; radius=0.024664",
+      "candidate_refinement_steps": 3,
+      "raw_birth_radius_m": 0.024664256734439886
+    },
+    {
+      "cycle": 1,
+      "kind": "birth",
+      "parents": [],
+      "children": [
+        "t002.birth"
+      ],
+      "before_ids": [
+        "initial.circle",
+        "t001.birth"
+      ],
+      "after_ids": [
+        "initial.circle",
+        "t001.birth",
+        "t002.birth"
+      ],
+      "production_before": 0.3038992080440435,
+      "production_after": 0.15903975238091822,
+      "refined_before": 0.3038992080440431,
+      "refined_after": 0.15903975238091655,
+      "construction": "exterior_td_region; radius=0.024592",
+      "candidate_refinement_steps": 3,
+      "raw_birth_radius_m": 0.02459245379682983
+    },
+    {
+      "cycle": 2,
+      "kind": "death",
+      "parents": [
+        "initial.circle"
+      ],
+      "children": [],
+      "before_ids": [
+        "initial.circle",
+        "t001.birth",
+        "t002.birth"
+      ],
+      "after_ids": [
+        "t001.birth",
+        "t002.birth"
+      ],
+      "production_before": 0.15802009233563508,
+      "production_after": 1.0081145623445446e-12,
+      "refined_before": 0.15802009233563258,
+      "refined_after": 1.0081145614705762e-12,
+      "construction": "leave_one_component_out",
+      "candidate_refinement_steps": 3
+    }
+  ],
+  "trajectory_checks": {
+    "monotone_accepted_states": true,
+    "all_event_margins_pass": true
+  },
+  "endpoint": {
+    "geometry": {
+      "component_count": 2,
+      "truth_component_count": 2,
+      "matched_components": [
+        {
+          "recovered_component": "t001.birth",
+          "truth_component": "truth.B",
+          "hausdorff_m": 1.3562796120590267e-08
+        },
+        {
+          "recovered_component": "t002.birth",
+          "truth_component": "truth.A",
+          "hausdorff_m": 6.834192686325028e-08
+        }
+      ],
+      "maximum_matched_hausdorff_m": 6.834192686325028e-08,
+      "union_iou": 1.0,
+      "final_maximum_modes": [
+        1,
+        1
+      ]
+    },
+    "training_relative": 1.4199398307467652e-06,
+    "holdout_relative": [
+      9.060633284723953e-06,
+      6.8661310909878294e-06
+    ],
+    "gates": {
+      "correct_count": true,
+      "boundary": true,
+      "overlap": true,
+      "training": true,
+      "holdout": true
+    },
+    "passed": true,
+    "audit_work": {
+      "totals": {
+        "evaluation_count": 2,
+        "forward_evaluation_count": 2,
+        "forward_frequency_solve_count": 3,
+        "td_evaluation_count": 0,
+        "td_frequency_solve_count": 0,
+        "analytic_base_frequency_solve_count": 0,
+        "factorization_count": 0,
+        "derivative_assembly_count": 0,
+        "tangent_solve_count": 0,
+        "analytic_primal_rhs_count": 0,
+        "reciprocal_frequency_solve_count": 0,
+        "reciprocal_rhs_count": 0,
+        "reciprocal_contraction_count": 0,
+        "compiled_frequency_batch_count": 0,
+        "compiled_local_factorization_count": 0,
+        "compiled_local_rhs_count": 0,
+        "compiled_local_cache_hit_count": 0,
+        "compiled_reduced_solve_count": 0,
+        "compiled_reduced_rhs_count": 0,
+        "compiled_fallback_count": 0,
+        "bie_frequency_solve_count": 3
+      },
+      "stages": {
+        "unscoped": {
+          "evaluation_count": 2,
+          "forward_frequency_solve_count": 3,
+          "forward_evaluation_count": 2
+        }
+      }
+    }
+  },
+  "wall_seconds": 197.36312790121883
+}
