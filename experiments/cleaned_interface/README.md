@@ -238,6 +238,11 @@ an exact shape-distance audit; tests in `test_n_reparam.py`. It is not wired
 into `fit`. `python -m experiments.cleaned_interface.n_reparam` reproduces the
 NU-002 replay ([iteration 10](../../docs/iterations/cleaned_interfaces/iteration_10/01_results.md)).
 
+[nu003.py](nu003.py) is `SpectralProjectedUpdate`: the CI-001 trial map with the
+spline resampler replaced by the eq. 9 quadrature (no splines). It also provides
+the NU-003 pre-check, campaign substitution and drift/identity report; tests in
+`test_nu003.py`. Results: [iteration 11](../../docs/iterations/cleaned_interfaces/iteration_11/01_results.md).
+
 ## Executable policy
 
 [policy.py](policy.py) is the single definition of `cumulative_sc_ma/1.0.0`.
