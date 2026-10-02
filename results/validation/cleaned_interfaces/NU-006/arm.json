@@ -1,0 +1,49 @@
+{
+  "experiment": "NU-006",
+  "arm": "MG",
+  "solver": "modal_muller",
+  "update": "BatchedCertifiedUpdate",
+  "construction": "z + P_K[R(z+h*n)-R(z)], R = eq. 9 arclength quadrature (no splines); FD derivative of the complete trial",
+  "update_settings": {
+    "name": "centred_state_band_spectral_projection",
+    "length_unit_m": 0.05,
+    "projection_tolerance": 1e-05,
+    "coordinates": "real Fourier coefficients of normal distance h (m) in normalized arclength",
+    "gauge": "arclength refit on every trial",
+    "derivative_step_m": 1e-07,
+    "construction": "z + P_K[R(z+h*n)-R(z)], R = eq. 9 arclength quadrature (no splines); FD derivative of the complete trial",
+    "projection_tolerance_meaning": "grid refinement, not intentional smoothing",
+    "resampler": "eq. 9 quadrature on the uniform grid (count and 2*count); no splines",
+    "validity": "exact area -> Lemma 3-4 increment vs accepted-curve Y -> full |W|^2 certificate (crop + Lemma 3 tail) -> sampled test (unchanged fallback)",
+    "certificate_window": 64,
+    "full_certificate_windows": [
+      64,
+      128
+    ],
+    "full_crop_band": "max(K, 64)",
+    "regularity": "certified |W|^2 >= 1e-12 sum j^2|x_j|^2",
+    "shadow": false,
+    "prepare": "batched torch float64 (NU-006)",
+    "prepare_device": "cuda",
+    "chunk_bytes": 536870912
+  },
+  "cases": [
+    "core__wrong_circle",
+    "core__circle_to_star",
+    "core__circle_to_c",
+    "core__kite",
+    "core__peanut",
+    "core__hook"
+  ],
+  "policy_changes": {
+    "fit_seconds": [
+      1800.0,
+      14400.0
+    ],
+    "audit_seconds": [
+      300.0,
+      3600.0
+    ],
+    "reason": "identical to the NU-001 to NU-005 arms; unit caps unchanged"
+  }
+}

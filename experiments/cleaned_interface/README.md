@@ -255,6 +255,13 @@ and campaign; tests in `test_nu005.py`. The drift and decision audit is
 [nu005_drift.py](nu005_drift.py). Results:
 [iteration 13](../../docs/iterations/cleaned_interfaces/iteration_13/01_results.md).
 
+[nu006.py](nu006.py) is `BatchedCertifiedUpdate`: the NU-005 update whose `prepare`
+evaluates all 2(2M+1)+2 projections in one torch float64 call (CUDA when available;
+it falls back to the sequential CPU path after device out-of-memory). It is
+decision-identical to NU-005 and cuts geometry preparation from 150 s to 3.9 s on the six core
+cases; tests in `test_nu006.py`. Results:
+[iteration 14](../../docs/iterations/cleaned_interfaces/iteration_14/01_results.md).
+
 ## Executable policy
 
 [policy.py](policy.py) is the single definition of `cumulative_sc_ma/1.0.0`.
