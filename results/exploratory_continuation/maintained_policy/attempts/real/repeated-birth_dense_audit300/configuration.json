@@ -1,0 +1,1580 @@
+{
+  "initial": {
+    "components": [
+      {
+        "real": [
+          -5.2349374282854085e-18,
+          -3.360532861144768e-17,
+          -6.526330950736379e-18,
+          -4.307145449023508e-17,
+          1.4970375479268339,
+          0.5382025607773064,
+          2.1697130625292743e-17,
+          -3.3113641070144325e-17,
+          1.6728665327992394e-18
+        ],
+        "imag": [
+          -9.715323925504568e-18,
+          -2.2676868240122043e-17,
+          -6.1250309280796765e-18,
+          -5.883978500957105e-19,
+          -0.7049009308135834,
+          -6.005378892738264e-17,
+          -5.948190324732654e-18,
+          9.499091708515319e-18,
+          3.766269191488321e-18
+        ]
+      },
+      {
+        "real": [
+          -1.816512977680572e-18,
+          -8.097563153039521e-18,
+          -7.115689686580218e-18,
+          -5.103070694087483e-18,
+          -1.2801706653873137,
+          0.4982787485166885,
+          1.9428317108524405e-17,
+          1.1037712915309338e-17,
+          5.332672608897889e-18
+        ],
+        "imag": [
+          6.671020872870406e-20,
+          -6.0560697503224995e-18,
+          1.3204316873130035e-18,
+          1.5794179298285433e-18,
+          -0.7749277070464633,
+          -5.479210215011547e-17,
+          -3.220947462347375e-19,
+          -2.2352352333052303e-18,
+          1.4560656642236074e-18
+        ]
+      },
+      {
+        "real": [
+          -2.9489193415142907e-18,
+          -3.5957844408393206e-18,
+          -3.312425575330801e-17,
+          1.3474972175229856e-17,
+          0.08824816756991093,
+          0.4820437914901174,
+          -5.770090110827748e-18,
+          3.102820810787598e-17,
+          7.431704016148474e-18
+        ],
+        "imag": [
+          1.3609712647577376e-18,
+          -4.927906179296606e-18,
+          6.984066561735653e-18,
+          6.273764535057989e-18,
+          1.7826043120899349,
+          -5.781677491368403e-17,
+          4.0273504659417194e-18,
+          -1.213536485024881e-17,
+          -1.0143853643301245e-17
+        ]
+      },
+      {
+        "real": [
+          -1.3999439866766802e-18,
+          4.282420132002208e-17,
+          5.3228346735519984e-18,
+          3.9472631204158126e-17,
+          0.19967477303802328,
+          0.18712051592547804,
+          1.651385622438948e-17,
+          1.633380926922038e-17,
+          -4.207329416299767e-18
+        ],
+        "imag": [
+          -9.717147905591235e-18,
+          -4.51790093980767e-18,
+          1.6739054080453774e-18,
+          5.405674010393775e-18,
+          -3.200118493345947,
+          -2.5799776540418734e-17,
+          -6.782282366692786e-18,
+          4.013128394728082e-18,
+          4.26934175357389e-18
+        ]
+      }
+    ],
+    "ids": [
+      "topo.0",
+      "topo.1",
+      "topo.2",
+      "topo.3"
+    ],
+    "storage_band": 4
+  },
+  "contrast": 0.5,
+  "solver": "coupled_nodal_kress",
+  "execution": {
+    "device": "cpu",
+    "frequency_threads": 1,
+    "acceleration": "spd016",
+    "geometry": "both",
+    "resolution": 512
+  },
+  "update": {
+    "name": "centred_state_band_projection",
+    "length_unit_m": 0.05,
+    "projection_tolerance": 1e-05,
+    "coordinates": "real Fourier coefficients of normal distance h (m) in normalized arclength",
+    "gauge": "arclength refit on every trial",
+    "derivative_step_m": 1e-07,
+    "construction": "z + P_K[A(z+h n)-A(z)]",
+    "projection_tolerance_meaning": "grid refinement, not intentional smoothing",
+    "component_composition": "independent projected trials; coupled physics",
+    "metric": "sum of per-component squared RMS normal displacements"
+  },
+  "plan": {
+    "policy": "cumulative_sc_ma",
+    "version": "1.0.0",
+    "fit_units": 13412,
+    "fit_seconds": 1800.0,
+    "definitions": {
+      "M": "normal shape update band",
+      "K_geometry": "Cartesian geometry storage band",
+      "K_trace": "backend-internal physics trace cutoff, never M or K_geometry",
+      "resolution": "backend-owned nodal/coefficient workspace profile"
+    },
+    "changes_from_DF": [
+      "declared-noise whitening and discrepancy stop for every stage",
+      "recurrent cleanup before full-catalog releases when noise is declared"
+    ],
+    "operations": [
+      {
+        "operation": "audit",
+        "label": "initial_audit",
+        "purpose": "Qualify the prescribed original start",
+        "entry": "before localization",
+        "transition": "localize if qualified; otherwise final failure",
+        "details": {
+          "scope": "all real frequencies, complete-trial Jacobian/FD",
+          "seconds": 300.0,
+          "catalog_alias": true
+        }
+      },
+      {
+        "operation": "localize",
+        "label": "prescribed_td_initialization",
+        "purpose": "Retain the common qualified TD seed configuration",
+        "entry": "original-start audit passed",
+        "transition": "same fixed-count seeds enter warmup; no single-circle localization",
+        "details": {
+          "original_localization": "single-circle Mie search",
+          "replacement": "common archived TD seeds",
+          "reason": "paired comparison requires identical data-only starts and component counts",
+          "catalog_alias": true
+        }
+      },
+      {
+        "operation": "fit",
+        "label": "warmup_025_damped",
+        "purpose": "Warm up localized circle at 0.25 GHz",
+        "entry": "previous operation completed or exhausted its stage quota",
+        "transition": "advance on normal/quota return; any hard/numerical failure goes to final audit; full real catalog at declared noise discrepancy goes directly to final audit",
+        "details": {
+          "accuracy_profile": {
+            "production": 512,
+            "refined": 1024,
+            "kind": "nodal_kress",
+            "nodal_resolution": 512,
+            "K_trace": null,
+            "coefficient_workspace": null,
+            "refinement": "double nodes; refuse candidates outside per-frequency tolerance"
+          },
+          "expected_noise_loss": 0.0,
+          "noise_threshold": null,
+          "weight_rule": "equal frequency weights",
+          "stopping": [
+            "loss tolerance",
+            "gradient infinity norm",
+            "relative step",
+            "iteration cap",
+            "stage quota",
+            "global work/time cap",
+            "numerical refusal"
+          ],
+          "catalog_alias": true
+        },
+        "stage": {
+          "label": "warmup_025_damped",
+          "weights": [
+            1.0
+          ],
+          "discrepancy_tolerances": [
+            1e-05
+          ],
+          "update_modes": 1,
+          "curve_modes": 4,
+          "nodes": 512,
+          "refined_nodes": 1024,
+          "iterations": 44,
+          "quota": 600,
+          "wavenumbers": [
+            0.641718860444247
+          ],
+          "M": 1,
+          "K_geometry": 4,
+          "frequencies_hz": [
+            250000000.0
+          ],
+          "damping": [
+            0.0
+          ]
+        },
+        "optimizer": {
+          "initial_damping": 0.001,
+          "damping_increase": 10.0,
+          "damping_decrease": 0.3,
+          "max_damping_trials": 5,
+          "max_backtracks": 7,
+          "gradient_tolerance": 1e-07,
+          "loss_tolerance": 1e-14,
+          "relative_step_tolerance": 1e-07,
+          "scaling_floor": 1.0,
+          "step_bounds_m": [
+            0.012,
+            0.018,
+            0.006
+          ],
+          "acceptance_absolute_margin": 1e-14,
+          "acceptance_relative_margin": 1e-08,
+          "cross_resolution_factor": 5.0,
+          "residual_floor": 1e-12,
+          "domain_box": [
+            [
+              -5.999999999999999,
+              -5.999999999999999
+            ],
+            [
+              6.000000000000001,
+              6.000000000000001
+            ]
+          ],
+          "step_control": "coefficient",
+          "physical_step_bound_m": 0.006,
+          "damping_rule": "schedule",
+          "hanke_ratio": 0.7,
+          "metric": "marquardt",
+          "detectability_factor": 2.5,
+          "log_model": false
+        },
+        "cleanup_band": null,
+        "geometry_update": "z + P_K[A(z+h*n)-A(z)], derivative of the complete trial",
+        "cleanup": "none"
+      },
+      {
+        "operation": "fit",
+        "label": "stage_1_damped",
+        "purpose": "Real-catalog alias frequency prefix; M=floor(3*max(real(k_exterior))), K_geometry=2*M+2",
+        "entry": "previous operation completed or exhausted its stage quota",
+        "transition": "advance on normal/quota return; any hard/numerical failure goes to final audit; full real catalog at declared noise discrepancy goes directly to final audit",
+        "details": {
+          "accuracy_profile": {
+            "production": 512,
+            "refined": 1024,
+            "kind": "nodal_kress",
+            "nodal_resolution": 512,
+            "K_trace": null,
+            "coefficient_workspace": null,
+            "refinement": "double nodes; refuse candidates outside per-frequency tolerance"
+          },
+          "expected_noise_loss": 0.0,
+          "noise_threshold": null,
+          "weight_rule": "equal frequency weights",
+          "stopping": [
+            "loss tolerance",
+            "gradient infinity norm",
+            "relative step",
+            "iteration cap",
+            "stage quota",
+            "global work/time cap",
+            "numerical refusal"
+          ],
+          "catalog_alias": true
+        },
+        "stage": {
+          "label": "stage_1_damped",
+          "weights": [
+            1.0
+          ],
+          "discrepancy_tolerances": [
+            1e-05
+          ],
+          "update_modes": 2,
+          "curve_modes": 6,
+          "nodes": 512,
+          "refined_nodes": 1024,
+          "iterations": 22,
+          "quota": 1000,
+          "wavenumbers": [
+            0.9625782906663704
+          ],
+          "M": 2,
+          "K_geometry": 6,
+          "frequencies_hz": [
+            375000000.0
+          ],
+          "damping": [
+            0.0
+          ]
+        },
+        "optimizer": {
+          "initial_damping": 0.001,
+          "damping_increase": 10.0,
+          "damping_decrease": 0.3,
+          "max_damping_trials": 5,
+          "max_backtracks": 7,
+          "gradient_tolerance": 1e-07,
+          "loss_tolerance": 1e-14,
+          "relative_step_tolerance": 1e-07,
+          "scaling_floor": 1.0,
+          "step_bounds_m": [
+            0.012,
+            0.018,
+            0.006
+          ],
+          "acceptance_absolute_margin": 1e-14,
+          "acceptance_relative_margin": 1e-08,
+          "cross_resolution_factor": 5.0,
+          "residual_floor": 1e-12,
+          "domain_box": [
+            [
+              -5.999999999999999,
+              -5.999999999999999
+            ],
+            [
+              6.000000000000001,
+              6.000000000000001
+            ]
+          ],
+          "step_control": "coefficient",
+          "physical_step_bound_m": 0.006,
+          "damping_rule": "schedule",
+          "hanke_ratio": 0.7,
+          "metric": "marquardt",
+          "detectability_factor": 2.5,
+          "log_model": false
+        },
+        "cleanup_band": null,
+        "geometry_update": "z + P_K[A(z+h*n)-A(z)], derivative of the complete trial",
+        "cleanup": "none"
+      },
+      {
+        "operation": "fit",
+        "label": "stage_2_damped",
+        "purpose": "Real-catalog alias frequency prefix; M=floor(3*max(real(k_exterior))), K_geometry=2*M+2",
+        "entry": "previous operation completed or exhausted its stage quota",
+        "transition": "advance on normal/quota return; any hard/numerical failure goes to final audit; full real catalog at declared noise discrepancy goes directly to final audit",
+        "details": {
+          "accuracy_profile": {
+            "production": 512,
+            "refined": 1024,
+            "kind": "nodal_kress",
+            "nodal_resolution": 512,
+            "K_trace": null,
+            "coefficient_workspace": null,
+            "refinement": "double nodes; refuse candidates outside per-frequency tolerance"
+          },
+          "expected_noise_loss": 0.0,
+          "noise_threshold": null,
+          "weight_rule": "equal frequency weights",
+          "stopping": [
+            "loss tolerance",
+            "gradient infinity norm",
+            "relative step",
+            "iteration cap",
+            "stage quota",
+            "global work/time cap",
+            "numerical refusal"
+          ],
+          "catalog_alias": true
+        },
+        "stage": {
+          "label": "stage_2_damped",
+          "weights": [
+            0.5,
+            0.5
+          ],
+          "discrepancy_tolerances": [
+            1e-05,
+            1e-05
+          ],
+          "update_modes": 3,
+          "curve_modes": 8,
+          "nodes": 512,
+          "refined_nodes": 1024,
+          "iterations": 22,
+          "quota": 1250,
+          "wavenumbers": [
+            0.9625782906663704,
+            1.283437720888494
+          ],
+          "M": 3,
+          "K_geometry": 8,
+          "frequencies_hz": [
+            375000000.0,
+            500000000.0
+          ],
+          "damping": [
+            0.0,
+            0.0
+          ]
+        },
+        "optimizer": {
+          "initial_damping": 0.001,
+          "damping_increase": 10.0,
+          "damping_decrease": 0.3,
+          "max_damping_trials": 5,
+          "max_backtracks": 7,
+          "gradient_tolerance": 1e-07,
+          "loss_tolerance": 1e-14,
+          "relative_step_tolerance": 1e-07,
+          "scaling_floor": 1.0,
+          "step_bounds_m": [
+            0.012,
+            0.018,
+            0.006
+          ],
+          "acceptance_absolute_margin": 1e-14,
+          "acceptance_relative_margin": 1e-08,
+          "cross_resolution_factor": 5.0,
+          "residual_floor": 1e-12,
+          "domain_box": [
+            [
+              -5.999999999999999,
+              -5.999999999999999
+            ],
+            [
+              6.000000000000001,
+              6.000000000000001
+            ]
+          ],
+          "step_control": "coefficient",
+          "physical_step_bound_m": 0.006,
+          "damping_rule": "schedule",
+          "hanke_ratio": 0.7,
+          "metric": "marquardt",
+          "detectability_factor": 2.5,
+          "log_model": false
+        },
+        "cleanup_band": null,
+        "geometry_update": "z + P_K[A(z+h*n)-A(z)], derivative of the complete trial",
+        "cleanup": "none"
+      },
+      {
+        "operation": "fit",
+        "label": "stage_3_damped",
+        "purpose": "Real-catalog alias frequency prefix; M=floor(3*max(real(k_exterior))), K_geometry=2*M+2",
+        "entry": "previous operation completed or exhausted its stage quota",
+        "transition": "advance on normal/quota return; any hard/numerical failure goes to final audit; full real catalog at declared noise discrepancy goes directly to final audit",
+        "details": {
+          "accuracy_profile": {
+            "production": 512,
+            "refined": 1024,
+            "kind": "nodal_kress",
+            "nodal_resolution": 512,
+            "K_trace": null,
+            "coefficient_workspace": null,
+            "refinement": "double nodes; refuse candidates outside per-frequency tolerance"
+          },
+          "expected_noise_loss": 0.0,
+          "noise_threshold": null,
+          "weight_rule": "equal frequency weights",
+          "stopping": [
+            "loss tolerance",
+            "gradient infinity norm",
+            "relative step",
+            "iteration cap",
+            "stage quota",
+            "global work/time cap",
+            "numerical refusal"
+          ],
+          "catalog_alias": true
+        },
+        "stage": {
+          "label": "stage_3_damped",
+          "weights": [
+            0.3333333333333333,
+            0.3333333333333333,
+            0.3333333333333333
+          ],
+          "discrepancy_tolerances": [
+            1e-05,
+            1e-05,
+            1e-07
+          ],
+          "update_modes": 5,
+          "curve_modes": 12,
+          "nodes": 512,
+          "refined_nodes": 1024,
+          "iterations": 22,
+          "quota": 1750,
+          "wavenumbers": [
+            0.9625782906663704,
+            1.283437720888494,
+            1.9251565813327407
+          ],
+          "M": 5,
+          "K_geometry": 12,
+          "frequencies_hz": [
+            375000000.0,
+            500000000.0,
+            750000000.0
+          ],
+          "damping": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "optimizer": {
+          "initial_damping": 0.001,
+          "damping_increase": 10.0,
+          "damping_decrease": 0.3,
+          "max_damping_trials": 5,
+          "max_backtracks": 7,
+          "gradient_tolerance": 1e-07,
+          "loss_tolerance": 1e-14,
+          "relative_step_tolerance": 1e-07,
+          "scaling_floor": 1.0,
+          "step_bounds_m": [
+            0.012,
+            0.018,
+            0.006
+          ],
+          "acceptance_absolute_margin": 1e-14,
+          "acceptance_relative_margin": 1e-08,
+          "cross_resolution_factor": 5.0,
+          "residual_floor": 1e-12,
+          "domain_box": [
+            [
+              -5.999999999999999,
+              -5.999999999999999
+            ],
+            [
+              6.000000000000001,
+              6.000000000000001
+            ]
+          ],
+          "step_control": "coefficient",
+          "physical_step_bound_m": 0.006,
+          "damping_rule": "schedule",
+          "hanke_ratio": 0.7,
+          "metric": "marquardt",
+          "detectability_factor": 2.5,
+          "log_model": false
+        },
+        "cleanup_band": null,
+        "geometry_update": "z + P_K[A(z+h*n)-A(z)], derivative of the complete trial",
+        "cleanup": "none"
+      },
+      {
+        "operation": "fit",
+        "label": "stage_4_damped",
+        "purpose": "Real-catalog alias frequency prefix; M=floor(3*max(real(k_exterior))), K_geometry=2*M+2",
+        "entry": "previous operation completed or exhausted its stage quota",
+        "transition": "advance on normal/quota return; any hard/numerical failure goes to final audit; full real catalog at declared noise discrepancy goes directly to final audit",
+        "details": {
+          "accuracy_profile": {
+            "production": 512,
+            "refined": 1024,
+            "kind": "nodal_kress",
+            "nodal_resolution": 512,
+            "K_trace": null,
+            "coefficient_workspace": null,
+            "refinement": "double nodes; refuse candidates outside per-frequency tolerance"
+          },
+          "expected_noise_loss": 0.0,
+          "noise_threshold": null,
+          "weight_rule": "equal frequency weights",
+          "stopping": [
+            "loss tolerance",
+            "gradient infinity norm",
+            "relative step",
+            "iteration cap",
+            "stage quota",
+            "global work/time cap",
+            "numerical refusal"
+          ],
+          "catalog_alias": true
+        },
+        "stage": {
+          "label": "stage_4_damped",
+          "weights": [
+            0.25,
+            0.25,
+            0.25,
+            0.25
+          ],
+          "discrepancy_tolerances": [
+            1e-05,
+            1e-05,
+            1e-07,
+            1e-07
+          ],
+          "update_modes": 7,
+          "curve_modes": 16,
+          "nodes": 512,
+          "refined_nodes": 1024,
+          "iterations": 22,
+          "quota": 4000,
+          "wavenumbers": [
+            0.9625782906663704,
+            1.283437720888494,
+            1.9251565813327407,
+            2.566875441776988
+          ],
+          "M": 7,
+          "K_geometry": 16,
+          "frequencies_hz": [
+            375000000.0,
+            500000000.0,
+            750000000.0,
+            1000000000.0
+          ],
+          "damping": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "optimizer": {
+          "initial_damping": 0.001,
+          "damping_increase": 10.0,
+          "damping_decrease": 0.3,
+          "max_damping_trials": 5,
+          "max_backtracks": 7,
+          "gradient_tolerance": 1e-07,
+          "loss_tolerance": 1e-14,
+          "relative_step_tolerance": 1e-07,
+          "scaling_floor": 1.0,
+          "step_bounds_m": [
+            0.012,
+            0.018,
+            0.006
+          ],
+          "acceptance_absolute_margin": 1e-14,
+          "acceptance_relative_margin": 1e-08,
+          "cross_resolution_factor": 5.0,
+          "residual_floor": 1e-12,
+          "domain_box": [
+            [
+              -5.999999999999999,
+              -5.999999999999999
+            ],
+            [
+              6.000000000000001,
+              6.000000000000001
+            ]
+          ],
+          "step_control": "coefficient",
+          "physical_step_bound_m": 0.006,
+          "damping_rule": "schedule",
+          "hanke_ratio": 0.7,
+          "metric": "marquardt",
+          "detectability_factor": 2.5,
+          "log_model": false
+        },
+        "cleanup_band": null,
+        "geometry_update": "z + P_K[A(z+h*n)-A(z)], derivative of the complete trial",
+        "cleanup": "none"
+      },
+      {
+        "operation": "fit",
+        "label": "stage_4_undamped",
+        "purpose": "Return explicitly to the measured real-frequency objective",
+        "entry": "previous operation completed or exhausted its stage quota",
+        "transition": "advance on normal/quota return; any hard/numerical failure goes to final audit; full real catalog at declared noise discrepancy goes directly to final audit",
+        "details": {
+          "accuracy_profile": {
+            "production": 512,
+            "refined": 1024,
+            "kind": "nodal_kress",
+            "nodal_resolution": 512,
+            "K_trace": null,
+            "coefficient_workspace": null,
+            "refinement": "double nodes; refuse candidates outside per-frequency tolerance"
+          },
+          "expected_noise_loss": 0.0,
+          "noise_threshold": null,
+          "weight_rule": "equal frequency weights",
+          "stopping": [
+            "loss tolerance",
+            "gradient infinity norm",
+            "relative step",
+            "iteration cap",
+            "stage quota",
+            "global work/time cap",
+            "numerical refusal"
+          ],
+          "catalog_alias": true
+        },
+        "stage": {
+          "label": "stage_4_undamped",
+          "weights": [
+            0.25,
+            0.25,
+            0.25,
+            0.25
+          ],
+          "discrepancy_tolerances": [
+            1e-05,
+            1e-05,
+            1e-07,
+            1e-07
+          ],
+          "update_modes": 7,
+          "curve_modes": 16,
+          "nodes": 512,
+          "refined_nodes": 1024,
+          "iterations": 22,
+          "quota": 4000,
+          "wavenumbers": [
+            0.9625782906663704,
+            1.283437720888494,
+            1.9251565813327407,
+            2.566875441776988
+          ],
+          "M": 7,
+          "K_geometry": 16,
+          "frequencies_hz": [
+            375000000.0,
+            500000000.0,
+            750000000.0,
+            1000000000.0
+          ],
+          "damping": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "optimizer": {
+          "initial_damping": 0.001,
+          "damping_increase": 10.0,
+          "damping_decrease": 0.3,
+          "max_damping_trials": 5,
+          "max_backtracks": 7,
+          "gradient_tolerance": 1e-07,
+          "loss_tolerance": 1e-14,
+          "relative_step_tolerance": 1e-07,
+          "scaling_floor": 1.0,
+          "step_bounds_m": [
+            0.012,
+            0.018,
+            0.006
+          ],
+          "acceptance_absolute_margin": 1e-14,
+          "acceptance_relative_margin": 1e-08,
+          "cross_resolution_factor": 5.0,
+          "residual_floor": 1e-12,
+          "domain_box": [
+            [
+              -5.999999999999999,
+              -5.999999999999999
+            ],
+            [
+              6.000000000000001,
+              6.000000000000001
+            ]
+          ],
+          "step_control": "coefficient",
+          "physical_step_bound_m": 0.006,
+          "damping_rule": "schedule",
+          "hanke_ratio": 0.7,
+          "metric": "marquardt",
+          "detectability_factor": 2.5,
+          "log_model": false
+        },
+        "cleanup_band": null,
+        "geometry_update": "z + P_K[A(z+h*n)-A(z)], derivative of the complete trial",
+        "cleanup": "none"
+      },
+      {
+        "operation": "fit",
+        "label": "release_M11",
+        "purpose": "Full real catalog with shape-band release",
+        "entry": "previous operation completed or exhausted its stage quota",
+        "transition": "advance on normal/quota return; any hard/numerical failure goes to final audit; full real catalog at declared noise discrepancy goes directly to final audit",
+        "details": {
+          "accuracy_profile": {
+            "production": 512,
+            "refined": 1024,
+            "kind": "nodal_kress",
+            "nodal_resolution": 512,
+            "K_trace": null,
+            "coefficient_workspace": null,
+            "refinement": "double nodes; refuse candidates outside per-frequency tolerance"
+          },
+          "expected_noise_loss": 0.0,
+          "noise_threshold": null,
+          "weight_rule": "equal frequency weights",
+          "stopping": [
+            "loss tolerance",
+            "gradient infinity norm",
+            "relative step",
+            "iteration cap",
+            "stage quota",
+            "global work/time cap",
+            "numerical refusal"
+          ],
+          "catalog_alias": true
+        },
+        "stage": {
+          "label": "release_M11",
+          "weights": [
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2
+          ],
+          "discrepancy_tolerances": [
+            1e-05,
+            1e-05,
+            1e-05,
+            1e-07,
+            1e-07
+          ],
+          "update_modes": 11,
+          "curve_modes": 192,
+          "nodes": 512,
+          "refined_nodes": 1024,
+          "iterations": 22,
+          "quota": 1500,
+          "wavenumbers": [
+            0.641718860444247,
+            0.9625782906663704,
+            1.283437720888494,
+            1.9251565813327407,
+            2.566875441776988
+          ],
+          "M": 11,
+          "K_geometry": 192,
+          "frequencies_hz": [
+            250000000.0,
+            375000000.0,
+            500000000.0,
+            750000000.0,
+            1000000000.0
+          ],
+          "damping": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "optimizer": {
+          "initial_damping": 0.001,
+          "damping_increase": 10.0,
+          "damping_decrease": 0.3,
+          "max_damping_trials": 5,
+          "max_backtracks": 7,
+          "gradient_tolerance": 1e-07,
+          "loss_tolerance": 1e-14,
+          "relative_step_tolerance": 1e-07,
+          "scaling_floor": 1.0,
+          "step_bounds_m": [
+            0.012,
+            0.018,
+            0.006
+          ],
+          "acceptance_absolute_margin": 1e-14,
+          "acceptance_relative_margin": 1e-08,
+          "cross_resolution_factor": 5.0,
+          "residual_floor": 1e-12,
+          "domain_box": [
+            [
+              -5.999999999999999,
+              -5.999999999999999
+            ],
+            [
+              6.000000000000001,
+              6.000000000000001
+            ]
+          ],
+          "step_control": "coefficient",
+          "physical_step_bound_m": 0.006,
+          "damping_rule": "schedule",
+          "hanke_ratio": 0.7,
+          "metric": "marquardt",
+          "detectability_factor": 2.5,
+          "log_model": false
+        },
+        "cleanup_band": null,
+        "geometry_update": "z + P_K[A(z+h*n)-A(z)], derivative of the complete trial",
+        "cleanup": "none"
+      },
+      {
+        "operation": "fit",
+        "label": "release_M15",
+        "purpose": "Full real catalog with shape-band release",
+        "entry": "previous operation completed or exhausted its stage quota",
+        "transition": "advance on normal/quota return; any hard/numerical failure goes to final audit; full real catalog at declared noise discrepancy goes directly to final audit",
+        "details": {
+          "accuracy_profile": {
+            "production": 512,
+            "refined": 1024,
+            "kind": "nodal_kress",
+            "nodal_resolution": 512,
+            "K_trace": null,
+            "coefficient_workspace": null,
+            "refinement": "double nodes; refuse candidates outside per-frequency tolerance"
+          },
+          "expected_noise_loss": 0.0,
+          "noise_threshold": null,
+          "weight_rule": "equal frequency weights",
+          "stopping": [
+            "loss tolerance",
+            "gradient infinity norm",
+            "relative step",
+            "iteration cap",
+            "stage quota",
+            "global work/time cap",
+            "numerical refusal"
+          ],
+          "catalog_alias": true
+        },
+        "stage": {
+          "label": "release_M15",
+          "weights": [
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2
+          ],
+          "discrepancy_tolerances": [
+            1e-05,
+            1e-05,
+            1e-05,
+            1e-07,
+            1e-07
+          ],
+          "update_modes": 15,
+          "curve_modes": 192,
+          "nodes": 512,
+          "refined_nodes": 1024,
+          "iterations": 22,
+          "quota": 1500,
+          "wavenumbers": [
+            0.641718860444247,
+            0.9625782906663704,
+            1.283437720888494,
+            1.9251565813327407,
+            2.566875441776988
+          ],
+          "M": 15,
+          "K_geometry": 192,
+          "frequencies_hz": [
+            250000000.0,
+            375000000.0,
+            500000000.0,
+            750000000.0,
+            1000000000.0
+          ],
+          "damping": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "optimizer": {
+          "initial_damping": 0.001,
+          "damping_increase": 10.0,
+          "damping_decrease": 0.3,
+          "max_damping_trials": 5,
+          "max_backtracks": 7,
+          "gradient_tolerance": 1e-07,
+          "loss_tolerance": 1e-14,
+          "relative_step_tolerance": 1e-07,
+          "scaling_floor": 1.0,
+          "step_bounds_m": [
+            0.012,
+            0.018,
+            0.006
+          ],
+          "acceptance_absolute_margin": 1e-14,
+          "acceptance_relative_margin": 1e-08,
+          "cross_resolution_factor": 5.0,
+          "residual_floor": 1e-12,
+          "domain_box": [
+            [
+              -5.999999999999999,
+              -5.999999999999999
+            ],
+            [
+              6.000000000000001,
+              6.000000000000001
+            ]
+          ],
+          "step_control": "coefficient",
+          "physical_step_bound_m": 0.006,
+          "damping_rule": "schedule",
+          "hanke_ratio": 0.7,
+          "metric": "marquardt",
+          "detectability_factor": 2.5,
+          "log_model": false
+        },
+        "cleanup_band": null,
+        "geometry_update": "z + P_K[A(z+h*n)-A(z)], derivative of the complete trial",
+        "cleanup": "none"
+      },
+      {
+        "operation": "fit",
+        "label": "release_M19",
+        "purpose": "Full real catalog with shape-band release",
+        "entry": "previous operation completed or exhausted its stage quota",
+        "transition": "advance on normal/quota return; any hard/numerical failure goes to final audit; full real catalog at declared noise discrepancy goes directly to final audit",
+        "details": {
+          "accuracy_profile": {
+            "production": 512,
+            "refined": 1024,
+            "kind": "nodal_kress",
+            "nodal_resolution": 512,
+            "K_trace": null,
+            "coefficient_workspace": null,
+            "refinement": "double nodes; refuse candidates outside per-frequency tolerance"
+          },
+          "expected_noise_loss": 0.0,
+          "noise_threshold": null,
+          "weight_rule": "equal frequency weights",
+          "stopping": [
+            "loss tolerance",
+            "gradient infinity norm",
+            "relative step",
+            "iteration cap",
+            "stage quota",
+            "global work/time cap",
+            "numerical refusal"
+          ],
+          "catalog_alias": true
+        },
+        "stage": {
+          "label": "release_M19",
+          "weights": [
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2
+          ],
+          "discrepancy_tolerances": [
+            1e-05,
+            1e-05,
+            1e-05,
+            1e-07,
+            1e-07
+          ],
+          "update_modes": 19,
+          "curve_modes": 192,
+          "nodes": 512,
+          "refined_nodes": 1024,
+          "iterations": 22,
+          "quota": 1500,
+          "wavenumbers": [
+            0.641718860444247,
+            0.9625782906663704,
+            1.283437720888494,
+            1.9251565813327407,
+            2.566875441776988
+          ],
+          "M": 19,
+          "K_geometry": 192,
+          "frequencies_hz": [
+            250000000.0,
+            375000000.0,
+            500000000.0,
+            750000000.0,
+            1000000000.0
+          ],
+          "damping": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "optimizer": {
+          "initial_damping": 0.001,
+          "damping_increase": 10.0,
+          "damping_decrease": 0.3,
+          "max_damping_trials": 5,
+          "max_backtracks": 7,
+          "gradient_tolerance": 1e-07,
+          "loss_tolerance": 1e-14,
+          "relative_step_tolerance": 1e-07,
+          "scaling_floor": 1.0,
+          "step_bounds_m": [
+            0.012,
+            0.018,
+            0.006
+          ],
+          "acceptance_absolute_margin": 1e-14,
+          "acceptance_relative_margin": 1e-08,
+          "cross_resolution_factor": 5.0,
+          "residual_floor": 1e-12,
+          "domain_box": [
+            [
+              -5.999999999999999,
+              -5.999999999999999
+            ],
+            [
+              6.000000000000001,
+              6.000000000000001
+            ]
+          ],
+          "step_control": "coefficient",
+          "physical_step_bound_m": 0.006,
+          "damping_rule": "schedule",
+          "hanke_ratio": 0.7,
+          "metric": "marquardt",
+          "detectability_factor": 2.5,
+          "log_model": false
+        },
+        "cleanup_band": null,
+        "geometry_update": "z + P_K[A(z+h*n)-A(z)], derivative of the complete trial",
+        "cleanup": "none"
+      },
+      {
+        "operation": "cleanup",
+        "label": "fixed_M25_cleanup",
+        "purpose": "Remove stored high Cartesian harmonics before this release",
+        "entry": "enter fixed_M25",
+        "transition": "fit fixed_M25",
+        "details": {
+          "retained_band": 64,
+          "storage_band": 192,
+          "construction": "centered coefficient crop, then zero-pad; no refit",
+          "catalog_alias": true
+        }
+      },
+      {
+        "operation": "fit",
+        "label": "fixed_M25",
+        "purpose": "Full real catalog with one-time state cleanup",
+        "entry": "previous operation completed or exhausted its stage quota",
+        "transition": "advance on normal/quota return; any hard/numerical failure goes to final audit; full real catalog at declared noise discrepancy goes directly to final audit",
+        "details": {
+          "accuracy_profile": {
+            "production": 512,
+            "refined": 1024,
+            "kind": "nodal_kress",
+            "nodal_resolution": 512,
+            "K_trace": null,
+            "coefficient_workspace": null,
+            "refinement": "double nodes; refuse candidates outside per-frequency tolerance"
+          },
+          "expected_noise_loss": 0.0,
+          "noise_threshold": null,
+          "weight_rule": "equal frequency weights",
+          "stopping": [
+            "loss tolerance",
+            "gradient infinity norm",
+            "relative step",
+            "iteration cap",
+            "stage quota",
+            "global work/time cap",
+            "numerical refusal"
+          ],
+          "catalog_alias": true
+        },
+        "stage": {
+          "label": "fixed_M25",
+          "weights": [
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2
+          ],
+          "discrepancy_tolerances": [
+            1e-05,
+            1e-05,
+            1e-05,
+            1e-07,
+            1e-07
+          ],
+          "update_modes": 25,
+          "curve_modes": 192,
+          "nodes": 512,
+          "refined_nodes": 1024,
+          "iterations": 22,
+          "quota": 304,
+          "wavenumbers": [
+            0.641718860444247,
+            0.9625782906663704,
+            1.283437720888494,
+            1.9251565813327407,
+            2.566875441776988
+          ],
+          "M": 25,
+          "K_geometry": 192,
+          "frequencies_hz": [
+            250000000.0,
+            375000000.0,
+            500000000.0,
+            750000000.0,
+            1000000000.0
+          ],
+          "damping": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "optimizer": {
+          "initial_damping": 0.001,
+          "damping_increase": 10.0,
+          "damping_decrease": 0.3,
+          "max_damping_trials": 5,
+          "max_backtracks": 7,
+          "gradient_tolerance": 1e-07,
+          "loss_tolerance": 1e-14,
+          "relative_step_tolerance": 1e-07,
+          "scaling_floor": 1.0,
+          "step_bounds_m": [
+            0.012,
+            0.018,
+            0.006
+          ],
+          "acceptance_absolute_margin": 1e-14,
+          "acceptance_relative_margin": 1e-08,
+          "cross_resolution_factor": 5.0,
+          "residual_floor": 1e-12,
+          "domain_box": [
+            [
+              -5.999999999999999,
+              -5.999999999999999
+            ],
+            [
+              6.000000000000001,
+              6.000000000000001
+            ]
+          ],
+          "step_control": "coefficient",
+          "physical_step_bound_m": 0.006,
+          "damping_rule": "schedule",
+          "hanke_ratio": 0.7,
+          "metric": "marquardt",
+          "detectability_factor": 2.5,
+          "log_model": false
+        },
+        "cleanup_band": 64,
+        "geometry_update": "z + P_K[A(z+h*n)-A(z)], derivative of the complete trial",
+        "cleanup": "crop coefficients then pad; no arclength refit"
+      },
+      {
+        "operation": "fit",
+        "label": "fixed_M31",
+        "purpose": "Full real catalog with shape-band release",
+        "entry": "previous operation completed or exhausted its stage quota",
+        "transition": "advance on normal/quota return; any hard/numerical failure goes to final audit; full real catalog at declared noise discrepancy goes directly to final audit",
+        "details": {
+          "accuracy_profile": {
+            "production": 512,
+            "refined": 1024,
+            "kind": "nodal_kress",
+            "nodal_resolution": 512,
+            "K_trace": null,
+            "coefficient_workspace": null,
+            "refinement": "double nodes; refuse candidates outside per-frequency tolerance"
+          },
+          "expected_noise_loss": 0.0,
+          "noise_threshold": null,
+          "weight_rule": "equal frequency weights",
+          "stopping": [
+            "loss tolerance",
+            "gradient infinity norm",
+            "relative step",
+            "iteration cap",
+            "stage quota",
+            "global work/time cap",
+            "numerical refusal"
+          ],
+          "catalog_alias": true
+        },
+        "stage": {
+          "label": "fixed_M31",
+          "weights": [
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2
+          ],
+          "discrepancy_tolerances": [
+            1e-05,
+            1e-05,
+            1e-05,
+            1e-07,
+            1e-07
+          ],
+          "update_modes": 31,
+          "curve_modes": 192,
+          "nodes": 512,
+          "refined_nodes": 1024,
+          "iterations": 22,
+          "quota": 304,
+          "wavenumbers": [
+            0.641718860444247,
+            0.9625782906663704,
+            1.283437720888494,
+            1.9251565813327407,
+            2.566875441776988
+          ],
+          "M": 31,
+          "K_geometry": 192,
+          "frequencies_hz": [
+            250000000.0,
+            375000000.0,
+            500000000.0,
+            750000000.0,
+            1000000000.0
+          ],
+          "damping": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "optimizer": {
+          "initial_damping": 0.001,
+          "damping_increase": 10.0,
+          "damping_decrease": 0.3,
+          "max_damping_trials": 5,
+          "max_backtracks": 7,
+          "gradient_tolerance": 1e-07,
+          "loss_tolerance": 1e-14,
+          "relative_step_tolerance": 1e-07,
+          "scaling_floor": 1.0,
+          "step_bounds_m": [
+            0.012,
+            0.018,
+            0.006
+          ],
+          "acceptance_absolute_margin": 1e-14,
+          "acceptance_relative_margin": 1e-08,
+          "cross_resolution_factor": 5.0,
+          "residual_floor": 1e-12,
+          "domain_box": [
+            [
+              -5.999999999999999,
+              -5.999999999999999
+            ],
+            [
+              6.000000000000001,
+              6.000000000000001
+            ]
+          ],
+          "step_control": "coefficient",
+          "physical_step_bound_m": 0.006,
+          "damping_rule": "schedule",
+          "hanke_ratio": 0.7,
+          "metric": "marquardt",
+          "detectability_factor": 2.5,
+          "log_model": false
+        },
+        "cleanup_band": null,
+        "geometry_update": "z + P_K[A(z+h*n)-A(z)], derivative of the complete trial",
+        "cleanup": "none"
+      },
+      {
+        "operation": "fit",
+        "label": "fixed_M37",
+        "purpose": "Full real catalog with shape-band release",
+        "entry": "previous operation completed or exhausted its stage quota",
+        "transition": "advance on normal/quota return; any hard/numerical failure goes to final audit; full real catalog at declared noise discrepancy goes directly to final audit",
+        "details": {
+          "accuracy_profile": {
+            "production": 512,
+            "refined": 1024,
+            "kind": "nodal_kress",
+            "nodal_resolution": 512,
+            "K_trace": null,
+            "coefficient_workspace": null,
+            "refinement": "double nodes; refuse candidates outside per-frequency tolerance"
+          },
+          "expected_noise_loss": 0.0,
+          "noise_threshold": null,
+          "weight_rule": "equal frequency weights",
+          "stopping": [
+            "loss tolerance",
+            "gradient infinity norm",
+            "relative step",
+            "iteration cap",
+            "stage quota",
+            "global work/time cap",
+            "numerical refusal"
+          ],
+          "catalog_alias": true
+        },
+        "stage": {
+          "label": "fixed_M37",
+          "weights": [
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2
+          ],
+          "discrepancy_tolerances": [
+            1e-05,
+            1e-05,
+            1e-05,
+            1e-07,
+            1e-07
+          ],
+          "update_modes": 37,
+          "curve_modes": 192,
+          "nodes": 512,
+          "refined_nodes": 1024,
+          "iterations": 22,
+          "quota": 304,
+          "wavenumbers": [
+            0.641718860444247,
+            0.9625782906663704,
+            1.283437720888494,
+            1.9251565813327407,
+            2.566875441776988
+          ],
+          "M": 37,
+          "K_geometry": 192,
+          "frequencies_hz": [
+            250000000.0,
+            375000000.0,
+            500000000.0,
+            750000000.0,
+            1000000000.0
+          ],
+          "damping": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "optimizer": {
+          "initial_damping": 0.001,
+          "damping_increase": 10.0,
+          "damping_decrease": 0.3,
+          "max_damping_trials": 5,
+          "max_backtracks": 7,
+          "gradient_tolerance": 1e-07,
+          "loss_tolerance": 1e-14,
+          "relative_step_tolerance": 1e-07,
+          "scaling_floor": 1.0,
+          "step_bounds_m": [
+            0.012,
+            0.018,
+            0.006
+          ],
+          "acceptance_absolute_margin": 1e-14,
+          "acceptance_relative_margin": 1e-08,
+          "cross_resolution_factor": 5.0,
+          "residual_floor": 1e-12,
+          "domain_box": [
+            [
+              -5.999999999999999,
+              -5.999999999999999
+            ],
+            [
+              6.000000000000001,
+              6.000000000000001
+            ]
+          ],
+          "step_control": "coefficient",
+          "physical_step_bound_m": 0.006,
+          "damping_rule": "schedule",
+          "hanke_ratio": 0.7,
+          "metric": "marquardt",
+          "detectability_factor": 2.5,
+          "log_model": false
+        },
+        "cleanup_band": null,
+        "geometry_update": "z + P_K[A(z+h*n)-A(z)], derivative of the complete trial",
+        "cleanup": "none"
+      },
+      {
+        "operation": "frontier",
+        "label": "observable_frontier",
+        "purpose": "Measure the paired-Jacobian frontier at the current curve and highest real frequency",
+        "entry": "fixed schedule completed and real-catalog noise discrepancy not reached",
+        "transition": "append fixed stages up to frontier; otherwise final audit",
+        "details": {
+          "formula": "max(p: paired_column_norm[p] >= threshold*max(paired_column_norm))",
+          "threshold": 0.01,
+          "top": 95,
+          "step": 6,
+          "first": 43,
+          "K_geometry": 192,
+          "quota": 304,
+          "iterations": 22,
+          "work_units": 2,
+          "noise_rule": "stop releases/tail once full real-catalog loss <= 1.1^2*expected noise loss",
+          "possible_bands": [
+            43,
+            49,
+            55,
+            61,
+            67,
+            73,
+            79,
+            85,
+            91
+          ],
+          "catalog_alias": true
+        }
+      },
+      {
+        "operation": "audit",
+        "label": "final_audit",
+        "purpose": "Qualify the returned endpoint independently",
+        "entry": "every exit, including a hard stop or refusal",
+        "transition": "return unscored curve and diagnostics",
+        "details": {
+          "scope": "all real frequencies; last actual M; field/column Jacobian/complete-trial FD",
+          "field_tolerances": "1e-5 at <=0.5 GHz; 1e-7 otherwise",
+          "jacobian_tolerance": 0.001,
+          "fd_tolerance": 0.001,
+          "fd_step_m": 1e-07,
+          "fd_seed": 42001,
+          "seconds": 300.0,
+          "backend": "selected solver",
+          "catalog_alias": true
+        }
+      }
+    ],
+    "adaptations": {
+      "maintained_policy_source": "experiments.cleaned_interface.policy.CumulativePolicy",
+      "maintained_interpreter_source": "experiments.cleaned_interface.runner.fit",
+      "geometry": "componentwise complete ProjectedUpdate with coupled forward/reciprocal physics",
+      "initialization": "common TD seeds replace inapplicable single-circle Mie localization",
+      "prefix_frequencies_hz": [
+        375000000.0,
+        500000000.0,
+        750000000.0,
+        1000000000.0
+      ],
+      "damping_ratio": 0.0,
+      "information": "same five real observations",
+      "frontier": "direct-sum component bases; global threshold; common released band",
+      "frozen_default_reproduction": false
+    }
+  }
+}

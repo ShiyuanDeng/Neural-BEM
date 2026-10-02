@@ -1,0 +1,3292 @@
+{
+  "policy": "cumulative_sc_ma",
+  "version": "1.0.0",
+  "decisions": [
+    {
+      "index": 0,
+      "operation": {
+        "operation": "audit",
+        "label": "initial_audit",
+        "purpose": "Qualify the prescribed original start",
+        "entry": "before localization",
+        "transition": "localize if qualified; otherwise final failure",
+        "details": {
+          "scope": "all real frequencies, complete-trial Jacobian/FD",
+          "seconds": 900.0,
+          "catalog_alias": true
+        }
+      },
+      "reason": "original start qualified",
+      "passed": true
+    },
+    {
+      "index": 1,
+      "operation": {
+        "operation": "localize",
+        "label": "prescribed_td_initialization",
+        "purpose": "Retain the common qualified TD seed configuration",
+        "entry": "original-start audit passed",
+        "transition": "same fixed-count seeds enter warmup; no single-circle localization",
+        "details": {
+          "original_localization": "single-circle Mie search",
+          "replacement": "common archived TD seeds",
+          "reason": "paired comparison requires identical data-only starts and component counts",
+          "catalog_alias": true
+        }
+      },
+      "reason": "preserve common data-only TD seed configuration after initial numerical audit",
+      "initialization": {
+        "reason": "preserve common data-only TD seed configuration after initial numerical audit",
+        "component_count": 2,
+        "additional_localization_solves": 0,
+        "initializer": "archived topological derivative; no truth or heldout access",
+        "single_circle_mie_localization_replaced": true
+      }
+    },
+    {
+      "index": 2,
+      "operation": {
+        "operation": "fit",
+        "label": "scif_visit_00_frequency_0",
+        "purpose": "Single-frequency visit on the declared RLA/SCIF path; same optimizer/update/physics",
+        "entry": "previous operation completed or exhausted its stage quota",
+        "transition": "advance on normal/quota return; any hard/numerical failure goes to final audit; full real catalog at declared noise discrepancy goes directly to final audit",
+        "details": {
+          "accuracy_profile": {
+            "production": 512,
+            "refined": 1024,
+            "kind": "nodal_kress",
+            "nodal_resolution": 512,
+            "K_trace": null,
+            "coefficient_workspace": null,
+            "refinement": "double nodes; refuse candidates outside per-frequency tolerance"
+          },
+          "expected_noise_loss": 0.0,
+          "noise_threshold": null,
+          "weight_rule": "equal frequency weights",
+          "stopping": [
+            "loss tolerance",
+            "gradient infinity norm",
+            "relative step",
+            "iteration cap",
+            "stage quota",
+            "global work/time cap",
+            "numerical refusal"
+          ]
+        },
+        "stage": {
+          "label": "scif_visit_00_frequency_0",
+          "weights": [
+            1.0
+          ],
+          "discrepancy_tolerances": [
+            1e-05
+          ],
+          "update_modes": 1,
+          "curve_modes": 192,
+          "nodes": 512,
+          "refined_nodes": 1024,
+          "iterations": 22,
+          "quota": null,
+          "wavenumbers": [
+            0.641718860444247
+          ],
+          "M": 1,
+          "K_geometry": 192,
+          "frequencies_hz": [
+            250000000.0
+          ],
+          "damping": [
+            0.0
+          ]
+        },
+        "optimizer": {
+          "initial_damping": 0.001,
+          "damping_increase": 10.0,
+          "damping_decrease": 0.3,
+          "max_damping_trials": 5,
+          "max_backtracks": 7,
+          "gradient_tolerance": 1e-07,
+          "loss_tolerance": 1e-14,
+          "relative_step_tolerance": 1e-07,
+          "scaling_floor": 1.0,
+          "step_bounds_m": [
+            0.012,
+            0.018,
+            0.006
+          ],
+          "acceptance_absolute_margin": 1e-14,
+          "acceptance_relative_margin": 1e-08,
+          "cross_resolution_factor": 5.0,
+          "residual_floor": 1e-12,
+          "domain_box": [
+            [
+              -5.999999999999999,
+              -5.999999999999999
+            ],
+            [
+              6.000000000000001,
+              6.000000000000001
+            ]
+          ],
+          "step_control": "coefficient",
+          "physical_step_bound_m": 0.006,
+          "damping_rule": "schedule",
+          "hanke_ratio": 0.7,
+          "metric": "marquardt",
+          "detectability_factor": 2.5,
+          "log_model": false
+        },
+        "cleanup_band": null,
+        "geometry_update": "z + P_K[A(z+h*n)-A(z)], derivative of the complete trial",
+        "cleanup": "none"
+      },
+      "reason": "resolved stage entered",
+      "work": {
+        "work_units": 0,
+        "stage": "scif_visit_00_frequency_0",
+        "stage_units": 0,
+        "stage_quota": null,
+        "cap": 512,
+        "solves": {},
+        "reciprocal_batches": {},
+        "failed": {},
+        "seconds": 0.0003661639057099819
+      }
+    },
+    {
+      "index": 3,
+      "operation": {
+        "operation": "fit",
+        "label": "scif_visit_00_frequency_0",
+        "purpose": "Single-frequency visit on the declared RLA/SCIF path; same optimizer/update/physics",
+        "entry": "previous operation completed or exhausted its stage quota",
+        "transition": "advance on normal/quota return; any hard/numerical failure goes to final audit; full real catalog at declared noise discrepancy goes directly to final audit",
+        "details": {
+          "accuracy_profile": {
+            "production": 512,
+            "refined": 1024,
+            "kind": "nodal_kress",
+            "nodal_resolution": 512,
+            "K_trace": null,
+            "coefficient_workspace": null,
+            "refinement": "double nodes; refuse candidates outside per-frequency tolerance"
+          },
+          "expected_noise_loss": 0.0,
+          "noise_threshold": null,
+          "weight_rule": "equal frequency weights",
+          "stopping": [
+            "loss tolerance",
+            "gradient infinity norm",
+            "relative step",
+            "iteration cap",
+            "stage quota",
+            "global work/time cap",
+            "numerical refusal"
+          ]
+        },
+        "stage": {
+          "label": "scif_visit_00_frequency_0",
+          "weights": [
+            1.0
+          ],
+          "discrepancy_tolerances": [
+            1e-05
+          ],
+          "update_modes": 1,
+          "curve_modes": 192,
+          "nodes": 512,
+          "refined_nodes": 1024,
+          "iterations": 22,
+          "quota": null,
+          "wavenumbers": [
+            0.641718860444247
+          ],
+          "M": 1,
+          "K_geometry": 192,
+          "frequencies_hz": [
+            250000000.0
+          ],
+          "damping": [
+            0.0
+          ]
+        },
+        "optimizer": {
+          "initial_damping": 0.001,
+          "damping_increase": 10.0,
+          "damping_decrease": 0.3,
+          "max_damping_trials": 5,
+          "max_backtracks": 7,
+          "gradient_tolerance": 1e-07,
+          "loss_tolerance": 1e-14,
+          "relative_step_tolerance": 1e-07,
+          "scaling_floor": 1.0,
+          "step_bounds_m": [
+            0.012,
+            0.018,
+            0.006
+          ],
+          "acceptance_absolute_margin": 1e-14,
+          "acceptance_relative_margin": 1e-08,
+          "cross_resolution_factor": 5.0,
+          "residual_floor": 1e-12,
+          "domain_box": [
+            [
+              -5.999999999999999,
+              -5.999999999999999
+            ],
+            [
+              6.000000000000001,
+              6.000000000000001
+            ]
+          ],
+          "step_control": "coefficient",
+          "physical_step_bound_m": 0.006,
+          "damping_rule": "schedule",
+          "hanke_ratio": 0.7,
+          "metric": "marquardt",
+          "detectability_factor": 2.5,
+          "log_model": false
+        },
+        "cleanup_band": null,
+        "geometry_update": "z + P_K[A(z+h*n)-A(z)], derivative of the complete trial",
+        "cleanup": "none"
+      },
+      "reason": "stage returned",
+      "outcome": "NORMAL_OPTIMIZER_RETURN",
+      "stop": "no_decreasing_step",
+      "final_loss": 9.512551449941567e-06
+    },
+    {
+      "index": 4,
+      "operation": {
+        "operation": "fit",
+        "label": "scif_visit_01_frequency_0",
+        "purpose": "Single-frequency visit on the declared RLA/SCIF path; same optimizer/update/physics",
+        "entry": "previous operation completed or exhausted its stage quota",
+        "transition": "advance on normal/quota return; any hard/numerical failure goes to final audit; full real catalog at declared noise discrepancy goes directly to final audit",
+        "details": {
+          "accuracy_profile": {
+            "production": 512,
+            "refined": 1024,
+            "kind": "nodal_kress",
+            "nodal_resolution": 512,
+            "K_trace": null,
+            "coefficient_workspace": null,
+            "refinement": "double nodes; refuse candidates outside per-frequency tolerance"
+          },
+          "expected_noise_loss": 0.0,
+          "noise_threshold": null,
+          "weight_rule": "equal frequency weights",
+          "stopping": [
+            "loss tolerance",
+            "gradient infinity norm",
+            "relative step",
+            "iteration cap",
+            "stage quota",
+            "global work/time cap",
+            "numerical refusal"
+          ]
+        },
+        "stage": {
+          "label": "scif_visit_01_frequency_0",
+          "weights": [
+            1.0
+          ],
+          "discrepancy_tolerances": [
+            1e-05
+          ],
+          "update_modes": 1,
+          "curve_modes": 192,
+          "nodes": 512,
+          "refined_nodes": 1024,
+          "iterations": 22,
+          "quota": null,
+          "wavenumbers": [
+            0.641718860444247
+          ],
+          "M": 1,
+          "K_geometry": 192,
+          "frequencies_hz": [
+            250000000.0
+          ],
+          "damping": [
+            0.0
+          ]
+        },
+        "optimizer": {
+          "initial_damping": 0.001,
+          "damping_increase": 10.0,
+          "damping_decrease": 0.3,
+          "max_damping_trials": 5,
+          "max_backtracks": 7,
+          "gradient_tolerance": 1e-07,
+          "loss_tolerance": 1e-14,
+          "relative_step_tolerance": 1e-07,
+          "scaling_floor": 1.0,
+          "step_bounds_m": [
+            0.012,
+            0.018,
+            0.006
+          ],
+          "acceptance_absolute_margin": 1e-14,
+          "acceptance_relative_margin": 1e-08,
+          "cross_resolution_factor": 5.0,
+          "residual_floor": 1e-12,
+          "domain_box": [
+            [
+              -5.999999999999999,
+              -5.999999999999999
+            ],
+            [
+              6.000000000000001,
+              6.000000000000001
+            ]
+          ],
+          "step_control": "coefficient",
+          "physical_step_bound_m": 0.006,
+          "damping_rule": "schedule",
+          "hanke_ratio": 0.7,
+          "metric": "marquardt",
+          "detectability_factor": 2.5,
+          "log_model": false
+        },
+        "cleanup_band": null,
+        "geometry_update": "z + P_K[A(z+h*n)-A(z)], derivative of the complete trial",
+        "cleanup": "none"
+      },
+      "reason": "resolved stage entered",
+      "work": {
+        "work_units": 15,
+        "stage": "scif_visit_01_frequency_0",
+        "stage_units": 0,
+        "stage_quota": null,
+        "cap": 512,
+        "solves": {
+          "scif_visit_00_frequency_0:initial_objective": 1,
+          "scif_visit_00_frequency_0:candidate": 4,
+          "scif_visit_00_frequency_0:acceptance_validation": 5
+        },
+        "reciprocal_batches": {
+          "scif_visit_00_frequency_0:derivative": 5
+        },
+        "failed": {},
+        "seconds": 109.89659644616768
+      }
+    },
+    {
+      "index": 5,
+      "operation": {
+        "operation": "fit",
+        "label": "scif_visit_01_frequency_0",
+        "purpose": "Single-frequency visit on the declared RLA/SCIF path; same optimizer/update/physics",
+        "entry": "previous operation completed or exhausted its stage quota",
+        "transition": "advance on normal/quota return; any hard/numerical failure goes to final audit; full real catalog at declared noise discrepancy goes directly to final audit",
+        "details": {
+          "accuracy_profile": {
+            "production": 512,
+            "refined": 1024,
+            "kind": "nodal_kress",
+            "nodal_resolution": 512,
+            "K_trace": null,
+            "coefficient_workspace": null,
+            "refinement": "double nodes; refuse candidates outside per-frequency tolerance"
+          },
+          "expected_noise_loss": 0.0,
+          "noise_threshold": null,
+          "weight_rule": "equal frequency weights",
+          "stopping": [
+            "loss tolerance",
+            "gradient infinity norm",
+            "relative step",
+            "iteration cap",
+            "stage quota",
+            "global work/time cap",
+            "numerical refusal"
+          ]
+        },
+        "stage": {
+          "label": "scif_visit_01_frequency_0",
+          "weights": [
+            1.0
+          ],
+          "discrepancy_tolerances": [
+            1e-05
+          ],
+          "update_modes": 1,
+          "curve_modes": 192,
+          "nodes": 512,
+          "refined_nodes": 1024,
+          "iterations": 22,
+          "quota": null,
+          "wavenumbers": [
+            0.641718860444247
+          ],
+          "M": 1,
+          "K_geometry": 192,
+          "frequencies_hz": [
+            250000000.0
+          ],
+          "damping": [
+            0.0
+          ]
+        },
+        "optimizer": {
+          "initial_damping": 0.001,
+          "damping_increase": 10.0,
+          "damping_decrease": 0.3,
+          "max_damping_trials": 5,
+          "max_backtracks": 7,
+          "gradient_tolerance": 1e-07,
+          "loss_tolerance": 1e-14,
+          "relative_step_tolerance": 1e-07,
+          "scaling_floor": 1.0,
+          "step_bounds_m": [
+            0.012,
+            0.018,
+            0.006
+          ],
+          "acceptance_absolute_margin": 1e-14,
+          "acceptance_relative_margin": 1e-08,
+          "cross_resolution_factor": 5.0,
+          "residual_floor": 1e-12,
+          "domain_box": [
+            [
+              -5.999999999999999,
+              -5.999999999999999
+            ],
+            [
+              6.000000000000001,
+              6.000000000000001
+            ]
+          ],
+          "step_control": "coefficient",
+          "physical_step_bound_m": 0.006,
+          "damping_rule": "schedule",
+          "hanke_ratio": 0.7,
+          "metric": "marquardt",
+          "detectability_factor": 2.5,
+          "log_model": false
+        },
+        "cleanup_band": null,
+        "geometry_update": "z + P_K[A(z+h*n)-A(z)], derivative of the complete trial",
+        "cleanup": "none"
+      },
+      "reason": "stage returned",
+      "outcome": "NORMAL_OPTIMIZER_RETURN",
+      "stop": "no_decreasing_step",
+      "final_loss": 9.512551449941567e-06
+    },
+    {
+      "index": 6,
+      "operation": {
+        "operation": "fit",
+        "label": "scif_visit_02_frequency_1",
+        "purpose": "Single-frequency visit on the declared RLA/SCIF path; same optimizer/update/physics",
+        "entry": "previous operation completed or exhausted its stage quota",
+        "transition": "advance on normal/quota return; any hard/numerical failure goes to final audit; full real catalog at declared noise discrepancy goes directly to final audit",
+        "details": {
+          "accuracy_profile": {
+            "production": 512,
+            "refined": 1024,
+            "kind": "nodal_kress",
+            "nodal_resolution": 512,
+            "K_trace": null,
+            "coefficient_workspace": null,
+            "refinement": "double nodes; refuse candidates outside per-frequency tolerance"
+          },
+          "expected_noise_loss": 0.0,
+          "noise_threshold": null,
+          "weight_rule": "equal frequency weights",
+          "stopping": [
+            "loss tolerance",
+            "gradient infinity norm",
+            "relative step",
+            "iteration cap",
+            "stage quota",
+            "global work/time cap",
+            "numerical refusal"
+          ]
+        },
+        "stage": {
+          "label": "scif_visit_02_frequency_1",
+          "weights": [
+            1.0
+          ],
+          "discrepancy_tolerances": [
+            1e-05
+          ],
+          "update_modes": 1,
+          "curve_modes": 192,
+          "nodes": 512,
+          "refined_nodes": 1024,
+          "iterations": 22,
+          "quota": null,
+          "wavenumbers": [
+            0.9625782906663704
+          ],
+          "M": 1,
+          "K_geometry": 192,
+          "frequencies_hz": [
+            375000000.0
+          ],
+          "damping": [
+            0.0
+          ]
+        },
+        "optimizer": {
+          "initial_damping": 0.001,
+          "damping_increase": 10.0,
+          "damping_decrease": 0.3,
+          "max_damping_trials": 5,
+          "max_backtracks": 7,
+          "gradient_tolerance": 1e-07,
+          "loss_tolerance": 1e-14,
+          "relative_step_tolerance": 1e-07,
+          "scaling_floor": 1.0,
+          "step_bounds_m": [
+            0.012,
+            0.018,
+            0.006
+          ],
+          "acceptance_absolute_margin": 1e-14,
+          "acceptance_relative_margin": 1e-08,
+          "cross_resolution_factor": 5.0,
+          "residual_floor": 1e-12,
+          "domain_box": [
+            [
+              -5.999999999999999,
+              -5.999999999999999
+            ],
+            [
+              6.000000000000001,
+              6.000000000000001
+            ]
+          ],
+          "step_control": "coefficient",
+          "physical_step_bound_m": 0.006,
+          "damping_rule": "schedule",
+          "hanke_ratio": 0.7,
+          "metric": "marquardt",
+          "detectability_factor": 2.5,
+          "log_model": false
+        },
+        "cleanup_band": null,
+        "geometry_update": "z + P_K[A(z+h*n)-A(z)], derivative of the complete trial",
+        "cleanup": "none"
+      },
+      "reason": "resolved stage entered",
+      "work": {
+        "work_units": 17,
+        "stage": "scif_visit_02_frequency_1",
+        "stage_units": 0,
+        "stage_quota": null,
+        "cap": 512,
+        "solves": {
+          "scif_visit_00_frequency_0:initial_objective": 1,
+          "scif_visit_00_frequency_0:candidate": 4,
+          "scif_visit_00_frequency_0:acceptance_validation": 5,
+          "scif_visit_01_frequency_0:initial_objective": 1
+        },
+        "reciprocal_batches": {
+          "scif_visit_00_frequency_0:derivative": 5,
+          "scif_visit_01_frequency_0:derivative": 1
+        },
+        "failed": {},
+        "seconds": 111.77641981607303
+      }
+    },
+    {
+      "index": 7,
+      "operation": {
+        "operation": "fit",
+        "label": "scif_visit_02_frequency_1",
+        "purpose": "Single-frequency visit on the declared RLA/SCIF path; same optimizer/update/physics",
+        "entry": "previous operation completed or exhausted its stage quota",
+        "transition": "advance on normal/quota return; any hard/numerical failure goes to final audit; full real catalog at declared noise discrepancy goes directly to final audit",
+        "details": {
+          "accuracy_profile": {
+            "production": 512,
+            "refined": 1024,
+            "kind": "nodal_kress",
+            "nodal_resolution": 512,
+            "K_trace": null,
+            "coefficient_workspace": null,
+            "refinement": "double nodes; refuse candidates outside per-frequency tolerance"
+          },
+          "expected_noise_loss": 0.0,
+          "noise_threshold": null,
+          "weight_rule": "equal frequency weights",
+          "stopping": [
+            "loss tolerance",
+            "gradient infinity norm",
+            "relative step",
+            "iteration cap",
+            "stage quota",
+            "global work/time cap",
+            "numerical refusal"
+          ]
+        },
+        "stage": {
+          "label": "scif_visit_02_frequency_1",
+          "weights": [
+            1.0
+          ],
+          "discrepancy_tolerances": [
+            1e-05
+          ],
+          "update_modes": 1,
+          "curve_modes": 192,
+          "nodes": 512,
+          "refined_nodes": 1024,
+          "iterations": 22,
+          "quota": null,
+          "wavenumbers": [
+            0.9625782906663704
+          ],
+          "M": 1,
+          "K_geometry": 192,
+          "frequencies_hz": [
+            375000000.0
+          ],
+          "damping": [
+            0.0
+          ]
+        },
+        "optimizer": {
+          "initial_damping": 0.001,
+          "damping_increase": 10.0,
+          "damping_decrease": 0.3,
+          "max_damping_trials": 5,
+          "max_backtracks": 7,
+          "gradient_tolerance": 1e-07,
+          "loss_tolerance": 1e-14,
+          "relative_step_tolerance": 1e-07,
+          "scaling_floor": 1.0,
+          "step_bounds_m": [
+            0.012,
+            0.018,
+            0.006
+          ],
+          "acceptance_absolute_margin": 1e-14,
+          "acceptance_relative_margin": 1e-08,
+          "cross_resolution_factor": 5.0,
+          "residual_floor": 1e-12,
+          "domain_box": [
+            [
+              -5.999999999999999,
+              -5.999999999999999
+            ],
+            [
+              6.000000000000001,
+              6.000000000000001
+            ]
+          ],
+          "step_control": "coefficient",
+          "physical_step_bound_m": 0.006,
+          "damping_rule": "schedule",
+          "hanke_ratio": 0.7,
+          "metric": "marquardt",
+          "detectability_factor": 2.5,
+          "log_model": false
+        },
+        "cleanup_band": null,
+        "geometry_update": "z + P_K[A(z+h*n)-A(z)], derivative of the complete trial",
+        "cleanup": "none"
+      },
+      "reason": "stage returned",
+      "outcome": "NORMAL_OPTIMIZER_RETURN",
+      "stop": "no_decreasing_step",
+      "final_loss": 9.622130405230872e-05
+    },
+    {
+      "index": 8,
+      "operation": {
+        "operation": "fit",
+        "label": "scif_visit_03_frequency_2",
+        "purpose": "Single-frequency visit on the declared RLA/SCIF path; same optimizer/update/physics",
+        "entry": "previous operation completed or exhausted its stage quota",
+        "transition": "advance on normal/quota return; any hard/numerical failure goes to final audit; full real catalog at declared noise discrepancy goes directly to final audit",
+        "details": {
+          "accuracy_profile": {
+            "production": 512,
+            "refined": 1024,
+            "kind": "nodal_kress",
+            "nodal_resolution": 512,
+            "K_trace": null,
+            "coefficient_workspace": null,
+            "refinement": "double nodes; refuse candidates outside per-frequency tolerance"
+          },
+          "expected_noise_loss": 0.0,
+          "noise_threshold": null,
+          "weight_rule": "equal frequency weights",
+          "stopping": [
+            "loss tolerance",
+            "gradient infinity norm",
+            "relative step",
+            "iteration cap",
+            "stage quota",
+            "global work/time cap",
+            "numerical refusal"
+          ]
+        },
+        "stage": {
+          "label": "scif_visit_03_frequency_2",
+          "weights": [
+            1.0
+          ],
+          "discrepancy_tolerances": [
+            1e-05
+          ],
+          "update_modes": 1,
+          "curve_modes": 192,
+          "nodes": 512,
+          "refined_nodes": 1024,
+          "iterations": 22,
+          "quota": null,
+          "wavenumbers": [
+            1.283437720888494
+          ],
+          "M": 1,
+          "K_geometry": 192,
+          "frequencies_hz": [
+            500000000.0
+          ],
+          "damping": [
+            0.0
+          ]
+        },
+        "optimizer": {
+          "initial_damping": 0.001,
+          "damping_increase": 10.0,
+          "damping_decrease": 0.3,
+          "max_damping_trials": 5,
+          "max_backtracks": 7,
+          "gradient_tolerance": 1e-07,
+          "loss_tolerance": 1e-14,
+          "relative_step_tolerance": 1e-07,
+          "scaling_floor": 1.0,
+          "step_bounds_m": [
+            0.012,
+            0.018,
+            0.006
+          ],
+          "acceptance_absolute_margin": 1e-14,
+          "acceptance_relative_margin": 1e-08,
+          "cross_resolution_factor": 5.0,
+          "residual_floor": 1e-12,
+          "domain_box": [
+            [
+              -5.999999999999999,
+              -5.999999999999999
+            ],
+            [
+              6.000000000000001,
+              6.000000000000001
+            ]
+          ],
+          "step_control": "coefficient",
+          "physical_step_bound_m": 0.006,
+          "damping_rule": "schedule",
+          "hanke_ratio": 0.7,
+          "metric": "marquardt",
+          "detectability_factor": 2.5,
+          "log_model": false
+        },
+        "cleanup_band": null,
+        "geometry_update": "z + P_K[A(z+h*n)-A(z)], derivative of the complete trial",
+        "cleanup": "none"
+      },
+      "reason": "resolved stage entered",
+      "work": {
+        "work_units": 26,
+        "stage": "scif_visit_03_frequency_2",
+        "stage_units": 0,
+        "stage_quota": null,
+        "cap": 512,
+        "solves": {
+          "scif_visit_00_frequency_0:initial_objective": 1,
+          "scif_visit_00_frequency_0:candidate": 4,
+          "scif_visit_00_frequency_0:acceptance_validation": 5,
+          "scif_visit_01_frequency_0:initial_objective": 1,
+          "scif_visit_02_frequency_1:initial_objective": 1,
+          "scif_visit_02_frequency_1:candidate": 2,
+          "scif_visit_02_frequency_1:acceptance_validation": 3
+        },
+        "reciprocal_batches": {
+          "scif_visit_00_frequency_0:derivative": 5,
+          "scif_visit_01_frequency_0:derivative": 1,
+          "scif_visit_02_frequency_1:derivative": 3
+        },
+        "failed": {},
+        "seconds": 174.54698267113417
+      }
+    },
+    {
+      "index": 9,
+      "operation": {
+        "operation": "fit",
+        "label": "scif_visit_03_frequency_2",
+        "purpose": "Single-frequency visit on the declared RLA/SCIF path; same optimizer/update/physics",
+        "entry": "previous operation completed or exhausted its stage quota",
+        "transition": "advance on normal/quota return; any hard/numerical failure goes to final audit; full real catalog at declared noise discrepancy goes directly to final audit",
+        "details": {
+          "accuracy_profile": {
+            "production": 512,
+            "refined": 1024,
+            "kind": "nodal_kress",
+            "nodal_resolution": 512,
+            "K_trace": null,
+            "coefficient_workspace": null,
+            "refinement": "double nodes; refuse candidates outside per-frequency tolerance"
+          },
+          "expected_noise_loss": 0.0,
+          "noise_threshold": null,
+          "weight_rule": "equal frequency weights",
+          "stopping": [
+            "loss tolerance",
+            "gradient infinity norm",
+            "relative step",
+            "iteration cap",
+            "stage quota",
+            "global work/time cap",
+            "numerical refusal"
+          ]
+        },
+        "stage": {
+          "label": "scif_visit_03_frequency_2",
+          "weights": [
+            1.0
+          ],
+          "discrepancy_tolerances": [
+            1e-05
+          ],
+          "update_modes": 1,
+          "curve_modes": 192,
+          "nodes": 512,
+          "refined_nodes": 1024,
+          "iterations": 22,
+          "quota": null,
+          "wavenumbers": [
+            1.283437720888494
+          ],
+          "M": 1,
+          "K_geometry": 192,
+          "frequencies_hz": [
+            500000000.0
+          ],
+          "damping": [
+            0.0
+          ]
+        },
+        "optimizer": {
+          "initial_damping": 0.001,
+          "damping_increase": 10.0,
+          "damping_decrease": 0.3,
+          "max_damping_trials": 5,
+          "max_backtracks": 7,
+          "gradient_tolerance": 1e-07,
+          "loss_tolerance": 1e-14,
+          "relative_step_tolerance": 1e-07,
+          "scaling_floor": 1.0,
+          "step_bounds_m": [
+            0.012,
+            0.018,
+            0.006
+          ],
+          "acceptance_absolute_margin": 1e-14,
+          "acceptance_relative_margin": 1e-08,
+          "cross_resolution_factor": 5.0,
+          "residual_floor": 1e-12,
+          "domain_box": [
+            [
+              -5.999999999999999,
+              -5.999999999999999
+            ],
+            [
+              6.000000000000001,
+              6.000000000000001
+            ]
+          ],
+          "step_control": "coefficient",
+          "physical_step_bound_m": 0.006,
+          "damping_rule": "schedule",
+          "hanke_ratio": 0.7,
+          "metric": "marquardt",
+          "detectability_factor": 2.5,
+          "log_model": false
+        },
+        "cleanup_band": null,
+        "geometry_update": "z + P_K[A(z+h*n)-A(z)], derivative of the complete trial",
+        "cleanup": "none"
+      },
+      "reason": "stage returned",
+      "outcome": "NORMAL_OPTIMIZER_RETURN",
+      "stop": "no_decreasing_step",
+      "final_loss": 0.00036071946393768646
+    },
+    {
+      "index": 10,
+      "operation": {
+        "operation": "fit",
+        "label": "scif_visit_04_frequency_3",
+        "purpose": "Single-frequency visit on the declared RLA/SCIF path; same optimizer/update/physics",
+        "entry": "previous operation completed or exhausted its stage quota",
+        "transition": "advance on normal/quota return; any hard/numerical failure goes to final audit; full real catalog at declared noise discrepancy goes directly to final audit",
+        "details": {
+          "accuracy_profile": {
+            "production": 512,
+            "refined": 1024,
+            "kind": "nodal_kress",
+            "nodal_resolution": 512,
+            "K_trace": null,
+            "coefficient_workspace": null,
+            "refinement": "double nodes; refuse candidates outside per-frequency tolerance"
+          },
+          "expected_noise_loss": 0.0,
+          "noise_threshold": null,
+          "weight_rule": "equal frequency weights",
+          "stopping": [
+            "loss tolerance",
+            "gradient infinity norm",
+            "relative step",
+            "iteration cap",
+            "stage quota",
+            "global work/time cap",
+            "numerical refusal"
+          ]
+        },
+        "stage": {
+          "label": "scif_visit_04_frequency_3",
+          "weights": [
+            1.0
+          ],
+          "discrepancy_tolerances": [
+            1e-07
+          ],
+          "update_modes": 2,
+          "curve_modes": 192,
+          "nodes": 512,
+          "refined_nodes": 1024,
+          "iterations": 22,
+          "quota": null,
+          "wavenumbers": [
+            1.9251565813327407
+          ],
+          "M": 2,
+          "K_geometry": 192,
+          "frequencies_hz": [
+            750000000.0
+          ],
+          "damping": [
+            0.0
+          ]
+        },
+        "optimizer": {
+          "initial_damping": 0.001,
+          "damping_increase": 10.0,
+          "damping_decrease": 0.3,
+          "max_damping_trials": 5,
+          "max_backtracks": 7,
+          "gradient_tolerance": 1e-07,
+          "loss_tolerance": 1e-14,
+          "relative_step_tolerance": 1e-07,
+          "scaling_floor": 1.0,
+          "step_bounds_m": [
+            0.012,
+            0.018,
+            0.006
+          ],
+          "acceptance_absolute_margin": 1e-14,
+          "acceptance_relative_margin": 1e-08,
+          "cross_resolution_factor": 5.0,
+          "residual_floor": 1e-12,
+          "domain_box": [
+            [
+              -5.999999999999999,
+              -5.999999999999999
+            ],
+            [
+              6.000000000000001,
+              6.000000000000001
+            ]
+          ],
+          "step_control": "coefficient",
+          "physical_step_bound_m": 0.006,
+          "damping_rule": "schedule",
+          "hanke_ratio": 0.7,
+          "metric": "marquardt",
+          "detectability_factor": 2.5,
+          "log_model": false
+        },
+        "cleanup_band": null,
+        "geometry_update": "z + P_K[A(z+h*n)-A(z)], derivative of the complete trial",
+        "cleanup": "none"
+      },
+      "reason": "resolved stage entered",
+      "work": {
+        "work_units": 38,
+        "stage": "scif_visit_04_frequency_3",
+        "stage_units": 0,
+        "stage_quota": null,
+        "cap": 512,
+        "solves": {
+          "scif_visit_00_frequency_0:initial_objective": 1,
+          "scif_visit_00_frequency_0:candidate": 4,
+          "scif_visit_00_frequency_0:acceptance_validation": 5,
+          "scif_visit_01_frequency_0:initial_objective": 1,
+          "scif_visit_02_frequency_1:initial_objective": 1,
+          "scif_visit_02_frequency_1:candidate": 2,
+          "scif_visit_02_frequency_1:acceptance_validation": 3,
+          "scif_visit_03_frequency_2:initial_objective": 1,
+          "scif_visit_03_frequency_2:candidate": 3,
+          "scif_visit_03_frequency_2:acceptance_validation": 4
+        },
+        "reciprocal_batches": {
+          "scif_visit_00_frequency_0:derivative": 5,
+          "scif_visit_01_frequency_0:derivative": 1,
+          "scif_visit_02_frequency_1:derivative": 3,
+          "scif_visit_03_frequency_2:derivative": 4
+        },
+        "failed": {},
+        "seconds": 262.83823011117056
+      }
+    },
+    {
+      "index": 11,
+      "operation": {
+        "operation": "fit",
+        "label": "scif_visit_04_frequency_3",
+        "purpose": "Single-frequency visit on the declared RLA/SCIF path; same optimizer/update/physics",
+        "entry": "previous operation completed or exhausted its stage quota",
+        "transition": "advance on normal/quota return; any hard/numerical failure goes to final audit; full real catalog at declared noise discrepancy goes directly to final audit",
+        "details": {
+          "accuracy_profile": {
+            "production": 512,
+            "refined": 1024,
+            "kind": "nodal_kress",
+            "nodal_resolution": 512,
+            "K_trace": null,
+            "coefficient_workspace": null,
+            "refinement": "double nodes; refuse candidates outside per-frequency tolerance"
+          },
+          "expected_noise_loss": 0.0,
+          "noise_threshold": null,
+          "weight_rule": "equal frequency weights",
+          "stopping": [
+            "loss tolerance",
+            "gradient infinity norm",
+            "relative step",
+            "iteration cap",
+            "stage quota",
+            "global work/time cap",
+            "numerical refusal"
+          ]
+        },
+        "stage": {
+          "label": "scif_visit_04_frequency_3",
+          "weights": [
+            1.0
+          ],
+          "discrepancy_tolerances": [
+            1e-07
+          ],
+          "update_modes": 2,
+          "curve_modes": 192,
+          "nodes": 512,
+          "refined_nodes": 1024,
+          "iterations": 22,
+          "quota": null,
+          "wavenumbers": [
+            1.9251565813327407
+          ],
+          "M": 2,
+          "K_geometry": 192,
+          "frequencies_hz": [
+            750000000.0
+          ],
+          "damping": [
+            0.0
+          ]
+        },
+        "optimizer": {
+          "initial_damping": 0.001,
+          "damping_increase": 10.0,
+          "damping_decrease": 0.3,
+          "max_damping_trials": 5,
+          "max_backtracks": 7,
+          "gradient_tolerance": 1e-07,
+          "loss_tolerance": 1e-14,
+          "relative_step_tolerance": 1e-07,
+          "scaling_floor": 1.0,
+          "step_bounds_m": [
+            0.012,
+            0.018,
+            0.006
+          ],
+          "acceptance_absolute_margin": 1e-14,
+          "acceptance_relative_margin": 1e-08,
+          "cross_resolution_factor": 5.0,
+          "residual_floor": 1e-12,
+          "domain_box": [
+            [
+              -5.999999999999999,
+              -5.999999999999999
+            ],
+            [
+              6.000000000000001,
+              6.000000000000001
+            ]
+          ],
+          "step_control": "coefficient",
+          "physical_step_bound_m": 0.006,
+          "damping_rule": "schedule",
+          "hanke_ratio": 0.7,
+          "metric": "marquardt",
+          "detectability_factor": 2.5,
+          "log_model": false
+        },
+        "cleanup_band": null,
+        "geometry_update": "z + P_K[A(z+h*n)-A(z)], derivative of the complete trial",
+        "cleanup": "none"
+      },
+      "reason": "stage returned",
+      "outcome": "NORMAL_OPTIMIZER_RETURN",
+      "stop": "no_decreasing_step",
+      "final_loss": 2.7288429711601084e-05
+    },
+    {
+      "index": 12,
+      "operation": {
+        "operation": "fit",
+        "label": "scif_visit_05_frequency_2",
+        "purpose": "Single-frequency visit on the declared RLA/SCIF path; same optimizer/update/physics",
+        "entry": "previous operation completed or exhausted its stage quota",
+        "transition": "advance on normal/quota return; any hard/numerical failure goes to final audit; full real catalog at declared noise discrepancy goes directly to final audit",
+        "details": {
+          "accuracy_profile": {
+            "production": 512,
+            "refined": 1024,
+            "kind": "nodal_kress",
+            "nodal_resolution": 512,
+            "K_trace": null,
+            "coefficient_workspace": null,
+            "refinement": "double nodes; refuse candidates outside per-frequency tolerance"
+          },
+          "expected_noise_loss": 0.0,
+          "noise_threshold": null,
+          "weight_rule": "equal frequency weights",
+          "stopping": [
+            "loss tolerance",
+            "gradient infinity norm",
+            "relative step",
+            "iteration cap",
+            "stage quota",
+            "global work/time cap",
+            "numerical refusal"
+          ]
+        },
+        "stage": {
+          "label": "scif_visit_05_frequency_2",
+          "weights": [
+            1.0
+          ],
+          "discrepancy_tolerances": [
+            1e-05
+          ],
+          "update_modes": 1,
+          "curve_modes": 192,
+          "nodes": 512,
+          "refined_nodes": 1024,
+          "iterations": 22,
+          "quota": null,
+          "wavenumbers": [
+            1.283437720888494
+          ],
+          "M": 1,
+          "K_geometry": 192,
+          "frequencies_hz": [
+            500000000.0
+          ],
+          "damping": [
+            0.0
+          ]
+        },
+        "optimizer": {
+          "initial_damping": 0.001,
+          "damping_increase": 10.0,
+          "damping_decrease": 0.3,
+          "max_damping_trials": 5,
+          "max_backtracks": 7,
+          "gradient_tolerance": 1e-07,
+          "loss_tolerance": 1e-14,
+          "relative_step_tolerance": 1e-07,
+          "scaling_floor": 1.0,
+          "step_bounds_m": [
+            0.012,
+            0.018,
+            0.006
+          ],
+          "acceptance_absolute_margin": 1e-14,
+          "acceptance_relative_margin": 1e-08,
+          "cross_resolution_factor": 5.0,
+          "residual_floor": 1e-12,
+          "domain_box": [
+            [
+              -5.999999999999999,
+              -5.999999999999999
+            ],
+            [
+              6.000000000000001,
+              6.000000000000001
+            ]
+          ],
+          "step_control": "coefficient",
+          "physical_step_bound_m": 0.006,
+          "damping_rule": "schedule",
+          "hanke_ratio": 0.7,
+          "metric": "marquardt",
+          "detectability_factor": 2.5,
+          "log_model": false
+        },
+        "cleanup_band": null,
+        "geometry_update": "z + P_K[A(z+h*n)-A(z)], derivative of the complete trial",
+        "cleanup": "none"
+      },
+      "reason": "resolved stage entered",
+      "work": {
+        "work_units": 50,
+        "stage": "scif_visit_05_frequency_2",
+        "stage_units": 0,
+        "stage_quota": null,
+        "cap": 512,
+        "solves": {
+          "scif_visit_00_frequency_0:initial_objective": 1,
+          "scif_visit_00_frequency_0:candidate": 4,
+          "scif_visit_00_frequency_0:acceptance_validation": 5,
+          "scif_visit_01_frequency_0:initial_objective": 1,
+          "scif_visit_02_frequency_1:initial_objective": 1,
+          "scif_visit_02_frequency_1:candidate": 2,
+          "scif_visit_02_frequency_1:acceptance_validation": 3,
+          "scif_visit_03_frequency_2:initial_objective": 1,
+          "scif_visit_03_frequency_2:candidate": 3,
+          "scif_visit_03_frequency_2:acceptance_validation": 4,
+          "scif_visit_04_frequency_3:initial_objective": 1,
+          "scif_visit_04_frequency_3:candidate": 3,
+          "scif_visit_04_frequency_3:acceptance_validation": 4
+        },
+        "reciprocal_batches": {
+          "scif_visit_00_frequency_0:derivative": 5,
+          "scif_visit_01_frequency_0:derivative": 1,
+          "scif_visit_02_frequency_1:derivative": 3,
+          "scif_visit_03_frequency_2:derivative": 4,
+          "scif_visit_04_frequency_3:derivative": 4
+        },
+        "failed": {},
+        "seconds": 351.5104239862412
+      }
+    },
+    {
+      "index": 13,
+      "operation": {
+        "operation": "fit",
+        "label": "scif_visit_05_frequency_2",
+        "purpose": "Single-frequency visit on the declared RLA/SCIF path; same optimizer/update/physics",
+        "entry": "previous operation completed or exhausted its stage quota",
+        "transition": "advance on normal/quota return; any hard/numerical failure goes to final audit; full real catalog at declared noise discrepancy goes directly to final audit",
+        "details": {
+          "accuracy_profile": {
+            "production": 512,
+            "refined": 1024,
+            "kind": "nodal_kress",
+            "nodal_resolution": 512,
+            "K_trace": null,
+            "coefficient_workspace": null,
+            "refinement": "double nodes; refuse candidates outside per-frequency tolerance"
+          },
+          "expected_noise_loss": 0.0,
+          "noise_threshold": null,
+          "weight_rule": "equal frequency weights",
+          "stopping": [
+            "loss tolerance",
+            "gradient infinity norm",
+            "relative step",
+            "iteration cap",
+            "stage quota",
+            "global work/time cap",
+            "numerical refusal"
+          ]
+        },
+        "stage": {
+          "label": "scif_visit_05_frequency_2",
+          "weights": [
+            1.0
+          ],
+          "discrepancy_tolerances": [
+            1e-05
+          ],
+          "update_modes": 1,
+          "curve_modes": 192,
+          "nodes": 512,
+          "refined_nodes": 1024,
+          "iterations": 22,
+          "quota": null,
+          "wavenumbers": [
+            1.283437720888494
+          ],
+          "M": 1,
+          "K_geometry": 192,
+          "frequencies_hz": [
+            500000000.0
+          ],
+          "damping": [
+            0.0
+          ]
+        },
+        "optimizer": {
+          "initial_damping": 0.001,
+          "damping_increase": 10.0,
+          "damping_decrease": 0.3,
+          "max_damping_trials": 5,
+          "max_backtracks": 7,
+          "gradient_tolerance": 1e-07,
+          "loss_tolerance": 1e-14,
+          "relative_step_tolerance": 1e-07,
+          "scaling_floor": 1.0,
+          "step_bounds_m": [
+            0.012,
+            0.018,
+            0.006
+          ],
+          "acceptance_absolute_margin": 1e-14,
+          "acceptance_relative_margin": 1e-08,
+          "cross_resolution_factor": 5.0,
+          "residual_floor": 1e-12,
+          "domain_box": [
+            [
+              -5.999999999999999,
+              -5.999999999999999
+            ],
+            [
+              6.000000000000001,
+              6.000000000000001
+            ]
+          ],
+          "step_control": "coefficient",
+          "physical_step_bound_m": 0.006,
+          "damping_rule": "schedule",
+          "hanke_ratio": 0.7,
+          "metric": "marquardt",
+          "detectability_factor": 2.5,
+          "log_model": false
+        },
+        "cleanup_band": null,
+        "geometry_update": "z + P_K[A(z+h*n)-A(z)], derivative of the complete trial",
+        "cleanup": "none"
+      },
+      "reason": "stage returned",
+      "outcome": "NORMAL_OPTIMIZER_RETURN",
+      "stop": "no_decreasing_step",
+      "final_loss": 2.0696354994653647e-06
+    },
+    {
+      "index": 14,
+      "operation": {
+        "operation": "fit",
+        "label": "scif_visit_06_frequency_1",
+        "purpose": "Single-frequency visit on the declared RLA/SCIF path; same optimizer/update/physics",
+        "entry": "previous operation completed or exhausted its stage quota",
+        "transition": "advance on normal/quota return; any hard/numerical failure goes to final audit; full real catalog at declared noise discrepancy goes directly to final audit",
+        "details": {
+          "accuracy_profile": {
+            "production": 512,
+            "refined": 1024,
+            "kind": "nodal_kress",
+            "nodal_resolution": 512,
+            "K_trace": null,
+            "coefficient_workspace": null,
+            "refinement": "double nodes; refuse candidates outside per-frequency tolerance"
+          },
+          "expected_noise_loss": 0.0,
+          "noise_threshold": null,
+          "weight_rule": "equal frequency weights",
+          "stopping": [
+            "loss tolerance",
+            "gradient infinity norm",
+            "relative step",
+            "iteration cap",
+            "stage quota",
+            "global work/time cap",
+            "numerical refusal"
+          ]
+        },
+        "stage": {
+          "label": "scif_visit_06_frequency_1",
+          "weights": [
+            1.0
+          ],
+          "discrepancy_tolerances": [
+            1e-05
+          ],
+          "update_modes": 1,
+          "curve_modes": 192,
+          "nodes": 512,
+          "refined_nodes": 1024,
+          "iterations": 22,
+          "quota": null,
+          "wavenumbers": [
+            0.9625782906663704
+          ],
+          "M": 1,
+          "K_geometry": 192,
+          "frequencies_hz": [
+            375000000.0
+          ],
+          "damping": [
+            0.0
+          ]
+        },
+        "optimizer": {
+          "initial_damping": 0.001,
+          "damping_increase": 10.0,
+          "damping_decrease": 0.3,
+          "max_damping_trials": 5,
+          "max_backtracks": 7,
+          "gradient_tolerance": 1e-07,
+          "loss_tolerance": 1e-14,
+          "relative_step_tolerance": 1e-07,
+          "scaling_floor": 1.0,
+          "step_bounds_m": [
+            0.012,
+            0.018,
+            0.006
+          ],
+          "acceptance_absolute_margin": 1e-14,
+          "acceptance_relative_margin": 1e-08,
+          "cross_resolution_factor": 5.0,
+          "residual_floor": 1e-12,
+          "domain_box": [
+            [
+              -5.999999999999999,
+              -5.999999999999999
+            ],
+            [
+              6.000000000000001,
+              6.000000000000001
+            ]
+          ],
+          "step_control": "coefficient",
+          "physical_step_bound_m": 0.006,
+          "damping_rule": "schedule",
+          "hanke_ratio": 0.7,
+          "metric": "marquardt",
+          "detectability_factor": 2.5,
+          "log_model": false
+        },
+        "cleanup_band": null,
+        "geometry_update": "z + P_K[A(z+h*n)-A(z)], derivative of the complete trial",
+        "cleanup": "none"
+      },
+      "reason": "resolved stage entered",
+      "work": {
+        "work_units": 56,
+        "stage": "scif_visit_06_frequency_1",
+        "stage_units": 0,
+        "stage_quota": null,
+        "cap": 512,
+        "solves": {
+          "scif_visit_00_frequency_0:initial_objective": 1,
+          "scif_visit_00_frequency_0:candidate": 4,
+          "scif_visit_00_frequency_0:acceptance_validation": 5,
+          "scif_visit_01_frequency_0:initial_objective": 1,
+          "scif_visit_02_frequency_1:initial_objective": 1,
+          "scif_visit_02_frequency_1:candidate": 2,
+          "scif_visit_02_frequency_1:acceptance_validation": 3,
+          "scif_visit_03_frequency_2:initial_objective": 1,
+          "scif_visit_03_frequency_2:candidate": 3,
+          "scif_visit_03_frequency_2:acceptance_validation": 4,
+          "scif_visit_04_frequency_3:initial_objective": 1,
+          "scif_visit_04_frequency_3:candidate": 3,
+          "scif_visit_04_frequency_3:acceptance_validation": 4,
+          "scif_visit_05_frequency_2:initial_objective": 1,
+          "scif_visit_05_frequency_2:candidate": 1,
+          "scif_visit_05_frequency_2:acceptance_validation": 2
+        },
+        "reciprocal_batches": {
+          "scif_visit_00_frequency_0:derivative": 5,
+          "scif_visit_01_frequency_0:derivative": 1,
+          "scif_visit_02_frequency_1:derivative": 3,
+          "scif_visit_03_frequency_2:derivative": 4,
+          "scif_visit_04_frequency_3:derivative": 4,
+          "scif_visit_05_frequency_2:derivative": 2
+        },
+        "failed": {},
+        "seconds": 385.72823098814115
+      }
+    },
+    {
+      "index": 15,
+      "operation": {
+        "operation": "fit",
+        "label": "scif_visit_06_frequency_1",
+        "purpose": "Single-frequency visit on the declared RLA/SCIF path; same optimizer/update/physics",
+        "entry": "previous operation completed or exhausted its stage quota",
+        "transition": "advance on normal/quota return; any hard/numerical failure goes to final audit; full real catalog at declared noise discrepancy goes directly to final audit",
+        "details": {
+          "accuracy_profile": {
+            "production": 512,
+            "refined": 1024,
+            "kind": "nodal_kress",
+            "nodal_resolution": 512,
+            "K_trace": null,
+            "coefficient_workspace": null,
+            "refinement": "double nodes; refuse candidates outside per-frequency tolerance"
+          },
+          "expected_noise_loss": 0.0,
+          "noise_threshold": null,
+          "weight_rule": "equal frequency weights",
+          "stopping": [
+            "loss tolerance",
+            "gradient infinity norm",
+            "relative step",
+            "iteration cap",
+            "stage quota",
+            "global work/time cap",
+            "numerical refusal"
+          ]
+        },
+        "stage": {
+          "label": "scif_visit_06_frequency_1",
+          "weights": [
+            1.0
+          ],
+          "discrepancy_tolerances": [
+            1e-05
+          ],
+          "update_modes": 1,
+          "curve_modes": 192,
+          "nodes": 512,
+          "refined_nodes": 1024,
+          "iterations": 22,
+          "quota": null,
+          "wavenumbers": [
+            0.9625782906663704
+          ],
+          "M": 1,
+          "K_geometry": 192,
+          "frequencies_hz": [
+            375000000.0
+          ],
+          "damping": [
+            0.0
+          ]
+        },
+        "optimizer": {
+          "initial_damping": 0.001,
+          "damping_increase": 10.0,
+          "damping_decrease": 0.3,
+          "max_damping_trials": 5,
+          "max_backtracks": 7,
+          "gradient_tolerance": 1e-07,
+          "loss_tolerance": 1e-14,
+          "relative_step_tolerance": 1e-07,
+          "scaling_floor": 1.0,
+          "step_bounds_m": [
+            0.012,
+            0.018,
+            0.006
+          ],
+          "acceptance_absolute_margin": 1e-14,
+          "acceptance_relative_margin": 1e-08,
+          "cross_resolution_factor": 5.0,
+          "residual_floor": 1e-12,
+          "domain_box": [
+            [
+              -5.999999999999999,
+              -5.999999999999999
+            ],
+            [
+              6.000000000000001,
+              6.000000000000001
+            ]
+          ],
+          "step_control": "coefficient",
+          "physical_step_bound_m": 0.006,
+          "damping_rule": "schedule",
+          "hanke_ratio": 0.7,
+          "metric": "marquardt",
+          "detectability_factor": 2.5,
+          "log_model": false
+        },
+        "cleanup_band": null,
+        "geometry_update": "z + P_K[A(z+h*n)-A(z)], derivative of the complete trial",
+        "cleanup": "none"
+      },
+      "reason": "stage returned",
+      "outcome": "NORMAL_OPTIMIZER_RETURN",
+      "stop": "no_decreasing_step",
+      "final_loss": 4.47987831974058e-07
+    },
+    {
+      "index": 16,
+      "operation": {
+        "operation": "fit",
+        "label": "scif_visit_07_frequency_0",
+        "purpose": "Single-frequency visit on the declared RLA/SCIF path; same optimizer/update/physics",
+        "entry": "previous operation completed or exhausted its stage quota",
+        "transition": "advance on normal/quota return; any hard/numerical failure goes to final audit; full real catalog at declared noise discrepancy goes directly to final audit",
+        "details": {
+          "accuracy_profile": {
+            "production": 512,
+            "refined": 1024,
+            "kind": "nodal_kress",
+            "nodal_resolution": 512,
+            "K_trace": null,
+            "coefficient_workspace": null,
+            "refinement": "double nodes; refuse candidates outside per-frequency tolerance"
+          },
+          "expected_noise_loss": 0.0,
+          "noise_threshold": null,
+          "weight_rule": "equal frequency weights",
+          "stopping": [
+            "loss tolerance",
+            "gradient infinity norm",
+            "relative step",
+            "iteration cap",
+            "stage quota",
+            "global work/time cap",
+            "numerical refusal"
+          ]
+        },
+        "stage": {
+          "label": "scif_visit_07_frequency_0",
+          "weights": [
+            1.0
+          ],
+          "discrepancy_tolerances": [
+            1e-05
+          ],
+          "update_modes": 1,
+          "curve_modes": 192,
+          "nodes": 512,
+          "refined_nodes": 1024,
+          "iterations": 22,
+          "quota": null,
+          "wavenumbers": [
+            0.641718860444247
+          ],
+          "M": 1,
+          "K_geometry": 192,
+          "frequencies_hz": [
+            250000000.0
+          ],
+          "damping": [
+            0.0
+          ]
+        },
+        "optimizer": {
+          "initial_damping": 0.001,
+          "damping_increase": 10.0,
+          "damping_decrease": 0.3,
+          "max_damping_trials": 5,
+          "max_backtracks": 7,
+          "gradient_tolerance": 1e-07,
+          "loss_tolerance": 1e-14,
+          "relative_step_tolerance": 1e-07,
+          "scaling_floor": 1.0,
+          "step_bounds_m": [
+            0.012,
+            0.018,
+            0.006
+          ],
+          "acceptance_absolute_margin": 1e-14,
+          "acceptance_relative_margin": 1e-08,
+          "cross_resolution_factor": 5.0,
+          "residual_floor": 1e-12,
+          "domain_box": [
+            [
+              -5.999999999999999,
+              -5.999999999999999
+            ],
+            [
+              6.000000000000001,
+              6.000000000000001
+            ]
+          ],
+          "step_control": "coefficient",
+          "physical_step_bound_m": 0.006,
+          "damping_rule": "schedule",
+          "hanke_ratio": 0.7,
+          "metric": "marquardt",
+          "detectability_factor": 2.5,
+          "log_model": false
+        },
+        "cleanup_band": null,
+        "geometry_update": "z + P_K[A(z+h*n)-A(z)], derivative of the complete trial",
+        "cleanup": "none"
+      },
+      "reason": "resolved stage entered",
+      "work": {
+        "work_units": 62,
+        "stage": "scif_visit_07_frequency_0",
+        "stage_units": 0,
+        "stage_quota": null,
+        "cap": 512,
+        "solves": {
+          "scif_visit_00_frequency_0:initial_objective": 1,
+          "scif_visit_00_frequency_0:candidate": 4,
+          "scif_visit_00_frequency_0:acceptance_validation": 5,
+          "scif_visit_01_frequency_0:initial_objective": 1,
+          "scif_visit_02_frequency_1:initial_objective": 1,
+          "scif_visit_02_frequency_1:candidate": 2,
+          "scif_visit_02_frequency_1:acceptance_validation": 3,
+          "scif_visit_03_frequency_2:initial_objective": 1,
+          "scif_visit_03_frequency_2:candidate": 3,
+          "scif_visit_03_frequency_2:acceptance_validation": 4,
+          "scif_visit_04_frequency_3:initial_objective": 1,
+          "scif_visit_04_frequency_3:candidate": 3,
+          "scif_visit_04_frequency_3:acceptance_validation": 4,
+          "scif_visit_05_frequency_2:initial_objective": 1,
+          "scif_visit_05_frequency_2:candidate": 1,
+          "scif_visit_05_frequency_2:acceptance_validation": 2,
+          "scif_visit_06_frequency_1:initial_objective": 1,
+          "scif_visit_06_frequency_1:candidate": 1,
+          "scif_visit_06_frequency_1:acceptance_validation": 2
+        },
+        "reciprocal_batches": {
+          "scif_visit_00_frequency_0:derivative": 5,
+          "scif_visit_01_frequency_0:derivative": 1,
+          "scif_visit_02_frequency_1:derivative": 3,
+          "scif_visit_03_frequency_2:derivative": 4,
+          "scif_visit_04_frequency_3:derivative": 4,
+          "scif_visit_05_frequency_2:derivative": 2,
+          "scif_visit_06_frequency_1:derivative": 2
+        },
+        "failed": {},
+        "seconds": 426.4357153750025
+      }
+    },
+    {
+      "index": 17,
+      "operation": {
+        "operation": "fit",
+        "label": "scif_visit_07_frequency_0",
+        "purpose": "Single-frequency visit on the declared RLA/SCIF path; same optimizer/update/physics",
+        "entry": "previous operation completed or exhausted its stage quota",
+        "transition": "advance on normal/quota return; any hard/numerical failure goes to final audit; full real catalog at declared noise discrepancy goes directly to final audit",
+        "details": {
+          "accuracy_profile": {
+            "production": 512,
+            "refined": 1024,
+            "kind": "nodal_kress",
+            "nodal_resolution": 512,
+            "K_trace": null,
+            "coefficient_workspace": null,
+            "refinement": "double nodes; refuse candidates outside per-frequency tolerance"
+          },
+          "expected_noise_loss": 0.0,
+          "noise_threshold": null,
+          "weight_rule": "equal frequency weights",
+          "stopping": [
+            "loss tolerance",
+            "gradient infinity norm",
+            "relative step",
+            "iteration cap",
+            "stage quota",
+            "global work/time cap",
+            "numerical refusal"
+          ]
+        },
+        "stage": {
+          "label": "scif_visit_07_frequency_0",
+          "weights": [
+            1.0
+          ],
+          "discrepancy_tolerances": [
+            1e-05
+          ],
+          "update_modes": 1,
+          "curve_modes": 192,
+          "nodes": 512,
+          "refined_nodes": 1024,
+          "iterations": 22,
+          "quota": null,
+          "wavenumbers": [
+            0.641718860444247
+          ],
+          "M": 1,
+          "K_geometry": 192,
+          "frequencies_hz": [
+            250000000.0
+          ],
+          "damping": [
+            0.0
+          ]
+        },
+        "optimizer": {
+          "initial_damping": 0.001,
+          "damping_increase": 10.0,
+          "damping_decrease": 0.3,
+          "max_damping_trials": 5,
+          "max_backtracks": 7,
+          "gradient_tolerance": 1e-07,
+          "loss_tolerance": 1e-14,
+          "relative_step_tolerance": 1e-07,
+          "scaling_floor": 1.0,
+          "step_bounds_m": [
+            0.012,
+            0.018,
+            0.006
+          ],
+          "acceptance_absolute_margin": 1e-14,
+          "acceptance_relative_margin": 1e-08,
+          "cross_resolution_factor": 5.0,
+          "residual_floor": 1e-12,
+          "domain_box": [
+            [
+              -5.999999999999999,
+              -5.999999999999999
+            ],
+            [
+              6.000000000000001,
+              6.000000000000001
+            ]
+          ],
+          "step_control": "coefficient",
+          "physical_step_bound_m": 0.006,
+          "damping_rule": "schedule",
+          "hanke_ratio": 0.7,
+          "metric": "marquardt",
+          "detectability_factor": 2.5,
+          "log_model": false
+        },
+        "cleanup_band": null,
+        "geometry_update": "z + P_K[A(z+h*n)-A(z)], derivative of the complete trial",
+        "cleanup": "none"
+      },
+      "reason": "stage returned",
+      "outcome": "NORMAL_OPTIMIZER_RETURN",
+      "stop": "no_decreasing_step",
+      "final_loss": 2.666291976338617e-08
+    },
+    {
+      "index": 18,
+      "operation": {
+        "operation": "fit",
+        "label": "scif_visit_08_frequency_0",
+        "purpose": "Single-frequency visit on the declared RLA/SCIF path; same optimizer/update/physics",
+        "entry": "previous operation completed or exhausted its stage quota",
+        "transition": "advance on normal/quota return; any hard/numerical failure goes to final audit; full real catalog at declared noise discrepancy goes directly to final audit",
+        "details": {
+          "accuracy_profile": {
+            "production": 512,
+            "refined": 1024,
+            "kind": "nodal_kress",
+            "nodal_resolution": 512,
+            "K_trace": null,
+            "coefficient_workspace": null,
+            "refinement": "double nodes; refuse candidates outside per-frequency tolerance"
+          },
+          "expected_noise_loss": 0.0,
+          "noise_threshold": null,
+          "weight_rule": "equal frequency weights",
+          "stopping": [
+            "loss tolerance",
+            "gradient infinity norm",
+            "relative step",
+            "iteration cap",
+            "stage quota",
+            "global work/time cap",
+            "numerical refusal"
+          ]
+        },
+        "stage": {
+          "label": "scif_visit_08_frequency_0",
+          "weights": [
+            1.0
+          ],
+          "discrepancy_tolerances": [
+            1e-05
+          ],
+          "update_modes": 1,
+          "curve_modes": 192,
+          "nodes": 512,
+          "refined_nodes": 1024,
+          "iterations": 22,
+          "quota": null,
+          "wavenumbers": [
+            0.641718860444247
+          ],
+          "M": 1,
+          "K_geometry": 192,
+          "frequencies_hz": [
+            250000000.0
+          ],
+          "damping": [
+            0.0
+          ]
+        },
+        "optimizer": {
+          "initial_damping": 0.001,
+          "damping_increase": 10.0,
+          "damping_decrease": 0.3,
+          "max_damping_trials": 5,
+          "max_backtracks": 7,
+          "gradient_tolerance": 1e-07,
+          "loss_tolerance": 1e-14,
+          "relative_step_tolerance": 1e-07,
+          "scaling_floor": 1.0,
+          "step_bounds_m": [
+            0.012,
+            0.018,
+            0.006
+          ],
+          "acceptance_absolute_margin": 1e-14,
+          "acceptance_relative_margin": 1e-08,
+          "cross_resolution_factor": 5.0,
+          "residual_floor": 1e-12,
+          "domain_box": [
+            [
+              -5.999999999999999,
+              -5.999999999999999
+            ],
+            [
+              6.000000000000001,
+              6.000000000000001
+            ]
+          ],
+          "step_control": "coefficient",
+          "physical_step_bound_m": 0.006,
+          "damping_rule": "schedule",
+          "hanke_ratio": 0.7,
+          "metric": "marquardt",
+          "detectability_factor": 2.5,
+          "log_model": false
+        },
+        "cleanup_band": null,
+        "geometry_update": "z + P_K[A(z+h*n)-A(z)], derivative of the complete trial",
+        "cleanup": "none"
+      },
+      "reason": "resolved stage entered",
+      "work": {
+        "work_units": 68,
+        "stage": "scif_visit_08_frequency_0",
+        "stage_units": 0,
+        "stage_quota": null,
+        "cap": 512,
+        "solves": {
+          "scif_visit_00_frequency_0:initial_objective": 1,
+          "scif_visit_00_frequency_0:candidate": 4,
+          "scif_visit_00_frequency_0:acceptance_validation": 5,
+          "scif_visit_01_frequency_0:initial_objective": 1,
+          "scif_visit_02_frequency_1:initial_objective": 1,
+          "scif_visit_02_frequency_1:candidate": 2,
+          "scif_visit_02_frequency_1:acceptance_validation": 3,
+          "scif_visit_03_frequency_2:initial_objective": 1,
+          "scif_visit_03_frequency_2:candidate": 3,
+          "scif_visit_03_frequency_2:acceptance_validation": 4,
+          "scif_visit_04_frequency_3:initial_objective": 1,
+          "scif_visit_04_frequency_3:candidate": 3,
+          "scif_visit_04_frequency_3:acceptance_validation": 4,
+          "scif_visit_05_frequency_2:initial_objective": 1,
+          "scif_visit_05_frequency_2:candidate": 1,
+          "scif_visit_05_frequency_2:acceptance_validation": 2,
+          "scif_visit_06_frequency_1:initial_objective": 1,
+          "scif_visit_06_frequency_1:candidate": 1,
+          "scif_visit_06_frequency_1:acceptance_validation": 2,
+          "scif_visit_07_frequency_0:initial_objective": 1,
+          "scif_visit_07_frequency_0:candidate": 1,
+          "scif_visit_07_frequency_0:acceptance_validation": 2
+        },
+        "reciprocal_batches": {
+          "scif_visit_00_frequency_0:derivative": 5,
+          "scif_visit_01_frequency_0:derivative": 1,
+          "scif_visit_02_frequency_1:derivative": 3,
+          "scif_visit_03_frequency_2:derivative": 4,
+          "scif_visit_04_frequency_3:derivative": 4,
+          "scif_visit_05_frequency_2:derivative": 2,
+          "scif_visit_06_frequency_1:derivative": 2,
+          "scif_visit_07_frequency_0:derivative": 2
+        },
+        "failed": {},
+        "seconds": 469.1116667641327
+      }
+    },
+    {
+      "index": 19,
+      "operation": {
+        "operation": "fit",
+        "label": "scif_visit_08_frequency_0",
+        "purpose": "Single-frequency visit on the declared RLA/SCIF path; same optimizer/update/physics",
+        "entry": "previous operation completed or exhausted its stage quota",
+        "transition": "advance on normal/quota return; any hard/numerical failure goes to final audit; full real catalog at declared noise discrepancy goes directly to final audit",
+        "details": {
+          "accuracy_profile": {
+            "production": 512,
+            "refined": 1024,
+            "kind": "nodal_kress",
+            "nodal_resolution": 512,
+            "K_trace": null,
+            "coefficient_workspace": null,
+            "refinement": "double nodes; refuse candidates outside per-frequency tolerance"
+          },
+          "expected_noise_loss": 0.0,
+          "noise_threshold": null,
+          "weight_rule": "equal frequency weights",
+          "stopping": [
+            "loss tolerance",
+            "gradient infinity norm",
+            "relative step",
+            "iteration cap",
+            "stage quota",
+            "global work/time cap",
+            "numerical refusal"
+          ]
+        },
+        "stage": {
+          "label": "scif_visit_08_frequency_0",
+          "weights": [
+            1.0
+          ],
+          "discrepancy_tolerances": [
+            1e-05
+          ],
+          "update_modes": 1,
+          "curve_modes": 192,
+          "nodes": 512,
+          "refined_nodes": 1024,
+          "iterations": 22,
+          "quota": null,
+          "wavenumbers": [
+            0.641718860444247
+          ],
+          "M": 1,
+          "K_geometry": 192,
+          "frequencies_hz": [
+            250000000.0
+          ],
+          "damping": [
+            0.0
+          ]
+        },
+        "optimizer": {
+          "initial_damping": 0.001,
+          "damping_increase": 10.0,
+          "damping_decrease": 0.3,
+          "max_damping_trials": 5,
+          "max_backtracks": 7,
+          "gradient_tolerance": 1e-07,
+          "loss_tolerance": 1e-14,
+          "relative_step_tolerance": 1e-07,
+          "scaling_floor": 1.0,
+          "step_bounds_m": [
+            0.012,
+            0.018,
+            0.006
+          ],
+          "acceptance_absolute_margin": 1e-14,
+          "acceptance_relative_margin": 1e-08,
+          "cross_resolution_factor": 5.0,
+          "residual_floor": 1e-12,
+          "domain_box": [
+            [
+              -5.999999999999999,
+              -5.999999999999999
+            ],
+            [
+              6.000000000000001,
+              6.000000000000001
+            ]
+          ],
+          "step_control": "coefficient",
+          "physical_step_bound_m": 0.006,
+          "damping_rule": "schedule",
+          "hanke_ratio": 0.7,
+          "metric": "marquardt",
+          "detectability_factor": 2.5,
+          "log_model": false
+        },
+        "cleanup_band": null,
+        "geometry_update": "z + P_K[A(z+h*n)-A(z)], derivative of the complete trial",
+        "cleanup": "none"
+      },
+      "reason": "stage returned",
+      "outcome": "NORMAL_OPTIMIZER_RETURN",
+      "stop": "no_decreasing_step",
+      "final_loss": 2.666291976338617e-08
+    },
+    {
+      "index": 20,
+      "operation": {
+        "operation": "fit",
+        "label": "scif_visit_09_frequency_1",
+        "purpose": "Single-frequency visit on the declared RLA/SCIF path; same optimizer/update/physics",
+        "entry": "previous operation completed or exhausted its stage quota",
+        "transition": "advance on normal/quota return; any hard/numerical failure goes to final audit; full real catalog at declared noise discrepancy goes directly to final audit",
+        "details": {
+          "accuracy_profile": {
+            "production": 512,
+            "refined": 1024,
+            "kind": "nodal_kress",
+            "nodal_resolution": 512,
+            "K_trace": null,
+            "coefficient_workspace": null,
+            "refinement": "double nodes; refuse candidates outside per-frequency tolerance"
+          },
+          "expected_noise_loss": 0.0,
+          "noise_threshold": null,
+          "weight_rule": "equal frequency weights",
+          "stopping": [
+            "loss tolerance",
+            "gradient infinity norm",
+            "relative step",
+            "iteration cap",
+            "stage quota",
+            "global work/time cap",
+            "numerical refusal"
+          ]
+        },
+        "stage": {
+          "label": "scif_visit_09_frequency_1",
+          "weights": [
+            1.0
+          ],
+          "discrepancy_tolerances": [
+            1e-05
+          ],
+          "update_modes": 1,
+          "curve_modes": 192,
+          "nodes": 512,
+          "refined_nodes": 1024,
+          "iterations": 22,
+          "quota": null,
+          "wavenumbers": [
+            0.9625782906663704
+          ],
+          "M": 1,
+          "K_geometry": 192,
+          "frequencies_hz": [
+            375000000.0
+          ],
+          "damping": [
+            0.0
+          ]
+        },
+        "optimizer": {
+          "initial_damping": 0.001,
+          "damping_increase": 10.0,
+          "damping_decrease": 0.3,
+          "max_damping_trials": 5,
+          "max_backtracks": 7,
+          "gradient_tolerance": 1e-07,
+          "loss_tolerance": 1e-14,
+          "relative_step_tolerance": 1e-07,
+          "scaling_floor": 1.0,
+          "step_bounds_m": [
+            0.012,
+            0.018,
+            0.006
+          ],
+          "acceptance_absolute_margin": 1e-14,
+          "acceptance_relative_margin": 1e-08,
+          "cross_resolution_factor": 5.0,
+          "residual_floor": 1e-12,
+          "domain_box": [
+            [
+              -5.999999999999999,
+              -5.999999999999999
+            ],
+            [
+              6.000000000000001,
+              6.000000000000001
+            ]
+          ],
+          "step_control": "coefficient",
+          "physical_step_bound_m": 0.006,
+          "damping_rule": "schedule",
+          "hanke_ratio": 0.7,
+          "metric": "marquardt",
+          "detectability_factor": 2.5,
+          "log_model": false
+        },
+        "cleanup_band": null,
+        "geometry_update": "z + P_K[A(z+h*n)-A(z)], derivative of the complete trial",
+        "cleanup": "none"
+      },
+      "reason": "resolved stage entered",
+      "work": {
+        "work_units": 70,
+        "stage": "scif_visit_09_frequency_1",
+        "stage_units": 0,
+        "stage_quota": null,
+        "cap": 512,
+        "solves": {
+          "scif_visit_00_frequency_0:initial_objective": 1,
+          "scif_visit_00_frequency_0:candidate": 4,
+          "scif_visit_00_frequency_0:acceptance_validation": 5,
+          "scif_visit_01_frequency_0:initial_objective": 1,
+          "scif_visit_02_frequency_1:initial_objective": 1,
+          "scif_visit_02_frequency_1:candidate": 2,
+          "scif_visit_02_frequency_1:acceptance_validation": 3,
+          "scif_visit_03_frequency_2:initial_objective": 1,
+          "scif_visit_03_frequency_2:candidate": 3,
+          "scif_visit_03_frequency_2:acceptance_validation": 4,
+          "scif_visit_04_frequency_3:initial_objective": 1,
+          "scif_visit_04_frequency_3:candidate": 3,
+          "scif_visit_04_frequency_3:acceptance_validation": 4,
+          "scif_visit_05_frequency_2:initial_objective": 1,
+          "scif_visit_05_frequency_2:candidate": 1,
+          "scif_visit_05_frequency_2:acceptance_validation": 2,
+          "scif_visit_06_frequency_1:initial_objective": 1,
+          "scif_visit_06_frequency_1:candidate": 1,
+          "scif_visit_06_frequency_1:acceptance_validation": 2,
+          "scif_visit_07_frequency_0:initial_objective": 1,
+          "scif_visit_07_frequency_0:candidate": 1,
+          "scif_visit_07_frequency_0:acceptance_validation": 2,
+          "scif_visit_08_frequency_0:initial_objective": 1
+        },
+        "reciprocal_batches": {
+          "scif_visit_00_frequency_0:derivative": 5,
+          "scif_visit_01_frequency_0:derivative": 1,
+          "scif_visit_02_frequency_1:derivative": 3,
+          "scif_visit_03_frequency_2:derivative": 4,
+          "scif_visit_04_frequency_3:derivative": 4,
+          "scif_visit_05_frequency_2:derivative": 2,
+          "scif_visit_06_frequency_1:derivative": 2,
+          "scif_visit_07_frequency_0:derivative": 2,
+          "scif_visit_08_frequency_0:derivative": 1
+        },
+        "failed": {},
+        "seconds": 471.0139657291584
+      }
+    },
+    {
+      "index": 21,
+      "operation": {
+        "operation": "fit",
+        "label": "scif_visit_09_frequency_1",
+        "purpose": "Single-frequency visit on the declared RLA/SCIF path; same optimizer/update/physics",
+        "entry": "previous operation completed or exhausted its stage quota",
+        "transition": "advance on normal/quota return; any hard/numerical failure goes to final audit; full real catalog at declared noise discrepancy goes directly to final audit",
+        "details": {
+          "accuracy_profile": {
+            "production": 512,
+            "refined": 1024,
+            "kind": "nodal_kress",
+            "nodal_resolution": 512,
+            "K_trace": null,
+            "coefficient_workspace": null,
+            "refinement": "double nodes; refuse candidates outside per-frequency tolerance"
+          },
+          "expected_noise_loss": 0.0,
+          "noise_threshold": null,
+          "weight_rule": "equal frequency weights",
+          "stopping": [
+            "loss tolerance",
+            "gradient infinity norm",
+            "relative step",
+            "iteration cap",
+            "stage quota",
+            "global work/time cap",
+            "numerical refusal"
+          ]
+        },
+        "stage": {
+          "label": "scif_visit_09_frequency_1",
+          "weights": [
+            1.0
+          ],
+          "discrepancy_tolerances": [
+            1e-05
+          ],
+          "update_modes": 1,
+          "curve_modes": 192,
+          "nodes": 512,
+          "refined_nodes": 1024,
+          "iterations": 22,
+          "quota": null,
+          "wavenumbers": [
+            0.9625782906663704
+          ],
+          "M": 1,
+          "K_geometry": 192,
+          "frequencies_hz": [
+            375000000.0
+          ],
+          "damping": [
+            0.0
+          ]
+        },
+        "optimizer": {
+          "initial_damping": 0.001,
+          "damping_increase": 10.0,
+          "damping_decrease": 0.3,
+          "max_damping_trials": 5,
+          "max_backtracks": 7,
+          "gradient_tolerance": 1e-07,
+          "loss_tolerance": 1e-14,
+          "relative_step_tolerance": 1e-07,
+          "scaling_floor": 1.0,
+          "step_bounds_m": [
+            0.012,
+            0.018,
+            0.006
+          ],
+          "acceptance_absolute_margin": 1e-14,
+          "acceptance_relative_margin": 1e-08,
+          "cross_resolution_factor": 5.0,
+          "residual_floor": 1e-12,
+          "domain_box": [
+            [
+              -5.999999999999999,
+              -5.999999999999999
+            ],
+            [
+              6.000000000000001,
+              6.000000000000001
+            ]
+          ],
+          "step_control": "coefficient",
+          "physical_step_bound_m": 0.006,
+          "damping_rule": "schedule",
+          "hanke_ratio": 0.7,
+          "metric": "marquardt",
+          "detectability_factor": 2.5,
+          "log_model": false
+        },
+        "cleanup_band": null,
+        "geometry_update": "z + P_K[A(z+h*n)-A(z)], derivative of the complete trial",
+        "cleanup": "none"
+      },
+      "reason": "stage returned",
+      "outcome": "NORMAL_OPTIMIZER_RETURN",
+      "stop": "no_decreasing_step",
+      "final_loss": 4.4798686690593037e-07
+    },
+    {
+      "index": 22,
+      "operation": {
+        "operation": "fit",
+        "label": "scif_visit_10_frequency_0",
+        "purpose": "Single-frequency visit on the declared RLA/SCIF path; same optimizer/update/physics",
+        "entry": "previous operation completed or exhausted its stage quota",
+        "transition": "advance on normal/quota return; any hard/numerical failure goes to final audit; full real catalog at declared noise discrepancy goes directly to final audit",
+        "details": {
+          "accuracy_profile": {
+            "production": 512,
+            "refined": 1024,
+            "kind": "nodal_kress",
+            "nodal_resolution": 512,
+            "K_trace": null,
+            "coefficient_workspace": null,
+            "refinement": "double nodes; refuse candidates outside per-frequency tolerance"
+          },
+          "expected_noise_loss": 0.0,
+          "noise_threshold": null,
+          "weight_rule": "equal frequency weights",
+          "stopping": [
+            "loss tolerance",
+            "gradient infinity norm",
+            "relative step",
+            "iteration cap",
+            "stage quota",
+            "global work/time cap",
+            "numerical refusal"
+          ]
+        },
+        "stage": {
+          "label": "scif_visit_10_frequency_0",
+          "weights": [
+            1.0
+          ],
+          "discrepancy_tolerances": [
+            1e-05
+          ],
+          "update_modes": 1,
+          "curve_modes": 192,
+          "nodes": 512,
+          "refined_nodes": 1024,
+          "iterations": 22,
+          "quota": null,
+          "wavenumbers": [
+            0.641718860444247
+          ],
+          "M": 1,
+          "K_geometry": 192,
+          "frequencies_hz": [
+            250000000.0
+          ],
+          "damping": [
+            0.0
+          ]
+        },
+        "optimizer": {
+          "initial_damping": 0.001,
+          "damping_increase": 10.0,
+          "damping_decrease": 0.3,
+          "max_damping_trials": 5,
+          "max_backtracks": 7,
+          "gradient_tolerance": 1e-07,
+          "loss_tolerance": 1e-14,
+          "relative_step_tolerance": 1e-07,
+          "scaling_floor": 1.0,
+          "step_bounds_m": [
+            0.012,
+            0.018,
+            0.006
+          ],
+          "acceptance_absolute_margin": 1e-14,
+          "acceptance_relative_margin": 1e-08,
+          "cross_resolution_factor": 5.0,
+          "residual_floor": 1e-12,
+          "domain_box": [
+            [
+              -5.999999999999999,
+              -5.999999999999999
+            ],
+            [
+              6.000000000000001,
+              6.000000000000001
+            ]
+          ],
+          "step_control": "coefficient",
+          "physical_step_bound_m": 0.006,
+          "damping_rule": "schedule",
+          "hanke_ratio": 0.7,
+          "metric": "marquardt",
+          "detectability_factor": 2.5,
+          "log_model": false
+        },
+        "cleanup_band": null,
+        "geometry_update": "z + P_K[A(z+h*n)-A(z)], derivative of the complete trial",
+        "cleanup": "none"
+      },
+      "reason": "resolved stage entered",
+      "work": {
+        "work_units": 76,
+        "stage": "scif_visit_10_frequency_0",
+        "stage_units": 0,
+        "stage_quota": null,
+        "cap": 512,
+        "solves": {
+          "scif_visit_00_frequency_0:initial_objective": 1,
+          "scif_visit_00_frequency_0:candidate": 4,
+          "scif_visit_00_frequency_0:acceptance_validation": 5,
+          "scif_visit_01_frequency_0:initial_objective": 1,
+          "scif_visit_02_frequency_1:initial_objective": 1,
+          "scif_visit_02_frequency_1:candidate": 2,
+          "scif_visit_02_frequency_1:acceptance_validation": 3,
+          "scif_visit_03_frequency_2:initial_objective": 1,
+          "scif_visit_03_frequency_2:candidate": 3,
+          "scif_visit_03_frequency_2:acceptance_validation": 4,
+          "scif_visit_04_frequency_3:initial_objective": 1,
+          "scif_visit_04_frequency_3:candidate": 3,
+          "scif_visit_04_frequency_3:acceptance_validation": 4,
+          "scif_visit_05_frequency_2:initial_objective": 1,
+          "scif_visit_05_frequency_2:candidate": 1,
+          "scif_visit_05_frequency_2:acceptance_validation": 2,
+          "scif_visit_06_frequency_1:initial_objective": 1,
+          "scif_visit_06_frequency_1:candidate": 1,
+          "scif_visit_06_frequency_1:acceptance_validation": 2,
+          "scif_visit_07_frequency_0:initial_objective": 1,
+          "scif_visit_07_frequency_0:candidate": 1,
+          "scif_visit_07_frequency_0:acceptance_validation": 2,
+          "scif_visit_08_frequency_0:initial_objective": 1,
+          "scif_visit_09_frequency_1:initial_objective": 1,
+          "scif_visit_09_frequency_1:candidate": 1,
+          "scif_visit_09_frequency_1:acceptance_validation": 2
+        },
+        "reciprocal_batches": {
+          "scif_visit_00_frequency_0:derivative": 5,
+          "scif_visit_01_frequency_0:derivative": 1,
+          "scif_visit_02_frequency_1:derivative": 3,
+          "scif_visit_03_frequency_2:derivative": 4,
+          "scif_visit_04_frequency_3:derivative": 4,
+          "scif_visit_05_frequency_2:derivative": 2,
+          "scif_visit_06_frequency_1:derivative": 2,
+          "scif_visit_07_frequency_0:derivative": 2,
+          "scif_visit_08_frequency_0:derivative": 1,
+          "scif_visit_09_frequency_1:derivative": 2
+        },
+        "failed": {},
+        "seconds": 511.1022141012363
+      }
+    },
+    {
+      "index": 23,
+      "operation": {
+        "operation": "fit",
+        "label": "scif_visit_10_frequency_0",
+        "purpose": "Single-frequency visit on the declared RLA/SCIF path; same optimizer/update/physics",
+        "entry": "previous operation completed or exhausted its stage quota",
+        "transition": "advance on normal/quota return; any hard/numerical failure goes to final audit; full real catalog at declared noise discrepancy goes directly to final audit",
+        "details": {
+          "accuracy_profile": {
+            "production": 512,
+            "refined": 1024,
+            "kind": "nodal_kress",
+            "nodal_resolution": 512,
+            "K_trace": null,
+            "coefficient_workspace": null,
+            "refinement": "double nodes; refuse candidates outside per-frequency tolerance"
+          },
+          "expected_noise_loss": 0.0,
+          "noise_threshold": null,
+          "weight_rule": "equal frequency weights",
+          "stopping": [
+            "loss tolerance",
+            "gradient infinity norm",
+            "relative step",
+            "iteration cap",
+            "stage quota",
+            "global work/time cap",
+            "numerical refusal"
+          ]
+        },
+        "stage": {
+          "label": "scif_visit_10_frequency_0",
+          "weights": [
+            1.0
+          ],
+          "discrepancy_tolerances": [
+            1e-05
+          ],
+          "update_modes": 1,
+          "curve_modes": 192,
+          "nodes": 512,
+          "refined_nodes": 1024,
+          "iterations": 22,
+          "quota": null,
+          "wavenumbers": [
+            0.641718860444247
+          ],
+          "M": 1,
+          "K_geometry": 192,
+          "frequencies_hz": [
+            250000000.0
+          ],
+          "damping": [
+            0.0
+          ]
+        },
+        "optimizer": {
+          "initial_damping": 0.001,
+          "damping_increase": 10.0,
+          "damping_decrease": 0.3,
+          "max_damping_trials": 5,
+          "max_backtracks": 7,
+          "gradient_tolerance": 1e-07,
+          "loss_tolerance": 1e-14,
+          "relative_step_tolerance": 1e-07,
+          "scaling_floor": 1.0,
+          "step_bounds_m": [
+            0.012,
+            0.018,
+            0.006
+          ],
+          "acceptance_absolute_margin": 1e-14,
+          "acceptance_relative_margin": 1e-08,
+          "cross_resolution_factor": 5.0,
+          "residual_floor": 1e-12,
+          "domain_box": [
+            [
+              -5.999999999999999,
+              -5.999999999999999
+            ],
+            [
+              6.000000000000001,
+              6.000000000000001
+            ]
+          ],
+          "step_control": "coefficient",
+          "physical_step_bound_m": 0.006,
+          "damping_rule": "schedule",
+          "hanke_ratio": 0.7,
+          "metric": "marquardt",
+          "detectability_factor": 2.5,
+          "log_model": false
+        },
+        "cleanup_band": null,
+        "geometry_update": "z + P_K[A(z+h*n)-A(z)], derivative of the complete trial",
+        "cleanup": "none"
+      },
+      "reason": "stage returned",
+      "outcome": "NORMAL_OPTIMIZER_RETURN",
+      "stop": "no_decreasing_step",
+      "final_loss": 2.66627272959471e-08
+    },
+    {
+      "index": 24,
+      "operation": {
+        "operation": "fit",
+        "label": "scif_visit_11_frequency_0",
+        "purpose": "Single-frequency visit on the declared RLA/SCIF path; same optimizer/update/physics",
+        "entry": "previous operation completed or exhausted its stage quota",
+        "transition": "advance on normal/quota return; any hard/numerical failure goes to final audit; full real catalog at declared noise discrepancy goes directly to final audit",
+        "details": {
+          "accuracy_profile": {
+            "production": 512,
+            "refined": 1024,
+            "kind": "nodal_kress",
+            "nodal_resolution": 512,
+            "K_trace": null,
+            "coefficient_workspace": null,
+            "refinement": "double nodes; refuse candidates outside per-frequency tolerance"
+          },
+          "expected_noise_loss": 0.0,
+          "noise_threshold": null,
+          "weight_rule": "equal frequency weights",
+          "stopping": [
+            "loss tolerance",
+            "gradient infinity norm",
+            "relative step",
+            "iteration cap",
+            "stage quota",
+            "global work/time cap",
+            "numerical refusal"
+          ]
+        },
+        "stage": {
+          "label": "scif_visit_11_frequency_0",
+          "weights": [
+            1.0
+          ],
+          "discrepancy_tolerances": [
+            1e-05
+          ],
+          "update_modes": 1,
+          "curve_modes": 192,
+          "nodes": 512,
+          "refined_nodes": 1024,
+          "iterations": 22,
+          "quota": null,
+          "wavenumbers": [
+            0.641718860444247
+          ],
+          "M": 1,
+          "K_geometry": 192,
+          "frequencies_hz": [
+            250000000.0
+          ],
+          "damping": [
+            0.0
+          ]
+        },
+        "optimizer": {
+          "initial_damping": 0.001,
+          "damping_increase": 10.0,
+          "damping_decrease": 0.3,
+          "max_damping_trials": 5,
+          "max_backtracks": 7,
+          "gradient_tolerance": 1e-07,
+          "loss_tolerance": 1e-14,
+          "relative_step_tolerance": 1e-07,
+          "scaling_floor": 1.0,
+          "step_bounds_m": [
+            0.012,
+            0.018,
+            0.006
+          ],
+          "acceptance_absolute_margin": 1e-14,
+          "acceptance_relative_margin": 1e-08,
+          "cross_resolution_factor": 5.0,
+          "residual_floor": 1e-12,
+          "domain_box": [
+            [
+              -5.999999999999999,
+              -5.999999999999999
+            ],
+            [
+              6.000000000000001,
+              6.000000000000001
+            ]
+          ],
+          "step_control": "coefficient",
+          "physical_step_bound_m": 0.006,
+          "damping_rule": "schedule",
+          "hanke_ratio": 0.7,
+          "metric": "marquardt",
+          "detectability_factor": 2.5,
+          "log_model": false
+        },
+        "cleanup_band": null,
+        "geometry_update": "z + P_K[A(z+h*n)-A(z)], derivative of the complete trial",
+        "cleanup": "none"
+      },
+      "reason": "resolved stage entered",
+      "work": {
+        "work_units": 82,
+        "stage": "scif_visit_11_frequency_0",
+        "stage_units": 0,
+        "stage_quota": null,
+        "cap": 512,
+        "solves": {
+          "scif_visit_00_frequency_0:initial_objective": 1,
+          "scif_visit_00_frequency_0:candidate": 4,
+          "scif_visit_00_frequency_0:acceptance_validation": 5,
+          "scif_visit_01_frequency_0:initial_objective": 1,
+          "scif_visit_02_frequency_1:initial_objective": 1,
+          "scif_visit_02_frequency_1:candidate": 2,
+          "scif_visit_02_frequency_1:acceptance_validation": 3,
+          "scif_visit_03_frequency_2:initial_objective": 1,
+          "scif_visit_03_frequency_2:candidate": 3,
+          "scif_visit_03_frequency_2:acceptance_validation": 4,
+          "scif_visit_04_frequency_3:initial_objective": 1,
+          "scif_visit_04_frequency_3:candidate": 3,
+          "scif_visit_04_frequency_3:acceptance_validation": 4,
+          "scif_visit_05_frequency_2:initial_objective": 1,
+          "scif_visit_05_frequency_2:candidate": 1,
+          "scif_visit_05_frequency_2:acceptance_validation": 2,
+          "scif_visit_06_frequency_1:initial_objective": 1,
+          "scif_visit_06_frequency_1:candidate": 1,
+          "scif_visit_06_frequency_1:acceptance_validation": 2,
+          "scif_visit_07_frequency_0:initial_objective": 1,
+          "scif_visit_07_frequency_0:candidate": 1,
+          "scif_visit_07_frequency_0:acceptance_validation": 2,
+          "scif_visit_08_frequency_0:initial_objective": 1,
+          "scif_visit_09_frequency_1:initial_objective": 1,
+          "scif_visit_09_frequency_1:candidate": 1,
+          "scif_visit_09_frequency_1:acceptance_validation": 2,
+          "scif_visit_10_frequency_0:initial_objective": 1,
+          "scif_visit_10_frequency_0:candidate": 1,
+          "scif_visit_10_frequency_0:acceptance_validation": 2
+        },
+        "reciprocal_batches": {
+          "scif_visit_00_frequency_0:derivative": 5,
+          "scif_visit_01_frequency_0:derivative": 1,
+          "scif_visit_02_frequency_1:derivative": 3,
+          "scif_visit_03_frequency_2:derivative": 4,
+          "scif_visit_04_frequency_3:derivative": 4,
+          "scif_visit_05_frequency_2:derivative": 2,
+          "scif_visit_06_frequency_1:derivative": 2,
+          "scif_visit_07_frequency_0:derivative": 2,
+          "scif_visit_08_frequency_0:derivative": 1,
+          "scif_visit_09_frequency_1:derivative": 2,
+          "scif_visit_10_frequency_0:derivative": 2
+        },
+        "failed": {},
+        "seconds": 544.8942770562135
+      }
+    },
+    {
+      "index": 25,
+      "operation": {
+        "operation": "fit",
+        "label": "scif_visit_11_frequency_0",
+        "purpose": "Single-frequency visit on the declared RLA/SCIF path; same optimizer/update/physics",
+        "entry": "previous operation completed or exhausted its stage quota",
+        "transition": "advance on normal/quota return; any hard/numerical failure goes to final audit; full real catalog at declared noise discrepancy goes directly to final audit",
+        "details": {
+          "accuracy_profile": {
+            "production": 512,
+            "refined": 1024,
+            "kind": "nodal_kress",
+            "nodal_resolution": 512,
+            "K_trace": null,
+            "coefficient_workspace": null,
+            "refinement": "double nodes; refuse candidates outside per-frequency tolerance"
+          },
+          "expected_noise_loss": 0.0,
+          "noise_threshold": null,
+          "weight_rule": "equal frequency weights",
+          "stopping": [
+            "loss tolerance",
+            "gradient infinity norm",
+            "relative step",
+            "iteration cap",
+            "stage quota",
+            "global work/time cap",
+            "numerical refusal"
+          ]
+        },
+        "stage": {
+          "label": "scif_visit_11_frequency_0",
+          "weights": [
+            1.0
+          ],
+          "discrepancy_tolerances": [
+            1e-05
+          ],
+          "update_modes": 1,
+          "curve_modes": 192,
+          "nodes": 512,
+          "refined_nodes": 1024,
+          "iterations": 22,
+          "quota": null,
+          "wavenumbers": [
+            0.641718860444247
+          ],
+          "M": 1,
+          "K_geometry": 192,
+          "frequencies_hz": [
+            250000000.0
+          ],
+          "damping": [
+            0.0
+          ]
+        },
+        "optimizer": {
+          "initial_damping": 0.001,
+          "damping_increase": 10.0,
+          "damping_decrease": 0.3,
+          "max_damping_trials": 5,
+          "max_backtracks": 7,
+          "gradient_tolerance": 1e-07,
+          "loss_tolerance": 1e-14,
+          "relative_step_tolerance": 1e-07,
+          "scaling_floor": 1.0,
+          "step_bounds_m": [
+            0.012,
+            0.018,
+            0.006
+          ],
+          "acceptance_absolute_margin": 1e-14,
+          "acceptance_relative_margin": 1e-08,
+          "cross_resolution_factor": 5.0,
+          "residual_floor": 1e-12,
+          "domain_box": [
+            [
+              -5.999999999999999,
+              -5.999999999999999
+            ],
+            [
+              6.000000000000001,
+              6.000000000000001
+            ]
+          ],
+          "step_control": "coefficient",
+          "physical_step_bound_m": 0.006,
+          "damping_rule": "schedule",
+          "hanke_ratio": 0.7,
+          "metric": "marquardt",
+          "detectability_factor": 2.5,
+          "log_model": false
+        },
+        "cleanup_band": null,
+        "geometry_update": "z + P_K[A(z+h*n)-A(z)], derivative of the complete trial",
+        "cleanup": "none"
+      },
+      "reason": "stage returned",
+      "outcome": "NORMAL_OPTIMIZER_RETURN",
+      "stop": "no_decreasing_step",
+      "final_loss": 2.66627272959471e-08
+    },
+    {
+      "index": 26,
+      "operation": {
+        "operation": "fit",
+        "label": "scif_visit_12_frequency_1",
+        "purpose": "Single-frequency visit on the declared RLA/SCIF path; same optimizer/update/physics",
+        "entry": "previous operation completed or exhausted its stage quota",
+        "transition": "advance on normal/quota return; any hard/numerical failure goes to final audit; full real catalog at declared noise discrepancy goes directly to final audit",
+        "details": {
+          "accuracy_profile": {
+            "production": 512,
+            "refined": 1024,
+            "kind": "nodal_kress",
+            "nodal_resolution": 512,
+            "K_trace": null,
+            "coefficient_workspace": null,
+            "refinement": "double nodes; refuse candidates outside per-frequency tolerance"
+          },
+          "expected_noise_loss": 0.0,
+          "noise_threshold": null,
+          "weight_rule": "equal frequency weights",
+          "stopping": [
+            "loss tolerance",
+            "gradient infinity norm",
+            "relative step",
+            "iteration cap",
+            "stage quota",
+            "global work/time cap",
+            "numerical refusal"
+          ]
+        },
+        "stage": {
+          "label": "scif_visit_12_frequency_1",
+          "weights": [
+            1.0
+          ],
+          "discrepancy_tolerances": [
+            1e-05
+          ],
+          "update_modes": 1,
+          "curve_modes": 192,
+          "nodes": 512,
+          "refined_nodes": 1024,
+          "iterations": 22,
+          "quota": null,
+          "wavenumbers": [
+            0.9625782906663704
+          ],
+          "M": 1,
+          "K_geometry": 192,
+          "frequencies_hz": [
+            375000000.0
+          ],
+          "damping": [
+            0.0
+          ]
+        },
+        "optimizer": {
+          "initial_damping": 0.001,
+          "damping_increase": 10.0,
+          "damping_decrease": 0.3,
+          "max_damping_trials": 5,
+          "max_backtracks": 7,
+          "gradient_tolerance": 1e-07,
+          "loss_tolerance": 1e-14,
+          "relative_step_tolerance": 1e-07,
+          "scaling_floor": 1.0,
+          "step_bounds_m": [
+            0.012,
+            0.018,
+            0.006
+          ],
+          "acceptance_absolute_margin": 1e-14,
+          "acceptance_relative_margin": 1e-08,
+          "cross_resolution_factor": 5.0,
+          "residual_floor": 1e-12,
+          "domain_box": [
+            [
+              -5.999999999999999,
+              -5.999999999999999
+            ],
+            [
+              6.000000000000001,
+              6.000000000000001
+            ]
+          ],
+          "step_control": "coefficient",
+          "physical_step_bound_m": 0.006,
+          "damping_rule": "schedule",
+          "hanke_ratio": 0.7,
+          "metric": "marquardt",
+          "detectability_factor": 2.5,
+          "log_model": false
+        },
+        "cleanup_band": null,
+        "geometry_update": "z + P_K[A(z+h*n)-A(z)], derivative of the complete trial",
+        "cleanup": "none"
+      },
+      "reason": "resolved stage entered",
+      "work": {
+        "work_units": 84,
+        "stage": "scif_visit_12_frequency_1",
+        "stage_units": 0,
+        "stage_quota": null,
+        "cap": 512,
+        "solves": {
+          "scif_visit_00_frequency_0:initial_objective": 1,
+          "scif_visit_00_frequency_0:candidate": 4,
+          "scif_visit_00_frequency_0:acceptance_validation": 5,
+          "scif_visit_01_frequency_0:initial_objective": 1,
+          "scif_visit_02_frequency_1:initial_objective": 1,
+          "scif_visit_02_frequency_1:candidate": 2,
+          "scif_visit_02_frequency_1:acceptance_validation": 3,
+          "scif_visit_03_frequency_2:initial_objective": 1,
+          "scif_visit_03_frequency_2:candidate": 3,
+          "scif_visit_03_frequency_2:acceptance_validation": 4,
+          "scif_visit_04_frequency_3:initial_objective": 1,
+          "scif_visit_04_frequency_3:candidate": 3,
+          "scif_visit_04_frequency_3:acceptance_validation": 4,
+          "scif_visit_05_frequency_2:initial_objective": 1,
+          "scif_visit_05_frequency_2:candidate": 1,
+          "scif_visit_05_frequency_2:acceptance_validation": 2,
+          "scif_visit_06_frequency_1:initial_objective": 1,
+          "scif_visit_06_frequency_1:candidate": 1,
+          "scif_visit_06_frequency_1:acceptance_validation": 2,
+          "scif_visit_07_frequency_0:initial_objective": 1,
+          "scif_visit_07_frequency_0:candidate": 1,
+          "scif_visit_07_frequency_0:acceptance_validation": 2,
+          "scif_visit_08_frequency_0:initial_objective": 1,
+          "scif_visit_09_frequency_1:initial_objective": 1,
+          "scif_visit_09_frequency_1:candidate": 1,
+          "scif_visit_09_frequency_1:acceptance_validation": 2,
+          "scif_visit_10_frequency_0:initial_objective": 1,
+          "scif_visit_10_frequency_0:candidate": 1,
+          "scif_visit_10_frequency_0:acceptance_validation": 2,
+          "scif_visit_11_frequency_0:initial_objective": 1
+        },
+        "reciprocal_batches": {
+          "scif_visit_00_frequency_0:derivative": 5,
+          "scif_visit_01_frequency_0:derivative": 1,
+          "scif_visit_02_frequency_1:derivative": 3,
+          "scif_visit_03_frequency_2:derivative": 4,
+          "scif_visit_04_frequency_3:derivative": 4,
+          "scif_visit_05_frequency_2:derivative": 2,
+          "scif_visit_06_frequency_1:derivative": 2,
+          "scif_visit_07_frequency_0:derivative": 2,
+          "scif_visit_08_frequency_0:derivative": 1,
+          "scif_visit_09_frequency_1:derivative": 2,
+          "scif_visit_10_frequency_0:derivative": 2,
+          "scif_visit_11_frequency_0:derivative": 1
+        },
+        "failed": {},
+        "seconds": 546.4002383123152
+      }
+    },
+    {
+      "index": 27,
+      "operation": {
+        "operation": "fit",
+        "label": "scif_visit_12_frequency_1",
+        "purpose": "Single-frequency visit on the declared RLA/SCIF path; same optimizer/update/physics",
+        "entry": "previous operation completed or exhausted its stage quota",
+        "transition": "advance on normal/quota return; any hard/numerical failure goes to final audit; full real catalog at declared noise discrepancy goes directly to final audit",
+        "details": {
+          "accuracy_profile": {
+            "production": 512,
+            "refined": 1024,
+            "kind": "nodal_kress",
+            "nodal_resolution": 512,
+            "K_trace": null,
+            "coefficient_workspace": null,
+            "refinement": "double nodes; refuse candidates outside per-frequency tolerance"
+          },
+          "expected_noise_loss": 0.0,
+          "noise_threshold": null,
+          "weight_rule": "equal frequency weights",
+          "stopping": [
+            "loss tolerance",
+            "gradient infinity norm",
+            "relative step",
+            "iteration cap",
+            "stage quota",
+            "global work/time cap",
+            "numerical refusal"
+          ]
+        },
+        "stage": {
+          "label": "scif_visit_12_frequency_1",
+          "weights": [
+            1.0
+          ],
+          "discrepancy_tolerances": [
+            1e-05
+          ],
+          "update_modes": 1,
+          "curve_modes": 192,
+          "nodes": 512,
+          "refined_nodes": 1024,
+          "iterations": 22,
+          "quota": null,
+          "wavenumbers": [
+            0.9625782906663704
+          ],
+          "M": 1,
+          "K_geometry": 192,
+          "frequencies_hz": [
+            375000000.0
+          ],
+          "damping": [
+            0.0
+          ]
+        },
+        "optimizer": {
+          "initial_damping": 0.001,
+          "damping_increase": 10.0,
+          "damping_decrease": 0.3,
+          "max_damping_trials": 5,
+          "max_backtracks": 7,
+          "gradient_tolerance": 1e-07,
+          "loss_tolerance": 1e-14,
+          "relative_step_tolerance": 1e-07,
+          "scaling_floor": 1.0,
+          "step_bounds_m": [
+            0.012,
+            0.018,
+            0.006
+          ],
+          "acceptance_absolute_margin": 1e-14,
+          "acceptance_relative_margin": 1e-08,
+          "cross_resolution_factor": 5.0,
+          "residual_floor": 1e-12,
+          "domain_box": [
+            [
+              -5.999999999999999,
+              -5.999999999999999
+            ],
+            [
+              6.000000000000001,
+              6.000000000000001
+            ]
+          ],
+          "step_control": "coefficient",
+          "physical_step_bound_m": 0.006,
+          "damping_rule": "schedule",
+          "hanke_ratio": 0.7,
+          "metric": "marquardt",
+          "detectability_factor": 2.5,
+          "log_model": false
+        },
+        "cleanup_band": null,
+        "geometry_update": "z + P_K[A(z+h*n)-A(z)], derivative of the complete trial",
+        "cleanup": "none"
+      },
+      "reason": "stage returned",
+      "outcome": "NORMAL_OPTIMIZER_RETURN",
+      "stop": "no_decreasing_step",
+      "final_loss": 4.47986078045829e-07
+    },
+    {
+      "index": 28,
+      "operation": {
+        "operation": "fit",
+        "label": "scif_visit_13_frequency_0",
+        "purpose": "Single-frequency visit on the declared RLA/SCIF path; same optimizer/update/physics",
+        "entry": "previous operation completed or exhausted its stage quota",
+        "transition": "advance on normal/quota return; any hard/numerical failure goes to final audit; full real catalog at declared noise discrepancy goes directly to final audit",
+        "details": {
+          "accuracy_profile": {
+            "production": 512,
+            "refined": 1024,
+            "kind": "nodal_kress",
+            "nodal_resolution": 512,
+            "K_trace": null,
+            "coefficient_workspace": null,
+            "refinement": "double nodes; refuse candidates outside per-frequency tolerance"
+          },
+          "expected_noise_loss": 0.0,
+          "noise_threshold": null,
+          "weight_rule": "equal frequency weights",
+          "stopping": [
+            "loss tolerance",
+            "gradient infinity norm",
+            "relative step",
+            "iteration cap",
+            "stage quota",
+            "global work/time cap",
+            "numerical refusal"
+          ]
+        },
+        "stage": {
+          "label": "scif_visit_13_frequency_0",
+          "weights": [
+            1.0
+          ],
+          "discrepancy_tolerances": [
+            1e-05
+          ],
+          "update_modes": 1,
+          "curve_modes": 192,
+          "nodes": 512,
+          "refined_nodes": 1024,
+          "iterations": 22,
+          "quota": null,
+          "wavenumbers": [
+            0.641718860444247
+          ],
+          "M": 1,
+          "K_geometry": 192,
+          "frequencies_hz": [
+            250000000.0
+          ],
+          "damping": [
+            0.0
+          ]
+        },
+        "optimizer": {
+          "initial_damping": 0.001,
+          "damping_increase": 10.0,
+          "damping_decrease": 0.3,
+          "max_damping_trials": 5,
+          "max_backtracks": 7,
+          "gradient_tolerance": 1e-07,
+          "loss_tolerance": 1e-14,
+          "relative_step_tolerance": 1e-07,
+          "scaling_floor": 1.0,
+          "step_bounds_m": [
+            0.012,
+            0.018,
+            0.006
+          ],
+          "acceptance_absolute_margin": 1e-14,
+          "acceptance_relative_margin": 1e-08,
+          "cross_resolution_factor": 5.0,
+          "residual_floor": 1e-12,
+          "domain_box": [
+            [
+              -5.999999999999999,
+              -5.999999999999999
+            ],
+            [
+              6.000000000000001,
+              6.000000000000001
+            ]
+          ],
+          "step_control": "coefficient",
+          "physical_step_bound_m": 0.006,
+          "damping_rule": "schedule",
+          "hanke_ratio": 0.7,
+          "metric": "marquardt",
+          "detectability_factor": 2.5,
+          "log_model": false
+        },
+        "cleanup_band": null,
+        "geometry_update": "z + P_K[A(z+h*n)-A(z)], derivative of the complete trial",
+        "cleanup": "none"
+      },
+      "reason": "resolved stage entered",
+      "work": {
+        "work_units": 90,
+        "stage": "scif_visit_13_frequency_0",
+        "stage_units": 0,
+        "stage_quota": null,
+        "cap": 512,
+        "solves": {
+          "scif_visit_00_frequency_0:initial_objective": 1,
+          "scif_visit_00_frequency_0:candidate": 4,
+          "scif_visit_00_frequency_0:acceptance_validation": 5,
+          "scif_visit_01_frequency_0:initial_objective": 1,
+          "scif_visit_02_frequency_1:initial_objective": 1,
+          "scif_visit_02_frequency_1:candidate": 2,
+          "scif_visit_02_frequency_1:acceptance_validation": 3,
+          "scif_visit_03_frequency_2:initial_objective": 1,
+          "scif_visit_03_frequency_2:candidate": 3,
+          "scif_visit_03_frequency_2:acceptance_validation": 4,
+          "scif_visit_04_frequency_3:initial_objective": 1,
+          "scif_visit_04_frequency_3:candidate": 3,
+          "scif_visit_04_frequency_3:acceptance_validation": 4,
+          "scif_visit_05_frequency_2:initial_objective": 1,
+          "scif_visit_05_frequency_2:candidate": 1,
+          "scif_visit_05_frequency_2:acceptance_validation": 2,
+          "scif_visit_06_frequency_1:initial_objective": 1,
+          "scif_visit_06_frequency_1:candidate": 1,
+          "scif_visit_06_frequency_1:acceptance_validation": 2,
+          "scif_visit_07_frequency_0:initial_objective": 1,
+          "scif_visit_07_frequency_0:candidate": 1,
+          "scif_visit_07_frequency_0:acceptance_validation": 2,
+          "scif_visit_08_frequency_0:initial_objective": 1,
+          "scif_visit_09_frequency_1:initial_objective": 1,
+          "scif_visit_09_frequency_1:candidate": 1,
+          "scif_visit_09_frequency_1:acceptance_validation": 2,
+          "scif_visit_10_frequency_0:initial_objective": 1,
+          "scif_visit_10_frequency_0:candidate": 1,
+          "scif_visit_10_frequency_0:acceptance_validation": 2,
+          "scif_visit_11_frequency_0:initial_objective": 1,
+          "scif_visit_12_frequency_1:initial_objective": 1,
+          "scif_visit_12_frequency_1:candidate": 1,
+          "scif_visit_12_frequency_1:acceptance_validation": 2
+        },
+        "reciprocal_batches": {
+          "scif_visit_00_frequency_0:derivative": 5,
+          "scif_visit_01_frequency_0:derivative": 1,
+          "scif_visit_02_frequency_1:derivative": 3,
+          "scif_visit_03_frequency_2:derivative": 4,
+          "scif_visit_04_frequency_3:derivative": 4,
+          "scif_visit_05_frequency_2:derivative": 2,
+          "scif_visit_06_frequency_1:derivative": 2,
+          "scif_visit_07_frequency_0:derivative": 2,
+          "scif_visit_08_frequency_0:derivative": 1,
+          "scif_visit_09_frequency_1:derivative": 2,
+          "scif_visit_10_frequency_0:derivative": 2,
+          "scif_visit_11_frequency_0:derivative": 1,
+          "scif_visit_12_frequency_1:derivative": 2
+        },
+        "failed": {},
+        "seconds": 580.8932173312642
+      }
+    }
+  ]
+}

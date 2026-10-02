@@ -1,0 +1,73 @@
+AUDIT stage_0_initial_audit.json {"losses": {"64": 3.861259522714549e-09, "128": 3.886499796999831e-09, "256": 3.8865097807222154e-09}, "comparisons": [{"low": 64, "high": 128, "residual_discrepancy": 2.5287700167676362e-06, "objective_difference": 2.524027428528234e-11, "objective_perturbation_bound": 2.261453775206434e-10}, {"low": 128, "high": 256, "residual_discrepancy": 7.916705270320763e-10, "objective_difference": 9.983722384097508e-15, "objective_perturbation_bound": 6.979773139103464e-14}]}
+FIT stage_0 0 loss 3.861259522714549e-09 gradient 0.0004013436893291341 seconds 4.9710292890667915
+FIT stage_0 10 loss 2.412989993934028e-09 gradient 0.00021806988405603458 seconds 62.39346704818308
+FIT stage_0 20 loss 2.3480122428369024e-09 gradient 0.00025137108281333493 seconds 126.61120890825987
+FIT stage_0 30 loss 2.2753659973661764e-09 gradient 0.00030151324973998444 seconds 193.97922265715897
+FIT stage_0 40 loss 2.1938714332144184e-09 gradient 0.0003207300364510507 seconds 264.0193396983668
+FIT stage_0 50 loss 2.129197350353332e-09 gradient 0.0003290343311445602 seconds 334.2336269142106
+FIT stage_0 50 loss 2.129197350353332e-09 gradient 0.0003290343311445602 seconds 339.6351902880706
+FIT stage_0 60 loss 2.058934762243581e-09 gradient 0.000339769321361967 seconds 409.72988173831254
+FIT stage_0 70 loss 2.012169804195716e-09 gradient 0.00034646607552646727 seconds 478.21557400515303
+FIT stage_0 80 loss 1.963832193078316e-09 gradient 0.00036672358998421703 seconds 547.3601483483799
+FIT stage_0 90 loss 1.907593319430593e-09 gradient 0.00038869793562185757 seconds 616.2932953801937
+FIT stage_0 100 loss 1.878377521093905e-09 gradient 0.00043283360687335233 seconds 716.1438712771051
+FIT stage_0 100 loss 1.878377521093905e-09 gradient 0.00043283360687335233 seconds 721.6395061272196
+FIT stage_0 110 loss 1.8236214239492368e-09 gradient 0.000446167507308622 seconds 807.5486076953821
+FIT stage_0 120 loss 1.7816037214610433e-09 gradient 0.00046038518927673155 seconds 896.8551137433387
+FIT stage_0 130 loss 1.7397533602407488e-09 gradient 0.0004662331373408532 seconds 991.6043843780644
+FIT stage_0 140 loss 1.6856306697754018e-09 gradient 0.00046379069322544304 seconds 1076.2638360401616
+FIT stage_0 150 loss 1.6477525018390762e-09 gradient 0.0004667021149195054 seconds 1143.5304419454187
+FIT stage_0 150 loss 1.6477525018390762e-09 gradient 0.0004667021149195054 seconds 1149.025090641342
+FIT stage_0 160 loss 1.6111463432135344e-09 gradient 0.0004608418205566793 seconds 1238.6460700733587
+Traceback (most recent call last):
+  File "/home/drdeng/Neural_SDF_BEM_AD/experiments/stopping_floor/continue_top010.py", line 268, in <module>
+    for k in ("matrix_bitwise_equal", "proposal_bitwise_equal", "stencil_decisions_equal")):
+  File "/home/drdeng/Neural_SDF_BEM_AD/experiments/stopping_floor/continue_top010.py", line 259, in main
+    initial = driver.deserialize_state(saved.get("final_state", saved.get("state")))
+  File "/home/drdeng/Neural_SDF_BEM_AD/experiments/stopping_floor/continue_top010.py", line 181, in fit
+    "gradient", row["gradient_inf"], "seconds", row["seconds"], flush=True)
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/work_accounting.py", line 102, in accounted_call
+    return function(*args, **kwargs)
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/runtime.py", line 85, in wrapped
+    return function(*args, **kwargs)
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/ordered_boundary/validation_cache.py", line 168, in wrapped
+    return function(*args, **kwargs)
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/radial_topology.py", line 1580, in run_multiradial_fd_inverse
+    matrix, basis, unresolved_columns, one_sided_new = jacobian(accepted_state)
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/radial_topology.py", line 1344, in jacobian
+    plus = probe(state, step)
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/radial_topology.py", line 1243, in probe
+    return evaluate(trial)
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/radial_topology.py", line 1213, in evaluate
+    result = evaluate_multiradial_objective(
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/runtime.py", line 85, in wrapped
+    return function(*args, **kwargs)
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/radial_topology.py", line 773, in evaluate_multiradial_objective
+    boundary = state.boundary(geometry_config)
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/radial_topology.py", line 290, in boundary
+    tuple(
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/radial_topology.py", line 291, in <genexpr>
+    component.boundary_curve(geometry_config) if isinstance(component, CartesianFourierCurveState) else radial_fourier_state_curve(
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/explicit_fourier.py", line 221, in boundary_curve
+    report = memoized_validation('component_report', lambda: (
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/ordered_boundary/validation_cache.py", line 135, in memoized_validation
+    return compute() if cache is None else cache.memoize(kind, key_factory, compute)
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/explicit_fourier.py", line 226, in <lambda>
+    lambda: validate_periodic_parameterization(curve, settings, raise_on_error=False))
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/ordered_boundary/validation.py", line 358, in validate_periodic_parameterization
+    self_intersections = _self_intersection_count(points, cross_tolerance, length_tolerance)
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/ordered_boundary/validation_cache.py", line 208, in wrapped
+    return memoized_validation('self_intersection',
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/ordered_boundary/validation_cache.py", line 135, in memoized_validation
+    return compute() if cache is None else cache.memoize(kind, key_factory, compute)
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/ordered_boundary/validation_cache.py", line 211, in <lambda>
+    lambda: function(points, cross_tolerance, length_tolerance))
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/ordered_boundary/validation.py", line 596, in _self_intersection_count
+    return _dense_self_intersection_count(points, cross_tolerance, length_tolerance)
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/ordered_boundary/validation.py", line 612, in _dense_self_intersection_count
+    intersections = _segment_pair_intersection_matrix(
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/ordered_boundary/validation.py", line 563, in _segment_pair_intersection_matrix
+    & _point_on_segment_matrix(second_end, first_start, first_end, length_tolerance)
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/ordered_boundary/validation.py", line 582, in _point_on_segment_matrix
+    (candidates >= lower - length_tolerance) & (candidates <= upper + length_tolerance),
+KeyboardInterrupt

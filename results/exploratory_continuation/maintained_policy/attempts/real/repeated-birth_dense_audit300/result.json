@@ -1,0 +1,336 @@
+{
+  "scene": "repeated-birth",
+  "arm": "real",
+  "status": "EXCEPTION",
+  "selection_uses_holdout": false,
+  "same_real_observations": true,
+  "extra_damped_information": false,
+  "input_signature": "2db10501b205ed1d754cec144faaffdaa953889cb3c43c5868dd0e4ed85aa9f8",
+  "work_cap": 13412,
+  "fit_seconds_cap": 1800.0,
+  "input_sha256": {
+    "results/exploratory_continuation/frequency_data/repeated-birth.npz": "22ae0e9b53cac50acfb18e73e76c44ffea1b1a0f4240f2f6c3ca02b9e22f7e27",
+    "results/exploratory_continuation/initializers/repeated-birth.json": "f4a8a0dce531054b899982d09b4e221bae0d35cc4dd2f7f46c8b345d955af8fa"
+  },
+  "detail": "Traceback (most recent call last):\n  File \"/home/drdeng/Neural_SDF_BEM_AD/experiments/cleaned_interface/runner.py\", line 138, in fit\n    raise ValueError('Original-start numerical audit failed')\nValueError: Original-start numerical audit failed\n",
+  "fit_result": {
+    "policy": "cumulative_sc_ma",
+    "policy_version": "1.0.0",
+    "outcome": "EXCEPTION",
+    "detail": "Traceback (most recent call last):\n  File \"/home/drdeng/Neural_SDF_BEM_AD/experiments/cleaned_interface/runner.py\", line 138, in fit\n    raise ValueError('Original-start numerical audit failed')\nValueError: Original-start numerical audit failed\n",
+    "final_curve": {
+      "components": [
+        {
+          "real": [
+            -5.2349374282854085e-18,
+            -3.360532861144768e-17,
+            -6.526330950736379e-18,
+            -4.307145449023508e-17,
+            1.4970375479268339,
+            0.5382025607773064,
+            2.1697130625292743e-17,
+            -3.3113641070144325e-17,
+            1.6728665327992394e-18
+          ],
+          "imag": [
+            -9.715323925504568e-18,
+            -2.2676868240122043e-17,
+            -6.1250309280796765e-18,
+            -5.883978500957105e-19,
+            -0.7049009308135834,
+            -6.005378892738264e-17,
+            -5.948190324732654e-18,
+            9.499091708515319e-18,
+            3.766269191488321e-18
+          ]
+        },
+        {
+          "real": [
+            -1.816512977680572e-18,
+            -8.097563153039521e-18,
+            -7.115689686580218e-18,
+            -5.103070694087483e-18,
+            -1.2801706653873137,
+            0.4982787485166885,
+            1.9428317108524405e-17,
+            1.1037712915309338e-17,
+            5.332672608897889e-18
+          ],
+          "imag": [
+            6.671020872870406e-20,
+            -6.0560697503224995e-18,
+            1.3204316873130035e-18,
+            1.5794179298285433e-18,
+            -0.7749277070464633,
+            -5.479210215011547e-17,
+            -3.220947462347375e-19,
+            -2.2352352333052303e-18,
+            1.4560656642236074e-18
+          ]
+        },
+        {
+          "real": [
+            -2.9489193415142907e-18,
+            -3.5957844408393206e-18,
+            -3.312425575330801e-17,
+            1.3474972175229856e-17,
+            0.08824816756991093,
+            0.4820437914901174,
+            -5.770090110827748e-18,
+            3.102820810787598e-17,
+            7.431704016148474e-18
+          ],
+          "imag": [
+            1.3609712647577376e-18,
+            -4.927906179296606e-18,
+            6.984066561735653e-18,
+            6.273764535057989e-18,
+            1.7826043120899349,
+            -5.781677491368403e-17,
+            4.0273504659417194e-18,
+            -1.213536485024881e-17,
+            -1.0143853643301245e-17
+          ]
+        },
+        {
+          "real": [
+            -1.3999439866766802e-18,
+            4.282420132002208e-17,
+            5.3228346735519984e-18,
+            3.9472631204158126e-17,
+            0.19967477303802328,
+            0.18712051592547804,
+            1.651385622438948e-17,
+            1.633380926922038e-17,
+            -4.207329416299767e-18
+          ],
+          "imag": [
+            -9.717147905591235e-18,
+            -4.51790093980767e-18,
+            1.6739054080453774e-18,
+            5.405674010393775e-18,
+            -3.200118493345947,
+            -2.5799776540418734e-17,
+            -6.782282366692786e-18,
+            4.013128394728082e-18,
+            4.26934175357389e-18
+          ]
+        }
+      ],
+      "ids": [
+        "topo.0",
+        "topo.1",
+        "topo.2",
+        "topo.3"
+      ],
+      "storage_band": 4
+    },
+    "stages": [],
+    "decisions": [
+      {
+        "index": 0,
+        "operation": {
+          "operation": "audit",
+          "label": "initial_audit",
+          "purpose": "Qualify the prescribed original start",
+          "entry": "before localization",
+          "transition": "localize if qualified; otherwise final failure",
+          "details": {
+            "scope": "all real frequencies, complete-trial Jacobian/FD",
+            "seconds": 300.0,
+            "catalog_alias": true
+          }
+        },
+        "reason": "original start refused",
+        "passed": false
+      },
+      {
+        "index": 1,
+        "operation": {
+          "operation": "audit",
+          "label": "final_audit",
+          "purpose": "Qualify the returned endpoint independently",
+          "entry": "every exit, including a hard stop or refusal",
+          "transition": "return unscored curve and diagnostics",
+          "details": {
+            "scope": "all real frequencies; last actual M; field/column Jacobian/complete-trial FD",
+            "field_tolerances": "1e-5 at <=0.5 GHz; 1e-7 otherwise",
+            "jacobian_tolerance": 0.001,
+            "fd_tolerance": 0.001,
+            "fd_step_m": 1e-07,
+            "fd_seed": 42001,
+            "seconds": 300.0,
+            "backend": "selected solver",
+            "catalog_alias": true
+          }
+        },
+        "reason": "fit returned; audit endpoint",
+        "outcome": "EXCEPTION"
+      },
+      {
+        "index": 2,
+        "operation": {
+          "operation": "audit",
+          "label": "final_audit",
+          "purpose": "Qualify the returned endpoint independently",
+          "entry": "every exit, including a hard stop or refusal",
+          "transition": "return unscored curve and diagnostics",
+          "details": {
+            "scope": "all real frequencies; last actual M; field/column Jacobian/complete-trial FD",
+            "field_tolerances": "1e-5 at <=0.5 GHz; 1e-7 otherwise",
+            "jacobian_tolerance": 0.001,
+            "fd_tolerance": 0.001,
+            "fd_step_m": 1e-07,
+            "fd_seed": 42001,
+            "seconds": 300.0,
+            "backend": "selected solver",
+            "catalog_alias": true
+          }
+        },
+        "reason": "endpoint refused",
+        "passed": false
+      }
+    ],
+    "localization": {},
+    "fit_work": null,
+    "fit_and_localization_seconds": 0.0,
+    "fit_and_localization_units": 0,
+    "initial_audit_passed": false,
+    "final_audit_passed": false,
+    "relative_residual": null,
+    "audit_units": 43,
+    "total_seconds": 618.746542789042,
+    "physics": {
+      "solver": "coupled_nodal_kress",
+      "execution": {
+        "device": "cpu",
+        "frequency_threads": 1,
+        "acceleration": "spd016",
+        "geometry": "both",
+        "resolution": 512
+      },
+      "counts": {
+        "evaluation_attempts": 23,
+        "evaluations": 21,
+        "failed_evaluations": 2,
+        "derivative_attempts": 20,
+        "derivatives": 20,
+        "failed_derivatives": 0,
+        "disk_batches": 0
+      },
+      "devices": {
+        "cpu": 21
+      },
+      "fallback_reasons": {},
+      "seconds": {
+        "evaluation_attempts": 0.0,
+        "evaluations": 517.1637521074153,
+        "derivative_attempts": 0.0,
+        "derivatives": 11.403799918014556,
+        "failed_evaluations": 87.20662514213473
+      },
+      "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+      "localization_model": "prescribed common TD circles; Mie search replaced",
+      "ray": {
+        "gamma": 0.25,
+        "lo": 0.01,
+        "hi": 100.0,
+        "panels": 111,
+        "degree": 24
+      },
+      "retained_device_state": "one ray table; matrix and reusable LU factors retained on host",
+      "geometry": "coupled disjoint Cartesian Fourier curves",
+      "physics_extension": "inherited maintained real/complex nodal service on OrderedBoundary2D"
+    },
+    "geometry_work": {
+      "preparations": 8,
+      "geometry_projections": 80,
+      "trial_constructions": 8,
+      "refused_trials": 0,
+      "preparation_seconds": 0.07087758602574468,
+      "trial_seconds": 0.0416040220297873
+    },
+    "total_units": 43
+  },
+  "completed": false,
+  "endpoint": {
+    "geometry": {
+      "component_count": 4,
+      "truth_component_count": 3,
+      "matched_components": [
+        {
+          "recovered_component": "topo.0",
+          "truth_component": "truth.B",
+          "hausdorff_m": 0.010097912012372591
+        },
+        {
+          "recovered_component": "topo.1",
+          "truth_component": "truth.A",
+          "hausdorff_m": 0.011746616407892664
+        },
+        {
+          "recovered_component": "topo.2",
+          "truth_component": "truth.C",
+          "hausdorff_m": 0.01378346335618661
+        }
+      ],
+      "maximum_matched_hausdorff_m": 0.01378346335618661,
+      "union_iou": 0.6205087857330186,
+      "final_maximum_modes": [
+        4,
+        4,
+        4,
+        4
+      ]
+    },
+    "training_relative": 0.18429233121470515,
+    "holdout_relative": [
+      1.236534108360179,
+      1.2209448764987474
+    ],
+    "gates": {
+      "correct_count": false,
+      "boundary": false,
+      "overlap": false,
+      "training": false,
+      "holdout": false
+    },
+    "passed": false,
+    "audit_work": {
+      "totals": {
+        "evaluation_count": 2,
+        "forward_evaluation_count": 2,
+        "forward_frequency_solve_count": 3,
+        "td_evaluation_count": 0,
+        "td_frequency_solve_count": 0,
+        "analytic_base_frequency_solve_count": 0,
+        "factorization_count": 0,
+        "derivative_assembly_count": 0,
+        "tangent_solve_count": 0,
+        "analytic_primal_rhs_count": 0,
+        "reciprocal_frequency_solve_count": 0,
+        "reciprocal_rhs_count": 0,
+        "reciprocal_contraction_count": 0,
+        "compiled_frequency_batch_count": 0,
+        "compiled_local_factorization_count": 0,
+        "compiled_local_rhs_count": 0,
+        "compiled_local_cache_hit_count": 0,
+        "compiled_reduced_solve_count": 0,
+        "compiled_reduced_rhs_count": 0,
+        "compiled_fallback_count": 0,
+        "bie_frequency_solve_count": 3
+      },
+      "stages": {
+        "unscoped": {
+          "evaluation_count": 2,
+          "forward_frequency_solve_count": 3,
+          "forward_evaluation_count": 2
+        }
+      }
+    },
+    "evaluation_nodes": 512,
+    "evaluation_only": true
+  },
+  "qualified_pass": false,
+  "wall_seconds": 640.7064605979249
+}

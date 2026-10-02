@@ -1,0 +1,107 @@
+{
+  "method": "dense",
+  "single_curve": true,
+  "frequencies": 5,
+  "nodes": [
+    512,
+    1024
+  ],
+  "baseline_max_rss_kib": 578820,
+  "peak_rss_kib": 2264208,
+  "incremental_peak_kib": 1685388,
+  "seconds": 31.789894139859825,
+  "audit": {
+    "passed": true,
+    "field_relative": [
+      3.022220590995065e-15,
+      3.1918202089802965e-15,
+      2.3507399215401764e-15,
+      2.4366633330907793e-15,
+      4.1901963051969344e-15
+    ],
+    "jacobian_relative": [
+      8.852050575588201e-16,
+      1.0728722335990844e-15,
+      7.897141922151543e-16,
+      6.132494496203947e-16,
+      7.313301696451193e-16,
+      7.455801076613214e-16,
+      8.371317071156066e-16
+    ],
+    "jacobian_column_norm": [
+      0.22273507990926109,
+      0.19389021575714074,
+      0.2256783165467553,
+      0.20659703427518614,
+      0.19389003241009248,
+      0.22567831654435333,
+      0.20659703427658452
+    ],
+    "full_trial_fd_relative": 3.151255154522987e-09,
+    "fine_loss": 0.5019232893757928,
+    "relative_residual": [
+      1.0012971515087412,
+      0.9975442641507505,
+      1.0038217776417508,
+      1.00479338142382,
+      1.0021349452929917
+    ],
+    "work": {
+      "work_units": 30,
+      "stage": null,
+      "stage_units": 30,
+      "stage_quota": null,
+      "cap": 46,
+      "solves": {
+        "None:audit_base": 5,
+        "None:audit_fine": 5,
+        "None:audit_fd": 10
+      },
+      "reciprocal_batches": {
+        "None:derivative": 10
+      },
+      "failed": {},
+      "seconds": 31.774539635051042
+    }
+  },
+  "memory_measurement": "Linux getrusage(RUSAGE_SELF).ru_maxrss in a fresh process; includes interpreter/import baseline",
+  "physics": {
+    "solver": "nodal_kress",
+    "execution": {
+      "device": "cpu",
+      "frequency_threads": 1,
+      "acceleration": "spd016",
+      "geometry": "both",
+      "resolution": 512
+    },
+    "counts": {
+      "evaluation_attempts": 20,
+      "evaluations": 20,
+      "failed_evaluations": 0,
+      "derivative_attempts": 10,
+      "derivatives": 10,
+      "failed_derivatives": 0,
+      "disk_batches": 0
+    },
+    "devices": {
+      "cpu": 20
+    },
+    "fallback_reasons": {},
+    "seconds": {
+      "evaluation_attempts": 0.0,
+      "evaluations": 31.592584391590208,
+      "derivative_attempts": 0.0,
+      "derivatives": 0.15871954942122102
+    },
+    "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+    "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+    "ray": {
+      "gamma": 0.25,
+      "lo": 0.01,
+      "hi": 100.0,
+      "panels": 111,
+      "degree": 24
+    },
+    "retained_device_state": "one ray table; matrix and reusable LU factors retained on host"
+  }
+}

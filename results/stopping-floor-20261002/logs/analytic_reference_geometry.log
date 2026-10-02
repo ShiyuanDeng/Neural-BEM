@@ -1,0 +1,48 @@
+AUDIT stage_0_initial_audit.json {"losses": {"128": 3.886499797036463e-09, "256": 3.886509780775298e-09, "512": 3.886509780802927e-09}, "comparisons": [{"low": 128, "high": 256, "residual_discrepancy": 7.916704715070133e-10, "objective_difference": 9.983738835065531e-15, "objective_perturbation_bound": 6.979772649611516e-14}, {"low": 256, "high": 512, "residual_discrepancy": 3.2543732726652836e-15, "objective_difference": 2.762865963988368e-20, "objective_perturbation_bound": 2.8692093990563704e-19}]}
+FIT stage_0 0 loss 3.886499797036463e-09 gradient 0.00041177794423753305 seconds 5.583095215726644
+FIT stage_0 10 loss 2.5235197420385433e-09 gradient 0.00034286114410459574 seconds 72.47998371673748
+FIT stage_0 20 loss 2.4251424085152993e-09 gradient 0.00036854711509886603 seconds 147.08347471477464
+FIT stage_0 30 loss 2.365478765570224e-09 gradient 0.0004419642915532467 seconds 223.01633245684206
+FIT stage_0 40 loss 2.3136383443775845e-09 gradient 0.000509140155930887 seconds 300.4252659310587
+Traceback (most recent call last):
+  File "/home/drdeng/Neural_SDF_BEM_AD/experiments/stopping_floor/continue_top010.py", line 302, in <module>
+    if {(r["nodes"], r["h"]) for r in previous["rows"]} != expected:
+  File "/home/drdeng/Neural_SDF_BEM_AD/experiments/stopping_floor/continue_top010.py", line 293, in main
+    if difference > 1e-11:
+  File "/home/drdeng/Neural_SDF_BEM_AD/experiments/stopping_floor/continue_top010.py", line 183, in fit
+    while True:
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/work_accounting.py", line 102, in accounted_call
+    return function(*args, **kwargs)
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/runtime.py", line 85, in wrapped
+    return function(*args, **kwargs)
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/ordered_boundary/validation_cache.py", line 168, in wrapped
+    return function(*args, **kwargs)
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/radial_topology.py", line 1547, in run_multiradial_fd_inverse
+    candidate_evaluation = evaluate(candidate)
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/radial_topology.py", line 1213, in evaluate
+    result = evaluate_multiradial_objective(
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/runtime.py", line 85, in wrapped
+    return function(*args, **kwargs)
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/radial_topology.py", line 774, in evaluate_multiradial_objective
+    forward = predict_multicomponent_kress_paired_boundary_response(
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_bem_multicomponent/forward.py", line 623, in predict_multicomponent_kress_paired_boundary_response
+    _solve_paired_boundary(boundary, resolved_problem, settings)
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_bem_multicomponent/forward.py", line 558, in _solve_paired_boundary
+    forwards = tuple(
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_bem_multicomponent/forward.py", line 559, in <genexpr>
+    solve_multicomponent_kress_tmz_total_field_batch(
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/gpr_bem_kress/multicomponent.py", line 1811, in solve_multicomponent_kress_tmz_total_field_batch
+    system = build_multicomponent_kress_tmz_frequency_system(
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/gpr_bem_kress/multicomponent.py", line 1276, in build_multicomponent_kress_tmz_frequency_system
+    return build_multicomponent_muller_system(
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/gpr_bem_kress/multicomponent.py", line 1199, in build_multicomponent_muller_system
+    blocks = build_multicomponent_muller_blocks(
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/gpr_bem_kress/multicomponent.py", line 942, in build_multicomponent_muller_blocks
+    self_block = build_muller_difference_blocks(
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/gpr_bem_kress/operators.py", line 401, in build_muller_difference_blocks
+    radial_values, near_count, direct_count = _evaluate_radial_differences(
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/gpr_bem_kress/_kernels.py", line 265, in _evaluate_radial_differences
+    near_values = _series_radial_differences(
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/gpr_bem_kress/_kernels.py", line 153, in _series_radial_differences
+    radius_power = radius**power
+KeyboardInterrupt

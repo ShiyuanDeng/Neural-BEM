@@ -132,6 +132,9 @@ def reuse_reference_data(output, reference, spec):
         for name in ('scene.json', 'observations.json', 'initial_state.json',
                      'oracle_check.json', 'geometry_check.json'):
             shutil.copyfile(source / name, target / name)
+        # The reference supplies observations. Starting geometry is selected
+        # explicitly for this new run, even if that reference used --init topo.
+        driver.write_json(target / 'initial_state.json', driver.serialize_state(initial_state(scene)))
         shared_data(output, scene, spec)  # validates the acquisition/material contract
         hashes[scene['id']] = digest(target / 'observations.json')
         checks.append(check)
@@ -141,20 +144,37 @@ def reuse_reference_data(output, reference, spec):
         new_oracle_solves=0))
 
 
-def prepare(output, spec_path, reference_data=None, arms=DEFAULT_ARMS, experiment_id='TOP-006'):
+def prepare(output, spec_path, reference_data=None, arms=DEFAULT_ARMS, experiment_id='TOP-006',
+            initializer='current', initializer_data=None):
+    if initializer not in ('current', 'topo', 'lsm'):
+        raise ValueError('Initializer must be current, topo or lsm.')
+    if initializer == 'lsm' and initializer_data is None:
+        raise ValueError('LSM requires --initializer-data with qualified full matrices; the frozen data are paired.')
+    if initializer == 'current' and initializer_data is not None:
+        raise ValueError('--initializer-data requires --init topo or lsm.')
     output.mkdir(parents=True, exist_ok=False)
     spec = read(spec_path)
     driver.write_json(output / 'scene_spec.json', spec)
     provenance = source_provenance(ROOT)
+    if initializer != 'current':
+        for name in ('experiments/initialization_followup/benchmark_adapter.py',
+                     'experiments/initialization_followup/run.py',
+                     'experiments/exploratory_continuation/indicators.py',
+                     'experiments/exploratory_continuation/run.py'):
+            provenance['source_sha256'][name] = digest(ROOT / name)
     provenance['benchmark_spec_sha256'] = digest(output / 'scene_spec.json')
     driver.write_json(output / 'manifest.json', dict(experiment_id=experiment_id, spec_version=spec['version'],
         acquisition=spec.get('acquisition'), source=provenance, arms=list(arms), inverse_runtime=runtime_metadata(),
+        initializer=initializer, initializer_data=None if initializer_data is None else str(Path(initializer_data).resolve()),
         arm_policies={a: ARM_POLICIES[a] for a in arms},
         expected_runs=len(arms)*len(spec['scenes']), workers_limit=4,
         per_run_timeout_seconds=600, suite_wall_ceiling_seconds=2700,
         oracle_work_in_inversion_counts=False, controlled_wall_time_comparison=False))
     if reference_data is not None:
         reuse_reference_data(output, reference_data, spec)
+        if initializer != 'current':
+            from experiments.initialization_followup.benchmark_adapter import apply_initializer
+            apply_initializer(output, spec, initializer, initializer_data)
         render_initials(output)
         return
     frequencies = np.asarray(spec['training_frequencies_hz'] + spec['holdout_frequencies_hz'])
@@ -206,7 +226,15 @@ def prepare(output, spec_path, reference_data=None, arms=DEFAULT_ARMS, experimen
         if not record['passed']:
             raise ValueError(f"Oracle convergence gate failed: {scene['id']}")
     driver.write_json(output / 'oracle_checks.json', records)
+    if initializer != 'current':
+        from experiments.initialization_followup.benchmark_adapter import apply_initializer
+        apply_initializer(output, spec, initializer, initializer_data)
     render_initials(output)
+
+
+def prepared_initial_state(output, scene):
+    path = output / 'scenes' / scene['id'] / 'initial_state.json'
+    return driver.deserialize_state(read(path)) if path.exists() else initial_state(scene)
 
 
 def shared_data(output, scene, spec):
@@ -423,7 +451,7 @@ def render_initials(output):
     spec = read(output / 'scene_spec.json')
     fig, axes = plt.subplots(3, 4, figsize=(14, 11), constrained_layout=True)
     for ax, scene in zip(axes.flat, spec['scenes']):
-        plot_geometry(ax, scene, None, initial_state(scene))
+        plot_geometry(ax, scene, None, prepared_initial_state(output, scene))
         ax.set_title(scene['title'], fontsize=9)
     axes.flat[0].legend(fontsize=8)
     fig.suptitle(f"Frozen topology scenes {spec['version']} — dashed targets, "
@@ -522,7 +550,7 @@ def render_results(output, spec, rows, arms=DEFAULT_ARMS):
                 row = lookup.get((scene['id'], arm))
                 path = output / 'runs' / arm / scene['id']
                 state = saved_run_state(path, row)
-                plot_geometry(ax, scene, state, initial_state(scene))
+                plot_geometry(ax, scene, state, prepared_initial_state(output, scene))
                 detail = ('FAILED — last saved state' if (path / 'failure.json').exists() else 'INCOMPLETE') if row is None else (
                     f"{'PASS' if row['passed'] else 'FAIL'} | {row['geometry']['component_count']}/{len(scene['truth'])} objects"
                     f" | IoU {row['geometry']['union_iou']:.2f}")
@@ -541,7 +569,7 @@ def render_results(output, spec, rows, arms=DEFAULT_ARMS):
     fig, axes = plt.subplots(1, 1+len(arms), squeeze=False,
                              figsize=(4.3*(1+len(arms)), 4.5), constrained_layout=True)
     axes = axes[0]
-    plot_geometry(axes[0], scene, None, initial_state(scene))
+    plot_geometry(axes[0], scene, None, prepared_initial_state(output, scene))
     axes[0].set_title('Starting circle and targets')
     axes[0].legend(fontsize=8)
     for ax, arm in zip(axes[1:], arms):
@@ -579,6 +607,10 @@ def main():
                         help='Comma-separated controller policies to run, e.g. A,G. Scenes and budgets never vary.')
     parser.add_argument('--experiment-id', default='TOP-006')
     parser.add_argument('--skip-render', action='store_true')
+    parser.add_argument('--init', dest='initializer', choices=('current', 'topo', 'lsm'), default='current',
+                        help='Starting geometry policy; current preserves the frozen original starts.')
+    parser.add_argument('--initializer-data', type=Path,
+                        help='Explicit qualified full-matrix input directory for LSM or full-matrix TD; fitting stays paired.')
     args = parser.parse_args()
     configure_runtime_argument(args)
     output = args.output.resolve()
@@ -590,7 +622,8 @@ def main():
     if args.run_one:
         run_one(output, *args.run_one)
         return 0
-    prepare(output, args.spec, args.reference_data, arms, args.experiment_id)
+    prepare(output, args.spec, args.reference_data, arms, args.experiment_id,
+            args.initializer, args.initializer_data)
     if args.prepare_only:
         return 0
     (output / 'logs').mkdir()

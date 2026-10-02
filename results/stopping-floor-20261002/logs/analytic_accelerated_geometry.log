@@ -1,0 +1,45 @@
+FIT stage_0 0 loss 3.886499797036463e-09 gradient 0.00041177794423753305 seconds 1.1657724208198488
+FIT stage_0 10 loss 2.5235197420385433e-09 gradient 0.00034286114410459574 seconds 21.327768970746547
+FIT stage_0 20 loss 2.4251424085152993e-09 gradient 0.00036854711509886603 seconds 44.253544511739165
+FIT stage_0 30 loss 2.365478765570224e-09 gradient 0.0004419642915532467 seconds 63.98402650700882
+FIT stage_0 40 loss 2.3136383443775845e-09 gradient 0.000509140155930887 seconds 84.50362266507
+FIT stage_0 50 loss 2.2574657658997857e-09 gradient 0.0005341170328163698 seconds 104.47998267272487
+FIT stage_0 50 loss 2.2574657658997857e-09 gradient 0.0005341170328163698 seconds 105.41999980760738
+Traceback (most recent call last):
+  File "/home/drdeng/Neural_SDF_BEM_AD/experiments/stopping_floor/continue_top010.py", line 321, in <module>
+    main()
+  File "/home/drdeng/Neural_SDF_BEM_AD/experiments/stopping_floor/continue_top010.py", line 312, in main
+    current, terminal = fit(initial, data, solve, template, stage, nodes[:2], args.fd_step,
+  File "/home/drdeng/Neural_SDF_BEM_AD/experiments/stopping_floor/continue_top010.py", line 184, in fit
+    result = accounted_call("optimizer", rt.run_multiradial_fd_inverse,
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/work_accounting.py", line 102, in accounted_call
+    return function(*args, **kwargs)
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/runtime.py", line 85, in wrapped
+    return function(*args, **kwargs)
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/ordered_boundary/validation_cache.py", line 174, in wrapped
+    return function(*args, **kwargs)
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/radial_topology.py", line 1580, in run_multiradial_fd_inverse
+    matrix, basis, unresolved_columns, one_sided_new = jacobian(accepted_state)
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/radial_topology.py", line 1296, in jacobian
+    plus, minus = allowed(step), allowed(-step)
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/ordered_boundary/validation_cache.py", line 197, in wrapped
+    return function(*args, **kwargs)
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/radial_topology.py", line 1287, in allowed
+    trial = retract(state, delta)[0]
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/radial_topology.py", line 1231, in retract
+    return candidate.polar_angle_gauge_fixed()
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/radial_topology.py", line 249, in polar_angle_gauge_fixed
+    regauged, maximum = polar_angle_gauge_fixed_point(component)
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/curve_updates.py", line 1543, in polar_angle_gauge_fixed_point
+    once, first = measured_projection(current)
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/curve_updates.py", line 1526, in measured_projection
+    projected, _, truncation = regauge_cartesian_state_to_polar_angle(candidate, samples=count)
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/curve_updates.py", line 1700, in regauge_cartesian_state_to_polar_angle
+    parameterization.evaluate(best_parameters, wrap=False).points, dtype=np.float64
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/ordered_boundary/parameterization.py", line 130, in evaluate
+    result = self.evaluator(evaluation_parameters)
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/ordered_boundary/analytic.py", line 215, in evaluator
+    + np.einsum("...m,md->...d", cos_phase * modes, sine)
+  File "/home/drdeng/miniconda3/envs/EMNerf/lib/python3.9/site-packages/numpy/_core/einsumfunc.py", line 1429, in einsum
+    return c_einsum(*operands, **kwargs)
+KeyboardInterrupt

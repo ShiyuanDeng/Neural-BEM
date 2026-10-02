@@ -14,5 +14,10 @@ results/**/*.csv -text whitespace=cr-at-eol
 data/fresnel/*.exp -text whitespace=cr-at-eol
 results/time_domain/dx*.log -text whitespace=-blank-at-eol,-blank-at-eof
 
+# Preserve hashed generated follow-up plots, plans, and raw numerical logs.
+results/initialization-full-matrix-resolved-20261002/**/*.svg binary
+results/exploratory_continuation/maintained_policy/**/plan.md -text whitespace=-blank-at-eof
+results/stopping-floor-20261002/logs/*.log -text whitespace=-blank-at-eol,-blank-at-eof
+
 # The supplied controlling plan uses intentional Markdown hard line breaks.
 docs/iterations/implicit_mlp/iteration_02/02_proposals/04_final_plan.md whitespace=-blank-at-eol

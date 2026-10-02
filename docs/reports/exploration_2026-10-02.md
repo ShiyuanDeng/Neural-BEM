@@ -3,11 +3,60 @@
 The [new research document](../iterations/cleaned_interfaces/compass_artifact_wf-82366c2c-4c07-5e25-8f50-db8aa83ba80c_text_markdown.md)
 was pulled at commit `15611d94` on the already active
 `feature/shape-frequency-continuation` branch. No branch or worktree was
-created. Work followed all ten priorities, using CPU experiments and existing
-solver/geometry implementations where they applied. Existing inverse defaults
-are unchanged; the new numerical interfaces are opt-in.
+created. The first campaign produced experiments for all ten priorities, using
+CPU runs and existing solver/geometry implementations where they applied.
+That coverage did **not** complete every requested comparison or resolve every
+research question. The new numerical interfaces are opt-in.
 
-## Results and scope
+## Closure and value for the cleaned interface
+
+The user closed the broad campaign because the plan came from an outdated
+branch, allowing demonstrated improvements for the cleaned interface to be
+retained. New campaign scheduling stopped. Unfinished trajectories are preserved
+as **scope-change stops**, not numerical failures or completed comparisons.
+No branch was created, switched, or merged.
+
+The initial handoff overstated completion: the original M=5 SC arm was not the
+maintained cumulative policy. The follow-up executes the actual policy through
+explicit coupled-geometry and frequency-catalog adapters, but its interrupted
+campaign does not establish a replacement strategy. The
+[maintained-policy closure](../../results/exploratory_continuation/maintained_policy/README.md)
+records finished cases, partial checkpoints, and the information differences.
+
+The useful results retained are:
+
+- **Cleaned-interface numerical audit:** stream independent frequencies to
+  release dense systems promptly, and reuse an unchanged failed initial audit
+  when no fitting occurred. Direct equivalence tests and an isolated memory
+  comparison qualify this change. It changes neither the policy nor its
+  numerical acceptance tolerances. The five-frequency N512/1024 check reduces
+  peak process memory by 74.4%, with bitwise-identical outputs and work counts.
+  Commit `8e619088` isolates this fix from the experimental adapters.
+- **Measured illumination:** incident-only multipole calibration, withheld-angle
+  checks, and a fixed-illumination shape derivative support a controlled 1–4 GHz
+  Fresnel comparison. At the final geometry, the 4 GHz residual improves from
+  24.77% to 16.49%. These are reusable experimental source primitives; they are
+  not installed as cleaned-interface defaults. See the
+  [source qualification](../../results/fresnel/source_qualification/README.md).
+- **Initializer evidence:** all 24 additional LSM/full-matrix TD controller jobs
+  completed. Each initializer passes 5/12, matching the original-start count;
+  neither result supports a new initialization default. The
+  [full comparison](../../results/initialization-full-matrix-resolved-20261002/README.md)
+  explicitly accounts for the additional 552 complex samples per scene.
+- **Stopping-floor evidence:** continued resolved decreases below historical
+  floors show that the old stopping point was premature. The run was closed
+  while descending, so eventual shape recovery and a final numerical floor
+  remain unestablished. The
+  [continuation audit](../../results/stopping-floor-20261002/README.md)
+  gives residual/gradient error bounds and preserved checkpoints. No optimizer
+  default is changed from this partial experiment.
+
+The [follow-up validation bundle](../../results/exploration-followup-20261002/README.md)
+records the exact tests, closure status, source hashes, and artifact inventory.
+The first campaign's provenance remains unchanged and refers to its earlier
+snapshot, not these follow-up edits.
+
+## Initial campaign results and scope
 
 | Priority | Executed work | Evidence and limits |
 |---|---|---|
@@ -87,7 +136,7 @@ literature or a derivation, and the limits of its comparison. Reviewed figures
 and numerical arrays are retained as named exceptions to the normal generated
 artifact exclusions. No paper PDF or third-party source tree is vendored.
 
-## Final validation and provenance
+## Initial campaign validation and provenance
 
 The combined CPU test run passes **60 tests** across all new experiment
 modules and the existing Kress API/forward regression checks. The 14 warnings

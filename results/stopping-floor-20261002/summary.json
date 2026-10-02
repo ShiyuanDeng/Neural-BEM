@@ -1,0 +1,282 @@
+{
+  "status": "CLOSED_BY_USER_SCOPE_CHANGE",
+  "question_fully_resolved": false,
+  "scope": "Archived TOP-010 continuation; no production-policy change",
+  "arms": [
+    {
+      "arm": "coarse_control",
+      "label": "FD 64",
+      "status": "CONTROLLED_PREFIX_REPLACED_BY_QUALIFIED_FAST_CONTINUATION",
+      "accepted_steps": 161,
+      "initial_loss": 3.861259522714549e-09,
+      "final_loss": 1.6040108207715184e-09,
+      "improvement": 2.4072527895150415,
+      "last_gradient_inf": 0.0004608418205566793,
+      "last_gradient_iteration": 160,
+      "final_gradient_status": "not_computed_after_last_accepted_step",
+      "observed_frequency_solves_lower_bound": 14088,
+      "interrupted_extra_frequency_solves_upper_bound": 430,
+      "acceptance_checks": 383,
+      "rejected_acceptance_checks": 222,
+      "accepted_below_old_floor": 159,
+      "minimum_accepted_gain": 1.705870294636765e-13,
+      "postfit": {
+        "geometry": {
+          "component_count": 2,
+          "final_maximum_modes": [
+            9,
+            9
+          ],
+          "matched_components": [
+            {
+              "hausdorff_m": 0.011547861617809602,
+              "recovered_component": "t001.birth",
+              "truth_component": "truth.star5"
+            },
+            {
+              "hausdorff_m": 0.009097772096167247,
+              "recovered_component": "t003.birth",
+              "truth_component": "truth.star7"
+            }
+          ],
+          "maximum_matched_hausdorff_m": 0.011547861617809602,
+          "truth_component_count": 2,
+          "union_iou": 0.7385770234986945
+        },
+        "holdout": {
+          "128": [
+            0.45610384913407903,
+            1.2933555503663774
+          ],
+          "256": [
+            0.4561038255734805,
+            1.293355516925431
+          ]
+        },
+        "train": {
+          "128": 5.6246822430926025e-05,
+          "256": 5.624548232662933e-05
+        }
+      }
+    },
+    {
+      "arm": "refined_control",
+      "label": "FD 128",
+      "status": "CONTROLLED_PREFIX_REPLACED_BY_QUALIFIED_FAST_CONTINUATION",
+      "accepted_steps": 58,
+      "initial_loss": 3.886499797036463e-09,
+      "final_loss": 2.2197220862256124e-09,
+      "improvement": 1.7508947724374895,
+      "last_gradient_inf": 0.0005611705622228067,
+      "last_gradient_iteration": 58,
+      "final_gradient_status": "measured",
+      "observed_frequency_solves_lower_bound": 4952,
+      "interrupted_extra_frequency_solves_upper_bound": 430,
+      "acceptance_checks": 58,
+      "rejected_acceptance_checks": 0,
+      "accepted_below_old_floor": 56,
+      "minimum_accepted_gain": 1.3759250232617592e-13,
+      "postfit": {
+        "geometry": {
+          "component_count": 2,
+          "final_maximum_modes": [
+            9,
+            9
+          ],
+          "matched_components": [
+            {
+              "hausdorff_m": 0.01181823965636054,
+              "recovered_component": "t001.birth",
+              "truth_component": "truth.star5"
+            },
+            {
+              "hausdorff_m": 0.010084331479370982,
+              "recovered_component": "t003.birth",
+              "truth_component": "truth.star7"
+            }
+          ],
+          "maximum_matched_hausdorff_m": 0.01181823965636054,
+          "truth_component_count": 2,
+          "union_iou": 0.7269193391642371
+        },
+        "holdout": {
+          "128": [
+            0.5118939992248458,
+            1.365552748993616
+          ],
+          "256": [
+            0.5118940068246418,
+            1.3655527619940384
+          ]
+        },
+        "train": {
+          "128": 6.662915407256015e-05,
+          "256": 6.663026222544053e-05
+        }
+      }
+    },
+    {
+      "arm": "analytic_control",
+      "label": "Analytic 128, reference geometry",
+      "status": "CONTROLLED_PREFIX_REPLACED_BY_QUALIFIED_FAST_CONTINUATION",
+      "accepted_steps": 43,
+      "initial_loss": 3.886499797036463e-09,
+      "final_loss": 2.294912318719066e-09,
+      "improvement": 1.6935286657076996,
+      "last_gradient_inf": 0.0005145431466637243,
+      "last_gradient_iteration": 43,
+      "final_gradient_status": "measured",
+      "observed_frequency_solves_lower_bound": 662,
+      "interrupted_extra_frequency_solves_upper_bound": 430,
+      "acceptance_checks": 43,
+      "rejected_acceptance_checks": 0,
+      "accepted_below_old_floor": 41,
+      "minimum_accepted_gain": 1.4121286833001823e-13,
+      "postfit": {
+        "geometry": {
+          "component_count": 2,
+          "final_maximum_modes": [
+            9,
+            9
+          ],
+          "matched_components": [
+            {
+              "hausdorff_m": 0.011887206364037027,
+              "recovered_component": "t001.birth",
+              "truth_component": "truth.star5"
+            },
+            {
+              "hausdorff_m": 0.010169519383891693,
+              "recovered_component": "t003.birth",
+              "truth_component": "truth.star7"
+            }
+          ],
+          "maximum_matched_hausdorff_m": 0.011887206364037027,
+          "truth_component_count": 2,
+          "union_iou": 0.7205550177476605
+        },
+        "holdout": {
+          "128": [
+            0.5265072840595876,
+            1.38422106509652
+          ],
+          "256": [
+            0.5265072750476271,
+            1.3842210485341797
+          ]
+        },
+        "train": {
+          "128": 6.774824453354806e-05,
+          "256": 6.774688634967208e-05
+        }
+      }
+    },
+    {
+      "arm": "analytic_fast",
+      "label": "Analytic 128, accelerated geometry",
+      "status": "CLOSED_BY_USER_SCOPE_CHANGE",
+      "accepted_steps": 54,
+      "initial_loss": 3.886499797036463e-09,
+      "final_loss": 2.2480601349105455e-09,
+      "improvement": 1.7288237697391997,
+      "last_gradient_inf": 0.0005466575480971246,
+      "last_gradient_iteration": 53,
+      "final_gradient_status": "not_computed_after_last_accepted_step",
+      "observed_frequency_solves_lower_bound": 862,
+      "interrupted_extra_frequency_solves_upper_bound": 430,
+      "acceptance_checks": 54,
+      "rejected_acceptance_checks": 0,
+      "accepted_below_old_floor": 52,
+      "minimum_accepted_gain": 1.4121286833001823e-13,
+      "postfit": {
+        "geometry": {
+          "component_count": 2,
+          "final_maximum_modes": [
+            9,
+            9
+          ],
+          "matched_components": [
+            {
+              "hausdorff_m": 0.011839198744864667,
+              "recovered_component": "t001.birth",
+              "truth_component": "truth.star5"
+            },
+            {
+              "hausdorff_m": 0.010124272964807375,
+              "recovered_component": "t003.birth",
+              "truth_component": "truth.star7"
+            }
+          ],
+          "maximum_matched_hausdorff_m": 0.011839198744864667,
+          "truth_component_count": 2,
+          "union_iou": 0.7254204398447607
+        },
+        "holdout": {
+          "128": [
+            0.5161924169563896,
+            1.3708004605232058
+          ],
+          "256": [
+            0.5161924194523244,
+            1.3708004648227508
+          ]
+        },
+        "train": {
+          "128": 6.705311528832358e-05,
+          "256": 6.705348948953721e-05
+        }
+      }
+    }
+  ],
+  "exact_geometry_acceleration_overlap": {
+    "updates_compared": 43,
+    "loss_bitwise_equal": true,
+    "parameter_bitwise_equal": true
+  },
+  "fd_analytic_overlap": {
+    "updates_compared": 43,
+    "maximum_absolute_parameter_difference": 2.2138506286864534e-08,
+    "maximum_relative_objective_difference": 5.853156777434972e-05
+  },
+  "fit_frequency_solves_lower_bound": 20564,
+  "fit_interruption_extra_frequency_solves_upper_bound": 1720,
+  "work_note": "Detailed files separately retain initial audits, kernel calibration, qualification, and post-fit scoring work; the fit-only bounds here exclude those categories.",
+  "initial_postfit": {
+    "geometry": {
+      "component_count": 2,
+      "final_maximum_modes": [
+        9,
+        9
+      ],
+      "matched_components": [
+        {
+          "hausdorff_m": 0.011848799184435503,
+          "recovered_component": "t001.birth",
+          "truth_component": "truth.star5"
+        },
+        {
+          "hausdorff_m": 0.010835424249945014,
+          "recovered_component": "t003.birth",
+          "truth_component": "truth.star7"
+        }
+      ],
+      "maximum_matched_hausdorff_m": 0.011848799184435503,
+      "truth_component_count": 2,
+      "union_iou": 0.7088
+    },
+    "holdout": {
+      "128": [
+        0.5790354177521546,
+        1.4153879281669788
+      ],
+      "256": [
+        0.5790354184894357,
+        1.4153879299541814
+      ]
+    },
+    "train": {
+      "128": 8.816461645127066e-05,
+      "256": 8.816472969075804e-05
+    }
+  }
+}

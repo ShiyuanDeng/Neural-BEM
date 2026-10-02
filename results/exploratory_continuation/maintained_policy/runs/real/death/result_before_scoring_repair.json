@@ -1,0 +1,19 @@
+{
+  "scene": "death",
+  "arm": "real",
+  "status": "EXCEPTION",
+  "selection_uses_holdout": false,
+  "same_real_observations": true,
+  "extra_damped_information": false,
+  "input_signature": "bad8a7aecb2195f1942bafc207da408c27374cf737764990500c26066c8991fd",
+  "work_cap": 13412,
+  "fit_seconds_cap": 1800.0,
+  "input_sha256": {
+    "results/exploratory_continuation/frequency_data/death.npz": "dacc05bc9aebee91771c0226ad4e5d5990fad4b2283cbb084ec635b271a120fa",
+    "results/exploratory_continuation/initializers/death.json": "7a8b99de5af3ec481a24da1a1eced2affefa196076928316d99921e1d0be1e5e"
+  },
+  "traceback": "Traceback (most recent call last):\n  File \"/home/drdeng/Neural_SDF_BEM_AD/experiments/exploratory_continuation/maintained_run.py\", line 118, in run_one\n    completed=result['outcome']=='COMPLETED_SCHEDULE', endpoint=score(scene, curve))\n  File \"/home/drdeng/Neural_SDF_BEM_AD/experiments/exploratory_continuation/maintained_run.py\", line 92, in score\n    result = audit(legacy_state(curve), scene, refined, data, held)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/experiments/exploratory_continuation/run.py\", line 49, in audit\n    _, training = topology_objective(state, data, geometry, solve)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/topology_controller.py\", line 261, in topology_objective\n    evaluation = evaluate_multiradial_objective(state, data, geometry, solve_config=solve_config)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/runtime.py\", line 85, in wrapped\n    return function(*args, **kwargs)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/radial_topology.py\", line 773, in evaluate_multiradial_objective\n    boundary = state.boundary(geometry_config)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/radial_topology.py\", line 290, in boundary\n    tuple(\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/radial_topology.py\", line 291, in <genexpr>\n    component.boundary_curve(geometry_config) if isinstance(component, CartesianFourierCurveState) else radial_fourier_state_curve(\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/sdf_inverse/explicit_fourier.py\", line 215, in boundary_curve\n    raise OrderedSDFGeometryError(\"Cartesian Fourier chart is undersampled.\")\nsdf_inverse.geometry.OrderedSDFGeometryError: Cartesian Fourier chart is undersampled.\n",
+  "qualified_pass": false,
+  "completed": false,
+  "wall_seconds": 673.7233493607491
+}

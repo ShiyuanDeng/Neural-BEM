@@ -42,6 +42,7 @@ class Problem:
     origin_m: complex = .5 + .5j
     bounds_m: tuple = ((.2, .2), (.8, .8))
     material: str = 'equal_density_homogeneous'
+    damping_ratio: float = .25
 
     def __post_init__(self):
         if not np.isfinite(self.contrast) or self.contrast <= 0:
@@ -50,6 +51,8 @@ class Problem:
             raise ValueError('Positive finite length unit required.')
         if not np.isfinite(self.origin_m):
             raise ValueError('Finite origin required.')
+        if not np.isfinite(self.damping_ratio) or self.damping_ratio < 0:
+            raise ValueError('Finite nonnegative damping_ratio required.')
         if not self.real or len(self.real) != len(self.damped):
             raise ValueError('CI-001 requires matched real AND damped observations. Generate missing '
                              'synthetic data explicitly with the benchmark augment command.')
@@ -63,10 +66,10 @@ class Problem:
                 raise ValueError('Noise metadata must cover every frequency, or all be noiseless.')
         for real, damped in zip(self.real, self.damped):
             if (complex(real.wavenumber).imag != 0 or
-                    not np.isclose(damped.wavenumber, real.wavenumber * (1 + .25j), rtol=1e-13, atol=0) or
+                    not np.isclose(damped.wavenumber, real.wavenumber * (1 + self.damping_ratio*1j), rtol=1e-13, atol=0) or
                     real.frequency_hz != damped.frequency_hz or
                     not same_acquisition(real.acquisition, damped.acquisition)):
-                raise ValueError('Damped catalog must match the real acquisition at k*(1+0.25i).')
+                raise ValueError(f'Damped catalog must match the real acquisition at k*(1+{self.damping_ratio:g}i).')
         bounds = np.asarray(self.bounds_m)
         if bounds.shape != (2, 2) or not np.isfinite(bounds).all() or np.any(bounds[1] <= bounds[0]):
             raise ValueError('Expected finite ordered physical bounds.')

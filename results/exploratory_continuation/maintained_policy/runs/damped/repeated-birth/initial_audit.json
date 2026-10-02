@@ -1,0 +1,27 @@
+{
+  "passed": false,
+  "traceback": "Traceback (most recent call last):\n  File \"/home/drdeng/Neural_SDF_BEM_AD/experiments/cleaned_interface/runner.py\", line 65, in audit\n    low_columns.append(np.array(low.prediction, copy=True))\n  File \"/home/drdeng/Neural_SDF_BEM_AD/experiments/cleaned_interface/runner.py\", line 65, in <listcomp>\n    low_columns.append(np.array(low.prediction, copy=True))\n  File \"/home/drdeng/Neural_SDF_BEM_AD/experiments/shape_continuation/lm_backend.py\", line 335, in production\n    return self._predict(curve, self.stage.nodes, category, keep=True)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/experiments/shape_continuation/geometry_runtime.py\", line 59, in wrapped\n    return function(*args, **kwargs)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/experiments/shape_continuation/lm_backend.py\", line 321, in _predict\n    value = call()\n  File \"/home/drdeng/Neural_SDF_BEM_AD/experiments/shape_continuation/lm_backend.py\", line 312, in predict\n    self.physics.evaluate(curve, observation, self.contrast, nodes))\n  File \"/home/drdeng/Neural_SDF_BEM_AD/experiments/shape_continuation/geometry_runtime.py\", line 59, in wrapped\n    return function(*args, **kwargs)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/experiments/cleaned_interface/physics.py\", line 145, in evaluate\n    state = F.solve(curve, float(np.real(observation.wavenumber)), contrast,\n  File \"/home/drdeng/Neural_SDF_BEM_AD/experiments/shape_continuation/geometry_runtime.py\", line 59, in wrapped\n    return function(*args, **kwargs)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/experiments/shape_continuation/forward.py\", line 259, in solve\n    matrix, factors = _dense_system(curve, wavenumber, ki, assemble, device, fallback, work)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/experiments/shape_continuation/forward.py\", line 220, in _dense_system\n    factors = cuda_assembly.DeviceFactors(matrix, fallback=fallback) if device else lu_factor(matrix)\n  File \"/home/drdeng/miniconda3/envs/EMNerf/lib/python3.9/site-packages/scipy/linalg/_decomp_lu.py\", line 111, in lu_factor\n    lu, piv, info = getrf(a1, overwrite_a=overwrite_a)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/experiments/cleaned_interface/runner.py\", line 27, in expired\n    raise TimeoutError('Independent numerical audit exceeded its wall budget')\nTimeoutError: Independent numerical audit exceeded its wall budget\n",
+  "work": {
+    "work_units": 21,
+    "stage": null,
+    "stage_units": 21,
+    "stage_quota": null,
+    "cap": 46,
+    "solves": {
+      "None:audit_base": 5,
+      "None:audit_fine": 5,
+      "None:audit_fd": 1
+    },
+    "reciprocal_batches": {
+      "None:derivative": 10
+    },
+    "failed": {},
+    "seconds": 313.4017462711781
+  },
+  "seconds": 313.401746830903,
+  "solver": "coupled_nodal_kress",
+  "update_modes": 1,
+  "storage_band": 4,
+  "production_resolution": 512,
+  "refined_resolution": 1024
+}

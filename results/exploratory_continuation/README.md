@@ -58,3 +58,7 @@ The separate 32-by-32 full-ring LSM disk control attains its 1% right-hand-side 
 Four focused sampling/path tests and six half-space tests pass. [path_completion_audit.json](path_completion_audit.json) preserves the correction of seven false completion flags, and [frequency_metadata_audit.json](frequency_metadata_audit.json) documents correcting descriptive frequency values from indices to Hz. Neither correction changes any forward solve. The one implementation-development failure is retained in `development_failures/`.
 
 Machine-readable evidence: [summary.json](summary.json), [manifest.json](manifest.json), [selected_endpoints.json](selected_endpoints.json), [cap512_selected_endpoints.json](cap512_selected_endpoints.json), individual run records, logs, checkpoints, qualified observations and source/input hashes. Setup required 120 frequency solves for the extra training-data qualification; endpoint audits and initialization audits are separately recorded.
+
+## Later maintained-policy follow-up
+
+The actual maintained-policy follow-up was closed by the user after identifying an outdated source plan. Its completed and interrupted attempts are preserved in [the closure report](maintained_policy/README.md). The transferable cleaned-interface audit fix reduced isolated peak RSS by 74.4% with bitwise-equal numerical outputs; the full strategy comparison was not completed.
