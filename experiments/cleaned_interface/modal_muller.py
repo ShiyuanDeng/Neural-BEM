@@ -1,4 +1,4 @@
-"""Node-free modal Müller physics service, with the same contract as NodalKress.
+"""Boundary-collocation-free modal Müller service, with NodalKress's contract.
 
 One evaluation runs six separately timed stages:
 
@@ -315,7 +315,11 @@ class ModalMuller:
                                'optimizer ledger separately retains SPD reservation/charge semantics',
                 localization_model='exact homogeneous disk Mie series, qualified by selected backend',
                 discretization='Fourier-Galerkin traces |m|<=K_trace; Chebyshev radial and log|W|^2 '
-                               'expansions on window K_trace+margin; Graf sources/receivers; no boundary nodes',
+                               'expansions on window K_trace+margin; Graf sources/receivers; no boundary collocation',
+                sampling=dict(operator_boundary_collocation=False, interval_proposal_torus_grid=True,
+                              frontier_geometry_quadrature=True, end_to_end_sample_free=False),
+                certificate_arithmetic='exact-arithmetic residual inequality with heuristic FFT allowance; '
+                                       'not interval verified',
                 execution_note='Execution.device selects geometry preparation and assembly (modal_cuda on CUDA); '
                                'scalar kernels, Graf waves, LU, fields and Jacobian on the CPU; '
                                'Execution.acceleration selects only the Mie grid; Execution.resolution is not used',

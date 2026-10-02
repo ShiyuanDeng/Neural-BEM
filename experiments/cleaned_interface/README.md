@@ -7,6 +7,16 @@ discrepancy stop, and one noiseless case falls short on residuals. See the
 [campaign results](../../docs/iterations/cleaned_interfaces/iteration_03/01_results.md).
 Runtime retention is not established.
 
+**Meaning of “node free.”** The defensible claim is **boundary-collocation-free
+Fourier–Galerkin physics with spline-free, quadrature-based geometry** when the
+spectral geometry update is explicitly selected. The complete inverse is not
+sample-free: normal moves, arclength quadrature, metrics, interval proposals,
+frontier diagnostics and the inconclusive-validity fallback use samples.
+Nonlinear FFT operations have quadrature/aliasing error; they are not exact
+coefficient convolutions. The validity inequalities hold in exact arithmetic,
+but the current FFT rounding allowance is heuristic, not interval-verified.
+See the [NF-001 review and experiments](../../docs/iterations/cleaned_interfaces/iteration_17/01_results.md).
+
 ## Run the 36 configurations
 
 From the repository root, using the existing EMNerf environment:
@@ -82,7 +92,7 @@ The runner never reads traces, matrices, factors or modal coefficients.
 Register a qualified implementation with `register_backend(name, factory)`;
 then the same `solver=name` selection covers the whole run.
 
-`modal_muller` is the node-free alternative (next section). Until `register()`
+`modal_muller` is the coefficient-space alternative (next section). Until `register()`
 is called, `make_backend('modal_muller')` still raises a capability error
 **before fitting**. There is no silent nodal replacement.
 
@@ -99,8 +109,8 @@ serial CPU baseline. Pair it with `device=auto` or `cpu`.
 ## Modal Müller service
 
 [modal_muller.py](modal_muller.py) implements the same contract as
-`NodalKress` with the node-free Chebyshev Müller discretization: Fourier–Galerkin
-traces `|m| <= K_trace` and no boundary nodes in the operator. It is the clean
+`NodalKress` with the Chebyshev Müller discretization: Fourier–Galerkin
+traces `|m| <= K_trace` and no boundary collocation nodes in the operator. It is the clean
 rewrite of the prototype that the
 [independent review](../../docs/iterations/cleaned_interfaces/node_free_modal_muller_review.md)
 checked. Registration is explicit, so CI-001's frozen sources stay unchanged:
@@ -110,6 +120,23 @@ from experiments.cleaned_interface.modal_muller import register
 register()
 result = fit(problem, solver='modal_muller', execution=Execution(device='auto', frequency_threads=4))
 ```
+
+Physics and geometry are separate selections. The call above preserves the
+legacy spline geometry. Select the retained NU-006 geometry directly with
+`fit(..., geometry_update='certified_spectral')`, or use the modal CLI:
+
+```bash
+"$CI_PY" -m experiments.cleaned_interface.modal_muller run --solver modal_muller \
+  --geometry-update certified_spectral --output NEW_PREPARED_CAMPAIGN
+```
+
+Available geometry selections are `spline`, `spectral` (NU-003),
+`certified_spectral` (NU-006), and `analytic_spectral` (NF-001 experimental
+analytic quadrature tangent). Omission retains the existing runner/wrapper
+choice. Explicit selection is recorded in campaign identity, plans, decisions,
+configuration and results; changing it requires a fresh campaign. It cannot be
+combined with a representation-specific `geometry_adapter`. The analytic path
+runs on the CPU and retains the same sampled finite trial and validity tiers.
 
 `device` has the same meaning as for Kress. `cpu` is the unchanged reference
 path. `auto` runs geometry preparation and assembly on CUDA through
@@ -168,8 +195,12 @@ the service raises `ValueError`, and LM records it as a numerical refusal.
   triangle bound. beta must be certified by the complete coefficient residual
   `r = ||1 - |W|² v||_1 < 1`, which gives `|W|² >= (1-r)/||v||_1`. This replaces
   the prototype's assumed `beta = 0.05` and the finite-Parseval test that the
-  review disproved. A crossing or touching curve fails the certificate.
-  Clockwise curves are refused from the exact signed area.
+  review disproved. In exact arithmetic a crossing or touching curve cannot
+  pass this inequality. Numerical receipts mark `arithmetic_verified=false`:
+  the floating-point allowance is not a proved enclosure. Failure is
+  inconclusive and does not establish a crossing (simple near-cusp curves can
+  exhaust the degree/window budget too).
+  Clockwise curves are refused from the coefficient signed-area formula.
 - The radial degree is where every later Chebyshev coefficient falls below
   1e-15 of the coefficient sum.
 - The Graf order uses the rigorous |J_l| bound (DLMF 10.14.4), with |H_l|

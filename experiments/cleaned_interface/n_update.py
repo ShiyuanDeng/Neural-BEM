@@ -115,6 +115,8 @@ def curve_certificate(curve, window, *, tolerance=1e-12, max_degree=4000):
     return dict(window=window, rho=cert['residual'], allowance=cert['allowance'],
                 reciprocal_l1=cert['reciprocal_l1'], beta=interval['lower'], Lambda=interval['upper'],
                 log_degree=interval['degree'], nu=float(derivative_norm(z)),
+                arithmetic_verified=False, rounding_model='heuristic FFT allowance',
+                proposal_grid=interval['proposal_grid'],
                 seconds=time.perf_counter()-started)
 
 

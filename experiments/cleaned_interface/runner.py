@@ -11,6 +11,7 @@ from experiments.shape_continuation.geometry_runtime import geometry_runtime, ge
 from experiments.shape_continuation.lm_backend import (
     Ledger, Objective, Stop, fit_stage, NORMAL_RETURN, STAGE_QUOTA)
 from .geometry import ProjectedUpdate, resize, cleanup
+from .geometry_selection import make_update, describe_plan, operation_record
 from .io import write, curve_record
 from .localization import localize
 from .physics import make_backend
@@ -107,7 +108,7 @@ def audit(curve, stage, config, problem, physics, update, seconds):
 
 
 def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=None, physics=None,
-        on_event=None, geometry_adapter=None, localization_adapter=None, audit_adapter=None):
+        on_event=None, geometry_adapter=None, localization_adapter=None, audit_adapter=None, geometry_update=None):
     """Run from the prescribed start. This function cannot read truth or scene IDs.
 
     ``physics`` is dependency injection for qualified registered services/tests;
@@ -115,8 +116,12 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
     Optional geometry/localization adapters extend the input representation while
     retaining this interpreter, policy operations, optimizer and audit. They must
     declare their adaptations in the returned settings/receipt.
+    ``geometry_update`` explicitly selects a maintained update without a global
+    substitution; it cannot be combined with a representation adapter.
     """
     physics = physics or make_backend(solver, execution)
+    if geometry_adapter is not None and geometry_update is not None:
+        raise ValueError('Choose geometry_update or geometry_adapter, not both.')
     policy = policy or CumulativePolicy()
     resize_curve = resize if geometry_adapter is None else geometry_adapter.resize
     cleanup_curve = cleanup if geometry_adapter is None else geometry_adapter.cleanup
@@ -130,7 +135,11 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
     first = next(op for op in operations if op.kind == 'fit')
     curve = resize_curve(problem.initial, first.stage.curve_modes)
     last_stage, last_config = first.stage, first.optimizer
-    update = create_update(problem.length_unit_m)
+    update = (create_update(problem.length_unit_m) if geometry_adapter is not None else
+              make_update(geometry_update, problem.length_unit_m, physics.execution, default=create_update))
+    update_settings = update.settings()
+    record_settings = update_settings if geometry_update is not None else {}
+    plan = describe_plan(plan, update_settings, override_operations=geometry_update is not None)
     stages, decisions, accepted = [], [], []
     outcome, detail = 'COMPLETED_SCHEDULE', None
     initial_audit, final_audit, localization = {}, {}, {}
@@ -144,7 +153,7 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
             write(Path(output)/name, value)
 
     def event(op, reason, **values):
-        decisions.append(dict(index=len(decisions), operation=op.record(), reason=reason, **values))
+        decisions.append(dict(index=len(decisions), operation=operation_record(op, record_settings), reason=reason, **values))
         save('decisions.json', dict(policy=policy.name, version=policy.version, decisions=decisions))
         if on_event is not None:
             on_event(decisions[-1])
@@ -221,7 +230,7 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
                         policy.frontier_top, policy.frontier_threshold)
                     tail = policy.tail(problem, physics, measured['frontier'])
                     event(op, 'frontier measured; releases resolved' if tail else 'frontier at or below completed band',
-                          measured=measured, resolved_operations=[item.record() for item in tail])
+                          measured=measured, resolved_operations=[operation_record(item, record_settings) for item in tail])
                     queue[:0] = tail
                 else:
                     raise ValueError('Unknown policy operation: '+op.kind)
@@ -255,7 +264,8 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
         initial_audit_passed=initial_audit.get('passed', False), final_audit_passed=final_audit['passed'],
         relative_residual=final_audit.get('relative_residual'),
         audit_units=sum(a.get('work', {}).get('work_units', 0) for a in (initial_audit, final_audit)),
-        total_seconds=perf_counter()-started, physics=physics.receipt(), geometry_work=update.counts)
+        total_seconds=perf_counter()-started, physics=physics.receipt(), geometry_work=update.counts,
+        geometry_update=geometry_update, geometry_settings=update_settings)
     row['total_units'] = row['fit_and_localization_units']+row['audit_units']
     save('fit_result.json', row)
     return row

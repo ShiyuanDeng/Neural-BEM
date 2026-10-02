@@ -293,7 +293,8 @@ def test_gpu_mie_grid_matches_reference_and_ordering():
     np.testing.assert_array_equal(np.argsort(a,axis=None),np.argsort(c,axis=None))
 
 
-def test_runner_end_to_end_from_start_with_localization_cleanup_frontier_and_audit(tmp_path):
+@pytest.mark.parametrize('geometry_update', [None, 'certified_spectral', 'analytic_spectral'])
+def test_runner_end_to_end_from_start_with_localization_cleanup_frontier_and_audit(tmp_path, geometry_update):
     """Small independent disk data; exercise the interpreter without a research-scene fit."""
     from .runner import fit
     from .problem import Problem
@@ -324,7 +325,7 @@ def test_runner_end_to_end_from_start_with_localization_cleanup_frontier_and_aud
     policy=ShortPolicy(storage_band=24,frontier_top=7,
         localization=LocalizationRule(center_min_m=.5,center_max_m=.5,center_step_m=.004,
             radius_min_m=.05,radius_max_m=.05,radius_step_m=.001,max_starts=1,refinement_iterations=1))
-    result=fit(p,physics=backend,policy=policy,output=tmp_path)
+    result=fit(p,physics=backend,policy=policy,output=tmp_path,geometry_update=geometry_update)
     assert result['outcome']=='COMPLETED_SCHEDULE',result['detail']
     assert result['initial_audit_passed'] and result['final_audit_passed']
     assert result['localization']['units']==6
@@ -332,4 +333,9 @@ def test_runner_end_to_end_from_start_with_localization_cleanup_frontier_and_aud
     operations={e['operation']['operation'] for e in result['decisions']}
     assert operations=={'audit','localize','fit','cleanup','frontier'}
     assert result['total_units']==result['audit_units']+result['fit_and_localization_units']
-    assert read(tmp_path/'plan.json')['operations']==portable([op.record() for op in policy.operations(p,backend)])
+    from .geometry_selection import describe_plan
+    expected = describe_plan(policy.plan(p,backend), result['geometry_settings'],
+                             override_operations=geometry_update is not None)
+    assert read(tmp_path/'plan.json')['operations']==portable(expected['operations'])
+    if geometry_update is None:
+        assert read(tmp_path/'plan.json')['operations']==portable([op.record() for op in policy.operations(p,backend)])

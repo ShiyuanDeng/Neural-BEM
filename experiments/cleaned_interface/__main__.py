@@ -6,6 +6,7 @@ from . import benchmark as b
 from .io import portable
 from .physics import Execution, make_backend
 from .policy import CumulativePolicy, readable_plan
+from .geometry_selection import GEOMETRY_UPDATES, make_update, describe_plan
 
 
 def main():
@@ -13,6 +14,8 @@ def main():
     parser.add_argument('command',choices=('inventory','prepare','augment','verify','plan','run','report','spd-pairs','compare-execution'))
     parser.add_argument('--output',type=Path,default=b.DEFAULT_OUTPUT)
     parser.add_argument('--solver',default='nodal_kress')
+    parser.add_argument('--geometry-update',choices=GEOMETRY_UPDATES,
+                        help='explicit geometry method; default preserves the legacy spline update')
     parser.add_argument('--device',choices=('auto','cpu','cuda'),default='auto')
     parser.add_argument('--acceleration',choices=('reference','spd016'),default='spd016')
     parser.add_argument('--frequency-threads',type=int,default=4)
@@ -43,12 +46,16 @@ def main():
         row=next((r for r in rows if r['id']==case),None)
         if row is None:
             parser.error('Unknown case: '+case)
-        value=CumulativePolicy().plan(b.fitting_problem(row,args.output),make_backend(args.solver,execution))
+        problem=b.fitting_problem(row,args.output)
+        value=CumulativePolicy().plan(problem,make_backend(args.solver,execution))
+        value=describe_plan(value,make_update(args.geometry_update,problem.length_unit_m,execution).settings(),
+                            override_operations=args.geometry_update is not None)
         if args.format=='text':
             print(readable_plan(value))
             return
     elif args.command=='run':
-        value=b.run(args.output,execution,solver=args.solver,workers=args.workers,cases=args.cases)
+        value=b.run(args.output,execution,solver=args.solver,workers=args.workers,cases=args.cases,
+                    geometry_update=args.geometry_update)
     elif args.command=='spd-pairs':
         from .qualification import spd_pairs
         value=spd_pairs(args.output,execution)

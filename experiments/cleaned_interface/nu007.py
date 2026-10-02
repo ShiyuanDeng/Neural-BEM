@@ -79,6 +79,8 @@ def device_certificate(curve, window, device, *, tolerance=1e-12, max_degree=400
     product = _convolve(quotient, quotient.flip(0, 1).conj())
     ww = (product+product.flip(0, 1).conj())/2
     upper = float(ww.abs().sum())
+    if not np.isfinite(upper) or upper <= 0 or not np.isfinite(tolerance) or tolerance <= 0:
+        raise ValueError('Positive finite modulus norm and log tolerance required.')
     half = (ww.shape[0]-1)//2
     grid = max(64, next_fast_len(4*half+4))
     spectrum = torch.zeros((grid, grid), dtype=torch.complex128, device=device)
@@ -86,7 +88,7 @@ def device_certificate(curve, window, device, *, tolerance=1e-12, max_degree=400
     spectrum[index[:, None], index[None, :]] = ww
     sampled = float(torch.fft.ifft2(spectrum).real.min())*grid*grid
     if not sampled > 0:
-        raise ValueError(f'Curve is not simple and regular: sampled min |W|^2 = {sampled:g}.')
+        raise ValueError(f'Inconclusive interval proposal: sampled min |W|^2 = {sampled:g}.')
     beta = sampled/2
     degree, ratio = _degree(upper, beta, tolerance, max_degree)
     mapped = 2*ww/(upper-beta)
@@ -115,6 +117,8 @@ def device_certificate(curve, window, device, *, tolerance=1e-12, max_degree=400
     norm = float(inverse.abs().sum())
     allowance = 80*product.numel()*EPS*upper*norm
     lower = (1-residual-allowance)/norm
+    if not np.isfinite([residual, norm, allowance, lower]).all() or norm <= 0:
+        raise ValueError('Non-finite reciprocal residual certificate.')
     recomputed = False
     if lower < beta:
         if not lower > 0:
@@ -123,6 +127,7 @@ def device_certificate(curve, window, device, *, tolerance=1e-12, max_degree=400
         degree, _ = _degree(upper, beta, tolerance, max_degree)
     return dict(window=window, rho=residual, allowance=allowance, reciprocal_l1=norm, beta=beta, Lambda=upper,
                 log_degree=degree, recomputed=recomputed, nu=float(derivative_norm(z)),
+                arithmetic_verified=False, rounding_model='heuristic FFT allowance', proposal_grid=grid,
                 seconds=time.perf_counter()-started)
 
 

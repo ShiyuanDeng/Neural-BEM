@@ -1,8 +1,8 @@
-"""Frequency-independent Laurent geometry for the node-free modal Müller service.
+"""Frequency-independent Laurent geometry for boundary-collocation-free Müller physics.
 
 A curve z(t)=sum_j z_j exp(ijt), in package units, becomes centred coefficient
 arrays in w=exp(i theta) (target, first axis) and v=exp(i phi) (source,
-second axis). Every product is an exact linear convolution, projected to the
+second axis). Every product is a padded linear convolution in floating point, projected to the
 coefficient window |a|,|b|<=B after each step. Operator arrays never use
 boundary samples. A sampled |W|^2 minimum only proposes the interval that the
 coefficient residual certificate then accepts or replaces.
@@ -144,17 +144,21 @@ class ChebyshevArrays:
 
 
 def log_modulus(ww, band, tolerance=1e-16, max_degree=4000, workers=1):
-    """Coefficients of log|W|^2 in the window, on a certified interval [beta, Lambda].
+    """Coefficients of log|W|^2 with a residual-based interval [beta, Lambda].
 
     Lambda is the coefficient triangle bound. beta starts at half the sampled
     minimum. The same Chebyshev arrays also build v ~ 1/|W|^2. If the complete
     (untruncated) product obeys r=||1-|W|^2 v||_1<1, then on the torus
     |W|^2 >= (1-r)/||v||_1. That bound either accepts beta, or replaces it for
     one recomputation that is valid by construction. A regular, simple curve
-    has W != 0 everywhere; a curve that fails the certificate is refused.
+    has W != 0 everywhere; an inconclusive certificate is refused. The
+    inequality is exact arithmetic; the FFT rounding allowance is heuristic,
+    not a verified enclosure of all coefficient and convolution errors.
     """
     started = perf_counter()
     upper = float(np.sum(np.abs(ww)))
+    if not np.isfinite(upper) or upper <= 0 or not np.isfinite(tolerance) or tolerance <= 0:
+        raise ValueError('Positive finite modulus norm and log tolerance required.')
     k = half(ww)
     grid = max(64, next_fast_len(4*k+4))
     spectrum = np.zeros((grid, grid), complex)
@@ -162,7 +166,7 @@ def log_modulus(ww, band, tolerance=1e-16, max_degree=4000, workers=1):
     spectrum[np.ix_(index, index)] = ww
     sampled = float(np.min(np.real(ifftn(spectrum, workers=workers)))*grid*grid)
     if not sampled > 0:
-        raise ValueError(f'Curve is not simple and regular: sampled min |W|^2 = {sampled:g}.')
+        raise ValueError(f'Inconclusive interval proposal: sampled min |W|^2 = {sampled:g}.')
     beta, certificate = sampled/2, None
     for attempt in range(2):
         root_upper, root_lower = np.sqrt(upper), np.sqrt(beta)
@@ -195,17 +199,22 @@ def log_modulus(ww, band, tolerance=1e-16, max_degree=4000, workers=1):
         # Generous FFT rounding allowance; the inequality itself is exact arithmetic.
         allowance = 80*product.size*EPS*upper*norm
         lower = (1-residual-allowance)/norm
-        certificate = dict(residual=residual, allowance=allowance, reciprocal_l1=norm, lower=lower)
+        if not np.isfinite([residual, norm, allowance, lower]).all() or norm <= 0:
+            raise ValueError('Non-finite reciprocal residual certificate.')
+        certificate = dict(residual=residual, allowance=allowance, reciprocal_l1=norm, lower=lower,
+                           arithmetic_verified=False, rounding_model='heuristic FFT allowance')
         if lower >= beta:
             break
         if not lower > 0:
             raise ValueError(f'|W|^2 lower bound not certified (coefficient residual {residual:.3g}).')
         beta = lower
-    return log, dict(upper=upper, lower=beta, sampled_minimum=sampled, degree=degree,
+    if not np.isfinite(log).all():
+        raise ValueError('Non-finite log modulus coefficients.')
+    return log, dict(upper=upper, lower=beta, sampled_minimum=sampled, proposal_grid=grid, degree=degree,
                      series_bound=float(2*ratio**(degree+1)/((degree+1)*(1-ratio))),
                      recomputed=bool(attempt), certificate=certificate,
                      meaning='beta <= |W|^2 <= Lambda on the torus; beta from the coefficient residual '
-                             'certificate (exact-arithmetic inequality plus a rounding allowance)',
+                             'inequality, conditional on a heuristic rounding allowance; not interval verified',
                      seconds=perf_counter()-started)
 
 
@@ -294,4 +303,5 @@ class ModalGeometry:
         return dict(window=self.band, curve_band=self.curve_band, radial_upper=self.radial_upper,
                     log_interval=self.log_interval, radial_degree_prepared=self.radial.count-1,
                     wave_arrays=list(self.waves.arrays.shape[:2]), preparation_seconds=self.seconds,
-                    stored_bytes=int(self.radial.nbytes+self.waves.arrays.nbytes), boundary_nodes=0)
+                    stored_bytes=int(self.radial.nbytes+self.waves.arrays.nbytes), boundary_nodes=0,
+                    boundary_nodes_scope='operator collocation only; interval proposal uses a sampled torus grid')

@@ -1,0 +1,57 @@
+......................F................................................. [ 72%]
+...........................                                              [100%]
+=================================== FAILURES ===================================
+_ test_runner_end_to_end_from_start_with_localization_cleanup_frontier_and_audit _
+
+tmp_path = PosixPath('/tmp/pytest-of-drdeng/pytest-306/test_runner_end_to_end_from_st0')
+
+    def test_runner_end_to_end_from_start_with_localization_cleanup_frontier_and_audit(tmp_path):
+        """Small independent disk data; exercise the interpreter without a research-scene fit."""
+        from .runner import fit
+        from .problem import Problem
+        from .physics import NodalKress
+        from .policy import Operation
+        class SmallBackend(NodalKress):
+            def resolution_profile(self,storage_band):
+                row=super().resolution_profile(storage_band)
+                row.update(production=64,refined=128,nodal_resolution=64)
+                return row
+        class ShortPolicy(CumulativePolicy):
+            def operations(self,p,physics):
+                ops=super().operations(p,physics)
+                fits=[o for o in ops if o.kind=='fit']
+                warm=replace(fits[0],stage=replace(fits[0].stage,iterations=1))
+                next_fit=replace(fits[1],stage=replace(fits[1].stage,iterations=1))
+                clean=Operation('cleanup','test_cleanup','exercise exact cleanup','after warm-up','next fit',
+                                details=dict(retained_band=4,storage_band=8))
+                return (ops[0],ops[1],warm,clean,next_fit,ops[-2],ops[-1])
+            def tail(self,p,physics,frontier):
+                return ()
+        backend=SmallBackend(Execution(device='cpu',frequency_threads=1))
+        template=problem()
+        truth=FourierCurve.circle()
+        real=tuple(replace(o,scattered=backend.evaluate(truth,o,.5,128).prediction) for o in template.real)
+        damped=tuple(replace(o,scattered=backend.evaluate(truth,o,.5,128).prediction) for o in template.damped)
+        p=Problem(FourierCurve.circle(1.02),real,damped,.5)
+        policy=ShortPolicy(storage_band=24,frontier_top=7,
+            localization=LocalizationRule(center_min_m=.5,center_max_m=.5,center_step_m=.004,
+                radius_min_m=.05,radius_max_m=.05,radius_step_m=.001,max_starts=1,refinement_iterations=1))
+        result=fit(p,physics=backend,policy=policy,output=tmp_path)
+        assert result['outcome']=='COMPLETED_SCHEDULE',result['detail']
+        assert result['initial_audit_passed'] and result['final_audit_passed']
+        assert result['localization']['units']==6
+        assert len(result['stages'])==2
+        operations={e['operation']['operation'] for e in result['decisions']}
+        assert operations=={'audit','localize','fit','cleanup','frontier'}
+        assert result['total_units']==result['audit_units']+result['fit_and_localization_units']
+>       assert read(tmp_path/'plan.json')['operations']==portable([op.record() for op in policy.operations(p,backend)])
+E       AssertionError: assert [{'details': ...r', ...}, ...] == [{'details': ...r', ...}, ...]
+E
+E         At index 2 diff: {'operation': 'fit', 'label': 'warmup_025_damped', 'purpose': 'Warm up localized circle at 0.25 GHz', 'entry': 'previous operation completed or exhausted its stage quota', 'transition': 'advance on normal/quota return; any hard/numerical failure goes to final audit; full real catalog at declared noise discrepancy goes directly to final audit', 'details': {'accuracy_profile': {'production': 64, 'refined': 128, 'kind': 'nodal_kress', 'nodal_resolution': 64, 'K_trace': None, 'coefficient_workspace': None, 'refinement': 'double nodes; refuse candidates outs...
+E
+E         ...Full output truncated (2 lines hidden), use '-vv' to show
+
+experiments/cleaned_interface/test_interface.py:335: AssertionError
+=========================== short test summary info ============================
+FAILED experiments/cleaned_interface/test_interface.py::test_runner_end_to_end_from_start_with_localization_cleanup_frontier_and_audit
+1 failed, 98 passed in 92.43s (0:01:32)

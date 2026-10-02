@@ -348,7 +348,8 @@ def residual_limits(row):
 
 
 def run_case(job):
-    output, row, solver, execution = job
+    output, row, solver, execution, *selection = job
+    geometry_update = selection[0] if selection else None
     output = Path(output)
     folder = output/'runs'/row['id']
     if (folder/'result.json').exists():
@@ -361,7 +362,7 @@ def run_case(job):
     folder.mkdir(parents=True)
     try:
         problem = fitting_problem(row, output)
-        result = fit(problem, solver=solver, execution=execution, output=folder,
+        result = fit(problem, solver=solver, execution=execution, output=folder, geometry_update=geometry_update,
             on_event=lambda event: print(row['id'],event['operation']['label'],event['reason'],flush=True))
         # The inverse and its independent audit have returned before target access.
         metrics = score(row,curve_from(result['final_curve']))
@@ -380,7 +381,7 @@ def run_case(job):
     return result
 
 
-def run(output, execution, *, solver='nodal_kress', workers=1, cases=None):
+def run(output, execution, *, solver='nodal_kress', workers=1, cases=None, geometry_update=None):
     output = Path(output)
     manifest = verify(output,require_damped=True)
     if workers < 1:
@@ -391,18 +392,23 @@ def run(output, execution, *, solver='nodal_kress', workers=1, cases=None):
     rows = [r for r in manifest['cases'] if cases is None or r['id'] in cases]
     # Preflight every requested input and capability before launching any fit.
     backend = make_backend(solver,execution)
+    if geometry_update is not None:
+        from .geometry_selection import make_update
+        make_update(geometry_update, 1., execution)  # reject unknown selections before any fit
     policy = CumulativePolicy()
     for row in rows:
         problem = fitting_problem(row,output)
         backend.validate(problem)
         policy.operations(problem,backend)
     settings = dict(solver=solver,execution=asdict(execution),workers=workers)
+    if geometry_update is not None:
+        settings['geometry_update'] = geometry_update
     path = output/'execution.json'
     if path.exists() and read(path)['settings'] != portable(settings):
         raise ValueError('Do not mix execution settings in one campaign; use a new output directory')
     if not path.exists():
         write(path,dict(settings=settings,environment=environment(),manifest_sha256=digest(output/'manifest.json')))
-    jobs = [(output,row,solver,execution) for row in rows]
+    jobs = [(output,row,solver,execution,geometry_update) for row in rows]
     if workers==1:
         for job in jobs:
             run_case(job)

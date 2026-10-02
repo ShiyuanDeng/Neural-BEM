@@ -100,7 +100,9 @@ class CertifiedSpectralUpdate(SpectralProjectedUpdate):
     def settings(self):
         return dict(super().settings(), validity=VALIDITY, certificate_window=self.window,
                     full_certificate_windows=FULL_WINDOWS, full_crop_band='max(K, 64)',
-                    regularity='certified |W|^2 >= 1e-12 sum j^2|x_j|^2', shadow=self.shadow)
+                    regularity='coefficient residual lower bound >= 1e-12 sum j^2|x_j|^2', shadow=self.shadow,
+                    certificate_arithmetic='float64 with heuristic FFT rounding allowance; not interval verified',
+                    sampled_validity_fallback=True)
 
     def prepare(self, curve, update_modes, curve_modes):
         space = super().prepare(curve, update_modes, curve_modes)
@@ -213,13 +215,13 @@ class CertifiedSpectralUpdate(SpectralProjectedUpdate):
         """``ProjectedUpdate.trial`` with the same order of checks and the same candidate."""
         started = time.perf_counter()
         self.counts['trial_constructions'] += 1
+        self.records = []  # zero steps must not inherit the preceding trial's validity evidence
         a = self._checked(space, coefficients)
         try:
             if not np.any(a):
                 return space.curve, dict(projection_error=0., projection_relative=0.,
                     maximum_normal_m=0., rms_normal_m=0., refits=2, speed_ratio=speed_ratio(space.curve),
                     intentional_projection_mm=0., finite_path=self.name)
-            self.records = []
             coarse, smoothing = self._moved(space, a, space.count, 'moved_coarse')
             fine, _ = self._moved(space, a, 2*space.count, 'moved_fine')
             c = space.curve.coefficients+coarse-space.base_projection
@@ -383,11 +385,11 @@ def drift(output, nodal=BASE/'CI-001', ms=BASE/'NU-004-MS', mc=BASE/'NU-005', ce
     if len(out['arms']['MC']['cases']) == len(CORE) and len(out['arms']['nodal']['cases']) == len(CORE):
         rule = decide(out['arms']['nodal'], out['arms']['MC'])
         rule.pop('outcome')
-        mc = out['arms']['MC']['cases']
+        mc_cases = out['arms']['MC']['cases']
         units = {c: [read(Path(a)/'runs'/c/'result.json')['total_units'] for a in (ms, mc)] for c in CORE}
-        identical = all(mc[c]['identity_vs_MS']['same_accepted_steps'] and units[c][0] == units[c][1] for c in CORE)
-        fallback = sum(mc[c]['validity']['fallback'] for c in CORE)
-        curves = sum(mc[c]['validity']['curves'] for c in CORE)
+        identical = all(mc_cases[c]['identity_vs_MS']['same_accepted_steps'] and units[c][0] == units[c][1] for c in CORE)
+        fallback = sum(mc_cases[c]['validity']['fallback'] for c in CORE)
+        curves = sum(mc_cases[c]['validity']['curves'] for c in CORE)
         retained = rule['qualifies'] and identical
         out['decision'] = dict(rule, decision_identical_to_MS=identical, units=units,
                                fallback=fallback, curves=curves, fallback_fraction=fallback/max(curves, 1),

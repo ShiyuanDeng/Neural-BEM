@@ -10,8 +10,8 @@ change-of-variables quadrature of the proposal's eq. 9,
     R(w)_k = <w(theta) alpha'(theta) e^{-i k alpha(theta)}>_0,   |k| <= K,
 
 evaluated on the same uniform grid. No spline, interpolation or inversion theta(alpha)
-remains; grids serve only as FFT and quadrature engines (the proposal's
-definition of node-free). The increment form keeps the first-order cancellation of
+remains; grids serve as FFT and quadrature engines. This is spline-free, not
+sample-free or exact nonlinear convolution. The increment form keeps the first-order cancellation of
 the arclength crop that NU-002 found necessary at the damped bands.
 
     python -m experiments.cleaned_interface.nu003 precheck --output DIR
@@ -88,7 +88,8 @@ class SpectralProjectedUpdate(ProjectedUpdate):
 
     def settings(self):
         return dict(super().settings(), construction=CONSTRUCTION,
-                    resampler='eq. 9 quadrature on the uniform grid (count and 2*count); no splines')
+                    resampler='eq. 9 quadrature on the uniform grid (count and 2*count); no splines',
+                    boundary_samples=True, projection_error_control='coarse/fine diagnostic; not a rigorous bound')
 
     def _project(self, *args, **kwargs):
         self.counts['geometry_projections'] += 1

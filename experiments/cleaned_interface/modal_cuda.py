@@ -144,6 +144,8 @@ def log_modulus(ww, band, tolerance=1e-16, max_degree=4000):
     started = perf_counter()
     device = ww.device
     upper = float(ww.abs().sum())
+    if not np.isfinite(upper) or upper <= 0 or not np.isfinite(tolerance) or tolerance <= 0:
+        raise ValueError('Positive finite modulus norm and log tolerance required.')
     k = half(ww)
     grid = max(64, next_fast_len(4*k+4))
     spectrum = torch.zeros((grid, grid), dtype=COMPLEX, device=device)
@@ -151,7 +153,7 @@ def log_modulus(ww, band, tolerance=1e-16, max_degree=4000):
     spectrum[index[:, None], index[None, :]] = ww
     sampled = float(torch.fft.ifftn(spectrum).real.min())*grid*grid
     if not sampled > 0:
-        raise ValueError(f'Curve is not simple and regular: sampled min |W|^2 = {sampled:g}.')
+        raise ValueError(f'Inconclusive interval proposal: sampled min |W|^2 = {sampled:g}.')
     beta, certificate = sampled/2, None
     for attempt in range(2):
         root_upper, root_lower = np.sqrt(upper), np.sqrt(beta)
@@ -183,17 +185,22 @@ def log_modulus(ww, band, tolerance=1e-16, max_degree=4000):
         norm = float(inverse.abs().sum())
         allowance = 80*product.numel()*EPS*upper*norm
         lower = (1-residual-allowance)/norm
-        certificate = dict(residual=residual, allowance=allowance, reciprocal_l1=norm, lower=lower)
+        if not np.isfinite([residual, norm, allowance, lower]).all() or norm <= 0:
+            raise ValueError('Non-finite reciprocal residual certificate.')
+        certificate = dict(residual=residual, allowance=allowance, reciprocal_l1=norm, lower=lower,
+                           arithmetic_verified=False, rounding_model='heuristic FFT allowance')
         if lower >= beta:
             break
         if not lower > 0:
             raise ValueError(f'|W|^2 lower bound not certified (coefficient residual {residual:.3g}).')
         beta = lower
-    return log, dict(upper=upper, lower=beta, sampled_minimum=sampled, degree=degree,
+    if not bool(torch.isfinite(log).all()):
+        raise ValueError('Non-finite log modulus coefficients.')
+    return log, dict(upper=upper, lower=beta, sampled_minimum=sampled, proposal_grid=grid, degree=degree,
                      series_bound=float(2*ratio**(degree+1)/((degree+1)*(1-ratio))),
                      recomputed=bool(attempt), certificate=certificate,
                      meaning='beta <= |W|^2 <= Lambda on the torus; beta from the coefficient residual '
-                             'certificate (exact-arithmetic inequality plus a rounding allowance)',
+                             'inequality, conditional on a heuristic rounding allowance; not interval verified',
                      seconds=perf_counter()-started)
 
 
@@ -240,7 +247,8 @@ class DeviceModalGeometry:
         return dict(window=self.band, curve_band=self.curve_band, radial_upper=self.radial_upper,
                     log_interval=self.log_interval, radial_degree_prepared=self.radial.count-1,
                     wave_arrays=list(self.waves.arrays.shape[:2]), preparation_seconds=self.seconds,
-                    device_bytes=int(self.radial.nbytes), boundary_nodes=0, device=str(self.device))
+                    device_bytes=int(self.radial.nbytes), boundary_nodes=0, device=str(self.device),
+                    boundary_nodes_scope='operator collocation only; interval proposal uses a sampled torus grid')
 
 
 def kernel_matrix(log_part, smooth, cutoff):
