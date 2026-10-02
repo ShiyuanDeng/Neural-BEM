@@ -243,6 +243,10 @@ spline resampler replaced by the eq. 9 quadrature (no splines). It also provides
 the NU-003 pre-check, campaign substitution and drift/identity report; tests in
 `test_nu003.py`. Results: [iteration 11](../../docs/iterations/cleaned_interfaces/iteration_11/01_results.md).
 
+[nu004.py](nu004.py) runs the NU-003 map with `solver='modal_muller'` (arm MS)
+and a modal + spline control (arm MN), and writes the drift/identity report.
+Results: [iteration 12](../../docs/iterations/cleaned_interfaces/iteration_12/01_results.md).
+
 ## Executable policy
 
 [policy.py](policy.py) is the single definition of `cumulative_sc_ma/1.0.0`.
