@@ -247,6 +247,14 @@ the NU-003 pre-check, campaign substitution and drift/identity report; tests in
 and a modal + spline control (arm MN), and writes the drift/identity report.
 Results: [iteration 12](../../docs/iterations/cleaned_interfaces/iteration_12/01_results.md).
 
+[nu005.py](nu005.py) is `CertifiedSpectralUpdate`: the NU-003 map whose three
+sampled validity tests (moved curve, coarse and fine, and candidate) are each preceded by
+coefficient certificates (exact area, then Lemma 3–4 increment, then the full |W|² certificate,
+with the unchanged sampled test as fallback). It also provides the NU-005 pre-check
+and campaign; tests in `test_nu005.py`. The drift and decision audit is
+[nu005_drift.py](nu005_drift.py). Results:
+[iteration 13](../../docs/iterations/cleaned_interfaces/iteration_13/01_results.md).
+
 ## Executable policy
 
 [policy.py](policy.py) is the single definition of `cumulative_sc_ma/1.0.0`.
