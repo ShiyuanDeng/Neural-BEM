@@ -232,6 +232,12 @@ python -m experiments.cleaned_interface.n_update_audit drift --campaigns CI-001 
 
 Plan and decision rules: [iteration 08](../../docs/iterations/cleaned_interfaces/iteration_08/03_plan.md).
 
+[n_reparam.py](n_reparam.py) is the spectral arclength reparameterization
+(proposal eq. 9: quadrature on a uniform grid, no splines or inversion) with
+an exact shape-distance audit; tests in `test_n_reparam.py`. It is not wired
+into `fit`. `python -m experiments.cleaned_interface.n_reparam` reproduces the
+NU-002 replay ([iteration 10](../../docs/iterations/cleaned_interfaces/iteration_10/01_results.md)).
+
 ## Executable policy
 
 [policy.py](policy.py) is the single definition of `cumulative_sc_ma/1.0.0`.

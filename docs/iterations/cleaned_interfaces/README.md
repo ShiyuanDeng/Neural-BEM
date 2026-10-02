@@ -13,7 +13,7 @@ implementation first, with the 36-scene campaign to be run by the user.
 
 | Item | State |
 |---|---|
-| Current cycle | [Iteration 09](iteration_09/01_results.md): NU-001 completed all 12 CUDA runs on six core configurations. Arm A matches 2/6 and arm B 3/6; both trigger drift flags, so the pre-registered decision keeps the nodal trial map. The [iteration 08 plan](iteration_08/03_plan.md) and [validation evidence](../../../results/validation/cleaned_interfaces/NU-001-VALIDATION.md) record the design and execution. [Iteration 07](iteration_07/01_results.md): modal fixes yield 7/9 matching reruns; the other 27 have not been rerun. [Iteration 06](iteration_06/01_results.md): CI-001-modal 19/36 (nodal 28/36). [Iteration 03 / CI-001](iteration_03/01_results.md): nodal 28/36; requirement 1 not satisfied |
+| Current cycle | [Iteration 10](iteration_10/01_results.md): NU-002 offline pre-check (user: "go"). The eq. 9 spectral arclength reset keeps the shape within 10⁻⁵ σ₀ at K = 192 up to r_σ ≈ 3.4, but at the damped bands K = 8–20 it moves the shape by 10⁻⁴–3·10⁻² σ₀ on every drifted state, nodal included (3/64 pass, all peanut). The planned arm B + reset run was not started. Proposed, not run: NU-003, the nodal increment map with its spline resampler replaced by eq. 9. [Iteration 09](iteration_09/01_results.md): NU-001 completed all 12 CUDA runs on six core configurations. Arm A matches 2/6 and arm B 3/6; both trigger drift flags, so the pre-registered decision keeps the nodal trial map. The [iteration 08 plan](iteration_08/03_plan.md) and [validation evidence](../../../results/validation/cleaned_interfaces/NU-001-VALIDATION.md) record the design and execution. [Iteration 07](iteration_07/01_results.md): modal fixes yield 7/9 matching reruns; the other 27 have not been rerun. [Iteration 06](iteration_06/01_results.md): CI-001-modal 19/36 (nodal 28/36). [Iteration 03 / CI-001](iteration_03/01_results.md): nodal 28/36; requirement 1 not satisfied |
 | User requirements | [Three requirements and the cumulative-pipeline clarification](iteration_01/02_proposals/01_user_requirements.md) |
 | Plan | [CI-001 — restore clean inverse interfaces and verify retention](iteration_01/03_plan.md) |
 | SPD integration | [Assessment](iteration_01/02_proposals/02_spd_integration_review.md): preserve SPD-010–015 and integrate SPD-016 grid-plus-assembly through maintained interfaces; field-table extension not selected |
@@ -47,6 +47,7 @@ by scene identity. CI-001 does not establish all-36 retention (28/36).
 | [07](iteration_07/01_results.md) | Modal fixes: scaled Graf plus a finer profile; 7/9 affected cases now match nodal; the C stop needs a curve-adaptive cutoff |
 | [08](iteration_08/03_plan.md) | NU-001 plan: coefficient normal update (arms A/B), exact derivative, tiered validity; control done; six-case runs pre-registered |
 | [09](iteration_09/01_results.md) | NU-001 six-case CUDA results: neither arm qualifies under the fixed match and drift rules; retain nodal |
+| [10](iteration_10/01_results.md) | NU-002 arclength-reset replay: exact at K = 192 for r_σ ≤ 3.4; at K = 8–20 a reset changes the shape, so it cannot repair drift where drift starts; NU-003 proposed |
 
 Follow the [shared iteration workflow](../README.md). Iteration 02 records
 the implementation checks; iteration 03 records the inverse campaign.
