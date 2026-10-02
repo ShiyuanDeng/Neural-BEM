@@ -1,0 +1,74 @@
+{
+  "passed": true,
+  "refinement_relative": [
+    5.636074065148392e-15,
+    4.456382348953846e-15,
+    5.251083130895605e-15,
+    4.3969452649349315e-15,
+    3.84342751541376e-15,
+    2.2930972999199494e-15,
+    3.413697687835627e-15,
+    2.152465843225083e-15,
+    3.5196629650691996e-15,
+    1.6791317477056772e-15,
+    2.078135188789427e-15,
+    2.5038140191319773e-15,
+    2.404112521724687e-15,
+    2.5346670318276444e-15,
+    1.9419186022314726e-15,
+    3.628198168860083e-15,
+    2.4657496247002987e-15,
+    2.7580842698810805e-15,
+    2.6878569689801417e-15
+  ],
+  "nodes": [
+    1024,
+    2048
+  ],
+  "work_units": 38,
+  "seconds": 10.079669701168314,
+  "source_real": "results/validation/shape_continuation/SC-050-localization-robustness/inputs/new_thin_c/observations.json",
+  "truth": "results/validation/shape_continuation/SC-050-localization-robustness/inputs/new_thin_c/truth.json",
+  "original_real_sha256": "e8aa69a2b13787a687de0aa44b2418fcc67d68b1575e6a398a04c390c7a36438",
+  "observations_sha256": "6fcc8fcf46abada4d6bcd3fb54cea27a93bf7ecb6dc5cf67c7aa1a48e8816961",
+  "contract": "new synthetic damped observations; original real measurements unchanged",
+  "physics": {
+    "solver": "nodal_kress",
+    "execution": {
+      "device": "auto",
+      "frequency_threads": 4,
+      "acceleration": "spd016",
+      "geometry": "both",
+      "resolution": 512
+    },
+    "counts": {
+      "evaluation_attempts": 570,
+      "evaluations": 570,
+      "failed_evaluations": 0,
+      "derivative_attempts": 0,
+      "derivatives": 0,
+      "failed_derivatives": 0,
+      "disk_batches": 0,
+      "ray_table_setup": 1
+    },
+    "devices": {
+      "cuda-damped": 570
+    },
+    "fallback_reasons": {},
+    "seconds": {
+      "evaluation_attempts": 0.0,
+      "ray_table_setup": 0.09473872603848577,
+      "evaluations": 565.1859431229532
+    },
+    "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+    "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+    "ray": {
+      "gamma": 0.25,
+      "lo": 0.01,
+      "hi": 100.0,
+      "panels": 111,
+      "degree": 24
+    },
+    "retained_device_state": "one ray table; matrix and reusable LU factors retained on host"
+  }
+}
