@@ -48,31 +48,57 @@ def audit(curve, stage, config, problem, physics, update, seconds):
     started = perf_counter()
     try:
         with deadline(seconds):
-            coarse = Objective(stage, problem.contrast, config, ledger, physics=physics)
-            fine = Objective(replace(stage, nodes=stage.refined_nodes,
-                                     refined_nodes=physics.refine_resolution(stage.refined_nodes)),
-                             problem.contrast, config, ledger, physics=physics)
-            low, high = coarse.production(curve, 'audit_base'), fine.production(curve, 'audit_fine')
-            if low is None or high is None:
-                raise ValueError('Endpoint forward evaluation failed')
+            # Each frequency is independent. Keep only one coarse/fine pair of
+            # dense systems long enough to extract the reciprocal derivatives.
+            # Normalization/stacking below is exactly Objective's common map.
+            from experiments.shape_continuation.lm_backend import normalize
+            observed = np.column_stack([o.scattered for o in problem.real])
             space = update.prepare(curve, stage.update_modes, curve.band)
-            ja, jb = coarse.jacobian(low, update, space), fine.jacobian(high, update, space)
-            fields = np.linalg.norm(low.prediction-high.prediction, axis=0)/np.linalg.norm(high.prediction, axis=0)
+            low_columns, high_columns, coarse_jac, fine_jac = [], [], [], []
+            def evaluate(shape, observation, nodes, category):
+                ledger.reserve(1)
+                ledger.charge('solve', category)
+                try:
+                    return physics.evaluate(shape, observation, problem.contrast, nodes)
+                except (ValueError, FloatingPointError, np.linalg.LinAlgError):
+                    ledger.fail(category)
+                    raise
+            for observation in problem.real:
+                low = evaluate(curve, observation, stage.nodes, 'audit_base')
+                high = evaluate(curve, observation, stage.refined_nodes, 'audit_fine')
+                low_columns.append(np.array(low.prediction, copy=True))
+                high_columns.append(np.array(high.prediction, copy=True))
+                for state, destination in ((low, coarse_jac), (high, fine_jac)):
+                    ledger.reserve(1)
+                    ledger.charge('reciprocal', 'derivative')
+                    destination.append(physics.derivative(state, update, space))
+                del state, low, high
+            low_prediction, high_prediction = np.column_stack(low_columns), np.column_stack(high_columns)
+            ja = normalize(np.stack(coarse_jac, axis=1), observed, stage.weights, config.residual_floor)
+            jb = normalize(np.stack(fine_jac, axis=1), observed, stage.weights, config.residual_floor)
+            fields = np.linalg.norm(low_prediction-high_prediction, axis=0)/np.linalg.norm(high_prediction, axis=0)
             colnorm = np.linalg.norm(jb, axis=0)
             derivative = np.linalg.norm(ja-jb, axis=0)/np.maximum(colnorm, 1e-30)
             direction = np.random.default_rng(42001).normal(size=ja.shape[1])
             direction /= np.linalg.norm(direction)
-            plus, minus = [fine.production(update.trial(space, sign*1e-7*direction)[0], 'audit_fd')
-                           for sign in (1, -1)]
-            if plus is None or minus is None:
-                raise ValueError('Complete-trial finite difference refused')
-            fd = (plus.residual-minus.residual)/2e-7
+            residuals = []
+            for sign in (1, -1):
+                candidate = update.trial(space, sign*1e-7*direction)[0]
+                predictions = []
+                for observation in problem.real:
+                    state = evaluate(candidate, observation, stage.refined_nodes, 'audit_fd')
+                    predictions.append(np.array(state.prediction, copy=True))
+                    del state
+                residuals.append(normalize(np.column_stack(predictions)-observed, observed,
+                                           stage.weights, config.residual_floor))
+            fd = (residuals[0]-residuals[1])/2e-7
             error = float(np.linalg.norm(fd-jb@direction)/max(np.linalg.norm(fd), 1e-30))
+            residual = normalize(high_prediction-observed, observed, stage.weights, config.residual_floor)
             row = dict(passed=bool(np.all(fields <= stage.discrepancy_tolerances) and
                 max(derivative) <= 1e-3 and error <= 1e-3), field_relative=fields,
                 jacobian_relative=derivative, jacobian_column_norm=colnorm, full_trial_fd_relative=error,
-                fine_loss=high.loss, relative_residual=np.linalg.norm(high.prediction-fine.observed, axis=0)/
-                                                      np.linalg.norm(fine.observed, axis=0))
+                fine_loss=.5*float(residual@residual),
+                relative_residual=np.linalg.norm(high_prediction-observed, axis=0)/np.linalg.norm(observed, axis=0))
     except Exception:
         row = dict(passed=False, traceback=traceback.format_exc())
     return dict(row, work=ledger.snapshot(), seconds=perf_counter()-started, solver=physics.name,
@@ -201,7 +227,14 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
             save('unscored.json', dict(outcome=outcome, detail=detail, final_curve=curve_record(curve),
                  stages=stages, fit_work=None if ledger is None else ledger.snapshot()))
             event(operations[-1], 'fit returned; audit endpoint', outcome=outcome)
-            final_audit = audit(curve, last_stage, last_config, problem, physics, update, policy.audit_seconds)
+            if ledger is None and initial_audit and not initial_audit['passed']:
+                # No localization or fitting occurred: this is the identical
+                # already-audited endpoint. Do not repeat a failed dense audit.
+                final_audit = dict(initial_audit, reused_identical_initial_audit=True,
+                    original_audit_work=initial_audit.get('work'), seconds=0.,
+                    work=dict(work_units=0, solves={}, reciprocal_batches={}, failed={}))
+            else:
+                final_audit = audit(curve, last_stage, last_config, problem, physics, update, policy.audit_seconds)
             save('final_audit.json', final_audit)
             event(operations[-1], 'endpoint '+('qualified' if final_audit['passed'] else 'refused'),
                   passed=final_audit['passed'])
