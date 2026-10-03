@@ -50,7 +50,7 @@ def track(system, x0, *, max_steps=40, initial_step=.5, maximum_step=1., minimum
     path = [dict(x=x.copy(), gradient_inf=np.linalg.norm(f, np.inf), tangent=tangent.copy())]
     refusals, ds = [], initial_step
     reason = 'accepted-step cap'
-    for _ in range(max_steps):
+    while len(path)-1 < max_steps:
         predictor = x+ds*tangent
         y = predictor.copy()
         try:
@@ -113,12 +113,15 @@ def endpoint(folder, budget, case, full):
     gradient_error = max(np.linalg.norm(np.asarray(r['gradient'])-data[-1]['gradient'], np.inf) for r in data)
     eig, vectors = np.linalg.eigh(h)
     scale = max(np.linalg.norm(h, 2), 1e-300)
-    qualified = error/scale <= 1e-3 and gradient_error <= max(1e-10, data[-1]['gradient_inf']*1e-3)
+    loss_error = abs(data[-1]['loss']-saved['final_loss'])/max(abs(saved['final_loss']), 1e-14)
+    qualified = (error/scale <= 1e-3 and gradient_error <= max(1e-10, data[-1]['gradient_inf']*1e-3)
+                 and loss_error <= 1e-7)
     stationary = data[-1]['gradient_inf'] <= 1e-8 and qualified
     kind = ('resolved positive curvature' if eig[0] > 10*error else
             'resolved negative curvature' if eig[0] < -10*error else 'unresolved near-zero curvature')
     record = dict(case=case, full=full, archive_stop=saved['stop'], archive_loss=saved['final_loss'],
         measurements=data, hessian_error_operator=error, hessian_error_relative=error/scale,
+        archived_loss_relative_error=loss_error,
         gradient_error_inf=gradient_error, numerical_qualification=qualified,
         stationary_at_declared_tolerance=stationary, curvature=kind,
         chart='affine production tangent; second derivative differs from finite retraction away from stationarity',

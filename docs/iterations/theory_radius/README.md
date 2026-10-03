@@ -15,6 +15,9 @@ resolved evidence of folds in a bounded stationary branch?
 TR-001 is complete: 40/40 numerical rows qualify; damping enlarges the
 high-contrast C's stage-2 empirical radius about 41x, while paired and full
 truth-local radii are similar. See [results](iteration_02/01_results.md).
-TR-002 and TR-003 remain in progress. This track changes no production default and makes
+TR-002 is complete: 24 handoffs checked, 17 outside the local argument's scope,
+seven evaluable indicators and no sufficient-inequality passes. The scalar
+estimate does not establish a useful scheduling gate. TR-003 remains in progress.
+This track changes no production default and makes
 no new inverse-recovery or certified-convergence claim. Existing FM-003 work
 remains owned by the cleaned-interface track.

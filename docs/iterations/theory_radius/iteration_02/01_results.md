@@ -35,8 +35,39 @@ Evidence: [TR-001 report](../../../../results/validation/theory_radius/TR-001/RE
 [validation receipt](../../../../results/validation/theory_radius/TR-001/validation.json),
 [preflight tests](../../../../results/validation/theory_radius/validation/preflight.log).
 
-## Remaining approved diagnostics
+## TR-002: archived handoffs complete
 
-TR-002 will test applicability at archived endpoints. TR-003 will distinguish
+All 24 declared handoffs were examined in 4.73 s using the TR-001 measurements
+and 69 additional forward frequency solves. Eight endpoints fail the sampled
+single-normal-graph test; nine more lie outside the current empirical radius
+or sampled neighborhood. Seven indicators can be evaluated, and **none passes**
+the sufficient next-stage inequality. The seven include transitions on successful
+full-data trajectories, so this cannot be promoted to a useful rejection rule.
+
+The normal-band remainder matters. For example, the contrast-4 full-data stage-4
+endpoint has a 0.0405 mm retained-coordinate norm but a 0.1335 mm normal-band
+tail. Its combined residual/model-error indicator is 0.3352 mm against the next
+real-stage radius of 0.1755 mm. Excluding this tail would overstate applicability.
+For the paired high-contrast C, all four checked early endpoints lack a qualified
+single normal graph over truth. A truth-local theorem cannot justify those steps.
+
+The result is **no practical handoff gate established**, not failed convergence
+or a demonstrated fold. The current scalar sufficient estimate is too restrictive
+on this sample. FM-003 census summaries were still pending when this experiment
+captured its context; no partial census was truth-scored or duplicated.
+
+The source refinement before TR-002 skips forward evaluation of already-inapplicable
+remote projections, preserving their geometry and radius diagnostics. The full
+curvature implementation also checks the archived objective value and counts
+accepted continuation steps rather than correction attempts. All 23 preflight
+tests passed again; TR-001's sealed source archive remains unchanged.
+
+Evidence: [TR-002 report](../../../../results/validation/theory_radius/TR-002/README.md),
+[summary](../../../../results/validation/theory_radius/TR-002/summary.json),
+[validation](../../../../results/validation/theory_radius/TR-002/validation.json).
+
+## Remaining approved diagnostic
+
+TR-003 will distinguish
 stationarity, resolved curvature, acceptance-margin stops and bounded branch
 turning. No adaptive production policy or complex-geometry experiment has run.

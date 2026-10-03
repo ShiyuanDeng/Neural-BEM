@@ -87,6 +87,11 @@ def run(folder, budget):
                 if e1 is None or e2 is None or not e1['sigma_resolved'] or not e2['sigma_resolved']:
                     record['reason'] = 'Missing or unresolved empirical constants'
                     write(path, record); continue
+                r = float(np.linalg.norm(q))
+                if r >= min(1., e1['rho_sample_mm']):
+                    record.update(reason='Endpoint is outside its current empirical radius or sampled 1 mm neighborhood',
+                                  next_radius_mm=e2['rho_sample_mm'])
+                    write(path, record); continue
                 obs = select(getattr(problem, cat1), f1)
                 actual, _ = evaluator.evaluate(chart, q, obs, jacobian=False, curve=curve)
                 projected, _ = evaluator.evaluate(chart, q, obs, jacobian=False)
