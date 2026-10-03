@@ -20,7 +20,10 @@ research records below retain their original scope.
 ## Research and evidence
 
 - [Cleaned-interface track](iterations/cleaned_interfaces/README.md): CI, NU,
-  node-free reviews, and full-matrix studies.
+  and node-free reviews; historical FM-001/FM-002 records remain there.
+- [Relaxed-BIE track](iterations/relaxed_bie/README.md): current interpretation,
+  mathematical/evidence links, literature and GPU review, and the
+  RB-001 numerical-resolution follow-up.
 - [Results catalogue](../results/README.md): saved runs, including failures.
 - [Iteration index](iterations/README.md): dated plans, decisions, and reports.
 - [Research reports](reports/README.md) and [October 2 exploration](reports/exploration_2026-10-02.md).

@@ -14,7 +14,11 @@ data. Work is charged in SPD units: one frequency system solve, or one
 reciprocal right-hand-side batch for a Jacobian at one frequency.
 """
 from contextlib import contextmanager
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, field, asdict, replace
+from copy import deepcopy
+import hashlib
+import pickle
+from threading import RLock
 from time import perf_counter
 from typing import Optional
 
@@ -184,7 +188,8 @@ class Ledger:
     the stage quota (a normal stage end) or the total cap/wall (a hard stop).
     """
 
-    def __init__(self, cap=8012, seconds=7200.0, clock=perf_counter, endpoint_reserve=12):
+    def __init__(self, cap=8012, seconds=7200.0, clock=perf_counter, endpoint_reserve=12,
+                 strict_dispatch=False):
         self.cap, self.seconds, self.clock = int(cap), float(seconds), clock
         self.endpoint_reserve = int(endpoint_reserve)
         self.started = clock()
@@ -196,6 +201,34 @@ class Ledger:
         self.solves = {}
         self.failed = {}
         self.reciprocal = {}
+        self.strict_dispatch = strict_dispatch
+        self._lock = RLock()
+
+    @contextmanager
+    def calls(self, calls_for, function, items, kind, category):
+        """Opt-in accounting at dispatch; default retains historical SPD receipts."""
+        items = tuple(items)
+        if not self.strict_dispatch:
+            with calls_for(function, items) as calls:
+                def consume(call):
+                    self.reserve(1)
+                    self.charge(kind, category)
+                    return call()
+                yield [lambda call=call: consume(call) for call in calls]
+            return
+        self.reserve(len(items))  # complete batch, before a pool starts any work
+        def dispatched(item):
+            with self._lock:
+                self.reserve(1)
+                self.charge(kind, category)
+            try:
+                return function(item)
+            except Exception:
+                with self._lock:
+                    self.fail(category)
+                raise
+        with calls_for(dispatched, items) as calls:
+            yield calls
 
     def begin_stage(self, label, quota):
         if self.clock() - self.started >= self.seconds:
@@ -203,6 +236,21 @@ class Ledger:
         if self.units >= self.cap:
             raise TrialSolveCap("hard work cap at stage boundary")
         self.stage, self.stage_start, self.stage_quota = label, self.units, quota
+
+    @classmethod
+    def restore(cls, snapshot, *, seconds, endpoint_reserve=12, strict_dispatch=False):
+        """Restore consumed fitting work/time without granting a new stage quota."""
+        ledger = cls(cap=snapshot['cap'], seconds=seconds, endpoint_reserve=endpoint_reserve,
+                     strict_dispatch=strict_dispatch)
+        ledger.units = snapshot['work_units']
+        ledger.stage = snapshot['stage']
+        ledger.stage_start = ledger.units-snapshot['stage_units']
+        ledger.stage_quota = snapshot['stage_quota']
+        ledger.solves = dict(snapshot['solves'])
+        ledger.reciprocal = dict(snapshot['reciprocal_batches'])
+        ledger.failed = dict(snapshot['failed'])
+        ledger.started -= snapshot['seconds']
+        return ledger
 
     def reserve(self, maximum):
         overhead = self.endpoint_reserve if self.stage is not None and not self.endpoint else 0
@@ -313,14 +361,13 @@ class Objective:
             return state if keep else state.prediction  # release discarded systems early
 
         calls_for = ordered_calls if self.physics is None else self.physics.ordered_calls
-        with calls_for(predict, self.stage.observations) as calls:
+        with self.ledger.calls(calls_for, predict, self.stage.observations, "solve", category) as calls:
             for call in calls:
-                self.ledger.reserve(1)
-                self.ledger.charge("solve", category)
                 try:
                     value = call()
                 except (ValueError, FloatingPointError, np.linalg.LinAlgError):
-                    self.ledger.fail(category)
+                    if not self.ledger.strict_dispatch:
+                        self.ledger.fail(category)
                     return None
                 columns.append(np.asarray(value.prediction if keep else value).reshape(-1))
                 if keep:
@@ -347,10 +394,9 @@ class Objective:
         derivative_for = (lambda forward: shape_jacobian(forward, update.velocities(space, forward.curve))
                           if self.physics is None else self.physics.derivative(forward, update, space))
         calls_for = ordered_calls if self.physics is None else self.physics.ordered_calls
-        with calls_for(derivative_for, evaluation.forwards) as calls:
+        with self.ledger.calls(calls_for, derivative_for, evaluation.forwards,
+                               "reciprocal", "derivative") as calls:
             for call in calls:
-                self.ledger.reserve(1)
-                self.ledger.charge("reciprocal", "derivative")
                 block = call()
                 blocks.append(block.reshape(-1, block.shape[-1]))
         derivative = np.stack(blocks, axis=1)  # (pairs, frequencies, directions)
@@ -373,12 +419,66 @@ class StageResult:
     detail: Optional[str] = None
     work: dict = field(default_factory=dict)
     seconds: float = 0.0
+    checkpoint: object = field(default=None, repr=False)
+    resolution_events: list = field(default_factory=list)
+    final_nodes: Optional[int] = None
+    final_refined_nodes: Optional[int] = None
+
+
+@dataclass
+class StageCheckpoint:
+    """Accepted-state restart, retaining the exact linearization and next damping.
+
+    No LU factors are needed until the next accepted candidate. Cached refined
+    values are part of the state so pause/resume does not add solves or reset
+    quotas. The caller must restore the matching ledger before resuming.
+    """
+    signature: str
+    stage: FitStage
+    current: Evaluation
+    matrix: np.ndarray
+    gradient: np.ndarray
+    iteration: int
+    damping: float
+    initial_loss: float
+    scale: float
+    work: dict
+    history: list
+    trials: list
+    checks: list
+    refined_cache: dict
+
+
+def checkpoint_signature(stage, contrast, config, update):
+    # Hashing pickle bytes does not deserialize or execute any external input.
+    return hashlib.sha256(pickle.dumps((stage, float(contrast), config, update.settings()),
+                                      protocol=5)).hexdigest()
+
+
+@dataclass(frozen=True)
+class ResolutionResponse:
+    """One opt-in promotion followed by ordinary backtracking at the upper pair.
+
+    The caller supplies the same physics service at the finer execution profile
+    (RB-001 uses one frequency worker). This mechanism is for ordinary losses.
+    """
+    production_nodes: int = 1024
+    refined_nodes: int = 2048
+    physics: object = field(default=None, repr=False, compare=False)
+
+    def __post_init__(self):
+        if self.production_nodes <= 0 or self.refined_nodes <= self.production_nodes:
+            raise ValueError('Resolution response must refine strictly')
+
+
+class _PromoteBase(Exception):
+    pass
 
 
 @fit_geometry_validation
 @geometry_validated
 def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None, physics=None,
-              objective_factory=None):
+              objective_factory=None, resume=None, pause_after=None, resolution_response=None):
     """Run one stage, optionally under a fit-local ``geometry_validation`` cache.
 
     Exact reuse and spatial intersection checks are enabled by default. Use
@@ -390,19 +490,34 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
     started = perf_counter()
     if curve.band != stage.curve_modes:
         raise ValueError("Pass the curve at the stage storage band.")
+    if resolution_response is not None:
+        if objective_factory not in (None, Objective) or getattr(stage, 'relaxed_tau', None) is not None:
+            raise ValueError('Resolution response is qualified only for the ordinary objective')
+        if stage.nodes > resolution_response.production_nodes or stage.refined_nodes > resolution_response.refined_nodes:
+            raise ValueError('Starting resolution exceeds the response ceiling')
+        ledger.strict_dispatch = True
+    signature = checkpoint_signature(stage, contrast, config, update) if resume is not None or pause_after is not None else None
+    if resume is not None:
+        if resume.signature != signature or not np.array_equal(curve.coefficients, resume.current.curve.coefficients):
+            raise ValueError('Resume state does not match the stage, objective, update or curve')
+        for key in ('work_units', 'stage', 'stage_units', 'stage_quota', 'cap', 'solves', 'reciprocal_batches', 'failed'):
+            if ledger.snapshot()[key] != resume.work[key]:
+                raise ValueError('Resume ledger mismatch: '+key)
     objective = (objective_factory or Objective)(stage, contrast, config, ledger, physics=physics)
     m = objective.count
     history, trials, checks = [], [], []
     accepted_steps, converged, stop_reason, outcome, detail = 0, False, "maximum_iterations", NORMAL_RETURN, None
     current = None
     initial_loss = float("nan")
+    checkpoint = None
+    resolution_events = []
+    promotion_objective = None
+    resume_iteration = 0
 
     def admissible(candidate_curve):
         return inside_box(candidate_curve, config.domain_box)
 
-    def validate(base, candidate):
-        ledger.reserve(2 * m)
-        rb, rc = objective.refined(base.curve), objective.refined(candidate.curve)
+    def checked_pair(base, candidate, rb, rc, active_stage, *, check_base=False):
         if rb is None or rc is None:
             raise NumericalFailure("refined evaluation failed at an accepted or candidate state")
         discrepancy = relative_columns(candidate.prediction, rc.prediction)
@@ -410,12 +525,98 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
                    prediction_discrepancy=discrepancy.tolist(),
                    refined_base_loss=rb.loss, refined_candidate_loss=rc.loss)
         checks.append(row)
-        tolerances = np.asarray(stage.discrepancy_tolerances)
-        if not np.all(np.isfinite(discrepancy)) or np.any(discrepancy > tolerances):
-            row["accepted"] = False
-            row["numerical_obstruction"] = True
-            raise NumericalFailure("candidate leaves the frozen numerical-resolution regime")
-        return row["accepted"]
+        tolerances = np.asarray(active_stage.discrepancy_tolerances)
+        accurate = bool(np.all(np.isfinite(discrepancy)) and np.all(discrepancy <= tolerances))
+        base_accurate = True
+        if check_base:
+            bd = relative_columns(base.prediction, rb.prediction)
+            base_accurate = bool(np.all(np.isfinite(bd)) and np.all(bd <= tolerances))
+            row.update(base_prediction_discrepancy=bd.tolist(), base_qualified=base_accurate,
+                       candidate_qualified=accurate, nodes=active_stage.nodes,
+                       refined_nodes=active_stage.refined_nodes,
+                       threshold_distance=(tolerances-discrepancy).tolist())
+        if not accurate or not base_accurate:
+            row.update(accepted=False, numerical_obstruction=True)
+        return row, base_accurate, accurate
+
+    def finer_objective():
+        nonlocal promotion_objective
+        if promotion_objective is None:
+            finer = replace(stage, nodes=resolution_response.production_nodes,
+                            refined_nodes=resolution_response.refined_nodes)
+            promotion_objective = Objective(finer, contrast, config, ledger,
+                                            physics=resolution_response.physics or physics)
+        return promotion_objective
+
+    def promote(fine):
+        nonlocal stage, objective, physics
+        stage, objective, physics = fine.stage, fine, fine.physics
+        resolution_events.append(dict(action='promoted', nodes=stage.nodes, refined_nodes=stage.refined_nodes,
+                                      work=ledger.snapshot()))
+
+    def validate(base, candidate):
+        ledger.reserve(2 * m)
+        rb, rc = objective.refined(base.curve), objective.refined(candidate.curve)
+        row, base_ok, candidate_ok = checked_pair(base, candidate, rb, rc, stage,
+                                                  check_base=resolution_response is not None)
+        if resolution_response is None:
+            if not candidate_ok:
+                raise NumericalFailure("candidate leaves the frozen numerical-resolution regime")
+            return candidate if row['accepted'] else None
+        if base_ok and candidate_ok:
+            return candidate if row['accepted'] else None
+        if stage.nodes == resolution_response.production_nodes:
+            if not base_ok:
+                raise NumericalFailure('unresolved accepted base at maximum permitted resolution')
+            resolution_events.append(dict(action='reject_inaccurate_candidate', check=deepcopy(row),
+                                          work=ledger.snapshot()))
+            return None
+        fine = finer_objective()
+        ledger.reserve(2*m)
+        rrb, rrc = fine.refined(base.curve), fine.refined(candidate.curve)
+        finer_row, fine_base_ok, fine_candidate_ok = checked_pair(rb, rc, rrb, rrc, fine.stage, check_base=True)
+        resolution_events.append(dict(action='refinement_attempt', check=deepcopy(finer_row),
+                                      work=ledger.snapshot()))
+        if not fine_base_ok:
+            raise NumericalFailure('unresolved accepted base at maximum permitted resolution')
+        if finer_row['accepted'] and fine_candidate_ok:
+            # Rebuild the factorized production evaluation at the promoted N.
+            # Its refined counterpart remains in the fine objective's cache.
+            rebuilt = fine.production(candidate.curve, 'promotion_candidate')
+            if rebuilt is None:
+                raise NumericalFailure('promoted candidate factorization failed')
+            repeat, _, _ = checked_pair(rb, rebuilt, rrb, rrc, fine.stage, check_base=True)
+            if not repeat['accepted']:
+                raise NumericalFailure('promoted candidate changed during factorization rebuild')
+            promote(fine)
+            return rebuilt
+        if not base_ok:
+            promote(fine)
+            raise _PromoteBase()
+        return None
+
+    def qualified_base(evaluation):
+        """No retry may start from an unresolved retained state."""
+        refined = objective.refined(evaluation.curve)
+        if refined is None:
+            raise NumericalFailure('retained base refinement failed')
+        discrepancy = relative_columns(evaluation.prediction, refined.prediction)
+        if np.all(np.isfinite(discrepancy)) and np.all(discrepancy <= stage.discrepancy_tolerances):
+            return evaluation, False
+        if stage.nodes == resolution_response.production_nodes:
+            raise NumericalFailure('unresolved accepted base at maximum permitted resolution')
+        fine = finer_objective()
+        finer = fine.refined(evaluation.curve)
+        if finer is None:
+            raise NumericalFailure('retained base finer solve failed')
+        discrepancy = relative_columns(refined.prediction, finer.prediction)
+        if not np.all(np.isfinite(discrepancy)) or np.any(discrepancy > stage.discrepancy_tolerances):
+            raise NumericalFailure('unresolved accepted base at maximum permitted resolution')
+        rebuilt = fine.production(evaluation.curve, 'promotion_base')
+        if rebuilt is None:
+            raise NumericalFailure('promoted base factorization failed')
+        promote(fine)
+        return rebuilt, True
 
     def gradient_frame(evaluation):
         space = update.prepare(evaluation.curve, stage.update_modes, stage.curve_modes)
@@ -438,7 +639,18 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
         if trial is not None:
             row.update({k: trial[k] for k in ("maximum_normal_m", "rms_normal_m", "projection_relative",
                                                "speed_ratio") if k in trial})
+        if resolution_response is not None:
+            row.update(nodes=stage.nodes, refined_nodes=stage.refined_nodes)
         history.append(row)
+
+    def capture():
+        nonlocal checkpoint
+        if resume is None and pause_after is None:
+            return
+        checkpoint = StageCheckpoint(checkpoint_signature(stage, contrast, config, update), stage,
+            replace(current, forwards=()), matrix.copy(), gradient.copy(), accepted_steps, damping,
+            initial_loss, scale, deepcopy(ledger.snapshot()), deepcopy(history), deepcopy(trials),
+            deepcopy(checks), dict(objective.refined_cache))
 
     scale = max(float(np.linalg.norm(curve.coefficients) * update.length_unit_m), 1.0)
     smoothing = None
@@ -453,27 +665,49 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
     try:
         if not admissible(curve):
             raise NumericalFailure("initial state leaves the geometry domain")
-        current = objective.production(curve, "initial_objective")
-        if current is None:
-            raise NumericalFailure("initial state is not solver-ready")
-        initial_loss = current.loss
-        if on_accept is not None:
-            on_accept(0, current)
-        space, matrix, gradient = gradient_frame(current)
-        damping = config.initial_damping
-        record(0, current, gradient, np.zeros(matrix.shape[1]), damping, damping)
+        if resume is None:
+            current = objective.production(curve, "initial_objective")
+            if current is None:
+                raise NumericalFailure("initial state is not solver-ready")
+            initial_loss = current.loss
+            if on_accept is not None:
+                on_accept(0, current)
+            if resolution_response is not None:
+                current, _ = qualified_base(current)
+            space, matrix, gradient = gradient_frame(current)
+            damping = config.initial_damping
+            record(0, current, gradient, np.zeros(matrix.shape[1]), damping, damping)
+        else:
+            current, matrix, gradient = resume.current, resume.matrix.copy(), resume.gradient.copy()
+            history, trials, checks = deepcopy((resume.history, resume.trials, resume.checks))
+            accepted_steps, resume_iteration = resume.iteration, resume.iteration
+            damping, initial_loss, scale = resume.damping, resume.initial_loss, resume.scale
+            objective.refined_cache = dict(resume.refined_cache)
+            space = update.prepare(current.curve, stage.update_modes, stage.curve_modes)
+            if resolution_response is not None:
+                current, changed = qualified_base(current)
+                if changed:
+                    space, matrix, gradient = gradient_frame(current)
+        capture()
         if current.loss <= config.loss_tolerance:
             converged, stop_reason = True, "loss_tolerance"
         elif np.linalg.norm(gradient, ord=np.inf) <= config.gradient_tolerance:
             converged, stop_reason = True, "gradient_tolerance"
-        for iteration in range(1, stage.iterations + 1):
+        iteration = resume_iteration
+        while iteration < stage.iterations:
             if converged:
                 break
+            if pause_after is not None and accepted_steps >= pause_after:
+                outcome, stop_reason = 'PAUSED', 'accepted_state_pause'
+                break
+            iteration += 1
             normal = matrix.T @ matrix
             damped = damping_matrix(space, normal)
             accepted = None
             trial_damping = damping
             rule = None
+            restart = False
+            accuracy_limited = False
             if config.damping_rule == "hanke":
                 trial_damping, attainable = hanke_damping(matrix, current.residual, damped, config.hanke_ratio)
                 rule = dict(hanke_lambda=float(trial_damping), hanke_attainable=bool(attainable))
@@ -493,6 +727,8 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
                     if config.log_model:
                         trial.update(predicted_decrease=float(-(gradient @ step) - 0.5 * step @ normal @ step),
                                      **(rule or {}))
+                    if resolution_response is not None:
+                        trial.update(proposal_nodes=stage.nodes, proposal_refined_nodes=stage.refined_nodes)
                     trials.append(trial)
                     try:
                         candidate_curve, geometry = update.trial(space, step)
@@ -511,17 +747,39 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
                     if candidate.loss >= current.loss:
                         trial["status"] = "nondecreasing"
                         continue
-                    if not validate(current, candidate):
-                        trial["status"] = "acceptance_margin"
+                    before_checks = len(checks)
+                    try:
+                        qualified = validate(current, candidate)
+                    except _PromoteBase:
+                        trial.update(status='base_promotion_retry', nodes=stage.nodes)
+                        current = objective.production(current.curve, 'promotion_base')
+                        if current is None:
+                            raise NumericalFailure('promoted base factorization failed')
+                        space, matrix, gradient = gradient_frame(current)
+                        restart = True
+                        break
+                    if qualified is None:
+                        inaccurate = any(c.get('numerical_obstruction', False) for c in checks[before_checks:])
+                        accuracy_limited |= inaccurate
+                        trial["status"] = "numerical_rejection" if inaccurate else "acceptance_margin"
                         continue
+                    candidate = qualified
+                    if resolution_response is not None:
+                        trial.update(original_production_loss=trial['loss'], loss=candidate.loss,
+                                     nodes=stage.nodes, refined_nodes=stage.refined_nodes)
                     trial["status"] = "accepted"
                     accepted = (candidate, step, trial_damping, trial)
                     break
-                if accepted is not None:
+                if accepted is not None or restart:
                     break
                 trial_damping *= config.damping_increase
+            if restart:
+                iteration -= 1  # same iteration, original quota and damping
+                continue
             if accepted is None:
-                stop_reason = "no_decreasing_step"
+                stop_reason = "accuracy_limited_trials_exhausted" if accuracy_limited else "no_decreasing_step"
+                if accuracy_limited:
+                    outcome = 'ACCURACY_LIMITED_TRIALS'
                 break
             current, step, used_damping, trial = accepted
             accepted_steps = iteration
@@ -530,6 +788,7 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
                 on_accept(iteration, current)
             space, matrix, gradient = gradient_frame(current)
             record(iteration, current, gradient, step, used_damping, damping, trial)
+            capture()
             if current.loss <= config.loss_tolerance:
                 converged, stop_reason = True, "loss_tolerance"
             elif np.linalg.norm(gradient, ord=np.inf) <= config.gradient_tolerance:
@@ -540,10 +799,13 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
         outcome, stop_reason, detail = STAGE_QUOTA, None, str(exc)
     except Stop as exc:
         outcome, stop_reason, detail = exc.code, None, str(exc)
+    if resolution_response is not None and trials and 'status' not in trials[-1]:
+        trials[-1].update(status=outcome, reason=detail)
     final = curve if current is None else current.curve
     return StageResult(stage.label, final, outcome, stop_reason, converged, accepted_steps, initial_loss,
                        float("nan") if current is None else current.loss, history, trials, checks,
-                       detail, ledger.snapshot(), perf_counter() - started)
+                       detail, ledger.snapshot(), perf_counter() - started, checkpoint,
+                       resolution_events, stage.nodes, stage.refined_nodes)
 
 
 class FixedSchedule:

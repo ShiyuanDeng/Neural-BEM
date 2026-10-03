@@ -1,0 +1,15 @@
+--- FM-002/solvers/bem_inverse/geometry_selection.py
++++ RB-001/solvers/bem_inverse/geometry_selection.py
+@@ -13,7 +13,11 @@
+         return SpectralProjectedUpdate(length_unit_m)
+     if name == 'certified_spectral':
+         from .batched import BatchedCertifiedUpdate
+-        return BatchedCertifiedUpdate(length_unit_m, device=None if execution.device == 'auto' else execution.device)
++        update = BatchedCertifiedUpdate(length_unit_m, device=None if execution.device == 'auto' else execution.device)
++        if update.device == 'cuda':
++            from .device_certified import DeviceCertifiedUpdate
++            return DeviceCertifiedUpdate(length_unit_m, device=update.device)
++        return update
+     if name == 'analytic_spectral':
+         from .analytic_projection import AnalyticSpectralUpdate
+         return AnalyticSpectralUpdate(length_unit_m)

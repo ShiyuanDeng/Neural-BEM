@@ -45,6 +45,14 @@ no recoveries. The [results and limits](../../docs/iterations/cleaned_interfaces
 record the numerical stops, costs, 477 passing tests and unchanged ordinary
 controls. The ordinary damped default remains selected.
 
+Current relaxed-BIE research now belongs to the
+[standalone track](../../docs/iterations/relaxed_bie/README.md). Its
+[updated assessment](../../docs/iterations/relaxed_bie/iteration_01/01_results.md)
+qualifies the original closure recommendation, and
+[RB-001](../../docs/iterations/relaxed_bie/iteration_02/01_results.md) records
+the approved resolution-recovery follow-up. FM-001/FM-002 commands and sealed
+artifacts retain their existing paths.
+
 One maintained, truth-free SC/MA continuation runner. **The CI-001 campaign
 passes 28 of 36 configurations under the frozen contract**, and recovery is 34/36,
 the same as the archived strategies. Seven noisy cases fail the residual gate after the

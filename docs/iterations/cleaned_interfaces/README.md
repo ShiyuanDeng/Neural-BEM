@@ -19,16 +19,17 @@ reduced from 103.5 s to 7.5 s. CPU selection and the spline/nodal defaults
 remain unchanged. The original NU-007 failure is preserved. See the
 [qualification report](../../../results/validation/cleaned_interfaces/NU-007a-20261003/README.md).
 
-**FM-002 relaxed-BIE review (2026-10-03):** the complete reduced-loss gradient
-is implemented and qualified; all 12 fixed damping/relaxation runs are complete.
-Both damped arms recover 3/3 cases, while both real-prefix arms recover 1/3.
-Relaxation improves the failed endpoints but adds no recoveries. Retain the
-ordinary damped default and close this tested variant, with no universal
-claim about relaxation: the four failures are numerical-resolution stops.
-All 477 regression tests pass, and the ordinary controls reproduce FM-001
-bit-for-bit. See [iteration 19](iteration_19/01_results.md) and its
-[advance plan](iteration_19/03_plan.md). This uses nodal Kress physics and
-does not extend the node-free campaign coverage.
+**Relaxed BIE now has its own [research track](../relaxed_bie/README.md)**
+(2026-10-03, user-directed organization). FM-001/FM-002 originals remain in
+iterations 18/19 and their sealed result bundles. The new track owns the
+updated interpretation and [RB-001 plan](../relaxed_bie/iteration_01/03_plan.md):
+test resolution recovery for the four stopped real-prefix trajectories.
+Broader closure remains premature because their rejected candidates still
+decreased loss at both resolutions. RB-001 is complete; its
+[new results](../relaxed_bie/iteration_02/01_results.md) record four removable
+stops and four qualified finer endpoints, but no new recoveries within the
+retained budgets. The ordinary
+damped default and the recorded node-free campaign coverage are unchanged.
 
 **NF-001 outsider audit (2026-10-02–03):** the maintained claim is now
 boundary-collocation-free modal physics with optional spline-free quadrature
@@ -46,7 +47,7 @@ uses the qualified NU-007 path described above.
 | Item | State |
 |---|---|
 | GPU certificate completion | [NU-007a](../../../results/validation/cleaned_interfaces/NU-007a-20261003/README.md): integrated on CUDA after threshold-scaled qualification; 39.5% less wall time on six core cases |
-| Relaxed-BIE cycle | [Iteration 19](iteration_19/01_results.md): complete reduced gradient; all 12 controlled runs complete; no recovery advantage from relaxation under the tested settings |
+| Relaxed-BIE research | [Standalone track](../relaxed_bie/README.md): RB-001 complete; all four immediate obstructions are removable, but continued full/paired recovery is 0/4. [Original iteration 19](iteration_19/01_results.md) is preserved |
 | Node-free cycle | [Iteration 17](iteration_17/01_results.md): NF-001 outsider review and integrated claim/interface fixes; analytic quadrature tangent retained as opt-in after bounded experiments |
 | Previous cycle | [Iteration 15](iteration_15/01_results.md): NU-007 (user: "go"), GPU certificates, **stopped at stage 1**. Decisions and tiers matched in all 864 pre-check trials, and certificate time fell 10× (1,520 s → 151 s). The pre-registered relative-bound gate failed (1.5·10⁻⁵). The diagnostic shows these gaps only at bounds ≤ 10⁻⁴ (round-off floor), with no bound within 6.4·10⁻³ of the decision threshold. The campaign was not run. Proposed, not run: NU-007a with a threshold-scaled gate. [Iteration 14](iteration_14/01_results.md): NU-006 (user: "yes go") **retained and adopted as the default `prepare`**. The NU-005 update with all its `prepare` projections batched on the RTX 5090 is decision-identical to NU-005 on the six core cases (same steps and units, final curves within 2.1·10⁻¹⁰ σ₀). Geometry preparation falls from 150 s to 3.9 s, and wall time from 390 s to 242 s (nodal: 573 s). The NU-005 certificates are now 43% of wall time (104 s). Proposed, not run: certificate reuse from modal physics, batched LU and Graf waves on the GPU, all-36. [Iteration 13](iteration_13/01_results.md): NU-005 (user: "keep up to NU005") **retained, no sampled fallback**. Certificate tiers (exact area, then a Lemma 3–4 increment, then the full |W|² certificate) in front of the sampled validity test decided all 1,131 validity checks on the six core cases. The decisions and final curves are bit-identical to NU-004-MS, and the pre-check gates held (864 trials, no shadow disagreement). Certificates add 103 s (390 s against MS's 293 s). Not established: refusal without samples (no trial was refused). Proposed, not run: NU-006 (NUFFT quadrature), certificate reuse from modal physics, Krawczyk refusal, all-36. [Iteration 12](iteration_12/01_results.md): NU-004 (user: "yes go") **retained**. Modal Müller physics with the NU-003 spline-free map matches nodal on 6/6 core cases with no drift flag. It is decision-identical to nodal and to a modal + spline control (same steps, same 9,677 units, final curves within 6·10⁻⁸ σ₀), at 293 s against nodal's 573 s. The quadrature is now 52% of wall time. Still sampled: the self-intersection test. Proposed, not run: NU-005 (validity without samples), NU-006 (NUFFT quadrature), then all-36. [Iteration 11](iteration_11/01_results.md): NU-003 (user: "go") **qualifies**. The CI-001 trial map with its spline resampler replaced by the eq. 9 quadrature matches nodal on 6/6 core cases with no drift flag, and is decision-identical (same accepted steps in all 72 stages, same 9,677 units, final curves within 6·10⁻⁸ σ₀). Geometry preparation is 2.2× slower (total wall time +15%). Still node-based: `nodal_kress` physics and the sampled validity test. Proposed, not run: NU-004 (NU-003 + modal Müller). [Iteration 10](iteration_10/01_results.md): NU-002 offline pre-check (user: "go"). The eq. 9 spectral arclength reset keeps the shape within 10⁻⁵ σ₀ at K = 192 up to r_σ ≈ 3.4, but at the damped bands K = 8–20 it moves the shape by 10⁻⁴–3·10⁻² σ₀ on every drifted state, nodal included (3/64 pass, all peanut). The planned arm B + reset run was not started. Proposed, not run: NU-003, the nodal increment map with its spline resampler replaced by eq. 9. [Iteration 09](iteration_09/01_results.md): NU-001 completed all 12 CUDA runs on six core configurations. Arm A matches 2/6 and arm B 3/6; both trigger drift flags, so the pre-registered decision keeps the nodal trial map. The [iteration 08 plan](iteration_08/03_plan.md) and [validation evidence](../../../results/validation/cleaned_interfaces/NU-001-VALIDATION.md) record the design and execution. [Iteration 07](iteration_07/01_results.md): modal fixes yield 7/9 matching reruns; the other 27 have not been rerun. [Iteration 06](iteration_06/01_results.md): CI-001-modal 19/36 (nodal 28/36). [Iteration 03 / CI-001](iteration_03/01_results.md): nodal 28/36; requirement 1 not satisfied |
 | User requirements | [Three requirements and the cumulative-pipeline clarification](iteration_01/02_proposals/01_user_requirements.md) |

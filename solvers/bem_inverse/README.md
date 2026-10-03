@@ -73,6 +73,25 @@ The reverse geometry assembly runs on CPU and reuses existing CPU/CUDA LU
 factors for one additional correction solve per frequency. Median ordering
 and kernel branches are locally fixed; the objective is piecewise smooth.
 This capability currently belongs to the nodal backend, not modal Müller.
+Its experiment history and proposed numerical-resolution follow-up are indexed
+in the [relaxed-BIE research track](../../docs/iterations/relaxed_bie/README.md).
+
+Ordinary nodal stages also support an opt-in `ResolutionResponse` in
+`continuation.lm_backend`. It checks retained bases and candidates, promotes
+to a declared finer pair when qualified, rebuilds the production linearization,
+and otherwise continues the existing backtracking search. The default remains
+the original hard stop. Accuracy-limited exhaustion and an unresolved finer
+base have explicit outcomes. The response enables work accounting before
+threaded dispatch.
+
+`fit_stage(..., pause_after=k)` returns a `StageCheckpoint` after an accepted
+state. It retains the current residual/Jacobian, next damping, refined cache,
+history and consumed ledger state; `resume=checkpoint` validates the matching
+stage, objective, update, curve and ledger. `Ledger.restore` preserves elapsed
+time and stage/global work. At the policy level, `runner.FitResume` carries
+that checkpoint and the remaining resolved operation queue. The
+[RB-001 driver](../../experiments/relaxed_bie/README.md) reconstructs these
+states from qualified archived evidence and owns the historical input mapping.
 
 ## Compatibility and source provenance
 

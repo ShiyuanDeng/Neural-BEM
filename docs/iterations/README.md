@@ -30,6 +30,7 @@ The [research implementation principles](implementation_principles.md), adopted 
 | Track | Organised around | Handoff |
 |---|---|---|
 | **Cleaned interfaces** | *How can one cumulative SC/MA inverse retain all-36 performance with clear stage policies and interchangeable forward solvers?* | [`cleaned_interfaces/README.md`](cleaned_interfaces/README.md) |
+| **Relaxed BIE** | *Does relaxing the BIE improve shape recovery when gradients, numerical accuracy and cost are controlled fairly?* | [`relaxed_bie/README.md`](relaxed_bie/README.md) |
 | **Shape/frequency continuation** | *How should shape harmonics and frequency steps adapt in a qualified nodal inverse?* | [`shape_frequency_continuation/README.md`](shape_frequency_continuation/README.md) |
 | **Topology** | *How can the inverse choose and execute topology changes more reliably?* | [`topology/README.md`](topology/README.md) |
 | **Boundary–BIE** | *Which properties of smooth-boundary representations improve the BIE inverse?* | [`boundary_bie/README.md`](boundary_bie/README.md) |
@@ -41,6 +42,19 @@ The [research implementation principles](implementation_principles.md), adopted 
 | Radial Fourier topology | The cycle that built the automatic controller | [`radial_fourier_topology/README.md`](radial_fourier_topology/README.md) |
 | Cartesian Fourier | The chart study and its topology match | [`cartesian_fourier/README.md`](cartesian_fourier/README.md) |
 | Implicit MLP | Neural-owned geometry with Method B | [`implicit_mlp/README.md`](implicit_mlp/README.md) |
+
+**Relaxed BIE opened on 2026-10-03 by user direction.** It starts from the
+completed FM-001/FM-002 experiments in cleaned-interface iterations 18/19,
+whose sealed originals remain in place. The new
+[iteration-01 assessment](relaxed_bie/iteration_01/01_results.md) records the
+qualified complete gradient, unchanged recovery counts, and the unresolved
+numerical-resolution stops. [RB-001](relaxed_bie/iteration_01/03_plan.md) is
+**APPROVED** by the user's request to continue the track. Execution is
+**COMPLETE**: all four stops reproduced and were removable, 506 regression
+tests passed, and all four continued endpoints passed finer audits. Recovery
+remains 0/4 under both contracts within the retained budgets. The
+[iteration-02 closeout](relaxed_bie/iteration_02/01_results.md) distinguishes
+quota/time limits from stationarity; the ordinary damped default remains.
 
 Topology, Boundary–BIE, Laurent, Modal compression, Speed-up and Shape/frequency
 continuation are **question-based**. Topology, Boundary–BIE, Speed-up and

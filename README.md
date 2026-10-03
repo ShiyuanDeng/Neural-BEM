@@ -72,6 +72,11 @@ Other research paths remain available: [implicit MLP](docs/pipelines/implicit_ml
 [shape/frequency continuation](docs/pipelines/shape_frequency_continuation.md).
 Their claims and defaults are documented in their own guides.
 
+The [relaxed-BIE research track](docs/iterations/relaxed_bie/README.md) owns
+the current FM-001/FM-002 interpretation, literature/GPU review and RB-001
+resolution-recovery experiment. Its sealed historical evidence remains at
+the original paths.
+
 The previous long [repository overview](docs/legacy/repository_overview_2026-10-03.md)
 and [research dashboard](docs/legacy/dashboard_2026-10-03.md) are preserved as
 historical snapshots. Reference solvers, experimental code, and recorded

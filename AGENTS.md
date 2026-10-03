@@ -10,6 +10,10 @@
 - `cp` (including `cp?`) means **commit and push** the current workspace changes
   to the current branch's configured remote. Treat it as an action request;
   do not ask the user to expand the abbreviation or reconfirm the operation.
+- After each new experiment run, automatically commit and push its code,
+  documentation, and results to the current branch's configured remote,
+  including failed-run evidence. No separate `cp` request or confirmation is
+  needed; validate first, then verify the push and final working-tree status.
 - When asked to make the working tree clean, preserve the work by committing
   it. Do not discard changes to achieve a clean status.
 - Run appropriate validation before committing, then verify the push and the
