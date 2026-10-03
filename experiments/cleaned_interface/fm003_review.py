@@ -6,7 +6,6 @@ loads truth only for a completed census or a finished continuation.
 import argparse
 from collections import Counter
 from pathlib import Path
-import sys
 
 import numpy as np
 
@@ -98,7 +97,7 @@ def plots(output):
     plt.rcParams.update({'font.size':10,'axes.spines.top':False,'axes.spines.right':False})
     colors={'no_decreasing_step':'#4477aa','gradient_tolerance':'#228833',
             'loss_tolerance':'#228833','relative_step_tolerance':'#66ccee','NUMERICAL_FAILURE':'#cc6677'}
-    fig,axes=plt.subplots(2,len(completed),figsize=(5*len(completed),8),squeeze=False)
+    fig,axes=plt.subplots(2,len(completed),figsize=(5*len(completed),9),squeeze=False)
     for j,phase in enumerate(completed):
         s=read(output/phase/'summary.json')
         rows=[read(output/phase/name) for name in s['results']]
@@ -129,7 +128,7 @@ def plots(output):
             z=curve.values(2048)*50
             ax.plot(np.r_[z.real,z.real[0]],np.r_[z.imag,z.imag[0]],label=label,color=color,linestyle=style,linewidth=1.5)
         ax.set(xlabel='x relative to ring centre (mm)',ylabel='y relative to ring centre (mm)',aspect='equal')
-        ax.legend(fontsize=8)
+        ax.legend(fontsize=8,loc='upper center',bbox_to_anchor=(.5,-.20),ncol=2,frameon=False)
     fig.tight_layout()
     fig.savefig(output/'census.png',dpi=160)
     fig.savefig(output/'census.svg')
@@ -169,9 +168,115 @@ def synthesis(output):
     return result
 
 
+def finalize_report(output):
+    """Put registered outcomes and their limits ahead of the detailed tables."""
+    result=synthesis(output)
+    f.report(output)
+    path=f.b.ROOT/'docs/iterations/cleaned_interfaces/iteration_21/01_results.md'
+    detailed=path.read_text().split('\n',1)[1]
+    paired=read(output/'phase1/summary.json')
+    continued=read(output/'phase2/result.json')
+    original=read(f.b.DEFAULT_OUTPUT/'runs'/f.HIGH/'result.json')
+    summaries={p:read(output/p/'summary.json') for p in f.PHASES}
+    validations={p:read(output/'validation'/(p+'.json')) for p in f.PHASES}
+    def interval(row):
+        lo,hi=row['wilson95']
+        return f'{row["hits"]}/{row["n"]} = {100*row["share"]:.2f}% [{100*lo:.2f}, {100*hi:.2f}]'
+    winner=paired['clusters'][0]
+    lines=['# FM-003: paired C recovered by the stage-2 census', '', result['reading'], '',
+        f'**G1 {"passed" if result["G1"] else "failed"}; G2 {"passed" if result["G2"] else "failed"}.** '
+        f'The loss-selected winner is start {continued["winner_index"]}: stage-2 loss '
+        f'{paired["winner_loss"]:.9g}, aligned arclength RMS {winner["representative_truth_distance_mm"]:.4g} mm. '
+        'Its unchanged CI-001 suffix completed and passed the final numerical audit.', '',
+        '| Frozen paired recovery measure | Original CI-001 | FM-003 continuation | Limit |',
+        '|---|---:|---:|---:|']
+    for label,key,limit in [('RMS (mm)','rms_mm',1.),('Hausdorff upper bound (mm)','hausdorff_upper_mm',2.)]:
+        lines.append(f'| {label} | {original["metrics"][key]:.7g} | {continued["metrics"][key]:.7g} | {limit:g} |')
+    lines += [f'| Maximum relative residual | {original["maximum_residual"]:.7g} | '
+        f'{continued["maximum_residual"]:.7g} | 0.003 |',
+        f'| Recovered | {original["recovered"]} | {continued["recovered"]} | all gates |', '',
+        '**The census did not find a zero-loss stage-2 endpoint.** '
+        f'Paired high contrast has {paired["zero_loss"]["hits"]}/{paired["completed"]} endpoints below `1e-6`. '
+        'The result establishes that a nonzero-loss stage-2 endpoint selected without truth can lead to recovery. '
+        'It does not establish the proposal\'s stronger zero-loss-basin premise.', '',
+        '## Registered census comparisons', '',
+        'Shares below use all completed starts as denominators. Brackets are Wilson 95% intervals in percent.', '',
+        '| Census | Lowest-loss cluster | Within 5 mm of truth | z1 cluster | Loss < 1e-6 |',
+        '|---|---|---|---|---|']
+    for phase,s in summaries.items():
+        label={'phase1':'Paired, contrast 13.3','phase3':'Full matrix, contrast 13.3','phase4':'Paired, contrast 4'}[phase]
+        lines.append(f'| {label} | {interval(s["lowest_cluster"])} | {interval(s["within_5mm"])} | '
+                     f'{interval(s["z1_cluster"])} | {s["zero_loss"]["hits"]}/{s["completed"]} |')
+    lines += ['', f'G3 point-estimate predictions: p(full) > p(paired): **{result["G3"]["full_share_larger"]}**; '
+        f'p(c4) > p(c13.3): **{result["G3"]["c4_share_larger"]}**. '
+        'These are separately defined minimum-loss clusters. Their shares alone do not establish a difference '
+        'in recovery probability; only the paired high-contrast winner was continued.', '',
+        '![Census losses, truth distances and recovered boundaries](../../../../results/validation/cleaned_interfaces/FM-003/census.png)', '',
+        '## Cost and numerical stops', '',
+        '| Census | Wall minutes | Charged stage work | Numerical refusals | Iteration-capped starts |',
+        '|---|---:|---:|---:|---|']
+    for phase,s in summaries.items():
+        v=validations[phase]
+        lines.append(f'| {phase} | {s["seconds"]/60:.2f} | {s["work_units"]} | '
+            f'{s["stop_reasons"].get("NUMERICAL_FAILURE",0)} | {v["iteration_or_work_capped_starts"]} |')
+    extra=result['costs']['phase1']['separately_run_start0_seconds']
+    lines += ['', f'Phase 1 wall time excludes its reused Phase 0 start-0 fit ({extra:.3f} s); '
+        'charged census work includes that fit once. '
+        f'The continuation and final audit took {continued["total_seconds"]:.3f} s and '
+        f'{continued["total_units"]} work units. Including the registered historical prefix '
+        f'(162 units, 15.5 s), the paired census, and reused start 0 gives '
+        f'{continued["total_with_census_and_prefix_units"]} units and '
+        f'{(continued["total_with_census_and_prefix_seconds"]+extra)/60:.2f} minutes. '
+        'Lifting, replay qualification, controls and report generation are separate experiment overhead.', '',
+        'The `200` iteration limit was retained even where reached. Those endpoints are reported as capped; '
+        'numerically refused endpoints are also retained and separately labelled. '
+        'No censuses were extended or start seeds changed in response to results.', '',
+        'The nine near-truth paired endpoints do not provide nine demonstrated recoveries. '
+        'Only the lowest-loss winner was continued. The fixed 512-start census is the demonstrated selection cost; '
+        'a cheaper stopping/selection rule has not been tested.', '',
+        '## Validation, provenance and scope', '',
+        'Phase L passed the disk, unitarity, symmetry and node-doubling gates. '
+        'Only 0.25 GHz at order 2 passed the registered usable-lift rule. '
+        'The ambiguous higher-order lift errors differ from the sandbox reference; '
+        'the gate outcomes and usable-lift classification agree. '
+        'Phase 0 reproduced CI-001 bit for bit, including four accepted steps and its exact endpoint/loss. '
+        'One- and four-frequency-thread executions matched exactly. The campaign/package checks passed '
+        '21 tests, and the suffix-entry adapter passed its separate test. All three census receipt audits passed.', '',
+        'The suffix-entry correction is documented in '
+        '[iteration 20](../iteration_20/05_suffix_entry.md): stage 3 is entered directly, '
+        'with historical original-start qualification carried as provenance and an actual final audit. '
+        'The original implementation archive remains intact; the suffix has a separate seal/archive.', '',
+        'This is a noiseless synthetic damped-data result for the contrast-13.3 development C. '
+        'It does not establish uniqueness, exhaustive global optimization, performance on noisy/real data, '
+        'or recovery of other shapes. Production defaults and all prior campaign sources/results are unchanged. '
+        'Other research work was active on the shared branch/host; wall times are observed costs, '
+        'not a controlled runtime comparison. Independent reviewer remains unassigned.', '',
+        'Reproduce using the sealed sources and the commands in '
+        '[the execution notes](../iteration_20/04_execution.md), substituting '
+        '`python -m experiments.cleaned_interface.fm003_suffix` for Phase 2. '
+        'The final figures and synthesis are generated by '
+        '`python -m experiments.cleaned_interface.fm003_review plots` and `finalize`.', '',
+        'Machine-readable evidence: '
+        '[synthesis](../../../../results/validation/cleaned_interfaces/FM-003/synthesis.json), '
+        '[paired census](../../../../results/validation/cleaned_interfaces/FM-003/phase1/summary.json), '
+        '[continuation](../../../../results/validation/cleaned_interfaces/FM-003/phase2/result.json), '
+        '[full control](../../../../results/validation/cleaned_interfaces/FM-003/phase3/summary.json), '
+        '[contrast-4 control](../../../../results/validation/cleaned_interfaces/FM-003/phase4/summary.json).', '',
+        '## Detailed frozen-run tables', '', detailed]
+    path.write_text('\n'.join(lines))
+    write(output/'analysis_implementation.json',dict(
+        sources={f.b.path_ref(Path(__file__)):digest(__file__)},
+        inputs={str(p.relative_to(output)):digest(p) for p in
+                [output/'synthesis.json',output/'phase2/result.json',
+                 *[output/phase/'summary.json' for phase in summaries],
+                 *[output/'validation'/(phase+'.json') for phase in summaries]]},
+        report_sha256=digest(path),plot_sha256=digest(output/'census.png')))
+    return dict(report=f.b.path_ref(path),G1=result['G1'],G2=result['G2'])
+
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('command',choices=['validate','distances','plots','synthesis'])
+    parser.add_argument('command',choices=['validate','distances','plots','synthesis','finalize'])
     parser.add_argument('--phase',choices=f.PHASES,default='phase1')
     parser.add_argument('--output',type=Path,default=f.OUTPUT)
     a=parser.parse_args()
@@ -181,6 +286,8 @@ def main():
         result=continuation_distances(a.output)
     elif a.command=='plots':
         result=plots(a.output)
+    elif a.command=='finalize':
+        result=finalize_report(a.output)
     else:
         result=synthesis(a.output)
     print(result,flush=True)
