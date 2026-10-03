@@ -41,3 +41,15 @@ Truth-centred radii and retrospective handoff indicators are not online inverse
 controls. The stationary branch uses a fixed chart and a data homotopy, so it
 does not reproduce the production moving-chart frequency ladder. Source seals,
 refusals, numerical gates, work counts and timing limits accompany each result.
+
+The actual TR-003 execution retained its first stage-entry adapter failure and
+continued only the two branches with `python -m experiments.theory_radius.resume_branches`.
+The resumed numerical work completed, but a concurrent edit to the unused
+FM-003 reporting module triggered the broad final source guard. The explicit
+`python -m experiments.theory_radius.closeout` review qualifies that completed
+evidence while preserving the original failed guard. It checks all numerical
+source/input hashes, the exact named nondependency exception, retained endpoint
+hashes, branch completeness and combined budgets. Its report is
+`TR-003-branches/QUALIFIED_REPORT.md`; the original manifest and failure are not
+rewritten. `interpret.py` separately distinguishes TR-001 radius probes above
+and below their recorded origin-refinement floor.

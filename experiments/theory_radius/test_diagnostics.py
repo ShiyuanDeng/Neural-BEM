@@ -41,6 +41,15 @@ def test_graph_circle_and_unrelated_disjoint_curve():
     assert not normal_graph(c.FourierCurve.circle(.6), c.FourierCurve.circle(.2, 1.2), 64)['valid']
 
 
+def test_projected_stage_entry_zero_pads_without_changing_shape():
+    original = c.FourierCurve.circle(.6, .01j)
+    chart = c.Chart(original, 5, projected=True, storage=12)
+    assert chart.base.band == 12
+    assert np.array_equal(chart.base.values(512), original.values(512))
+    assert np.max(abs(chart.production_trial(np.zeros(11)).values(512)-original.values(512))) < 1e-14
+    assert chart.metric_error < 1e-10
+
+
 def test_full_hessian_contains_residual_curvature():
     # r(q)=q^2-2, Phi=.5*r^2: H=6q^2-4, while GN=4q^2.
     h, skew = hessian(lambda q: 2*q*(q*q-2), np.array([.5]), 1e-4)

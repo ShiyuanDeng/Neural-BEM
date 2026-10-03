@@ -105,6 +105,19 @@ def report(phase):
         lines += ['', 'These are bounded, truth-free data-homotopy paths in a fixed low-band chart, '
                   'not the moving-chart production frequency ladder. Their limits do not establish '
                   'absence of folds elsewhere or justify complex continuation by themselves.', '']
+        if phase == 'TR-003-branches':
+            parent=read(folder/'parent.json')
+            for name, value in parent['files'].items():
+                if digest(ROOT/name) != value:
+                    raise ValueError('Retained endpoint evidence changed: '+name)
+            metrics['parent_work']=parent['work']
+            metrics['combined_seconds']=parent['work']['seconds']+receipt['work']['seconds']
+            metrics['combined_frequency_solves']=parent['work']['frequency_solves_completed']+receipt['work']['frequency_solves_completed']
+            lines += ['The four endpoint audits above are reused unchanged from the preserved '
+                      'TR-003 attempt; only the two branches were executed in this continuation. '
+                      f'Combined numerical wall time: {metrics["combined_seconds"]:.1f} s; '
+                      f'combined forward frequency solves: {metrics["combined_frequency_solves"]}. '
+                      'Parent hashes and consumed budget are in `parent.json`.', '']
         valid=completed and len(endpoints)==4 and len(branches)==2 and all(r.get('complete') for r in branches)
     metrics['artifact_validation_passed']=valid
     write(folder/'summary.json',metrics)
@@ -118,5 +131,5 @@ def report(phase):
 
 if __name__ == '__main__':
     parser=argparse.ArgumentParser()
-    parser.add_argument('phase', choices=('TR-001','TR-002','TR-003'))
+    parser.add_argument('phase', choices=('TR-001','TR-002','TR-003','TR-003-branches'))
     report(parser.parse_args().phase)

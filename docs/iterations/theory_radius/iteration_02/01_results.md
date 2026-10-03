@@ -84,8 +84,60 @@ omitted this padding. The failed attempt is retained in
 [failure receipt](../../../../results/validation/theory_radius/TR-003/failure.json).
 It used 111.83 s, 912 forward frequency solves and 720 derivative batches.
 
-The bounded repair will zero-pad before preparing the production tangent,
-leaving the physical curve unchanged. The endpoint audits need not be repeated.
-The two branches will use a fresh continuation bundle, the remaining 3,488.17 s
-and 19,088 forward-solve budget, and explicit hashes of the retained endpoint
-audits. No adaptive policy or complex-geometry experiment has run.
+The repair zero-pads before preparing the production tangent, leaving the
+physical curve unchanged. All 24 tests pass, including a new stage-entry
+regression. The endpoint audits were reused unchanged. The branches used a
+fresh bundle, the remaining 3,488.17 s / 19,088 solve budget, and explicit
+hashes of the retained endpoint audits.
+
+## TR-003: branches complete and numerically qualified
+
+The contrast-4 path exhibits **two resolved turning brackets**, near homotopy
+t=0.77 and t=0.60. N1024 checks confirm stationary gradients, tangent reversal,
+and Hessian inertia changes. Real pseudo-arclength traverses both, then reaches
+the declared 15 mm fixed-chart limit at t=0.6212 after 20 accepted steps. It
+does not reach the target t=1 within that chart.
+
+The contrast-13.3 path crosses t=1 after nine accepted steps with no observed
+turning point. A fixed-t correction converges to gradient 1.10e-10 per mm and
+loss 0.00464085. Post-run truth scoring gives **9.41 mm RMS boundary error**:
+this is a wrong-shape stationary endpoint, not recovery. Truth did not enter
+tracking or endpoint selection. The constructed data homotopy at fixed damped
+frequencies is distinct from the production moving-chart frequency ladder.
+
+Total TR-003 numerical cost, including the retained adapter failure, is
+415.67 s, 5,282 forward frequency solves and 5,090 derivative batches.
+
+The resumed numerical work completed, but its final broad source guard failed
+when the concurrently running FM-003 work changed `fm003_review.py`. That
+reporting module is not a dependency of these diagnostics. A scoped post-run
+audit verifies that it is the only changed source, **every numerical source and
+input still matches**, all endpoint and branch artifacts are complete, and the
+combined budgets hold. The original seal and failure remain unchanged, with
+before/after copies of the unrelated file and an explicit qualification receipt.
+No numerical rerun or silent seal rewrite was used to erase the failure.
+
+Evidence: [qualified branch report](../../../../results/validation/theory_radius/TR-003-branches/QUALIFIED_REPORT.md),
+[qualification and provenance review](../../../../results/validation/theory_radius/TR-003-branches/qualification.json),
+[24 passing tests](../../../../results/validation/theory_radius/validation/branch_repair.log).
+
+## Decision
+
+The three approved diagnostics are complete, at **1,006.32 s (16.77 min)** of
+combined numerical wall time, under concurrent FM-003 load. Production defaults
+are unchanged.
+
+- The local atlas supports damping as a way to reduce high-contrast nonlinearity.
+  Its constants remain empirical; no convergence radius is certified.
+- The current sufficient scalar handoff indicator is too restrictive to promote:
+  it passes none of the 24 tested transitions, including successful trajectories.
+- Folds exist on the contrast-4 diagnostic homotopy, but the hard contrast-13.3
+  branch reaches a wrong stationary shape without an observed fold. This does
+  not establish folds as the hard case's operative bottleneck or demonstrate a
+  benefit from complex geometry.
+- Concurrent **FM-003**, independently of TR, completed its 512-start paired
+  census and recovered the contrast-13.3 C using the selected winner followed
+  by the ordinary suffix: RMS 6.55e-5 mm, maximum residual 1.59e-6. This updates
+  the starting fixed-initialization failure picture; it is not a uniqueness
+  theorem or a TR recovery. The next practical priority is cheaper truth-free
+  basin entry, using that completed evidence. No successor has been launched.

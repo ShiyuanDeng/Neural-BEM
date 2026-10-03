@@ -57,6 +57,9 @@ class Chart:
         self.dimension = 2*band+1
         self.projected = projected
         if projected:
+            if base.band > storage:
+                raise ValueError('A diagnostic chart must not truncate its origin')
+            base = resize(base, storage)  # stage entry pads without changing the curve
             self.update = ProjectedUpdate(length_unit_m)
             with geometry_runtime(EXECUTION.geometry):
                 self.space = self.update.prepare(base, band, storage)
@@ -203,6 +206,8 @@ def seal(folder, phase):
     if phase != 'TR-001':
         inputs.update((OUTPUT/'TR-001').glob('*.json'))
         inputs.update((OUTPUT/'TR-001/rows').glob('*.json'))
+    if phase == 'TR-003-branches':
+        inputs.update((OUTPUT/'TR-003').rglob('*.json'))
     with tarfile.open(folder/'sources.tar.gz', 'w:gz') as archive:
         for p in sources:
             archive.add(p, arcname=b.path_ref(p), recursive=False)
