@@ -53,6 +53,19 @@ qualifies the original closure recommendation, and
 the approved resolution-recovery follow-up. FM-001/FM-002 commands and sealed
 artifacts retain their existing paths.
 
+FM-003 completed the model-free lifting check and the fixed 512/256/256
+stage-2 censuses. Selecting the paired contrast-13.3 C endpoint by stage-2
+loss and continuing the unchanged CI-001 suffix recovered the C. The
+[results](../../docs/iterations/cleaned_interfaces/iteration_21/01_results.md)
+give the recovery audit, control shares, costs, numerical refusals and limits;
+no zero-loss stage-2 endpoint was found. Follow the
+[execution notes](../../docs/iterations/cleaned_interfaces/iteration_20/04_execution.md),
+using `python -m experiments.cleaned_interface.fm003_suffix` for Phase 2 as
+explained in the [entry correction](../../docs/iterations/cleaned_interfaces/iteration_20/05_suffix_entry.md).
+The `fm003_review` commands `validate`, `distances`, `plots`, and `finalize`
+check receipts and regenerate the evaluation artifacts. This is a campaign
+result; the maintained production policy remains unchanged.
+
 One maintained, truth-free SC/MA continuation runner. **The CI-001 campaign
 passes 28 of 36 configurations under the frozen contract**, and recovery is 34/36,
 the same as the archived strategies. Seven noisy cases fail the residual gate after the

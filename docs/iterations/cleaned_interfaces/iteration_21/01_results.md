@@ -1,4 +1,64 @@
-# FM-003 results
+# FM-003: paired C recovered by the stage-2 census
+
+Search failure supported: the lowest-loss paired stage-2 basin is near truth and its unchanged continuation recovers the C.
+
+**G1 passed; G2 passed.** The loss-selected winner is start 289: stage-2 loss 0.00118292425, aligned arclength RMS 2.415 mm. Its unchanged CI-001 suffix completed and passed the final numerical audit.
+
+| Frozen paired recovery measure | Original CI-001 | FM-003 continuation | Limit |
+|---|---:|---:|---:|
+| RMS (mm) | 6.39619 | 6.549439e-05 | 1 |
+| Hausdorff upper bound (mm) | 19.28089 | 0.02990586 | 2 |
+| Maximum relative residual | 1.145274 | 1.588915e-06 | 0.003 |
+| Recovered | False | True | all gates |
+
+**The census did not find a zero-loss stage-2 endpoint.** Paired high contrast has 0/512 endpoints below `1e-6` (one-sided exact 95% upper bound 0.5834% on that event). The result establishes that a nonzero-loss stage-2 endpoint selected without truth can lead to recovery. It does not establish the proposal's stronger zero-loss-basin premise.
+
+## Registered census comparisons
+
+Shares below use all completed starts as denominators. Brackets are Wilson 95% intervals in percent.
+
+| Census | Lowest-loss cluster | Within 5 mm of truth | z1 cluster | Loss < 1e-6 |
+|---|---|---|---|---|
+| Paired, contrast 13.3 | 1/512 = 0.20% [0.03, 1.10] | 9/512 = 1.76% [0.93, 3.31] | 266/512 = 51.95% [47.63, 56.25] | 0/512 |
+| Full matrix, contrast 13.3 | 1/256 = 0.39% [0.07, 2.18] | 200/256 = 78.12% [72.67, 82.75] | 56/256 = 21.88% [17.25, 27.33] | 0/256 |
+| Paired, contrast 4 | 1/256 = 0.39% [0.07, 2.18] | 173/256 = 67.58% [61.62, 73.02] | 24/256 = 9.38% [6.38, 13.57] | 0/256 |
+
+G3 point-estimate predictions: p(full) > p(paired): **True**; p(c4) > p(c13.3): **True**. All three minimum-loss clusters are singletons, so the factor-of-two point estimates reflect 512 versus 256 starts. They do not demonstrate the predicted difference in minimum-basin probability. The registered within-5-mm shares provide the clearer control separation.
+
+The contrast-4 minimum-loss endpoint is 5.324 mm from truth, outside the 5 mm threshold despite most of that control's endpoints falling within it. Only the paired high-contrast winner was continued; a loss-based selection rule is not established for the other controls.
+
+![Census losses, truth distances and recovered boundaries](../../../../results/validation/cleaned_interfaces/FM-003/census.png)
+
+## Cost and numerical stops
+
+| Census | Wall minutes | Charged stage work | Numerical refusals | Iteration-capped starts |
+|---|---:|---:|---:|---|
+| phase1 | 63.16 | 56100 | 63 | [259, 499] |
+| phase3 | 35.95 | 33550 | 25 | [79] |
+| phase4 | 45.06 | 43998 | 41 | [7] |
+
+Phase 1 wall time excludes its reused Phase 0 start-0 fit (4.848 s); charged census work includes that fit once. The continuation and final audit took 154.568 s and 2469 work units. Including the registered historical prefix (162 units, 15.5 s), the paired census, and reused start 0 gives 58731 units and 66.07 minutes. Lifting, replay qualification, controls and report generation are separate experiment overhead.
+
+For the paired high-contrast census, cost per observed minimum-cluster hit is 56100 units and 63.24 minutes (one hit). Cost per within-5-mm endpoint is 6233 units and 7.03 minutes (nine hits). These are empirical event-cost ratios, not validated recovery-cost guarantees. With no zero-loss hits, there is no finite empirical cost estimate for that proposed basin.
+
+The `200` iteration limit was retained even where reached. Those endpoints are reported as capped; numerically refused endpoints are also retained and separately labelled. No censuses were extended or start seeds changed in response to results.
+
+The nine near-truth paired endpoints do not provide nine demonstrated recoveries. Only the lowest-loss winner was continued. The fixed 512-start census is the demonstrated selection cost; a cheaper stopping/selection rule has not been tested.
+
+## Validation, provenance and scope
+
+Phase L passed the disk, unitarity, symmetry and node-doubling gates. Only 0.25 GHz at order 2 passed the registered usable-lift rule. The ambiguous higher-order lift errors differ from the sandbox reference; the gate outcomes and usable-lift classification agree. Phase 0 reproduced CI-001 bit for bit, including four accepted steps and its exact endpoint/loss. One- and four-frequency-thread executions matched exactly. The campaign/package checks passed 21 tests, and the suffix-entry adapter passed its separate test. All three census receipt audits passed.
+
+The suffix-entry correction is documented in [iteration 20](../iteration_20/05_suffix_entry.md): stage 3 is entered directly, with historical original-start qualification carried as provenance and an actual final audit. The original implementation archive remains intact; the suffix has a separate seal/archive.
+
+This is a noiseless synthetic damped-data result for the contrast-13.3 development C. It does not establish uniqueness, exhaustive global optimization, performance on noisy/real data, or recovery of other shapes. Production defaults and all prior campaign sources/results are unchanged. Other research work was active on the shared branch/host; wall times are observed costs, not a controlled runtime comparison. Independent reviewer remains unassigned.
+
+Reproduce using the sealed sources and the commands in [the execution notes](../iteration_20/04_execution.md), substituting `python -m experiments.cleaned_interface.fm003_suffix` for Phase 2. The final figures and synthesis are generated by `python -m experiments.cleaned_interface.fm003_review plots` and `finalize`.
+
+Machine-readable evidence: [synthesis](../../../../results/validation/cleaned_interfaces/FM-003/synthesis.json), [paired census](../../../../results/validation/cleaned_interfaces/FM-003/phase1/summary.json), [continuation](../../../../results/validation/cleaned_interfaces/FM-003/phase2/result.json), [full control](../../../../results/validation/cleaned_interfaces/FM-003/phase3/summary.json), [contrast-4 control](../../../../results/validation/cleaned_interfaces/FM-003/phase4/summary.json).
+
+## Detailed frozen-run tables
+
 
 Frozen plan: [iteration 20](../iteration_20/03_plan.md). Existing `feature/shape-frequency-continuation` branch; production policy unchanged.
 

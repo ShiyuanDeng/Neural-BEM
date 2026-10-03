@@ -132,6 +132,8 @@ def plots(output):
     fig.tight_layout()
     fig.savefig(output/'census.png',dpi=160)
     fig.savefig(output/'census.svg')
+    svg=output/'census.svg'
+    svg.write_text('\n'.join(line.rstrip() for line in svg.read_text().splitlines())+'\n')
     plt.close(fig)
 
 
@@ -155,10 +157,13 @@ def synthesis(output):
     costs={}
     for p,summary in summaries.items():
         hits=summary['within_5mm']['hits']
+        lowest_hits=summary['lowest_cluster']['hits']
         reused=read(output/'phase0/start0/result.json')['seconds'] if p=='phase1' else 0.
         costs[p]=dict(wall_seconds=summary['seconds'],separately_run_start0_seconds=reused,
             stage_seconds=summary['stage_seconds'],work_units=summary['work_units'],
             cost_seconds_including_start0=summary['seconds']+reused,
+            seconds_per_lowest_cluster_hit=(summary['seconds']+reused)/lowest_hits if lowest_hits else None,
+            units_per_lowest_cluster_hit=summary['work_units']/lowest_hits if lowest_hits else None,
             seconds_per_within_5mm_hit=(summary['seconds']+reused)/hits if hits else None,
             units_per_within_5mm_hit=summary['work_units']/hits if hits else None)
     result=dict(G1=s['G1'],G2=continued['recovered'],reading=reading,G3=control_predictions,
@@ -196,7 +201,8 @@ def finalize_report(output):
         f'{continued["maximum_residual"]:.7g} | 0.003 |',
         f'| Recovered | {original["recovered"]} | {continued["recovered"]} | all gates |', '',
         '**The census did not find a zero-loss stage-2 endpoint.** '
-        f'Paired high contrast has {paired["zero_loss"]["hits"]}/{paired["completed"]} endpoints below `1e-6`. '
+        f'Paired high contrast has {paired["zero_loss"]["hits"]}/{paired["completed"]} endpoints below `1e-6` '
+        f'(one-sided exact 95% upper bound {100*paired["zero_loss"]["zero_hit_one_sided_exact95_upper"]:.4f}% on that event). '
         'The result establishes that a nonzero-loss stage-2 endpoint selected without truth can lead to recovery. '
         'It does not establish the proposal\'s stronger zero-loss-basin premise.', '',
         '## Registered census comparisons', '',
@@ -209,8 +215,13 @@ def finalize_report(output):
                      f'{interval(s["z1_cluster"])} | {s["zero_loss"]["hits"]}/{s["completed"]} |')
     lines += ['', f'G3 point-estimate predictions: p(full) > p(paired): **{result["G3"]["full_share_larger"]}**; '
         f'p(c4) > p(c13.3): **{result["G3"]["c4_share_larger"]}**. '
-        'These are separately defined minimum-loss clusters. Their shares alone do not establish a difference '
-        'in recovery probability; only the paired high-contrast winner was continued.', '',
+        'All three minimum-loss clusters are singletons, so the factor-of-two point estimates reflect '
+        '512 versus 256 starts. They do not demonstrate the predicted difference in minimum-basin '
+        'probability. The registered within-5-mm shares provide the clearer control separation.', '',
+        f'The contrast-4 minimum-loss endpoint is {summaries["phase4"]["clusters"][0]["representative_truth_distance_mm"]:.4g} mm '
+        'from truth, outside the 5 mm threshold despite most of that control\'s endpoints falling within it. '
+        'Only the paired high-contrast winner was continued; a loss-based selection rule is not established '
+        'for the other controls.', '',
         '![Census losses, truth distances and recovered boundaries](../../../../results/validation/cleaned_interfaces/FM-003/census.png)', '',
         '## Cost and numerical stops', '',
         '| Census | Wall minutes | Charged stage work | Numerical refusals | Iteration-capped starts |',
@@ -228,6 +239,13 @@ def finalize_report(output):
         f'{continued["total_with_census_and_prefix_units"]} units and '
         f'{(continued["total_with_census_and_prefix_seconds"]+extra)/60:.2f} minutes. '
         'Lifting, replay qualification, controls and report generation are separate experiment overhead.', '',
+        f'For the paired high-contrast census, cost per observed minimum-cluster hit is '
+        f'{result["costs"]["phase1"]["units_per_lowest_cluster_hit"]:.0f} units and '
+        f'{result["costs"]["phase1"]["seconds_per_lowest_cluster_hit"]/60:.2f} minutes (one hit). '
+        f'Cost per within-5-mm endpoint is {result["costs"]["phase1"]["units_per_within_5mm_hit"]:.0f} units and '
+        f'{result["costs"]["phase1"]["seconds_per_within_5mm_hit"]/60:.2f} minutes (nine hits). '
+        'These are empirical event-cost ratios, not validated recovery-cost guarantees. '
+        'With no zero-loss hits, there is no finite empirical cost estimate for that proposed basin.', '',
         'The `200` iteration limit was retained even where reached. Those endpoints are reported as capped; '
         'numerically refused endpoints are also retained and separately labelled. '
         'No censuses were extended or start seeds changed in response to results.', '',
@@ -270,7 +288,8 @@ def finalize_report(output):
                 [output/'synthesis.json',output/'phase2/result.json',
                  *[output/phase/'summary.json' for phase in summaries],
                  *[output/'validation'/(phase+'.json') for phase in summaries]]},
-        report_sha256=digest(path),plot_sha256=digest(output/'census.png')))
+        report_sha256=digest(path),plot_sha256=digest(output/'census.png'),
+        svg_sha256=digest(output/'census.svg')))
     return dict(report=f.b.path_ref(path),G1=result['G1'],G2=result['G2'])
 
 
