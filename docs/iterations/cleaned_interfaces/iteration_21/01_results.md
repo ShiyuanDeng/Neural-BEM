@@ -278,6 +278,12 @@ Phase 0 strict replay: **PASS**. Checks: `{'accepted_steps': True, 'stop': True,
 | 242 | 1 | 1.96937412 | 215 | 54.04 | `{'NUMERICAL_FAILURE': 1}` |
 | 243 | 1 | 4.14886046 | 147 | 53.399 | `{'NUMERICAL_FAILURE': 1}` |
 
+## Continued paired winner
+
+Start 289; outcome `COMPLETED_SCHEDULE`; G2 recovered: **True**. Metrics: `{'rms_mm': 6.54943859485408e-05, 'hausdorff_mm': 0.00031109092272620044, 'hausdorff_upper_mm': 0.02990585856869686}`. Maximum residual: 1.5889154167499496e-06.
+
+Census + historical prefix + continuation/audits: 58731 units, 3959.6 s.
+
 G1: **True**. Winner chosen by stage-2 loss before truth scoring.
 
 All start draws, refusals, optimizer trials, timeouts and source/input seals are in `results/validation/cleaned_interfaces/FM-003/`. Damped synthetic catalogs support no realism claim.
