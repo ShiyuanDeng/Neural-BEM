@@ -1,0 +1,190 @@
+"""Read-only receipt validation and post-census FM-003 figures.
+
+This module does not fit, choose starts, or change the sealed experiment. It
+loads truth only for a completed census or a finished continuation.
+"""
+import argparse
+from collections import Counter
+from pathlib import Path
+import sys
+
+import numpy as np
+
+from bem_inverse.io import curve_from, digest, read, write
+from . import fm003 as f
+
+
+def validate_phase(output, phase):
+    f.verify(output)
+    folder=output/phase
+    census=read(folder/'census.json')
+    summary=read(folder/'summary.json')
+    checks={}
+    rows=[]
+    for name,sha in census['results'].items():
+        path=folder/name
+        assert digest(path)==sha, path
+        rows.append(read(path))
+    checks['completed_prefix']=[r['index'] for r in rows]==list(range(census['completed']))
+    checks['counts']=census['completed']<=f.PHASES[phase][2] and census['scheduled']==f.PHASES[phase][2]
+    checks['cap_unchanged']=census['cap_seconds']==f.PHASES[phase][3]
+    checks['no_wall_limit_in_completed_prefix']=all(r['outcome']!='TRIAL_WALL_LIMIT' for r in rows)
+    checks['work_sum']=census['work_units']==sum(r['work']['work_units'] for r in rows)
+    finite=[r for r in rows if r.get('final_loss') is not None and 'curve' in r]
+    winner=min(finite,key=lambda r:(r['final_loss'],r['index'])) if finite else None
+    checks['winner']=census['winner_index']==(winner['index'] if winner else None)
+    indices=[i for c in summary['clusters'] for i in c['indices']]
+    checks['cluster_partition']=sorted(indices)==sorted(r['index'] for r in finite)
+    checks['cluster_counts']=all(c['size']==len(c['indices']) and c['share']==c['size']/len(rows)
+                                 for c in summary['clusters'])
+    checks['stage2_contract']=True
+    checks['input_provenance']=True
+    attempts=[]
+    for row in rows:
+        start=read(output/'starts'/census['case']/f'{row["index"]:04d}.json')
+        attempts += start['attempts']
+        run=folder/'runs'/f'{row["index"]:04d}'
+        if row.get('reused_from'):
+            checks['input_provenance'] &= row['reused_sha256']==digest(output/row['reused_from'])
+            continue
+        checks['input_provenance'] &= read(run/'input.json')==start
+        if start['valid']:
+            conf=read(run/'configuration.json')
+            checks['input_provenance'] &= conf['start_sha256']==digest(run/'input.json')
+            s=conf['operation']['stage']
+            checks['stage2_contract'] &= (s['iterations'],s['quota'],s['M'],s['K_geometry'],s['nodes'],s['refined_nodes'])==(200,10000,5,12,512,1024)
+            checks['stage2_contract'] &= s['frequencies_hz']==[.5e9,.75e9] and s['damping']==[.25,.25]
+    capped_rows=[r['index'] for r in rows if r.get('stop')=='maximum_iterations' or r['outcome']=='STAGE_QUOTA_REACHED']
+    refusal_counts=Counter(a.get('reason') for a in attempts if not a['valid'])
+    result=dict(phase=phase,passed=all(checks.values()),checks=checks,
+        completed=len(rows),finite_endpoints=len(finite),iteration_or_work_capped_starts=capped_rows,
+        draw_refusals=dict(refusal_counts), total_draws=len(attempts),
+        stop_counts=dict(Counter(r.get('stop') or r['outcome'] for r in rows)),
+        numerical_failure_details=dict(Counter(r.get('detail') for r in rows if r['outcome']=='NUMERICAL_FAILURE')),
+        maximum_seconds=max((r['seconds'] for r in rows),default=0),
+        median_seconds=float(np.median([r['seconds'] for r in rows])) if rows else None,
+        receipt_sha256=digest(folder/'census.json'))
+    write(output/'validation'/(phase+'.json'),result)
+    if not result['passed']:
+        raise ValueError('Receipt validation failed: '+str(checks))
+    return result
+
+
+def continuation_distances(output):
+    result=read(output/'phase2/result.json')
+    if 'stages' not in result:
+        return dict(outcome=result['outcome'],complete=False)
+    truth=f.arclength_curve(curve_from(read(f.b.ROOT/f.descriptor(f.HIGH)['truth'])))
+    winner=read(output/'phase1/runs'/f'{result["winner_index"]:04d}'/'result.json')
+    rows=[dict(stage='stage_2_census_winner',loss=winner['final_loss'],
+               aligned_rms_mm=f.aligned_preprojected_mm(f.arclength_curve(curve_from(winner['curve'])),truth))]
+    for s in result['stages']:
+        rows.append(dict(stage=s['stage'],loss=s['final_loss'],outcome=s['outcome'],stop=s['stop'],
+            accepted_steps=s['accepted_steps'],
+            aligned_rms_mm=f.aligned_preprojected_mm(f.arclength_curve(curve_from(s['curve'])),truth)))
+    record=dict(complete=True,stages=rows,first_over_5mm=next((r['stage'] for r in rows if r['aligned_rms_mm']>=5),None),
+                result_sha256=digest(output/'phase2/result.json'))
+    write(output/'phase2/stage_distances.json',record)
+    return record
+
+
+def plots(output):
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    completed=[p for p in f.PHASES if (output/p/'summary.json').exists()]
+    if not completed:
+        return
+    plt.rcParams.update({'font.size':10,'axes.spines.top':False,'axes.spines.right':False})
+    colors={'no_decreasing_step':'#4477aa','gradient_tolerance':'#228833',
+            'loss_tolerance':'#228833','relative_step_tolerance':'#66ccee','NUMERICAL_FAILURE':'#cc6677'}
+    fig,axes=plt.subplots(2,len(completed),figsize=(5*len(completed),8),squeeze=False)
+    for j,phase in enumerate(completed):
+        s=read(output/phase/'summary.json')
+        rows=[read(output/phase/name) for name in s['results']]
+        good=[r for r in rows if r.get('final_loss') is not None]
+        ax=axes[0,j]
+        groups={r.get('stop') or r['outcome'] for r in good}
+        for name in sorted(groups):
+            part=[r for r in good if (r.get('stop') or r['outcome'])==name]
+            ax.scatter([max(r['final_loss'],1e-16) for r in part],
+                [s['truth_distance_mm'][str(r['index'])] for r in part],s=16,alpha=.65,
+                label=name,color=colors.get(name,'#aa3377'))
+        ax.axvline(1e-6,color='#555555',linestyle=':',linewidth=1)
+        ax.axhline(5,color='#555555',linestyle=':',linewidth=1)
+        ax.set(xscale='log',xlabel='Stage-2 loss',ylabel='Aligned arclength RMS to truth (mm)',
+            title=f'{phase}: {"full" if s["full"] else "paired"}, contrast {4 if phase=="phase4" else 13.3}\n{len(rows)} fixed starts')
+        ax.legend(fontsize=7,loc='best')
+        ax=axes[1,j]
+        truth=curve_from(read(f.b.ROOT/f.descriptor(s['case'])['truth']))
+        initial=f.z1(s['case'])
+        winner=next(r for r in rows if r['index']==s['winner_index'])
+        shapes=[('Truth',truth,'#222222','-'),('z1',initial,'#999999',':'),
+                ('Lowest-loss stage 2',curve_from(winner['curve']),'#4477aa','-')]
+        if phase=='phase1' and (output/'phase2/result.json').exists():
+            continued=read(output/'phase2/result.json')
+            if 'final_curve' in continued:
+                shapes.append(('Continued endpoint',curve_from(continued['final_curve']),'#cc6677','--'))
+        for label,curve,color,style in shapes:
+            z=curve.values(2048)*50
+            ax.plot(np.r_[z.real,z.real[0]],np.r_[z.imag,z.imag[0]],label=label,color=color,linestyle=style,linewidth=1.5)
+        ax.set(xlabel='x relative to ring centre (mm)',ylabel='y relative to ring centre (mm)',aspect='equal')
+        ax.legend(fontsize=8)
+    fig.tight_layout()
+    fig.savefig(output/'census.png',dpi=160)
+    fig.savefig(output/'census.svg')
+    plt.close(fig)
+
+
+def synthesis(output):
+    summaries={p:read(output/p/'summary.json') for p in f.PHASES if (output/p/'summary.json').exists()}
+    if len(summaries)<3 or not (output/'phase2/result.json').exists():
+        raise ValueError('All frozen phases must finish before synthesis')
+    s=summaries['phase1']; continued=read(output/'phase2/result.json')
+    if s['within_5mm']['hits']==0:
+        reading='Inconclusive for search: none of the fixed paired high-contrast starts reaches an endpoint within 5 mm.'
+    elif not s['G1']:
+        reading='A lower-loss wrong stage-2 minimum wins despite nearer endpoints; the proposed search-failure claim is rejected under this representation.'
+    elif continued['recovered']:
+        reading='Search failure supported: the lowest-loss paired stage-2 basin is near truth and its unchanged continuation recovers the C.'
+    else:
+        reading='The right stage-2 basin is not sufficient: unchanged continuation does not recover the C.'
+    control_predictions=dict(full_share_larger=summaries['phase3']['lowest_cluster']['share']>s['lowest_cluster']['share'],
+        c4_share_larger=summaries['phase4']['lowest_cluster']['share']>s['lowest_cluster']['share'])
+    comparisons={p:dict(lowest_cluster=r['lowest_cluster'],within_5mm=r['within_5mm'],
+                           zero_loss=r['zero_loss'],z1_cluster=r['z1_cluster']) for p,r in summaries.items()}
+    costs={}
+    for p,summary in summaries.items():
+        hits=summary['within_5mm']['hits']
+        reused=read(output/'phase0/start0/result.json')['seconds'] if p=='phase1' else 0.
+        costs[p]=dict(wall_seconds=summary['seconds'],separately_run_start0_seconds=reused,
+            stage_seconds=summary['stage_seconds'],work_units=summary['work_units'],
+            cost_seconds_including_start0=summary['seconds']+reused,
+            seconds_per_within_5mm_hit=(summary['seconds']+reused)/hits if hits else None,
+            units_per_within_5mm_hit=summary['work_units']/hits if hits else None)
+    result=dict(G1=s['G1'],G2=continued['recovered'],reading=reading,G3=control_predictions,
+                comparisons=comparisons,costs=costs,
+                selection='The three minimum-loss clusters are separately defined; their shares are not necessarily the shares reaching the same physical solution.')
+    write(output/'synthesis.json',result)
+    return result
+
+
+def main():
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('command',choices=['validate','distances','plots','synthesis'])
+    parser.add_argument('--phase',choices=f.PHASES,default='phase1')
+    parser.add_argument('--output',type=Path,default=f.OUTPUT)
+    a=parser.parse_args()
+    if a.command=='validate':
+        result=validate_phase(a.output,a.phase)
+    elif a.command=='distances':
+        result=continuation_distances(a.output)
+    elif a.command=='plots':
+        result=plots(a.output)
+    else:
+        result=synthesis(a.output)
+    print(result,flush=True)
+
+
+if __name__=='__main__':
+    main()
