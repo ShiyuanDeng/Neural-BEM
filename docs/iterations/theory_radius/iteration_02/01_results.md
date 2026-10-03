@@ -66,8 +66,26 @@ Evidence: [TR-002 report](../../../../results/validation/theory_radius/TR-002/RE
 [summary](../../../../results/validation/theory_radius/TR-002/summary.json),
 [validation](../../../../results/validation/theory_radius/TR-002/validation.json).
 
-## Remaining approved diagnostic
+## TR-003: endpoint audits complete; branch launch failure retained
 
-TR-003 will distinguish
-stationarity, resolved curvature, acceptance-margin stops and bounded branch
-turning. No adaptive production policy or complex-geometry experiment has run.
+All four stage-2 endpoint objectives reproduce their archived losses and pass
+the gradient/Hessian step-size and resolution checks. Each has resolved positive
+curvature in the affine production-tangent chart. The paired C4 and C13.3
+gradients are 1.04e-7 and 2.68e-7 per mm, above the declared 1e-8 stationarity
+threshold. Their archives retain 5 and 10 positive-gain rejected trials,
+respectively, below the acceptance-margin rule. No fold is established at these
+stops; exact stationarity is not established either.
+
+After the four audits, the first homotopy launch refused its input before any
+branch solve: `ProjectedUpdate.prepare` requires the accepted curve already be
+padded from the stage-1 storage band to stage 2's K12. The diagnostic adapter
+omitted this padding. The failed attempt is retained in
+[TR-003](../../../../results/validation/theory_radius/TR-003/README.md) and its
+[failure receipt](../../../../results/validation/theory_radius/TR-003/failure.json).
+It used 111.83 s, 912 forward frequency solves and 720 derivative batches.
+
+The bounded repair will zero-pad before preparing the production tangent,
+leaving the physical curve unchanged. The endpoint audits need not be repeated.
+The two branches will use a fresh continuation bundle, the remaining 3,488.17 s
+and 19,088 forward-solve budget, and explicit hashes of the retained endpoint
+audits. No adaptive policy or complex-geometry experiment has run.

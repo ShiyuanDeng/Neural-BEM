@@ -1,0 +1,24 @@
+ENDPOINT modal__c4__development_c False False resolved positive curvature
+ENDPOINT modal__c4__development_c True True resolved positive curvature
+ENDPOINT modal__c13.3__development_c False False resolved positive curvature
+ENDPOINT modal__c13.3__development_c True False resolved positive curvature
+Traceback (most recent call last):
+  File "/home/drdeng/miniconda3/envs/EMNerf/lib/python3.9/runpy.py", line 197, in _run_module_as_main
+    return _run_code(code, main_globals, None,
+  File "/home/drdeng/miniconda3/envs/EMNerf/lib/python3.9/runpy.py", line 87, in _run_code
+    exec(code, run_globals)
+  File "/home/drdeng/Neural_SDF_BEM_AD/experiments/theory_radius/folds.py", line 236, in <module>
+    execute('TR-003', run, 3600., 20000)
+  File "/home/drdeng/Neural_SDF_BEM_AD/experiments/theory_radius/common.py", line 239, in execute
+    function(folder, budget)
+  File "/home/drdeng/Neural_SDF_BEM_AD/experiments/theory_radius/folds.py", line 232, in run
+    homotopy(folder, budget, case)
+  File "/home/drdeng/Neural_SDF_BEM_AD/experiments/theory_radius/folds.py", line 157, in homotopy
+    chart = Chart(start, 5, problem.length_unit_m, projected=True, storage=12)
+  File "/home/drdeng/Neural_SDF_BEM_AD/experiments/theory_radius/common.py", line 62, in __init__
+    self.space = self.update.prepare(base, band, storage)
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/geometry.py", line 76, in prepare
+    plain=super().prepare(curve,update_modes,curve_modes)
+  File "/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/continuation/updates.py", line 92, in prepare
+    raise ValueError("The accepted curve must already use the stage storage band.")
+ValueError: The accepted curve must already use the stage storage band.
