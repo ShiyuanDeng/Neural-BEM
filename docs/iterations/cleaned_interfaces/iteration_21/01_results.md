@@ -2,6 +2,8 @@
 
 Frozen plan: [iteration 20](../iteration_20/03_plan.md). Existing `feature/shape-frequency-continuation` branch; production policy unchanged.
 
+Baseline `b43fa04c2e27b6b1f7fd05eba153436f4f2e7cc0`. One worker, four frequency threads, auto device; single-threaded BLAS.
+
 Phase L gates: **PASS**. Usable lifts: `[{'frequency_hz': 250000000.0, 'N': 2}]`.
 
 | GHz | N | Full truncation floor | Paired residual | Full lift error | Ambiguity | Linear error |
@@ -15,5 +17,7 @@ Phase L gates: **PASS**. Usable lifts: `[{'frequency_hz': 250000000.0, 'N': 2}]`
 | 0.75 | 2 | 0.3711 | 0.3026 | 0.7244 | 1.608e-07 | 0.9763 |
 | 0.75 | 3 | 0.07111 | 0.0522 | 0.9372 | 1.278 | 0.9581 |
 | 0.75 | 4 | 0.05531 | 0.0126 | 1.051 | 2.029 | 0.9743 |
+
+Phase 0 strict replay: **PASS**. Checks: `{'accepted_steps': True, 'stop': True, 'loss': True, 'identical_coefficients': True}`. Loss relative difference 0; maximum coefficient difference 0.
 
 All start draws, refusals, optimizer trials, timeouts and source/input seals are in `results/validation/cleaned_interfaces/FM-003/`. Damped synthetic catalogs support no realism claim.
