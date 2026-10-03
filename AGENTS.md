@@ -14,3 +14,17 @@
   it. Do not discard changes to achieve a clean status.
 - Run appropriate validation before committing, then verify the push and the
   final working-tree status.
+
+# Code and evidence map
+
+- The maintained cleaned SC/MA inverse is `solvers/bem_inverse/`. Start with
+  its `README.md` for the API, dependency boundary, and validation commands.
+- Keep that package independent of `experiments/`, root `run_*.py` drivers,
+  and saved `results/`. Campaigns and truth-based scoring belong in experiments.
+- Old cleaned-interface and shared continuation module paths are compatibility
+  imports. Change their implementations in `solvers/bem_inverse/`.
+- Scope code searches to the relevant package and its tests. Consult `results/`
+  and `docs/iterations/` when a task needs recorded evidence or campaign history.
+- Preserve reference solvers, frozen inputs, source snapshots, and failed-run
+  evidence. Dated plans and archived dashboards describe historical work;
+  they do not select the current implementation.

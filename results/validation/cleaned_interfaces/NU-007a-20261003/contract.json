@@ -1,0 +1,36 @@
+{
+  "experiment": "NU-007a",
+  "source_states": "NU-006: last accepted state in every stage",
+  "sizes_m": [
+    1e-07,
+    0.001,
+    0.006,
+    0.018
+  ],
+  "directions": 3,
+  "seed": 5,
+  "bound_tolerance": 1e-09,
+  "bound_scale": "max(1, abs(host bound))",
+  "same_threshold_side": true,
+  "same_regularity_side": true,
+  "same_decisions_reasons_candidates": true,
+  "same_role_tiers": true,
+  "campaign_cases": [
+    "core__wrong_circle",
+    "core__circle_to_star",
+    "core__circle_to_c",
+    "core__kite",
+    "core__peanut",
+    "core__hook"
+  ],
+  "repeats": 3,
+  "execution": {
+    "device": "cuda",
+    "frequency_threads": 4,
+    "acceleration": "spd016",
+    "geometry": "both",
+    "resolution": 512
+  },
+  "adoption": "NU-001 no-drift and >=5/6 matches, same NU-006 decisions, work and tier counts; bit-identical fresh CPU/GPU accepted curves; full-path timing reported separately",
+  "disclosure": "Threshold-scaled gate chosen after original NU-007 diagnostic and 36-trial replay; not an independent unseen-data gate. Original failed evidence is preserved."
+}

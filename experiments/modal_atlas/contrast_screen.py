@@ -140,6 +140,7 @@ def source_paths():
              ROOT / 'results/validation/shape_continuation/SC-042-state-strategies/run.py'}
     paths.update(Path(m.__file__).resolve() for m in (atlas_cases, atlas_strategy_tests, forward, geometry, lm_backend))
     paths.update((ROOT / 'experiments/shape_continuation').glob('*.py'))
+    paths.update((ROOT / 'solvers/bem_inverse').rglob('*.py'))
     return sorted(paths)
 
 

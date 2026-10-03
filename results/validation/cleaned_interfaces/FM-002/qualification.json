@@ -1,0 +1,158 @@
+{
+  "test_returncode": 0,
+  "test_command": [
+    "/home/drdeng/miniconda3/envs/EMNerf/bin/python",
+    "-m",
+    "pytest",
+    "pytest/bem_inverse",
+    "experiments/cleaned_interface",
+    "experiments/shape_continuation",
+    "pytest/gpr_bem_kress",
+    "pytest/ordered_boundary",
+    "-q"
+  ],
+  "probes": [
+    {
+      "case": "modal__c13.3__development_c",
+      "stage": "warmup_025_real_relaxed",
+      "checks": [
+        {
+          "step_m": 1e-06,
+          "fd": 0.2746802002162249,
+          "derivative": 0.27468020016715394,
+          "error": 4.907096951001222e-11,
+          "passed": true
+        },
+        {
+          "step_m": 1e-07,
+          "fd": 0.27468020026046036,
+          "derivative": 0.27468020016715394,
+          "error": 9.33064181474208e-11,
+          "passed": true
+        }
+      ],
+      "gradient_refinement_relative": 3.28278099723476e-16,
+      "gradient_cosine_with_old": -0.998726624923437,
+      "passed": true
+    },
+    {
+      "case": "modal__c13.3__development_c",
+      "stage": "stage_4_real_relaxed",
+      "checks": [
+        {
+          "step_m": 1e-06,
+          "fd": -0.5908262490916805,
+          "derivative": -0.5908264502888592,
+          "error": 2.011971786952671e-07,
+          "passed": true
+        },
+        {
+          "step_m": 1e-07,
+          "fd": -0.5908264473497571,
+          "derivative": -0.5908264502888592,
+          "error": 2.939102072829769e-09,
+          "passed": true
+        }
+      ],
+      "gradient_refinement_relative": 5.7994158334581e-13,
+      "gradient_cosine_with_old": 0.4281907285584043,
+      "passed": true
+    },
+    {
+      "case": "modal__c13.3__shifted_star",
+      "stage": "warmup_025_real_relaxed",
+      "checks": [
+        {
+          "step_m": 1e-06,
+          "fd": -6.094789028849391e-07,
+          "derivative": -6.099306563003245e-07,
+          "error": 4.517534153854209e-10,
+          "passed": true
+        },
+        {
+          "step_m": 1e-07,
+          "fd": -6.099260424721905e-07,
+          "derivative": -6.099306563003245e-07,
+          "error": 4.613828134058742e-12,
+          "passed": true
+        }
+      ],
+      "gradient_refinement_relative": 2.0733694911396925e-10,
+      "gradient_cosine_with_old": 0.929572813382898,
+      "passed": true
+    },
+    {
+      "case": "modal__c13.3__shifted_star",
+      "stage": "stage_4_real_relaxed",
+      "checks": [
+        {
+          "step_m": 1e-06,
+          "fd": 0.34267038916818704,
+          "derivative": 0.34266988717655755,
+          "error": 5.01991629486831e-07,
+          "passed": true
+        },
+        {
+          "step_m": 1e-07,
+          "fd": 0.34266989308584517,
+          "derivative": 0.34266988717655755,
+          "error": 5.909287614791481e-09,
+          "passed": true
+        }
+      ],
+      "gradient_refinement_relative": 9.134300271980601e-13,
+      "gradient_cosine_with_old": 0.48160972381981354,
+      "passed": true
+    }
+  ],
+  "passed": true,
+  "backend": {
+    "solver": "nodal_kress",
+    "execution": {
+      "device": "auto",
+      "frequency_threads": 4,
+      "acceleration": "spd016",
+      "geometry": "both",
+      "resolution": 512
+    },
+    "counts": {
+      "evaluation_attempts": 60,
+      "evaluations": 60,
+      "failed_evaluations": 0,
+      "derivative_attempts": 10,
+      "derivatives": 10,
+      "failed_derivatives": 0,
+      "disk_batches": 0,
+      "relaxation_adjoint_attempts": 60,
+      "relaxation_adjoints": 60,
+      "relaxed_gradient_attempts": 20,
+      "relaxed_gradients": 20
+    },
+    "devices": {
+      "cuda": 60
+    },
+    "fallback_reasons": {},
+    "seconds": {
+      "evaluation_attempts": 0.0,
+      "evaluations": 8.319418038241565,
+      "relaxation_adjoint_attempts": 0.0,
+      "relaxation_adjoints": 1.9437335864640772,
+      "relaxed_gradient_attempts": 0.0,
+      "relaxed_gradients": 105.5655191517435,
+      "derivative_attempts": 0.0,
+      "derivatives": 0.3622912084683776
+    },
+    "work_semantics": "actual dispatched evaluations and derivative batches, including speculative threads; optimizer ledger separately retains SPD reservation/charge semantics",
+    "localization_model": "exact homogeneous disk Mie series, qualified by selected backend",
+    "ray": {
+      "gamma": 0.25,
+      "lo": 0.01,
+      "hi": 100.0,
+      "panels": 111,
+      "degree": 24
+    },
+    "retained_device_state": "one ray table; matrix and reusable LU factors retained on host"
+  },
+  "manifest_sha256": "4949ae7f788f50f5ad2d284f504b5f5c54428629223789871c6b38472ef30315",
+  "tests_sha256": "d997e350fcfbe12d88332a115a0d591160dc2e47eef4eb995cb7e164eb91771b"
+}

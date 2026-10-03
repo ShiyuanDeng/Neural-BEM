@@ -1,0 +1,78 @@
+{
+  "case": "modal__c13.3__development_c",
+  "stage": "warmup_025_real_relaxed",
+  "production_nodes": 512,
+  "archived_initial_loss": 0.009827056735279102,
+  "replayed_loss": 0.009827056735279106,
+  "archived_gradient_inf": 0.12819874044224644,
+  "frozen_weight_gradient": [
+    -0.1281987404422543,
+    0.010995537779116143,
+    0.005227888160959474
+  ],
+  "checks": [
+    {
+      "step_m": 1e-05,
+      "exact_loss_fd_gradient": [
+        1.3074357237940688,
+        -0.1790085171949132,
+        -0.052979507132212826
+      ],
+      "relative_gradient_error": 1.0973926763744415,
+      "gradient_cosine": -0.9987266212300007,
+      "exact_slope_along_negative_approx_gradient": 0.1698568788513169
+    },
+    {
+      "step_m": 1e-06,
+      "exact_loss_fd_gradient": [
+        1.3074364481509282,
+        -0.17900851953522867,
+        -0.05297950878870028
+      ],
+      "relative_gradient_error": 1.0973926237851392,
+      "gradient_cosine": -0.9987266248836574,
+      "exact_slope_along_negative_approx_gradient": 0.16985697174734687
+    },
+    {
+      "step_m": 1e-07,
+      "exact_loss_fd_gradient": [
+        1.3074364552286,
+        -0.17900851957859676,
+        -0.05297950885288505
+      ],
+      "relative_gradient_error": 1.0973926232708766,
+      "gradient_cosine": -0.9987266249186004,
+      "exact_slope_along_negative_approx_gradient": 0.16985697265550787
+    }
+  ],
+  "frozen_weight_fd_control": {
+    "gradient": [
+      -0.12819874044278645,
+      0.010995537770217001,
+      0.005227888148426341
+    ],
+    "relative_error": 1.1943585204265534e-10
+  },
+  "refined_check": {
+    "nodes": 1024,
+    "loss": 0.009827056735279113,
+    "gradient": [
+      1.3074364553587043,
+      -0.17900851957859676,
+      -0.05297950871410717
+    ],
+    "gradient_cosine": -0.9987266249192166,
+    "relative_loss_change": 6.661338147750939e-16
+  },
+  "local_steps": {
+    "step_m": 1e-07,
+    "loss_change_negative_approx_gradient": 1.3190312715162522e-07,
+    "loss_change_negative_finite_difference_gradient": -1.3206814638774822e-07
+  },
+  "record_sha256": "c0ce84887335f20bb86d5913136bdede8bb168228376c6a802bb69e955560050",
+  "source_sha256": {
+    "solvers/bem_inverse/full_matrix.py": "8b0338035fdf9a57c451a00dccbad4143eb971f5a94066431c2c4d00d7411f37",
+    "/tmp/relaxed_bie_review_20261003.py": "7f68bf7f0a54daca9ec5ffb42bdcf337b9fe64a43bae61843a5e61d5d3455ecb"
+  },
+  "scope": "Local derivative diagnostic only; no claim that a corrected derivative recovers this case."
+}

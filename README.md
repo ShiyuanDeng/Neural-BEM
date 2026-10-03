@@ -1,214 +1,78 @@
 # Neural SDF BEM AD
 
-**Latest all-scene results:** [TOP-025 video gallery](results/validation/topology/TOP-025-20260915-210356-all-scenes-current/README.md) · [Overview video](results/validation/topology/TOP-025-20260915-210356-all-scenes-current/videos/all_scenes.mp4) · [Final scenes](results/validation/topology/TOP-025-20260915-210356-all-scenes-current/all_scenes.png). Saved reference-pipeline runs: **7/12 pass all gates**. Every success, failure and work stop is included.
+Research code for 2-D dielectric transmission, boundary-element forward
+modeling, and inverse geometry reconstruction.
 
-**Current Cartesian full-inverse default:** compiled Kress + guarded reciprocal
-Jacobians + training-only readiness in the TOP-025 pipeline. Existing commands
-select it automatically; single-object and unsupported compiled fits retain full
-Kress fallbacks. Use `--inverse-runtime fast` for the previous operator profile or
-`--inverse-runtime reference` for FD/reference CPU. See the
-[pipeline guide](docs/pipelines/explicit_cartesian_fourier.md) and
-[default-promotion record](docs/iterations/speedup/iteration_07/01_results.md).
-The preceding [SPD-006 campaign](docs/iterations/speedup/iteration_06/01_results.md)
-recovered all 16 workers; its two hard scenes took **17m29s / 21m32s** with this setup.
+**Start with [`solvers/bem_inverse`](solvers/bem_inverse/README.md) for the
+maintained cleaned SC/MA inverse.** It provides the problem/observation API,
+continuation policy, solver services, geometry updates, and numerical audits.
+Campaign catalogs, truth-based scoring, and dated studies live separately in
+`experiments/` and `results/`.
 
-Research code for homogeneous full-space 2-D TMz dielectric transmission,
-neural implicit geometry, boundary-element forward modeling, and inversion.
+## Run and validate
 
-**Exploratory results (2026-10-02):** [ten-priority research report](docs/reports/exploration_2026-10-02.md)
-includes a 108-case shape-sensitivity atlas and TOP-009 finite-path audit,
-measured Fresnel inversions, TE/lossy derivatives, initialization and frequency
-controls, independent transient/half-space checks, sphere IBIM and Algoim.
-These are opt-in experiments with their numerical limits recorded.
+From the repository root, use the existing EMNerf environment:
 
-**Isolated continuation research (2026-09-22):**
-[Shape and frequency continuation](docs/pipelines/shape_frequency_continuation.md)
-uses Cartesian Fourier geometry, arclength normal updates, plane waves and
-dense nodal Müller/Kress. It has no dependency on the old inverse drivers and
-provides a small qualified baseline for reproducing the Borges–Rachh–Greengard
-continuation algorithm. Existing production defaults are unchanged.
+```bash
+export PYTHONPATH=solvers:.
+export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
+CI_PY=/home/drdeng/miniconda3/envs/EMNerf/bin/python
 
-**Cleaned SC/MA interface (2026-09-30):**
-[`experiments/cleaned_interface`](experiments/cleaned_interface/README.md)
-provides one cumulative policy, readable stage plans, an explicit solver
-service, and the selected SPD execution improvements. Focused CPU/CUDA checks
-pass. The [all-36 campaign](docs/iterations/cleaned_interfaces/iteration_03/01_results.md)
-passes 28/36 (recovery 34/36). Seven noisy cases fail the residual gate after the
-discrepancy stop; matched runtime retention is not established.
+# Check the package boundary and the cleaned numerical/campaign contracts.
+"$CI_PY" -m pytest pytest/bem_inverse experiments/cleaned_interface -q
 
-**The three current inverse pipelines are Implicit MLP + Method B, Explicit
-Cartesian Fourier, and Explicit Radial Fourier.** The implicit pipeline updates neural weights with the Kress
-adjoint; Method B supplies the MLP's boundary to the physical solver. Its
-gradient is validated, but recovery remains **FAIL / unresolved**: the new
-12-pair circle, ellipse-to-circle and star runs all fail overall acceptance.
-Radial Fourier recovers its canonical curve on recorded cases; MLP fitting and
-representation gates are separate. Cartesian Fourier runs without neural
-fitting or audits and includes corresponding topology suites. A matched
-three-way recovery benchmark has not been completed. Neural evidence is recorded in the
-[implementation report](docs/reports/implicit_mlp_adjoint_2026-09-07.md).
+# Inspect the existing campaign without launching fits.
+"$CI_PY" -m experiments.cleaned_interface inventory
+"$CI_PY" -m experiments.cleaned_interface plan --cases modal__c4__development_c
+```
 
-## Start here
+The [campaign guide](experiments/cleaned_interface/README.md) documents input
+preparation, source seals, CPU/CUDA selection, and fresh output directories.
+The default numerical policy and solver selection are unchanged by package
+isolation. Historical import paths continue to work.
 
-- [Project dashboard](docs/README.md): current baseline, the two current
-  research objectives, active tracks and what each is waiting for. **Start
-  here if you are picking up work.**
-- [Baseline B0](docs/baselines/B0_2026-09-10.md): the executable comparison
-  reference — commit `345038a`, the audited source for the current tracks —
-  and its provenance limitations.
-- [Current architecture](docs/current_architecture.md): actual capabilities,
-  defaults, and the distinction between implicit and explicit geometry.
-- [Implicit MLP + Method B](docs/pipelines/implicit_mlp.md): adjoint
-  updates, historical evidence, and acceptance requirements.
-- [Explicit Radial Fourier](docs/pipelines/explicit_radial_fourier.md): curve
-  recovery, MLP representation policies, and frozen neural metrics.
-- [Explicit Cartesian Fourier](docs/pipelines/explicit_cartesian_fourier.md):
-  MLP-free curve inversion and automatic topology, with their representation limits.
-- [Explicit Radial Fourier shape/material experiments](docs/pipelines/explicit_radial_shape_material.md):
-  the radial variant with one unknown interior permittivity.
-- [Results catalogue](results/README.md): pipeline, scene, date, outcome, and takeaway.
-- [Reproduction commands](docs/reproduction.md): adjoint inverse, controls,
-  gradient checks and fresh output paths.
-- [Documentation map](docs/README.md): current guidance, reports, references, and legacy records.
+## Where to work
 
-**Track A update (2026-09-11):** TOP-001 and TOP-005 are complete. The new
-opt-in `--include-simplest-candidate` policy reduces worst Cartesian split
-error from 175 µm to 31 nm across ten replays, using 42% fewer BIE solves.
-All five full-controller quality checks pass; total work falls 7%, with
-extra cost on four unchanged cases. [Report, videos and reproduction commands](results/validation/topology/TOP-005-20260911/README.md).
-
-**Broader performance benchmark:** [Topology scenes v1](docs/benchmarks/topology_scenes.md)
-adds distant/enclosing starts, ellipses, stars and three different targets.
-Current and future topology performance comparisons must report all twelve
-scenes, including failures; circular split improvements alone do not establish
-general recovery. TOP-006 tested both current policies: **5/12 scenes pass for
-each; the distant ellipse/star case fails**. [Results and visual comparisons](results/validation/topology/TOP-006-20260911-scenes-v1/README.md).
-
-**Track A update (2026-09-11, TOP-007):** four of those failures were uncaught
-geometry exceptions, not bad reconstructions — the optimizer could stop on the
-production resolution's feasibility boundary, which the refined evaluation then
-refused. The opt-in `--refined-feasibility-guard` requires every optimizer step
-to be admissible at both resolutions, using geometry checks and no extra
-solves. Guarded runs abort nothing and return 9/12 against the default's 7/12,
-with identical final states wherever both arms complete; **both arms still pass
-5/12**, so the remaining failure is shape, not feasibility.
-[Report and comparisons](results/validation/topology/TOP-007-20260911-refined-feasibility/README.md) ·
-[videos of every scene](results/validation/topology/TOP-007-20260911-refined-feasibility/videos.md).
-
-**Track A update (2026-09-12, TOP-008 and TOP-009):** the two candidates an
-evidence-based literature review accepted are now both measured. TOP-008: a
-probe the 8-mm radius floor refused was being recorded as a derivative of zero,
-freezing its Jacobian column, and a gradient assembled from those zeros could
-still report convergence. The opt-in `--feasible-fd-jacobian` measures the
-feasible side instead; it frees the pinned component from 8.000 mm to 22.737 mm,
-returns 10/12 runs against 9/12 and takes `split` to 0.000023 mm at a quarter of
-the solves — but **buys no new benchmark pass**, still 5/12.
-[Report](results/validation/topology/TOP-008-20260912-feasible-fd/README.md).
-
-TOP-009 then added the missing shape bandwidth. Adding modes fits the training
-data **248x better** while final boundary error, IoU and holdout error get
-**worse**, which stopped the line before the benchmark. A stage-3
-diagnostic corrected the reading: the **true geometry fits the same training
-acquisition to 3.23e-07 relative error**, so the reconstruction is 7.1e6x worse
-than this known attainable value. One component acquired star-like shape with
-similar perimeter, area and isoperimetric ratio. A truth-selected rotation of
-**34 degrees** reduces its boundary error, exposing a substantial phase mismatch.
-A fourth stage ran the mode ladder to
-exhaustion at K=9, enough for both a five- and a seven-lobed star: the answer
-improves to 11.849 mm from 17.599, still ends worse than the circles it started
-from, and remains **74,159x above the objective the true geometry attains**.
-**Independent review:** this demonstrates a suboptimal reconstruction, not a
-certified local minimum or unique inversion. Thirteen of fourteen refinements
-stopped on small loss change; the final data error already satisfies the
-controller's tolerance despite poor geometry. The next proposed check separates
-optimizer stopping from stationarity before choosing a restart strategy.
-[Review and counter repair](docs/iterations/topology/iteration_07/02_proposals/01_independent_review.md).
-[Report](results/validation/topology/TOP-009-20260912-bandwidth-capacity/README.md).
-
-**Track A update (2026-09-12, TOP-010):** the independent review's diagnostic
-refutes the local-minimum reading. At the saved state the terminal gradient is
-**4013x the optimizer's own tolerance**, stable across three finite-difference
-scales, with a full-rank Jacobian — and three restarts of the **unmodified**
-optimizer recover **1.7x** in the objective in 45 seconds with no source change.
-Three absolute constants, one of them serving as both the loss target and the
-accepted loss change, sit at the same order as the entire remaining objective.
-Yet matched boundary error moved 11.849 to 11.991 mm and IoU stayed at 0.7088.
-Four defects are now found and fixed — derivative, capacity, ladder truncation,
-premature stopping — **each worth objective and none worth geometry**, and the
-benchmark still passes 5/12. The open question is why the gated geometry is
-insensitive to four orders of magnitude of training objective.
-[Report](results/validation/topology/TOP-010-20260912-stopping-vs-stationarity/README.md).
-
-## Implementation at a glance
-
-| Entry point | What it currently runs |
+| Location | Role |
 |---|---|
-| `run_implicit_mlp_inverse.py` | Implicit MLP + Method B: direct neural-weight Kress-adjoint updates with actual-MLP acceptance |
-| `run_explicit_radial_fourier_inverse.py` | Explicit Radial Fourier: curve-owned inverse with MLP fitting/audits; old `run_mlp_sdf_inverse_comparison.py` alias retained |
-| `run_explicit_cartesian_fourier_inverse.py` | MLP-free single-component Cartesian Fourier inverse |
-| `run_fourier_topology_controller.py --chart cartesian` | Automatic Cartesian Fourier birth, death, split and merge; optional selective candidate refinement |
-| `run_selective_topology_experiment.py` | TOP-005: baseline replay checks, twenty paired split replays and five full-controller qualifications |
-| `run_topology_scene_benchmark.py` | Frozen twelve-scene benchmark over named controller arms, geometry/holdout checks, overlays and difficult-case videos |
-| `run_radial_fourier_topology_challenges.py --chart cartesian` | Cartesian versions of the three topology replacement challenges |
-| `run_sdf_inverse_comparison.py` | Shared comparison driver: Kress neural cases use adjoint by default; archived known-shape-family controls and explicit parameter-FD references remain runnable |
-| `run_sdf_representation_ablation.py` | Explicit Radial Fourier under `legacy_strict`, `curve_only`, and `export_only` representation policies |
-| `run_material_inverse_comparison.py` | Fixed or radial-K2 shape plus one interior permittivity, using analytic Kress derivatives |
-| `run_material_robustness_comparison.py` | Bounded continuation/restart comparison for that shape/material problem |
-| `run_neural_metric_comparison.py` | Frozen neural-feature metrics on radial geometry; no training during inversion |
+| [`solvers/bem_inverse/`](solvers/bem_inverse/README.md) | Maintained cleaned inverse implementation and public API |
+| [`solvers/gpr_bem_kress/`](solvers/gpr_bem_kress/README.md), [`solvers/ordered_boundary/`](solvers/ordered_boundary/README.md) | Reusable physics and ordered-boundary geometry used by the inverse |
+| [`experiments/cleaned_interface/`](experiments/cleaned_interface/README.md) | Campaigns, qualification, historical regressions, and compatibility imports |
+| [`experiments/shape_continuation/`](experiments/shape_continuation/README.md), `experiments/modal_atlas/` | Research drivers; extracted shared numerics forward to `bem_inverse` |
+| [`pytest/`](pytest/README.md) | Package and solver regression tests |
+| [`solvers/`](solvers/README.md) | Other inverse implementations and independent reference solvers |
+| [`docs/`](docs/README.md) | Pipeline guides, dated reports, and research history |
+| [`results/`](results/README.md) | Recorded evidence, inputs, source snapshots, and failures |
 
-The explicit radial CLI's `legacy_strict` policy describes per-step neural
-fitting. The implicit MLP CLI instead updates network weights from the Kress
-adjoint, with a fresh Method-B extraction and BEM solve controlling acceptance.
-Gradient correctness and accepted data decrease are distinct from converged
-physical reconstruction; retain the independent-reference accuracy gates.
+For cleaned-interface code changes, search `solvers/bem_inverse` first. Search
+historical evidence explicitly when needed, for example:
 
-The archived Method-B parameter inverses solved known shape families with
-3 circle, 4 ellipse, 5 star or 7 random-feature controls. The star's five lobes
-were fixed in advance; its center, radius, amplitude and rotation were recovered
-from data. These are small-parameter family recoveries, not full-MLP inverses.
-Their [archive](results/legacy/known_shape_family_parameter_inverse) preserves
-the original observations and parameter-recovery evidence.
+```bash
+rg 'make_backend' solvers/bem_inverse experiments/cleaned_interface pytest/bem_inverse
+rg 'discrepancy' docs/iterations/cleaned_interfaces
+```
 
-These [Legacy known-shape-family controls](docs/legacy/known_shape_family_controls.md)
-are distinct from the neural
-`--optimizer parameter_fd` reference, which updates every MLP weight through
-numerical derivatives. Finite differences also validate adjoint derivatives;
-those checks do not compare full reconstruction performance.
+## Numerical scope and evidence
 
-`gpr_bem_kress` supplies ordered Müller/Kress solves and opt-in single-interface
-discrete geometry/material derivatives. `gpr_bem_mod` retains compressed-cloud
-forward and neural B-scan adjoint implementations. Selector-backed commands
-use `--solver`, then `SOLVER`, then frozen `gpr_bem_ref`; use `--solver=mod`
-explicitly for MOD. Ordered inverse
-drivers import their peers directly.
+The cleaned CI-001 campaign recorded **28/36 configurations passing its frozen
+contract and 34/36 recovered**. Seven noisy cases fail the residual gate after
+discrepancy stopping; matched runtime retention was not established.
+[Campaign report](docs/iterations/cleaned_interfaces/iteration_03/01_results.md).
+Extraction does not change those results or promote experimental methods.
 
-The single-component radial driver is star-shaped, and so is the Cartesian
-chart under its polar-angle gauge -- an open concern recorded 2026-09-15,
-since removing that restriction was a reason for adopting the Cartesian
-chart. See the Cartesian pipeline's representation limits. The separate automatic
-topology controller chooses birth, death, split and merge from data without a
-supplied object count; its evidence is bounded to the recorded synthetic cases.
-The maintained inverse remains full-space and two-dimensional. Separate
-[half-space forward](results/halfspace/README.md) and
-[3-D scalar sphere](results/ibim3d/README.md) experiments are available;
-layered-ground and 3-D inversion are not implemented.
+`nodal_kress` remains the default. `modal_muller` requires explicit registration;
+geometry selection is separate. The modal method is boundary-collocation-free,
+but the complete inverse still uses quadrature and sampled checks. See the
+[campaign guide](experiments/cleaned_interface/README.md) for capabilities and
+limits, including opt-in full-matrix observations and geometry variants.
 
-## Repository layout
+Other research paths remain available: [implicit MLP](docs/pipelines/implicit_mlp.md),
+[Cartesian Fourier/topology](docs/pipelines/explicit_cartesian_fourier.md),
+[radial Fourier](docs/pipelines/explicit_radial_fourier.md), and
+[shape/frequency continuation](docs/pipelines/shape_frequency_continuation.md).
+Their claims and defaults are documented in their own guides.
 
-| Location | Contents |
-|---|---|
-| `solvers/` | Project-owned geometry, forward solvers, inverse algorithms, and references |
-| `pytest/` | Regression sources and validation drivers |
-| `results/inverse/implicit_mlp/` | MLP-owned adjoint recovery runs, including failed cases |
-| `results/inverse/radial_fourier/` | Curve-owned recovery, representation policies, shape/material and frozen-metric experiments |
-| `results/representation/` | Neural fitting and distance-supervision evidence |
-| `results/validation/` | Geometry, forward, conversion, and derivative studies |
-| `results/demos/` | Demonstrations, separate from inverse recovery claims |
-| `results/legacy/` | Known-shape-family parameter inverses, superseded inverse/development runs and archived solver experiments |
-| `docs/pipelines/` | The three current pipelines, radial variants, and their validation limits |
-| `docs/reports/`, `docs/reference/`, `docs/legacy/` | Dated evidence, technical detail, and superseded plans |
-
-Measurements retain their original run IDs and machine-readable payloads.
-[Relocations](results/relocations.json) record old and new paths;
-`results/sdf_boundary_parameterization` is a compatibility link for recorded
-geometry paths and the existing notebook. Original source snapshots and
-commands describe the historical run, even when current code has moved on.
+The previous long [repository overview](docs/legacy/repository_overview_2026-10-03.md)
+and [research dashboard](docs/legacy/dashboard_2026-10-03.md) are preserved as
+historical snapshots. Reference solvers, experimental code, and recorded
+results remain in place.

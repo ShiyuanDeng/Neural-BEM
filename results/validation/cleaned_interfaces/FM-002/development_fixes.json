@@ -1,0 +1,21 @@
+{
+  "scope": "Pre-seal development tests; no FM-002 trajectory had run. Full initial console outputs are in the task transcript, not separate saved log files.",
+  "checks": [
+    {
+      "command_scope": "existing test_full_matrix.py",
+      "result": "15 passed, 1 failed",
+      "issue": "Purely residual-relative relaxed-field stationarity gate failed near an exact fit.",
+      "fix": "Add an explicit signal-scale floating-point roundoff allowance; retain the residual-relative tolerance."
+    },
+    {
+      "command_scope": "test_relaxed_gradient.py plus test_full_matrix.py",
+      "result": "28 passed, 1 failed",
+      "issue": "New accounting test looked up an unqualified ledger key; actual work keys include the stage prefix. Numerical gradient and descent assertions passed.",
+      "fix": "Check the stage-qualified correction-solve keys."
+    },
+    {
+      "command_scope": "expanded test_relaxed_gradient.py plus test_full_matrix.py",
+      "result": "32 passed in 29.62 seconds"
+    }
+  ]
+}

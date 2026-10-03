@@ -70,7 +70,8 @@ def check_stage_resolution(shape, stage, contrast, acquisition, work):
 def provenance():
     root = Path(__file__).resolve().parents[2]
     files = [*Path(__file__).parent.glob("*.py"), *(root / "solvers/gpr_bem_kress").glob("*.py"),
-             *(root / "solvers/ordered_boundary").glob("*.py"), *(root / "solvers/periodic_kress").glob("*.py")]
+             *(root / "solvers/ordered_boundary").glob("*.py"), *(root / "solvers/periodic_kress").glob("*.py"),
+             *(root / "solvers/bem_inverse").rglob("*.py")]
     return dict(commit=subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root, text=True).strip(),
         git_status=subprocess.check_output(["git", "status", "--short"], cwd=root, text=True),
         source_sha256={str(p.relative_to(root)): hashlib.sha256(p.read_bytes()).hexdigest() for p in files if p.is_file()},

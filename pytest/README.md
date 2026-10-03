@@ -3,10 +3,16 @@
 Tests mirror the package or study they own. Generated evidence lives only
 under [`../results/`](../results); `pytest/` contains no result bundles.
 
+For the maintained cleaned inverse, run `pytest/bem_inverse` together with
+`experiments/cleaned_interface`. The latter retains historical campaign
+fixtures and numerical regressions. The [package guide](../solvers/bem_inverse/README.md)
+gives exact commands and the checks for shared continuation/solver changes.
+
 ## Layout
 
 | Directory | Responsibility | Uses solver-error metrics? |
 |---|---|---:|
+| [`bem_inverse/`](bem_inverse/README.md) | Standalone cleaned API, dependency boundary, and historical-import compatibility | Yes |
 | `gpr_bem_shared/` | Selector-backed tests shared by frozen `ref` and operational `mod` | Yes, in system/theory tests |
 | `gpr_bem_mod/` | MOD-only adjoint, inverse, and shape-derivative checks | Yes, except the kernel-identity test |
 | [`gpr_bem_kress/`](gpr_bem_kress) | Direct-import Kress/Müller blocks, systems, receivers, fields, and single-interface discrete JVP/objective-adjoint contracts | **Yes** |

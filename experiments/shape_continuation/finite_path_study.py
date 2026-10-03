@@ -29,6 +29,7 @@ def geometric_score(curve, truth):
 
 def frozen_sources():
     paths = list((sc.ROOT / 'experiments/shape_continuation').glob('*.py'))
+    paths.extend((sc.ROOT / 'solvers/bem_inverse').rglob('*.py'))
     return {str(p.relative_to(sc.ROOT)): sc.digest(p) for p in paths}
 
 

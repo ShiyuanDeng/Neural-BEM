@@ -1,6 +1,4 @@
-"""CI-001: one continuation policy over an explicitly selected physics service."""
-from .problem import Observation, Problem
-from .physics import Execution, make_backend, register_backend
-from .policy import CumulativePolicy
+"""Compatibility entry point; maintained API: :mod:`bem_inverse`."""
+from bem_inverse import Observation, Problem, Execution, make_backend, register_backend, CumulativePolicy
 
 __all__ = ['Observation', 'Problem', 'Execution', 'make_backend', 'register_backend', 'CumulativePolicy']

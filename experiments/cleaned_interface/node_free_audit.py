@@ -212,8 +212,9 @@ def main():
         raise FileExistsError('Use a fresh output directory; preserve all prior diagnostics.')
     output.mkdir(parents=True)
     torch.set_num_threads(1)
+    source_paths = {*Path(__file__).parent.glob('*.py'), *ROOT.glob('solvers/**/*.py')}
     sources = {str(p.relative_to(ROOT)): hashlib.sha256(p.read_bytes()).hexdigest()
-               for p in Path(__file__).parent.glob('*.py')}
+               for p in sorted(source_paths)}
     write(output/'provenance.json', dict(sources=sources, parent_commit=subprocess.check_output(
         ['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip(), python=platform.python_version(),
         numpy=np.__version__, scipy=scipy.__version__, torch=torch.__version__,

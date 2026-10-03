@@ -1,12 +1,23 @@
-# Cleaned inverse interface (CI-001)
+# Cleaned inverse campaigns (CI-001)
+
+The maintained numerical API now lives in
+[`solvers/bem_inverse`](../../solvers/bem_inverse/README.md). This directory
+owns campaign commands, qualification, scoring, historical regression fixtures,
+and compatibility imports. Edit runtime implementations in `bem_inverse`;
+the old module paths forward to the same implementations. Existing command
+lines remain valid. Pre-extraction source seals require their recorded sources;
+use a fresh output directory for a campaign on the extracted code.
 
 FM-001 adds opt-in full source-by-receiver observations for `nodal_kress`.
 The runner flattens these in source-major order for fitting and audits;
 localization still reads only the damped paired diagonal. Ordinary paired
 calls and the default policy retain their behavior. `full_matrix.RelaxedStage`
 selects a positive `relaxed_tau` for a stage (`None` retains ordinary loss).
-The receiver weights are frozen in the LM Jacobian and recomputed at every
-trial and refined evaluation; final audits always use ordinary real-data loss.
+FM-002 supplies the complete relaxed-loss gradient, including shape-dependent
+receiver weights and penalty normalization, by eliminating the auxiliary field
+and differentiating the resulting objective. The frozen-weight data Jacobian
+is retained only as a curvature approximation. Trial and refined evaluations
+recompute the exact loss; final audits always use ordinary real-data loss.
 `full_matrix.RealRelaxedPrefix` is the fixed opt-in FRr schedule. Additional
 adjoint RHS batches reuse existing CPU/CUDA LU factors and count against the
 unchanged work budgets. Full-matrix frontier norms use all measured entries.
@@ -19,6 +30,20 @@ environment. It refuses changed source/input seals, unqualified catalogs,
 incomplete run overwrites, and unpassed arm gates. Each arm stops at its
 second loss of a previously recovered case. See the
 [frozen FM-001 plan](../../docs/iterations/cleaned_interfaces/iteration_18/03_plan.md).
+
+The corrected three-case, four-arm comparison driver is
+`python -m experiments.cleaned_interface.fm002`. Invoke `seal`, `qualify`,
+`run`, then `report`. It independently varies early damping and relaxation while all
+arms keep damped paired localization. The new campaign has its own source
+archive and input seal. FM-001 must be reproduced from its archived sources;
+the corrected gradient does not rewrite that experiment. See the
+[FM-002 plan](../../docs/iterations/cleaned_interfaces/iteration_19/03_plan.md).
+
+FM-002 completed all 12 fixed runs: both damped arms recovered 3/3 selected
+cases, and both real-prefix arms recovered 1/3. Corrected relaxation added
+no recoveries. The [results and limits](../../docs/iterations/cleaned_interfaces/iteration_19/01_results.md)
+record the numerical stops, costs, 477 passing tests and unchanged ordinary
+controls. The ordinary damped default remains selected.
 
 One maintained, truth-free SC/MA continuation runner. **The CI-001 campaign
 passes 28 of 36 configurations under the frozen contract**, and recovery is 34/36,
@@ -88,8 +113,7 @@ also requires a new campaign.
 ## Public interface
 
 ```python
-from experiments.cleaned_interface import Problem, Observation, Execution
-from experiments.cleaned_interface.runner import fit
+from bem_inverse import Problem, Observation, Execution, fit
 
 result = fit(
     problem,  # original curve, real/damped observations, acquisition, contrast, units
@@ -103,7 +127,7 @@ result = fit(
 Only the benchmark layer loads targets, for explicit observation generation
 and scoring after fitting and numerical audit return.
 
-The solver contract is in [physics.py](physics.py). Predictions carry an
+The solver contract is in [physics.py](../../solvers/bem_inverse/physics.py). Predictions carry an
 opaque handle; the optimizer passes that handle back for derivatives through
 the **complete projected geometry trial**. The selected service also owns
 localization qualification, its exact-disk landscape service, frontier
@@ -128,21 +152,21 @@ serial CPU baseline. Pair it with `device=auto` or `cpu`.
 
 ## Modal Müller service
 
-[modal_muller.py](modal_muller.py) implements the same contract as
+[modal_muller.py](../../solvers/bem_inverse/modal_muller.py) implements the same contract as
 `NodalKress` with the Chebyshev Müller discretization: Fourier–Galerkin
 traces `|m| <= K_trace` and no boundary collocation nodes in the operator. It is the clean
 rewrite of the prototype that the
 [independent review](../../docs/iterations/cleaned_interfaces/node_free_modal_muller_review.md)
-checked. Registration is explicit, so CI-001's frozen sources stay unchanged:
+checked. Registration remains explicit. Existing source seals must still match their recorded code:
 
 ```python
-from experiments.cleaned_interface.modal_muller import register
+from bem_inverse.modal_muller import register
 register()
 result = fit(problem, solver='modal_muller', execution=Execution(device='auto', frequency_threads=4))
 ```
 
 Physics and geometry are separate selections. The call above preserves the
-legacy spline geometry. Select the retained NU-006 geometry directly with
+legacy spline geometry. Select certified spectral geometry directly with
 `fit(..., geometry_update='certified_spectral')`, or use the modal CLI:
 
 ```bash
@@ -151,7 +175,8 @@ legacy spline geometry. Select the retained NU-006 geometry directly with
 ```
 
 Available geometry selections are `spline`, `spectral` (NU-003),
-`certified_spectral` (NU-006), and `analytic_spectral` (NF-001 experimental
+`certified_spectral` (NU-006 preparation plus NU-007 certificates on CUDA),
+and `analytic_spectral` (NF-001 experimental
 analytic quadrature tangent). Omission retains the existing runner/wrapper
 choice. Explicit selection is recorded in campaign identity, plans, decisions,
 configuration and results; changing it requires a fresh campaign. It cannot be
@@ -160,7 +185,7 @@ runs on the CPU and retains the same sampled finite trial and validity tiers.
 
 `device` has the same meaning as for Kress. `cpu` is the unchanged reference
 path. `auto` runs geometry preparation and assembly on CUDA through
-[modal_cuda.py](modal_cuda.py), and falls back to the CPU after device
+[modal_cuda.py](../../solvers/bem_inverse/modal_cuda.py), and falls back to the CPU after device
 out-of-memory with a recorded reason. `cuda` fails instead of falling back.
 Scalar Bessel/Hankel values, Graf waves, LU, fields and the Jacobian always
 run on the CPU, so handles hold no device memory.
@@ -252,7 +277,7 @@ Both were fixed afterwards
 
 ## Coefficient normal update (NU-001)
 
-[n_update.py](n_update.py) is an alternative geometry update with the same
+[n_update.py](../../solvers/bem_inverse/n_update.py) is an alternative geometry update with the same
 step coordinates as `ProjectedUpdate`. It moves the Laurent coefficients
 directly:
 
@@ -313,9 +338,19 @@ decision-identical to NU-005 and cuts geometry preparation from 150 s to 3.9 s o
 cases; tests in `test_nu006.py`. Results:
 [iteration 14](../../docs/iterations/cleaned_interfaces/iteration_14/01_results.md).
 
+[nu007a.py](nu007a.py) completes GPU certificate qualification under the
+disclosed threshold-scaled comparison gate. All 864 offline comparisons and
+18 complete CPU/GPU pairs pass, retaining archived NU-006 paths and results.
+Across six core cases, the sum of per-case median runtimes falls from 247.2 s
+to 149.6 s, and certificate work from 103.5 s to 7.5 s. Explicit
+`certified_spectral` selection now uses `DeviceCertifiedUpdate` on CUDA and
+retains `BatchedCertifiedUpdate` on CPU; the spline/nodal defaults remain.
+The original failed NU-007 evidence is preserved. See the
+[qualification and integration report](../../results/validation/cleaned_interfaces/NU-007a-20261003/README.md).
+
 ## Executable policy
 
-[policy.py](policy.py) is the single definition of `cumulative_sc_ma/1.0.0`.
+[policy.py](../../solvers/bem_inverse/policy.py) is the single definition of `cumulative_sc_ma/1.0.0`.
 The CLI plan, `plan.md`, `plan.json`, and resolved `decisions.json` come from
 its operation objects. Static fits list actual frequencies/wavenumbers,
 damping, weights, bands, accuracy profile, optimizer settings, budgets,

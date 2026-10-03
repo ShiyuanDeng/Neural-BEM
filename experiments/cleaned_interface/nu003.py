@@ -38,62 +38,14 @@ from .io import read, write, curve_from, portable
 from .n_update_audit import ArmPolicy, CORE, case_drift, relative_columns
 from .physics import Execution
 from .policy import CumulativePolicy
+from bem_inverse.spectral import (
+    CONSTRUCTION, arclength_quadrature, spectral_project,
+    SpectralProjectedUpdate,
+)
 
 ROOT = b.ROOT
 BASE = ROOT/'results/validation/cleaned_interfaces'
 ROUNDOFF = 1e-12   # refinement differences below this are round-off (pre-registered, iteration 11)
-CONSTRUCTION = 'z + P_K[R(z+h*n)-R(z)], R = eq. 9 arclength quadrature (no splines); FD derivative of the complete trial'
-
-
-def arclength_quadrature(moved, nodes, band):
-    """Coefficients |k| <= band of the arclength curve of ``moved`` by eq. 9 on its uniform nodes.
-
-    Returns (coefficients, crop error): the error is max |P_band R(moved)(alpha_i) - moved(theta_i)|,
-    the same intentional-smoothing quantity ``project`` reports, sampled at alpha(theta_i).
-    """
-    angles, length = arclength_angles(nodes)
-    count = nodes.num_nodes
-    w = moved.values(count)
-    weights = w*nodes.speeds/(length/(2*np.pi))
-    step = np.exp(-1j*angles)
-    powers = np.empty((band+1, count), complex)
-    powers[0] = 1.
-    for k in range(1, band+1):
-        powers[k] = powers[k-1]*step                       # e^{-i k alpha}
-    positive = powers@weights/count                        # k = 0..band
-    negative = np.conj(powers[1:])@weights/count           # k = -1..-band
-    coefficients = np.concatenate((negative[::-1], positive))
-    evaluated = coefficients[band]+np.conj(powers[1:]).T@positive[1:]+powers[1:].T@negative
-    return coefficients, float(np.max(np.abs(evaluated-w)))
-
-
-def spectral_project(curve, coefficients, band, count, length_unit_m, *, validate=False):
-    """``geometry.project`` with A replaced by ``arclength_quadrature``; same signature and checks."""
-    nodes = curve.nodes(count)
-    z = curve.values(count)
-    h = normal_basis(nodes, len(coefficients)//2)@coefficients/length_unit_m
-    normal = nodes.normals@np.array([1, 1j])
-    moved = FourierCurve.from_samples(z+h*normal, count//2-1)
-    n = moved.nodes(count)
-    if validate:
-        if n.signed_area <= 0 or np.min(n.speeds) < 1e-6*np.mean(n.speeds):
-            raise UpdateRefused('irregular_parameterization', 'Invalid displaced curve.')
-        if self_intersections(n.points):
-            raise UpdateRefused('self_intersection', 'Displaced curve self-intersects.')
-    return arclength_quadrature(moved, n, band)
-
-
-class SpectralProjectedUpdate(ProjectedUpdate):
-    name = 'centred_state_band_spectral_projection'
-
-    def settings(self):
-        return dict(super().settings(), construction=CONSTRUCTION,
-                    resampler='eq. 9 quadrature on the uniform grid (count and 2*count); no splines',
-                    boundary_samples=True, projection_error_control='coarse/fine diagnostic; not a rigorous bound')
-
-    def _project(self, *args, **kwargs):
-        self.counts['geometry_projections'] += 1
-        return spectral_project(*args, **kwargs)
 
 
 # --------------------------------------------------------------------------- pre-check

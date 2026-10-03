@@ -1,6 +1,11 @@
 # Solvers and inverse implementations
 
-The two current inverse pipelines are [Implicit MLP + Method B](../docs/pipelines/implicit_mlp.md)
+The maintained cleaned SC/MA inverse is [`bem_inverse`](bem_inverse/README.md).
+It owns the continuation runner, solver services, and shared numerical code;
+campaign drivers remain under `experiments/cleaned_interface`.
+
+Other inverse paths include [Implicit MLP + Method B](../docs/pipelines/implicit_mlp.md),
+[Explicit Cartesian Fourier](../docs/pipelines/explicit_cartesian_fourier.md),
 and [Explicit Radial Fourier](../docs/pipelines/explicit_radial_fourier.md).
 The neural adjoint gradient is validated, but current neural recovery fails its
 acceptance checks. Explicit radial reconstruction succeeds in recorded controls;
@@ -11,6 +16,7 @@ neural fitting/export has separate outcomes. See the
 
 | Package | Role |
 |---|---|
+| [`bem_inverse`](bem_inverse/README.md) | Maintained cleaned SC/MA inverse, shared continuation numerics, and explicit nodal/modal services |
 | `gpr_bem_ref` | Frozen original and selector default |
 | `gpr_bem_mod` | Maintained compressed-cloud forward, older neural B-scan adjoint, and ordered inverse comparison peer |
 | `gpr_bem_kress` | Ordered Müller/Kress forward, multi-component assembly and opt-in single-interface discrete derivatives |

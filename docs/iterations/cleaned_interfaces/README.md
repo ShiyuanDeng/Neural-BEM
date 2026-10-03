@@ -11,6 +11,25 @@ implementation first, with the 36-scene campaign to be run by the user.
 
 ## Current handoff
 
+**NU-007a GPU certificates (2026-10-03):** qualified and integrated for explicit
+`certified_spectral` selection on CUDA. All 864 offline comparisons and 18
+full-path pairs pass; archived NU-006 paths and final curves are unchanged.
+Six-case median totals fall from 247.2 s to 149.6 s, with certificate work
+reduced from 103.5 s to 7.5 s. CPU selection and the spline/nodal defaults
+remain unchanged. The original NU-007 failure is preserved. See the
+[qualification report](../../../results/validation/cleaned_interfaces/NU-007a-20261003/README.md).
+
+**FM-002 relaxed-BIE review (2026-10-03):** the complete reduced-loss gradient
+is implemented and qualified; all 12 fixed damping/relaxation runs are complete.
+Both damped arms recover 3/3 cases, while both real-prefix arms recover 1/3.
+Relaxation improves the failed endpoints but adds no recoveries. Retain the
+ordinary damped default and close this tested variant, with no universal
+claim about relaxation: the four failures are numerical-resolution stops.
+All 477 regression tests pass, and the ordinary controls reproduce FM-001
+bit-for-bit. See [iteration 19](iteration_19/01_results.md) and its
+[advance plan](iteration_19/03_plan.md). This uses nodal Kress physics and
+does not extend the node-free campaign coverage.
+
 **NF-001 outsider audit (2026-10-02–03):** the maintained claim is now
 boundary-collocation-free modal physics with optional spline-free quadrature
 geometry, not an end-to-end sample-free inverse. Explicit geometry selection
@@ -20,12 +39,15 @@ as an experimental option. See [iteration 17](iteration_17/01_results.md), the
 [advance plan](iteration_16/03_plan.md) and the
 [evidence bundle](../../../results/validation/cleaned_interfaces/NF-001-outsider-review/README.md).
 The user authorized these code fixes and experiments without further approval.
-NU-006 is selectable as `--geometry-update certified_spectral`; the legacy
-public default is still spline. NU-007 remains unadopted.
+Certified spectral geometry is selectable as `--geometry-update certified_spectral`;
+the legacy public default is still spline. CUDA certificate evaluation now
+uses the qualified NU-007 path described above.
 
 | Item | State |
 |---|---|
-| Current cycle | [Iteration 17](iteration_17/01_results.md): NF-001 outsider review and integrated claim/interface fixes; analytic quadrature tangent retained as opt-in after bounded experiments |
+| GPU certificate completion | [NU-007a](../../../results/validation/cleaned_interfaces/NU-007a-20261003/README.md): integrated on CUDA after threshold-scaled qualification; 39.5% less wall time on six core cases |
+| Relaxed-BIE cycle | [Iteration 19](iteration_19/01_results.md): complete reduced gradient; all 12 controlled runs complete; no recovery advantage from relaxation under the tested settings |
+| Node-free cycle | [Iteration 17](iteration_17/01_results.md): NF-001 outsider review and integrated claim/interface fixes; analytic quadrature tangent retained as opt-in after bounded experiments |
 | Previous cycle | [Iteration 15](iteration_15/01_results.md): NU-007 (user: "go"), GPU certificates, **stopped at stage 1**. Decisions and tiers matched in all 864 pre-check trials, and certificate time fell 10× (1,520 s → 151 s). The pre-registered relative-bound gate failed (1.5·10⁻⁵). The diagnostic shows these gaps only at bounds ≤ 10⁻⁴ (round-off floor), with no bound within 6.4·10⁻³ of the decision threshold. The campaign was not run. Proposed, not run: NU-007a with a threshold-scaled gate. [Iteration 14](iteration_14/01_results.md): NU-006 (user: "yes go") **retained and adopted as the default `prepare`**. The NU-005 update with all its `prepare` projections batched on the RTX 5090 is decision-identical to NU-005 on the six core cases (same steps and units, final curves within 2.1·10⁻¹⁰ σ₀). Geometry preparation falls from 150 s to 3.9 s, and wall time from 390 s to 242 s (nodal: 573 s). The NU-005 certificates are now 43% of wall time (104 s). Proposed, not run: certificate reuse from modal physics, batched LU and Graf waves on the GPU, all-36. [Iteration 13](iteration_13/01_results.md): NU-005 (user: "keep up to NU005") **retained, no sampled fallback**. Certificate tiers (exact area, then a Lemma 3–4 increment, then the full |W|² certificate) in front of the sampled validity test decided all 1,131 validity checks on the six core cases. The decisions and final curves are bit-identical to NU-004-MS, and the pre-check gates held (864 trials, no shadow disagreement). Certificates add 103 s (390 s against MS's 293 s). Not established: refusal without samples (no trial was refused). Proposed, not run: NU-006 (NUFFT quadrature), certificate reuse from modal physics, Krawczyk refusal, all-36. [Iteration 12](iteration_12/01_results.md): NU-004 (user: "yes go") **retained**. Modal Müller physics with the NU-003 spline-free map matches nodal on 6/6 core cases with no drift flag. It is decision-identical to nodal and to a modal + spline control (same steps, same 9,677 units, final curves within 6·10⁻⁸ σ₀), at 293 s against nodal's 573 s. The quadrature is now 52% of wall time. Still sampled: the self-intersection test. Proposed, not run: NU-005 (validity without samples), NU-006 (NUFFT quadrature), then all-36. [Iteration 11](iteration_11/01_results.md): NU-003 (user: "go") **qualifies**. The CI-001 trial map with its spline resampler replaced by the eq. 9 quadrature matches nodal on 6/6 core cases with no drift flag, and is decision-identical (same accepted steps in all 72 stages, same 9,677 units, final curves within 6·10⁻⁸ σ₀). Geometry preparation is 2.2× slower (total wall time +15%). Still node-based: `nodal_kress` physics and the sampled validity test. Proposed, not run: NU-004 (NU-003 + modal Müller). [Iteration 10](iteration_10/01_results.md): NU-002 offline pre-check (user: "go"). The eq. 9 spectral arclength reset keeps the shape within 10⁻⁵ σ₀ at K = 192 up to r_σ ≈ 3.4, but at the damped bands K = 8–20 it moves the shape by 10⁻⁴–3·10⁻² σ₀ on every drifted state, nodal included (3/64 pass, all peanut). The planned arm B + reset run was not started. Proposed, not run: NU-003, the nodal increment map with its spline resampler replaced by eq. 9. [Iteration 09](iteration_09/01_results.md): NU-001 completed all 12 CUDA runs on six core configurations. Arm A matches 2/6 and arm B 3/6; both trigger drift flags, so the pre-registered decision keeps the nodal trial map. The [iteration 08 plan](iteration_08/03_plan.md) and [validation evidence](../../../results/validation/cleaned_interfaces/NU-001-VALIDATION.md) record the design and execution. [Iteration 07](iteration_07/01_results.md): modal fixes yield 7/9 matching reruns; the other 27 have not been rerun. [Iteration 06](iteration_06/01_results.md): CI-001-modal 19/36 (nodal 28/36). [Iteration 03 / CI-001](iteration_03/01_results.md): nodal 28/36; requirement 1 not satisfied |
 | User requirements | [Three requirements and the cumulative-pipeline clarification](iteration_01/02_proposals/01_user_requirements.md) |
 | Plan | [CI-001 — restore clean inverse interfaces and verify retention](iteration_01/03_plan.md) |
@@ -63,6 +85,7 @@ by scene identity. CI-001 does not establish all-36 retention (28/36).
 | [10](iteration_10/01_results.md) | NU-002 arclength-reset replay: exact at K = 192 for r_σ ≤ 3.4; at K = 8–20 a reset changes the shape, so it cannot repair drift where drift starts; NU-003 proposed |
 | [11](iteration_11/01_results.md) | NU-003 spectral increment map: pre-check passes; six-case CUDA run matches 6/6 and is decision-identical to nodal; adopt; 15% slower |
 | [12](iteration_12/01_results.md) | NU-004 modal Müller + spline-free map: 6/6, decision-identical to nodal and modal + spline, 2.0× faster than nodal; quadrature dominates geometry |
+| [19](iteration_19/01_results.md) | FM-002: corrected relaxed gradient and fixed four-arm, three-case study; damping 3/3 with or without relaxation, real prefix 1/3 with or without; 477 tests pass |
 
 Follow the [shared iteration workflow](../README.md). Iteration 02 records
 the implementation checks; iteration 03 records the inverse campaign.

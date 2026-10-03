@@ -220,6 +220,11 @@ def test_preparation_freezes_contract_and_refuses_unsealed_augmentation(tmp_path
     assert result['cases']==36 and result['missing_damped']==16
     m=b.verify(tmp_path)
     assert m['comparison']==portable(b.COMPARISON)
+    maintained={str(p.relative_to(b.ROOT)) for p in (b.ROOT/'solvers/bem_inverse').rglob('*.py')}
+    assert maintained and maintained <= m['sources'].keys()
+    import tarfile
+    with tarfile.open(tmp_path/'sources.tar.gz') as archive:
+        assert maintained <= set(archive.getnames())
     with pytest.raises(ValueError,match='sealed'):
         b.verify(tmp_path,require_damped=True)
     with pytest.raises(ValueError,match='explicitly'):
