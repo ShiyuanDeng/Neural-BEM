@@ -53,7 +53,7 @@ def audit(curve, stage, config, problem, physics, update, seconds):
             # dense systems long enough to extract the reciprocal derivatives.
             # Normalization/stacking below is exactly Objective's common map.
             from experiments.shape_continuation.lm_backend import normalize
-            observed = np.column_stack([o.scattered for o in problem.real])
+            observed = np.column_stack([o.scattered.reshape(-1) for o in problem.real])
             space = update.prepare(curve, stage.update_modes, curve.band)
             low_columns, high_columns, coarse_jac, fine_jac = [], [], [], []
             def evaluate(shape, observation, nodes, category):
@@ -67,12 +67,13 @@ def audit(curve, stage, config, problem, physics, update, seconds):
             for observation in problem.real:
                 low = evaluate(curve, observation, stage.nodes, 'audit_base')
                 high = evaluate(curve, observation, stage.refined_nodes, 'audit_fine')
-                low_columns.append(np.array(low.prediction, copy=True))
-                high_columns.append(np.array(high.prediction, copy=True))
+                low_columns.append(np.array(low.prediction, copy=True).reshape(-1))
+                high_columns.append(np.array(high.prediction, copy=True).reshape(-1))
                 for state, destination in ((low, coarse_jac), (high, fine_jac)):
                     ledger.reserve(1)
                     ledger.charge('reciprocal', 'derivative')
-                    destination.append(physics.derivative(state, update, space))
+                    block = physics.derivative(state, update, space)
+                    destination.append(block.reshape(-1, block.shape[-1]))
                 del state, low, high
             low_prediction, high_prediction = np.column_stack(low_columns), np.column_stack(high_columns)
             ja = normalize(np.stack(coarse_jac, axis=1), observed, stage.weights, config.residual_floor)
@@ -88,7 +89,7 @@ def audit(curve, stage, config, problem, physics, update, seconds):
                 predictions = []
                 for observation in problem.real:
                     state = evaluate(candidate, observation, stage.refined_nodes, 'audit_fd')
-                    predictions.append(np.array(state.prediction, copy=True))
+                    predictions.append(np.array(state.prediction, copy=True).reshape(-1))
                     del state
                 residuals.append(normalize(np.column_stack(predictions)-observed, observed,
                                            stage.weights, config.residual_floor))
@@ -100,6 +101,12 @@ def audit(curve, stage, config, problem, physics, update, seconds):
                 jacobian_relative=derivative, jacobian_column_norm=colnorm, full_trial_fd_relative=error,
                 fine_loss=.5*float(residual@residual),
                 relative_residual=np.linalg.norm(high_prediction-observed, axis=0)/np.linalg.norm(observed, axis=0))
+            if all(o.scattered.ndim == 2 for o in problem.real):
+                paired_prediction = np.column_stack([np.diag(high_prediction[:,i].reshape(o.scattered.shape))
+                                                     for i,o in enumerate(problem.real)])
+                paired_observed = np.column_stack([np.diag(o.scattered) for o in problem.real])
+                row['paired_relative_residual'] = (np.linalg.norm(paired_prediction-paired_observed,axis=0)
+                                                  /np.linalg.norm(paired_observed,axis=0))
     except Exception:
         row = dict(passed=False, traceback=traceback.format_exc())
     return dict(row, work=ledger.snapshot(), seconds=perf_counter()-started, solver=physics.name,
@@ -197,8 +204,12 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
                         accepted.append(dict(stage=op.label, iteration=iteration, M=op.stage.update_modes,
                             loss=evaluation.loss, units=ledger.units, curve=record_curve(evaluation.curve)))
                         save('accepted.json', dict(states=accepted))
+                    objective_options = {}
+                    if getattr(op.stage, 'relaxed_tau', None) is not None:
+                        from .full_matrix import RelaxedObjective
+                        objective_options['objective_factory'] = RelaxedObjective
                     result = fit_stage(curve, op.stage, problem.contrast, update, op.optimizer, ledger,
-                                       on_accept=checkpoint, physics=physics)
+                                       on_accept=checkpoint, physics=physics, **objective_options)
                     curve = result.curve
                     row = dict(stage=op.label, M=op.stage.update_modes, K_geometry=op.stage.curve_modes,
                         outcome=result.outcome, stop=result.stop_reason, detail=result.detail,
@@ -267,5 +278,7 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
         total_seconds=perf_counter()-started, physics=physics.receipt(), geometry_work=update.counts,
         geometry_update=geometry_update, geometry_settings=update_settings)
     row['total_units'] = row['fit_and_localization_units']+row['audit_units']
+    if 'paired_relative_residual' in final_audit:
+        row['paired_relative_residual'] = final_audit['paired_relative_residual']
     save('fit_result.json', row)
     return row

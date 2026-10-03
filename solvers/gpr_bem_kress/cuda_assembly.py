@@ -449,19 +449,19 @@ class DeviceFactors:
             lu, pivots = self._offloaded
         return tuple(torch.tensor(v, device=self.device) for v in (self.host, lu, pivots))
 
-    def solve(self, rhs):
+    def solve(self, rhs, *, adjoint=False):
         """Return ``(solution, relative residual)``; host complex arrays in and out."""
         try:
-            return self._solve_device(rhs)
+            return self._solve_device(rhs, adjoint=adjoint)
         except Exception as exc:
             if not (self.fallback and out_of_memory(exc)):
                 raise
             with self._lock:
                 self.fallback_count += 1
             record_fallback("reciprocal solve")
-            return self._solve_host(rhs)
+            return self._solve_host(rhs, adjoint=adjoint)
 
-    def _solve_host(self, rhs):
+    def _solve_host(self, rhs, *, adjoint=False):
         from scipy.linalg import lu_solve
         with self._lock:
             if self._resident is not None:
@@ -469,19 +469,22 @@ class DeviceFactors:
                 self._offloaded = (resident[1].cpu().numpy(), resident[2].cpu().numpy())
             lu, pivots = self._offloaded
         # Torch returns LAPACK getrf pivots (one-based); SciPy expects zero-based.
-        solution = lu_solve((lu, pivots.astype(np.int64) - 1), np.asarray(rhs, dtype=np.complex128))
-        residual = np.linalg.norm(self.host @ solution - rhs) / max(np.linalg.norm(rhs), np.finfo(float).tiny)
+        solution = lu_solve((lu, pivots.astype(np.int64) - 1), np.asarray(rhs, dtype=np.complex128),
+                            trans=2 if adjoint else 0)
+        matrix = self.host.conj().T if adjoint else self.host
+        residual = np.linalg.norm(matrix @ solution - rhs) / max(np.linalg.norm(rhs), np.finfo(float).tiny)
         return solution, float(residual)
 
-    def _solve_device(self, rhs):
+    def _solve_device(self, rhs, *, adjoint=False):
         import torch
         matrix, lu, pivots = self._operands()
         b = torch.as_tensor(np.ascontiguousarray(rhs, dtype=np.complex128), device=self.device)
         column = b.ndim == 1
         if column:
             b = b[:, None]
-        x = torch.linalg.lu_solve(lu, pivots, b)
-        residual = float(torch.linalg.norm(matrix @ x - b)) / max(float(torch.linalg.norm(b)),
+        x = torch.linalg.lu_solve(lu, pivots, b, adjoint=adjoint)
+        operator = matrix.mH if adjoint else matrix
+        residual = float(torch.linalg.norm(operator @ x - b)) / max(float(torch.linalg.norm(b)),
                                                                   np.finfo(float).tiny)
         solution = x.cpu().numpy()
         return (solution[:, 0] if column else solution), residual

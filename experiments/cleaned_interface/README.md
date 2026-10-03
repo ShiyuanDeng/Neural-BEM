@@ -1,5 +1,25 @@
 # Cleaned inverse interface (CI-001)
 
+FM-001 adds opt-in full source-by-receiver observations for `nodal_kress`.
+The runner flattens these in source-major order for fitting and audits;
+localization still reads only the damped paired diagonal. Ordinary paired
+calls and the default policy retain their behavior. `full_matrix.RelaxedStage`
+selects a positive `relaxed_tau` for a stage (`None` retains ordinary loss).
+The receiver weights are frozen in the LM Jacobian and recomputed at every
+trial and refined evaluation; final audits always use ordinary real-data loss.
+`full_matrix.RealRelaxedPrefix` is the fixed opt-in FRr schedule. Additional
+adjoint RHS batches reuse existing CPU/CUDA LU factors and count against the
+unchanged work budgets. Full-matrix frontier norms use all measured entries.
+
+The preregistered campaign driver is `python -m experiments.cleaned_interface.fm001`:
+`seal`, `controls`, `catalogs`, `paths`, `arm --arm F`, `arm --arm FRr`, and
+`report`, in that order after Phase-0 replay. Run from the repository root
+with `PYTHONPATH=.:solvers`, single-threaded BLAS, and the archived `EMNerf`
+environment. It refuses changed source/input seals, unqualified catalogs,
+incomplete run overwrites, and unpassed arm gates. Each arm stops at its
+second loss of a previously recovered case. See the
+[frozen FM-001 plan](../../docs/iterations/cleaned_interfaces/iteration_18/03_plan.md).
+
 One maintained, truth-free SC/MA continuation runner. **The CI-001 campaign
 passes 28 of 36 configurations under the frozen contract**, and recovery is 34/36,
 the same as the archived strategies. Seven noisy cases fail the residual gate after the

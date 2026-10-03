@@ -107,9 +107,10 @@ class NodalKress:
     def validate(self, problem):
         if problem.material != 'equal_density_homogeneous' or not isinstance(problem.initial, FourierCurve):
             raise ValueError('nodal_kress requires a single Fourier curve and equal-density homogeneous material.')
-        if any(not isinstance(o.acquisition, F.PointSourceAcquisition) or not o.acquisition.paired
+        if any(not isinstance(o.acquisition, F.PointSourceAcquisition) or
+               len(o.acquisition.sources) != len(o.acquisition.receivers)
                for o in (*problem.real, *problem.damped)):
-            raise ValueError('CI-001 disk localization requires paired point-source acquisition.')
+            raise ValueError('CI-001 disk localization requires point sources with a matched receiver diagonal.')
         if self.execution.device == 'cuda' and not CA.available():
             raise RuntimeError('Explicit CUDA execution requested, but no CUDA device is available.')
         if self.execution.device == 'cuda' and self.execution.acceleration == 'reference':
@@ -223,6 +224,36 @@ class NodalKress:
         return result
 
     @geometry_validated
+    def relaxation_components(self, prediction):
+        """Reuse the forward LU for H=A^{-H}C^H; return backend-owned receiver rows."""
+        from scipy.linalg import lu_solve
+        started = perf_counter()
+        state = prediction._handle
+        self._record('relaxation_adjoint_attempts')
+        try:
+            with execution(kernels='reference', device='cpu'):
+                rows = F._operators(state.curve)[1](state.curve, state.acquisition.receivers,
+                                                    state.wavenumber).state_rows
+            rhs = rows.conj().T
+            if isinstance(state.factors, CA.DeviceFactors):
+                h, residual = state.factors.solve(rhs, adjoint=True)
+            else:
+                h = lu_solve(state.factors, rhs, trans=2)
+                residual = np.linalg.norm(state.matrix.conj().T@h-rhs)/np.linalg.norm(rhs)
+            if not np.isfinite(h).all() or residual > 1e-10:
+                raise FloatingPointError('Unqualified adjoint Mueller solve')
+        except Exception:
+            self._record('failed_relaxation_adjoints', perf_counter()-started)
+            raise
+        self._record('relaxation_adjoints', perf_counter()-started)
+        return h, rows
+
+    def relaxation_weights(self, prediction, tau):
+        from .full_matrix import receiver_weights
+        h, rows = self.relaxation_components(prediction)
+        return receiver_weights(h, rows, tau, paired=prediction._handle.acquisition.paired)
+
+    @geometry_validated
     def observable_frontier(self, curve, observation, contrast, top, threshold):
         from experiments.shape_continuation.atlas import orthonormal_normal_basis
         state = self.evaluate(curve, observation, contrast,
@@ -238,7 +269,7 @@ class NodalKress:
         if getattr(state.factors, 'fallback_count', 0) > before:
             self._record('factor_fallbacks', fallback='frontier device solve OOM; retained host LU')
         self._record('derivatives', perf_counter()-started)
-        norms = np.linalg.norm(jacobian, axis=0)
+        norms = np.linalg.norm(jacobian.reshape(-1, jacobian.shape[-1]), axis=0)
         paired = np.r_[norms[0], np.hypot(norms[1::2], norms[2::2])]
         if not np.isfinite(paired).all() or paired.max() <= 0:
             raise FloatingPointError('No finite nonzero observable frontier')

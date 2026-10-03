@@ -297,7 +297,7 @@ class Objective:
     def __init__(self, stage, contrast, config, ledger, *, physics=None):
         self.stage, self.contrast, self.config, self.ledger = stage, float(contrast), config, ledger
         self.physics = physics
-        self.observed = np.column_stack([o.scattered for o in stage.observations])
+        self.observed = np.column_stack([o.scattered.reshape(-1) for o in stage.observations])
         self.refined_cache = {}
         self.count = len(stage.observations)
 
@@ -322,7 +322,7 @@ class Objective:
                 except (ValueError, FloatingPointError, np.linalg.LinAlgError):
                     self.ledger.fail(category)
                     return None
-                columns.append(value.prediction if keep else value)
+                columns.append(np.asarray(value.prediction if keep else value).reshape(-1))
                 if keep:
                     forwards.append(value)
         prediction = np.column_stack(columns)
@@ -351,7 +351,8 @@ class Objective:
             for call in calls:
                 self.ledger.reserve(1)
                 self.ledger.charge("reciprocal", "derivative")
-                blocks.append(call())
+                block = call()
+                blocks.append(block.reshape(-1, block.shape[-1]))
         derivative = np.stack(blocks, axis=1)  # (pairs, frequencies, directions)
         return normalize(derivative, self.observed, self.stage.weights, self.config.residual_floor)
 
@@ -376,7 +377,8 @@ class StageResult:
 
 @fit_geometry_validation
 @geometry_validated
-def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None, physics=None):
+def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None, physics=None,
+              objective_factory=None):
     """Run one stage, optionally under a fit-local ``geometry_validation`` cache.
 
     Exact reuse and spatial intersection checks are enabled by default. Use
@@ -388,7 +390,7 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
     started = perf_counter()
     if curve.band != stage.curve_modes:
         raise ValueError("Pass the curve at the stage storage band.")
-    objective = Objective(stage, contrast, config, ledger, physics=physics)
+    objective = (objective_factory or Objective)(stage, contrast, config, ledger, physics=physics)
     m = objective.count
     history, trials, checks = [], [], []
     accepted_steps, converged, stop_reason, outcome, detail = 0, False, "maximum_iterations", NORMAL_RETURN, None

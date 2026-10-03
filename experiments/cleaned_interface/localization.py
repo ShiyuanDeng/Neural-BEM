@@ -1,5 +1,6 @@
 """MA-004 localization, using policy controls and the selected physics service."""
 from time import perf_counter
+from dataclasses import replace
 import numpy as np
 
 from experiments.shape_continuation.geometry import FourierCurve
@@ -11,6 +12,9 @@ from .geometry import resize
 def localize(problem, physics, rule, ledger, on_progress=None):
     started = perf_counter()
     obs = problem.damped[:rule.frequencies]
+    # FM-001 changes fitting acquisition, never the localization information.
+    obs = tuple(o if o.acquisition.paired else replace(o,
+        acquisition=replace(o.acquisition, paired=True), scattered=np.diag(o.scattered)) for o in obs)
     observed = np.column_stack([o.scattered for o in obs])
     norms = np.linalg.norm(observed, axis=0)
     xs = np.arange(rule.center_min_m, rule.center_max_m + .0001, rule.center_step_m)
