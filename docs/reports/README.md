@@ -10,6 +10,7 @@ historical context.
 
 | Report | Scope |
 |---|---|
+| [inverse_review_2026-10-03.md](inverse_review_2026-10-03.md) | Critical review of current node-free claims, numerical performance, benchmark rigor, data access and literature comparability; saved-artifact audit included |
 | [exploration_2026-10-02.md](exploration_2026-10-02.md) | Ten ranked exploratory tasks: shape sensitivity and TOP-009 finite path; Fresnel data; TE/lossy; sampling/continuation; gprMax transients; half-space; sphere IBIM; Algoim |
 | [overnight_2026-09-25.md](overnight_2026-09-25.md) | Shape-continuation briefing: SC-036 matched finite paths, SC-035 centred state band, SC-037 later release; state restriction helps peanut/C/kite with a star tradeoff; no method promoted |
 | [implicit_mlp_adjoint_2026-09-07.md](implicit_mlp_adjoint_2026-09-07.md) | Direct neural Kress-adjoint implementation and gradient validation; bounded early runs and all three new 12-pair circle/ellipse/star cases fail recovery acceptance |
