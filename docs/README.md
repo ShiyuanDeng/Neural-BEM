@@ -19,6 +19,8 @@ research records below retain their original scope.
 
 ## Research and evidence
 
+- [Local-radius theory diagnostics](iterations/theory_radius/README.md): empirical
+  fixed-chart stability, archived handoff applicability, and stationary branches.
 - [Cleaned-interface track](iterations/cleaned_interfaces/README.md): CI, NU,
   and node-free reviews; historical FM-001/FM-002 records remain there.
 - [Relaxed-BIE track](iterations/relaxed_bie/README.md): current interpretation,
