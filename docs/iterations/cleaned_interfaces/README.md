@@ -87,6 +87,8 @@ by scene identity. CI-001 does not establish all-36 retention (28/36).
 | [11](iteration_11/01_results.md) | NU-003 spectral increment map: pre-check passes; six-case CUDA run matches 6/6 and is decision-identical to nodal; adopt; 15% slower |
 | [12](iteration_12/01_results.md) | NU-004 modal Müller + spline-free map: 6/6, decision-identical to nodal and modal + spline, 2.0× faster than nodal; quadrature dominates geometry |
 | [19](iteration_19/01_results.md) | FM-002: corrected relaxed gradient and fixed four-arm, three-case study; damping 3/3 with or without relaxation, real prefix 1/3 with or without; 477 tests pass |
+| [20](iteration_20/03_plan.md) / [21](iteration_21/01_results.md) | FM-003: 512-start paired stage-2 census; the lowest-loss endpoint continues to recover the contrast-13.3 C (search failure supported); no zero-loss endpoint |
+| [22](iteration_22/03_plan.md) / [23](iteration_23/01_results.md) | FM-004 (user: "go"): all 11 below-gap census endpoints continued; 4/11 recover, the contrast-4 control fails; every failure is the CI-001 numerical-resolution hard stop. Proposed, not run: FM-005 with RB-001's resolution response |
 
 Follow the [shared iteration workflow](../README.md). Iteration 02 records
 the implementation checks; iteration 03 records the inverse campaign.
