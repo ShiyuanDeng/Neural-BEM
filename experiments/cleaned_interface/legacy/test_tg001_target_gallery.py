@@ -1,9 +1,9 @@
-"""TG-001 target fixtures and case rows; no forward solves."""
+"""LEGACY TG-001 target fixtures and case rows; no forward solves."""
 import numpy as np
 import pytest
 
-from . import benchmark as b
-from . import target_gallery as tg
+from .. import benchmark as b
+from . import tg001_target_gallery as tg
 
 
 def test_logo_glyph_is_the_vendored_closed_polygon():

@@ -1,0 +1,392 @@
+{
+  "experiment": "TG-002",
+  "purpose": "the ten-scene benchmark; inputs only",
+  "scenes": {
+    "circle": {
+      "shape": {
+        "source": "SC-022 wrong_circle: radius 50 mm",
+        "band": 1,
+        "taper": null,
+        "arclength": false
+      },
+      "placement": {
+        "offset_mm": 22,
+        "direction_deg": 35,
+        "rotation": 0.0
+      }
+    },
+    "kite": {
+      "shape": {
+        "source": "SC-025 kite (Colton-Kress): 25 mm scale",
+        "band": 8,
+        "taper": null,
+        "arclength": false
+      },
+      "placement": {
+        "offset_mm": 30,
+        "direction_deg": 150,
+        "rotation": 0.5
+      }
+    },
+    "peanut": {
+      "shape": {
+        "source": "SC-025 peanut: 50 mm (0.75 + 0.3 cos 2t)",
+        "band": 8,
+        "taper": null,
+        "arclength": false
+      },
+      "placement": {
+        "offset_mm": 34,
+        "direction_deg": 255,
+        "rotation": 1.1
+      }
+    },
+    "star": {
+      "shape": {
+        "source": "SC-022 circle_to_star: 50 mm (1 + 0.25 cos 5t)",
+        "band": 6,
+        "taper": null,
+        "arclength": false
+      },
+      "placement": {
+        "offset_mm": 26,
+        "direction_deg": 320,
+        "rotation": 0.41
+      }
+    },
+    "asymmetric": {
+      "shape": {
+        "source": "SC-050 new_asymmetric: 50 mm (0.92 + 0.16 cos 3t + 0.12 sin 4t + 0.055 cos(7t+0.4))",
+        "band": 8,
+        "taper": null,
+        "arclength": false
+      },
+      "placement": {
+        "offset_mm": 38,
+        "direction_deg": 80,
+        "rotation": -0.32
+      }
+    },
+    "c_shape": {
+      "shape": {
+        "source": "SC-022 circle_to_c (development_c): R 40 mm, half-width 18 mm, half-angle 110 deg",
+        "band": 10,
+        "taper": null,
+        "arclength": true
+      },
+      "placement": {
+        "offset_mm": 30,
+        "direction_deg": 205,
+        "rotation": 0.3
+      }
+    },
+    "hook": {
+      "shape": {
+        "source": "SC-025 hook: R 36 mm, half-width 13 mm, half-angle 130 deg",
+        "band": 10,
+        "taper": null,
+        "arclength": true
+      },
+      "placement": {
+        "offset_mm": 26,
+        "direction_deg": 290,
+        "rotation": 2.4
+      }
+    },
+    "cross": {
+      "shape": {
+        "source": "TG-001 cross: rounded plus sign, arm half-width 0.36 of arm length",
+        "band": 20,
+        "taper": 10,
+        "arclength": true
+      },
+      "placement": {
+        "offset_mm": 34,
+        "direction_deg": 15,
+        "rotation": 0.35
+      }
+    },
+    "cog": {
+      "shape": {
+        "source": "TG-001 cog: 8 teeth, r = 0.94 + 0.12 tanh(3 cos 8t)/tanh 3",
+        "band": 32,
+        "taper": 20,
+        "arclength": false
+      },
+      "placement": {
+        "offset_mm": 22,
+        "direction_deg": 170,
+        "rotation": 0.17
+      }
+    },
+    "aphex_twin": {
+      "shape": {
+        "source": "TG-001 Aphex Twin logo glyph (public-domain SVG, see LOGO_PROVENANCE)",
+        "band": 32,
+        "taper": 16,
+        "arclength": true
+      },
+      "placement": {
+        "offset_mm": 38,
+        "direction_deg": 235,
+        "rotation": 0.0
+      }
+    }
+  },
+  "start": {
+    "center_m": [
+      0.5,
+      0.5
+    ],
+    "radius_m": 0.065
+  },
+  "contrasts": [
+    0.5,
+    4.0,
+    13.3
+  ],
+  "logo": {
+    "source": "https://en.wikipedia.org/wiki/File:Aphex_Twin_logo.svg",
+    "licence": "Public domain",
+    "author": "Original logo by Paul Nicholson; vectorized by Iwantmorelife",
+    "used": "first path only (the central glyph); the surrounding ring is a separate annulus and is omitted"
+  },
+  "frequencies_hz": [
+    250000000.0,
+    375000000.0,
+    500000000.0,
+    625000000.0,
+    750000000.0,
+    875000000.0,
+    1000000000.0,
+    1125000000.0,
+    1250000000.0,
+    1375000000.0,
+    1500000000.0,
+    1625000000.0,
+    1750000000.0,
+    1875000000.0,
+    2000000000.0,
+    2125000000.0,
+    2250000000.0,
+    2375000000.0,
+    2500000000.0
+  ],
+  "damping_ratio": 0.25,
+  "acquisition": "CI-001 frozen 24-pair ring",
+  "noise": "none; observed equals the N2048 prediction",
+  "qualification": {
+    "nodes": [
+      1024,
+      2048
+    ],
+    "max_relative_difference": 1e-08
+  },
+  "sources": {
+    "experiments/benchmark/__init__.py": "ff72e151de67136ccc8b6efcdeb1dc56fb2d017adcc1834a6f17040173661ac6",
+    "experiments/benchmark/__main__.py": "b0c17fc890403d40b3ec29f7cbb563d630f8fc65b05bb155888efae47282846e",
+    "experiments/benchmark/assets/aphex_twin_logo.svg": "05f73997e0bd08e6ba18073783c5e9824ba9d2664f699580995a443b9faa66ec",
+    "experiments/benchmark/campaign.py": "90aff244f4c49b11fb92bc83634792b845a4a0e70b749946e0cb709ed6e3df97",
+    "experiments/benchmark/nl001.py": "a9f89cadf23d22b65189a474c170ac0ba0bb31efdadc35542dc673c3eb54f8ae",
+    "experiments/benchmark/scenes.py": "2bf6987eb4d28bb2c19578328903be2586794049bc176c2e60e22bfc29f5b789",
+    "experiments/benchmark/test_benchmark.py": "f637ae55c61e5c7126ef52799e15bcec64fadb4e12a9295e1378e2245d355661",
+    "experiments/cleaned_interface/benchmark.py": "65b61d2cd3d9bf1a8e9797915a5432b8afe3cef7bea38603785ba5cd6f51b529",
+    "solvers/bem_inverse/__init__.py": "6d5340ad8a2ad99649fc260a6bfa5446cec05efd967b8d10a8bf4d81fd6b3396",
+    "solvers/bem_inverse/analytic_projection.py": "ba0c11c0833baf0086bc9bf860284aecd9b4165789899b62fb0c7414bfd9a864",
+    "solvers/bem_inverse/batched.py": "e38b1926e2f19dec8dfc7fe00fb2becf2fe77e65a32d97056501d63635406a16",
+    "solvers/bem_inverse/certified.py": "589f07524be04f5f86a6a128f24bddde0784e3b38abe1970161b0f9f6613882b",
+    "solvers/bem_inverse/continuation/__init__.py": "86ba4f139e92f8cc8e6c4017bcf818d39fa6fc8ecc93546ac6de9682bc979a05",
+    "solvers/bem_inverse/continuation/forward.py": "7e7e60f0a6093b383653bea7ab1b5a5712464c48feb18d1c2a802ddc57fc8c3d",
+    "solvers/bem_inverse/continuation/geometry.py": "f7302ebb445b226acd3c4cafb68047f31cfef85654959c2c1f319a897983578a",
+    "solvers/bem_inverse/continuation/geometry_runtime.py": "cb7c7f3aeea9e0ed238f70b25527078b1101f462393920159fa7ee196ab0e1d4",
+    "solvers/bem_inverse/continuation/lm_backend.py": "e944947a4d243989e6f9001b64d0b9d59805dae0ad54bb68a13bd6b1e7a4099a",
+    "solvers/bem_inverse/continuation/updates.py": "66106909f583bfd26adf97e344984dbf51d50e0f267a80ce6fa772f0a1287c50",
+    "solvers/bem_inverse/continuation/validation.py": "c5bf3baa1951f7e65f5ca802640942a4b74c81e90c0a18afbe546bbcbba464dd",
+    "solvers/bem_inverse/damped_cuda.py": "23ede4c7a38d8f268f45bdb252e1e924ece2365025ecd3fa6a20153259778353",
+    "solvers/bem_inverse/device_certified.py": "ce9ea9db87a15a2bbe107dda73ba0f03b62f34a2a494dd067e24f232c93e662c",
+    "solvers/bem_inverse/full_matrix.py": "2db0bfde23cbe6c5000c440eca7f7474c41029ca3e33830097a5943d999ba2b9",
+    "solvers/bem_inverse/geometry.py": "958a57599c402b020593376ea78e1246b41d43787e9673e181936fbf4db4c0e6",
+    "solvers/bem_inverse/geometry_selection.py": "9c8f738e5c605ce874f5fd78c8bc632ff4a9497b8ca0e3aafc040c611cef328e",
+    "solvers/bem_inverse/io.py": "b9f9fd20ead7f5a40d5636e96517e1087391d73910ee1632cb94636cbcc6d9ad",
+    "solvers/bem_inverse/localization.py": "ba87071aaf5836d29ac4f22137dab7ca461f9f07475eaae538e05b4a3b1572ba",
+    "solvers/bem_inverse/mie_grid.py": "88b1d08bea24cd80b7cbd169ab39c6fbe25c7d5a8c5b92b6b3b4b6f9613e6b9b",
+    "solvers/bem_inverse/mie_localize.py": "c32a2c2a533070a4016c7d092f212c1e5bbf3709957572c9d3193702de9b1229",
+    "solvers/bem_inverse/modal_cuda.py": "d873681f60fc4ceb94cdb560829c7fa97b8018ea44b07213b1dc3d7d868707ff",
+    "solvers/bem_inverse/modal_geometry.py": "48b2a77da07160193f1cceb625817802a2d3f79382bae6ab3c8d911fed096fec",
+    "solvers/bem_inverse/modal_muller.py": "e75129e3acdff02c81377f204d63b2f5a397fe3c9c785e93c366fb2591bb35c9",
+    "solvers/bem_inverse/modal_operator.py": "ba6bfe318d5d1f8d97e19c3404c6ed6780d25a0df84cee9fdb6e4b99c94b2461",
+    "solvers/bem_inverse/n_reparam.py": "b1a5ed78a4e6ee0daf5432716fb3dd9165a8aa8e00c732dbc17a6d5ae2534189",
+    "solvers/bem_inverse/n_update.py": "713a698d6cb6555354729f1d2db77e99500f0ee1c9bee2c1315d0eb8e8481548",
+    "solvers/bem_inverse/normal_basis.py": "b2388c9bd74e10301910145eacf92bd8df89789ee2857f237bae60091c1a5ced",
+    "solvers/bem_inverse/physics.py": "9ac3ec4a2dbc649fc9b2761d063f9c1d6bf4eaee6a98f8ee795b32c7cc0c921f",
+    "solvers/bem_inverse/policy.py": "e270fff33c2c27378a24fc7a4e6ccc07c9db4eed015b9f0587694c7c41be38ba",
+    "solvers/bem_inverse/problem.py": "6b62280ff443734e7924ae3d8820147ee930124032ecaa69fd20e2c891f0f390",
+    "solvers/bem_inverse/relaxed_gradient.py": "8fe03505ee89292edaea428ab86b46eca3e0d1e63761c200aa510ee778717362",
+    "solvers/bem_inverse/runner.py": "d1b2dc71a1c69ae78800531a9cf13ee799681f73ccfdc6551dd72cb055715d8e",
+    "solvers/bem_inverse/spectral.py": "527a0764cdb8c360c026e622b4c2547cc1b2495574ac6af33420d3024a4d03a6"
+  },
+  "archive_sha256": "129f23cfdac33b18ca6758651398c29f4ade695b729fbd847e66c602a2f2f926",
+  "parent_commit": "2d735c432b54e8c6bf5b27452dd9becd919a20f7",
+  "initial_status": "R  experiments/cleaned_interface/assets/aphex_twin_logo.svg -> experiments/benchmark/assets/aphex_twin_logo.svg\nRM experiments/cleaned_interface/test_target_gallery.py -> experiments/cleaned_interface/legacy/test_tg001_target_gallery.py\nRM experiments/cleaned_interface/target_gallery.py -> experiments/cleaned_interface/legacy/tg001_target_gallery.py\n?? experiments/benchmark/__init__.py\n?? experiments/benchmark/__main__.py\n?? experiments/benchmark/campaign.py\n?? experiments/benchmark/nl001.py\n?? experiments/benchmark/scenes.py\n?? experiments/benchmark/test_benchmark.py\n?? experiments/cleaned_interface/legacy/__init__.py\n?? results/validation/cleaned_interfaces/TG-002/\n",
+  "environment": {
+    "python": "3.9.25 (main, Nov  3 2025, 22:33:05) \n[GCC 11.2.0]",
+    "platform": "Linux-6.8.0-138-generic-x86_64-with-glibc2.35",
+    "machine": "pc-Alienware-Area-51-AAT2250",
+    "gpu": "NVIDIA GeForce RTX 5090",
+    "torch": "2.8.0+cu128",
+    "numpy": "2.0.2",
+    "threadpools": {
+      "runtime_introspection": "threadpoolctl not installed; configured BLAS environment recorded"
+    },
+    "blas_threads": {
+      "OMP_NUM_THREADS": null,
+      "OPENBLAS_NUM_THREADS": null,
+      "MKL_NUM_THREADS": null
+    },
+    "inherited_sc": {
+      "SC_FORWARD_BACKEND": null,
+      "SC_FREQUENCY_THREADS": null,
+      "SC_GEOMETRY_RUNTIME": null
+    },
+    "load_average": [
+      0.74609375,
+      0.33251953125,
+      0.47998046875
+    ]
+  },
+  "inputs_sealed": true,
+  "qualification_failures": [],
+  "inputs": {
+    "inputs/aphex_twin/c0.5/damped.json": "3355d5c4e46b4468e5c85ed16081eb6264902d4491e80124d39566d781483d99",
+    "inputs/aphex_twin/c0.5/damped_qualification.json": "7c775d3443797d8ad8a864d540aa1be20624aca3c352f82bbd5f65980192d37c",
+    "inputs/aphex_twin/c0.5/observations.json": "5596bc9a78f09185a1bcdf8ea32708b19649197cd47c35390e6d02a11219cac5",
+    "inputs/aphex_twin/c0.5/qualification.json": "d264233e048f7e0cddc5f5299bc1a131e3d61da60e2b05b3a04419c37efe5ccb",
+    "inputs/aphex_twin/c13.3/damped.json": "5d667200a7155c3ad801737c2d54e9dd2bd371b44a75cbd78be60ad8f7b0aa25",
+    "inputs/aphex_twin/c13.3/damped_qualification.json": "0ac5304ef15ae3d6ec2f5c9ce98eb313d14c284cc7898ec33de09365027a9bbd",
+    "inputs/aphex_twin/c13.3/observations.json": "55f12fa254d745b5edc304633f3765727c8efddf386607b6eaf496f8073ff0cf",
+    "inputs/aphex_twin/c13.3/qualification.json": "6fe477649a47ea487631f50b8dc7889a2f30b6eda55d0a178da17e188edbed77",
+    "inputs/aphex_twin/c4/damped.json": "c4af676d66433c1733e0b94fc2470961e5ddf0a06bf7bd48a7316da43b17709c",
+    "inputs/aphex_twin/c4/damped_qualification.json": "a7257bfbfc31d3a070beb86d7aee8a1a5d38514ebe38ed65d73ab001efc28fb0",
+    "inputs/aphex_twin/c4/observations.json": "f09e137f507dd942e7784453ea34ce16ee85fd0fbefaf2110441775e4d0b0eb5",
+    "inputs/aphex_twin/c4/qualification.json": "ec15d8dfea2b899f69c4ba633831c60859e253521b989712cd3948298235d51a",
+    "inputs/aphex_twin/truth.json": "841eaf4b8dec3bcd902fa334f3cf794c7e86b649cf373c132525cb93f5d31aab",
+    "inputs/asymmetric/c0.5/damped.json": "a82df6ad9dbb984c74ed54bb4c1c748408f169e7ba6a769cb302affd23d36403",
+    "inputs/asymmetric/c0.5/damped_qualification.json": "7efbfb51a014804771892d6d1f64418fbbdc1bc69ddc596277a03ac9131ffb6a",
+    "inputs/asymmetric/c0.5/observations.json": "8fd3d5e40af9e680c5e36321577acf5d58c35d96e281ebdc3a61d4a0fd1e8792",
+    "inputs/asymmetric/c0.5/qualification.json": "a293f46e93a6db7dd5f8fecee4620328de6de6462da1f9b11d78d5186b0bc0a1",
+    "inputs/asymmetric/c13.3/damped.json": "5788905ebad22342e71466d56ff5492c2aa724565b175535771be9237fa2e0e6",
+    "inputs/asymmetric/c13.3/damped_qualification.json": "5edaf34c14e6ddf804b8d585e8b1823479c3b8de48c4d10037faf265e81a2cc5",
+    "inputs/asymmetric/c13.3/observations.json": "8d8643f747bf106a5d7a09ef992ae4063ff0bc4262780dfdcab6ff9f05fa99ec",
+    "inputs/asymmetric/c13.3/qualification.json": "897e2cb27941652c5b32ace87ffb30468cf2d02a9d6860e9d308d2d08cda1dab",
+    "inputs/asymmetric/c4/damped.json": "3a7fef521e35aa0a9ced9417e6a0acd01ced6937fb57507eb85c5e80ce2642a4",
+    "inputs/asymmetric/c4/damped_qualification.json": "4f529ef3e5ee0e85cb3ad014de0ae88ac69dfe4f29fc2dda936c748280976bf3",
+    "inputs/asymmetric/c4/observations.json": "5bc59f5b481200b80b5d91fcc3c7754c7a45cac429fd5d9d71865456224c67bc",
+    "inputs/asymmetric/c4/qualification.json": "1f147c864f8138beb619616785398a5a5862eead7296c3e82f684ec428b493e2",
+    "inputs/asymmetric/truth.json": "dcd29c2521869747a98bb3f3d269e9f13db9a16633b06dff4dfc51aaec180864",
+    "inputs/c_shape/c0.5/damped.json": "db4a1e9dedd7b6c944707b89161e9c541160f532a6b5e967c990814c8c68bf3c",
+    "inputs/c_shape/c0.5/damped_qualification.json": "4010b8761be0ca8a243f18ee006ecfa6efcc4540760ae8078bea3a68d8a12e8f",
+    "inputs/c_shape/c0.5/observations.json": "ef3ba6499da6b790fabc1a459ccac067676eefabd172d42051df1bbc3cf1802f",
+    "inputs/c_shape/c0.5/qualification.json": "ddaf1f203424850c57416fee0988132f86ab56412954fb02797728caf1a23d5a",
+    "inputs/c_shape/c13.3/damped.json": "445742b5c96b789cff1c1b2d240cbdf15cfa1e9c710edce2b36fa9e4a080f7f7",
+    "inputs/c_shape/c13.3/damped_qualification.json": "2f28b4109d6dda76b84e8f636ae02a7c840a3772837d8c899d63552935a4d247",
+    "inputs/c_shape/c13.3/observations.json": "fd3262d399cc0c079c125869fbd70cbbbbd45540d6ed517d4408f2efbd6aad32",
+    "inputs/c_shape/c13.3/qualification.json": "8ba77f8609fd2e08a479f1c7acc8031d38bb4c3eb53427430a72c599780624a4",
+    "inputs/c_shape/c4/damped.json": "1e6ddad8fc8cf1a68f9af928628fe37701bb866e6cd17518c05ba81dfe6b1e71",
+    "inputs/c_shape/c4/damped_qualification.json": "d8808cb352298edcfc8c2f8efef709bee2c186beefbc0166d1a8f6a532423885",
+    "inputs/c_shape/c4/observations.json": "10aaaf11ca7c7d26edcbfbc4ecb5a27eac89e15c8c93aabc9431a4eb6a095298",
+    "inputs/c_shape/c4/qualification.json": "23825b545037ab87adb2a5ddc28cc5e49e797c485c9b21e9a6c9ba71c292fb45",
+    "inputs/c_shape/truth.json": "834d1c634f62c5e730e3100a4f333c9632d9b047c91de6a7a71ae87c49d7d9de",
+    "inputs/circle/c0.5/damped.json": "0e8527560ee1a403a01b9f4c73247c47c2aee7ee192e9950d137009cdee35e6f",
+    "inputs/circle/c0.5/damped_qualification.json": "a40cbe2ebf8c742d5dff8ad383dedfa852b9aba3600da1b94b971eabc3e26680",
+    "inputs/circle/c0.5/observations.json": "d2f9b55562355f8cd7bdeabfa1acb478620902bac1f0c65e1b5c9562d75d16d8",
+    "inputs/circle/c0.5/qualification.json": "ef713ec1378ea395f6e9a60849c3fd09f7b6af8e8f3dbd6d3cf845f75290d696",
+    "inputs/circle/c13.3/damped.json": "5cd023fe7cec094b09de667fb2a16554311809856cde985ca2ba2768cfc73cef",
+    "inputs/circle/c13.3/damped_qualification.json": "bfb95dd00efe27f0d5afe501fb8636d29e1d1b764ba00016e287107c567e8106",
+    "inputs/circle/c13.3/observations.json": "afaaeda43a1ae467d9e6be339d3ec0d1081c4d17163571800c1841ca265ac4b9",
+    "inputs/circle/c13.3/qualification.json": "0c4447cfc5daa2f603b1e96c3df1eb0f7446918b0e08d37a7b1a8a39e1555041",
+    "inputs/circle/c4/damped.json": "02ff7aba1a34d76de15780d45f0b34c12a3bd21ec44a09ba8e8593d31ca0e742",
+    "inputs/circle/c4/damped_qualification.json": "b1abc4c2960d6e5c9497c70e3ff412ff97aad355a78e72c3ab86cf6c9bfb0b32",
+    "inputs/circle/c4/observations.json": "320f132b652283aab198bca11a999e31dcc0092c780c780c2c3766548b8b9d32",
+    "inputs/circle/c4/qualification.json": "5cc5e1cc5cba24f996d20fbb47fea44cb102bafc85400c0cb4477a29a8cf27b3",
+    "inputs/circle/truth.json": "1c1b61d7da28900364e5ca3ebae221bafe8673a2338a11e12692caeceeccf1aa",
+    "inputs/cog/c0.5/damped.json": "c01d1777794466d7bdf26d85c0b2f3567376907c16bbba1c7d37b45f6b21a402",
+    "inputs/cog/c0.5/damped_qualification.json": "1581ff2081487f42101da3f3526d607d8173b37b79ddd46d83eb225755e0cee2",
+    "inputs/cog/c0.5/observations.json": "cf5f8f395e297419242b1d59ceb26193bebd5a87669d184975e668e82e952524",
+    "inputs/cog/c0.5/qualification.json": "48c5a71dba7f54ba1b6541c8cfec0fe779afd25fb001ab88ce468b3b03d32906",
+    "inputs/cog/c13.3/damped.json": "7d209f9c0f29860add26938b99577e32c1cb0080ba8ca52dd25c03f76db6cea0",
+    "inputs/cog/c13.3/damped_qualification.json": "9f1b12cda5337b1a4db5c4d25ab778862de805b5ea2e0aa4908e399a3ad012fc",
+    "inputs/cog/c13.3/observations.json": "2bdc55ffe5768a807d88e6aff937e08dda0da359845823aa60e7977df41f8c57",
+    "inputs/cog/c13.3/qualification.json": "49ca7a83cd7f0c326e4ee954f298cf0e59eb82cb37018b3ef01e1841ae9c55a3",
+    "inputs/cog/c4/damped.json": "ad8e874c86b286482c258b201a8f7e5216004b50b3e2fe8ac058839fd2dd4ecd",
+    "inputs/cog/c4/damped_qualification.json": "af7ff2febf2b8fcaef92e7d109f1f78fb267a0151dab7a8fae2c4df90440a466",
+    "inputs/cog/c4/observations.json": "6248294db0035c6c7f9a16ad770b290ce9ecfa347453d1b630445b0f34fa06e6",
+    "inputs/cog/c4/qualification.json": "b273597298e00be7ae20b63e145488edb5a0064e0c35d7c5c6abde84adcda593",
+    "inputs/cog/truth.json": "6a1699bec75cba5d37a07dfca57a116cf085d75901d1c6d0f172af62dd0132a2",
+    "inputs/cross/c0.5/damped.json": "2c741f61e479d7937939b134e8170b62f3af82b2f4d020e9a7a4d9d209b0f78e",
+    "inputs/cross/c0.5/damped_qualification.json": "c4219fb7afca646ca76e79f74edf72df8f9298d60ac54c8398130253e7d33816",
+    "inputs/cross/c0.5/observations.json": "a5012ae834d4d15c5b724913e85388a96f33e2b89eb18c893ddcd776c15b0e69",
+    "inputs/cross/c0.5/qualification.json": "70611858e7103640085dde37dfc392b31a2e4ad15e13344d78073fc39a7407bc",
+    "inputs/cross/c13.3/damped.json": "55b6099f9e69c678a8bb97f5e029840ed6b6f6f2b706633eb2817117179304ac",
+    "inputs/cross/c13.3/damped_qualification.json": "dfdb786fbccea3fb524a7a837b4ee0bbf93fb0b603c1024cd8c8c6864951ae24",
+    "inputs/cross/c13.3/observations.json": "efb5ba8ad55946a02776764eba5d83a777dd0af390b382e722f003a0b9a09742",
+    "inputs/cross/c13.3/qualification.json": "59f9ca8c4102d34c8e6e446429dc0682cfdfe1b2bd712338968d80fceeba5b0d",
+    "inputs/cross/c4/damped.json": "d44fa1a8556c6a5144d3082506e8e2668d36f2a67daf838c6eb8ccc83201a91e",
+    "inputs/cross/c4/damped_qualification.json": "9a80c92a79bc7868f5cdefce0b89ef49c3112a7eda23cd259480965b12c7e739",
+    "inputs/cross/c4/observations.json": "20421d105fd1f8b7829826ab976688d81a8521dc614d40dd46465e5c68aa175a",
+    "inputs/cross/c4/qualification.json": "62285a2133e45a2e44da43f6d9c10e86e43965da87b31b02f740b5fa8842ebb5",
+    "inputs/cross/truth.json": "5a01efdeab1eba2851d4d3e32104aec67605395bd7c7476545294105502858b4",
+    "inputs/hook/c0.5/damped.json": "70dd9a7e972803c8e6fda24cdd1f6f7eafec08d28bdf9353312847cc9fc53be7",
+    "inputs/hook/c0.5/damped_qualification.json": "625204a148fb0c78ece0e459c48e83ea71ee56a8b89482b9699c8056e9a7d2a8",
+    "inputs/hook/c0.5/observations.json": "91abf2be6635f950ad91908c911dd07866496eb66c60a82643b42512406d9e60",
+    "inputs/hook/c0.5/qualification.json": "d4191c16eb5373449faa70c6301ab9b076da431c22fc05f6acd673bbac6c57a5",
+    "inputs/hook/c13.3/damped.json": "aecad4155dc2a92b22a0221c63bc7c780972857d752424958084023a43bdc18f",
+    "inputs/hook/c13.3/damped_qualification.json": "26f088618e95d8690a40ec2f2addec867e8aef3ccd889bfec14569e429954001",
+    "inputs/hook/c13.3/observations.json": "f9c917cfdf144bd15b72b4c8ae94f6e4353659963195b67a3dd6a7e024c94322",
+    "inputs/hook/c13.3/qualification.json": "ffcaa500b70f3130de5d530488ed9d73d7805275e25e678d6600a6ee9934f1ce",
+    "inputs/hook/c4/damped.json": "b3ca270567d57134f7387f1f63bbaaf5ba8631b0667da05d473123367b6ce7db",
+    "inputs/hook/c4/damped_qualification.json": "2e1e47cf02a4f5a08c0acdbfb94a7afe8781be9e272151bab0a6499dd6fcc67d",
+    "inputs/hook/c4/observations.json": "54c87edf252d8e90deddddd53f09a3d6f12b2b41ea0c0de82adaca89b1aa96a3",
+    "inputs/hook/c4/qualification.json": "8972625cb335ad887fdcc33b12e44cbf260bb74dbd1d925bbb4f15ce7cf2aaf8",
+    "inputs/hook/truth.json": "4af08361cdbb0b8e1c231dec22da8ad803fb11c8a6ce21c2a312700064701d3c",
+    "inputs/kite/c0.5/damped.json": "edde818d48d7535594e459cc3e4dd1ca5a40f27dbdc0f81d18e010859a68386e",
+    "inputs/kite/c0.5/damped_qualification.json": "468600f59f6c0c10e5693a34c26b8a13d830ff12a833ba5bb88b4ebde6a5351a",
+    "inputs/kite/c0.5/observations.json": "069f6a125e8cda4c2afcab6346adcb31bb1d67d33b0c928df049539cf943f7ba",
+    "inputs/kite/c0.5/qualification.json": "8cc7fb0feb8cba3dc3b78fe1c99e9f0f5bcf9b68ccd5f1628d703a657001b768",
+    "inputs/kite/c13.3/damped.json": "cb10908933c87220f53dad715f796b08559addee19c272cafd3de730d196d79b",
+    "inputs/kite/c13.3/damped_qualification.json": "204f8f46c8eec47a1a8c06ea7deda6269b072f71bd76bcacd56ca44058a236a4",
+    "inputs/kite/c13.3/observations.json": "d2b41605bcc65002237d6dc8ec88845cfa686e27d649c1e0c47082c54427d6ba",
+    "inputs/kite/c13.3/qualification.json": "772b2bfa44fbf25a1e83df546d7695b31d82b766f8d6c63e7a3a34a924b7527a",
+    "inputs/kite/c4/damped.json": "42f07c74db08d5cf058aa9b3571bed104d791304f073f46fd39f241c6f7732ef",
+    "inputs/kite/c4/damped_qualification.json": "7a5077494b4fc3a5aeb77946aef24fe93e868e389953ada2068c649a0aae487d",
+    "inputs/kite/c4/observations.json": "8fedad76730156c5adc2dc14edde7eaa14d0e5a307d6097400842e6f0d8ef811",
+    "inputs/kite/c4/qualification.json": "85bda6e8938be6feb09e54c04deed6928cb5123d93c511ca131804f467924fa2",
+    "inputs/kite/truth.json": "94a714f92a73e202f59094bbe321843444c42c611cd64e7696ef25578a783f29",
+    "inputs/peanut/c0.5/damped.json": "76ba57c9dab897b71df5fefa04ce0c1efaa74c70c9bfce1c8cdacab7e38d75b6",
+    "inputs/peanut/c0.5/damped_qualification.json": "8bcf786f0c600819fe7e76e604cecb3bd862180122ff6d6ee0c4a1b98d2379b9",
+    "inputs/peanut/c0.5/observations.json": "175f4da9e612f0e77541dc0aab989dcea2c1b01fbe30c44396e4d43e7152f58e",
+    "inputs/peanut/c0.5/qualification.json": "4db80112aa2ec5eef424df0c431a01399521f0693e47fb5974e4078c1d626591",
+    "inputs/peanut/c13.3/damped.json": "704213f37cb11530131702c64c0d7c3cf06b449579249c3730bded3def182a11",
+    "inputs/peanut/c13.3/damped_qualification.json": "0dd8abdaa47da4299ebe7622668a364f07ccc15e21bf489a4510c3eb9a7080f2",
+    "inputs/peanut/c13.3/observations.json": "9908b718958661c2c895fa4729cc0e3d7b99d7187bb5165cb04f8715c663e911",
+    "inputs/peanut/c13.3/qualification.json": "cbcb04e729bdb98afc76b2a1b567141ded34adabe8b9a85fd54dd4e3c4ac7388",
+    "inputs/peanut/c4/damped.json": "2a3e44c6ef9b5b514f7e18a9624a445b0469ea9ea54b06d738607c4b18c64835",
+    "inputs/peanut/c4/damped_qualification.json": "d35a83aff427b3b0d066f70793a1a6924a66facc0b011a22a1ced439bf62e304",
+    "inputs/peanut/c4/observations.json": "41d6dc4a9b9d4ce4881e3513e9e8c4216543aec081f406c3525b5010aba7b55e",
+    "inputs/peanut/c4/qualification.json": "54fdd8d127faf7ce21439b435d276ea62a9690875eb70f8dad8892a746cb9fa1",
+    "inputs/peanut/truth.json": "2daf170872127a15cb686ff1a0af266bdb7ce7e5c41519d3b21db78a1823ade2",
+    "inputs/star/c0.5/damped.json": "7782b54c08667a74207de157c30305e8516d81027fe5893508538c73da12d2f7",
+    "inputs/star/c0.5/damped_qualification.json": "3e7c10534508d09f32c154276c1ff745cbc6775466e8005664683cc5ebdbe541",
+    "inputs/star/c0.5/observations.json": "b3d1ad327ae67230b9fd1ee861d17c15c962a055a1042ed5dee5f753d43a96f7",
+    "inputs/star/c0.5/qualification.json": "808f710f892facbd65d65ed78925b608f6f9340e53284bc5b110585c5b794188",
+    "inputs/star/c13.3/damped.json": "93e58425e4f368547f9944afc16620e6e83c9292873d31bf764b2966e0bc7709",
+    "inputs/star/c13.3/damped_qualification.json": "d4e13942ddce64d11fcdedfae8c6c7b4c1f6effaa3cf136ff2dd603a46bda36f",
+    "inputs/star/c13.3/observations.json": "b0a467f6c5162290c7437d2e6b851f156333bf663d16510ffa7c0acedc46945a",
+    "inputs/star/c13.3/qualification.json": "835cd0929d77cf0bdc768688a0c8486cdb042eeb3fe445acaf99dbf5c8fdfdc5",
+    "inputs/star/c4/damped.json": "89036e753810964f8ab97575249aea90560b692ebf161ef610e97322790688d5",
+    "inputs/star/c4/damped_qualification.json": "659cee700c2671768fee3b80118e7c671dd11da93566ccec9365834755df9823",
+    "inputs/star/c4/observations.json": "79b363858f6faa29cf53c5cd243272713a51ca96c2151f7872e5eb1b88371ddd",
+    "inputs/star/c4/qualification.json": "6505098d4594388ddde8a1cc3a3e0ba240f0e7ac2f9708e7d98d49d7d1a49dd0",
+    "inputs/star/truth.json": "41f092591ea853806d028025ebb008b96bfc3908292a5762d3cd8b204e5ebba7",
+    "inputs/start.json": "ca80f7c9da06b6919cdffd5a81ec4188d8981721ceaad71c64ef0c8de2fd0265"
+  }
+}

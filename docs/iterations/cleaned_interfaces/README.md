@@ -90,6 +90,7 @@ by scene identity. CI-001 does not establish all-36 retention (28/36).
 | [20](iteration_20/03_plan.md) / [21](iteration_21/01_results.md) | FM-003: 512-start paired stage-2 census; the lowest-loss endpoint continues to recover the contrast-13.3 C (search failure supported); no zero-loss endpoint |
 | [22](iteration_22/03_plan.md) / [23](iteration_23/01_results.md) | FM-004 (user: "go"): all 11 below-gap census endpoints continued; 4/11 recover, the contrast-4 control fails; every failure is the CI-001 numerical-resolution hard stop. Proposed, not run: FM-005 with RB-001's resolution response |
 | [24](iteration_24/03_plan.md) / [25](iteration_25/01_results.md) | FM-005 (user: "go"): RB-001 resolution response on FM-004's stops; paired recoveries 4/11 → 7/11, successes unchanged, contrast-4 control still fails; remaining failures limited at N1024/2048. Proposed, not run: FM-006 blind fresh-seed pipeline test |
+| [26](iteration_26/03_plan.md) | TG-002 benchmark built (10 scenes × 3 contrasts, one centred start, no grid search) in `experiments/benchmark`; far-start and other legacy scene sets retired ([LEGACY](../../../experiments/benchmark/LEGACY.md)). NL-001 (grid search on/off) pre-registered, **not run** |
 
 Follow the [shared iteration workflow](../README.md). Iteration 02 records
 the implementation checks; iteration 03 records the inverse campaign.

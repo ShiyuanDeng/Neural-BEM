@@ -1,5 +1,11 @@
 # Cleaned inverse campaigns (CI-001)
 
+> **New experiments do not start here.** Use the TG-002 benchmark in
+> [`experiments/benchmark`](../benchmark/README.md). This directory's campaigns
+> (CI-001, NU, FM, TG-001) are run on legacy scene sets, which are retired; see
+> [LEGACY.md](../benchmark/LEGACY.md). Its `benchmark.py` helpers (`fitting_problem`,
+> `score`, `residual_limits`) are still reused unchanged.
+
 The maintained numerical API now lives in
 [`solvers/bem_inverse`](../../solvers/bem_inverse/README.md). This directory
 owns campaign commands, qualification, scoring, historical regression fixtures,
@@ -474,13 +480,10 @@ for the focused checks, and the
 [campaign review](../../results/validation/cleaned_interfaces/CI-001-campaign-review/README.md)
 for the all-36 regressions and build re-verification.
 
-## New target shapes (TG-001)
+## TG-001 (legacy, superseded by TG-002)
 
-`target_gallery.py` adds 15 cases outside the frozen 36: the Aphex Twin logo
-glyph (public-domain SVG in `assets/`), an eight-tooth cog, a rounded cross, a
-heart and a thick S, each at contrasts 0.5, 4 and 13.3 from off-centre starts.
-Case IDs are `target__c<contrast>__<scene>`. The rows reuse
-`benchmark.fitting_problem`, `run_case` and `score` unchanged, and CI-001 seals
-are untouched. Use `python -m experiments.cleaned_interface.target_gallery`
-`inventory`, `plan --cases ...` or `run --cases ... --run-dir <fresh dir>`. See the
+TG-001 added five far-start targets on 2026-10-04 and was superseded the same day
+by [`experiments/benchmark`](../benchmark/README.md). Its module moved to
+`legacy/tg001_target_gallery.py`, and the logo asset moved to `experiments/benchmark/assets/`
+with the same SHA-256. No TG-001 fit was run. See the
 [TG-001 inputs](../../results/validation/cleaned_interfaces/TG-001/README.md).

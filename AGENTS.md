@@ -19,6 +19,19 @@
 - Run appropriate validation before committing, then verify the push and the
   final working-tree status.
 
+# Which experiments to run
+
+- New inverse experiments use only the TG-002 benchmark in `experiments/benchmark/`
+  (10 scenes x contrasts 0.5/4/13.3, one centred start, no grid search). Read its
+  `README.md` first. Default method: `modal_muller` + `certified_spectral`,
+  `--localization none`.
+- Far-start cases and the SC-050 grid-search initializer are retired (user,
+  2026-10-04). Do not add them to new experiments. Every older scene set (CI-001
+  36 cases, SC-0xx, MA-00x, FM/RB/TR cases, TG-001) is legacy. It stays in place
+  only because seals hash its paths; see `experiments/benchmark/LEGACY.md`.
+- Each new experiment gets a pre-registered plan in `docs/iterations/` and
+  explicit user approval of its ID before it runs.
+
 # Code and evidence map
 
 - The maintained cleaned SC/MA inverse is `solvers/bem_inverse/`. Start with

@@ -1,3 +1,5 @@
+> **Legacy scene definitions.** New experiments use [`experiments/benchmark`](../benchmark/README.md) (TG-002); see [LEGACY.md](../benchmark/LEGACY.md). Files here stay in place because campaign seals hash them.
+
 # Shape and frequency continuation on nodal Müller/Kress
 
 Implementation started 2026-09-22 under the user's explicit instruction to

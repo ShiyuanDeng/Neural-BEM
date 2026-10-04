@@ -102,7 +102,8 @@ registration, historical pickle lookups, and experiments that temporarily
 replace module attributes. Mixed NU modules retain their campaign commands
 and re-export the extracted classes and functions.
 
-Existing campaign CLIs are unchanged:
+Existing campaign CLIs are unchanged. They run legacy scene sets; new experiments use
+[`experiments/benchmark`](../../experiments/benchmark/README.md) (TG-002):
 
 ```bash
 python -m experiments.cleaned_interface inventory

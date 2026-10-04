@@ -1,4 +1,6 @@
-"""TG-001: five new single-object targets for the cleaned SC/MA inverse.
+"""LEGACY, superseded by `experiments/benchmark` (TG-002). Kept to reproduce TG-001 inputs only.
+
+TG-001: five new single-object targets for the cleaned SC/MA inverse.
 
 The targets add features that the 36-case regression set does not cover: the
 Aphex Twin logo glyph (non-star, two thin strokes, a deep re-entrant notch),
@@ -15,13 +17,13 @@ scoring after the fit and audit return.
 
 Commands (repository root, ``PYTHONPATH=solvers:.``, EMNerf environment)::
 
-    python -m experiments.cleaned_interface.target_gallery prepare
-    python -m experiments.cleaned_interface.target_gallery generate
-    python -m experiments.cleaned_interface.target_gallery verify
-    python -m experiments.cleaned_interface.target_gallery inventory
-    python -m experiments.cleaned_interface.target_gallery figure
-    python -m experiments.cleaned_interface.target_gallery plan --cases target__c13.3__aphex_twin
-    python -m experiments.cleaned_interface.target_gallery run --cases target__c4__cog --run-dir <fresh dir>
+    python -m experiments.cleaned_interface.legacy.tg001_target_gallery prepare
+    python -m experiments.cleaned_interface.legacy.tg001_target_gallery generate
+    python -m experiments.cleaned_interface.legacy.tg001_target_gallery verify
+    python -m experiments.cleaned_interface.legacy.tg001_target_gallery inventory
+    python -m experiments.cleaned_interface.legacy.tg001_target_gallery figure
+    python -m experiments.cleaned_interface.legacy.tg001_target_gallery plan --cases target__c13.3__aphex_twin
+    python -m experiments.cleaned_interface.legacy.tg001_target_gallery run --cases target__c4__cog --run-dir <fresh dir>
 """
 import argparse
 from dataclasses import asdict
@@ -36,13 +38,13 @@ import numpy as np
 
 from experiments.shape_continuation.geometry import FourierCurve
 from experiments.shape_continuation.geometry_runtime import geometry_runtime
-from .io import read, write, digest, curve_record, curve_from, portable
-from .physics import Execution, make_backend
-from . import benchmark as b
+from ..io import read, write, digest, curve_record, curve_from, portable
+from ..physics import Execution, make_backend
+from .. import benchmark as b
 
 ROOT = b.ROOT
 DEFAULT_OUTPUT = ROOT/'results/validation/cleaned_interfaces/TG-001'
-LOGO = Path(__file__).resolve().parent/'assets/aphex_twin_logo.svg'
+LOGO = Path(__file__).resolve().parents[2]/'benchmark/assets/aphex_twin_logo.svg'  # moved; same SHA-256
 LOGO_SHA256 = '05f73997e0bd08e6ba18073783c5e9824ba9d2664f699580995a443b9faa66ec'
 LOGO_PROVENANCE = dict(
     source='https://en.wikipedia.org/wiki/File:Aphex_Twin_logo.svg', licence='Public domain',
@@ -375,8 +377,8 @@ def figure(output=DEFAULT_OUTPUT):
 
 
 def main():
-    from .geometry_selection import GEOMETRY_UPDATES, make_update, describe_plan
-    from .policy import CumulativePolicy, readable_plan
+    from ..geometry_selection import GEOMETRY_UPDATES, make_update, describe_plan
+    from ..policy import CumulativePolicy, readable_plan
     parser = argparse.ArgumentParser(description='TG-001 new target shapes')
     parser.add_argument('command', choices=('prepare', 'generate', 'verify', 'inventory', 'figure', 'plan', 'run'))
     parser.add_argument('--output', type=Path, default=DEFAULT_OUTPUT)

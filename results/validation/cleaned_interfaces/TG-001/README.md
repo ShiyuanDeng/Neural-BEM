@@ -1,4 +1,9 @@
-# TG-001: new target shapes (inputs only)
+# TG-001: new target shapes (inputs only), LEGACY
+
+> **Superseded on 2026-10-04 by [TG-002](../TG-002/README.md)** (`experiments/benchmark`).
+> TG-001 uses far starts, which only recover with the retired grid search. Kept as a record;
+> the module is now `experiments.cleaned_interface.legacy.tg001_target_gallery`, and the logo
+> is at `experiments/benchmark/assets/aphex_twin_logo.svg` (same SHA-256).
 
 Five single-object targets for the cleaned SC/MA inverse, each at contrasts
 0.5, 4 and 13.3, giving 15 new cases. They add geometry that the 36-case CI-001
@@ -22,7 +27,7 @@ used by CI-001 are reused.
 
 **Logo source.** [`File:Aphex_Twin_logo.svg`](https://en.wikipedia.org/wiki/File:Aphex_Twin_logo.svg)
 is public domain (original logo by Paul Nicholson, vectorised by Iwantmorelife). It is
-vendored at `experiments/cleaned_interface/assets/aphex_twin_logo.svg` and its SHA-256 is
+vendored (now at `experiments/benchmark/assets/aphex_twin_logo.svg`) and its SHA-256 is
 checked on load. Only the central glyph (the first path, a 190-vertex polygon) is used. The
 surrounding ring is a separate annulus, which the single-curve solver cannot represent.
 
@@ -65,9 +70,9 @@ upper bound ≤ 2 mm, residual ≤ max(0.003, 3 × noise)). Fitting never reads 
 test checks this.
 
 ```bash
-PYTHONPATH=solvers:. python -m experiments.cleaned_interface.target_gallery inventory
-PYTHONPATH=solvers:. python -m experiments.cleaned_interface.target_gallery plan --cases target__c13.3__aphex_twin
-PYTHONPATH=solvers:. python -m experiments.cleaned_interface.target_gallery run \
+PYTHONPATH=solvers:. python -m experiments.cleaned_interface.legacy.tg001_target_gallery inventory
+PYTHONPATH=solvers:. python -m experiments.cleaned_interface.legacy.tg001_target_gallery plan --cases target__c13.3__aphex_twin
+PYTHONPATH=solvers:. python -m experiments.cleaned_interface.legacy.tg001_target_gallery run \
     --cases target__c4__cog --run-dir results/validation/cleaned_interfaces/<new-campaign>
 ```
 
