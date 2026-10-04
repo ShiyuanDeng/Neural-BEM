@@ -9,7 +9,7 @@ The earlier geometry-only draft has not been executed. This amendment replaces
 its fixed-floor primary baseline; PC-002 is approved with the narrowed execution below.
 
 - **Approval status:** APPROVED. User: "yes but try speed up validation a bit, im waiting for the fair nodal spline to run on the 10 scenes."
-- **Execution status:** implementation and focused validation; fitting pending.
+- **Execution status:** NS COMPLETE, 30/30 cases, 26 recoveries; [results](05_results.md). Deferred arms were not run.
 - **Owner:** Codex. **Independent reviewer:** unassigned.
 - **Checkout:** existing `feature/shape-frequency-continuation`, planning head
   `b583f29992489e7b14aea3f60c086ec0bc0bc738`. No branch or worktree creation.

@@ -91,6 +91,7 @@ contractions remain on CPU. See the
 | `spectral`, `certified`, `batched`, `analytic_projection` | Extracted selectable geometry mathematics |
 | `modal_geometry`, `modal_operator`, `modal_muller`, `modal_cuda` | Fourier–Galerkin Müller service and execution |
 | `continuation/` | Shared Fourier curves, forward operations, geometry validation, and LM optimizer |
+| `nodal_geometry`, `nodal_resolution` | Fit-local exact nodal geometry reuse and truth-free stage profile qualification |
 | `normal_basis`, `mie_localize`, `mie_grid`, `damped_cuda` | Frontier basis, exact-disk localization, and damped execution |
 | `full_matrix`, `relaxed_gradient` | Opt-in full-matrix relaxation, complete reduced-loss gradient, and prefix policy |
 | `n_update`, `n_reparam`, `device_certified` | Retained opt-in research geometry implementations; not promoted to defaults |

@@ -62,8 +62,9 @@ def audit(curve, stage, config, problem, physics, update, seconds):
     stage = replace(stage, observations=problem.real, weights=tuple(np.ones(count)/count),
                     curve_modes=curve.band,
                     discrepancy_tolerances=tuple(1e-5 if o.frequency_hz <= .5e9 else 1e-7 for o in problem.real))
-    independent_reference = (physics.name == 'nodal_kress' and
-        getattr(physics.execution, 'nodal_resolution_profile', 'fixed') == 'band_matched')
+    reference_nodes = (physics.audit_reference_resolution(stage)
+                       if hasattr(physics, 'audit_reference_resolution') else None)
+    independent_reference = reference_nodes is not None
     ledger = Ledger(cap=(8 if independent_reference else 6)*count+16, seconds=seconds, endpoint_reserve=0)
     started = perf_counter()
     try:
@@ -95,7 +96,7 @@ def audit(curve, stage, config, problem, physics, update, seconds):
                     block = physics.derivative(state, update, space)
                     destination.append(block.reshape(-1, block.shape[-1]))
                 if independent_reference:
-                    reference = evaluate(curve, observation, 1024, 'audit_reference')
+                    reference = evaluate(curve, observation, reference_nodes, 'audit_reference')
                     reference_columns.append(np.array(reference.prediction, copy=True).reshape(-1))
                     ledger.reserve(1)
                     ledger.charge('reciprocal', 'audit_reference')
@@ -135,7 +136,7 @@ def audit(curve, stage, config, problem, physics, update, seconds):
                 reference_fields = (np.linalg.norm(reference_prediction-high_prediction, axis=0)
                                     /np.linalg.norm(high_prediction, axis=0))
                 reference_derivative = np.linalg.norm(jr-jb, axis=0)/np.maximum(colnorm, 1e-30)
-                row.update(reference_nodes=1024, reference_refined_nodes=stage.refined_nodes,
+                row.update(reference_nodes=reference_nodes, reference_refined_nodes=stage.refined_nodes,
                            reference_field_relative=reference_fields, reference_jacobian_relative=reference_derivative)
                 row['passed'] = bool(row['passed'] and np.all(reference_fields <= stage.discrepancy_tolerances)
                                      and np.all(reference_derivative <= 1e-3))

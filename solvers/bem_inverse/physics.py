@@ -360,6 +360,9 @@ class NodalKress:
             return replace(stage, refined_nodes=max(2048, stage.refined_nodes))
         return stage
 
+    def audit_reference_resolution(self, stage):
+        return 1024 if self.execution.nodal_resolution_profile == 'band_matched' else None
+
     def close(self):
         self._geometry_cache.clear()
 

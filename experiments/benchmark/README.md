@@ -68,6 +68,7 @@ python -m experiments.benchmark run --pipeline nodal_fixed --cases all --run-dir
 |---|---|
 | `scenes.py` | Scene shapes, frozen placements, the start, case IDs |
 | `campaign.py` | Input generation and seal, CI-001-shaped rows, `keep_start`, the fit runner, `summarize`, gallery |
+| `pc002.py`, `pc002_validation.py` | Approved fair nodal+spline run and read-only receipt validation ([results](../../docs/iterations/cleaned_interfaces/iteration_28/05_results.md)); `python -m experiments.benchmark.pc002 report` regenerates the table/gallery |
 | `pc001.py` | Three-arm pipeline comparison N0/N1/M1 and its side-by-side report ([plan](../../docs/iterations/cleaned_interfaces/iteration_27/03_plan.md)) |
 | `nl001.py` | First pre-registered experiment: grid search on or off ([plan](../../docs/iterations/cleaned_interfaces/iteration_26/03_plan.md)) |
 | `test_benchmark.py` | Frozen placements, valid truths, no truth access during fitting |

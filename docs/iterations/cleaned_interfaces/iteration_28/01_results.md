@@ -1,5 +1,9 @@
 # Iteration 28 — PC-001 exposes geometry-reuse and resolution confounds
 
+Opening evidence recorded before approval/implementation. The completed
+PC-002 outcome is in [05_results.md](05_results.md); the historical opening
+state below is preserved.
+
 Opened 2026-10-04 by the user's request for a fresh cleaned-interface iteration
 and a plan to make the nodal/spline timing baseline fair.
 

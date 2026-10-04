@@ -95,13 +95,15 @@ def test_cached_fields_jacobian_and_full_trial_match_reference(damped):
 
 
 @pytest.mark.skipif(not CA.available(), reason='CUDA unavailable')
-def test_native_profile_audit_is_checked_against_independent_reference():
+@pytest.mark.parametrize('backend_name', ['nodal_kress', 'opaque_probe'])
+def test_native_profile_audit_is_checked_against_independent_reference(backend_name):
     from experiments.benchmark import campaign as c
     from bem_inverse.runner import audit
     from bem_inverse.policy import CumulativePolicy
     problem = c.problem('circle__c4')
     physics = NodalKress(Execution(device='cuda', resolution=130, nodal_geometry_reuse='per_curve',
                                   nodal_resolution_profile='band_matched'))
+    physics.name = backend_name  # reference tokens belong to the service, not runner name checks
     op = next(o for o in CumulativePolicy().operations(problem, physics) if o.kind == 'fit')
     problem = replace(problem, real=(problem.real[0], problem.real[-1]),
                       damped=(problem.damped[0], problem.damped[-1]))
