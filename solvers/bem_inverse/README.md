@@ -39,7 +39,23 @@ register()
 result = fit(problem, solver="modal_muller", geometry_update="certified_spectral")
 ```
 
-The default remains `nodal_kress` with the spline projected update. Supported
+To select a complete named recipe instead of individual slots:
+
+```python
+from bem_inverse import pipelines
+result = pipelines.fit(problem, "modal_fixed", execution=Execution(device="auto"), output="path/to/run")
+```
+
+| Pipeline | Physics | Geometry update | Unresolved trial |
+|---|---|---|---|
+| `nodal_baseline` | `nodal_kress` | `spline` | hard stop (CI-001) |
+| `nodal_fixed` | `nodal_kress` | `certified_spectral` | one promotion to N1024/2048 (`ResolutionResponse`) |
+| `modal_fixed` | `modal_muller` | `certified_spectral` | hard stop; no modal response exists, and one is refused |
+
+A pipeline only fills `fit`'s physics, geometry-update and resolution slots; policy, start
+and localization stay with the caller. Results gain `pipeline` and `resolution_promoted`.
+
+Calling `fit` without a pipeline keeps the legacy default: `nodal_kress` with the spline projected update. Supported
 explicit geometry names are `spline`, `spectral`, `certified_spectral`, and
 `analytic_spectral`; the last is experimental. Device selection and physics
 selection remain independent. See the
@@ -58,6 +74,7 @@ limits, execution semantics, and the recorded evidence.
 | `normal_basis`, `mie_localize`, `mie_grid`, `damped_cuda` | Frontier basis, exact-disk localization, and damped execution |
 | `full_matrix`, `relaxed_gradient` | Opt-in full-matrix relaxation, complete reduced-loss gradient, and prefix policy |
 | `n_update`, `n_reparam`, `device_certified` | Retained opt-in research geometry implementations; not promoted to defaults |
+| `pipelines` | Named recipes (`nodal_baseline`, `nodal_fixed`, `modal_fixed`) that fill `fit`'s slots |
 | `io` | Portable numerical receipts |
 
 Dependency direction is campaigns → `bem_inverse` → reusable solver/geometry

@@ -22,6 +22,7 @@ from bem_inverse.continuation.geometry_runtime import geometry_runtime
 from bem_inverse.io import read, write, digest, curve_record, curve_from, portable
 from bem_inverse.physics import Execution, make_backend
 from bem_inverse.runner import fit
+from bem_inverse import pipelines as P
 from experiments.cleaned_interface import benchmark as ci
 from . import scenes as S
 
@@ -193,6 +194,15 @@ def _physics(solver, execution):
     return make_backend(solver, execution)
 
 
+def _fit(problem, settings, execution, folder, adapter, on_event):
+    if 'pipeline' in settings:
+        return P.fit(problem, settings['pipeline']['name'], execution=execution, output=folder,
+                     localization_adapter=adapter, on_event=on_event)
+    return fit(problem, solver=settings['solver'], execution=execution,
+               physics=_physics(settings['solver'], execution), output=folder,
+               geometry_update=settings['geometry_update'], localization_adapter=adapter, on_event=on_event)
+
+
 def run_case(job):
     run_dir, case_row, settings = job
     run_dir = Path(run_dir)
@@ -204,11 +214,9 @@ def run_case(job):
     folder.mkdir(parents=True)
     execution = Execution(**settings['execution'])
     try:
-        result = fit(ci.fitting_problem(case_row, run_dir), solver=settings['solver'], execution=execution,
-            physics=_physics(settings['solver'], execution), output=folder,
-            geometry_update=settings['geometry_update'],
-            localization_adapter=keep_start if settings['localization'] == 'none' else None,
-            on_event=lambda e: print(case_row['id'], e['operation']['label'], e['reason'], flush=True))
+        result = _fit(ci.fitting_problem(case_row, run_dir), settings, execution, folder,
+            keep_start if settings['localization'] == 'none' else None,
+            lambda e: print(case_row['id'], e['operation']['label'], e['reason'], flush=True))
         # The inverse and its independent audit have returned before target access.
         metrics = ci.score(case_row, curve_from(result['final_curve']))
         limits = ci.residual_limits(case_row)
@@ -225,9 +233,17 @@ def run_case(job):
     return result
 
 
-def run(run_dir, cases, *, solver, geometry_update, localization, execution, workers=1, output=INPUTS,
-        experiment=None):
-    """Fit ``cases`` into ``run_dir``. One run directory holds exactly one setting."""
+def run(run_dir, cases, *, localization, execution, solver=None, geometry_update=None, pipeline=None,
+        workers=1, output=INPUTS, experiment=None):
+    """Fit ``cases`` into ``run_dir``. One run directory holds exactly one setting.
+
+    Select either a named ``pipeline`` (``bem_inverse.pipelines``) or ``solver`` plus
+    ``geometry_update`` (the NL-001 form).
+    """
+    if pipeline is not None and (solver is not None or geometry_update is not None):
+        raise ValueError('Choose a pipeline or solver/geometry_update, not both')
+    if pipeline is None and (solver is None or geometry_update is None):
+        raise ValueError('Without a pipeline, pass both solver and geometry_update')
     if localization not in LOCALIZATION:
         raise ValueError(f'localization must be one of {LOCALIZATION}')
     if not 1 <= workers <= MAX_WORKERS:
@@ -235,8 +251,9 @@ def run(run_dir, cases, *, solver, geometry_update, localization, execution, wor
     run_dir = Path(run_dir)
     verify(output, require_inputs=True)
     rows = [row(c, output) for c in cases]
-    settings = portable(dict(solver=solver, geometry_update=geometry_update, localization=localization,
-                             execution=asdict(execution)))
+    method = (dict(pipeline=P.get(pipeline).settings()) if pipeline is not None else
+              dict(solver=solver, geometry_update=geometry_update))
+    settings = portable(dict(method, localization=localization, execution=asdict(execution)))
     manifest = run_dir/'manifest.json'
     if not manifest.exists():
         run_dir.mkdir(parents=True, exist_ok=True)
@@ -249,7 +266,7 @@ def run(run_dir, cases, *, solver, geometry_update, localization, execution, wor
     if saved['settings'] != settings or saved['inputs_sha256'] != digest(Path(output)/'manifest.json'):
         raise ValueError('Do not mix settings or inputs in one run directory; use a fresh one')
     # Preflight every input and capability before the first fit.
-    physics = _physics(solver, execution)
+    physics = P.physics(pipeline, execution) if pipeline is not None else _physics(solver, execution)
     for r in rows:
         physics.validate(ci.fitting_problem(r, run_dir))
     jobs = [(run_dir, r, settings) for r in rows]
@@ -263,6 +280,13 @@ def run(run_dir, cases, *, solver, geometry_update, localization, execution, wor
     return summarize(run_dir)
 
 
+def _short(detail, limit=240):
+    if not detail:
+        return None
+    lines = [line for line in str(detail).strip().splitlines() if line.strip()]
+    return lines[-1][:limit] if lines else None
+
+
 def summarize(run_dir):
     run_dir = Path(run_dir)
     rows = []
@@ -272,7 +296,9 @@ def summarize(run_dir):
         rows.append(dict(id=r['case']['id'], scene=r['case']['case'], contrast=r['case']['contrast'],
             outcome=r.get('outcome'), recovered=r['recovered'], rms_mm=m.get('rms_mm'),
             hausdorff_upper_mm=m.get('hausdorff_upper_mm'), maximum_residual=r.get('maximum_residual'),
-            audit=r.get('final_audit_passed'), units=r.get('total_units'), seconds=r.get('total_seconds')))
+            audit=r.get('final_audit_passed'), units=r.get('total_units'), seconds=r.get('total_seconds'),
+            resolution_promoted=r.get('resolution_promoted'),
+            last_stage=(r.get('stages') or [{}])[-1].get('stage'), detail=_short(r.get('detail'))))
     summary = dict(completed=len(rows), recovered=sum(r['recovered'] for r in rows),
                    by_contrast={S.tag(c): sum(r['recovered'] for r in rows if r['contrast'] == c) for c in S.CONTRASTS},
                    rows=rows)

@@ -45,7 +45,9 @@ Shapes keep their historical definitions; only the placement is new.
 - **Policy:** otherwise the default `CumulativePolicy`.
 
 These are the CLI defaults. `--localization grid` and `--solver nodal_kress` exist only as
-controls.
+controls. `--pipeline nodal_baseline|nodal_fixed|modal_fixed` selects a named recipe from
+`bem_inverse.pipelines` instead of `--solver`/`--geometry-update`; `modal_fixed` is the default
+method above.
 
 ## Commands (repository root, EMNerf environment)
 
@@ -55,6 +57,7 @@ python -m experiments.benchmark verify       # check the sealed inputs
 python -m experiments.benchmark inventory    # list the 30 case IDs
 python -m experiments.benchmark plan --cases aphex_twin__c13.3
 python -m experiments.benchmark run --cases all --run-dir results/validation/cleaned_interfaces/<ID>/<arm> --workers 2
+python -m experiments.benchmark run --pipeline nodal_fixed --cases all --run-dir <fresh dir> --workers 2
 ```
 
 - Use one fresh `--run-dir` per setting; mixed settings are refused.
@@ -65,6 +68,7 @@ python -m experiments.benchmark run --cases all --run-dir results/validation/cle
 |---|---|
 | `scenes.py` | Scene shapes, frozen placements, the start, case IDs |
 | `campaign.py` | Input generation and seal, CI-001-shaped rows, `keep_start`, the fit runner, `summarize`, gallery |
+| `pc001.py` | Three-arm pipeline comparison N0/N1/M1 and its side-by-side report ([plan](../../docs/iterations/cleaned_interfaces/iteration_27/03_plan.md)) |
 | `nl001.py` | First pre-registered experiment: grid search on or off ([plan](../../docs/iterations/cleaned_interfaces/iteration_26/03_plan.md)) |
 | `test_benchmark.py` | Frozen placements, valid truths, no truth access during fitting |
 
