@@ -1,9 +1,10 @@
 # PC-001: node-free versus nodal pipelines on TG-002, each with its applicable fixes
 
-Pre-registered 2026-10-04. **PROPOSED — NOT APPROVED TO RUN.** The user asked for the
-three-arm comparison and for code that is ready to run it ("go ahead … i expect the code to
-be ready to run the three arms on the same 10 scenes and give side by side comparison").
-Running PC-001 needs a separate, explicit approval of this ID. Branch: the existing
+Pre-registered 2026-10-04 and committed at `af3cd068` before any PC-001 fit. The user asked
+for the three-arm comparison and for code that is ready to run it ("go ahead … i expect the
+code to be ready to run the three arms on the same 10 scenes and give side by side
+comparison"). **APPROVED 2026-10-04:** asked to reply "go PC-001", the user replied **"go"**.
+That approves PC-001 only; NL-001 remains unapproved. Branch: the existing
 `feature/shape-frequency-continuation`. No new branch or worktree. Owner: Claude.
 Independent reviewer: unassigned. No production default or earlier source/result changes.
 
