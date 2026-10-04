@@ -11,6 +11,14 @@ implementation first, with the 36-scene campaign to be run by the user.
 
 ## Current handoff
 
+**Iteration 28 / PC-002 approved (2026-10-04):** the user approved the fair
+nodal+spline arm and requested faster validation. The
+[priority amendment](iteration_28/03_plan.md) runs NS alone on TG-002's ten
+scenes × three contrasts after focused numerical checks. Geometry reuse and
+stage-selected nodal resolution remove the two identified confounds; full
+endpoint audits remain. Other arms and repeated controls are deferred.
+PC-001's complete and stopped evidence is preserved.
+
 **NU-007a GPU certificates (2026-10-03):** qualified and integrated for explicit
 `certified_spectral` selection on CUDA. All 864 offline comparisons and 18
 full-path pairs pass; archived NU-006 paths and final curves are unchanged.
@@ -92,6 +100,7 @@ by scene identity. CI-001 does not establish all-36 retention (28/36).
 | [24](iteration_24/03_plan.md) / [25](iteration_25/01_results.md) | FM-005 (user: "go"): RB-001 resolution response on FM-004's stops; paired recoveries 4/11 → 7/11, successes unchanged, contrast-4 control still fails; remaining failures limited at N1024/2048. Proposed, not run: FM-006 blind fresh-seed pipeline test |
 | [26](iteration_26/03_plan.md) | TG-002 benchmark built (10 scenes × 3 contrasts, one centred start, no grid search) in `experiments/benchmark`; far-start and other legacy scene sets retired ([LEGACY](../../../experiments/benchmark/LEGACY.md)). NL-001 (grid search on/off) pre-registered, **not run** |
 | [27](iteration_27/03_plan.md) | PC-001 (user: "go"): M1 and N1 complete, both 26/30 on the same cases (M1 median 31 s, N1 157 s); **N0 stopped by the user at 12/30** to add nodal geometry reuse across frequencies first ([results](../../../results/validation/cleaned_interfaces/PC-001/README.md)): N0 `nodal_baseline`, N1 `nodal_fixed` (certified spectral + N1024/2048 resolution response), M1 `modal_fixed` (node-free) on TG-002; named pipelines in `bem_inverse.pipelines`; `pc001 report` gives the side-by-side comparison |
+| [28](iteration_28/03_plan.md) | PC-002 **proposed, not approved; amended after user review**: geometry reuse plus accuracy-selected nodal resolution; fresh TG-002 comparison with uncached, fixed512 and CPU-LU controls, common GPU certificates and independent audits. [Opening evidence](iteration_28/01_results.md); no code change or run |
 
 Follow the [shared iteration workflow](../README.md). Iteration 02 records
 the implementation checks; iteration 03 records the inverse campaign.
