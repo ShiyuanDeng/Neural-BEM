@@ -37,3 +37,12 @@ PYTHONPATH=solvers:. OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 
 The six measured phases are precision/decision coverage, repeated timing,
 preparation ablations, derivative step-size references, interpolation attribution
 and component profiling. All use saved TG-002/PC-002 geometry; no physics solves.
+
+The main replay completed in 838.73 s with 31 states/279 moves; the receipt
+validator passed frozen inputs, committed numerical source hashes, full phase
+coverage, device fallback counts and profile/error-vector accounting. Its
+[results](../iteration_30/01_results.md) preserve the main measurements.
+The unchanged interpolation errors prompted a bounded attribution continuation
+on the same six preselected moves, registered separately before dispatch in
+[05_attribution_continuation.md](05_attribution_continuation.md). Its two focused
+tests pass in 0.12 s; the main run and source provenance remain intact.

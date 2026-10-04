@@ -1,0 +1,224 @@
+{
+  "state": {
+    "id": "aphex_twin__c4",
+    "curve": {
+      "real": [
+        4.454479742420307e-05,
+        -0.0007156143442066795,
+        -0.0021173380453027827,
+        0.00033856432018629113,
+        -0.0009716869944720376,
+        -0.0009337781049920075,
+        0.009235312163371475,
+        0.005383203408616188,
+        0.015797133090290898,
+        0.008478014404352687,
+        -0.05010664764644793,
+        -0.027485930163733893,
+        -0.43481672578036906,
+        0.5667829875704695,
+        0.04070145353001324,
+        -0.03499179984475288,
+        -0.0010317868502368998,
+        0.014613385123226122,
+        0.002150912951526842,
+        0.006049512115766337,
+        -0.0015155740567627028,
+        0.0017507091461038213,
+        -0.00045519545056301835,
+        -0.0011834225996748,
+        -0.0006941106104891784
+      ],
+      "imag": [
+        -0.00048172989222462423,
+        -0.00010934775185844379,
+        -0.0006383456489313978,
+        -0.00014254895008704494,
+        0.0004354333949603376,
+        -0.0010234501775985905,
+        0.0010162540508462992,
+        0.011595639772154435,
+        -0.01888297028094687,
+        0.016842283014853528,
+        0.04995106442642982,
+        -0.14306151578604132,
+        -0.641321634231681,
+        0.34295505184804664,
+        -0.024494668163023932,
+        0.029937325779692624,
+        -0.02916074924445897,
+        -0.0077574833236142456,
+        0.019902911291411043,
+        0.006278415500177939,
+        -0.002092925087963611,
+        -0.00010749831991584179,
+        -0.0012108183809979639,
+        -0.0003261863944746712,
+        6.34735402748794e-05
+      ]
+    },
+    "M": 5,
+    "stage": "stage_2_damped",
+    "source": "results/validation/cleaned_interfaces/PC-002/NS/runs/aphex_twin__c4/accepted.json",
+    "sha256": "ad703db238e57d2d977f5de74bba4f93e0d70b31a6aceb00e104f09f04fed55f",
+    "K": 12,
+    "N": 1024,
+    "sigma0": 0.7540893354961337,
+    "speed_ratio": 1.0781890910198204,
+    "maximum_abs_curvature_per_m": 110.24323330873905,
+    "timing_panel": true,
+    "exact_key": "78bfd0171f24141fc8bdbe6625a01e6aa282709dd9515af221a86d99b207daf4"
+  },
+  "arms": {
+    "S": {
+      "seconds": 0.020153359975665808,
+      "settings": {
+        "name": "centred_state_band_projection",
+        "length_unit_m": 0.05,
+        "projection_tolerance": 1e-05,
+        "coordinates": "real Fourier coefficients of normal distance h (m) in normalized arclength",
+        "gauge": "arclength refit on every trial",
+        "derivative_step_m": 1e-07,
+        "construction": "z + P_K[A(z+h n)-A(z)]",
+        "projection_tolerance_meaning": "grid refinement, not intentional smoothing"
+      }
+    },
+    "F": {
+      "seconds": 0.013590619899332523,
+      "settings": {
+        "name": "centred_state_band_spectral_projection",
+        "length_unit_m": 0.05,
+        "projection_tolerance": 1e-05,
+        "coordinates": "real Fourier coefficients of normal distance h (m) in normalized arclength",
+        "gauge": "arclength refit on every trial",
+        "derivative_step_m": 1e-07,
+        "construction": "z + P_K[R(z+h*n)-R(z)], R = eq. 9 arclength quadrature (no splines); FD derivative of the complete trial",
+        "projection_tolerance_meaning": "grid refinement, not intentional smoothing",
+        "resampler": "eq. 9 quadrature on the uniform grid (count and 2*count); no splines",
+        "boundary_samples": true,
+        "projection_error_control": "coarse/fine diagnostic; not a rigorous bound"
+      }
+    },
+    "B": {
+      "seconds": 0.022736952174454927,
+      "settings": {
+        "name": "centred_state_band_spectral_projection",
+        "length_unit_m": 0.05,
+        "projection_tolerance": 1e-05,
+        "coordinates": "real Fourier coefficients of normal distance h (m) in normalized arclength",
+        "gauge": "arclength refit on every trial",
+        "derivative_step_m": 1e-07,
+        "construction": "z + P_K[R(z+h*n)-R(z)], R = eq. 9 arclength quadrature (no splines); FD derivative of the complete trial",
+        "projection_tolerance_meaning": "grid refinement, not intentional smoothing",
+        "resampler": "eq. 9 quadrature on the uniform grid (count and 2*count); no splines",
+        "boundary_samples": true,
+        "projection_error_control": "coarse/fine diagnostic; not a rigorous bound",
+        "validity": "exact area -> Lemma 3-4 increment vs accepted-curve Y -> full |W|^2 certificate (crop + Lemma 3 tail) -> sampled test (unchanged fallback)",
+        "certificate_window": 64,
+        "full_certificate_windows": [
+          64,
+          128
+        ],
+        "full_crop_band": "max(K, 64)",
+        "regularity": "coefficient residual lower bound >= 1e-12 sum j^2|x_j|^2",
+        "shadow": false,
+        "certificate_arithmetic": "float64 with heuristic FFT rounding allowance; not interval verified",
+        "sampled_validity_fallback": true,
+        "prepare": "batched torch float64 (NU-006)",
+        "prepare_device": "cuda",
+        "chunk_bytes": 536870912
+      }
+    },
+    "C": {
+      "seconds": 0.022918404079973698,
+      "settings": {
+        "name": "centred_state_band_spectral_projection",
+        "length_unit_m": 0.05,
+        "projection_tolerance": 1e-05,
+        "coordinates": "real Fourier coefficients of normal distance h (m) in normalized arclength",
+        "gauge": "arclength refit on every trial",
+        "derivative_step_m": 1e-07,
+        "construction": "z + P_K[R(z+h*n)-R(z)], R = eq. 9 arclength quadrature (no splines); FD derivative of the complete trial",
+        "projection_tolerance_meaning": "grid refinement, not intentional smoothing",
+        "resampler": "eq. 9 quadrature on the uniform grid (count and 2*count); no splines",
+        "boundary_samples": true,
+        "projection_error_control": "coarse/fine diagnostic; not a rigorous bound",
+        "validity": "exact area -> Lemma 3-4 increment vs accepted-curve Y -> full |W|^2 certificate (crop + Lemma 3 tail) -> sampled test (unchanged fallback)",
+        "certificate_window": 64,
+        "full_certificate_windows": [
+          64,
+          128
+        ],
+        "full_crop_band": "max(K, 64)",
+        "regularity": "coefficient residual lower bound >= 1e-12 sum j^2|x_j|^2",
+        "shadow": false,
+        "certificate_arithmetic": "float64 with heuristic FFT rounding allowance; not interval verified",
+        "sampled_validity_fallback": true,
+        "prepare": "batched torch float64 (NU-006)",
+        "prepare_device": "cuda",
+        "chunk_bytes": 536870912,
+        "certificate": "torch float64 port of curve_certificate (NU-007)",
+        "certificate_device": "cuda"
+      }
+    }
+  },
+  "columns": {
+    "S": {
+      "maximum": 6.517936030574614e-08,
+      "median": 4.220917393981937e-08,
+      "columns": [
+        3.343937378251281e-08,
+        3.765732488438396e-08,
+        5.294199952510632e-08,
+        4.375355023358343e-08,
+        5.6455242601417734e-08,
+        5.0359563481025854e-08,
+        6.517936030574614e-08,
+        3.4231621006547174e-08,
+        4.220917393981937e-08,
+        4.1946947982974904e-08,
+        3.045883355884953e-08
+      ]
+    },
+    "B": {
+      "maximum": 4.939757751322267e-10,
+      "median": 2.8120070498823533e-10,
+      "columns": [
+        2.057949279950332e-10,
+        2.335565291292096e-10,
+        3.3565361888953347e-10,
+        4.2163786431233643e-10,
+        2.3834965473831156e-10,
+        2.438009262021249e-10,
+        1.6850901287126256e-10,
+        3.0829195502623796e-10,
+        4.939757751322267e-10,
+        3.4749623884929586e-10,
+        2.8120070498823533e-10
+      ]
+    },
+    "C": {
+      "maximum": 4.939757751322267e-10,
+      "median": 2.8120070498823533e-10,
+      "columns": [
+        2.057949279950332e-10,
+        2.335565291292096e-10,
+        3.3565361888953347e-10,
+        4.2163786431233643e-10,
+        2.3834965473831156e-10,
+        2.438009262021249e-10,
+        1.6850901287126256e-10,
+        3.0829195502623796e-10,
+        4.939757751322267e-10,
+        3.4749623884929586e-10,
+        2.8120070498823533e-10
+      ]
+    }
+  },
+  "base_S_F": {
+    "maximum_m": 1.166970304991144e-11,
+    "rms_m": 5.630647644156683e-12,
+    "relative": 3.0950452421485734e-10,
+    "coefficient_l2_m": 5.630647644156683e-12
+  }
+}
