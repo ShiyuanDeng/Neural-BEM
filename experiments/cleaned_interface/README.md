@@ -473,3 +473,14 @@ The SPD-016 field-table extension is intentionally not selected. See
 for the focused checks, and the
 [campaign review](../../results/validation/cleaned_interfaces/CI-001-campaign-review/README.md)
 for the all-36 regressions and build re-verification.
+
+## New target shapes (TG-001)
+
+`target_gallery.py` adds 15 cases outside the frozen 36: the Aphex Twin logo
+glyph (public-domain SVG in `assets/`), an eight-tooth cog, a rounded cross, a
+heart and a thick S, each at contrasts 0.5, 4 and 13.3 from off-centre starts.
+Case IDs are `target__c<contrast>__<scene>`. The rows reuse
+`benchmark.fitting_problem`, `run_case` and `score` unchanged, and CI-001 seals
+are untouched. Use `python -m experiments.cleaned_interface.target_gallery`
+`inventory`, `plan --cases ...` or `run --cases ... --run-dir <fresh dir>`. See the
+[TG-001 inputs](../../results/validation/cleaned_interfaces/TG-001/README.md).

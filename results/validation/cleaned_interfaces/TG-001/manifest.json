@@ -1,0 +1,260 @@
+{
+  "experiment": "TG-001",
+  "purpose": "new target shapes for the cleaned SC/MA inverse; inputs only",
+  "scenes": {
+    "aphex_twin": {
+      "size": 1.15,
+      "band": 32,
+      "taper": 16,
+      "center": [
+        0.512,
+        0.488
+      ],
+      "rotation": 0.0,
+      "start": [
+        0.33,
+        0.66
+      ]
+    },
+    "cog": {
+      "size": 1.05,
+      "band": 32,
+      "taper": 20,
+      "center": [
+        0.48,
+        0.53
+      ],
+      "rotation": 0.17,
+      "start": [
+        0.68,
+        0.66
+      ]
+    },
+    "cross": {
+      "size": 1.05,
+      "band": 20,
+      "taper": 10,
+      "center": [
+        0.53,
+        0.47
+      ],
+      "rotation": 0.35,
+      "start": [
+        0.32,
+        0.36
+      ]
+    },
+    "heart": {
+      "size": 1.1,
+      "band": 20,
+      "taper": 12,
+      "center": [
+        0.49,
+        0.51
+      ],
+      "rotation": 0.0,
+      "start": [
+        0.66,
+        0.33
+      ]
+    },
+    "s_curve": {
+      "size": 1.15,
+      "band": 20,
+      "taper": 12,
+      "center": [
+        0.51,
+        0.52
+      ],
+      "rotation": -0.3,
+      "start": [
+        0.69,
+        0.5
+      ]
+    }
+  },
+  "contrasts": [
+    0.5,
+    4.0,
+    13.3
+  ],
+  "start_radius_m": 0.065,
+  "logo": {
+    "source": "https://en.wikipedia.org/wiki/File:Aphex_Twin_logo.svg",
+    "licence": "Public domain",
+    "author": "Original logo by Paul Nicholson; vectorized by Iwantmorelife",
+    "used": "first path only (the central glyph); the surrounding ring is a separate annulus and is omitted"
+  },
+  "frequencies_hz": [
+    250000000.0,
+    375000000.0,
+    500000000.0,
+    625000000.0,
+    750000000.0,
+    875000000.0,
+    1000000000.0,
+    1125000000.0,
+    1250000000.0,
+    1375000000.0,
+    1500000000.0,
+    1625000000.0,
+    1750000000.0,
+    1875000000.0,
+    2000000000.0,
+    2125000000.0,
+    2250000000.0,
+    2375000000.0,
+    2500000000.0
+  ],
+  "damping_ratio": 0.25,
+  "acquisition": "CI-001 frozen 24-pair ring",
+  "qualification": {
+    "nodes": [
+      1024,
+      2048
+    ],
+    "max_relative_difference": 1e-08
+  },
+  "noise": "none; observed equals the N2048 prediction",
+  "sources": {
+    "experiments/cleaned_interface/assets/aphex_twin_logo.svg": "05f73997e0bd08e6ba18073783c5e9824ba9d2664f699580995a443b9faa66ec",
+    "experiments/cleaned_interface/benchmark.py": "65b61d2cd3d9bf1a8e9797915a5432b8afe3cef7bea38603785ba5cd6f51b529",
+    "experiments/cleaned_interface/target_gallery.py": "c425da85ee2d50728a2ba258b5b4aeb9bd51de81e081db261b3f20e2705a1481",
+    "solvers/bem_inverse/__init__.py": "6d5340ad8a2ad99649fc260a6bfa5446cec05efd967b8d10a8bf4d81fd6b3396",
+    "solvers/bem_inverse/analytic_projection.py": "ba0c11c0833baf0086bc9bf860284aecd9b4165789899b62fb0c7414bfd9a864",
+    "solvers/bem_inverse/batched.py": "e38b1926e2f19dec8dfc7fe00fb2becf2fe77e65a32d97056501d63635406a16",
+    "solvers/bem_inverse/certified.py": "589f07524be04f5f86a6a128f24bddde0784e3b38abe1970161b0f9f6613882b",
+    "solvers/bem_inverse/continuation/__init__.py": "86ba4f139e92f8cc8e6c4017bcf818d39fa6fc8ecc93546ac6de9682bc979a05",
+    "solvers/bem_inverse/continuation/forward.py": "7e7e60f0a6093b383653bea7ab1b5a5712464c48feb18d1c2a802ddc57fc8c3d",
+    "solvers/bem_inverse/continuation/geometry.py": "f7302ebb445b226acd3c4cafb68047f31cfef85654959c2c1f319a897983578a",
+    "solvers/bem_inverse/continuation/geometry_runtime.py": "cb7c7f3aeea9e0ed238f70b25527078b1101f462393920159fa7ee196ab0e1d4",
+    "solvers/bem_inverse/continuation/lm_backend.py": "e944947a4d243989e6f9001b64d0b9d59805dae0ad54bb68a13bd6b1e7a4099a",
+    "solvers/bem_inverse/continuation/updates.py": "66106909f583bfd26adf97e344984dbf51d50e0f267a80ce6fa772f0a1287c50",
+    "solvers/bem_inverse/continuation/validation.py": "c5bf3baa1951f7e65f5ca802640942a4b74c81e90c0a18afbe546bbcbba464dd",
+    "solvers/bem_inverse/damped_cuda.py": "23ede4c7a38d8f268f45bdb252e1e924ece2365025ecd3fa6a20153259778353",
+    "solvers/bem_inverse/device_certified.py": "ce9ea9db87a15a2bbe107dda73ba0f03b62f34a2a494dd067e24f232c93e662c",
+    "solvers/bem_inverse/full_matrix.py": "2db0bfde23cbe6c5000c440eca7f7474c41029ca3e33830097a5943d999ba2b9",
+    "solvers/bem_inverse/geometry.py": "958a57599c402b020593376ea78e1246b41d43787e9673e181936fbf4db4c0e6",
+    "solvers/bem_inverse/geometry_selection.py": "9c8f738e5c605ce874f5fd78c8bc632ff4a9497b8ca0e3aafc040c611cef328e",
+    "solvers/bem_inverse/io.py": "b9f9fd20ead7f5a40d5636e96517e1087391d73910ee1632cb94636cbcc6d9ad",
+    "solvers/bem_inverse/localization.py": "ba87071aaf5836d29ac4f22137dab7ca461f9f07475eaae538e05b4a3b1572ba",
+    "solvers/bem_inverse/mie_grid.py": "88b1d08bea24cd80b7cbd169ab39c6fbe25c7d5a8c5b92b6b3b4b6f9613e6b9b",
+    "solvers/bem_inverse/mie_localize.py": "c32a2c2a533070a4016c7d092f212c1e5bbf3709957572c9d3193702de9b1229",
+    "solvers/bem_inverse/modal_cuda.py": "d873681f60fc4ceb94cdb560829c7fa97b8018ea44b07213b1dc3d7d868707ff",
+    "solvers/bem_inverse/modal_geometry.py": "48b2a77da07160193f1cceb625817802a2d3f79382bae6ab3c8d911fed096fec",
+    "solvers/bem_inverse/modal_muller.py": "e75129e3acdff02c81377f204d63b2f5a397fe3c9c785e93c366fb2591bb35c9",
+    "solvers/bem_inverse/modal_operator.py": "ba6bfe318d5d1f8d97e19c3404c6ed6780d25a0df84cee9fdb6e4b99c94b2461",
+    "solvers/bem_inverse/n_reparam.py": "b1a5ed78a4e6ee0daf5432716fb3dd9165a8aa8e00c732dbc17a6d5ae2534189",
+    "solvers/bem_inverse/n_update.py": "713a698d6cb6555354729f1d2db77e99500f0ee1c9bee2c1315d0eb8e8481548",
+    "solvers/bem_inverse/normal_basis.py": "b2388c9bd74e10301910145eacf92bd8df89789ee2857f237bae60091c1a5ced",
+    "solvers/bem_inverse/physics.py": "9ac3ec4a2dbc649fc9b2761d063f9c1d6bf4eaee6a98f8ee795b32c7cc0c921f",
+    "solvers/bem_inverse/policy.py": "e270fff33c2c27378a24fc7a4e6ccc07c9db4eed015b9f0587694c7c41be38ba",
+    "solvers/bem_inverse/problem.py": "6b62280ff443734e7924ae3d8820147ee930124032ecaa69fd20e2c891f0f390",
+    "solvers/bem_inverse/relaxed_gradient.py": "8fe03505ee89292edaea428ab86b46eca3e0d1e63761c200aa510ee778717362",
+    "solvers/bem_inverse/runner.py": "d1b2dc71a1c69ae78800531a9cf13ee799681f73ccfdc6551dd72cb055715d8e",
+    "solvers/bem_inverse/spectral.py": "527a0764cdb8c360c026e622b4c2547cc1b2495574ac6af33420d3024a4d03a6"
+  },
+  "archive_sha256": "e2d9561523c2b6f35d19f57a1dd33cece0eb3b0281c90c72ed50b80439fed9dc",
+  "parent_commit": "1f923c04dca36de0c016f355f3c21da636ab0d14",
+  "initial_status": "?? experiments/cleaned_interface/assets/\n?? experiments/cleaned_interface/target_gallery.py\n?? results/validation/cleaned_interfaces/TG-001/\n",
+  "environment": {
+    "python": "3.9.25 (main, Nov  3 2025, 22:33:05) \n[GCC 11.2.0]",
+    "platform": "Linux-6.8.0-138-generic-x86_64-with-glibc2.35",
+    "machine": "pc-Alienware-Area-51-AAT2250",
+    "gpu": "NVIDIA GeForce RTX 5090",
+    "torch": "2.8.0+cu128",
+    "numpy": "2.0.2",
+    "threadpools": {
+      "runtime_introspection": "threadpoolctl not installed; configured BLAS environment recorded"
+    },
+    "blas_threads": {
+      "OMP_NUM_THREADS": "4",
+      "OPENBLAS_NUM_THREADS": null,
+      "MKL_NUM_THREADS": null
+    },
+    "inherited_sc": {
+      "SC_FORWARD_BACKEND": null,
+      "SC_FREQUENCY_THREADS": null,
+      "SC_GEOMETRY_RUNTIME": null
+    },
+    "load_average": [
+      0.1962890625,
+      0.107421875,
+      0.03173828125
+    ]
+  },
+  "inputs_sealed": true,
+  "qualification_failures": [],
+  "inputs": {
+    "inputs/aphex_twin/c0.5/damped.json": "405c72ec0711cd30b77587d1430da7bb7a145aa2de8f60bcd06956df18b22310",
+    "inputs/aphex_twin/c0.5/damped_qualification.json": "e9bd3f4f1968c596645a84c7f75068ebb35b786cd6d3e4e09e450b0c16d729b6",
+    "inputs/aphex_twin/c0.5/observations.json": "a97302bb974a9588d7ce0c74ff8325490edb177d4c5be7360f8524aa3538efa1",
+    "inputs/aphex_twin/c0.5/qualification.json": "6f17646891c46d0c4abc99ca92c010af8c080816dcba20952f591b0bc217f69b",
+    "inputs/aphex_twin/c13.3/damped.json": "5873152c8fc92e873a8461ef38833b30874d137ffca84099d6916e0f21150120",
+    "inputs/aphex_twin/c13.3/damped_qualification.json": "43bcfdd0bc63a159f7a0f55b8ce1d13d8b9a028f360a4da3a79b3ade1b88c627",
+    "inputs/aphex_twin/c13.3/observations.json": "113a76899201cf63682af339923a0de75e95b093dc9ee30a0193d1078b333ae5",
+    "inputs/aphex_twin/c13.3/qualification.json": "0d07a1ad3851b2209d9d6ee26f19caa6f0175d4af2dad5f1cd62d3fc095afa1c",
+    "inputs/aphex_twin/c4/damped.json": "a19a8a1dff9db28ed32c7a31c13e84a45356d59f52330841acb3a844a130cef5",
+    "inputs/aphex_twin/c4/damped_qualification.json": "8ee0e4a90882f5b9f74fa5ef309351996b35cb437a917034bcab62f7c074de8f",
+    "inputs/aphex_twin/c4/observations.json": "d00ed5ed70d0c9788b1fb26f232e47f989dfea1b1cd57b72f09298bf25f372b8",
+    "inputs/aphex_twin/c4/qualification.json": "9e1d9f19beb193562c8c37b1bb8f61d72ca114ad40ec3abd71e1281bd6eb021c",
+    "inputs/aphex_twin/initial.json": "9b7bb9914df656c0bac86377c6602e5cb886d39efcb161e663760693ee9bcd50",
+    "inputs/aphex_twin/truth.json": "0a886481330a2ad158afe5a4dcd426e8d785da8e049649ba385951870ac194bf",
+    "inputs/cog/c0.5/damped.json": "b2b0ca784b172f888d17afdbd36dfea8b025e9e2128fc6d9c6433144a6c8cc51",
+    "inputs/cog/c0.5/damped_qualification.json": "59bf559dc9f1754132ae44be818002d8ac0b0711887039b17dae026c467119ed",
+    "inputs/cog/c0.5/observations.json": "a802e3bee9612753474e93b0261e8f48debc001b50d2319389c023d464839278",
+    "inputs/cog/c0.5/qualification.json": "0668ac4e2c96467eadb22def42bfcd088efeeac93b9bb755f10fef631d6be935",
+    "inputs/cog/c13.3/damped.json": "beefaa03c78de96bf5a56a9b57024c9dec134e17c8bf70f78caf9af6dc688882",
+    "inputs/cog/c13.3/damped_qualification.json": "5a618295d0c53463a494043f7c82eb045ebd8a8f6d095b7ac20705b89709de4f",
+    "inputs/cog/c13.3/observations.json": "c0d518da416e5c5383ab6304a2c5dad8370e5000ad09899eea0f0afbbd440e55",
+    "inputs/cog/c13.3/qualification.json": "c1202b6198240f838f6faa27cb813960c0d2395050286d744e824f56b07556b3",
+    "inputs/cog/c4/damped.json": "7b291aba714a0b439a331bc12a7b7665f57a13c885f951fef3d2cadd0476e1c7",
+    "inputs/cog/c4/damped_qualification.json": "6166b2e8490bb3a85e37670b577ce53a80f072e989f4905631c7343d00d694a4",
+    "inputs/cog/c4/observations.json": "1629286a21d1447b5499ebb1d1b8091a6a2b8bdacf51ec75a4cfe473fe5629b1",
+    "inputs/cog/c4/qualification.json": "0c6653c174d1102f98a68c4ae3b1e62d8073e56d67dff8a0c1a09ce03f4199b0",
+    "inputs/cog/initial.json": "daff608a4645a6ada3c01aa4542a5ad028375e0bf9cb436eb0053d3f890bcfd6",
+    "inputs/cog/truth.json": "ddec3599fb48b112a119c1de9113d997dc876cfc0ce1b42e3cd0dac02cda2feb",
+    "inputs/cross/c0.5/damped.json": "bdd448df3433d92bbac4d76eedccce1d9488c02eb4f4a9872c61e6bce04aaa98",
+    "inputs/cross/c0.5/damped_qualification.json": "567b47f9d7cbbcb0b231604e10661b0968987a8c259dc620c240e96919ef4fe0",
+    "inputs/cross/c0.5/observations.json": "40863146b478460bca52f3922a7014b925582e80d14706ca2bba34eda44f2a9b",
+    "inputs/cross/c0.5/qualification.json": "767f79720f92b5bbb542fcebe9b8f2c27af782a5abfd5da2be639e7246f3ed10",
+    "inputs/cross/c13.3/damped.json": "bfdac44159ed000bf6cf79585fd07c55a62fdbc56f347419272b3fadf7b94e74",
+    "inputs/cross/c13.3/damped_qualification.json": "6a6c64b0c0a337ff08fed991b6ec2c37dbefca8272ddebba70f4aa2f944941e8",
+    "inputs/cross/c13.3/observations.json": "5d7a98ed5e3cfe5b36cf0f3197d65986ea42875b972cc3e77144c166285c15fe",
+    "inputs/cross/c13.3/qualification.json": "19ad64c5932da197503586b0df988fff1d391c73c772130f4c0fd00b90b81e8d",
+    "inputs/cross/c4/damped.json": "a92c41a2ee6f98577122c1403c1e73161eff8b164ed38733c0b176e832861c22",
+    "inputs/cross/c4/damped_qualification.json": "abcacbd5d8dadfec7d25c10b4dfda088ec07179fa26f3fb42099d10a1148159f",
+    "inputs/cross/c4/observations.json": "1a185ce31f547c7b686f41d4b08320ef026fd207863e303ce45d524dbb7a4ae5",
+    "inputs/cross/c4/qualification.json": "3f708b02327deb8a4411c0d54d478b1df4101b1916a59e1f85cf65959b353cd3",
+    "inputs/cross/initial.json": "3e5ee02696c1ac1841b70aebe9aed4f8c4a53cbd57133d7ff37294b01ec899e0",
+    "inputs/cross/truth.json": "3f90d93a0d663b22c02e4896a432a039f928b532fb7790745bc53dabb26dd248",
+    "inputs/heart/c0.5/damped.json": "c34844df3675d49318812870d280b497b79bdc0c5b3716636bd140bfa7c84612",
+    "inputs/heart/c0.5/damped_qualification.json": "034969cd514c0c79d06119627f3769e0e989a293637f00d038a879165493f39c",
+    "inputs/heart/c0.5/observations.json": "c0d2da43b705ae33a1fa6f8e54416e30c3592029a3b3904f637a78805e1dd7bb",
+    "inputs/heart/c0.5/qualification.json": "8256df831db3c0c19eba833d2fb30f1b0135cefaa986041d17f5f7560219137a",
+    "inputs/heart/c13.3/damped.json": "b12ba5bc61a522411865b2cfba19c69c021694019c8612a68b7750fed24fbcdf",
+    "inputs/heart/c13.3/damped_qualification.json": "40577d95c02f20ba5d74ce4de41409133e1c6298b6f36ea70a1bf73e07c321cf",
+    "inputs/heart/c13.3/observations.json": "ca8aea0f07e18491f0bca6f50f64e65497b89109a23729b59da1c937e6236f15",
+    "inputs/heart/c13.3/qualification.json": "e90f21803e6d9d72aba10cab52b6daac55c8c83f1e28a6948c4bd57ebe38afbb",
+    "inputs/heart/c4/damped.json": "bec4615422de7ab315f0a81bd8248536f54b1b2de412c59ae4b8d8bc7d24361f",
+    "inputs/heart/c4/damped_qualification.json": "145b2dbbcf6480087c0cee740713bc6e134ff9cd1c6b0a101ba6a5912aa08913",
+    "inputs/heart/c4/observations.json": "f2ffdadf31ae79815b226c913e321d59bfdd5906fcb4c5f642a26f36311279c2",
+    "inputs/heart/c4/qualification.json": "bcaec59570a980da986a9ce1c07e4578c800b6f420860e932ffcd262a35cd59f",
+    "inputs/heart/initial.json": "0824f6dc9baddf1a9b818bf93719fef4049778e7d1696df58398f7f3640a741c",
+    "inputs/heart/truth.json": "9c9644453c71dc6e45a0f27b10451f0b410afca8bf1685937b55c4daed08f464",
+    "inputs/s_curve/c0.5/damped.json": "86ff58ad89a570271486c97af92a50add281e70d2372c6b0ba35bc4869037521",
+    "inputs/s_curve/c0.5/damped_qualification.json": "60ccbc1e51062159d06522caec504ef99143baccc4dfe74d8ad0435013bba791",
+    "inputs/s_curve/c0.5/observations.json": "1c6791d006be747f482ffc37fb3c5ffe93d41e1da70c93027f50f8f04bb80f5a",
+    "inputs/s_curve/c0.5/qualification.json": "2cc650f94fefbadb48067b38ee5b680deca60f35c015c35e75e06a8a8424856d",
+    "inputs/s_curve/c13.3/damped.json": "0d401582c6947c3bb87f4f81fc6705d1e6db5afd80da1cb1a42d0653947cd972",
+    "inputs/s_curve/c13.3/damped_qualification.json": "ea9c4746a7a7e7713bbb580a03eeca62db0435ba4a4b9a448d3a29b0a0f5327b",
+    "inputs/s_curve/c13.3/observations.json": "2b2b406903090b3629b67d2819f1c8810fbf6d9b8f5f0ad6883446dd05298491",
+    "inputs/s_curve/c13.3/qualification.json": "39a260f45230536de5ad4023d916b2bc69a7535132a6078e1855e46c1bf531ee",
+    "inputs/s_curve/c4/damped.json": "3d01c9141032de1880cec0ca4352367807f47441d06f82759f6070a275a06036",
+    "inputs/s_curve/c4/damped_qualification.json": "d3f4ef1c1ffe118ef5ed2ff7dc12ee93aff8791dcac51b665db3bd2d8526d3f4",
+    "inputs/s_curve/c4/observations.json": "94baa5477d4076b58ad9e09f8a248f72403bde4c8bb7d44c4ae48ad05c6fa5ee",
+    "inputs/s_curve/c4/qualification.json": "5aff65bf2c05ffdc950b32c1b000c27e638d1afae50cbbdfaa6fb25d1d9a6160",
+    "inputs/s_curve/initial.json": "efc8a62ddf30b5742bd8722712e6695d22f5251457ac3d305407b12aeb5a32ce",
+    "inputs/s_curve/truth.json": "7bbb8fabcf83418bd70d2ef15d609b65c292c25839caadd99c07b2b0605e5804"
+  }
+}
