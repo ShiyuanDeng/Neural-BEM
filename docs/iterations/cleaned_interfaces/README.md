@@ -11,13 +11,16 @@ implementation first, with the 36-scene campaign to be run by the user.
 
 ## Current handoff
 
-**GC-001 approved (2026-10-05, user: "run"):** the user requested a current geometry-only
-spline/spectral runtime and precision comparison, including attribution.
-[Iteration 29](iteration_29/01_results.md) records historical evidence and code
-findings; the [pre-registration](iteration_29/03_plan.md) separates interpolation,
-quadrature, finite differences, batching/device work and validity checking on
-31 fixed TG-002 replay states. The driver and focused checks are ready;
-execution follows the [record](iteration_29/04_execution.md).
+**GC-001 complete (2026-10-05, user: "run"):** [iteration 30](iteration_30/01_results.md)
+reports the current geometry-only spline/spectral comparison and attribution.
+31 fixed TG-002 replay states, 279 shared moves, identical decisions (277 accepted,
+two self-intersection refusals). CUDA spectral preparation is 27x faster than
+spline in the paired panel, but CPU spectral trials and certificate checking
+cost more. The dominant precision discrepancy in the largest probes is final
+uniform-arclength resampling/FFT aliasing, not cubic interpolation alone.
+The measured geometry category is about 19% of whole inverse time; its component
+speedups cannot be claimed as whole-inverse gains. Total measurement: 14.33 min,
+zero physics solves. [Table and receipts](../../../results/validation/cleaned_interfaces/GC-001/README.md).
 
 **Iteration 28 / PC-002 complete (2026-10-04):** the fair nodal+spline arm
 finished all 30 TG-002 cases and recovered **26/30 (9/9/8)**, exactly PC-001
@@ -113,7 +116,7 @@ by scene identity. CI-001 does not establish all-36 retention (28/36).
 | [26](iteration_26/03_plan.md) | TG-002 benchmark built (10 scenes × 3 contrasts, one centred start, no grid search) in `experiments/benchmark`; far-start and other legacy scene sets retired ([LEGACY](../../../experiments/benchmark/LEGACY.md)). NL-001 (grid search on/off) pre-registered, **not run** |
 | [27](iteration_27/03_plan.md) | PC-001 (user: "go"): M1 and N1 complete, both 26/30 on the same cases (M1 median 31 s, N1 157 s); **N0 stopped by the user at 12/30** to add nodal geometry reuse across frequencies first ([results](../../../results/validation/cleaned_interfaces/PC-001/README.md)): N0 `nodal_baseline`, N1 `nodal_fixed` (certified spectral + N1024/2048 resolution response), M1 `modal_fixed` (node-free) on TG-002; named pipelines in `bem_inverse.pipelines`; `pc001 report` gives the side-by-side comparison |
 | [28](iteration_28/05_results.md) | PC-002 complete: fair nodal+spline on all 30 TG-002 cases, 26/30 recovered (same M1/N1 cases), N130/N386, median fit 48.18 s; stronger audits and matched-speedup limitations reported; controls deferred |
-| [29](iteration_29/03_plan.md) | GC-001 approved (user: "run", 2026-10-05): geometry-only current spline/CPU spectral/GPU-prepared spectral/certified spectral comparison and error/cost attribution; focused checks pass, execution recorded separately |
+| [29](iteration_29/03_plan.md) / [30](iteration_30/01_results.md) | GC-001 complete: 31 states/279 geometry moves, same decisions in all four arms; CUDA preparation gain, output-FFT aliasing attribution, and bounded whole-inverse runtime significance established; no inverse fitting |
 
 Follow the [shared iteration workflow](../README.md). Iteration 02 records
 the implementation checks; iteration 03 records the inverse campaign.

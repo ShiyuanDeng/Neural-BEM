@@ -139,12 +139,26 @@ def build(output):
             assert arm['preparation_other']>=-1e-6 and arm['trial_other']>=-1e-6
             assert all(v>=0 for v in arm['preparation_components'].values())
             assert all(v>=-1e-9 for v in arm['trial_components'].values())
+    alias_manifest=read(output/'aliasing/manifest.json')
+    alias_completion=read(output/'aliasing/completion.json')
+    assert alias_completion['completed'] and alias_completion['cases']==6 and alias_completion['physics_calls']==0
+    assert alias_manifest['main_manifest_sha256']==digest(output/'manifest.json')
+    import hashlib
+    alias_source=subprocess.check_output(['git','show',alias_manifest['source_commit']+':experiments/benchmark/gc001_aliasing.py'],cwd=campaign.ROOT)
+    assert hashlib.sha256(alias_source).hexdigest()==alias_manifest['source_sha256']
+    for path,expected in alias_manifest['selection_hashes'].items():
+        assert digest(output/path)==expected
+    aliasing=[read(output/'aliasing'/f'{i:02d}.json') for i in range(1,7)]
+    assert [r['selection'] for r in aliasing]==[r['selection'] for r in interpolation]
+    assert all(r['native_reproduction_relative']<1e-5 for r in aliasing)
     report=dict(experiment='GC-001',validated=True,completed=completed,source_commit=manifest['source_commit'],
         coverage=dict(states=31,unique_states=manifest['unique_states'],trials=279,timing_states=11,timing_repeats=3),
         timing_seconds=timing,paired_ratios=ratios,timing_per_state=per_state,
         precision=errors,decision_counts=agreement,decision_disagreements=disagreement,
         preparation_ablations=ablations,derivative_panel=derivatives,interpolation=interpolation,
-        profiles=profiles,historical_context=historical_context(),
+        profiles=profiles,aliasing=aliasing,aliasing_completion=alias_completion,
+        total_measurement_seconds=completed['total_seconds']+alias_completion['seconds'],
+        historical_context=historical_context(),
         semantics=dict(timing='median of per-state medians, 11 equally weighted states, ranges retained',
             reference='qualified 4N/8N spectral refinement; not exact geometry or a rigorous bound',
             errors='parameter-aligned 2N curve evaluation; metres and normalized units; not Hausdorff',
@@ -184,6 +198,20 @@ def build(output):
         label=s['state']+' / '+s['move']+(' (reference unresolved)' if not r['reference_qualified'] else '')
         lines.append(f"| {label} | "+' | '.join(f"{e[k]['maximum_m']*1e9:.6g}" for k in ('native','inverse','position','both'))+' |')
     lines+=['','Rows marked reference unresolved show diagnostic distances only; they are excluded from accuracy rankings.']
+    lines+=['','## Output-grid aliasing attribution','',
+            'Same six moves, fixed original moved curve. First vary only the final arclength sampling grid',
+            'before retained-band FFT cropping; native inverse and position splines stay fixed.',
+            'Then vary the integration grid at fixed 8N output, with direct moved-Fourier position evaluation.','',
+            '| State / move | Native N output, nm | 8N output only, nm | 8N integration and output, direct position, nm |',
+            '|---|---:|---:|---:|']
+    for r in aliasing:
+        s=r['selection'];label=s['state']+' / '+s['move']+(' (reference unresolved)' if not r['reference_qualified'] else '')
+        native=r['output_grids']['native_cubic']['errors']
+        lines.append(f"| {label} | {native['1']['maximum_m']*1e9:.6g} | {native['8']['maximum_m']*1e9:.6g} | {r['integration_grids']['errors']['8']['maximum_m']*1e9:.6g} |")
+    lines+=['','These adaptive diagnostic results identify output resampling/FFT aliasing as the dominant error',
+            'in the qualified large-disagreement probes. Cubic interpolation and integration contribute',
+            'smaller residuals. They do not establish inverse recovery gains or authorize a production change.',
+            f"Main replay: {completed['total_seconds']/60:.2f} min; attribution continuation: {alias_completion['seconds']:.2f} s."]
     lines+=['','## Whole-inverse context','',
             'These are historical internal runtime fractions, not matched inverse speed comparisons.','',
             '| Existing run | Recorded geometry-update share of total | Median case share | Total speedup if all geometry is 2× faster |',
@@ -201,7 +229,8 @@ def build(output):
     write(output/'validation.json',dict(passed=True,checks=['31 fixed states/279 moves','11 × 3 × 4 timing arms',
         'source commit hashes','input seal and replay source hashes','zero device fallbacks',
         'five preparation/derivative/profile states','six predeclared ranked interpolation trials',
-        'factorial vector closure','exclusive profiling accounting'],physics_calls=0))
+        'factorial vector closure','exclusive profiling accounting','aliasing continuation source/selection hashes',
+        'six aliasing cases and native-path reproduction'],physics_calls=0))
     return report
 
 

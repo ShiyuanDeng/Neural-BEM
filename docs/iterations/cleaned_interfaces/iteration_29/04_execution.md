@@ -46,3 +46,10 @@ The unchanged interpolation errors prompted a bounded attribution continuation
 on the same six preselected moves, registered separately before dispatch in
 [05_attribution_continuation.md](05_attribution_continuation.md). Its two focused
 tests pass in 0.12 s; the main run and source provenance remain intact.
+
+The continuation completed its six cases in 21.19 s. It identifies final
+uniform-arclength output sampling/FFT aliasing as the dominant large-disagreement
+effect. Its committed source and selection hashes, zero-physics receipt and
+native-path reproduction are checked by the final bundle validator. Total
+measurement time is 859.92 s (14.33 min). Results and all raw/command-error
+evidence are retained; production numerical code is unchanged.

@@ -72,10 +72,42 @@ The six factorial interpolation checks do not support the hypothesis that
 cubic inverse/position interpolation dominates the large stress errors:
 replacing both leaves approximately the same error. An adaptive, bounded
 [attribution continuation](../iteration_29/05_attribution_continuation.md) on
-the **same six moves** will vary only the final arclength output sampling grid
-before FFT cropping, then separately the speed/arclength integration grid.
-Main measurements remain intact. Attribution beyond this point is pending
-that discriminating check.
+the **same six moves** completed in **21.19 s**, from source `2012f21f`.
+Its two focused tests passed, and its source/selection hashes and native-path
+reproduction checks pass. Main measurements remain intact. Total numerical
+measurement time is **14.33 minutes**; implementation/reporting time is separate.
+
+Holding the native moved Fourier curve, native inverse and native position
+spline fixed, increasing **only the final uniform-arclength output sampling**
+from N to 8N gives:
+
+| Qualified diagnostic move | Native error, nm | 8N output error, nm | 8N integration/output with direct Fourier position, nm |
+|---|---:|---:|---:|
+| aphex contrast 13.3, 6 mm d1 | 400.825 | 0.906 | 0.01336 |
+| kite contrast 4, 6 mm d1 | 91.018 | 0.106 | 0.05849 |
+| kite contrast 13.3, 6 mm d1 (refused self-intersection) | 89.317 | 0.0582 | 0.000958 |
+| cog contrast 13.3, 6 mm d1 | 119.230 | 1.438 | 0.000668 |
+| star contrast 13.3, 6 mm d1 | 128.794 | 1.285 | 0.000801 |
+
+The selected kite contrast-4 d2 move has an unresolved spectral reference; its
+distances are retained but excluded from accuracy rankings. These probes were
+selected after observing S/F disagreement, so they are attribution diagnostics,
+not an independent accuracy sample.
+
+**Finding:** the dominant large-disagreement error is aliasing when the
+uniform-arclength samples are FFT-cropped. The reparameterized curve can have
+high harmonics even though the original parameterized curve and retained band
+are resolved. CPU spectral obtains retained coefficients by integrating on the
+original parameter grid, avoiding that extra uniform-arclength sampling/FFT
+operation. Output-grid refinement removes most of the discrepancy; integration
+and interpolation contribute smaller residuals after it. The inverse/position
+replacement factorial alone could not detect this because it held output N
+fixed. Refinement errors are not strictly monotone as error vectors cancel.
+
+This diagnoses a finite sampling effect in the spline map, not a fundamental
+limit of cubic interpolation. Oversampling only trial-output grids is a possible
+future correction, with cost/qualification still open; no production change or
+new inverse run was performed here.
 
 ## Bigger picture
 
@@ -100,3 +132,17 @@ numerical margin on big moves, without changing any of this replay's decisions.
 The replay supplies no evidence of fixing the four inverse failures or improving
 recovery; those are questions about changed inverse trajectories and physical
 resolution, outside this geometry-only experiment.
+
+## Priorities after this result
+
+| Priority | Opportunity | Evidence and expected scope | Effort |
+|---|---|---|---|
+| 1 | Reuse base normal basis/jets in spline preparation | Repeated basis work is 46% of the spline profile panel's preparation; unchanged-math CPU opportunity, full-inverse gain must be measured | Medium |
+| 2 | Separate coefficient-only spectral preparation from crop diagnostics | 19–24% CPU preparation saving in three high-band probes, bit-identical coefficients; helps CPU path/fallback, less useful to already-batched CUDA prepare | Low |
+| 3 | Qualify independent trial-output oversampling for spline | Largest errors mostly disappear at finer output grids; offers internal projection margin, with no demonstrated recovery improvement | Medium |
+| 4 | Optimize expensive certificate trial paths | Same decisions here but substantial 6 mm stress cost; preserve assurance/fallback semantics and measure realistic LM moves | Medium/high |
+
+These are open implementation opportunities, not approved production changes.
+Physics/resolution qualification and the large endpoint-audit costs remain
+larger complete-runtime targets. Do not launch follow-up inverse comparisons
+under this geometry-only approval.

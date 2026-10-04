@@ -45,6 +45,26 @@ Vector contributions and their interaction are retained; norm reductions are not
 
 Rows marked reference unresolved show diagnostic distances only; they are excluded from accuracy rankings.
 
+## Output-grid aliasing attribution
+
+Same six moves, fixed original moved curve. First vary only the final arclength sampling grid
+before retained-band FFT cropping; native inverse and position splines stay fixed.
+Then vary the integration grid at fixed 8N output, with direct moved-Fourier position evaluation.
+
+| State / move | Native N output, nm | 8N output only, nm | 8N integration and output, direct position, nm |
+|---|---:|---:|---:|
+| aphex_twin__c13.3 / 0.006m-d1 | 400.825 | 0.906088 | 0.0133587 |
+| kite__c4 / 0.006m-d2 (reference unresolved) | 111.233 | 29.0333 | 3.09201 |
+| kite__c4 / 0.006m-d1 | 91.0182 | 0.106336 | 0.0584913 |
+| kite__c13.3 / 0.006m-d1 | 89.3171 | 0.058219 | 0.000958155 |
+| cog__c13.3 / 0.006m-d1 | 119.23 | 1.43806 | 0.000668214 |
+| star__c13.3 / 0.006m-d1 | 128.794 | 1.28464 | 0.000800796 |
+
+These adaptive diagnostic results identify output resampling/FFT aliasing as the dominant error
+in the qualified large-disagreement probes. Cubic interpolation and integration contribute
+smaller residuals. They do not establish inverse recovery gains or authorize a production change.
+Main replay: 13.98 min; attribution continuation: 21.19 s.
+
 ## Whole-inverse context
 
 These are historical internal runtime fractions, not matched inverse speed comparisons.
