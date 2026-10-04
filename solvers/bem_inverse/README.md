@@ -62,6 +62,26 @@ selection remain independent. See the
 [campaign guide](../../experiments/cleaned_interface/README.md) for numerical
 limits, execution semantics, and the recorded evidence.
 
+## Experimental fair nodal profile (PC-002)
+
+`Execution(nodal_geometry_reuse="per_curve", nodal_resolution_profile="band_matched",
+resolution=130, device="cuda")` opts into fit-local exact-curve CUDA geometry
+reuse and stage-entry nodal accuracy selection. Legacy defaults remain fixed512
+and reuse off. The seed matches modal trace dimension, rounded to even N and
+increased to resolve stored geometry. Each selected pair must pass every
+active field tolerance and the normalized Jacobian-column 1e-3 gate; trial
+acceptance retains its existing refinement check. Selection work counts in
+stage/global budgets. Endpoint audits compare the native profile and an
+independent N1024 result against N2048, including the full-trial derivative.
+
+The cache retains at most four entries and 256 MiB each of host/device geometry.
+Its exact key includes coefficient bytes, shape, dtype, nodes and device; it
+contains no frequency kernels, matrices, factors or acquisition waves.
+Receipts report builds, hits, memory, timing and stage-selected resolutions.
+LU and reciprocal solves use CUDA; receiver/incident waves and Jacobian
+contractions remain on CPU. See the
+[PC-002 priority plan](../../docs/iterations/cleaned_interfaces/iteration_28/03_plan.md).
+
 ## Code map
 
 | Modules | Responsibility |

@@ -62,7 +62,9 @@ def audit(curve, stage, config, problem, physics, update, seconds):
     stage = replace(stage, observations=problem.real, weights=tuple(np.ones(count)/count),
                     curve_modes=curve.band,
                     discrepancy_tolerances=tuple(1e-5 if o.frequency_hz <= .5e9 else 1e-7 for o in problem.real))
-    ledger = Ledger(cap=6*count+16, seconds=seconds, endpoint_reserve=0)
+    independent_reference = (physics.name == 'nodal_kress' and
+        getattr(physics.execution, 'nodal_resolution_profile', 'fixed') == 'band_matched')
+    ledger = Ledger(cap=(8 if independent_reference else 6)*count+16, seconds=seconds, endpoint_reserve=0)
     started = perf_counter()
     try:
         with deadline(seconds):
@@ -73,6 +75,7 @@ def audit(curve, stage, config, problem, physics, update, seconds):
             observed = np.column_stack([o.scattered.reshape(-1) for o in problem.real])
             space = update.prepare(curve, stage.update_modes, curve.band)
             low_columns, high_columns, coarse_jac, fine_jac = [], [], [], []
+            reference_columns, reference_jac = [], []
             def evaluate(shape, observation, nodes, category):
                 ledger.reserve(1)
                 ledger.charge('solve', category)
@@ -91,6 +94,14 @@ def audit(curve, stage, config, problem, physics, update, seconds):
                     ledger.charge('reciprocal', 'derivative')
                     block = physics.derivative(state, update, space)
                     destination.append(block.reshape(-1, block.shape[-1]))
+                if independent_reference:
+                    reference = evaluate(curve, observation, 1024, 'audit_reference')
+                    reference_columns.append(np.array(reference.prediction, copy=True).reshape(-1))
+                    ledger.reserve(1)
+                    ledger.charge('reciprocal', 'audit_reference')
+                    block = physics.derivative(reference, update, space)
+                    reference_jac.append(block.reshape(-1, block.shape[-1]))
+                    del reference
                 del state, low, high
             low_prediction, high_prediction = np.column_stack(low_columns), np.column_stack(high_columns)
             ja = normalize(np.stack(coarse_jac, axis=1), observed, stage.weights, config.residual_floor)
@@ -118,6 +129,16 @@ def audit(curve, stage, config, problem, physics, update, seconds):
                 jacobian_relative=derivative, jacobian_column_norm=colnorm, full_trial_fd_relative=error,
                 fine_loss=.5*float(residual@residual),
                 relative_residual=np.linalg.norm(high_prediction-observed, axis=0)/np.linalg.norm(observed, axis=0))
+            if independent_reference:
+                reference_prediction = np.column_stack(reference_columns)
+                jr = normalize(np.stack(reference_jac, axis=1), observed, stage.weights, config.residual_floor)
+                reference_fields = (np.linalg.norm(reference_prediction-high_prediction, axis=0)
+                                    /np.linalg.norm(high_prediction, axis=0))
+                reference_derivative = np.linalg.norm(jr-jb, axis=0)/np.maximum(colnorm, 1e-30)
+                row.update(reference_nodes=1024, reference_refined_nodes=stage.refined_nodes,
+                           reference_field_relative=reference_fields, reference_jacobian_relative=reference_derivative)
+                row['passed'] = bool(row['passed'] and np.all(reference_fields <= stage.discrepancy_tolerances)
+                                     and np.all(reference_derivative <= 1e-3))
             if all(o.scattered.ndim == 2 for o in problem.real):
                 paired_prediction = np.column_stack([np.diag(high_prediction[:,i].reshape(o.scattered.shape))
                                                      for i,o in enumerate(problem.real)])
@@ -153,7 +174,11 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
     record_curve = curve_record if geometry_adapter is None else geometry_adapter.record
     create_update = ProjectedUpdate if geometry_adapter is None else geometry_adapter.update
     initialize = localize if localization_adapter is None else localization_adapter
-    numerical_audit = audit if audit_adapter is None else audit_adapter
+    selected_audit = audit if audit_adapter is None else audit_adapter
+    def numerical_audit(curve, stage, *args):
+        if hasattr(physics, 'audit_stage'):
+            stage = physics.audit_stage(stage)
+        return selected_audit(curve, stage, *args)
     physics.validate(problem)
     operations = list(policy.operations(problem, physics))
     plan = policy.plan(problem, physics)
@@ -218,11 +243,13 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
                 if not initial_audit['passed']:
                     raise ValueError('Original-start numerical audit failed')
                 ledger = Ledger(cap=policy.fit_units, seconds=policy.fit_seconds,
-                                strict_dispatch=resolution_response is not None)
+                                strict_dispatch=(resolution_response is not None or
+                                    getattr(physics.execution, 'nodal_resolution_profile', 'fixed') == 'band_matched'))
                 queue = list(operations[1:-1])
             else:
                 ledger = Ledger.restore(resume.stage.work, seconds=policy.fit_seconds,
-                                        strict_dispatch=resolution_response is not None)
+                                        strict_dispatch=(resolution_response is not None or
+                                    getattr(physics.execution, 'nodal_resolution_profile', 'fixed') == 'band_matched'))
                 queue = list(resume.operations)
                 save('resume.json', dict(work=resume.stage.work, iteration=resume.stage.iteration,
                     next_damping=resume.stage.damping, curve=record_curve(curve),
@@ -249,7 +276,15 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
                     curve = resize_curve(curve, op.stage.curve_modes)
                     if resumed_stage is None:
                         ledger.begin_stage(op.label, op.stage.quota)
-                    event(op, 'resolved stage entered', work=ledger.snapshot())
+                    selection = None
+                    if resumed_stage is None and hasattr(physics, 'select_stage'):
+                        selected, selection = physics.select_stage(curve, op.stage, op.optimizer,
+                                                                   problem.contrast, update, ledger)
+                        op = replace(op, stage=selected)
+                        last_stage = selected
+                        if selection is not None:
+                            save(op.label+'_resolution.json', selection)
+                    event(op, 'resolved stage entered', work=ledger.snapshot(), resolution_selection=selection)
                     def checkpoint(iteration, evaluation):
                         accepted.append(dict(stage=op.label, iteration=iteration, M=op.stage.update_modes,
                             loss=evaluation.loss, units=ledger.units, curve=record_curve(evaluation.curve)))
@@ -267,7 +302,8 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
                         outcome=result.outcome, stop=result.stop_reason, detail=result.detail,
                         accepted_steps=result.accepted_steps, initial_loss=result.initial_loss,
                         final_loss=result.final_loss, seconds=result.seconds, work=ledger.snapshot(),
-                        curve=record_curve(curve))
+                        curve=record_curve(curve), nodes=op.stage.nodes, refined_nodes=op.stage.refined_nodes,
+                        resolution_selection=selection)
                     if resolution_response is not None:
                         row.update(nodes=result.final_nodes, refined_nodes=result.final_refined_nodes,
                                    resolution_events=result.resolution_events)
@@ -308,6 +344,8 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
             fit_seconds = perf_counter()-fit_started
         except Stop as exc:
             outcome, detail = exc.code, str(exc)
+            if hasattr(exc, 'resolution_selection'):
+                save('resolution_selection_failure.json', exc.resolution_selection)
         except Exception:
             outcome, detail = 'EXCEPTION', traceback.format_exc()
         finally:
@@ -333,6 +371,8 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
                     save('original_resolution_audit.json', original_audit)
                     final_audit = dict(final_audit, resolution_changed=True,
                         original_resolution=list(original_resolution), original_resolution_passed=original_audit['passed'])
+            if hasattr(physics, 'close'):
+                physics.close()
             save('final_audit.json', final_audit)
             event(operations[-1], 'endpoint '+('qualified' if final_audit['passed'] else 'refused'),
                   passed=final_audit['passed'])

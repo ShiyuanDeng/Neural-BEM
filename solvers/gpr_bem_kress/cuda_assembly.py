@@ -264,11 +264,10 @@ def _tensor(values, device):
     return torch.tensor(np.asarray(values), device=device)  # copies read-only arrays
 
 
-def _difference_blocks(adapter, exterior, interior, settings, device, *, direct_kernel=None):
-    """Device ``build_muller_difference_blocks`` V, K, Kp, T for one component (weighted)."""
+def prepare_geometry(adapter, device):
+    """Frequency-independent CUDA geometry. Caller owns lifetime and device lock."""
     import torch
     count = adapter.num_nodes
-    diagonal_log, diagonal_remainder = _diagonal_split_limits(adapter, exterior, interior)
     points, normals = _tensor(adapter.points, device), _tensor(adapter.normals, device)
     dx = points[:, None, 0] - points[None, :, 0]
     dy = points[:, None, 1] - points[None, :, 1]
@@ -277,6 +276,30 @@ def _difference_blocks(adapter, exterior, interior, settings, device, *, direct_
     source_projection = dx * normals[None, :, 0] + dy * normals[None, :, 1]
     normal_dot = normals[:, None, 0] * normals[None, :, 0] + normals[:, None, 1] * normals[None, :, 1]
     off_diagonal = ~torch.eye(count, dtype=torch.bool, device=device)
+    safe = torch.where(off_diagonal, distance, torch.ones_like(distance))
+    projection_product = target_projection * source_projection / safe ** 2
+    offsets = (torch.arange(count, device=device)[:, None] - torch.arange(count, device=device)[None, :]) % count
+    kress_by_offset = kress_log_weights(count)
+    log_by_offset = np.zeros(count, dtype=np.float64)
+    log_by_offset[1:] = np.log(4.0 * np.sin(np.pi * np.arange(1, count) / count) ** 2)
+    return dict(distance=distance, target_projection=target_projection,
+        source_projection=source_projection, normal_dot=normal_dot, off_diagonal=off_diagonal,
+        projection_product=projection_product, kress_by_offset=kress_by_offset,
+        weight_rows=_tensor(kress_by_offset, device)[offsets],
+        log_rows=_tensor(log_by_offset, device)[offsets],
+        source_speed=_tensor(adapter.theta_speeds, device)[None, :],
+        diagonal=torch.arange(count, device=device))
+
+
+def _difference_blocks(adapter, exterior, interior, settings, device, *, direct_kernel=None, prepared=None):
+    """Device difference blocks; an optional exact-curve preparation shares geometry."""
+    import torch
+    count = adapter.num_nodes
+    diagonal_log, diagonal_remainder = _diagonal_split_limits(adapter, exterior, interior)
+    geometry = prepare_geometry(adapter, device) if prepared is None else prepared
+    distance, target_projection, source_projection, normal_dot, off_diagonal = (
+        geometry[name] for name in ('distance', 'target_projection', 'source_projection',
+                                   'normal_dot', 'off_diagonal'))
     maximum_wave = max(abs(exterior), abs(interior))
     near = off_diagonal & (maximum_wave * distance <= settings.near_argument)
     direct = off_diagonal & ~near
@@ -288,8 +311,7 @@ def _difference_blocks(adapter, exterior, interior, settings, device, *, direct_
             for destination, source in zip(radial, values(distance[mask])):
                 destination[mask] = source
     green, radial_first, radial_anisotropy, green_log, radial_first_log, radial_anisotropy_log = radial
-    safe = torch.where(off_diagonal, distance, torch.ones_like(distance))
-    projection_product = target_projection * source_projection / safe ** 2
+    projection_product = geometry['projection_product']
     kernels = dict(
         V=(green, green_log),
         K=(-radial_first * source_projection, -radial_first_log * source_projection),
@@ -298,14 +320,8 @@ def _difference_blocks(adapter, exterior, interior, settings, device, *, direct_
            -radial_first_log * normal_dot - radial_anisotropy_log * projection_product),
     )
 
-    offsets = (torch.arange(count, device=device)[:, None] - torch.arange(count, device=device)[None, :]) % count
-    kress_by_offset = kress_log_weights(count)
-    log_by_offset = np.zeros(count, dtype=np.float64)
-    log_by_offset[1:] = np.log(4.0 * np.sin(np.pi * np.arange(1, count) / count) ** 2)
-    weight_rows = _tensor(kress_by_offset, device)[offsets]
-    log_rows = _tensor(log_by_offset, device)[offsets]
-    source_speed = _tensor(adapter.theta_speeds, device)[None, :]
-    diagonal = torch.arange(count, device=device)
+    kress_by_offset, weight_rows, log_rows, source_speed, diagonal = (
+        geometry[name] for name in ('kress_by_offset', 'weight_rows', 'log_rows', 'source_speed', 'diagonal'))
     blocks = {}
     for name, (kernel, logarithmic) in kernels.items():
         zero = torch.zeros((), dtype=torch.complex128, device=device)

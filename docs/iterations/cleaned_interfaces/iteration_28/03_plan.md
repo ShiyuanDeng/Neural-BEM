@@ -31,8 +31,9 @@ cache invalidation/concurrency/bounds, compare cached and uncached CUDA real
 and damped fields and full-trial Jacobians at identical resolution, exercise
 resolution escalation/refusal and run the affected runner/package checks.
 Retain the production/refined checks throughout fitting and full endpoint
-field/Jacobian/finite-trial audits. An independent endpoint reference uses
-N1024/N2048 on CUDA; it is distinct from the selected native stage profile.
+field/Jacobian/finite-trial audits. Each endpoint audit compares both its native profile and independent
+N1024 against N2048 on CUDA, including field/Jacobian gates and full-trial
+finite differences. It records all three node counts.
 No CPU-reference timing comparison or modal speedup conclusion is drawn.
 
 NS uses explicit CUDA, four frequency threads, one fit at a time on the idle
@@ -52,7 +53,7 @@ stage tolerances and every normalized Jacobian column agrees within 1e-3.
 Freeze that pair during the stage; unchanged trial cross-resolution gates
 still refuse under-resolved candidates. Charge all selection solves and
 reciprocal batches to the stage/global ledger and wall cap. Audit endpoints
-at fixed N1024/N2048, not with an unqualified seed. There is no N1-style
+against fixed N1024/N2048, also checking native-profile fields and Jacobians. There is no N1-style
 trial promotion. Report selected node counts and any escalation separately.
 
 Stop and retain evidence if focused equivalence validation fails. Otherwise

@@ -27,6 +27,8 @@ class Execution:
     acceleration: str = 'spd016'
     geometry: str = 'both'
     resolution: int = 512
+    nodal_geometry_reuse: str = 'off'
+    nodal_resolution_profile: str = 'fixed'
 
     def __post_init__(self):
         if self.device not in ('auto', 'cpu', 'cuda'):
@@ -37,8 +39,13 @@ class Execution:
             raise ValueError('frequency_threads must be a positive integer')
         if self.geometry not in ('reference', 'cache', 'spatial', 'both'):
             raise ValueError('Unknown geometry runtime')
-        if self.resolution < 512 or self.resolution % 2:
-            raise ValueError('The nodal accuracy profile needs an even resolution >=512')
+        if self.nodal_geometry_reuse not in ('off', 'per_curve'):
+            raise ValueError('Unknown nodal geometry reuse')
+        if self.nodal_resolution_profile not in ('fixed', 'band_matched'):
+            raise ValueError('Unknown nodal resolution profile')
+        minimum = 512 if self.nodal_resolution_profile == 'fixed' else 8
+        if self.resolution < minimum or self.resolution % 2:
+            raise ValueError(f'The nodal accuracy profile needs an even resolution >={minimum}')
 
 
 @dataclass(frozen=True)
@@ -94,6 +101,8 @@ class NodalKress:
         self._devices = {}
         self._fallbacks = {}
         self._seconds = {}
+        from .nodal_geometry import GeometryCache
+        self._geometry_cache = GeometryCache()
 
     def _record(self, kind, seconds=0., device=None, fallback=None):
         with self._lock:
@@ -117,6 +126,12 @@ class NodalKress:
             raise ValueError('Reference damped execution is CPU. Use device=cpu or auto, or enable spd016.')
 
     def resolution_profile(self, storage_band):
+        if self.execution.nodal_resolution_profile == 'band_matched':
+            trace = max(64, 32*(int(np.ceil(storage_band/64))+1))
+            n = 2*int(np.ceil(max(8, 2*trace+1, 2*storage_band+1)/2))
+            return dict(production=n, refined=min(n+64, 1024) if n < 1024 else 2*n, kind='nodal_kress',
+                        nodal_resolution=n, K_trace=trace, coefficient_workspace=None,
+                        refinement='stage-selected fields and Jacobian; next +64 nodes, then 2048')
         n = max(self.execution.resolution, 2 * (storage_band + 1))
         return dict(production=n, refined=2*n, kind='nodal_kress',
                     nodal_resolution=n, K_trace=None, coefficient_workspace=None,
@@ -142,7 +157,7 @@ class NodalKress:
         started = perf_counter()
         self._record('evaluation_attempts')
         try:
-            if complex(observation.wavenumber).imag == 0:
+            if complex(observation.wavenumber).imag == 0 and self.execution.nodal_geometry_reuse == 'off':
                 state = F.solve(curve, float(np.real(observation.wavenumber)), contrast,
                                 observation.acquisition, resolution, execution_backend=self.execution.device)
                 fallback = 'real CUDA OOM' if state.backend == 'cpu-fallback' else None
@@ -159,9 +174,10 @@ class NodalKress:
 
     def _damped(self, shape, observation, contrast, nodes):
         k = complex(observation.wavenumber)
-        if k.real <= 0 or k.imag <= 0 or not np.isfinite(k) or contrast <= 0 or not np.isfinite(contrast):
+        if k.real <= 0 or k.imag < 0 or not np.isfinite(k) or contrast <= 0 or not np.isfinite(contrast):
             raise ValueError('Invalid damped material/wavenumber')
-        curve = shape.nodes(nodes)
+        curve, adapter, prepared = self._geometry_cache.get(shape, nodes, self.execution.device,
+            enabled=self.execution.nodal_geometry_reuse == 'per_curve')
         assemble, receivers, incident = F._operators(curve)
         ki, acquisition = k * np.sqrt(contrast), observation.acquisition
         selected = self.execution.device
@@ -181,7 +197,16 @@ class NodalKress:
                 try:
                     from .damped_cuda import gpu_matrix
                     with CA._device_work:
-                        matrix = gpu_matrix(curve, k, ki, self._ray_table())
+                        if k.imag:
+                            matrix = gpu_matrix(curve, k, ki, self._ray_table(), adapter=adapter, prepared=prepared)
+                        else:
+                            from gpr_bem_kress.operators import MullerAssemblyConfig
+                            if adapter is None:
+                                from gpr_bem_kress.geometry import adapt_periodic_curve
+                                adapter = adapt_periodic_curve(curve)
+                            blocks = CA._difference_blocks(adapter, k, complex(ki), MullerAssemblyConfig(),
+                                                           'cuda', prepared=prepared)
+                            matrix = CA._compose(blocks, nodes, 'cuda')
                     factors = CA.DeviceFactors(matrix, fallback=selected == 'auto')
                     matrix = factors.host
                 except Exception as exc:
@@ -204,7 +229,7 @@ class NodalKress:
         if not np.isfinite(prediction).all():
             raise FloatingPointError('Nonfinite damped prediction')
         state = F.ForwardState(curve, k, ki, acquisition, matrix, factors, traces,
-                               prediction, residual, 'cuda-damped' if device else 'cpu-damped')
+                               prediction, residual, ('cuda-damped' if k.imag else 'cuda') if device else 'cpu-damped')
         return state, reason
 
     @geometry_validated
@@ -323,15 +348,37 @@ class NodalKress:
         self._record('disk_batches', perf_counter()-started, device, reason)
         return value
 
+    def select_stage(self, curve, stage, config, contrast, update, ledger):
+        if self.execution.nodal_resolution_profile == 'fixed':
+            return stage, None
+        from .nodal_resolution import select_stage
+        return select_stage(self, curve, stage, config, contrast, update, ledger)
+
+    def audit_stage(self, stage):
+        if self.execution.nodal_resolution_profile == 'band_matched':
+            from dataclasses import replace
+            return replace(stage, refined_nodes=max(2048, stage.refined_nodes))
+        return stage
+
+    def close(self):
+        self._geometry_cache.clear()
+
     def receipt(self):
+        geometry_cache = self._geometry_cache.receipt()
         with self._lock:
-            return dict(solver=self.name, execution=asdict(self.execution), counts=dict(self._counts),
+            return dict(solver=self.name, execution=asdict(self.execution), geometry_cache=geometry_cache,
+                component_devices=dict(assembly=dict(cuda=sum(v for k,v in self._devices.items() if k.startswith('cuda')),
+                                                      cpu=sum(v for k,v in self._devices.items() if k.startswith('cpu'))),
+                    LU=dict(cuda=sum(v for k,v in self._devices.items() if k.startswith('cuda')),
+                            cpu=sum(v for k,v in self._devices.items() if k.startswith('cpu'))),
+                    field_evaluation='cpu', jacobian_contraction='cpu', reciprocal_solve='same as forward factors'),
+                counts=dict(self._counts),
                 devices=dict(self._devices), fallback_reasons=dict(self._fallbacks), seconds=dict(self._seconds),
                 work_semantics='actual dispatched evaluations and derivative batches, including speculative threads; '
                                'optimizer ledger separately retains SPD reservation/charge semantics',
                 localization_model='exact homogeneous disk Mie series, qualified by selected backend',
                 ray=dict(gamma=.25, lo=.01, hi=100., panels=111, degree=24),
-                retained_device_state='one ray table; matrix and reusable LU factors retained on host')
+                retained_device_state='ray table and bounded geometry cache; matrix and reusable LU factors retained on host')
 
 
 register_backend('nodal_kress', NodalKress)

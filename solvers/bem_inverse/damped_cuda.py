@@ -74,10 +74,10 @@ def make_direct(table, chunk=1 << 18):
     return _direct
 
 
-def gpu_matrix(curve, ko, ki, table):
+def gpu_matrix(curve, ko, ki, table, *, adapter=None, prepared=None):
     """SPD-016 assembly with an explicit radial kernel, never a global patch."""
     CA._ready('cuda')
-    adapter = adapt_periodic_curve(curve)
+    adapter = adapt_periodic_curve(curve) if adapter is None else adapter
     blocks = CA._difference_blocks(adapter, complex(ko), complex(ki),
-        MullerAssemblyConfig(), 'cuda', direct_kernel=make_direct(table))
+        MullerAssemblyConfig(), 'cuda', direct_kernel=make_direct(table), prepared=prepared)
     return CA._compose(blocks, adapter.num_nodes, 'cuda')
