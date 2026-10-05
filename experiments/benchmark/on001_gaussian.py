@@ -59,13 +59,12 @@ def qualify(width_factor=2., batch="qualification_F"):
                         for label, a in (("zero", direction*0), ("active", finite)):
                             current, receipt = update.trial(space, a)
                             hp, h = 5e-8, 1e-7
-                            plus = update.trial(space, a+h*tangent)[0]
-                            minus = update.trial(space, a-h*tangent)[0]
+                            plus, plus_receipt = update.trial(space, a+h*tangent)
+                            minus, minus_receipt = update.trial(space, a-h*tangent)
                             if label == "zero":
                                 delta = space.derivatives@tangent
                             else:
-                                delta = (update.trial(space, a+hp*tangent)[0].coefficients-
-                                         update.trial(space, a-hp*tangent)[0].coefficients)/(2*hp)
+                                delta = update.tangent_at(space, a, tangent)
                             directional = SimpleNamespace(curve=current, derivatives=delta[:, None])
                             profile = physics.resolution_profile(current.band)
                             for catalog, observations in (("real", p.real), ("damped", p.damped)):
@@ -85,7 +84,9 @@ def qualify(width_factor=2., batch="qualification_F"):
                                 passed = field <= (1e-5 if frequency <= .5e9 else 1e-7) and column <= 1e-3 and error <= 1e-3
                                 row["checks"].append(dict(label=label, catalog=catalog, field_relative=field,
                                     column_relative=column, full_trial_fd_relative=error, passed=bool(passed),
-                                    gaussian=receipt))
+                                    gaussian=receipt, plus_alpha=plus_receipt["gaussian_alpha"],
+                                    minus_alpha=minus_receipt["gaussian_alpha"],
+                                    nominal_zero_model_ratio=None if label != "zero" else (1/plus_receipt["gaussian_alpha"]-1)))
                                 print(case, name, label, catalog, "field", field, "column", column, "FD", error,
                                       "passed", passed, flush=True)
                     row["passed"] = all(r["passed"] for r in row["checks"])

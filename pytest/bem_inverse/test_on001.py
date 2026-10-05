@@ -194,6 +194,8 @@ def test_gaussian_complete_projected_tangent_and_active_finite_direction():
         m = update.trial(space, a-h*tangent)[0].coefficients
         fds.append((p-m)/(2*h))
     assert np.linalg.norm(fds[0]-fds[1])/np.linalg.norm(fds[1]) < 1e-5
+    exact = update.tangent_at(space, a, tangent)
+    assert np.linalg.norm(fds[1]-exact)/np.linalg.norm(exact) < 1e-5
     strict = GaussianDisplacement(.05, device="cpu", projection_tolerance=1e-16)
     from bem_inverse.continuation.updates import UpdateRefused
     with pytest.raises(UpdateRefused, match="projection"):
@@ -223,9 +225,7 @@ def test_gaussian_reciprocal_matches_full_field_fd_at_zero_and_active_clip(dampe
             delta = space.derivatives@tangent
         else:
             assert receipt["gaussian_alpha"] < 1
-            hp = h/2
-            delta = (update.trial(space, a+hp*tangent)[0].coefficients-
-                     update.trial(space, a-hp*tangent)[0].coefficients)/(2*hp)
+            delta = update.tangent_at(space, a, tangent)
         predicted = physics.evaluate(current, observation, p.contrast, token(24))
         derivative = physics.derivative(predicted, update, SimpleNamespace(curve=current, derivatives=delta[:, None]))[:, 0]
         fd = (physics.evaluate(plus, observation, p.contrast, token(24)).prediction-

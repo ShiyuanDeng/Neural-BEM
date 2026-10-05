@@ -145,3 +145,30 @@ a geometry FD tangent at half that step; a focused implementation correction
 will replace that tangent with the exact derivative through the active norm
 bound and discrete projection, then repeat this bounded qualification once.
 The fixed endpoint FD step and original acceptance tolerances remain unchanged.
+
+## F closeout and frozen finalist
+
+Exact active-scaling derivative preflight: **35 passed**. One corrected repeat
+of all 16 saved-state qualifications completed; **10/16 passed**. F remains
+unqualified, so **F closes qualification-negative, with no fresh F screen**.
+The permitted width repair is not triggered: interpolation gates all passed.
+No further map repair or R/H/W2 branch is opened.
+
+At the saved kite/star endpoints, the fixed 1e-7m zero-state audit directions
+have clipping factors **0.06994196** and **0.17744565**. Their predicted
+relative discrepancy `1/alpha-1` is **13.2975691** and **4.6355283**, matching
+observed real-field FD errors **13.2975692** and **4.6355283**. This diagnoses
+an insufficient usable local neighbourhood under the conservative global
+momenta bound at these coordinates. Field/column numerical agreement can
+remain good while the unchanged finite-trial gate fails. Exact active finite
+derivatives also fail that prescribed FD check on some endpoints. The raw
+ambient injectivity guarantee is consequently insufficient for this pipeline.
+Original and corrected failed evidence remain in `qualification_F/` and
+`qualification_F_exact/`, including all directions/configurations/sources.
+
+**Finalist frozen: E only**, required accuracy .003, ordinary certified spectral
+map, modal Müller, G/W/F disabled, centred start, localization none, unchanged
+policy schedule/coefficient caps/resolution and endpoint gates. Confirmation
+will run all 30 fresh B/E pairs, each contiguous under compute/source locks,
+releasing locks between pairs. Per-pair source/input checks and publication
+are required. Screen selection is development evidence, not generalization.

@@ -183,6 +183,33 @@ class GaussianDisplacement(ProjectedUpdate):
             weights=space.weights, translation=space.translation, prescribed=prescribed,
             condition=condition, cache=space.cache)
 
+    def tangent_at(self, space, coefficients, direction):
+        """Complete directional derivative away from the norm/clipping kinks.
+
+        Centres and interpolation solve are fixed in this prepared finite map.
+        A coefficient-zero Gaussian group or C=.8 requires one-sided checks.
+        """
+        a = self._checked(space, coefficients)
+        d = self._checked(space, direction)
+        w, dw = space.weights@a, space.weights@d
+        C = float(np.exp(-.5)*sum(abs(w))/space.width)
+        alpha = min(1., .8/C) if C > 0 else 1.
+        if C > .8:
+            nonzero = abs(w) > 0
+            if np.any(~nonzero & (abs(dw) > 0)):
+                raise ValueError("Gaussian norm kink requires a one-sided derivative")
+            gradient = np.exp(-.5)*float(np.real(np.sum(np.conj(w[nonzero])*dw[nonzero]/abs(w[nonzero]))))/space.width
+            dalpha = -alpha*gradient/C
+        elif abs(C-.8) <= 1e-12:
+            raise ValueError("Gaussian clipping kink requires one-sided checks")
+        else:
+            dalpha = 0.
+        used_direction = alpha*d+dalpha*a
+        velocity = self._velocities(space, space.count)
+        raw = space.curve.values(space.count)+alpha*(velocity@a)
+        moved = FourierCurve.from_samples(raw, space.count//2-1)
+        return projection_tangent(moved, (velocity@used_direction)[:, None], space.curve_modes, space.count)[:, 0]
+
     def trial(self, space, coefficients):
         started = perf_counter()
         self.counts["trial_constructions"] += 1
