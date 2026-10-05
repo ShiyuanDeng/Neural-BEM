@@ -15,7 +15,7 @@ child run_case entry to fit-return after fit_result output; excludes truth scori
 | peanut__c13.3 | unrun | unrun | unrun | unrun | — |
 | star__c0.5 | unrun | unrun | unrun | unrun | — |
 | star__c4 | unrun | unrun | unrun | unrun | — |
-| star__c13.3 | unrun | unrun | unrun | unrun | — |
+| star__c13.3 | True | 48.093 | True | 29.984 | 1.604 |
 | asymmetric__c0.5 | unrun | unrun | unrun | unrun | — |
 | asymmetric__c4 | unrun | unrun | unrun | unrun | — |
 | asymmetric__c13.3 | unrun | unrun | unrun | unrun | — |
