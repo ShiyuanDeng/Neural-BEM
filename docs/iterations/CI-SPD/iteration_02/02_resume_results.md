@@ -40,3 +40,31 @@ The true-residual failures release the single pre-registered complex128/float64
 fallback. This changes only arithmetic precision, with its cost recorded.
 No second precision change, extra iteration cap or alternative solver is allowed
 in this adapter phase. Inversion and timing parity remain blocked.
+
+## resume128_double
+
+Completed 12 checks in 34.063s; true solves qualified 0/12, field gates 0/12, FD controls 0/12. Source hashes stayed unchanged; native arrays and log were verified and saved.
+
+| Contrast | Catalog | GHz | True residual | Field discrepancy | Field gate | FD gate |
+|---|---|---:|---:|---:|---|---|
+| 0.5 | real | 0.25 | 3.77e-06 | 0.000361 | False | False |
+| 0.5 | real | 2.5 | 0.000201 | 0.0586 | False | False |
+| 0.5 | damped | 0.25 | 7.49e-06 | 0.000404 | False | False |
+| 0.5 | damped | 2.5 | 0.000114 | 0.0488 | False | False |
+| 4 | real | 0.25 | 4.82e-06 | 0.00121 | False | False |
+| 4 | real | 2.5 | 0.256 | 0.947 | False | False |
+| 4 | damped | 0.25 | 1.41e-05 | 0.000842 | False | False |
+| 4 | damped | 2.5 | 0.000435 | 0.145 | False | False |
+| 13.3 | real | 0.25 | 7.16e-05 | 0.00463 | False | False |
+| 13.3 | real | 2.5 | 0.0253 | 1.72 | False | False |
+| 13.3 | damped | 0.25 | 4.86e-05 | 0.00334 | False | False |
+| 13.3 | damped | 2.5 | 0.000489 | 0.243 | False | False |
+
+Field discrepancies from unqualified solves cannot measure the physical grid error reliably.
+
+The single precision fallback is exhausted. Even the weakest low-frequency
+control misses 1e-6 at the 200-iteration cap in double precision. One registered
+256/224 low-frequency c0.5 real control will now check whether the required
+initial finer grid removes this failure. If it fails, stop at that mandatory
+control: the conjunctive adapter gate cannot pass, so no additional cases or
+512 escalation can release fitting under the remaining single-repair contract.
