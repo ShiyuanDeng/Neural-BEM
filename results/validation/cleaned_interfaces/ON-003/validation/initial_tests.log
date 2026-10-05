@@ -1,0 +1,40 @@
+..F.                                                                     [100%]
+=================================== FAILURES ===================================
+________ test_exact_circle_matches_maue_and_near_quadrature_refinement _________
+
+    def test_exact_circle_matches_maue_and_near_quadrature_refinement():
+        k=18.+4.5j; a=.065; tau=1e-4; n=np.arange(-10,11)
+        exact=circle_exact(a,k,n)
+        Vm=circle_exact(a,k,n-1)[0]; Vp=circle_exact(a,k,n+1)[0]
+        np.testing.assert_allclose(exact[2],-n*n*exact[0]+a*a*k*k/2*(Vm+Vp),rtol=2e-12,atol=2e-13)
+>       np.testing.assert_allclose(circle_near(a,k,tau,n,1024),circle_near(a,k,tau,n,2048),rtol=1e-10,atol=1e-12)
+
+pytest/bem_inverse/test_on003.py:33: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+args = (<function assert_allclose.<locals>.compare at 0x761967bc21f0>, array([[ 4.87210501e-02+1.39474802e-04j,  5.30118619e-...,
+        -3.61855194e+00+2.66146918e-02j, -4.22579349e+00+2.28170188e-02j,
+        -4.80939999e+00+1.97293549e-02j]]))
+kwds = {'equal_nan': True, 'err_msg': '', 'header': 'Not equal to tolerance rtol=1e-10, atol=1e-12', 'strict': False, ...}
+
+    @wraps(func)
+    def inner(*args, **kwds):
+        with self._recreate_cm():
+>           return func(*args, **kwds)
+E           AssertionError: 
+E           Not equal to tolerance rtol=1e-10, atol=1e-12
+E           
+E           Mismatched elements: 21 / 63 (33.3%)
+E           Max absolute difference among violations: 0.00024414
+E           Max relative difference among violations: 0.06655147
+E            ACTUAL: array([[ 4.872105e-02+1.394748e-04j,  5.301186e-02+1.706726e-04j,
+E                    5.769769e-02+2.070385e-04j,  6.269124e-02+2.480194e-04j,
+E                    6.784355e-02+2.923354e-04j,  7.294155e-02+3.379107e-04j,...
+E            DESIRED: array([[ 4.872105e-02+1.394748e-04j,  5.301186e-02+1.706726e-04j,
+E                    5.769769e-02+2.070385e-04j,  6.269124e-02+2.480194e-04j,
+E                    6.784355e-02+2.923354e-04j,  7.294155e-02+3.379107e-04j,...
+
+../miniconda3/envs/EMNerf/lib/python3.9/contextlib.py:79: AssertionError
+=========================== short test summary info ============================
+FAILED pytest/bem_inverse/test_on003.py::test_exact_circle_matches_maue_and_near_quadrature_refinement
+1 failed, 3 passed in 0.08s
