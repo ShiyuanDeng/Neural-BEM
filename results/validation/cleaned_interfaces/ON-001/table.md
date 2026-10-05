@@ -32,5 +32,5 @@ All times include the unchanged endpoint audit. Unrun cases remain unrun.
 | cog__c4 | True / 22.52s / COMPLETED_SCHEDULE | True / 15.18s / REQUIRED_ACCURACY_REACHED | unrun | unrun | unrun | unrun |
 | cog__c13.3 | True / 49.58s / COMPLETED_SCHEDULE | True / 37.25s / REQUIRED_ACCURACY_REACHED | unrun | unrun | unrun | unrun |
 | aphex_twin__c0.5 | False / 19.68s / NUMERICAL_FAILURE | False / 19.73s / NUMERICAL_FAILURE | False / 19.79s / NUMERICAL_FAILURE | False / 19.66s / NUMERICAL_FAILURE | False / 19.77s / NUMERICAL_FAILURE | False / 24.18s / NUMERICAL_FAILURE |
-| aphex_twin__c4 | unrun | unrun | False / 27.18s / NUMERICAL_FAILURE | False / 27.16s / NUMERICAL_FAILURE | False / 26.74s / NUMERICAL_FAILURE | False / 27.22s / NUMERICAL_FAILURE |
+| aphex_twin__c4 | False / 27.08s / NUMERICAL_FAILURE | False / 26.88s / NUMERICAL_FAILURE | False / 27.18s / NUMERICAL_FAILURE | False / 27.16s / NUMERICAL_FAILURE | False / 26.74s / NUMERICAL_FAILURE | False / 27.22s / NUMERICAL_FAILURE |
 | aphex_twin__c13.3 | unrun | unrun | False / 41.47s / NUMERICAL_FAILURE | False / 41.34s / NUMERICAL_FAILURE | False / 41.45s / NUMERICAL_FAILURE | False / 40.19s / NUMERICAL_FAILURE |

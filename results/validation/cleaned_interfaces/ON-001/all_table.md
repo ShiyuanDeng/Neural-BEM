@@ -32,5 +32,5 @@ child run_case entry to fit-return after fit_result output; excludes truth scori
 | cog__c4 | True | 23.243 | True | 15.817 | 1.469 |
 | cog__c13.3 | True | 50.286 | True | 37.878 | 1.328 |
 | aphex_twin__c0.5 | False | 20.367 | False | 20.353 | — |
-| aphex_twin__c4 | unrun | unrun | unrun | unrun | — |
+| aphex_twin__c4 | False | 27.775 | False | 27.501 | — |
 | aphex_twin__c13.3 | unrun | unrun | unrun | unrun | — |
