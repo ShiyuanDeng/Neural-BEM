@@ -1,0 +1,44 @@
+{
+  "contrast": 4,
+  "catalog": "damped",
+  "frequency_hz": 2500000000.0,
+  "pixels": 128,
+  "centers": 112,
+  "double": false,
+  "build_seconds": 0.2770342128351331,
+  "equation_scale": 45511.1111111111,
+  "solve_seconds": 0.1981074409559369,
+  "true_residual": 0.007006356958299875,
+  "physical_relative": 0.22783771559451332,
+  "linear_stats": [
+    {
+      "phase": "forward",
+      "iterations": 200.0,
+      "initial_rel": 1.0,
+      "final_rel": 0.007006351370364428,
+      "converged": 0.0
+    },
+    {
+      "phase": "forward",
+      "iterations": 200.0,
+      "initial_rel": 1.0,
+      "final_rel": 0.007006351370364428,
+      "converged": 0.0
+    }
+  ],
+  "field_passed": false,
+  "adjoint": {
+    "system_relative": 2.743434492913366e-07,
+    "sensor_relative": 1.1718186243570017e-07,
+    "off_pair_max": 0.0
+  },
+  "derivative": {
+    "passed": false,
+    "traceback": "Traceback (most recent call last):\n  File \"/home/drdeng/Neural_SDF_BEM_AD/experiments/benchmark/on002.py\", line 135, in qualify\n    row[\"derivative\"]=derivative_check(frequency,target)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/experiments/benchmark/on002.py\", line 66, in derivative_check\n    loss, grad, residuals = frequency.objective_gradient(target)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/experiments/benchmark/on002_adapter.py\", line 116, in objective_gradient\n    raise RuntimeError(f\"Forward true residual refuses update: {forward_residual:g}\")\nRuntimeError: Forward true residual refuses update: 0.00700636\n"
+  },
+  "native_occupancy_range": [
+    0.0,
+    1.000000238418579
+  ],
+  "total_seconds": 0.7821676223538816
+}

@@ -27,3 +27,16 @@ failed regression attempts and the scale diagnostic are retained in validation.
 
 Registered-grid qualification is pending. No inverse, hybrid, gallery of
 recoveries or matched timing comparison is released yet.
+
+## Registered 128/112 single-precision screen
+
+The repaired batch completed all 12 configurations in 10.954s.
+True solves qualified 0/12; field gates qualified
+0/12; occupancy derivatives qualified 0/12.
+All native prediction/reference/occupancy arrays are preserved and checked.
+Source hashes stayed unchanged. The 200-iteration cap is retained.
+
+The true-residual failures release the single pre-registered complex128/float64
+fallback. This changes only arithmetic precision, with its cost recorded.
+No second precision change, extra iteration cap or alternative solver is allowed
+in this adapter phase. Inversion and timing parity remain blocked.
