@@ -11,7 +11,7 @@ All times include the unchanged endpoint audit. Unrun cases remain unrun.
 | kite__c4 | True / 27.02s / COMPLETED_SCHEDULE | True / 12.41s / REQUIRED_ACCURACY_REACHED | unrun | unrun | unrun | unrun |
 | kite__c13.3 | True / 40.78s / COMPLETED_SCHEDULE | True / 35.42s / REQUIRED_ACCURACY_REACHED | unrun | unrun | unrun | unrun |
 | peanut__c0.5 | True / 16.08s / COMPLETED_SCHEDULE | True / 7.37s / REQUIRED_ACCURACY_REACHED | unrun | unrun | unrun | unrun |
-| peanut__c4 | unrun | unrun | unrun | unrun | unrun | unrun |
+| peanut__c4 | True / 15.38s / COMPLETED_SCHEDULE | True / 8.87s / REQUIRED_ACCURACY_REACHED | unrun | unrun | unrun | unrun |
 | peanut__c13.3 | unrun | unrun | unrun | unrun | unrun | unrun |
 | star__c0.5 | unrun | unrun | unrun | unrun | unrun | unrun |
 | star__c4 | unrun | unrun | unrun | unrun | unrun | unrun |

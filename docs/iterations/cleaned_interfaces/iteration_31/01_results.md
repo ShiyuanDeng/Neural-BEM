@@ -183,3 +183,9 @@ The screen used the same internal fit boundary for all screen arms. These two
 timing boundaries are reported explicitly rather than silently mixed.
 A read-back of the eight recorded B/E screen pairs reproduced the original
 median paired speedup; sealed inputs and the frozen finalist were verified.
+
+The historical PC-001 M1 inventory was read back: 26/30 recovered, with
+exactly the three Aphex contrasts and hook13.3 failing. Confirmation will
+compare the fresh B and E sets against that inventory, including cap-related
+mismatches if any. Early matched circle/kite pairs have no recovery regression;
+full-suite classification is withheld until all 30 are complete.
