@@ -53,3 +53,17 @@ Aphex13.3 used 19.79s on refused geometry proposals, 50.3% of its 39.36s
 fit. This releases F under the declared decision tree if no earlier major
 screen result closes into confirmation. G and E still run independently
 first. No new recipe is selected from this baseline result alone.
+
+## G — reach-informed clipping
+
+Completed **4/8 recovered**, no new recoveries and no regression. All four
+common successes are slower (circle 6.15s, c_shape 30.39s, kite 69.80s, star
+49.86s; baseline 5.43, 27.96, 65.78, 46.28s). G therefore does not qualify for
+adoption or GE. The 0.4 repair is not released: projected geometry refusals
+vanished rather than persisted. Its useful mechanism evidence is retained,
+including Aphex13.3 passing farther along continuation with zero geometry
+refusals, but its endpoint still failed. Original endpoint gates stayed active.
+Sources remained frozen; read-back and source-hash checks passed. **G closed
+screen-negative**; E is next, independently. The conditional F remains
+released by baseline Aphex13.3 geometry cost, unless E earns immediate major
+confirmation.
