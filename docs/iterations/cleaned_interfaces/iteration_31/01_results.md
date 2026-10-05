@@ -189,3 +189,10 @@ exactly the three Aphex contrasts and hook13.3 failing. Confirmation will
 compare the fresh B and E sets against that inventory, including cap-related
 mismatches if any. Early matched circle/kite pairs have no recovery regression;
 full-suite classification is withheld until all 30 are complete.
+
+Screen timing metadata correction: `screen_paired.json` now explicitly names
+its internal fit-runner boundary. Original screen receipts predate
+`audited_output_seconds`; the numeric times and ratios are unchanged.
+Full confirmation uses the broader case-entry-to-fit-return boundary specified
+above. This prevents the shared summary format from implying identical timing
+boundaries across the development screen and confirmation.
