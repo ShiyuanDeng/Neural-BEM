@@ -49,6 +49,25 @@ def main():
     timing=dict(common_successes=len(common),median_C_over_RG=float(np.median(ratios)) if ratios else None,
         p10_C_over_RG=float(np.percentile(ratios,10)) if ratios else None,
         total_audited_seconds={a:sum(r['arms'][a]['audited_output_seconds'] or 0 for r in rows) for a in ('C','RG')})
+    repeat_rows=[]
+    for case in ('circle__c4','kite__c0.5','star__c13.3'):
+        for batch in ('all','timing1','timing2'):
+            c,rg=load(batch,'C',case),load(batch,'RG',case)
+            if c and rg:
+                repeat_rows.append(dict(case=case,batch=batch,C=c['audited_output_seconds'],
+                    RG=rg['audited_output_seconds'],C_over_RG=c['audited_output_seconds']/rg['audited_output_seconds']))
+    timing['repeats']=repeat_rows
+    times=['# RG-001 audited-output timing','',
+        '| Case | C seconds | RG seconds | C/RG on common successes |', '|---|---|---|---|']
+    for r in rows:
+        c,rg=r['arms']['C'],r['arms']['RG']
+        ratio=c['audited_output_seconds']/rg['audited_output_seconds'] if c['recovered'] and rg['recovered'] else None
+        ratio_text='—' if ratio is None else f'{ratio:.4f}'
+        times.append(f"| {r['case']} | {c['audited_output_seconds']:.4f} | {rg['audited_output_seconds']:.4f} | {ratio_text} |")
+    times += ['','## Declared timing repeats','', '| Case | Batch | C seconds | RG seconds | C/RG |', '|---|---|---|---|---|']
+    for r in repeat_rows:
+        times.append(f"| {r['case']} | {r['batch']} | {r['C']:.4f} | {r['RG']:.4f} | {r['C_over_RG']:.4f} |")
+    (OUT/'timing_table.md').write_text('\n'.join(times)+'\n')
     checks={case:read(OUT/'independent'/f'{case}.json') for case in additions if (OUT/'independent'/f'{case}.json').exists()}
     repeats={case:load('recovery_repeat','RG',case) for case in additions}
     reach={case:load('extended','RG',case) for case in ('aphex_twin__c0.5','aphex_twin__c4','aphex_twin__c13.3','hook__c13.3')}
@@ -87,7 +106,7 @@ def main():
     if not additions:
         lines.append('No new benchmark recovery, so new-recovery-only nodal checks and repeats are inapplicable.')
     lines+=['','## Timing','',f"Common successes: {len(common)}. Median C/RG: {timing['median_C_over_RG']}. Suite audited totals including failures: {timing['total_audited_seconds']} seconds.",'',
-        'Times include CUDA startup, initial audit and final/early audit; they exclude imports and truth scoring. Two additional timing repeats per declared timing case are reported separately in the evidence bundle.','',
+        'Times include CUDA startup, initial audit and final/early audit; they exclude imports and truth scoring. [Paired case times and all six timing repeats](../../../../results/validation/cleaned_interfaces/RG-001/timing_table.md) are reported separately. The common-success median is consistent with unchanged numerical work; no speedup is claimed.','',
         '## Extended-budget diagnostics','',
         'These are outside the 120 s / 13,412-unit benchmark and never counted as benchmark recoveries.','',
         '| Case | Recovery | RMS mm | Audit | Outcome |','|---|---|---|---|---|']
@@ -118,6 +137,14 @@ def plot():
         ax.set_title(case,fontsize=10)
         ax.set_aspect('equal');ax.set_xlabel('mm');ax.set_ylabel('mm');ax.legend(fontsize=7)
     fig.tight_layout();fig.savefig(OUT/'boundaries.png',dpi=130);plt.close(fig)
+    fig,ax=plt.subplots(figsize=(13,5))
+    for arm,color in [('C','#427ab3'),('RG','#d17229')]:
+        values=[load('all',arm,case) for case in S.CASES]
+        ax.plot(range(30),[r['audited_output_seconds'] if r else np.nan for r in values],
+                'o-',color=color,label=arm,markersize=3)
+    ax.set_xticks(range(30),S.CASES,rotation=65,ha='right',fontsize=7)
+    ax.set_ylabel('Seconds to audited output (failures included)');ax.legend()
+    fig.tight_layout();fig.savefig(OUT/'timings.png',dpi=130);plt.close(fig)
 
 
 if __name__=='__main__':
