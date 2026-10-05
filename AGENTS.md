@@ -29,8 +29,9 @@
   2026-10-04). Do not add them to new experiments. Every older scene set (CI-001
   36 cases, SC-0xx, MA-00x, FM/RB/TR cases, TG-001) is legacy. It stays in place
   only because seals hash its paths; see `experiments/benchmark/LEGACY.md`.
-- Each new experiment gets a pre-registered plan in `docs/iterations/` and
-  explicit user approval of its ID before it runs.
+- Each new experiment gets a pre-registered plan in `docs/iterations/`.
+  User approval of the requested experiment work is sufficient authorization
+  to run it; do not require a separate approval naming its tracking ID.
 
 # Code and evidence map
 

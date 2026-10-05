@@ -13,9 +13,11 @@ and proposed follow-up plans live here; recorded evidence remains under `results
 records translation/scaling initialization, the unchanged existing frequency
 ladder including its M/K progression, four additional all-frequency M/K
 stages, and full configured release. This is a documented design; the
-default policy remains unchanged. The opt-in [CS-001 implementation](CS-001_preparation.md)
-is prepared and bounded checks pass; paired TG-002 fitting awaits specific
-ID approval. Its initial-stage evidence is
+default policy remains unchanged. The opt-in [CS-001 screen](CS-001_results.md)
+completed eight matched TG-002 pairs: revised 4/8 versus control 5/8,
+1.499x median speedup on retained successes, and one C-shape regression.
+All four added shape stages were exercised, but full release was not entered.
+Its earlier initial-stage evidence is
 in [GGB-004](GGB-004_results.md) and [GGB-005](GGB-005_results.md).
 
 **Question:** Why is the released GauGal cylinder reconstruction fast, and

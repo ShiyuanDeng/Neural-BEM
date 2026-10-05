@@ -1,5 +1,8 @@
 # CS-001 preparation — fitting awaiting specific ID approval
 
+Historical pre-run record. The later user instruction removed separate ID
+confirmation and authorized execution; see [completed CS-001 results](CS-001_results.md).
+
 2026-10-05. **Prepared, no inverse fits run.** The general user request
 authorizes implementation and preparation. AGENTS.md additionally requires
 explicit approval of the experiment ID before fitting; CS-001 was presented

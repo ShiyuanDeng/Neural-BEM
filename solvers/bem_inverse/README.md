@@ -39,8 +39,12 @@ frequency ladder and M/K progression, four full-catalog stages with
 Use it with `geometry_update="certified_spectral"`; stage-local similarity
 affects the initial fit only, and independent audits retain the selected
 ordinary geometry update. The default `CumulativePolicy` remains unchanged.
-The bounded paired TG-002 validation is preregistered as
-[CS-001](../../docs/iterations/CI-SPD/CS-001_plan.md).
+The bounded paired TG-002 [CS-001 validation](../../docs/iterations/CI-SPD/CS-001_results.md)
+recovered 4/8 versus 5/8 for the current-policy control: 1.499x median
+speedup on four retained successes, but a C-shape recovery regression.
+The compact shape storage selects lower modal trace cutoffs, and the
+regression stopped at the candidate-resolution gate. This configuration
+is not qualified for promotion; full release was not reached by this screen.
 
 To select modal physics explicitly:
 
