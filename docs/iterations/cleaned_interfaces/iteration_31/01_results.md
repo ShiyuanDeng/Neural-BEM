@@ -196,3 +196,11 @@ its internal fit-runner boundary. Original screen receipts predate
 Full confirmation uses the broader case-entry-to-fit-return boundary specified
 above. This prevents the shared summary format from implying identical timing
 boundaries across the development screen and confirmation.
+
+All 30 fresh pairs completed at approximately 03:11 UTC: **B 26/30, E 26/30**,
+exactly the historical recovery set, no regressions or additions. The median
+paired audited-output speedup is **1.545838x**. Two sequential declared timing
+repeats are running. A read-only gallery-generation process inadvertently
+overlapped the first repeated circle pair; its numerical evidence is preserved,
+its timing is excluded, and one circle-only uncontended replacement will use
+the remaining declared confirmation allowance. No numerical recipe changes.
