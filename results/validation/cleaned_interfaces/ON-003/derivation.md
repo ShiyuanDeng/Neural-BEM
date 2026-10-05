@@ -30,6 +30,13 @@ A scalar speed-weighted B^H D B would use the wrong flux coordinates.
 
 Maue in these parameter coordinates gives
 Tfar[m,n]=-m*n*Vfar[m,n]+2pi*k^2*sum_j N_j^H D N_j[m,n].
+The split T components are the *linear split of the full Maue form*.
+Neither compact far nor finite-time near separately satisfies the homogeneous
+Helmholtz equation. Their heat/cutoff forcing terms cancel on the required
+separation interval; the separate Maue components must not be claimed to
+equal independently differentiated hypersingular layers without those terms.
+The sum implements the full Maue operator.
+
 Take exterior minus interior for V,K,T,Kprime and assemble
 [[I-deltaK, deltaV],[-deltaT,I+deltaKprime]]. Universal jumps cancel
 in the differences; retain the displayed identities. On a circle Kprime=K.
