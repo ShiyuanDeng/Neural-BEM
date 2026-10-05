@@ -29,6 +29,7 @@ class Execution:
     resolution: int = 512
     nodal_geometry_reuse: str = 'off'
     nodal_resolution_profile: str = 'fixed'
+    audit_frequency_batch: int = 1
 
     def __post_init__(self):
         if self.device not in ('auto', 'cpu', 'cuda'):
@@ -37,6 +38,8 @@ class Execution:
             raise ValueError('acceleration must be reference or spd016')
         if self.frequency_threads < 1 or int(self.frequency_threads) != self.frequency_threads:
             raise ValueError('frequency_threads must be a positive integer')
+        if self.audit_frequency_batch not in (1, 2, 3):
+            raise ValueError('Audit frequency batches must be 1, 2 or 3 to bound system memory.')
         if self.geometry not in ('reference', 'cache', 'spatial', 'both'):
             raise ValueError('Unknown geometry runtime')
         if self.nodal_geometry_reuse not in ('off', 'per_curve'):

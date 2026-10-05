@@ -82,6 +82,26 @@ and one-time ambient scaling, but failed ON-001 curved-state finite-trial
 qualification under the unchanged endpoint gate. It is not a qualified
 replacement for `certified_spectral`. No recipe default was changed.
 
+## CI-SPD feedback and exact reuse (pending inverse qualification)
+
+`CumulativePolicy(damping_rule="agreement", avoid_terminal_linearization=True)`
+selects gain/accepted-fraction damping feedback with a scaled curvature floor,
+pre-geometry budget checks, a stage proposal cap and a shortened-progress stop.
+The schedule default remains unchanged. `Execution(audit_frequency_batch=2)`
+streams two frequencies concurrently within the configured frequency threads;
+the default is one. The ordinary acceptance, validity and endpoint checks
+remain active. Terminal tangent omission preserves callback and checkpoint
+requirements. The fixed qualification comparison is
+[DP-001](../../docs/iterations/CI-SPD/DP-001_plan.md), pending ID approval.
+
+Immutable base geometry and resolution-only assembly arrays are cached, and
+wave expansions append missing cells. Receipts retain candidate exceptions,
+actual geometry proposals, failed phase timings and exclusive audit phases.
+CUDA assembly reports lock/prior-work wait, event device span, synchronized
+host span and host transfer; these are nested measurements, not additional
+runner wall time. Bounded tests establish numerical equivalence, not an
+inverse recovery or speed claim.
+
 ## RG-001 opt-in resolution gate
 
 `CumulativePolicy(resolution_gate="decision")` retains the existing

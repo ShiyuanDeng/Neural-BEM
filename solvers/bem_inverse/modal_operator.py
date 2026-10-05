@@ -7,6 +7,7 @@ T. Every kernel is split as G=P(R) log R+Q(R); log R=log(4 sin^2((theta-phi)/2))
 Sources and receivers use Graf's addition theorem about z_0.
 """
 import numpy as np
+from functools import lru_cache
 from scipy.fft import dct
 from scipy.signal import fftconvolve
 from scipy.special import gammaln, hankel1, i0e, jv
@@ -83,6 +84,21 @@ def radial_coefficients(ko, ki, upper, tolerance=1e-15):
     raise ValueError(f'Radial Chebyshev series unresolved at {count//2} points (alpha={alpha:.3g}).')
 
 
+@lru_cache(maxsize=8)
+def assembly_indices(band, cutoff):
+    modes = np.arange(-cutoff, cutoff+1)
+    a = np.arange(-band, band+1)[None, :]
+    b = np.arange(-2*cutoff, 2*cutoff+1)[:, None]-a
+    ell = np.arange(-band-cutoff, band+cutoff+1)
+    symbol = np.where(ell == 0, 0., -1/np.maximum(np.abs(ell), 1))
+    m, n = np.meshgrid(modes, modes, indexing='ij')
+    arrays = (modes, a+band, np.clip(b+band, 0, 2*band), np.abs(b)<=band,
+              symbol, m+band, band-n, m-n+2*cutoff, m+2*band+cutoff, np.eye(len(modes)))
+    for array in arrays:
+        array.setflags(write=False)
+    return arrays
+
+
 def kernel_matrix(log_part, smooth, cutoff):
     """Galerkin block 2 pi (S[m,-n] + sum_l L_l P[m-l, l-n]), L_l=-1/|l|, L_0=0.
 
@@ -92,15 +108,10 @@ def kernel_matrix(log_part, smooth, cutoff):
     band = half(log_part)
     if cutoff > band:
         raise ValueError('Trace cutoff must fit inside the coefficient window.')
-    modes = np.arange(-cutoff, cutoff+1)
-    a = np.arange(-band, band+1)[None, :]
-    b = np.arange(-2*cutoff, 2*cutoff+1)[:, None]-a
-    diagonals = np.where(np.abs(b) <= band, log_part[a+band, np.clip(b+band, 0, 2*band)], 0)
-    ell = np.arange(-band-cutoff, band+cutoff+1)
-    symbol = np.where(ell == 0, 0., -1/np.maximum(np.abs(ell), 1))
+    modes, a, b, mask, symbol, sm, sn, pm, pn, identity = assembly_indices(band, cutoff)
+    diagonals = np.where(mask, log_part[a, b], 0)
     product = fftconvolve(diagonals, symbol[None, :], axes=1)
-    m, n = np.meshgrid(modes, modes, indexing='ij')
-    return 2*np.pi*(smooth[m+band, band-n]+product[m-n+2*cutoff, m+2*band+cutoff])
+    return 2*np.pi*(smooth[sm, sn]+product[pm, pn])
 
 
 def muller_matrix(geometry, ko, ki, cutoff, *, tolerance=1e-15, workers=1, basis_workers=1):
@@ -116,11 +127,10 @@ def muller_matrix(geometry, ko, ki, cutoff, *, tolerance=1e-15, workers=1, basis
     t_log, t_smooth = geometry.normal_dot(np.stack((hp, hq)), workers)
     v = kernel_matrix(p, q, cutoff)
     k = kernel_matrix(k_log, k_smooth, cutoff)
-    modes = np.arange(-cutoff, cutoff+1)
+    modes, *_, identity = assembly_indices(geometry.band, cutoff)
     t = -modes[:, None]*modes[None, :]*v+kernel_matrix(t_log, t_smooth, cutoff)
     # K' kernel is K with target and source exchanged: K'[m,n]=K[-n,-m].
     kp = k[::-1, ::-1].T
-    identity = np.eye(len(modes))
     return np.block([[identity-k, v], [-t, identity+kp]]), info
 
 

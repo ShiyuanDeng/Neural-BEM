@@ -276,6 +276,10 @@ def test_cuda_matches_cpu_and_keeps_handles_on_host(frequency, damping):
     cpu, gpu = modal(), ModalMuller(Execution(device='cuda', frequency_threads=1))
     a, c = [service.evaluate(curve, observation, 13.3, token(96)) for service in (cpu, gpu)]
     assert c.diagnostics['device'] == 'cuda-modal' and gpu.receipt()['devices'] == {'cuda-modal': 1}
+    seconds = gpu.receipt()['seconds']
+    for name in ('assembly_gpu_queue', 'assembly_gpu_prior_work_wait', 'assembly_gpu_execution',
+                 'assembly_gpu_execution_wall', 'assembly_host_transfer'):
+        assert seconds[name] >= 0
     assert relative(c.prediction, a.prediction) < 1e-11
     assert relative(gpu.derivative(c, update, space), cpu.derivative(a, update, space)) < 1e-10
     assert all(isinstance(v, np.ndarray) for v in (*c._handle.factors, c._handle.traces, c._handle.reciprocal_rhs))

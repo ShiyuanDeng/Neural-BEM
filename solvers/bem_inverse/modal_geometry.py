@@ -239,7 +239,7 @@ class WaveArrays:
         self.seconds = 0.
 
     def ensure(self, orders, terms, workers=1):
-        """Arrays for n<=orders, p<terms; rebuilt (cheaply) only when enlarged."""
+        """Arrays for n<=orders, p<terms; preserve cells and append missing ones."""
         with self._lock:
             have = self.arrays.shape
             if orders < have[0] and terms <= have[1]:
@@ -247,10 +247,18 @@ class WaveArrays:
             started = perf_counter()
             rows, columns = max(orders+1, have[0]), max(terms, have[1])
             arrays = np.empty((rows, columns, 2*self.band+1), complex)
-            arrays[0, 0] = delta(self.band, 1)
-            for n in range(1, rows):
+            old_rows, old_columns = have[:2]
+            if old_rows:
+                arrays[:old_rows, :old_columns] = self.arrays
+            else:
+                arrays[0, 0] = delta(self.band, 1)
+            for n in range(max(1, old_rows), rows):
                 arrays[n, 0] = self._zeta(arrays[n-1, 0], workers)
-            for p in range(1, columns):
+            # Newly added rows need their old columns; existing rows do not.
+            if old_rows < rows:
+                for p in range(1, old_columns):
+                    arrays[old_rows:, p] = self._modulus(arrays[old_rows:, p-1], workers)
+            for p in range(max(1, old_columns), columns):
                 arrays[:, p] = self._modulus(arrays[:, p-1], workers)
             self.arrays = arrays
             self.seconds += perf_counter()-started

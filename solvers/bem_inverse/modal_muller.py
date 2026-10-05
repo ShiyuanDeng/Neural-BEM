@@ -117,8 +117,10 @@ class ModalMuller:
     @contextmanager
     def _stage(self, kind):
         started = perf_counter()
-        yield
-        self._record(kind, perf_counter()-started)
+        try:
+            yield
+        finally:
+            self._record(kind, perf_counter()-started)
 
     def validate(self, problem):
         if problem.material != 'equal_density_homogeneous' or not isinstance(problem.initial, FourierCurve):
@@ -187,10 +189,18 @@ class ModalMuller:
         from . import modal_cuda
         try:
             geometry = self._geometry(curve, window, device)
-            with self._stage('assembly'), CA._device_work:
-                return geometry, (*modal_cuda.muller_matrix(geometry, k, ki, cutoff,
-                                                            tolerance=self.settings.radial_tolerance),
-                                  'cuda-modal', None)
+            with self._stage('assembly'):
+                queued = perf_counter()
+                with CA._device_work:
+                    self._record('assembly_gpu_queue', perf_counter()-queued)
+                    timing = {}
+                    try:
+                        matrix = modal_cuda.muller_matrix(geometry, k, ki, cutoff,
+                            tolerance=self.settings.radial_tolerance, timing=timing)
+                    finally:
+                        for kind, elapsed in timing.items():
+                            self._record(kind, elapsed)
+                    return geometry, (*matrix, 'cuda-modal', None)
         except Exception as exc:
             if self.execution.device != 'auto' or not CA.out_of_memory(exc):
                 raise

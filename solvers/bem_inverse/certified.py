@@ -184,14 +184,24 @@ class CertifiedSpectralUpdate(SpectralProjectedUpdate):
 
     # ------------------------------------------------------------------ trial map
 
+    def _base_grid(self, space, count, dimension):
+        key = ('base_grid', count, dimension)
+        if key not in space.cache:
+            nodes = space.curve.nodes(count)
+            arrays = (normal_basis(nodes, dimension//2), space.curve.values(count),
+                      nodes.normals@np.array([1, 1j]))
+            for array in arrays:
+                array.setflags(write=False)
+            space.cache[key] = (nodes, *arrays)
+        return space.cache[key]
+
     def _moved(self, space, a, count, role):
         """``spectral_project(validate=True)`` with its sampled test replaced by ``check``."""
         self.counts['geometry_projections'] += 1
         curve = space.curve
-        nodes = curve.nodes(count)
-        h = normal_basis(nodes, len(a)//2)@a/self.length_unit_m
-        normal = nodes.normals@np.array([1, 1j])
-        moved = FourierCurve.from_samples(curve.values(count)+h*normal, count//2-1)
+        nodes, basis, base, normal = self._base_grid(space, count, len(a))
+        h = basis@a/self.length_unit_m
+        moved = FourierCurve.from_samples(base+h*normal, count//2-1)
         n = moved.nodes(count)
 
         def sampled():
@@ -223,7 +233,7 @@ class CertifiedSpectralUpdate(SpectralProjectedUpdate):
             c = space.curve.coefficients+coarse-space.base_projection
             f = space.curve.coefficients+fine-space.fine_base_projection
             error = float(np.max(np.abs(values(c-f, 2*space.count))))
-            radius = space.curve.nodes(space.count).perimeter/(2*np.pi)
+            radius = self._base_grid(space, space.count, len(a))[0].perimeter/(2*np.pi)
             if error/radius > self.projection_tolerance:
                 raise UpdateRefused('unresolved_projection', f'geometry grid refinement {error/radius:g}')
             candidate = FourierCurve(c)

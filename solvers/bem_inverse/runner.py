@@ -70,6 +70,8 @@ def audit(curve, stage, config, problem, physics, update, seconds):
                        if hasattr(physics, 'audit_reference_resolution') else None)
     independent_reference = reference_nodes is not None
     ledger = Ledger(cap=(8 if independent_reference else 6)*count+16, seconds=seconds, endpoint_reserve=0)
+    execution = getattr(physics, 'execution', None)
+    batch = min(getattr(execution, 'audit_frequency_batch', 1), getattr(execution, 'frequency_threads', 1))
     started = perf_counter()
     try:
         with deadline(seconds):
@@ -82,32 +84,48 @@ def audit(curve, stage, config, problem, physics, update, seconds):
             low_columns, high_columns, coarse_jac, fine_jac = [], [], [], []
             reference_columns, reference_jac = [], []
             def evaluate(shape, observation, nodes, category):
-                ledger.reserve(1)
-                ledger.charge('solve', category)
+                with ledger._lock:
+                    ledger.reserve(1)
+                    ledger.charge('solve', category)
                 try:
                     return physics.evaluate(shape, observation, problem.contrast, nodes)
                 except (ValueError, FloatingPointError, np.linalg.LinAlgError):
-                    ledger.fail(category)
+                    with ledger._lock:
+                        ledger.fail(category)
                     raise
-            for observation in problem.real:
+            def derivative(state, category='derivative'):
+                with ledger._lock:
+                    ledger.reserve(1)
+                    ledger.charge('reciprocal', category)
+                block = physics.derivative(state, update, space)
+                return block.reshape(-1, block.shape[-1])
+            def batches(function):
+                # Return arrays only; factorized systems die inside each worker.
+                for begin in range(0, count, batch):
+                    items = problem.real[begin:begin+batch]
+                    if batch == 1:
+                        yield function(items[0])
+                    else:
+                        with physics.ordered_calls(function, items) as calls:
+                            for call in calls:
+                                yield call()
+            def field_pair(observation):
                 low = evaluate(curve, observation, stage.nodes, 'audit_base')
                 high = evaluate(curve, observation, stage.refined_nodes, 'audit_fine')
-                low_columns.append(np.array(low.prediction, copy=True).reshape(-1))
-                high_columns.append(np.array(high.prediction, copy=True).reshape(-1))
-                for state, destination in ((low, coarse_jac), (high, fine_jac)):
-                    ledger.reserve(1)
-                    ledger.charge('reciprocal', 'derivative')
-                    block = physics.derivative(state, update, space)
-                    destination.append(block.reshape(-1, block.shape[-1]))
+                lp = np.array(low.prediction, copy=True).reshape(-1)
+                hp = np.array(high.prediction, copy=True).reshape(-1)
+                ja, jb = derivative(low), derivative(high)
+                rp = jr = None
                 if independent_reference:
                     reference = evaluate(curve, observation, reference_nodes, 'audit_reference')
-                    reference_columns.append(np.array(reference.prediction, copy=True).reshape(-1))
-                    ledger.reserve(1)
-                    ledger.charge('reciprocal', 'audit_reference')
-                    block = physics.derivative(reference, update, space)
-                    reference_jac.append(block.reshape(-1, block.shape[-1]))
-                    del reference
-                del state, low, high
+                    rp = np.array(reference.prediction, copy=True).reshape(-1)
+                    jr = derivative(reference, 'audit_reference')
+                return lp, hp, ja, jb, rp, jr
+            for lp, hp, ja, jb, rp, jr in batches(field_pair):
+                low_columns.append(lp); high_columns.append(hp)
+                coarse_jac.append(ja); fine_jac.append(jb)
+                if independent_reference:
+                    reference_columns.append(rp); reference_jac.append(jr)
             low_prediction, high_prediction = np.column_stack(low_columns), np.column_stack(high_columns)
             ja = normalize(np.stack(coarse_jac, axis=1), observed, stage.weights, config.residual_floor)
             jb = normalize(np.stack(fine_jac, axis=1), observed, stage.weights, config.residual_floor)
@@ -120,10 +138,10 @@ def audit(curve, stage, config, problem, physics, update, seconds):
             for sign in (1, -1):
                 candidate = update.trial(space, sign*1e-7*direction)[0]
                 predictions = []
-                for observation in problem.real:
+                def finite_difference(observation):
                     state = evaluate(candidate, observation, stage.refined_nodes, 'audit_fd')
-                    predictions.append(np.array(state.prediction, copy=True).reshape(-1))
-                    del state
+                    return np.array(state.prediction, copy=True).reshape(-1)
+                predictions.extend(batches(finite_difference))
                 residuals.append(normalize(np.column_stack(predictions)-observed, observed,
                                            stage.weights, config.residual_floor))
             fd = (residuals[0]-residuals[1])/2e-7
@@ -153,6 +171,7 @@ def audit(curve, stage, config, problem, physics, update, seconds):
     except Exception:
         row = dict(passed=False, traceback=traceback.format_exc())
     return dict(row, work=ledger.snapshot(), seconds=perf_counter()-started, solver=physics.name,
+                frequency_batch=batch,
                 update_modes=stage.update_modes, storage_band=curve.band,
                 production_resolution=stage.nodes, refined_resolution=stage.refined_nodes)
 
@@ -181,6 +200,7 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
     initialize = localize if localization_adapter is None else localization_adapter
     selected_audit = audit if audit_adapter is None else audit_adapter
     audit_spent, early_audits = 0., []
+    audit_phase_seconds = dict(initial=0., early=0., terminal=0.)
     early_endpoint = None
     early_retry_residual = None
     early_retry_resolution = None
@@ -194,7 +214,9 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
             return dict(passed=False, seconds=0., work=dict(work_units=0), reason='audit allowance exhausted')
         if hasattr(physics, 'audit_stage'):
             stage = physics.audit_stage(stage)
+        started_audit = perf_counter()
         row = selected_audit(curve, stage, config, problem, physics, update, seconds)
+        audit_phase_seconds[phase] += perf_counter()-started_audit
         audit_spent += row['seconds']
         return row
     physics.validate(problem)
@@ -364,6 +386,8 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
                         final_loss=result.final_loss, seconds=result.seconds, work=ledger.snapshot(),
                         curve=record_curve(curve), nodes=op.stage.nodes, refined_nodes=op.stage.refined_nodes,
                         resolution_selection=selection)
+                    row.update(physics_failures=getattr(result, 'physics_failures', []),
+                               geometry_proposals=getattr(result, 'geometry_proposals', len(result.trials)))
                     overshoots = [check for check in result.acceptance_checks
                                   if check.get('accepted') and check.get('numerical_obstruction')]
                     row.update(resolution_gate=op.optimizer.resolution_gate,
@@ -455,6 +479,9 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
         total_seconds=perf_counter()-started, audit_seconds=audit_spent, early_audits=early_audits,
         physics=physics.receipt(), geometry_work=update.counts,
         geometry_update=geometry_update, geometry_settings=update_settings)
+    row['exclusive_wall_seconds'] = dict(initial_audit=audit_phase_seconds['initial'],
+        fit_and_localization=fit_seconds, early_audits=audit_phase_seconds['early'],
+        terminal_audits=audit_phase_seconds['terminal'])
     row['total_units'] = row['fit_and_localization_units']+row['audit_units']
     row.update(resolution_gate=policy.resolution_gate,
                accepted_resolution_overshoots=sum(s['accepted_resolution_overshoots'] for s in stages),

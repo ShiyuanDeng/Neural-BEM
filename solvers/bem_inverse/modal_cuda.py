@@ -22,6 +22,7 @@ and the two agree to roundoff.
 """
 from threading import Lock
 from time import perf_counter
+from functools import lru_cache
 
 import numpy as np
 from scipy.fft import next_fast_len
@@ -251,35 +252,59 @@ class DeviceModalGeometry:
                     boundary_nodes_scope='operator collocation only; interval proposal uses a sampled torus grid')
 
 
+@lru_cache(maxsize=8)
+def assembly_indices(band, cutoff, device_name):
+    device = torch.device(device_name)
+    modes = torch.arange(-cutoff, cutoff+1, device=device)
+    a = torch.arange(-band, band+1, device=device)[None, :]
+    b = torch.arange(-2*cutoff, 2*cutoff+1, device=device)[:, None]-a
+    ell = torch.arange(-band-cutoff, band+cutoff+1, device=device)
+    symbol = torch.where(ell == 0, 0., -1/ell.abs().clamp(min=1).double()).to(COMPLEX)
+    m, n = torch.meshgrid(modes, modes, indexing='ij')
+    return (modes, a+band, (b+band).clamp(0, 2*band), b.abs()<=band, symbol,
+            m+band, band-n, m-n+2*cutoff, m+2*band+cutoff,
+            torch.eye(len(modes), dtype=COMPLEX, device=device))
+
+
 def kernel_matrix(log_part, smooth, cutoff):
     """modal_operator.kernel_matrix on the device."""
     band = half(log_part)
     if cutoff > band:
         raise ValueError('Trace cutoff must fit inside the coefficient window.')
-    device = log_part.device
-    modes = torch.arange(-cutoff, cutoff+1, device=device)
-    a = torch.arange(-band, band+1, device=device)[None, :]
-    b = torch.arange(-2*cutoff, 2*cutoff+1, device=device)[:, None]-a
-    diagonals = torch.where(b.abs() <= band, log_part[a+band, (b+band).clamp(0, 2*band)], 0)
-    ell = torch.arange(-band-cutoff, band+cutoff+1, device=device)
-    symbol = torch.where(ell == 0, 0., -1/ell.abs().clamp(min=1).double()).to(COMPLEX)
+    modes, a, b, mask, symbol, sm, sn, pm, pn, identity = assembly_indices(band, cutoff, str(log_part.device))
+    diagonals = torch.where(mask, log_part[a, b], 0)
     product = _convolve(diagonals, symbol[None, :], 1)
-    m, n = torch.meshgrid(modes, modes, indexing='ij')
-    return 2*np.pi*(smooth[m+band, band-n]+product[m-n+2*cutoff, m+2*band+cutoff])
+    return 2*np.pi*(smooth[sm, sn]+product[pm, pn])
 
 
-def muller_matrix(geometry, ko, ki, cutoff, *, tolerance=1e-15):
+def muller_matrix(geometry, ko, ki, cutoff, *, tolerance=1e-15, timing=None):
     """modal_operator.muller_matrix on the device; returns a host (NumPy) matrix."""
     coefficients, info = radial_coefficients(ko, ki, geometry.radial_upper, tolerance)
+    # Scalar coefficient construction is CPU work; measure GPU assembly after it.
+    if timing is not None:
+        queued = perf_counter()
+        torch.cuda.synchronize(geometry.device)
+        timing['assembly_gpu_prior_work_wait'] = perf_counter()-queued
+        begin, end = torch.cuda.Event(enable_timing=True), torch.cuda.Event(enable_timing=True)
+        begin.record(torch.cuda.current_stream(geometry.device))
+    started = perf_counter()
     p, q, dp, dq, hp, hq = geometry.radial.combine(coefficients)
     q, dq, hq = torch.stack((q, dq, hq))+geometry.log_multiplier(torch.stack((p, dp, hp)))
     k_log, k_smooth = -2*geometry.source_dot(torch.stack((dp, dq)))
     t_log, t_smooth = geometry.normal_dot(torch.stack((hp, hq)))
     v = kernel_matrix(p, q, cutoff)
     k = kernel_matrix(k_log, k_smooth, cutoff)
-    modes = torch.arange(-cutoff, cutoff+1, device=p.device)
+    modes, *_, identity = assembly_indices(geometry.band, cutoff, str(p.device))
     t = -(modes[:, None]*modes[None, :])*v+kernel_matrix(t_log, t_smooth, cutoff)
     kp = k.flip(0).flip(1).T
-    identity = torch.eye(len(modes), dtype=COMPLEX, device=p.device)
     matrix = torch.cat((torch.cat((identity-k, v), 1), torch.cat((-t, identity+kp), 1)), 0)
-    return matrix.cpu().numpy(), info
+    if timing is not None:
+        end.record(torch.cuda.current_stream(p.device))
+        end.synchronize()
+        timing['assembly_gpu_execution'] = begin.elapsed_time(end)/1000.
+        timing['assembly_gpu_execution_wall'] = perf_counter()-started
+    transfer = perf_counter()
+    host = matrix.cpu().numpy()
+    if timing is not None:
+        timing['assembly_host_transfer'] = perf_counter()-transfer
+    return host, info

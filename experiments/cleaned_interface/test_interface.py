@@ -45,7 +45,9 @@ def test_noiseless_policy_matches_every_archived_stage_and_optimizer():
     fits=[o for o in ops if o.kind=='fit']
     assert [portable(stage_record(o.stage)) for o in fits]==archived['stages']
     # New opt-in controller defaults preserve this archived optimizer recipe.
-    archived_backend = dict(archived['backend'], reach_fraction=0., resolution_gate='absolute')
+    archived_backend = dict(archived['backend'], reach_fraction=0., resolution_gate='absolute',
+        damping_floor_relative=1e-6, geometry_proposal_cap=2000, progress_window=5,
+        minimum_relative_progress=.01, avoid_terminal_linearization=False)
     assert all(portable(asdict(o.optimizer))==archived_backend for o in fits)
     assert [op.record() for op in ops]==policy.plan(p,backend)['operations']
     assert len([o for o in ops if o.kind=='cleanup'])==1

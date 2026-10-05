@@ -70,6 +70,8 @@ class CumulativePolicy:
     working_anchors: int = 0
     reach_fraction: float = 0.0
     log_model: bool = False
+    damping_rule: str = 'schedule'
+    avoid_terminal_linearization: bool = False
     resolution_gate: str = 'absolute'
     gamma: float = .25
     prefix_frequencies_hz: tuple = (.5e9, .75e9, 1e9, 1.25e9)
@@ -86,7 +88,8 @@ class CumulativePolicy:
 
     def _config(self, problem, observations):
         config = BackendConfig(domain_box=problem.domain_box, log_model=self.log_model,
-                               reach_fraction=self.reach_fraction, resolution_gate=self.resolution_gate)
+                               reach_fraction=self.reach_fraction, resolution_gate=self.resolution_gate,
+                               damping_rule=self.damping_rule, avoid_terminal_linearization=self.avoid_terminal_linearization)
         count = len(observations)
         weights = tuple(np.ones(count)/count)
         expected = 0.

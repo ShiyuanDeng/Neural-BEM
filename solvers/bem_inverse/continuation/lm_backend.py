@@ -29,6 +29,7 @@ from .forward import ordered_calls, solve, shape_jacobian
 from .geometry import FourierCurve, grid_size, integer
 from .geometry_runtime import geometry_validated
 from .updates import UpdateRefused
+from .globalization import damping_floor, accepted_damping, shortened_stagnation
 
 NORMAL_RETURN = "NORMAL_OPTIMIZER_RETURN"
 STAGE_QUOTA = "STAGE_QUOTA_REACHED"
@@ -52,6 +53,10 @@ class TrialWallLimit(Stop):
 
 class NumericalFailure(Stop):
     code = "NUMERICAL_FAILURE"
+
+
+class GeometryProposalCap(Stop):
+    code = 'GEOMETRY_PROPOSAL_CAP'
 
 
 @dataclass(frozen=True)
@@ -126,18 +131,30 @@ class BackendConfig:
     # ON-001 opt-in; sampled reach is a proxy, never an admissibility certificate.
     reach_fraction: float = 0.0
     resolution_gate: str = "absolute"
+    # CI-SPD feedback is opt-in until recovery retention is measured.
+    damping_floor_relative: float = 1e-6
+    geometry_proposal_cap: int = 2000
+    progress_window: int = 5
+    minimum_relative_progress: float = .01
+    avoid_terminal_linearization: bool = False
 
     def __post_init__(self):
         if self.resolution_gate not in ("absolute", "decision"):
             raise ValueError("resolution_gate must be 'absolute' or 'decision'")
         if not 0 <= self.reach_fraction <= 1:
             raise ValueError("reach_fraction must lie in [0, 1]")
-        if self.damping_rule not in ("schedule", "hanke"):
+        if self.damping_rule not in ("schedule", "hanke", "agreement"):
             raise ValueError(f"Unknown damping rule {self.damping_rule!r}.")
         if self.metric not in ("marquardt", "mass", "curvature"):
             raise ValueError(f"Unknown step metric {self.metric!r}.")
         if not 0 < self.hanke_ratio < 1 or not self.detectability_factor > 0:
             raise ValueError("hanke_ratio must lie in (0, 1) and detectability_factor must be positive.")
+        if not np.isfinite(self.damping_floor_relative) or not 0 < self.damping_floor_relative < 1:
+            raise ValueError('Damping floor must be a finite relative curvature in (0,1).')
+        integer(self.geometry_proposal_cap, 'geometry_proposal_cap')
+        integer(self.progress_window, 'progress_window')
+        if not np.isfinite(self.minimum_relative_progress) or not 0 <= self.minimum_relative_progress < 1:
+            raise ValueError('Minimum progress must lie in [0,1).')
 
     def bounds(self, orders):
         order = np.asarray(orders)
@@ -378,6 +395,7 @@ class Objective:
         self.observed = np.column_stack([o.scattered.reshape(-1) for o in stage.observations])
         self.refined_cache = {}
         self.count = len(stage.observations)
+        self.failures = []
 
     @geometry_validated
     def _predict(self, curve, nodes, category, keep):
@@ -385,9 +403,22 @@ class Objective:
         forwards, columns = [], []
 
         def predict(observation):
-            state = (solve(curve, observation.wavenumber, self.contrast, observation.acquisition, nodes)
-                     if self.physics is None else
-                     self.physics.evaluate(curve, observation, self.contrast, nodes))
+            try:
+                state = (solve(curve, observation.wavenumber, self.contrast, observation.acquisition, nodes)
+                         if self.physics is None else
+                         self.physics.evaluate(curve, observation, self.contrast, nodes))
+            except (ValueError, FloatingPointError, np.linalg.LinAlgError) as exc:
+                failure = dict(exception_type=type(exc).__name__, message=str(exc),
+                    category=category, resolution=nodes,
+                    frequency_hz=getattr(observation, 'frequency_hz', None),
+                    wavenumber=dict(real=float(complex(observation.wavenumber).real),
+                                    imag=float(complex(observation.wavenumber).imag)),
+                    candidate_sha256=hashlib.sha256(curve.coefficients.tobytes()).hexdigest(),
+                    candidate_coefficients=dict(real=curve.coefficients.real.tolist(),
+                                                imag=curve.coefficients.imag.tolist()))
+                with self.ledger._lock:
+                    self.failures.append(failure)
+                raise
             return state if keep else state.prediction  # release discarded systems early
 
         calls_for = ordered_calls if self.physics is None else self.physics.ordered_calls
@@ -453,6 +484,8 @@ class StageResult:
     resolution_events: list = field(default_factory=list)
     final_nodes: Optional[int] = None
     final_refined_nodes: Optional[int] = None
+    physics_failures: list = field(default_factory=list)
+    geometry_proposals: int = 0
 
 
 @dataclass
@@ -546,6 +579,7 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
     promotion_objective = None
     reach_cache = {}
     resume_iteration = 0
+    geometry_proposals = 0
 
     def admissible(candidate_curve):
         return inside_box(candidate_curve, config.domain_box)
@@ -660,7 +694,7 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
 
     def record(iteration, evaluation, gradient, step, damping, next_damping, trial=None):
         row = dict(iteration=iteration, loss=evaluation.loss, relative_l2=evaluation.relative_l2,
-                   gradient_inf=float(np.linalg.norm(gradient, ord=np.inf)),
+                   gradient_inf=None if gradient is None else float(np.linalg.norm(gradient, ord=np.inf)),
                    step_norm_m=float(np.linalg.norm(step)), damping=float(damping),
                    next_damping=float(next_damping), step_m=np.asarray(step, float).tolist(),
                    coefficients=dict(real=evaluation.curve.coefficients.real.tolist(),
@@ -672,7 +706,10 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
                        working_events=deepcopy(objective.events))
         if trial is not None:
             row.update({k: trial[k] for k in ("maximum_normal_m", "rms_normal_m", "projection_relative",
-                                               "speed_ratio") if k in trial})
+                                               "speed_ratio", "accepted_fraction", "gain_ratio",
+                                               "damping_feedback", "damping_floor") if k in trial})
+        if gradient is None:
+            row['terminal_linearization_skipped'] = True
         if resolution_response is not None:
             row.update(nodes=stage.nodes, refined_nodes=stage.refined_nodes)
         history.append(row)
@@ -714,6 +751,7 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
         else:
             current, matrix, gradient = resume.current, resume.matrix.copy(), resume.gradient.copy()
             history, trials, checks = deepcopy((resume.history, resume.trials, resume.checks))
+            geometry_proposals = sum(t.get('geometry_constructed', True) for t in trials)
             accepted_steps, resume_iteration = resume.iteration, resume.iteration
             damping, initial_loss, scale = resume.damping, resume.initial_loss, resume.scale
             objective.refined_cache = dict(resume.refined_cache)
@@ -742,6 +780,10 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
             rule = None
             restart = False
             accuracy_limited = False
+            seen_steps = set()
+            floor = damping_floor(normal, damped, config.damping_floor_relative) if config.damping_rule == 'agreement' else 0.
+            if floor:
+                trial_damping = max(trial_damping, floor)
             if config.damping_rule == "hanke":
                 trial_damping, attainable = hanke_damping(matrix, current.residual, damped, config.hanke_ratio)
                 rule = dict(hanke_lambda=float(trial_damping), hanke_attainable=bool(attainable))
@@ -751,6 +793,7 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
                 except np.linalg.LinAlgError:
                     trial_damping *= config.damping_increase
                     continue
+                raw_norm = float(np.linalg.norm(proposed))
                 proposed = control_step(proposed, space, update, config)
                 clipping = {}
                 if config.reach_fraction:
@@ -758,19 +801,36 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
                     proposed, clipping = clip_direction(proposed, space.curve, update.length_unit_m,
                                                         config.reach_fraction, reach_cache)
                 for backtrack in range(config.max_backtracks + 1):
+                    if config.damping_rule == 'agreement':
+                        ledger.reserve(0)  # deadline/work check before geometry, even after pure refusals
+                        if geometry_proposals >= config.geometry_proposal_cap:
+                            raise GeometryProposalCap('stage geometry proposal cap reached')
                     step = 0.5 ** backtrack * proposed
                     if np.linalg.norm(step) / scale <= config.relative_step_tolerance:
                         continue
                     trial = dict(iteration=iteration, damping=float(trial_damping), backtrack=backtrack,
                                  step_norm_m=float(np.linalg.norm(step)), **clipping)
-                    if config.log_model:
+                    feedback = config.damping_rule == 'agreement'
+                    if feedback:
+                        fraction = float(np.linalg.norm(step)/max(raw_norm, np.finfo(float).tiny))
+                        trial.update(accepted_fraction=fraction, damping_floor=floor,
+                                     clipping_fraction=float(np.linalg.norm(proposed)/max(raw_norm, np.finfo(float).tiny)))
+                    if config.log_model or feedback:
                         trial["step_m"] = step.tolist()
-                    if config.log_model:
+                    if config.log_model or feedback:
                         trial.update(predicted_decrease=float(-(gradient @ step) - 0.5 * step @ normal @ step),
                                      **(rule or {}))
                     if resolution_response is not None:
                         trial.update(proposal_nodes=stage.nodes, proposal_refined_nodes=stage.refined_nodes)
                     trials.append(trial)
+                    if feedback:
+                        key = np.ascontiguousarray(step).tobytes()
+                        if key in seen_steps:
+                            trial.update(status='refused', reason='repeated_clipped_proposal', geometry_constructed=False)
+                            continue
+                        seen_steps.add(key)
+                    geometry_proposals += 1
+                    trial['geometry_constructed'] = True
                     geometry_started = perf_counter()
                     try:
                         candidate_curve, geometry = update.trial(space, step)
@@ -779,7 +839,9 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
                             step = np.asarray(geometry['a_used'], float)
                             trial['step_m'] = step.tolist()
                             trial['step_norm_m'] = float(np.linalg.norm(step))
-                            if config.log_model:
+                            if feedback:
+                                trial['accepted_fraction'] = float(np.linalg.norm(step)/max(raw_norm, np.finfo(float).tiny))
+                            if config.log_model or feedback:
                                 trial['predicted_decrease'] = float(-gradient@step-.5*step@normal@step)
                     except UpdateRefused as exc:
                         trial.update(getattr(update, "last_trial", {}))
@@ -805,6 +867,8 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
                     else:
                         candidate = objective.production(candidate_curve, "candidate")
                     if candidate is None:
+                        trial.update(status='physics_failed', reason='production_evaluation_failed',
+                                     physics_failures=deepcopy(getattr(objective, 'failures', [])))
                         raise NumericalFailure("production evaluation failed at candidate state")
                     if not np.isfinite(candidate.loss) or not np.isfinite(candidate.prediction).all():
                         raise NumericalFailure("non-finite production evaluation at candidate state")
@@ -841,7 +905,7 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
                     if resolution_response is not None:
                         trial.update(original_production_loss=trial['loss'], loss=candidate.loss,
                                      nodes=stage.nodes, refined_nodes=stage.refined_nodes)
-                    if config.log_model:
+                    if config.log_model or feedback:
                         trial["actual_decrease"] = current.loss-candidate.loss
                         pred = trial["predicted_decrease"]
                         trial["gain_ratio"] = trial["actual_decrease"]/pred if pred > 0 else None
@@ -861,12 +925,29 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
                 break
             current, step, used_damping, trial = accepted
             accepted_steps = iteration
-            damping = max(used_damping * config.damping_decrease, np.finfo(float).tiny)
+            if config.damping_rule == 'agreement':
+                damping, trial['damping_feedback'] = accepted_damping(used_damping, floor,
+                    trial['accepted_fraction'], trial['gain_ratio'], config)
+            else:
+                damping = max(used_damping * config.damping_decrease, np.finfo(float).tiny)
             if on_accept is not None:
                 on_accept(iteration, current)
+            terminal = current.loss <= config.loss_tolerance or iteration >= stage.iterations
+            if (config.avoid_terminal_linearization and terminal and pause_after is None and
+                    resume is None and resolution_response is None):
+                # on_accept has already observed the current evaluation; no callback
+                # receives a tangent. Checkpoint/resolution-response paths retain it.
+                record(iteration, current, None, step, used_damping, damping, trial)
+                if current.loss <= config.loss_tolerance:
+                    converged, stop_reason = True, 'loss_tolerance'
+                break
             space, matrix, gradient = gradient_frame(current)
             record(iteration, current, gradient, step, used_damping, damping, trial)
             capture()
+            if (config.damping_rule == 'agreement' and not current.loss <= config.loss_tolerance and
+                    shortened_stagnation(history, config.progress_window, config.minimum_relative_progress)):
+                stop_reason = 'shortened_step_stagnation'
+                break
             if current.loss <= config.loss_tolerance:
                 converged, stop_reason = True, "loss_tolerance"
             elif np.linalg.norm(gradient, ord=np.inf) <= config.gradient_tolerance:
@@ -883,7 +964,8 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
     return StageResult(stage.label, final, outcome, stop_reason, converged, accepted_steps, initial_loss,
                        float("nan") if current is None else current.loss, history, trials, checks,
                        detail, ledger.snapshot(), perf_counter() - started, checkpoint,
-                       resolution_events, stage.nodes, stage.refined_nodes)
+                       resolution_events, stage.nodes, stage.refined_nodes,
+                       deepcopy(getattr(objective, 'failures', [])), geometry_proposals)
 
 
 class FixedSchedule:
