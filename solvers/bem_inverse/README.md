@@ -32,10 +32,15 @@ runner returns unscored numerical results and audits. Campaign code owns
 synthetic-data generation, truth loading, and recovery scoring.
 
 The [agreed continuation schedule](../../docs/iterations/CI-SPD/CONTINUATION_SCHEDULE.md)
-specifies a translation/scaling initialization, preservation of the existing
-frequency ladder and its M/K progression, four further all-frequency shape
-stages, then full configured release. It is a documented design for a future
-policy change; the current executable `CumulativePolicy` remains unchanged.
+has an opt-in implementation, `bem_inverse.continuation_policy.ShapeFrequencyPolicy`:
+exact translation/scaling initialization at damped 0.25 GHz, the preserved
+frequency ladder and M/K progression, four full-catalog stages with
+(M,K_geometry)=(11,24)/(15,32)/(19,40)/(25,52), then full release at (95,192).
+Use it with `geometry_update="certified_spectral"`; stage-local similarity
+affects the initial fit only, and independent audits retain the selected
+ordinary geometry update. The default `CumulativePolicy` remains unchanged.
+The bounded paired TG-002 validation is preregistered as
+[CS-001](../../docs/iterations/CI-SPD/CS-001_plan.md).
 
 To select modal physics explicitly:
 

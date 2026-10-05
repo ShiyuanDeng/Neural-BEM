@@ -13,7 +13,9 @@ and proposed follow-up plans live here; recorded evidence remains under `results
 records translation/scaling initialization, the unchanged existing frequency
 ladder including its M/K progression, four additional all-frequency M/K
 stages, and full configured release. This is a documented design; the
-executable policy has not yet been changed. Its initial-stage evidence is
+default policy remains unchanged. The opt-in [CS-001 implementation](CS-001_preparation.md)
+is prepared and bounded checks pass; paired TG-002 fitting awaits specific
+ID approval. Its initial-stage evidence is
 in [GGB-004](GGB-004_results.md) and [GGB-005](GGB-005_results.md).
 
 **Question:** Why is the released GauGal cylinder reconstruction fast, and

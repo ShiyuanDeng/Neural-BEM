@@ -1,9 +1,15 @@
 # Agreed inverse continuation schedule
 
-2026-10-05. Status: **agreed design, documented for implementation**.
+2026-10-05. Status: **agreed design; opt-in CS-001 implementation prepared**.
 This records the user's four-phase schedule and correction:
 **"frequency ladder stays as it is now."** This documentation change does
 not change the executable policy or launch an experiment.
+
+Subsequent implementation: [CS-001 plan](CS-001_plan.md) and
+[preparation](CS-001_preparation.md) record the concrete opt-in policy,
+passed bounded tests and CPU/CUDA derivative qualification. Default
+`CumulativePolicy` remains unchanged. No CS-001 inverse fits have run;
+specific experiment-ID approval is pending.
 
 ## Schedule
 

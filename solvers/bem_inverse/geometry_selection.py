@@ -24,12 +24,15 @@ def make_update(name, length_unit_m, execution, *, default=None):
     if name == 'analytic_spectral':
         from .analytic_projection import AnalyticSpectralUpdate
         return AnalyticSpectralUpdate(length_unit_m)
+    if name == 'similarity':
+        from .similarity import SimilarityUpdate
+        return SimilarityUpdate(length_unit_m)
     raise ValueError(f'Unknown geometry update {name!r}; choose from {GEOMETRY_UPDATES}.')
 
 
 def operation_record(operation, settings):
     row = operation.record()
-    if 'geometry_update' in row and 'construction' in settings:
+    if operation.fit_geometry_update is None and 'geometry_update' in row and 'construction' in settings:
         row['geometry_update'] = settings['construction']
     return row
 
@@ -38,6 +41,7 @@ def describe_plan(plan, settings, *, override_operations=True):
     """Use the selected implementation's description in every fit operation."""
     plan = dict(plan, geometry=settings)
     plan['operations'] = [dict(op, geometry_update=settings['construction'])
-                          if override_operations and 'geometry_update' in op and 'construction' in settings else op
+                          if override_operations and 'geometry_update' in op and op.get('fit_geometry_update') is None
+                          and 'construction' in settings else op
                           for op in plan['operations']]
     return plan

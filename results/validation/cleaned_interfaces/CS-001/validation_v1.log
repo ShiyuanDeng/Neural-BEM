@@ -1,0 +1,127 @@
+........................................................................ [ 15%]
+........................................................................ [ 30%]
+...................................................................FF... [ 45%]
+........................................................................ [ 60%]
+........................................................................ [ 75%]
+........................................................................ [ 90%]
+...........................................                              [100%]
+=================================== FAILURES ===================================
+__________ test_arm_policy_records_update_and_only_changes_time_caps ___________
+
+    def test_arm_policy_records_update_and_only_changes_time_caps():
+        p = b.fitting_problem(next(r for r in b.descriptors() if r['id'] == 'modal__c4__development_c'), b.DEFAULT_OUTPUT)
+        backend = make_backend(execution_settings=Execution(device='cpu'))
+        base, arm = CumulativePolicy(), ArmPolicy(geometry_update=ARMS['A']['construction'])
+>       a, c = base.operations(p, backend), arm.operations(p, backend)
+
+experiments/cleaned_interface/test_n_update.py:177: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+solvers/bem_inverse/policy.py:177: in operations
+    return self._explicit_cleanup(operations)
+experiments/cleaned_interface/n_update_audit.py:74: in _explicit_cleanup
+    return tuple(ArmOperation(**{f.name: getattr(op, f.name) for f in fields(Operation)},
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+.0 = <tuple_iterator object at 0x737d56b6c2b0>
+
+>   return tuple(ArmOperation(**{f.name: getattr(op, f.name) for f in fields(Operation)},
+                              geometry_update=self.geometry_update)
+                 for op in super()._explicit_cleanup(operations))
+E   TypeError: cleaned_interface.n_update_audit.ArmOperation() got multiple values for keyword argument 'geometry_update'
+
+experiments/cleaned_interface/n_update_audit.py:74: TypeError
+________________ test_runner_end_to_end_under_arm_substitution _________________
+
+tmp_path = PosixPath('/tmp/pytest-of-drdeng/pytest-381/test_runner_end_to_end_under_a0')
+
+    def test_runner_end_to_end_under_arm_substitution(tmp_path):
+        from .runner import fit
+        from .problem import Problem
+        from .physics import NodalKress
+        from .policy import LocalizationRule
+    
+        class SmallBackend(NodalKress):
+            def resolution_profile(self, storage_band):
+                row = super().resolution_profile(storage_band)
+                row.update(production=64, refined=128, nodal_resolution=64)
+                return row
+    
+        class ShortPolicy(ArmPolicy):
+            def operations(self, p, physics):
+                ops = super().operations(p, physics)
+                fits = [o for o in ops if o.kind == 'fit']
+                warm = replace(fits[0], stage=replace(fits[0].stage, iterations=1))
+                next_fit = replace(fits[1], stage=replace(fits[1].stage, iterations=1))
+                return (ops[0], ops[1], warm, next_fit, ops[-2], ops[-1])
+    
+            def tail(self, p, physics, frontier):
+                return ()
+        backend = SmallBackend(Execution(device='cpu', frequency_threads=1))
+        template = b.fitting_problem(next(r for r in b.descriptors() if r['id'] == 'modal__c4__development_c'),
+                                     b.DEFAULT_OUTPUT)
+        truth = FourierCurve.circle()
+        real = tuple(replace(o, scattered=backend.evaluate(truth, o, .5, 128).prediction) for o in template.real)
+        damped = tuple(replace(o, scattered=backend.evaluate(truth, o, .5, 128).prediction) for o in template.damped)
+        p = Problem(FourierCurve.circle(1.02), real, damped, .5)
+        policy = ShortPolicy(storage_band=24, frontier_top=7, geometry_update=ARMS['A']['construction'],
+            localization=LocalizationRule(center_min_m=.5, center_max_m=.5, center_step_m=.004,
+                radius_min_m=.05, radius_max_m=.05, radius_step_m=.001, max_starts=1, refinement_iterations=1))
+        with arm_substitution('A'):
+>           result = fit(p, physics=backend, policy=policy, output=tmp_path)
+
+experiments/cleaned_interface/test_n_update.py:226: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+solvers/bem_inverse/runner.py:223: in fit
+    operations = list(policy.operations(problem, physics))
+experiments/cleaned_interface/test_n_update.py:207: in operations
+    ops = super().operations(p, physics)
+solvers/bem_inverse/policy.py:177: in operations
+    return self._explicit_cleanup(operations)
+experiments/cleaned_interface/n_update_audit.py:74: in _explicit_cleanup
+    return tuple(ArmOperation(**{f.name: getattr(op, f.name) for f in fields(Operation)},
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+.0 = <tuple_iterator object at 0x737d56b6ae20>
+
+>   return tuple(ArmOperation(**{f.name: getattr(op, f.name) for f in fields(Operation)},
+                              geometry_update=self.geometry_update)
+                 for op in super()._explicit_cleanup(operations))
+E   TypeError: cleaned_interface.n_update_audit.ArmOperation() got multiple values for keyword argument 'geometry_update'
+
+experiments/cleaned_interface/n_update_audit.py:74: TypeError
+=============================== warnings summary ===============================
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:64
+  /home/drdeng/miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:64: PyparsingDeprecationWarning: 'oneOf' deprecated - use 'one_of'
+    prop = Group((name + Suppress("=") + comma_separated(value)) | oneOf(_CONSTANTS))
+
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:85
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:85
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:85
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:85
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:85
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:85
+  /home/drdeng/miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:85: PyparsingDeprecationWarning: 'parseString' deprecated - use 'parse_string'
+    parse = parser.parseString(pattern)
+
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:89
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:89
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:89
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:89
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:89
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:89
+  /home/drdeng/miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:89: PyparsingDeprecationWarning: 'resetCache' deprecated - use 'reset_cache'
+    parser.resetCache()
+
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_mathtext.py:45
+  /home/drdeng/miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_mathtext.py:45: PyparsingDeprecationWarning: 'enablePackrat' deprecated - use 'enable_packrat'
+    ParserElement.enablePackrat()
+
+experiments/shape_continuation/test_atlas_video.py::test_removable_without_cap_is_the_sequential_projection
+  /home/drdeng/Neural_SDF_BEM_AD/experiments/shape_continuation/atlas_video.py:94: RuntimeWarning: invalid value encountered in multiply
+    cap = np.where(c > 0, c * amplitude, 0.0)          # a column with no new information removes nothing
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED experiments/cleaned_interface/test_n_update.py::test_arm_policy_records_update_and_only_changes_time_caps
+FAILED experiments/cleaned_interface/test_n_update.py::test_runner_end_to_end_under_arm_substitution
+2 failed, 473 passed, 15 warnings in 153.23s (0:02:33)

@@ -41,6 +41,7 @@ class Operation:
     optimizer: object = None
     cleanup_band: object = None
     details: object = None
+    fit_geometry_update: object = None
 
     def record(self):
         row = dict(operation=self.kind, label=self.label, purpose=self.purpose,
@@ -54,6 +55,9 @@ class Operation:
             row.update(stage=stage, optimizer=asdict(self.optimizer), cleanup_band=self.cleanup_band,
                        geometry_update='z + P_K[A(z+h*n)-A(z)], derivative of the complete trial',
                        cleanup='crop coefficients then pad; no arclength refit' if self.cleanup_band else 'none')
+            if self.fit_geometry_update is not None:
+                row['geometry_update'] = self.fit_geometry_update
+                row['fit_geometry_update'] = self.fit_geometry_update
         return row
 
 
