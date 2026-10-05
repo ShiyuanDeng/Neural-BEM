@@ -135,3 +135,22 @@ phase change. Differentiate both test and source factors, near remainders,
 and the complete source/receiver service. Compose with the maintained
 finite-update Cartesian velocities; changing only speed-weighted V is
 insufficient. Derivatives are authorized only after full field qualification.
+
+## Independent circle near reference in heat time
+
+For circle radius a the angular heat integral is exact in terms of modified
+Bessel coefficients:
+
+Vnear_n=(1/2) integral_0^tau exp(k^2 t) exp(-a^2/(2t)) I_n(a^2/(2t)) dt/t.
+
+Write scaled I as ive(n,x), x=a^2/(2t), and substitute t=tau*u^2. Then
+Vnear_n=integral_0^1 exp(k^2*tau*u^2) ive(n,x) du/u.
+Knear_n=(a/2) partial_a Vnear_n replaces ive by x partial_x ive in the same
+integral; Hnear_n=a^2*k^2*(Vnear_(n-1)+Vnear_(n+1))/2, and
+Tnear_n=-n^2 Vnear_n+Hnear_n. These controls use the already declared 256/512
+Gauss orders. They do not change the candidate or add a near-repair arm.
+For x>=1e6 and |n|<=129, the eight-term large-x scaled-I expansion and its
+analytic derivative avoid overflow and loss from subtracting neighboring
+scaled I values. Below that threshold SciPy scaled I and its recurrence
+supply the derivative. Independent angular/heat-time tests precede the batch.
+This reference isolates any roundoff in the angular P*log/smooth cancellation.

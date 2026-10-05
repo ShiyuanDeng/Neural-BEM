@@ -52,3 +52,11 @@ def test_radial_transform_zero_mode_normalization_and_grid_layout():
     cap=np.pi*grid.size/grid.period
     nyquist=np.any(np.isclose(abs(grid.q),cap,rtol=1e-13,atol=0),axis=1)
     assert np.all(diagonal[nyquist]==0)
+
+
+def test_circle_heat_time_reference_is_independent_of_angular_quadrature():
+    from bem_inverse.on003_circle_reference import heat_circle
+    n=np.arange(-10,11); a=.065; k=18.+4.5j; tau=1e-4
+    reference=heat_circle(a,k,tau,n,512)
+    np.testing.assert_allclose(heat_circle(a,k,tau,n,256),reference,rtol=1e-10,atol=1e-12)
+    np.testing.assert_allclose(circle_near(a,k,tau,n,2048),reference,rtol=1e-9,atol=1e-11)
