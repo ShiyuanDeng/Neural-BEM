@@ -32,8 +32,7 @@ adapter configurations converged. Its record was preserved unchanged in `7d50e3f
 
 **Proposed, awaiting approval (2026-10-05):** [GP-001](iteration_02/03_plan.md) replaces
 ON-002: adapter repair ladder, physics feasibility, then parity.
-[EW-001](iteration_03/03_plan.md) reruns the Ewald circle control at
-xi/k* = 0.5/0.4/0.35 and applies a cost gate. None has run.
+**EW-001 closed:** [smaller splits still fail; 46–48x contraction cost lower bound](iteration_03/05_results.md) corrects the Gaussian-tail pass prediction and closes the registered 2D line.
 
 Read [the detailed comparison and explanation](01_results.md). It documents
 the completed, approved GGB-001 pilot and the actual source paths used by its

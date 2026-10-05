@@ -4,11 +4,13 @@ Prepared 2026-10-05 by Claude, following ON-003 and the
 [outside review](../../cleaned_interfaces/iteration_31/02_claude_review.md)
 (finding R5). User request: "draft plans for all three tracks".
 
-**Status: APPROVED, IN PROGRESS.** User instruction: "go on EW-001"
+**Status: CLOSED — `CIRCLE_FAILS_AT_UNREGISTERED_SPLIT`.** User instruction: "go on EW-001"
 (2026-10-05). Approval covers Q1 and Q2 below and the closeout.
 Execution uses the existing `feature/shape-frequency-continuation` checkout,
 where this plan was registered; no branch or worktree is created.
 Start: 2026-10-05 09:31 UTC; two-hour deadline: 11:31 UTC.
+Completed within budget; [results and corrected prediction](05_results.md).
+The original predictions below are preserved as the pre-registration.
 It does not cover curved states, full fields, derivatives, inverse
 integration, a new branch or worktree, or any other experiment.
 
