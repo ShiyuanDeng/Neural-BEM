@@ -23,7 +23,9 @@ SCREEN = ("aphex_twin__c0.5", "aphex_twin__c4", "aphex_twin__c13.3", "hook__c13.
           "circle__c4", "c_shape__c13.3", "kite__c0.5", "star__c13.3")
 ARMS = {"B": {}, "G": dict(reach_fraction=.8), "G04": dict(reach_fraction=.4),
         "E": dict(required_accuracy=.003), "E001": dict(required_accuracy=.001),
-        "GE": dict(reach_fraction=.8, required_accuracy=.003)}
+        "GE": dict(reach_fraction=.8, required_accuracy=.003),
+        "EW": dict(required_accuracy=.003, working_anchors=5),
+        "EW9": dict(required_accuracy=.003, working_anchors=9)}
 EXECUTION = Execution(device="cuda", frequency_threads=4)
 COORD = Path("/tmp/neural-sdf-bem-ad-coordination")
 
@@ -138,7 +140,19 @@ def report():
             paired_speedups=dict(zip(common, speeds)),
             median_speedup=float(np.median(speeds)) if speeds else None,
             p10_speedup=float(np.percentile(speeds, 10)) if speeds else None)
-    value = dict(batches=batches, inventory=inventory, comparisons=comparisons)
+    parents = {}
+    for name, batch in batches.items():
+        if batch['arm'] not in ('EW', 'EW9') or 'screen_E' not in batches:
+            continue
+        parent = batches['screen_E']['rows']
+        rows = batch['rows']
+        common = [k for k in parent if parent[k]['recovered'] and rows.get(k, {}).get('recovered')]
+        ratios = [parent[k]['seconds']/rows[k]['seconds'] for k in common]
+        parents[name] = dict(parent='screen_E', common_successes=common,
+            regressions=[k for k in parent if parent[k]['recovered'] and not rows.get(k, {}).get('recovered')],
+            paired_speedups=dict(zip(common, ratios)),
+            median_speedup=float(np.median(ratios)) if ratios else None)
+    value = dict(batches=batches, inventory=inventory, comparisons=comparisons, parent_comparisons=parents)
     write(OUTPUT/"report.json", value)
     lines = ["# ON-001 live evidence", "", "All times include the unchanged endpoint audit. Unrun cases remain unrun.", "",
              "| Case | "+" | ".join(batches)+" |", "|---|"+"---|"*len(batches)]
@@ -173,7 +187,8 @@ def plots(batches):
                 continue
             z = curve_from(result["final_curve"]).values(2048)*S.LENGTH
             ax.plot(z.real*1000, z.imag*1000, lw=.8, label=name)
-        ax.set_title(case, fontsize=8)
+        executed = any(case in b["rows"] for b in batches.values())
+        ax.set_title(case+("" if executed else " — unrun"), fontsize=8)
         ax.set_aspect("equal")
         ax.legend(fontsize=5)
     fig.tight_layout()

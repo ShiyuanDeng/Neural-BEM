@@ -508,6 +508,8 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
             if ledger.snapshot()[key] != resume.work[key]:
                 raise ValueError('Resume ledger mismatch: '+key)
     objective = (objective_factory or Objective)(stage, contrast, config, ledger, physics=physics)
+    if hasattr(objective, "model_residual") and (resume is not None or pause_after is not None):
+        raise ValueError("Working-frequency checkpointing requires separately qualified W2 state")
     m = objective.count
     history, trials, checks = [], [], []
     accepted_steps, converged, stop_reason, outcome, detail = 0, False, "maximum_iterations", NORMAL_RETURN, None
@@ -627,8 +629,10 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
         space = update.prepare(evaluation.curve, stage.update_modes, stage.curve_modes)
         ledger.reserve(4 * m)  # Jacobian plus one production/refined step opportunity
         matrix = objective.jacobian(evaluation, update, space)
+        model_residual = (objective.model_residual(evaluation) if hasattr(objective, 'model_residual')
+                          else evaluation.residual)
         gradient = (objective.gradient(evaluation, update, space, matrix)
-                    if hasattr(objective, 'gradient') else matrix.T @ evaluation.residual)
+                    if hasattr(objective, 'gradient') else matrix.T @ model_residual)
         if gradient.shape != (matrix.shape[1],) or not np.isfinite(gradient).all():
             raise FloatingPointError('Invalid objective gradient')
         return space, matrix, gradient
@@ -641,6 +645,10 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
                    coefficients=dict(real=evaluation.curve.coefficients.real.tolist(),
                                      imag=evaluation.curve.coefficients.imag.tolist()),
                    work=ledger.snapshot())
+        if hasattr(objective, "indices"):
+            row.update(active_frequencies=objective.indices,
+                       maximum_full_residual=float(objective.relative_residuals(evaluation).max()),
+                       working_events=deepcopy(objective.events))
         if trial is not None:
             row.update({k: trial[k] for k in ("maximum_normal_m", "rms_normal_m", "projection_relative",
                                                "speed_ratio") if k in trial})
@@ -756,9 +764,20 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
                     if not admissible(candidate_curve):
                         trial.update(status="refused", reason="outside_domain")
                         continue
-                    candidate = objective.production(candidate_curve, "candidate")
+                    if hasattr(objective, 'candidate'):
+                        from bem_inverse.working_frequency import WorkingSetChanged
+                        try:
+                            candidate = objective.candidate(current, candidate_curve)
+                        except WorkingSetChanged:
+                            trial.update(status='working_model_rebuild', **objective.last_trial)
+                            space, matrix, gradient = gradient_frame(current)
+                            restart = True
+                            break
+                        trial.update(objective.last_trial)
+                    else:
+                        candidate = objective.production(candidate_curve, "candidate")
                     if candidate is None:
-                        trial.update(status="refused", reason="physics_failed")
+                        trial.update(status="refused", reason=trial.get("working_status", "physics_failed"))
                         continue
                     trial.update(loss=candidate.loss)
                     if candidate.loss >= current.loss:
@@ -779,6 +798,15 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
                         inaccurate = any(c.get('numerical_obstruction', False) for c in checks[before_checks:])
                         accuracy_limited |= inaccurate
                         trial["status"] = "numerical_rejection" if inaccurate else "acceptance_margin"
+                        if hasattr(objective, 'reject'):
+                            from bem_inverse.working_frequency import WorkingSetChanged
+                            try:
+                                objective.reject(current, candidate)
+                            except WorkingSetChanged:
+                                trial.update(status='working_model_rebuild', **objective.last_trial)
+                                space, matrix, gradient = gradient_frame(current)
+                                restart = True
+                                break
                         continue
                     candidate = qualified
                     if resolution_response is not None:

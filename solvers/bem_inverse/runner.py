@@ -305,7 +305,11 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
                     event(op, 'resolved stage entered', work=ledger.snapshot(), resolution_selection=selection)
                     def checkpoint(iteration, evaluation):
                         nonlocal early_endpoint, early_retry_residual, early_retry_resolution, fit_started
-                        accepted.append(dict(stage=op.label, iteration=iteration, M=op.stage.update_modes,
+                        observed = np.column_stack([o.scattered.reshape(-1) for o in op.stage.observations])
+                        maximum_stage_residual = float(max(np.linalg.norm(evaluation.prediction-observed, axis=0)
+                                                          /np.linalg.norm(observed, axis=0)))
+                        accepted.append(dict(maximum_stage_residual=maximum_stage_residual,
+                            active_frequency_count=len(op.stage.observations), stage=op.label, iteration=iteration, M=op.stage.update_modes,
                             loss=evaluation.loss, units=ledger.units, curve=record_curve(evaluation.curve)))
                         save('accepted.json', dict(states=accepted))
                         threshold = getattr(policy, 'required_accuracy', None)
@@ -339,6 +343,13 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
                             early_endpoint = (evaluation.curve.coefficients.tobytes(), checked)
                             raise RequiredAccuracyReached('full real catalog meets required accuracy; audit passed')
                     objective_options = {}
+                    anchors = getattr(policy, 'working_anchors', 0)
+                    full_real = (len(op.stage.observations) == len(problem.real) and
+                                 all(a is b for a, b in zip(op.stage.observations, problem.real)))
+                    if anchors and full_real and len(problem.real) == 19:
+                        from functools import partial
+                        from .working_frequency import WorkingObjective
+                        objective_options['objective_factory'] = partial(WorkingObjective, anchor_count=anchors)
                     if getattr(op.stage, 'relaxed_tau', None) is not None:
                         from .full_matrix import RelaxedObjective
                         objective_options['objective_factory'] = RelaxedObjective

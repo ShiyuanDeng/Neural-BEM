@@ -67,6 +67,7 @@ class CumulativePolicy:
     # Optional ON-001 rules. Defaults preserve the established recipe.
     audit_aggregate_seconds: object = None
     required_accuracy: object = None
+    working_anchors: int = 0
     reach_fraction: float = 0.0
     log_model: bool = False
     gamma: float = .25

@@ -71,3 +71,78 @@ def test_early_exit_requires_full_catalog_and_audit_and_charges_failure(monkeypa
         assert calls[1] == 19.
         assert len(row["early_audits"]) == 1
     assert row["audit_seconds"] == len(calls)
+
+
+def working_fixture():
+    from bem_inverse.continuation import lm_backend as lm
+    from bem_inverse.continuation.forward import ordered_calls
+    from bem_inverse.physics import Prediction
+    from bem_inverse.working_frequency import WorkingObjective
+    from test_resolution_resume import ScalarUpdate
+    class Physics:
+        def __init__(self):
+            self.calls, self.derivatives = [], []
+        def ordered_calls(self, f, items):
+            return ordered_calls(f, items, threads=1)
+        def evaluate(self, curve, obs, contrast, nodes):
+            r = curve.coefficients[-1].real
+            slope = -10. if obs.index == 3 else 1.
+            self.calls.append((r, obs.index, nodes))
+            return Prediction(np.array([2.+slope*(r-2)], complex), {}, slope)
+        def derivative(self, evaluation, update, space):
+            self.derivatives.append(evaluation._handle)
+            return np.array([[evaluation._handle]], complex)
+    observations = tuple(SimpleNamespace(scattered=np.ones(1, complex), index=i, wavenumber=1.) for i in range(19))
+    stage = lm.FitStage("working", observations, (1/19,)*19, (1e-8,)*19, 0, 1, 8, 16, 1)
+    ledger = lm.Ledger(cap=10000, endpoint_reserve=0)
+    ledger.begin_stage("working", None)
+    config = lm.BackendConfig(step_bounds_m=(.8,)*3, max_damping_trials=1, log_model=True)
+    physics = Physics()
+    return lm, WorkingObjective, stage, ledger, config, physics, ScalarUpdate()
+
+
+def test_working_subset_improvement_with_full_increase_rejects_and_reuses_evaluations():
+    from bem_inverse.working_frequency import WorkingSetChanged
+    lm, factory, stage, ledger, config, physics, update = working_fixture()
+    objective = factory(stage, .5, config, ledger, physics=physics)
+    base = objective.production(FourierCurve.circle(2.), "initial")
+    matrix = objective.jacobian(base, update, update.prepare(base.curve))
+    assert objective.indices == (0, 1, 2, 4, 9, 14, 18)
+    assert matrix.shape == (14, 1)
+    np.testing.assert_allclose(.5*np.linalg.norm(objective.model_residual(base))**2, .5)
+    previous = len(physics.calls)
+    with pytest.raises(WorkingSetChanged):
+        objective.candidate(base, FourierCurve.circle(1.2))
+    assert len(physics.calls)-previous == 19  # seven reused, twelve added, none duplicated
+    assert objective.last_trial["working_candidate_loss"] < .5
+    assert objective.last_trial["full_candidate_loss"] > .5
+    assert 3 in objective.indices and len(objective.indices) == 8
+    assert ledger.units == len(physics.calls)+len(physics.derivatives)
+
+
+def test_working_expansion_rebuilds_model_and_accepts_only_full_decrease():
+    lm, factory, stage, ledger, config, physics, update = working_fixture()
+    result = lm.fit_stage(FourierCurve.circle(2), stage, .5, update, config, ledger,
+                          physics=physics, objective_factory=factory)
+    assert result.trials[0]["status"] == "working_model_rebuild"
+    assert result.trials[-1]["status"] == "accepted"
+    assert result.final_loss < result.initial_loss
+    assert result.acceptance_checks[-1]["accepted"]
+    assert all(c["refined_candidate_loss"] < c["refined_base_loss"] for c in result.acceptance_checks if c["accepted"])
+    assert len(physics.derivatives) > 7  # rebuild after rejected full-data proposal
+    assert ledger.units == len(physics.calls)+len(physics.derivatives)
+
+
+def test_working_final_polishing_and_renormalized_full_weights():
+    lm, factory, stage, ledger, config, physics, update = working_fixture()
+    weights = tuple(np.arange(1, 20)/190.)
+    stage = replace(stage, weights=weights)
+    objective = factory(stage, .5, config, ledger, physics=physics)
+    base = objective.production(FourierCurve.circle(2.), "initial")
+    objective.jacobian(base, update, update.prepare(base.curve))
+    subset = objective.model_residual(base)
+    assert .5*float(subset@subset) == pytest.approx(.5)
+    assert sum(objective._subset(objective.indices).stage.weights) == pytest.approx(1.)
+    accurate = replace(base, prediction=objective.observed*1.005)
+    objective.jacobian(accurate, update, update.prepare(base.curve))
+    assert objective.indices == tuple(range(19))
