@@ -60,7 +60,9 @@ def derivative_check(frequency, target):
     C, _ = A.external()
     pts = frequency.projected.centers
     direction = torch.cos(13*pts[:,0])*torch.sin(17*pts[:,1])*((b>.05)&(b<.95))
-    direction /= torch.clamp(abs(direction).max(),min=1e-12)
+    if float(abs(direction).max().cpu()) <= 1e-12:
+        raise ValueError("No nonzero interface-supported derivative direction")
+    direction /= abs(direction).max()
     loss, grad, residuals = frequency.objective_gradient(target)
     exact = float(torch.sum(grad*direction).cpu())
     differences = []
@@ -83,7 +85,8 @@ def qualify(args):
     folder.mkdir(exist_ok=False)
     started = time.perf_counter()
     B.verify(require_inputs=True)
-    sources = [Path(A.__file__), Path(__file__)]
+    sources = [Path(A.__file__), Path(__file__), Path(B.__file__),
+               ROOT/"experiments/benchmark/scenes.py", ROOT/"experiments/benchmark/test_on002.py"]
     # Record all actually-importable numerical sources; shared source lock is
     # held by launcher for the entire process, not just hash creation.
     sources += list((ROOT/"solvers").rglob("*.py"))
@@ -93,6 +96,8 @@ def qualify(args):
         double=args.double,device=args.device,versions=A.versions(),source_hashes=hashes,
         contract="TG-002 adapted known-material GauGal; paired diagonal; circle initial state",
         field_target=1e-3,true_residual_target=1e-6,solver_iteration_cap=200,
+        equation_normalization="A and RHS divided by physical testing cell area; kernel/readout unchanged",
+        solver_rhs_normalization="unit 2-norm separately for every forward/adjoint channel; physical solution restored",
         source_lock="launcher holds shared lock throughout process",
         compute_lock="launcher holds exclusive lock throughout process"))
     records=[]
@@ -112,6 +117,7 @@ def qualify(args):
                     frequency=A.build(problem,o,pixels=args.pixels,centers=args.centers,
                                       device=args.device,double=args.double)
                     row["build_seconds"]=frequency.build_seconds
+                    row["equation_scale"]=1/frequency.model.cell_area
                     A.sync(args.device); solve=time.perf_counter()
                     pred, u, residual=frequency.predict()
                     A.sync(args.device)
@@ -151,7 +157,11 @@ def qualify(args):
         raise RuntimeError("Numerical sources changed during batch: "+str(changes))
     write(folder/"summary.json",dict(records=records,complete=True,
         elapsed_seconds=time.perf_counter()-started,source_hashes_unchanged=True,
-        fields_qualified=all(r.get("field_passed",False) for r in records)))
+        fields_qualified=all(r.get("field_passed",False) for r in records),
+        adjoints_qualified=all(r.get("adjoint",{}).get("system_relative",float("inf"))<=1e-5
+            and r.get("adjoint",{}).get("sensor_relative",float("inf"))<=1e-5
+            and r.get("adjoint",{}).get("off_pair_max",float("inf"))==0 for r in records),
+        derivatives_qualified=bool(args.derivative and all(r.get("derivative",{}).get("passed",False) for r in records))))
 
 
 def main():

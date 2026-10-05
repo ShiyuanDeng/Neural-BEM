@@ -1,7 +1,8 @@
 # ON 002 Matched GauGal comparison and conditional hybrid
 
 Prepared 2026-10-05. Approval status: **APPROVED by direct user launch**.
-Execution status: **INTERRUPTED, adapter-unqualified** (2026-10-05 01:48:40 UTC). Implementation owner and execution reviewer:
+Execution status: **RESUMED — adapter repair/qualification**. The first launch
+was interrupted, adapter-unqualified, at 2026-10-05 01:48:40 UTC. Implementation owner and execution reviewer:
 ON-002 agent. This is an alternative eight-hour campaign to ON-001.
 
 ## Launch receipt
@@ -244,3 +245,43 @@ GauGal, and a decision: parity established, hybrid retained, GauGal retained
 as faster baseline, BEM retained as stronger baseline, or adapter/experiment
 incomplete. A winner ends this contract. Additional physics, noise,
 unknown-material fitting and a new experiment ID remain future work.
+
+## Authorized resumption, 2026-10-05
+
+User instruction: `go on ON-002`. Resume: **2026-10-05T10:03:41.689077+00:00**.
+This resumes ON-002 and its strict pre-fit physics gate, not proposed GP-001.
+The original active 554 seconds remain charged; pause time is excluded from
+this resumed allocation. Adapter deadline: **2026-10-05T11:54:27.689077+00:00**;
+global deadline: **2026-10-05T17:54:27.689077+00:00**. All original stage and case caps
+remain. No new branch or worktree is created. The recorded launch branch is
+retained because RG-001 is actively running in this shared checkout; no
+checkout operation may alter its sources. B remains pinned at its original
+launch; completed ON-001 or unfinished RG-001 cannot change this comparison.
+
+Pre-registered repair: divide the Galerkin operator, RHS, Jacobi diagonals and
+mass lump by the common physical pixel testing area. The released BiCGSTAB's
+absolute squared-denominator floor otherwise breaks metre-scale equations.
+This leaves the exact physical solution, volume kernel and sensor integral
+unchanged. Verify the FFT assembly against an independent dense projection,
+its solve against direct factorization, and the complete occupancy gradient
+for both signs of contrast. Treat this as the single adapter repair, including
+at most one declared complex128/float64 fallback if single precision fails
+true-residual or derivative checks; there are no further adapter redesigns.
+Test the registered 128/112 and 256/224 pairs. The original conditional
+512/448 escalation remains limited to once and the adapter deadline.
+
+Every tested frequency must satisfy the 1e-3 sharp-disk field gate and 1e-6
+true solve residual, with adjoints and a nonzero occupancy FD direction.
+Fitting, hybrid and timing comparison stay blocked unless all gates pass.
+The original failed batch is immutable. Save all resumed batch receipts and
+native arrays under fresh names, then validate, commit and verify the push.
+
+Repair detail, before the resumed grid screen: the frozen source strength is
+1e-6. Normalize each forward/adjoint RHS to unit 2-norm inside the pinned
+BiCGSTAB and undo that scale on its returned field, in addition to the common
+testing-area normalization. The first independent 12/10 control matched the
+dense operator to 1e-12 but stalled at 2.94e-2 without RHS normalization and
+6.67e-5 with it at the unchanged 200-iteration cap. This is one scale-repair
+implementation, not a new physical model or solver. The independent dense
+regression uses an 8/4 system so its solver check fits the registered cap;
+the prescribed 128/112 and 256/224 screens determine actual feasibility.

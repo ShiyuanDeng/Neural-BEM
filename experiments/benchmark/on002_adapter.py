@@ -101,8 +101,7 @@ class AdaptedFrequency:
         C, _ = external()
         b = self.coefficients if occupancy is None else occupancy
         chi = (self.contrast-1)*b
-        u = C.collocation_forward_prop(self.projected, chi,
-                torch.zeros_like(self.projected.uinc), self.options)
+        u = normalized_bicgstab(self, chi, self.projected.uinc, adjoint=False)
         residual = true_relative(C.collocation_a_forward(self.projected, chi, u),
                                  self.projected.uinc)
         pred = C.collocation_sensor_forward(self.model, self.projected, chi, u).diagonal()
@@ -121,8 +120,7 @@ class AdaptedFrequency:
         z = z/norm2
         p = C.collocation_sensor_adjoint(self.model, self.projected, z)
         rhs = C._contrast_source_u_adjoint(self.projected, chi, p)
-        v = C.collocation_backward_prop(self.projected, chi, rhs,
-                torch.zeros_like(rhs), self.options)
+        v = normalized_bicgstab(self, chi, rhs, adjoint=True)
         adjoint_residual = true_relative(C.collocation_a_adjoint(self.projected, chi, v), rhs)
         if not np.isfinite(adjoint_residual) or adjoint_residual > self.options.pcg_tol:
             raise RuntimeError(f"Adjoint true residual refuses update: {adjoint_residual:g}")
@@ -141,6 +139,48 @@ def true_relative(lhs, rhs):
     value = torch.linalg.vector_norm(lhs-rhs, dim=1)/torch.clamp(
         torch.linalg.vector_norm(rhs, dim=1), min=1e-30)
     return float(value.max().detach().cpu())
+
+
+def normalized_bicgstab(frequency, chi, rhs, *, adjoint):
+    """Reuse pinned batched Jacobi BiCGSTAB with unit-norm RHS per channel.
+
+    TG-002 uses source strength 1e-6. Normalizing A alone therefore still
+    activates the released absolute scalar-division floor. Solve for u/norm
+    with rhs/norm, then restore the physical field. Adjoint RHS gets the same
+    treatment; no operator, tolerance, iteration cap or precision changes.
+    """
+    C, _ = external()
+    p, opts = frequency.projected, frequency.options
+    norms = torch.linalg.vector_norm(rhs, dim=1, keepdim=True)
+    norms = torch.where(norms > 0, norms, torch.ones_like(norms))
+    operation = C.collocation_a_adjoint if adjoint else C.collocation_a_forward
+    def solve():
+        value, info = C._bicgstab(lambda u: operation(p, chi, u), rhs/norms,
+            torch.zeros_like(rhs), tol=opts.pcg_tol, max_iter=opts.pcg_max_iter,
+            preconditioner=C._collocation_preconditioner(p, chi, opts, adjoint=adjoint),
+            mode=opts.collocation_bicgstab_mode, sync_every=opts.collocation_bicgstab_sync_every,
+            fixed_iter=opts.collocation_bicgstab_fixed_iter, return_info=True)
+        C._record_linear_solve(p, "adjoint" if adjoint else "forward", info)
+        return value*norms
+    return C._timed_phase(p, "adjoint_solve" if adjoint else "forward_solve", solve)
+
+
+def normalize_testing_equations(projected):
+    """Divide the Galerkin equations by their common physical testing area.
+
+    The released BiCGSTAB has an absolute 1e-30 floor on squared scalar
+    denominators. Metre-scale testing integrals hit this floor even in the
+    Born regime. Removing the common area from A and its RHS preserves the
+    exact field and derivative; the physical kernel and receiver area stay
+    unchanged. Apply once to the freshly built domain-kernel model.
+    """
+    area = projected.domain_cell_area
+    if not np.isfinite(area) or area <= 0:
+        raise ValueError("Positive finite Galerkin testing area required")
+    projected.domain_cell_area = 1.0
+    for name in ("uinc", "mass_diag", "mass_lump", "k_diag"):
+        setattr(projected, name, getattr(projected, name)/area)
+    return 1.0/area
 
 
 def build(problem, observation, *, pixels=128, centers=112, device="cuda", double=False):
@@ -185,6 +225,7 @@ def build(problem, observation, *, pixels=128, centers=112, device="cuda", doubl
         collocation_preconditioner="jacobi", pcg_tol=1e-6, pcg_max_iter=200,
         collocation_chunk_size=64, collocation_contrast_mode="lumped-galerkin")
     projected = S.build_synthetic_galerkin_model(model, options)
+    normalize_testing_equations(projected)
     # Initial circle in coefficients: exact cell fraction at the centre lattice.
     # GauGal's normalized separable rendering provides the fixed smoothing.
     center = problem.origin_m+problem.length_unit_m*complex(problem.initial.coefficients[problem.initial.band])
