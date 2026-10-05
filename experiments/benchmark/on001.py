@@ -110,8 +110,11 @@ def run(arm, cases, batch):
 def report():
     batches = {}
     for manifest in sorted(OUTPUT.glob("*/manifest.json")):
+        metadata = read(manifest)
+        if metadata.get("arm") not in ARMS:
+            continue  # qualification manifests are diagnostics, not fresh fits
         name = manifest.parent.name
-        batches[name] = dict(arm=read(manifest)["arm"], rows={})
+        batches[name] = dict(arm=metadata["arm"], rows={})
         for p in sorted((manifest.parent/"runs").glob("*/result.json")):
             r = read(p)
             trials = [t for s in r.get("stages", []) for t in read(p.parent/(s["stage"]+".json")).get("trials", [])]
