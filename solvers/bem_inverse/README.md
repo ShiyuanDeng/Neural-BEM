@@ -82,7 +82,7 @@ and one-time ambient scaling, but failed ON-001 curved-state finite-trial
 qualification under the unchanged endpoint gate. It is not a qualified
 replacement for `certified_spectral`. No recipe default was changed.
 
-## CI-SPD feedback and exact reuse (pending inverse qualification)
+## CI-SPD feedback and exact reuse (DP-001)
 
 `CumulativePolicy(damping_rule="agreement", avoid_terminal_linearization=True)`
 selects gain/accepted-fraction damping feedback with a scaled curvature floor,
@@ -91,16 +91,21 @@ The schedule default remains unchanged. `Execution(audit_frequency_batch=2)`
 streams two frequencies concurrently within the configured frequency threads;
 the default is one. The ordinary acceptance, validity and endpoint checks
 remain active. Terminal tangent omission preserves callback and checkpoint
-requirements. The fixed qualification comparison is
-[DP-001](../../docs/iterations/CI-SPD/DP-001_plan.md), pending ID approval.
+requirements. The approved [DP-001 comparison](../../docs/iterations/CI-SPD/DP-001_results.md)
+retained 26/30 TG-002 recoveries, with no new recovery or regression. All 26
+recovered outputs were faster: median paired speedup 1.134x and 8.4% less
+summed output time including failures. The four failed cases still stop at
+the numerical-resolution gate, and their summed time increased. This supports
+the combined recipe under the tested contract, not case-8 recovery or an
+isolated speed claim for each change. These switches remain opt-in.
 
 Immutable base geometry and resolution-only assembly arrays are cached, and
 wave expansions append missing cells. Receipts retain candidate exceptions,
 actual geometry proposals, failed phase timings and exclusive audit phases.
 CUDA assembly reports lock/prior-work wait, event device span, synchronized
 host span and host transfer; these are nested measurements, not additional
-runner wall time. Bounded tests establish numerical equivalence, not an
-inverse recovery or speed claim.
+runner wall time. Bounded tests establish numerical equivalence; inverse
+recovery and runtime evidence comes from the paired campaign.
 
 ## RG-001 opt-in resolution gate
 
