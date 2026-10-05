@@ -21,7 +21,7 @@ child run_case entry to fit-return after fit_result output; excludes truth scori
 | asymmetric__c13.3 | True | 35.411 | True | 26.423 | 1.340 |
 | c_shape__c0.5 | True | 19.132 | True | 13.468 | 1.421 |
 | c_shape__c4 | True | 28.004 | True | 19.380 | 1.445 |
-| c_shape__c13.3 | unrun | unrun | unrun | unrun | — |
+| c_shape__c13.3 | True | 28.896 | True | 24.455 | 1.182 |
 | hook__c0.5 | unrun | unrun | unrun | unrun | — |
 | hook__c4 | unrun | unrun | unrun | unrun | — |
 | hook__c13.3 | unrun | unrun | unrun | unrun | — |
