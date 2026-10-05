@@ -31,7 +31,7 @@ def pinned_reference():
     # Frozen archive produced locally by git archive, with only solvers paths.
     with tarfile.open(archive) as t:
         for member in t.getmembers():
-            if not member.name.startswith('solvers/') or '..' in Path(member.name).parts:
+            if (member.name != 'solvers' and not member.name.startswith('solvers/')) or '..' in Path(member.name).parts:
                 raise RuntimeError('Unexpected archive member')
         t.extractall(pin)
     sys.path.insert(0,str(pin/'solvers'))
