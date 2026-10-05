@@ -115,6 +115,14 @@ def main():
     lines+=['','The default gate remains absolute. The evidence supports pre-registering RP-001 (a bounded modal resolution response): the relaxed gate accepts steps but leaves the four failure endpoints unresolved. PX-001 may still be needed for the contrast-13.3 basin. No successor experiment is authorized or opened.','',
         '[Plan](03_plan.md), [execution record](04_rg001_execution.md), [machine-readable closeout](../../../../results/validation/cleaned_interfaces/RG-001/closeout.json), [case table](../../../../results/validation/cleaned_interfaces/RG-001/table.md).','',
         '![RG-001 endpoints](../../../../results/validation/cleaned_interfaces/RG-001/boundaries.png)','']
+    final_validation=OUT/'qualification/final_bundle_validation.json'
+    if final_validation.exists():
+        validation=read(final_validation)
+        lines += ['## Closeout validation','',
+            'All 80 fit receipts validate, including settings, recovery gates, source identity and work caps. All 26 fresh C successes reproduce their saved ON-001 E accepted paths and final coefficients bitwise. All authorized stages are complete; no new-recovery-only check was required.','',
+            'All four extended runs remain unrecovered and end at a numerical obstruction. Aphex 4 changes from a wall stop to exhausted accuracy-limited trials, with exactly the same endpoint. Aphex 0.5 and hook 13.3 also retain identical endpoints; aphex 13.3 improves slightly to 3.776 mm before a production failure. Additional time does not establish a qualified endpoint.','',
+            f"The retained threaded dispatcher finishes extra frequency calls at {len(validation['accounting_differences'])} failed runs, so backend attempt counts exceed their charged totals by a few calls. Both charged work and actual backend attempts remain below every fit cap; this receipt limitation is recorded in the final validation bundle.",'',
+            '[Receipt validation](../../../../results/validation/cleaned_interfaces/RG-001/qualification/final_bundle_validation.json).','']
     (ROOT/'docs/iterations/cleaned_interfaces/iteration_31/05_results.md').write_text('\n'.join(lines))
     plot()
     print(json.dumps({k:result[k] for k in ('classification','recovery','additions','P1_failures','predictions')},indent=2))

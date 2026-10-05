@@ -82,6 +82,22 @@ and one-time ambient scaling, but failed ON-001 curved-state finite-trial
 qualification under the unchanged endpoint gate. It is not a qualified
 replacement for `certified_spectral`. No recipe default was changed.
 
+## RG-001 opt-in resolution gate
+
+`CumulativePolicy(resolution_gate="decision")` retains the existing
+production/refined gain acceptance decision when a candidate exceeds the
+stage's absolute field tolerance. Receipts record the mode, per-frequency
+overshoot ratios, accepted-overshoot count and largest accepted overshoot.
+Failed or non-finite evaluations stop both modes; endpoint audit tolerances
+remain unchanged. The default gate is `"absolute"`.
+
+RG-001 retained all 26 TG-002 recoveries and their accepted paths bitwise,
+with no new recovery. Aphex 4 improved from 1.685 to 0.664 mm RMS, but its
+Hausdorff and field gates failed. Larger-budget diagnostics did not produce
+qualified endpoints. Decision mode remains experimental; the study supports
+a follow-up on modal resolution response. See the
+[RG-001 results](../../docs/iterations/cleaned_interfaces/iteration_31/05_results.md).
+
 ## Experimental fair nodal profile (PC-002)
 
 `Execution(nodal_geometry_reuse="per_curve", nodal_resolution_profile="band_matched",
