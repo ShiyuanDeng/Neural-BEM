@@ -27,7 +27,7 @@ child run_case entry to fit-return after fit_result output; excludes truth scori
 | hook__c13.3 | False | 25.943 | False | 25.854 | — |
 | cross__c0.5 | True | 19.621 | True | 10.301 | 1.905 |
 | cross__c4 | True | 20.702 | True | 13.617 | 1.520 |
-| cross__c13.3 | unrun | unrun | unrun | unrun | — |
+| cross__c13.3 | True | 36.934 | True | 30.505 | 1.211 |
 | cog__c0.5 | unrun | unrun | unrun | unrun | — |
 | cog__c4 | unrun | unrun | unrun | unrun | — |
 | cog__c13.3 | unrun | unrun | unrun | unrun | — |
