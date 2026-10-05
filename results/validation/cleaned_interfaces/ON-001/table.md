@@ -22,7 +22,7 @@ All times include the unchanged endpoint audit. Unrun cases remain unrun.
 | c_shape__c0.5 | True / 18.44s / COMPLETED_SCHEDULE | True / 12.85s / REQUIRED_ACCURACY_REACHED | unrun | unrun | unrun | unrun |
 | c_shape__c4 | True / 27.31s / COMPLETED_SCHEDULE | True / 18.76s / REQUIRED_ACCURACY_REACHED | unrun | unrun | unrun | unrun |
 | c_shape__c13.3 | True / 28.19s / COMPLETED_SCHEDULE | True / 23.83s / REQUIRED_ACCURACY_REACHED | True / 27.96s / COMPLETED_SCHEDULE | True / 23.65s / REQUIRED_ACCURACY_REACHED | True / 27.42s / REQUIRED_ACCURACY_REACHED | True / 30.39s / COMPLETED_SCHEDULE |
-| hook__c0.5 | unrun | unrun | unrun | unrun | unrun | unrun |
+| hook__c0.5 | True / 20.88s / COMPLETED_SCHEDULE | True / 12.93s / REQUIRED_ACCURACY_REACHED | unrun | unrun | unrun | unrun |
 | hook__c4 | unrun | unrun | unrun | unrun | unrun | unrun |
 | hook__c13.3 | unrun | unrun | False / 25.34s / NUMERICAL_FAILURE | False / 25.44s / NUMERICAL_FAILURE | False / 26.56s / NUMERICAL_FAILURE | False / 46.72s / NUMERICAL_FAILURE |
 | cross__c0.5 | unrun | unrun | unrun | unrun | unrun | unrun |
