@@ -20,6 +20,13 @@ F failed curved-state finite-trial qualification, with no fresh F fits.
 The retained E option is explicit; no default recipe changed.
 [All-30 comparison and gallery](../../../results/validation/cleaned_interfaces/ON-001/README.md).
 
+**Outside review of ON-001/002/003 (2026-10-05):** [iteration 31 review](iteration_31/02_claude_review.md).
+E is valid; it is a stopping rule with an accuracy trade. A fatal absolute field gate ends all four
+TG-002 failures, though every killing trial passed `acceptance()`; hook 13.3 is a damped-prefix
+basin failure. F and ON-003 were not decisive tests. ON-002 was interrupted with an unconverged
+adapter, and its files are untracked. Proposed next step (unapproved): a new-ID, decision-relative
+gate test. [Recomputed evidence](../../../results/validation/cleaned_interfaces/ON-review-20261005/README.md).
+
 **ON-003 closed:** [operator feasibility report](../CI-SPD/iteration_01/05_ON003_results.md),
 **ACCURACY_OR_RESOURCE_LIMITED** at the declared circle-control Fourier-grid
 ceiling. No general forward operator qualified; full curved/field/derivative
@@ -159,7 +166,7 @@ by scene identity. CI-001 does not establish all-36 retention (28/36).
 | [27](iteration_27/03_plan.md) | PC-001 (user: "go"): M1 and N1 complete, both 26/30 on the same cases (M1 median 31 s, N1 157 s); **N0 stopped by the user at 12/30** to add nodal geometry reuse across frequencies first ([results](../../../results/validation/cleaned_interfaces/PC-001/README.md)): N0 `nodal_baseline`, N1 `nodal_fixed` (certified spectral + N1024/2048 resolution response), M1 `modal_fixed` (node-free) on TG-002; named pipelines in `bem_inverse.pipelines`; `pc001 report` gives the side-by-side comparison |
 | [28](iteration_28/05_results.md) | PC-002 complete: fair nodal+spline on all 30 TG-002 cases, 26/30 recovered (same M1/N1 cases), N130/N386, median fit 48.18 s; stronger audits and matched-speedup limitations reported; controls deferred |
 | [29](iteration_29/03_plan.md) / [30](iteration_30/01_results.md) | GC-001 complete: 31 states/279 geometry moves, same decisions in all four arms; CUDA preparation gain, output-FFT aliasing attribution, and bounded whole-inverse runtime significance established; no inverse fitting |
-| [31](iteration_31/01_results.md) | ON-001 closed, useful partial result: all 30 fresh B/E pairs retain 26/30, median paired output speedup 1.546x, p10 1.225x; repeated timing controls completed. G/W negative, F unqualified; E opt-in retained, no new recovery |
+| [31](iteration_31/01_results.md) | ON-001 closed, useful partial result: all 30 fresh B/E pairs retain 26/30, median paired output speedup 1.546x, p10 1.225x; repeated timing controls completed. G/W negative, F unqualified; E opt-in retained, no new recovery; [outside review](iteration_31/02_claude_review.md) of ON-001/002/003 |
 
 Follow the [shared iteration workflow](../README.md). Iteration 02 records
 the implementation checks; iteration 03 records the inverse campaign.

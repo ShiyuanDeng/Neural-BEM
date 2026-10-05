@@ -25,6 +25,11 @@ median paired audited-output speedup 1.546x, p10 1.225x. E is retained as an
 opt-in control. G/W closed screen-negative and F failed finite-trial qualification.
 This is not a GauGal-parity claim; ON-002 remains independently owned.
 
+**Outside review (2026-10-05):** [ON-001/002/003 review](../cleaned_interfaces/iteration_31/02_claude_review.md).
+ON-003's circle errors track the Ewald truncation term exp(-tau q_max^2); only xi >= k* was
+registered, which could not pass at the 256 grid. ON-002 was interrupted at 01:48 UTC with 0/12
+adapter configurations converged; its plan and adapter remain untracked.
+
 Read [the detailed comparison and explanation](01_results.md). It documents
 the completed, approved GGB-001 pilot and the actual source paths used by its
 two arms. The [evidence index](../../../results/validation/cleaned_interfaces/CI-SPD/README.md)
