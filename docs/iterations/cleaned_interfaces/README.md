@@ -11,6 +11,38 @@ implementation first, with the 36-scene campaign to be run by the user.
 
 ## Current handoff
 
+**ON-001 closed (2026-10-05), useful partial result:** [iteration 31](iteration_31/01_results.md)
+confirms the frozen required-accuracy exit on all 30 fresh matched TG-002
+pairs: B/E **26/30**, the same historical recovery set, no regressions or
+additions. Median paired audited-output speedup **1.546x**, p10 **1.225x**;
+the 2x major-speed threshold was not reached. G/W closed screen-negative;
+F failed curved-state finite-trial qualification, with no fresh F fits.
+The retained E option is explicit; no default recipe changed.
+[All-30 comparison and gallery](../../../results/validation/cleaned_interfaces/ON-001/README.md).
+
+**ON-003 closed:** [operator feasibility report](../CI-SPD/iteration_01/05_ON003_results.md),
+**ACCURACY_OR_RESOURCE_LIMITED** at the declared circle-control Fourier-grid
+ceiling. No general forward operator qualified; full curved/field/derivative
+coverage is explicitly unrun. This is a bounded negative control result.
+
+**Two-agent launch:** use the [launch guide and ETAs](../OVERNIGHT_AGENT_TRACKS.md).
+Assign ON-001 to inverse progress and ON-003 to Ewald operator feasibility.
+The guide includes short launch commands, file ownership and shared-resource rules.
+
+**Overnight research brief, 2026-10-05:** the user requested ambitious options
+for a pipeline advance or GauGal speed/performance parity, including automatic
+success/failure branches. The [brief](iteration_30/02_proposals/01_overnight_research_brief.md)
+recommends [ON-001](iteration_30/03_plan.md): reach-informed clipping,
+required-accuracy stopping, working-frequency proposals and conditional
+Gaussian displacement or trust/fidelity control. The user's seven restructuring
+ideas are incorporated in the [integration review](iteration_30/02_proposals/02_gaugal_restructuring_integration.md).
+[ON-002](../CI-SPD/iteration_01/03_plan.md) is a separate matched TG-002
+GauGal/hybrid alternative; [ON-003](../CI-SPD/iteration_01/04_ON003_ewald_plan.md)
+is Ewald-style Müller forward feasibility. These documents were proposals at
+preparation; direct named launches subsequently authorized ON-001 and ON-003.
+Their current execution states are recorded above. ON-002 has a separate
+launch and handoff; its owned plan/report controls that track.
+
 **CI-SPD has its own [track](../CI-SPD/README.md) (2026-10-05):** the user requested a detailed
 account of why GauGal is fast, with physical and optimization design choices
 held fixed. [CI-SPD](../CI-SPD/01_results.md) records the completed GGB-001
@@ -127,6 +159,7 @@ by scene identity. CI-001 does not establish all-36 retention (28/36).
 | [27](iteration_27/03_plan.md) | PC-001 (user: "go"): M1 and N1 complete, both 26/30 on the same cases (M1 median 31 s, N1 157 s); **N0 stopped by the user at 12/30** to add nodal geometry reuse across frequencies first ([results](../../../results/validation/cleaned_interfaces/PC-001/README.md)): N0 `nodal_baseline`, N1 `nodal_fixed` (certified spectral + N1024/2048 resolution response), M1 `modal_fixed` (node-free) on TG-002; named pipelines in `bem_inverse.pipelines`; `pc001 report` gives the side-by-side comparison |
 | [28](iteration_28/05_results.md) | PC-002 complete: fair nodal+spline on all 30 TG-002 cases, 26/30 recovered (same M1/N1 cases), N130/N386, median fit 48.18 s; stronger audits and matched-speedup limitations reported; controls deferred |
 | [29](iteration_29/03_plan.md) / [30](iteration_30/01_results.md) | GC-001 complete: 31 states/279 geometry moves, same decisions in all four arms; CUDA preparation gain, output-FFT aliasing attribution, and bounded whole-inverse runtime significance established; no inverse fitting |
+| [31](iteration_31/01_results.md) | ON-001 closed, useful partial result: all 30 fresh B/E pairs retain 26/30, median paired output speedup 1.546x, p10 1.225x; repeated timing controls completed. G/W negative, F unqualified; E opt-in retained, no new recovery |
 
 Follow the [shared iteration workflow](../README.md). Iteration 02 records
 the implementation checks; iteration 03 records the inverse campaign.

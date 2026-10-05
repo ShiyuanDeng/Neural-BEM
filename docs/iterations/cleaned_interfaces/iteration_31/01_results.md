@@ -1,8 +1,128 @@
-# ON-001 — live execution record
+# ON-001 — results
 
-Status: **IN PROGRESS**, authorized by `Go ON-001 using docs/iterations/OVERNIGHT_AGENT_TRACKS.md`.
+Status: **CLOSED — USEFUL PARTIAL RESULT**, authorized by `Go ON-001 using docs/iterations/OVERNIGHT_AGENT_TRACKS.md`.
 Start 2026-10-05 01:37:21 UTC; eight-hour deadline 09:37:21 UTC.
 Plan: [iteration 30](../iteration_30/03_plan.md). No branches/worktrees created.
+
+
+## Confirmed result and closure
+
+**Terminal classification: useful partial result.** All 30 fresh B/E pairs
+completed: **26/30 recovered in each**, distributed 9/10, 9/10, 8/10 across
+contrasts 0.5, 4, 13.3. Both reproduce all 26 historical PC-001 M1 successes.
+There are **zero recovery regressions and zero new recoveries**. All common
+recoveries are faster: median paired audited-output speedup **1.545838x**,
+10th percentile **1.225445x**. The 2x major-speed threshold was
+not reached. Suite output time including all failures falls from
+803.352s to 550.986s
+(31.41% less).
+This is the frozen-recipe TG-002 confirmation, not a generalization study.
+
+Retain **E only**: `modal_muller` + `certified_spectral`, full real-catalog
+maximum residual <= .003 at an accepted state, passed independent current
+endpoint audit, centred start, `localization none`, original continuation
+schedule/coefficient caps/resolution. G/W/F are disabled. The API controls are
+opt-in; no default pipeline or solver was changed. No per-scene recipe choice
+uses truth. Truth scoring runs only after the inverse returns.
+
+| Quantity | B | E |
+|---|---:|---:|
+| All-30 audited output seconds | 803.352 | 550.986 |
+| All-30 fit seconds | 685.959 | 438.032 |
+| All-30 audit seconds | 95.961 | 93.737 |
+| Median common-success fit seconds | 18.435 | 9.976 |
+| Median common-success audited output seconds | 22.408 | 13.724 |
+| All-30 fit plus audit units | 63619 | 41531 |
+| Proposals | 2511 | 2145 |
+| Accepted | 1826 | 1572 |
+| Geometry refusals | 43 | 43 |
+
+Times start at campaign case entry and end after `fit_result.json` is written,
+including setup and all charged initial/early/final audits. Python imports and
+truth scoring are excluded; child-process and case times remain in receipts.
+Fit and audit times use the internal runner boundaries, so they need not sum
+exactly to the broader output time. Component physics seconds sum threaded
+calls; geometry timers overlap. They are diagnostic costs, not additive wall
+time fractions. Detailed geometry/certificate/projection, physics, proposal,
+refusal, fallback and work totals are in `final_comparison.json`.
+
+No fit/audit time cap or fit-work cap was exceeded. Maximum B/E fit times are
+62.563/39.382s; maximum audits
+3.953/3.610s; maximum fit units
+4856/3659, below 120s/30s/13,412.
+The four failures are the three Aphex contrasts and hook/13.3. Both arms stop
+because a candidate leaves the frozen numerical-resolution regime; early exit
+does not remove that obstruction. No newly recovered hard case exists, so the
+conditional finer nodal endpoint check is not triggered.
+
+### Repeated timing checks
+
+Two extra sequential matched repeats were completed on the three declared
+cases. All repeated numerical cases retain recovery. The first repeated circle
+pair overlapped read-only gallery generation; its timing is explicitly excluded
+and preserved. A circle-only uncontended replacement completed within the
+original confirmation allowance. Eligible timing pairs are:
+
+| Case | Eligible pairs including all-30 | B/E speedups | Median |
+|---|---|---|---|
+| circle__c4 | 3 | 1.240 / 1.242 / 1.238 | 1.240 |
+| kite__c0.5 | 3 | 3.857 / 3.894 / 3.829 | 3.857 |
+| star__c13.3 | 3 | 1.600 / 1.566 / 1.604 | 1.600 |
+
+Only these eligible samples support the repeated-timing claim. They use fresh
+interpreters, one case worker/four frequency threads/one BLAS thread and shared
+B/E settings. Compute/source locks make each pair contiguous; source hashes
+match at both ends. All 30 confirmation pairs share one source fingerprint.
+Input seals and frozen configuration were verified; each pair was read back,
+validated, committed and pushed after releasing numerical locks. Publication
+receipts and immutable source archives are included in the evidence bundle.
+
+### Mechanism decisions, cost and next direction
+
+G closed screen-negative (4/8 retained, no additions, median .924x vs B);
+its .4 repair was not released after hard-case geometry refusals vanished.
+E independently qualified (4/8 retained, median 1.430x). W on E closed
+screen-negative (4/8, every common success slower; marginal median .890x).
+No stricter E or nine-anchor W repair was released because no recovery was lost.
+Conditional F was released by B's Aphex/13.3 geometry-refusal cost. It failed
+saved-state finite-trial qualification: original 11/16, exact-active correction
+10/16. All interpolation gates passed, so the half-width repair was not
+released. The unchanged 1e-7m audit direction exceeded the usable local
+neighbourhood under the conservative global Gaussian momenta bound at some
+curved endpoints. Raw injectivity does not qualify the projected pipeline.
+Both failed qualification bundles remain preserved; **F had zero fresh fits**.
+R/H/W2 and unreleased repairs are explicitly unrun.
+
+The four development screens cost 939.667s at the internal audited boundary
+(961.948s including case scoring/setup); F qualification states cost 39.370s
+across both preserved attempts. These development/diagnostic costs are separate
+from deployment and included in the actual overnight elapsed time. Complete
+child-process timings, validation logs, numerical failures and queue waits
+remain available. Actual closeout: **2026-10-05 03:19:15 UTC**, elapsed
+**101.91 minutes** since authorized launch; within the eight-hour ceiling.
+
+Validation: 218 package/campaign plus 348 shared checks before baseline;
+W focused 20 and regression 554; F focused 12 and regression 560; exact-active
+correction 35 focused/package/modal checks. Original failed preflight/fixture
+logs are preserved. Final comparison/receipt/source/input read-back and visual
+QA completed. No unrelated benchmark or reference inputs were modified.
+
+**ON-001 is closed.** The retained E option is a measured speed improvement,
+with the same four recovery failures. ON-002 is separately authorized and owned;
+this result does not claim GauGal parity or absorb its unfinished adapter.
+ON-003 independently closed at a negative circle control, without qualified
+full-field/derivative/inverse integration. Future noise/material/measurement
+coverage or a targeted resolution-response experiment needs its own named plan
+and approval; no further ON-001 tuning is launched.
+
+Artifacts: [all-30 comparison](../../../../results/validation/cleaned_interfaces/ON-001/final_table.md),
+[boundary gallery](../../../../results/validation/cleaned_interfaces/ON-001/confirmation_boundaries.png),
+[timing plot](../../../../results/validation/cleaned_interfaces/ON-001/confirmation_timings.png),
+[structured comparison](../../../../results/validation/cleaned_interfaces/ON-001/final_comparison.json),
+[evidence index](../../../../results/validation/cleaned_interfaces/ON-001/README.md).
+
+
+## Preserved execution record
 
 Evidence: [live table](../../../../results/validation/cleaned_interfaces/ON-001/table.md),
 [structured receipts](../../../../results/validation/cleaned_interfaces/ON-001/report.json).

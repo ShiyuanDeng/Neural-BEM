@@ -1,7 +1,7 @@
 # ON 001 Overnight adaptive boundary inversion
 
 Prepared 2026-10-05. Approval status: **APPROVED by direct launch, 2026-10-05**.
-Execution status: **STARTED**. Implementation owner: ON-001 Agent 1.
+Execution status: **CLOSED — USEFUL PARTIAL RESULT**. Implementation owner: ON-001 Agent 1.
 Actual user instruction: `Go ON-001 using docs/iterations/OVERNIGHT_AGENT_TRACKS.md`.
 Start: **2026-10-05 01:37:21 UTC**. Deadline: **2026-10-05 09:37:21 UTC**.
 No new arms after 05:47:21 UTC; final closeout reserve begins 08:57:21 UTC.
@@ -375,3 +375,8 @@ GauGal parity. On a closed negative, name the failed mechanisms and stop this
 contract. Ewald, shape-Taylor, T-matrix, IBIM, atlas and Krylov work are not
 extra ON-001 branches; their disposition is in the integration review.
 Any such later experiment needs its own named approval.
+
+
+## Actual closeout
+
+Closed 2026-10-05 03:19:15 UTC (101.91 min elapsed). All 30 B/E pairs, declared repeats and uncontended circle replacement completed. 26/30 retained, no additions; median 1.545838x. [Results](../iteration_31/01_results.md). The pre-registered bounded decision tree above is preserved.

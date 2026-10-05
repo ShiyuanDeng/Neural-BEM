@@ -56,11 +56,31 @@ A pipeline only fills `fit`'s physics, geometry-update and resolution slots; pol
 and localization stay with the caller. Results gain `pipeline` and `resolution_promoted`.
 
 Calling `fit` without a pipeline keeps the legacy default: `nodal_kress` with the spline projected update. Supported
-explicit geometry names are `spline`, `spectral`, `certified_spectral`, and
-`analytic_spectral`; the last is experimental. Device selection and physics
+explicit geometry names are `spline`, `spectral`, `certified_spectral`,
+`analytic_spectral`, and `gaussian_lipschitz`; the last two are experimental
+and the Gaussian map failed ON-001 curved-state qualification. Device selection and physics
 selection remain independent. See the
 [campaign guide](../../experiments/cleaned_interface/README.md) for numerical
 limits, execution semantics, and the recorded evidence.
+
+## ON-001 opt-in controls
+
+`CumulativePolicy(required_accuracy=.003)` requests a passed current endpoint
+audit at accepted full-real-catalog states meeting the maximum per-frequency
+residual criterion. Failed audits remain charged and retry only after the
+residual halves or the geometry/physics resolution changes. Optional
+`audit_aggregate_seconds=30` reserves ten seconds for the terminal audit.
+The ordinary defaults retain the original schedule and separate audit budgets.
+
+ON-001 confirmed this E rule on all 30 TG-002 pairs: 26/30 recovered in
+both arms, median paired audited-output speedup 1.546x, no new recovery. Evidence:
+[iteration 31](../../docs/iterations/cleaned_interfaces/iteration_31/01_results.md).
+`reach_fraction` and `working_anchors` retain the tested research controllers;
+reach clipping and subset proposals closed screen-negative. The experimental
+`gaussian_lipschitz` geometry selector retains its complete discrete tangent
+and one-time ambient scaling, but failed ON-001 curved-state finite-trial
+qualification under the unchanged endpoint gate. It is not a qualified
+replacement for `certified_spectral`. No recipe default was changed.
 
 ## Experimental fair nodal profile (PC-002)
 

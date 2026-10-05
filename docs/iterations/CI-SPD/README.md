@@ -2,12 +2,28 @@
 
 Opened 2026-10-05 at the user's request.
 
-CI-SPD is a standalone track under `docs/iterations/CI-SPD/`. Its three
-documents are kept together here; recorded evidence remains under `results/`.
+For parallel execution, see the [two-agent launch guide and ETAs](../OVERNIGHT_AGENT_TRACKS.md):
+Agent 1 runs ON-001; Agent 2 runs ON-003. Sending the named launch command
+authorizes that bounded plan; the guide itself starts no experiment.
+
+CI-SPD is a standalone track under `docs/iterations/CI-SPD/`. Its comparison
+and proposed follow-up plans live here; recorded evidence remains under `results/`.
 
 **Question:** Why is the released GauGal cylinder reconstruction fast, and
 which measured costs explain its difference from our current cleaned modal
 BEM implementation?
+
+**ON-003 closed (2026-10-05):**
+[the Ewald feasibility report](iteration_01/05_ON003_results.md) records
+**ACCURACY_OR_RESOURCE_LIMITED**, a negative circle control at the registered
+Fourier-grid ceiling. Full-field and derivative coverage remain explicitly
+unrun; no inverse integration is qualified. Agent 2 supplied its final handoff.
+
+**ON-001 closed, useful partial result:** [inverse results](../cleaned_interfaces/iteration_31/01_results.md)
+confirm all 30 matched TG-002 pairs, B/E 26/30 with no additions/regressions;
+median paired audited-output speedup 1.546x, p10 1.225x. E is retained as an
+opt-in control. G/W closed screen-negative and F failed finite-trial qualification.
+This is not a GauGal-parity claim; ON-002 remains independently owned.
 
 Read [the detailed comparison and explanation](01_results.md). It documents
 the completed, approved GGB-001 pilot and the actual source paths used by its
@@ -22,3 +38,16 @@ and [verified modal runtime and geometry-check proposal](MODAL_RUNTIME_GEOMETRY_
 These are unimplemented proposals derived from existing evidence; no new
 experiment was run. Their future qualification requires a pre-registered ID
 and explicit user approval under the repository workflow.
+
+**Overnight options, 2026-10-05:** the user requested an ambitious research
+brief with conditional next steps. The [big-picture brief](../cleaned_interfaces/iteration_30/02_proposals/01_overnight_research_brief.md)
+recommends [ON-001](../cleaned_interfaces/iteration_30/03_plan.md), an adaptive
+BEM speed/recovery campaign with reach clipping and a conditional Gaussian map.
+[ON-002](iteration_01/03_plan.md) is the alternative matched TG-002 GauGal
+comparison and conditional hybrid. [ON-003](iteration_01/04_ON003_ewald_plan.md)
+is separate Ewald-style Müller forward feasibility. The
+[seven-idea integration review](../cleaned_interfaces/iteration_30/02_proposals/02_gaugal_restructuring_integration.md)
+records the supplied report's mathematical corrections and the remaining roadmap.
+The brief itself provided no launch authorization. Direct named launches later
+approved ON-001 and ON-003; their actual evidence/status is linked above.
+ON-002 remains independently owned with its own explicit launch and report.
