@@ -1,4 +1,4 @@
-"""GGB-004 saved-data report and direct-boundary video; no solver calls."""
+"""GGB-004/005 saved-data reports and direct-boundary videos; no solver calls."""
 import argparse
 import json
 from pathlib import Path
@@ -12,12 +12,27 @@ DEFAULT_OUTPUT = ROOT/'results/validation/cleaned_interfaces/GGB-004'
 COLORS = ('#2974b5', '#c5552c', '#2b8666')
 
 
+def frequencies(result):
+    values = result.get('frequencies_hz')
+    if values is None and result.get('experiment_id') == 'GGB-004':
+        values = [.5e9, .75e9, 1e9, 1.25e9]
+    values = np.asarray(values, dtype=float)
+    if values.ndim != 1 or not len(values) or not np.isfinite(values).all() or np.any(values <= 0):
+        raise ValueError('Receipt needs a nonempty list of positive finite fitted frequencies.')
+    return values
+
+
+def frequency_label(result):
+    return ', '.join(f'{value*1e-9:.2f}' for value in frequencies(result))+' GHz'
+
+
 def load(output):
     folder = output/'W'
     receipt, stream, endpoint = (folder/name for name in ('result.json', 'accepted.jsonl', 'endpoint.npz'))
     result = json.loads(receipt.read_text())
-    if result.get('experiment_id') != 'GGB-004':
-        raise ValueError('Expected a GGB-004 receipt.')
+    if result.get('experiment_id') not in ('GGB-004', 'GGB-005'):
+        raise ValueError('Expected a GGB-004 or GGB-005 receipt.')
+    frequencies(result)
     track = previous.Track('W', result, sources=[receipt, stream])
     for row in previous.json_lines(stream, track.warnings):
         track.add(row, 'accepted.jsonl')
@@ -56,7 +71,8 @@ def plot(track, edges):
     loss = np.array([s['loss'] if previous.finite(s.get('loss')) else np.nan for s in states])
     fig = plt.figure(figsize=(12.8, 8), dpi=100, facecolor='#fcfcfb')
     fig.text(.065, .95, 'Case 8 | Translation and scaling only', fontsize=20, weight='bold')
-    fig.text(.065, .905, 'GGB-004 | 0.50, 0.75, 1.00, 1.25 GHz fitted together | Initial restricted stage', fontsize=11, color='#52514e')
+    scope = ' fitted together' if len(frequencies(track.result)) > 1 else ' fitted'
+    fig.text(.065, .905, f"{track.result['experiment_id']} | {frequency_label(track.result)}{scope} | Initial restricted stage", fontsize=11, color='#52514e')
     boundary = fig.add_axes([.065, .22, .43, .61])
     previous.setup_axis(boundary, edges, previous.limits([track], edges))
     boundary.plot(*previous.close_line(states[0]['z']), color='#aab1b7', ls='--', lw=1.2, label='Initial circle')
@@ -104,8 +120,8 @@ def markdown(track, video):
     row, states = track.result, track.states
     stage = track.stages[0] if track.stages else {}
     num = previous.number
-    lines = ['# GGB-004 — Translation and scaling before shape updates', '',
-        'Case 8; original centred 0.35 m circle and unchanged four-frequency GGB-002 data. '
+    lines = [f"# {row['experiment_id']} — Translation and scaling before shape updates", '',
+        f'Case 8; original centred 0.35 m circle and unchanged GGB-002 observations at {frequency_label(row)}. '
         'Only the two centre coordinates and radius are fitted; no shape continuation is included.', '',
         f"Receipt **{row.get('status', 'unavailable')}**; optimizer **{stage.get('outcome', 'unavailable')} / "
         f"{stage.get('stop_reason') or stage.get('detail') or 'unspecified'}**. "
@@ -171,7 +187,8 @@ def report(output=DEFAULT_OUTPUT, inputs=previous.DEFAULT_INPUT, *, videos=True,
     artifacts.append(path)
     if any(previous.digest(path) != digest for path, digest in hashes.items()):
         raise ValueError('Saved sources changed during rendering.')
-    manifest = dict(experiment_id='GGB-004', physics_calls=0, inverse_calls=0, source_hashes=hashes,
+    manifest = dict(experiment_id=track.result['experiment_id'], frequencies_hz=frequencies(track.result).tolist(),
+        physics_calls=0, inverse_calls=0, source_hashes=hashes,
         material_rasterization=False, state_interpolation=False, video=video, states=len(track.states),
         warnings=track.warnings, artifact_hashes={str(p.relative_to(output)): previous.digest(p) for p in artifacts})
     (output/'rendering_manifest.json').write_text(json.dumps(manifest, indent=2, allow_nan=False)+'\n')

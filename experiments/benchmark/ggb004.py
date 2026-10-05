@@ -111,7 +111,8 @@ def stationarity(curve,observations,weights,contrast,update,service,config):
                 predicted_gain_resolution_difference=abs(rows[0]['predicted_gain']-rows[1]['predicted_gain']))
 
 
-def run(output):
+def run(output, *, experiment_id=ID, frequency_indices=(1,2,3,4),
+        source_manifest=sources, endpoint_audit=common.audit):
     import torch
     from bem_inverse.continuation.geometry import FourierCurve
     from bem_inverse.continuation.lm_backend import FitStage,Ledger
@@ -120,25 +121,26 @@ def run(output):
     from bem_inverse.similarity import SimilarityUpdate
     from .ggb002_adapter import FullMatrixModal
     authorization = json.loads((output/'authorization.json').read_text())
-    if authorization['experiment_id']!=ID or not authorization['authorized']:
+    if authorization['experiment_id']!=experiment_id or not authorization['authorized']:
         raise ValueError('User authorization must be recorded.')
     qualification = json.loads((output/'qualification.json').read_text())
-    before = sources()
+    before = source_manifest()
     data,seal = common.inputs()
     if qualification['status']!='PASSED' or qualification['source_hashes']!=before or qualification['input']!=seal:
         raise ValueError('Current sources and inputs must pass qualification.')
     folder = output/'W'
     folder.mkdir(exist_ok=False)
-    observations = common.previous.observations(data,(1,2,3,4))
+    observations = common.previous.observations(data,frequency_indices)
     config,weights,expected = CumulativePolicy()._config(SimpleNamespace(domain_box=common.previous.DOMAIN),observations)
     execution = Execution(device='cuda',frequency_threads=1)
     service = FullMatrixModal(execution)
     update = SimilarityUpdate(1.)
     curve = FourierCurve(np.r_[np.zeros(33,complex),.35,np.zeros(31,complex)])
-    stage = FitStage('W_translation_radius',observations,weights,(1e-4,)*4,0,32,8*64,8*96,100,2600)
+    stage = FitStage('W_translation_radius',observations,weights,(1e-4,)*len(observations),0,32,8*64,8*96,100,2600)
     ledger = Ledger(cap=8000,seconds=2400,strict_dispatch=True)
     ledger.begin_stage(stage.label,stage.quota)
-    row = dict(experiment_id=ID,arm='W',status='RUNNING',input=seal,source_hashes=before,
+    row = dict(experiment_id=experiment_id,arm='W',status='RUNNING',input=seal,source_hashes=before,
+        frequency_indices=frequency_indices,frequencies_hz=[o.frequency_hz for o in observations],
         backend_config=asdict(config),execution=asdict(execution),weights=weights,
         expected_noise_loss=expected,settings=dict(stage='translation and radius only',iterations=100,
         quota=2600,cap=8000,seconds_cap=2400,translation_cap_m=.018,radius_cap_m=.012),
@@ -165,7 +167,7 @@ def run(output):
         np.savez_compressed(folder/'curve.npz',coefficients=curve.coefficients)
         common.write(folder/'result.json',row)
         began = perf_counter()
-        audited,prediction,refined = common.audit(curve,data,service,weights,config)
+        audited,prediction,refined = endpoint_audit(curve,data,service,weights,config)
         row.update(audited)
         np.savez_compressed(folder/'endpoint.npz',coefficients=curve.coefficients,
                             prediction=np.stack(prediction),refined_prediction=np.stack(refined))
@@ -174,7 +176,7 @@ def run(output):
         torch.cuda.synchronize()
         row.update(audit_seconds=perf_counter()-began,physics_receipt_with_audits=service.receipt())
         row.update(common.shape_metrics(curve,data))
-        if sources()!=before:
+        if source_manifest()!=before:
             raise ValueError('Numerical sources changed during the run.')
         row.update(status='COMPLETE')
     except Exception:
@@ -189,15 +191,17 @@ def run(output):
     print(stage_row['outcome'],stage_row['stop_reason'],flush=True)
 
 
-def verify(output):
+def verify(output, *, experiment_id=ID, frequency_indices=(1,2,3,4)):
     from bem_inverse.continuation.geometry import FourierCurve
     row = json.loads((output/'W/result.json').read_text())
+    assert row['experiment_id']==experiment_id
+    assert tuple(row.get('frequency_indices',(1,2,3,4)))==frequency_indices
     data,seal = common.inputs()
     assert row['input']==seal
     assert row['source_hashes']==json.loads((output/'qualification.json').read_text())['source_hashes']
     if row['status']=='FAILED':
         assert row.get('traceback')
-        common.write(output/'validation.json',dict(experiment_id=ID,status='FAILED_PRESERVED'))
+        common.write(output/'validation.json',dict(experiment_id=experiment_id,status='FAILED_PRESERVED'))
         return
     with np.load(output/'W/endpoint.npz') as end:
         curve = FourierCurve(end['coefficients'])
@@ -211,6 +215,7 @@ def verify(output):
         last = events[-1]['coefficients']
         np.testing.assert_array_equal(np.array(last['real'])+1j*np.array(last['imag']),end['coefficients'])
         for i,a in enumerate(row['audit']):
+            assert a['active_in_fit']==(i in frequency_indices)
             target = data['archived_observed'] if i==0 else data['observed'][i]
             residual = np.linalg.norm(end['refined_prediction'][i]-target)/np.linalg.norm(target)
             np.testing.assert_allclose(residual,a['relative_residual'],rtol=1e-13)
@@ -232,9 +237,14 @@ def verify(output):
     np.testing.assert_allclose(audit['loss'],stage['final_loss'],rtol=1e-12)
     if stage['history'][-1].get('gradient_inf') is not None:
         np.testing.assert_allclose(audit['gradient_inf'],stage['history'][-1]['gradient_inf'],rtol=1e-7,atol=1e-12)
-    joint = .5*sum(w*a['relative_residual']**2 for w,a in zip(row['weights'],row['audit'][1:]))
+    active = [row['audit'][i] for i in frequency_indices]
+    assert len(row['weights'])==len(active)
+    joint = .5*sum(w*a['relative_residual']**2 for w,a in zip(row['weights'],active))
     np.testing.assert_allclose(joint,row['refined_joint_loss'],rtol=1e-13)
-    common.write(output/'validation.json',dict(experiment_id=ID,status='PASSED',
+    assert row['noise_discrepancy_met']==bool(joint<=row['backend_config']['loss_tolerance'])
+    assert row['all_frequency_noise_targets_met']==all(a['noise_target_met'] for a in active)
+    assert row['field_gates_passed']==all(a['field_gate_passed'] for a in active)
+    common.write(output/'validation.json',dict(experiment_id=experiment_id,status='PASSED',
         accepted_steps=len(events)-1,circle_preserved=True))
     print('Saved restricted endpoint verified.')
 
