@@ -1,0 +1,12 @@
+{
+  "status": "FAILED_IMPLEMENTATION_GRID_LAYOUT",
+  "candidate_commit": "ff3928da",
+  "xi_over_kstar": 1,
+  "grid": 128,
+  "radial_order": 256,
+  "cause": "NumPy 2 unique inverse indices preserve the 2D input shape; code assumed a flat inverse index",
+  "repair": "explicitly flatten unique inverse indices; add an independent zero-mode transform/grid-layout test",
+  "numerical_coverage": "flat/near controls computed; first radial transform constructed; no grid reconstruction or block action completed",
+  "missing_evidence": "pre-grid numerical controls had not been written at exception time; same controls are retained on retry; checkpoint writing added",
+  "physics_or_declared_settings_changed": false
+}

@@ -128,7 +128,7 @@ class FarGrid:
         # Integer squared radii give identical reuse grouping at every grid.
         r2, inverse = np.unique((xx*xx+yy*yy).astype(int), return_inverse=True)
         return cls(2*np.pi/L*np.stack((xx.ravel(), yy.ravel()), axis=1),
-                   2*np.pi/L*np.sqrt(r2), inverse, L, size, R0, R1, tau)
+                   2*np.pi/L*np.sqrt(r2), inverse.ravel(), L, size, R0, R1, tau)
 
     def multiplier(self, k, order):
         """Integral 2pi int r w(r) G_far(r) J0(qr) dr / L^2."""

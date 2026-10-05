@@ -106,6 +106,7 @@ def run(xi):
             control=quad(lambda u:f(u).real,0,1,epsabs=1e-14)[0]+1j*quad(lambda u:f(u).imag,0,1,epsabs=1e-14)[0]
             symbol=complex(E.flat_near(omega,k,tau))
             flat_rows.append(dict(k=[k.real,k.imag],omega=omega,near=[symbol.real,symbol.imag],independent_absolute_error=abs(symbol-control),grazing=omega==k.real and k.imag==0))
+    write(folder/'near_and_flat_controls.json',dict(flat=flat_rows,near_controls=medium_rows,wave_order=list(waves)))
     rows=[]; grid_receipts=[]
     for size in (128,256):
         grid=E.FarGrid.build(size,tau,manifest['settings']['R0_m'])
