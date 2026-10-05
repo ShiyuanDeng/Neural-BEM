@@ -67,3 +67,16 @@ Sources remained frozen; read-back and source-hash checks passed. **G closed
 screen-negative**; E is next, independently. The conditional F remains
 released by baseline Aphex13.3 geometry cost, unless E earns immediate major
 confirmation.
+
+## E — required-accuracy exit
+
+Completed **4/8 recovered**, retaining all B successes with no new recovery.
+Audited endpoint times: circle 4.23s, c_shape 23.65s, kite 16.82s and star
+29.37s. Median paired speedup **1.430x**, P10 **1.211x**: E qualifies for W but
+not the 2x major target. All exits used a full-real accepted-state criterion
+and passed current endpoint audit; no truth informed stopping. Kite stopped
+at RMS 0.1883mm and Hausdorff upper bound 0.6647mm, within unchanged gates.
+No stricter repair is released because there is no screen regression.
+G is not combined. **W parent is E**, with initial seven-frequency proposals
+and exact original full-frequency acceptance. Conditional F remains eligible
+if no W major screen result closes into confirmation.
