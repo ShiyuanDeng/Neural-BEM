@@ -1,0 +1,25 @@
+........................................................................ [ 29%]
+..........................................................F............. [ 58%]
+........................................................................ [ 87%]
+...............................                                          [100%]
+=================================== FAILURES ===================================
+_______ test_noiseless_policy_matches_every_archived_stage_and_optimizer _______
+
+    def test_noiseless_policy_matches_every_archived_stage_and_optimizer():
+        p=problem()
+        policy=CumulativePolicy()
+        backend=make_backend(execution_settings=Execution(device='cpu'))
+        ops=policy.operations(p,backend)
+        archived=read(b.ROOT/'results/validation/modal_atlas/MA-004/runs/D/c4/development_c/configuration.json')
+        fits=[o for o in ops if o.kind=='fit']
+        assert [portable(stage_record(o.stage)) for o in fits]==archived['stages']
+        # New opt-in controller defaults preserve this archived optimizer recipe.
+        archived_backend = dict(archived['backend'], reach_fraction=0.)
+>       assert all(portable(asdict(o.optimizer))==archived_backend for o in fits)
+E       assert False
+E        +  where False = all(<generator object test_noiseless_policy_matches_every_archived_stage_and_optimizer.<locals>.<genexpr> at 0x71d0d60d7f20>)
+
+experiments/cleaned_interface/test_interface.py:49: AssertionError
+=========================== short test summary info ============================
+FAILED experiments/cleaned_interface/test_interface.py::test_noiseless_policy_matches_every_archived_stage_and_optimizer
+1 failed, 246 passed in 139.68s (0:02:19)

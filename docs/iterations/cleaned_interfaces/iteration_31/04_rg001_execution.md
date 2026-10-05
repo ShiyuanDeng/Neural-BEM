@@ -24,3 +24,15 @@ archive, receipt and traceback are retained in `RG-001/failed_stage0_01/` and
 were validated, committed and pushed before repair. Cleanup now calls `close`
 only when supplied by the backend. The rerun freezes a fresh campaign manifest;
 no fitting or numerical qualification setting changed.
+
+Stage 0 completed in 102.34 s: 30/30 truths pass the original endpoint audit
+and residual criterion. All aphex truths pass all declared stage pairs, so P2–P4
+are not revised. `cog__c13.3` is labelled gate-limited by construction under the
+plan's exact-truth diagnostic: its early production/refined pairs overshoot,
+while its final pair passes. This labels field qualification at those exact
+truth states; it does not assert that an intermediate fit must reach the exact
+truth during the damped prefix.
+
+The four saved killing trials replay with exactly matching production and
+refined gains (zero relative differences), and all four are accepted by the
+decision gate. The declared replay-construction repair was not needed.
