@@ -172,3 +172,14 @@ policy schedule/coefficient caps/resolution and endpoint gates. Confirmation
 will run all 30 fresh B/E pairs, each contiguous under compute/source locks,
 releasing locks between pairs. Per-pair source/input checks and publication
 are required. Screen selection is development evidence, not generalization.
+
+Confirmation uses contiguous B/E pairs, releasing compute/source locks before
+reporting and publication and between every pair. Each completed/failed pair
+is validated and committed/pushed independently. Primary confirmation time
+runs from campaign case entry through fit-return (including backend setup and
+final fit-result output); truth scoring and fresh Python imports are excluded.
+Internal fit/audit timers and complete child-process wall times remain separate.
+The screen used the same internal fit boundary for all screen arms. These two
+timing boundaries are reported explicitly rather than silently mixed.
+A read-back of the eight recorded B/E screen pairs reproduced the original
+median paired speedup; sealed inputs and the frozen finalist were verified.

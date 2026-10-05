@@ -33,7 +33,8 @@ COORD = Path("/tmp/neural-sdf-bem-ad-coordination")
 
 def source_paths():
     return sorted([*c.ROOT.glob("solvers/**/*.py"), *(c.ROOT/"experiments/benchmark"/name for name in
-                       ("__init__.py", "campaign.py", "scenes.py", "on001.py")),
+                       ("__init__.py", "campaign.py", "scenes.py")),
+                   *Path(__file__).parent.glob("on001*.py"),
                    c.ROOT/"experiments/cleaned_interface/benchmark.py"])
 
 
@@ -64,7 +65,7 @@ def run_case(arm, case, folder):
             recovered=bool(result["final_audit_passed"] and metrics["rms_mm"] <= 1. and
                 metrics["hausdorff_upper_mm"] <= 2. and residual is not None and np.all(residual <= limits)),
             maximum_residual=None if residual is None else float(max(residual)),
-            scoring_seconds=perf_counter()-returned)
+            scoring_seconds=perf_counter()-returned, audited_output_seconds=returned-started)
     except Exception:
         result = dict(case=row, outcome="WORKER_EXCEPTION", recovered=False, traceback=traceback.format_exc())
     result.update(arm=arm, on001_settings=asdict(policy), case_seconds=perf_counter()-started)
