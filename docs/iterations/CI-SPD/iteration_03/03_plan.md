@@ -4,8 +4,11 @@ Prepared 2026-10-05 by Claude, following ON-003 and the
 [outside review](../../cleaned_interfaces/iteration_31/02_claude_review.md)
 (finding R5). User request: "draft plans for all three tracks".
 
-**Status: PROPOSED.** Nothing has run. Running it needs the user's explicit
-approval of the ID EW-001. Approval covers Q1 and Q2 below and the closeout.
+**Status: APPROVED, IN PROGRESS.** User instruction: "go on EW-001"
+(2026-10-05). Approval covers Q1 and Q2 below and the closeout.
+Execution uses the existing `feature/shape-frequency-continuation` checkout,
+where this plan was registered; no branch or worktree is created.
+Start: 2026-10-05 09:31 UTC; two-hour deadline: 11:31 UTC.
 It does not cover curved states, full fields, derivatives, inverse
 integration, a new branch or worktree, or any other experiment.
 

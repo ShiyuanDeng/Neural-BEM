@@ -1,0 +1,29 @@
+{
+  "command": [
+    "flock",
+    "-x",
+    "/tmp/neural-sdf-bem-ad-coordination/compute.lock",
+    "flock",
+    "-s",
+    "/tmp/neural-sdf-bem-ad-coordination/source.lock",
+    "env",
+    "PYTHONPATH=solvers:.",
+    "OMP_NUM_THREADS=1",
+    "OPENBLAS_NUM_THREADS=1",
+    "MKL_NUM_THREADS=1",
+    "/home/drdeng/miniconda3/envs/EMNerf/bin/python",
+    "-m",
+    "experiments.benchmark.ew001",
+    "circle",
+    "--xi",
+    "1"
+  ],
+  "returncode": 0,
+  "rebuilt_rows": 192,
+  "passed": true,
+  "evidence_hashes": {
+    "stage_A_xi1/block_diagonal_errors.csv": "3014c40754e47575e2f57422e6a02bfa04d003a1152dc251435de1acbc4b4130",
+    "stage_A_xi1/grid128_arrays.npz": "b10e891b2aba1fafb77d0ae01555b2e209ebbea6de66a054bbf5d67e1e477296",
+    "stage_A_xi1/grid256_arrays.npz": "14d8534773853fcafec9ce8dad228f1b29be0213be5ffd40a56a91c3e6822494"
+  }
+}
