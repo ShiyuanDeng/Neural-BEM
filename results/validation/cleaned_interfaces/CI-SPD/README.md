@@ -1,16 +1,19 @@
 # CI-SPD evidence index
 
-This bundle documents the already completed GGB-001 experiment. Its creation
-only aggregates existing JSON and copies the existing comparison image;
-no field solver, inverse fit, geometry replay, or new timing experiment runs.
+This bundle documents the already completed GGB-001 experiment and related
+runtime/design notes grounded in existing evidence. Its creation aggregates
+existing JSON and copies the existing comparison image; no field solver,
+inverse fit, geometry replay, or new timing experiment runs.
 
-The [detailed explanation](../../../../docs/iterations/cleaned_interfaces/CI-SPD/01_results.md)
+The [detailed explanation](../../../../docs/iterations/CI-SPD/01_results.md)
 distinguishes measured timings from mechanisms identified in the source.
 
 | Artifact | Contents |
 |---|---|
 | [comparison_summary.json](comparison_summary.json) | Per-case metrics, timing boundaries, physics counts, exact trial-status/refusal totals, stages and source-manifest digest |
 | [comparison.png](comparison.png) | Byte-identical copy of the original truth/GauGal/BEM image panel |
+| [GPU_SPLINE_FAIR_BASELINE.md](../../../../docs/iterations/CI-SPD/GPU_SPLINE_FAIR_BASELINE.md) | Existing geometry evidence, a proposed GPU spline baseline and unmeasured predictions |
+| [MODAL_RUNTIME_GEOMETRY_CHECK.md](../../../../docs/iterations/CI-SPD/MODAL_RUNTIME_GEOMETRY_CHECK.md) | Verified PC-001/PC-002 runtime accounting, corrected audit timing boundaries and proposed certificate-cost fixes |
 
 Canonical evidence is retained in
 [Gau-Gal at commit 3ec2627](https://github.com/HaibingWu657/Gau-Gal/tree/3ec2627d3ff7329453ec7b76469a0761d6f6e3de/docs/iterations/GGB-001/evidence).

@@ -11,9 +11,9 @@ implementation first, with the 36-scene campaign to be run by the user.
 
 ## Current handoff
 
-**CI-SPD comparison documented (2026-10-05):** the user requested a detailed
+**CI-SPD has its own [track](../CI-SPD/README.md) (2026-10-05):** the user requested a detailed
 account of why GauGal is fast, with physical and optimization design choices
-held fixed. [CI-SPD](CI-SPD/01_results.md) records the completed GGB-001
+held fixed. [CI-SPD](../CI-SPD/01_results.md) records the completed GGB-001
 three-cylinder comparison, the actual pixel-domain FFT/separable-projection
 path, batched warm-started BiCGSTAB, and the BEM's repeated geometry refusals.
 It distinguishes measured costs from unmeasured causal contributions and
@@ -127,7 +127,6 @@ by scene identity. CI-001 does not establish all-36 retention (28/36).
 | [27](iteration_27/03_plan.md) | PC-001 (user: "go"): M1 and N1 complete, both 26/30 on the same cases (M1 median 31 s, N1 157 s); **N0 stopped by the user at 12/30** to add nodal geometry reuse across frequencies first ([results](../../../results/validation/cleaned_interfaces/PC-001/README.md)): N0 `nodal_baseline`, N1 `nodal_fixed` (certified spectral + N1024/2048 resolution response), M1 `modal_fixed` (node-free) on TG-002; named pipelines in `bem_inverse.pipelines`; `pc001 report` gives the side-by-side comparison |
 | [28](iteration_28/05_results.md) | PC-002 complete: fair nodal+spline on all 30 TG-002 cases, 26/30 recovered (same M1/N1 cases), N130/N386, median fit 48.18 s; stronger audits and matched-speedup limitations reported; controls deferred |
 | [29](iteration_29/03_plan.md) / [30](iteration_30/01_results.md) | GC-001 complete: 31 states/279 geometry moves, same decisions in all four arms; CUDA preparation gain, output-FFT aliasing attribution, and bounded whole-inverse runtime significance established; no inverse fitting |
-| [CI-SPD](CI-SPD/01_results.md) | Documentation of GauGal's execution structure and the approved GGB-001 comparison with cleaned modal BEM; measured timing/accuracy, rejection counts, design differences and attribution limits; no new runs or changes |
 
 Follow the [shared iteration workflow](../README.md). Iteration 02 records
 the implementation checks; iteration 03 records the inverse campaign.

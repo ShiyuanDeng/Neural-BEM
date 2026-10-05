@@ -286,7 +286,7 @@ target on cases 13 and 14 and produces sharper homogeneous shapes. Case 8
 does not recover: all three stages stop with `no_decreasing_step`, despite
 their normal optimizer-return status. A normal return is not convergence.
 
-![Matched truth and reconstructions](../../../../results/validation/cleaned_interfaces/CI-SPD/comparison.png)
+![Matched truth and reconstructions](../../../results/validation/cleaned_interfaces/CI-SPD/comparison.png)
 
 | Case | GauGal load s | GauGal build s | GauGal optimization s | GauGal total excluding load s | BEM fit s | BEM endpoint audits s |
 |---|---:|---:|---:|---:|---:|---:|
@@ -436,8 +436,8 @@ type alias without changing physical operators or optimization steps.
 - [Field applications, explicit gradient, sensor maps, TV and BiCGSTAB](https://github.com/HaibingWu657/Gau-Gal/blob/3ec2627d3ff7329453ec7b76469a0761d6f6e3de/src/gaugal/paper2d/collocation.py).
 - [Released outer loop and timing boundaries](https://github.com/HaibingWu657/Gau-Gal/blob/3ec2627d3ff7329453ec7b76469a0761d6f6e3de/src/gaugal/paper2d/reconstruct.py).
 - [BEM full-matrix adapter and pilot driver](https://github.com/HaibingWu657/Gau-Gal/tree/3ec2627d3ff7329453ec7b76469a0761d6f6e3de/comparisons).
-- [Maintained modal backend and its execution receipt](../../../../solvers/bem_inverse/modal_muller.py).
-- [Geometry update selection](../../../../solvers/bem_inverse/geometry_selection.py), [trial/certificate logic](../../../../solvers/bem_inverse/certified.py), and [GPU certificate implementation](../../../../solvers/bem_inverse/device_certified.py).
-- [Maintained LM loop and trial records](../../../../solvers/bem_inverse/continuation/lm_backend.py).
-- [Local compact evidence and original-source digests](../../../../results/validation/cleaned_interfaces/CI-SPD/README.md).
-- [GC-001 geometry-only attribution](../iteration_30/01_results.md): independent context for CPU trial work and GPU preparation. Its TG-002 replay times are not substituted for the unprofiled GGB-001 remainder.
+- [Maintained modal backend and its execution receipt](../../../solvers/bem_inverse/modal_muller.py).
+- [Geometry update selection](../../../solvers/bem_inverse/geometry_selection.py), [trial/certificate logic](../../../solvers/bem_inverse/certified.py), and [GPU certificate implementation](../../../solvers/bem_inverse/device_certified.py).
+- [Maintained LM loop and trial records](../../../solvers/bem_inverse/continuation/lm_backend.py).
+- [Local compact evidence and original-source digests](../../../results/validation/cleaned_interfaces/CI-SPD/README.md).
+- [GC-001 geometry-only attribution](../cleaned_interfaces/iteration_30/01_results.md): independent context for CPU trial work and GPU preparation. Its TG-002 replay times are not substituted for the unprofiled GGB-001 remainder.

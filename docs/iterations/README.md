@@ -30,6 +30,7 @@ The [research implementation principles](implementation_principles.md), adopted 
 | Track | Organised around | Handoff |
 |---|---|---|
 | **Cleaned interfaces** | *How can one cumulative SC/MA inverse retain all-36 performance with clear stage policies and interchangeable forward solvers?* | [`cleaned_interfaces/README.md`](cleaned_interfaces/README.md) |
+| **CI-SPD** | *Which implementation costs explain inverse runtime, and how can geometry work be reduced without changing qualified behavior?* | [`CI-SPD/README.md`](CI-SPD/README.md) |
 | **Relaxed BIE** | *Does relaxing the BIE improve shape recovery when gradients, numerical accuracy and cost are controlled fairly?* | [`relaxed_bie/README.md`](relaxed_bie/README.md) |
 | **Shape/frequency continuation** | *How should shape harmonics and frequency steps adapt in a qualified nodal inverse?* | [`shape_frequency_continuation/README.md`](shape_frequency_continuation/README.md) |
 | **Topology** | *How can the inverse choose and execute topology changes more reliably?* | [`topology/README.md`](topology/README.md) |
