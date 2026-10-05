@@ -31,7 +31,9 @@ def main():
             endpoint=r['metrics']
             comparisons.append(dict(case=case,abort_rms_mm=before,rms_mm=endpoint['rms_mm'],
                 reduction_fraction=1-endpoint['rms_mm']/before,shape_passed=endpoint['rms_mm']<=1 and endpoint['hausdorff_upper_mm']<=2,
-                audit_passed=r['final_audit_passed'],recovered=r['recovered'],outcome=r['outcome'],
+                audit_passed=r['final_audit_passed'],recovered=r['recovered'],outcome=r['outcome'],detail=r.get('detail'),
+                stages=[s['stage'] for s in r['stages']],
+                past_original_stage=any(s['stage']==('stage_4_damped' if case=='aphex_twin__c0.5' else 'release_M15') for s in r['stages']),
                 accepted_overshoots=r['accepted_resolution_overshoots'],
                 largest_accepted_overshoot=r['largest_accepted_resolution_overshoot']))
     complete=len(rows)==30
@@ -56,7 +58,7 @@ def main():
     p4=[r for r in comparisons if r['case'] in ('aphex_twin__c13.3','hook__c13.3')]
     predictions=dict(P1='holds' if valid else 'falsified' if p1_failures else 'unfinished',
         P2='holds' if p2 and (p2['recovered'] or (p2['shape_passed'] and p2['audit_passed'])) else 'falsified' if p2 else 'unrun',
-        P3='holds' if p3 and p3['rms_mm']<4.4 and p3['accepted_overshoots']>0 else 'falsified' if p3 else 'unrun',
+        P3='holds' if p3 and p3['rms_mm']<4.4 and p3['past_original_stage'] else 'falsified' if p3 else 'unrun',
         P4='holds' if len(p4)==2 and all(not r['recovered'] and r['rms_mm']>=3 for r in p4) else 'falsified' if p4 else 'unrun',
         P5=dict(endpoints_passing=sum(bool(v) for v in all_audits),endpoints_checked=len(all_audits),
                 failed_cases=[r['case'] for r in rows if not r['arms']['RG']['final_audit_passed']]))
@@ -77,6 +79,8 @@ def main():
         lines.append(f"| {r['case']} | {r['abort_rms_mm']:.6f} | {r['rms_mm']:.6f} | {100*r['reduction_fraction']:.1f}% | {r['audit_passed']} | {r['recovered']} | {r['accepted_overshoots']} |")
     lines+=['','## Registered predictions','',f"P1: {predictions['P1']}; P2: {predictions['P2']}; P3: {predictions['P3']}; P4: {predictions['P4']}.",'',
         f"P5 endpoint audits: {sum(bool(v) for v in all_audits)}/{len(all_audits)} pass. Failed cases: {', '.join(predictions['P5']['failed_cases']) or 'none'}.",'',
+        'P3 requires leaving stage_3_damped as well as improving RMS. Its original trial is accepted, but the run still stops inside that stage on a later production failure, so the registered prediction is falsified.','',
+        'The 26 converged common successes pass their audits. All four RG failure endpoints fail the field gate; these endpoints are hard stops rather than newly converged outputs. P5 has no newly converged failure endpoint to test, while its stated warning about unresolved RG endpoints is observed.','',
         '## Independent checks and repeats','']
     for case in additions:
         lines.append(f"- {case}: independent nodal N1024/N2048 audit {checks.get(case,{}).get('passed', 'unrun')}; fresh RG recovery {(repeats[case] or {}).get('recovered','unrun')}.")
@@ -89,7 +93,7 @@ def main():
         '| Case | Recovery | RMS mm | Audit | Outcome |','|---|---|---|---|---|']
     for case,r in reach.items():
         lines.append(f"| {case} | {'unrun' if r is None else r['recovered']} | {'—' if r is None else r['metrics']['rms_mm']} | {'—' if r is None else r['final_audit_passed']} | {'—' if r is None else r['outcome']} |")
-    lines+=['','The default gate remains absolute. No successor experiment is authorized or opened.','',
+    lines+=['','The default gate remains absolute. The evidence supports pre-registering RP-001 (a bounded modal resolution response): the relaxed gate accepts steps but leaves the four failure endpoints unresolved. PX-001 may still be needed for the contrast-13.3 basin. No successor experiment is authorized or opened.','',
         '[Plan](03_plan.md), [execution record](04_rg001_execution.md), [machine-readable closeout](../../../../results/validation/cleaned_interfaces/RG-001/closeout.json), [case table](../../../../results/validation/cleaned_interfaces/RG-001/table.md).','',
         '![RG-001 endpoints](../../../../results/validation/cleaned_interfaces/RG-001/boundaries.png)','']
     (ROOT/'docs/iterations/cleaned_interfaces/iteration_31/05_results.md').write_text('\n'.join(lines))
