@@ -26,7 +26,7 @@ All times include the unchanged endpoint audit. Unrun cases remain unrun.
 | hook__c4 | True / 36.00s / COMPLETED_SCHEDULE | True / 23.66s / REQUIRED_ACCURACY_REACHED | unrun | unrun | unrun | unrun |
 | hook__c13.3 | False / 25.26s / NUMERICAL_FAILURE | False / 25.23s / NUMERICAL_FAILURE | False / 25.34s / NUMERICAL_FAILURE | False / 25.44s / NUMERICAL_FAILURE | False / 26.56s / NUMERICAL_FAILURE | False / 46.72s / NUMERICAL_FAILURE |
 | cross__c0.5 | True / 18.93s / COMPLETED_SCHEDULE | True / 9.67s / REQUIRED_ACCURACY_REACHED | unrun | unrun | unrun | unrun |
-| cross__c4 | unrun | unrun | unrun | unrun | unrun | unrun |
+| cross__c4 | True / 20.00s / COMPLETED_SCHEDULE | True / 12.99s / REQUIRED_ACCURACY_REACHED | unrun | unrun | unrun | unrun |
 | cross__c13.3 | unrun | unrun | unrun | unrun | unrun | unrun |
 | cog__c0.5 | unrun | unrun | unrun | unrun | unrun | unrun |
 | cog__c4 | unrun | unrun | unrun | unrun | unrun | unrun |
