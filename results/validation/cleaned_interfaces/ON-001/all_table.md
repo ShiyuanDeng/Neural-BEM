@@ -9,7 +9,7 @@ child run_case entry to fit-return after fit_result output; excludes truth scori
 | circle__c13.3 | True | 7.348 | True | 4.612 | 1.593 |
 | kite__c0.5 | True | 66.422 | True | 17.220 | 3.857 |
 | kite__c4 | True | 27.706 | True | 13.028 | 2.127 |
-| kite__c13.3 | unrun | unrun | unrun | unrun | — |
+| kite__c13.3 | True | 41.475 | True | 36.042 | 1.151 |
 | peanut__c0.5 | unrun | unrun | unrun | unrun | — |
 | peanut__c4 | unrun | unrun | unrun | unrun | — |
 | peanut__c13.3 | unrun | unrun | unrun | unrun | — |
