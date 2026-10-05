@@ -11,8 +11,8 @@ in torch float64/complex128. On the device it runs:
 
 The assembled matrix returns to the host. Several parts stay on the CPU:
 
-- scalar Bessel/Hankel values (SciPy; torch.special Bessel functions are never
-  used),
+- analytic radial coefficients (extended-precision Bessel recurrence) and
+  other scalar Bessel/Hankel values (SciPy; no torch.special Bessel calls),
 - Graf sources and receivers,
 - the regular-wave arrays,
 - LU.

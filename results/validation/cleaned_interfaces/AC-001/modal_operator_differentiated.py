@@ -10,35 +10,9 @@ import numpy as np
 from functools import lru_cache
 from scipy.signal import fftconvolve
 from scipy.special import gammaln, hankel1, i0e, jv
+from numpy.polynomial.chebyshev import chebder, chebdiv
 
 from .modal_geometry import EPS, half, reflect
-
-
-_RADIAL_PI = np.longdouble('3.141592653589793238462643383279502884')
-_RADIAL_EULER = np.longdouble('0.577215664901532860606512090082402431')
-
-
-def _radial_bessel_orders(a, count):
-    """Integer J orders by scaled Miller recurrence in extended precision.
-
-    Normalize with J0+2 sum_(n>=1) t^n J_n = exp(sign*i*a), t=sign*i,
-    choosing sign opposite Im(a). The right side then grows rather than
-    decays, avoiding an ill-conditioned normalization for damped arguments.
-    No special-function values at radial sample points are involved.
-    """
-    a = np.clongdouble(a)
-    last = count+32
-    values = np.zeros(last+2, dtype=np.clongdouble)
-    values[last] = 1
-    for n in range(last, 0, -1):
-        values[n-1] = (2*n/a)*values[n]-values[n+1]
-        if abs(values[n-1]) > 1e200:
-            values[n-1:] *= np.longdouble('1e-200')
-    sign = -1 if a.imag >= 0 else 1
-    phase = np.array([1, sign*1j, -1, -sign*1j], dtype=np.clongdouble)
-    normalization = values[0]+2*np.sum(phase[np.arange(1, last+1) % 4]*values[1:last+1])
-    values *= np.exp(sign*1j*a)/normalization
-    return values[:count]
 
 
 def radial_functions(r2, ko, ki):
@@ -85,7 +59,7 @@ def radial_functions(r2, ko, ki):
 
 
 def _radial_split_coefficients(k, upper, count):
-    """Analytic P,Q,P',Q'+(P-P(0))/R coefficients (no radial samples).
+    """Analytic P,Q coefficients, with x=2R/upper-1 (no radial samples).
 
     Graf's theorem gives [J_(2m)(k sqrt(R))]_n = e_n J_(m+n)(a) J_(m-n)(a),
     where a=k sqrt(upper)/2 and e_n=2-delta_n0. DLMF 10.23.16 then gives
@@ -93,44 +67,29 @@ def _radial_split_coefficients(k, upper, count):
     C=i/4-(EulerGamma+log(k/2))/(2 pi). This avoids subtracting a singular
     Hankel series and P log(R). Negative integer orders use J_-n=(-1)^n J_n.
     """
-    k = np.clongdouble(k)
-    a = k*np.sqrt(np.longdouble(upper))/2
+    a = k*np.sqrt(upper)/2
     n = np.arange(count)
     m = np.arange(1, count+1)[:, None]
-    bessel = _radial_bessel_orders(a, 2*count)
+    bessel = jv(np.arange(2*count), a)
     difference = m-n
     products = bessel[m+n]*bessel[np.abs(difference)]
     products *= np.where(difference < 0, (-1.)**difference, 1.)
+    regular = np.sum(((-1.)**m/m)*products, axis=0)/np.pi
     j0 = (-1.)**n*bessel[:count]**2
-    pi = _RADIAL_PI
-    constant = .25j-(_RADIAL_EULER+np.log(k/2))/(2*pi)
-    q = constant*j0+np.sum(((-1.)**m/m.astype(np.longdouble))*products, axis=0)/pi
-    p = -j0/(4*pi)
-    dp = k*k/(16*pi)*(j0+products[0])
-    # Differentiate the Neumann expansion analytically and use the Bessel
-    # recurrences before evaluating coefficients. For S=Q'+(P-P(0))/R,
-    # the J_(2m) weights are k^2*(-C/4-1/(16pi)) at m=0,
-    # k^2*(-C/4+1/(32pi)) at m=1, and
-    # k^2*(1+2*(-1)^m/m)/(8pi*(m^2-1)) for m>=2.
-    # This avoids spectral differentiation of rounded coefficients.
-    high = m[1:].astype(np.longdouble)
-    weights = (1+2*(-1.)**high/high)/(8*pi*(high*high-1))
-    s = k*k*((-constant/4-1/(16*pi))*j0
-             +(-constant/4+1/(32*pi))*products[0]
-             +np.sum(weights*products[1:], axis=0))
-    arrays = np.array([p, q, dp, s])
-    arrays[:, 1:] *= 2
-    return arrays
+    q = (.25j-(np.euler_gamma+np.log(k/2))/(2*np.pi))*j0+regular
+    p = -j0/(4*np.pi)
+    p[1:] *= 2
+    q[1:] *= 2
+    return p, q
 
 
 def _neumann_tail_bounds(k, upper, count):
-    """Absolute l1 bounds for omitted Neumann terms in Q and regular S.
+    """Absolute l1 bounds for omitted Neumann terms in Q and its R derivative.
 
     |J_l(a)| <= exp(|Im a|) (|a|/2)^l/l!. In the omitted products m>count,
     l=m+n>count, n<=l, and summing the other Bessel factor is bounded by
-    2 exp(|Im a|+|a|/2). Sum the resulting geometric majorant. The absolute
-    S/Q weight ratio is at most |k|^2*(m+2)/(8*(m^2-1)), decreasing for m>=2.
-    These bound truncation, not roundoff.
+    2 exp(|Im a|+|a|/2). Sum the resulting geometric majorant, including l^2
+    for the Chebyshev derivative. These bound truncation, not roundoff.
     """
     a = k*np.sqrt(upper)/2
     h, start = abs(a)/2, count+1
@@ -141,15 +100,17 @@ def _neumann_tail_bounds(k, upper, count):
                  +start*np.log(h)-gammaln(start+1))
     first = np.exp(log_first)
     tail = first/(1-ratio)
-    return tail, tail*abs(k)**2*(start+2)/(8*(start**2-1))
+    second_moment = (start**2/(1-ratio)+2*start*ratio/(1-ratio)**2
+                     +ratio*(1+ratio)/(1-ratio)**3)
+    return tail, first*second_moment*2/upper
 
 
 def radial_coefficients(ko, ki, upper, tolerance=1e-15):
     """Construct all six radial Chebyshev series from analytic Bessel products.
 
-    Derivatives and the removable quotient are combined analytically in the
-    even-Bessel basis before coefficient evaluation. P_o(0)=P_i(0)=-1/(4 pi)
-    cancels the singular constants. Resolution uses coefficient decay,
+    Derivatives and the removable quotient (P_o-P_i)/R are formed before
+    truncation. The latter's roundoff-size constant remainder is discarded:
+    P_o(0)=P_i(0)=-1/(4 pi) analytically. Resolution uses coefficient decay,
     not a floating-point error certificate. ``radial_points`` is always zero.
     ``amplification`` uses a coefficient-derived weighted RMS lower bound on
     the peak, rather than the former sampled peak (see amplification_scope).
@@ -159,18 +120,23 @@ def radial_coefficients(ko, ki, upper, tolerance=1e-15):
             not np.isfinite(ko) or not np.isfinite(ki) or ko == 0 or ki == 0):
         raise ValueError('Finite nonzero wavenumbers, upper > 0 and 0 < tolerance < 1 required.')
     # Complex logarithms also give the principal branch for negative real k.
-    ko, ki = np.clongdouble(ko), np.clongdouble(ki)
+    ko, ki = complex(ko), complex(ki)
     alpha = max(abs(ko), abs(ki))*np.sqrt(upper)/2
     count = 16*int(np.ceil(max(64, 2*(alpha+6*alpha**(1/3)+24))/16))
     for _ in range(4):
-        po, qo, dpo, so = _radial_split_coefficients(ko, upper, count)
-        pi, qi, dpi, si = _radial_split_coefficients(ki, upper, count)
-        p, q, dp, dq = po-pi, qo-qi, dpo-dpi, so-si
+        po, qo = _radial_split_coefficients(ko, upper, count)
+        pi, qi = _radial_split_coefficients(ki, upper, count)
+        p, q = po-pi, qo-qi
         # P_o(0)-P_i(0)=0 exactly. Obtain the constant coefficient from that
         # identity instead of subtracting two nearly equal O(1) constants
         # when |k| sqrt(upper) is small.
         p[0] = -np.sum((-1.)**np.arange(1, count)*p[1:])
-        c = np.array([p, q, dp, dq,
+        dp = chebder(p, scl=2/upper)
+        dq = chebder(q, scl=2/upper)
+        quotient, remainder = chebdiv(p, np.array([upper/2, upper/2]))
+        dq[:len(quotient)] += quotient
+        c = np.array([p, q, np.pad(dp, (0, count-len(dp))),
+                      np.pad(dq, (0, count-len(dq))),
                       ko*ko*po-ki*ki*pi, ko*ko*qo-ki*ki*qi])
         if not np.all(np.isfinite(c)):
             raise ValueError('Non-finite analytic radial Chebyshev coefficients.')
@@ -185,15 +151,11 @@ def radial_coefficients(ko, ki, upper, tolerance=1e-15):
             degree = int(max(np.argmax(row) for row in small))+2
             rms = np.sqrt(np.abs(c[:, 0])**2+np.sum(np.abs(c[:, 1:])**2, axis=1)/2)
             peak_lower_bound = float(np.max(rms))
-            with np.errstate(over='ignore'):
-                result = np.asarray(c[:, :degree+1], dtype=np.complex128)
-            if not np.all(np.isfinite(result)):
-                raise ValueError('Non-finite analytic radial Chebyshev coefficients.')
-            return result, dict(
+            return c[:, :degree+1], dict(
                 radial_degree=degree, radial_points=0, radial_terms=count,
                 radial_coefficient_method='analytic_bessel', alpha=float(alpha),
-                radial_work_precision_bits=int(np.finfo(np.longdouble).nmant+1),
                 coefficient_sum=float(np.max(size)),
+                quotient_remainder=float(np.max(np.abs(remainder))),
                 neumann_tail_bound=float(np.max(tail)),
                 amplification=float(np.max(size)/peak_lower_bound) if peak_lower_bound else 0.,
                 amplification_scope='coefficient l1 / Chebyshev weighted RMS; no radial samples')

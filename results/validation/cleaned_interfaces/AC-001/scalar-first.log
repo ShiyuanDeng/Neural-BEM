@@ -1,0 +1,79 @@
+FF.F.......................                                              [100%]
+=================================== FAILURES ===================================
+____ test_all_six_series_against_dct_and_high_precision[0.05-0.01-0.0-0.5] _____
+
+contrast = 0.5, damping = 0.0, k = 0.05, upper = 0.01
+
+    @pytest.mark.parametrize('contrast', [.5, 4., 13.3])
+    @pytest.mark.parametrize('damping', [0., .25])
+    @pytest.mark.parametrize('k,upper', [(.05, .01), (1.2, 4.), (6.417188604442469, 12.)])
+    def test_all_six_series_against_dct_and_high_precision(contrast, damping, k, upper):
+        ko = k*(1+1j*damping)
+        ki = ko*np.sqrt(contrast)
+        coefficients, info = operator.radial_coefficients(ko, ki, upper)
+        reference = dct_reference(ko, ki, upper)
+        scale = np.sum(np.abs(reference), axis=1)
+        padded = np.pad(coefficients, ((0, 0), (0, reference.shape[1]-coefficients.shape[1])))
+>       assert np.all(np.sum(np.abs(padded-reference), axis=1) < 1e-11*scale)
+E       AssertionError: assert np.False_
+E        +  where np.False_ = <function all at 0x7841849b23b0>(array([9.74511979e-18, 2.30171554e-16, 1.12496174e-19, 1.16775089e-18,\n       4.97381277e-19, 3.72250389e-18]) < (1e-11 * array([2.48679161e-07, 5.51608509e-02, 2.48679599e-05, 1.80207558e-04,\n       9.94718394e-05, 6.32663614e-04])))
+E        +    where <function all at 0x7841849b23b0> = np.all
+E        +    and   array([9.74511979e-18, 2.30171554e-16, 1.12496174e-19, 1.16775089e-18,\n       4.97381277e-19, 3.72250389e-18]) = <function sum at 0x7841849aefb0>(array([[9.74347293e-18, 1.32348898e-22, 2.21007271e-24, ...,\n        1.93093881e-25, 7.18273631e-25, 0.00000000e+00],\n...\n       [1.21217488e-19, 7.42390356e-21, 7.40891117e-22, ...,\n        7.25821383e-22, 9.35369124e-22, 1.55778475e-21]]), axis=1)
+E        +      where <function sum at 0x7841849aefb0> = np.sum
+E        +      and   array([[9.74347293e-18, 1.32348898e-22, 2.21007271e-24, ...,\n        1.93093881e-25, 7.18273631e-25, 0.00000000e+00],\n...\n       [1.21217488e-19, 7.42390356e-21, 7.40891117e-22, ...,\n        7.25821383e-22, 9.35369124e-22, 1.55778475e-21]]) = <ufunc 'absolute'>((array([[ 1.24339581e-07+0.00000000e+00j,  1.24339508e-07-4.78939111e-39j,\n        -7.28552626e-14-1.78443928e-29j, .......,\n         0.00000000e+00+0.00000000e+00j,  0.00000000e+00+0.00000000e+00j,\n         0.00000000e+00+0.00000000e+00j]]) - array([[ 1.24339581e-07+0.00000000e+00j,  1.24339508e-07+0.00000000e+00j,\n        -7.28552626e-14+0.00000000e+00j, .......,\n        -1.50024111e-22+7.10147482e-22j,  7.90143401e-22-5.00588458e-22j,\n        -1.21140601e-21-9.79381845e-22j]])))
+E        +        where <ufunc 'absolute'> = np.abs
+
+pytest/bem_inverse/test_analytic_radial.py:56: AssertionError
+____ test_all_six_series_against_dct_and_high_precision[0.05-0.01-0.0-4.0] _____
+
+contrast = 4.0, damping = 0.0, k = 0.05, upper = 0.01
+
+    @pytest.mark.parametrize('contrast', [.5, 4., 13.3])
+    @pytest.mark.parametrize('damping', [0., .25])
+    @pytest.mark.parametrize('k,upper', [(.05, .01), (1.2, 4.), (6.417188604442469, 12.)])
+    def test_all_six_series_against_dct_and_high_precision(contrast, damping, k, upper):
+        ko = k*(1+1j*damping)
+        ki = ko*np.sqrt(contrast)
+        coefficients, info = operator.radial_coefficients(ko, ki, upper)
+        reference = dct_reference(ko, ki, upper)
+        scale = np.sum(np.abs(reference), axis=1)
+        padded = np.pad(coefficients, ((0, 0), (0, reference.shape[1]-coefficients.shape[1])))
+>       assert np.all(np.sum(np.abs(padded-reference), axis=1) < 1e-11*scale)
+E       AssertionError: assert np.False_
+E        +  where np.False_ = <function all at 0x7841849b23b0>(array([1.52616080e-17, 4.89135470e-16, 7.43401550e-19, 4.39066468e-18,\n       5.22871952e-18, 1.52557026e-17]) < (1e-11 * array([1.49206885e-06, 1.10327858e-01, 1.49207759e-04, 9.28925103e-04,\n       5.96831037e-04, 3.21457004e-03])))
+E        +    where <function all at 0x7841849b23b0> = np.all
+E        +    and   array([1.52616080e-17, 4.89135470e-16, 7.43401550e-19, 4.39066468e-18,\n       5.22871952e-18, 1.52557026e-17]) = <function sum at 0x7841849aefb0>(array([[1.52523105e-17, 4.78939111e-39, 3.53025985e-24, ...,\n        5.16801389e-24, 3.09687859e-24, 5.29395592e-23],\n...\n       [6.13317367e-19, 1.87046997e-20, 2.64314974e-20, ...,\n        5.21165180e-21, 3.51817816e-21, 4.45758998e-21]]), axis=1)
+E        +      where <function sum at 0x7841849aefb0> = np.sum
+E        +      and   array([[1.52523105e-17, 4.78939111e-39, 3.53025985e-24, ...,\n        5.16801389e-24, 3.09687859e-24, 5.29395592e-23],\n...\n       [6.13317367e-19, 1.87046997e-20, 2.64314974e-20, ...,\n        5.21165180e-21, 3.51817816e-21, 4.45758998e-21]]) = <ufunc 'absolute'>((array([[-7.46034424e-07+0.00000000e+00j, -7.46032967e-07-4.78939111e-39j,\n         1.45710065e-12+3.56886729e-28j, .......,\n         0.00000000e+00+0.00000000e+00j,  0.00000000e+00+0.00000000e+00j,\n         0.00000000e+00+0.00000000e+00j]]) - array([[-7.46034424e-07+0.00000000e+00j, -7.46032967e-07+0.00000000e+00j,\n         1.45710065e-12+0.00000000e+00j, .......,\n        -5.15071084e-21+7.94664929e-22j, -2.95142745e-21-1.91485080e-21j,\n         4.03664139e-21+1.89093488e-21j]])))
+E        +        where <ufunc 'absolute'> = np.abs
+
+pytest/bem_inverse/test_analytic_radial.py:56: AssertionError
+____ test_all_six_series_against_dct_and_high_precision[0.05-0.01-0.25-0.5] ____
+
+contrast = 0.5, damping = 0.25, k = 0.05, upper = 0.01
+
+    @pytest.mark.parametrize('contrast', [.5, 4., 13.3])
+    @pytest.mark.parametrize('damping', [0., .25])
+    @pytest.mark.parametrize('k,upper', [(.05, .01), (1.2, 4.), (6.417188604442469, 12.)])
+    def test_all_six_series_against_dct_and_high_precision(contrast, damping, k, upper):
+        ko = k*(1+1j*damping)
+        ki = ko*np.sqrt(contrast)
+        coefficients, info = operator.radial_coefficients(ko, ki, upper)
+        reference = dct_reference(ko, ki, upper)
+        scale = np.sum(np.abs(reference), axis=1)
+        padded = np.pad(coefficients, ((0, 0), (0, reference.shape[1]-coefficients.shape[1])))
+>       assert np.all(np.sum(np.abs(padded-reference), axis=1) < 1e-11*scale)
+E       AssertionError: assert np.False_
+E        +  where np.False_ = <function all at 0x7841849b23b0>(array([1.97585894e-17, 3.07179947e-16, 1.88967204e-19, 1.38305028e-18,\n       4.62056436e-19, 3.58275894e-18]) < (1e-11 * array([2.64221648e-07, 5.51606530e-02, 2.64222151e-05, 1.84740829e-04,\n       1.05688891e-04, 6.42421557e-04])))
+E        +    where <function all at 0x7841849b23b0> = np.all
+E        +    and   array([1.97585894e-17, 3.07179947e-16, 1.88967204e-19, 1.38305028e-18,\n       4.62056436e-19, 3.58275894e-18]) = <function sum at 0x7841849aefb0>(array([[1.97569111e-17, 6.61744490e-23, 3.41922675e-24, ...,\n        3.92103446e-25, 5.47424974e-25, 0.00000000e+00],\n...\n       [2.42434976e-19, 8.43134405e-21, 5.89158117e-22, ...,\n        1.05510086e-21, 1.49186962e-21, 9.77982030e-22]]), axis=1)
+E        +      where <function sum at 0x7841849aefb0> = np.sum
+E        +      and   array([[1.97569111e-17, 6.61744490e-23, 3.41922675e-24, ...,\n        3.92103446e-25, 5.47424974e-25, 0.00000000e+00],\n...\n       [2.42434976e-19, 8.43134405e-21, 5.89158117e-22, ...,\n        1.05510086e-21, 1.49186962e-21, 9.77982030e-22]]) = <ufunc 'absolute'>((array([[ 1.16568424e-07+6.21696947e-08j,  1.16568379e-07+6.21696264e-08j,\n        -4.58191750e-14-6.83017860e-14j, .......,\n         0.00000000e+00+0.00000000e+00j,  0.00000000e+00+0.00000000e+00j,\n         0.00000000e+00+0.00000000e+00j]]) - array([[ 1.16568424e-07+6.21696947e-08j,  1.16568379e-07+6.21696264e-08j,\n        -4.58191750e-14-6.83017860e-14j, .......,\n         4.35321279e-22+9.61110405e-22j, -6.67270742e-22-1.33432557e-21j,\n         5.53177035e-22+8.06501097e-22j]])))
+E        +        where <ufunc 'absolute'> = np.abs
+
+pytest/bem_inverse/test_analytic_radial.py:56: AssertionError
+=========================== short test summary info ============================
+FAILED pytest/bem_inverse/test_analytic_radial.py::test_all_six_series_against_dct_and_high_precision[0.05-0.01-0.0-0.5]
+FAILED pytest/bem_inverse/test_analytic_radial.py::test_all_six_series_against_dct_and_high_precision[0.05-0.01-0.0-4.0]
+FAILED pytest/bem_inverse/test_analytic_radial.py::test_all_six_series_against_dct_and_high_precision[0.05-0.01-0.25-0.5]
+3 failed, 24 passed in 0.88s

@@ -160,6 +160,14 @@ contractions remain on CPU. See the
 
 ## Code map
 
+Modal radial coefficients are now constructed directly from analytic Bessel
+products, including the regularized Hankel terms through their Neumann series.
+CPU and CUDA assembly share this path; it performs no radial sampling or DCT.
+Derivatives and the removable material-difference quotient are formed in
+coefficient space. See the [derivation](../../docs/reference/modal_radial_coefficients.md)
+and [AC-001 validation](../../docs/iterations/CI-SPD/AC-001_results.md).
+The retained `radial_functions` evaluator serves as an independent test reference.
+
 | Modules | Responsibility |
 |---|---|
 | `problem`, `physics`, `policy`, `runner` | Input contract, solver service/registration, executable policy, and fitting/audits |
