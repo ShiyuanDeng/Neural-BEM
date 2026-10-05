@@ -169,3 +169,18 @@ GGB_PY=/home/drdeng/miniconda3/envs/EMNerf/bin/python
 "$GGB_PY" -m experiments.benchmark.ggb002 verify
 # Validate, commit, and push F4; verify remote and final working-tree status.
 ```
+
+## Execution closeout
+
+Both approved arms ran once. S1 stopped in M7 with a candidate production
+evaluation failure; F4 stopped in M3 with the same generic native failure
+detail. Neither reached the noise target or exhausted its budget. There
+were no alternate starts, retries, tuning, or additional inverse runs.
+All endpoint field-refinement gates pass; both failed inverse outcomes are
+preserved. See [results](GGB-002_results.md).
+
+S1 exposed a reporting-only field-name/null-formatting error after its
+numerical results were saved. The original driver and preparation seal are
+retained; a separate amendment records the corrected renderer and verifies
+unchanged numerical ASTs. No historical seal or failed-run evidence was
+overwritten. All 85 tests and the saved-array read-back checks pass.

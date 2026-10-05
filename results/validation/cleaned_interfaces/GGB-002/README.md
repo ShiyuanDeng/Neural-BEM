@@ -7,6 +7,13 @@ TG-002 scene default. It uses the maintained modal Müller solver and
 certified spectral updates with the original centred radius-0.35 m start.
 Material is known; this is a shape-recovery control.
 
+Both approved arms completed without recovery. S1 ends at 67.609% residual
+at its fitting frequency, 0.5 GHz. F4 ends at 110.826–111.283% across its
+four fitting frequencies; both have approximately 5.5% noise targets. Both
+stop on a candidate production-evaluation failure, S1 in M7 and F4 in M3.
+F4's 4.769-second fit reflects early failure. See the [report](report.md) and
+[interpretation](../../../../docs/iterations/CI-SPD/GGB-002_results.md).
+
 The original archive contains only 0.4 GHz observations. The new four-real-
 frequency panel is 0.5, 0.75, 1.0, and 1.25 GHz. Observations are generated
 independently using the original 93 active pixels, their original coordinates,
@@ -39,8 +46,19 @@ geometry derivative checks at the two panel endpoints on CPU and CUDA.
 | `report.md`, `comparison.png` | Per-frequency residuals, optimization evidence and reconstruction panels |
 | `validation.json` | Read-back verification of sealed inputs, endpoint residuals, metrics and discrepancy decisions |
 | `test_validation.json` | Pre-execution meaningful unit and maintained-package checks |
+| `postprocessing_amendment.json`, `source_snapshots/` | Preserved original driver/seal and a reporting-only correction; numerical ASTs unchanged |
 
 Source: `experiments/benchmark/ggb002.py` and `ggb002_adapter.py`.
 Follow the commands in the plan. Runs use fresh directories and are never
 automatically retried or tuned to their outcomes. Original GGB-001 evidence
 in Gau-Gal remains unchanged.
+
+S1's inverse and audits finished and saved before a report-formatting error
+was found. The failure receipt is retained; the report was corrected without
+rerunning the inverse or altering raw stage evidence. The original
+`preparation.json` seal is unchanged. Its explicit postprocessing amendment
+verifies unchanged numerical-function ASTs and records source versions.
+
+All 85 checks passed before execution and after the correction. Final
+read-back verification passes for both endpoints. The final comparison panel
+was visually checked.
