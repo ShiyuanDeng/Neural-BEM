@@ -1,0 +1,54 @@
+{
+  "records": [
+    {
+      "contrast": 0.5,
+      "catalog": "real",
+      "frequency_hz": 250000000.0,
+      "pixels": 256,
+      "centers": 224,
+      "double": true,
+      "build_seconds": 5.191672890912741,
+      "equation_scale": 182044.4444444444,
+      "solve_seconds": 6.047053558751941,
+      "true_residual": 7.04559532537324e-06,
+      "physical_relative": 0.00011318193442015114,
+      "linear_stats": [
+        {
+          "phase": "forward",
+          "iterations": 200.0,
+          "initial_rel": 1.0,
+          "final_rel": 7.045595325372419e-06,
+          "converged": 0.0
+        },
+        {
+          "phase": "forward",
+          "iterations": 200.0,
+          "initial_rel": 1.0,
+          "final_rel": 7.045595325372419e-06,
+          "converged": 0.0
+        }
+      ],
+      "field_passed": false,
+      "adjoint": {
+        "system_relative": 6.436143155543655e-16,
+        "sensor_relative": 5.160890841003748e-16,
+        "off_pair_max": 0.0
+      },
+      "derivative": {
+        "passed": false,
+        "traceback": "Traceback (most recent call last):\n  File \"/home/drdeng/Neural_SDF_BEM_AD/experiments/benchmark/on002.py\", line 135, in qualify\n    row[\"derivative\"]=derivative_check(frequency,target)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/experiments/benchmark/on002.py\", line 66, in derivative_check\n    loss, grad, residuals = frequency.objective_gradient(target)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/experiments/benchmark/on002_adapter.py\", line 116, in objective_gradient\n    raise RuntimeError(f\"Forward true residual refuses update: {forward_residual:g}\")\nRuntimeError: Forward true residual refuses update: 7.0456e-06\n"
+      },
+      "native_occupancy_range": [
+        0.0,
+        1.0000000000000007
+      ],
+      "total_seconds": 17.590482546947896
+    }
+  ],
+  "complete": true,
+  "elapsed_seconds": 17.610268091317266,
+  "source_hashes_unchanged": true,
+  "fields_qualified": false,
+  "adjoints_qualified": true,
+  "derivatives_qualified": false
+}

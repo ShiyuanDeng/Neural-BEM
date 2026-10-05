@@ -1,7 +1,8 @@
 # ON 002 Matched GauGal comparison and conditional hybrid
 
 Prepared 2026-10-05. Approval status: **APPROVED by direct user launch**.
-Execution status: **RESUMED — adapter repair/qualification**. The first launch
+Execution status: **CLOSED — ADAPTER_INCOMPLETE** after authorized resumption.
+See [resumed results](../iteration_02/02_resume_results.md). The first launch
 was interrupted, adapter-unqualified, at 2026-10-05 01:48:40 UTC. Implementation owner and execution reviewer:
 ON-002 agent. This is an alternative eight-hour campaign to ON-001.
 
@@ -285,3 +286,8 @@ dense operator to 1e-12 but stalled at 2.94e-2 without RHS normalization and
 implementation, not a new physical model or solver. The independent dense
 regression uses an 8/4 system so its solver check fits the registered cap;
 the prescribed 128/112 and 256/224 screens determine actual feasibility.
+
+Resumption closed at **2026-10-05T10:19:29.506081+00:00** after the repaired 128-grid
+screens and the registered 256-grid weak control all failed the true solve gate.
+The approved adapter stop rule applies. Inverse, hybrid and comparison stages
+remain unrun; no GauGal/BEM speed or recovery conclusion is established.

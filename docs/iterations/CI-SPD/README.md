@@ -30,8 +30,13 @@ ON-003's circle errors track the Ewald truncation term exp(-tau q_max^2); only x
 registered, which could not pass at the 256 grid. ON-002 was interrupted at 01:48 UTC with 0/12
 adapter configurations converged. Its record was preserved unchanged in `7d50e3f8`.
 
-**Proposed, awaiting approval (2026-10-05):** [GP-001](iteration_02/03_plan.md) replaces
-ON-002: adapter repair ladder, physics feasibility, then parity.
+**ON-002 resumed and closed (2026-10-05):** [resumed adapter results](iteration_02/02_resume_results.md)
+record **ADAPTER_INCOMPLETE** after scale normalization and the declared
+complex128 fallback: 0/25 resumed solve gates passed, including the 256-grid
+weak control. No inverse, hybrid or timing-parity comparison was released.
+
+**Proposed, awaiting approval (2026-10-05):** [GP-001](iteration_02/03_plan.md) remains
+unrun: its amended adapter repair ladder, feasibility and parity contract is separate.
 **EW-001 closed:** [smaller splits still fail; 46–48x contraction cost lower bound](iteration_03/05_results.md) corrects the Gaussian-tail pass prediction and closes the registered 2D line.
 
 Read [the detailed comparison and explanation](01_results.md). It documents

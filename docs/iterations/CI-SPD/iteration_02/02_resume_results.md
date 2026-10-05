@@ -1,70 +1,88 @@
-# ON-002 resumed adapter qualification
+# ON-002 resumed results — adapter incomplete
 
-User authorization: `go on ON-002`. The resume receipt preserves the original
-baseline, interruption, renewed deadlines and existing launch branch.
-GP-001 is not launched. The strict ON-002 field gate still blocks fitting.
+**Decision: ADAPTER_INCOMPLETE.** The authorized `go on ON-002` resumption
+finished its allowed scale/precision repair, but no registered-grid system
+reached the 1e-6 true residual at the fixed 200-iteration BiCGSTAB cap.
+The strict ON-002 stop rule closes the adapter and blocks fitting. This is
+an incomplete comparison, not evidence that either inverse method is better.
 
-The pinned BiCGSTAB uses an absolute 1e-30 floor on squared scalar division
- denominators. Physical pixel testing areas and the frozen 1e-6 source
-strength make its iterates scale dependent. On the independent 12/10 control,
-removing only the common testing area gave true residual 0.02940 after 200
-iterations; additionally normalizing the RHS gave 6.67e-5 at the same cap.
-Both failures are retained. Exact FFT assembly agreed with dense projection
-at 1e-12. This control remains unqualified at its cap.
+The final 256/224 control was the prescribed start circle, contrast 0.5,
+0.25 GHz real frequency, in complex128. Its true residual was **7.0456e-6**.
+Its raw sharp-disk field discrepancy was 1.1318e-4, but the solve failure
+prevents qualification or a reliable grid-error conclusion. Its system and
+sensor adjoint errors were 6.44e-16 and 5.16e-16, with exactly zero off-pair
+readout. The occupancy gradient was correctly refused.
 
-The implemented repair removes the testing area from both sides, and
-normalizes each forward/adjoint RHS to unit norm before the pinned solve,
-restoring the physical solution afterward. Kernel and receiver cell-area
-factors, paired readout, contrast chain rule, solver, caps and tolerances are
-unchanged. GauGal remains read-only.
+## Repair and independent checks
 
-**Focused regression: 7 passed.** A smaller independent 8/4 dense assembly
-checks operator layout, physical scaling, iterative/direct agreement and the
-complete occupancy derivative for contrasts 0.5, 4 and 13.3. This establishes
-algebraic correctness on that control; it does not qualify the registered grids.
-The original four disk/kernel/mask controls also pass. The earlier three
-failed regression attempts and the scale diagnostic are retained in validation.
+The pinned external BiCGSTAB clamps squared complex-division denominators at
+1e-30. Metre-scale Galerkin testing areas and the frozen 1e-6 source strength
+activate that absolute floor. The adapter now divides its equations and RHS
+by the common physical testing area, normalizes each forward/adjoint RHS to
+unit 2-norm inside the pinned solve, then restores the physical solution.
+The exact equations, physical pixel kernel, receiver cell area, paired mask
+and signed contrast chain rule are preserved. No GauGal source was edited.
 
-Registered-grid qualification is pending. No inverse, hybrid, gallery of
-recoveries or matched timing comparison is released yet.
+A 12/10 dense control verified FFT assembly at 1e-12, but failed the solve
+cap: testing-area normalization alone yielded residual 0.02940; unit-RHS
+normalization improved it to 6.67e-5. Those failed checks are retained.
+**Seven regression tests pass**, including independent dense operator,
+direct-solve and complete-gradient controls at all three contrasts on an
+8/4 system, plus the original disk, kernel and paired-mask controls. This
+small-system result does not qualify the registered resolutions.
 
-## Registered 128/112 single-precision screen
+## Registered-grid evidence
 
-The repaired batch completed all 12 configurations in 10.954s.
-True solves qualified 0/12; field gates qualified
-0/12; occupancy derivatives qualified 0/12.
-All native prediction/reference/occupancy arrays are preserved and checked.
-Source hashes stayed unchanged. The 200-iteration cap is retained.
+| Batch | Pixels / centres | Precision | Checks | Solve / field / FD gates | Diagnostic seconds |
+|---|---|---|---:|---|---:|
+| resume128_float | 128 / 112 | complex64 | 12 | 0 / 0 / 0 | 10.954 |
+| resume128_double | 128 / 112 | complex128 | 12 | 0 / 0 / 0 | 34.063 |
+| resume256_double_weak_control | 256 / 224 | complex128 | 1 | 0 / 0 / 0 | 17.610 |
 
-The true-residual failures release the single pre-registered complex128/float64
-fallback. This changes only arithmetic precision, with its cost recorded.
-No second precision change, extra iteration cap or alternative solver is allowed
-in this adapter phase. Inversion and timing parity remain blocked.
+The two 128-grid batches each covered contrasts 0.5/4/13.3 at 0.25 and
+2.5 GHz, real and damped. The single complex128 fallback was used after
+single-precision true-residual failures. Double precision still qualified
+0/12 solves. The mandatory weak 256-grid control then failed, exhausting
+the declared adapter repair. The remaining 256 controls and 512 escalation
+were not released. Algebraic and paired-sensor adjoints passed all 25 resumed
+checks; full-grid occupancy derivatives remained blocked by failed forward
+solves. Remaining causes at the registered cap are unresolved; this report
+does not claim precision alone, physical discretization alone, or a layout
+error explains them.
 
-## resume128_double
+The original 128-grid batch remains immutable: 0/12 solves qualified,
+residuals 0.91–1.00. Its previously local native arrays are now committed too.
+No observation was regenerated, target geometry selected a setting, or
+reference implementation changed. B remains pinned to launch `6f2c1408` in
+its unchanged source archive; it was not rerun under unqualified G physics.
 
-Completed 12 checks in 34.063s; true solves qualified 0/12, field gates 0/12, FD controls 0/12. Source hashes stayed unchanged; native arrays and log were verified and saved.
+## Scope, validation and receipts
 
-| Contrast | Catalog | GHz | True residual | Field discrepancy | Field gate | FD gate |
-|---|---|---:|---:|---:|---|---|
-| 0.5 | real | 0.25 | 3.77e-06 | 0.000361 | False | False |
-| 0.5 | real | 2.5 | 0.000201 | 0.0586 | False | False |
-| 0.5 | damped | 0.25 | 7.49e-06 | 0.000404 | False | False |
-| 0.5 | damped | 2.5 | 0.000114 | 0.0488 | False | False |
-| 4 | real | 0.25 | 4.82e-06 | 0.00121 | False | False |
-| 4 | real | 2.5 | 0.256 | 0.947 | False | False |
-| 4 | damped | 0.25 | 1.41e-05 | 0.000842 | False | False |
-| 4 | damped | 2.5 | 0.000435 | 0.145 | False | False |
-| 13.3 | real | 0.25 | 7.16e-05 | 0.00463 | False | False |
-| 13.3 | real | 2.5 | 0.0253 | 1.72 | False | False |
-| 13.3 | damped | 0.25 | 4.86e-05 | 0.00334 | False | False |
-| 13.3 | damped | 2.5 | 0.000489 | 0.243 | False | False |
+B/G fitting, hybrid H, all-30 comparison, recovery gallery and timing repeats
+are **unrun because the adapter gate failed**. No speed ratio or recovery
+winner is published. Proposed GP-001 remains unrun; it is a separate contract.
+This run stayed on the recorded existing `feature/shape-frequency-continuation`
+launch branch while RG-001 used the checkout. No branch/worktree was created.
+Compute/source/Git locks separated numerical batches and publications; active
+RG-001 changes were preserved.
 
-Field discrepancies from unqualified solves cannot measure the physical grid error reliably.
+Every resumed batch completed, verified unchanged numerical/external source
+hashes, and saved checked native predictions, independent Mie references,
+occupancy/coefficient arrays, solver statistics, adjoints, refusals and logs.
+Final TG-002 seal verification passed all 30 cases. The focused tests pass,
+source snapshots and baseline archive match their hashes, and whitespace
+validation passes. The original interruption and diagnostic failures stay
+in the evidence rather than being overwritten.
 
-The single precision fallback is exhausted. Even the weakest low-frequency
-control misses 1e-6 at the 200-iteration cap in double precision. One registered
-256/224 low-frequency c0.5 real control will now check whether the required
-initial finer grid removes this failure. If it fails, stop at that mandatory
-control: the conjunctive adapter gate cannot pass, so no additional cases or
-512 escalation can release fitting under the remaining single-repair contract.
+- [Plan and resume registration](../iteration_01/03_plan.md)
+- [Original interrupted record](01_results.md)
+- [Machine-readable closeout](../../../../results/validation/cleaned_interfaces/ON-002/closeout.json)
+- [Resumed 128 single-precision receipts](../../../../results/validation/cleaned_interfaces/ON-002/resume128_float/summary.json)
+- [Resumed 128 double-precision receipts](../../../../results/validation/cleaned_interfaces/ON-002/resume128_double/summary.json)
+- [Final 256 weak control](../../../../results/validation/cleaned_interfaces/ON-002/resume256_double_weak_control/summary.json)
+- [Validation and failed diagnostics](../../../../results/validation/cleaned_interfaces/ON-002/validation/)
+
+Closed 2026-10-05T10:19:29.506081+00:00; resumed wall time including queueing/reporting
+through this receipt: 947.817s, plus 554s charged from the first launch.
+The three registered-grid diagnostic batches took 62.628s;
+these are adapter costs, not inverse comparison timings.
