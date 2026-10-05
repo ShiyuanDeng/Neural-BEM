@@ -1,0 +1,34 @@
+{
+  "command": [
+    "flock",
+    "-x",
+    "/tmp/neural-sdf-bem-ad-coordination/compute.lock",
+    "flock",
+    "-s",
+    "/tmp/neural-sdf-bem-ad-coordination/source.lock",
+    "env",
+    "PYTHONPATH=solvers:.",
+    "OMP_NUM_THREADS=1",
+    "OPENBLAS_NUM_THREADS=1",
+    "MKL_NUM_THREADS=1",
+    "/home/drdeng/miniconda3/envs/EMNerf/bin/python",
+    "-m",
+    "experiments.benchmark.ew001",
+    "costs"
+  ],
+  "returncode": 0,
+  "evidence_hashes": {
+    "stage_A_xi0.35/block_diagonal_errors.csv": "70e060021b1be48009ec251f65b5d99d7875b50918ceb0990b746fd77bfe55b0",
+    "stage_A_xi0.35/grid128_arrays.npz": "b7f5c33062e881c02e3f3a285f58026442dad45e65ae25e1a40179e5c1ca1daa",
+    "stage_A_xi0.35/grid256_arrays.npz": "124c2131a231808910a508dc912610a0b97276e26688d10534c439bdd4c776ea",
+    "stage_A_xi0.4/block_diagonal_errors.csv": "e9af82d7ea9810f4f3647dd38350e09a447aa90e0bd5a50d321eddbaa86ae336",
+    "stage_A_xi0.4/grid128_arrays.npz": "90038c77406ee27e666bd13c3410db269d94e6c357f72eacca4ae6cf01cae4cc",
+    "stage_A_xi0.4/grid256_arrays.npz": "1de8f5638ded9daa29e9077bfc65ca748952bce49e0e2f2aa2569102b7f77992",
+    "stage_A_xi0.5/block_diagonal_errors.csv": "60e5afeb75e754215a749aa7c5e99dea218dd80aa99c7796ac28b6fc51bd95ce",
+    "stage_A_xi0.5/grid128_arrays.npz": "bd3da973be9c3d08fddaa92ac0351da6c98167bb67748f0c3d2bea71ce9e41ad",
+    "stage_A_xi0.5/grid256_arrays.npz": "7c02c2ff55f4faf3adb4a70803ac33c419f201a16cc72a57cef9137a4100d9fa",
+    "stage_A_xi1/block_diagonal_errors.csv": "3014c40754e47575e2f57422e6a02bfa04d003a1152dc251435de1acbc4b4130",
+    "stage_A_xi1/grid128_arrays.npz": "b10e891b2aba1fafb77d0ae01555b2e209ebbea6de66a054bbf5d67e1e477296",
+    "stage_A_xi1/grid256_arrays.npz": "14d8534773853fcafec9ce8dad228f1b29be0213be5ffd40a56a91c3e6822494"
+  }
+}
