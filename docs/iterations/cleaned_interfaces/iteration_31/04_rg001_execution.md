@@ -36,3 +36,11 @@ truth during the damped prefix.
 The four saved killing trials replay with exactly matching production and
 refined gains (zero relative differences), and all four are accepted by the
 decision gate. The declared replay-construction repair was not needed.
+
+Stage 1 completed before opening Stage 2. Regression suites pass (247 + 348
+checks); the initial suite's one failure was solely the archived dictionary
+missing the new default field. The assertion now explicitly requires
+`resolution_gate='absolute'` and still compares every archived numerical setting.
+Two fresh C runs each on circle 4 and kite 0.5 have bit-identical accepted paths
+and decisions, setting P1's coefficient tolerance to zero. Fresh C paths also
+reproduce the saved ON-001 E paths bitwise on both controls.
