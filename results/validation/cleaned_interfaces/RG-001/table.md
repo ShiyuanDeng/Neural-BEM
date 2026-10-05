@@ -31,6 +31,6 @@ Unrun cases remain unrun; extended runs are diagnostic only.
 | cog__c0.5 | True | True | 0.06111261417784594 | True | 0 |
 | cog__c4 | True | True | 0.03971313726363457 | True | 0 |
 | cog__c13.3 | True | True | 0.010691782451528844 | True | 0 |
-| aphex_twin__c0.5 | unrun | unrun | — | — | — |
+| aphex_twin__c0.5 | False | False | 3.8684523992889592 | False | 1 |
 | aphex_twin__c4 | unrun | unrun | — | — | — |
 | aphex_twin__c13.3 | unrun | unrun | — | — | — |
