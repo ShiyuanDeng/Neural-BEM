@@ -4,6 +4,10 @@ Approved user instruction: "go on EW-001". Registered Q1/Q2 only.
 
 | Split | Grid | Cutoff | Max normalized error | Circle gate |
 |---:|---:|---:|---:|---|
+| 0.35 | 128 | 64 | 0.025227963 | FAIL |
+| 0.35 | 128 | 128 | 0.025227963 | FAIL |
+| 0.35 | 256 | 64 | 8.7950031e-05 | FAIL |
+| 0.35 | 256 | 128 | 0.00049557914 | FAIL |
 | 0.4 | 128 | 64 | 0.067038614 | FAIL |
 | 0.4 | 128 | 128 | 0.067038614 | FAIL |
 | 0.4 | 256 | 64 | 0.00075085518 | FAIL |
