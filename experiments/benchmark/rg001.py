@@ -144,7 +144,8 @@ def truth_case(case):
         endpoint_prediction_passed=bool(endpoint['passed'] and max(endpoint.get('relative_residual', [np.inf])) <= .003),
         gate_limited_by_construction=any(not r['passed'] for r in stages))
     write(OUT/'stage0'/f'{case}.json', value)
-    physics.close()
+    if hasattr(physics, 'close'):
+        physics.close()
     print('TRUTH', case, value['endpoint_prediction_passed'], max(r['worst_ratio'] for r in stages), flush=True)
     return value
 
@@ -193,7 +194,8 @@ def replay():
         passed = bool(row['accepted'] and not accurate and max(differences.values()) <= 1e-6)
         rows.append(dict(case=case, stage=name, check=row, saved_check=old,
                          relative_gain_differences=differences, passed=passed))
-        physics.close()
+        if hasattr(physics, 'close'):
+            physics.close()
         print('REPLAY', case, passed, differences, flush=True)
     value = dict(passed=all(r['passed'] for r in rows), rows=rows)
     write(OUT/'qualification/replay.json', value)
@@ -329,7 +331,8 @@ def independent(case):
     update = make_update('certified_spectral', p.length_unit_m, EXECUTION)
     result = audit(curve, stage, op.optimizer, p, physics, update, 120.)
     write(OUT/'independent'/f'{case}.json', result)
-    physics.close()
+    if hasattr(physics, 'close'):
+        physics.close()
     return result
 
 

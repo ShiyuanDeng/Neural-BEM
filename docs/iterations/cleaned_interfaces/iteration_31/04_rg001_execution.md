@@ -17,3 +17,10 @@ The historical production-failure branch refused a proposal; the explicit
 fatal-failure contract tightens that exceptional path, without relaxing it.
 
 Other pre-existing untracked work is preserved and excluded from RG-001 commits.
+
+The first Stage 0 attempt stopped after writing `circle__c0.5.json` because the
+driver called a nonexistent `ModalMuller.close()`. Its original manifest, source
+archive, receipt and traceback are retained in `RG-001/failed_stage0_01/` and
+were validated, committed and pushed before repair. Cleanup now calls `close`
+only when supplied by the backend. The rerun freezes a fresh campaign manifest;
+no fitting or numerical qualification setting changed.

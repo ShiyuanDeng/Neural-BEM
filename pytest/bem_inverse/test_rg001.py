@@ -97,7 +97,6 @@ def test_nonfinite_candidate_is_fatal_in_stage(gate, nodes):
 
 
 def test_finite_absolute_default_is_identical_to_explicit_default():
-    default = scalar(iterations=2, physics=ScalarPhysics('none'))
     # Disable the synthetic coarse bias for a fully qualified reference path.
     physics, stage, config, ledger = setup(iterations=2, nodes=16)
     a = lm.fit_stage(FourierCurve.circle(2.), stage, .5, ScalarUpdate(), config, ledger, physics=physics)
