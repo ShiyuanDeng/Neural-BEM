@@ -8,7 +8,7 @@ All times include the unchanged endpoint audit. Unrun cases remain unrun.
 | circle__c4 | True / 5.32s / COMPLETED_SCHEDULE | True / 4.24s / REQUIRED_ACCURACY_REACHED | True / 5.43s / COMPLETED_SCHEDULE | True / 4.23s / REQUIRED_ACCURACY_REACHED | True / 4.27s / REQUIRED_ACCURACY_REACHED | True / 6.15s / COMPLETED_SCHEDULE |
 | circle__c13.3 | True / 6.66s / COMPLETED_SCHEDULE | True / 3.99s / REQUIRED_ACCURACY_REACHED | unrun | unrun | unrun | unrun |
 | kite__c0.5 | True / 65.73s / COMPLETED_SCHEDULE | True / 16.59s / REQUIRED_ACCURACY_REACHED | True / 65.78s / COMPLETED_SCHEDULE | True / 16.82s / REQUIRED_ACCURACY_REACHED | True / 18.74s / REQUIRED_ACCURACY_REACHED | True / 69.80s / COMPLETED_SCHEDULE |
-| kite__c4 | unrun | unrun | unrun | unrun | unrun | unrun |
+| kite__c4 | True / 27.02s / COMPLETED_SCHEDULE | True / 12.41s / REQUIRED_ACCURACY_REACHED | unrun | unrun | unrun | unrun |
 | kite__c13.3 | unrun | unrun | unrun | unrun | unrun | unrun |
 | peanut__c0.5 | unrun | unrun | unrun | unrun | unrun | unrun |
 | peanut__c4 | unrun | unrun | unrun | unrun | unrun | unrun |
