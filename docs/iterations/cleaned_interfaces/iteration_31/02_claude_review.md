@@ -246,6 +246,11 @@ algorithmic speedup. With noisy data its threshold should come from the noise le
 Before any relaunch, commit the files unchanged as an interrupted record and
 correct the status in a separate commit. Then fix the disk non-convergence.
 
+*Update, later on 2026-10-05:* the ON-002 files were committed unchanged in
+`7d50e3f8`, so the four links now resolve. The stale status line is corrected
+in [GP-001](../../CI-SPD/iteration_02/03_plan.md) Stage 0. The
+`on002_status.json` snapshot predates that commit.
+
 ## Checked and passed
 
 | Check | Result |

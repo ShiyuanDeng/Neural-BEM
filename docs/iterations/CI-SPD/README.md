@@ -28,7 +28,12 @@ This is not a GauGal-parity claim; ON-002 remains independently owned.
 **Outside review (2026-10-05):** [ON-001/002/003 review](../cleaned_interfaces/iteration_31/02_claude_review.md).
 ON-003's circle errors track the Ewald truncation term exp(-tau q_max^2); only xi >= k* was
 registered, which could not pass at the 256 grid. ON-002 was interrupted at 01:48 UTC with 0/12
-adapter configurations converged; its plan and adapter remain untracked.
+adapter configurations converged. Its record was preserved unchanged in `7d50e3f8`.
+
+**Proposed, awaiting approval (2026-10-05):** [GP-001](iteration_02/03_plan.md) replaces
+ON-002: adapter repair ladder, physics feasibility, then parity.
+[EW-001](iteration_03/03_plan.md) reruns the Ewald circle control at
+xi/k* = 0.5/0.4/0.35 and applies a cost gate. None has run.
 
 Read [the detailed comparison and explanation](01_results.md). It documents
 the completed, approved GGB-001 pilot and the actual source paths used by its

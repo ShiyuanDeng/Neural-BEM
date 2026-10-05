@@ -27,6 +27,12 @@ basin failure. F and ON-003 were not decisive tests. ON-002 was interrupted with
 adapter, and its files are untracked. Proposed next step (unapproved): a new-ID, decision-relative
 gate test. [Recomputed evidence](../../../results/validation/cleaned_interfaces/ON-review-20261005/README.md).
 
+**Proposed, awaiting approval (2026-10-05):** [RG-001](iteration_31/03_plan.md), a
+decision-relative resolution gate for the four TG-002 failures. The successors
+[GP-001](../CI-SPD/iteration_02/03_plan.md) (GauGal, replacing the interrupted ON-002) and
+[EW-001](../CI-SPD/iteration_03/03_plan.md) (Ewald record correction and cost gate) live in CI-SPD.
+None has run.
+
 **ON-003 closed:** [operator feasibility report](../CI-SPD/iteration_01/05_ON003_results.md),
 **ACCURACY_OR_RESOURCE_LIMITED** at the declared circle-control Fourier-grid
 ceiling. No general forward operator qualified; full curved/field/derivative
