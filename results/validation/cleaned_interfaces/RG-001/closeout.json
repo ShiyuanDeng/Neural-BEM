@@ -1,0 +1,134 @@
+{
+  "classification": "Mechanism confirmed, no recovery",
+  "complete": true,
+  "P1_failures": [],
+  "predictions": {
+    "P1": "holds",
+    "P2": "falsified",
+    "P3": "falsified",
+    "P4": "holds",
+    "P5": {
+      "endpoints_passing": 26,
+      "endpoints_checked": 30,
+      "failed_cases": [
+        "aphex_twin__c0.5",
+        "aphex_twin__c13.3",
+        "aphex_twin__c4",
+        "hook__c13.3"
+      ]
+    }
+  },
+  "recovery": {
+    "C": 26,
+    "RG": 26
+  },
+  "additions": [],
+  "failure_progress": [
+    {
+      "case": "aphex_twin__c0.5",
+      "abort_rms_mm": 4.398304214420466,
+      "rms_mm": 3.8684523992889592,
+      "reduction_fraction": 0.12046729587151161,
+      "shape_passed": false,
+      "audit_passed": false,
+      "recovered": false,
+      "outcome": "NUMERICAL_FAILURE",
+      "detail": "production evaluation failed at candidate state",
+      "stages": [
+        "warmup_025_damped",
+        "stage_1_damped",
+        "stage_2_damped",
+        "stage_3_damped"
+      ],
+      "past_original_stage": false,
+      "accepted_overshoots": 1,
+      "largest_accepted_overshoot": 39.5051648031261
+    },
+    {
+      "case": "aphex_twin__c4",
+      "abort_rms_mm": 1.6853827949467404,
+      "rms_mm": 0.6640492520764268,
+      "reduction_fraction": 0.6059949976542798,
+      "shape_passed": false,
+      "audit_passed": false,
+      "recovered": false,
+      "outcome": "TRIAL_WALL_LIMIT",
+      "detail": "hard wall limit",
+      "stages": [
+        "warmup_025_damped",
+        "stage_1_damped",
+        "stage_2_damped",
+        "stage_3_damped",
+        "stage_4_damped",
+        "stage_4_undamped",
+        "release_M11",
+        "release_M15"
+      ],
+      "past_original_stage": true,
+      "accepted_overshoots": 25,
+      "largest_accepted_overshoot": 4231.6727805209
+    },
+    {
+      "case": "aphex_twin__c13.3",
+      "abort_rms_mm": 4.152414420225198,
+      "rms_mm": 3.9482543968416195,
+      "reduction_fraction": 0.04916658182988065,
+      "shape_passed": false,
+      "audit_passed": false,
+      "recovered": false,
+      "outcome": "TRIAL_WALL_LIMIT",
+      "detail": "hard wall limit",
+      "stages": [
+        "warmup_025_damped",
+        "stage_1_damped",
+        "stage_2_damped",
+        "stage_3_damped",
+        "stage_4_damped",
+        "stage_4_undamped",
+        "release_M11"
+      ],
+      "past_original_stage": false,
+      "accepted_overshoots": 45,
+      "largest_accepted_overshoot": 1430.9070066490717
+    },
+    {
+      "case": "hook__c13.3",
+      "abort_rms_mm": 8.657453881756418,
+      "rms_mm": 7.96878938007939,
+      "reduction_fraction": 0.0795458469756597,
+      "shape_passed": false,
+      "audit_passed": false,
+      "recovered": false,
+      "outcome": "NUMERICAL_FAILURE",
+      "detail": "production evaluation failed at candidate state",
+      "stages": [
+        "warmup_025_damped",
+        "stage_1_damped",
+        "stage_2_damped",
+        "stage_3_damped",
+        "stage_4_damped",
+        "stage_4_undamped",
+        "release_M11"
+      ],
+      "past_original_stage": false,
+      "accepted_overshoots": 19,
+      "largest_accepted_overshoot": 194329.03763433205
+    }
+  ],
+  "timing": {
+    "common_successes": 26,
+    "median_C_over_RG": 1.005559337165188,
+    "p10_C_over_RG": 0.9913839497129193,
+    "total_audited_seconds": {
+      "C": 554.1146458722651,
+      "RG": 841.0895522381179
+    }
+  },
+  "new_recovery_checks": {},
+  "extended": {
+    "aphex_twin__c0.5": null,
+    "aphex_twin__c4": null,
+    "aphex_twin__c13.3": null,
+    "hook__c13.3": null
+  }
+}
