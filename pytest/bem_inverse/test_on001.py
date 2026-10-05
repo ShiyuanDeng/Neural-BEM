@@ -146,3 +146,104 @@ def test_working_final_polishing_and_renormalized_full_weights():
     accurate = replace(base, prediction=objective.observed*1.005)
     objective.jacobian(accurate, update, update.prepare(base.curve))
     assert objective.indices == tuple(range(19))
+
+
+def test_gaussian_zero_expansion_and_raw_lipschitz_scaling_once():
+    from bem_inverse.gaussian_displacement import GaussianDisplacement, kernel
+    from bem_inverse.geometry import resize
+    update = GaussianDisplacement(.05, device="cpu")
+    space = update.prepare(resize(FourierCurve.circle(), 8), 3, 8)
+    assert update.trial(space, np.zeros(7))[0] is space.curve
+    a = np.zeros(7); a[0] = .001
+    candidate, receipt = update.trial(space, a)
+    assert abs(candidate.coefficients[candidate.band+1]) > 1
+    large = a*100
+    candidate, receipt = update.trial(space, large)
+    assert receipt["gaussian_alpha"] < 1
+    assert receipt["raw_lower_lipschitz"] >= .2-1e-14
+    assert receipt["a_used"][0] == pytest.approx(receipt["gaussian_alpha"]*large[0])
+    w, b = space.weights@large, space.translation@large
+    rng = np.random.default_rng(0)
+    x = rng.normal(size=100)+1j*rng.normal(size=100)
+    mapped = x+receipt["gaussian_alpha"]*(kernel(x, space.centres, space.width)@w+b)
+    assert np.all(abs(mapped[:, None]-mapped[None]) >= .2*abs(x[:, None]-x[None])-1e-12)
+    # Original momenta/translation are retained; only the evaluation is scaled.
+    assert receipt["gaussian_momenta_norm_sum"] == pytest.approx(sum(abs(w)))
+    assert receipt["gaussian_translation"] == pytest.approx(b)
+
+
+def test_gaussian_complete_projected_tangent_and_active_finite_direction():
+    from bem_inverse.gaussian_displacement import GaussianDisplacement
+    from bem_inverse.geometry import resize
+    curve = FourierCurve(np.array([.01j, .02, .02j, .1-.05j, 1., .07, .01]))
+    curve = resize(curve, 16)
+    update = GaussianDisplacement(.05, device="cpu")
+    space = update.prepare(curve, 5, 16)
+    direction = np.random.default_rng(3).normal(size=11); direction /= np.linalg.norm(direction)
+    eps = 1e-7
+    plus = update.trial(space, eps*direction)[0].coefficients
+    minus = update.trial(space, -eps*direction)[0].coefficients
+    fd = (plus-minus)/(2*eps)
+    assert np.linalg.norm(fd-space.derivatives@direction)/np.linalg.norm(fd) < 1e-5
+    a = .05*direction
+    assert update.trial(space, a)[1]["gaussian_alpha"] < 1
+    tangent = np.random.default_rng(4).normal(size=11); tangent /= np.linalg.norm(tangent)
+    fds = []
+    for h in (eps, eps/2):
+        p = update.trial(space, a+h*tangent)[0].coefficients
+        m = update.trial(space, a-h*tangent)[0].coefficients
+        fds.append((p-m)/(2*h))
+    assert np.linalg.norm(fds[0]-fds[1])/np.linalg.norm(fds[1]) < 1e-5
+    strict = GaussianDisplacement(.05, device="cpu", projection_tolerance=1e-16)
+    from bem_inverse.continuation.updates import UpdateRefused
+    with pytest.raises(UpdateRefused, match="projection"):
+        strict.trial(strict.prepare(curve, 5, 16), a)
+
+
+@pytest.mark.parametrize("damped", [False, True])
+def test_gaussian_reciprocal_matches_full_field_fd_at_zero_and_active_clip(damped):
+    from bem_inverse.gaussian_displacement import GaussianDisplacement
+    from bem_inverse.geometry import resize
+    from bem_inverse.modal_muller import ModalMuller, ModalSettings, token
+    p = fixture()
+    observation = (p.damped if damped else p.real)[-1]
+    physics = ModalMuller(Execution(device="cpu", frequency_threads=1),
+                          ModalSettings(trace_minimum=16, trace_step=8, window_margin=16))
+    update = GaussianDisplacement(p.length_unit_m, device="cpu")
+    curve = resize(FourierCurve.circle(1., .03+.02j), 8)
+    space = update.prepare(curve, 3, 8)
+    direction = np.random.default_rng(7).normal(size=7); direction /= np.linalg.norm(direction)
+    tangent = np.random.default_rng(8).normal(size=7); tangent /= np.linalg.norm(tangent)
+    for a in (direction*0, .05*direction):
+        current, receipt = update.trial(space, a)
+        h = 1e-7
+        plus = update.trial(space, a+h*tangent)[0]
+        minus = update.trial(space, a-h*tangent)[0]
+        if not np.any(a):
+            delta = space.derivatives@tangent
+        else:
+            assert receipt["gaussian_alpha"] < 1
+            hp = h/2
+            delta = (update.trial(space, a+hp*tangent)[0].coefficients-
+                     update.trial(space, a-hp*tangent)[0].coefficients)/(2*hp)
+        predicted = physics.evaluate(current, observation, p.contrast, token(24))
+        derivative = physics.derivative(predicted, update, SimpleNamespace(curve=current, derivatives=delta[:, None]))[:, 0]
+        fd = (physics.evaluate(plus, observation, p.contrast, token(24)).prediction-
+              physics.evaluate(minus, observation, p.contrast, token(24)).prediction)/(2*h)
+        assert np.linalg.norm(derivative-fd)/np.linalg.norm(fd) < 1e-3
+
+
+def test_gaussian_clip_kink_has_distinct_one_sided_derivatives():
+    from bem_inverse.gaussian_displacement import GaussianDisplacement
+    from bem_inverse.geometry import resize
+    update = GaussianDisplacement(.05, device="cpu")
+    space = update.prepare(resize(FourierCurve.circle(), 8), 3, 8)
+    direction = np.zeros(7); direction[0] = 1.
+    C = np.exp(-.5)*sum(abs(space.weights@direction))/space.width
+    a = .8/C*direction
+    middle = update.trial(space, a)[0].coefficients
+    h = 1e-7
+    right = (update.trial(space, a+h*direction)[0].coefficients-middle)/h
+    left = (middle-update.trial(space, a-h*direction)[0].coefficients)/h
+    assert np.linalg.norm(right) < 1e-6
+    assert np.linalg.norm(left) > 1e-3

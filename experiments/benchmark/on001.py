@@ -25,7 +25,8 @@ ARMS = {"B": {}, "G": dict(reach_fraction=.8), "G04": dict(reach_fraction=.4),
         "E": dict(required_accuracy=.003), "E001": dict(required_accuracy=.001),
         "GE": dict(reach_fraction=.8, required_accuracy=.003),
         "EW": dict(required_accuracy=.003, working_anchors=5),
-        "EW9": dict(required_accuracy=.003, working_anchors=9)}
+        "EW9": dict(required_accuracy=.003, working_anchors=9),
+        "EF": dict(required_accuracy=.003, geometry_update="gaussian_lipschitz")}
 EXECUTION = Execution(device="cuda", frequency_threads=4)
 COORD = Path("/tmp/neural-sdf-bem-ad-coordination")
 
@@ -45,13 +46,15 @@ def run_case(arm, case, folder):
         raise FileExistsError(f"Preserve completed/failed run: {folder}")
     folder.mkdir(parents=True)
     started = perf_counter()
+    options = dict(ARMS[arm])
+    geometry = options.pop("geometry_update", "certified_spectral")
     policy = CumulativePolicy(fit_seconds=120., audit_seconds=30., audit_aggregate_seconds=30.,
-                              log_model=True, **ARMS[arm])
+                              log_model=True, **options)
     row = c.row(case)
     try:
         result = fit(ci.fitting_problem(row, c.INPUTS), solver="modal_muller", execution=EXECUTION,
                      physics=c._physics("modal_muller", EXECUTION), policy=policy, output=folder,
-                     geometry_update="certified_spectral", localization_adapter=c.keep_start,
+                     geometry_update=geometry, localization_adapter=c.keep_start,
                      on_event=lambda e: print(case, e["operation"]["label"], e["reason"], flush=True))
         returned = perf_counter()
         metrics = ci.score(row, curve_from(result["final_curve"]))

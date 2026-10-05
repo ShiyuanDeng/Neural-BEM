@@ -1,0 +1,87 @@
+........F                                                                [100%]
+=================================== FAILURES ===================================
+_____ test_gaussian_complete_projected_tangent_and_active_finite_direction _____
+
+    def test_gaussian_complete_projected_tangent_and_active_finite_direction():
+        from bem_inverse.gaussian_displacement import GaussianDisplacement
+        from bem_inverse.geometry import resize
+        curve = FourierCurve(np.array([.01j, .02, .1-.05j, 1., .07, .02j, .01]))
+        curve = resize(curve, 16)
+        update = GaussianDisplacement(.05, device="cpu")
+>       space = update.prepare(curve, 5, 16)
+
+pytest/bem_inverse/test_on001.py:181: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+solvers/bem_inverse/gaussian_displacement.py:138: in prepare
+    n = curve.nodes(count)
+solvers/bem_inverse/continuation/geometry.py:70: in nodes
+    return PeriodicCurve2D(
+<string>:13: in __init__
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <[AttributeError("'PeriodicCurve2D' object has no attribute 'parameter_step'") raised in repr()] PeriodicCurve2D object at 0x70252ee48b80>
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.component_id, str) or not self.component_id.strip():
+            raise ValueError("component_id must be a non-empty string.")
+        if not isinstance(self.provenance, CurveProvenance2D):
+            raise TypeError("provenance must be a CurveProvenance2D object.")
+    
+        parameters = readonly_float_array(self.parameters, name="parameters", ndim=1)
+        count = int(parameters.size)
+        if count < 3:
+            raise ValueError("A periodic curve needs at least three nodes.")
+    
+        node_arrays = {}
+        for name in ("points", "first_derivatives", "second_derivatives"):
+            value = readonly_float_array(getattr(self, name), name=name, ndim=2)
+            if value.shape != (count, 2):
+                raise ValueError(f"{name} must have shape (num_nodes, 2).")
+            node_arrays[name] = value
+    
+        third_derivatives = None
+        if self.third_derivatives is not None:
+            third_derivatives = readonly_float_array(
+                self.third_derivatives,
+                name="third_derivatives",
+                ndim=2,
+            )
+            if third_derivatives.shape != (count, 2):
+                raise ValueError("third_derivatives must have shape (num_nodes, 2).")
+    
+        period = float(self.period)
+        parameter_origin = float(self.parameter_origin)
+        if not np.isfinite(period) or period <= 0.0:
+            raise ValueError("period must be finite and positive.")
+        if not np.isfinite(parameter_origin):
+            raise ValueError("parameter_origin must be finite.")
+        parameter_step = period / count
+        expected_parameters = parameter_origin + parameter_step * np.arange(count, dtype=np.float64)
+        if not np.allclose(parameters, expected_parameters, rtol=0.0, atol=1.0e-13 * period):
+            raise ValueError(
+                "parameters must be the canonical uniform periodic grid with no repeated endpoint."
+            )
+    
+        points = node_arrays["points"]
+        first = node_arrays["first_derivatives"]
+        second = node_arrays["second_derivatives"]
+        speeds_values = np.linalg.norm(first, axis=1)
+        if np.any(speeds_values <= 0.0):
+            raise ValueError("first_derivatives must define a regular node grid with positive speed.")
+        tangents_values = first / speeds_values[:, None]
+        normals_values = np.column_stack((tangents_values[:, 1], -tangents_values[:, 0]))
+        curvatures_values = cross2d(first, second) / speeds_values**3
+        weights_values = parameter_step * speeds_values
+        signed_area = 0.5 * parameter_step * float(np.sum(cross2d(points, first)))
+        if not np.isfinite(signed_area) or signed_area <= 0.0:
+>           raise ValueError(
+                "Node-based solver geometry must be counterclockwise so normals are outward. "
+                "Reverse the continuous parameterization before discretizing."
+            )
+E           ValueError: Node-based solver geometry must be counterclockwise so normals are outward. Reverse the continuous parameterization before discretizing.
+
+solvers/ordered_boundary/curve.py:97: ValueError
+=========================== short test summary info ============================
+FAILED pytest/bem_inverse/test_on001.py::test_gaussian_complete_projected_tangent_and_active_finite_direction
+1 failed, 8 passed in 0.14s

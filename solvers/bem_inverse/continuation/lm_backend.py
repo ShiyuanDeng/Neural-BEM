@@ -754,7 +754,14 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
                     try:
                         candidate_curve, geometry = update.trial(space, step)
                         trial.update(geometry)
+                        if 'a_used' in geometry:
+                            step = np.asarray(geometry['a_used'], float)
+                            trial['step_m'] = step.tolist()
+                            trial['step_norm_m'] = float(np.linalg.norm(step))
+                            if config.log_model:
+                                trial['predicted_decrease'] = float(-gradient@step-.5*step@normal@step)
                     except UpdateRefused as exc:
+                        trial.update(getattr(update, "last_trial", {}))
                         trial.update(status="refused", reason=exc.reason, detail=exc.detail)
                         if config.log_model:
                             trial["geometry_seconds"] = perf_counter()-geometry_started

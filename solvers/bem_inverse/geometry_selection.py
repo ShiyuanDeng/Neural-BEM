@@ -1,5 +1,5 @@
 """Explicit geometry selection without process-global experiment substitution."""
-GEOMETRY_UPDATES = ('spline', 'spectral', 'certified_spectral', 'analytic_spectral')
+GEOMETRY_UPDATES = ('spline', 'spectral', 'certified_spectral', 'analytic_spectral', 'gaussian_lipschitz')
 
 
 def make_update(name, length_unit_m, execution, *, default=None):
@@ -18,6 +18,9 @@ def make_update(name, length_unit_m, execution, *, default=None):
             from .device_certified import DeviceCertifiedUpdate
             return DeviceCertifiedUpdate(length_unit_m, device=update.device)
         return update
+    if name == 'gaussian_lipschitz':
+        from .gaussian_displacement import GaussianDisplacement
+        return GaussianDisplacement(length_unit_m, device=None if execution.device == 'auto' else execution.device)
     if name == 'analytic_spectral':
         from .analytic_projection import AnalyticSpectralUpdate
         return AnalyticSpectralUpdate(length_unit_m)

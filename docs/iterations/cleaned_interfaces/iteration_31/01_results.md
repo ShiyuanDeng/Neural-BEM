@@ -116,3 +116,32 @@ using 50.3% of its fitting time. R/H/W2 will not run. F keeps the base
 coefficient cap and the independently qualifying E choice, replaces G's
 clipping and keeps W disabled. Qualification precedes its fresh eight-case
 screen. E remains the best qualifying existing recipe if F closes.
+
+F implementation preflight: **12 passed**, including zero and actively clipped
+complete field FD in both real/damped catalogs, the raw lower-Lipschitz bound,
+exact zero update, circle expansion, projection refusal and separate one-sided
+checks at the clipping kink. One initial test fixture was clockwise; its
+original failed log is retained and the fixture corrected. The implementation
+uses the analytic derivative of the complete discrete projection of its own
+interpolated field at zero, including speed, arclength weight and phase. The
+Gaussian saddle solve is linear in coordinates and scaling is locally identity
+at zero; this does not reuse the ordinary normal-map tangent. Nonzero clipping
+is included in the finite-direction qualification.
+
+## F qualification — original width
+
+Pre-dispatch regression gate: **560 passed**. Qualification completed all 16
+saved states (eight starts, eight B endpoints), with zero/active clipped
+field checks in real/damped catalogs. **11/16 states passed**. Every initial
+circle passed; several curved endpoints failed the complete-trial FD gate.
+All interpolation gates passed (condition estimates below 1e12 and relative
+velocity errors below 1e-4), so the half-width repair is **not released**.
+The source-hash check passed and original failed evidence is preserved in
+`qualification_F/`. No fresh F fits have been launched.
+
+The zero-state FD errors on kite/star appear consistent with clipping at the
+unchanged 1e-7m audit perturbation. The first active-direction diagnostic used
+a geometry FD tangent at half that step; a focused implementation correction
+will replace that tangent with the exact derivative through the active norm
+bound and discrete projection, then repeat this bounded qualification once.
+The fixed endpoint FD step and original acceptance tolerances remain unchanged.
