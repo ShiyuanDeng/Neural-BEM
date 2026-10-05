@@ -1,6 +1,6 @@
 {
   "prefix": "repeat2",
-  "completed_pairs": 1,
+  "completed_pairs": 2,
   "rows": [
     {
       "id": "circle__c0.5",
@@ -54,10 +54,32 @@
     {
       "id": "kite__c0.5",
       "B": {
-        "status": "unrun"
+        "recovered": true,
+        "outcome": "COMPLETED_SCHEDULE",
+        "seconds": 66.25821354426444,
+        "fit_seconds": 62.37073695426807,
+        "fit_internal_seconds": 65.55613008188084,
+        "metrics": {
+          "rms_mm": 0.0145168059559872,
+          "hausdorff_mm": 0.05114438713616437,
+          "hausdorff_upper_mm": 0.07298481665985115
+        },
+        "maximum_residual": 4.791998347275705e-06,
+        "audit": true
       },
       "E": {
-        "status": "unrun"
+        "recovered": true,
+        "outcome": "REQUIRED_ACCURACY_REACHED",
+        "seconds": 17.30342414835468,
+        "fit_seconds": 13.558359439484775,
+        "fit_internal_seconds": 16.672409267164767,
+        "metrics": {
+          "rms_mm": 0.18828370973698963,
+          "hausdorff_mm": 0.6428687560867457,
+          "hausdorff_upper_mm": 0.6646915011839148
+        },
+        "maximum_residual": 0.002618456391141754,
+        "audit": true
       }
     },
     {
@@ -296,19 +318,20 @@
     }
   ],
   "recovered": {
-    "B": 1,
-    "E": 1
+    "B": 2,
+    "E": 2
   },
   "regressions": [],
   "additions": [],
   "paired_speedups": {
-    "circle__c4": 1.241778108041247
+    "circle__c4": 1.241778108041247,
+    "kite__c0.5": 3.8291966362371515
   },
-  "median_speedup": 1.241778108041247,
-  "p10_speedup": 1.241778108041247,
+  "median_speedup": 2.5354873721391993,
+  "p10_speedup": 1.5005199608608375,
   "total_audited_seconds": {
-    "B": 6.023018119856715,
-    "E": 4.850317525211722
+    "B": 72.28123166412115,
+    "E": 22.1537416735664
   },
   "timing_boundary": "child run_case entry to fit-return after fit_result output; excludes truth scoring and Python imports"
 }
