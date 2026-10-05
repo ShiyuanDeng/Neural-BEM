@@ -1,0 +1,313 @@
+{
+  "record": "CI-SPD documentation of existing GGB-001 evidence",
+  "source_commit": "3ec2627d3ff7329453ec7b76469a0761d6f6e3de",
+  "source_manifest_sha256": "e2571a9bf8671077b7f36b081a17e3f65367085445ec242b9533dd6de3b9da2e",
+  "source_url": "https://github.com/HaibingWu657/Gau-Gal/blob/3ec2627d3ff7329453ec7b76469a0761d6f6e3de/docs/iterations/GGB-001/evidence/manifest.json",
+  "aggregation": "Static JSON aggregation only; no solver calls or new experiments",
+  "timing_formula": "other_wall = fit + audit - successful/failed evaluations - successful/failed derivatives; LU is a subset of physics",
+  "gpu": "NVIDIA GeForce RTX 5090",
+  "torch": "2.8.0+cu128",
+  "source_archive_sha256": "060e9d779ec8b6ebfd299c54cf9204148cdd9f5c43b71c6b43cdc55c5b1e5cd6",
+  "gaugal_dimension": 3136,
+  "bem_dimension": 258,
+  "bem_refined_dimension": 386,
+  "rows": [
+    {
+      "sample": 8,
+      "gaugal": {
+        "dataset": "cylinder",
+        "sample": "sample_0008",
+        "output_dir": "outputs/GGB-001/pilot/sample_0008/gaugal",
+        "prediction_path": "outputs/GGB-001/pilot/sample_0008/gaugal/final_predicted_data.npz",
+        "method": "galerkin-kernel",
+        "num_iter": 300,
+        "num_gaussians": 3136,
+        "optimization_sec": 0.813673626165837,
+        "build_sec": 0.1760408328846097,
+        "evaluation_sec": 0.06690229009836912,
+        "visualization_sec": 0.10542329819872975,
+        "rel_data_error": 0.0526290200650692,
+        "snr_db": 8.306050473247533,
+        "rrmse": 0.01891082782955261,
+        "psnr": 35.560677156678416,
+        "ssim": 0.9724528911863948,
+        "amp_max": 0.5478537678718567,
+        "amp_mean": 0.009313364513218403,
+        "linear_solves": 2.0,
+        "linear_iterations": 1.0,
+        "linear_avg_iterations": 0.5
+      },
+      "gaugal_load_seconds": 0.6005529281683266,
+      "gaugal_total_excluding_load_seconds": 1.1837875829078257,
+      "bem_metrics": {
+        "ssim": 0.9091381694810015,
+        "rrmse": 0.06452102179793082,
+        "psnr": 25.86735646034294,
+        "snr_db": -1.3872702109393318,
+        "rel_data_error": 0.876624834098205
+      },
+      "bem_fit_seconds": 347.93517411500216,
+      "bem_audit_seconds": 1.0954239289276302,
+      "bem_physics_seconds_including_audits": 28.88661406142637,
+      "bem_other_wall_seconds": 320.1439839825034,
+      "bem_lu_seconds": 0.37050114246085286,
+      "bem_field_refinement_error": 5.951267671059169e-06,
+      "pixel_circle_model_mismatch": 0.00745067808564968,
+      "accepted_steps": 99,
+      "trial_proposals": 845,
+      "trial_statuses": {
+        "accepted": 99,
+        "refused": 746
+      },
+      "refusal_reasons": {
+        "self_intersection": 669,
+        "physics_failed": 73,
+        "unresolved_projection": 4
+      },
+      "initial_relative_residual": 2.6358005588814764,
+      "stages": [
+        {
+          "stage_label": "single_frequency_M3",
+          "outcome": "NORMAL_OPTIMIZER_RETURN",
+          "stop_reason": "no_decreasing_step",
+          "converged": false,
+          "accepted_steps": 76,
+          "seconds": 180.60699910111725
+        },
+        {
+          "stage_label": "single_frequency_M7",
+          "outcome": "NORMAL_OPTIMIZER_RETURN",
+          "stop_reason": "no_decreasing_step",
+          "converged": false,
+          "accepted_steps": 10,
+          "seconds": 50.80088107427582
+        },
+        {
+          "stage_label": "single_frequency_M11",
+          "outcome": "NORMAL_OPTIMIZER_RETURN",
+          "stop_reason": "no_decreasing_step",
+          "converged": false,
+          "accepted_steps": 13,
+          "seconds": 116.51374720502645
+        }
+      ],
+      "physics_counts": {
+        "evaluation_attempts": 280,
+        "evaluations": 207,
+        "failed_evaluations": 73,
+        "derivative_attempts": 102,
+        "derivatives": 102,
+        "failed_derivatives": 0,
+        "disk_batches": 0,
+        "geometry_cache_hits": 4,
+        "geometry": 203,
+        "assembly": 207,
+        "waves": 207,
+        "factorization": 207,
+        "fields": 207,
+        "reciprocal_solve": 102,
+        "jacobian": 102
+      },
+      "physics_stage_seconds": {
+        "geometry": 15.239636858459562,
+        "waves": 0.5407282640226185,
+        "assembly": 1.0067323632538319,
+        "factorization": 0.37050114246085286,
+        "fields": 0.12965965690091252,
+        "jacobian": 0.2617046241648495
+      },
+      "work_units": 379
+    },
+    {
+      "sample": 13,
+      "gaugal": {
+        "dataset": "cylinder",
+        "sample": "sample_0013",
+        "output_dir": "outputs/GGB-001/pilot/sample_0013/gaugal",
+        "prediction_path": "outputs/GGB-001/pilot/sample_0013/gaugal/final_predicted_data.npz",
+        "method": "galerkin-kernel",
+        "num_iter": 300,
+        "num_gaussians": 3136,
+        "optimization_sec": 1.2645300808362663,
+        "build_sec": 0.005769097246229649,
+        "evaluation_sec": 0.00270436005666852,
+        "visualization_sec": 0.10764594888314605,
+        "rel_data_error": 0.049727849662303925,
+        "snr_db": 11.35360994348883,
+        "rrmse": 0.018175920513286006,
+        "psnr": 35.61497869157411,
+        "ssim": 0.9565694615107864,
+        "amp_max": 0.35299161076545715,
+        "amp_mean": 0.02243805304169655,
+        "linear_solves": 2.0,
+        "linear_iterations": 1.0,
+        "linear_avg_iterations": 0.5
+      },
+      "gaugal_load_seconds": 0.5582783841527998,
+      "gaugal_total_excluding_load_seconds": 1.3859771699644625,
+      "bem_metrics": {
+        "ssim": 0.9935806477049947,
+        "rrmse": 0.009601155517525141,
+        "psnr": 41.832797568697,
+        "snr_db": 17.57142869659127,
+        "rel_data_error": 0.05021287115172636
+      },
+      "bem_fit_seconds": 1.9283515671268106,
+      "bem_audit_seconds": 0.0801291330717504,
+      "bem_physics_seconds_including_audits": 1.484056418761611,
+      "bem_other_wall_seconds": 0.52442428143695,
+      "bem_lu_seconds": 0.1046190857887268,
+      "bem_field_refinement_error": 3.0886024740053845e-14,
+      "pixel_circle_model_mismatch": 0.009686500518130088,
+      "accepted_steps": 14,
+      "trial_proposals": 24,
+      "trial_statuses": {
+        "accepted": 14,
+        "acceptance_margin": 10
+      },
+      "refusal_reasons": {},
+      "initial_relative_residual": 0.6566004848429571,
+      "stages": [
+        {
+          "stage_label": "single_frequency_M3",
+          "outcome": "NORMAL_OPTIMIZER_RETURN",
+          "stop_reason": "no_decreasing_step",
+          "converged": false,
+          "accepted_steps": 13,
+          "seconds": 1.726781110279262
+        },
+        {
+          "stage_label": "single_frequency_M7",
+          "outcome": "NORMAL_OPTIMIZER_RETURN",
+          "stop_reason": "loss_tolerance",
+          "converged": true,
+          "accepted_steps": 1,
+          "seconds": 0.19980056211352348
+        }
+      ],
+      "physics_counts": {
+        "evaluation_attempts": 55,
+        "evaluations": 55,
+        "failed_evaluations": 0,
+        "derivative_attempts": 16,
+        "derivatives": 16,
+        "failed_derivatives": 0,
+        "disk_batches": 0,
+        "geometry_cache_hits": 2,
+        "geometry": 53,
+        "assembly": 55,
+        "waves": 55,
+        "factorization": 55,
+        "fields": 55,
+        "reciprocal_solve": 16,
+        "jacobian": 16
+      },
+      "physics_stage_seconds": {
+        "geometry": 0.832032720092684,
+        "waves": 0.14174709655344486,
+        "assembly": 0.3162017143331468,
+        "factorization": 0.1046190857887268,
+        "fields": 0.03795597516000271,
+        "jacobian": 0.04596617352217436
+      },
+      "work_units": 68
+    },
+    {
+      "sample": 14,
+      "gaugal": {
+        "dataset": "cylinder",
+        "sample": "sample_0014",
+        "output_dir": "outputs/GGB-001/pilot/sample_0014/gaugal",
+        "prediction_path": "outputs/GGB-001/pilot/sample_0014/gaugal/final_predicted_data.npz",
+        "method": "galerkin-kernel",
+        "num_iter": 300,
+        "num_gaussians": 3136,
+        "optimization_sec": 0.8652339656837285,
+        "build_sec": 0.0057136849500238895,
+        "evaluation_sec": 0.0033947788178920746,
+        "visualization_sec": 0.11016663396731019,
+        "rel_data_error": 0.04998213052749634,
+        "snr_db": 11.971430145525957,
+        "rrmse": 0.020240707925259793,
+        "psnr": 34.88230707361031,
+        "ssim": 0.9550374442168411,
+        "amp_max": 0.3756444454193115,
+        "amp_mean": 0.02899913862347603,
+        "linear_solves": 2.0,
+        "linear_iterations": 4.0,
+        "linear_avg_iterations": 2.0
+      },
+      "gaugal_load_seconds": 0.5393082611262798,
+      "gaugal_total_excluding_load_seconds": 0.989996621850878,
+      "bem_metrics": {
+        "ssim": 0.9857245800281625,
+        "rrmse": 0.015031408517457549,
+        "psnr": 37.813704035658084,
+        "snr_db": 14.902827007776335,
+        "rel_data_error": 0.05443969011325644
+      },
+      "bem_fit_seconds": 36.19137899577618,
+      "bem_audit_seconds": 0.043667891062796116,
+      "bem_physics_seconds_including_audits": 4.051119080744684,
+      "bem_other_wall_seconds": 32.18392780609429,
+      "bem_lu_seconds": 0.21492283046245575,
+      "bem_field_refinement_error": 3.343066257627245e-11,
+      "pixel_circle_model_mismatch": 0.011248840337366407,
+      "accepted_steps": 42,
+      "trial_proposals": 133,
+      "trial_statuses": {
+        "accepted": 42,
+        "refused": 66,
+        "acceptance_margin": 25
+      },
+      "refusal_reasons": {
+        "self_intersection": 66
+      },
+      "initial_relative_residual": 0.8737102118129928,
+      "stages": [
+        {
+          "stage_label": "single_frequency_M3",
+          "outcome": "NORMAL_OPTIMIZER_RETURN",
+          "stop_reason": "no_decreasing_step",
+          "converged": false,
+          "accepted_steps": 35,
+          "seconds": 23.385742616374046
+        },
+        {
+          "stage_label": "single_frequency_M7",
+          "outcome": "NORMAL_OPTIMIZER_RETURN",
+          "stop_reason": "loss_tolerance",
+          "converged": true,
+          "accepted_steps": 7,
+          "seconds": 12.800736927893013
+        }
+      ],
+      "physics_counts": {
+        "evaluation_attempts": 121,
+        "evaluations": 121,
+        "failed_evaluations": 0,
+        "derivative_attempts": 44,
+        "derivatives": 44,
+        "failed_derivatives": 0,
+        "disk_batches": 0,
+        "geometry_cache_hits": 2,
+        "geometry": 119,
+        "assembly": 121,
+        "waves": 121,
+        "factorization": 121,
+        "fields": 121,
+        "reciprocal_solve": 44,
+        "jacobian": 44
+      },
+      "physics_stage_seconds": {
+        "geometry": 2.6395143172703683,
+        "waves": 0.35680495062842965,
+        "assembly": 0.6130042322911322,
+        "factorization": 0.21492283046245575,
+        "fields": 0.08277207147330046,
+        "jacobian": 0.1294632558710873
+      },
+      "work_units": 162
+    }
+  ]
+}
