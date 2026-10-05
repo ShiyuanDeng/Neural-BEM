@@ -9,6 +9,13 @@ authorizes that bounded plan; the guide itself starts no experiment.
 CI-SPD is a standalone track under `docs/iterations/CI-SPD/`. Its comparison
 and proposed follow-up plans live here; recorded evidence remains under `results/`.
 
+**Agreed schedule (2026-10-05):** [continuation schedule](CONTINUATION_SCHEDULE.md)
+records translation/scaling initialization, the unchanged existing frequency
+ladder including its M/K progression, four additional all-frequency M/K
+stages, and full configured release. This is a documented design; the
+executable policy has not yet been changed. Its initial-stage evidence is
+in [GGB-004](GGB-004_results.md) and [GGB-005](GGB-005_results.md).
+
 **Question:** Why is the released GauGal cylinder reconstruction fast, and
 which measured costs explain its difference from our current cleaned modal
 BEM implementation?

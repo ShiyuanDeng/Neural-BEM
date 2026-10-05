@@ -31,6 +31,12 @@ result = fit(
 runner returns unscored numerical results and audits. Campaign code owns
 synthetic-data generation, truth loading, and recovery scoring.
 
+The [agreed continuation schedule](../../docs/iterations/CI-SPD/CONTINUATION_SCHEDULE.md)
+specifies a translation/scaling initialization, preservation of the existing
+frequency ladder and its M/K progression, four further all-frequency shape
+stages, then full configured release. It is a documented design for a future
+policy change; the current executable `CumulativePolicy` remains unchanged.
+
 To select modal physics explicitly:
 
 ```python
