@@ -1,0 +1,19 @@
+# RG-001 execution record
+
+User approved RG-001 with “go on RG-001” on 2026-10-05 and explicitly selected
+the existing `feature/shape-frequency-continuation` branch. No branch or worktree
+was created. The pre-registered plan remains unchanged.
+
+Execution began at 09:24 UTC. The four-hour ceiling is 13:24 UTC; no new stage
+opens after 12:39 UTC. Stage 0 has a 15-minute limit. Truth-stage checks retain
+the full frozen truth coefficients even when a stage stores fewer modes:
+cropping would diagnose a different shape. Identical catalog/resolution requests
+are reused across stages; all fixed and possible frontier stages are recorded.
+
+Production/refined failures and non-finite evaluations are fatal under both
+gates, as required by the plan. For finite solver-ready states the default
+absolute gate retains its decisions, accepted coefficients, and stage behavior.
+The historical production-failure branch refused a proposal; the explicit
+fatal-failure contract tightens that exceptional path, without relaxing it.
+
+Other pre-existing untracked work is preserved and excluded from RG-001 commits.

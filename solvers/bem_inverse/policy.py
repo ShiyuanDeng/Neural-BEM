@@ -70,6 +70,7 @@ class CumulativePolicy:
     working_anchors: int = 0
     reach_fraction: float = 0.0
     log_model: bool = False
+    resolution_gate: str = 'absolute'
     gamma: float = .25
     prefix_frequencies_hz: tuple = (.5e9, .75e9, 1e9, 1.25e9)
     prefix_quotas: tuple = (1000, 1250, 1750, 4000)
@@ -85,7 +86,7 @@ class CumulativePolicy:
 
     def _config(self, problem, observations):
         config = BackendConfig(domain_box=problem.domain_box, log_model=self.log_model,
-                               reach_fraction=self.reach_fraction)
+                               reach_fraction=self.reach_fraction, resolution_gate=self.resolution_gate)
         count = len(observations)
         weights = tuple(np.ones(count)/count)
         expected = 0.

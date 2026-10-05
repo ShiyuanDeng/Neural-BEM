@@ -364,6 +364,12 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
                         final_loss=result.final_loss, seconds=result.seconds, work=ledger.snapshot(),
                         curve=record_curve(curve), nodes=op.stage.nodes, refined_nodes=op.stage.refined_nodes,
                         resolution_selection=selection)
+                    overshoots = [check for check in result.acceptance_checks
+                                  if check.get('accepted') and check.get('numerical_obstruction')]
+                    row.update(resolution_gate=op.optimizer.resolution_gate,
+                               accepted_resolution_overshoots=len(overshoots),
+                               largest_accepted_resolution_overshoot=max(
+                                   (max(check['prediction_discrepancy_ratios']) for check in overshoots), default=0.))
                     if resolution_response is not None:
                         row.update(nodes=result.final_nodes, refined_nodes=result.final_refined_nodes,
                                    resolution_events=result.resolution_events)
@@ -450,6 +456,10 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
         physics=physics.receipt(), geometry_work=update.counts,
         geometry_update=geometry_update, geometry_settings=update_settings)
     row['total_units'] = row['fit_and_localization_units']+row['audit_units']
+    row.update(resolution_gate=policy.resolution_gate,
+               accepted_resolution_overshoots=sum(s['accepted_resolution_overshoots'] for s in stages),
+               largest_accepted_resolution_overshoot=max(
+                   (s['largest_accepted_resolution_overshoot'] for s in stages), default=0.))
     if resume is not None:
         row.update(resumed=True, historical_seconds=historical_seconds,
                    fresh_fit_seconds=max(0., fit_seconds-historical_seconds),

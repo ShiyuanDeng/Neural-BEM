@@ -125,8 +125,11 @@ class BackendConfig:
     log_model: bool = False
     # ON-001 opt-in; sampled reach is a proxy, never an admissibility certificate.
     reach_fraction: float = 0.0
+    resolution_gate: str = "absolute"
 
     def __post_init__(self):
+        if self.resolution_gate not in ("absolute", "decision"):
+            raise ValueError("resolution_gate must be 'absolute' or 'decision'")
         if not 0 <= self.reach_fraction <= 1:
             raise ValueError("reach_fraction must lie in [0, 1]")
         if self.damping_rule not in ("schedule", "hanke"):
@@ -335,6 +338,29 @@ def relative_columns(a, b):
     return np.linalg.norm(a - b, axis=0) / np.linalg.norm(b, axis=0)
 
 
+def resolution_check(base, candidate, refined_base, refined_candidate, stage, config):
+    """Gain decision and field qualification, retaining the pre-gate decision."""
+    states = (base, candidate, refined_base, refined_candidate)
+    if any(s is None for s in states):
+        raise NumericalFailure("production or refined evaluation failed")
+    if any(not np.isfinite(s.loss) or not np.isfinite(s.prediction).all() for s in states):
+        raise NumericalFailure("non-finite production or refined evaluation")
+    discrepancy = relative_columns(candidate.prediction, refined_candidate.prediction)
+    if not np.isfinite(discrepancy).all():
+        raise NumericalFailure("non-finite prediction discrepancy")
+    row = dict(acceptance(*(s.loss for s in states), config),
+               prediction_discrepancy=discrepancy.tolist(),
+               refined_base_loss=refined_base.loss, refined_candidate_loss=refined_candidate.loss,
+               gate=config.resolution_gate,
+               prediction_discrepancy_ratios=(discrepancy/np.asarray(stage.discrepancy_tolerances)).tolist())
+    accurate = bool(np.all(discrepancy <= stage.discrepancy_tolerances))
+    if not accurate:
+        row['numerical_obstruction'] = True
+        if config.resolution_gate == 'absolute':
+            row['accepted'] = False
+    return row, accurate
+
+
 def inside_box(curve, box):
     if box is None:
         return True
@@ -525,15 +551,10 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
         return inside_box(candidate_curve, config.domain_box)
 
     def checked_pair(base, candidate, rb, rc, active_stage, *, check_base=False):
-        if rb is None or rc is None:
-            raise NumericalFailure("refined evaluation failed at an accepted or candidate state")
-        discrepancy = relative_columns(candidate.prediction, rc.prediction)
-        row = dict(acceptance(base.loss, candidate.loss, rb.loss, rc.loss, config),
-                   prediction_discrepancy=discrepancy.tolist(),
-                   refined_base_loss=rb.loss, refined_candidate_loss=rc.loss)
+        row, accurate = resolution_check(base, candidate, rb, rc, active_stage, config)
+        discrepancy = np.asarray(row['prediction_discrepancy'])
         checks.append(row)
         tolerances = np.asarray(active_stage.discrepancy_tolerances)
-        accurate = bool(np.all(np.isfinite(discrepancy)) and np.all(discrepancy <= tolerances))
         base_accurate = True
         if check_base:
             bd = relative_columns(base.prediction, rb.prediction)
@@ -542,7 +563,7 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
                        candidate_qualified=accurate, nodes=active_stage.nodes,
                        refined_nodes=active_stage.refined_nodes,
                        threshold_distance=(tolerances-discrepancy).tolist())
-        if not accurate or not base_accurate:
+        if (not accurate and config.resolution_gate == 'absolute') or not base_accurate:
             row.update(accepted=False, numerical_obstruction=True)
         return row, base_accurate, accurate
 
@@ -567,7 +588,7 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
         row, base_ok, candidate_ok = checked_pair(base, candidate, rb, rc, stage,
                                                   check_base=resolution_response is not None)
         if resolution_response is None:
-            if not candidate_ok:
+            if not candidate_ok and config.resolution_gate == 'absolute':
                 raise NumericalFailure("candidate leaves the frozen numerical-resolution regime")
             return candidate if row['accepted'] else None
         if base_ok and candidate_ok:
@@ -784,8 +805,9 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
                     else:
                         candidate = objective.production(candidate_curve, "candidate")
                     if candidate is None:
-                        trial.update(status="refused", reason=trial.get("working_status", "physics_failed"))
-                        continue
+                        raise NumericalFailure("production evaluation failed at candidate state")
+                    if not np.isfinite(candidate.loss) or not np.isfinite(candidate.prediction).all():
+                        raise NumericalFailure("non-finite production evaluation at candidate state")
                     trial.update(loss=candidate.loss)
                     if candidate.loss >= current.loss:
                         trial["status"] = "nondecreasing"
