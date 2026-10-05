@@ -36,12 +36,14 @@ def snapshot(folder, f, step, prediction):
         prediction=prediction.cpu().numpy(), x=f.model.x.cpu().numpy(), y=f.model.y.cpu().numpy())
 
 
-def run(folder, device):
+def run(folder, device, tv_prox='native'):
     folder.mkdir(parents=True, exist_ok=False)
     started = time.perf_counter()
     seal = B.verify(require_inputs=True)
     source_paths = [Path(__file__), Path(G.__file__), Path(A.__file__),
         ROOT/'experiments/benchmark/test_gs001.py', ROOT/'docs/iterations/CI-SPD/GS-001_plan.md']
+    if tv_prox == 'qualified':
+        source_paths.append(ROOT/'docs/iterations/CI-SPD/GS-001_tv_repair_plan.md')
     source_paths += list((A.EXTERNAL/'src').rglob('*.py'))
     hashes = {str(p): digest(p) for p in source_paths}
     write(folder/'manifest.json', dict(experiment='GS-001', case=CASE, frequency_hz=5e8,
@@ -51,7 +53,8 @@ def run(folder, device):
         parent_commit=subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
         branch=subprocess.check_output(['git', 'branch', '--show-current'], text=True).strip(),
         authorization='User: try run gau gal in one of our high contrast scenes. see single frequency will take it how far',
-        max_steps=300, fit_wall_cap_seconds=1800, preconditioner='exact separable Gaussian mass'))
+        max_steps=300, fit_wall_cap_seconds=1800, preconditioner='exact separable Gaussian mass',
+        tv_prox=tv_prox))
     problem = B.problem(CASE)
     observation = problem.real[INDEX]
     assert observation.frequency_hz == 5e8
@@ -115,9 +118,14 @@ def run(folder, device):
         step_size = min(.1/maximum, .05/maximum if step_size is None else step_size*1.5)
         accepted_trial = False
         for backtrack in range(12):
-            candidate, _, _, _ = C._collocation_tv_prox(f.model, f.projected,
-                current-step_size*grad, step_size*lam/current.numel(), None, None,
-                f.options, max_iter=100)
+            raw = current-step_size*grad
+            if tv_prox == 'qualified':
+                candidate = G.bounded_tv_prox(raw.reshape(n,n),
+                    step_size*lam/current.numel()).reshape(-1)
+            else:
+                candidate, _, _, _ = C._collocation_tv_prox(f.model, f.projected,
+                    raw, step_size*lam/current.numel(), None, None,
+                    f.options, max_iter=100)
             candidate = candidate.clamp(0,1)
             try:
                 pred, _, true_residual = f.predict(candidate)
@@ -150,7 +158,7 @@ def run(folder, device):
     prediction, _, residual = f.predict()
     snapshot(folder, f, accepted, prediction)
     result = dict(experiment='GS-001', case=CASE, stop=stop, accepted_steps=accepted,
-        frequency_hz=5e8, pixels=f.grid, centres=f.projected.grid_size,
+        frequency_hz=5e8, pixels=f.grid, centres=f.projected.grid_size, tv_prox=tv_prox,
         initial_data_residual=history[0]['data_residual'],
         final_data_residual=float((torch.linalg.vector_norm(prediction-target)/torch.linalg.vector_norm(target)).cpu()),
         final_true_residual=residual, fit_seconds=time.perf_counter()-fit_started,
@@ -242,6 +250,7 @@ def main():
     parser.add_argument('command',choices=['run','report'])
     parser.add_argument('--output',type=Path,default=OUT)
     parser.add_argument('--device',default='cuda')
+    parser.add_argument('--tv-prox',choices=['native','qualified'],default='native')
     args = parser.parse_args()
     torch.set_num_threads(1)
     if args.command == 'report':
@@ -253,7 +262,7 @@ def main():
         fcntl.flock(compute,fcntl.LOCK_EX)
         fcntl.flock(source,fcntl.LOCK_SH)
         try:
-            run(args.output,args.device)
+            run(args.output,args.device,args.tv_prox)
         except Exception:
             args.output.mkdir(parents=True,exist_ok=True)
             write(args.output/'failure.json',dict(traceback=traceback.format_exc()))

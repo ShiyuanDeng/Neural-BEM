@@ -7,6 +7,31 @@ import torch
 from . import on002_adapter as A
 
 
+def bounded_tv_prox(image, alpha, iterations=100):
+    """Bounded periodic isotropic-TV prox with a continuous alpha->0 limit.
+
+    Maximize the TV dual over pointwise unit disks. For fixed dual p the
+    bounded primal minimizer is clip(image-alpha D* p,0,1). The dual ascent
+    direction D x has Lipschitz constant <=8 alpha, so 0.124/alpha
+    is below its inverse Lipschitz constant.
+    """
+    if alpha < 0 or not np.isfinite(alpha):
+        raise ValueError('Finite nonnegative TV step required')
+    if alpha == 0:
+        return image.clamp(0,1)
+    px, py = torch.zeros_like(image), torch.zeros_like(image)
+    for _ in range(iterations):
+        adjoint = torch.roll(px,1,1)-px+torch.roll(py,1,0)-py
+        value = (image-alpha*adjoint).clamp(0,1)
+        dx, dy = torch.roll(value,-1,1)-value, torch.roll(value,-1,0)-value
+        px = px+(.124/alpha)*dx
+        py = py+(.124/alpha)*dy
+        norm = torch.sqrt(px*px+py*py).clamp(min=1)
+        px, py = px/norm, py/norm
+    adjoint = torch.roll(px,1,1)-px+torch.roll(py,1,0)-py
+    return (image-alpha*adjoint).clamp(0,1)
+
+
 @dataclass
 class Frequency(A.AdaptedFrequency):
     mass_y_inverse: torch.Tensor
