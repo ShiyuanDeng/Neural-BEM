@@ -6,7 +6,7 @@ Unrun cases remain unrun; extended runs are diagnostic only.
 |---|---|---|---|---|---|
 | circle__c0.5 | True | True | 7.820325675446094e-06 | True | 0 |
 | circle__c4 | True | True | 1.607127941584595e-05 | True | 0 |
-| circle__c13.3 | unrun | unrun | — | — | — |
+| circle__c13.3 | True | True | 4.955408408245933e-05 | True | 0 |
 | kite__c0.5 | unrun | unrun | — | — | — |
 | kite__c4 | unrun | unrun | — | — | — |
 | kite__c13.3 | unrun | unrun | — | — | — |
