@@ -123,8 +123,12 @@ class BackendConfig:
     metric: str = "marquardt"
     detectability_factor: float = 2.5
     log_model: bool = False
+    # ON-001 opt-in; sampled reach is a proxy, never an admissibility certificate.
+    reach_fraction: float = 0.0
 
     def __post_init__(self):
+        if not 0 <= self.reach_fraction <= 1:
+            raise ValueError("reach_fraction must lie in [0, 1]")
         if self.damping_rule not in ("schedule", "hanke"):
             raise ValueError(f"Unknown damping rule {self.damping_rule!r}.")
         if self.metric not in ("marquardt", "mass", "curvature"):
@@ -512,6 +516,7 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
     checkpoint = None
     resolution_events = []
     promotion_objective = None
+    reach_cache = {}
     resume_iteration = 0
 
     def admissible(candidate_curve):
@@ -718,24 +723,36 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
                     trial_damping *= config.damping_increase
                     continue
                 proposed = control_step(proposed, space, update, config)
+                clipping = {}
+                if config.reach_fraction:
+                    from bem_inverse.reach import clip_direction
+                    proposed, clipping = clip_direction(proposed, space.curve, update.length_unit_m,
+                                                        config.reach_fraction, reach_cache)
                 for backtrack in range(config.max_backtracks + 1):
                     step = 0.5 ** backtrack * proposed
                     if np.linalg.norm(step) / scale <= config.relative_step_tolerance:
                         continue
                     trial = dict(iteration=iteration, damping=float(trial_damping), backtrack=backtrack,
-                                 step_norm_m=float(np.linalg.norm(step)))
+                                 step_norm_m=float(np.linalg.norm(step)), **clipping)
+                    if config.log_model:
+                        trial["step_m"] = step.tolist()
                     if config.log_model:
                         trial.update(predicted_decrease=float(-(gradient @ step) - 0.5 * step @ normal @ step),
                                      **(rule or {}))
                     if resolution_response is not None:
                         trial.update(proposal_nodes=stage.nodes, proposal_refined_nodes=stage.refined_nodes)
                     trials.append(trial)
+                    geometry_started = perf_counter()
                     try:
                         candidate_curve, geometry = update.trial(space, step)
                         trial.update(geometry)
                     except UpdateRefused as exc:
                         trial.update(status="refused", reason=exc.reason, detail=exc.detail)
+                        if config.log_model:
+                            trial["geometry_seconds"] = perf_counter()-geometry_started
                         continue
+                    if config.log_model:
+                        trial["geometry_seconds"] = perf_counter()-geometry_started
                     if not admissible(candidate_curve):
                         trial.update(status="refused", reason="outside_domain")
                         continue
@@ -767,6 +784,10 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
                     if resolution_response is not None:
                         trial.update(original_production_loss=trial['loss'], loss=candidate.loss,
                                      nodes=stage.nodes, refined_nodes=stage.refined_nodes)
+                    if config.log_model:
+                        trial["actual_decrease"] = current.loss-candidate.loss
+                        pred = trial["predicted_decrease"]
+                        trial["gain_ratio"] = trial["actual_decrease"]/pred if pred > 0 else None
                     trial["status"] = "accepted"
                     accepted = (candidate, step, trial_damping, trial)
                     break

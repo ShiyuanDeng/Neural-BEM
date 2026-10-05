@@ -64,6 +64,11 @@ class CumulativePolicy:
     fit_units: int = 13412
     fit_seconds: float = 1800.
     audit_seconds: float = 300.
+    # Optional ON-001 rules. Defaults preserve the established recipe.
+    audit_aggregate_seconds: object = None
+    required_accuracy: object = None
+    reach_fraction: float = 0.0
+    log_model: bool = False
     gamma: float = .25
     prefix_frequencies_hz: tuple = (.5e9, .75e9, 1e9, 1.25e9)
     prefix_quotas: tuple = (1000, 1250, 1750, 4000)
@@ -78,7 +83,8 @@ class CumulativePolicy:
     localization: LocalizationRule = LocalizationRule()
 
     def _config(self, problem, observations):
-        config = BackendConfig(domain_box=problem.domain_box)
+        config = BackendConfig(domain_box=problem.domain_box, log_model=self.log_model,
+                               reach_fraction=self.reach_fraction)
         count = len(observations)
         weights = tuple(np.ones(count)/count)
         expected = 0.

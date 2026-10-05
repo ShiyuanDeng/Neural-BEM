@@ -44,7 +44,9 @@ def test_noiseless_policy_matches_every_archived_stage_and_optimizer():
     archived=read(b.ROOT/'results/validation/modal_atlas/MA-004/runs/D/c4/development_c/configuration.json')
     fits=[o for o in ops if o.kind=='fit']
     assert [portable(stage_record(o.stage)) for o in fits]==archived['stages']
-    assert all(portable(asdict(o.optimizer))==archived['backend'] for o in fits)
+    # New opt-in controller defaults preserve this archived optimizer recipe.
+    archived_backend = dict(archived['backend'], reach_fraction=0.)
+    assert all(portable(asdict(o.optimizer))==archived_backend for o in fits)
     assert [op.record() for op in ops]==policy.plan(p,backend)['operations']
     assert len([o for o in ops if o.kind=='cleanup'])==1
     assert [o.stage.update_modes for o in policy.tail(p,backend,95) if o.kind=='fit']==[43,49,55,61,67,73,79,85,91]

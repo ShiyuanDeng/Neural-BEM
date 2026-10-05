@@ -1,0 +1,93 @@
+..F.......F..........................                                    [100%]
+=================================== FAILURES ===================================
+_ test_early_exit_requires_full_catalog_and_audit_and_charges_failure[True-False] _
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x76310f7f71f0>
+full = True, passed = False
+
+    @pytest.mark.parametrize("full, passed", [(True, True), (True, False), (False, True)])
+    def test_early_exit_requires_full_catalog_and_audit_and_charges_failure(monkeypatch, full, passed):
+        p = fixture()
+        calls = []
+        def audit(curve, stage, config, problem, physics, update, seconds):
+            calls.append(seconds)
+            return dict(passed=True if len(calls) == 1 else passed, seconds=1., work=dict(work_units=7))
+        class Policy(ShortPolicy):
+            def operations(self, problem, physics):
+                ops = list(super().operations(problem, physics))
+                if not full:
+                    ops[1] = self._fit(problem, physics, "subset", problem.real[:2], 1, 8, 200, iterations=1)
+                return tuple(ops)
+        def stage(curve, stage, contrast, update, config, ledger, on_accept, **kwargs):
+            evaluation = SimpleNamespace(curve=curve, loss=0., prediction=np.column_stack(
+                [o.scattered for o in stage.observations]))
+            outcome = runner.NORMAL_RETURN
+            try:
+                on_accept(0, evaluation)
+                # The failed audit cannot retry at the same residual/resolution.
+                on_accept(1, evaluation)
+            except runner.RequiredAccuracyReached:
+                outcome = "REQUIRED_ACCURACY_REACHED"
+            return SimpleNamespace(curve=curve, outcome=outcome, stop_reason="test", detail=None,
+                accepted_steps=0, initial_loss=0., final_loss=0., seconds=0., history=[], trials=[], acceptance_checks=[])
+        monkeypatch.setattr(runner, "fit_stage", stage)
+        row = runner.fit(p, physics=NodalKress(Execution(device="cpu", frequency_threads=1)),
+            policy=Policy(required_accuracy=.003, audit_aggregate_seconds=30., audit_seconds=30.), audit_adapter=audit)
+        assert (row["outcome"] == "REQUIRED_ACCURACY_REACHED") == (full and passed)
+>       assert len(calls) == (2 if passed else 3) if full else len(calls) == 2
+E       assert False
+
+pytest/bem_inverse/test_on001.py:67: AssertionError
+______ test_pause_resume_preserves_damping_trajectory_counters_and_cache _______
+
+    def test_pause_resume_preserves_damping_trajectory_counters_and_cache():
+        physics, stage, config, ledger = setup('refine', iterations=4, nodes=16)
+        full = lm.fit_stage(FourierCurve.circle(2), stage, .5, ScalarUpdate(), config, ledger, physics=physics)
+        physics2, _, _, split_ledger = setup('refine', iterations=4, nodes=16)
+        part = lm.fit_stage(FourierCurve.circle(2), stage, .5, ScalarUpdate(), config, split_ledger,
+                            physics=physics2, pause_after=2)
+        assert part.outcome == 'PAUSED'
+        checkpoint = part.checkpoint
+        resumed = lm.fit_stage(part.curve, stage, .5, ScalarUpdate(), config, restore(checkpoint.work),
+                               physics=physics2, resume=checkpoint)
+        assert np.array_equal(full.curve.coefficients, resumed.curve.coefficients)
+        assert full.accepted_steps == resumed.accepted_steps
+>       assert full.trials == resumed.trials
+E       AssertionError: assert [{'actual_dec...067e-06, ...}] == [{'actual_dec...148e-06, ...}]
+E         
+E         At index 0 diff: {'iteration': 1, 'damping': 0.001, 'backtrack': 0, 'step_norm_m': 0.8, 'geometry_seconds': 5.775131285190582e-06, 'loss': 60.49999999999998, 'actual_decrease': 120.00000000000003, 'status': 'accepted'} != {'iteration': 1, 'damping': 0.001, 'backtrack': 0, 'step_norm_m': 0.8, 'geometry_seconds': 5.757901817560196e-06, 'loss': 60.49999999999998, 'actual_decrease': 120.00000000000003, 'status': 'accepted'}
+E         Use -v to get more diff
+
+pytest/bem_inverse/test_resolution_resume.py:134: AssertionError
+=============================== warnings summary ===============================
+experiments/benchmark/test_benchmark.py::test_pc001_report_on_synthetic_runs
+  /home/drdeng/miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:64: PyparsingDeprecationWarning: 'oneOf' deprecated - use 'one_of'
+    prop = Group((name + Suppress("=") + comma_separated(value)) | oneOf(_CONSTANTS))
+
+experiments/benchmark/test_benchmark.py::test_pc001_report_on_synthetic_runs
+experiments/benchmark/test_benchmark.py::test_pc001_report_on_synthetic_runs
+experiments/benchmark/test_benchmark.py::test_pc001_report_on_synthetic_runs
+experiments/benchmark/test_benchmark.py::test_pc001_report_on_synthetic_runs
+experiments/benchmark/test_benchmark.py::test_pc001_report_on_synthetic_runs
+experiments/benchmark/test_benchmark.py::test_pc001_report_on_synthetic_runs
+  /home/drdeng/miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:85: PyparsingDeprecationWarning: 'parseString' deprecated - use 'parse_string'
+    parse = parser.parseString(pattern)
+
+experiments/benchmark/test_benchmark.py::test_pc001_report_on_synthetic_runs
+experiments/benchmark/test_benchmark.py::test_pc001_report_on_synthetic_runs
+experiments/benchmark/test_benchmark.py::test_pc001_report_on_synthetic_runs
+experiments/benchmark/test_benchmark.py::test_pc001_report_on_synthetic_runs
+experiments/benchmark/test_benchmark.py::test_pc001_report_on_synthetic_runs
+experiments/benchmark/test_benchmark.py::test_pc001_report_on_synthetic_runs
+  /home/drdeng/miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:89: PyparsingDeprecationWarning: 'resetCache' deprecated - use 'reset_cache'
+    parser.resetCache()
+
+experiments/benchmark/test_benchmark.py::test_pc001_report_on_synthetic_runs
+  /home/drdeng/miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_mathtext.py:45: PyparsingDeprecationWarning: 'enablePackrat' deprecated - use 'enable_packrat'
+    ParserElement.enablePackrat()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED pytest/bem_inverse/test_on001.py::test_early_exit_requires_full_catalog_and_audit_and_charges_failure[True-False]
+FAILED pytest/bem_inverse/test_resolution_resume.py::test_pause_resume_preserves_damping_trajectory_counters_and_cache
+2 failed, 35 passed, 14 warnings in 2.56s

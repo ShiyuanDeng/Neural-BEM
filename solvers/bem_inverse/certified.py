@@ -86,7 +86,7 @@ class CertifiedSpectralUpdate(SpectralProjectedUpdate):
         self.window, self.shadow = int(window), bool(shadow)
         self.counts.update({f'{r}_{t}': 0 for r in ROLES for t in TIERS})
         self.counts.update(base_certificates=0, base_certificate_failures=0, full_certificate_failures=0,
-                           certificate_seconds=0., sampled_seconds=0., shadow_disagreements=0)
+                           certificate_seconds=0., sampled_seconds=0., projection_seconds=0., shadow_disagreements=0)
         self.records = []   # per-curve tier rows of the latest trial
 
     def settings(self):
@@ -201,7 +201,11 @@ class CertifiedSpectralUpdate(SpectralProjectedUpdate):
                 raise UpdateRefused('self_intersection', 'Displaced curve self-intersects.')
 
         self.check(space, moved.coefficients, role, sampled)
-        return arclength_quadrature(moved, n, space.curve_modes)
+        started = time.perf_counter()
+        try:
+            return arclength_quadrature(moved, n, space.curve_modes)
+        finally:
+            self.counts['projection_seconds'] += time.perf_counter()-started
 
     def trial(self, space, coefficients):
         """``ProjectedUpdate.trial`` with the same order of checks and the same candidate."""
