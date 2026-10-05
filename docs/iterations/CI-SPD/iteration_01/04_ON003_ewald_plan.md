@@ -1,7 +1,7 @@
 # ON-003 — Fourier-factorized Müller forward feasibility
 
 Prepared 2026-10-05. Approval status: **APPROVED FOR EXECUTION**.
-Execution status: **STARTED — preparation**. This is a separate, bounded eight-hour
+Execution status: **CLOSED — ACCURACY_OR_RESOURCE_LIMITED (Fourier accuracy ceiling)**. This is a separate, bounded eight-hour
 forward experiment. No numerical experiment was performed while writing it.
 
 User launch: `Go ON-003 using docs/iterations/OVERNIGHT_AGENT_TRACKS.md.`
@@ -9,6 +9,12 @@ Start: **2026-10-05 01:49:12 UTC**. Deadline: **2026-10-05 09:49:12 UTC**.
 No new variants after 07:49:12 UTC; closeout reserve begins 08:19:12 UTC.
 Existing checkout: `feature/shape-frequency-continuation`, as explicitly instructed
 by the launch guide. ON-001 runs concurrently; OS locks serialize numerical work.
+
+Closeout: [ON-003 results](05_ON003_results.md). Scientific decision at
+2026-10-05 02:36:34 UTC. All four split choices fail the circle diagonal
+operator control at both permitted grids, confirmed by independent references.
+The 48 full-field configurations and conditional derivatives remain explicitly
+unrun; no larger grid or inverse experiment was launched.
 
 ## Question and authorization boundary
 
