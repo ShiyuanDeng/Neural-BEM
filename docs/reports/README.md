@@ -10,7 +10,7 @@ historical context.
 
 | Report | Scope |
 |---|---|
-| [research_freeze_2026-10-05.md](research_freeze_2026-10-05.md) | Read-only repository freeze, source-traced current pipeline, complete research-track ledger, quantitative evidence and conflicting claims; October 5 snapshot saved October 6 |
+| [research_freeze_2026-10-05.md](research_freeze_2026-10-05.md) | Read-only repository freeze, source-traced current pipeline, complete research-track ledger, quantitative evidence and conflicting claims; October 5 snapshot saved October 6, independently fact-checked against code and raw results (Appendix A) |
 | [inverse_review_2026-10-03.md](inverse_review_2026-10-03.md) | Critical review of current node-free claims, numerical performance, benchmark rigor, data access and literature comparability; saved-artifact audit included |
 | [exploration_2026-10-02.md](exploration_2026-10-02.md) | Ten ranked exploratory tasks: shape sensitivity and TOP-009 finite path; Fresnel data; TE/lossy; sampling/continuation; gprMax transients; half-space; sphere IBIM; Algoim |
 | [overnight_2026-09-25.md](overnight_2026-09-25.md) | Shape-continuation briefing: SC-036 matched finite paths, SC-035 centred state band, SC-037 later release; state restriction helps peanut/C/kite with a star tradeoff; no method promoted |

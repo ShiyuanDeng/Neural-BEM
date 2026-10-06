@@ -6,6 +6,13 @@
 > the audit, before this report was saved and the workspace committed. Links point
 > to repository paths; use the recorded source revisions and experiment archives
 > when later changes alter those paths.
+>
+> **Fact-checked 2026-10-06.** A second, independent pass re-derived the report's
+> claims from source code, saved result files and Git (not from summary documents).
+> Corrections are applied inline and listed in [Appendix A](#appendix-a--fact-check-log-2026-10-06).
+> Since the audit, the dirty tree it describes was committed unchanged (plus a one-line
+> stale test assertion) as **`71087669`**. That commit is now the reproducible reference
+> for the frozen state.
 
 **The maintained research pipeline is now an explicit Cartesian Fourier boundary inverse solver using modal Müller physics.** Neural SDF inversion, topology changes, modal compression, and several alternative continuation schemes have substantial histories, but they are not all part of that pipeline.
 
@@ -28,6 +35,7 @@ The audit made no repository changes, ran no inverse experiments, and reran no n
 | Working tree | **12 modified tracked files; 8 untracked files; no staged changes** |
 | Worktrees | One: this checkout |
 | Remote verification | No fetch or live remote comparison performed |
+| Post-freeze reference commit | **`710876696a0eb2bf616e8dede89f55135aed7559`** (2026-10-06 01:51 BST, pushed): the audited dirty tree, this report, and a one-line test-assertion fix |
 
 **Branch discrepancy:** the supplied preferences name `feature/ordered-boundary-nystrom`, but the actual checkout is `feature/shape-frequency-continuation`. The audit preserved the actual checkout.
 
@@ -165,7 +173,7 @@ There is **no single repository-wide default** independent of the entry point.
 
 | Entry point | Actual selection |
 |---|---|
-| Benchmark CLI, ordinary invocation | `modal_muller` + `certified_spectral` + `CumulativePolicy` + localization `none` |
+| Benchmark CLI, ordinary invocation | `modal_muller` + `certified_spectral` + `CumulativePolicy` (defaults: 1,800 s fit, 300 s audit) + localization `none`; behaves like `modal_fixed` (hard stop on an unresolved trial) |
 | Benchmark `--pipeline modal_fixed` | Same physics/update pairing; unresolved numerical trials cause a hard stop |
 | Bare `bem_inverse.runner.fit(...)` | Legacy defaults: `nodal_kress` and spline-based projected update |
 | Benchmark `--policy ...` | Working-tree policy registry selects a complete recipe and benchmark contract |
@@ -251,7 +259,7 @@ Here `R_arc` denotes arclength reparameterization, **not** the squared-distance 
 | Boundary solve | $Ax=b$, $x=[\hat u_D,\hat q]$, $q=\lvert z'\rvert\partial_nu$ | Dense matrix/RHS → modal traces and retained LU | [ModalMuller._evaluate](../../solvers/bem_inverse/modal_muller.py) | Yes | Algebraic residual recorded; this alone does not certify discretization accuracy |
 | Receiver field | Boundary representation contracted with receiver coefficients | Traces + receivers → paired complex scattered fields | Same `_evaluate`; `point_kernels` | Yes | Production/refined and independent reference comparisons in tests |
 | Objective | Normalized complex residual stacked into a real vector; $\frac12r^Tr$ | Predictions, data, weights → residual/loss | [normalize / Objective](../../solvers/bem_inverse/continuation/lm_backend.py) | Yes | Objective/derivative tests; declared-noise weighting differs from noiseless TG-002 |
-| Geometry tangent | Cartesian coefficient velocities of the complete projected trial | Current curve + update basis → `space.derivatives` | [BatchedCertifiedUpdate.prepare](../../solvers/bem_inverse/batched.py) | Yes | Default uses centered finite differences of geometry construction, not forward-solve finite differences |
+| Geometry tangent | Cartesian coefficient velocities of the complete projected trial | Current curve + update basis → `space.derivatives` | [BatchedCertifiedUpdate.prepare](../../solvers/bem_inverse/batched.py) (on CUDA, its subclass `DeviceCertifiedUpdate`) | Yes | Default uses centered finite differences of geometry construction, not forward-solve finite differences |
 | Physics sensitivity | Reciprocal Hadamard contraction with $w_i=\Re(V_i\overline N)$ | Forward/reciprocal traces + geometry velocities → complex field Jacobian | [derivative / _contract](../../solvers/bem_inverse/modal_muller.py), [hadamard](../../solvers/bem_inverse/modal_operator.py) | Yes | Refined-column comparisons and complete-trial directional FD checks |
 | LM update | $(J^TJ+\lambda D)a=-J^Tr$ | Residual/Jacobian → proposed real normal coefficients | [fit_stage](../../solvers/bem_inverse/continuation/lm_backend.py) | Yes | Optimizer tests and campaign histories; damping depends on selected policy |
 | Geometry update | Centered arclength projection of a normal displacement | $c,a$ → trial coefficients | [spectral_project](../../solvers/bem_inverse/spectral.py), [CertifiedSpectralUpdate.trial](../../solvers/bem_inverse/certified.py) | Yes | Coarse/fine projection checks, certificate attempts, sampled fallback and domain checks |
@@ -364,7 +372,7 @@ The acceptance path includes:
 5. resolution tolerances;
 6. a decrease test that accounts for disagreement between resolutions.
 
-The established `modal_fixed` path stops on an unresolved numerical trial. The working-tree `modal_response` variant changes that behavior, but is not a qualified replacement.
+The established `modal_fixed` path stops on an unresolved numerical trial. The `modal_response` variant (dirty tree at the freeze, committed in `71087669`) promotes an unresolved trial once to $K_t=128/160$ and rejects unresolved trials there instead of stopping. It is not a qualified replacement.
 
 ### “Certified” has a bounded meaning
 
@@ -382,30 +390,30 @@ The current solver is not established as an entirely sample-free, formally certi
 
 ## 1.7 The ordinary continuation schedule
 
-For TG-002, the default policy executes approximately this sequence:
+For TG-002, the default policy executes this sequence. Bands below were checked against the executed `plan.json` of recorded DP-001 runs.
 
 | Phase | Actual action |
 |---|---|
 | Initial audit | Qualify the prescribed start |
 | Localization operation | Benchmark `none` adapter keeps the centered start |
 | Warm-up | Damped 0.25 GHz, $M=1$, $K_g=4$ |
-| Frequency ladder | Cumulative damped prefixes ending at 0.5, 0.75, 1.0 and 1.25 GHz; TG-002 update bands approximately 3, 5, 7, 9 |
-| Return to measured objective | Same four frequencies, undamped |
-| Full-catalog release | All 19 real frequencies, $M=11,15,19$, ordinarily $K_g=192$ |
-| Cleanup | Crop stored geometry to band 64 and pad back; no arclength refit |
+| Frequency ladder | Cumulative damped prefixes ending at 0.5, 0.75, 1.0 and 1.25 GHz; $M=3,5,7,9$ with $K_g=2M+2=8,12,16,20$ ($M=\lfloor3\max\Re k\rfloor$); $K_t=64/96$ |
+| Return to measured objective | Same four frequencies, undamped, $M=9$, $K_g=20$ |
+| Full-catalog release | All 19 real frequencies, $M=11,15,19$, $K_g=192$, $K_t=128/160$ |
+| Cleanup | Once, before $M=25$ (noiseless data): crop stored geometry to band 64 and pad back; no arclength refit |
 | Fixed releases | $M=25,31,37$ |
 | Observable frontier | Measure paired-Jacobian information at the highest real frequency |
-| Conditional tail | Add bands in increments of six, up to the configured ceiling |
+| Conditional tail | Add bands in steps of six from 37: candidates $M=43,49,\ldots,91$ |
 | Final audit | Run on every exit, including numerical failure |
 
-The ordinary path does **not** automatically run an unconditional final $M=95$ stage.
+The ordinary path does **not** run an $M=95$ stage: with step 6 from 37 and ceiling 95, the tail stops at 91.
 
 Other important distinctions:
 
 - Default policy damping is the scheduled rule. DP-001 feedback damping is an option.
 - Default `required_accuracy` is unset. ON-001's accuracy exit is an option.
 - TG-002 is noiseless; noise whitening/discrepancy rules exist but are not thereby validated by TG-002.
-- The ordinary policy defaults to 1,800 fit seconds and 300 audit seconds. The new named-policy benchmark contract uses 120 fit seconds and 30-second audit allowances. A recipe comparison must include these contracts.
+- `CumulativePolicy` defaults to 1,800 fit seconds and 300 audit seconds; the ordinary CLI, PC-001 and PC-002 ran under these. The registry's `BENCHMARK_CONTRACT` (120 fit seconds, 30-second audit allowances, 13,412 work units) is **not new**: ON-001, DP-001, RG-001 and CS-001 ran under it (their recorded plans show `fit_seconds=120`). The 26/30 count was obtained under both budgets. A recipe comparison must still state its contract.
 
 ## 1.8 Numerical audit versus recovery
 
@@ -460,12 +468,14 @@ The input truth was generated with the CPU nodal reference and qualified through
 | **PC-002** | Fairer nodal+spline comparison: **26/30**, median total ≈100.58 s | A stronger nodal comparator; independent fine-reference audit evidence | Fully matched timing against all earlier modal runs |
 | **ON-001 B/E** | **26/30 in both**; median paired successful-output speedup **1.546×** | Accuracy-based early exit retained these recoveries | New recovery or a universal speedup |
 | **DP-001 E/F** | **26/30 in both**; all 26 shared successes faster; median **1.134×** | Recorded feedback/reuse recipe retained recovery | Attribution of the gain to one mechanism alone |
-| **RG-001** | **26/30 in both**, no new recovery | Decision-gate relaxation was executed and tested | Resolution-gate changes solving the four failures |
+| **RG-001** | **26/30 in both**, no new recovery; accepted paths of the 26 retained bitwise; Aphex c4 RMS 1.685→0.664 mm, but its endpoint audit, Hausdorff and field gates failed | Decision-gate relaxation was executed and tested | Resolution-gate changes solving the four failures |
 | **CS-001** | Eight-case screen: control **5/8**, revised **4/8** | Four retained recoveries, one regression; shared-success median **1.499×** faster | A successfully promoted new continuation schedule |
 
 Evidence: [PC-001 report](../../results/validation/cleaned_interfaces/PC-001/report.md), [PC-002 summary](../../results/validation/cleaned_interfaces/PC-002/NS/summary.json), [ON-001 results](../iterations/cleaned_interfaces/iteration_31/01_results.md), [DP-001 comparison](../../results/validation/cleaned_interfaces/DP-001/final_comparison.json), [RG-001 report](../../results/validation/cleaned_interfaces/RG-001/report.json), [CS-001 report](../../results/validation/cleaned_interfaces/CS-001/report.json).
 
-The audit independently recomputed **268 saved recovery classifications** across PC-001, ON-001, DP-001, CS-001 and RG-001 using each result's stored audit flag and metrics. They agreed with the recorded classifications. This checked classification consistency; it did not recompute geometry distances or rerun endpoint physics.
+The recovery rule was recomputed from every saved `result.json` with stored metrics under PC-001, ON-001, DP-001, CS-001 and RG-001, using its audit flag, RMS, Hausdorff upper bound and per-frequency residual limits. All **334** results (PC-001 72, ON-001 106, DP-001 60, CS-001 16, RG-001 80) agree with their recorded classifications. (The first draft reported 268, from a narrower file selection.) This checked classification consistency. It did not recompute geometry distances or rerun endpoint physics.
+
+**The same four cases fail in every 30-case campaign:** `aphex_twin` at all three contrasts and `hook__c13.3`. This holds for PC-001 M1 (modal) and N1 (nodal Kress), PC-002 (nodal + spline), ON-001 B/E, DP-001 E/F and RG-001. The failures are therefore not specific to the modal discretization or to the spectral geometry update.
 
 ### The four failures in DP-001 F
 
@@ -476,7 +486,7 @@ The audit independently recomputed **268 saved recovery classifications** across
 | `aphex_twin__c13.3` | 2.570 | 10.657 | 1.370 | Fail |
 | `hook__c13.3` | 8.653 | 25.140 | 1.629 | Pass |
 
-These are failed recoveries, including three numerically qualified endpoints. Their histories include numerical-resolution stops. They do not prove data nonuniqueness, stationary local minima, or impossibility of recovery.
+These are failed recoveries, including three numerically qualified endpoints. All four DP-001 F runs ended with `NUMERICAL_FAILURE` (“candidate leaves the frozen numerical-resolution regime”). Removing that stop has not rescued them. In PC-001 N1, the nodal resolution response promoted all four to N1024/2048, and they still failed with trial wall limits or accuracy-limited trials. RG-001's extended diagnostics gave them 900 s fit budgets; none recovered, and none passed its endpoint audit. This does not prove data nonuniqueness, stationary local minima, or impossibility of recovery.
 
 ### Why CS-001 is a failed promotion
 
@@ -498,7 +508,7 @@ None of the screened runs entered the advertised final $M=95$ release. Smaller g
 | Work | Status and concrete evidence | Limit |
 |---|---|---|
 | **AC-001 analytic radial coefficients** | Implemented in the active operator; 24/24 scalar cases and 4/4 highest-frequency matrix/field comparisons passed | No full inverse rerun after this change |
-| **AC-001 regression suite** | Saved XML records **628 passed, 46 skipped**, plus five separately passing CUDA tests | Historical test execution, not tests rerun in the audit or a complete seal of the dirty tree |
+| **AC-001 regression suite** | Saved XML records **628 passed, 46 skipped**, plus five separately passing CUDA tests. It contains test cases from the then-untracked `test_policies.py`, `test_entry_reuse.py` and `test_validity_order.py`, so it ran on a tree that already held the policy work | Historical test execution, not tests rerun in the audit or a complete seal of the dirty tree |
 | **AC-001 numerical accuracy** | Maximum reported normalized scalar coefficient discrepancy ≈$6.37\times10^{-13}$; high-precision value discrepancy ≈$2.18\times10^{-13}$; worst final forward matrix comparison ≈$9.07\times10^{-9}$ | Norm-scaled metrics are not uniform absolute-error guarantees for every regime |
 | **AC-001 performance** | Analytic scalar construction median ≈1.00 ms versus ≈0.354 ms for the DCT reference | Removing radial sampling did not make this scalar substep faster |
 | **AC-002 profile** | Twelve forward evaluations; three fresh/reused pairs on each device; field equivalence and accounting assertions passed | One geometry/frequency configuration, not inverse throughput |
@@ -509,13 +519,13 @@ The AC-001 archive preserves failed intermediate implementations, including smal
 
 Sources: [AC-001 evidence](../../results/validation/cleaned_interfaces/AC-001/README.md), [final suite XML](../../results/validation/cleaned_interfaces/AC-001/final-suite.xml), [AC-002 profile](../../results/validation/cleaned_interfaces/AC-002/profile.json).
 
-## 2.3 Uncommitted policies: implementation is ahead of evidence
+## 2.3 Policy registry (uncommitted at the freeze, committed in `71087669`): implementation is ahead of evidence
 
 The new registry contains these recipes:
 
 | Recipe | Research status supported by evidence |
 |---|---|
-| `baseline` | Established algorithm lineage, but registry/wiring is uncommitted |
+| `baseline` | Established algorithm lineage; registry/wiring was uncommitted at the freeze and has no campaign of its own as a registry entry |
 | `accuracy_exit` | ON-001 idea quantitatively qualified |
 | `feedback` | DP-001 idea quantitatively qualified |
 | `decision_gate` | Executed experimental variant; no new recovery |
@@ -667,11 +677,16 @@ Sources: [native modal research](../../experiments/modal_muller_research/README.
 | **SC-047: coupled nonstar shapes** | Local physics/derivatives qualified; object-selection transfer failed false-birth checks |
 | **SC-048: global-motion enrichment** | Tested, failed intended transfer gates |
 | **SC-049/050: far starts and Mie initialization** | Far-start failure and historical grid-localization successes recorded |
-| **SC-051: frequency-only control** | Frequency-only fixed-band policy was much worse on the old 36-case collection; supports the tested need for joint shape release, not a universal theorem |
+| **SC-051: frequency-only control** | Frequency-only full bands ($M=K=255$ from the first frequency) recovered **0/36** single-object configurations versus 34/36 for the preselected established strategies, with worse RMS in all 41 compared cases; supports the tested need for joint shape release, not a universal theorem |
 
 Far starts and SC-050 grid initialization are now **explicitly retired for new experiments**. They remain because historical seals and evidence reference them. Their existence in code or old success tables does not make them current recommendations.
 
 The old **34/36** continuation headline is also not a clean result of one uniform present-day pipeline; it combines historical development/transfer evidence.
+
+Two different “34/36” figures appear in the repository. Do not merge them:
+
+- **SC-051's 34/36** counts per-case *preselected* established strategies, not one fixed pipeline.
+- **CI-001's 34/36** counts geometric recovery. Only **28/36** passed the full frozen contract; seven noisy cases failed the residual gate (§3.6).
 
 Source: [SC history and result index](../iterations/shape_frequency_continuation/README.md), [legacy benchmark policy](../../experiments/benchmark/LEGACY.md).
 
@@ -682,9 +697,9 @@ Source: [SC history and result index](../iterations/shape_frequency_continuation
 | **MA-001 / reproduction** | Wave-pair identity and circle/BIE checks; trace-frontier diagnostics. One sharp-kite state failed numerical qualification and was excluded |
 | **Resonance interpretation** | High-contrast circle mechanism partly supported; the proposed contrast-0.5 resonance explanation was not supported |
 | **MA-002/003** | Frozen high-contrast and band-only interventions failed to resolve the relevant basins |
-| **MA-004** | Damping-only study failed two of four adoption gates |
+| **MA-004** | Damped localization/prefix repaired 2 of the 4 MA-002 failures and kept all 8 earlier recoveries. Gate G1 required 3 repairs, so it failed and transfer was withheld |
 | **MA-005** | Damping plus shape-frontier release gave strong bounded transfer/fresh results; original hard C-shape case remained unsolved |
-| **MA-006** | Operator atlas tested. Aggressive reduced solves failed most field/Jacobian/update requirements; Schur completion restored accuracy |
+| **MA-006** | Operator atlas executed; 9/10 cells qualified. Relative to projection, reduced solves needed a larger tested cutoff in 1/9 data/Jacobian cells and 3/9 local-update cells; exact Schur elimination restored the reference. It is a projected-Nyström control ($P=12$): no deployed adaptive cutoff and no inverse speed-up |
 
 These studies helped form the cumulative policy. They did not produce a validated automatic modal-compression or adaptive-resolution controller.
 
@@ -751,7 +766,7 @@ Sources: [October 2 exploration report](exploration_2026-10-02.md), [September e
 
 | Idea | Evidence | Status |
 |---|---|---|
-| **T1 / TR-001 empirical local radius** | Forty numerically qualified rows and 936 probes; some tangential-cone violations and unresolved singular-value cases | Executed empirical study, not a certified Lipschitz radius or convergence theorem |
+| **T1 / TR-001 empirical local radius** | Forty numerically qualified rows and 936 extra probes. None of the 911 resolved probes violated the tangential-cone condition (maximum ratio 0.32 against 1/2). The 22 apparent violations were all among the 25 unresolved probes and are numerical-floor effects; eight weakest singular values were also unresolved. For the contrast-13.3 C, damping enlarged the empirical radius about 41× (0.0088→0.36 mm) | Executed empirical study supporting a nonlinearity explanation of the damping benefit near truth; not a certified Lipschitz radius or convergence theorem |
 | **T2 / TR-002 certified handoff rule** | 24 handoffs; 17 outside the stated applicability conditions; none of seven applicable cases passed the desired inequality | Failed useful certification criterion |
 | **TR-003 branch/homotopy work** | Later numerical branch qualifications exist; earlier completion/adapter validation failed | Mixed evidence; failed completion guard must remain visible |
 | **Complex-frequency damping** | Implemented and used | Real geometry with complex $k$ |
@@ -769,9 +784,9 @@ Literature-priority and novelty statements in these documents were not independe
 |---|---|---|
 | **GGB-001 comparison** | Three eligible cylinder examples, different acquisition/noise/parameterization contracts; very fast GauGal runs compared with an unsuccessful slow BEM example | Executed comparison, not general method parity |
 | **GGB-002** | Single-/four-frequency BEM alternatives failed recovery; four-frequency run encountered numerical failure | Negative bounded result; not proof that frequencies cannot help |
-| **GGB-003 translation + shape** | Center error fell ≈458.6→1.4 mm, but data residual remained high; substantial certificate cost | Localization success, failed full recovery |
-| **GGB-004 translation + radius** | 43 updates, ≈3.70 s; center error ≈0.198 mm; pixel metric looked exact | Higher-frequency residual gates failed; circle-only result |
-| **GGB-005 single-frequency translation + radius** | 30 updates, ≈1.32 s; active-frequency residual passed noise criterion | Higher-frequency holdouts failed; not general shape recovery |
+| **GGB-003 translation + shape** | Arm-to-arm comparison, not one run improving: the translation arm T ended 1.40 mm from the true centre, versus 458.58 mm for baseline arm B. Both arms ended in `NUMERICAL_FAILURE`. T's residuals stayed at 13.5–16.2% against a 5.5% noise target, and T took 297.7 s versus 4.4 s | Localization success, failed full recovery |
+| **GGB-004 translation + radius** | 43 updates, ≈3.70 s; center error ≈0.20 mm; pixel metric looked exact | Fitted 0.75/1.0/1.25 GHz residuals (5.6–6.6%) missed the ≈5.5% noise targets; circle-only result |
+| **GGB-005 single-frequency translation + radius** | 30 updates, ≈1.32 s; centre error ≈0.10 mm; fitted 0.5 GHz residual 5.20% met its 5.50% noise target | 0.75–1.25 GHz holdouts (5.6–6.6%) missed theirs; not general shape recovery |
 | **ON-002 GauGal adapter** | Rescaling/double-precision/resumed qualifications; 0/25 required solve gates | `ADAPTER_INCOMPLETE`; inverse/hybrid/all-30 work unrun |
 | **GS-001 native TV** | Twelve updates; ≈30.2% residual; stall | Executed failure preserved |
 | **GS-001 repaired TV** | 202 updates to wall cap; ≈0.461% single-frequency residual, IoU ≈0.331, sampled RMS ≈28.1 mm | Data fit improved, geometry recovery failed; still above TG-002's 0.3% data threshold |
@@ -789,8 +804,9 @@ Sources: [GGB-002](../../results/validation/cleaned_interfaces/GGB-002/report.md
 |---|---|
 | “The project is currently a neural SDF inverse.” | The maintained benchmark optimizes explicit Fourier boundaries. Neural inversion is a separate paused lineage with failed principal recovery runs |
 | “The repo is on ordered-boundary-nystrom.” | Actual checkout is shape-frequency-continuation, 446 commits beyond that branch tip |
-| “HEAD reproduces the current workspace.” | Twenty modified/untracked paths include executable policy changes |
-| “The current code has recovered 26/30.” | Recorded earlier campaign versions did. New kernel work and dirty variants lack a matching complete current-tree campaign |
+| “HEAD reproduces the current workspace.” | At the freeze it did not: twenty modified/untracked paths included executable policy changes. Since 2026-10-06 they are committed in `71087669` |
+| “The current code has recovered 26/30.” | Recorded earlier campaign versions did. New kernel work (AC-001) and the policy variants lack a matching complete campaign on `71087669` |
+| “The four failures are a modal-discretization artefact.” | The identical four cases fail with nodal Kress too (PC-001 N1, including promotion to N1024/2048, and PC-002 nodal + spline) |
 | “Topology recovered 7/12.” | True of the older scorecard; a later compiled scorecard records 8/12 under changed settings |
 | “Node-free means the inverse has no sampling.” | Operator construction is coefficient-based, but geometry projection, validity preparation/fallback and FD qualification use sampling |
 | “The geometry certificate in the September PDF proves correctness.” | Independent counterexamples refuted the proposed finite-section/RMS certificates. Current code uses a different, stronger residual construction with stated numerical limits |
@@ -800,7 +816,7 @@ Sources: [GGB-002](../../results/validation/cleaned_interfaces/GGB-002/report.md
 | “A small residual means the shape was recovered.” | GS-001 is a direct counterexample. TG-002 correctly requires geometry and numerical gates too |
 | “Passing the endpoint audit means successful inversion.” | Three DP-001 failures passed numerical audit |
 | “Four-phase continuation was adopted successfully.” | CS-001 lost one control recovery; its final full-release stage was never reached in the screen |
-| “Modal resolution response does not exist.” | That is stale documentation relative to the dirty tree: it is now implemented, but remains unqualified |
+| “Modal resolution response does not exist.” | True at HEAD `3d3ed16a` (the `pipelines.py` docstring and error said so); stale relative to the dirty tree. `modal_response` is implemented and committed in `71087669`, but remains unqualified |
 | “PS-001 is a registered/completed screen.” | The registry refers to a missing plan; no completed screen evidence was found |
 | “The modal method is five times faster than nodal.” | Some historical totals have that ratio, but PC-002 shows why recipe, audit, geometry and execution settings must be matched |
 | “Analytic radial coefficients made the method faster.” | They removed radial sampling; the measured scalar construction was slower, and no whole-inverse speed gain was demonstrated |
@@ -814,9 +830,9 @@ The following wording stays within the evidence:
 
 > We have a maintained two-dimensional, known-material, single-boundary inverse solver using explicit Cartesian Fourier geometry and modal Müller boundary-integral physics. It uses reciprocal shape sensitivities, a normal/spectral geometry update, and staged shape-frequency continuation with numerical acceptance and endpoint checks.
 
-> On the frozen noiseless TG-002 benchmark—ten shapes at three contrasts, one centered start, 24 paired measurements at 19 frequencies—the recorded modal campaigns recover 26 of 30 cases. Accuracy-based stopping and a later feedback/reuse recipe retained those recoveries and reduced measured runtime under their recorded contracts.
+> On the frozen noiseless TG-002 benchmark—ten shapes at three contrasts, one centered start, 24 paired measurements at 19 frequencies—the recorded modal campaigns recover 26 of 30 cases. Accuracy-based stopping and a later feedback/reuse recipe retained those recoveries and reduced measured runtime under their recorded contracts. The same four cases (the Aphex Twin shape at all three contrasts and the hook at contrast 13.3) fail in every 30-case campaign, with both modal and nodal physics.
 
-> We have extensive forward, derivative and geometry validation, including independent nodal controls. The newest analytic radial-coefficient implementation passed component and regression tests, but has not yet been shown to retain the complete benchmark on the exact current working tree.
+> We have extensive forward, derivative and geometry validation, including independent nodal controls. The newest analytic radial-coefficient implementation passed component and regression tests, but has not yet been shown to retain the complete benchmark on the current code.
 
 > Several major ideas were investigated and did not meet their intended goals: the principal neural-SDF inverse runs, useful modal compression for the inverse, broad atlas-driven control, the latest four-phase continuation promotion, and current GauGal-adapter parity. Other successful diagnostics—topology suffixes, multi-object response reuse, localization, and low-rank operator snapshots—have narrower scope than a general inverse result.
 
@@ -828,7 +844,7 @@ These are existing open items, not new research proposals, and no work on them w
 
 | Existing item | Frozen status |
 |---|---|
-| Modal resolution response / RP-001 lineage | Now partly implemented in the dirty tree; campaign qualification absent |
+| Modal resolution response / RP-001 lineage | Implemented as `modal_response` (dirty tree at the freeze, committed in `71087669`); campaign qualification absent |
 | PS-001 policy comparison | Screen code exists; referenced preregistration is missing; no completed results |
 | Exact stage-entry reuse and validity-order changes | Implemented with test-related evidence; exact current combined campaign behavior unresolved |
 | Blind transfer of selected initialization/resolution successes | FM-006-style follow-up remains distinct from retrospective FM-003–005 selections |
@@ -861,3 +877,57 @@ All 89 evidence links in the audit resolved before saving this receipt, and
 report introduced no scientific implementation changes. The pre-existing policy
 work is preserved in the requested commit; its campaign-qualification limitations
 remain as recorded above. No new benchmark campaign was run.
+
+# Appendix A — Fact-check log (2026-10-06)
+
+A second pass re-derived the claims above from primary sources: source code (identical at `71087669` to the audited dirty tree for all scientific files), saved `result.json`/`plan.json`/XML records, and Git. Iteration result documents served only where no raw record exists. Landing pages and summaries were not treated as evidence. Corrections are applied in place above.
+
+## Corrections
+
+| Section | First draft | Corrected to | Primary evidence |
+|---|---|---|---|
+| §1.7 | The 120 s / 30 s benchmark contract was described as *new* | It is the contract ON-001, DP-001, RG-001 and CS-001 ran under. PC-001/PC-002 used the 1,800 s / 300 s defaults. The 26/30 count holds under both | `fit_seconds` in each campaign's `plan.json`; `BENCHMARK_CONTRACT` comment in `policies.py` |
+| §1.7 | Ladder bands “approximately 3, 5, 7, 9”; tail “up to the configured ceiling” | Exact $M$, $K_g$ and $K_t$ per stage; tail candidates 43–91, never 95 | DP-001 `plan.json`; `CumulativePolicy.operations/tail` |
+| §2.1 | “268 saved recovery classifications” | 334 results, all consistent | All `result.json` with metrics under PC-001, ON-001, DP-001, CS-001, RG-001 |
+| §3.5 MA-004 | “failed two of four adoption gates” | Repaired 2 of 4 failures; G1 needed 3, so G1 failed; 8 earlier recoveries kept | `modal_atlas/iteration_05/01_results.md` |
+| §3.5 MA-006 | “reduced solves failed most requirements” | 9/10 cells qualified; a larger cutoff was needed in only 1/9 and 3/9 cells | `modal_atlas/iteration_07/01_results.md` |
+| §3.9 TR-001 | “some tangential-cone violations” | No resolved probe violated the condition; apparent violations were unresolved numerical-floor probes | `theory_radius/iteration_02/01_results.md` |
+| §3.10 GGB-003 | “Center error fell ≈458.6→1.4 mm” (reads as one run improving) | Endpoints of two different arms (B 458.58 mm, T 1.40 mm); both ended in `NUMERICAL_FAILURE` | `GGB-003/report.md` |
+| §3.10 GGB-004/005 | Residual outcomes stated qualitatively | Residual versus noise target per frequency | `CI-SPD/GGB-004_results.md`, `GGB-005_results.md` |
+
+## Additions
+
+- The identical four-case failure set across every 30-case campaign, modal and nodal (§2.1, Part 4, Part 5).
+- Nodal promotion to N1024/2048 (PC-001 N1) and 900 s budgets (RG-001 extended) did not rescue those four (§2.1).
+- The AC-001 suite already collected the then-untracked policy test modules (§2.2).
+- The two distinct “34/36” figures, and SC-051's 0/36 frequency-only result (§3.5).
+- The post-freeze reference commit `71087669`, with stale “dirty tree / uncommitted” wording updated where it describes the present (header, §0.1, §2.3, Parts 4–6).
+
+## Verified as written (selection)
+
+- **Part 0:** branch, HEAD and date; the 12 modified + 8 untracked files; branch tips; 446/558 commit counts; tag and stash; TG-002 manifest SHA-256; Markdown/result census counts.
+- **Part 1:** every cited function at its cited location; CLI and `runner.fit` defaults; modal input requirements; Müller block structure with Maue form; six radial functions; the $K_t$ formula and $B=K_t+64$, matching recorded plans; SciPy LU and CPU Graf/Jacobian work; `device=auto` semantics; Jacobian factor $2\pi(k_i^2-k_o^2)$; $10^{-7}$ m centered geometry differences; audit tolerances (field $10^{-5}/10^{-7}$, Jacobian $10^{-3}$, FD $10^{-3}$, seed 42001); recovery gates.
+- **Part 2:**
+  - PC-001: M1 26/30, 31.39 s; N1 26/30, 156.68 s; N0 stopped by the user at 12/12.
+  - PC-002 26/30, 100.58 s; ON-001 1.546×; DP-001 1.134× with all 26 faster; RG-001 26/30.
+  - CS-001: 5/8 vs 4/8; C-shape stop at M15/K32 at $1.1278\times10^{-7}$; RMS 0.251 mm, Hausdorff 0.655 mm, residual 25.9%; no case reached M95.
+  - DP-001 F failure table.
+  - AC-001: 24/24 and 4/4; 628 passed, 46 skipped, plus 5 CUDA; error metrics; 1.00 vs 0.354 ms; no inverse rerun.
+  - AC-002 timings; registry contents; absent PS-001 plan and results.
+- **Part 3, checked against result records:**
+  - Neural: RMS 14.10/9.51 mm; lobe 1.53 vs 12.5 mm.
+  - Topology: TOP-025 7/12 vs 8/12 (rows, source revision, failures, `production_promotion: false`); TOP-009/020/021/022/024 dispositions.
+  - BIE: BIE-001/002/004/006 (3.44×, 1,008 checks, 1.87×).
+  - Laurent and compression: LAU-003/004 (48/194; 42/42 with 24 rebuilds); September 18 study (kD = 60 Mie check, retention 0.38–0.63, additive penalty, rank 11, 81/161 assemblies); MC-001.
+  - Continuation and atlases: SC-038/039/043/047–050; MA-001 kite exclusion and resonance finding; MA-005.
+  - Cleaned interface: CI-001 28/36 (34/36 geometric); modal 19/36; 7/9 repairs; NU-001–NU-007a; GC-001 278/279.
+  - Relaxed BIE and initialization: FM-002–FM-006; RB-001 0/4.
+  - Theory radius: TR-001/002 counts.
+  - GauGal and alternatives: GGB-004/005; ON-002 0/25; ON-003; EW-001; GS-001 (12 → 202 updates, 30.2% → 0.461%, IoU 0.331, RMS 28.1 mm).
+  - Exploration: LSM 5/12; streamed audit bitwise identical.
+
+## Not independently re-verified
+
+- The census fingerprint `9db28a1f…` (its serialization was not recorded; file counts are consistent).
+- Individual rows for SC-001–037, TOP-001–008/011–019/023, SPD-001–016 beyond the runtime-history table, LAU-001/002/005, and the §3.8 exploration rows other than LSM and streamed audit.
+- Document-level theory claims in §3.9, and every literature-priority or novelty statement.
