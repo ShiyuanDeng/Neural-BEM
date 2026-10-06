@@ -1,0 +1,967 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Research map — 5 Oct 2026</title>
+<style>
+@page { size: 1280px 720px; margin: 0; }
+:root {
+  --surface: #fcfcfb; --ink: #0b0b0b; --muted: #52514e; --spine: #c9c8c2;
+  --green: #1baf7a; --blue: #2a78d6; --orange: #eb6834; --amber: #eda100;
+  --grey: #8a8984; --card: #ffffff; --cardline: #e4e3dd;
+  --navy: #123a6b; --sky: #9cc7f2;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: #fff; }
+body { font-family: 'Ubuntu', 'DejaVu Sans', sans-serif; color: var(--ink);
+       -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.slide { width: 1280px; height: 720px; position: relative; overflow: hidden; background: var(--surface);
+         padding: 40px 56px 0 56px; page-break-after: always; break-after: page; }
+.slide:last-of-type { page-break-after: auto; break-after: auto; }
+.kicker { font-size: 12px; text-transform: uppercase; letter-spacing: .13em; color: var(--muted); font-weight: 500; }
+.kicker::before { content: ''; display: inline-block; width: 22px; height: 3px; background: var(--amber);
+                  vertical-align: middle; margin-right: 10px; border-radius: 2px; }
+h1 { font-size: 29px; line-height: 1.15; margin: 8px 0 0 0; font-weight: 700; letter-spacing: -.01em; }
+.sub { font-size: 15px; color: var(--muted); margin-top: 6px; }
+.footer { position: absolute; left: 56px; right: 56px; bottom: 14px; height: 24px; font-size: 10.5px; color: var(--muted);
+          display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--spine); padding-top: 6px; }
+.legend { display: flex; gap: 12px; align-items: center; }
+.mono { font-family: 'Ubuntu Mono', 'DejaVu Sans Mono', monospace; }
+
+/* status tokens: colour + text label, never colour alone */
+.s-adopted  { --c: var(--green); }
+.s-option   { --c: var(--blue); }
+.s-negative { --c: var(--orange); }
+.s-hist     { --c: var(--grey); }
+.s-open     { --c: var(--ink); }
+.chip { display: inline-flex; align-items: center; gap: 5px; font-size: 10.5px; line-height: 1; white-space: nowrap;
+        padding: 3px 8px 3px 7px; border-radius: 10px; color: var(--ink);
+        background: color-mix(in srgb, var(--c) 15%, white); }
+.chip::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--c); flex: none; }
+.chip.s-hist { background: #efeee9; }
+.chip.s-open { background: #fff; border: 1px dashed var(--ink); padding: 2px 7px 2px 6px; }
+.chip.s-open::before { background: transparent; border: 1.5px solid var(--ink); width: 5px; height: 5px; }
+
+/* idea cards */
+.cards { display: grid; gap: 14px; margin-top: 20px; }
+.cols-3 { grid-template-columns: repeat(3, 1fr); }
+.cols-4 { grid-template-columns: repeat(4, 1fr); }
+.cols-2 { grid-template-columns: repeat(2, 1fr); }
+.card { background: var(--card); border: 1px solid var(--cardline); border-radius: 8px; padding: 13px 15px 13px 19px; position: relative; }
+.card::before { content: ''; position: absolute; left: 0; top: 9px; bottom: 9px; width: 4px; border-radius: 2px; background: var(--c); }
+.card.s-open::before { background: repeating-linear-gradient(to bottom, var(--ink) 0 5px, transparent 5px 9px); width: 3px; }
+.card.s-hist::before { background: var(--grey); }
+.card .name { font-weight: 700; font-size: 17px; line-height: 1.2; }
+.card .meta { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 4px; }
+.card .id { font-family: 'Ubuntu Mono', 'DejaVu Sans Mono', monospace; font-size: 11.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card .row { font-size: 14px; line-height: 1.38; margin-top: 7px; }
+.card .lab { display: inline-block; font-size: 10px; letter-spacing: .09em; text-transform: uppercase; color: var(--muted); width: 56px; font-weight: 500; }
+.cols-4 .card .row { font-size: 13.4px; }
+.cols-4 .card .name { font-size: 16px; }
+.cols-2 .card .name { font-size: 19px; }
+.cols-2 .card .row { font-size: 15.5px; }
+.dense .card .row { font-size: 13.2px; margin-top: 5px; }
+.dense .card .name { font-size: 16px; }
+.dense .card { padding: 11px 14px 11px 18px; }
+.cols-4 .card .lab { display: block; width: auto; margin-bottom: 1px; }
+.note { font-size: 13.5px; color: var(--muted); margin-top: 14px; line-height: 1.45; }
+b.k { font-weight: 700; }
+
+/* title slide */
+.title-slide h1 { font-size: 46px; margin-top: 70px; max-width: 980px; }
+.title-slide .sub { font-size: 19px; max-width: 900px; margin-top: 14px; line-height: 1.35; }
+.tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 46px; }
+.tile { background: #fff; border: 1px solid var(--cardline); border-radius: 10px; padding: 16px 20px; }
+.tile .big { font-size: 40px; font-weight: 700; letter-spacing: -.02em; }
+.tile .big small { font-size: 18px; color: var(--muted); font-weight: 500; }
+.tile .txt { font-size: 13px; color: var(--muted); line-height: 1.4; margin-top: 4px; }
+.readme { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 26px; }
+.readme div { font-size: 12px; color: var(--muted); line-height: 1.35; }
+.readme .chip { margin-bottom: 6px; }
+
+/* pipeline slide */
+.flow { display: grid; grid-template-columns: repeat(6, 1fr); gap: 22px; margin-top: 22px; position: relative; }
+.stage { background: #fff; border: 1px solid var(--cardline); border-top: 4px solid var(--green); border-radius: 8px; padding: 10px 12px; position: relative; min-height: 212px; display: flex; flex-direction: column; }
+.stage .step { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+.stage .name { font-size: 15.5px; font-weight: 700; margin-top: 3px; line-height: 1.2; }
+.stage .what { font-size: 13.2px; line-height: 1.37; margin-top: 7px; }
+.stage .from { font-family: 'Ubuntu Mono', 'DejaVu Sans Mono', monospace; font-size: 11px; color: var(--muted); margin-top: auto; padding-top: 8px; line-height: 1.3; }
+.stage:not(:last-child)::after { content: '→'; position: absolute; right: -19px; top: 70px; font-size: 18px; color: var(--muted); }
+.loop { margin: 6px 0 0 calc((100% - 110px) / 6 + 22px); width: calc(100% - (100% - 110px) / 6 - 22px - 40px); height: 22px;
+        border: 1.5px solid var(--muted); border-top: none; border-radius: 0 0 12px 12px; position: relative; }
+.loop span { position: absolute; left: 50%; transform: translateX(-50%); bottom: -9px; background: var(--surface); padding: 0 8px; font-size: 11.5px; color: var(--muted); }
+.schedule-title { font-size: 15px; font-weight: 700; margin-top: 18px; }
+.schedule-title span { font-weight: 400; color: var(--muted); font-size: 13px; }
+.options { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 6px; font-size: 12px; color: var(--muted); }
+
+/* failure slide */
+.split { display: grid; grid-template-columns: 742px 1fr; gap: 26px; margin-top: 14px; }
+.attempts { display: flex; flex-direction: column; gap: 10px; }
+.attempt { background: #fff; border: 1px solid var(--cardline); border-radius: 7px; padding: 9px 12px 9px 16px; position: relative; }
+.attempt::before { content: ''; position: absolute; left: 0; top: 7px; bottom: 7px; width: 4px; border-radius: 2px; background: var(--c); }
+.attempt.s-open::before { background: repeating-linear-gradient(to bottom, var(--ink) 0 5px, transparent 5px 9px); width: 3px; }
+.attempt .top { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; }
+.attempt .name { font-size: 14.5px; font-weight: 700; }
+.attempt .id { font-family: 'Ubuntu Mono', monospace; font-size: 10.5px; color: var(--muted); }
+.attempt .row { font-size: 12.8px; line-height: 1.35; margin-top: 3px; }
+
+/* side-branch table */
+table.side { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 13px; }
+table.side th { text-align: left; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); font-weight: 500; padding: 0 8px 6px 0; border-bottom: 1px solid var(--spine); }
+table.side td { padding: 7px 10px 7px 0; border-bottom: 1px solid #ebeae4; vertical-align: top; line-height: 1.33; }
+table.side td.n { font-weight: 700; width: 210px; }
+table.side td.i { font-family: 'Ubuntu Mono', monospace; font-size: 11px; color: var(--muted); width: 150px; }
+table.side td.s { width: 128px; padding-right: 0; }
+
+/* closing slide */
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 24px; }
+.panel { background: #fff; border: 1px solid var(--cardline); border-radius: 10px; padding: 18px 22px 8px 22px; }
+.panel h2 { font-size: 19px; margin: 0 0 12px 0; }
+.panel ul { margin: 0; padding-left: 18px; }
+.panel li { font-size: 15.5px; line-height: 1.45; margin-bottom: 11px; }
+.panel li .id { font-family: 'Ubuntu Mono', monospace; font-size: 11.5px; color: var(--muted); }
+.notsupported { margin-top: 20px; font-size: 15px; line-height: 1.45; background: #fff; border: 1px solid var(--cardline); border-left: 4px solid var(--orange); border-radius: 8px; padding: 10px 16px; }
+
+svg text { font-family: 'Ubuntu', 'DejaVu Sans', sans-serif; }
+</style>
+</head>
+<body>
+
+<!-- ============================ 1. TITLE ============================ -->
+<section class="slide title-slide">
+  <div class="kicker">Supervisor meeting · 6 October 2026</div>
+  <h1>From neural SDFs to a node-free boundary inverse</h1>
+  <div class="sub">A map of the experiment branches: what each one tried, what it changed in the pipeline, and what survived into today's solver.</div>
+  <div class="tiles">
+    <div class="tile"><div class="big">26<small> / 30</small></div>
+      <div class="txt">TG-002 cases recovered by the current modal pipeline: 10 shapes × contrasts 0.5 / 4 / 13.3, one centred start (PC-001, ON-001, DP-001, RG-001).</div></div>
+    <div class="tile"><div class="big">4</div>
+      <div class="txt">cases fail in <b>every</b> 30-case campaign, with modal and nodal physics alike: Aphex Twin at all three contrasts and the hook at contrast 13.3.</div></div>
+    <div class="tile"><div class="big">31<small> s vs 157 s</small></div>
+      <div class="txt">median time per case, modal vs nodal, at identical recovery (PC-001). A fairer nodal profile takes 101 s (PC-002).</div></div>
+  </div>
+  <div class="readme">
+    <div><span class="chip s-adopted">In pipeline</span><br>Part of the default solver today.</div>
+    <div><span class="chip s-option">Qualified option</span><br>Passed its own test; kept as an option, reference or evidence.</div>
+    <div><span class="chip s-negative">Negative / closed</span><br>Tested and failed its goal, or closed.</div>
+    <div><span class="chip s-hist">Paused / separate</span><br>Paused, retired, superseded, or a separate pipeline.</div>
+    <div><span class="chip s-open">Open</span><br>Implemented or proposed, not yet run.</div>
+  </div>
+  <div class="footer"><span>All numbers re-derived from saved result files; no new solves. Full evidence: docs/reports/research_freeze_2026-10-05.md (fact-checked)</span><span>1 / 11</span></div>
+</section>
+
+<!-- ============================ 2. PIPELINE ============================ -->
+<section class="slide">
+  <div class="kicker">The pipeline today · benchmark default</div>
+  <h1>One loop of six stages, wrapped in a continuation schedule</h1>
+  <div class="sub">Every stage below came out of a branch on the following slides; the IDs show where.</div>
+  <div class="flow">
+    <div class="stage"><div class="step">1 · Shape</div><div class="name">Cartesian Fourier boundary</div>
+      <div class="what">The unknown is <span style="white-space:nowrap">z(θ) = Σ<sub>j</sub> c<sub>j</sub> e<sup>ijθ</sup></span>: one closed curve, known contrast.</div>
+      <div class="from">Cartesian Fourier track</div></div>
+    <div class="stage"><div class="step">2 · Physics</div><div class="name">Node-free modal Müller</div>
+      <div class="what">Müller system assembled in Fourier modes straight from geometry coefficients: no boundary nodes.</div>
+      <div class="from">CI-001-modal · NU-004 · scaled Graf · AC-001</div></div>
+    <div class="stage"><div class="step">3 · Sensitivity</div><div class="name">Reciprocal shape Jacobian</div>
+      <div class="what">One reciprocal solve gives every shape column, using velocities of the actual update.</div>
+      <div class="from">SPD-005 · SC-035</div></div>
+    <div class="stage"><div class="step">4 · Step</div><div class="name">Damped Gauss–Newton</div>
+      <div class="what">(JᵀJ + λD) a = −Jᵀr for the harmonics a of a normal displacement.</div>
+      <div class="from">CI-001 optimizer</div></div>
+    <div class="stage"><div class="step">5 · Update</div><div class="name">Certified spectral update</div>
+      <div class="what">Move along the normal, re-parametrize by arclength in Fourier space, certify no self-intersection.</div>
+      <div class="from">NU-003 · NU-005 · NU-006 · NU-007a</div></div>
+    <div class="stage"><div class="step">6 · Gate</div><div class="name">Resolution gate + audit</div>
+      <div class="what">Refuse a trial whose two resolutions disagree; audit every endpoint at all 19 frequencies.</div>
+      <div class="from">CI-001 contract</div></div>
+  </div>
+  <div class="loop"><span>accepted step → next iteration (from stage 2)</span></div>
+  <div class="schedule-title">Continuation schedule: damped ladder, then shape release <span>· MA-005 · SC-035 · SC-038 · bar height = shape band M</span></div>
+  <svg width="1168" height="196" viewBox="0 0 1168 196" style="display:block;margin-top:4px">
+    <line x1="0" y1="126" x2="1168" y2="126" stroke="#c9c8c2" stroke-width="1"/>
+<rect x="24.7" y="123.8" width="34" height="2.1" rx="3" fill="#9cc7f2"/>
+<text x="41.714285714285715" y="118.85" font-size="11.5" font-weight="700" fill="#0b0b0b" text-anchor="middle" >M1</text>
+<text x="41.714285714285715" y="141" font-size="10.5" font-weight="400" fill="#0b0b0b" text-anchor="middle" >0.25</text>
+<text x="41.714285714285715" y="154" font-size="10" font-weight="400" fill="#52514e" text-anchor="middle" >warm-up</text>
+<rect x="108.1" y="119.5" width="34" height="6.4" rx="3" fill="#9cc7f2"/>
+<text x="125.14285714285714" y="114.55" font-size="11.5" font-weight="700" fill="#0b0b0b" text-anchor="middle" >M3</text>
+<text x="125.14285714285714" y="141" font-size="10.5" font-weight="400" fill="#0b0b0b" text-anchor="middle" >0.5</text>
+<text x="125.14285714285714" y="154" font-size="10" font-weight="400" fill="#52514e" text-anchor="middle" >prefix</text>
+<rect x="191.6" y="115.2" width="34" height="10.8" rx="3" fill="#9cc7f2"/>
+<text x="208.57142857142858" y="110.25" font-size="11.5" font-weight="700" fill="#0b0b0b" text-anchor="middle" >M5</text>
+<text x="208.57142857142858" y="141" font-size="10.5" font-weight="400" fill="#0b0b0b" text-anchor="middle" >≤0.75</text>
+<text x="208.57142857142858" y="154" font-size="10" font-weight="400" fill="#52514e" text-anchor="middle" >prefix</text>
+<rect x="275.0" y="111.0" width="34" height="15.0" rx="3" fill="#9cc7f2"/>
+<text x="292.0" y="105.95" font-size="11.5" font-weight="700" fill="#0b0b0b" text-anchor="middle" >M7</text>
+<text x="292.0" y="141" font-size="10.5" font-weight="400" fill="#0b0b0b" text-anchor="middle" >≤1.0</text>
+<text x="292.0" y="154" font-size="10" font-weight="400" fill="#52514e" text-anchor="middle" >prefix</text>
+<rect x="358.4" y="106.7" width="34" height="19.3" rx="3" fill="#9cc7f2"/>
+<text x="375.42857142857144" y="101.65" font-size="11.5" font-weight="700" fill="#0b0b0b" text-anchor="middle" >M9</text>
+<text x="375.42857142857144" y="141" font-size="10.5" font-weight="400" fill="#0b0b0b" text-anchor="middle" >≤1.25</text>
+<text x="375.42857142857144" y="154" font-size="10" font-weight="400" fill="#52514e" text-anchor="middle" >prefix</text>
+<rect x="441.9" y="106.7" width="34" height="19.3" rx="3" fill="#123a6b"/>
+<text x="458.8571428571429" y="101.65" font-size="11.5" font-weight="700" fill="#0b0b0b" text-anchor="middle" >M9</text>
+<text x="458.8571428571429" y="141" font-size="10.5" font-weight="400" fill="#0b0b0b" text-anchor="middle" >≤1.25</text>
+<text x="458.8571428571429" y="154" font-size="10" font-weight="400" fill="#52514e" text-anchor="middle" >return</text>
+<rect x="525.3" y="102.3" width="34" height="23.6" rx="3" fill="#123a6b"/>
+<text x="542.2857142857142" y="97.35" font-size="11.5" font-weight="700" fill="#0b0b0b" text-anchor="middle" >M11</text>
+<text x="542.2857142857142" y="141" font-size="10.5" font-weight="400" fill="#0b0b0b" text-anchor="middle" >all 19</text>
+<text x="542.2857142857142" y="154" font-size="10" font-weight="400" fill="#52514e" text-anchor="middle" >release</text>
+<rect x="608.7" y="93.8" width="34" height="32.2" rx="3" fill="#123a6b"/>
+<text x="625.7142857142857" y="88.75" font-size="11.5" font-weight="700" fill="#0b0b0b" text-anchor="middle" >M15</text>
+<text x="625.7142857142857" y="141" font-size="10.5" font-weight="400" fill="#0b0b0b" text-anchor="middle" >all 19</text>
+<text x="625.7142857142857" y="154" font-size="10" font-weight="400" fill="#52514e" text-anchor="middle" >release</text>
+<rect x="692.1" y="85.2" width="34" height="40.9" rx="3" fill="#123a6b"/>
+<text x="709.1428571428571" y="80.15" font-size="11.5" font-weight="700" fill="#0b0b0b" text-anchor="middle" >M19</text>
+<text x="709.1428571428571" y="141" font-size="10.5" font-weight="400" fill="#0b0b0b" text-anchor="middle" >all 19</text>
+<text x="709.1428571428571" y="154" font-size="10" font-weight="400" fill="#52514e" text-anchor="middle" >release</text>
+<text x="792.5714285714286" y="116" font-size="15" font-weight="400" fill="#52514e" text-anchor="middle" >✂</text>
+<text x="792.5714285714286" y="141" font-size="10.5" font-weight="400" fill="#0b0b0b" text-anchor="middle" >crop to 64</text>
+<text x="792.5714285714286" y="154" font-size="10" font-weight="400" fill="#52514e" text-anchor="middle" >cleanup</text>
+<rect x="859.0" y="72.2" width="34" height="53.8" rx="3" fill="#123a6b"/>
+<text x="876.0" y="67.25" font-size="11.5" font-weight="700" fill="#0b0b0b" text-anchor="middle" >M25</text>
+<text x="876.0" y="141" font-size="10.5" font-weight="400" fill="#0b0b0b" text-anchor="middle" >all 19</text>
+<text x="876.0" y="154" font-size="10" font-weight="400" fill="#52514e" text-anchor="middle" >fixed</text>
+<rect x="942.4" y="59.4" width="34" height="66.6" rx="3" fill="#123a6b"/>
+<text x="959.4285714285714" y="54.35000000000001" font-size="11.5" font-weight="700" fill="#0b0b0b" text-anchor="middle" >M31</text>
+<text x="959.4285714285714" y="141" font-size="10.5" font-weight="400" fill="#0b0b0b" text-anchor="middle" >all 19</text>
+<text x="959.4285714285714" y="154" font-size="10" font-weight="400" fill="#52514e" text-anchor="middle" >fixed</text>
+<rect x="1025.9" y="46.5" width="34" height="79.5" rx="3" fill="#123a6b"/>
+<text x="1042.857142857143" y="41.45" font-size="11.5" font-weight="700" fill="#0b0b0b" text-anchor="middle" >M37</text>
+<text x="1042.857142857143" y="141" font-size="10.5" font-weight="400" fill="#0b0b0b" text-anchor="middle" >all 19</text>
+<text x="1042.857142857143" y="154" font-size="10" font-weight="400" fill="#52514e" text-anchor="middle" >fixed</text>
+<rect x="1109.3" y="38.5" width="34" height="87.5" rx="3" fill="none" stroke="#123a6b" stroke-width="1.5" stroke-dasharray="4 3"/>
+<text x="1126.2857142857144" y="33.45" font-size="11.5" font-weight="700" fill="#0b0b0b" text-anchor="middle" >M43…91</text>
+<text x="1126.2857142857144" y="141" font-size="10.5" font-weight="400" fill="#0b0b0b" text-anchor="middle" >all 19</text>
+<text x="1126.2857142857144" y="154" font-size="10" font-weight="400" fill="#52514e" text-anchor="middle" >tail, if seen</text>
+<path d="M8.0,161 V166 H409.1 V161" fill="none" stroke="#c9c8c2" stroke-width="1.2"/><rect x="58.6" y="173" width="10" height="10" rx="2" fill="#9cc7f2"/><text x="73.57142857142858" y="182" font-size="11" font-weight="400" fill="#52514e" text-anchor="start" >damped k(1+0.25i) · K = 2M+2 = 4…20 · K_t 64</text>
+<path d="M508.6,161 V166 H1160.0 V161" fill="none" stroke="#c9c8c2" stroke-width="1.2"/><rect x="684.3" y="173" width="10" height="10" rx="2" fill="#123a6b"/><text x="699.2857142857142" y="182" font-size="11" font-weight="400" fill="#52514e" text-anchor="start" >real data, all 19 frequencies · K = 192 · K_t 128 · tail = observable frontier</text>
+<text x="458.8571428571429" y="182" font-size="10" font-weight="400" fill="#52514e" text-anchor="middle" >real, 4 freq.</text>
+<text x="0" y="12" font-size="10.5" font-weight="400" fill="#52514e" text-anchor="start" >frequency set (GHz) below each bar; M = normal-update harmonics</text>
+  </svg>
+  <div class="options">Opt-in, not default:
+    <span class="chip s-option">accuracy exit · ON-001</span>
+    <span class="chip s-option">agreement damping + reuse · DP-001</span>
+    <span class="chip s-negative">decision gate · RG-001</span>
+    <span class="chip s-negative">four-phase · CS-001</span>
+    <span class="chip s-open">6 unrun registry candidates · PS-001</span>
+  </div>
+  <div class="footer"><span>Stages traced in code at commit 71087669 (runner.fit, CumulativePolicy, modal_muller, certified); bands match the recorded DP-001 plans</span><span>2 / 11</span></div>
+</section>
+
+<!-- ============================ 3. TREE ============================ -->
+<section class="slide">
+  <div class="kicker">Research lineage · 1 Sep → 5 Oct 2026</div>
+  <h1>Which branches merged into the pipeline, and which ended</h1>
+  <svg width="1168" height="520" viewBox="0 0 1168 520" style="display:block;margin-top:14px">
+    <line x1="132.0" y1="260" x2="148.0" y2="260" stroke="#0b0b0b" stroke-width="3"/><path d="M146.0,254 L154.0,260 L146.0,266 Z" fill="#0b0b0b"/>
+<rect x="0.0" y="232" width="132" height="56" rx="10" fill="#ffffff" stroke="#0b0b0b" stroke-width="2"/><rect x="10.0" y="232" width="112" height="3" fill="#1baf7a"/>
+<text x="66" y="252" font-size="12.5" font-weight="700" fill="#0b0b0b" text-anchor="middle" >Ordered-boundary</text>
+<text x="66" y="267" font-size="12.5" font-weight="700" fill="#0b0b0b" text-anchor="middle" >Kress reference</text>
+<text x="66" y="282" font-size="10.5" font-weight="400" fill="#52514e" text-anchor="middle" >from 1 Sep</text>
+<line x1="286.0" y1="260" x2="302.0" y2="260" stroke="#0b0b0b" stroke-width="3"/><path d="M300.0,254 L308.0,260 L300.0,266 Z" fill="#0b0b0b"/>
+<rect x="154.0" y="232" width="132" height="56" rx="10" fill="#ffffff" stroke="#0b0b0b" stroke-width="2"/><rect x="164.0" y="232" width="112" height="3" fill="#1baf7a"/>
+<text x="220" y="252" font-size="12.5" font-weight="700" fill="#0b0b0b" text-anchor="middle" >Explicit Cartesian</text>
+<text x="220" y="267" font-size="12.5" font-weight="700" fill="#0b0b0b" text-anchor="middle" >Fourier boundary</text>
+<text x="220" y="282" font-size="10.5" font-weight="400" fill="#52514e" text-anchor="middle" >8–11 Sep</text>
+<line x1="440.0" y1="260" x2="456.0" y2="260" stroke="#0b0b0b" stroke-width="3"/><path d="M454.0,254 L462.0,260 L454.0,266 Z" fill="#0b0b0b"/>
+<rect x="308.0" y="232" width="132" height="56" rx="10" fill="#ffffff" stroke="#0b0b0b" stroke-width="2"/><rect x="318.0" y="232" width="112" height="3" fill="#1baf7a"/>
+<text x="374" y="252" font-size="12.5" font-weight="700" fill="#0b0b0b" text-anchor="middle" >Shape–frequency</text>
+<text x="374" y="267" font-size="12.5" font-weight="700" fill="#0b0b0b" text-anchor="middle" >continuation</text>
+<text x="374" y="282" font-size="10.5" font-weight="400" fill="#52514e" text-anchor="middle" >SC · 22–30 Sep</text>
+<line x1="594.0" y1="260" x2="610.0" y2="260" stroke="#0b0b0b" stroke-width="3"/><path d="M608.0,254 L616.0,260 L608.0,266 Z" fill="#0b0b0b"/>
+<rect x="462.0" y="232" width="132" height="56" rx="10" fill="#ffffff" stroke="#0b0b0b" stroke-width="2"/><rect x="472.0" y="232" width="112" height="3" fill="#1baf7a"/>
+<text x="528" y="252" font-size="12.5" font-weight="700" fill="#0b0b0b" text-anchor="middle" >Damped frequency</text>
+<text x="528" y="267" font-size="12.5" font-weight="700" fill="#0b0b0b" text-anchor="middle" >ladder</text>
+<text x="528" y="282" font-size="10.5" font-weight="400" fill="#52514e" text-anchor="middle" >MA · 29–30 Sep</text>
+<line x1="748.0" y1="260" x2="764.0" y2="260" stroke="#0b0b0b" stroke-width="3"/><path d="M762.0,254 L770.0,260 L762.0,266 Z" fill="#0b0b0b"/>
+<rect x="616.0" y="232" width="132" height="56" rx="10" fill="#ffffff" stroke="#0b0b0b" stroke-width="2"/><rect x="626.0" y="232" width="112" height="3" fill="#1baf7a"/>
+<text x="682" y="252" font-size="12.5" font-weight="700" fill="#0b0b0b" text-anchor="middle" >Cleaned inverse</text>
+<text x="682" y="267" font-size="12.5" font-weight="700" fill="#0b0b0b" text-anchor="middle" >contract</text>
+<text x="682" y="282" font-size="10.5" font-weight="400" fill="#52514e" text-anchor="middle" >CI-001 · 30 Sep</text>
+<line x1="902.0" y1="260" x2="918.0" y2="260" stroke="#0b0b0b" stroke-width="3"/><path d="M916.0,254 L924.0,260 L916.0,266 Z" fill="#0b0b0b"/>
+<rect x="770.0" y="232" width="132" height="56" rx="10" fill="#ffffff" stroke="#0b0b0b" stroke-width="2"/><rect x="780.0" y="232" width="112" height="3" fill="#1baf7a"/>
+<text x="836" y="252" font-size="12.5" font-weight="700" fill="#0b0b0b" text-anchor="middle" >Node-free modal +</text>
+<text x="836" y="267" font-size="12.5" font-weight="700" fill="#0b0b0b" text-anchor="middle" >certified update</text>
+<text x="836" y="282" font-size="10.5" font-weight="400" fill="#52514e" text-anchor="middle" >NU · 1–3 Oct</text>
+<rect x="924.0" y="232" width="132" height="56" rx="10" fill="#ffffff" stroke="#0b0b0b" stroke-width="2"/><rect x="934.0" y="232" width="112" height="3" fill="#1baf7a"/>
+<text x="990" y="252" font-size="12.5" font-weight="700" fill="#0b0b0b" text-anchor="middle" >TG-002 benchmark</text>
+<text x="990" y="267" font-size="12.5" font-weight="700" fill="#0b0b0b" text-anchor="middle" >+ speed options</text>
+<text x="990" y="282" font-size="10.5" font-weight="400" fill="#52514e" text-anchor="middle" >ON · DP · 4–5 Oct</text>
+<line x1="1056.0" y1="260" x2="1066" y2="260" stroke="#0b0b0b" stroke-width="3"/><path d="M1066,254 L1074,260 L1066,266 Z" fill="#0b0b0b"/><rect x="1076" y="234" width="92" height="52" rx="10" fill="#0b0b0b"/><text x="1122" y="260" font-size="21" font-weight="700" fill="#ffffff" text-anchor="middle" >26/30</text><text x="1122" y="277" font-size="10.5" font-weight="400" fill="#d9d8d2" text-anchor="middle" >TG-002</text>
+<path d="M40,232 V52 Q40,40 52,40 H420" fill="none" stroke="#8a8984" stroke-width="3" stroke-linejoin="round"/>
+<path d="M420,32 V48 M426,32 V48" stroke="#8a8984" stroke-width="3" stroke-linecap="round"/>
+<text x="62" y="31" font-size="13" font-weight="700" fill="#0b0b0b" text-anchor="start" >Neural SDF inverse (implicit MLP)</text>
+<text x="62" y="57" font-size="11" font-weight="400" fill="#52514e" text-anchor="start" >2–24 Sep · paused 11 Sep · long runs stalled at RMS 14.1 / 9.5 mm</text>
+<path d="M200,232 V110 Q200,98 212,98 H665" fill="none" stroke="#8a8984" stroke-width="3" stroke-linejoin="round"/>
+<path d="M665,90 V106 M671,90 V106" stroke="#8a8984" stroke-width="3" stroke-linecap="round"/>
+<text x="222" y="89" font-size="13" font-weight="700" fill="#0b0b0b" text-anchor="start" >Topology events (TOP-001–025)</text>
+<text x="222" y="115" font-size="11" font-weight="400" fill="#52514e" text-anchor="start" >11–17 Sep · births, deaths, splits, merges · 8/12 scenes · separate pipeline</text>
+<path d="M700,232 V82 Q700,70 712,70 H850" fill="none" stroke="#2a78d6" stroke-width="3" stroke-linejoin="round"/>
+<circle cx="854" cy="70" r="6" fill="#2a78d6"/>
+<text x="722" y="61" font-size="13" font-weight="700" fill="#0b0b0b" text-anchor="start" >Theory radius (TR-001/002)</text>
+<text x="722" y="87" font-size="11" font-weight="400" fill="#52514e" text-anchor="start" >3 Oct · damping widens the local radius ~41× · no certified rule</text>
+<path d="M350,232 V168 Q350,156 362,156 H560" fill="none" stroke="#eb6834" stroke-width="3" stroke-linejoin="round"/>
+<path d="M554,150 L566,162 M554,162 L566,150" stroke="#eb6834" stroke-width="3" stroke-linecap="round"/>
+<text x="372" y="147" font-size="13" font-weight="700" fill="#0b0b0b" text-anchor="start" >Atlas-forecast controller (SC-041–043)</text>
+<text x="372" y="173" font-size="11" font-weight="400" fill="#52514e" text-anchor="start" >failed both superiority gates</text>
+<path d="M410,232 V216 Q410,204 422,204 H560" fill="none" stroke="#8a8984" stroke-width="3" stroke-linejoin="round"/>
+<path d="M560,196 V212 M566,196 V212" stroke="#8a8984" stroke-width="3" stroke-linecap="round"/>
+<text x="432" y="195" font-size="13" font-weight="700" fill="#0b0b0b" text-anchor="start" >Grid localization (SC-050)</text>
+<text x="432" y="221" font-size="11" font-weight="400" fill="#52514e" text-anchor="start" >far starts · 6/6 transfers · retired 4 Oct</text>
+<path d="M940,232 V168 Q940,156 952,156 H1150" fill="none" stroke="#eb6834" stroke-width="3" stroke-linejoin="round"/>
+<path d="M1144,150 L1156,162 M1144,162 L1156,150" stroke="#eb6834" stroke-width="3" stroke-linecap="round"/>
+<text x="1160" y="127" font-size="13" font-weight="700" fill="#0b0b0b" text-anchor="end" >GauGal comparison (GGB, GS, ON-002/3, EW)</text>
+<text x="1160" y="144" font-size="11" font-weight="400" fill="#52514e" text-anchor="end" >5 Oct · circle start works · shapes fail · speed routes closed</text>
+<path d="M1030,232 V216 Q1030,204 1042,204 H1150" fill="none" stroke="#eb6834" stroke-width="3" stroke-linejoin="round"/>
+<path d="M1144,198 L1156,210 M1144,210 L1156,198" stroke="#eb6834" stroke-width="3" stroke-linecap="round"/>
+<text x="1160" y="195" font-size="13" font-weight="700" fill="#0b0b0b" text-anchor="end" >Four-phase schedule (CS-001)</text>
+<text x="1160" y="221" font-size="11" font-weight="400" fill="#52514e" text-anchor="end" >lost C c13.3 · 4/8 vs 5/8</text>
+<path d="M240,288 V332 Q240,344 252,344 H648 Q660,344 660,332 V297" fill="none" stroke="#1baf7a" stroke-width="3" stroke-linejoin="round"/>
+<path d="M654,299 L660,289 L666,299 Z" fill="#1baf7a"/>
+<text x="262" y="335" font-size="13" font-weight="700" fill="#0b0b0b" text-anchor="start" >Derivatives &amp; runtime (BIE, SPD) · 11–30 Sep</text>
+<text x="262" y="361" font-size="11" font-weight="400" fill="#52514e" text-anchor="start" >analytic → reciprocal derivatives, GPU, damped grids → merged</text>
+<path d="M190,288 V392 Q190,404 202,404 H804 Q816,404 816,392 V297" fill="none" stroke="#1baf7a" stroke-width="3" stroke-linejoin="round"/>
+<path d="M810,299 L816,289 L822,299 Z" fill="#1baf7a"/>
+<text x="212" y="395" font-size="13" font-weight="700" fill="#0b0b0b" text-anchor="start" >Coefficient-space Müller operators (Laurent) · 16–22 Sep</text>
+<text x="212" y="421" font-size="11" font-weight="400" fill="#52514e" text-anchor="start" >→ became the node-free modal physics</text>
+<path d="M450,404 V452 Q450,464 462,464 H650" fill="none" stroke="#eb6834" stroke-width="3" stroke-linejoin="round"/>
+<path d="M644,458 L656,470 M644,470 L656,458" stroke="#eb6834" stroke-width="3" stroke-linecap="round"/>
+<text x="472" y="455" font-size="13" font-weight="700" fill="#0b0b0b" text-anchor="start" >Modal compression &amp; ROMs (LAU, MC-001)</text>
+<text x="472" y="481" font-size="11" font-weight="400" fill="#52514e" text-anchor="start" >no useful compression · closed 22 Sep</text>
+<path d="M60,288 V452 Q60,464 72,464 H160" fill="none" stroke="#eb6834" stroke-width="3" stroke-linejoin="round"/>
+<path d="M154,458 L166,470 M154,470 L166,458" stroke="#eb6834" stroke-width="3" stroke-linecap="round"/>
+<text x="82" y="455" font-size="13" font-weight="700" fill="#0b0b0b" text-anchor="start" >Implicit IBIM / QBX</text>
+<text x="82" y="481" font-size="11" font-weight="400" fill="#52514e" text-anchor="start" >closed 1 Sep</text>
+<path d="M870,288 V452 Q870,464 882,464 H1020" fill="none" stroke="#2a78d6" stroke-width="3" stroke-linejoin="round"/>
+<circle cx="1024" cy="464" r="6" fill="#2a78d6"/>
+<text x="892" y="455" font-size="13" font-weight="700" fill="#0b0b0b" text-anchor="start" >Relaxed BIE + start census (FM, RB)</text>
+<text x="892" y="481" font-size="11" font-weight="400" fill="#52514e" text-anchor="start" >1–3 Oct · no relaxation gain · starts 7/11</text>
+<path d="M1030,288 V332 Q1030,344 1042,344 H1150" fill="none" stroke="#0b0b0b" stroke-width="3" stroke-linejoin="round" stroke-dasharray="6 4"/>
+<circle cx="1155" cy="344" r="6" fill="#fcfcfb" stroke="#0b0b0b" stroke-width="1.8"/>
+<text x="1160" y="362" font-size="13" font-weight="700" fill="#0b0b0b" text-anchor="end" >Open: PS-001 screen, RP-001</text>
+<text x="1160" y="378" font-size="11" font-weight="400" fill="#52514e" text-anchor="end" >modal response · full TG-002 rerun</text>
+  </svg>
+  <div class="footer"><span>Main line = today's pipeline, left to right in time; dates are first–last commits of each track. Branch line colour and end marker give the outcome.</span>
+    <span class="legend"><span class="chip s-adopted">merged ➜</span><span class="chip s-option">kept ●</span><span class="chip s-negative">closed ✕</span><span class="chip s-hist">paused ‖</span><span class="chip s-open">open ○</span></span><span>3 / 11</span></div>
+</section>
+
+<!-- ============================ 4. BRANCH A ============================ -->
+<section class="slide">
+  <div class="kicker">Branch A · representation and forward physics</div>
+  <h1>Which boundary, and which forward solver?</h1>
+  <div class="sub">From an implicit boundary cloud, to ordered nodes, to Fourier coefficients with no boundary nodes in the physics.</div>
+  <div class="cards cols-3">
+    <div class="card s-negative"><div class="name">Compressed implicit boundary</div>
+      <div class="meta"><span class="id">IBIM · QBX · kdiff — closed 1 Sep</span><span class="chip s-negative">Negative / closed</span></div>
+      <div class="row"><span class="lab">Change</span>Solve on a compressed implicit boundary cloud with QBX or kernel-difference quadrature.</div>
+      <div class="row"><span class="lab">Result</span>No robustness or cost advantage established; QBX tuning stopped, kept only as a diagnostic.</div></div>
+    <div class="card s-option"><div class="name">Ordered-boundary Kress</div>
+      <div class="meta"><span class="id">periodic_kress · gpr_bem_kress</span><span class="chip s-option">Reference</span></div>
+      <div class="row"><span class="lab">Change</span>An ordered closed curve with Kress log-singular quadrature (nodal Nyström).</div>
+      <div class="row"><span class="lab">Result</span>The trusted reference: it generated the TG-002 data (N1024/2048-qualified) and is the nodal comparator.</div></div>
+    <div class="card s-adopted"><div class="name">Cartesian Fourier boundary</div>
+      <div class="meta"><span class="id">cartesian_fourier — 10–11 Sep</span><span class="chip s-adopted">In pipeline</span></div>
+      <div class="row"><span class="lab">Change</span>Optimize the complex Fourier coefficients of z(θ) directly: no SDF, no star-shape limit.</div>
+      <div class="row"><span class="lab">Result</span>Became the state variable of the current inverse.</div></div>
+    <div class="card s-adopted"><div class="name">Node-free modal Müller</div>
+      <div class="meta"><span class="id">CI-001-modal → NU-004</span><span class="chip s-adopted">In pipeline</span></div>
+      <div class="row"><span class="lab">Change</span>Assemble the Müller system in Fourier modes from geometry coefficients, with no boundary nodes.</div>
+      <div class="row"><span class="lab">Result</span>First campaign 19/36 vs nodal 28/36; after fixes, decision-identical to nodal on 6/6 core cases (293 s vs 573 s).</div></div>
+    <div class="card s-adopted"><div class="name">Scaled Graf sources, finer profile</div>
+      <div class="meta"><span class="id">modal fixes — 1 Oct</span><span class="chip s-adopted">In pipeline</span></div>
+      <div class="row"><span class="lab">Change</span>Rescale the Graf addition series for point sources and receivers; use a finer production resolution profile.</div>
+      <div class="row"><span class="lab">Result</span>7 of the 9 cases that had failed for these reasons now match nodal.</div></div>
+    <div class="card s-adopted"><div class="name">Analytic radial coefficients</div>
+      <div class="meta"><span class="id">AC-001 — 5 Oct</span><span class="chip s-adopted">In pipeline</span></div>
+      <div class="row"><span class="lab">Change</span>Build the six Chebyshev radial-kernel arrays from Bessel-product formulas instead of sampling.</div>
+      <div class="row"><span class="lab">Result</span>24/24 scalar and 4/4 forward checks pass; slower scalar step (1.00 vs 0.35 ms); TG-002 not yet rerun.</div></div>
+  </div>
+  <div class="footer"><span>Sources: docs/legacy/qbx_closure.md · cleaned_interfaces iterations 06–12 · CI-SPD/AC-001_results.md</span><span>4 / 11</span></div>
+</section>
+
+<!-- ============================ 5. BRANCH B ============================ -->
+<section class="slide">
+  <div class="kicker">Branch B · neural implicit geometry</div>
+  <h1>Can an MLP signed-distance function be the unknown?</h1>
+  <div class="sub">Paused on 11 Sep by decision: explicit Cartesian Fourier first. The track is scientifically open, not abandoned.</div>
+  <div class="cards cols-2">
+    <div class="card s-option"><div class="name">SDF-to-boundary bridge (Method B)</div>
+      <div class="meta"><span class="id">sdf_to_ordered_boundary — from 2 Sep</span><span class="chip s-option">Qualified option</span></div>
+      <div class="row"><span class="lab">Change</span>Extract a smooth Cartesian Fourier contour from the SDF zero level set and hand it to Kress.</div>
+      <div class="row"><span class="lab">Result</span>The conversion and its reverse derivative work (better than 2e-6 on audited states). It is a geometry bridge, not an inverse.</div></div>
+    <div class="card s-negative"><div class="name">Neural SDF inverse through a BEM adjoint</div>
+      <div class="meta"><span class="id">implicit_mlp iterations 1–3 — 8–11 Sep</span><span class="chip s-negative">Negative</span></div>
+      <div class="row"><span class="lab">Change</span>Optimize MLP weights with the BEM adjoint pulled back through Method B (paired and multistatic data).</div>
+      <div class="row"><span class="lab">Result</span>Both long star runs stopped with no decreasing neural step: RMS 14.1 mm (paired), 9.5 mm (multistatic); the multistatic run shrank the 12.5 mm lobe to 1.5 mm.</div></div>
+    <div class="card s-open"><div class="name">Iteration-3 repair plan</div>
+      <div class="meta"><span class="id">implicit_mlp/iteration_03/03_plan.md</span><span class="chip s-open">Open</span></div>
+      <div class="row"><span class="lab">Change</span>An agreed plan to repair neural geometric motion, written after a recorded gradient diagnosis.</div>
+      <div class="row"><span class="lab">Result</span>Never executed. Paused as written, not withdrawn.</div></div>
+    <div class="card s-option"><div class="name">Gradient diagnosis</div>
+      <div class="meta"><span class="id">implicit_mlp iteration 3 reviews</span><span class="chip s-option">Qualified</span></div>
+      <div class="row"><span class="lab">Change</span>Audit the Kress shape gradient and the Method-B reverse at the stalled states.</div>
+      <div class="row"><span class="lab">Result</span>Both cleared (composite within 1e-9 to 6.4e-6), so the stall is not a gradient bug. Both runs ended on the admissibility boundary.</div></div>
+  </div>
+  <div class="note">The repository and its name still carry this origin, but no neural component runs in the TG-002 pipeline. The explicit radial-Fourier controller built alongside it (8–11 Sep) moved to the topology track.</div>
+  <div class="footer"><span>Sources: docs/iterations/implicit_mlp/README.md · implicit_mlp/iteration_03/01_results.md · radial_fourier_topology/README.md</span><span>5 / 11</span></div>
+</section>
+
+<!-- ============================ 6. BRANCH C ============================ -->
+<section class="slide">
+  <div class="kicker">Branch C · continuation</div>
+  <h1>In what order should frequencies and shape detail be released?</h1>
+  <div class="sub">Shape–frequency continuation (SC, 22–30 Sep) and the modal atlas (MA, 29–30 Sep) produced today's schedule.</div>
+  <div class="cards cols-4">
+    <div class="card s-adopted"><div class="name">Centred state band, complete-trial derivative</div>
+      <div class="meta"><span class="id">SC-035</span><span class="chip s-adopted">In pipeline</span></div>
+      <div class="row"><span class="lab">Change</span>Store the curve at K = 8/12/16/20 during the ladder; differentiate the actual update construction.</div>
+      <div class="row"><span class="lab">Result</span>Peanut/C/kite RMS 0.14/0.47/0.57 mm, against 2.94/3.20/2.98 mm; star 16% worse.</div></div>
+    <div class="card s-adopted"><div class="name">All-frequency shape release</div>
+      <div class="meta"><span class="id">SC-038</span><span class="chip s-adopted">In pipeline</span></div>
+      <div class="row"><span class="lab">Change</span>After the ladder, fit all 19 frequencies while releasing M = 11, 15, 19.</div>
+      <div class="row"><span class="lab">Result</span>C 0.49 → 0.024 mm and kite 0.55 → 0.11 mm against matched M = 9 controls.</div></div>
+    <div class="card s-adopted"><div class="name">Damped frequency ladder</div>
+      <div class="meta"><span class="id">MA-004 → MA-005</span><span class="chip s-adopted">In pipeline</span></div>
+      <div class="row"><span class="lab">Change</span>Localize and run the low-frequency prefix at complex wavenumber k(1 + 0.25i).</div>
+      <div class="row"><span class="lab">Result</span>MA-004 repaired 2 of 4 (its gate needed 3). MA-005: 7/8 transfer vs 0/8 frozen (damping alone also 7/8).</div></div>
+    <div class="card s-adopted"><div class="name">Observable-frontier tail</div>
+      <div class="meta"><span class="id">MA-005 → policy</span><span class="chip s-adopted">In pipeline</span></div>
+      <div class="row"><span class="lab">Change</span>Keep adding 6 shape modes while the paired Jacobian at 2.5 GHz still sees them.</div>
+      <div class="row"><span class="lab">Result</span>A conditional tail, M = 43…91, in the default schedule.</div></div>
+    <div class="card s-negative"><div class="name">Atlas-forecast controller</div>
+      <div class="meta"><span class="id">SC-041 → SC-043</span><span class="chip s-negative">Negative</span></div>
+      <div class="row"><span class="lab">Change</span>Choose the next shape band from a sensitivity-atlas forecast.</div>
+      <div class="row"><span class="lab">Result</span>Both superiority gates failed: RMS ratio 1.11 vs a fixed schedule, 1.005 vs a stagnation rule.</div></div>
+    <div class="card s-negative"><div class="name">Ray steps, wider ladder</div>
+      <div class="meta"><span class="id">SC-036 · SC-037</span><span class="chip s-negative">Negative</span></div>
+      <div class="row"><span class="lab">Change</span>Step along rays; store a wider K ladder (8/16/32/64/192).</div>
+      <div class="row"><span class="lab">Result</span>Mixed: the star was restored, but the C got 27.7% worse, failing the 25% gate.</div></div>
+    <div class="card s-negative"><div class="name">Frequency-only control</div>
+      <div class="meta"><span class="id">SC-051</span><span class="chip s-negative">Negative</span></div>
+      <div class="row"><span class="lab">Change</span>Release every shape mode (M = K = 255) from the first frequency.</div>
+      <div class="row"><span class="lab">Result</span>0/36 recovered, against 34/36 for the preselected established strategies. Shape release is needed.</div></div>
+    <div class="card s-hist"><div class="name">Grid localization for far starts</div>
+      <div class="meta"><span class="id">SC-049 → SC-050</span><span class="chip s-hist">Retired</span></div>
+      <div class="row"><span class="lab">Change</span>A data-only disk search plus a 0.25 GHz warm-up before the ladder.</div>
+      <div class="row"><span class="lab">Result</span>6/6 far-start transfers recovered; retired with far starts on 4 Oct.</div></div>
+  </div>
+  <div class="footer"><span>Sources: shape_frequency_continuation/README.md (iterations 18–31) · modal_atlas iterations 05–06</span><span>6 / 11</span></div>
+</section>
+
+<!-- ============================ 7. BRANCH D ============================ -->
+<section class="slide">
+  <div class="kicker">Branch D · cleaned inverse and certified geometry</div>
+  <h1>How do we move the boundary safely, without nodes?</h1>
+  <div class="sub">CI-001 froze the contract on 30 Sep; the NU series (1–3 Oct) replaced the spline and node-based geometry steps (some sampled checks remain).</div>
+  <div class="cards cols-4">
+    <div class="card s-adopted"><div class="name">Cleaned inverse contract</div>
+      <div class="meta"><span class="id">CI-001 — 30 Sep</span><span class="chip s-adopted">In pipeline</span></div>
+      <div class="row"><span class="lab">Change</span>One truth-blind interface with frozen data and gates: RMS ≤ 1 mm, Hausdorff ≤ 2 mm, residual ≤ 0.3%, audit.</div>
+      <div class="row"><span class="lab">Result</span>Nodal 28/36 under the full contract (34/36 on geometry alone).</div></div>
+    <div class="card s-negative"><div class="name">Coefficient-normal update</div>
+      <div class="meta"><span class="id">NU-001</span><span class="chip s-negative">Negative</span></div>
+      <div class="row"><span class="lab">Change</span>Displace the Fourier coefficients along the normal directly, with no re-parametrization.</div>
+      <div class="row"><span class="lab">Result</span>2/6 and 3/6 cases matched, with drift flags; the nodal trial map was kept.</div></div>
+    <div class="card s-adopted"><div class="name">Spline-free spectral update</div>
+      <div class="meta"><span class="id">NU-003</span><span class="chip s-adopted">In pipeline</span></div>
+      <div class="row"><span class="lab">Change</span>Replace the spline resampler with arclength quadrature in Fourier space.</div>
+      <div class="row"><span class="lab">Result</span>Decision-identical on 6/6 core cases; preparation 2.2× slower.</div></div>
+    <div class="card s-adopted"><div class="name">Coefficient validity certificate</div>
+      <div class="meta"><span class="id">NU-005</span><span class="chip s-adopted">In pipeline</span></div>
+      <div class="row"><span class="lab">Change</span>Prove there is no self-intersection from |W|² coefficient bounds, before any sampled test.</div>
+      <div class="row"><span class="lab">Result</span>Decided all 1,131 checks with no sampled fallback; costs +103 s.</div></div>
+    <div class="card s-adopted"><div class="name">Batched GPU geometry preparation</div>
+      <div class="meta"><span class="id">NU-006</span><span class="chip s-adopted">In pipeline</span></div>
+      <div class="row"><span class="lab">Change</span>Evaluate every update projection in one float64 GPU batch.</div>
+      <div class="row"><span class="lab">Result</span>Preparation 150 → 3.9 s; wall time 390 → 242 s on the six core cases.</div></div>
+    <div class="card s-adopted"><div class="name">GPU certificates</div>
+      <div class="meta"><span class="id">NU-007 → NU-007a</span><span class="chip s-adopted">In pipeline</span></div>
+      <div class="row"><span class="lab">Change</span>Run the validity certificates on the GPU.</div>
+      <div class="row"><span class="lab">Result</span>NU-007 failed its relative-bound gate. NU-007a (a threshold-scaled gate) passed with 39.5% less wall time.</div></div>
+    <div class="card s-option"><div class="name">Spline vs spectral replay</div>
+      <div class="meta"><span class="id">GC-001</span><span class="chip s-option">Qualified</span></div>
+      <div class="row"><span class="lab">Change</span>Replay 279 recorded moves through both geometry updates, with no physics.</div>
+      <div class="row"><span class="lab">Result</span>278/279 reference-qualified, with identical decisions; output-grid aliasing identified as a dominant discrepancy.</div></div>
+    <div class="card s-option"><div class="name">Analytic geometry tangent</div>
+      <div class="meta"><span class="id">NF-001</span><span class="chip s-option">Option</span></div>
+      <div class="row"><span class="lab">Change</span>Differentiate the discrete projection analytically, not by central differences.</div>
+      <div class="row"><span class="lab">Result</span>Selectable as analytic_spectral; the default still uses 10⁻⁷ m central differences.</div></div>
+  </div>
+  <div class="footer"><span>Sources: docs/iterations/cleaned_interfaces/README.md (iterations 03–30) · results/validation/cleaned_interfaces/GC-001</span><span>7 / 11</span></div>
+</section>
+
+<!-- ============================ 8. BRANCH E ============================ -->
+<section class="slide">
+  <div class="kicker">Branch E · speed</div>
+  <h1>Where does the time go, and what can be removed exactly?</h1>
+  <div class="sub">Derivative and runtime work (BIE, SPD: 11–30 Sep) carried over; the TG-002 speed options (ON, DP) came on 4–5 Oct.</div>
+  <div class="cards cols-3 dense">
+    <div class="card s-hist"><div class="name">Analytic operator derivatives</div>
+      <div class="meta"><span class="id">BIE-004</span><span class="chip s-hist">Superseded</span></div>
+      <div class="row"><span class="lab">Change</span>Differentiate the boundary operators analytically instead of by finite differences.</div>
+      <div class="row"><span class="lab">Result</span>1,008 operator checks pass; derivatives 1.87× faster. Then superseded by reciprocal derivatives.</div></div>
+    <div class="card s-adopted"><div class="name">Reciprocal shape derivatives</div>
+      <div class="meta"><span class="id">SPD-005 → modal Hadamard form</span><span class="chip s-adopted">In pipeline</span></div>
+      <div class="row"><span class="lab">Change</span>One reciprocal solve with receivers as sources yields every shape column.</div>
+      <div class="row"><span class="lab">Result</span>A further 1.77–2.38× over operator derivatives (death/split/merge scenes); the idea is used by the modal Jacobian.</div></div>
+    <div class="card s-adopted"><div class="name">Modal instead of nodal physics</div>
+      <div class="meta"><span class="id">PC-001 · PC-002</span><span class="chip s-adopted">In pipeline</span></div>
+      <div class="row"><span class="lab">Change</span>Same schedule and gates; swap only the forward physics.</div>
+      <div class="row"><span class="lab">Result</span>Both 26/30. Median 31 s modal vs 157 s nodal; a fairer nodal profile takes 101 s.</div></div>
+    <div class="card s-option"><div class="name">Accuracy exit</div>
+      <div class="meta"><span class="id">ON-001 E</span><span class="chip s-option">Qualified option</span></div>
+      <div class="row"><span class="lab">Change</span>Stop once the all-frequency residual is ≤ 0.3% and the endpoint audit passes.</div>
+      <div class="row"><span class="lab">Result</span>26/30 kept; median 1.55× faster per successful case. The reach-clip and 7-frequency arms were rejected.</div></div>
+    <div class="card s-option"><div class="name">Agreement damping + exact reuse</div>
+      <div class="meta"><span class="id">DP-001 F</span><span class="chip s-option">Qualified option</span></div>
+      <div class="row"><span class="lab">Change</span>Set damping from model/actual agreement, skip the terminal tangent, reuse exact solves, batch audits.</div>
+      <div class="row"><span class="lab">Result</span>26/30 kept; all 26 successes faster, median 1.13×.</div></div>
+    <div class="card s-open"><div class="name">Stage-entry reuse, validity-first</div>
+      <div class="meta"><span class="id">PS-001 candidates</span><span class="chip s-open">Open</span></div>
+      <div class="row"><span class="lab">Change</span>Carry each stage's endpoint solves into the next stage; run the cheap sampled validity test first.</div>
+      <div class="row"><span class="lab">Result</span>Implemented as exact (same accepted decisions); no campaign run yet.</div></div>
+    <div class="card s-option"><div class="name">Exact geometry reuse</div>
+      <div class="meta"><span class="id">SPD-008</span><span class="chip s-option">Qualified option</span></div>
+      <div class="row"><span class="lab">Change</span>Reuse geometry reports and audits while the curve is unchanged.</div>
+      <div class="row"><span class="lab">Result</span>22–55% less time on the topology scenes, with unchanged paths.</div></div>
+    <div class="card s-negative"><div class="name">Projected modal solve</div>
+      <div class="meta"><span class="id">BIE-002</span><span class="chip s-negative">Negative</span></div>
+      <div class="row"><span class="lab">Change</span>Solve in a projected, truncated modal basis to save work.</div>
+      <div class="row"><span class="lab">Result</span>Reference checks pass, but it runs 3.44× slower; no useful compression.</div></div>
+    <div class="card s-negative"><div class="name">First-order operator reuse</div>
+      <div class="meta"><span class="id">BIE-006</span><span class="chip s-negative">Negative</span></div>
+      <div class="row"><span class="lab">Change</span>Reuse operators across accepted steps with a tangent correction.</div>
+      <div class="row"><span class="lab">Result</span>Most approximations lost accuracy; no qualifying saving. Stopped.</div></div>
+  </div>
+  <div class="footer"><span>Speed-ups come from different baselines and phases; never multiply them. Sources: boundary_bie, speedup/full_inverse_runtime_history.md, ON-001, DP-001, PC-001/002</span><span>8 / 11</span></div>
+</section>
+
+<!-- ============================ 9. FAILURES ============================ -->
+<section class="slide">
+  <div class="kicker">Branch F · the last four failures</div>
+  <h1>The same four cases fail in every campaign</h1>
+  <div class="sub">Each dot is one TG-002 case in one campaign arm, read from its saved result file.</div>
+  <div class="split">
+    <div>
+      <svg width="742" height="372" viewBox="0 0 742 372" style="display:block">
+        <rect x="639" y="46" width="14" height="274" rx="4" fill="#eb6834" fill-opacity="0.10"/>
+<rect x="667" y="46" width="14" height="274" rx="4" fill="#eb6834" fill-opacity="0.10"/>
+<rect x="653" y="46" width="14" height="274" rx="4" fill="#eb6834" fill-opacity="0.10"/>
+<rect x="523" y="46" width="14" height="274" rx="4" fill="#eb6834" fill-opacity="0.10"/>
+<text x="228" y="22" font-size="11.5" font-weight="700" fill="#0b0b0b" text-anchor="middle" >circle</text>
+<text x="214" y="38" font-size="8.5" font-weight="400" fill="#52514e" text-anchor="middle" >0.5</text>
+<text x="228" y="38" font-size="8.5" font-weight="400" fill="#52514e" text-anchor="middle" >4</text>
+<text x="242" y="38" font-size="8.5" font-weight="400" fill="#52514e" text-anchor="middle" >13.3</text>
+<text x="276" y="22" font-size="11.5" font-weight="700" fill="#0b0b0b" text-anchor="middle" >kite</text>
+<text x="262" y="38" font-size="8.5" font-weight="400" fill="#52514e" text-anchor="middle" >0.5</text>
+<text x="276" y="38" font-size="8.5" font-weight="400" fill="#52514e" text-anchor="middle" >4</text>
+<text x="290" y="38" font-size="8.5" font-weight="400" fill="#52514e" text-anchor="middle" >13.3</text>
+<text x="324" y="22" font-size="11.5" font-weight="700" fill="#0b0b0b" text-anchor="middle" >peanut</text>
+<text x="310" y="38" font-size="8.5" font-weight="400" fill="#52514e" text-anchor="middle" >0.5</text>
+<text x="324" y="38" font-size="8.5" font-weight="400" fill="#52514e" text-anchor="middle" >4</text>
+<text x="338" y="38" font-size="8.5" font-weight="400" fill="#52514e" text-anchor="middle" >13.3</text>
+<text x="372" y="22" font-size="11.5" font-weight="700" fill="#0b0b0b" text-anchor="middle" >star</text>
+<text x="358" y="38" font-size="8.5" font-weight="400" fill="#52514e" text-anchor="middle" >0.5</text>
+<text x="372" y="38" font-size="8.5" font-weight="400" fill="#52514e" text-anchor="middle" >4</text>
+<text x="386" y="38" font-size="8.5" font-weight="400" fill="#52514e" text-anchor="middle" >13.3</text>
+<text x="420" y="22" font-size="11.5" font-weight="700" fill="#0b0b0b" text-anchor="middle" >asym.</text>
+<text x="406" y="38" font-size="8.5" font-weight="400" fill="#52514e" text-anchor="middle" >0.5</text>
+<text x="420" y="38" font-size="8.5" font-weight="400" fill="#52514e" text-anchor="middle" >4</text>
+<text x="434" y="38" font-size="8.5" font-weight="400" fill="#52514e" text-anchor="middle" >13.3</text>
+<text x="468" y="22" font-size="11.5" font-weight="700" fill="#0b0b0b" text-anchor="middle" >C</text>
+<text x="454" y="38" font-size="8.5" font-weight="400" fill="#52514e" text-anchor="middle" >0.5</text>
+<text x="468" y="38" font-size="8.5" font-weight="400" fill="#52514e" text-anchor="middle" >4</text>
+<text x="482" y="38" font-size="8.5" font-weight="400" fill="#52514e" text-anchor="middle" >13.3</text>
+<text x="516" y="22" font-size="11.5" font-weight="700" fill="#0b0b0b" text-anchor="middle" >hook</text>
+<text x="502" y="38" font-size="8.5" font-weight="400" fill="#52514e" text-anchor="middle" >0.5</text>
+<text x="516" y="38" font-size="8.5" font-weight="400" fill="#52514e" text-anchor="middle" >4</text>
+<text x="530" y="38" font-size="8.5" font-weight="400" fill="#52514e" text-anchor="middle" >13.3</text>
+<text x="564" y="22" font-size="11.5" font-weight="700" fill="#0b0b0b" text-anchor="middle" >cross</text>
+<text x="550" y="38" font-size="8.5" font-weight="400" fill="#52514e" text-anchor="middle" >0.5</text>
+<text x="564" y="38" font-size="8.5" font-weight="400" fill="#52514e" text-anchor="middle" >4</text>
+<text x="578" y="38" font-size="8.5" font-weight="400" fill="#52514e" text-anchor="middle" >13.3</text>
+<text x="612" y="22" font-size="11.5" font-weight="700" fill="#0b0b0b" text-anchor="middle" >cog</text>
+<text x="598" y="38" font-size="8.5" font-weight="400" fill="#52514e" text-anchor="middle" >0.5</text>
+<text x="612" y="38" font-size="8.5" font-weight="400" fill="#52514e" text-anchor="middle" >4</text>
+<text x="626" y="38" font-size="8.5" font-weight="400" fill="#52514e" text-anchor="middle" >13.3</text>
+<text x="660" y="22" font-size="11.5" font-weight="700" fill="#0b0b0b" text-anchor="middle" >Aphex</text>
+<text x="646" y="38" font-size="8.5" font-weight="400" fill="#52514e" text-anchor="middle" >0.5</text>
+<text x="660" y="38" font-size="8.5" font-weight="400" fill="#52514e" text-anchor="middle" >4</text>
+<text x="674" y="38" font-size="8.5" font-weight="400" fill="#52514e" text-anchor="middle" >13.3</text>
+<text x="0" y="61" font-size="12" font-weight="700" fill="#0b0b0b" text-anchor="start" >PC-001 N1</text>
+<text x="0" y="73" font-size="9.8" font-weight="400" fill="#52514e" text-anchor="start" >nodal Kress + certified spectral</text>
+<circle cx="214" cy="62" r="5.5" fill="#1baf7a"/>
+<circle cx="228" cy="62" r="5.5" fill="#1baf7a"/>
+<circle cx="242" cy="62" r="5.5" fill="#1baf7a"/>
+<circle cx="262" cy="62" r="5.5" fill="#1baf7a"/>
+<circle cx="276" cy="62" r="5.5" fill="#1baf7a"/>
+<circle cx="290" cy="62" r="5.5" fill="#1baf7a"/>
+<circle cx="310" cy="62" r="5.5" fill="#1baf7a"/>
+<circle cx="324" cy="62" r="5.5" fill="#1baf7a"/>
+<circle cx="338" cy="62" r="5.5" fill="#1baf7a"/>
+<circle cx="358" cy="62" r="5.5" fill="#1baf7a"/>
+<circle cx="372" cy="62" r="5.5" fill="#1baf7a"/>
+<circle cx="386" cy="62" r="5.5" fill="#1baf7a"/>
+<circle cx="406" cy="62" r="5.5" fill="#1baf7a"/>
+<circle cx="420" cy="62" r="5.5" fill="#1baf7a"/>
+<circle cx="434" cy="62" r="5.5" fill="#1baf7a"/>
+<circle cx="454" cy="62" r="5.5" fill="#1baf7a"/>
+<circle cx="468" cy="62" r="5.5" fill="#1baf7a"/>
+<circle cx="482" cy="62" r="5.5" fill="#1baf7a"/>
+<circle cx="502" cy="62" r="5.5" fill="#1baf7a"/>
+<circle cx="516" cy="62" r="5.5" fill="#1baf7a"/>
+<circle cx="530" cy="62" r="5.5" fill="#ffffff" stroke="#eb6834" stroke-width="2"/><path d="M527.4,59.4 L532.6,64.6 M527.4,64.6 L532.6,59.4" stroke="#eb6834" stroke-width="1.8" stroke-linecap="round"/>
+<circle cx="550" cy="62" r="5.5" fill="#1baf7a"/>
+<circle cx="564" cy="62" r="5.5" fill="#1baf7a"/>
+<circle cx="578" cy="62" r="5.5" fill="#1baf7a"/>
+<circle cx="598" cy="62" r="5.5" fill="#1baf7a"/>
+<circle cx="612" cy="62" r="5.5" fill="#1baf7a"/>
+<circle cx="626" cy="62" r="5.5" fill="#1baf7a"/>
+<circle cx="646" cy="62" r="5.5" fill="#ffffff" stroke="#eb6834" stroke-width="2"/><path d="M643.4,59.4 L648.6,64.6 M643.4,64.6 L648.6,59.4" stroke="#eb6834" stroke-width="1.8" stroke-linecap="round"/>
+<circle cx="660" cy="62" r="5.5" fill="#ffffff" stroke="#eb6834" stroke-width="2"/><path d="M657.4,59.4 L662.6,64.6 M657.4,64.6 L662.6,59.4" stroke="#eb6834" stroke-width="1.8" stroke-linecap="round"/>
+<circle cx="674" cy="62" r="5.5" fill="#ffffff" stroke="#eb6834" stroke-width="2"/><path d="M671.4,59.4 L676.6,64.6 M671.4,64.6 L676.6,59.4" stroke="#eb6834" stroke-width="1.8" stroke-linecap="round"/>
+<text x="742" y="66" font-size="12" font-weight="700" fill="#0b0b0b" text-anchor="end" >26/30</text>
+<text x="0" y="91" font-size="12" font-weight="700" fill="#0b0b0b" text-anchor="start" >PC-002</text>
+<text x="0" y="103" font-size="9.8" font-weight="400" fill="#52514e" text-anchor="start" >nodal Kress + spline, fair profile</text>
+<circle cx="214" cy="92" r="5.5" fill="#1baf7a"/>
+<circle cx="228" cy="92" r="5.5" fill="#1baf7a"/>
+<circle cx="242" cy="92" r="5.5" fill="#1baf7a"/>
+<circle cx="262" cy="92" r="5.5" fill="#1baf7a"/>
+<circle cx="276" cy="92" r="5.5" fill="#1baf7a"/>
+<circle cx="290" cy="92" r="5.5" fill="#1baf7a"/>
+<circle cx="310" cy="92" r="5.5" fill="#1baf7a"/>
+<circle cx="324" cy="92" r="5.5" fill="#1baf7a"/>
+<circle cx="338" cy="92" r="5.5" fill="#1baf7a"/>
+<circle cx="358" cy="92" r="5.5" fill="#1baf7a"/>
+<circle cx="372" cy="92" r="5.5" fill="#1baf7a"/>
+<circle cx="386" cy="92" r="5.5" fill="#1baf7a"/>
+<circle cx="406" cy="92" r="5.5" fill="#1baf7a"/>
+<circle cx="420" cy="92" r="5.5" fill="#1baf7a"/>
+<circle cx="434" cy="92" r="5.5" fill="#1baf7a"/>
+<circle cx="454" cy="92" r="5.5" fill="#1baf7a"/>
+<circle cx="468" cy="92" r="5.5" fill="#1baf7a"/>
+<circle cx="482" cy="92" r="5.5" fill="#1baf7a"/>
+<circle cx="502" cy="92" r="5.5" fill="#1baf7a"/>
+<circle cx="516" cy="92" r="5.5" fill="#1baf7a"/>
+<circle cx="530" cy="92" r="5.5" fill="#ffffff" stroke="#eb6834" stroke-width="2"/><path d="M527.4,89.4 L532.6,94.6 M527.4,94.6 L532.6,89.4" stroke="#eb6834" stroke-width="1.8" stroke-linecap="round"/>
+<circle cx="550" cy="92" r="5.5" fill="#1baf7a"/>
+<circle cx="564" cy="92" r="5.5" fill="#1baf7a"/>
+<circle cx="578" cy="92" r="5.5" fill="#1baf7a"/>
+<circle cx="598" cy="92" r="5.5" fill="#1baf7a"/>
+<circle cx="612" cy="92" r="5.5" fill="#1baf7a"/>
+<circle cx="626" cy="92" r="5.5" fill="#1baf7a"/>
+<circle cx="646" cy="92" r="5.5" fill="#ffffff" stroke="#eb6834" stroke-width="2"/><path d="M643.4,89.4 L648.6,94.6 M643.4,94.6 L648.6,89.4" stroke="#eb6834" stroke-width="1.8" stroke-linecap="round"/>
+<circle cx="660" cy="92" r="5.5" fill="#ffffff" stroke="#eb6834" stroke-width="2"/><path d="M657.4,89.4 L662.6,94.6 M657.4,94.6 L662.6,89.4" stroke="#eb6834" stroke-width="1.8" stroke-linecap="round"/>
+<circle cx="674" cy="92" r="5.5" fill="#ffffff" stroke="#eb6834" stroke-width="2"/><path d="M671.4,89.4 L676.6,94.6 M671.4,94.6 L676.6,89.4" stroke="#eb6834" stroke-width="1.8" stroke-linecap="round"/>
+<text x="742" y="96" font-size="12" font-weight="700" fill="#0b0b0b" text-anchor="end" >26/30</text>
+<line x1="0" y1="107" x2="742" y2="107" stroke="#c9c8c2" stroke-width="1" stroke-dasharray="3 3"/>
+<text x="0" y="121" font-size="12" font-weight="700" fill="#0b0b0b" text-anchor="start" >PC-001 M1</text>
+<text x="0" y="133" font-size="9.8" font-weight="400" fill="#52514e" text-anchor="start" >modal, established recipe</text>
+<circle cx="214" cy="122" r="5.5" fill="#1baf7a"/>
+<circle cx="228" cy="122" r="5.5" fill="#1baf7a"/>
+<circle cx="242" cy="122" r="5.5" fill="#1baf7a"/>
+<circle cx="262" cy="122" r="5.5" fill="#1baf7a"/>
+<circle cx="276" cy="122" r="5.5" fill="#1baf7a"/>
+<circle cx="290" cy="122" r="5.5" fill="#1baf7a"/>
+<circle cx="310" cy="122" r="5.5" fill="#1baf7a"/>
+<circle cx="324" cy="122" r="5.5" fill="#1baf7a"/>
+<circle cx="338" cy="122" r="5.5" fill="#1baf7a"/>
+<circle cx="358" cy="122" r="5.5" fill="#1baf7a"/>
+<circle cx="372" cy="122" r="5.5" fill="#1baf7a"/>
+<circle cx="386" cy="122" r="5.5" fill="#1baf7a"/>
+<circle cx="406" cy="122" r="5.5" fill="#1baf7a"/>
+<circle cx="420" cy="122" r="5.5" fill="#1baf7a"/>
+<circle cx="434" cy="122" r="5.5" fill="#1baf7a"/>
+<circle cx="454" cy="122" r="5.5" fill="#1baf7a"/>
+<circle cx="468" cy="122" r="5.5" fill="#1baf7a"/>
+<circle cx="482" cy="122" r="5.5" fill="#1baf7a"/>
+<circle cx="502" cy="122" r="5.5" fill="#1baf7a"/>
+<circle cx="516" cy="122" r="5.5" fill="#1baf7a"/>
+<circle cx="530" cy="122" r="5.5" fill="#ffffff" stroke="#eb6834" stroke-width="2"/><path d="M527.4,119.4 L532.6,124.6 M527.4,124.6 L532.6,119.4" stroke="#eb6834" stroke-width="1.8" stroke-linecap="round"/>
+<circle cx="550" cy="122" r="5.5" fill="#1baf7a"/>
+<circle cx="564" cy="122" r="5.5" fill="#1baf7a"/>
+<circle cx="578" cy="122" r="5.5" fill="#1baf7a"/>
+<circle cx="598" cy="122" r="5.5" fill="#1baf7a"/>
+<circle cx="612" cy="122" r="5.5" fill="#1baf7a"/>
+<circle cx="626" cy="122" r="5.5" fill="#1baf7a"/>
+<circle cx="646" cy="122" r="5.5" fill="#ffffff" stroke="#eb6834" stroke-width="2"/><path d="M643.4,119.4 L648.6,124.6 M643.4,124.6 L648.6,119.4" stroke="#eb6834" stroke-width="1.8" stroke-linecap="round"/>
+<circle cx="660" cy="122" r="5.5" fill="#ffffff" stroke="#eb6834" stroke-width="2"/><path d="M657.4,119.4 L662.6,124.6 M657.4,124.6 L662.6,119.4" stroke="#eb6834" stroke-width="1.8" stroke-linecap="round"/>
+<circle cx="674" cy="122" r="5.5" fill="#ffffff" stroke="#eb6834" stroke-width="2"/><path d="M671.4,119.4 L676.6,124.6 M671.4,124.6 L676.6,119.4" stroke="#eb6834" stroke-width="1.8" stroke-linecap="round"/>
+<text x="742" y="126" font-size="12" font-weight="700" fill="#0b0b0b" text-anchor="end" >26/30</text>
+<text x="0" y="151" font-size="12" font-weight="700" fill="#0b0b0b" text-anchor="start" >ON-001 B</text>
+<text x="0" y="163" font-size="9.8" font-weight="400" fill="#52514e" text-anchor="start" >modal baseline, 120 s contract</text>
+<circle cx="214" cy="152" r="5.5" fill="#1baf7a"/>
+<circle cx="228" cy="152" r="5.5" fill="#1baf7a"/>
+<circle cx="242" cy="152" r="5.5" fill="#1baf7a"/>
+<circle cx="262" cy="152" r="5.5" fill="#1baf7a"/>
+<circle cx="276" cy="152" r="5.5" fill="#1baf7a"/>
+<circle cx="290" cy="152" r="5.5" fill="#1baf7a"/>
+<circle cx="310" cy="152" r="5.5" fill="#1baf7a"/>
+<circle cx="324" cy="152" r="5.5" fill="#1baf7a"/>
+<circle cx="338" cy="152" r="5.5" fill="#1baf7a"/>
+<circle cx="358" cy="152" r="5.5" fill="#1baf7a"/>
+<circle cx="372" cy="152" r="5.5" fill="#1baf7a"/>
+<circle cx="386" cy="152" r="5.5" fill="#1baf7a"/>
+<circle cx="406" cy="152" r="5.5" fill="#1baf7a"/>
+<circle cx="420" cy="152" r="5.5" fill="#1baf7a"/>
+<circle cx="434" cy="152" r="5.5" fill="#1baf7a"/>
+<circle cx="454" cy="152" r="5.5" fill="#1baf7a"/>
+<circle cx="468" cy="152" r="5.5" fill="#1baf7a"/>
+<circle cx="482" cy="152" r="5.5" fill="#1baf7a"/>
+<circle cx="502" cy="152" r="5.5" fill="#1baf7a"/>
+<circle cx="516" cy="152" r="5.5" fill="#1baf7a"/>
+<circle cx="530" cy="152" r="5.5" fill="#ffffff" stroke="#eb6834" stroke-width="2"/><path d="M527.4,149.4 L532.6,154.6 M527.4,154.6 L532.6,149.4" stroke="#eb6834" stroke-width="1.8" stroke-linecap="round"/>
+<circle cx="550" cy="152" r="5.5" fill="#1baf7a"/>
+<circle cx="564" cy="152" r="5.5" fill="#1baf7a"/>
+<circle cx="578" cy="152" r="5.5" fill="#1baf7a"/>
+<circle cx="598" cy="152" r="5.5" fill="#1baf7a"/>
+<circle cx="612" cy="152" r="5.5" fill="#1baf7a"/>
+<circle cx="626" cy="152" r="5.5" fill="#1baf7a"/>
+<circle cx="646" cy="152" r="5.5" fill="#ffffff" stroke="#eb6834" stroke-width="2"/><path d="M643.4,149.4 L648.6,154.6 M643.4,154.6 L648.6,149.4" stroke="#eb6834" stroke-width="1.8" stroke-linecap="round"/>
+<circle cx="660" cy="152" r="5.5" fill="#ffffff" stroke="#eb6834" stroke-width="2"/><path d="M657.4,149.4 L662.6,154.6 M657.4,154.6 L662.6,149.4" stroke="#eb6834" stroke-width="1.8" stroke-linecap="round"/>
+<circle cx="674" cy="152" r="5.5" fill="#ffffff" stroke="#eb6834" stroke-width="2"/><path d="M671.4,149.4 L676.6,154.6 M671.4,154.6 L676.6,149.4" stroke="#eb6834" stroke-width="1.8" stroke-linecap="round"/>
+<text x="742" y="156" font-size="12" font-weight="700" fill="#0b0b0b" text-anchor="end" >26/30</text>
+<text x="0" y="181" font-size="12" font-weight="700" fill="#0b0b0b" text-anchor="start" >ON-001 E</text>
+<text x="0" y="193" font-size="9.8" font-weight="400" fill="#52514e" text-anchor="start" >accuracy exit</text>
+<circle cx="214" cy="182" r="5.5" fill="#1baf7a"/>
+<circle cx="228" cy="182" r="5.5" fill="#1baf7a"/>
+<circle cx="242" cy="182" r="5.5" fill="#1baf7a"/>
+<circle cx="262" cy="182" r="5.5" fill="#1baf7a"/>
+<circle cx="276" cy="182" r="5.5" fill="#1baf7a"/>
+<circle cx="290" cy="182" r="5.5" fill="#1baf7a"/>
+<circle cx="310" cy="182" r="5.5" fill="#1baf7a"/>
+<circle cx="324" cy="182" r="5.5" fill="#1baf7a"/>
+<circle cx="338" cy="182" r="5.5" fill="#1baf7a"/>
+<circle cx="358" cy="182" r="5.5" fill="#1baf7a"/>
+<circle cx="372" cy="182" r="5.5" fill="#1baf7a"/>
+<circle cx="386" cy="182" r="5.5" fill="#1baf7a"/>
+<circle cx="406" cy="182" r="5.5" fill="#1baf7a"/>
+<circle cx="420" cy="182" r="5.5" fill="#1baf7a"/>
+<circle cx="434" cy="182" r="5.5" fill="#1baf7a"/>
+<circle cx="454" cy="182" r="5.5" fill="#1baf7a"/>
+<circle cx="468" cy="182" r="5.5" fill="#1baf7a"/>
+<circle cx="482" cy="182" r="5.5" fill="#1baf7a"/>
+<circle cx="502" cy="182" r="5.5" fill="#1baf7a"/>
+<circle cx="516" cy="182" r="5.5" fill="#1baf7a"/>
+<circle cx="530" cy="182" r="5.5" fill="#ffffff" stroke="#eb6834" stroke-width="2"/><path d="M527.4,179.4 L532.6,184.6 M527.4,184.6 L532.6,179.4" stroke="#eb6834" stroke-width="1.8" stroke-linecap="round"/>
+<circle cx="550" cy="182" r="5.5" fill="#1baf7a"/>
+<circle cx="564" cy="182" r="5.5" fill="#1baf7a"/>
+<circle cx="578" cy="182" r="5.5" fill="#1baf7a"/>
+<circle cx="598" cy="182" r="5.5" fill="#1baf7a"/>
+<circle cx="612" cy="182" r="5.5" fill="#1baf7a"/>
+<circle cx="626" cy="182" r="5.5" fill="#1baf7a"/>
+<circle cx="646" cy="182" r="5.5" fill="#ffffff" stroke="#eb6834" stroke-width="2"/><path d="M643.4,179.4 L648.6,184.6 M643.4,184.6 L648.6,179.4" stroke="#eb6834" stroke-width="1.8" stroke-linecap="round"/>
+<circle cx="660" cy="182" r="5.5" fill="#ffffff" stroke="#eb6834" stroke-width="2"/><path d="M657.4,179.4 L662.6,184.6 M657.4,184.6 L662.6,179.4" stroke="#eb6834" stroke-width="1.8" stroke-linecap="round"/>
+<circle cx="674" cy="182" r="5.5" fill="#ffffff" stroke="#eb6834" stroke-width="2"/><path d="M671.4,179.4 L676.6,184.6 M671.4,184.6 L676.6,179.4" stroke="#eb6834" stroke-width="1.8" stroke-linecap="round"/>
+<text x="742" y="186" font-size="12" font-weight="700" fill="#0b0b0b" text-anchor="end" >26/30</text>
+<text x="0" y="211" font-size="12" font-weight="700" fill="#0b0b0b" text-anchor="start" >DP-001 E</text>
+<text x="0" y="223" font-size="9.8" font-weight="400" fill="#52514e" text-anchor="start" >frozen E</text>
+<circle cx="214" cy="212" r="5.5" fill="#1baf7a"/>
+<circle cx="228" cy="212" r="5.5" fill="#1baf7a"/>
+<circle cx="242" cy="212" r="5.5" fill="#1baf7a"/>
+<circle cx="262" cy="212" r="5.5" fill="#1baf7a"/>
+<circle cx="276" cy="212" r="5.5" fill="#1baf7a"/>
+<circle cx="290" cy="212" r="5.5" fill="#1baf7a"/>
+<circle cx="310" cy="212" r="5.5" fill="#1baf7a"/>
+<circle cx="324" cy="212" r="5.5" fill="#1baf7a"/>
+<circle cx="338" cy="212" r="5.5" fill="#1baf7a"/>
+<circle cx="358" cy="212" r="5.5" fill="#1baf7a"/>
+<circle cx="372" cy="212" r="5.5" fill="#1baf7a"/>
+<circle cx="386" cy="212" r="5.5" fill="#1baf7a"/>
+<circle cx="406" cy="212" r="5.5" fill="#1baf7a"/>
+<circle cx="420" cy="212" r="5.5" fill="#1baf7a"/>
+<circle cx="434" cy="212" r="5.5" fill="#1baf7a"/>
+<circle cx="454" cy="212" r="5.5" fill="#1baf7a"/>
+<circle cx="468" cy="212" r="5.5" fill="#1baf7a"/>
+<circle cx="482" cy="212" r="5.5" fill="#1baf7a"/>
+<circle cx="502" cy="212" r="5.5" fill="#1baf7a"/>
+<circle cx="516" cy="212" r="5.5" fill="#1baf7a"/>
+<circle cx="530" cy="212" r="5.5" fill="#ffffff" stroke="#eb6834" stroke-width="2"/><path d="M527.4,209.4 L532.6,214.6 M527.4,214.6 L532.6,209.4" stroke="#eb6834" stroke-width="1.8" stroke-linecap="round"/>
+<circle cx="550" cy="212" r="5.5" fill="#1baf7a"/>
+<circle cx="564" cy="212" r="5.5" fill="#1baf7a"/>
+<circle cx="578" cy="212" r="5.5" fill="#1baf7a"/>
+<circle cx="598" cy="212" r="5.5" fill="#1baf7a"/>
+<circle cx="612" cy="212" r="5.5" fill="#1baf7a"/>
+<circle cx="626" cy="212" r="5.5" fill="#1baf7a"/>
+<circle cx="646" cy="212" r="5.5" fill="#ffffff" stroke="#eb6834" stroke-width="2"/><path d="M643.4,209.4 L648.6,214.6 M643.4,214.6 L648.6,209.4" stroke="#eb6834" stroke-width="1.8" stroke-linecap="round"/>
+<circle cx="660" cy="212" r="5.5" fill="#ffffff" stroke="#eb6834" stroke-width="2"/><path d="M657.4,209.4 L662.6,214.6 M657.4,214.6 L662.6,209.4" stroke="#eb6834" stroke-width="1.8" stroke-linecap="round"/>
+<circle cx="674" cy="212" r="5.5" fill="#ffffff" stroke="#eb6834" stroke-width="2"/><path d="M671.4,209.4 L676.6,214.6 M671.4,214.6 L676.6,209.4" stroke="#eb6834" stroke-width="1.8" stroke-linecap="round"/>
+<text x="742" y="216" font-size="12" font-weight="700" fill="#0b0b0b" text-anchor="end" >26/30</text>
+<text x="0" y="241" font-size="12" font-weight="700" fill="#0b0b0b" text-anchor="start" >DP-001 F</text>
+<text x="0" y="253" font-size="9.8" font-weight="400" fill="#52514e" text-anchor="start" >agreement damping + reuse</text>
+<circle cx="214" cy="242" r="5.5" fill="#1baf7a"/>
+<circle cx="228" cy="242" r="5.5" fill="#1baf7a"/>
+<circle cx="242" cy="242" r="5.5" fill="#1baf7a"/>
+<circle cx="262" cy="242" r="5.5" fill="#1baf7a"/>
+<circle cx="276" cy="242" r="5.5" fill="#1baf7a"/>
+<circle cx="290" cy="242" r="5.5" fill="#1baf7a"/>
+<circle cx="310" cy="242" r="5.5" fill="#1baf7a"/>
+<circle cx="324" cy="242" r="5.5" fill="#1baf7a"/>
+<circle cx="338" cy="242" r="5.5" fill="#1baf7a"/>
+<circle cx="358" cy="242" r="5.5" fill="#1baf7a"/>
+<circle cx="372" cy="242" r="5.5" fill="#1baf7a"/>
+<circle cx="386" cy="242" r="5.5" fill="#1baf7a"/>
+<circle cx="406" cy="242" r="5.5" fill="#1baf7a"/>
+<circle cx="420" cy="242" r="5.5" fill="#1baf7a"/>
+<circle cx="434" cy="242" r="5.5" fill="#1baf7a"/>
+<circle cx="454" cy="242" r="5.5" fill="#1baf7a"/>
+<circle cx="468" cy="242" r="5.5" fill="#1baf7a"/>
+<circle cx="482" cy="242" r="5.5" fill="#1baf7a"/>
+<circle cx="502" cy="242" r="5.5" fill="#1baf7a"/>
+<circle cx="516" cy="242" r="5.5" fill="#1baf7a"/>
+<circle cx="530" cy="242" r="5.5" fill="#ffffff" stroke="#eb6834" stroke-width="2"/><path d="M527.4,239.4 L532.6,244.6 M527.4,244.6 L532.6,239.4" stroke="#eb6834" stroke-width="1.8" stroke-linecap="round"/>
+<circle cx="550" cy="242" r="5.5" fill="#1baf7a"/>
+<circle cx="564" cy="242" r="5.5" fill="#1baf7a"/>
+<circle cx="578" cy="242" r="5.5" fill="#1baf7a"/>
+<circle cx="598" cy="242" r="5.5" fill="#1baf7a"/>
+<circle cx="612" cy="242" r="5.5" fill="#1baf7a"/>
+<circle cx="626" cy="242" r="5.5" fill="#1baf7a"/>
+<circle cx="646" cy="242" r="5.5" fill="#ffffff" stroke="#eb6834" stroke-width="2"/><path d="M643.4,239.4 L648.6,244.6 M643.4,244.6 L648.6,239.4" stroke="#eb6834" stroke-width="1.8" stroke-linecap="round"/>
+<circle cx="660" cy="242" r="5.5" fill="#ffffff" stroke="#eb6834" stroke-width="2"/><path d="M657.4,239.4 L662.6,244.6 M657.4,244.6 L662.6,239.4" stroke="#eb6834" stroke-width="1.8" stroke-linecap="round"/>
+<circle cx="674" cy="242" r="5.5" fill="#ffffff" stroke="#eb6834" stroke-width="2"/><path d="M671.4,239.4 L676.6,244.6 M671.4,244.6 L676.6,239.4" stroke="#eb6834" stroke-width="1.8" stroke-linecap="round"/>
+<text x="742" y="246" font-size="12" font-weight="700" fill="#0b0b0b" text-anchor="end" >26/30</text>
+<text x="0" y="271" font-size="12" font-weight="700" fill="#0b0b0b" text-anchor="start" >RG-001 C</text>
+<text x="0" y="283" font-size="9.8" font-weight="400" fill="#52514e" text-anchor="start" >control</text>
+<circle cx="214" cy="272" r="5.5" fill="#1baf7a"/>
+<circle cx="228" cy="272" r="5.5" fill="#1baf7a"/>
+<circle cx="242" cy="272" r="5.5" fill="#1baf7a"/>
+<circle cx="262" cy="272" r="5.5" fill="#1baf7a"/>
+<circle cx="276" cy="272" r="5.5" fill="#1baf7a"/>
+<circle cx="290" cy="272" r="5.5" fill="#1baf7a"/>
+<circle cx="310" cy="272" r="5.5" fill="#1baf7a"/>
+<circle cx="324" cy="272" r="5.5" fill="#1baf7a"/>
+<circle cx="338" cy="272" r="5.5" fill="#1baf7a"/>
+<circle cx="358" cy="272" r="5.5" fill="#1baf7a"/>
+<circle cx="372" cy="272" r="5.5" fill="#1baf7a"/>
+<circle cx="386" cy="272" r="5.5" fill="#1baf7a"/>
+<circle cx="406" cy="272" r="5.5" fill="#1baf7a"/>
+<circle cx="420" cy="272" r="5.5" fill="#1baf7a"/>
+<circle cx="434" cy="272" r="5.5" fill="#1baf7a"/>
+<circle cx="454" cy="272" r="5.5" fill="#1baf7a"/>
+<circle cx="468" cy="272" r="5.5" fill="#1baf7a"/>
+<circle cx="482" cy="272" r="5.5" fill="#1baf7a"/>
+<circle cx="502" cy="272" r="5.5" fill="#1baf7a"/>
+<circle cx="516" cy="272" r="5.5" fill="#1baf7a"/>
+<circle cx="530" cy="272" r="5.5" fill="#ffffff" stroke="#eb6834" stroke-width="2"/><path d="M527.4,269.4 L532.6,274.6 M527.4,274.6 L532.6,269.4" stroke="#eb6834" stroke-width="1.8" stroke-linecap="round"/>
+<circle cx="550" cy="272" r="5.5" fill="#1baf7a"/>
+<circle cx="564" cy="272" r="5.5" fill="#1baf7a"/>
+<circle cx="578" cy="272" r="5.5" fill="#1baf7a"/>
+<circle cx="598" cy="272" r="5.5" fill="#1baf7a"/>
+<circle cx="612" cy="272" r="5.5" fill="#1baf7a"/>
+<circle cx="626" cy="272" r="5.5" fill="#1baf7a"/>
+<circle cx="646" cy="272" r="5.5" fill="#ffffff" stroke="#eb6834" stroke-width="2"/><path d="M643.4,269.4 L648.6,274.6 M643.4,274.6 L648.6,269.4" stroke="#eb6834" stroke-width="1.8" stroke-linecap="round"/>
+<circle cx="660" cy="272" r="5.5" fill="#ffffff" stroke="#eb6834" stroke-width="2"/><path d="M657.4,269.4 L662.6,274.6 M657.4,274.6 L662.6,269.4" stroke="#eb6834" stroke-width="1.8" stroke-linecap="round"/>
+<circle cx="674" cy="272" r="5.5" fill="#ffffff" stroke="#eb6834" stroke-width="2"/><path d="M671.4,269.4 L676.6,274.6 M671.4,274.6 L676.6,269.4" stroke="#eb6834" stroke-width="1.8" stroke-linecap="round"/>
+<text x="742" y="276" font-size="12" font-weight="700" fill="#0b0b0b" text-anchor="end" >26/30</text>
+<text x="0" y="301" font-size="12" font-weight="700" fill="#0b0b0b" text-anchor="start" >RG-001 RG</text>
+<text x="0" y="313" font-size="9.8" font-weight="400" fill="#52514e" text-anchor="start" >decision-relative gate</text>
+<circle cx="214" cy="302" r="5.5" fill="#1baf7a"/>
+<circle cx="228" cy="302" r="5.5" fill="#1baf7a"/>
+<circle cx="242" cy="302" r="5.5" fill="#1baf7a"/>
+<circle cx="262" cy="302" r="5.5" fill="#1baf7a"/>
+<circle cx="276" cy="302" r="5.5" fill="#1baf7a"/>
+<circle cx="290" cy="302" r="5.5" fill="#1baf7a"/>
+<circle cx="310" cy="302" r="5.5" fill="#1baf7a"/>
+<circle cx="324" cy="302" r="5.5" fill="#1baf7a"/>
+<circle cx="338" cy="302" r="5.5" fill="#1baf7a"/>
+<circle cx="358" cy="302" r="5.5" fill="#1baf7a"/>
+<circle cx="372" cy="302" r="5.5" fill="#1baf7a"/>
+<circle cx="386" cy="302" r="5.5" fill="#1baf7a"/>
+<circle cx="406" cy="302" r="5.5" fill="#1baf7a"/>
+<circle cx="420" cy="302" r="5.5" fill="#1baf7a"/>
+<circle cx="434" cy="302" r="5.5" fill="#1baf7a"/>
+<circle cx="454" cy="302" r="5.5" fill="#1baf7a"/>
+<circle cx="468" cy="302" r="5.5" fill="#1baf7a"/>
+<circle cx="482" cy="302" r="5.5" fill="#1baf7a"/>
+<circle cx="502" cy="302" r="5.5" fill="#1baf7a"/>
+<circle cx="516" cy="302" r="5.5" fill="#1baf7a"/>
+<circle cx="530" cy="302" r="5.5" fill="#ffffff" stroke="#eb6834" stroke-width="2"/><path d="M527.4,299.4 L532.6,304.6 M527.4,304.6 L532.6,299.4" stroke="#eb6834" stroke-width="1.8" stroke-linecap="round"/>
+<circle cx="550" cy="302" r="5.5" fill="#1baf7a"/>
+<circle cx="564" cy="302" r="5.5" fill="#1baf7a"/>
+<circle cx="578" cy="302" r="5.5" fill="#1baf7a"/>
+<circle cx="598" cy="302" r="5.5" fill="#1baf7a"/>
+<circle cx="612" cy="302" r="5.5" fill="#1baf7a"/>
+<circle cx="626" cy="302" r="5.5" fill="#1baf7a"/>
+<circle cx="646" cy="302" r="5.5" fill="#ffffff" stroke="#eb6834" stroke-width="2"/><path d="M643.4,299.4 L648.6,304.6 M643.4,304.6 L648.6,299.4" stroke="#eb6834" stroke-width="1.8" stroke-linecap="round"/>
+<circle cx="660" cy="302" r="5.5" fill="#ffffff" stroke="#eb6834" stroke-width="2"/><path d="M657.4,299.4 L662.6,304.6 M657.4,304.6 L662.6,299.4" stroke="#eb6834" stroke-width="1.8" stroke-linecap="round"/>
+<circle cx="674" cy="302" r="5.5" fill="#ffffff" stroke="#eb6834" stroke-width="2"/><path d="M671.4,299.4 L676.6,304.6 M671.4,304.6 L676.6,299.4" stroke="#eb6834" stroke-width="1.8" stroke-linecap="round"/>
+<text x="742" y="306" font-size="12" font-weight="700" fill="#0b0b0b" text-anchor="end" >26/30</text>
+<text x="0" y="22" font-size="11" font-weight="400" fill="#52514e" text-anchor="start" >campaign arm</text>
+<text x="0" y="38" font-size="9.5" font-weight="400" fill="#52514e" text-anchor="start" >nodal above the dashed line</text>
+<circle cx="6" cy="336" r="5.5" fill="#1baf7a"/><text x="16" y="340" font-size="11" font-weight="400" fill="#52514e" text-anchor="start" >recovered</text>
+<circle cx="96" cy="336" r="5.5" fill="#ffffff" stroke="#eb6834" stroke-width="2"/><path d="M93.4,333.4 L98.6,338.6 M93.4,338.6 L98.6,333.4" stroke="#eb6834" stroke-width="1.8"/><text x="106" y="340" font-size="11" font-weight="400" fill="#52514e" text-anchor="start" >failed (shaded columns fail in every row)</text>
+<text x="742" y="340" font-size="11" font-weight="400" fill="#52514e" text-anchor="end" >columns: scene × contrast 0.5 / 4 / 13.3</text>
+      </svg>
+      <div class="note" style="margin-top:6px"><b class="k" style="color:var(--ink)">Diagnosis (ON review).</b> Each Aphex run stops on the absolute field-agreement gate, on a trial that still reduced the loss. The hook at c13.3 leaves the damped prefix 6.8 mm off (every success: ≤ 1.13 mm), so it sits in a wrong basin.</div>
+    </div>
+    <div class="attempts">
+      <div class="attempt s-negative"><div class="top"><span class="name">Nodal resolution promotion</span><span class="id">RB-001 · PC-001 N1</span></div>
+        <div class="row">Promote an unresolved trial once to N1024/2048 → still 0/4 (trial wall limits, accuracy-limited trials).</div></div>
+      <div class="attempt s-negative"><div class="top"><span class="name">Decision-relative gate</span><span class="id">RG-001</span></div>
+        <div class="row">Unresolved trials keep their gain decision instead of stopping → 0/4. Aphex c4 RMS 1.69 → 0.66 mm, but its gates fail.</div></div>
+      <div class="attempt s-negative"><div class="top"><span class="name">Longer budgets</span><span class="id">RG-001 extended</span></div>
+        <div class="row">900 s per fit → 0/4; no endpoint passes its audit.</div></div>
+      <div class="attempt s-negative"><div class="top"><span class="name">Four-phase schedule</span><span class="id">CS-001</span></div>
+        <div class="row">Similarity start + four compact all-frequency stages → 3 of the 4 screened, none recovered; it also lost the C at c13.3.</div></div>
+      <div class="attempt s-open"><div class="top"><span class="name">Modal resolution response</span><span class="id">RP-001 · modal_response</span></div>
+        <div class="row">Promote once to K<sub>t</sub> 128/160 and reject there instead of stopping → implemented, not yet run.</div></div>
+      <div class="attempt s-open"><div class="top"><span class="name">Hook basin repair</span><span class="id">PX-001</span></div>
+        <div class="row">Named in the RG-001 results as possibly needed for the c13.3 basin → not designed.</div></div>
+    </div>
+  </div>
+  <div class="footer"><span>Matrix built by build.py from results/validation/cleaned_interfaces/{PC-001,PC-002,ON-001,DP-001,RG-001}; no new solves</span>
+    <span class="legend"><span class="chip s-negative">Negative</span><span class="chip s-open">Open</span></span><span>9 / 11</span></div>
+</section>
+
+<!-- ============================ 10. SIDE BRANCHES ============================ -->
+<section class="slide">
+  <div class="kicker">Side branches</div>
+  <h1>Ideas that closed or stayed separate</h1>
+  <table class="side">
+    <tr><th>Idea</th><th>IDs</th><th>Main idea / change</th><th>Outcome</th><th>Status</th></tr>
+    <tr><td class="n">Modal compression &amp; masks</td><td class="i">LAU-001–004 · MC-001</td><td>Keep only the significant Fourier modes of the operator.</td><td>No non-circle 50%-retention mask passed the forward/derivative gate; track closed 22 Sep.</td><td class="s"><span class="chip s-negative">Negative / closed</span></td></tr>
+    <tr><td class="n">Broadband operator ROM</td><td class="i">Laurent study, 18 Sep</td><td>Represent the operator across frequency with a small basis.</td><td>The operator has rank 11 at 10⁻⁶, but solutions need about 80; no inverse saving shown.</td><td class="s"><span class="chip s-negative">Negative / closed</span></td></tr>
+    <tr><td class="n">Multi-object local responses</td><td class="i">T = P A⁻¹ B</td><td>Couple per-object response operators instead of one big solve.</td><td>Matches monolithic solves to 10⁻¹⁴; not integrated (the benchmark has one object).</td><td class="s"><span class="chip s-hist">Separate</span></td></tr>
+    <tr><td class="n">Topology events</td><td class="i">TOP-001–025</td><td>Births, deaths, splits and merges of boundary components.</td><td>7/12, then 8/12 scenes; a separate pipeline, not promoted to production.</td><td class="s"><span class="chip s-hist">Separate</span></td></tr>
+    <tr><td class="n">Field-defined events</td><td class="i">field_defined_events</td><td>Topology triggers borrowed from the literature (theta, presence, relocation).</td><td>Every borrowed mechanism failed or was blocked.</td><td class="s"><span class="chip s-negative">Negative / closed</span></td></tr>
+    <tr><td class="n">Relaxed BIE, start census</td><td class="i">FM-001–005 · RB-001</td><td>A relaxed boundary-integral formulation; a 512-start census for the hard C (legacy CI-001 cases).</td><td>Relaxation added no recovery; selected endpoints 4/11 → 7/11 with resolution promotion.</td><td class="s"><span class="chip s-option">Bounded</span></td></tr>
+    <tr><td class="n">Theory radius</td><td class="i">TR-001 · TR-002</td><td>Measure the local convergence radius; test a certified handoff rule.</td><td>Damping widens the empirical radius about 41×; the handoff rule passed 0 of 7 applicable cases.</td><td class="s"><span class="chip s-option">Empirical only</span></td></tr>
+    <tr><td class="n">GauGal comparison</td><td class="i">GGB-001–005 · GS-001</td><td>Run against the GauGal pixel solver; add exact translation/radius first stages.</td><td>Exact translation/radius stages find the circle centre to 0.1–0.2 mm, but shapes fail; GauGal's own fit reaches 0.46% residual at only IoU 0.33 (GS-001).</td><td class="s"><span class="chip s-negative">Negative</span></td></tr>
+    <tr><td class="n">GauGal speed routes</td><td class="i">ON-002 · ON-003 · EW-001</td><td>A GauGal adapter, and an Ewald-split Green's function on a Fourier grid.</td><td>Adapter 0/25 solve gates; the Ewald circle control failed, with a 46–48× contraction-cost bound.</td><td class="s"><span class="chip s-negative">Negative / closed</span></td></tr>
+    <tr><td class="n">Exploratory extensions</td><td class="i">exploration, 2 Oct</td><td>Fresnel data, TE/lossy media, half-space, 3-D IBIM sphere, time domain.</td><td>Feasibility studies only; not part of any TG-002 claim.</td><td class="s"><span class="chip s-hist">Separate</span></td></tr>
+  </table>
+  <div class="footer"><span>Sources: laurent, modal_compression, topology, field_defined_events, relaxed_bie, theory_radius, CI-SPD READMEs · reports/exploration_2026-10-02.md</span><span>10 / 11</span></div>
+</section>
+
+<!-- ============================ 11. CLAIMS + OPEN ============================ -->
+<section class="slide">
+  <div class="kicker">Where this leaves us</div>
+  <h1>What we can claim, and what is already queued</h1>
+  <div class="two">
+    <div class="panel">
+      <h2>Supported by the evidence</h2>
+      <ul>
+        <li>A maintained 2-D, single-boundary, known-contrast inverse: Cartesian Fourier geometry, node-free modal Müller physics, reciprocal sensitivities, a certified spectral update and a damped shape–frequency schedule.</li>
+        <li>On the noiseless TG-002 benchmark it recovers <b>26/30</b>, the same count as nodal physics, at about one-fifth of the median time.</li>
+        <li>Accuracy exit and agreement damping + reuse keep all 26 and run faster (median 1.55× and 1.13×).</li>
+        <li>The four failures are shared by every physics and update tried. The Aphex runs end on the resolution gate, and relaxing that gate alone did not recover them; the hook sits in a wrong basin.</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h2>Open threads already in the record</h2>
+      <ul>
+        <li><b>Policy screen</b> <span class="id">PS-001</span>: 13 registered recipes, committed in 71087669; the referenced plan file is missing and no screen has run.</li>
+        <li><b>Modal resolution response</b> <span class="id">RP-001 · modal_response</span>: implemented, unqualified.</li>
+        <li><b>Full TG-002 rerun</b> on the current code, since the AC-001 kernel change has had only component tests.</li>
+        <li><b>Hook basin</b> <span class="id">PX-001</span> and <b>blind start transfer</b> <span class="id">FM-006</span>: proposed only.</li>
+        <li><b>GauGal hybrid</b> <span class="id">GP-001</span>: proposed, awaiting approval.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="notsupported"><b>Not supported yet:</b> a global convergence guarantee, robustness to noisy data, arbitrary topology recovery, end-to-end sample-free certification, recovery by neural-SDF optimization, or superiority over GauGal.</div>
+  <div class="footer"><span>Full evidence and fact-check log: docs/reports/research_freeze_2026-10-05.md (Appendix A)</span><span>11 / 11</span></div>
+</section>
+
+</body>
+</html>
