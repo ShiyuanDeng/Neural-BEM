@@ -1,0 +1,134 @@
+Save/commit validation — 2026-10-06
+
+This is subsequent commit validation, not part of the October 5 read-only audit.
+No new benchmark campaign was run.
+
+Initial command:
+env PYTHONPATH=solvers:. OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 /home/drdeng/miniconda3/envs/EMNerf/bin/python -m pytest pytest/bem_inverse experiments/benchmark experiments/cleaned_interface experiments/shape_continuation pytest/gpr_bem_kress pytest/ordered_boundary -q -o cache_dir=/tmp/research-freeze-pytest-cache --junitxml=/tmp/research-freeze-commit-validation.xml
+
+........................................................................ [  9%]
+........................................................................ [ 19%]
+...................................F.................................... [ 28%]
+........................................................................ [ 38%]
+........................................................................ [ 48%]
+........................................................................ [ 57%]
+........................................................................ [ 67%]
+........................................................................ [ 76%]
+........................................................................ [ 86%]
+........................................................................ [ 96%]
+.............................                                            [100%]
+=================================== FAILURES ===================================
+___________________ test_run_refuses_mixed_method_selection ____________________
+
+tmp_path = PosixPath('/tmp/pytest-of-drdeng/pytest-397/test_run_refuses_mixed_method_0')
+
+    def test_run_refuses_mixed_method_selection(tmp_path):
+        from bem_inverse.physics import Execution
+        with pytest.raises(ValueError, match='not both'):
+>           c.run(tmp_path, [], pipeline='modal_fixed', solver='modal_muller', localization='none', execution=Execution())
+
+experiments/benchmark/test_benchmark.py:85:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+experiments/benchmark/campaign.py:307: in run
+    settings = settings_for(localization=localization, execution=execution, solver=solver,
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    def settings_for(*, localization, execution, solver=None, geometry_update=None, pipeline=None, policy=None,
+                     contract=None):
+        """The single setting of one run directory: a policy, a pipeline, or solver plus update."""
+        chosen = sum(x is not None for x in (pipeline, policy)) + (solver is not None or geometry_update is not None)
+        if chosen > 1:
+>           raise ValueError('Choose one of a policy, a pipeline, or solver/geometry_update')
+E           ValueError: Choose one of a policy, a pipeline, or solver/geometry_update
+
+experiments/benchmark/campaign.py:249: ValueError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-drdeng/pytest-397/test_run_refuses_mixed_method_0')
+
+    def test_run_refuses_mixed_method_selection(tmp_path):
+        from bem_inverse.physics import Execution
+        with pytest.raises(ValueError, match='not both'):
+>           c.run(tmp_path, [], pipeline='modal_fixed', solver='modal_muller', localization='none', execution=Execution())
+E           AssertionError: Regex pattern did not match.
+E            Regex: 'not both'
+E            Input: 'Choose one of a policy, a pipeline, or solver/geometry_update'
+
+experiments/benchmark/test_benchmark.py:85: AssertionError
+=============================== warnings summary ===============================
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:64
+  /home/drdeng/miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:64: PyparsingDeprecationWarning: 'oneOf' deprecated - use 'one_of'
+    prop = Group((name + Suppress("=") + comma_separated(value)) | oneOf(_CONSTANTS))
+
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:85
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:85
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:85
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:85
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:85
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:85
+  /home/drdeng/miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:85: PyparsingDeprecationWarning: 'parseString' deprecated - use 'parse_string'
+    parse = parser.parseString(pattern)
+
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:89
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:89
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:89
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:89
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:89
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:89
+  /home/drdeng/miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:89: PyparsingDeprecationWarning: 'resetCache' deprecated - use 'reset_cache'
+    parser.resetCache()
+
+../miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_mathtext.py:45
+  /home/drdeng/miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_mathtext.py:45: PyparsingDeprecationWarning: 'enablePackrat' deprecated - use 'enable_packrat'
+    ParserElement.enablePackrat()
+
+experiments/shape_continuation/test_atlas_video.py::test_removable_without_cap_is_the_sequential_projection
+  /home/drdeng/Neural_SDF_BEM_AD/experiments/shape_continuation/atlas_video.py:94: RuntimeWarning: invalid value encountered in multiply
+    cap = np.where(c > 0, c * amplitude, 0.0)          # a column with no new information removes nothing
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+-------- generated xml file: /tmp/research-freeze-commit-validation.xml --------
+=========================== short test summary info ============================
+FAILED experiments/benchmark/test_benchmark.py::test_run_refuses_mixed_method_selection
+1 failed, 748 passed, 15 warnings in 223.87s (0:03:43)
+
+Correction: update only the expected ValueError message in
+experiments/benchmark/test_benchmark.py::test_run_refuses_mixed_method_selection
+from "not both" to the existing "Choose one of a policy, a pipeline, or solver/geometry_update".
+No scientific implementation was changed while saving this report.
+
+Follow-up command:
+env PYTHONPATH=solvers:. OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 /home/drdeng/miniconda3/envs/EMNerf/bin/python -m pytest experiments/benchmark/test_benchmark.py experiments/benchmark/test_policies_archive.py -q -o cache_dir=/tmp/research-freeze-pytest-cache --junitxml=/tmp/research-freeze-commit-followup.xml
+
+...............................                                          [100%]
+=============================== warnings summary ===============================
+experiments/benchmark/test_benchmark.py::test_pc001_report_on_synthetic_runs
+  /home/drdeng/miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:64: PyparsingDeprecationWarning: 'oneOf' deprecated - use 'one_of'
+    prop = Group((name + Suppress("=") + comma_separated(value)) | oneOf(_CONSTANTS))
+
+experiments/benchmark/test_benchmark.py::test_pc001_report_on_synthetic_runs
+experiments/benchmark/test_benchmark.py::test_pc001_report_on_synthetic_runs
+experiments/benchmark/test_benchmark.py::test_pc001_report_on_synthetic_runs
+experiments/benchmark/test_benchmark.py::test_pc001_report_on_synthetic_runs
+experiments/benchmark/test_benchmark.py::test_pc001_report_on_synthetic_runs
+experiments/benchmark/test_benchmark.py::test_pc001_report_on_synthetic_runs
+  /home/drdeng/miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:85: PyparsingDeprecationWarning: 'parseString' deprecated - use 'parse_string'
+    parse = parser.parseString(pattern)
+
+experiments/benchmark/test_benchmark.py::test_pc001_report_on_synthetic_runs
+experiments/benchmark/test_benchmark.py::test_pc001_report_on_synthetic_runs
+experiments/benchmark/test_benchmark.py::test_pc001_report_on_synthetic_runs
+experiments/benchmark/test_benchmark.py::test_pc001_report_on_synthetic_runs
+experiments/benchmark/test_benchmark.py::test_pc001_report_on_synthetic_runs
+experiments/benchmark/test_benchmark.py::test_pc001_report_on_synthetic_runs
+  /home/drdeng/miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:89: PyparsingDeprecationWarning: 'resetCache' deprecated - use 'reset_cache'
+    parser.resetCache()
+
+experiments/benchmark/test_benchmark.py::test_pc001_report_on_synthetic_runs
+  /home/drdeng/miniconda3/envs/EMNerf/lib/python3.9/site-packages/matplotlib/_mathtext.py:45: PyparsingDeprecationWarning: 'enablePackrat' deprecated - use 'enable_packrat'
+    ParserElement.enablePackrat()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+--------- generated xml file: /tmp/research-freeze-commit-followup.xml ---------
+31 passed, 14 warnings in 0.97s

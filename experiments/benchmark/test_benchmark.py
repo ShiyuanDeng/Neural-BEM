@@ -81,7 +81,7 @@ def test_pc001_arms_are_the_three_pipelines_with_shared_settings():
 
 def test_run_refuses_mixed_method_selection(tmp_path):
     from bem_inverse.physics import Execution
-    with pytest.raises(ValueError, match='not both'):
+    with pytest.raises(ValueError, match='Choose one of a policy, a pipeline, or solver/geometry_update'):
         c.run(tmp_path, [], pipeline='modal_fixed', solver='modal_muller', localization='none', execution=Execution())
     with pytest.raises(ValueError, match='both solver'):
         c.run(tmp_path, [], solver='modal_muller', localization='none', execution=Execution())

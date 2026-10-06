@@ -23,6 +23,7 @@ from bem_inverse.io import read, write, digest, curve_record, curve_from, portab
 from bem_inverse.physics import Execution, make_backend
 from bem_inverse.runner import fit
 from bem_inverse import pipelines as P
+from bem_inverse import policies as R
 from experiments.cleaned_interface import benchmark as ci
 from . import scenes as S
 
@@ -195,6 +196,10 @@ def _physics(solver, execution):
 
 
 def _fit(problem, settings, execution, folder, adapter, on_event):
+    if 'policy' in settings:
+        spec = settings['policy']
+        return R.fit(problem, spec['recipe']['name'], execution=execution, contract=spec['contract'], output=folder,
+                     localization_adapter=adapter, on_event=on_event)
     if 'pipeline' in settings:
         return P.fit(problem, settings['pipeline']['name'], execution=execution, output=folder,
                      localization_adapter=adapter, on_event=on_event)
@@ -213,10 +218,13 @@ def run_case(job):
         raise FileExistsError(f'Incomplete run preserved at {folder}; use a fresh run directory')
     folder.mkdir(parents=True)
     execution = Execution(**settings['execution'])
+    started = perf_counter()
     try:
         result = _fit(ci.fitting_problem(case_row, run_dir), settings, execution, folder,
             keep_start if settings['localization'] == 'none' else None,
             lambda e: print(case_row['id'], e['operation']['label'], e['reason'], flush=True))
+        # ON-001 boundary: case entry to the returned, audited numerical output; scoring excluded.
+        result['audited_output_seconds'] = perf_counter()-started
         # The inverse and its independent audit have returned before target access.
         metrics = ci.score(case_row, curve_from(result['final_curve']))
         limits = ci.residual_limits(case_row)
@@ -233,27 +241,38 @@ def run_case(job):
     return result
 
 
-def run(run_dir, cases, *, localization, execution, solver=None, geometry_update=None, pipeline=None,
-        workers=1, output=INPUTS, experiment=None):
-    """Fit ``cases`` into ``run_dir``. One run directory holds exactly one setting.
-
-    Select either a named ``pipeline`` (``bem_inverse.pipelines``) or ``solver`` plus
-    ``geometry_update`` (the NL-001 form).
-    """
-    if pipeline is not None and (solver is not None or geometry_update is not None):
-        raise ValueError('Choose a pipeline or solver/geometry_update, not both')
-    if pipeline is None and (solver is None or geometry_update is None):
-        raise ValueError('Without a pipeline, pass both solver and geometry_update')
+def settings_for(*, localization, execution, solver=None, geometry_update=None, pipeline=None, policy=None,
+                 contract=None):
+    """The single setting of one run directory: a policy, a pipeline, or solver plus update."""
+    chosen = sum(x is not None for x in (pipeline, policy)) + (solver is not None or geometry_update is not None)
+    if chosen > 1:
+        raise ValueError('Choose one of a policy, a pipeline, or solver/geometry_update')
+    if policy is None and pipeline is None and (solver is None or geometry_update is None):
+        raise ValueError('Without a policy or pipeline, pass both solver and geometry_update')
     if localization not in LOCALIZATION:
         raise ValueError(f'localization must be one of {LOCALIZATION}')
-    if not 1 <= workers <= MAX_WORKERS:
-        raise ValueError(f'workers must be 1..{MAX_WORKERS}')
-    run_dir = Path(run_dir)
-    verify(output, require_inputs=True)
-    rows = [row(c, output) for c in cases]
+    if policy is not None:
+        contract = dict(R.BENCHMARK_CONTRACT if contract is None else contract)
+        return portable(dict(policy=R.settings(policy, contract), localization=localization,
+                             execution=asdict(R.execution_for(policy, execution))))
+    if contract is not None:
+        raise ValueError('A contract applies to named policies only')
     method = (dict(pipeline=P.get(pipeline).settings()) if pipeline is not None else
               dict(solver=solver, geometry_update=geometry_update))
-    settings = portable(dict(method, localization=localization, execution=asdict(execution)))
+    return portable(dict(method, localization=localization, execution=asdict(execution)))
+
+
+def physics_for(settings):
+    if 'policy' in settings:
+        return P.physics(settings['policy']['recipe']['pipeline'], Execution(**settings['execution']))
+    if 'pipeline' in settings:
+        return P.physics(settings['pipeline']['name'], Execution(**settings['execution']))
+    return _physics(settings['solver'], Execution(**settings['execution']))
+
+
+def open_run(run_dir, cases, settings, *, output=INPUTS, experiment=None):
+    """Create or check ``run_dir``'s manifest; mixed settings or inputs are refused."""
+    run_dir = Path(run_dir)
     manifest = run_dir/'manifest.json'
     if not manifest.exists():
         run_dir.mkdir(parents=True, exist_ok=True)
@@ -265,14 +284,40 @@ def run(run_dir, cases, *, localization, execution, solver=None, geometry_update
     saved = read(manifest)
     if saved['settings'] != settings or saved['inputs_sha256'] != digest(Path(output)/'manifest.json'):
         raise ValueError('Do not mix settings or inputs in one run directory; use a fresh one')
+    return saved
+
+
+def run_fresh(job):
+    """``run_case`` in a fresh spawned interpreter: no CUDA, cache or import state is shared."""
+    with ProcessPoolExecutor(1, mp_context=multiprocessing.get_context('spawn')) as pool:
+        return pool.submit(run_case, job).result()
+
+
+def run(run_dir, cases, *, localization, execution, solver=None, geometry_update=None, pipeline=None,
+        policy=None, contract=None, workers=1, output=INPUTS, experiment=None):
+    """Fit ``cases`` into ``run_dir``. One run directory holds exactly one setting.
+
+    Select a named ``policy`` (``bem_inverse.policies``, under the TG-002 contract unless
+    ``contract`` is given), a named ``pipeline`` (``bem_inverse.pipelines``), or ``solver``
+    plus ``geometry_update`` (the NL-001 form). Policy runs give every case a fresh
+    interpreter so that per-case timings are comparable.
+    """
+    if not 1 <= workers <= MAX_WORKERS:
+        raise ValueError(f'workers must be 1..{MAX_WORKERS}')
+    settings = settings_for(localization=localization, execution=execution, solver=solver,
+                            geometry_update=geometry_update, pipeline=pipeline, policy=policy, contract=contract)
+    run_dir = Path(run_dir)
+    verify(output, require_inputs=True)
+    rows = [row(c, output) for c in cases]
+    open_run(run_dir, cases, settings, output=output, experiment=experiment)
     # Preflight every input and capability before the first fit.
-    physics = P.physics(pipeline, execution) if pipeline is not None else _physics(solver, execution)
+    physics = physics_for(settings)
     for r in rows:
         physics.validate(ci.fitting_problem(r, run_dir))
     jobs = [(run_dir, r, settings) for r in rows]
     if workers == 1:
         for job in jobs:
-            run_case(job)
+            (run_fresh if policy is not None else run_case)(job)
     else:
         with ProcessPoolExecutor(workers, mp_context=multiprocessing.get_context('spawn')) as pool:
             for future in as_completed([pool.submit(run_case, job) for job in jobs]):
@@ -297,6 +342,7 @@ def summarize(run_dir):
             outcome=r.get('outcome'), recovered=r['recovered'], rms_mm=m.get('rms_mm'),
             hausdorff_upper_mm=m.get('hausdorff_upper_mm'), maximum_residual=r.get('maximum_residual'),
             audit=r.get('final_audit_passed'), units=r.get('total_units'), seconds=r.get('total_seconds'),
+            audited_output_seconds=r.get('audited_output_seconds'),
             resolution_promoted=r.get('resolution_promoted'),
             last_stage=(r.get('stages') or [{}])[-1].get('stage'), detail=_short(r.get('detail'))))
     summary = dict(completed=len(rows), recovered=sum(r['recovered'] for r in rows),

@@ -13,10 +13,12 @@ def make_update(name, length_unit_m, execution, *, default=None):
         return SpectralProjectedUpdate(length_unit_m)
     if name == 'certified_spectral':
         from .batched import BatchedCertifiedUpdate
-        update = BatchedCertifiedUpdate(length_unit_m, device=None if execution.device == 'auto' else execution.device)
+        order = getattr(execution, 'validity_order', 'certificate_first')
+        update = BatchedCertifiedUpdate(length_unit_m, device=None if execution.device == 'auto' else execution.device,
+                                        order=order)
         if update.device == 'cuda':
             from .device_certified import DeviceCertifiedUpdate
-            return DeviceCertifiedUpdate(length_unit_m, device=update.device)
+            return DeviceCertifiedUpdate(length_unit_m, device=update.device, order=order)
         return update
     if name == 'gaussian_lipschitz':
         from .gaussian_displacement import GaussianDisplacement

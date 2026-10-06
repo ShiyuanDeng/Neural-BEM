@@ -19,6 +19,8 @@ class ShapeFrequencyPolicy(CumulativePolicy):
     shape_quota: int = 1500
 
     def operations(self, problem, physics):
+        if self.release_storage != 'fixed':
+            raise ValueError('The four added shape stages set their own storage; release_storage does not apply.')
         prior = super().operations(problem, physics)
         warmup = next(op for op in prior if op.label == 'warmup_025_damped')
         initialization = replace(warmup, label='initialize_translation_scale',

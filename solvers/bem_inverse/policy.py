@@ -77,6 +77,11 @@ class CumulativePolicy:
     damping_rule: str = 'schedule'
     avoid_terminal_linearization: bool = False
     resolution_gate: str = 'absolute'
+    # 'fixed' stores every full-catalog stage at storage_band (the established recipe);
+    # 'compact' stores each at K_geometry=2M+2, as the frequency-ladder prefix does. The
+    # backend derives its trace cutoff from storage, so compact stages also solve smaller
+    # systems; that coupling is the mechanism under test, not a separate resolution choice.
+    release_storage: str = 'fixed'
     gamma: float = .25
     prefix_frequencies_hz: tuple = (.5e9, .75e9, 1e9, 1.25e9)
     prefix_quotas: tuple = (1000, 1250, 1750, 4000)
@@ -89,6 +94,14 @@ class CumulativePolicy:
     frontier_top: int = 95
     noise_factor: float = 1.1
     localization: LocalizationRule = LocalizationRule()
+
+    def __post_init__(self):
+        if self.release_storage not in ('fixed', 'compact'):
+            raise ValueError("release_storage must be 'fixed' or 'compact'")
+
+    def release_storage_band(self, band):
+        """Geometry storage of a full-catalog stage with update band ``band``."""
+        return self.storage_band if self.release_storage == 'fixed' else 2*band+2
 
     def _config(self, problem, observations):
         config = BackendConfig(domain_box=problem.domain_box, log_model=self.log_model,
@@ -155,7 +168,7 @@ class CumulativePolicy:
             release = band in self.release_bands
             clean = self.cleanup_band if noisy or band == self.fixed_bands[0] else None
             operations.append(self._fit(problem, physics, f'{"release" if release else "fixed"}_M{band}',
-                problem.real, band, self.storage_band, 1500 if release else 304,
+                problem.real, band, self.release_storage_band(band), 1500 if release else 304,
                 cleanup=clean, purpose='Full real catalog with '+('recurrent noise cleanup' if noisy else
                     'one-time state cleanup' if clean else 'shape-band release')))
         operations.append(Operation('frontier', 'observable_frontier',
@@ -164,7 +177,8 @@ class CumulativePolicy:
             'append fixed stages up to frontier; otherwise final audit', details=dict(
                 formula='max(p: paired_column_norm[p] >= threshold*max(paired_column_norm))',
                 threshold=self.frontier_threshold, top=self.frontier_top, step=self.frontier_step,
-                first=self.fixed_bands[-1]+self.frontier_step, K_geometry=self.storage_band,
+                first=self.fixed_bands[-1]+self.frontier_step,
+                K_geometry=self.storage_band if self.release_storage == 'fixed' else '2M+2',
                 quota=304, iterations=22, work_units=2,
                 noise_rule='stop releases/tail once full real-catalog loss <= 1.1^2*expected noise loss',
                 possible_bands=list(range(self.fixed_bands[-1]+self.frontier_step,
@@ -195,7 +209,8 @@ class CumulativePolicy:
             band += self.frontier_step
             bands.append(band)
         noisy = all(o.sigma_real_imag > 0 for o in problem.real)
-        return self._explicit_cleanup(tuple(self._fit(problem, physics, f'fixed_M{m}', problem.real, m, self.storage_band, 304,
+        return self._explicit_cleanup(tuple(self._fit(problem, physics, f'fixed_M{m}', problem.real, m,
+            self.release_storage_band(m), 304,
             cleanup=self.cleanup_band if noisy else None,
             purpose='Adaptive release: measured frontier exceeds previous update band') for m in bands))
 

@@ -10,10 +10,14 @@ pipeline sees the same stages and data.
 | ``nodal_baseline`` | nodal Kress | spline (CI-001) | hard stop (CI-001) |
 | ``nodal_fixed`` | nodal Kress | certified spectral (NU-003/005/006/007a) | promote once to N1024/2048 (RB-001) |
 | ``modal_fixed`` | modal Müller (scaled Graf, finer profile) | certified spectral | hard stop |
+| ``modal_response`` | modal Müller | certified spectral | promote once to K_trace 128/160 (opt-in, PS-001) |
 
-The resolution response is qualified for nodal Kress only. Modal Müller sets
-its trace cutoff from the storage band, and no modal response exists yet, so
-combining them is refused. Omitting a pipeline keeps ``fit``'s legacy default.
+The nodal response (RB-001) is qualified. Modal resolutions are tokens 8*K_trace,
+and a modal stage's own profile follows its storage band; ``modal_response``
+promotes an unresolved trial once to the K_geometry=192 profile (tokens
+1024/1280) and rejects unresolved trials at that ceiling instead of stopping.
+It reuses the same modal service and is unqualified until its PS-001 screen.
+Omitting a pipeline keeps ``fit``'s legacy default.
 """
 from dataclasses import asdict, dataclass, replace
 
@@ -37,11 +41,10 @@ class Pipeline:
         if self.geometry_update not in GEOMETRY_UPDATES:
             raise ValueError(f'Unknown geometry update {self.geometry_update!r}; choose from {GEOMETRY_UPDATES}')
         if self.resolution_response is not None:
-            if self.solver != 'nodal_kress':
-                raise ValueError('The resolution response is qualified for nodal_kress only; '
-                                 'modal_muller has no resolution response yet')
             production, refined = self.resolution_response
             ResolutionResponse(production, refined)  # validates strict refinement
+            if self.solver == 'modal_muller' and (production % 8 or refined % 8):
+                raise ValueError('modal_muller resolution tokens are multiples of 8 (8*K_trace)')
 
     def settings(self):
         return asdict(self)
@@ -53,7 +56,10 @@ PIPELINES = {p.name: p for p in (
     Pipeline('nodal_fixed', 'nodal_kress', 'certified_spectral', (1024, 2048),
              'Nodal Kress with every applicable fix: certified spectral update, RB-001 resolution response'),
     Pipeline('modal_fixed', 'modal_muller', 'certified_spectral', None,
-             'Node-free: modal Müller physics, certified spectral update; no modal resolution response exists'),
+             'Node-free: modal Müller physics, certified spectral update; hard stop on an unresolved trial'),
+    Pipeline('modal_response', 'modal_muller', 'certified_spectral', (1024, 1280),
+             'modal_fixed with one promotion of an unresolved trial to K_trace 128/160 (the K_geometry=192 '
+             'profile); unresolved trials at that ceiling are rejected, not fatal'),
 )}
 
 
@@ -79,16 +85,25 @@ def resolution_response(pipeline, execution=None):
     if pipeline.resolution_response is None:
         return None
     production, refined = pipeline.resolution_response
+    if pipeline.solver == 'modal_muller':
+        return ResolutionResponse(production, refined, None)  # tokens select K_trace in the same service
     finer = replace(execution or Execution(), resolution=production)
     return ResolutionResponse(production, refined, make_backend(pipeline.solver, finer))
 
 
 def promoted(result, pipeline):
-    """Whether any stage ended at the promoted resolution (fit records this itself only on resume)."""
+    """Whether a stage promoted its resolution (fit records this itself only on resume).
+
+    Recorded promotion events decide when present: a modal stage can start at the ceiling
+    profile because of its own storage band. Older receipts fall back to stage resolutions.
+    """
     pipeline = get(pipeline)
     if pipeline.resolution_response is None:
         return False
-    return any(row.get('nodes') == pipeline.resolution_response[0] for row in result.get('stages', ()))
+    stages = result.get('stages', ())
+    if any('resolution_events' in row for row in stages):
+        return any(event.get('action') == 'promoted' for row in stages for event in row.get('resolution_events', ()))
+    return any(row.get('nodes') == pipeline.resolution_response[0] for row in stages)
 
 
 def fit(problem, pipeline, *, execution=None, **options):

@@ -243,6 +243,10 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
     original_resolution = (first.stage.nodes, first.stage.refined_nodes) if resolution_response is not None else None
     resumed_stage = None
     promoted = False
+    # Exact stage-entry reuse: the previous endpoint replaces the next stage's initial
+    # solves when curve, catalog and resolution are unchanged (charges are replayed).
+    reuse_entries = bool(getattr(physics.execution, 'stage_entry_reuse', False) and geometry_adapter is None)
+    carried = None
     if resume is not None:
         if not resume.operations or resume.operations[0].label != resume.stage.stage.label:
             raise ValueError('Resume queue must begin with the checkpoint stage')
@@ -303,6 +307,7 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
                 op = queue.pop(0)
                 if op.kind == 'localize':
                     ledger.begin_stage(op.label, None)
+                    carried = None
                     curve, localization = initialize(problem, physics, policy.localization, ledger,
                         lambda rows: save('localization_progress.json', dict(candidates=rows)))
                     save('localization.json', localization)
@@ -310,6 +315,7 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
                           initialization=localization)
                 elif op.kind == 'cleanup':
                     ledger.reserve(0)
+                    carried = None
                     curve = cleanup_curve(curve, op.details['retained_band'], op.details['storage_band'])
                     event(op, 'policy cleanup entered', curve=record_curve(curve))
                 elif op.kind == 'fit':
@@ -322,6 +328,10 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
                         update = stage_updates[op.fit_geometry_update]
                     else:
                         update = audit_update
+                    if resolution_response is not None:
+                        # The stage's own (unpromoted) profile; constant for nodal recipes, while a
+                        # modal profile follows each stage's storage band.
+                        original_resolution = (op.stage.nodes, op.stage.refined_nodes)
                     if promoted:
                         op = replace(op, stage=replace(op.stage, nodes=resolution_response.production_nodes,
                                                        refined_nodes=resolution_response.refined_nodes))
@@ -390,17 +400,22 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
                     if getattr(op.stage, 'relaxed_tau', None) is not None:
                         from .full_matrix import RelaxedObjective
                         objective_options['objective_factory'] = RelaxedObjective
+                    entry, carried = carried, None
                     result = fit_stage(curve, op.stage, problem.contrast, update, op.optimizer, ledger,
                                        on_accept=checkpoint, physics=physics, resume=resumed_stage,
-                                       resolution_response=resolution_response, **objective_options)
+                                       resolution_response=resolution_response, entry=entry,
+                                       retain_final=reuse_entries, **objective_options)
                     resumed_stage = None
                     curve = result.curve
+                    carried = result.final_entry if reuse_entries else None
                     row = dict(stage=op.label, M=op.stage.update_modes, K_geometry=op.stage.curve_modes,
                         outcome=result.outcome, stop=result.stop_reason, detail=result.detail,
                         accepted_steps=result.accepted_steps, initial_loss=result.initial_loss,
                         final_loss=result.final_loss, seconds=result.seconds, work=ledger.snapshot(),
                         curve=record_curve(curve), nodes=op.stage.nodes, refined_nodes=op.stage.refined_nodes,
                         resolution_selection=selection)
+                    if reuse_entries:
+                        row['entry_reused'] = result.entry_reused
                     row.update(physics_failures=getattr(result, 'physics_failures', []),
                                geometry_proposals=getattr(result, 'geometry_proposals', len(result.trials)))
                     overshoots = [check for check in result.acceptance_checks
@@ -473,7 +488,8 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
                 audit_stage = (replace(last_stage, update_modes=1)
                                if update is not audit_update and last_stage.update_modes == 0 else last_stage)
                 final_audit = numerical_audit(curve, audit_stage, last_config, problem, physics, audit_update, policy.audit_seconds)
-                if promoted and original_resolution is not None:
+                if (promoted and original_resolution is not None and
+                        tuple(original_resolution) != (last_stage.nodes, last_stage.refined_nodes)):
                     original_stage = replace(last_stage, nodes=original_resolution[0],
                                              refined_nodes=original_resolution[1])
                     original_audit = numerical_audit(curve, original_stage, last_config, problem, physics,

@@ -21,6 +21,10 @@ the sampled test's speed condition min|x'| >= 1e-6 mean|x'|. Anything inconclusi
 through to the sampled test, so refusals and their reasons are unchanged. The candidate
 curves are computed exactly as in NU-004-MS; only the validity path differs.
 
+``order='sampled_first'`` runs the sampled test after tiers 1-2 and computes tier 3 only to
+overturn a sampled refusal. Because tiers 2-3 only accept, both orders accept the same set
+and raise the same refusals; only the work done and the recorded tier labels differ.
+
 Campaigns and diagnostics remain under experiments.cleaned_interface.
 """
 from dataclasses import dataclass, field
@@ -46,11 +50,21 @@ SPEED_FACTOR = 1e-6     # the sampled test's min speed / mean speed
 ROLES = ('moved_coarse', 'moved_fine', 'candidate')
 
 
-TIERS = ('area_refused', 'increment', 'full', 'sampled_accepted', 'sampled_refused')
+TIERS = ('area_refused', 'increment', 'full', 'sampled_accepted', 'sampled_refused', 'full_override')
+
+
+ORDERS = ('certificate_first', 'sampled_first')
 
 
 VALIDITY = ('exact area -> Lemma 3-4 increment vs accepted-curve Y -> full |W|^2 certificate '
             '(crop + Lemma 3 tail) -> sampled test (unchanged fallback)')
+
+
+# Tiers 2-3 only accept, so certificate_first accepts inc | full | sampled. Running the
+# sampled test before the full certificate accepts the same set, raises the same refusal,
+# and computes the full certificate only when it could still overturn a sampled refusal.
+VALIDITY_SAMPLED_FIRST = ('exact area -> Lemma 3-4 increment vs accepted-curve Y -> sampled test -> '
+                          'full |W|^2 certificate only to overturn a sampled refusal (same accept set)')
 
 
 def pad(coefficients, band):
@@ -81,16 +95,21 @@ class CertifiedSpace(ProjectedSpace):
 class CertifiedSpectralUpdate(SpectralProjectedUpdate):
     """NU-003 trial map; validity by certificate tiers with the sampled test as fallback."""
 
-    def __init__(self, length_unit_m, *, window=WINDOW, shadow=False, **kwargs):
+    def __init__(self, length_unit_m, *, window=WINDOW, shadow=False, order='certificate_first', **kwargs):
         super().__init__(length_unit_m, **kwargs)
-        self.window, self.shadow = int(window), bool(shadow)
+        if order not in ORDERS:
+            raise ValueError(f'Unknown validity order {order!r}; choose from {ORDERS}')
+        if shadow and order != 'certificate_first':
+            raise ValueError('The shadow comparison needs the certificate_first order')
+        self.window, self.shadow, self.order = int(window), bool(shadow), order
         self.counts.update({f'{r}_{t}': 0 for r in ROLES for t in TIERS})
         self.counts.update(base_certificates=0, base_certificate_failures=0, full_certificate_failures=0,
                            certificate_seconds=0., sampled_seconds=0., projection_seconds=0., shadow_disagreements=0)
         self.records = []   # per-curve tier rows of the latest trial
 
     def settings(self):
-        return dict(super().settings(), validity=VALIDITY, certificate_window=self.window,
+        return dict(super().settings(), validity=VALIDITY if self.order == 'certificate_first' else
+                    VALIDITY_SAMPLED_FIRST, validity_order=self.order, certificate_window=self.window,
                     full_certificate_windows=FULL_WINDOWS, full_crop_band='max(K, 64)',
                     regularity='coefficient residual lower bound >= 1e-12 sum j^2|x_j|^2', shadow=self.shadow,
                     certificate_arithmetic='float64 with heuristic FFT rounding allowance; not interval verified',
@@ -118,12 +137,12 @@ class CertifiedSpectralUpdate(SpectralProjectedUpdate):
             space.cache['certificate'] = cert
         return space.cache['certificate']
 
-    def certify(self, space, x):
-        """Tiers 1-3 for coefficients ``x`` (any band): ('refused'|'increment'|'full'|None, record)."""
+    def _cheap(self, space, x):
+        """Tiers 1-2: ('refused'|'increment'|None, record, regularity floor)."""
         area = signed_area(x)
         row = dict(band=len(x)//2, signed_area=area)
         if not area > 0:
-            return 'refused', row
+            return 'refused', row, None
         floor = regularity_floor(x)
         base = self._base(space)
         if base is not None:
@@ -131,7 +150,11 @@ class CertifiedSpectralUpdate(SpectralProjectedUpdate):
             bound, lower, nu_d = increment_bound(base, pad(x, K)-pad(space.curve.coefficients, K))
             row.update(increment_bound=bound, increment_lower=lower, increment_nu=nu_d)
             if bound < 1 and lower >= floor:
-                return 'increment', row
+                return 'increment', row, floor
+        return None, row, floor
+
+    def _full(self, space, x, row, floor):
+        """Tier 3 on the crop of ``x`` with its Lemma 3 tail: 'full' or None; updates ``row``."""
         crop = min(len(x)//2, max(space.curve.band, WINDOW))
         cropped = FourierCurve(pad(x, crop))
         tail = pad(x, len(x)//2)-pad(cropped.coefficients, len(x)//2)
@@ -145,11 +168,44 @@ class CertifiedSpectralUpdate(SpectralProjectedUpdate):
             row.update(full_window=window, full_bound=bound, full_lower=lower, tail_nu=nu_t, full_rho=own['rho'],
                        full_reciprocal_l1=own['reciprocal_l1'], full_log_degree=own['log_degree'])
             if bound < 1 and lower >= floor:
-                return 'full', row
-        return None, row
+                return 'full'
+        return None
+
+    def certify(self, space, x):
+        """Tiers 1-3 for coefficients ``x`` (any band): ('refused'|'increment'|'full'|None, record)."""
+        tier, row, floor = self._cheap(space, x)
+        if tier is None:
+            tier = self._full(space, x, row, floor)
+        return tier, row
+
+    def _check_sampled_first(self, space, x, role, sampled):
+        """The certificate_first accept set, with the full certificate only after a sampled refusal."""
+        tier, row, floor = self._cheap(space, x)
+        if tier == 'refused':
+            self.counts[f'{role}_area_refused'] += 1
+            self.records.append(dict(row, role=role, tier='area_refused'))
+            raise UpdateRefused('irregular_parameterization', f'exact signed area {row["signed_area"]:g} <= 0')
+        if tier == 'increment':
+            self.counts[f'{role}_increment'] += 1
+            self.records.append(dict(row, role=role, tier='increment'))
+            return
+        try:
+            self._sampled(sampled)
+        except (UpdateRefused, ValueError):
+            if self._full(space, x, row, floor) == 'full':
+                self.counts[f'{role}_full_override'] += 1
+                self.records.append(dict(row, role=role, tier='full_override'))
+                return
+            self.counts[f'{role}_sampled_refused'] += 1
+            self.records.append(dict(row, role=role, tier='sampled_refused'))
+            raise
+        self.counts[f'{role}_sampled_accepted'] += 1
+        self.records.append(dict(row, role=role, tier='sampled_accepted'))
 
     def check(self, space, x, role, sampled):
         """Tiered decision for one curve; ``sampled`` runs the unchanged test (raises on refusal)."""
+        if self.order == 'sampled_first':
+            return self._check_sampled_first(space, x, role, sampled)
         tier, row = self.certify(space, x)
         if tier == 'refused':
             self.counts[f'{role}_area_refused'] += 1

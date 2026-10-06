@@ -1,4 +1,4 @@
-"""python -m experiments.benchmark {prepare,generate,verify,inventory,figure,plan,run} (repository root, PYTHONPATH=solvers:.)"""
+"""python -m experiments.benchmark {prepare,generate,verify,inventory,figure,policies,plan,run} (repository root, PYTHONPATH=solvers:.)"""
 import argparse
 import json
 from pathlib import Path
@@ -6,14 +6,18 @@ from pathlib import Path
 from bem_inverse.io import portable
 from bem_inverse.physics import Execution
 from bem_inverse.pipelines import PIPELINES
+from bem_inverse import policies as R
 from . import campaign as c, scenes as S
 
 
 def main():
     parser = argparse.ArgumentParser(description='TG-002 benchmark: inputs, plans and fits')
-    parser.add_argument('command', choices=('prepare', 'generate', 'verify', 'inventory', 'figure', 'plan', 'run'))
+    parser.add_argument('command', choices=('prepare', 'generate', 'verify', 'inventory', 'figure', 'policies', 'plan',
+                                            'run'))
     parser.add_argument('--cases', nargs='+', help=f'case IDs, e.g. {S.CASES[0]}; "all" for every case')
     parser.add_argument('--run-dir', type=Path, help='fresh directory for fits (run only)')
+    parser.add_argument('--policy', choices=list(R.POLICIES),
+                        help='named policy from bem_inverse.policies (schedule, options, pipeline); TG-002 contract')
     parser.add_argument('--pipeline', choices=sorted(PIPELINES),
                         help='named recipe from bem_inverse.pipelines; replaces --solver/--geometry-update')
     parser.add_argument('--solver', choices=('modal_muller', 'nodal_kress'), help='default modal_muller')
@@ -25,9 +29,11 @@ def main():
     parser.add_argument('--frequency-threads', type=int, default=4)
     parser.add_argument('--workers', type=int, default=1)
     args = parser.parse_args()
+    if args.policy and (args.pipeline or args.solver or args.geometry_update):
+        parser.error('--policy sets the pipeline, solver and geometry update; do not pass them too')
     if args.pipeline and (args.solver or args.geometry_update):
         parser.error('--pipeline sets the solver and geometry update; do not pass them too')
-    if not args.pipeline:
+    if not args.pipeline and not args.policy:
         args.solver = args.solver or 'modal_muller'
         args.geometry_update = args.geometry_update or 'certified_spectral'
     execution = Execution(args.device, args.frequency_threads)
@@ -43,6 +49,27 @@ def main():
         value = [dict(id=r['id'], scene=r['case'], contrast=r['contrast']) for r in c.descriptors()]
     elif args.command == 'figure':
         value = c.figure()
+    elif args.command == 'policies':
+        print(R.table())
+        return
+    elif args.command == 'plan' and args.policy:
+        from bem_inverse.geometry_selection import make_update, describe_plan
+        from bem_inverse.policy import readable_plan
+        from bem_inverse import pipelines as P
+        problem, recipe = c.problem(cases[0]), R.recipe(args.policy)
+        run_execution = R.execution_for(args.policy, execution)
+        pipeline = P.get(recipe.pipeline)
+        plan = R.build(args.policy, **R.BENCHMARK_CONTRACT).plan(problem, P.physics(pipeline, run_execution))
+        plan = describe_plan(plan, make_update(pipeline.geometry_update, problem.length_unit_m,
+                                               run_execution).settings(), override_operations=True)
+        print(readable_plan(plan))
+        entry = R.get(args.policy)
+        print(f'\nPolicy {entry.name} ({entry.status}; lineage {" -> ".join(recipe.lineage)}): {entry.change}.')
+        print(f'Recipe: {json.dumps(recipe.settings())}; contract: {json.dumps(R.BENCHMARK_CONTRACT)}.')
+        if args.localization == 'none':
+            print('\nNOTE: --localization none replaces operation "damped_localization" with keep_start '
+                  '(no grid search); the first fit stage then moves the start circle.')
+        return
     elif args.command == 'plan':
         from bem_inverse.policy import CumulativePolicy, readable_plan
         from bem_inverse.geometry_selection import make_update, describe_plan
@@ -66,7 +93,7 @@ def main():
     else:
         if not args.run_dir:
             parser.error('run needs --run-dir (a fresh directory per setting)')
-        method = (dict(pipeline=args.pipeline) if args.pipeline else
+        method = (dict(policy=args.policy) if args.policy else dict(pipeline=args.pipeline) if args.pipeline else
                   dict(solver=args.solver, geometry_update=args.geometry_update))
         value = c.run(args.run_dir, cases, localization=args.localization, execution=execution,
                       workers=args.workers, **method)

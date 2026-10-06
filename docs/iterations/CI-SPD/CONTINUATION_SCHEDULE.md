@@ -13,6 +13,9 @@ full release was never entered. Default `CumulativePolicy` remains unchanged.
 The frozen [plan](CS-001_plan.md) and historical
 [preparation](CS-001_preparation.md) retain their original pre-run status.
 
+Every implemented or proposed variant of this schedule, by phase, with its
+test scenes and results: [continuation variants](CONTINUATION_VARIANTS.md).
+
 ## Schedule
 
 | Phase | Data | Updates and bandwidth |

@@ -304,6 +304,19 @@ class Ledger:
         store[key] = store.get(key, 0) + 1
         self.units += 1
 
+    def replay(self, kind, category, count):
+        """Charge ``count`` calls exactly as ``calls`` would, for results reused without dispatch.
+
+        Reservations and charges follow the same order, so quotas, caps and receipts are
+        unchanged; only the solver work is skipped.
+        """
+        if self.strict_dispatch:
+            self.reserve(count)
+        for _ in range(count):
+            with self._lock:
+                self.reserve(1)
+                self.charge(kind, category)
+
     def fail(self, category):
         key = f"{self.stage}:{category}"
         self.failed[key] = self.failed.get(key, 0) + 1
@@ -394,8 +407,21 @@ class Objective:
         self.physics = physics
         self.observed = np.column_stack([o.scattered.reshape(-1) for o in stage.observations])
         self.refined_cache = {}
+        self.reusable_refined = {}  # exact refined predictions carried from the previous stage
         self.count = len(stage.observations)
         self.failures = []
+
+    def _evaluation(self, curve, prediction, forwards):
+        residual = normalize(prediction - self.observed, self.observed, self.stage.weights,
+                             self.config.residual_floor)
+        relative = float(np.linalg.norm(prediction - self.observed) / np.linalg.norm(self.observed))
+        return Evaluation(curve, 0.5 * float(residual @ residual), relative, residual, prediction, tuple(forwards))
+
+    def reused(self, curve, prediction, forwards, category):
+        """``production`` for an exactly reused endpoint: the same charges, no dispatched solves."""
+        self.ledger.reserve(self.count)
+        self.ledger.replay("solve", category, self.count)
+        return self._evaluation(curve, np.array(prediction, copy=True), forwards)
 
     @geometry_validated
     def _predict(self, curve, nodes, category, keep):
@@ -433,11 +459,7 @@ class Objective:
                 columns.append(np.asarray(value.prediction if keep else value).reshape(-1))
                 if keep:
                     forwards.append(value)
-        prediction = np.column_stack(columns)
-        residual = normalize(prediction - self.observed, self.observed, self.stage.weights,
-                             self.config.residual_floor)
-        relative = float(np.linalg.norm(prediction - self.observed) / np.linalg.norm(self.observed))
-        return Evaluation(curve, 0.5 * float(residual @ residual), relative, residual, prediction, tuple(forwards))
+        return self._evaluation(curve, np.column_stack(columns), forwards)
 
     def production(self, curve, category):
         return self._predict(curve, self.stage.nodes, category, keep=True)
@@ -445,7 +467,14 @@ class Objective:
     def refined(self, curve):
         key = curve.coefficients.tobytes()
         if key not in self.refined_cache:
-            self.refined_cache[key] = self._predict(curve, self.stage.refined_nodes, "acceptance_validation", keep=False)
+            if key in self.reusable_refined:
+                # Charged where the original refined solve would have been charged.
+                self.ledger.reserve(self.count)
+                self.ledger.replay("solve", "acceptance_validation", self.count)
+                self.refined_cache[key] = self._evaluation(curve, self.reusable_refined.pop(key), ())
+            else:
+                self.refined_cache[key] = self._predict(curve, self.stage.refined_nodes, "acceptance_validation",
+                                                        keep=False)
         return self.refined_cache[key]
 
     @geometry_validated
@@ -486,6 +515,38 @@ class StageResult:
     final_refined_nodes: Optional[int] = None
     physics_failures: list = field(default_factory=list)
     geometry_proposals: int = 0
+    final_entry: object = field(default=None, repr=False)
+    entry_reused: bool = False
+
+
+@dataclass(frozen=True, eq=False)
+class StageEntry:
+    """An evaluated stage endpoint offered to the next stage for exact reuse.
+
+    The production prediction keeps its factorized forward states, so the next
+    stage builds its own Jacobian without new solves. ``refined_prediction`` is
+    present when the stage already validated this curve. Reuse requires the same
+    curve bytes, active catalog (identical objects), contrast, physics service and
+    both resolutions; the ledger is charged exactly as the replaced solves.
+    """
+    curve_bytes: bytes = field(repr=False)
+    band: int
+    nodes: int
+    refined_nodes: int
+    observations: tuple = field(repr=False)
+    contrast: float
+    physics: object = field(repr=False)
+    prediction: np.ndarray = field(repr=False)
+    forwards: tuple = field(repr=False)
+    refined_prediction: object = field(default=None, repr=False)
+
+    def matches(self, curve, stage, contrast, physics):
+        return bool(curve.band == self.band and curve.coefficients.tobytes() == self.curve_bytes and
+                    stage.nodes == self.nodes and stage.refined_nodes == self.refined_nodes and
+                    len(stage.observations) == len(self.observations) and
+                    all(a is b for a, b in zip(stage.observations, self.observations)) and
+                    float(contrast) == self.contrast and physics is self.physics and
+                    len(self.forwards) == len(self.observations))
 
 
 @dataclass
@@ -541,7 +602,8 @@ class _PromoteBase(Exception):
 @fit_geometry_validation
 @geometry_validated
 def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None, physics=None,
-              objective_factory=None, resume=None, pause_after=None, resolution_response=None):
+              objective_factory=None, resume=None, pause_after=None, resolution_response=None,
+              entry=None, retain_final=False):
     """Run one stage, optionally under a fit-local ``geometry_validation`` cache.
 
     Exact reuse and spatial intersection checks are enabled by default. Use
@@ -549,6 +611,11 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
     ``geometry_validation('cache', on_fit=...)`` to collect cache diagnostics. The
     generic cache callback's ``num_nodes`` is unset for this stage interface;
     resolutions remain available in the caller's FitStage record.
+
+    ``entry`` (a previous stage's ``StageEntry``) replaces the initial production
+    solve and the base refined solve when it matches this stage exactly; charges
+    are replayed, so decisions and receipts are unchanged. ``retain_final`` returns
+    this stage's endpoint as ``StageResult.final_entry`` for the next stage.
     """
     started = perf_counter()
     if curve.band != stage.curve_modes:
@@ -733,11 +800,18 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
         if config.metric == "marquardt":
             return np.diag(np.maximum(np.diag(normal), config.scaling_floor))
         return update.metric(space, config.metric, smoothing)
+    reusable = (entry is not None and resume is None and type(objective) is Objective and
+                entry.matches(curve, stage, contrast, physics))
     try:
         if not admissible(curve):
             raise NumericalFailure("initial state leaves the geometry domain")
         if resume is None:
-            current = objective.production(curve, "initial_objective")
+            if reusable:
+                current = objective.reused(curve, entry.prediction, entry.forwards, "initial_objective")
+                if entry.refined_prediction is not None:
+                    objective.reusable_refined[entry.curve_bytes] = entry.refined_prediction
+            else:
+                current = objective.production(curve, "initial_objective")
             if current is None:
                 raise NumericalFailure("initial state is not solver-ready")
             initial_loss = current.loss
@@ -961,11 +1035,19 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
     if resolution_response is not None and trials and 'status' not in trials[-1]:
         trials[-1].update(status=outcome, reason=detail)
     final = curve if current is None else current.curve
+    final_entry = None
+    if retain_final and current is not None and type(objective) is Objective and len(current.forwards) == m:
+        key = current.curve.coefficients.tobytes()
+        refined = objective.refined_cache.get(key)
+        final_entry = StageEntry(key, current.curve.band, stage.nodes, stage.refined_nodes, tuple(stage.observations),
+            float(contrast), physics, current.prediction, current.forwards,
+            refined.prediction if refined is not None else objective.reusable_refined.get(key))
     return StageResult(stage.label, final, outcome, stop_reason, converged, accepted_steps, initial_loss,
                        float("nan") if current is None else current.loss, history, trials, checks,
                        detail, ledger.snapshot(), perf_counter() - started, checkpoint,
                        resolution_events, stage.nodes, stage.refined_nodes,
-                       deepcopy(getattr(objective, 'failures', [])), geometry_proposals)
+                       deepcopy(getattr(objective, 'failures', [])), geometry_proposals,
+                       final_entry, reusable)
 
 
 class FixedSchedule:
