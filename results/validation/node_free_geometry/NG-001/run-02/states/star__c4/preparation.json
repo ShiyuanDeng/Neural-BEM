@@ -1,0 +1,113 @@
+{
+  "arms": {
+    "coarse": {
+      "success": true,
+      "seconds": 0.03824136406183243,
+      "working_band": 768,
+      "construction_receipt": {
+        "scalar_degree": 19,
+        "sqrt_residual_relative": 2.1423557221769773e-14,
+        "inverse_residual": 3.278798137682642e-14,
+        "speed_error_bound": 1.5933023978342423e-14,
+        "alpha_error_bound": 1.5983275291023842e-13,
+        "ranges": {
+          "cells": 0,
+          "method": "coefficient triangle",
+          "arithmetic_verified": false
+        },
+        "q_range": {
+          "cells": 0,
+          "method": "coefficient triangle",
+          "arithmetic_verified": false
+        },
+        "speed_interval": [
+          1.1695608922486962,
+          1.4570283366088947
+        ],
+        "arithmetic_verified": false,
+        "phase_degree": 8,
+        "maximum_phase_residual_bound": 1.832995902467456e-09,
+        "maximum_phase_total_bound": 1.863683791026222e-09,
+        "coefficient_error_bound_nonzero": 1.0540222089096502e-08,
+        "seconds": 0.037984215188771486,
+        "working_band": 768,
+        "curve_quadrature": false
+      }
+    },
+    "fine": {
+      "success": true,
+      "seconds": 0.06573719438165426,
+      "working_band": 1536,
+      "construction_receipt": {
+        "scalar_degree": 19,
+        "sqrt_residual_relative": 2.7556551215207488e-14,
+        "inverse_residual": 4.5292041719544285e-14,
+        "speed_error_bound": 2.049422449910272e-14,
+        "alpha_error_bound": 2.0558861424577053e-13,
+        "ranges": {
+          "cells": 0,
+          "method": "coefficient triangle",
+          "arithmetic_verified": false
+        },
+        "q_range": {
+          "cells": 0,
+          "method": "coefficient triangle",
+          "arithmetic_verified": false
+        },
+        "speed_interval": [
+          1.1695608922486922,
+          1.457028336608898
+        ],
+        "arithmetic_verified": false,
+        "phase_degree": 8,
+        "maximum_phase_residual_bound": 5.2138083354708055e-09,
+        "maximum_phase_total_bound": 5.253281349405994e-09,
+        "coefficient_error_bound_nonzero": 2.8687386597320677e-08,
+        "seconds": 0.06537217274308205,
+        "working_band": 1536,
+        "curve_quadrature": false
+      }
+    },
+    "current": {
+      "success": true,
+      "seconds": 7.915400675032288,
+      "settings": {
+        "name": "centred_state_band_spectral_projection",
+        "length_unit_m": 0.05,
+        "projection_tolerance": 1e-05,
+        "coordinates": "real Fourier coefficients of normal distance h (m) in normalized arclength",
+        "gauge": "arclength refit on every trial",
+        "derivative_step_m": 1e-07,
+        "construction": "z + P_K[R(z+h*n)-R(z)], R = eq. 9 arclength quadrature (no splines); FD derivative of the complete trial",
+        "projection_tolerance_meaning": "grid refinement, not intentional smoothing",
+        "resampler": "eq. 9 quadrature on the uniform grid (count and 2*count); no splines",
+        "boundary_samples": true,
+        "projection_error_control": "coarse/fine diagnostic; not a rigorous bound",
+        "validity": "exact area -> Lemma 3-4 increment vs accepted-curve Y -> full |W|^2 certificate (crop + Lemma 3 tail) -> sampled test (unchanged fallback)",
+        "validity_order": "certificate_first",
+        "certificate_window": 64,
+        "full_certificate_windows": [
+          64,
+          128
+        ],
+        "full_crop_band": "max(K, 64)",
+        "regularity": "coefficient residual lower bound >= 1e-12 sum j^2|x_j|^2",
+        "shadow": false,
+        "certificate_arithmetic": "float64 with heuristic FFT rounding allowance; not interval verified",
+        "sampled_validity_fallback": true,
+        "prepare": "batched torch float64 (NU-006)",
+        "prepare_device": "cpu",
+        "chunk_bytes": 536870912
+      }
+    }
+  },
+  "base_certificate": {
+    "outcome": "unresolved",
+    "reason": "seconds_budget",
+    "arithmetic_verified": true,
+    "pair_cells": 535,
+    "range_cells": 247,
+    "active_modes": 385,
+    "seconds": 5.011401833966374
+  }
+}

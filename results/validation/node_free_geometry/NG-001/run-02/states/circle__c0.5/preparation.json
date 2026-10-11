@@ -1,0 +1,118 @@
+{
+  "arms": {
+    "coarse": {
+      "success": true,
+      "seconds": 0.03691767901182175,
+      "working_band": 768,
+      "construction_receipt": {
+        "scalar_degree": 8,
+        "sqrt_residual_relative": 1.834858851568086e-14,
+        "inverse_residual": 2.969365560765037e-14,
+        "speed_error_bound": 9.225846627751226e-15,
+        "alpha_error_bound": 1.1625865747230012e-13,
+        "ranges": {
+          "cells": 0,
+          "method": "coefficient triangle",
+          "arithmetic_verified": false
+        },
+        "q_range": {
+          "cells": 0,
+          "method": "coefficient triangle",
+          "arithmetic_verified": false
+        },
+        "speed_interval": [
+          0.994417317310114,
+          1.005559981720849
+        ],
+        "arithmetic_verified": false,
+        "phase_degree": 8,
+        "maximum_phase_residual_bound": 1.6016947497734602e-09,
+        "maximum_phase_total_bound": 1.624016412008142e-09,
+        "coefficient_error_bound_nonzero": 3.4596105365490436e-09,
+        "seconds": 0.03669097227975726,
+        "working_band": 768,
+        "curve_quadrature": false
+      }
+    },
+    "fine": {
+      "success": true,
+      "seconds": 0.06455922592431307,
+      "working_band": 1536,
+      "construction_receipt": {
+        "scalar_degree": 8,
+        "sqrt_residual_relative": 2.28073318173934e-14,
+        "inverse_residual": 3.864494739658366e-14,
+        "speed_error_bound": 1.146774560646331e-14,
+        "alpha_error_bound": 1.4450974119068633e-13,
+        "ranges": {
+          "cells": 0,
+          "method": "coefficient triangle",
+          "arithmetic_verified": false
+        },
+        "q_range": {
+          "cells": 0,
+          "method": "coefficient triangle",
+          "arithmetic_verified": false
+        },
+        "speed_interval": [
+          0.9944173173101125,
+          1.0055599817208503
+        ],
+        "arithmetic_verified": false,
+        "phase_degree": 8,
+        "maximum_phase_residual_bound": 4.648033603289304e-09,
+        "maximum_phase_total_bound": 4.675779473597916e-09,
+        "coefficient_error_bound_nonzero": 9.831681166783587e-09,
+        "seconds": 0.06425166595727205,
+        "working_band": 1536,
+        "curve_quadrature": false
+      }
+    },
+    "current": {
+      "success": true,
+      "seconds": 5.414534245152026,
+      "settings": {
+        "name": "centred_state_band_spectral_projection",
+        "length_unit_m": 0.05,
+        "projection_tolerance": 1e-05,
+        "coordinates": "real Fourier coefficients of normal distance h (m) in normalized arclength",
+        "gauge": "arclength refit on every trial",
+        "derivative_step_m": 1e-07,
+        "construction": "z + P_K[R(z+h*n)-R(z)], R = eq. 9 arclength quadrature (no splines); FD derivative of the complete trial",
+        "projection_tolerance_meaning": "grid refinement, not intentional smoothing",
+        "resampler": "eq. 9 quadrature on the uniform grid (count and 2*count); no splines",
+        "boundary_samples": true,
+        "projection_error_control": "coarse/fine diagnostic; not a rigorous bound",
+        "validity": "exact area -> Lemma 3-4 increment vs accepted-curve Y -> full |W|^2 certificate (crop + Lemma 3 tail) -> sampled test (unchanged fallback)",
+        "validity_order": "certificate_first",
+        "certificate_window": 64,
+        "full_certificate_windows": [
+          64,
+          128
+        ],
+        "full_crop_band": "max(K, 64)",
+        "regularity": "coefficient residual lower bound >= 1e-12 sum j^2|x_j|^2",
+        "shadow": false,
+        "certificate_arithmetic": "float64 with heuristic FFT rounding allowance; not interval verified",
+        "sampled_validity_fallback": true,
+        "prepare": "batched torch float64 (NU-006)",
+        "prepare_device": "cpu",
+        "chunk_bytes": 536870912
+      }
+    }
+  },
+  "base_certificate": {
+    "outcome": "valid",
+    "reason": "arc_range_cover",
+    "lower_W": 0.2277193022800021,
+    "arithmetic_verified": true,
+    "interval_digits": 30,
+    "arcs": 16,
+    "pair_cells": 120,
+    "range_cells": 32,
+    "active_modes": 36,
+    "omitted_position_bound": 2.847423850366041e-13,
+    "omitted_derivative_bound": 5.1816186637365384e-12,
+    "seconds": 0.07476427778601646
+  }
+}
