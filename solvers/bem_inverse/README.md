@@ -160,6 +160,14 @@ contractions remain on CPU. See the
 
 ## Code map
 
+`coefficient_geometry` is an isolated NG-001 engine for centred arclength
+updates and complete directional tangents without curve quadrature.
+`interval_geometry` uses the optional `mpmath` dependency for directed arc
+range certificates and direct increment reuse. They are not registered fit
+strategies; approximation residuals remain float64. See the
+[component results](../../docs/iterations/node_free_geometry/NG-001_results.md)
+for accuracy, unresolved cases and complete cost.
+
 `complex_radius` is an isolated research instrument for genuinely complex
 disk radii, exact transmission jets and scalar holomorphic continuation.
 [Track 12](../../docs/iterations/complex_geometry/README.md) qualified local

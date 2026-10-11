@@ -66,6 +66,7 @@ python -m experiments.benchmark run --pipeline nodal_fixed --cases all --run-dir
 
 | File | Role |
 |---|---|
+| `ng001.py` | Track 7 coefficient geometry replay against the current setup on frozen TG-002 states/moves; no fitting. [Plan](../../docs/iterations/node_free_geometry/NG-001_plan.md), [results](../../docs/iterations/node_free_geometry/NG-001_results.md); `--report` regenerates numeric summaries. |
 | `cg001.py`, `cg001_completion.py`, `cg002.py`, `cg001_report.py` | Track 12 complex-radius component studies on frozen circle observations: local physical fold transport qualified; fixed endpoint detours return nonreal. [Results](../../docs/iterations/complex_geometry/README.md); report regeneration performs no fitting. |
 | `scenes.py` | Scene shapes, frozen placements, the start, case IDs |
 | `campaign.py` | Input generation and seal, CI-001-shaped rows, `keep_start`, the fit runner, `summarize`, gallery |
