@@ -106,6 +106,8 @@ def figures(output,result,rows):
     axes[1].legend(fontsize=8)
     fig.savefig(output/'comparison.png',dpi=180)
     fig.savefig(output/'comparison.svg')
+    svg=output/'comparison.svg'
+    svg.write_text('\n'.join(line.rstrip() for line in svg.read_text().splitlines())+'\n')
     plt.close(fig)
 
 
