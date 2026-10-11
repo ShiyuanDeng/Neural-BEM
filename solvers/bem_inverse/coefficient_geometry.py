@@ -120,7 +120,7 @@ class Speed:
     receipt: dict
 
 
-def speed(p, band, dp=None, *, tolerance=1e-10, max_degree=512):
+def _binomial_speed(p, band, dp=None, *, tolerance=1e-10, max_degree=512):
     """Finite binomial polynomials for sqrt(S), inverse sqrt(S), and tangents."""
     first = derivative(p)
     S = real(product(first, conjugate(first)))
@@ -191,6 +191,83 @@ def speed(p, band, dp=None, *, tolerance=1e-10, max_degree=512):
              arithmetic_verified=False))
 
 
+def _newton_speed(p, band, dp=None, *, tolerance=1e-10, max_iterations=64):
+    """A fixed finite inverse-root iteration, checked with full residuals.
+
+    The integer scaling/count branches are locally fixed for the tangent.
+    Inner squares are full products; only v, u and q are cropped.
+    """
+    first=derivative(p)
+    S=real(product(first,conjugate(first)))
+    dS=None if dp is None else 2*real(product(derivative(dp),conjugate(first)))
+    lower,upper,ranges=range_enclosure(S,positive=True)
+    mean_S=float(S[len(S)//2].real)
+    gamma=2.**max(1,math.ceil(math.log2(upper/mean_S))+1)
+    c=gamma*mean_S
+    scalar_error=1-lower/c
+    iterations=0
+    while scalar_error>1e-14 or iterations<8:
+        scalar_error=scalar_error**2*(3+scalar_error)/4
+        iterations+=1
+        if iterations>max_iterations:
+            raise CoefficientUnresolved('inverse_root_iteration_budget',dict(iterations=iterations,limit=max_iterations))
+    u=constant(1/np.sqrt(c),band)
+    dc=None if dp is None else gamma*dS[len(dS)//2].real
+    du=None if dp is None else np.zeros_like(dp)
+    if du is not None:
+        du[band]=-.5*dc/c**1.5
+    for _ in range(iterations):
+        square=product(u,u)
+        v=product(S,square,band)
+        g=constant(3.,band)-v
+        if du is not None:
+            dv=product(dS,square,band)+2*product(S,product(u,du),band)
+            du=real((product(du,g,band)-product(u,dv,band))/2)
+        u=real(product(u,g,band)/2)
+    q=real(product(S,u,band))
+    dq=None if dp is None else real(product(dS,u,band)+product(S,du,band))
+    sqrt_residual=product(q,q)-crop(S,2*band)
+    inverse_residual=-product(S,product(u,u))
+    inverse_residual[len(inverse_residual)//2]+=1
+    rs,ru=norm(sqrt_residual),norm(inverse_residual)
+    if not np.isfinite([rs,ru]).all() or rs/mean_S>tolerance or ru>tolerance:
+        raise CoefficientUnresolved('full_speed_residual',dict(sqrt_relative=rs/mean_S,
+            inverse=ru,band=band,iterations=iterations,method='newton'))
+    # With S>0 and residual <1, a continuous real u has constant sign.
+    # Its positive mean selects the positive branch without point tests.
+    if not u[band].real>0:
+        raise CoefficientUnresolved('inverse_root_branch',dict(mean=float(u[band].real)))
+    mq,_,qrange=range_enclosure(q,positive=True)
+    eps_speed=rs/(mq+np.sqrt(lower))
+    mean=float(q[band].real)
+    k=np.arange(-band,band+1)
+    nz=k!=0
+    eta=np.zeros_like(q)
+    eta[nz]=q[nz]/(1j*k[nz]*mean)
+    eta[band]=-sum(eta[nz])
+    eta=real(eta)
+    dmean=None if dp is None else dq[band].real
+    deta=None
+    if dp is not None:
+        deta=np.zeros_like(dp)
+        deta[nz]=(dq[nz]/mean-q[nz,None]*dmean/mean**2)/(1j*k[nz,None])
+        deta[band]=-np.sum(deta[nz],axis=0)
+        deta=real(deta)
+    eps_alpha=2*np.pi*eps_speed/max(mean-eps_speed,1e-30)*(1+norm(q)/mean)
+    return Speed(q,u,dq,eta,deta,mean,dmean,dict(scalar_method='newton',scalar_degree=None,
+        inverse_root_iterations=iterations,scale_gamma=gamma,sqrt_residual_relative=rs/mean_S,
+        inverse_residual=ru,speed_error_bound=eps_speed,alpha_error_bound=eps_alpha,
+        ranges=ranges,q_range=qrange,speed_interval=[np.sqrt(lower),np.sqrt(upper)],arithmetic_verified=False))
+
+
+def speed(p,band,dp=None,*,method='binomial',**kwargs):
+    if method=='binomial':
+        return _binomial_speed(p,band,dp,**kwargs)
+    if method=='newton':
+        return _newton_speed(p,band,dp,**kwargs)
+    raise ValueError(f'Unknown speed method {method!r}')
+
+
 def phase_seed(s, band):
     """Cropped Taylor composition of exp(i eta), with actual forward tangent."""
     x = 1j*s.eta.copy()
@@ -223,11 +300,11 @@ def phase_seed(s, band):
     return shift(out, 1, band), None if dx is None else shift(dout, 1, band), degree
 
 
-def projection(p, output_band, band, dp=None, *, phase_tolerance=1e-8, keep_phases=False):
+def projection(p, output_band, band, dp=None, *, phase_tolerance=1e-8, keep_phases=False, speed_method='binomial'):
     started = time.perf_counter()
     p = crop(p, band)
     dp = None if dp is None else crop(dp, band)
-    s = speed(p, band, dp)
+    s = speed(p, band, dp, method=speed_method)
     seed, dseed, degree = phase_seed(s, band)
     P = constant(1., band)
     dP = None if dp is None else np.zeros_like(dp)
@@ -268,16 +345,17 @@ def projection(p, output_band, band, dp=None, *, phase_tolerance=1e-8, keep_phas
 
 class CoefficientGeometry:
     """Reusable base and finite update; no solver registration or sampled methods."""
-    def __init__(self, curve, update_modes, *, band=None, length_unit_m=.05):
+    def __init__(self, curve, update_modes, *, band=None, length_unit_m=.05, speed_method='binomial'):
         self.curve, self.M = curve, update_modes
         self.K = curve.band
         self.B = band or max(256, 4*self.K)
         if self.B < max(self.K, self.M):
             raise ValueError('Working band must cover storage and update bands.')
         self.unit = length_unit_m
+        self.speed_method=speed_method
         z = crop(curve.coefficients, self.B)
         self.base, _, self.speed, phases, self.receipt = projection(z, max(self.K, self.M), self.B,
-                                                                  keep_phases=True)
+                                                                  keep_phases=True,speed_method=speed_method)
         self.base = crop(self.base, self.K)
         self.phases = np.array(phases[:self.M+1])
         self.normal = product(-1j*derivative(z), self.speed.u, self.B)
@@ -296,11 +374,12 @@ class CoefficientGeometry:
         if not np.any(a):
             return self.curve.coefficients.copy(), crop(self.curve.coefficients, self.B), dict(identity=True)
         moved = crop(self.curve.coefficients, self.B)+self.displacement(a)
-        projected, _, _, _, receipt = projection(moved, self.K, self.B)
+        projected, _, _, _, receipt = projection(moved, self.K, self.B,speed_method=self.speed_method)
         return self.curve.coefficients+projected-self.base, moved, receipt
 
     def tangent(self, directions):
         directions = np.atleast_2d(directions)
         dp = np.stack([self.displacement(a) for a in directions], axis=1)
-        _, dot, _, _, receipt = projection(crop(self.curve.coefficients, self.B), self.K, self.B, dp)
+        _, dot, _, _, receipt = projection(crop(self.curve.coefficients, self.B), self.K, self.B, dp,
+                                           speed_method=self.speed_method)
         return dot, receipt

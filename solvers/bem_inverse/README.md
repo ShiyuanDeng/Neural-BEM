@@ -167,6 +167,11 @@ range certificates and direct increment reuse. They are not registered fit
 strategies; approximation residuals remain float64. See the
 [component results](../../docs/iterations/node_free_geometry/NG-001_results.md)
 for accuracy, unresolved cases and complete cost.
+The [NG-002 follow-up](../../docs/iterations/node_free_geometry/NG-002_results.md)
+adds opt-in `speed_method="newton"` within this isolated engine and directed
+Laurent Horner proof evaluation. All 31 saved bases prove within five seconds;
+178/279 finite moves construct accurately with the declared band escalation.
+New-move admissibility and complete-trial improvement are not established.
 
 `complex_radius` is an isolated research instrument for genuinely complex
 disk radii, exact transmission jets and scalar holomorphic continuation.

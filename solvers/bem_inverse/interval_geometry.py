@@ -6,6 +6,7 @@ No polygon or point-only validity fallback is used. Failure is unresolved,
 unless a declared admissibility violation is itself proved.
 """
 import math
+import hashlib
 import time
 
 import numpy as np
@@ -29,6 +30,33 @@ class IntervalGeometry:
     def _complex(self, z):
         return self.iv.mpc(float(z.real), float(z.imag))
 
+    @staticmethod
+    def curve_key(coefficients):
+        a=np.asarray(coefficients,dtype='<c16')
+        if a.ndim!=1 or len(a)%2!=1 or not np.isfinite(a).all():
+            raise ValueError('Expected a finite odd-length coefficient vector.')
+        while len(a)>1 and a[0]==0 and a[-1]==0:
+            a=a[1:-1]
+        return hashlib.sha256(np.ascontiguousarray(a).tobytes()).hexdigest()
+
+    def _jet(self,coefficients,derivatives,centre):
+        """Directed Laurent Horner evaluation: one interval exponential."""
+        iv=self.iv
+        zero=iv.mpc(0)
+        e=iv.exp(iv.mpc(0,iv.mpf(centre)))
+        negative=iv.mpc(e.real,-e.imag)
+        z,dz=coefficients.get(0,zero),zero
+        for sign,phase in ((1,e),(-1,negative)):
+            degree=max((sign*j for j in coefficients if sign*j>0),default=0)
+            part,dpart=zero,zero
+            for n in range(degree,0,-1):
+                coefficient=coefficients.get(sign*n,zero)
+                part=(part+coefficient)*phase
+                dpart=(dpart+derivatives.get(sign*n,zero))*phase
+            z+=part
+            dz+=dpart
+        return z,dz
+
     def _area_floor(self, coefficients):
         iv = self.iv
         K = len(coefficients)//2
@@ -43,8 +71,12 @@ class IntervalGeometry:
     def increment(self, base, accepted, candidate):
         """Use exact interval differences, not rounded float subtraction."""
         started = time.perf_counter()
+        old_key=self.curve_key(accepted)
+        new_key=self.curve_key(candidate)
         if base['outcome'] != 'valid' or not base['arithmetic_verified']:
             return dict(outcome='unresolved', reason='base_unproved', seconds=time.perf_counter()-started)
+        if base.get('curve_sha256')!=old_key:
+            return dict(outcome='unresolved',reason='base_curve_mismatch',seconds=time.perf_counter()-started)
         K = max(len(accepted)//2, len(candidate)//2)
         def padded(a):
             return np.pad(a, (K-len(a)//2,)*2)
@@ -57,10 +89,12 @@ class IntervalGeometry:
         valid = _down(lower)>0 and _down(lower**2)>_up(floor) and _down(area)>0
         return dict(outcome='valid' if valid else 'unresolved', reason='direct_increment' if valid else 'increment_margin',
                     lower_W=max(0.,_down(lower)), increment_nu_upper=_up(amount),
+                    curve_sha256=new_key,
                     arithmetic_verified=True, seconds=time.perf_counter()-started)
 
     def certify(self, coefficients):
         begun = time.perf_counter()
+        key=self.curve_key(coefficients)
         iv = self.iv
         area, floor = self._area_floor(coefficients)
         if _up(area) <= 0:
@@ -73,6 +107,8 @@ class IntervalGeometry:
         modes = np.arange(-K, K+1)
         threshold = 1e-13*max(1.,float(np.sum(np.abs(coefficients))))
         active = [(int(j),self._complex(z)) for j,z in zip(modes,coefficients) if abs(z)>threshold]
+        active_coefficients=dict(active)
+        active_derivatives={j:iv.mpc(0,j)*c for j,c in active}
         tails = [iv.mpf(0),iv.mpf(0)]
         for j,z in zip(modes,coefficients):
             if abs(z) <= threshold:
@@ -98,11 +134,7 @@ class IntervalGeometry:
             budget()
             centre=(lo+hi)/2
             h=max(_up(iv.mpf(centre)-iv.mpf(lo)),_up(iv.mpf(hi)-iv.mpf(centre)))
-            z,dz=iv.mpc(0),iv.mpc(0)
-            for j,c in active:
-                e=iv.exp(iv.mpc(0,iv.mpf(j)*iv.mpf(centre)))
-                z += c*e
-                dz += iv.mpc(0,j)*c*e
+            z,dz=self._jet(active_coefficients,active_derivatives,centre)
             radius=second*iv.mpf(h)**2/2+tails[0]
             delta=iv.mpf([-h,h])
             x=z.real+dz.real*delta+iv.mpf([-_up(radius),_up(radius)])
@@ -165,6 +197,7 @@ class IntervalGeometry:
                 else:
                     pairs.extend((a,child) for child in split(b))
             return dict(outcome='valid',reason='arc_range_cover',lower_W=smallest,
+                        curve_sha256=key,jet_evaluation='directed Laurent Horner',
                         arithmetic_verified=True,interval_digits=iv.dps,arcs=len(arcs),
                         pair_cells=examined,range_cells=len(cache),active_modes=len(active),
                         omitted_position_bound=_up(tails[0]),omitted_derivative_bound=_up(tails[1]),

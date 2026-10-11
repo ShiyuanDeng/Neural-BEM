@@ -66,6 +66,7 @@ python -m experiments.benchmark run --pipeline nodal_fixed --cases all --run-dir
 
 | File | Role |
 |---|---|
+| `ng002.py` | Newton speed and directed Horner proof ablations on the frozen NG-001 panel; construction and base proofs only. [Plan](../../docs/iterations/node_free_geometry/NG-002_plan.md), [results](../../docs/iterations/node_free_geometry/NG-002_results.md). |
 | `ng001.py` | Track 7 coefficient geometry replay against the current setup on frozen TG-002 states/moves; no fitting. [Plan](../../docs/iterations/node_free_geometry/NG-001_plan.md), [results](../../docs/iterations/node_free_geometry/NG-001_results.md); `--report` regenerates numeric summaries. |
 | `cg001.py`, `cg001_completion.py`, `cg002.py`, `cg003.py`, `cg001_report.py`, `cg003_report.py` | Track 12 complex-radius studies: local fold transport qualified; fixed detours and 92 directed loop trials return no real minimum. [Results](../../docs/iterations/complex_geometry/README.md); reports read saved evidence only. |
 | `scenes.py` | Scene shapes, frozen placements, the start, case IDs |

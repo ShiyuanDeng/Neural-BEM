@@ -2,6 +2,7 @@
 from unittest.mock import patch
 
 import numpy as np
+import pytest
 
 from bem_inverse.coefficient_geometry import CoefficientGeometry, crop
 from bem_inverse.continuation.geometry import FourierCurve
@@ -10,11 +11,12 @@ from bem_inverse.spectral import spectral_project
 from bem_inverse.analytic_projection import projection_derivatives
 
 
-def test_circle_radius_identity_and_no_boundary_evaluation():
+@pytest.mark.parametrize('method',['binomial','newton'])
+def test_circle_radius_identity_and_no_boundary_evaluation(method):
     curve=FourierCurve(crop(FourierCurve.circle(1.3,2+3j).coefficients,8))
     with (patch.object(FourierCurve,'values',side_effect=AssertionError('boundary samples')),
           patch.object(FourierCurve,'nodes',side_effect=AssertionError('boundary nodes'))):
-        model=CoefficientGeometry(curve,2,band=64)
+        model=CoefficientGeometry(curve,2,band=64,speed_method=method)
         zero,_,_=model.trial(np.zeros(5))
         moved,_,_=model.trial(np.array([.001,0,0,0,0]))
     np.testing.assert_array_equal(zero,curve.coefficients)
@@ -23,9 +25,10 @@ def test_circle_radius_identity_and_no_boundary_evaluation():
     np.testing.assert_allclose(moved,expected,atol=2e-12,rtol=0)
 
 
-def test_complete_tangent_matches_finite_map_and_independent_quadrature():
+@pytest.mark.parametrize('method',['binomial','newton'])
+def test_complete_tangent_matches_finite_map_and_independent_quadrature(method):
     curve=FourierCurve(crop(np.array([.06,2+3j,1.3]),8))
-    model=CoefficientGeometry(curve,2,band=96)
+    model=CoefficientGeometry(curve,2,band=96,speed_method=method)
     directions=np.array([[.1,.3,-.2,.05,.2],[-.2,.1,.2,.3,.1]])
     dot,_=model.tangent(directions)
     eps=1e-7
@@ -49,6 +52,7 @@ def test_interval_cover_and_unresolved_crossing_without_nodes():
         candidate=circle.copy()
         candidate[2] += .01
         assert verifier.increment(result,circle,candidate)['outcome']=='valid'
+        assert verifier.increment(result,candidate,candidate)['reason']=='base_curve_mismatch'
         crossing=np.zeros(5,complex)
         crossing[3:]=1
         bad=verifier.certify(crossing)
