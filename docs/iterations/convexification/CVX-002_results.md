@@ -1,7 +1,8 @@
-# Joint unknown reference field: implementation and first numerical screen
+# Joint unknown reference field: implementation, screen and resolution check
 
-2026-10-11. Track 13, CVX-002. **The 41×41 screen is complete; the pre-registered
-57×57 resolution checks are pending.**
+2026-10-11. Track 13, CVX-002. **The 41×41 screen and the pre-registered
+57×57 resolution checks are complete.** Supplementary phase/readout diagnostics
+are separately registered and pending at this checkpoint.
 
 The implemented joint-field method improved the coefficient image for the
 below-background circle with added full-boundary data. Its occupancy IoU rose
@@ -10,7 +11,10 @@ in the unweighted arm. This is useful partial reconstruction, not a recovered
 TG-002 object: Hausdorff error worsened from **39.39 to 100.99 mm**, and the
 thresholded shape's original paired-data residual remained large. The weighted
 arm was slightly worse on coefficient error, IoU, RMS and paired prediction.
-The other six preselected arms stopped at explicit phase qualifications.
+At 57×57, coefficient RMSE improved slightly, but IoU declined to **0.832–0.834**
+and all-contour RMS worsened to **15.95–16.00 mm**. These two grids do not
+demonstrate grid convergence. The other six preselected screen arms stopped
+at explicit phase qualifications.
 
 ## Evidence and experimental scope
 
@@ -27,6 +31,8 @@ The other six preselected arms stopped at explicit phase qualifications.
 - [Post-run validation](../../../results/validation/convexification/CVX-002/screen/validation.json),
   [numerical table](../../../results/validation/convexification/CVX-002/screen/table.csv),
   and [overview figure](../../../results/validation/convexification/CVX-002/screen/overview.svg).
+- [Complete 57×57 summary](../../../results/validation/convexification/CVX-002/refinement57/summary.json)
+  and [refinement launch manifest](../../../results/validation/convexification/CVX-002/refinement57/manifest.json).
 
 This is an augmented-acquisition feasibility screen on four frozen TG-002
 targets, not the standard 30-case benchmark. It uses one existing source at
@@ -132,6 +138,55 @@ The reported RMS is the root mean square of 19 frequency-relative errors, not
 one aggregate norm over the full catalog. These checks are not TG-002's
 certified endpoint audit and support no recovery count.
 
+## Pre-registered 57×57 resolution check
+
+Both successful screen arms met the pre-registered rule: at least 25% sampled
+RMS improvement, at least 0.10 IoU improvement, and passed linear/forward
+qualifications. Both were therefore rerun at 57×57, without changing the data
+contract, start, weights, regularization or 12-update cap. Eligibility did not
+require good paired residuals or improved Hausdorff distance; it was a
+development refinement rule rather than a recovery qualification.
+
+| Endpoint metric, circle / 0.5 | 41×41 unweighted | 57×57 unweighted | 41×41 weighted | 57×57 weighted |
+|---|---:|---:|---:|---:|
+| Grid spacing | 6.000 mm | 4.286 mm | 6.000 mm | 4.286 mm |
+| Coefficient RMSE | 0.08392 | 0.08034 | 0.08784 | 0.08071 |
+| Occupancy IoU | 0.84545 | 0.83450 | 0.84234 | 0.83217 |
+| All-contour sampled RMS | 15.086 mm | 15.946 mm | 15.176 mm | 15.997 mm |
+| All-contour sampled Hausdorff | 100.985 mm | 105.362 mm | 101.107 mm | 105.411 mm |
+| Paired RMS relative residual | 95.473% | 102.967% | 118.321% | 105.539% |
+| Paired maximum relative residual | 330.938% | 359.205% | 381.019% | 367.564% |
+| Fit wall time | 15.93 s | 58.99 s | 16.42 s | 59.04 s |
+
+The finer-grid rasterized start itself changes slightly: its IoU is 0.54351,
+sampled RMS 21.050 mm and Hausdorff distance 38.010 mm. Both refined endpoints
+retain substantial IoU/RMS improvement over that start, but their RMS improvement
+is now below the screen's 25% eligibility threshold. Each still has two
+threshold contours; the single-object physical readout again discards one.
+None of the 19 original paired frequencies passes the 0.3% residual threshold.
+
+The finer-grid auxiliary PDE RMS falls to 3.7595e-4 unweighted and 4.0365e-4
+weighted; normal mismatches fall to 0.09245% and 0.09834%. Final objectives are
+4.1892e-5 and 4.2506e-5. This improvement in auxiliary residuals does not provide
+a corresponding improvement in contour geometry. Paired prediction becomes
+worse for the unweighted arm and better for the weighted arm relative to their
+own coarse endpoints, while remaining poor in both cases. The unweighted arm
+still has the better coefficient, IoU, contour and paired metrics at the finer
+resolution.
+
+Both refined fits accepted all 12 full steps and stopped at the iteration cap.
+Their final relative steps are 1.1437e-4 and 1.8475e-4, above the 1e-5 small-step
+criterion. All 24 refined linear solves passed, with maximum stationarity
+2.2328e-14 and no LSMR fallback. The full refinement campaign took **159.76 s**;
+its source hashes remained unchanged. Original paired forward checks again
+passed numerical refinement. Numerical evaluation is therefore qualified, but
+neither iteration convergence nor spatial grid convergence is established.
+
+The result is a mixed resolution check, not evidence that the favorable coarse
+RMS represents a converged boundary reconstruction. The persistent extra
+contour and poor physical readout warrant the separately registered diagnostic
+inspection before deciding which formulation change is justified.
+
 ## Six arms stopped before optimization
 
 All four cases passed the nodal refinement and initial Mie/field qualification
@@ -222,7 +277,7 @@ It is a new feasibility variant inspired by these papers, not a literal
 reproduction of either published method. The qualifications and limitations
 identified in [CVX-001](CVX-001_results.md) remain applicable.
 
-## Verification and next registered action
+## Verification and remaining diagnostic work
 
 The nonlinear residual directional-derivative check was **6.22e-12** relative;
 the independent full linear residual check was **2.47e-16**. Polynomial stencil
@@ -238,18 +293,17 @@ The complete screen took **113.60 s** on the recorded host, including data
 generation, both successful fits and their physical checks, and the retained
 qualification failures. Source hashes remained unchanged during execution.
 
-Both successful arms meet the pre-registered development-refinement rule:
-at least 25% sampled RMS improvement, at least 0.10 IoU improvement, and passed
-linear/forward qualifications. That rule did not require good paired residuals
-or improved Hausdorff distance, so refinement eligibility must not be read as
-recovery qualification. The next authorized action is the unchanged pair of
-57×57 runs on `circle__c0.5`, with the same parameters and iteration cap. Their
-results are pending at this screen checkpoint.
+The prescribed 57×57 checks are complete and reported above. The
+[supplementary diagnostic plan](CVX-002_diagnostics_plan.md) is registered but
+has not yet produced results at this checkpoint. It will inspect the phase
+qualification and contour/readout evidence; it does not authorize silently
+replacing failed screen cells or tuning the completed inversions against truth.
 
 The present conclusion is limited but concrete: a jointly unknown reference
 field and smoother frequency secants can produce a better low-contrast
 coefficient image from augmented Cauchy data. This weight did not improve that
 result, physical binary-shape prediction remains poor, and the single-valued
-log requirement blocks the other preselected cases. These numbers justify
-the registered resolution check; they do not justify a global-convergence
-claim, adoption as the maintained solver, or a TG-002 recovery claim.
+log requirement blocks the other preselected cases. Resolution refinement does
+not improve the contour metrics consistently. The evidence does not justify a
+global-convergence claim, adoption as the maintained solver, or a TG-002
+recovery claim.
