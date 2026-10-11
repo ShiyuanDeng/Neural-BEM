@@ -40,11 +40,13 @@ precision; it is not a mathematical zero-error certificate.
 
 ## Mechanism and real controls
 
-The independent reviewer predicted that increasing dogleg height might leave
-its winding around relevant critical values unchanged. Identical positive
-endpoints across a 100-fold height change support this explanation. Negative
-routes select the conjugate continuation. This is evidence about the tested
-paths, not a proof of their global topology or a no-real-solution theorem.
+Identical positive endpoints across a 100-fold height change are consistent
+with homotopic routes, but do not establish equal winding or path classes:
+different classes can act identically on a chosen root. Negative routes
+select the conjugate continuation, as the mirror symmetry of F predicts.
+They are symmetry controls, not independent topology discoveries. The
+[literature/theory audit](LITERATURE_THEORY_AUDIT.md) gives the covering-space
+assumptions and this logical distinction. No no-real-solution theorem follows.
 
 Natural real-parameter continuation stops at the already qualified fold near
 t=.64916724. Real pseudo-arclength was given sufficient exposure in both
@@ -65,9 +67,11 @@ end nonreal.
 ## Decision and reproducibility
 
 Close the fixed-dogleg experiment. Preserve CG-001's successful local
-monodromy result. A worthwhile next theoretical/algorithmic question is a
-truth-free rule for choosing winding sequences that move to a real minimum
-at t=1; merely increasing detour height did not change the endpoint here.
+monodromy result. A worthwhile next theoretical/algorithmic question is
+whether a real minimum at t=1 belongs to the start-accessible continuation
+orbit. If it does, investigate a truth-free rule for choosing ordered loop
+sequences to reach it. Merely increasing detour height did not change the
+endpoint here; the existence of a useful reachable target remains unproved.
 General complex Fourier geometry and a full inverse comparison remain unrun.
 
 Measured wall time including construction, all failed attempts, controls and

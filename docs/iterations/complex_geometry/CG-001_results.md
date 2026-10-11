@@ -41,6 +41,14 @@ measured-data loss at t=1 is lower, but it is not established as stationary
 there. Transporting a stationary branch is not equivalent to minimizing the
 desired measured-data loss.
 
+The [post-run literature/theory audit](LITERATURE_THEORY_AUDIT.md) supplies
+an exact local fold factorization and a derived loss-barrier check. The
+observed/predicted barrier ratios are 1.01748 and 1.00867 for the original
+and half-radius loops, consistent with the predicted relative O(tf−t)
+correction. This added arithmetic diagnostic uses saved losses only and is
+not a new preregistered gate. The finite modal sum is numerically qualified;
+neither an exact fold enclosure nor an infinite-series tail bound is claimed.
+
 ## Real comparison and conditional exploration
 
 The completed real pseudo-arclength control ends at q=1.2938012177,
@@ -60,7 +68,7 @@ Close CG-001 and retain the demonstrated uniform-complex-scaling mechanism.
 General complex Fourier geometry and singular BIE quadrature remain untested.
 The primary literature supports local analyticity under stated assumptions,
 not a global successful return theorem; see the [derivation](DERIVATION.md)
-and [pre-registration](CG-001_plan.md).
+and [assumption-by-assumption literature audit](LITERATURE_THEORY_AUDIT.md).
 
 A focused extension is justified by the nonreal half-loop endpoints and
 failed real adjacent-fold attachment: test fixed complex data paths all the

@@ -5,5 +5,53 @@
   "cg002_positive_real_returns": 0,
   "maximum_cg002_field_refinement": 0.0,
   "maximum_cg002_scaled_stationarity": 9.998645036657868e-12,
-  "maximum_cg002_hessian_refinement": 0.0
+  "maximum_cg002_hessian_refinement": 0.0,
+  "post_hoc_fold_asymptotics": {
+    "status": "POST_HOC_DIAGNOSTIC_NOT_A_PREREGISTERED_GATE",
+    "source": "CG-001/run-02 saved receipts only; no tuning or field evaluations",
+    "a_Ft": 46.21381446297977,
+    "b_Fqq": 35979230.42019501,
+    "radius_scale_mm": 50,
+    "rows": [
+      {
+        "loop": "original",
+        "base_t": 0.6375982344134684,
+        "epsilon": 0.011569012622900998,
+        "predicted_separation_q": 0.0003447887717318741,
+        "observed_separation_q": 0.0003573941309984452,
+        "predicted_separation_mm": 0.017239438586593707,
+        "observed_separation_mm": 0.01786970654992226,
+        "separation_observed_over_predicted": 1.0365596571003586,
+        "minimum_homotopy_loss": 0.2673693935551015,
+        "maximum_homotopy_loss": 0.26749443596731237,
+        "predicted_loss_barrier": 0.00012289379811852884,
+        "observed_loss_barrier": 0.00012504241221089618,
+        "loss_barrier_observed_over_predicted": 1.0174835030348321,
+        "minimum_loss_source": "continuation.json:summaries.start_connection.homotopy_loss",
+        "maximum_loss_source": "continuation.json:summaries.one_loop.homotopy_loss",
+        "separation_source": "path_one_loop.json:states[0,-1].q",
+        "minimum_receipt_displacement_from_loop_start_q": 3.289339148506258e-18
+      },
+      {
+        "loop": "half_radius",
+        "base_t": 0.6433827407249189,
+        "epsilon": 0.005784506311450555,
+        "predicted_separation_q": 0.00024380247856858994,
+        "observed_separation_q": 0.0002481932697795397,
+        "predicted_separation_mm": 0.012190123928429497,
+        "observed_separation_mm": 0.012409663488976985,
+        "separation_observed_over_predicted": 1.018009624991218,
+        "minimum_homotopy_loss": 0.27206431140194837,
+        "maximum_homotopy_loss": 0.2721081375332935,
+        "predicted_loss_barrier": 4.344951900769178e-05,
+        "observed_loss_barrier": 4.382613134512603e-05,
+        "loss_barrier_observed_over_predicted": 1.0086678137304024,
+        "minimum_loss_source": "continuation.json:summaries.half_radius_two.homotopy_loss",
+        "maximum_loss_source": "continuation.json:summaries.half_radius_one.homotopy_loss",
+        "separation_source": "path_half_radius_one.json:states[0,-1].q",
+        "minimum_receipt_displacement_from_loop_start_q": 1.2523383490978954e-13
+      }
+    ],
+    "half_radius_minimum_note": "Loss uses the approximately restored half_radius_two endpoint; the receipt displacement from the loop start is reported explicitly."
+  }
 }

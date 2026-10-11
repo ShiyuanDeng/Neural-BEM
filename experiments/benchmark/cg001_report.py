@@ -20,6 +20,48 @@ def complex_array(states,key):
     return np.array([complex(*row[key]) for row in states])
 
 
+def fold_asymptotics(first,local):
+    """Post hoc arithmetic on frozen receipts, never an acceptance gate.
+
+    The selected fold has positive a=Ft and b=Fqq. Its leading root gap
+    is 2*s and maximum-minus-minimum loss barrier is 2*b*s**3/3, where
+    s=sqrt(2*a*(tf-t)/b). No field, derivative or fitted value is recomputed.
+    """
+    fold=local['fold']; summaries=local['summaries']
+    a,b=fold['Ft'][0],fold['Fqq'][0]
+    rows=[]
+    for label,arm,minimum in (('original','one_loop','start_connection'),
+                               ('half_radius','half_radius_one','half_radius_two')):
+        states=read(first/f'path_{arm}.json')['states']
+        base_t=states[0]['t'][0]
+        epsilon=fold['t']-base_t
+        s=float(np.sqrt(2*a*epsilon/b))
+        observed_gap=abs(states[-1]['q'][0]-states[0]['q'][0])
+        predicted_gap=2*s
+        minimum_loss=summaries[minimum]['homotopy_loss']
+        maximum_loss=summaries[arm]['homotopy_loss']
+        observed_barrier=maximum_loss-minimum_loss
+        predicted_barrier=2*b*s**3/3
+        minimum_q=complex(*summaries[minimum]['endpoint_q'])
+        rows.append(dict(loop=label,base_t=base_t,epsilon=epsilon,
+            predicted_separation_q=predicted_gap,observed_separation_q=observed_gap,
+            predicted_separation_mm=50*predicted_gap,observed_separation_mm=50*observed_gap,
+            separation_observed_over_predicted=observed_gap/predicted_gap,
+            minimum_homotopy_loss=minimum_loss,maximum_homotopy_loss=maximum_loss,
+            predicted_loss_barrier=predicted_barrier,observed_loss_barrier=observed_barrier,
+            loss_barrier_observed_over_predicted=observed_barrier/predicted_barrier,
+            minimum_loss_source=f'continuation.json:summaries.{minimum}.homotopy_loss',
+            maximum_loss_source=f'continuation.json:summaries.{arm}.homotopy_loss',
+            separation_source=f'path_{arm}.json:states[0,-1].q',
+            minimum_receipt_displacement_from_loop_start_q=abs(
+                minimum_q-complex(*states[0]['q']))))
+    return dict(status='POST_HOC_DIAGNOSTIC_NOT_A_PREREGISTERED_GATE',
+        source='CG-001/run-02 saved receipts only; no tuning or field evaluations',
+        a_Ft=a,b_Fqq=b,radius_scale_mm=50,rows=rows,
+        half_radius_minimum_note='Loss uses the approximately restored half_radius_two '
+            'endpoint; the receipt displacement from the loop start is reported explicitly.')
+
+
 def validate():
     first=BASE/'CG-001/run-02'; completion=BASE/'CG-001/run-03'; second=BASE/'CG-002/run-01'
     qual=read(first/'qualification.json'); local=read(first/'continuation.json')
@@ -51,10 +93,11 @@ def validate():
         cg002_arms=12,cg002_positive_real_returns=0,
         maximum_cg002_field_refinement=max_field,
         maximum_cg002_scaled_stationarity=max_stationarity,
-        maximum_cg002_hessian_refinement=max_hessian)
+        maximum_cg002_hessian_refinement=max_hessian,
+        post_hoc_fold_asymptotics=fold_asymptotics(first,local))
 
 
-def report():
+def report(*,refresh_plots=True):
     import matplotlib
     matplotlib.use('Agg')
     matplotlib.rcParams['svg.hashsalt']='track12-cg001-cg002'
@@ -107,10 +150,11 @@ def report():
     axes[0,1].legend(fontsize=8,loc='upper right')
     fig.suptitle('Track 12 · Local fold transport succeeds; tested paths have no real return\n'
                  'Exact transmission disk, fixed center · TG-002 circle data · contrast 13.3 · 1.5 GHz',fontsize=13)
-    fig.savefig(output/'track12.png',dpi=190)
-    fig.savefig(output/'track12.svg',metadata={'Date':None})
-    svg=output/'track12.svg'
-    svg.write_text('\n'.join(line.rstrip() for line in svg.read_text().splitlines())+'\n')
+    if refresh_plots:
+        fig.savefig(output/'track12.png',dpi=190)
+        fig.savefig(output/'track12.svg',metadata={'Date':None})
+        svg=output/'track12.svg'
+        svg.write_text('\n'.join(line.rstrip() for line in svg.read_text().splitlines())+'\n')
     plt.close(fig)
     (output/'validation.json').write_text(json.dumps(checked,indent=2)+'\n')
     lines=['# Track 12 — saved evidence report','',
@@ -122,11 +166,38 @@ def report():
     for h in heights:
         q=endpoint['summaries'][f'dogleg_{h:+g}']['endpoint_q']
         lines.append(f'| {h:g} | {q[0]*50:.9f} | {q[1]*50:.9f} | {endpoint["comparisons"][str(h)]["half_step_error"]:.3g} |')
+    lines+=['', 'Post hoc fold asymptotics from frozen receipts: the loss-barrier check was',
+        'not a preregistered acceptance gate. No path, field, derivative, or parameter was retuned.',
+        'With a=Ft, b=Fqq, epsilon=tf-t and s=sqrt(2*a*epsilon/b), the leading',
+        'root separation is 2*s and the maximum-minus-minimum loss barrier is 2*b*s^3/3.',
+        '', '| Loop | epsilon | Diagnostic | Leading prediction | Receipt value | Receipt / prediction |',
+        '|---|---:|---|---:|---:|---:|']
+    for row in checked['post_hoc_fold_asymptotics']['rows']:
+        for label,predicted,observed,ratio in (
+            ('Root separation (mm)','predicted_separation_mm','observed_separation_mm',
+             'separation_observed_over_predicted'),
+            ('Normalized loss barrier','predicted_loss_barrier','observed_loss_barrier',
+             'loss_barrier_observed_over_predicted')):
+            lines.append(f'| {row["loop"]} | {row["epsilon"]:.11g} | {label} | '
+                         f'{row[predicted]:.12g} | {row[observed]:.12g} | {row[ratio]:.10f} |')
+    restored=checked['post_hoc_fold_asymptotics']['rows'][1]
+    lines+=['', 'The original minimum loss is the saved start-connection endpoint loss.',
+        'The half-radius minimum loss uses the approximately restored two-loop endpoint,',
+        f'whose radius differs from the loop start by {restored["minimum_receipt_displacement_from_loop_start_q"]:.3g} q units.',
+        'Both relative corrections decrease approximately by half when epsilon is halved;',
+        'this is consistent with the local asymptotic expansion, not a rigorous remainder bound.',
+        '', '[Literature and theory audit](../../../../docs/iterations/complex_geometry/LITERATURE_THEORY_AUDIT.md).']
     lines+=['','This report reads saved JSON only. Fixed-center radius studies do not establish unrestricted shape recovery.',
+            'Reproduce the tables and validation without changing the figures with',
+            '`python -m experiments.benchmark.cg001_report --no-plots`.',
             '', '[Local mechanism](../CG-001/run-03/completion.json) · [Endpoint study](../CG-002/run-01/outcome.json)', '']
     (output/'README.md').write_text('\n'.join(lines))
     print(json.dumps(checked,indent=2))
 
 
 if __name__=='__main__':
-    report()
+    import argparse
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--no-plots',action='store_true',
+                        help='Regenerate report tables and validation while preserving existing plot files')
+    report(refresh_plots=not parser.parse_args().no_plots)
