@@ -1,0 +1,33 @@
+# Track 12 — complex-geometry continuation
+
+2026-10-11. Two completed component experiments using exact transmission
+physics and TG-002 circle measurements. Maintained inverse defaults are
+unchanged; general complex Fourier geometry and benchmark recovery are unrun.
+
+- [CG-001 results](CG-001_results.md): qualified physical fold, local complex
+  sheet exchange and successful real pseudo-arclength control. One loop
+  swaps a minimum and maximum; two restore the initial root.
+- [CG-002 results](CG-002_results.md): all three fixed positive detour heights
+  reach the same nonreal stationary endpoint at measured-data t=1; none
+  returns a real minimum. Negative and half-step controls agree.
+- [Mathematical derivation](DERIVATION.md), [CG-001 plan](CG-001_plan.md),
+  [CG-002 plan](CG-002_plan.md), and preserved [run-01 qualification failure](CG-001_run01.md)
+  / [run-02 incomplete real control](CG-001_run02.md).
+- [Combined figure and reproducible read-only report](../../../results/validation/complex_geometry/report/README.md).
+
+**Question:** Can complex geometry bypass a physical fold and return to a
+useful real stationary shape?
+
+**Result:** Partly supported. Local loop transport works; two-loop restoration
+error is 7.64e-14. Real pseudo-arclength also crosses the fold. At t=1, 0/3
+fixed detours return real, despite half-step agreement below 4.45e-16.
+
+**Why:** A loop changes the stationary-solution branch. The local exchange
+turns a minimum into a maximum; wider detours reach the same nonreal endpoint.
+Unchanged winding is a supported explanation, not a global proof.
+
+**Limit:** Fixed-center radius family with deliberately mismatched center;
+no unrestricted inverse recovery claim.
+
+**Decision:** Retain the qualified mechanism and close these tests. The next
+question is selecting winding sequences that reach a real minimum at t=1.

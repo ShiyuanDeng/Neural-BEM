@@ -35,6 +35,14 @@ specific unanswered question.
 
 ## Common scientific comparison contract
 
+**Track 12 investigation, 2026-10-11:** [CG-001/002](../iterations/complex_geometry/README.md)
+qualified complex-radius transport around a physical transmission-data fold:
+one loop exchanges a real minimum and maximum, and two restore the start.
+Real pseudo-arclength also passes the fold. Three fixed detour heights to the
+measured-data endpoint all return the same nonreal root; no inverse advantage
+is established. The next question is selecting winding sequences, with
+general complex Fourier geometry and benchmark recovery still unrun.
+
 **Track 13 investigation, 2026-10-11:** [CVX-001](../iterations/convexification/CVX-001_results.md)
 completed the formulation/component study. Differentiating the normalized log
 field cancels its second-derivative interface jump; the current TMz jump is

@@ -160,6 +160,12 @@ contractions remain on CPU. See the
 
 ## Code map
 
+`complex_radius` is an isolated research instrument for genuinely complex
+disk radii, exact transmission jets and scalar holomorphic continuation.
+[Track 12](../../docs/iterations/complex_geometry/README.md) qualified local
+fold monodromy but found no real endpoint for three fixed measured-data
+detours. It does not implement complex FourierCurve geometry or enter `fit`.
+
 Modal radial coefficients are now constructed directly from analytic Bessel
 products, including the regularized Hankel terms through their Neumann series.
 CPU and CUDA assembly share this path; it performs no radial sampling or DCT.
