@@ -17,12 +17,13 @@ from .ng001 import ROOT,UNIT,DIAGNOSTIC,no_curve_samples,measured,error,complex_
 PRIOR=ROOT/'results/validation/node_free_geometry/NG-001/run-02'
 
 
-def models_for(curve,M,output):
+def models_for(curve,M,output,engine_kwargs=None):
     cache={}
     def model(B):
         if B not in cache:
             with no_curve_samples():
-                obj,timing=measured(lambda:CoefficientGeometry(curve,M,band=B,speed_method='newton'))
+                obj,timing=measured(lambda:CoefficientGeometry(curve,M,band=B,
+                    **({'speed_method':'newton'} if engine_kwargs is None else engine_kwargs)))
             cache[B]=(obj,timing)
             write(output/'preparations.json',{str(b):dict(t,construction_receipt=None if m is None else m.receipt)
                                             for b,(m,t) in cache.items()})
@@ -72,13 +73,13 @@ def tangents(row,old,model,output):
     write(output/'tangent.json',result)
 
 
-def state(row,output):
+def state(row,output,engine_kwargs=None,coarse_limit=2048):
     curve=curve_from(row['curve'])
     folder=output/'states'/row['id']
     files=list((PRIOR/'states'/row['id']).glob('*m-d*.json'))
     old=sorted([read(p) for p in files],key=lambda r:(r['move']['size_m'],r['move']['direction']))
     write(folder/'inputs.json',dict(state=row,prior_files={str(p.relative_to(ROOT)):digest(p) for p in files}))
-    model,cache=models_for(curve,row['M'],folder)
+    model,cache=models_for(curve,row['M'],folder,engine_kwargs)
     fixed_B=max(256,4*curve.band)
     records=[]
     for prior in old:
@@ -98,7 +99,7 @@ def state(row,output):
         started=time.perf_counter()
         B=fixed_B
         selected=None
-        while B<=2048:
+        while B<=coarse_limit:
             coarse,c=trial(B)
             fine,f=trial(2*B)
             if coarse is not None and fine is not None:
@@ -158,6 +159,13 @@ def summarize(output):
     stats=lambda x:None if not x else dict(count=len(x),median=float(np.median(x)),maximum=float(np.max(x)),sum=float(np.sum(x)))
     tangents=[read(p) for p in (output/'states').glob('*/tangent.json')]
     arms=[a for t in tangents if t['success'] for a in t['arms'].values() if a['timing']['success']]
+    def final_reason(r):
+        largest=max(map(int,r['attempts']))
+        for b in (largest//2,largest):
+            attempt=r['attempts'][str(b)]
+            if not attempt['success']:
+                return attempt.get('base_reason',attempt.get('reason'))
+        return 'band_refinement'
     result=dict(trials=len(rows),baseline_coarse_constructed=sum(r['baseline_coarse'] for r in rows),
         newton_fixed_coarse_constructed=sum(r['fixed_band_coarse_constructed'] for r in rows),
         fixed_band_gains=sum(not r['baseline_coarse'] and r['fixed_band_coarse_constructed'] for r in rows),
@@ -167,8 +175,7 @@ def summarize(output):
         tight_accurate=sum(r['error']['l1_relative']<=1e-7 for r in successful),
         l1_error_nm=stats([r['error']['l1_m']*1e9 for r in successful]),
         selected_bands=dict(Counter(r['selected_band'] for r in successful)),
-        failure_final_reasons=dict(Counter(list(r['attempts'].values())[-1].get('reason','band_refinement')
-                                          for r in rows if not r['success'])),
+        failure_final_reasons=dict(Counter(final_reason(r) for r in rows if not r['success'])),
         all_attempt_seconds=stats([r['total_seconds'] for r in rows]),
         by_size={str(s):dict(trials=sum(r['move']['size_m']==s for r in rows),
             fixed_constructed=sum(r['move']['size_m']==s and r['fixed_band_coarse_constructed'] for r in rows),

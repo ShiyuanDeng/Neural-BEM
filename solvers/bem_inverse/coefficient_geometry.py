@@ -260,11 +260,86 @@ def _newton_speed(p, band, dp=None, *, tolerance=1e-10, max_iterations=64):
         ranges=ranges,q_range=qrange,speed_interval=[np.sqrt(lower),np.sqrt(upper)],arithmetic_verified=False))
 
 
+def _bootstrap_speed(p,band,dp=None,*,tolerance=1e-10,max_iterations=64):
+    """Reciprocal-residual positivity bootstrap, with no angular anchors."""
+    first=derivative(p)
+    S=real(product(first,conjugate(first)))
+    dS=None if dp is None else 2*real(product(derivative(dp),conjugate(first)))
+    mean_S=float(S[len(S)//2].real)
+    upper=norm(S)
+    if not np.isfinite([mean_S,upper]).all() or mean_S<=0:
+        raise CoefficientUnresolved('positive_energy',dict(mean=mean_S,upper=upper))
+    gamma=2.**max(1,math.ceil(math.log2(upper/mean_S))+1)
+    c=gamma*mean_S
+    u=constant(1/np.sqrt(c),band)
+    dc=None if dp is None else gamma*dS[len(dS)//2].real
+    du=None if dp is None else np.zeros_like(dp)
+    if du is not None:
+        du[band]=-.5*dc/c**1.5
+    history=[]
+    qualified=False
+    for iterations in range(1,max_iterations+1):
+        square=product(u,u)
+        v=product(S,square,band)
+        g=constant(3.,band)-v
+        if du is not None:
+            dv=product(dS,square,band)+2*product(S,product(u,du),band)
+            du=real((product(du,g,band)-product(u,dv,band))/2)
+        u=real(product(u,g,band)/2)
+        if iterations<8:
+            continue
+        mixed=product(S,u)
+        q=real(crop(mixed,band))
+        tail=norm(mixed-crop(q,3*band))
+        rs=norm(product(q,q)-crop(S,2*band))
+        residual=-product(S,product(u,u))
+        residual[len(residual)//2]+=1
+        ru=norm(residual)
+        history.append(ru)
+        if np.isfinite([rs,ru,tail]).all() and rs/mean_S<=tolerance and ru<=tolerance and u[band].real>0:
+            lower=(1-ru)/norm(u)**2
+            mq=(1-ru)/norm(u)-tail
+            if mq>0:
+                qualified=True
+                break
+        if not np.isfinite([rs,ru,tail]).all():
+            break
+        if iterations>=12 and len(history)>=4 and all(history[j]>=.999*history[j-1] for j in (-3,-2,-1)):
+            break
+    if not qualified:
+        raise CoefficientUnresolved('full_speed_residual',dict(sqrt_relative=rs/mean_S,inverse=ru,
+            mixed_tail=tail,band=band,iterations=iterations,method='residual_newton',history=history[-4:]))
+    dq=None if dp is None else real(product(dS,u,band)+product(S,du,band))
+    eps_speed=rs/(mq+np.sqrt(lower))
+    mean=float(q[band].real)
+    k=np.arange(-band,band+1)
+    nz=k!=0
+    eta=np.zeros_like(q)
+    eta[nz]=q[nz]/(1j*k[nz]*mean)
+    eta[band]=-sum(eta[nz])
+    eta=real(eta)
+    dmean=None if dp is None else dq[band].real
+    deta=None
+    if dp is not None:
+        deta=np.zeros_like(dp)
+        deta[nz]=(dq[nz]/mean-q[nz,None]*dmean/mean**2)/(1j*k[nz,None])
+        deta[band]=-np.sum(deta[nz],axis=0)
+        deta=real(deta)
+    eps_alpha=2*np.pi*eps_speed/max(mean-eps_speed,1e-30)*(1+norm(q)/mean)
+    return Speed(q,u,dq,eta,deta,mean,dmean,dict(scalar_method='residual_newton',scalar_degree=None,
+        inverse_root_iterations=iterations,scale_gamma=gamma,sqrt_residual_relative=rs/mean_S,
+        inverse_residual=ru,mixed_tail=tail,q_lower=mq,speed_error_bound=eps_speed,alpha_error_bound=eps_alpha,
+        ranges=dict(method='full reciprocal residual bootstrap',cells=0,arithmetic_verified=False),
+        speed_interval=[np.sqrt(lower),np.sqrt(upper)],arithmetic_verified=False))
+
+
 def speed(p,band,dp=None,*,method='binomial',**kwargs):
     if method=='binomial':
         return _binomial_speed(p,band,dp,**kwargs)
     if method=='newton':
         return _newton_speed(p,band,dp,**kwargs)
+    if method=='residual_newton':
+        return _bootstrap_speed(p,band,dp,**kwargs)
     raise ValueError(f'Unknown speed method {method!r}')
 
 
@@ -300,7 +375,8 @@ def phase_seed(s, band):
     return shift(out, 1, band), None if dx is None else shift(dout, 1, band), degree
 
 
-def projection(p, output_band, band, dp=None, *, phase_tolerance=1e-8, keep_phases=False, speed_method='binomial'):
+def projection(p, output_band, band, dp=None, *, phase_tolerance=1e-8, keep_phases=False, speed_method='binomial',
+               accuracy_mode='phase',coefficient_tolerance=1e-5,coefficient_absolute_tolerance=None):
     started = time.perf_counter()
     p = crop(p, band)
     dp = None if dp is None else crop(dp, band)
@@ -326,7 +402,7 @@ def projection(p, output_band, band, dp=None, *, phase_tolerance=1e-8, keep_phas
         error = abs(sum(P)-1)+2*np.pi*norm(residual)
         largest = max(largest, error)
         errors.append(error+m*s.receipt['alpha_error_bound'])
-        if not np.isfinite(error) or error > phase_tolerance:
+        if not np.isfinite(error) or (accuracy_mode=='phase' and error > phase_tolerance):
             raise CoefficientUnresolved('full_phase_residual', dict(mode=m, error=error, band=band,
                                                                   tolerance=phase_tolerance))
         negative = conjugate(P)
@@ -337,15 +413,28 @@ def projection(p, output_band, band, dp=None, *, phase_tolerance=1e-8, keep_phas
             dout[output_band-m] = (dfirst.T@P[::-1]+first@dP[::-1])/(-1j*m)
         if keep_phases:
             phases.append(P.copy())
+    centred=p.copy()
+    centred[band]=0
+    es=s.receipt['speed_error_bound']
+    if accuracy_mode=='coefficients' and es>=s.mean:
+        raise CoefficientUnresolved('projection_mean_margin',dict(mean=s.mean,speed_error=es,band=band))
+    centroid_error=norm(centred)*es/max(s.mean-es,1e-30)*(1+norm(s.q)/s.mean)
+    nonzero_error=2*nu(p)*sum(e/m for m,e in enumerate(errors,1))
+    total_error=centroid_error+nonzero_error
+    budget=coefficient_tolerance*s.mean if coefficient_absolute_tolerance is None else coefficient_absolute_tolerance
+    if accuracy_mode=='coefficients' and (not np.isfinite(total_error) or total_error>budget):
+        raise CoefficientUnresolved('projection_coefficient_bound',dict(error=total_error,budget=budget,
+            band=band,maximum_phase_residual=largest,centroid_error=centroid_error,nonzero_error=nonzero_error))
     return out, dout, s, phases, dict(**s.receipt, phase_degree=degree,
         maximum_phase_residual_bound=largest, maximum_phase_total_bound=max(errors, default=0.),
-        coefficient_error_bound_nonzero=2*nu(p)*sum(e/m for m,e in enumerate(errors, 1)),
+        coefficient_error_bound_nonzero=nonzero_error,centroid_error_bound=centroid_error,
+        coefficient_error_bound=total_error,coefficient_error_budget=budget,accuracy_mode=accuracy_mode,
         seconds=time.perf_counter()-started, working_band=band, curve_quadrature=False)
 
 
 class CoefficientGeometry:
     """Reusable base and finite update; no solver registration or sampled methods."""
-    def __init__(self, curve, update_modes, *, band=None, length_unit_m=.05, speed_method='binomial'):
+    def __init__(self, curve, update_modes, *, band=None, length_unit_m=.05, speed_method='binomial',accuracy_mode='phase'):
         self.curve, self.M = curve, update_modes
         self.K = curve.band
         self.B = band or max(256, 4*self.K)
@@ -353,9 +442,12 @@ class CoefficientGeometry:
             raise ValueError('Working band must cover storage and update bands.')
         self.unit = length_unit_m
         self.speed_method=speed_method
+        if accuracy_mode not in ('phase','coefficients'):
+            raise ValueError('Unknown projection accuracy mode.')
+        self.accuracy_mode=accuracy_mode
         z = crop(curve.coefficients, self.B)
         self.base, _, self.speed, phases, self.receipt = projection(z, max(self.K, self.M), self.B,
-                                                                  keep_phases=True,speed_method=speed_method)
+            keep_phases=True,speed_method=speed_method,accuracy_mode=accuracy_mode,coefficient_tolerance=5e-6)
         self.base = crop(self.base, self.K)
         self.phases = np.array(phases[:self.M+1])
         self.normal = product(-1j*derivative(z), self.speed.u, self.B)
@@ -374,12 +466,14 @@ class CoefficientGeometry:
         if not np.any(a):
             return self.curve.coefficients.copy(), crop(self.curve.coefficients, self.B), dict(identity=True)
         moved = crop(self.curve.coefficients, self.B)+self.displacement(a)
-        projected, _, _, _, receipt = projection(moved, self.K, self.B,speed_method=self.speed_method)
+        budget=1e-5*self.speed.mean-self.receipt['coefficient_error_bound']
+        projected, _, _, _, receipt = projection(moved, self.K, self.B,speed_method=self.speed_method,
+            accuracy_mode=self.accuracy_mode,coefficient_absolute_tolerance=budget)
         return self.curve.coefficients+projected-self.base, moved, receipt
 
     def tangent(self, directions):
         directions = np.atleast_2d(directions)
         dp = np.stack([self.displacement(a) for a in directions], axis=1)
         _, dot, _, _, receipt = projection(crop(self.curve.coefficients, self.B), self.K, self.B, dp,
-                                           speed_method=self.speed_method)
+            speed_method=self.speed_method,accuracy_mode=self.accuracy_mode,coefficient_tolerance=5e-6)
         return dot, receipt

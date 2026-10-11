@@ -11,7 +11,7 @@ from bem_inverse.spectral import spectral_project
 from bem_inverse.analytic_projection import projection_derivatives
 
 
-@pytest.mark.parametrize('method',['binomial','newton'])
+@pytest.mark.parametrize('method',['binomial','newton','residual_newton'])
 def test_circle_radius_identity_and_no_boundary_evaluation(method):
     curve=FourierCurve(crop(FourierCurve.circle(1.3,2+3j).coefficients,8))
     with (patch.object(FourierCurve,'values',side_effect=AssertionError('boundary samples')),
@@ -25,7 +25,7 @@ def test_circle_radius_identity_and_no_boundary_evaluation(method):
     np.testing.assert_allclose(moved,expected,atol=2e-12,rtol=0)
 
 
-@pytest.mark.parametrize('method',['binomial','newton'])
+@pytest.mark.parametrize('method',['binomial','newton','residual_newton'])
 def test_complete_tangent_matches_finite_map_and_independent_quadrature(method):
     curve=FourierCurve(crop(np.array([.06,2+3j,1.3]),8))
     model=CoefficientGeometry(curve,2,band=96,speed_method=method)
@@ -40,6 +40,16 @@ def test_complete_tangent_matches_finite_map_and_independent_quadrature(method):
     a=directions[0]*.001
     control=spectral_project(curve,a,8,8192,.05)[0]-spectral_project(curve,np.zeros(5),8,8192,.05)[0]
     np.testing.assert_allclose(model.trial(a)[0]-curve.coefficients,control,atol=1e-10,rtol=0)
+
+
+def test_bootstrap_and_coefficient_budget_need_no_range_anchors():
+    curve=FourierCurve(crop(np.array([.2,2+3j,1.3]),8))
+    with patch('bem_inverse.coefficient_geometry.range_enclosure',side_effect=AssertionError('angular range anchor')):
+        model=CoefficientGeometry(curve,2,band=128,speed_method='residual_newton',accuracy_mode='coefficients')
+        proposed,_,receipt=model.trial(np.array([.001,0,0,0,0]))
+    assert receipt['coefficient_error_bound']+model.receipt['coefficient_error_bound']<=1e-5*model.speed.mean
+    reference=curve.coefficients+spectral_project(curve,np.array([.001,0,0,0,0]),8,8192,.05)[0]-spectral_project(curve,np.zeros(5),8,8192,.05)[0]
+    np.testing.assert_allclose(proposed,reference,atol=1e-10,rtol=0)
 
 
 def test_interval_cover_and_unresolved_crossing_without_nodes():
