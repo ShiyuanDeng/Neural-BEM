@@ -23,5 +23,6 @@ The [registered screen](CVX-002_plan.md) used augmented full Cauchy data on four
 TG-002 targets. Two low-contrast arms optimized; six arms stopped at sampled
 log-field qualification. The low-contrast images improved overlap but failed
 the original paired-data physical check. Both met the declared grid-refinement
-trigger; the report records that follow-up separately. This is an isolated
-prototype, with no maintained solver default change.
+trigger. The completed 57-grid reruns improve coefficient RMSE slightly but
+worsen overlap and all-contour geometry; they do not establish grid convergence.
+This is an isolated prototype, with no maintained solver default change.

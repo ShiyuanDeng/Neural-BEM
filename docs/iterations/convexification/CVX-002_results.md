@@ -1,20 +1,24 @@
-# Joint unknown reference field: implementation, screen and resolution check
+# Joint unknown reference field: implementation and numerical results
 
-2026-10-11. Track 13, CVX-002. **The 41×41 screen and the pre-registered
-57×57 resolution checks are complete.** Supplementary phase/readout diagnostics
-are separately registered and pending at this checkpoint.
+2026-10-11. Track 13, CVX-002. **The 41×41 screen, pre-registered 57×57 resolution
+checks, and supplementary phase/readout diagnostics are complete.**
 
-The implemented joint-field method improved the coefficient image for the
-below-background circle with added full-boundary data. Its occupancy IoU rose
-from **0.542 to 0.845**, and sampled contour RMS fell from **21.36 to 15.09 mm**
-in the unweighted arm. This is useful partial reconstruction, not a recovered
-TG-002 object: Hausdorff error worsened from **39.39 to 100.99 mm**, and the
-thresholded shape's original paired-data residual remained large. The weighted
-arm was slightly worse on coefficient error, IoU, RMS and paired prediction.
-At 57×57, coefficient RMSE improved slightly, but IoU declined to **0.832–0.834**
-and all-contour RMS worsened to **15.95–16.00 mm**. These two grids do not
-demonstrate grid convergence. The other six preselected screen arms stopped
-at explicit phase qualifications.
+The implemented joint-field method produced a useful partial reconstruction
+of the below-background circle from added full-boundary data. With the
+unweighted 41×41 solve, occupancy IoU rose from **0.542 to 0.845**. Its main
+object readout improved sampled RMS from **21.353 to 4.071 mm** and Hausdorff
+distance from **37.000 to 6.920 mm**. Original paired-data RMS residual improved
+from **198.125% to 95.473%**, which still fails physical recovery by a wide
+margin. A tiny distant component remains in the raw threshold image; the frozen
+all-contour score gives that component a minimum of 128 samples and therefore
+describes a different, less favorable geometric result.
+
+The tested Carleman-type weight did not beat the unweighted arm. At 57×57,
+the unweighted main-object RMS was **4.458 mm** and its paired RMS **102.967%**;
+the two grids do not establish grid convergence. Six other preselected screen
+arms stopped at phase qualifications. Their discrete phase defects persisted
+under the supplementary sampling refinements, so they cannot be dismissed as
+a single coarse-grid anomaly.
 
 ## Evidence and experimental scope
 
@@ -33,6 +37,12 @@ at explicit phase qualifications.
   and [overview figure](../../../results/validation/convexification/CVX-002/screen/overview.svg).
 - [Complete 57×57 summary](../../../results/validation/convexification/CVX-002/refinement57/summary.json)
   and [refinement launch manifest](../../../results/validation/convexification/CVX-002/refinement57/manifest.json).
+- [Supplementary diagnostic plan](CVX-002_diagnostics_plan.md),
+  [complete diagnostic summary](../../../results/validation/convexification/CVX-002/diagnostics/summary.json),
+  [diagnostic validation](../../../results/validation/convexification/CVX-002/diagnostics/validation.json),
+  [readout comparison](../../../results/validation/convexification/CVX-002/diagnostics/readout_comparison.json),
+  [diagnostic manifest](../../../results/validation/convexification/CVX-002/diagnostics/manifest.json),
+  and [phase figure](../../../results/validation/convexification/CVX-002/diagnostics/phase.png).
 
 This is an augmented-acquisition feasibility screen on four frozen TG-002
 targets, not the standard 30-case benchmark. It uses one existing source at
@@ -53,7 +63,10 @@ maintained solver default.
 The following numbers concern `circle__c0.5`. The coefficient and raster metrics
 include the whole auxiliary grid, with background fixed on its boundary.
 Contour metrics include **all** threshold contours, including disconnected
-components. They are sampled metrics, not certified geometric bounds.
+components. They are sampled metrics, not certified geometric bounds. The
+original implementation gives each contour at least 128 samples; its combined
+RMS is not uniform weighting by total perimeter. The supplementary main-object
+measurements below clarify this distinction without replacing the frozen score.
 
 | Metric | Centered initial circle | Unweighted, span 0 | Weighted, span 4 |
 |---|---:|---:|---:|
@@ -75,10 +88,11 @@ accepted update used the full proposed step; the backtracking alternatives
 were unnecessary in these two fits. These endpoint observations do not establish
 convergence to a fixed point or a globally optimal reconstruction.
 
-The RMS and IoU gains coexist with a worse Hausdorff distance and a second
-contour. Thus the experiment directly exhibits the limitation discussed in
-CVX-001: better area overlap or average boundary error does not control the
-worst geometric error. The real coefficient is unconstrained in this prototype;
+The raw threshold image's Hausdorff distance worsens because it includes a
+distant second contour. This does not mean the main object's boundary worsens:
+its separately measured RMS and Hausdorff distance both improve substantially.
+The all-contour RMS is also sensitive to the per-component sampling floor,
+as quantified below. The real coefficient is unconstrained in this prototype;
 the large fraction outside the known material interval is reported rather than
 hidden by display clipping.
 
@@ -113,7 +127,7 @@ metrics are the informative reconstruction evidence.
 
 ![CVX-002 screen: coefficient images, contours and recorded diagnostics](../../../results/validation/convexification/CVX-002/screen/overview.png)
 
-## Independent prediction does not qualify the recovered shape
+## Physical prediction improves, but does not qualify recovery
 
 The physical readout takes the largest closed contour, resamples by arclength,
 and fits Fourier band 16. Each arm discards one other component. Its smoothing
@@ -137,6 +151,46 @@ and boundary-normal mismatch do not transfer to a good binary shape prediction.
 The reported RMS is the root mean square of 19 frequency-relative errors, not
 one aggregate norm over the full catalog. These checks are not TG-002's
 certified endpoint audit and support no recovery count.
+
+The supplementary comparison evaluates the **exact prescribed initial circle**
+with the same paired-data normalization and forward qualification. It also
+samples each saved main-object Fourier readout and the truth uniformly by
+arclength at 16,384 points. These dense sampled geometric metrics differ from
+the original all-contour metrics; neither is a certified bound.
+The starting geometry here is the exact prescribed circle, whereas the original
+score uses its rasterized threshold contour. This explains their different
+initial Hausdorff values without changing the physical initialization.
+
+| Main-object readout | Sampled RMS | Sampled Hausdorff | Paired RMS residual | Paired maximum residual | Raw main / discarded component areas |
+|---|---:|---:|---:|---:|---:|
+| Exact prescribed start | 21.353 mm | 37.000 mm | 198.125% | 513.849% | — |
+| 41×41 unweighted | **4.071 mm** | **6.920 mm** | **95.473%** | **330.938%** | 6728.04 / 0.73244 mm² |
+| 41×41 weighted | 5.337 mm | 15.499 mm | 118.321% | 381.019% | 6741.13 / 1.14300 mm² |
+| 57×57 unweighted | 4.458 mm | 7.716 mm | 102.967% | 359.205% | 6603.92 / 0.02049 mm² |
+| 57×57 weighted | 4.588 mm | 7.925 mm | 105.539% | 367.564% | 6571.55 / 0.05510 mm² |
+
+All five forward evaluations qualify numerically, and all have **0 / 19**
+frequencies at or below 0.3% relative residual. Thus the main-shape and paired
+improvement over the prescribed start is real within this experiment, while
+the remaining physical error is substantial. The weighted main readout
+improves with grid refinement; the unweighted main readout deteriorates
+slightly. Neither trend supports a general grid-convergence claim.
+
+The frozen contour scorer allocates
+\(N_\ell=\max(128,\lceil P_\ell/(0.1\,\mathrm{mm})\rceil)\) points to each
+component, where \(P_\ell\) is its perimeter, then pools those samples for one
+direction of the symmetric RMS. Every tiny component above receives 128
+points. In particular, the **0.02049 mm²** speck on the finer unweighted grid
+gets the same minimum count as the much larger coarse-grid speck. Its distant
+location strongly affects the pooled RMS; it also controls the all-contour
+Hausdorff distance, which legitimately ignores component size. Accordingly,
+the increase from 15.086 to 15.946 mm in frozen all-contour RMS must not be
+described as a comparable deterioration of the main object's boundary.
+
+Both views are preserved: the full threshold image contains a spurious distant
+component, while the declared largest-component readout has a substantially
+better main boundary. The supplementary comparison changes no optimizer,
+endpoint selection, threshold or pre-registered refinement decision.
 
 ## Pre-registered 57×57 resolution check
 
@@ -168,7 +222,8 @@ None of the 19 original paired frequencies passes the 0.3% residual threshold.
 The finer-grid auxiliary PDE RMS falls to 3.7595e-4 unweighted and 4.0365e-4
 weighted; normal mismatches fall to 0.09245% and 0.09834%. Final objectives are
 4.1892e-5 and 4.2506e-5. This improvement in auxiliary residuals does not provide
-a corresponding improvement in contour geometry. Paired prediction becomes
+a consistent improvement in main-object geometry, and the frozen all-contour
+score has the component-weighting limitation described above. Paired prediction becomes
 worse for the unweighted arm and better for the weighted arm relative to their
 own coarse endpoints, while remaining poor in both cases. The unweighted arm
 still has the better coefficient, IoU, contour and paired metrics at the finer
@@ -183,9 +238,9 @@ passed numerical refinement. Numerical evaluation is therefore qualified, but
 neither iteration convergence nor spatial grid convergence is established.
 
 The result is a mixed resolution check, not evidence that the favorable coarse
-RMS represents a converged boundary reconstruction. The persistent extra
-contour and poor physical readout warrant the separately registered diagnostic
-inspection before deciding which formulation change is justified.
+main-object RMS represents a converged boundary reconstruction. The completed
+supplementary inspection distinguishes the improved main object from the
+persistent tiny extra contour and records both without revising earlier scores.
 
 ## Six arms stopped before optimization
 
@@ -198,18 +253,58 @@ screen denominator.
 |---|---:|---|---|
 | Circle / 4 | 2 | 4 nonzero initial-grid plaquette windings; sampled minimum \(|u/u_0|=0.01557\) | Prescribed initial physical field fails the sampled global-log qualification. |
 | Circle / 13.3 | 2 | 22 nonzero initial-grid plaquette windings; sampled minimum \(|u/u_0|=0.01133\) | Same starting-field obstruction, more sampled phase defects. |
-| C-shape / 13.3 | 2 | Boundary winding −1 at 0.375 GHz; sampled minimum \(|u/u_0|=0.07002\) | Measured boundary fails the single-valued-log qualification. |
+| C-shape / 13.3 | 2 | Boundary winding −1 at 0.375 GHz; three-frequency sampled minimum \(|u/u_0|=0.07002\) | Measured boundary fails the single-valued-log qualification. |
 
 The underlying records are
 [circle / 4](../../../results/validation/convexification/CVX-002/screen/circle__c4/log_qualification.json),
 [circle / 13.3](../../../results/validation/convexification/CVX-002/screen/circle__c13.3/log_qualification.json),
 and [C-shape / 13.3](../../../results/validation/convexification/CVX-002/screen/c_shape__c13.3/log_qualification.json).
 These are sampled diagnostics. Nonzero discrete winding warrants the declared
-stop; this screen has not located continuous zeros or certified continuous
-winding under mesh refinement. The initial-circle failures do not establish
+stop; the computations have not certified continuous zeros or continuous
+winding. The initial-circle failures do not establish
 that every possible auxiliary initialization fails. The boundary failure is
 different: changing an interior starting field would not remove the recorded
 boundary inconsistency. No phase branch cut was silently introduced to continue.
+
+The supplementary diagnostics save the raw complex ratios and repeat the exact
+initial-disk calculation on grids 41, 81 and 161. The positive/negative
+plaquette counts are identical on all three grids:
+
+| Initial contrast | 0.25 GHz, positive / negative | 0.375 GHz, positive / negative | 0.5 GHz, positive / negative |
+|---|---:|---:|---:|
+| 4 | 0 / 0 | 1 / 1 | 1 / 1 |
+| 13.3 | 2 / 2 | 2 / 2 | 7 / 7 |
+
+Every affected frequency has zero net index despite nonzero local indices.
+This explains why an outer-boundary winding check alone would miss these
+initial-field obstructions. From grid 81 to 161, every detected defect has a
+same-sign nearest defect center within **1.061 mm**. Mie cutoff checks,
+integer-index checks and discrete boundary/plaquette telescoping checks all
+pass. Stable sampled counts and locations strengthen the numerical evidence;
+they do not prove a continuous zero count or exclude unresolved phase motion
+between samples. Raw arrays and records are preserved in
+[contrast 4](../../../results/validation/convexification/CVX-002/diagnostics/initial_c4.json)
+and [contrast 13.3](../../../results/validation/convexification/CVX-002/diagnostics/initial_c13.3.json).
+
+For the measured C-shape boundary, winding remains **−1 at 0.375 GHz** with
+160, 320 and 640 perimeter points. Its maximum wrapped phase increment falls
+from **0.31745 to 0.16222 to 0.08155 radians**, and its sampled minimum magnitude
+at that frequency remains above **0.2574**. The other two frequencies have zero
+sampled winding. The independently refined forward boundary values pass their
+qualification at every resolution. These
+[refined boundary records](../../../results/validation/convexification/CVX-002/diagnostics/measured_c_shape.json)
+make a coarse sampling accident a less plausible explanation, while remaining
+a sampled qualification rather than a rigorous continuous winding certificate.
+
+![Refined phase defects of the prescribed initial fields](../../../results/validation/convexification/CVX-002/diagnostics/phase.png)
+
+The obstruction is distinct from interface regularity. If a global smooth log
+exists, \(w=u/u_0=\exp(k^2v)\) implies
+\(\oint dw/w=k^2\oint dv=0\) on a closed loop. A certified nonzero continuous
+winding would contradict that representation; the calculation here establishes
+stable sampled evidence only. Moreover, differentiating the log introduces
+\(u_k/u\), which is generally singular at a moving field zero. Cancellation
+of the material-interface jump does not cancel this separate singularity.
 
 ## What was implemented and what follows mathematically
 
@@ -277,7 +372,7 @@ It is a new feasibility variant inspired by these papers, not a literal
 reproduction of either published method. The qualifications and limitations
 identified in [CVX-001](CVX-001_results.md) remain applicable.
 
-## Verification and remaining diagnostic work
+## Verification and next formulation decisions
 
 The nonlinear residual directional-derivative check was **6.22e-12** relative;
 the independent full linear residual check was **2.47e-16**. Polynomial stencil
@@ -293,17 +388,41 @@ The complete screen took **113.60 s** on the recorded host, including data
 generation, both successful fits and their physical checks, and the retained
 qualification failures. Source hashes remained unchanged during execution.
 
-The prescribed 57×57 checks are complete and reported above. The
-[supplementary diagnostic plan](CVX-002_diagnostics_plan.md) is registered but
-has not yet produced results at this checkpoint. It will inspect the phase
-qualification and contour/readout evidence; it does not authorize silently
-replacing failed screen cells or tuning the completed inversions against truth.
+The supplementary diagnostic run completed in **59.50 s**, passed every
+registered qualification, and preserved its source and input hashes. It
+performed no new optimization and changed no saved endpoint. The three measured
+campaigns total **332.86 s**; this excludes implementation and analysis time.
+The combined
+evidence separates three practical questions for further work:
+
+1. **Make the field representation admissible.** The repository's fixed damped
+   catalog could be tested for phase defects under a new pre-registered
+   qualification. Complex damping might help, but it was not tested here and
+   does not guarantee nonvanishing. A direct complex-field formulation or
+   compatible local logarithm charts away from zeros could address parts of
+   the observed phase structure. Charts still need a separate treatment at
+   zeros. Each alternative changes the unknowns, compatibility equations and
+   applicable theory. Ordinary unwrapping cannot simply remove nonzero winding.
+2. **Enforce physical coefficient/readout consistency.** The successful image
+   has many out-of-material-range values, a small extra component, and sizable
+   binary forward error. A separately controlled trial could enforce the
+   convex material interval in each linear subproblem and compare a physical
+   forward refresh, as in the 2020 precedent, with the present pure auxiliary
+   updates. Neither modification is validated by the current run, and a
+   binary constraint would add a nonconvex restriction.
+3. **Address the real acquisition gap.** The prototype still uses additional
+   Cauchy data. Even a successful augmented-data reconstruction would leave
+   the paired-data boundary/tail observability question from CVX-001 unresolved.
+   A data adapter or a coupled sparse-data formulation needs its own explicit
+   evidence; these calculations do not supply one.
 
 The present conclusion is limited but concrete: a jointly unknown reference
-field and smoother frequency secants can produce a better low-contrast
-coefficient image from augmented Cauchy data. This weight did not improve that
-result, physical binary-shape prediction remains poor, and the single-valued
-log requirement blocks the other preselected cases. Resolution refinement does
-not improve the contour metrics consistently. The evidence does not justify a
+field and smoother frequency secants produce a better low-contrast image,
+main boundary and paired prediction than the prescribed start when supplied
+with augmented Cauchy data. This weight did not improve that result; remaining
+physical error is large, and the single-valued-log requirement blocks the
+other preselected cases with phase evidence stable under sampling refinement.
+Spatial refinement gives mixed main-object results, with no demonstrated
+convergence. The evidence does not justify a
 global-convergence claim, adoption as the maintained solver, or a TG-002
 recovery claim.

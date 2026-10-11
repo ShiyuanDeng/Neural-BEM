@@ -22,9 +22,10 @@ research records below retain their original scope.
 - [Architectural experiment backlog](reports/architectural_experiment_backlog_2026-10-11.md):
   thirteen ideas ranked by deviation from the current pipeline, for standalone
   scientific comparisons, with research-agent instructions and brief closeouts.
-- [Track 13 convexification study](iterations/convexification/CVX-001_results.md):
-  literature assumptions, transmission-field regularity, paired-data limitations,
-  exact component evidence, and the remaining tail/boundary closure question.
+- [Track 13 convexification](iterations/convexification/README.md): literature,
+  transmission-field regularity and paired-data limitations; CVX-002 implements
+  joint reference-field inversion with augmented Cauchy data. Low-contrast
+  images improve, but weighting and grid refinement do not deliver recovery.
 - [Local-radius theory diagnostics](iterations/theory_radius/README.md): empirical
   fixed-chart stability, archived handoff applicability, and stationary branches.
 - [Cleaned-interface track](iterations/cleaned_interfaces/README.md): CI, NU,

@@ -51,7 +51,14 @@ completed the formulation/component study. Differentiating the normalized log
 field cancels its second-derivative interface jump; the current TMz jump is
 zeroth order. Literature assumptions, exact paired-data completion limitations
 and tail closure prevent claiming a qualified benchmark competitor. All five
-registered component gates passed; no inverse experiment or default change.
+registered component gates passed. The subsequent
+[CVX-002 implementation](../iterations/convexification/CVX-002_results.md)
+jointly reconstructs the unknown reference field and coefficient from explicitly
+augmented Cauchy data. Four low-contrast fits across two grids improve overlap,
+but their binary readouts fail the original paired accuracy gates; the weight
+does not help. Six stronger-contrast screen arms stop at sampled log-field
+qualification. No maintained solver default changed or benchmark recovery is
+claimed.
 
 - **Match the physical task and target accuracy.** Each method can use its own
   appropriate discretization and solver. Match numerical accuracy before
