@@ -167,6 +167,9 @@ Derivatives and the removable material-difference quotient are formed in
 coefficient space. See the [derivation](../../docs/reference/modal_radial_coefficients.md)
 and [AC-001 validation](../../docs/iterations/CI-SPD/AC-001_results.md).
 The retained `radial_functions` evaluator serves as an independent test reference.
+Geometry-side steps still sample the curve. These include the trial move and
+arclength reset, validity fallback, domain box and frontier. The
+[sampling scope](../../docs/reference/node_free_scope.md) lists them.
 
 | Modules | Responsibility |
 |---|---|

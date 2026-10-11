@@ -10,6 +10,7 @@ historical context.
 
 | Report | Scope |
 |---|---|
+| [architectural_experiment_backlog_2026-10-11.md](architectural_experiment_backlog_2026-10-11.md) | Thirteen architectural research ideas ranked by deviation from the current pipeline; fair-comparison contract, agent instructions for literature/theory/derivations, and brief scientific closeouts; no immediate integration requirement |
 | [research_map_2026-10-05.pdf](research_map_2026-10-05.pdf) | 11-slide presentation map of the experiment branches: current pipeline, lineage tree, one card per idea (name, IDs, change, result, status), the four persistent TG-002 failures, claims and open threads; rebuilt by `research_map_2026-10-05/build.py` from saved results |
 | [research_freeze_2026-10-05.md](research_freeze_2026-10-05.md) | Read-only repository freeze, source-traced current pipeline, complete research-track ledger, quantitative evidence and conflicting claims; October 5 snapshot saved October 6, independently fact-checked against code and raw results (Appendix A) |
 | [inverse_review_2026-10-03.md](inverse_review_2026-10-03.md) | Critical review of current node-free claims, numerical performance, benchmark rigor, data access and literature comparability; saved-artifact audit included |

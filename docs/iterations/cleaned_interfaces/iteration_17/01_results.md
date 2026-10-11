@@ -23,6 +23,10 @@ the implemented numerical method without changing its successful calculations.
 | Certificate arithmetic | Exact-arithmetic theorem evaluated by float64 FFTs and an empirical allowance | Numerical certificate conditional on that allowance; not a computer-assisted proof |
 | Public runner before this work | `ProjectedUpdate` still selected spline geometry; NU-006 required an experimental global substitution | Integrated explicit geometry selection and truthful receipts |
 
+*Update 2026-10-06:* the current sampling scope, including later changes and
+measured fallback use on TG-002, is in
+[node_free_scope.md](../../../reference/node_free_scope.md).
+
 The original fixed NU-007 relative gate remains a failed experiment. A
 threshold-scaled diagnostic is sensible, but reinterpreting old results does
 not establish a fresh campaign or justify an automatic default switch.

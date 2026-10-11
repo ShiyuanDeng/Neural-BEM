@@ -19,6 +19,9 @@ research records below retain their original scope.
 
 ## Research and evidence
 
+- [Architectural experiment backlog](reports/architectural_experiment_backlog_2026-10-11.md):
+  thirteen ideas ranked by deviation from the current pipeline, for standalone
+  scientific comparisons, with research-agent instructions and brief closeouts.
 - [Local-radius theory diagnostics](iterations/theory_radius/README.md): empirical
   fixed-chart stability, archived handoff applicability, and stationary branches.
 - [Cleaned-interface track](iterations/cleaned_interfaces/README.md): CI, NU,

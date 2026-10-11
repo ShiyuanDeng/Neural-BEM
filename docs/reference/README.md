@@ -17,3 +17,4 @@ dated implementation status and proposed work should be read with the
 | [sdf_boundary_parameterization_implementation.md](sdf_boundary_parameterization_implementation.md) | Methods A/B/C geometry experiment |
 | [neural_sdf_to_kress_implementation_guide.md](neural_sdf_to_kress_implementation_guide.md) | SDF-to-ordered-boundary numerical design and protocols |
 | [deep-research-report.md](deep-research-report.md) | Literature and design background |
+| [node_free_scope.md](node_free_scope.md) | Current list of sampled steps in the modal inverse (what "node free" does and does not cover) |

@@ -81,13 +81,21 @@ Runtime retention is not established.
 
 **Meaning of “node free.”** The defensible claim is **boundary-collocation-free
 Fourier–Galerkin physics with spline-free, quadrature-based geometry** when the
-spectral geometry update is explicitly selected. The complete inverse is not
-sample-free: normal moves, arclength quadrature, metrics, interval proposals,
-frontier diagnostics and the inconclusive-validity fallback use samples.
-Nonlinear FFT operations have quadrature/aliasing error; they are not exact
-coefficient convolutions. The validity inequalities hold in exact arithmetic,
-but the current FFT rounding allowance is heuristic, not interval-verified.
-See the [NF-001 review and experiments](../../docs/iterations/cleaned_interfaces/iteration_17/01_results.md).
+spectral geometry update is explicitly selected. Operator assembly, including
+the radial Chebyshev coefficients (AC-001), uses no samples. The complete
+inverse is not sample-free. These steps use samples:
+
+- normal moves, arclength quadrature and the coarse/fine refinement gate;
+- finite-difference geometry tangents and interval proposals;
+- the domain-box test, frontier diagnostics and optional physical metrics;
+- the inconclusive-validity fallback.
+
+On TG-002, the fallback decides trials only in the unrecovered aphex and hook
+cases. Nonlinear FFT operations have quadrature/aliasing error; they are not
+exact coefficient convolutions. The validity inequalities hold in exact
+arithmetic, but the current FFT rounding allowance is heuristic, not
+interval-verified. See the [current sampling scope](../../docs/reference/node_free_scope.md)
+and the [NF-001 review and experiments](../../docs/iterations/cleaned_interfaces/iteration_17/01_results.md).
 
 ## Run the 36 configurations
 

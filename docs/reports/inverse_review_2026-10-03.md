@@ -70,6 +70,13 @@ For an operational definition, the modal inverse has coefficient-space boundary 
 
 These observations are explicit in [the prior node-free audit](../iterations/cleaned_interfaces/iteration_17/01_results.md), [certificate implementation](../../solvers/bem_inverse/certified.py), [modal geometry](../../solvers/bem_inverse/modal_geometry.py), and [modal frontier/receipts](../../solvers/bem_inverse/modal_muller.py). The receipts themselves say `end_to_end_sample_free=False` and `arithmetic_verified=False`. The first flag is compatible with the user's node-free definition; the second limits rigorous-verification claims.
 
+> **Update 2026-10-06.** The table above is a 2026-10-03 snapshot. The current list, with code locators and measured use, is in [node_free_scope.md](../reference/node_free_scope.md). Changes since this review:
+>
+> - Radial Chebyshev coefficients are now analytic, with no radial samples (AC-001).
+> - The sampled validity fallback runs on TG-002. In ON-001's baseline, it accepted 46 and refused 43 moved-curve trials, all in the four unrecovered cases. It was never used in the 26 recoveries.
+> - Two sampled checks were missing from this table: the domain-box test and the sampled maximum in the coarse/fine refinement gate.
+> - The PS-001 candidate `validity_first` would make the sampled test the primary validity decision.
+
 The certificate idea is substantive. With the divided difference (W=(z(w)-z(v))/(w-v)), λ = |W|², and a finite Laurent polynomial Y, the complete residual condition `r = ||1 - lambda Y||_1 < 1` gives `lambda >= (1-r)/||Y||_1 > 0` in exact arithmetic. This can certify regularity and injectivity. The missing part of a computer-assisted proof is rigorous enclosure of the implemented floating-point operations. The relevant distinction is explained in [Rump's verification review](https://www.tuhh.de/ti3/paper/rump/Ru10.pdf); a safety allowance without a proved error bound does not provide that enclosure.
 
 Likewise, nonlinear speed and phase functions do not retain finite Fourier support. Periodic trapezoidal quadrature can converge very rapidly, but finite-grid aliasing remains. [Trefethen and Weideman](https://people.maths.ox.ac.uk/trefethen/publication/PDF/2014_149.pdf) provide the mathematical context. The project's own aspect-100 ellipse check changes from approximately 6.06e-4 coefficient error at 64 quadrature samples to 3.80e-15 at 2048. That is successful numerical convergence, not evidence that samples were unnecessary.
