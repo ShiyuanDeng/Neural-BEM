@@ -35,6 +35,13 @@ specific unanswered question.
 
 ## Common scientific comparison contract
 
+**Track 13 investigation, 2026-10-11:** [CVX-001](../iterations/convexification/CVX-001_results.md)
+completed the formulation/component study. Differentiating the normalized log
+field cancels its second-derivative interface jump; the current TMz jump is
+zeroth order. Literature assumptions, exact paired-data completion limitations
+and tail closure prevent claiming a qualified benchmark competitor. All five
+registered component gates passed; no inverse experiment or default change.
+
 - **Match the physical task and target accuracy.** Each method can use its own
   appropriate discretization and solver. Match numerical accuracy before
   interpreting performance differences.

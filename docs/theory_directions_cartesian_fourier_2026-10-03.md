@@ -74,6 +74,16 @@ The chart describes every nearby curve by how far it sits from the true one, mea
 
 ### S1. Convexification adapted to shapes (seed 1)
 
+**2026-10-11 qualification:** the [Track 13 formulation study](iterations/convexification/CVX-001_results.md)
+corrects three assumptions in the historical assessment below. The maintained
+TMz jump is a zeroth-order potential, so the cited discontinuous-principal-
+coefficient interface theory is not automatically required. A sampled full-matrix
+column needs qualified trace interpolation/DtN conversion before supplying
+Cauchy data. Published convexity results also concern specified auxiliary models
+and regularity classes, not the unchanged paired sharp-interface inverse.
+The new study derives a smoother differentiated field, with unresolved tail
+and boundary closure. The original proposal remains below as historical context.
+
 **What is known (taken as given).** Klibanov and coauthors build the method in four steps.
 
 1. Transform the field so the unknown coefficient drops out, by differentiating with respect to frequency or source position.

@@ -22,6 +22,9 @@ research records below retain their original scope.
 - [Architectural experiment backlog](reports/architectural_experiment_backlog_2026-10-11.md):
   thirteen ideas ranked by deviation from the current pipeline, for standalone
   scientific comparisons, with research-agent instructions and brief closeouts.
+- [Track 13 convexification study](iterations/convexification/CVX-001_results.md):
+  literature assumptions, transmission-field regularity, paired-data limitations,
+  exact component evidence, and the remaining tail/boundary closure question.
 - [Local-radius theory diagnostics](iterations/theory_radius/README.md): empirical
   fixed-chart stability, archived handoff applicability, and stationary branches.
 - [Cleaned-interface track](iterations/cleaned_interfaces/README.md): CI, NU,
