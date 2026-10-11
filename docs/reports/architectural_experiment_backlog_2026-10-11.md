@@ -40,11 +40,13 @@ qualified complex-radius transport around a physical transmission-data fold:
 one loop exchanges a real minimum and maximum, and two restore the start.
 Real pseudo-arclength also passes the fold. Three fixed detour heights to the
 measured-data endpoint all return the same nonreal root; no inverse advantage
-is established. The [literature/theory audit](../iterations/complex_geometry/LITERATURE_THEORY_AUDIT.md)
-supports the local fold mechanism; equal endpoints do not establish equal
-winding. The next question is whether an accessible real minimum exists at
-t=1, then how to select routes to it. General complex Fourier geometry and
-benchmark recovery remain unrun.
+is established. [CG-003](../iterations/complex_geometry/CG-003_results.md) then
+tested 46 directed generators on both observed roots: 0/92 real returns,
+90 identity actions and two swaps. This generator family closes numerically
+on the complex pair; further work needs different generators. The
+[literature/theory audit](../iterations/complex_geometry/LITERATURE_THEORY_AUDIT.md)
+supports the local mechanism without a global return guarantee. General
+complex Fourier geometry and benchmark recovery remain unrun.
 
 **Track 13 investigation, 2026-10-11:** [CVX-001](../iterations/convexification/CVX-001_results.md)
 completed the formulation/component study. Differentiating the normalized log

@@ -29,7 +29,7 @@ The [research implementation principles](implementation_principles.md), adopted 
 
 | Track | Organised around | Handoff |
 |---|---|---|
-| **Complex geometry** | *Can complexified physical shapes pass folds and return to real measured-data minima?* CG-001 local mechanism qualified; CG-002 fixed detours have no real return | [`complex_geometry/README.md`](complex_geometry/README.md) |
+| **Complex geometry** | *Can complexified physical shapes pass folds and return to real measured-data minima?* CG-001 local mechanism qualified; CG-002/003 have no real return; 92 directed loops close on two nonreal roots | [`complex_geometry/README.md`](complex_geometry/README.md) |
 | **Carleman convexification** | *Can a differentiated auxiliary-field formulation fit sharp transmission interfaces and the actual observations?* CVX-002 joint-tail prototype improves an augmented-data image; no physical recovery | [`convexification/README.md`](convexification/README.md) |
 | **Cleaned interfaces** | *How can one cumulative SC/MA inverse retain all-36 performance with clear stage policies and interchangeable forward solvers?* | [`cleaned_interfaces/README.md`](cleaned_interfaces/README.md) |
 | **CI-SPD** | *Which implementation costs explain inverse runtime, and how can geometry work be reduced without changing qualified behavior?* | [`CI-SPD/README.md`](CI-SPD/README.md) |
