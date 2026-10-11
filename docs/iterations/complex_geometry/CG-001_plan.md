@@ -1,5 +1,12 @@
 # CG-001 — physical folds and complex geometry monodromy
 
+**Run-02 amendment (after preserving/pushing failed run 01, before run 02):**
+the independent centered-difference reference steps are 2e-6 and 1e-6; add a
+64-point Cauchy circle of radius .004 to check derivatives one through three.
+Both reference types must pass the unchanged 1e-6 tolerance. The analytic
+derivative, physics, census and path intervention are unchanged. This is the
+single bounded qualification-reference correction; see [failed run](CG-001_run01.md).
+
 Pre-registered 2026-10-11, before measurement. User authorized Track 12 research
 and explicitly selected the existing `feature/shape-frequency-continuation`
 branch. Root owns implementation and measurements; `theory_review` and

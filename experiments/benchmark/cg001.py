@@ -100,14 +100,24 @@ def qualification(folder, budget):
                 jets = model.jets(radius)[0]
                 fine = refined.jets(radius)[0]
                 errors = []
-                for step in (2e-5, 1e-5):
+                for step in (2e-6, 1e-6):
                     for direction in (1., 1j):
                         fd = (model.jets(radius+direction*step)[0]-
                               model.jets(radius-direction*step)[0])/(2*direction*step)
                         errors.extend(relative(fd[j], jets[j+1]) for j in range(3))
+                angles = 2*np.pi*np.arange(64)/64
+                rho = .004
+                samples = model.jets(radius+rho*np.exp(1j*angles))[0][:, 0, :]
+                cauchy_errors = []
+                for order, factorial in ((1, 1), (2, 2), (3, 6)):
+                    cauchy = factorial*np.mean(samples*np.exp(-1j*order*angles[:, None]), axis=0)/rho**order
+                    cauchy_errors.append(relative(cauchy, jets[order]))
                 row = dict(contrast=contrast, frequency_ghz=frequency, radius=radius,
-                    refinement=[relative(a, b) for a, b in zip(jets, fine)], derivative_errors=errors)
-                row['passed'] = max(row['refinement']) <= 1e-8 and max(errors) <= 1e-6
+                    refinement=[relative(a, b) for a, b in zip(jets, fine)], derivative_errors=errors,
+                    derivative_steps=[2e-6, 1e-6], cauchy_radius=rho, cauchy_points=64,
+                    cauchy_errors=cauchy_errors)
+                row['passed'] = (max(row['refinement']) <= 1e-8 and max(errors) <= 1e-6
+                                 and max(cauchy_errors) <= 1e-6)
                 complex_rows.append(row)
             work.append(dict(contrast=contrast, frequency_ghz=frequency,
                              counters=model.counters(), refined_counters=refined.counters()))
