@@ -124,7 +124,19 @@ charged ledger. Research geometry caches have one entry throughout the common
 epoch to keep GPU retention bounded; this changes no radial/log/Graf tolerance.
 No registry/default recipe was promoted. Nine structural/package tests pass.
 
-Two O8 boundary details were submitted to the user for interpretation: whether
-the selected two-iteration branch ends the slot or continues the rung, and
-whether the next decision resets or carries lambda. No dependent O8 behavior
-has been chosen while those answers are pending.
+The user resolved both O8 boundary details: each decision slot ends at the saved
+winning two-iteration branch endpoint, and lambda resets to the default at each
+new decision slot. Within a slot each candidate starts from the same saved
+controller; no winning rung continues beyond its saved endpoint.
+
+## Complete C0 local-branch batch
+
+`phaseA-probes-001` closes all 45 registered branches (nine at each of the five
+roles): 16 normal optimizer returns, 2 stage-quota returns, 21 numerical
+refusals, and 6 range-limited entries. All computed recording chunks read back,
+objectives/gradients/proposals replay, and field/reciprocal/event counts reconcile.
+Raw arrays use about 1.526 GiB; branch and monitor elapsed computation is 628.777 s
+(before separating serialization). This closes branch collection; labels,
+matched K proposal replays, actual-direction audits, selected derivatives,
+regeneration and the resource gate remain required. No policy/ceiling claim is
+released by this batch.

@@ -130,12 +130,12 @@ def verify(folder):
     return saved
 
 
-def active_qualification(problem,role,folder):
+def active_qualification(problem,role,folder,epoch=None):
     """Actual production directions at the prescribed checkpoint and workspace."""
     hold=dict(name='HOLD',axis=None,value=None,status='pending')
     curve,stage,config=setup(problem,role,hold,'active_qualification',iterations=2,quota=None)
     update=CertifiedSpectralUpdate(problem.length_unit_m)
-    recorder=Recorder(folder/'recording',digest(folder.parent.parent/'manifest.json'))
+    recorder=Recorder(folder/'recording',epoch or digest(folder/'manifest.json'))
     physics=IndependentModalMuller(EXECUTION,trace_cap=320,workspace=512,observer=recorder)
     ledger=Ledger(cap=10000,seconds=10800,endpoint_reserve=0,strict_dispatch=True)
     ledger.begin_stage('active_qualification',None)
@@ -256,6 +256,12 @@ def main():
     else:
         role=next(r for r in read(args.atlas/'roles.json')['roles'] if r['role']==args.role)
         args.folder.mkdir(parents=True,exist_ok=False)
+        from experiments.cleaned_interface.benchmark import environment
+        write(args.folder/'manifest.json',dict(experiment='MA-007',case=CASE,
+            purpose='offline active-objective qualification',role=args.role,
+            parent_atlas=str(args.atlas),source_hashes=hashes(),environment=environment(),
+            execution=EXECUTION.__dict__,settings=dict(workspace=512,trace_cap=320,
+                seed=42001,coordinate_increment_m=1e-7)))
         active_qualification(c.problem(CASE),role,args.folder)
 
 

@@ -1,0 +1,116 @@
+{
+  "schema": "MA007-pilot-1",
+  "path": "results/validation/modal_atlas/MA-007/phaseA-probes-001/2_last_damped/M2/recording/chunks/event_000032.npz",
+  "bytes": 1358,
+  "sha256": "551cb92ffa98079fc93a5afc3368a7b45f2c8f2116de0266767734598b53abde",
+  "arrays": {
+    "base_coefficients": {
+      "shape": [
+        41
+      ],
+      "dtype": "complex128",
+      "bytes": 656,
+      "sha256": "a12a3e17138ffff19d9d18041dcdef1788a453cb84e2da61acefebc730c55dd5",
+      "units": "see identity coordinate/trace conventions"
+    },
+    "step_m": {
+      "shape": [
+        31
+      ],
+      "dtype": "float64",
+      "bytes": 248,
+      "sha256": "6ec9b13cdcda9a9ec305761ef8a369143ca5507042355f83bfb430080e1ef867",
+      "units": "see identity coordinate/trace conventions"
+    }
+  },
+  "identity": {
+    "epoch": "826613991a50d7a6172187a2350e0c4ffec5dff4bc3766a1bb98189d2a937725",
+    "index": 32,
+    "kind": "geometry_trial",
+    "base_sha256": "a12a3e17138ffff19d9d18041dcdef1788a453cb84e2da61acefebc730c55dd5",
+    "candidate_sha256": null,
+    "trial": {
+      "iteration": 1,
+      "damping": 9.838204598259018e-06,
+      "backtrack": 0,
+      "step_norm_m": 0.007448785573482739,
+      "accepted_fraction": 1.0,
+      "damping_floor": 9.838204598259018e-06,
+      "clipping_fraction": 1.0,
+      "step_m": [
+        -1.5186705817046284e-06,
+        -0.0002470860568673578,
+        0.0001265850083031979,
+        0.0002699852247556052,
+        0.0004318192368181964,
+        0.000495412065859523,
+        -0.00102810499404345,
+        -0.0013694367367451214,
+        0.00136354153333423,
+        0.002011965480237456,
+        -8.981226307438022e-05,
+        -0.002846865826072341,
+        -0.001234331078955329,
+        0.0011787724340508034,
+        0.0007810632514019135,
+        -0.0008225392337424028,
+        0.00017693487704259492,
+        0.00021331451415416,
+        0.000153774713652593,
+        -0.000518951009980868,
+        -0.0009401209033812278,
+        -0.0004291198979528189,
+        0.0014056953244290951,
+        0.0023504754926784045,
+        -0.0010339451685472442,
+        -0.003177604094163458,
+        -0.0005174017991473455,
+        0.0018496216134957332,
+        0.001811933982663742,
+        -0.0014263397134055649,
+        -0.0021539481545699893
+      ],
+      "predicted_decrease": 0.0010662539248668427,
+      "proposal_nodes": 512,
+      "proposal_refined_nodes": 768,
+      "geometry_constructed": true,
+      "status": "refused",
+      "reason": "self_intersection",
+      "detail": "Displaced curve self-intersects.",
+      "geometry_seconds": 0.10024848207831383
+    },
+    "certificates": [
+      {
+        "band": 511,
+        "signed_area": 2.286006501594441,
+        "increment_bound": 3088.9097313264124,
+        "increment_lower": -128.3255746257983,
+        "increment_nu": 7.703985839648535,
+        "full_failed_windows": [
+          64,
+          128
+        ],
+        "role": "moved_coarse",
+        "tier": "sampled_refused"
+      }
+    ],
+    "traceback": "Traceback (most recent call last):\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/continuation/lm_backend.py\", line 984, in fit_stage\n    candidate_curve, geometry = update.trial(space, step)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/certified.py\", line 287, in trial\n    coarse, smoothing = self._moved(space, a, space.count, 'moved_coarse')\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/certified.py\", line 269, in _moved\n    self.check(space, moved.coefficients, role, sampled)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/certified.py\", line 226, in check\n    self._sampled(sampled)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/certified.py\", line 237, in _sampled\n    test()\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/certified.py\", line 267, in sampled\n    raise UpdateRefused('self_intersection', 'Displaced curve self-intersects.')\nbem_inverse.continuation.updates.UpdateRefused: self_intersection: Displaced curve self-intersects.\n",
+    "work": {
+      "work_units": 24,
+      "stage": "2_last_damped_M2",
+      "stage_units": 24,
+      "stage_quota": 200,
+      "cap": 200,
+      "solves": {
+        "2_last_damped_M2:initial_objective": 4,
+        "2_last_damped_M2:qualification": 8
+      },
+      "reciprocal_batches": {
+        "2_last_damped_M2:derivative": 12
+      },
+      "failed": {},
+      "seconds": 1.9648661580868065
+    }
+  },
+  "readback": "bitwise_passed"
+}
