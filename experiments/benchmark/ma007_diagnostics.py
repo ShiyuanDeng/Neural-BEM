@@ -277,7 +277,7 @@ def qualify_archived(folder,role_name):
 
 def pilot_usage():
     """All failed and successful recording-pilot attempts share the same limits."""
-    groups=[p for p in OUTPUT.glob('phaseA-*') if p.name!='phaseA-max-001']
+    groups=[p for p in OUTPUT.glob('phaseA-*') if not p.name.startswith('phaseA-max-')]
     byte_count=sum(f.stat().st_size for p in groups for f in p.rglob('*') if f.is_file())
     seconds=0.
     for p in groups:

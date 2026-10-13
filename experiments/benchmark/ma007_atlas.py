@@ -327,7 +327,14 @@ def collect(control, folder):
     COORD.mkdir(exist_ok=True)
     with (COORD/'compute.lock').open('a') as compute,(COORD/'source.lock').open('a') as source:
         fcntl.flock(compute,fcntl.LOCK_EX); fcntl.flock(source,fcntl.LOCK_SH)
+        from .ma007_diagnostics import pilot_usage
+        prior=pilot_usage()
+        compute_limit=max(0.,10800-prior['offline_seconds'])
+        byte_limit=max(0,20*2**30-prior['artifact_bytes'])
         manifest=prepare(control,folder); completed=[]; status='COLLECTING'
+        manifest.update(pilot_usage_at_start=prior,remaining_pilot_compute_seconds=compute_limit,
+            remaining_pilot_artifact_bytes=byte_limit)
+        write(folder/'manifest.json',manifest)
         stop=threading.Event(); samples=[]; monitor=threading.Thread(target=monitor_gpu,args=(stop,samples),daemon=True)
         monitor.start()
         memory_before=available_memory()
@@ -335,13 +342,13 @@ def collect(control, folder):
             if role['status']!='reached': continue
             elapsed=sum(x['compute_seconds'] for x in completed)
             used=sum(x['artifact_bytes'] for x in completed)
-            if elapsed>=10800 or used>=20*2**30:
+            if elapsed>=compute_limit or used>=byte_limit:
                 status='RESOURCE_BLOCKED';break
             env=dict(os.environ,PYTHONPATH=f'{c.ROOT}/solvers:{c.ROOT}',**THREADS)
             with (folder/(role['role']+'.log')).open('w') as log:
                 done=subprocess.run([sys.executable,'-m','experiments.benchmark.ma007_atlas','worker',
                     '--folder',str(folder),'--role',role['role'],
-                    '--compute-allowance',str(10800-elapsed),'--byte-allowance',str(20*2**30-used)],
+                    '--compute-allowance',str(compute_limit-elapsed),'--byte-allowance',str(byte_limit-used)],
                     cwd=c.ROOT,env=env,stdout=log,stderr=subprocess.STDOUT)
             path=folder/role['role']/'result.json'
             if done.returncode or not path.exists():

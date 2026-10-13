@@ -190,3 +190,17 @@ cells complete and all retained chunks pass retrieval/hash/schema checks.
 Elapsed 31.366 s, worker RSS 1.812 GiB, sampled GPU 7.931 GiB. The sub-block
 fallback remains required. This supersedes the CPU-preparation maximum pilot
 for matched resource forecasting; both attempts remain retained.
+
+## Verified local array capacity
+
+The approved single-machine retention route now uses the existing persistent
+local DATA volume at `/media/drdeng/DATA/Neural_SDF_BEM_AD/MA-007-raw`. Evidence-root
+NPZ paths are filesystem links to that volume; code, JSON manifests/hashes and
+reports remain in the repository. Existing artifacts stay preserved.
+`retention-roundtrip-001` verifies the largest corrected maximum-pilot chunk
+through copied-file SHA-256 and exact array read-back through the linked route.
+The storage route receipt records available capacity (about 951.3 GiB) and exact
+retrieval paths. Raw arrays remain on this machine only and are not pushed.
+No off-machine destination, contract reduction or research-policy change is
+introduced. Nominal and hard-envelope forecasts must still pass their declared
+gates before additional phases.

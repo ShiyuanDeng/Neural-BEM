@@ -8,6 +8,7 @@ import argparse
 from dataclasses import asdict
 import fcntl
 import hashlib
+import json
 import os
 from pathlib import Path
 import resource
@@ -227,7 +228,17 @@ class Chunks:
         path = self.folder/(name+'.npz')
         if path.exists():
             raise FileExistsError(path)
-        np.savez_compressed(path, **arrays)
+        route=OUTPUT/'storage_route.json'
+        actual_path=path
+        if route.exists() and path.is_relative_to(OUTPUT):
+            routing=json.loads(route.read_text())
+            if routing['verified_local_storage'] is not True:
+                raise ValueError('Local array storage has not passed round-trip verification')
+            actual_path=Path(routing['array_storage_root'])/path.relative_to(c.ROOT)
+            actual_path.parent.mkdir(parents=True,exist_ok=True)
+            if actual_path.exists():raise FileExistsError(actual_path)
+        np.savez_compressed(actual_path, **arrays)
+        if actual_path!=path:path.symlink_to(actual_path)
         metadata = {}
         with np.load(path, allow_pickle=False) as loaded:
             if set(loaded.files) != set(arrays):
@@ -241,6 +252,7 @@ class Chunks:
                     units=(units or {}).get(key, 'see identity coordinate/trace conventions'))
         row = dict(schema=SCHEMA, path=str(path.relative_to(c.ROOT)), bytes=path.stat().st_size,
             sha256=digest(path), arrays=metadata, identity=identity, readback='bitwise_passed')
+        row['local_storage_path']=str(actual_path)
         self.rows.append(row)
         write(path.with_suffix('.json'), row)
         self.seconds += perf_counter()-started
