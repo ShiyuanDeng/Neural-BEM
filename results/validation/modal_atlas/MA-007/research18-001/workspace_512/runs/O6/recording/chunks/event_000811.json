@@ -1,0 +1,112 @@
+{
+  "schema": "MA007-pilot-1",
+  "path": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/recording/chunks/event_000811.npz",
+  "bytes": 829,
+  "sha256": "51394e0e5c281a563c0db3838b6bd610b5ee12b5dadb8f699c5ddc37b54522f6",
+  "arrays": {
+    "base_coefficients": {
+      "shape": [
+        17
+      ],
+      "dtype": "complex128",
+      "bytes": 272,
+      "sha256": "51546c631a1f28c0d16a26f4beebb0673340d4216fe3c55cc4b7706af8007d9a",
+      "units": "see identity coordinate/trace conventions"
+    },
+    "step_m": {
+      "shape": [
+        15
+      ],
+      "dtype": "float64",
+      "bytes": 120,
+      "sha256": "c8cae7bc03c46d00c41e73af72f4d6153056e66c865ed492e23667214a7b9d19",
+      "units": "see identity coordinate/trace conventions"
+    }
+  },
+  "identity": {
+    "epoch": "3d5324f1858cafee86f89cffb52036b64dde736ddb0a72c58363bb7c845b2b89",
+    "index": 811,
+    "kind": "geometry_trial",
+    "base_sha256": "51546c631a1f28c0d16a26f4beebb0673340d4216fe3c55cc4b7706af8007d9a",
+    "candidate_sha256": null,
+    "trial": {
+      "iteration": 12,
+      "damping": 0.08099999999999999,
+      "backtrack": 2,
+      "step_norm_m": 0.0005990540749939594,
+      "accepted_fraction": 0.25,
+      "damping_floor": 9.562290480014887e-06,
+      "clipping_fraction": 1.0,
+      "step_m": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/c0f87f26ce50dccf2f7e6c6d7b428915298439d706775ad8bc2411c6aa491337.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          15
+        ],
+        "dtype": "float64",
+        "sha256": "ab819a4177fae57e72d47f59acbb91ee78cc1cc6980328d462ec16a72b6df20d",
+        "bytes": 330
+      },
+      "predicted_decrease": 0.00031373158730307643,
+      "proposal_nodes": 768,
+      "proposal_refined_nodes": 1024,
+      "geometry_constructed": true,
+      "status": "refused",
+      "reason": "self_intersection",
+      "detail": "Displaced curve self-intersects.",
+      "geometry_seconds": 0.25843724189326167
+    },
+    "certificates": [
+      {
+        "band": 511,
+        "signed_area": 2.048937208256484,
+        "increment_bound": 834.1815728406177,
+        "increment_lower": -6.971176115056371,
+        "increment_nu": 0.6003279281466221,
+        "full_failed_windows": [
+          64
+        ],
+        "full_window": 128,
+        "full_bound": 241.00419227141248,
+        "full_lower": -1.4195060899671457,
+        "tail_nu": 0.11937269878344278,
+        "full_rho": 0.6049949370657389,
+        "full_reciprocal_l1": 169.0758454421054,
+        "full_log_degree": 927,
+        "role": "moved_coarse",
+        "tier": "sampled_refused"
+      }
+    ],
+    "traceback": "Traceback (most recent call last):\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/continuation/lm_backend.py\", line 984, in fit_stage\n    candidate_curve, geometry = update.trial(space, step)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/certified.py\", line 287, in trial\n    coarse, smoothing = self._moved(space, a, space.count, 'moved_coarse')\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/certified.py\", line 269, in _moved\n    self.check(space, moved.coefficients, role, sampled)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/certified.py\", line 226, in check\n    self._sampled(sampled)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/certified.py\", line 237, in _sampled\n    test()\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/certified.py\", line 267, in sampled\n    raise UpdateRefused('self_intersection', 'Displaced curve self-intersects.')\nbem_inverse.continuation.updates.UpdateRefused: self_intersection: Displaced curve self-intersects.\n",
+    "work": {
+      "work_units": 397,
+      "stage": "slot_1",
+      "stage_units": 318,
+      "stage_quota": 3000,
+      "cap": 13412,
+      "solves": {
+        "warmup:initial_objective": 1,
+        "warmup:qualification": 18,
+        "warmup:candidate": 8,
+        "warmup:acceptance_validation": 9,
+        "warmup:move_witness": 8,
+        "warmup:move_witness_refinement": 8,
+        "slot_1:initial_objective": 3,
+        "slot_1:qualification": 69,
+        "slot_1:candidate": 39,
+        "slot_1:acceptance_validation": 36,
+        "slot_1:move_witness": 33,
+        "slot_1:move_witness_refinement": 33
+      },
+      "reciprocal_batches": {
+        "warmup:derivative": 27,
+        "slot_1:derivative": 105
+      },
+      "failed": {},
+      "seconds": 33.033900764305145
+    }
+  },
+  "readback": "bitwise_passed",
+  "local_storage_path": "/media/drdeng/DATA/Neural_SDF_BEM_AD/MA-007-raw/results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/recording/chunks/event_000811.npz"
+}

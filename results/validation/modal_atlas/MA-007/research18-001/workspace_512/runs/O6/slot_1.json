@@ -1,0 +1,3548 @@
+{
+  "stage": "slot_1",
+  "M": 7,
+  "K_geometry": 8,
+  "outcome": "NUMERICAL_FAILURE",
+  "stop": null,
+  "detail": "production evaluation failed at candidate state",
+  "accepted_steps": 16,
+  "initial_loss": 0.042902014618966304,
+  "final_loss": 0.0047595941620193465,
+  "seconds": 55.64685152936727,
+  "work": {
+    "work_units": 535,
+    "stage": "slot_1",
+    "stage_units": 456,
+    "stage_quota": 3000,
+    "cap": 13412,
+    "solves": {
+      "warmup:initial_objective": 1,
+      "warmup:qualification": 18,
+      "warmup:candidate": 8,
+      "warmup:acceptance_validation": 9,
+      "warmup:move_witness": 8,
+      "warmup:move_witness_refinement": 8,
+      "slot_1:initial_objective": 3,
+      "slot_1:qualification": 99,
+      "slot_1:candidate": 57,
+      "slot_1:acceptance_validation": 51,
+      "slot_1:move_witness": 48,
+      "slot_1:move_witness_refinement": 48
+    },
+    "reciprocal_batches": {
+      "warmup:derivative": 27,
+      "slot_1:derivative": 150
+    },
+    "failed": {
+      "slot_1:candidate": 3
+    },
+    "seconds": 57.277959844563156
+  },
+  "curve": {
+    "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/44d5036522e2d29225afaa0a2d43442155b9faf41494d371652f689bb141deb3.npz",
+    "encoding": "complex_curve_record",
+    "array": "value",
+    "shape": [
+      17
+    ],
+    "dtype": "complex128",
+    "sha256": "d30f81c5fd2bc40433958e28e3ec1c69273aea3200784ca8f7892dc4873c5e71",
+    "bytes": 493
+  },
+  "nodes": 768,
+  "refined_nodes": 1024,
+  "resolution_selection": {
+    "requested_floor": 96,
+    "actual_cutoff": 96,
+    "forced": false,
+    "trace_cap": 192,
+    "B_work": 512
+  },
+  "physics_failures": [
+    {
+      "exception_type": "ValueError",
+      "message": "log|W|^2 needs more than 4000 Chebyshev terms (beta/Lambda=3.07e-06); curve is nearly self-touching.",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/continuation/lm_backend.py\", line 455, in predict\n    self.physics.evaluate(curve, observation, self.contrast, nodes))\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/modal_muller.py\", line 233, in evaluate\n    prediction = self._evaluate(curve, observation, contrast, trace_cutoff(int(resolution)))\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/modal_muller.py\", line 254, in _evaluate\n    geometry, (matrix, radial, device, fallback) = self._matrix(curve, window, k, ki, cutoff)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/modal_muller.py\", line 204, in _matrix\n    geometry = self._geometry(curve, window, device)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/modal_muller.py\", line 190, in _geometry\n    slot[1] = DeviceModalGeometry(curve, window, device=device, **options)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/modal_cuda.py\", line 236, in __init__\n    self.log, self.log_interval = log_modulus(_real_product(quotient, quotient, 2), band,\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/modal_cuda.py\", line 166, in log_modulus\n    raise ValueError(f'log|W|^2 needs more than {max_degree} Chebyshev terms '\nValueError: log|W|^2 needs more than 4000 Chebyshev terms (beta/Lambda=3.07e-06); curve is nearly self-touching.\n",
+      "category": "candidate",
+      "resolution": 768,
+      "frequency_hz": 250000000.0,
+      "wavenumber": {
+        "real": 0.641718860444247,
+        "imag": 0.16042971511106174
+      },
+      "candidate_sha256": "ed79a9fd35eaa26c468eecb2308a29a89081ca705d8ad4e803760a65baa22fd1",
+      "candidate_coefficients": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/722b01f8c555b62cdf784828007dbea8d09369fdc0eea1cb7620406cfeb1e7f4.npz",
+        "encoding": "complex_curve_record",
+        "array": "value",
+        "shape": [
+          17
+        ],
+        "dtype": "complex128",
+        "sha256": "7a6902303ad5cb585af9131da6f997cf929518477da5252035fa44fcc57346a3",
+        "bytes": 495
+      }
+    },
+    {
+      "exception_type": "ValueError",
+      "message": "log|W|^2 needs more than 4000 Chebyshev terms (beta/Lambda=3.07e-06); curve is nearly self-touching.",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/continuation/lm_backend.py\", line 455, in predict\n    self.physics.evaluate(curve, observation, self.contrast, nodes))\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/modal_muller.py\", line 233, in evaluate\n    prediction = self._evaluate(curve, observation, contrast, trace_cutoff(int(resolution)))\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/modal_muller.py\", line 254, in _evaluate\n    geometry, (matrix, radial, device, fallback) = self._matrix(curve, window, k, ki, cutoff)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/modal_muller.py\", line 204, in _matrix\n    geometry = self._geometry(curve, window, device)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/modal_muller.py\", line 190, in _geometry\n    slot[1] = DeviceModalGeometry(curve, window, device=device, **options)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/modal_cuda.py\", line 236, in __init__\n    self.log, self.log_interval = log_modulus(_real_product(quotient, quotient, 2), band,\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/modal_cuda.py\", line 166, in log_modulus\n    raise ValueError(f'log|W|^2 needs more than {max_degree} Chebyshev terms '\nValueError: log|W|^2 needs more than 4000 Chebyshev terms (beta/Lambda=3.07e-06); curve is nearly self-touching.\n",
+      "category": "candidate",
+      "resolution": 768,
+      "frequency_hz": 375000000.0,
+      "wavenumber": {
+        "real": 0.9625782906663704,
+        "imag": 0.2406445726665926
+      },
+      "candidate_sha256": "ed79a9fd35eaa26c468eecb2308a29a89081ca705d8ad4e803760a65baa22fd1",
+      "candidate_coefficients": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/722b01f8c555b62cdf784828007dbea8d09369fdc0eea1cb7620406cfeb1e7f4.npz",
+        "encoding": "complex_curve_record",
+        "array": "value",
+        "shape": [
+          17
+        ],
+        "dtype": "complex128",
+        "sha256": "7a6902303ad5cb585af9131da6f997cf929518477da5252035fa44fcc57346a3",
+        "bytes": 495
+      }
+    },
+    {
+      "exception_type": "ValueError",
+      "message": "log|W|^2 needs more than 4000 Chebyshev terms (beta/Lambda=3.07e-06); curve is nearly self-touching.",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/continuation/lm_backend.py\", line 455, in predict\n    self.physics.evaluate(curve, observation, self.contrast, nodes))\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/modal_muller.py\", line 233, in evaluate\n    prediction = self._evaluate(curve, observation, contrast, trace_cutoff(int(resolution)))\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/modal_muller.py\", line 254, in _evaluate\n    geometry, (matrix, radial, device, fallback) = self._matrix(curve, window, k, ki, cutoff)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/modal_muller.py\", line 204, in _matrix\n    geometry = self._geometry(curve, window, device)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/modal_muller.py\", line 190, in _geometry\n    slot[1] = DeviceModalGeometry(curve, window, device=device, **options)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/modal_cuda.py\", line 236, in __init__\n    self.log, self.log_interval = log_modulus(_real_product(quotient, quotient, 2), band,\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/modal_cuda.py\", line 166, in log_modulus\n    raise ValueError(f'log|W|^2 needs more than {max_degree} Chebyshev terms '\nValueError: log|W|^2 needs more than 4000 Chebyshev terms (beta/Lambda=3.07e-06); curve is nearly self-touching.\n",
+      "category": "candidate",
+      "resolution": 768,
+      "frequency_hz": 500000000.0,
+      "wavenumber": {
+        "real": 1.283437720888494,
+        "imag": 0.3208594302221235
+      },
+      "candidate_sha256": "ed79a9fd35eaa26c468eecb2308a29a89081ca705d8ad4e803760a65baa22fd1",
+      "candidate_coefficients": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/722b01f8c555b62cdf784828007dbea8d09369fdc0eea1cb7620406cfeb1e7f4.npz",
+        "encoding": "complex_curve_record",
+        "array": "value",
+        "shape": [
+          17
+        ],
+        "dtype": "complex128",
+        "sha256": "7a6902303ad5cb585af9131da6f997cf929518477da5252035fa44fcc57346a3",
+        "bytes": 495
+      }
+    }
+  ],
+  "geometry_proposals": 35,
+  "resolution_gate": "absolute",
+  "accepted_resolution_overshoots": 0,
+  "largest_accepted_resolution_overshoot": 0.0,
+  "resolution_events": [],
+  "history": [
+    {
+      "iteration": 0,
+      "loss": 0.042902014618966304,
+      "relative_l2": 0.2684753991628602,
+      "gradient_inf": 4.263945483877938,
+      "step_norm_m": 0.0,
+      "damping": 0.001,
+      "next_damping": 0.001,
+      "step_m": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/074cf6897ef7daaa614abb5922d2d8d610fa23a3bc3c1573628c5f12fb7aeafa.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          15
+        ],
+        "dtype": "float64",
+        "sha256": "8cbd2b41bb9ec1fa59e0e4f17615ea07b270865f1ce009d85360ac989656f37e",
+        "bytes": 208
+      },
+      "coefficients": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/f29e878b355a29c3cbfc7b78381906e1a94e5679a673e7b6038f56ffce1fe465.npz",
+        "encoding": "complex_curve_record",
+        "array": "value",
+        "shape": [
+          17
+        ],
+        "dtype": "complex128",
+        "sha256": "d41eec8dead7c230e0f4e698ad73b839eaaa31472741da485ed8edd6062281a0",
+        "bytes": 363
+      },
+      "work": {
+        "work_units": 91,
+        "stage": "slot_1",
+        "stage_units": 12,
+        "stage_quota": 3000,
+        "cap": 13412,
+        "solves": {
+          "warmup:initial_objective": 1,
+          "warmup:qualification": 18,
+          "warmup:candidate": 8,
+          "warmup:acceptance_validation": 9,
+          "warmup:move_witness": 8,
+          "warmup:move_witness_refinement": 8,
+          "slot_1:initial_objective": 3,
+          "slot_1:qualification": 3
+        },
+        "reciprocal_batches": {
+          "warmup:derivative": 27,
+          "slot_1:derivative": 6
+        },
+        "failed": {},
+        "seconds": 2.278331695124507
+      },
+      "nodes": 768,
+      "refined_nodes": 1024
+    },
+    {
+      "iteration": 1,
+      "loss": 0.039229990870726796,
+      "relative_l2": 0.2499149127619372,
+      "gradient_inf": 9.995495013311,
+      "step_norm_m": 0.01362506056239715,
+      "damping": 0.001,
+      "next_damping": 0.01,
+      "step_m": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/42d04c6bfecbd7080f477bb48efe30a77423ac06d90579ab35ff8f678ce84e8c.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          15
+        ],
+        "dtype": "float64",
+        "sha256": "2ad83d24a745c8ab9ba67959c392035d74aba001c70dba71a2b930c74c8462a3",
+        "bytes": 326
+      },
+      "coefficients": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/6be7e8dd592ea80077eb2e404f46012e8d9a758c7e5afbacf891633541d20d71.npz",
+        "encoding": "complex_curve_record",
+        "array": "value",
+        "shape": [
+          17
+        ],
+        "dtype": "complex128",
+        "sha256": "6fb928a3e3f34067e7ea0818aae26ecd526ee8845428699cefd1e3b5264d2b40",
+        "bytes": 494
+      },
+      "work": {
+        "work_units": 121,
+        "stage": "slot_1",
+        "stage_units": 42,
+        "stage_quota": 3000,
+        "cap": 13412,
+        "solves": {
+          "warmup:initial_objective": 1,
+          "warmup:qualification": 18,
+          "warmup:candidate": 8,
+          "warmup:acceptance_validation": 9,
+          "warmup:move_witness": 8,
+          "warmup:move_witness_refinement": 8,
+          "slot_1:initial_objective": 3,
+          "slot_1:qualification": 9,
+          "slot_1:candidate": 3,
+          "slot_1:acceptance_validation": 6,
+          "slot_1:move_witness": 3,
+          "slot_1:move_witness_refinement": 3
+        },
+        "reciprocal_batches": {
+          "warmup:derivative": 27,
+          "slot_1:derivative": 15
+        },
+        "failed": {},
+        "seconds": 3.1153574120253325
+      },
+      "maximum_normal_m": 0.022219388986690097,
+      "rms_normal_m": 0.00964614700825262,
+      "projection_relative": 4.60380149378923e-15,
+      "speed_ratio": 3.8753067552576344,
+      "accepted_fraction": 0.7584480317073737,
+      "gain_ratio": 0.1607750450944054,
+      "damping_feedback": "poor_model_agreement",
+      "damping_floor": 1.8716132963781754e-06,
+      "nodes": 768,
+      "refined_nodes": 1024
+    },
+    {
+      "iteration": 2,
+      "loss": 0.02512668482813922,
+      "relative_l2": 0.1969515260389233,
+      "gradient_inf": 7.3340350474327085,
+      "step_norm_m": 0.0052914839506190145,
+      "damping": 0.01,
+      "next_damping": 0.01,
+      "step_m": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/a48e7d5e484674f31e1790a8a8bc98263d255ddef8cfef99efa8eb01db65e885.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          15
+        ],
+        "dtype": "float64",
+        "sha256": "d5b6066330e682173b7384226c4f418d93d6f3b828470c7d719d93a86301519b",
+        "bytes": 330
+      },
+      "coefficients": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/f2def96b20fae7a1a28a154b25c818ce9686769884aaf581a2ac1d01360e9936.npz",
+        "encoding": "complex_curve_record",
+        "array": "value",
+        "shape": [
+          17
+        ],
+        "dtype": "complex128",
+        "sha256": "c4b4bc2028e5cfa3a186e05fe32fedc551e5617789bbc17d1ba11ec90a16c415",
+        "bytes": 495
+      },
+      "work": {
+        "work_units": 148,
+        "stage": "slot_1",
+        "stage_units": 69,
+        "stage_quota": 3000,
+        "cap": 13412,
+        "solves": {
+          "warmup:initial_objective": 1,
+          "warmup:qualification": 18,
+          "warmup:candidate": 8,
+          "warmup:acceptance_validation": 9,
+          "warmup:move_witness": 8,
+          "warmup:move_witness_refinement": 8,
+          "slot_1:initial_objective": 3,
+          "slot_1:qualification": 15,
+          "slot_1:candidate": 6,
+          "slot_1:acceptance_validation": 9,
+          "slot_1:move_witness": 6,
+          "slot_1:move_witness_refinement": 6
+        },
+        "reciprocal_batches": {
+          "warmup:derivative": 27,
+          "slot_1:derivative": 24
+        },
+        "failed": {},
+        "seconds": 5.427267420105636
+      },
+      "maximum_normal_m": 0.012637261527401298,
+      "rms_normal_m": 0.0038719184308973714,
+      "projection_relative": 1.5832379002393796e-07,
+      "speed_ratio": 3.935887732960098,
+      "accepted_fraction": 0.5,
+      "gain_ratio": 0.7527461467806812,
+      "damping_feedback": "retain_after_shortening_or_marginal_agreement",
+      "damping_floor": 7.148195911888496e-06,
+      "nodes": 768,
+      "refined_nodes": 1024
+    },
+    {
+      "iteration": 3,
+      "loss": 0.020241926960032727,
+      "relative_l2": 0.1804176186407439,
+      "gradient_inf": 6.121871782493482,
+      "step_norm_m": 0.0018640319447980425,
+      "damping": 0.01,
+      "next_damping": 0.1,
+      "step_m": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/909ce36294970b1d72a6311f052bad9238b20043cbcc6a98a8aa9e01421fdf5d.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          15
+        ],
+        "dtype": "float64",
+        "sha256": "592a585bbd0651c4502ca88653cd15a49d84ef74b321202d22d5741a40868955",
+        "bytes": 331
+      },
+      "coefficients": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/86aeda4bc704b846e4275824ba30ea95a5493be2bc6d624f37758f4c12933e7a.npz",
+        "encoding": "complex_curve_record",
+        "array": "value",
+        "shape": [
+          17
+        ],
+        "dtype": "complex128",
+        "sha256": "f09306479ca2a446cce9aca74e23994336088f82a865188157e8c00fe3cb6759",
+        "bytes": 495
+      },
+      "work": {
+        "work_units": 178,
+        "stage": "slot_1",
+        "stage_units": 99,
+        "stage_quota": 3000,
+        "cap": 13412,
+        "solves": {
+          "warmup:initial_objective": 1,
+          "warmup:qualification": 18,
+          "warmup:candidate": 8,
+          "warmup:acceptance_validation": 9,
+          "warmup:move_witness": 8,
+          "warmup:move_witness_refinement": 8,
+          "slot_1:initial_objective": 3,
+          "slot_1:qualification": 21,
+          "slot_1:candidate": 12,
+          "slot_1:acceptance_validation": 12,
+          "slot_1:move_witness": 9,
+          "slot_1:move_witness_refinement": 9
+        },
+        "reciprocal_batches": {
+          "warmup:derivative": 27,
+          "slot_1:derivative": 33
+        },
+        "failed": {},
+        "seconds": 11.322232673410326
+      },
+      "maximum_normal_m": 0.0037790571528653464,
+      "rms_normal_m": 0.0014558444446947046,
+      "projection_relative": 8.733572616288804e-08,
+      "speed_ratio": 4.274635609864621,
+      "accepted_fraction": 0.25,
+      "gain_ratio": 0.7829416919943184,
+      "damping_feedback": "severely_shortened",
+      "damping_floor": 7.031307155104415e-06,
+      "nodes": 768,
+      "refined_nodes": 1024
+    },
+    {
+      "iteration": 4,
+      "loss": 0.016172171273395177,
+      "relative_l2": 0.15880419896339926,
+      "gradient_inf": 4.8688603487039614,
+      "step_norm_m": 0.0027868977508605725,
+      "damping": 0.1,
+      "next_damping": 0.1,
+      "step_m": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/d89608c1f2cc366cb59a3e908315c12a90d880a00505371d7941aaee31025f04.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          15
+        ],
+        "dtype": "float64",
+        "sha256": "009f55c8011717e33a6101ca1030033303395f645eb0539b507dfe3020c49129",
+        "bytes": 331
+      },
+      "coefficients": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/0064e138b983decf6ededc5f2efa71e5efd3eb883f8874e7d3ccd078a08c8fd0.npz",
+        "encoding": "complex_curve_record",
+        "array": "value",
+        "shape": [
+          17
+        ],
+        "dtype": "complex128",
+        "sha256": "e4bab3d7727bbd66bcc51e3de756a1831da58ea266f78a72e081762dabe039e4",
+        "bytes": 493
+      },
+      "work": {
+        "work_units": 205,
+        "stage": "slot_1",
+        "stage_units": 126,
+        "stage_quota": 3000,
+        "cap": 13412,
+        "solves": {
+          "warmup:initial_objective": 1,
+          "warmup:qualification": 18,
+          "warmup:candidate": 8,
+          "warmup:acceptance_validation": 9,
+          "warmup:move_witness": 8,
+          "warmup:move_witness_refinement": 8,
+          "slot_1:initial_objective": 3,
+          "slot_1:qualification": 27,
+          "slot_1:candidate": 15,
+          "slot_1:acceptance_validation": 15,
+          "slot_1:move_witness": 12,
+          "slot_1:move_witness_refinement": 12
+        },
+        "reciprocal_batches": {
+          "warmup:derivative": 27,
+          "slot_1:derivative": 42
+        },
+        "failed": {},
+        "seconds": 14.967381758615375
+      },
+      "maximum_normal_m": 0.006224381954676779,
+      "rms_normal_m": 0.0021297886730319844,
+      "projection_relative": 1.9161856124845254e-07,
+      "speed_ratio": 5.370226010029193,
+      "accepted_fraction": 0.5,
+      "gain_ratio": 0.6952492339077561,
+      "damping_feedback": "retain_after_shortening_or_marginal_agreement",
+      "damping_floor": 7.86522213658339e-06,
+      "nodes": 768,
+      "refined_nodes": 1024
+    },
+    {
+      "iteration": 5,
+      "loss": 0.014778601846000031,
+      "relative_l2": 0.14412365999319504,
+      "gradient_inf": 4.418327042603873,
+      "step_norm_m": 0.0024689559439894683,
+      "damping": 0.1,
+      "next_damping": 0.1,
+      "step_m": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/d8f6630910955f1db846a35d2075040e894203759ce53acdb4f93dd26f1e1ac1.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          15
+        ],
+        "dtype": "float64",
+        "sha256": "8d342f257222a847cb90ba6a74043f6672375175b21803084f63bd62a9b2c987",
+        "bytes": 331
+      },
+      "coefficients": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/0b8a501127e8f77bac9d03559be93cf93e569aecff3b455bc71ec07e4092e1c1.npz",
+        "encoding": "complex_curve_record",
+        "array": "value",
+        "shape": [
+          17
+        ],
+        "dtype": "complex128",
+        "sha256": "d0b72480869ed3fda3130eeb59c330f10ce71b0bd684403fe6a2fa1ae4c2f9d3",
+        "bytes": 493
+      },
+      "work": {
+        "work_units": 235,
+        "stage": "slot_1",
+        "stage_units": 156,
+        "stage_quota": 3000,
+        "cap": 13412,
+        "solves": {
+          "warmup:initial_objective": 1,
+          "warmup:qualification": 18,
+          "warmup:candidate": 8,
+          "warmup:acceptance_validation": 9,
+          "warmup:move_witness": 8,
+          "warmup:move_witness_refinement": 8,
+          "slot_1:initial_objective": 3,
+          "slot_1:qualification": 33,
+          "slot_1:candidate": 21,
+          "slot_1:acceptance_validation": 18,
+          "slot_1:move_witness": 15,
+          "slot_1:move_witness_refinement": 15
+        },
+        "reciprocal_batches": {
+          "warmup:derivative": 27,
+          "slot_1:derivative": 51
+        },
+        "failed": {},
+        "seconds": 17.138453306630254
+      },
+      "maximum_normal_m": 0.004631143917774833,
+      "rms_normal_m": 0.0019189127244597056,
+      "projection_relative": 3.601448209820569e-15,
+      "speed_ratio": 11.51058040616117,
+      "accepted_fraction": 0.5,
+      "gain_ratio": 0.42058215556172573,
+      "damping_feedback": "retain_after_shortening_or_marginal_agreement",
+      "damping_floor": 8.49987090633626e-06,
+      "nodes": 768,
+      "refined_nodes": 1024
+    },
+    {
+      "iteration": 6,
+      "loss": 0.013982549113841706,
+      "relative_l2": 0.14013603220356566,
+      "gradient_inf": 4.111243922010301,
+      "step_norm_m": 0.0006743628580413107,
+      "damping": 0.1,
+      "next_damping": 1.0,
+      "step_m": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/916ae70d78bf9d1e663b7aa1888fb941bbb46e7cd7aaefa7916d60133d0f339a.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          15
+        ],
+        "dtype": "float64",
+        "sha256": "6fe1ed8f69af4cd738ccc1d0593f5e8e03f4b88e7626df83291986c579023eb0",
+        "bytes": 332
+      },
+      "coefficients": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/26522c5a8d28a82808c1e54612cb21bfc70fef18986888efa148c6977fe9668c.npz",
+        "encoding": "complex_curve_record",
+        "array": "value",
+        "shape": [
+          17
+        ],
+        "dtype": "complex128",
+        "sha256": "355475bce0b57929c4e42a32f11579de1e4724012be8f7727e9c8d88aa2ca2dc",
+        "bytes": 493
+      },
+      "work": {
+        "work_units": 262,
+        "stage": "slot_1",
+        "stage_units": 183,
+        "stage_quota": 3000,
+        "cap": 13412,
+        "solves": {
+          "warmup:initial_objective": 1,
+          "warmup:qualification": 18,
+          "warmup:candidate": 8,
+          "warmup:acceptance_validation": 9,
+          "warmup:move_witness": 8,
+          "warmup:move_witness_refinement": 8,
+          "slot_1:initial_objective": 3,
+          "slot_1:qualification": 39,
+          "slot_1:candidate": 24,
+          "slot_1:acceptance_validation": 21,
+          "slot_1:move_witness": 18,
+          "slot_1:move_witness_refinement": 18
+        },
+        "reciprocal_batches": {
+          "warmup:derivative": 27,
+          "slot_1:derivative": 60
+        },
+        "failed": {},
+        "seconds": 18.814240212086588
+      },
+      "maximum_normal_m": 0.0015875111334718577,
+      "rms_normal_m": 0.0004767519193572511,
+      "projection_relative": 2.2584687670083434e-12,
+      "speed_ratio": 11.273160307629182,
+      "accepted_fraction": 0.125,
+      "gain_ratio": 0.8422084556756059,
+      "damping_feedback": "severely_shortened",
+      "damping_floor": 7.376297937106196e-06,
+      "nodes": 768,
+      "refined_nodes": 1024
+    },
+    {
+      "iteration": 7,
+      "loss": 0.011981056497202998,
+      "relative_l2": 0.13492429780211418,
+      "gradient_inf": 1.513056310375506,
+      "step_norm_m": 0.001203730348500792,
+      "damping": 1.0,
+      "next_damping": 0.3,
+      "step_m": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/aae9d044f6219f238413a81315e73f0794a0e75f9803e3e0e9dd63513a0f68ae.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          15
+        ],
+        "dtype": "float64",
+        "sha256": "5a5375045e45253905ecdd1ba162682e58dea683ae866b49e2801ad5dd0f0886",
+        "bytes": 332
+      },
+      "coefficients": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/dff2a28d79b4d88ab44c3c10defd6f81c721ddef56f3272c6d36ba9d10da4014.npz",
+        "encoding": "complex_curve_record",
+        "array": "value",
+        "shape": [
+          17
+        ],
+        "dtype": "complex128",
+        "sha256": "b98c89a7f50e2930bd8a384b0a3c330814fe7551136fbe45a43b9d4a2fb79552",
+        "bytes": 495
+      },
+      "work": {
+        "work_units": 289,
+        "stage": "slot_1",
+        "stage_units": 210,
+        "stage_quota": 3000,
+        "cap": 13412,
+        "solves": {
+          "warmup:initial_objective": 1,
+          "warmup:qualification": 18,
+          "warmup:candidate": 8,
+          "warmup:acceptance_validation": 9,
+          "warmup:move_witness": 8,
+          "warmup:move_witness_refinement": 8,
+          "slot_1:initial_objective": 3,
+          "slot_1:qualification": 45,
+          "slot_1:candidate": 27,
+          "slot_1:acceptance_validation": 24,
+          "slot_1:move_witness": 21,
+          "slot_1:move_witness_refinement": 21
+        },
+        "reciprocal_batches": {
+          "warmup:derivative": 27,
+          "slot_1:derivative": 69
+        },
+        "failed": {},
+        "seconds": 20.431001669727266
+      },
+      "maximum_normal_m": 0.00257590880623775,
+      "rms_normal_m": 0.0009551774084483877,
+      "projection_relative": 1.024438554093634e-12,
+      "speed_ratio": 12.896983066345038,
+      "accepted_fraction": 1.0,
+      "gain_ratio": 0.9633403717062228,
+      "damping_feedback": "full_step_good_agreement",
+      "damping_floor": 7.614649043821135e-06,
+      "nodes": 768,
+      "refined_nodes": 1024
+    },
+    {
+      "iteration": 8,
+      "loss": 0.010838417408148325,
+      "relative_l2": 0.1265067860793171,
+      "gradient_inf": 0.7626361929182368,
+      "step_norm_m": 0.0013423572376118759,
+      "damping": 0.3,
+      "next_damping": 0.09,
+      "step_m": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/15d1b48c605a7c45d69994c8e7436c5ec6874f391b50cc5d0d243563c03449ed.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          15
+        ],
+        "dtype": "float64",
+        "sha256": "5348f11acf2b0512d9d17e6d4a7db0fa2bf9d52aa980bc80a3289d6bae4a9972",
+        "bytes": 331
+      },
+      "coefficients": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/d4bf493b96d339cefd3a975b135390e09ded3ed779463ee8e27a81da4fa1d47e.npz",
+        "encoding": "complex_curve_record",
+        "array": "value",
+        "shape": [
+          17
+        ],
+        "dtype": "complex128",
+        "sha256": "c3e8b48a4e3d075dfb4ce877916d5ba3e6964164568dfdf21880d21156250e98",
+        "bytes": 494
+      },
+      "work": {
+        "work_units": 316,
+        "stage": "slot_1",
+        "stage_units": 237,
+        "stage_quota": 3000,
+        "cap": 13412,
+        "solves": {
+          "warmup:initial_objective": 1,
+          "warmup:qualification": 18,
+          "warmup:candidate": 8,
+          "warmup:acceptance_validation": 9,
+          "warmup:move_witness": 8,
+          "warmup:move_witness_refinement": 8,
+          "slot_1:initial_objective": 3,
+          "slot_1:qualification": 51,
+          "slot_1:candidate": 30,
+          "slot_1:acceptance_validation": 27,
+          "slot_1:move_witness": 24,
+          "slot_1:move_witness_refinement": 24
+        },
+        "reciprocal_batches": {
+          "warmup:derivative": 27,
+          "slot_1:derivative": 78
+        },
+        "failed": {},
+        "seconds": 22.276664537377656
+      },
+      "maximum_normal_m": 0.0037801808202772417,
+      "rms_normal_m": 0.0009358385643567629,
+      "projection_relative": 4.3955511518159865e-11,
+      "speed_ratio": 17.018228099827006,
+      "accepted_fraction": 1.0,
+      "gain_ratio": 1.216072937822074,
+      "damping_feedback": "full_step_good_agreement",
+      "damping_floor": 8.249800966211769e-06,
+      "nodes": 768,
+      "refined_nodes": 1024
+    },
+    {
+      "iteration": 9,
+      "loss": 0.008532613292337355,
+      "relative_l2": 0.10631103295543139,
+      "gradient_inf": 1.064415445439857,
+      "step_norm_m": 0.0024696646652265543,
+      "damping": 0.09,
+      "next_damping": 0.027,
+      "step_m": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/1e597432982f5f120125838cb2f5907267eb37a151ad10eb90cbe7d5985b03ea.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          15
+        ],
+        "dtype": "float64",
+        "sha256": "1fc1c4f37117ca375ddce50d377301fcdb8160c2f480a4e5eda4d71cb281aecd",
+        "bytes": 331
+      },
+      "coefficients": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/31e4f5a5f3f40d512709ec06ae28d3a976932a56921d9ca11947388b8b46b583.npz",
+        "encoding": "complex_curve_record",
+        "array": "value",
+        "shape": [
+          17
+        ],
+        "dtype": "complex128",
+        "sha256": "31b5d5550f193e355f39f7fa0d7cf3eade83cf44db753643ed933eaf8863efeb",
+        "bytes": 495
+      },
+      "work": {
+        "work_units": 343,
+        "stage": "slot_1",
+        "stage_units": 264,
+        "stage_quota": 3000,
+        "cap": 13412,
+        "solves": {
+          "warmup:initial_objective": 1,
+          "warmup:qualification": 18,
+          "warmup:candidate": 8,
+          "warmup:acceptance_validation": 9,
+          "warmup:move_witness": 8,
+          "warmup:move_witness_refinement": 8,
+          "slot_1:initial_objective": 3,
+          "slot_1:qualification": 57,
+          "slot_1:candidate": 33,
+          "slot_1:acceptance_validation": 30,
+          "slot_1:move_witness": 27,
+          "slot_1:move_witness_refinement": 27
+        },
+        "reciprocal_batches": {
+          "warmup:derivative": 27,
+          "slot_1:derivative": 87
+        },
+        "failed": {},
+        "seconds": 24.82222326565534
+      },
+      "maximum_normal_m": 0.008690201621966999,
+      "rms_normal_m": 0.0016191461846002402,
+      "projection_relative": 1.3693011180894424e-09,
+      "speed_ratio": 32.746018437794326,
+      "accepted_fraction": 1.0,
+      "gain_ratio": 1.748452739935101,
+      "damping_feedback": "full_step_good_agreement",
+      "damping_floor": 8.656716405192119e-06,
+      "nodes": 768,
+      "refined_nodes": 1024
+    },
+    {
+      "iteration": 10,
+      "loss": 0.006006297865204631,
+      "relative_l2": 0.07879826314514088,
+      "gradient_inf": 0.7040929734521959,
+      "step_norm_m": 0.005159360632579558,
+      "damping": 0.027,
+      "next_damping": 0.0081,
+      "step_m": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/f99ca4ccb6932fc90d7f809b9b174258063590cee914f79e10727f32e1a50c4e.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          15
+        ],
+        "dtype": "float64",
+        "sha256": "dbb6c4ed4cd871f77476ec9a2ab8ac18975ad812c0688893cee8775092f6b56f",
+        "bytes": 331
+      },
+      "coefficients": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/f68d35df59c821d6e97624cfe3f74a5d6646af711c301d1c0fe5f5d169d6af50.npz",
+        "encoding": "complex_curve_record",
+        "array": "value",
+        "shape": [
+          17
+        ],
+        "dtype": "complex128",
+        "sha256": "e09bd03e3e39c5f10aebbdb982fe24b6df9ce320c8cd251ce108e02364d5e093",
+        "bytes": 495
+      },
+      "work": {
+        "work_units": 370,
+        "stage": "slot_1",
+        "stage_units": 291,
+        "stage_quota": 3000,
+        "cap": 13412,
+        "solves": {
+          "warmup:initial_objective": 1,
+          "warmup:qualification": 18,
+          "warmup:candidate": 8,
+          "warmup:acceptance_validation": 9,
+          "warmup:move_witness": 8,
+          "warmup:move_witness_refinement": 8,
+          "slot_1:initial_objective": 3,
+          "slot_1:qualification": 63,
+          "slot_1:candidate": 36,
+          "slot_1:acceptance_validation": 33,
+          "slot_1:move_witness": 30,
+          "slot_1:move_witness_refinement": 30
+        },
+        "reciprocal_batches": {
+          "warmup:derivative": 27,
+          "slot_1:derivative": 96
+        },
+        "failed": {},
+        "seconds": 27.521835819352418
+      },
+      "maximum_normal_m": 0.009726266953392534,
+      "rms_normal_m": 0.002617845449033932,
+      "projection_relative": 1.0584765867183624e-06,
+      "speed_ratio": 17.724724155631474,
+      "accepted_fraction": 1.0,
+      "gain_ratio": 1.2772709248213603,
+      "damping_feedback": "full_step_good_agreement",
+      "damping_floor": 9.108513076990604e-06,
+      "nodes": 768,
+      "refined_nodes": 1024
+    },
+    {
+      "iteration": 11,
+      "loss": 0.005501763469407422,
+      "relative_l2": 0.07585460897189457,
+      "gradient_inf": 0.6419040028674565,
+      "step_norm_m": 0.0015388125594270133,
+      "damping": 0.0081,
+      "next_damping": 0.08099999999999999,
+      "step_m": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/2a5a509a7da960d9f4987a379c68c9d91f1c8281cca88753c3736db636a3fa56.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          15
+        ],
+        "dtype": "float64",
+        "sha256": "a9268c074a2fd62150798f7725196d654fd8b40178f7e1f4e714af31b9f612d1",
+        "bytes": 330
+      },
+      "coefficients": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/dbdaed7750c071a7547d434deb016b49c903a7939bc9a0e872323e380b1347f3.npz",
+        "encoding": "complex_curve_record",
+        "array": "value",
+        "shape": [
+          17
+        ],
+        "dtype": "complex128",
+        "sha256": "4b472fcb41923d47e774f577d4bd04866ed6e4e4fbba11963b4725bfc597bfde",
+        "bytes": 495
+      },
+      "work": {
+        "work_units": 397,
+        "stage": "slot_1",
+        "stage_units": 318,
+        "stage_quota": 3000,
+        "cap": 13412,
+        "solves": {
+          "warmup:initial_objective": 1,
+          "warmup:qualification": 18,
+          "warmup:candidate": 8,
+          "warmup:acceptance_validation": 9,
+          "warmup:move_witness": 8,
+          "warmup:move_witness_refinement": 8,
+          "slot_1:initial_objective": 3,
+          "slot_1:qualification": 69,
+          "slot_1:candidate": 39,
+          "slot_1:acceptance_validation": 36,
+          "slot_1:move_witness": 33,
+          "slot_1:move_witness_refinement": 33
+        },
+        "reciprocal_batches": {
+          "warmup:derivative": 27,
+          "slot_1:derivative": 105
+        },
+        "failed": {},
+        "seconds": 31.58727392507717
+      },
+      "maximum_normal_m": 0.0018197032456253313,
+      "rms_normal_m": 0.0005769969592862634,
+      "projection_relative": 1.2290712482638984e-09,
+      "speed_ratio": 31.237618884901824,
+      "accepted_fraction": 0.25,
+      "gain_ratio": 0.84283409154666,
+      "damping_feedback": "severely_shortened",
+      "damping_floor": 9.241010759248219e-06,
+      "nodes": 768,
+      "refined_nodes": 1024
+    },
+    {
+      "iteration": 12,
+      "loss": 0.00534462793159025,
+      "relative_l2": 0.07377308477633018,
+      "gradient_inf": 0.5566621575729782,
+      "step_norm_m": 0.0002995270374969797,
+      "damping": 0.08099999999999999,
+      "next_damping": 0.8099999999999998,
+      "step_m": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/318ccf8ce164d777b41c4ce1f7dbb250e821488d3652201d14192356ab2ae47f.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          15
+        ],
+        "dtype": "float64",
+        "sha256": "e7da4dbc5cbeb40ef7a42c0143f926191790f91584d4583abdd335cb2c913b7a",
+        "bytes": 331
+      },
+      "coefficients": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/445b95fb506b61abe2bb8d4faf3353860563d8b1e4a6a3329ae9b56bc00c322c.npz",
+        "encoding": "complex_curve_record",
+        "array": "value",
+        "shape": [
+          17
+        ],
+        "dtype": "complex128",
+        "sha256": "3475763413174a8fe5485001fab2a1ac8ce73ce8aab4fb6f073dfb47c4b6c17c",
+        "bytes": 494
+      },
+      "work": {
+        "work_units": 424,
+        "stage": "slot_1",
+        "stage_units": 345,
+        "stage_quota": 3000,
+        "cap": 13412,
+        "solves": {
+          "warmup:initial_objective": 1,
+          "warmup:qualification": 18,
+          "warmup:candidate": 8,
+          "warmup:acceptance_validation": 9,
+          "warmup:move_witness": 8,
+          "warmup:move_witness_refinement": 8,
+          "slot_1:initial_objective": 3,
+          "slot_1:qualification": 75,
+          "slot_1:candidate": 42,
+          "slot_1:acceptance_validation": 39,
+          "slot_1:move_witness": 36,
+          "slot_1:move_witness_refinement": 36
+        },
+        "reciprocal_batches": {
+          "warmup:derivative": 27,
+          "slot_1:derivative": 114
+        },
+        "failed": {},
+        "seconds": 35.79333309922367
+      },
+      "maximum_normal_m": 0.0004026376280079245,
+      "rms_normal_m": 0.00016929108504775786,
+      "projection_relative": 5.206713682298364e-10,
+      "speed_ratio": 35.609127679538624,
+      "accepted_fraction": 0.125,
+      "gain_ratio": 0.956775982348928,
+      "damping_feedback": "severely_shortened",
+      "damping_floor": 9.562290480014887e-06,
+      "nodes": 768,
+      "refined_nodes": 1024
+    },
+    {
+      "iteration": 13,
+      "loss": 0.005171600476872962,
+      "relative_l2": 0.07059016207837647,
+      "gradient_inf": 0.3580730722167563,
+      "step_norm_m": 0.0003129390111899801,
+      "damping": 0.8099999999999998,
+      "next_damping": 0.8099999999999998,
+      "step_m": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/097a7f1afbf34ce1f0350f6595137e4236a8678051bc2d0a7a05b9df11c84bb8.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          15
+        ],
+        "dtype": "float64",
+        "sha256": "0aeb8fd014554cd3cf6b8d3b8bb1bd8588fc4b2b3cce8484a2fffba9665a90ef",
+        "bytes": 333
+      },
+      "coefficients": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/aa308d5c12160537563b419fd6e863c30eef0791e57bdda8969b37886dd6fba2.npz",
+        "encoding": "complex_curve_record",
+        "array": "value",
+        "shape": [
+          17
+        ],
+        "dtype": "complex128",
+        "sha256": "4b586317895a5ffd2b386a166bb7cfc59fffc56f61ec6e2f20d83f30b369ea0a",
+        "bytes": 494
+      },
+      "work": {
+        "work_units": 451,
+        "stage": "slot_1",
+        "stage_units": 372,
+        "stage_quota": 3000,
+        "cap": 13412,
+        "solves": {
+          "warmup:initial_objective": 1,
+          "warmup:qualification": 18,
+          "warmup:candidate": 8,
+          "warmup:acceptance_validation": 9,
+          "warmup:move_witness": 8,
+          "warmup:move_witness_refinement": 8,
+          "slot_1:initial_objective": 3,
+          "slot_1:qualification": 81,
+          "slot_1:candidate": 45,
+          "slot_1:acceptance_validation": 42,
+          "slot_1:move_witness": 39,
+          "slot_1:move_witness_refinement": 39
+        },
+        "reciprocal_batches": {
+          "warmup:derivative": 27,
+          "slot_1:derivative": 123
+        },
+        "failed": {},
+        "seconds": 39.88863034918904
+      },
+      "maximum_normal_m": 0.0004950039922668152,
+      "rms_normal_m": 0.00021269201825484214,
+      "projection_relative": 2.6140103733601695e-06,
+      "speed_ratio": 36.14825962993706,
+      "accepted_fraction": 0.5,
+      "gain_ratio": 0.9445073010935019,
+      "damping_feedback": "retain_after_shortening_or_marginal_agreement",
+      "damping_floor": 9.567947289654967e-06,
+      "nodes": 768,
+      "refined_nodes": 1024
+    },
+    {
+      "iteration": 14,
+      "loss": 0.00506583750047321,
+      "relative_l2": 0.06865663894290763,
+      "gradient_inf": 0.23113375281180526,
+      "step_norm_m": 0.0002419412285240986,
+      "damping": 0.8099999999999998,
+      "next_damping": 0.8099999999999998,
+      "step_m": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/7d4a61228190123a7d41c099dac46032f40f777793bad44284b66c0f9cdd050f.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          15
+        ],
+        "dtype": "float64",
+        "sha256": "59403bbf69dc7ab99e9ff70dd2d74761306367e23d545184d30572b093e5fa30",
+        "bytes": 332
+      },
+      "coefficients": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/3382206f211127611d89527bc9037d13fff177526b2fddea06f96132d6ba99df.npz",
+        "encoding": "complex_curve_record",
+        "array": "value",
+        "shape": [
+          17
+        ],
+        "dtype": "complex128",
+        "sha256": "526f5cb3a10a58dea964ee3211d11525a8d4546b26dfc149b6db0c4d04734b68",
+        "bytes": 496
+      },
+      "work": {
+        "work_units": 478,
+        "stage": "slot_1",
+        "stage_units": 399,
+        "stage_quota": 3000,
+        "cap": 13412,
+        "solves": {
+          "warmup:initial_objective": 1,
+          "warmup:qualification": 18,
+          "warmup:candidate": 8,
+          "warmup:acceptance_validation": 9,
+          "warmup:move_witness": 8,
+          "warmup:move_witness_refinement": 8,
+          "slot_1:initial_objective": 3,
+          "slot_1:qualification": 87,
+          "slot_1:candidate": 48,
+          "slot_1:acceptance_validation": 45,
+          "slot_1:move_witness": 42,
+          "slot_1:move_witness_refinement": 42
+        },
+        "reciprocal_batches": {
+          "warmup:derivative": 27,
+          "slot_1:derivative": 132
+        },
+        "failed": {},
+        "seconds": 43.40495822764933
+      },
+      "maximum_normal_m": 0.00034411565490546057,
+      "rms_normal_m": 0.0001510264676224651,
+      "projection_relative": 5.70848581176975e-10,
+      "speed_ratio": 38.84779506521247,
+      "accepted_fraction": 0.5,
+      "gain_ratio": 0.9618128065599892,
+      "damping_feedback": "retain_after_shortening_or_marginal_agreement",
+      "damping_floor": 9.572118656306586e-06,
+      "nodes": 768,
+      "refined_nodes": 1024
+    },
+    {
+      "iteration": 15,
+      "loss": 0.004914985531716423,
+      "relative_l2": 0.06637714201793973,
+      "gradient_inf": 0.24095034381982758,
+      "step_norm_m": 0.0004087123933995997,
+      "damping": 0.8099999999999998,
+      "next_damping": 0.24299999999999994,
+      "step_m": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/115416b28de5ac4cf3a9fc4bea2037abcdda0d41dcab87a787f220a984ab3d19.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          15
+        ],
+        "dtype": "float64",
+        "sha256": "ea03f8af231449133f6ea3638c800ab01c9a2130795d8e454474675bc2274924",
+        "bytes": 332
+      },
+      "coefficients": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/f0049baf5623541b9b0e53a5acf0143b729962d953dc38fa7a0b2f90c3b51444.npz",
+        "encoding": "complex_curve_record",
+        "array": "value",
+        "shape": [
+          17
+        ],
+        "dtype": "complex128",
+        "sha256": "cb6ff7e23ea9e6fa5d33b6ed2bbafa5554312c5a66653943ccf731d4597452b9",
+        "bytes": 494
+      },
+      "work": {
+        "work_units": 505,
+        "stage": "slot_1",
+        "stage_units": 426,
+        "stage_quota": 3000,
+        "cap": 13412,
+        "solves": {
+          "warmup:initial_objective": 1,
+          "warmup:qualification": 18,
+          "warmup:candidate": 8,
+          "warmup:acceptance_validation": 9,
+          "warmup:move_witness": 8,
+          "warmup:move_witness_refinement": 8,
+          "slot_1:initial_objective": 3,
+          "slot_1:qualification": 93,
+          "slot_1:candidate": 51,
+          "slot_1:acceptance_validation": 48,
+          "slot_1:move_witness": 45,
+          "slot_1:move_witness_refinement": 45
+        },
+        "reciprocal_batches": {
+          "warmup:derivative": 27,
+          "slot_1:derivative": 141
+        },
+        "failed": {},
+        "seconds": 46.675212709698826
+      },
+      "maximum_normal_m": 0.0005329140266990603,
+      "rms_normal_m": 0.00024363323335089532,
+      "projection_relative": 3.068005464230188e-10,
+      "speed_ratio": 52.47400892380206,
+      "accepted_fraction": 1.0,
+      "gain_ratio": 0.9500012598707804,
+      "damping_feedback": "full_step_good_agreement",
+      "damping_floor": 9.55167701183083e-06,
+      "nodes": 768,
+      "refined_nodes": 1024
+    },
+    {
+      "iteration": 16,
+      "loss": 0.0047595941620193465,
+      "relative_l2": 0.06454263538724592,
+      "gradient_inf": 0.25992092962499347,
+      "step_norm_m": 0.0004150560532844835,
+      "damping": 0.24299999999999994,
+      "next_damping": 0.24299999999999994,
+      "step_m": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/c54c6d029a235ab9b65d4424a5a7f6627021b29228549f0e917f7263381dad1d.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          15
+        ],
+        "dtype": "float64",
+        "sha256": "0fa5a9ab7b646544f75c241aba8304104d1ec69fb52976166b1f7e5575059f9d",
+        "bytes": 332
+      },
+      "coefficients": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/44d5036522e2d29225afaa0a2d43442155b9faf41494d371652f689bb141deb3.npz",
+        "encoding": "complex_curve_record",
+        "array": "value",
+        "shape": [
+          17
+        ],
+        "dtype": "complex128",
+        "sha256": "d30f81c5fd2bc40433958e28e3ec1c69273aea3200784ca8f7892dc4873c5e71",
+        "bytes": 493
+      },
+      "work": {
+        "work_units": 532,
+        "stage": "slot_1",
+        "stage_units": 453,
+        "stage_quota": 3000,
+        "cap": 13412,
+        "solves": {
+          "warmup:initial_objective": 1,
+          "warmup:qualification": 18,
+          "warmup:candidate": 8,
+          "warmup:acceptance_validation": 9,
+          "warmup:move_witness": 8,
+          "warmup:move_witness_refinement": 8,
+          "slot_1:initial_objective": 3,
+          "slot_1:qualification": 99,
+          "slot_1:candidate": 54,
+          "slot_1:acceptance_validation": 51,
+          "slot_1:move_witness": 48,
+          "slot_1:move_witness_refinement": 48
+        },
+        "reciprocal_batches": {
+          "warmup:derivative": 27,
+          "slot_1:derivative": 150
+        },
+        "failed": {},
+        "seconds": 54.225003712810576
+      },
+      "maximum_normal_m": 0.00044738397067893435,
+      "rms_normal_m": 0.00022887963711561572,
+      "projection_relative": 9.574585554738576e-10,
+      "speed_ratio": 120.83896201307934,
+      "accepted_fraction": 0.5,
+      "gain_ratio": 0.9801388480579508,
+      "damping_feedback": "retain_after_shortening_or_marginal_agreement",
+      "damping_floor": 9.50001618070265e-06,
+      "nodes": 768,
+      "refined_nodes": 1024
+    }
+  ],
+  "trials": [
+    {
+      "iteration": 1,
+      "damping": 0.001,
+      "backtrack": 0,
+      "step_norm_m": 0.01362506056239715,
+      "accepted_fraction": 0.7584480317073737,
+      "damping_floor": 1.8716132963781754e-06,
+      "clipping_fraction": 0.7584480317073737,
+      "step_m": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/42d04c6bfecbd7080f477bb48efe30a77423ac06d90579ab35ff8f678ce84e8c.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          15
+        ],
+        "dtype": "float64",
+        "sha256": "2ad83d24a745c8ab9ba67959c392035d74aba001c70dba71a2b930c74c8462a3",
+        "bytes": 326
+      },
+      "predicted_decrease": 0.02283951309784012,
+      "proposal_nodes": 768,
+      "proposal_refined_nodes": 1024,
+      "geometry_constructed": true,
+      "projection_error": 4.460361937170671e-15,
+      "projection_relative": 4.60380149378923e-15,
+      "maximum_normal_m": 0.022219388986690097,
+      "rms_normal_m": 0.00964614700825262,
+      "speed_ratio": 3.8753067552576344,
+      "refits": 2,
+      "intentional_projection_mm": 4.768670890432722,
+      "finite_path": "centred_state_band_spectral_projection",
+      "validity_tiers": {
+        "moved_coarse": "full",
+        "moved_fine": "full",
+        "candidate": "full"
+      },
+      "geometry_seconds": 0.03847137186676264,
+      "loss": 0.039229990870726796,
+      "actual_decrease": 0.0036720237482395085,
+      "gain_ratio": 0.1607750450944054,
+      "status": "accepted",
+      "damping_feedback": "poor_model_agreement"
+    },
+    {
+      "iteration": 2,
+      "damping": 0.01,
+      "backtrack": 0,
+      "step_norm_m": 0.010582967901238029,
+      "accepted_fraction": 1.0,
+      "damping_floor": 7.148195911888496e-06,
+      "clipping_fraction": 1.0,
+      "step_m": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/da77c3fe446b022b57028f84f048542c443e5551873916f32220b7448bab49a5.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          15
+        ],
+        "dtype": "float64",
+        "sha256": "1bdfadbdfa334ec9ddee823a23f1a9342649660a3abe1de927e204fa66e83ae5",
+        "bytes": 330
+      },
+      "predicted_decrease": 0.025183167303724798,
+      "proposal_nodes": 768,
+      "proposal_refined_nodes": 1024,
+      "geometry_constructed": true,
+      "status": "refused",
+      "reason": "self_intersection",
+      "detail": "Displaced curve self-intersects.",
+      "geometry_seconds": 0.013737256173044443
+    },
+    {
+      "iteration": 2,
+      "damping": 0.01,
+      "backtrack": 1,
+      "step_norm_m": 0.0052914839506190145,
+      "accepted_fraction": 0.5,
+      "damping_floor": 7.148195911888496e-06,
+      "clipping_fraction": 1.0,
+      "step_m": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/a48e7d5e484674f31e1790a8a8bc98263d255ddef8cfef99efa8eb01db65e885.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          15
+        ],
+        "dtype": "float64",
+        "sha256": "d5b6066330e682173b7384226c4f418d93d6f3b828470c7d719d93a86301519b",
+        "bytes": 330
+      },
+      "predicted_decrease": 0.01873580635769988,
+      "proposal_nodes": 768,
+      "proposal_refined_nodes": 1024,
+      "geometry_constructed": true,
+      "projection_error": 1.8492137331016985e-07,
+      "projection_relative": 1.5832379002393796e-07,
+      "maximum_normal_m": 0.012637261527401298,
+      "rms_normal_m": 0.0038719184308973714,
+      "speed_ratio": 3.935887732960098,
+      "refits": 2,
+      "intentional_projection_mm": 3.2684073147215735,
+      "finite_path": "centred_state_band_spectral_projection",
+      "validity_tiers": {
+        "moved_coarse": "sampled_accepted",
+        "moved_fine": "sampled_accepted",
+        "candidate": "full"
+      },
+      "geometry_seconds": 0.7320900070481002,
+      "loss": 0.02512668482813922,
+      "actual_decrease": 0.014103306042587575,
+      "gain_ratio": 0.7527461467806812,
+      "status": "accepted",
+      "damping_feedback": "retain_after_shortening_or_marginal_agreement"
+    },
+    {
+      "iteration": 3,
+      "damping": 0.01,
+      "backtrack": 0,
+      "step_norm_m": 0.00745612777919217,
+      "accepted_fraction": 1.0,
+      "damping_floor": 7.031307155104415e-06,
+      "clipping_fraction": 1.0,
+      "step_m": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/cbe32d879dacca2e81b515fd35ee90f8e4724502ba71a74ba40f206f56573411.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          15
+        ],
+        "dtype": "float64",
+        "sha256": "d10070bd71498bb6525734d5a11d93c5a150ae700f52edab50c4743138ad73e1",
+        "bytes": 331
+      },
+      "predicted_decrease": 0.014428417537033802,
+      "proposal_nodes": 768,
+      "proposal_refined_nodes": 1024,
+      "geometry_constructed": true,
+      "projection_error": 1.6090472641186155e-09,
+      "projection_relative": 1.3417937668848902e-09,
+      "maximum_normal_m": 0.015116228611461386,
+      "rms_normal_m": 0.005823377778778819,
+      "speed_ratio": 26.025328471534696,
+      "refits": 2,
+      "intentional_projection_mm": 5.1881081413325605,
+      "finite_path": "centred_state_band_spectral_projection",
+      "validity_tiers": {
+        "moved_coarse": "sampled_accepted",
+        "moved_fine": "sampled_accepted",
+        "candidate": "full"
+      },
+      "geometry_seconds": 2.1148190619423985,
+      "loss": 0.027991041580960434,
+      "status": "nondecreasing"
+    },
+    {
+      "iteration": 3,
+      "damping": 0.01,
+      "backtrack": 1,
+      "step_norm_m": 0.003728063889596085,
+      "accepted_fraction": 0.5,
+      "damping_floor": 7.031307155104415e-06,
+      "clipping_fraction": 1.0,
+      "step_m": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/ba192fdc02bc7e4b5592d7e7ae4bb12cf8aec43f37f1e3d43e8f97fe42920606.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          15
+        ],
+        "dtype": "float64",
+        "sha256": "7e59cdda52c0d4aa1c673de26bcaf861200edd1fc99a5cd543bbf3eb7cc952d2",
+        "bytes": 331
+      },
+      "predicted_decrease": 0.010723376785096796,
+      "proposal_nodes": 768,
+      "proposal_refined_nodes": 1024,
+      "geometry_constructed": true,
+      "status": "refused",
+      "reason": "self_intersection",
+      "detail": "Displaced curve self-intersects.",
+      "geometry_seconds": 1.0378102990798652
+    },
+    {
+      "iteration": 3,
+      "damping": 0.01,
+      "backtrack": 2,
+      "step_norm_m": 0.0018640319447980425,
+      "accepted_fraction": 0.25,
+      "damping_floor": 7.031307155104415e-06,
+      "clipping_fraction": 1.0,
+      "step_m": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/909ce36294970b1d72a6311f052bad9238b20043cbcc6a98a8aa9e01421fdf5d.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          15
+        ],
+        "dtype": "float64",
+        "sha256": "592a585bbd0651c4502ca88653cd15a49d84ef74b321202d22d5741a40868955",
+        "bytes": 331
+      },
+      "predicted_decrease": 0.0062389803966933725,
+      "proposal_nodes": 768,
+      "proposal_refined_nodes": 1024,
+      "geometry_constructed": true,
+      "projection_error": 1.0473093161585925e-07,
+      "projection_relative": 8.733572616288804e-08,
+      "maximum_normal_m": 0.0037790571528653464,
+      "rms_normal_m": 0.0014558444446947046,
+      "speed_ratio": 4.274635609864621,
+      "refits": 2,
+      "intentional_projection_mm": 3.80365021410298,
+      "finite_path": "centred_state_band_spectral_projection",
+      "validity_tiers": {
+        "moved_coarse": "sampled_accepted",
+        "moved_fine": "sampled_accepted",
+        "candidate": "full"
+      },
+      "geometry_seconds": 0.7621959368698299,
+      "loss": 0.020241926960032727,
+      "actual_decrease": 0.004884757868106493,
+      "gain_ratio": 0.7829416919943184,
+      "status": "accepted",
+      "damping_feedback": "severely_shortened"
+    },
+    {
+      "iteration": 4,
+      "damping": 0.1,
+      "backtrack": 0,
+      "step_norm_m": 0.005573795501721145,
+      "accepted_fraction": 1.0,
+      "damping_floor": 7.86522213658339e-06,
+      "clipping_fraction": 1.0,
+      "step_m": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/fa079d47102c662b07cb3da968e402f409fe7ecb3b6e60670fff2ebee67259fb.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          15
+        ],
+        "dtype": "float64",
+        "sha256": "069b2f02e4bc4460671c95af2d32fad47fdad10a05883f10a9cf1eb017375a4f",
+        "bytes": 331
+      },
+      "predicted_decrease": 0.008384708625069532,
+      "proposal_nodes": 768,
+      "proposal_refined_nodes": 1024,
+      "geometry_constructed": true,
+      "status": "refused",
+      "reason": "self_intersection",
+      "detail": "Displaced curve self-intersects.",
+      "geometry_seconds": 0.8618071363307536
+    },
+    {
+      "iteration": 4,
+      "damping": 0.1,
+      "backtrack": 1,
+      "step_norm_m": 0.0027868977508605725,
+      "accepted_fraction": 0.5,
+      "damping_floor": 7.86522213658339e-06,
+      "clipping_fraction": 1.0,
+      "step_m": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/d89608c1f2cc366cb59a3e908315c12a90d880a00505371d7941aaee31025f04.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          15
+        ],
+        "dtype": "float64",
+        "sha256": "009f55c8011717e33a6101ca1030033303395f645eb0539b507dfe3020c49129",
+        "bytes": 331
+      },
+      "predicted_decrease": 0.005853664395662628,
+      "proposal_nodes": 768,
+      "proposal_refined_nodes": 1024,
+      "geometry_constructed": true,
+      "projection_error": 2.2677573775871136e-07,
+      "projection_relative": 1.9161856124845254e-07,
+      "maximum_normal_m": 0.006224381954676779,
+      "rms_normal_m": 0.0021297886730319844,
+      "speed_ratio": 5.370226010029193,
+      "refits": 2,
+      "intentional_projection_mm": 3.4026423311157417,
+      "finite_path": "centred_state_band_spectral_projection",
+      "validity_tiers": {
+        "moved_coarse": "sampled_accepted",
+        "moved_fine": "sampled_accepted",
+        "candidate": "full"
+      },
+      "geometry_seconds": 1.0323199634440243,
+      "loss": 0.016172171273395177,
+      "actual_decrease": 0.00406975568663755,
+      "gain_ratio": 0.6952492339077561,
+      "status": "accepted",
+      "damping_feedback": "retain_after_shortening_or_marginal_agreement"
+    },
+    {
+      "iteration": 5,
+      "damping": 0.1,
+      "backtrack": 0,
+      "step_norm_m": 0.004937911887978937,
+      "accepted_fraction": 1.0,
+      "damping_floor": 8.49987090633626e-06,
+      "clipping_fraction": 1.0,
+      "step_m": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/8e9c14d862065fa555fe792cad8f1f264c4528bc0f5d804c8c4b2ea35abe7f00.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          15
+        ],
+        "dtype": "float64",
+        "sha256": "c87df803c763d43be719a08ca8dc316da0d15136aae8dcc4f5d8ad5f1e5e31b6",
+        "bytes": 331
+      },
+      "predicted_decrease": 0.004858516125442358,
+      "proposal_nodes": 768,
+      "proposal_refined_nodes": 1024,
+      "geometry_constructed": true,
+      "projection_error": 1.83078621647236e-14,
+      "projection_relative": 1.53629527935432e-14,
+      "maximum_normal_m": 0.009262287835549665,
+      "rms_normal_m": 0.003837825448919411,
+      "speed_ratio": 33.14232948295354,
+      "refits": 2,
+      "intentional_projection_mm": 2.5434056951475723,
+      "finite_path": "centred_state_band_spectral_projection",
+      "validity_tiers": {
+        "moved_coarse": "sampled_accepted",
+        "moved_fine": "sampled_accepted",
+        "candidate": "full"
+      },
+      "geometry_seconds": 0.3583302036859095,
+      "loss": 0.019702538665208432,
+      "status": "nondecreasing"
+    },
+    {
+      "iteration": 5,
+      "damping": 0.1,
+      "backtrack": 1,
+      "step_norm_m": 0.0024689559439894683,
+      "accepted_fraction": 0.5,
+      "damping_floor": 8.49987090633626e-06,
+      "clipping_fraction": 1.0,
+      "step_m": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/d8f6630910955f1db846a35d2075040e894203759ce53acdb4f93dd26f1e1ac1.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          15
+        ],
+        "dtype": "float64",
+        "sha256": "8d342f257222a847cb90ba6a74043f6672375175b21803084f63bd62a9b2c987",
+        "bytes": 331
+      },
+      "predicted_decrease": 0.0033134297519919914,
+      "proposal_nodes": 768,
+      "proposal_refined_nodes": 1024,
+      "geometry_constructed": true,
+      "projection_error": 4.291806289120206e-15,
+      "projection_relative": 3.601448209820569e-15,
+      "maximum_normal_m": 0.004631143917774833,
+      "rms_normal_m": 0.0019189127244597056,
+      "speed_ratio": 11.51058040616117,
+      "refits": 2,
+      "intentional_projection_mm": 2.803354239277316,
+      "finite_path": "centred_state_band_spectral_projection",
+      "validity_tiers": {
+        "moved_coarse": "sampled_accepted",
+        "moved_fine": "sampled_accepted",
+        "candidate": "full"
+      },
+      "geometry_seconds": 0.11586571065708995,
+      "loss": 0.014778601846000031,
+      "actual_decrease": 0.001393569427395146,
+      "gain_ratio": 0.42058215556172573,
+      "status": "accepted",
+      "damping_feedback": "retain_after_shortening_or_marginal_agreement"
+    },
+    {
+      "iteration": 6,
+      "damping": 0.1,
+      "backtrack": 0,
+      "step_norm_m": 0.005394902864330486,
+      "accepted_fraction": 1.0,
+      "damping_floor": 7.376297937106196e-06,
+      "clipping_fraction": 1.0,
+      "step_m": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/87d911816e3ca425cdffd3b2415c242945b172b6bc52b7805b5a4e20b13aba6f.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          15
+        ],
+        "dtype": "float64",
+        "sha256": "df8a78353d4a87ba4b7bc17fc84e8eff3adad05771b512e2dfa020f125062120",
+        "bytes": 332
+      },
+      "predicted_decrease": 0.004699481770859197,
+      "proposal_nodes": 768,
+      "proposal_refined_nodes": 1024,
+      "geometry_constructed": true,
+      "status": "refused",
+      "reason": "self_intersection",
+      "detail": "Displaced curve self-intersects.",
+      "geometry_seconds": 0.0264122080989182
+    },
+    {
+      "iteration": 6,
+      "damping": 0.1,
+      "backtrack": 1,
+      "step_norm_m": 0.002697451432165243,
+      "accepted_fraction": 0.5,
+      "damping_floor": 7.376297937106196e-06,
+      "clipping_fraction": 1.0,
+      "step_m": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/a253ff33f45fd2583feff5dc0e56cd4d66f1647b7f8a8f7972a765e99e335ddb.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          15
+        ],
+        "dtype": "float64",
+        "sha256": "e7c59f56690fbdcbd31146ff226aff63db9384dd5a0aa09df3a3a738cb832142",
+        "bytes": 332
+      },
+      "predicted_decrease": 0.0031674816228279773,
+      "proposal_nodes": 768,
+      "proposal_refined_nodes": 1024,
+      "geometry_constructed": true,
+      "status": "refused",
+      "reason": "self_intersection",
+      "detail": "Displaced curve self-intersects.",
+      "geometry_seconds": 0.004793444648385048
+    },
+    {
+      "iteration": 6,
+      "damping": 0.1,
+      "backtrack": 2,
+      "step_norm_m": 0.0013487257160826214,
+      "accepted_fraction": 0.25,
+      "damping_floor": 7.376297937106196e-06,
+      "clipping_fraction": 1.0,
+      "step_m": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/bb576a72cfdfdc35e75f9bdc3ffc08a622c1e650b2eb8b1437720f77671c01ef.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          15
+        ],
+        "dtype": "float64",
+        "sha256": "07843cda14e2918b6864991e4410948382e24de088578b1f914530b3ef17a69e",
+        "bytes": 332
+      },
+      "predicted_decrease": 0.0017881759957635833,
+      "proposal_nodes": 768,
+      "proposal_refined_nodes": 1024,
+      "geometry_constructed": true,
+      "status": "refused",
+      "reason": "self_intersection",
+      "detail": "Displaced curve self-intersects.",
+      "geometry_seconds": 0.004622926004230976
+    },
+    {
+      "iteration": 6,
+      "damping": 0.1,
+      "backtrack": 3,
+      "step_norm_m": 0.0006743628580413107,
+      "accepted_fraction": 0.125,
+      "damping_floor": 7.376297937106196e-06,
+      "clipping_fraction": 1.0,
+      "step_m": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/916ae70d78bf9d1e663b7aa1888fb941bbb46e7cd7aaefa7916d60133d0f339a.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          15
+        ],
+        "dtype": "float64",
+        "sha256": "6fe1ed8f69af4cd738ccc1d0593f5e8e03f4b88e7626df83291986c579023eb0",
+        "bytes": 332
+      },
+      "predicted_decrease": 0.0009451967939691902,
+      "proposal_nodes": 768,
+      "proposal_refined_nodes": 1024,
+      "geometry_constructed": true,
+      "projection_error": 2.7642692788843524e-12,
+      "projection_relative": 2.2584687670083434e-12,
+      "maximum_normal_m": 0.0015875111334718577,
+      "rms_normal_m": 0.0004767519193572511,
+      "speed_ratio": 11.273160307629182,
+      "refits": 2,
+      "intentional_projection_mm": 3.9582182072643883,
+      "finite_path": "centred_state_band_spectral_projection",
+      "validity_tiers": {
+        "moved_coarse": "sampled_accepted",
+        "moved_fine": "sampled_accepted",
+        "candidate": "full"
+      },
+      "geometry_seconds": 0.3090173122473061,
+      "loss": 0.013982549113841706,
+      "actual_decrease": 0.0007960527321583255,
+      "gain_ratio": 0.8422084556756059,
+      "status": "accepted",
+      "damping_feedback": "severely_shortened"
+    },
+    {
+      "iteration": 7,
+      "damping": 1.0,
+      "backtrack": 0,
+      "step_norm_m": 0.001203730348500792,
+      "accepted_fraction": 1.0,
+      "damping_floor": 7.614649043821135e-06,
+      "clipping_fraction": 1.0,
+      "step_m": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/aae9d044f6219f238413a81315e73f0794a0e75f9803e3e0e9dd63513a0f68ae.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          15
+        ],
+        "dtype": "float64",
+        "sha256": "5a5375045e45253905ecdd1ba162682e58dea683ae866b49e2801ad5dd0f0886",
+        "bytes": 332
+      },
+      "predicted_decrease": 0.0020776588165756604,
+      "proposal_nodes": 768,
+      "proposal_refined_nodes": 1024,
+      "geometry_constructed": true,
+      "projection_error": 1.2501822881377802e-12,
+      "projection_relative": 1.024438554093634e-12,
+      "maximum_normal_m": 0.00257590880623775,
+      "rms_normal_m": 0.0009551774084483877,
+      "speed_ratio": 12.896983066345038,
+      "refits": 2,
+      "intentional_projection_mm": 4.038372739764724,
+      "finite_path": "centred_state_band_spectral_projection",
+      "validity_tiers": {
+        "moved_coarse": "sampled_accepted",
+        "moved_fine": "sampled_accepted",
+        "candidate": "full"
+      },
+      "geometry_seconds": 0.2890225341543555,
+      "loss": 0.011981056497202998,
+      "actual_decrease": 0.0020014926166387077,
+      "gain_ratio": 0.9633403717062228,
+      "status": "accepted",
+      "damping_feedback": "full_step_good_agreement"
+    },
+    {
+      "iteration": 8,
+      "damping": 0.3,
+      "backtrack": 0,
+      "step_norm_m": 0.0013423572376118759,
+      "accepted_fraction": 1.0,
+      "damping_floor": 8.249800966211769e-06,
+      "clipping_fraction": 1.0,
+      "step_m": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/15d1b48c605a7c45d69994c8e7436c5ec6874f391b50cc5d0d243563c03449ed.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          15
+        ],
+        "dtype": "float64",
+        "sha256": "5348f11acf2b0512d9d17e6d4a7db0fa2bf9d52aa980bc80a3289d6bae4a9972",
+        "bytes": 331
+      },
+      "predicted_decrease": 0.0009396139437993596,
+      "proposal_nodes": 768,
+      "proposal_refined_nodes": 1024,
+      "geometry_constructed": true,
+      "projection_error": 5.31528785146936e-11,
+      "projection_relative": 4.3955511518159865e-11,
+      "maximum_normal_m": 0.0037801808202772417,
+      "rms_normal_m": 0.0009358385643567629,
+      "speed_ratio": 17.018228099827006,
+      "refits": 2,
+      "intentional_projection_mm": 4.1755040529131975,
+      "finite_path": "centred_state_band_spectral_projection",
+      "validity_tiers": {
+        "moved_coarse": "sampled_accepted",
+        "moved_fine": "sampled_accepted",
+        "candidate": "full"
+      },
+      "geometry_seconds": 0.3619749741628766,
+      "loss": 0.010838417408148325,
+      "actual_decrease": 0.0011426390890546725,
+      "gain_ratio": 1.216072937822074,
+      "status": "accepted",
+      "damping_feedback": "full_step_good_agreement"
+    },
+    {
+      "iteration": 9,
+      "damping": 0.09,
+      "backtrack": 0,
+      "step_norm_m": 0.0024696646652265543,
+      "accepted_fraction": 1.0,
+      "damping_floor": 8.656716405192119e-06,
+      "clipping_fraction": 1.0,
+      "step_m": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/1e597432982f5f120125838cb2f5907267eb37a151ad10eb90cbe7d5985b03ea.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          15
+        ],
+        "dtype": "float64",
+        "sha256": "1fc1c4f37117ca375ddce50d377301fcdb8160c2f480a4e5eda4d71cb281aecd",
+        "bytes": 331
+      },
+      "predicted_decrease": 0.0013187683390839357,
+      "proposal_nodes": 768,
+      "proposal_refined_nodes": 1024,
+      "geometry_constructed": true,
+      "projection_error": 1.6811294087604961e-09,
+      "projection_relative": 1.3693011180894424e-09,
+      "maximum_normal_m": 0.008690201621966999,
+      "rms_normal_m": 0.0016191461846002402,
+      "speed_ratio": 32.746018437794326,
+      "refits": 2,
+      "intentional_projection_mm": 4.1802307835267225,
+      "finite_path": "centred_state_band_spectral_projection",
+      "validity_tiers": {
+        "moved_coarse": "sampled_accepted",
+        "moved_fine": "sampled_accepted",
+        "candidate": "full"
+      },
+      "geometry_seconds": 0.16646782215684652,
+      "loss": 0.008532613292337355,
+      "actual_decrease": 0.00230580411581097,
+      "gain_ratio": 1.748452739935101,
+      "status": "accepted",
+      "damping_feedback": "full_step_good_agreement"
+    },
+    {
+      "iteration": 10,
+      "damping": 0.027,
+      "backtrack": 0,
+      "step_norm_m": 0.005159360632579558,
+      "accepted_fraction": 1.0,
+      "damping_floor": 9.108513076990604e-06,
+      "clipping_fraction": 1.0,
+      "step_m": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/f99ca4ccb6932fc90d7f809b9b174258063590cee914f79e10727f32e1a50c4e.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          15
+        ],
+        "dtype": "float64",
+        "sha256": "dbb6c4ed4cd871f77476ec9a2ab8ac18975ad812c0688893cee8775092f6b56f",
+        "bytes": 331
+      },
+      "predicted_decrease": 0.0019779009903369217,
+      "proposal_nodes": 768,
+      "proposal_refined_nodes": 1024,
+      "geometry_constructed": true,
+      "projection_error": 1.3541454317139465e-06,
+      "projection_relative": 1.0584765867183624e-06,
+      "maximum_normal_m": 0.009726266953392534,
+      "rms_normal_m": 0.002617845449033932,
+      "speed_ratio": 17.724724155631474,
+      "refits": 2,
+      "intentional_projection_mm": 4.869073532758578,
+      "finite_path": "centred_state_band_spectral_projection",
+      "validity_tiers": {
+        "moved_coarse": "sampled_accepted",
+        "moved_fine": "sampled_accepted",
+        "candidate": "full"
+      },
+      "geometry_seconds": 0.2500972840934992,
+      "loss": 0.006006297865204631,
+      "actual_decrease": 0.0025263154271327245,
+      "gain_ratio": 1.2772709248213603,
+      "status": "accepted",
+      "damping_feedback": "full_step_good_agreement"
+    },
+    {
+      "iteration": 11,
+      "damping": 0.0081,
+      "backtrack": 0,
+      "step_norm_m": 0.006155250237708053,
+      "accepted_fraction": 1.0,
+      "damping_floor": 9.241010759248219e-06,
+      "clipping_fraction": 1.0,
+      "step_m": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/81a321443eb32eabdc779778af54210ec172e2ceae2049542259d37970b18058.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          15
+        ],
+        "dtype": "float64",
+        "sha256": "06560f02f9bf4333e5585958b23b1a3db11d5b89a581ca7cb52bc079c4dd6514",
+        "bytes": 330
+      },
+      "predicted_decrease": 0.0015972517209839152,
+      "proposal_nodes": 768,
+      "proposal_refined_nodes": 1024,
+      "geometry_constructed": true,
+      "status": "refused",
+      "reason": "self_intersection",
+      "detail": "Curve self-intersects.",
+      "geometry_seconds": 0.5698602478951216
+    },
+    {
+      "iteration": 11,
+      "damping": 0.0081,
+      "backtrack": 1,
+      "step_norm_m": 0.0030776251188540265,
+      "accepted_fraction": 0.5,
+      "damping_floor": 9.241010759248219e-06,
+      "clipping_fraction": 1.0,
+      "step_m": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/4e08b83f2cdd6100c4f4165ca500844dc12cfbdda94f7385a4eef17925b800ab.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          15
+        ],
+        "dtype": "float64",
+        "sha256": "d3040dfaeb4cfcba4bc1e2eb4c7b79bf10737d06869354efe85df7b1cad0b09b",
+        "bytes": 330
+      },
+      "predicted_decrease": 0.0010643639564000148,
+      "proposal_nodes": 768,
+      "proposal_refined_nodes": 1024,
+      "geometry_constructed": true,
+      "status": "refused",
+      "reason": "self_intersection",
+      "detail": "Curve self-intersects.",
+      "geometry_seconds": 0.9600162771530449
+    },
+    {
+      "iteration": 11,
+      "damping": 0.0081,
+      "backtrack": 2,
+      "step_norm_m": 0.0015388125594270133,
+      "accepted_fraction": 0.25,
+      "damping_floor": 9.241010759248219e-06,
+      "clipping_fraction": 1.0,
+      "step_m": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/2a5a509a7da960d9f4987a379c68c9d91f1c8281cca88753c3736db636a3fa56.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          15
+        ],
+        "dtype": "float64",
+        "sha256": "a9268c074a2fd62150798f7725196d654fd8b40178f7e1f4e714af31b9f612d1",
+        "bytes": 330
+      },
+      "predicted_decrease": 0.0005986165021770217,
+      "proposal_nodes": 768,
+      "proposal_refined_nodes": 1024,
+      "geometry_constructed": true,
+      "projection_error": 1.6908013478434758e-09,
+      "projection_relative": 1.2290712482638984e-09,
+      "maximum_normal_m": 0.0018197032456253313,
+      "rms_normal_m": 0.0005769969592862634,
+      "speed_ratio": 31.237618884901824,
+      "refits": 2,
+      "intentional_projection_mm": 5.053869291508313,
+      "finite_path": "centred_state_band_spectral_projection",
+      "validity_tiers": {
+        "moved_coarse": "sampled_accepted",
+        "moved_fine": "sampled_accepted",
+        "candidate": "full"
+      },
+      "geometry_seconds": 0.27184582594782114,
+      "loss": 0.005501763469407422,
+      "actual_decrease": 0.0005045343957972093,
+      "gain_ratio": 0.84283409154666,
+      "status": "accepted",
+      "damping_feedback": "severely_shortened"
+    },
+    {
+      "iteration": 12,
+      "damping": 0.08099999999999999,
+      "backtrack": 0,
+      "step_norm_m": 0.0023962162999758376,
+      "accepted_fraction": 1.0,
+      "damping_floor": 9.562290480014887e-06,
+      "clipping_fraction": 1.0,
+      "step_m": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/a1f29e96f3ab8d3ed3d1e65c6a6ecdaf31c73b26c74a56895e22bc8253caa8e6.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          15
+        ],
+        "dtype": "float64",
+        "sha256": "a5dc6b3b9333c0dcae41ff6b455f0c25ef6d514ed5f77feabca12fa987640db2",
+        "bytes": 330
+      },
+      "predicted_decrease": 0.000901232821982968,
+      "proposal_nodes": 768,
+      "proposal_refined_nodes": 1024,
+      "geometry_constructed": true,
+      "status": "refused",
+      "reason": "self_intersection",
+      "detail": "Displaced curve self-intersects.",
+      "geometry_seconds": 0.6422096379101276
+    },
+    {
+      "iteration": 12,
+      "damping": 0.08099999999999999,
+      "backtrack": 1,
+      "step_norm_m": 0.0011981081499879188,
+      "accepted_fraction": 0.5,
+      "damping_floor": 9.562290480014887e-06,
+      "clipping_fraction": 1.0,
+      "step_m": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/851601eac364386b441b5beae8cf22a78a9e6cd7c63482fa3adb1ab7cf640af9.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          15
+        ],
+        "dtype": "float64",
+        "sha256": "2b51fa0f29ecd3a51744240dbe389a0b3dba6f67acaf7c351af4a380fb014010",
+        "bytes": 330
+      },
+      "predicted_decrease": 0.0005685142534012633,
+      "proposal_nodes": 768,
+      "proposal_refined_nodes": 1024,
+      "geometry_constructed": true,
+      "status": "refused",
+      "reason": "self_intersection",
+      "detail": "Displaced curve self-intersects.",
+      "geometry_seconds": 0.5451234108768404
+    },
+    {
+      "iteration": 12,
+      "damping": 0.08099999999999999,
+      "backtrack": 2,
+      "step_norm_m": 0.0005990540749939594,
+      "accepted_fraction": 0.25,
+      "damping_floor": 9.562290480014887e-06,
+      "clipping_fraction": 1.0,
+      "step_m": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/c0f87f26ce50dccf2f7e6c6d7b428915298439d706775ad8bc2411c6aa491337.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          15
+        ],
+        "dtype": "float64",
+        "sha256": "ab819a4177fae57e72d47f59acbb91ee78cc1cc6980328d462ec16a72b6df20d",
+        "bytes": 330
+      },
+      "predicted_decrease": 0.00031373158730307643,
+      "proposal_nodes": 768,
+      "proposal_refined_nodes": 1024,
+      "geometry_constructed": true,
+      "status": "refused",
+      "reason": "self_intersection",
+      "detail": "Displaced curve self-intersects.",
+      "geometry_seconds": 0.25843724189326167
+    },
+    {
+      "iteration": 12,
+      "damping": 0.08099999999999999,
+      "backtrack": 3,
+      "step_norm_m": 0.0002995270374969797,
+      "accepted_fraction": 0.125,
+      "damping_floor": 9.562290480014887e-06,
+      "clipping_fraction": 1.0,
+      "step_m": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/318ccf8ce164d777b41c4ce1f7dbb250e821488d3652201d14192356ab2ae47f.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          15
+        ],
+        "dtype": "float64",
+        "sha256": "e7da4dbc5cbeb40ef7a42c0143f926191790f91584d4583abdd335cb2c913b7a",
+        "bytes": 331
+      },
+      "predicted_decrease": 0.00016423440880214944,
+      "proposal_nodes": 768,
+      "proposal_refined_nodes": 1024,
+      "geometry_constructed": true,
+      "projection_error": 7.196694273884234e-10,
+      "projection_relative": 5.206713682298364e-10,
+      "maximum_normal_m": 0.0004026376280079245,
+      "rms_normal_m": 0.00016929108504775786,
+      "speed_ratio": 35.609127679538624,
+      "refits": 2,
+      "intentional_projection_mm": 4.790729981951261,
+      "finite_path": "centred_state_band_spectral_projection",
+      "validity_tiers": {
+        "moved_coarse": "sampled_accepted",
+        "moved_fine": "sampled_accepted",
+        "candidate": "full"
+      },
+      "geometry_seconds": 0.317341567017138,
+      "loss": 0.00534462793159025,
+      "actual_decrease": 0.00015713553781717196,
+      "gain_ratio": 0.956775982348928,
+      "status": "accepted",
+      "damping_feedback": "severely_shortened"
+    },
+    {
+      "iteration": 13,
+      "damping": 0.8099999999999998,
+      "backtrack": 0,
+      "step_norm_m": 0.0006258780223799601,
+      "accepted_fraction": 1.0,
+      "damping_floor": 9.567947289654967e-06,
+      "clipping_fraction": 1.0,
+      "step_m": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/80c711f6d824d6d79c6e989d4d8b869f6956f286cb4959b949f2d62d108a5db3.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          15
+        ],
+        "dtype": "float64",
+        "sha256": "d768d87e6bf988318fc7e83d5b16222d2ea4a575f0c3cd1aab46af378d0b01fa",
+        "bytes": 333
+      },
+      "predicted_decrease": 0.0003192895392251956,
+      "proposal_nodes": 768,
+      "proposal_refined_nodes": 1024,
+      "geometry_constructed": true,
+      "status": "refused",
+      "reason": "self_intersection",
+      "detail": "Displaced curve self-intersects.",
+      "geometry_seconds": 1.039401541929692
+    },
+    {
+      "iteration": 13,
+      "damping": 0.8099999999999998,
+      "backtrack": 1,
+      "step_norm_m": 0.0003129390111899801,
+      "accepted_fraction": 0.5,
+      "damping_floor": 9.567947289654967e-06,
+      "clipping_fraction": 1.0,
+      "step_m": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/097a7f1afbf34ce1f0350f6595137e4236a8678051bc2d0a7a05b9df11c84bb8.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          15
+        ],
+        "dtype": "float64",
+        "sha256": "0aeb8fd014554cd3cf6b8d3b8bb1bd8588fc4b2b3cce8484a2fffba9665a90ef",
+        "bytes": 333
+      },
+      "predicted_decrease": 0.0001831933480206718,
+      "proposal_nodes": 768,
+      "proposal_refined_nodes": 1024,
+      "geometry_constructed": true,
+      "projection_error": 3.616206327091827e-06,
+      "projection_relative": 2.6140103733601695e-06,
+      "maximum_normal_m": 0.0004950039922668152,
+      "rms_normal_m": 0.00021269201825484214,
+      "speed_ratio": 36.14825962993706,
+      "refits": 2,
+      "intentional_projection_mm": 4.787270144278666,
+      "finite_path": "centred_state_band_spectral_projection",
+      "validity_tiers": {
+        "moved_coarse": "sampled_accepted",
+        "moved_fine": "sampled_accepted",
+        "candidate": "full"
+      },
+      "geometry_seconds": 0.4334054789505899,
+      "loss": 0.005171600476872962,
+      "actual_decrease": 0.00017302745471728734,
+      "gain_ratio": 0.9445073010935019,
+      "status": "accepted",
+      "damping_feedback": "retain_after_shortening_or_marginal_agreement"
+    },
+    {
+      "iteration": 14,
+      "damping": 0.8099999999999998,
+      "backtrack": 0,
+      "step_norm_m": 0.0004838824570481972,
+      "accepted_fraction": 1.0,
+      "damping_floor": 9.572118656306586e-06,
+      "clipping_fraction": 1.0,
+      "step_m": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/c3b9ef842a94a704aa812ccee845b2e6ac57c92b832173ee06dbfd85c3b55e3d.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          15
+        ],
+        "dtype": "float64",
+        "sha256": "9ff00bdc3b44d7d2dcae003aa4153f399c04d32a0f5ec81e7426afdbd7e98665",
+        "bytes": 331
+      },
+      "predicted_decrease": 0.00020228054852458946,
+      "proposal_nodes": 768,
+      "proposal_refined_nodes": 1024,
+      "geometry_constructed": true,
+      "status": "refused",
+      "reason": "unresolved_projection",
+      "detail": "geometry grid refinement 1.63871e-05",
+      "geometry_seconds": 0.5060584140010178
+    },
+    {
+      "iteration": 14,
+      "damping": 0.8099999999999998,
+      "backtrack": 1,
+      "step_norm_m": 0.0002419412285240986,
+      "accepted_fraction": 0.5,
+      "damping_floor": 9.572118656306586e-06,
+      "clipping_fraction": 1.0,
+      "step_m": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/7d4a61228190123a7d41c099dac46032f40f777793bad44284b66c0f9cdd050f.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          15
+        ],
+        "dtype": "float64",
+        "sha256": "59403bbf69dc7ab99e9ff70dd2d74761306367e23d545184d30572b093e5fa30",
+        "bytes": 332
+      },
+      "predicted_decrease": 0.0001099621211928164,
+      "proposal_nodes": 768,
+      "proposal_refined_nodes": 1024,
+      "geometry_constructed": true,
+      "projection_error": 7.902304565121112e-10,
+      "projection_relative": 5.70848581176975e-10,
+      "maximum_normal_m": 0.00034411565490546057,
+      "rms_normal_m": 0.0001510264676224651,
+      "speed_ratio": 38.84779506521247,
+      "refits": 2,
+      "intentional_projection_mm": 4.694072115501226,
+      "finite_path": "centred_state_band_spectral_projection",
+      "validity_tiers": {
+        "moved_coarse": "sampled_accepted",
+        "moved_fine": "sampled_accepted",
+        "candidate": "full"
+      },
+      "geometry_seconds": 0.3739857436157763,
+      "loss": 0.00506583750047321,
+      "actual_decrease": 0.00010576297639975241,
+      "gain_ratio": 0.9618128065599892,
+      "status": "accepted",
+      "damping_feedback": "retain_after_shortening_or_marginal_agreement"
+    },
+    {
+      "iteration": 15,
+      "damping": 0.8099999999999998,
+      "backtrack": 0,
+      "step_norm_m": 0.0004087123933995997,
+      "accepted_fraction": 1.0,
+      "damping_floor": 9.55167701183083e-06,
+      "clipping_fraction": 1.0,
+      "step_m": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/115416b28de5ac4cf3a9fc4bea2037abcdda0d41dcab87a787f220a984ab3d19.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          15
+        ],
+        "dtype": "float64",
+        "sha256": "ea03f8af231449133f6ea3638c800ab01c9a2130795d8e454474675bc2274924",
+        "bytes": 332
+      },
+      "predicted_decrease": 0.00015879133547391927,
+      "proposal_nodes": 768,
+      "proposal_refined_nodes": 1024,
+      "geometry_constructed": true,
+      "projection_error": 4.250804364194979e-10,
+      "projection_relative": 3.068005464230188e-10,
+      "maximum_normal_m": 0.0005329140266990603,
+      "rms_normal_m": 0.00024363323335089532,
+      "speed_ratio": 52.47400892380206,
+      "refits": 2,
+      "intentional_projection_mm": 4.713116843905955,
+      "finite_path": "centred_state_band_spectral_projection",
+      "validity_tiers": {
+        "moved_coarse": "sampled_accepted",
+        "moved_fine": "sampled_accepted",
+        "candidate": "full"
+      },
+      "geometry_seconds": 0.4263940523378551,
+      "loss": 0.004914985531716423,
+      "actual_decrease": 0.00015085196875678705,
+      "gain_ratio": 0.9500012598707804,
+      "status": "accepted",
+      "damping_feedback": "full_step_good_agreement"
+    },
+    {
+      "iteration": 16,
+      "damping": 0.24299999999999994,
+      "backtrack": 0,
+      "step_norm_m": 0.000830112106568967,
+      "accepted_fraction": 1.0,
+      "damping_floor": 9.50001618070265e-06,
+      "clipping_fraction": 1.0,
+      "step_m": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/a294d20f94006773ac011cf901b3b50202beae9805c5207894a6d68b0c482c8c.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          15
+        ],
+        "dtype": "float64",
+        "sha256": "8173262777648633adb0e1a841f8a624cb66395b23f79b6cdf73743036340f46",
+        "bytes": 332
+      },
+      "predicted_decrease": 0.000292034396289361,
+      "proposal_nodes": 768,
+      "proposal_refined_nodes": 1024,
+      "geometry_constructed": true,
+      "status": "refused",
+      "reason": "self_intersection",
+      "detail": "Curve self-intersects.",
+      "geometry_seconds": 0.5588917369022965
+    },
+    {
+      "iteration": 16,
+      "damping": 0.24299999999999994,
+      "backtrack": 1,
+      "step_norm_m": 0.0004150560532844835,
+      "accepted_fraction": 0.5,
+      "damping_floor": 9.50001618070265e-06,
+      "clipping_fraction": 1.0,
+      "step_m": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/c54c6d029a235ab9b65d4424a5a7f6627021b29228549f0e917f7263381dad1d.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          15
+        ],
+        "dtype": "float64",
+        "sha256": "0fa5a9ab7b646544f75c241aba8304104d1ec69fb52976166b1f7e5575059f9d",
+        "bytes": 332
+      },
+      "predicted_decrease": 0.00015854015990180277,
+      "proposal_nodes": 768,
+      "proposal_refined_nodes": 1024,
+      "geometry_constructed": true,
+      "projection_error": 1.3290481019575877e-09,
+      "projection_relative": 9.574585554738576e-10,
+      "maximum_normal_m": 0.00044738397067893435,
+      "rms_normal_m": 0.00022887963711561572,
+      "speed_ratio": 120.83896201307934,
+      "refits": 2,
+      "intentional_projection_mm": 4.60919234332688,
+      "finite_path": "centred_state_band_spectral_projection",
+      "validity_tiers": {
+        "moved_coarse": "sampled_accepted",
+        "moved_fine": "sampled_accepted",
+        "candidate": "full"
+      },
+      "geometry_seconds": 0.502691512927413,
+      "loss": 0.0047595941620193465,
+      "actual_decrease": 0.0001553913696970763,
+      "gain_ratio": 0.9801388480579508,
+      "status": "accepted",
+      "damping_feedback": "retain_after_shortening_or_marginal_agreement"
+    },
+    {
+      "iteration": 17,
+      "damping": 0.24299999999999994,
+      "backtrack": 0,
+      "step_norm_m": 0.0007575301482728628,
+      "accepted_fraction": 1.0,
+      "damping_floor": 9.42958210743313e-06,
+      "clipping_fraction": 1.0,
+      "step_m": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/ad367f246ddb7225d01a783189809da5cf2a621a2f4b8222196ced39e169235e.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          15
+        ],
+        "dtype": "float64",
+        "sha256": "b42b88fb9fd46e9181cce60161a9a28dca9c4ea1bedbc9c9ff7a50c4c008fd58",
+        "bytes": 330
+      },
+      "predicted_decrease": 0.00025656887080851805,
+      "proposal_nodes": 768,
+      "proposal_refined_nodes": 1024,
+      "geometry_constructed": true,
+      "status": "refused",
+      "reason": "unresolved_projection",
+      "detail": "geometry grid refinement 9.03951e-05",
+      "geometry_seconds": 0.36090545961633325
+    },
+    {
+      "iteration": 17,
+      "damping": 0.24299999999999994,
+      "backtrack": 1,
+      "step_norm_m": 0.0003787650741364314,
+      "accepted_fraction": 0.5,
+      "damping_floor": 9.42958210743313e-06,
+      "clipping_fraction": 1.0,
+      "step_m": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/96dc954d6ff24d3be40b29820e4f59d1e13e2c2f16ba50c2b177155a5dc0ccb5.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          15
+        ],
+        "dtype": "float64",
+        "sha256": "198eb613958753680fe4f115f19209db83f2a372bce1a72adf7c911e628245ca",
+        "bytes": 330
+      },
+      "predicted_decrease": 0.00013774209178414623,
+      "proposal_nodes": 768,
+      "proposal_refined_nodes": 1024,
+      "geometry_constructed": true,
+      "status": "refused",
+      "reason": "unresolved_projection",
+      "detail": "geometry grid refinement 2.97341e-05",
+      "geometry_seconds": 0.35299444664269686
+    },
+    {
+      "iteration": 17,
+      "damping": 0.24299999999999994,
+      "backtrack": 2,
+      "step_norm_m": 0.0001893825370682157,
+      "accepted_fraction": 0.25,
+      "damping_floor": 9.42958210743313e-06,
+      "clipping_fraction": 1.0,
+      "step_m": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/739de5c6490a3bf8aaf63446c3b9cbc0db247fba65874775170a1a54e1fd27c6.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          15
+        ],
+        "dtype": "float64",
+        "sha256": "cb50fcd6a3832f0efa86208fc74f251b526b0e6213b9c9721124743dd862a9f9",
+        "bytes": 330
+      },
+      "predicted_decrease": 7.123545998704492e-05,
+      "proposal_nodes": 768,
+      "proposal_refined_nodes": 1024,
+      "geometry_constructed": true,
+      "projection_error": 1.3335698941744034e-05,
+      "projection_relative": 9.584195657264284e-06,
+      "maximum_normal_m": 0.0001934210063022243,
+      "rms_normal_m": 9.81572672359846e-05,
+      "speed_ratio": 375.6627701790984,
+      "refits": 2,
+      "intentional_projection_mm": 4.4672924083140355,
+      "finite_path": "centred_state_band_spectral_projection",
+      "validity_tiers": {
+        "moved_coarse": "sampled_accepted",
+        "moved_fine": "sampled_accepted",
+        "candidate": "sampled_accepted"
+      },
+      "geometry_seconds": 0.7009719139896333,
+      "status": "physics_failed",
+      "reason": "production_evaluation_failed",
+      "physics_failures": [
+        {
+          "exception_type": "ValueError",
+          "message": "log|W|^2 needs more than 4000 Chebyshev terms (beta/Lambda=3.07e-06); curve is nearly self-touching.",
+          "traceback": "Traceback (most recent call last):\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/continuation/lm_backend.py\", line 455, in predict\n    self.physics.evaluate(curve, observation, self.contrast, nodes))\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/modal_muller.py\", line 233, in evaluate\n    prediction = self._evaluate(curve, observation, contrast, trace_cutoff(int(resolution)))\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/modal_muller.py\", line 254, in _evaluate\n    geometry, (matrix, radial, device, fallback) = self._matrix(curve, window, k, ki, cutoff)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/modal_muller.py\", line 204, in _matrix\n    geometry = self._geometry(curve, window, device)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/modal_muller.py\", line 190, in _geometry\n    slot[1] = DeviceModalGeometry(curve, window, device=device, **options)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/modal_cuda.py\", line 236, in __init__\n    self.log, self.log_interval = log_modulus(_real_product(quotient, quotient, 2), band,\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/modal_cuda.py\", line 166, in log_modulus\n    raise ValueError(f'log|W|^2 needs more than {max_degree} Chebyshev terms '\nValueError: log|W|^2 needs more than 4000 Chebyshev terms (beta/Lambda=3.07e-06); curve is nearly self-touching.\n",
+          "category": "candidate",
+          "resolution": 768,
+          "frequency_hz": 250000000.0,
+          "wavenumber": {
+            "real": 0.641718860444247,
+            "imag": 0.16042971511106174
+          },
+          "candidate_sha256": "ed79a9fd35eaa26c468eecb2308a29a89081ca705d8ad4e803760a65baa22fd1",
+          "candidate_coefficients": {
+            "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/722b01f8c555b62cdf784828007dbea8d09369fdc0eea1cb7620406cfeb1e7f4.npz",
+            "encoding": "complex_curve_record",
+            "array": "value",
+            "shape": [
+              17
+            ],
+            "dtype": "complex128",
+            "sha256": "7a6902303ad5cb585af9131da6f997cf929518477da5252035fa44fcc57346a3",
+            "bytes": 495
+          }
+        },
+        {
+          "exception_type": "ValueError",
+          "message": "log|W|^2 needs more than 4000 Chebyshev terms (beta/Lambda=3.07e-06); curve is nearly self-touching.",
+          "traceback": "Traceback (most recent call last):\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/continuation/lm_backend.py\", line 455, in predict\n    self.physics.evaluate(curve, observation, self.contrast, nodes))\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/modal_muller.py\", line 233, in evaluate\n    prediction = self._evaluate(curve, observation, contrast, trace_cutoff(int(resolution)))\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/modal_muller.py\", line 254, in _evaluate\n    geometry, (matrix, radial, device, fallback) = self._matrix(curve, window, k, ki, cutoff)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/modal_muller.py\", line 204, in _matrix\n    geometry = self._geometry(curve, window, device)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/modal_muller.py\", line 190, in _geometry\n    slot[1] = DeviceModalGeometry(curve, window, device=device, **options)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/modal_cuda.py\", line 236, in __init__\n    self.log, self.log_interval = log_modulus(_real_product(quotient, quotient, 2), band,\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/modal_cuda.py\", line 166, in log_modulus\n    raise ValueError(f'log|W|^2 needs more than {max_degree} Chebyshev terms '\nValueError: log|W|^2 needs more than 4000 Chebyshev terms (beta/Lambda=3.07e-06); curve is nearly self-touching.\n",
+          "category": "candidate",
+          "resolution": 768,
+          "frequency_hz": 375000000.0,
+          "wavenumber": {
+            "real": 0.9625782906663704,
+            "imag": 0.2406445726665926
+          },
+          "candidate_sha256": "ed79a9fd35eaa26c468eecb2308a29a89081ca705d8ad4e803760a65baa22fd1",
+          "candidate_coefficients": {
+            "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/722b01f8c555b62cdf784828007dbea8d09369fdc0eea1cb7620406cfeb1e7f4.npz",
+            "encoding": "complex_curve_record",
+            "array": "value",
+            "shape": [
+              17
+            ],
+            "dtype": "complex128",
+            "sha256": "7a6902303ad5cb585af9131da6f997cf929518477da5252035fa44fcc57346a3",
+            "bytes": 495
+          }
+        },
+        {
+          "exception_type": "ValueError",
+          "message": "log|W|^2 needs more than 4000 Chebyshev terms (beta/Lambda=3.07e-06); curve is nearly self-touching.",
+          "traceback": "Traceback (most recent call last):\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/continuation/lm_backend.py\", line 455, in predict\n    self.physics.evaluate(curve, observation, self.contrast, nodes))\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/modal_muller.py\", line 233, in evaluate\n    prediction = self._evaluate(curve, observation, contrast, trace_cutoff(int(resolution)))\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/modal_muller.py\", line 254, in _evaluate\n    geometry, (matrix, radial, device, fallback) = self._matrix(curve, window, k, ki, cutoff)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/modal_muller.py\", line 204, in _matrix\n    geometry = self._geometry(curve, window, device)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/modal_muller.py\", line 190, in _geometry\n    slot[1] = DeviceModalGeometry(curve, window, device=device, **options)\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/modal_cuda.py\", line 236, in __init__\n    self.log, self.log_interval = log_modulus(_real_product(quotient, quotient, 2), band,\n  File \"/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/modal_cuda.py\", line 166, in log_modulus\n    raise ValueError(f'log|W|^2 needs more than {max_degree} Chebyshev terms '\nValueError: log|W|^2 needs more than 4000 Chebyshev terms (beta/Lambda=3.07e-06); curve is nearly self-touching.\n",
+          "category": "candidate",
+          "resolution": 768,
+          "frequency_hz": 500000000.0,
+          "wavenumber": {
+            "real": 1.283437720888494,
+            "imag": 0.3208594302221235
+          },
+          "candidate_sha256": "ed79a9fd35eaa26c468eecb2308a29a89081ca705d8ad4e803760a65baa22fd1",
+          "candidate_coefficients": {
+            "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/722b01f8c555b62cdf784828007dbea8d09369fdc0eea1cb7620406cfeb1e7f4.npz",
+            "encoding": "complex_curve_record",
+            "array": "value",
+            "shape": [
+              17
+            ],
+            "dtype": "complex128",
+            "sha256": "7a6902303ad5cb585af9131da6f997cf929518477da5252035fa44fcc57346a3",
+            "bytes": 495
+          }
+        }
+      ]
+    }
+  ],
+  "acceptance_checks": [
+    {
+      "production_gain": 0.0036720237482395085,
+      "refined_gain": 0.00367202374823955,
+      "margin": 4.2903014618966304e-10,
+      "disagreement_allowance": 2.0816681711721685e-16,
+      "accepted": true,
+      "prediction_discrepancy": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/b73bf4a9357d93a6dab5d4af484333f0db1dbcc4fcb4d66754da4e21515c23cd.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "c4c75c25ab233a796da82fab1da9eaeb7e338234376d6e4bee6da0c761c5d06b",
+        "bytes": 230
+      },
+      "refined_base_loss": 0.04290201461896629,
+      "refined_candidate_loss": 0.03922999087072674,
+      "gate": "absolute",
+      "prediction_discrepancy_ratios": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/bd1ac797b850724acf66ee52326736cc04e7856658d824c65310d5833e64bfb2.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "625d2b8e5073fb7ecb5e6c5542c7a18f67acd3495deefe337f27b4173c5d21f4",
+        "bytes": 230
+      },
+      "base_prediction_discrepancy": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/afddc0c47a7619dab5c3a37fbef9edf6087ae42cd68b8e5d922f6a4002443410.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "d528e8b7f35fb93b3e7658fbb01a6f0a7e0b638aa7e4af7956f2820fc905705e",
+        "bytes": 229
+      },
+      "base_qualified": true,
+      "candidate_qualified": true,
+      "nodes": 768,
+      "refined_nodes": 1024,
+      "threshold_distance": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/a38106c803f624a2c84ec758ea1d6fae5a62e018544eff03ef188a48fe4843fb.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "4c3e01f042caf036c85e1c0ebb244a53daf4981fd352394ccc5e36979c0b7264",
+        "bytes": 223
+      }
+    },
+    {
+      "production_gain": 0.014103306042587575,
+      "refined_gain": 0.014103306042587603,
+      "margin": 3.9230990870726795e-10,
+      "disagreement_allowance": 1.3877787807814457e-16,
+      "accepted": true,
+      "prediction_discrepancy": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/d025595cb81af364d76813a878d1e6fe7bed15dd8877fd09fb250eacea6bb4f4.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "7717652b869af29ed3c67b4bdd2f223133f7c09e65e00a370b124b8993bfadb2",
+        "bytes": 229
+      },
+      "refined_base_loss": 0.03922999087072674,
+      "refined_candidate_loss": 0.025126684828139137,
+      "gate": "absolute",
+      "prediction_discrepancy_ratios": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/26f2b6365c9fe048f0ea18bfcf98c1b2378a8e0f178b3dccba74e831cf8eec46.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "1d06be6c5d05a5ba42036511dc4d7ab77058f3147e2ab187748532625af03b32",
+        "bytes": 230
+      },
+      "base_prediction_discrepancy": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/b73bf4a9357d93a6dab5d4af484333f0db1dbcc4fcb4d66754da4e21515c23cd.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "c4c75c25ab233a796da82fab1da9eaeb7e338234376d6e4bee6da0c761c5d06b",
+        "bytes": 230
+      },
+      "base_qualified": true,
+      "candidate_qualified": true,
+      "nodes": 768,
+      "refined_nodes": 1024,
+      "threshold_distance": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/a8e77ebb36801516adbcf90ec1a24ce7e704664e092e29fcbbf9ad09849834dc.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "0f73dbc6eb6edcc087df8e5124e12a55d879b1ae6cce1af01cc99b99d708b5d0",
+        "bytes": 222
+      }
+    },
+    {
+      "production_gain": 0.004884757868106493,
+      "refined_gain": 0.0048847578681065346,
+      "margin": 2.512768482813922e-10,
+      "disagreement_allowance": 2.0816681711721685e-16,
+      "accepted": true,
+      "prediction_discrepancy": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/a393a066ce75214fbb970595055490f8f3137fa6c90da76e07c00690118ab9cc.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "42ab42f8e40ef751bc67a383fd8008f9af1b5e5566fa0f2b7d245298241c94d0",
+        "bytes": 230
+      },
+      "refined_base_loss": 0.025126684828139137,
+      "refined_candidate_loss": 0.020241926960032602,
+      "gate": "absolute",
+      "prediction_discrepancy_ratios": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/3493549c011a3ff8b4b7b55b7c5c5054e0f587ec03fb44729408a7cb35654542.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "aec366a15bdc01c3c27552fb36eeedac90ab00e1a8413b0ef498b472663c1c53",
+        "bytes": 230
+      },
+      "base_prediction_discrepancy": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/d025595cb81af364d76813a878d1e6fe7bed15dd8877fd09fb250eacea6bb4f4.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "7717652b869af29ed3c67b4bdd2f223133f7c09e65e00a370b124b8993bfadb2",
+        "bytes": 229
+      },
+      "base_qualified": true,
+      "candidate_qualified": true,
+      "nodes": 768,
+      "refined_nodes": 1024,
+      "threshold_distance": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/0091082fbc908db54f1da7f58083263fa6d1386c4f6c5d82ee3a186ac2f9e001.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "918d5c10b3e2eb6e1ee69c23ec9ee476bcde1b9550c8956d6c39fcc9ea362915",
+        "bytes": 223
+      }
+    },
+    {
+      "production_gain": 0.00406975568663755,
+      "refined_gain": 0.004069755686637484,
+      "margin": 2.024292696003273e-10,
+      "disagreement_allowance": 3.2959746043559335e-16,
+      "accepted": true,
+      "prediction_discrepancy": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/2e328479dfa83f3c5ff83d561b20741d5904200d9dfa2aec380c525aa85658c2.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "2f46027aa80b05c54b74dfe438dcdece37fb4fb497a52e2941a17820edbbb1fb",
+        "bytes": 230
+      },
+      "refined_base_loss": 0.020241926960032602,
+      "refined_candidate_loss": 0.016172171273395118,
+      "gate": "absolute",
+      "prediction_discrepancy_ratios": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/64a7bcde84b1d8aec3a67bbb1c594b57504bfdae99df0036244206be4068cbee.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "b42f7367066364a7565ebd849a3a6ecdd4cc2851047510ebbe84088db957f814",
+        "bytes": 230
+      },
+      "base_prediction_discrepancy": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/a393a066ce75214fbb970595055490f8f3137fa6c90da76e07c00690118ab9cc.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "42ab42f8e40ef751bc67a383fd8008f9af1b5e5566fa0f2b7d245298241c94d0",
+        "bytes": 230
+      },
+      "base_qualified": true,
+      "candidate_qualified": true,
+      "nodes": 768,
+      "refined_nodes": 1024,
+      "threshold_distance": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/039e0763e35d44c50f4d4b2e5563c6d7f6a6600fd279d79e6d6bf4f68b81940b.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "2d8de11ed7213815ca4ac348143b5fcfe562a503d9f8a4ed08ba2bb6a1ebdf41",
+        "bytes": 222
+      }
+    },
+    {
+      "production_gain": 0.001393569427395146,
+      "refined_gain": 0.0013935694273951582,
+      "margin": 1.6173171273395177e-10,
+      "disagreement_allowance": 6.071532165918825e-17,
+      "accepted": true,
+      "prediction_discrepancy": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/b1bb7344dbf4bcb99019f3fda888124d67a8b905f340353759e9683044e71ee7.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "aee47bc0f7ac03d604767dc745afb05e67e47007ece9f27b9a9f600391fec293",
+        "bytes": 230
+      },
+      "refined_base_loss": 0.016172171273395118,
+      "refined_candidate_loss": 0.01477860184599996,
+      "gate": "absolute",
+      "prediction_discrepancy_ratios": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/d5c3b2ec74e9c9168db7f8c7ae0357682bd06c1cb7238e8e2191eac2d6426203.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "3901a8f6d7e16a84c064329e6fbc718d962bac8a0b5c70ecdfa0cd83ebcc57e5",
+        "bytes": 229
+      },
+      "base_prediction_discrepancy": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/2e328479dfa83f3c5ff83d561b20741d5904200d9dfa2aec380c525aa85658c2.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "2f46027aa80b05c54b74dfe438dcdece37fb4fb497a52e2941a17820edbbb1fb",
+        "bytes": 230
+      },
+      "base_qualified": true,
+      "candidate_qualified": true,
+      "nodes": 768,
+      "refined_nodes": 1024,
+      "threshold_distance": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/886d8eecfbbbe0a95a009362413b5dd378f6f64fd6c15a84b82477f33ddcaa90.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "cc804b9d8a3e8e83875d90c0cde8243240855d14af6789731eeb5d66f8838832",
+        "bytes": 223
+      }
+    },
+    {
+      "production_gain": 0.0007960527321583255,
+      "refined_gain": 0.00079605273215827,
+      "margin": 1.4779601846000032e-10,
+      "disagreement_allowance": 2.7755575615628914e-16,
+      "accepted": true,
+      "prediction_discrepancy": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/2b1e507f2f970e0184d31a99b73755224c5f0888971711f89659bb2eb4f79a4a.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "1b70af3a904bb1d77382831f0b1529e2c1404ae2af7df13fa365605edd2c22e4",
+        "bytes": 229
+      },
+      "refined_base_loss": 0.01477860184599996,
+      "refined_candidate_loss": 0.01398254911384169,
+      "gate": "absolute",
+      "prediction_discrepancy_ratios": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/12a81925400d1d8636b3db5948931a992b8891294e5c85a2f8d2dd9a20f4fb0e.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "fe6b6a3d6ffbfa1e84d83063d0a25ef6dad885a3593512aa6d11c51dc0a2caf9",
+        "bytes": 229
+      },
+      "base_prediction_discrepancy": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/b1bb7344dbf4bcb99019f3fda888124d67a8b905f340353759e9683044e71ee7.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "aee47bc0f7ac03d604767dc745afb05e67e47007ece9f27b9a9f600391fec293",
+        "bytes": 230
+      },
+      "base_qualified": true,
+      "candidate_qualified": true,
+      "nodes": 768,
+      "refined_nodes": 1024,
+      "threshold_distance": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/119a5d1bac3075fbbad4baa36cb51e421525f12030afcfa5ad371d660b8051e8.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "aa2ae7355c36a4c5f914d3dc31cf6abfa981bec0a537ae958f5251594dd4a19a",
+        "bytes": 223
+      }
+    },
+    {
+      "production_gain": 0.0020014926166387077,
+      "refined_gain": 0.0020014926166387094,
+      "margin": 1.3983549113841706e-10,
+      "disagreement_allowance": 8.673617379884035e-18,
+      "accepted": true,
+      "prediction_discrepancy": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/641a39c543b0a869dcd8ef4592db4024e6b22c89d357788c194e88f43a6923a0.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "a26f2a371d68c14af0d3dcbd7f0d9cbc37a63493a2e41762d1bcf0657e38f1a0",
+        "bytes": 230
+      },
+      "refined_base_loss": 0.01398254911384169,
+      "refined_candidate_loss": 0.01198105649720298,
+      "gate": "absolute",
+      "prediction_discrepancy_ratios": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/003f4e257573703a82c2966e9e9a1a1a0fc60ba44d4be627759c89875c568a46.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "5648c0d3749a3677e1fbb329f1929f0e5e0d0197bbe12f2aa4611b1cb3ee45e7",
+        "bytes": 230
+      },
+      "base_prediction_discrepancy": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/2b1e507f2f970e0184d31a99b73755224c5f0888971711f89659bb2eb4f79a4a.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "1b70af3a904bb1d77382831f0b1529e2c1404ae2af7df13fa365605edd2c22e4",
+        "bytes": 229
+      },
+      "base_qualified": true,
+      "candidate_qualified": true,
+      "nodes": 768,
+      "refined_nodes": 1024,
+      "threshold_distance": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/c32f12b995bbdaae3856bfe48f47d588b8a9b0e2b6e48cdb4a54b9929f0ab112.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "328d26a0b07ff8a30200906a618bc5150410a70797bce384571c22b335203216",
+        "bytes": 223
+      }
+    },
+    {
+      "production_gain": 0.0011426390890546725,
+      "refined_gain": 0.001142639089054643,
+      "margin": 1.1982056497203e-10,
+      "disagreement_allowance": 1.474514954580286e-16,
+      "accepted": true,
+      "prediction_discrepancy": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/5fe0371711511ce45634467abc89b197ccefa13b0b978ca07654e969b6f5ff63.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "dd9ff23cd0c240aaab12288617f343ba5954e6b731c4b40dcf7fa0d20beddc30",
+        "bytes": 229
+      },
+      "refined_base_loss": 0.01198105649720298,
+      "refined_candidate_loss": 0.010838417408148338,
+      "gate": "absolute",
+      "prediction_discrepancy_ratios": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/675bfaef950a00bb43ff39f860fa55f40bfc85492b75f312c5c69bd79c5952df.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "4858de1a1856ca35cfd7f1b5a1a7150e9dc18710b238cbf96ea5210075121e4b",
+        "bytes": 230
+      },
+      "base_prediction_discrepancy": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/641a39c543b0a869dcd8ef4592db4024e6b22c89d357788c194e88f43a6923a0.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "a26f2a371d68c14af0d3dcbd7f0d9cbc37a63493a2e41762d1bcf0657e38f1a0",
+        "bytes": 230
+      },
+      "base_qualified": true,
+      "candidate_qualified": true,
+      "nodes": 768,
+      "refined_nodes": 1024,
+      "threshold_distance": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/6c673966b1f6fe89af5dfebcc715dd3af8a0399b6dc302f2e505d72110691959.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "71effbc0c4a42b8bc69e0ccb4e9f56f8ec7ac90ee14ce15b7e194c44e0ec2322",
+        "bytes": 223
+      }
+    },
+    {
+      "production_gain": 0.00230580411581097,
+      "refined_gain": 0.002305804115810904,
+      "margin": 1.0839417408148337e-10,
+      "disagreement_allowance": 3.2959746043559335e-16,
+      "accepted": true,
+      "prediction_discrepancy": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/6d9cffd65accd706feb7d4526e952b73a5cfac0bcc580a58e7aeefe4c12d707d.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "40b46e7bf9f25ce52d97156cbf8167106ff5b2f0c53551f91ff5df6443f4bb35",
+        "bytes": 230
+      },
+      "refined_base_loss": 0.010838417408148338,
+      "refined_candidate_loss": 0.008532613292337433,
+      "gate": "absolute",
+      "prediction_discrepancy_ratios": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/49c08c8bde1ad4dc386c2087ed1f0ad29272fa7b1b0caa8c71b86b050372d60d.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "e65133b8d622b2c7e13b20fd08611d0789fb77c6b8878d0984a185f178202923",
+        "bytes": 230
+      },
+      "base_prediction_discrepancy": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/5fe0371711511ce45634467abc89b197ccefa13b0b978ca07654e969b6f5ff63.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "dd9ff23cd0c240aaab12288617f343ba5954e6b731c4b40dcf7fa0d20beddc30",
+        "bytes": 229
+      },
+      "base_qualified": true,
+      "candidate_qualified": true,
+      "nodes": 768,
+      "refined_nodes": 1024,
+      "threshold_distance": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/353d28b9821fd0b4e5acc06a44c59246fb134bc91541177d5718fa35c60f9150.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "0d042f046d4fa994aac48d0d19723541dd0b7faf8bb8a188b1ef1141b50ff7b8",
+        "bytes": 222
+      }
+    },
+    {
+      "production_gain": 0.0025263154271327245,
+      "refined_gain": 0.0025263154271328043,
+      "margin": 8.533613292337433e-11,
+      "disagreement_allowance": 3.9898639947466563e-16,
+      "accepted": true,
+      "prediction_discrepancy": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/5b461e0076673a50597a987b2c38df3e0ae24a0b65033713b38e171586488501.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "222476be3c84e4807e7b0a5433d281b91dafea3dc6393fc8ee61557a377677d2",
+        "bytes": 229
+      },
+      "refined_base_loss": 0.008532613292337433,
+      "refined_candidate_loss": 0.006006297865204629,
+      "gate": "absolute",
+      "prediction_discrepancy_ratios": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/3f89cdce7fbcf0b68b9c5c93cf63d29465d2f9c4be0b916df25ea59723b10692.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "fae7c0201c99874b3f6e3f1366c938819fd85a1625e1212f834808bf40b1cee1",
+        "bytes": 230
+      },
+      "base_prediction_discrepancy": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/6d9cffd65accd706feb7d4526e952b73a5cfac0bcc580a58e7aeefe4c12d707d.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "40b46e7bf9f25ce52d97156cbf8167106ff5b2f0c53551f91ff5df6443f4bb35",
+        "bytes": 230
+      },
+      "base_qualified": true,
+      "candidate_qualified": true,
+      "nodes": 768,
+      "refined_nodes": 1024,
+      "threshold_distance": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/cf9f2a50fc50763bdd28b50b5b2869746b57f5773a1cf7a4a0f58bfc58738aca.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "074da33b37526717a6902f77246d7d2244032119e62d67152eb32c5f99c46210",
+        "bytes": 223
+      }
+    },
+    {
+      "production_gain": 0.0005045343957972093,
+      "refined_gain": 0.0005045343957972501,
+      "margin": 6.007297865204631e-11,
+      "disagreement_allowance": 2.0383000842727483e-16,
+      "accepted": true,
+      "prediction_discrepancy": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/35eaf1ff04f88440ccd91e7dfabfdac9aacd15d3d9dd85d741c0f8295ddfa7b7.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "13fb2595a38aec5dea7a567e7fbc8755169773172c9fd9ca1d83b089edf6143d",
+        "bytes": 229
+      },
+      "refined_base_loss": 0.006006297865204629,
+      "refined_candidate_loss": 0.005501763469407379,
+      "gate": "absolute",
+      "prediction_discrepancy_ratios": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/8e5ce88a861d6dcd78c743c28455039943555c568164e11a634d3b123203ab29.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "ebbb4a342dc14540390cdf697dfc87c4a1ccf0754c9ce32d35456eeea56d0cf1",
+        "bytes": 229
+      },
+      "base_prediction_discrepancy": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/5b461e0076673a50597a987b2c38df3e0ae24a0b65033713b38e171586488501.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "222476be3c84e4807e7b0a5433d281b91dafea3dc6393fc8ee61557a377677d2",
+        "bytes": 229
+      },
+      "base_qualified": true,
+      "candidate_qualified": true,
+      "nodes": 768,
+      "refined_nodes": 1024,
+      "threshold_distance": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/734308533b207f2b62e9daaca506a6662428c75291457bdd747e074a9d11727c.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "e1786605c639e8178ec378c76d43be8b8951babdbfd9d06b87992a6c8ebe3fbe",
+        "bytes": 223
+      }
+    },
+    {
+      "production_gain": 0.00015713553781717196,
+      "refined_gain": 0.00015713553781707915,
+      "margin": 5.502763469407422e-11,
+      "disagreement_allowance": 4.640385298237959e-16,
+      "accepted": true,
+      "prediction_discrepancy": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/cda9abee4cc31790bb9efcf45ee6e8d7da6325122667b408925f9c681b9c2795.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "5f310419fee90065cf3703b8c8fe1b418d3fc16f6558571fac7f770b8ece84d2",
+        "bytes": 230
+      },
+      "refined_base_loss": 0.005501763469407379,
+      "refined_candidate_loss": 0.0053446279315903,
+      "gate": "absolute",
+      "prediction_discrepancy_ratios": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/7f120e37886d1f2511ff24f0420c76658ccb6bb881bbdd3f307688063a5d5930.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "5d60304dcabd62f979ec453d8eb96d3667696ee089129653565db9aa059bc98a",
+        "bytes": 229
+      },
+      "base_prediction_discrepancy": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/35eaf1ff04f88440ccd91e7dfabfdac9aacd15d3d9dd85d741c0f8295ddfa7b7.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "13fb2595a38aec5dea7a567e7fbc8755169773172c9fd9ca1d83b089edf6143d",
+        "bytes": 229
+      },
+      "base_qualified": true,
+      "candidate_qualified": true,
+      "nodes": 768,
+      "refined_nodes": 1024,
+      "threshold_distance": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/271bdb1fcb245c527ebbc867c00cbb80bb9644e7dfbd2faf4e945c8b748cf323.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "8c7280d727a323004357f5c775ab5c68fe7e795982c317c3c76e1e36ceda7a58",
+        "bytes": 222
+      }
+    },
+    {
+      "production_gain": 0.00017302745471728734,
+      "refined_gain": 0.00017302745471744346,
+      "margin": 5.3456279315903e-11,
+      "disagreement_allowance": 7.806255641895632e-16,
+      "accepted": true,
+      "prediction_discrepancy": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/c73ce8f184eb5e12eef8f60e7adf18606a4be52a480ddcd34bb598f60940133e.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "ba8d7b2c9abbb5726b135e93aad31ad4b2b867e4df7970a3aa5ffe30299be816",
+        "bytes": 230
+      },
+      "refined_base_loss": 0.0053446279315903,
+      "refined_candidate_loss": 0.0051716004768728565,
+      "gate": "absolute",
+      "prediction_discrepancy_ratios": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/5b7f55b1f573165ff5c4cda12015d1cf8ae60a5414ce2c00445c93197f12bf8c.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "f27987a1ab0553e798a8a38d37313c3d345104c6411f14a39105041addce540f",
+        "bytes": 230
+      },
+      "base_prediction_discrepancy": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/cda9abee4cc31790bb9efcf45ee6e8d7da6325122667b408925f9c681b9c2795.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "5f310419fee90065cf3703b8c8fe1b418d3fc16f6558571fac7f770b8ece84d2",
+        "bytes": 230
+      },
+      "base_qualified": true,
+      "candidate_qualified": true,
+      "nodes": 768,
+      "refined_nodes": 1024,
+      "threshold_distance": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/a133e2d999fde314cbc1f0aac35eca5a2e15ab72b64ba68c25c27372fee8b1de.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "b9ece9b6e1fbc005bfcfcd21a1853ff54f7f329d5f139987297f86d3f3e08355",
+        "bytes": 222
+      }
+    },
+    {
+      "production_gain": 0.00010576297639975241,
+      "refined_gain": 0.00010576297639969257,
+      "margin": 5.1726004768729625e-11,
+      "disagreement_allowance": 2.992397996059992e-16,
+      "accepted": true,
+      "prediction_discrepancy": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/50c06cdd0d07a2882c074a382c7f914b22e5723c5919a4656c84e31f96ca65ec.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "e66df14dd75ba5a2d05cc27119a96202a2a14838507bec26fd29cce82aebb0c1",
+        "bytes": 230
+      },
+      "refined_base_loss": 0.0051716004768728565,
+      "refined_candidate_loss": 0.005065837500473164,
+      "gate": "absolute",
+      "prediction_discrepancy_ratios": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/eba2be71fb459089803f44281800c299e6132dfade9d4d21afbc75a98681f2e2.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "0ce36718cf56175676411b97e07d3f24c126ca58d213e19bbe5cd0464bd9a912",
+        "bytes": 230
+      },
+      "base_prediction_discrepancy": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/c73ce8f184eb5e12eef8f60e7adf18606a4be52a480ddcd34bb598f60940133e.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "ba8d7b2c9abbb5726b135e93aad31ad4b2b867e4df7970a3aa5ffe30299be816",
+        "bytes": 230
+      },
+      "base_qualified": true,
+      "candidate_qualified": true,
+      "nodes": 768,
+      "refined_nodes": 1024,
+      "threshold_distance": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/e7a386986dc72ada8abd672a38575fada3784b1ba66c076f085aad2cda9f4ec6.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "f36f6788b3d376f3e0552f8715627a3cf0b236174229d6f0e2753661ea33b836",
+        "bytes": 223
+      }
+    },
+    {
+      "production_gain": 0.00015085196875678705,
+      "refined_gain": 0.00015085196875674455,
+      "margin": 5.0668375004732103e-11,
+      "disagreement_allowance": 2.1250362580715887e-16,
+      "accepted": true,
+      "prediction_discrepancy": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/f0baba7f6d3d184f35791650332b662e7ccff36a68d71a0092b933315666e8a2.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "99a80d031fce51f9301b2a2c22fe9c7d3a716fc56475788676db5b82a7ece65f",
+        "bytes": 229
+      },
+      "refined_base_loss": 0.005065837500473164,
+      "refined_candidate_loss": 0.004914985531716419,
+      "gate": "absolute",
+      "prediction_discrepancy_ratios": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/ec565115b67d9c9115910a031b699935e0e0a4dc6d2ae3482f934d14ed224d35.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "fa8cd1c87396b995281c4090ab444925983f17ccb50ab050748b69134cc9a31b",
+        "bytes": 229
+      },
+      "base_prediction_discrepancy": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/50c06cdd0d07a2882c074a382c7f914b22e5723c5919a4656c84e31f96ca65ec.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "e66df14dd75ba5a2d05cc27119a96202a2a14838507bec26fd29cce82aebb0c1",
+        "bytes": 230
+      },
+      "base_qualified": true,
+      "candidate_qualified": true,
+      "nodes": 768,
+      "refined_nodes": 1024,
+      "threshold_distance": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/f42314a992038fb58cefbeb52be7796b9239a47897d7510ebacaae3ea7172015.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "2dba8708bd85ba6d3b44471c3d74c1f0b2071c59bb5b57259919d0d3b2731826",
+        "bytes": 222
+      }
+    },
+    {
+      "production_gain": 0.0001553913696970763,
+      "refined_gain": 0.00015539136969718037,
+      "margin": 4.915985531716423e-11,
+      "disagreement_allowance": 5.204170427930421e-16,
+      "accepted": true,
+      "prediction_discrepancy": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/a2011da45748a161c210ec0472e7f99c58051d46e8463011693e72fe71e70063.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "2e39f602eac120ace1f3a50c64e4e23725b75eadad438cba2ae756fa8e42f306",
+        "bytes": 230
+      },
+      "refined_base_loss": 0.004914985531716419,
+      "refined_candidate_loss": 0.004759594162019239,
+      "gate": "absolute",
+      "prediction_discrepancy_ratios": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/04bae816221a87825bd664cc92517997e63dcfbb8518487652f835d220bda71f.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "6227a466c4db2ce0484344e69a261fa356ebb687041d2060a5cefe1735d6fffd",
+        "bytes": 229
+      },
+      "base_prediction_discrepancy": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/f0baba7f6d3d184f35791650332b662e7ccff36a68d71a0092b933315666e8a2.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "99a80d031fce51f9301b2a2c22fe9c7d3a716fc56475788676db5b82a7ece65f",
+        "bytes": 229
+      },
+      "base_qualified": true,
+      "candidate_qualified": true,
+      "nodes": 768,
+      "refined_nodes": 1024,
+      "threshold_distance": {
+        "array_reference": "results/validation/modal_atlas/MA-007/research18-001/workspace_512/runs/O6/array_payloads/ce5b872ef6a1455d1cfe33b0d6f258102984530f1ee38132f25403c1523f7a9d.npz",
+        "encoding": "list",
+        "array": "value",
+        "shape": [
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "ffb07bb7fa34bd252e89a6c333d1698ba02e15c57352e27eab46161ba58a5841",
+        "bytes": 223
+      }
+    }
+  ]
+}
