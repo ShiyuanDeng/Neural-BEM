@@ -215,3 +215,13 @@ Raw arrays 2.775 GiB, numerical compute 35.720 s, I/O 77.845 s. CPU-constructor
 response attempts stay preserved as superseded evidence. Active derivatives,
 registered branches, selected operators, final-cell replay and the release
 forecast must use the corrected factory cohort before Phase B.
+
+## User closes Phase A and requests launch readiness
+
+The user explicitly closed Phase A, retaining the existing baseline atlas, and
+requested readiness for all 18 research cases once they say go. No further
+Phase A experiments will run. The existing baseline strategy and 114-cell
+CUDA response atlas stay preserved; the closure does not turn unfinished
+checks into passes. The prepared nominal queue, same-scene settings, O8 user
+clarifications and launch command are recorded in `05_ready.md`. Research
+results and the three-question answers remain pending the requested runs.

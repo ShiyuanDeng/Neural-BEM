@@ -3,8 +3,9 @@
 The observer receives solver/optimizer evidence and cannot return an acceptance
 decision. A single writer serializes immutable copies. Waiting for that writer
 at completed numerical batches is pure I/O and suspends only the current ledger.
-Transient LU handles of the latest four curves permit refusal trace capture;
-additional reciprocal batches are performed and charged offline after the fit.
+Transient LU handles of four recent curves permit immediate refusal-forward
+capture. Lightweight identities survive return; regeneration and reciprocity
+are charged offline, with the original forward arrays retained losslessly.
 """
 from collections import OrderedDict
 from concurrent.futures import ThreadPoolExecutor
@@ -79,6 +80,20 @@ class Recorder:
             ledger.started+=elapsed
             self.ledger_io_wait_seconds+=elapsed
 
+    def capture_refusal(self,identities):
+        """Save original traces now; retain only regeneration identities later."""
+        with self.lock:
+            for identity in identities:
+                states=self.handles.get(identity)
+                if states is None:
+                    raise ValueError('Refusal trace handle lost before retention: '+identity)
+                for (wave,cutoff,workspace),value in states.items():
+                    if (identity,wave,cutoff,workspace) in self.refusal_handles:continue
+                    state,metadata,observation,execution,contrast=value
+                    event=self.queue('refusal_forward_capture',dict(coefficients=state.coefficients,
+                        X_s=state.traces),dict(metadata,timing_class='original forward traces'))
+                    self.refusal_handles[(identity,wave,cutoff,workspace)]=(event,metadata,observation,execution,contrast)
+
     def __call__(self, kind, record):
         started=perf_counter()
         if kind=='objective_setup':
@@ -87,6 +102,9 @@ class Recorder:
             self.context=dict(stage=stage.label,M=stage.update_modes,K=stage.curve_modes,
                 weights=list(stage.weights),frequencies_hz=[o.frequency_hz for o in stage.observations],
                 config=asdict(record['config']))
+            self.queue('stage_definition',{},dict(**self.context,nodes=stage.nodes,
+                refined_nodes=stage.refined_nodes,iterations=stage.iterations,quota=stage.quota,
+                catalog='damped' if any(complex(o.wavenumber).imag for o in stage.observations) else 'real'))
         elif kind=='field':
             state=record['state']; observation=record['observation']
             identity=dict(state_sha256=key(state.coefficients),K_u=state.cutoff,B_work=record['workspace'],
@@ -105,7 +123,7 @@ class Recorder:
                 if curve_key not in self.handles:
                     self.handles[curve_key]={}
                 self.handles.move_to_end(curve_key)
-                self.handles[curve_key][(state.wavenumber,state.cutoff)]=(state,identity,observation,
+                self.handles[curve_key][(state.wavenumber,state.cutoff,record['workspace'])]=(state,identity,observation,
                     record.get('execution'),record.get('contrast'))
                 while len(self.handles)>4:
                     drop=next(k for k in self.handles if k!=self.pinned_curve)
@@ -131,6 +149,7 @@ class Recorder:
             self.queue(kind,dict(J_normalized=record['J'],gradient=record['gradient'],
                 assembled_residual=evaluation.residual),dict(state_sha256=key(evaluation.curve.coefficients),
                     stage=record['stage'].label,M=record['stage'].update_modes,K=record['stage'].curve_modes,
+                    nodes=record['stage'].nodes,refined_nodes=record['stage'].refined_nodes,
                     work=record['ledger'].snapshot()))
         elif kind=='proposal':
             self.flush(record['ledger'])
@@ -152,21 +171,8 @@ class Recorder:
                 states={role:key(record[role].curve.coefficients) for role in
                     ('base','candidate','refined_base','refined_candidate') if record[role] is not None},
                 work=record['ledger'].snapshot()))
-            with self.lock:
-                for role in ('base','candidate','refined_base','refined_candidate'):
-                    evaluation=record[role]
-                    if evaluation is None:
-                        continue
-                    identity=key(evaluation.curve.coefficients)
-                    states=self.handles.get(identity)
-                    if states is None:
-                        raise ValueError('Refusal trace handle lost before retention: '+role)
-                    for (wave,cutoff),value in states.items():
-                        if (identity,wave,cutoff) not in self.refusal_handles:
-                            state,metadata,observation,execution,contrast=value
-                            event=self.queue('refusal_forward_capture',dict(coefficients=state.coefficients,
-                                X_s=state.traces),dict(metadata,timing_class='original forward traces'))
-                            self.refusal_handles[(identity,wave,cutoff)]=(event,metadata,observation,execution,contrast)
+            self.capture_refusal({key(record[role].curve.coefficients) for role in
+                ('base','candidate','refined_base','refined_candidate') if record[role] is not None})
         elif kind=='qualification':
             arrays=dict(record['arrays'])
             def metadata(value,prefix='row'):
@@ -179,6 +185,10 @@ class Recorder:
                 return value
             self.queue(kind,arrays,dict(kind_detail=record['kind_detail'],row=metadata(record['row']),
                 work=record['ledger'].snapshot()))
+            if record['row'].get('passed') is False:
+                identities={key(v) for name,v in record['arrays'].items() if name.endswith('_coefficients')}
+                if record['row'].get('base_sha256'):identities.add(record['row']['base_sha256'])
+                self.capture_refusal({k for k in identities if k in self.handles})
         elif kind=='accepted_history':
             self.queue(kind,{},dict(row=dict(record['row'])))
         elif kind=='physics_failure':
@@ -195,7 +205,7 @@ class Recorder:
         from bem_inverse.physics import Execution
         from bem_inverse.continuation.geometry import FourierCurve
         services={}; offline_forward_units=0
-        for (identity,wave,cutoff),(event,metadata,observation,execution,contrast) in self.refusal_handles.items():
+        for (identity,wave,cutoff,workspace),(event,metadata,observation,execution,contrast) in self.refusal_handles.items():
             artifact=self.events[event]['artifact']
             from . import campaign as c
             with np.load(c.ROOT/artifact,allow_pickle=False) as original:

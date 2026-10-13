@@ -235,8 +235,9 @@ class IndependentModalMuller(ModalMuller):
         except Exception as exc:
             from .continuation.updates import UpdateRefused
             if not isinstance(exc,UpdateRefused): raise
-            row=dict(passed=False,reason='witness_geometry_refusal',detail=exc.reason)
-            observe(self,'qualification',kind_detail='accepted_move',row=row,arrays=dict(fine_step=fine_step),ledger=ledger)
+            row=dict(passed=False,reason='witness_geometry_refusal',detail=exc.reason,stage=stage.label)
+            observe(self,'qualification',kind_detail='accepted_move',row=row,
+                arrays=dict(fine_step=fine_step,base_coefficients=base.curve.coefficients),ledger=ledger)
             if cutoff==self.trace_cap: return False
             return self._promotion(base.curve,stage,config,contrast,space,update,ledger,cutoff,row)
         move,arrays=displacement_comparison(base.curve,candidate.curve.coefficients-base.curve.coefficients,
@@ -249,10 +250,10 @@ class IndependentModalMuller(ModalMuller):
             raise NumericalFailure('accepted-move witness solve failed')
         check,accurate=resolution_check(higher['evaluation'],low_candidate,next_frame['evaluation'],high_candidate,
             higher['stage'],config)
-        row=dict(passed=bool(move['equivalent'] and accurate and check['accepted']),
+        row=dict(passed=bool(move['equivalent'] and accurate and check['accepted']),stage=stage.label,
             finite_move=move,witness_acceptance=check,lower_decision='accepted',higher_decision=check['accepted'],
             cutoff=cutoff,trace_cap=self.trace_cap,finer_geometry=finer_geometry)
-        arrays.update(lower_candidate_coefficients=candidate.curve.coefficients,
+        arrays.update(base_coefficients=base.curve.coefficients,lower_candidate_coefficients=candidate.curve.coefficients,
             higher_candidate_coefficients=finer_curve.coefficients,higher_step=fine_step,
             higher_prediction=low_candidate.prediction,refined_prediction=high_candidate.prediction)
         observe(self,'qualification',kind_detail='accepted_move',row=row,arrays=arrays,ledger=ledger)
@@ -266,4 +267,5 @@ class IndependentModalMuller(ModalMuller):
             workspace=self.settings.coefficient_workspace,witness_cutoffs='production+32, accepted-move+64',
             cap_semantics='witnesses above cap never supply production moves')
         value['workspace_services']={str(k):v.receipt() for k,v in self._workspace_services.items()}
+        value['adaptive_services']=getattr(self,'_adaptive_receipts',[])
         return value

@@ -54,8 +54,8 @@ class FourControlPolicy(CumulativePolicy):
 
     def __post_init__(self):
         super().__post_init__()
-        if self.order not in ('S0',*FIRST_PAIRS,'O7'):
-            raise ValueError('Fixed schedule must be S0 or O1 through O7.')
+        if self.order not in ('S0',*FIRST_PAIRS,'O7','O8'):
+            raise ValueError('Schedule must be S0 or O1 through O8.')
         if len(self.caps)!=4 or len(self.generous_target)!=4:
             raise ValueError('Four independent controls are required.')
         for axis,(value,maximum) in enumerate(zip(self.caps,(2.5,127,384,320))):
@@ -74,6 +74,23 @@ class FourControlPolicy(CumulativePolicy):
             Operation('localize','keep_start','Retain the prescribed centered start',
                 'initial audit passed','no data-based localization')]
         target=tuple(min(a,b) for a,b in zip(self.caps,self.generous_target))
+        if self.order=='O8':
+            operations.append(self.control_operation(problem,physics,'warmup',(.25,1,4,64),'damped',44,600))
+            for slot in range(1,9):
+                operations.append(Operation('adaptive',f'slot_{slot}','Complete charged branch contest',
+                    'same saved base and default lambda','saved branch endpoint or unchanged base',
+                    details=dict(slot=slot,catalog='damped' if slot<=4 else 'real',caps=self.caps,
+                        candidates=['HOLD','next F','next M','next K'],branch_iterations=2,
+                        branch_work_units=200,slot_work_units=3000,monitor_cutoffs=[320,352],
+                        reservation='n*(200+38)+38 before any candidate',lambda_rule='reset each decision slot',
+                        selection='both monitor scores agree; useful >=1% and >=1e-8; gain/work; within1% tie raw work then HOLD,F,M,K')))
+                if slot==4:
+                    operations.append(Operation('adaptive_bridge','bridge','Real bridge at current controls',
+                        'after slot 4','common rung exit',details=dict(catalog='real')))
+            operations.append(self.control_operation(problem,physics,'terminal',target,'real',self.fit_units,None))
+            operations.append(Operation('audit','final_audit','Independent full-real-catalog endpoint audit',
+                'fit returned','score only returned endpoint',details=dict(seconds=self.audit_seconds)))
+            return operations
         stages=[('warmup',(.25,1,4,64),(.25,1,4,64),'damped',44,600)]
         for slot in range(1,9):
             requested=NOMINAL[slot-1] if self.order=='S0' else ordered_vector(self.order,slot,target)
@@ -110,3 +127,24 @@ class FourControlPolicy(CumulativePolicy):
         operations.append(Operation('audit','final_audit','Independent full-real-catalog endpoint audit',
             'fit returned','score only returned endpoint',details=dict(seconds=self.audit_seconds)))
         return operations
+
+    def control_operation(self,problem,physics,label,vector,kind,iterations=60,quota=3000):
+        frequency,band,storage,cutoff=vector
+        observations=tuple(o for o in getattr(problem,kind) if o.frequency_hz<=frequency*1e9)
+        op=self._fit(problem,physics,label,observations,band,storage,quota,iterations,
+            purpose='Independent four-control research rung')
+        profile=dict(production=token(cutoff),refined=token(cutoff+32),kind='modal_muller',
+            K_trace=cutoff,K_trace_refined=cutoff+32,token='8*K_trace',
+            coefficient_workspace=dict(production=physics.settings.coefficient_workspace,
+                refined=physics.settings.coefficient_workspace),refinement='fixed common workspace')
+        return replace(op,stage=replace(op.stage,nodes=token(cutoff),refined_nodes=token(cutoff+32),
+            resolution_kind='modal'),details=dict(op.details,accuracy_profile=profile,
+                requested_controls=vector,uncapped_controls=vector,catalog=kind,trace_cap=self.caps[3]))
+
+    def resolve_adaptive(self,operation,problem,physics,state):
+        if state is None:
+            state=dict(controls=tuple(truncated_levels(axis,cap)[0] for axis,cap in enumerate(self.caps)))
+        resolved=self.control_operation(problem,physics,operation.label,state['controls'],
+            operation.details['catalog'])
+        return replace(resolved,details=dict(resolved.details,**operation.details,
+            adaptive_decision=operation.kind=='adaptive')),state

@@ -201,7 +201,7 @@ def worker(folder,role_name,branch_name):
     curve,stage,config=setup(problem,role,entry,role_name+'_'+branch_name)
     recorder=Recorder(target/'recording',digest(folder/'manifest.json'))
     physics=IndependentModalMuller(EXECUTION,trace_cap=stage.nodes//8,workspace=512,observer=recorder,
-        reject_unresolved_candidates=False)
+        reject_unresolved_candidates=role.get('controller_kind','historical')!='historical')
     update=make_update('certified_spectral',problem.length_unit_m,EXECUTION)
     ledger=Ledger(cap=200,seconds=10800,endpoint_reserve=0,strict_dispatch=True)
     ledger.begin_stage(stage.label,200)

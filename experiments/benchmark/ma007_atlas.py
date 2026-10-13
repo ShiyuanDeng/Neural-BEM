@@ -36,32 +36,35 @@ LADDER=(64,96,128,160,192,256,320)
 
 
 def checkpoint_roles(control):
-    run=control/'C0_recorded'
+    run=control if (control/'result.json').exists() else control/'C0_recorded'
     problem=c.problem(CASE)
     result=read(run/'result.json')
     accepted=read(run/'accepted.json')['states']
     operations=read(run/'plan.json')['operations']
     by_label={op['label']:op for op in operations if op['operation']=='fit'}
+    for event in result.get('decisions',[]):
+        op=event['operation']
+        if op.get('operation')=='fit':by_label[op['label']]=op
     recording=read(run/'recording/index.json')
     refusals=[e for e in recording['events'] if e['kind']=='resolution_refusal']
-    last_damped=next((s for s in reversed(result['stages']) if s['stage'].endswith('damped') and
-                     not s['stage'].endswith('undamped')),None)
+    def damped(label):return any(by_label[label]['stage']['damping'])
+    last_damped=next((s for s in reversed(result['stages']) if damped(s['stage'])),None)
     all_real=next((s for s in accepted if s['active_frequency_count']==19 and
-                  not s['stage'].endswith('damped')),None)
+                  s['stage'] in by_label and not damped(s['stage'])),None)
     records=[]
     def add(role,label,curve,occurrence,reason=None):
         if curve is None:
             records.append(dict(role=role,status=reason or 'not_reached',occurrence=occurrence));return
         op=by_label[label]; stage=read(run/(label+'.json'))
-        history=stage['history']
+        history=stage.get('history',[])
         entry=next((h for h in reversed(history) if curve_from(h['coefficients']).coefficients.tobytes()==
-                    curve_from(curve).coefficients.tobytes()),history[0])
+                    curve_from(curve).coefficients.tobytes()),history[0] if history else dict(next_damping=op['optimizer']['initial_damping']))
         settings=op['stage']
         records.append(dict(role=role,status='reached',label=label,curve=curve,occurrence=occurrence,
-            M=settings['update_modes'],K=settings['curve_modes'],K_u=settings['nodes']//8,
+            M=settings['update_modes'],K=curve_from(curve).band,K_u=entry.get('nodes',stage.get('nodes',settings['nodes']))//8,
             frequencies_hz=settings['frequencies_hz'],catalog='damped' if any(settings['damping']) else 'real',
             lambda_carried=entry['next_damping'],config=op['optimizer'],controller=entry,
-            source_epoch=result['source_epoch']))
+            source_epoch=result['source_epoch'],controller_kind='independent' if result['physics'].get('independent_accuracy') else 'historical'))
     from bem_inverse.io import curve_record
     first=next(op for op in operations if op['operation']=='fit')
     # The original physical circle is exactly padded to its recorded initial K.
@@ -78,7 +81,7 @@ def checkpoint_roles(control):
         add('4_first_resolution_refusal',refusal['stage'],match['curve'],dict(event=refusal['index']))
     else:
         add('4_first_resolution_refusal',first['label'],None,{},'not_triggered')
-    last=result['stages'][-1]
+    last=result['stages'][-1] if result['stages'] else dict(stage=first['label'])
     add('5_final',last['stage'],result['final_curve'],dict(returned_outcome=result['outcome']))
     return records
 

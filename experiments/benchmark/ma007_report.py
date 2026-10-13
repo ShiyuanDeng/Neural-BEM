@@ -59,7 +59,10 @@ def validate_recording(folder):
                 row['replay_flag']='retained exact inputs; replay unqualified'
         rows.append(row)
     counted={kind:sum(e['kind']==kind for e in index['events']) for kind in ('field','reciprocal','objective','proposal')}
-    counts=[result['physics']['counts'],*[v['counts'] for v in result['physics'].get('workspace_services',{}).values()]]
+    def service_counts(service):
+        return [service['counts'],*[v['counts'] for v in service.get('workspace_services',{}).values()],
+            *[v for branch in service.get('adaptive_services',[]) for v in service_counts(branch)]]
+    counts=service_counts(result['physics'])
     reconciliation=dict(fields=counted['field']==sum(v['evaluations'] for v in counts),
         reciprocals=counted['reciprocal']==sum(v['derivatives'] for v in counts),
         events=index['events_count']==len(index['events']))

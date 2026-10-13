@@ -215,7 +215,10 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
         if hasattr(physics, 'audit_stage'):
             stage = physics.audit_stage(stage)
         started_audit = perf_counter()
-        row = selected_audit(curve, stage, config, problem, physics, update, seconds)
+        previous_role=getattr(physics,'calculation_role','production')
+        physics.calculation_role=phase+'_audit'
+        try:row = selected_audit(curve, stage, config, problem, physics, update, seconds)
+        finally:physics.calculation_role=previous_role
         audit_phase_seconds[phase] += perf_counter()-started_audit
         audit_spent += row['seconds']
         return row
@@ -247,6 +250,7 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
     # solves when curve, catalog and resolution are unchanged (charges are replayed).
     reuse_entries = bool(getattr(physics.execution, 'stage_entry_reuse', False) and geometry_adapter is None)
     carried = None
+    adaptive_state = None
     if resume is not None:
         if not resume.operations or resume.operations[0].label != resume.stage.stage.label:
             raise ValueError('Resume queue must begin with the checkpoint stage')
@@ -265,7 +269,10 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
     def save(name, value):
         if output is not None:
             from pathlib import Path
+            io_started=perf_counter()
             write(Path(output)/name, value)
+            if ledger is not None and getattr(physics,'qualified_controller',False):
+                ledger.started+=perf_counter()-io_started
 
     def event(op, reason, **values):
         decisions.append(dict(index=len(decisions), operation=operation_record(op, record_settings), reason=reason, **values))
@@ -307,6 +314,8 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
             fit_started = perf_counter()-historical_seconds
             while queue:
                 op = queue.pop(0)
+                if op.kind in ('adaptive','adaptive_bridge'):
+                    op,adaptive_state=policy.resolve_adaptive(op,problem,physics,adaptive_state)
                 if op.kind == 'localize':
                     ledger.begin_stage(op.label, None)
                     carried = None
@@ -404,10 +413,19 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
                         from .full_matrix import RelaxedObjective
                         objective_options['objective_factory'] = RelaxedObjective
                     entry, carried = carried, None
-                    result = fit_stage(curve, op.stage, problem.contrast, update, op.optimizer, ledger,
-                                       on_accept=checkpoint, physics=physics, resume=resumed_stage,
-                                       resolution_response=resolution_response, entry=entry,
-                                       retain_final=reuse_entries, **objective_options)
+                    if (op.details or {}).get('adaptive_decision'):
+                        from .four_control_adaptive import decision_slot
+                        result,op,adaptive_state=decision_slot(problem,curve,op,policy,physics,update,ledger,adaptive_state)
+                        last_stage,last_config=op.stage,op.optimizer
+                        event(op,'adaptive slot returned at saved endpoint',outcome=result.outcome,
+                            stop=result.stop_reason,actual_controls=adaptive_state['controls'])
+                        if result.outcome==NORMAL_RETURN and getattr(result,'committed_evaluation',None) is not None:
+                            checkpoint(result.accepted_steps,result.committed_evaluation)
+                    else:
+                        result = fit_stage(curve, op.stage, problem.contrast, update, op.optimizer, ledger,
+                                           on_accept=checkpoint, physics=physics, resume=resumed_stage,
+                                           resolution_response=resolution_response, entry=entry,
+                                           retain_final=reuse_entries, **objective_options)
                     resumed_stage = None
                     curve = result.curve
                     carried = result.final_entry if reuse_entries else None
@@ -481,8 +499,10 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
             if ledger is not None and not fit_seconds:
                 fit_seconds = perf_counter()-ledger.started
             # Preserve endpoint before audits or external scoring can fail.
+            fitting_snapshot=None if ledger is None else ledger.snapshot()
+            if fitting_snapshot is not None:fit_seconds=fitting_snapshot['seconds']
             save('unscored.json', dict(outcome=outcome, detail=detail, final_curve=record_curve(curve),
-                 stages=stages, fit_work=None if ledger is None else ledger.snapshot()))
+                 stages=stages, fit_work=fitting_snapshot))
             event(operations[-1], 'fit returned; audit endpoint', outcome=outcome)
             if ledger is None and initial_audit and not initial_audit['passed']:
                 # No localization or fitting occurred: this is the identical
@@ -513,7 +533,7 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
                   passed=final_audit['passed'])
     row = dict(policy=policy.name, policy_version=policy.version, outcome=outcome, detail=detail,
         final_curve=record_curve(curve), stages=stages, decisions=decisions, localization=localization,
-        fit_work=None if ledger is None else ledger.snapshot(), fit_and_localization_seconds=fit_seconds,
+        fit_work=fitting_snapshot, fit_and_localization_seconds=fit_seconds,
         fit_and_localization_units=0 if ledger is None else ledger.units,
         initial_audit_passed=initial_audit.get('passed', False), final_audit_passed=final_audit['passed'],
         relative_residual=final_audit.get('relative_residual'),
