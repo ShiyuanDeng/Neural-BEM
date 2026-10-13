@@ -35,6 +35,13 @@ NORMAL_RETURN = "NORMAL_OPTIMIZER_RETURN"
 STAGE_QUOTA = "STAGE_QUOTA_REACHED"
 
 
+def observe(physics, kind, **record):
+    """Optional immutable-evidence hook; the observer cannot supply decisions."""
+    observer = getattr(physics, 'observer', None)
+    if observer is not None:
+        observer(kind, record)
+
+
 class Stop(RuntimeError):
     code = "IMPLEMENTATION_ERROR"
 
@@ -418,12 +425,16 @@ class Objective:
         self.reusable_refined = {}  # exact refined predictions carried from the previous stage
         self.count = len(stage.observations)
         self.failures = []
+        observe(physics, 'objective_setup', stage=stage, config=config, ledger=ledger)
 
     def _evaluation(self, curve, prediction, forwards):
         residual = normalize(prediction - self.observed, self.observed, self.stage.weights,
                              self.config.residual_floor)
         relative = float(np.linalg.norm(prediction - self.observed) / np.linalg.norm(self.observed))
-        return Evaluation(curve, 0.5 * float(residual @ residual), relative, residual, prediction, tuple(forwards))
+        result = Evaluation(curve, 0.5 * float(residual @ residual), relative, residual, prediction, tuple(forwards))
+        observe(self.physics, 'objective', stage=self.stage, config=self.config, ledger=self.ledger,
+                evaluation=result, observed=self.observed)
+        return result
 
     def reused(self, curve, prediction, forwards, category):
         """``production`` for an exactly reused endpoint: the same charges, no dispatched solves."""
@@ -452,6 +463,7 @@ class Objective:
                                                 imag=curve.coefficients.imag.tolist()))
                 with self.ledger._lock:
                     self.failures.append(failure)
+                observe(self.physics, 'physics_failure', failure=failure, ledger=self.ledger)
                 raise
             return state if keep else state.prediction  # release discarded systems early
 
@@ -673,6 +685,8 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
                        refined_nodes=active_stage.refined_nodes,
                        threshold_distance=(tolerances-discrepancy).tolist())
         if (not accurate and config.resolution_gate == 'absolute') or not base_accurate:
+            observe(physics, 'resolution_refusal', base=base, candidate=candidate,
+                    refined_base=rb, refined_candidate=rc, stage=active_stage, check=row, ledger=ledger)
             row.update(accepted=False, numerical_obstruction=True)
         return row, base_accurate, accurate
 
@@ -765,6 +779,8 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
                     if hasattr(objective, 'gradient') else matrix.T @ model_residual)
         if gradient.shape != (matrix.shape[1],) or not np.isfinite(gradient).all():
             raise FloatingPointError('Invalid objective gradient')
+        observe(physics, 'linearization', evaluation=evaluation, space=space, J=matrix,
+                gradient=gradient, stage=stage, config=config, ledger=ledger)
         return space, matrix, gradient
 
     def record(iteration, evaluation, gradient, step, damping, next_damping, trial=None):
@@ -788,6 +804,7 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
         if resolution_response is not None:
             row.update(nodes=stage.nodes, refined_nodes=stage.refined_nodes)
         history.append(row)
+        observe(physics, 'accepted_history', row=row, evaluation=evaluation, ledger=ledger)
 
     def capture():
         nonlocal checkpoint
@@ -876,12 +893,17 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
                     trial_damping *= config.damping_increase
                     continue
                 raw_norm = float(np.linalg.norm(proposed))
+                raw_proposed = proposed.copy() if getattr(physics, 'observer', None) is not None else None
                 proposed = control_step(proposed, space, update, config)
                 clipping = {}
                 if config.reach_fraction:
                     from bem_inverse.reach import clip_direction
                     proposed, clipping = clip_direction(proposed, space.curve, update.length_unit_m,
                                                         config.reach_fraction, reach_cache)
+                observe(physics, 'proposal', evaluation=current, space=space, J=matrix,
+                    gradient=gradient, normal=normal, metric=damped, damping=trial_damping,
+                    raw_proposed=raw_proposed, bounded_proposed=proposed, controller_floor=floor,
+                    stage=stage, config=config, ledger=ledger)
                 for backtrack in range(config.max_backtracks + 1):
                     if config.damping_rule == 'agreement':
                         ledger.reserve(0)  # deadline/work check before geometry, even after pure refusals
@@ -930,9 +952,13 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
                         trial.update(status="refused", reason=exc.reason, detail=exc.detail)
                         if config.log_model:
                             trial["geometry_seconds"] = perf_counter()-geometry_started
+                        observe(physics, 'geometry_trial', base=current.curve, candidate=None,
+                            step=step, space=space, trial=trial, ledger=ledger)
                         continue
                     if config.log_model:
                         trial["geometry_seconds"] = perf_counter()-geometry_started
+                    observe(physics, 'geometry_trial', base=current.curve, candidate=candidate_curve,
+                        step=step, space=space, trial=trial, ledger=ledger)
                     if not admissible(candidate_curve):
                         trial.update(status="refused", reason="outside_domain")
                         continue

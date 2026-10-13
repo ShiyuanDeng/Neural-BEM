@@ -25,6 +25,7 @@ from bem_inverse.io import read, write, digest, curve_from
 from bem_inverse.modal_muller import ModalMuller, ModalSettings, token
 from bem_inverse.physics import Execution
 from . import campaign as c
+from .ma007_retention import read, retain
 
 CASE = 'hook__c13.3'
 OUTPUT = c.ROOT/'results/validation/modal_atlas/MA-007'
@@ -38,6 +39,7 @@ SCHEMA = 'MA007-pilot-1'
 
 def sources():
     return sorted({*c.ROOT.glob('solvers/**/*.py'), Path(__file__).resolve(),
+        *Path(__file__).parent.glob('ma007*.py'),
         Path(__file__).with_name('ma007_report.py'),
         *(Path(__file__).parent/n for n in ('__init__.py', 'campaign.py', 'scenes.py')),
         c.ROOT/'experiments/cleaned_interface/benchmark.py'})
@@ -99,6 +101,99 @@ def prepare(folder):
                  'all cap, rung-exit, ordering, extension and confirmation fits'])
     write(folder/'manifest.json', value)
     return value
+
+
+def control_worker(folder, enabled):
+    """The actual historical feedback recipe; recording cannot supply decisions."""
+    from bem_inverse import policies
+    from bem_inverse.runner import fit
+    from experiments.cleaned_interface import benchmark as ci
+    from .ma007_recording import Recorder
+    verify(folder)
+    run=folder/('C0_recorded' if enabled else 'C0_disabled')
+    run.mkdir(exist_ok=False)
+    epoch=digest(folder/'manifest.json')
+    recorder=Recorder(run/'recording',epoch) if enabled else None
+    physics=ModalMuller(EXECUTION,observer=recorder)
+    policy=policies.build('feedback',**policies.BENCHMARK_CONTRACT)
+    problem=c.problem(CASE)
+    started=perf_counter()
+    def event(row):
+        print(row['operation']['label'],row['reason'],flush=True)
+    try:
+        result=fit(problem,solver='modal_muller',physics=physics,execution=EXECUTION,
+            policy=policy,output=run,geometry_update='certified_spectral',
+            localization_adapter=c.keep_start,on_event=event)
+        returned=perf_counter()
+        metrics=ci.score(c.row(CASE),curve_from(result['final_curve']))
+        residual=result.get('relative_residual')
+        result.update(metrics=metrics,case=CASE,recovered=bool(result['final_audit_passed'] and
+            metrics['rms_mm']<=1. and metrics['hausdorff_upper_mm']<=2. and residual is not None and
+            np.all(np.asarray(residual)<=.003)),audited_output_seconds=returned-started,
+            policy_spec=policies.settings('feedback',policies.BENCHMARK_CONTRACT),source_epoch=epoch)
+    except Exception:
+        result=dict(case=CASE,outcome='IMPLEMENTATION_FAILURE',traceback=traceback.format_exc(),recovered=False)
+    finally:
+        if recorder is not None:
+            result['recording']=recorder.finish()
+    result['recording_enabled']=enabled
+    write(run/'result.json',result)
+    print(result['outcome'],result['recovered'],flush=True)
+    return result
+
+
+def instrumentation_identity(folder):
+    a,b=[folder/name for name in ('C0_recorded','C0_disabled')]
+    result_a,result_b=read(a/'result.json'),read(b/'result.json')
+    checks=dict(outcome=result_a['outcome']==result_b['outcome'],
+        final_coefficients=np.array_equal(curve_from(result_a['final_curve']).coefficients,
+                                         curve_from(result_b['final_curve']).coefficients))
+    def accepted(path):
+        return [{k:r[k] for k in ('stage','iteration','M','loss','units','curve')}
+                for r in read(path/'accepted.json')['states']]
+    checks['accepted_states']=accepted(a)==accepted(b)
+    def trial_decisions(path):
+        result=read(path/'result.json')
+        return [[{k:t[k] for k in ('iteration','damping','backtrack','step_m','status','reason','loss',
+                                   'gain_ratio','actual_decrease','predicted_decrease') if k in t}
+                 for t in read(path/(stage['stage']+'.json'))['trials']]
+                for stage in result['stages']]
+    checks['trial_decisions']=trial_decisions(a)==trial_decisions(b)
+    value=dict(passed=all(checks.values()),checks=checks,
+        recorded_result_sha256=digest(a/'result.json'),disabled_result_sha256=digest(b/'result.json'),
+        disabled_atlas_link='C0_recorded atlas, only after exact identity and full atlas qualification')
+    write(folder/'instrumentation_identity.json',value)
+    return value
+
+
+def control(folder):
+    COORD.mkdir(exist_ok=True)
+    with (COORD/'compute.lock').open('a') as compute,(COORD/'source.lock').open('a') as source:
+        fcntl.flock(compute,fcntl.LOCK_EX); fcntl.flock(source,fcntl.LOCK_SH)
+        manifest=prepare(folder)
+        manifest.update(purpose='Phase A C0 instrumentation pair; atlas not yet collected',
+            user_authorization='2026-10-13 latest 19-fit plan, local array retention',
+            expected_configurations=['C0_recorded','C0_disabled'])
+        write(folder/'manifest.json',manifest)
+        for enabled in (True,False):
+            name='C0_recorded' if enabled else 'C0_disabled'
+            env=dict(os.environ,PYTHONPATH=f'{c.ROOT}/solvers:{c.ROOT}',**THREADS)
+            with (folder/(name+'.log')).open('w') as log:
+                done=subprocess.run([sys.executable,'-m','experiments.benchmark.ma007','control-worker',
+                    '--folder',str(folder),'--recording','on' if enabled else 'off'],
+                    cwd=c.ROOT,env=env,stdout=log,stderr=subprocess.STDOUT)
+            if done.returncode:
+                write(folder/(name+'_failure.json'),dict(returncode=done.returncode))
+                raise RuntimeError(name+' failed; evidence retained')
+        verify(folder)
+        identity=instrumentation_identity(folder)
+        write(OUTPUT/'state.json',dict(experiment='MA-007',phase='A',
+            source_epoch=digest(folder/'manifest.json'),completed=['maximum-dimension pilot','C0 instrumentation pair'],
+            instrumentation_passed=identity['passed'],full_study_complete=False,
+            pending=['complete C0 atlas/probes and regeneration','derivative/workspace qualification',
+                     'resource forecast/release','nine capacity fits','rung-exit fit','eight ordering fits',
+                     'conditional extensions/confirmations','three-question final report']))
+        print('INSTRUMENTATION_IDENTITY',identity['passed'],flush=True)
 
 
 def verify(folder):
@@ -340,9 +435,10 @@ def pilot(folder):
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('command',choices=('pilot','worker','verify'))
+    parser.add_argument('command',choices=('pilot','worker','verify','control','control-worker'))
     parser.add_argument('--folder',type=Path,required=True)
     parser.add_argument('--state',choices=('initial','last_damped','failed_endpoint'))
+    parser.add_argument('--recording',choices=('on','off'))
     args=parser.parse_args()
     if args.command=='pilot':
         pilot(args.folder.resolve())
@@ -350,6 +446,12 @@ def main():
         if args.state is None:
             parser.error('worker needs --state')
         worker(args.folder.resolve(),args.state)
+    elif args.command=='control':
+        control(args.folder.resolve())
+    elif args.command=='control-worker':
+        if args.recording is None:
+            parser.error('control-worker needs --recording')
+        control_worker(args.folder.resolve(),args.recording=='on')
     else:
         verify(args.folder.resolve())
 

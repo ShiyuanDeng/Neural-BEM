@@ -40,3 +40,31 @@ The C0 recording/instrumentation pilot, its complete atlas/probes, and the
 remaining qualification/release checks are still required. Machine-readable
 state and outstanding work are in the evidence root. Raw NPZ arrays remain on
 this machine only; their manifests, hashes, receipts and reports are committed.
+
+## C0 instrumentation pair
+
+Attempt: `results/validation/modal_atlas/MA-007/phaseA-control-001/`.
+The historical named feedback policy ran from the prescribed hook start with
+recording enabled, then disabled in a fresh interpreter, under the same sealed
+source epoch. Both returned NUMERICAL_FAILURE at release_M11, with 1,099 fitting
+work units, 8.6530739084 mm RMS, and 25.1401779119 mm Hausdorff upper bound.
+Their endpoint audits pass, but geometric/data recovery does not.
+
+Accepted states, trial decisions and final coefficients agree bitwise. Audited
+output wall times were 25.593 s recorded and 23.438 s disabled; these include
+capture/I/O overhead and are not an isolated speed claim. The recorder indexed
+2,092 events and retained 2,007 lossless chunks (43.44 MiB). Serialization took
+4.475 s, pure serialization waits took 1.132 s, and complete refusal reciprocal
+traces added 76 separately charged post-return diagnostic work units (0.109 s).
+Snapshot/operator retention remains part of the pending offline atlas.
+
+Read-back verifies each chunk's exact hash/shape/dtype. Saved objectives,
+gradients and regularized/clipped proposals replay within the plan's unchanged
+tolerances; event counts reconcile with the solver's field/derivative receipts.
+Ordinary runner JSON payloads are preserved locally byte for byte as ignored
+`.json.raw` files. Committed receipts replace raw numerical arrays with lossless
+NPZ references and hashes; expansion reproduces the original numerical content.
+
+This closes the instrumentation pair, not the C0 recording pilot: its complete
+five-role atlas, local probes, regeneration and the Phase B release gate remain
+required. The machine-readable state lists those outstanding steps.

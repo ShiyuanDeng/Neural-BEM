@@ -3,9 +3,72 @@ import argparse
 from pathlib import Path
 import hashlib
 import numpy as np
-from bem_inverse.io import read, write, digest
+from bem_inverse.io import write, digest
+from bem_inverse.continuation.lm_backend import normalize, BackendConfig, control_step
+from .ma007_retention import read
 from .ma007 import OUTPUT
 from . import campaign as c
+
+
+def relative(a,b,floor=1e-14):
+    return float(np.linalg.norm(a-b)/max(np.linalg.norm(b),floor))
+
+
+def validate_recording(folder):
+    """Replay saved data-space arithmetic; never assemble a new operator."""
+    from types import SimpleNamespace
+    root=folder/'C0_recorded'
+    result=read(root/'result.json')
+    index=read(root/'recording/index.json')
+    rows=[]
+    for path in sorted((root/'recording/chunks').glob('*.json')):
+        receipt=read(path); artifact=c.ROOT/receipt['path']
+        if digest(artifact)!=receipt['sha256']:
+            raise ValueError('Recorded array chunk hash changed: '+str(artifact))
+        with np.load(artifact,allow_pickle=False) as saved:
+            arrays={k:saved[k] for k in saved.files}
+        for key,metadata in receipt['arrays'].items():
+            value=arrays[key]
+            if (list(value.shape)!=metadata['shape'] or str(value.dtype)!=metadata['dtype'] or
+                hashlib.sha256(value.tobytes()).hexdigest()!=metadata['sha256']):
+                raise ValueError('Recorded array read-back defect: '+key)
+        identity=receipt['identity']; kind=identity['kind']
+        row=dict(event=identity['index'],kind=kind,artifact=receipt['path'],passed=True)
+        if kind=='objective':
+            residual=normalize(arrays['prediction']-arrays['observed'],arrays['observed'],
+                               arrays['weights'],identity['floor'])
+            loss=.5*float(residual@residual)
+            row.update(residual_error=relative(residual,arrays['assembled_residual']),
+                loss_error=abs(loss-identity['loss'])/max(abs(identity['loss']),1e-15))
+            row['passed']=row['residual_error']<=1e-12 and row['loss_error']<=1e-12
+        elif kind=='linearization':
+            gradient=arrays['J_normalized'].T@arrays['assembled_residual']
+            row['gradient_error']=relative(gradient,arrays['gradient'])
+            row['passed']=row['gradient_error']<=1e-10
+        elif kind=='proposal':
+            lhs=arrays['normal']+identity['damping']*arrays['metric']
+            proposed=np.linalg.solve(lhs,-arrays['gradient'])
+            band=(len(proposed)-1)//2
+            orders=np.r_[0,np.arange(1,band+1),np.arange(1,band+1)]
+            bounded=control_step(proposed,SimpleNamespace(orders=orders),None,BackendConfig(**identity['config']))
+            row.update(raw_step_error=relative(proposed,arrays['raw_proposed']),
+                bounded_step_error=relative(bounded,arrays['bounded_proposed']))
+            row['passed']=row['raw_step_error']<=1e-10 and row['bounded_step_error']<=1e-10
+            if not row['passed']:
+                row['condition']=float(np.linalg.cond(lhs))
+                row['replay_flag']='retained exact inputs; replay unqualified'
+        rows.append(row)
+    counted={kind:sum(e['kind']==kind for e in index['events']) for kind in ('field','reciprocal','objective','proposal')}
+    reconciliation=dict(fields=counted['field']==result['physics']['counts']['evaluations'],
+        reciprocals=counted['reciprocal']==result['physics']['counts']['derivatives'],
+        events=index['events_count']==len(index['events']))
+    value=dict(readback_passed=True,replay_passed=all(x['passed'] for x in rows),
+        reconciliation=reconciliation,rows=rows,counts=counted,
+        chunks_verified=len(rows),raw_array_bytes=index['raw_array_bytes'],
+        recording_seconds={k:index[k] for k in ('serialization_seconds','capture_inclusive_seconds',
+            'pure_io_wait_seconds','offline_refusal_reciprocal_seconds')})
+    write(folder/'recording_validation.json',value)
+    return value
 
 
 def report(folder):
@@ -46,8 +109,10 @@ def report(folder):
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--folder',type=Path,required=True)
+    parser.add_argument('--kind',choices=('pilot','control'),default='pilot')
     args=parser.parse_args()
-    print(report(args.folder.resolve())['chunks_verified'],'chunks verified')
+    value=(report(args.folder.resolve()) if args.kind=='pilot' else validate_recording(args.folder.resolve()))
+    print(value['chunks_verified'],'chunks verified')
 
 
 if __name__=='__main__':
