@@ -1,5 +1,9 @@
 # MA-007: ready for the 18 research cases
 
+**Executed 2026-10-13:** all 18 configurations returned and were pushed;
+8 recovered. See [the three-question answers](06_research18_results.md).
+The readiness text below records the queue before the user's launch instruction.
+
 The runs answer three questions: what useful limits can be established for
 F/M/K/Ku, what causes those limits, and which sequence works on this scene?
 

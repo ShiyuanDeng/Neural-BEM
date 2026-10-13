@@ -225,3 +225,17 @@ CUDA response atlas stay preserved; the closure does not turn unfinished
 checks into passes. The prepared nominal queue, same-scene settings, O8 user
 clarifications and launch command are recorded in `05_ready.md`. Research
 results and the three-question answers remain pending the requested runs.
+
+## All 18 requested research policies returned
+
+The user authorized the prepared 18-policy batch and excluded extra tests.
+All 18 ran sequentially in workspace512, with each returned result committed
+and pushed before dispatching the next. Eight returned recovered endpoints.
+
+The registered C* rule selected M1's (2.5,37,192,192) caps for O1–O8.
+O2 used the least fitting work among recoveries; K1 had the shortest observed
+audited fit return. No baseline repeat, test suite, or extra fit was run.
+
+[The three-question report](06_research18_results.md) analyzes saved receipts.
+It distinguishes sufficient individual caps from unestablished upper bounds,
+and leaves the unexecuted wider-plan evidence explicitly incomplete.
