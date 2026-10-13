@@ -12,9 +12,14 @@ cited as starting evidence.
 
 ## Current handoff
 
-For the current inverse lineage and the exact 36-configuration scope, see
+New inverse experiments use only the [TG-002 benchmark](../../../experiments/benchmark/README.md)
+with one centered start and no grid search. The proposed MA-007 study uses
+only `hook__c13.3`; the older scene sets and results below remain historical
+evidence and do not define its prospective scope.
+
+For the historical inverse lineage and its 36-configuration scope, see
 [the consolidated pipeline guide](../../pipelines/shape_frequency_continuation.md#current-inverse-across-the-36-configurations-2026-09-30).
-MA-005 DF is the newest successful inverse extension; the 34/36 SC-051
+In that historical comparison, the 34/36 SC-051
 reference result combines four strategies and does not validate DF on all 36.
 
 The new [Cleaned interfaces track](../cleaned_interfaces/README.md) owns the
@@ -27,7 +32,7 @@ user's requirements and the cumulative-pipeline cleanup plan.
 | Review of the vision | [Independent review](iteration_01/02_proposals/02_independent_review.md). §5.1 is gauge-dependent. The resonance mechanism does not apply to the contrast-0.5 benchmark. |
 | Current code check | [MA-001R](../../../results/validation/modal_atlas/MA-001R/README.md), 2026-09-29: Part B re-run on `feature/shape-frequency-continuation` at `032092cd` (CUDA default). Integer quantities identical; continuous ones agree to round-off. |
 | Code | `experiments/modal_atlas/` (isolated; no production or continuation code changed). MA-001 was imported unchanged from `claude/magical-meitner-11naoj` on 2026-09-29. MA-006 adds `operator_atlas.py`, its tests and read-back/plotting report; earlier hash-pinned sources remain unchanged. |
-| Next | No successor launched. [MA-006 closeout](iteration_07/01_results.md) identifies affordable cutoff-error estimation and qualification at active M=37–85 as the next numerical questions. The independent MA-005 proposals remain unexecuted. |
+| Next | [MA-007 proposed plan](iteration_07/03_plan.md): useful limits and mechanisms of F, M, K, and K_u, followed by continuation comparisons and a retained trajectory/operator atlas, using only TG-002 `hook__c13.3`. Planning only; execution has not started. [MA-006 closeout](iteration_07/01_results.md) remains the preceding numerical evidence. The independent MA-005 proposals remain unexecuted. |
 
 ## Cycle history
 
@@ -39,4 +44,4 @@ user's requirements and the cumulative-pipeline cleanup plan.
 | [04](iteration_04/01_results.md) | MA-003 complete: G1 fails; wrong-basin mechanism; damping probes; [MA-004 planned](iteration_04/03_plan.md). |
 | [05](iteration_05/01_results.md) | MA-004 complete: damping repairs 2 of 4 (G1 fails); the 13.3 star is limited by the final band; [MA-005 planned](iteration_05/03_plan.md). |
 | [06](iteration_06/01_results.md) | MA-005 complete: G1 and G2 pass; DF 7/8 transfer against 0/8 frozen. |
-| [07](iteration_07/01_results.md) | MA-006 complete: operator atlas and projection/reduced/Schur cutoff screen; 9/10 cells qualify, omitted-mode feedback changes usable cutoffs in high-contrast cases. |
+| [07](iteration_07/01_results.md) | MA-006 complete: operator atlas and projection/reduced/Schur cutoff screen; 9/10 cells qualify, omitted-mode feedback changes usable cutoffs in high-contrast cases. [MA-007 proposed](iteration_07/03_plan.md): four-control limits, mechanisms, and continuation atlas on TG-002 `hook__c13.3`; not started. |
