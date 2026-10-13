@@ -89,3 +89,19 @@ intrinsic errors as separately labeled diagnostics, reseal and rerun the five
 roles. This correction changes no threshold, direction coverage, solver or
 geometry algorithm. It is an implementation correction, not a research policy
 decision or a physical workspace-failure conclusion.
+
+## Corrected response atlas
+
+`phaseA-atlas-002` reran all five roles under a fresh source seal. Every one of
+the 114 cells passes the prescribed field and complete-trial P127-column
+response gate. Intrinsic diagnostics remain separately flagged, including weak
+initial-circle columns that do not qualify. All attempted B512 matrices are
+stored independently under the declared sub-block fallback.
+
+Collection used 72.242 s numerical compute and 71.436 s serialization/read-back,
+retaining 2.775 GiB of arrays. Peak worker RSS was 1.675 GiB; maximum CUDA reserved
+memory was 10.830 GiB; sampled total GPU use peaked at 12.190 GiB of 31.843 GiB.
+Read-back verifies all retained chunk hashes/shapes/dtypes and snapshot source
+residual/paired-prediction identities. The active-objective step comparisons,
+local probes, selected derivatives, regeneration and release forecast remain
+pending; response qualification alone is not the complete C0 pilot or a ceiling.

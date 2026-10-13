@@ -13,6 +13,8 @@ import subprocess
 import os
 import sys
 import tarfile
+import threading
+import resource
 from time import perf_counter
 import traceback
 
@@ -26,7 +28,8 @@ from bem_inverse.modal_muller import ModalMuller, ModalSettings, token
 from bem_inverse.modal_operator import hadamard
 from bem_inverse.normal_basis import orthonormal_normal_basis
 from . import campaign as c
-from .ma007 import CASE, OUTPUT, COORD, EXECUTION, THREADS, Chunks, Capture, permutation, subblock_indices, hashes
+from .ma007 import (CASE, OUTPUT, COORD, EXECUTION, THREADS, Chunks, Capture, permutation,
+                   subblock_indices, hashes, monitor_gpu, available_memory)
 from .ma007_retention import read
 
 LADDER=(64,96,128,160,192,256,320)
@@ -127,11 +130,13 @@ def errors(low, high):
     return fields,columns
 
 
-def worker(folder, role_name):
+def worker(folder, role_name, compute_allowance=10800., byte_allowance=20*2**30):
     manifest=verify(folder)
     role=next(r for r in read(folder/'roles.json')['roles'] if r['role']==role_name)
     target=folder/role_name; target.mkdir(exist_ok=False)
     started=perf_counter(); chunks=Chunks(target/'chunks')
+    import torch
+    torch.cuda.reset_peak_memory_stats()
     curve=curve_from(role['curve']); problem=c.problem(CASE); P=127; perm=permutation(P)
     update=CertifiedSpectralUpdate(problem.length_unit_m)
     space=update.prepare(curve,P,curve.band)
@@ -167,7 +172,7 @@ def worker(folder, role_name):
         for observation in getattr(problem,kind):
             used=sum(x['bytes'] for x in chunks.rows)
             compute_elapsed=perf_counter()-started-chunks.seconds
-            if compute_elapsed>=10800 or used>=20*2**30:
+            if compute_elapsed>=compute_allowance or used+600*2**20>byte_allowance:
                 status='RESOURCE_BLOCKED';break
             cell_name=f'{kind}_{observation.frequency_hz/1e9:g}'
             computed={}; attempted=[]; selected=None; failure=None
@@ -200,9 +205,10 @@ def worker(folder, role_name):
                     low=evaluate(cutoff); witnesses=[evaluate(cutoff+delta) for delta in (32,64)]
                     comparisons=[errors(low,high) for high in witnesses]
                     field_limit=1e-5 if observation.frequency_hz<=.5e9 else 1e-7
-                    passed=all(f<=field_limit and all(np.all(e<=1e-3) for e in cols.values())
+                    passed=all(f<=field_limit and np.all(cols['J_complete']<=1e-3)
                                for f,cols in comparisons)
                     attempted.append(dict(cutoff=cutoff,passed=passed,
+                        intrinsic_passed=all(np.all(x[1]['J_intrinsic']<=1e-3) for x in comparisons),
                         fields=[x[0] for x in comparisons],
                         max_column_errors={name:[float(np.max(x[1][name])) for x in comparisons]
                                            for name in ('J_complete','J_intrinsic')}))
@@ -211,8 +217,10 @@ def worker(folder, role_name):
                     for cutoff in [k for k in LADDER if k<selected]:
                         low=evaluate(cutoff); witnesses=[evaluate(cutoff+delta) for delta in (32,64)]
                         comparisons=[errors(low,high) for high in witnesses]
-                        passed=all(f<=field_limit and all(np.all(e<=1e-3) for e in cols.values()) for f,cols in comparisons)
-                        attempted.append(dict(cutoff=cutoff,passed=passed,fields=[x[0] for x in comparisons],
+                        passed=all(f<=field_limit and np.all(cols['J_complete']<=1e-3) for f,cols in comparisons)
+                        attempted.append(dict(cutoff=cutoff,passed=passed,
+                            intrinsic_passed=all(np.all(x[1]['J_intrinsic']<=1e-3) for x in comparisons),
+                            fields=[x[0] for x in comparisons],
                             max_column_errors={name:[float(np.max(x[1][name])) for x in comparisons]
                                                for name in ('J_complete','J_intrinsic')}))
                         if passed: selected=cutoff;break
@@ -224,13 +232,15 @@ def worker(folder, role_name):
                 f,cols=errors(lo,hi)
                 workspace_check=dict(cutoff=chosen,fields=f,
                     max_column_errors={name:float(np.max(e)) for name,e in cols.items()},
-                    passed=f<=field_limit and all(np.all(e<=1e-3) for e in cols.values()))
+                    passed=f<=field_limit and np.all(cols['J_complete']<=1e-3),
+                    intrinsic_passed=bool(np.all(cols['J_intrinsic']<=1e-3)))
                 if not workspace_check['passed']:
                     highest=evaluate(chosen,max_workspace_physics,1024)
                     f2,c2=errors(hi,highest)
                     workspace_check['768_1024']=dict(fields=f2,
                         max_column_errors={name:float(np.max(e)) for name,e in c2.items()},
-                        passed=f2<=field_limit and all(np.all(e<=1e-3) for e in c2.values()))
+                        passed=f2<=field_limit and np.all(c2['J_complete']<=1e-3),
+                        intrinsic_passed=bool(np.all(c2['J_intrinsic']<=1e-3)))
                     workspace_check['response_workspace_outcome']=('REQUIRES_COMMON_EPOCH_PROMOTION' if
                         workspace_check['768_1024']['passed'] else 'WORKSPACE_UNRESOLVED')
             except Exception:
@@ -288,6 +298,7 @@ def worker(folder, role_name):
                     system_residual=value['system_residual']))
             cell=dict(catalog=kind,frequency_hz=observation.frequency_hz,
                 status='failed' if failure else 'qualified' if selected is not None else 'unqualified',
+                response_gate='field and every complete-trial P column; intrinsic errors are diagnostic',
                 traceback=failure,selected_K_u=selected,K_top=top_cutoff,
                 attempted=attempted,workspace_check=workspace_check,feedback=feedback,artifacts=artifacts)
             cells.append(cell)
@@ -303,6 +314,9 @@ def worker(folder, role_name):
         io_seconds=chunks.seconds,elapsed_seconds=perf_counter()-started,
         artifact_bytes=sum(x['bytes'] for x in chunks.rows),chunks=len(chunks.rows),
         snapshots='all attempted B512 cutoffs retained separately',
+        peak_rss_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024,
+        peak_gpu_reserved_bytes=torch.cuda.max_memory_reserved(),
+        peak_gpu_allocated_bytes=torch.cuda.max_memory_allocated(),
         pending=manifest['required_pending'],physics=physics.receipt(),workspace_physics=workspace_physics.receipt())
     write(target/'result.json',value)
     return value
@@ -313,6 +327,9 @@ def collect(control, folder):
     with (COORD/'compute.lock').open('a') as compute,(COORD/'source.lock').open('a') as source:
         fcntl.flock(compute,fcntl.LOCK_EX); fcntl.flock(source,fcntl.LOCK_SH)
         manifest=prepare(control,folder); completed=[]; status='COLLECTING'
+        stop=threading.Event(); samples=[]; monitor=threading.Thread(target=monitor_gpu,args=(stop,samples),daemon=True)
+        monitor.start()
+        memory_before=available_memory()
         for role in read(folder/'roles.json')['roles']:
             if role['status']!='reached': continue
             elapsed=sum(x['compute_seconds'] for x in completed)
@@ -322,18 +339,28 @@ def collect(control, folder):
             env=dict(os.environ,PYTHONPATH=f'{c.ROOT}/solvers:{c.ROOT}',**THREADS)
             with (folder/(role['role']+'.log')).open('w') as log:
                 done=subprocess.run([sys.executable,'-m','experiments.benchmark.ma007_atlas','worker',
-                    '--folder',str(folder),'--role',role['role']],cwd=c.ROOT,env=env,stdout=log,stderr=subprocess.STDOUT)
+                    '--folder',str(folder),'--role',role['role'],
+                    '--compute-allowance',str(10800-elapsed),'--byte-allowance',str(20*2**30-used)],
+                    cwd=c.ROOT,env=env,stdout=log,stderr=subprocess.STDOUT)
             path=folder/role['role']/'result.json'
             if done.returncode or not path.exists():
                 status='ATLAS_PROCESS_FAILED';write(folder/(role['role']+'_failure.json'),dict(returncode=done.returncode));break
             completed.append(read(path))
             if completed[-1]['status']!='CELLS_TERMINAL': status=completed[-1]['status'];break
         verify(folder)
+        stop.set(); monitor.join(timeout=12)
         if status=='COLLECTING': status='RESPONSE_CELLS_TERMINAL'
         value=dict(status=status,full_atlas_complete=False,roles=completed,
             compute_seconds=sum(x['compute_seconds'] for x in completed),
             io_seconds=sum(x['io_seconds'] for x in completed),artifact_bytes=sum(x['artifact_bytes'] for x in completed),
             pending=manifest['required_pending'])
+        measured=[s for s in samples if 'used_bytes' in s]
+        value['resources']=dict(memory_before=memory_before,memory_after=available_memory(),
+            peak_rss_bytes=max((x['peak_rss_bytes'] for x in completed),default=None),
+            peak_gpu_reserved_bytes=max((x['peak_gpu_reserved_bytes'] for x in completed),default=None),
+            peak_gpu_used_sample_bytes=max((x['used_bytes'] for x in measured),default=None),
+            gpu_capacity_bytes=measured[0]['total_bytes'] if measured else None)
+        write(folder/'resource_samples.json',dict(samples=samples))
         write(folder/'response_atlas.json',value)
         print(status,flush=True)
 
@@ -344,11 +371,13 @@ def main():
     parser.add_argument('--folder',type=Path,required=True)
     parser.add_argument('--control',type=Path)
     parser.add_argument('--role')
+    parser.add_argument('--compute-allowance',type=float,default=10800.)
+    parser.add_argument('--byte-allowance',type=int,default=20*2**30)
     args=parser.parse_args()
     if args.command=='collect':
         if args.control is None: parser.error('collect needs --control')
         collect(args.control.resolve(),args.folder.resolve())
-    elif args.command=='worker': worker(args.folder.resolve(),args.role)
+    elif args.command=='worker': worker(args.folder.resolve(),args.role,args.compute_allowance,args.byte_allowance)
     else: verify(args.folder.resolve())
 
 
