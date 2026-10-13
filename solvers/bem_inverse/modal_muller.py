@@ -71,10 +71,18 @@ class ModalSettings:
     series_loss: float = 1e-9
     max_log_degree: int = 4000
     cached_geometries: int = 4
+    # Experimental independent accuracy slots. None preserves the historical
+    # storage-to-trace profile and cutoff+margin coefficient window.
+    coefficient_workspace: object = None
+    trace_cutoff: object = None
 
     def __post_init__(self):
         if min(self.trace_minimum, self.trace_step, self.window_margin, self.cached_geometries) < 1:
             raise ValueError('Modal trace, window and cache settings must be positive.')
+        for name in ('coefficient_workspace', 'trace_cutoff'):
+            value = getattr(self, name)
+            if value is not None and (isinstance(value, bool) or int(value) != value or value < 1):
+                raise ValueError(f'{name} must be a positive integer or None.')
 
 
 @dataclass(frozen=True)
@@ -93,9 +101,10 @@ class ModalState:
 class ModalMuller:
     name = 'modal_muller'
 
-    def __init__(self, execution_settings, settings=None):
+    def __init__(self, execution_settings, settings=None, observer=None):
         self.execution = execution_settings
         self.settings = settings or ModalSettings()
+        self.observer = observer
         self._lock = Lock()
         self._geometries = OrderedDict()
         self._counts = dict(evaluation_attempts=0, evaluations=0, failed_evaluations=0,
@@ -139,13 +148,17 @@ class ModalMuller:
 
     def resolution_profile(self, storage_band):
         s = self.settings
-        production = max(s.trace_minimum, s.trace_step*(int(np.ceil(storage_band/64))+1))
+        production = (s.trace_cutoff if s.trace_cutoff is not None else
+                      max(s.trace_minimum, s.trace_step*(int(np.ceil(storage_band/64))+1)))
         refined = production+s.trace_step
+        workspace = lambda k: s.coefficient_workspace or k+s.window_margin
         return dict(production=token(production), refined=token(refined), kind='modal_muller',
                     nodal_resolution=None, token='8*K_trace', K_trace=production, K_trace_refined=refined,
-                    coefficient_workspace=dict(production=production+s.window_margin,
-                                               refined=refined+s.window_margin),
-                    refinement=f'raise K_trace and coefficient window by {s.trace_step}; '
+                    coefficient_workspace=dict(production=workspace(production),
+                                               refined=workspace(refined)),
+                    refinement=f'raise K_trace by {s.trace_step}; '
+                               + ('hold coefficient workspace fixed; ' if s.coefficient_workspace else
+                                  f'raise coefficient window by {s.trace_step}; ')+
                                'refuse candidates outside per-frequency tolerance')
 
     def refine_resolution(self, resolution):
@@ -235,7 +248,10 @@ class ModalMuller:
         if not isinstance(acquisition, F.PointSourceAcquisition) or not acquisition.paired:
             raise ValueError('modal_muller supports paired point-source acquisition only.')
         ki = k*np.sqrt(contrast)
-        geometry, (matrix, radial, device, fallback) = self._matrix(curve, cutoff+s.window_margin, k, ki, cutoff)
+        window = s.coefficient_workspace or cutoff+s.window_margin
+        if window < max(cutoff, curve.band):
+            raise ValueError('Coefficient workspace must contain trace and geometry bands.')
+        geometry, (matrix, radial, device, fallback) = self._matrix(curve, window, k, ki, cutoff)
         with self._stage('waves'):
             options = dict(tolerance=s.graf_tolerance, series_loss=s.series_loss)
             sources, receivers = point_kernels(geometry, k, (acquisition.sources, acquisition.receivers), **options)
@@ -253,6 +269,12 @@ class ModalMuller:
             raise FloatingPointError('Nonfinite modal prediction')
         state = ModalState(k, ki, acquisition, cutoff, curve.coefficients.copy(), factors, traces,
                            np.vstack((receivers[0][test], receivers[1][test])))
+        if self.observer is not None:
+            with self._stage('recording_io'):
+                self.observer('field', dict(state=state, observation=observation,
+                    workspace=window, A=matrix, B_s=rhs, B_r=state.reciprocal_rhs,
+                    R=receiver, X_s=traces, prediction=prediction,
+                    system_residual=residual))
         interval = geometry.log_interval
         return Prediction(prediction, dict(solver=self.name, device=device, resolution=token(cutoff),
             K_trace=cutoff, window=window, system_residual=residual, fallback=fallback, log_degree=interval['degree'],
@@ -267,6 +289,10 @@ class ModalMuller:
         jacobian = hadamard(state.traces[:count], reciprocal[:count], weights, state.cutoff, factor)
         if not np.isfinite(jacobian).all():
             raise FloatingPointError('Nonfinite modal shape Jacobian.')
+        if self.observer is not None:
+            with self._stage('recording_io'):
+                self.observer('reciprocal', dict(state=state, X_r=reciprocal,
+                    normal_velocity_weights=weights, J=jacobian))
         return jacobian
 
     def _derivative(self, state, weights):

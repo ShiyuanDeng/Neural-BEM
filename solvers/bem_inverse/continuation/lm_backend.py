@@ -29,7 +29,7 @@ from .forward import ordered_calls, solve, shape_jacobian
 from .geometry import FourierCurve, grid_size, integer
 from .geometry_runtime import geometry_validated
 from .updates import UpdateRefused
-from .globalization import damping_floor, accepted_damping, shortened_stagnation
+from .globalization import damping_floor, accepted_damping, shortened_stagnation, insufficient_progress
 
 NORMAL_RETURN = "NORMAL_OPTIMIZER_RETURN"
 STAGE_QUOTA = "STAGE_QUOTA_REACHED"
@@ -72,6 +72,7 @@ class FitStage:
     refined_nodes: int  # acceptance and numerical-regime check
     iterations: int  # LM iteration cap
     quota: Optional[int] = None  # work units for this stage
+    resolution_kind: str = 'nodal'
 
     def __post_init__(self):
         count = len(self.observations)
@@ -83,7 +84,13 @@ class FitStage:
             integer(getattr(self, name), name)
         integer(self.update_modes, "update_modes", minimum=0)
         integer(self.iterations, "iterations", minimum=0)
-        if self.nodes <= 2 * self.curve_modes or self.refined_nodes <= self.nodes:
+        if self.resolution_kind not in ('nodal', 'modal'):
+            raise ValueError('resolution_kind must be nodal or modal.')
+        if self.refined_nodes <= self.nodes:
+            raise ValueError('Resolution must refine strictly.')
+        if self.resolution_kind == 'modal' and (self.nodes % 8 or self.refined_nodes % 8):
+            raise ValueError('Modal resolution tokens must be positive multiples of eight.')
+        if self.resolution_kind == 'nodal' and self.nodes <= 2 * self.curve_modes:
             raise ValueError("Nodes must resolve the curve band and refine strictly.")
         if self.quota is not None:
             integer(self.quota, "quota")
@@ -137,6 +144,7 @@ class BackendConfig:
     progress_window: int = 5
     minimum_relative_progress: float = .01
     avoid_terminal_linearization: bool = False
+    plain_progress_exit: bool = False
 
     def __post_init__(self):
         if self.resolution_gate not in ("absolute", "decision"):
@@ -1019,6 +1027,12 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
             record(iteration, current, gradient, step, used_damping, damping, trial)
             capture()
             if (config.damping_rule == 'agreement' and not current.loss <= config.loss_tolerance and
+                    config.plain_progress_exit and
+                    insufficient_progress(history, config.progress_window, config.minimum_relative_progress)):
+                stop_reason = 'progress_exit'
+                break
+            if (config.damping_rule == 'agreement' and not config.plain_progress_exit and
+                    not current.loss <= config.loss_tolerance and
                     shortened_stagnation(history, config.progress_window, config.minimum_relative_progress)):
                 stop_reason = 'shortened_step_stagnation'
                 break

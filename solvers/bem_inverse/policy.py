@@ -123,7 +123,8 @@ class CumulativePolicy:
         profile = physics.resolution_profile(storage)
         stage = FitStage(label, tuple(observations), weights,
             tuple(1e-5 if o.frequency_hz <= .5e9 else 1e-7 for o in observations),
-            band, storage, profile['production'], profile['refined'], iterations, quota)
+            band, storage, profile['production'], profile['refined'], iterations, quota,
+            resolution_kind='modal' if profile['kind']=='modal_muller' else 'nodal')
         return Operation('fit', label, purpose, 'previous operation completed or exhausted its stage quota',
             'advance on normal/quota return; any hard/numerical failure goes to final audit; '
             'full real catalog at declared noise discrepancy goes directly to final audit',

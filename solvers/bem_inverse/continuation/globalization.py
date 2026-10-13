@@ -30,3 +30,11 @@ def shortened_stagnation(history, window, minimum_progress):
     shortened = sum(row.get('accepted_fraction', 1.) <= .25 for row in history[-window:])
     return (shortened >= (window+1)//2 and
             (start-end)/max(abs(start), np.finfo(float).tiny) < minimum_progress)
+
+
+def insufficient_progress(history, window, minimum_progress):
+    """Plain accepted-loss progress exit, without a shortened-step condition."""
+    if len(history) <= window:
+        return False
+    start, end = history[-window-1]['loss'], history[-1]['loss']
+    return (start-end)/max(abs(start), np.finfo(float).tiny) < minimum_progress
