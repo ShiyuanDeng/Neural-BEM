@@ -10,7 +10,7 @@ from collections import OrderedDict
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import asdict
 import hashlib
-from threading import Lock, current_thread, main_thread
+from threading import RLock, current_thread, main_thread
 from time import perf_counter
 
 import numpy as np
@@ -40,13 +40,15 @@ class Recorder:
         self.folder=folder
         self.chunks=Chunks(folder/'chunks')
         self.epoch=epoch
-        self.lock=Lock()
+        self.lock=RLock()
         self.writer=ThreadPoolExecutor(max_workers=1,thread_name_prefix='MA007-serialization')
         self.futures=[]
         self.events=[]
         self.context={}
         self.handles=OrderedDict()
         self.refusal_handles={}
+        self.pinned_curve=None
+        self.ledger_io_wait_seconds=0.
         self.capture_seconds=0.
         self.io_wait_seconds=0.
         self.offline_reciprocal_seconds=0.
@@ -75,6 +77,7 @@ class Recorder:
         self.io_wait_seconds+=elapsed
         if ledger is not None:
             ledger.started+=elapsed
+            self.ledger_io_wait_seconds+=elapsed
 
     def __call__(self, kind, record):
         started=perf_counter()
@@ -91,6 +94,8 @@ class Recorder:
                 trace_order='Dirichlet, flux; modes -Ku..Ku; 24 source columns',
                 tail_axes='unknown block, total/last32/preceding32, source',
                 channels='paired diagonal R@X_s; strength in B_s only',
+                calculation_role=record.get('calculation_role','production'),
+                actual_K=len(state.coefficients)//2,
                 system_residual=record['system_residual'],operator_status='regenerable',**self.context)
             self.queue(kind,dict(coefficients=state.coefficients,prediction=record['prediction'],
                 observed=observation.scattered,residual=record['prediction']-observation.scattered,
@@ -100,9 +105,11 @@ class Recorder:
                 if curve_key not in self.handles:
                     self.handles[curve_key]={}
                 self.handles.move_to_end(curve_key)
-                self.handles[curve_key][(state.wavenumber,state.cutoff)]=(state,identity)
+                self.handles[curve_key][(state.wavenumber,state.cutoff)]=(state,identity,observation,
+                    record.get('execution'),record.get('contrast'))
                 while len(self.handles)>4:
-                    self.handles.popitem(last=False)
+                    drop=next(k for k in self.handles if k!=self.pinned_curve)
+                    self.handles.pop(drop)
         elif kind=='reciprocal':
             state=record['state']
             self.queue(kind,dict(J_complex=record['J'],
@@ -120,6 +127,7 @@ class Recorder:
         elif kind=='linearization':
             self.flush(record['ledger'])
             evaluation=record['evaluation']
+            self.pinned_curve=key(evaluation.curve.coefficients)
             self.queue(kind,dict(J_normalized=record['J'],gradient=record['gradient'],
                 assembled_residual=evaluation.residual),dict(state_sha256=key(evaluation.curve.coefficients),
                     stage=record['stage'].label,M=record['stage'].update_modes,K=record['stage'].curve_modes,
@@ -136,7 +144,8 @@ class Recorder:
                 arrays['candidate_coefficients']=record['candidate'].coefficients
             self.queue(kind,arrays,dict(base_sha256=key(record['base'].coefficients),
                 candidate_sha256=None if record['candidate'] is None else key(record['candidate'].coefficients),
-                trial=dict(record['trial']),certificates='retained in selected-update trial receipt',
+                trial=dict(record['trial']),certificates=record.get('certificates',[]),
+                traceback=record.get('traceback'),
                 work=record['ledger'].snapshot()))
         elif kind=='resolution_refusal':
             self.queue(kind,{},dict(stage=record['stage'].label,check=record['check'],
@@ -153,7 +162,23 @@ class Recorder:
                     if states is None:
                         raise ValueError('Refusal trace handle lost before retention: '+role)
                     for (wave,cutoff),value in states.items():
-                        self.refusal_handles[(identity,wave,cutoff)]=value
+                        if (identity,wave,cutoff) not in self.refusal_handles:
+                            state,metadata,observation,execution,contrast=value
+                            event=self.queue('refusal_forward_capture',dict(coefficients=state.coefficients,
+                                X_s=state.traces),dict(metadata,timing_class='original forward traces'))
+                            self.refusal_handles[(identity,wave,cutoff)]=(event,metadata,observation,execution,contrast)
+        elif kind=='qualification':
+            arrays=dict(record['arrays'])
+            def metadata(value,prefix='row'):
+                if isinstance(value,np.ndarray):
+                    name='qualification_'+prefix
+                    arrays[name]=value
+                    return dict(array_in_chunk=name)
+                if isinstance(value,dict): return {k:metadata(v,prefix+'_'+k) for k,v in value.items()}
+                if isinstance(value,(tuple,list)): return [metadata(v,prefix+'_'+str(i)) for i,v in enumerate(value)]
+                return value
+            self.queue(kind,arrays,dict(kind_detail=record['kind_detail'],row=metadata(record['row']),
+                work=record['ledger'].snapshot()))
         elif kind=='accepted_history':
             self.queue(kind,{},dict(row=dict(record['row'])))
         elif kind=='physics_failure':
@@ -165,20 +190,41 @@ class Recorder:
     def finish(self):
         # These extra reciprocal traces are post-return diagnostic work. They
         # cannot change the original fit or its fitting budget/accepted decisions.
-        for (identity,wave,cutoff),(state,metadata) in self.refusal_handles.items():
+        self.flush()
+        from bem_inverse.modal_muller import ModalMuller,ModalSettings,token
+        from bem_inverse.physics import Execution
+        from bem_inverse.continuation.geometry import FourierCurve
+        services={}; offline_forward_units=0
+        for (identity,wave,cutoff),(event,metadata,observation,execution,contrast) in self.refusal_handles.items():
+            artifact=self.events[event]['artifact']
+            from . import campaign as c
+            with np.load(c.ROOT/artifact,allow_pickle=False) as original:
+                coefficients=original['coefficients']; traces=original['X_s']
+            workspace=metadata['B_work']
+            if workspace not in services:
+                services[workspace]=ModalMuller(Execution(**execution),ModalSettings(
+                    coefficient_workspace=workspace,cached_geometries=1))
             started=perf_counter()
+            service=services[workspace]
+            offline_forward_units+=1
+            prediction=service.evaluate(FourierCurve(coefficients),observation,contrast,token(cutoff))
+            state=prediction._handle
+            regenerated_error=float(np.linalg.norm(traces-state.traces)/max(np.linalg.norm(traces),1e-14))
             reciprocal=lu_solve(state.factors,state.reciprocal_rhs)
             self.offline_reciprocal_seconds+=perf_counter()-started
             self.offline_reciprocal_units+=1
-            self.queue('refusal_complete_traces',dict(X_s=state.traces,X_r=reciprocal),
+            self.queue('refusal_complete_traces',dict(X_s=traces,X_s_regenerated=state.traces,X_r=reciprocal),
                 dict(metadata,state_sha256=identity,K_u=cutoff,wavenumber=wave,
-                     timing_class='offline post-return reciprocity work',work_units=1))
+                     regeneration_relative=regenerated_error,regeneration_passed=regenerated_error<=1e-10,
+                     timing_class='offline post-return regeneration and reciprocity work',work_units=2))
         self.flush()
         self.writer.shutdown(wait=True)
         value=dict(schema='MA007-work-1',events=self.events,events_count=len(self.events),
             raw_array_bytes=sum(x['bytes'] for x in self.chunks.rows),
             serialization_seconds=self.chunks.seconds,capture_inclusive_seconds=self.capture_seconds,
             pure_io_wait_seconds=self.io_wait_seconds,
+            ledger_io_wait_seconds=self.ledger_io_wait_seconds,
+            offline_refusal_forward_units=offline_forward_units,
             offline_refusal_reciprocal_seconds=self.offline_reciprocal_seconds,
             offline_refusal_reciprocal_units=self.offline_reciprocal_units,
             raw_retention='local machine only; committed hash manifests',

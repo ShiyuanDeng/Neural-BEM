@@ -17,7 +17,7 @@ def relative(a,b,floor=1e-14):
 def validate_recording(folder):
     """Replay saved data-space arithmetic; never assemble a new operator."""
     from types import SimpleNamespace
-    root=folder/'C0_recorded'
+    root=folder/'C0_recorded' if (folder/'C0_recorded').exists() else folder
     result=read(root/'result.json')
     index=read(root/'recording/index.json')
     rows=[]
@@ -59,8 +59,9 @@ def validate_recording(folder):
                 row['replay_flag']='retained exact inputs; replay unqualified'
         rows.append(row)
     counted={kind:sum(e['kind']==kind for e in index['events']) for kind in ('field','reciprocal','objective','proposal')}
-    reconciliation=dict(fields=counted['field']==result['physics']['counts']['evaluations'],
-        reciprocals=counted['reciprocal']==result['physics']['counts']['derivatives'],
+    counts=[result['physics']['counts'],*[v['counts'] for v in result['physics'].get('workspace_services',{}).values()]]
+    reconciliation=dict(fields=counted['field']==sum(v['evaluations'] for v in counts),
+        reciprocals=counted['reciprocal']==sum(v['derivatives'] for v in counts),
         events=index['events_count']==len(index['events']))
     value=dict(readback_passed=True,replay_passed=all(x['passed'] for x in rows),
         reconciliation=reconciliation,rows=rows,counts=counted,

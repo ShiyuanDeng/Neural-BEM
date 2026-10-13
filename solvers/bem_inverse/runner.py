@@ -292,11 +292,13 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
                     raise ValueError('Original-start numerical audit failed')
                 ledger = Ledger(cap=policy.fit_units, seconds=policy.fit_seconds,
                                 strict_dispatch=(resolution_response is not None or
+                                    getattr(physics,'strict_dispatch',False) or
                                     getattr(physics.execution, 'nodal_resolution_profile', 'fixed') == 'band_matched'))
                 queue = list(operations[1:-1])
             else:
                 ledger = Ledger.restore(resume.stage.work, seconds=policy.fit_seconds,
                                         strict_dispatch=(resolution_response is not None or
+                                    getattr(physics,'strict_dispatch',False) or
                                     getattr(physics.execution, 'nodal_resolution_profile', 'fixed') == 'band_matched'))
                 queue = list(resume.operations)
                 save('resume.json', dict(work=resume.stage.work, iteration=resume.stage.iteration,
@@ -351,7 +353,8 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
                     if op.fit_geometry_update is not None:
                         save(op.label+'_geometry.json', update.settings())
                     def checkpoint(iteration, evaluation):
-                        nonlocal early_endpoint, early_retry_residual, early_retry_resolution, fit_started
+                        nonlocal early_endpoint, early_retry_residual, early_retry_resolution, fit_started, curve
+                        curve=evaluation.curve
                         observed = np.column_stack([o.scattered.reshape(-1) for o in op.stage.observations])
                         maximum_stage_residual = float(max(np.linalg.norm(evaluation.prediction-observed, axis=0)
                                                           /np.linalg.norm(observed, axis=0)))
@@ -432,6 +435,10 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
                             physics = resolution_response.physics or physics
                             last_stage = replace(last_stage, nodes=result.final_nodes,
                                                  refined_nodes=result.final_refined_nodes)
+                    elif getattr(physics,'qualified_controller',False):
+                        row.update(nodes=result.final_nodes,refined_nodes=result.final_refined_nodes,
+                            resolution_events=result.resolution_events)
+                        last_stage=replace(last_stage,nodes=result.final_nodes,refined_nodes=result.final_refined_nodes)
                     stages.append(row)
                     save(op.label+'.json', dict(row, history=result.history, trials=result.trials,
                                                acceptance_checks=result.acceptance_checks))
@@ -447,6 +454,8 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
                         event(op, 'full real catalog reached declared-noise discrepancy; skip remaining releases/tail',
                               loss=result.final_loss, threshold=op.details['noise_threshold'])
                         break
+                elif op.kind == 'skip':
+                    event(op,'SKIPPED_IDENTICAL',work=ledger.snapshot())
                 elif op.kind == 'frontier':
                     ledger.begin_stage(op.label, None)
                     ledger.reserve(2)

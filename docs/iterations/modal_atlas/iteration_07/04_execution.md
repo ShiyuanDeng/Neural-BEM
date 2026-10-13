@@ -105,3 +105,26 @@ Read-back verifies all retained chunk hashes/shapes/dtypes and snapshot source
 residual/paired-prediction identities. The active-objective step comparisons,
 local probes, selected derivatives, regeneration and release forecast remain
 pending; response qualification alone is not the complete C0 pilot or a ceiling.
+
+## Initial registered HOLD branch and control implementation
+
+`phaseA-probe-check-001` executes the registered role-1 HOLD branch from the
+actual prescribed hook circle. It validates the opt-in independent trace
+qualification with the existing LM optimizer: two accepted iterations, 22
+charged branch units, all performed workspace/trace/move checks recorded, and
+a qualified independent 320/352 full-real monitor. This partial registered
+branch is not a full fit or policy/ceiling result. The remaining 44 branches
+are still required in the completed probe batch.
+
+The fixed S0 and O1–O7 schedules are implemented as an opt-in numerical policy.
+Their metadata enumeration preserves the prescribed bridge, cap vectors,
+zero-padding, and identical-rung skips. Trace and accepted-move qualification
+are hooks in the existing optimizer, with every witness dispatched through its
+charged ledger. Research geometry caches have one entry throughout the common
+epoch to keep GPU retention bounded; this changes no radial/log/Graf tolerance.
+No registry/default recipe was promoted. Nine structural/package tests pass.
+
+Two O8 boundary details were submitted to the user for interpretation: whether
+the selected two-iteration branch ends the slot or continues the rung, and
+whether the next decision resets or carries lambda. No dependent O8 behavior
+has been chosen while those answers are pending.

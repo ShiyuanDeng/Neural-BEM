@@ -272,6 +272,8 @@ class ModalMuller:
         if self.observer is not None:
             with self._stage('recording_io'):
                 self.observer('field', dict(state=state, observation=observation,
+                    contrast=contrast, execution=asdict(self.execution),
+                    calculation_role=getattr(self,'calculation_role','production'),
                     workspace=window, A=matrix, B_s=rhs, B_r=state.reciprocal_rhs,
                     R=receiver, X_s=traces, prediction=prediction,
                     system_residual=residual))

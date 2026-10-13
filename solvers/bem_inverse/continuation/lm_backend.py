@@ -18,6 +18,7 @@ from dataclasses import dataclass, field, asdict, replace
 from copy import deepcopy
 import hashlib
 import pickle
+import traceback
 from threading import RLock
 from time import perf_counter
 from typing import Optional
@@ -454,6 +455,7 @@ class Objective:
                          self.physics.evaluate(curve, observation, self.contrast, nodes))
             except (ValueError, FloatingPointError, np.linalg.LinAlgError) as exc:
                 failure = dict(exception_type=type(exc).__name__, message=str(exc),
+                    traceback=traceback.format_exc(),
                     category=category, resolution=nodes,
                     frequency_hz=getattr(observation, 'frequency_hz', None),
                     wavenumber=dict(real=float(complex(observation.wavenumber).real),
@@ -664,6 +666,7 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
     checkpoint = None
     resolution_events = []
     promotion_objective = None
+    qualified_controller = bool(getattr(physics, 'qualified_controller', False))
     reach_cache = {}
     resume_iteration = 0
     geometry_proposals = 0
@@ -709,7 +712,28 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
         ledger.reserve(2 * m)
         rb, rc = objective.refined(base.curve), objective.refined(candidate.curve)
         row, base_ok, candidate_ok = checked_pair(base, candidate, rb, rc, stage,
-                                                  check_base=resolution_response is not None)
+                                                  check_base=resolution_response is not None or qualified_controller)
+        if qualified_controller:
+            if not base_ok:
+                raise NumericalFailure('retained base lost its modal qualification')
+            if not candidate_ok:
+                answer=physics.respond_resolution_failure(base,candidate,stage,config,contrast,
+                    space,update,ledger,trials[-1])
+                if answer is False:
+                    return None
+                adopt_qualification(answer)
+                raise _PromoteBase()
+            if not row['accepted']:
+                return None
+            answer=physics.qualify_candidate(base,candidate,stage,config,contrast,
+                space,update,ledger,trials[-1])
+            if answer is True:
+                return candidate
+            if answer is False:
+                row.update(accepted=False,numerical_obstruction=True,reason='accepted_move_fidelity')
+                return None
+            adopt_qualification(answer)
+            raise _PromoteBase()
         if resolution_response is None:
             if not candidate_ok and config.resolution_gate == 'absolute':
                 raise NumericalFailure("candidate leaves the frozen numerical-resolution regime")
@@ -769,7 +793,14 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
         promote(fine)
         return rebuilt, True
 
+    def adopt_qualification(frame):
+        nonlocal stage,objective,current
+        stage,objective,current=frame['stage'],frame['objective'],frame['evaluation']
+        resolution_events.append(dict(action='modal_qualification_promotion',nodes=stage.nodes,
+            refined_nodes=stage.refined_nodes,work=ledger.snapshot()))
+
     def gradient_frame(evaluation):
+        nonlocal current,stage,objective
         space = update.prepare(evaluation.curve, stage.update_modes, stage.curve_modes)
         ledger.reserve(4 * m)  # Jacobian plus one production/refined step opportunity
         matrix = objective.jacobian(evaluation, update, space)
@@ -779,6 +810,15 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
                     if hasattr(objective, 'gradient') else matrix.T @ model_residual)
         if gradient.shape != (matrix.shape[1],) or not np.isfinite(gradient).all():
             raise FloatingPointError('Invalid objective gradient')
+        if qualified_controller:
+            while True:
+                answer=physics.qualify_linearization(evaluation,stage,config,contrast,space,update,ledger,
+                    matrix,gradient,damping)
+                if answer is None:
+                    break
+                adopt_qualification(answer)
+                evaluation=current
+                matrix,gradient=answer['matrix'],answer['gradient']
         observe(physics, 'linearization', evaluation=evaluation, space=space, J=matrix,
                 gradient=gradient, stage=stage, config=config, ledger=ledger)
         return space, matrix, gradient
@@ -801,7 +841,7 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
                                                "damping_feedback", "damping_floor") if k in trial})
         if gradient is None:
             row['terminal_linearization_skipped'] = True
-        if resolution_response is not None:
+        if resolution_response is not None or qualified_controller:
             row.update(nodes=stage.nodes, refined_nodes=stage.refined_nodes)
         history.append(row)
         observe(physics, 'accepted_history', row=row, evaluation=evaluation, ledger=ledger)
@@ -840,12 +880,16 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
             if current is None:
                 raise NumericalFailure("initial state is not solver-ready")
             initial_loss = current.loss
-            if on_accept is not None:
+            if on_accept is not None and not qualified_controller:
                 on_accept(0, current)
             if resolution_response is not None:
                 current, _ = qualified_base(current)
-            space, matrix, gradient = gradient_frame(current)
             damping = config.initial_damping
+            space, matrix, gradient = gradient_frame(current)
+            if qualified_controller:
+                initial_loss=current.loss
+                if on_accept is not None:
+                    on_accept(0,current)
             record(0, current, gradient, np.zeros(matrix.shape[1]), damping, damping)
         else:
             current, matrix, gradient = resume.current, resume.matrix.copy(), resume.gradient.copy()
@@ -924,7 +968,7 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
                     if config.log_model or feedback:
                         trial.update(predicted_decrease=float(-(gradient @ step) - 0.5 * step @ normal @ step),
                                      **(rule or {}))
-                    if resolution_response is not None:
+                    if resolution_response is not None or qualified_controller:
                         trial.update(proposal_nodes=stage.nodes, proposal_refined_nodes=stage.refined_nodes)
                     trials.append(trial)
                     if feedback:
@@ -953,12 +997,14 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
                         if config.log_model:
                             trial["geometry_seconds"] = perf_counter()-geometry_started
                         observe(physics, 'geometry_trial', base=current.curve, candidate=None,
-                            step=step, space=space, trial=trial, ledger=ledger)
+                            step=step, space=space, trial=trial, ledger=ledger,
+                            certificates=deepcopy(getattr(update,'records',[])),traceback=traceback.format_exc())
                         continue
                     if config.log_model:
                         trial["geometry_seconds"] = perf_counter()-geometry_started
                     observe(physics, 'geometry_trial', base=current.curve, candidate=candidate_curve,
-                        step=step, space=space, trial=trial, ledger=ledger)
+                        step=step, space=space, trial=trial, ledger=ledger,
+                        certificates=deepcopy(getattr(update,'records',[])))
                     if not admissible(candidate_curve):
                         trial.update(status="refused", reason="outside_domain")
                         continue
@@ -1029,7 +1075,7 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
             if accepted is None:
                 stop_reason = "accuracy_limited_trials_exhausted" if accuracy_limited else "no_decreasing_step"
                 if accuracy_limited:
-                    outcome = 'ACCURACY_LIMITED_TRIALS'
+                    outcome = 'KU_CAP_UNRESOLVED' if qualified_controller else 'ACCURACY_LIMITED_TRIALS'
                 break
             current, step, used_damping, trial = accepted
             accepted_steps = iteration
