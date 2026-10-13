@@ -16,7 +16,7 @@ from time import perf_counter
 import traceback
 import numpy as np
 from scipy.linalg import lu_solve
-from bem_inverse.certified import CertifiedSpectralUpdate
+from bem_inverse.geometry_selection import make_update
 from bem_inverse.continuation.geometry import FourierCurve
 from bem_inverse.continuation.lm_backend import normalize
 from bem_inverse.geometry import values
@@ -72,7 +72,7 @@ def selected_derivatives(atlas,folder,role_name):
     observation=next(x for x in problem.real if x.frequency_hz==cell['frequency_hz'])
     capture=Capture();physics=ModalMuller(EXECUTION,ModalSettings(coefficient_workspace=512,
         cached_geometries=1),observer=capture)
-    update=CertifiedSpectralUpdate(problem.length_unit_m);space=update.prepare(curve,P,curve.band)
+    update=make_update('certified_spectral',problem.length_unit_m,EXECUTION);space=update.prepare(curve,P,curve.band)
     chunks=Chunks(target/'chunks');started=perf_counter();work=0;rows=[]
     for u in (cutoff,cutoff+32):
         try:
@@ -167,7 +167,7 @@ def regenerate(run,atlas,folder):
     sampled_j=[*rng.choice(len(linearizations),min(5,len(linearizations)),replace=False)]
     rows=[];work=0;started=perf_counter()
     operations=read(run/'plan.json')['operations'];stages={e['label']:e for e in operations if e['operation']=='fit'}
-    services={};update=CertifiedSpectralUpdate(problem.length_unit_m)
+    services={};update=make_update('certified_spectral',problem.length_unit_m,EXECUTION)
     def service(workspace):
         if workspace not in services:
             services[workspace]=ModalMuller(EXECUTION,ModalSettings(coefficient_workspace=workspace,cached_geometries=1))
@@ -215,7 +215,7 @@ def regenerate(run,atlas,folder):
     result=dict(status='REGENERATION_PASSED' if all(r['passed'] for r in rows) else 'REGENERATION_DEFECT',
         seed=42007,rows=rows,work_units=work,compute_seconds=perf_counter()-started-chunks.seconds,
         io_seconds=chunks.seconds,artifact_bytes=sum(x['bytes'] for x in chunks.rows),
-        numerical_source_file=__import__('bem_inverse.modal_muller',fromlist=['']).__file__)
+        numerical_source_file=__import__('bem_inverse.modal_muller',fromlist=['']).__file__,geometry_settings=update.settings())
     write(folder/'result.json',result);return result
 
 
@@ -228,7 +228,7 @@ def final_cell(atlas,folder):
     old=arrays(entry['artifact']);problem=c.problem(CASE);curve=curve_from(role['curve'])
     service=ModalMuller(EXECUTION,ModalSettings(coefficient_workspace=512,cached_geometries=1))
     geom=arrays(str((atlas/'5_final/chunks/geometry_response_directions.npz').relative_to(c.ROOT)))
-    P=(len(geom['export_permutation'])-1)//2;update=CertifiedSpectralUpdate(problem.length_unit_m)
+    P=(len(geom['export_permutation'])-1)//2;update=make_update('certified_spectral',problem.length_unit_m,EXECUTION)
     space=update.prepare(curve,P,curve.band);started=perf_counter();chunks=Chunks(folder/'chunks')
     try:
         p=service.evaluate(curve,problem.real[-1],problem.contrast,token(cell['selected_K_u']))

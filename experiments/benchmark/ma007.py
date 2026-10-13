@@ -19,7 +19,7 @@ from time import perf_counter
 import traceback
 
 import numpy as np
-from bem_inverse.certified import CertifiedSpectralUpdate
+from bem_inverse.geometry_selection import make_update
 from bem_inverse.geometry import resize
 from bem_inverse.io import read, write, digest, curve_from
 from bem_inverse.modal_muller import ModalMuller, ModalSettings, token
@@ -284,7 +284,7 @@ def worker(folder, state_name):
     chunks = Chunks(target/'chunks')
     started = perf_counter()
     curve = resize(base,384)
-    update = CertifiedSpectralUpdate(problem.length_unit_m)
+    update = make_update('certified_spectral',problem.length_unit_m,EXECUTION)
     prep = perf_counter()
     space = update.prepare(curve,159,384)
     prep_seconds = perf_counter()-prep
@@ -299,7 +299,7 @@ def worker(folder, state_name):
         derivative='complete certified_spectral Cartesian tangent per metre optimizer coordinate',
         channels='paired diagonal R @ X_s; source strength applied only to B_s',
         P=159, K=384, contrast=problem.contrast, length_unit_m=problem.length_unit_m,
-        execution=asdict(EXECUTION), settings=asdict(physics.settings))
+        execution=asdict(EXECUTION), settings=asdict(physics.settings),geometry_settings=update.settings())
     chunks.save('state_and_directions', dict(coefficients=curve.coefficients,
         complete_cartesian_velocities=space.derivatives[:,perm], export_permutation=perm,
         sources=problem.real[0].acquisition.sources, receivers=problem.real[0].acquisition.receivers,

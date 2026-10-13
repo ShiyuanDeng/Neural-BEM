@@ -176,3 +176,8 @@ under fresh seals. C0 production and its disabled instrumentation replay already
 use the factory. No solver algorithm, threshold or research schedule is changed.
 Prior direct-constructor diagnostic evidence is superseded for matched claims;
 its storage and computation remain charged to the pilot.
+
+`phaseA-recording-regeneration-003` uses the archived production source and
+the maintained CUDA geometry factory. All 20 fields and five linearizations
+pass the unchanged 1e-10 gate. The failed CPU comparisons remain preserved.
+The affected additional atlas/probes are being rerun with this factory.

@@ -16,7 +16,7 @@ from time import perf_counter
 import traceback
 
 import numpy as np
-from bem_inverse.certified import CertifiedSpectralUpdate
+from bem_inverse.geometry_selection import make_update
 from bem_inverse.continuation.geometry import FourierCurve
 from bem_inverse.continuation.lm_backend import (FitStage,BackendConfig,Ledger,Objective,fit_stage,
                                                 NORMAL_RETURN,STAGE_QUOTA,normalize)
@@ -134,7 +134,7 @@ def active_qualification(problem,role,folder,epoch=None):
     """Actual production directions at the prescribed checkpoint and workspace."""
     hold=dict(name='HOLD',axis=None,value=None,status='pending')
     curve,stage,config=setup(problem,role,hold,'active_qualification',iterations=2,quota=None)
-    update=CertifiedSpectralUpdate(problem.length_unit_m)
+    update=make_update('certified_spectral',problem.length_unit_m,EXECUTION)
     recorder=Recorder(folder/'recording',epoch or digest(folder/'manifest.json'))
     physics=IndependentModalMuller(EXECUTION,trace_cap=320,workspace=512,observer=recorder)
     ledger=Ledger(cap=10000,seconds=10800,endpoint_reserve=0,strict_dispatch=True)
@@ -185,7 +185,8 @@ def active_qualification(problem,role,folder,epoch=None):
             trace_confirmations=confirmations,local_numerical_saturation=all(x['passed'] for x in confirmations))
     except Exception:
         value=dict(status='unqualified',traceback=traceback.format_exc(),work=ledger.snapshot())
-    value.update(compute_seconds=perf_counter()-started,recording=recorder.finish(),physics=physics.receipt())
+    value.update(compute_seconds=perf_counter()-started,recording=recorder.finish(),physics=physics.receipt(),
+        geometry_settings=update.settings())
     write(folder/'result.json',value)
     return value
 
@@ -201,7 +202,7 @@ def worker(folder,role_name,branch_name):
     recorder=Recorder(target/'recording',digest(folder/'manifest.json'))
     physics=IndependentModalMuller(EXECUTION,trace_cap=stage.nodes//8,workspace=512,observer=recorder,
         reject_unresolved_candidates=False)
-    update=CertifiedSpectralUpdate(problem.length_unit_m)
+    update=make_update('certified_spectral',problem.length_unit_m,EXECUTION)
     ledger=Ledger(cap=200,seconds=10800,endpoint_reserve=0,strict_dispatch=True)
     ledger.begin_stage(stage.label,200)
     accepted=[]; started=perf_counter()
@@ -215,7 +216,7 @@ def worker(folder,role_name,branch_name):
             work=ledger.snapshot(),compute_seconds=perf_counter()-started,
             requested=dict(F_hz=[o.frequency_hz for o in stage.observations],M=stage.update_modes,
                 K=stage.curve_modes,K_u=stage.nodes//8,B_work=512),actual_frozen_cutoff=physics.actual_cutoff,
-            accepted_states=accepted,physics=physics.receipt())
+            accepted_states=accepted,physics=physics.receipt(),geometry_settings=update.settings())
     except Exception:
         value=dict(role=role_name,branch=branch_name,status='IMPLEMENTATION_FAILURE',traceback=traceback.format_exc(),
             curve=curve_record(curve),work=ledger.snapshot(),compute_seconds=perf_counter()-started)

@@ -20,7 +20,7 @@ import traceback
 
 import numpy as np
 from scipy.linalg import lu_factor, lu_solve
-from bem_inverse.certified import CertifiedSpectralUpdate
+from bem_inverse.geometry_selection import make_update
 from bem_inverse.continuation.geometry import FourierCurve, grid_size
 from bem_inverse.geometry import values
 from bem_inverse.io import write, digest, curve_from
@@ -138,7 +138,7 @@ def worker(folder, role_name, compute_allowance=10800., byte_allowance=20*2**30)
     import torch
     torch.cuda.reset_peak_memory_stats()
     curve=curve_from(role['curve']); problem=c.problem(CASE); P=127; perm=permutation(P)
-    update=CertifiedSpectralUpdate(problem.length_unit_m)
+    update=make_update('certified_spectral',problem.length_unit_m,EXECUTION)
     space=update.prepare(curve,P,curve.band)
     count=grid_size(max(P,curve.band))
     nodes=curve.nodes(count); normal=nodes.normals@np.array([1,1j])
@@ -154,7 +154,8 @@ def worker(folder, role_name, compute_allowance=10800., byte_allowance=20*2**30)
         complete_units='data per metre of ordinary grouped optimizer coordinate (export permutation applied)',
         intrinsic_units='data per metre of L2(ds_package)-normalized normal coordinate',
         trace_order='Dirichlet, flux; modes -Ku..Ku; RHS sources then reciprocal receivers',
-        channels='paired diagonal R @ X_s; source strength applied to B_s only')
+        channels='paired diagonal R @ X_s; source strength applied to B_s only',
+        geometry_settings=update.settings())
     chunks.save('geometry_response_directions',dict(coefficients=curve.coefficients,
         cartesian_velocity_coefficients=space.derivatives[:,perm],cartesian_velocities=cartesian,
         realized_normal_velocities=realized,intrinsic_normal_velocities=intrinsic,

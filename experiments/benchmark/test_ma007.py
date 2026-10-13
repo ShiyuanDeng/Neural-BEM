@@ -10,6 +10,13 @@ from .ma007 import CASE, EXECUTION, Chunks, permutation, subblock_indices
 from . import campaign as c
 
 
+def test_diagnostics_resolve_the_production_geometry_factory():
+    from bem_inverse.geometry_selection import make_update
+    update=make_update('certified_spectral',c.problem(CASE).length_unit_m,EXECUTION)
+    assert update.settings()['prepare_device']=='cuda'
+    assert update.settings()['certificate_device']=='cuda'
+
+
 def test_independent_storage_trace_workspace_and_preserved_nodal_guard():
     physics=ModalMuller(EXECUTION,ModalSettings(trace_cutoff=64,coefficient_workspace=512))
     for band in (4,32,192,384):
