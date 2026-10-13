@@ -70,6 +70,7 @@ def read(path):
 
 def retain(folder):
     """Preserve original receipts byte for byte while removing array payloads."""
+    folder=Path(folder).resolve()
     rows=[]
     for path in sorted(folder.rglob('*.json')):
         original=path.read_bytes(); value=json.loads(original)
@@ -89,3 +90,10 @@ def retain(folder):
     write(folder/'payload_retention.json',dict(schema='MA007-JSON-arrays-1',converted=rows,
         raw_copies='local machine only',raw_npz='local machine only',metadata='committed and pushed'))
     return rows
+
+
+def original_digest(path):
+    """Hash the sealed original when JSON arrays have become local references."""
+    path=Path(path)
+    raw=path.with_suffix('.json.raw')
+    return digest(raw if raw.exists() else path)
