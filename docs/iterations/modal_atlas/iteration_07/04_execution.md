@@ -160,3 +160,19 @@ failures. No numerical discrepancy is inferred from a parse exception. Preserve
 the attempt, correct only the decoder and rerun the same seed/indices from the
 same archived numerical source. Hash/read-back and active recording arithmetic
 checks pass. No Phase B release or scientific bound is claimed yet.
+
+## Geometry implementation mismatch found by regeneration
+
+`phaseA-recording-regeneration-002` passes all 20 sampled field evaluations,
+but all five sampled complete Jacobians differ by 2.72e-10 to 5.09e-10, above
+the unchanged 1e-10 regeneration gate. The diagnostic code directly constructed
+CPU `CertifiedSpectralUpdate`; production `certified_spectral` uses the maintained
+factory and selects CUDA `DeviceCertifiedUpdate`. The algorithms share the
+centered spectral map but their finite-difference arithmetic is not bitwise
+equal. Preserve these failed attempts. Correct all diagnostic constructors to
+the existing production factory, save the resolved update settings, and rerun
+the affected maximum-dimension/response/probe/active/selected-derivative evidence
+under fresh seals. C0 production and its disabled instrumentation replay already
+use the factory. No solver algorithm, threshold or research schedule is changed.
+Prior direct-constructor diagnostic evidence is superseded for matched claims;
+its storage and computation remain charged to the pilot.
