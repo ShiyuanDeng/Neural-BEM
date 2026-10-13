@@ -152,6 +152,16 @@ def active_qualification(problem,role,folder,epoch=None):
             if promoted is None: break
             stage,objective,evaluation=promoted['stage'],promoted['objective'],promoted['evaluation']
             matrix,gradient=promoted['matrix'],promoted['gradient']
+        lower=dict(stage=stage,objective=objective,evaluation=evaluation,matrix=matrix,
+            gradient=gradient,cutoff=stage.nodes//8,workspace=512)
+        confirmations=[]
+        for delta in (32,64):
+            higher=physics._frame(curve,stage,config,problem.contrast,space,update,ledger,stage.nodes//8+delta)
+            comparison,raw=physics._compare(lower,higher,config,space,update,role['lambda_carried'])
+            from bem_inverse.continuation.lm_backend import observe
+            observe(physics,'qualification',kind_detail='active_objective_confirmation',
+                row=comparison,arrays=raw,ledger=ledger)
+            confirmations.append(dict(delta=delta,passed=comparison['passed']))
         # Actual projected-trial FD on the active objective, seed and coordinate
         # increment prescribed by the plan, using the production/refined arrays.
         direction=np.random.default_rng(42001).normal(size=matrix.shape[1]); direction/=np.linalg.norm(direction)
@@ -171,7 +181,8 @@ def active_qualification(problem,role,folder,epoch=None):
             dict(seed=42001,coordinate_increment_m=1e-7,M=stage.update_modes,K=stage.curve_modes,
                  production_K_u=stage.nodes//8,witness_K_u=stage.nodes//8+32,B_work=512))
         value=dict(status='qualified' if fd_error<=1e-3 else 'unqualified',full_trial_fd_relative=fd_error,
-            selected_K_u=stage.nodes//8,artifact=artifact['path'],work=ledger.snapshot())
+            selected_K_u=stage.nodes//8,artifact=artifact['path'],work=ledger.snapshot(),
+            trace_confirmations=confirmations,local_numerical_saturation=all(x['passed'] for x in confirmations))
     except Exception:
         value=dict(status='unqualified',traceback=traceback.format_exc(),work=ledger.snapshot())
     value.update(compute_seconds=perf_counter()-started,recording=recorder.finish(),physics=physics.receipt())
@@ -254,6 +265,7 @@ def main():
         collect(args.atlas.resolve(),args.folder.resolve(),{('1_initial','HOLD')} if args.command=='initial-hold' else None)
     elif args.command=='worker': worker(args.folder.resolve(),args.role,args.branch)
     else:
+        args.folder=args.folder.resolve()
         role=next(r for r in read(args.atlas/'roles.json')['roles'] if r['role']==args.role)
         args.folder.mkdir(parents=True,exist_ok=False)
         from experiments.cleaned_interface.benchmark import environment

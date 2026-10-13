@@ -140,3 +140,23 @@ Raw arrays use about 1.526 GiB; branch and monitor elapsed computation is 628.77
 matched K proposal replays, actual-direction audits, selected derivatives,
 regeneration and the resource gate remain required. No policy/ceiling claim is
 released by this batch.
+
+## Active derivatives, selected operators and first regeneration attempt
+
+`phaseA-diagnostics-001` closes all 12 declared pilot diagnostic tasks.
+All five C0 roles and the three prescribed archived hook states pass actual
+production-direction derivative qualification, including the seeded complete
+nonlinear-trial finite difference. Both +32 and +64 active-objective confirmation
+records are retained separately. Selected operator differences at roles 4 and 5
+converge at 2.375 GHz, in export directions 0, 170 and 204, at Ku96 and Ku128.
+The high-direction Ku96 Hadamard flags fail while their discrete operator/data
+identity flags pass; those physical-sensitivity flags remain independent.
+
+The archived-source role-5 atlas field/J regeneration passes. The first recording
+regeneration has an implementation parsing defect: complex wavenumbers stored
+as real/imaginary dictionaries were not decoded before lookup. Eight sampled
+real fields pass; twelve damped fields and five linearizations retain parsing
+failures. No numerical discrepancy is inferred from a parse exception. Preserve
+the attempt, correct only the decoder and rerun the same seed/indices from the
+same archived numerical source. Hash/read-back and active recording arithmetic
+checks pass. No Phase B release or scientific bound is claimed yet.
