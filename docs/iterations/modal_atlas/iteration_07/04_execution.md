@@ -181,3 +181,12 @@ its storage and computation remain charged to the pilot.
 the maintained CUDA geometry factory. All 20 fields and five linearizations
 pass the unchanged 1e-10 gate. The failed CPU comparisons remain preserved.
 The affected additional atlas/probes are being rerun with this factory.
+
+## Correct production-factory maximum pilot
+
+`phaseA-max-002` repeats all 39 prescribed maximum-dimension cells and 24
+sub-block assemblies with the maintained CUDA geometry factory. All numerical
+cells complete and all retained chunks pass retrieval/hash/schema checks.
+Elapsed 31.366 s, worker RSS 1.812 GiB, sampled GPU 7.931 GiB. The sub-block
+fallback remains required. This supersedes the CPU-preparation maximum pilot
+for matched resource forecasting; both attempts remain retained.
