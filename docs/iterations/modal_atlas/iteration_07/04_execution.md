@@ -204,3 +204,14 @@ retrieval paths. Raw arrays remain on this machine only and are not pushed.
 No off-machine destination, contract reduction or research-policy change is
 introduced. Nominal and hard-envelope forecasts must still pass their declared
 gates before additional phases.
+
+## Response atlas with production CUDA geometry
+
+`phaseA-atlas-003` closes all 114 five-role cells under a fresh source seal
+with the maintained production geometry factory and verified local DATA storage.
+Every cell passes the complete-trial response gate; all independently assembled
+snapshots, array hashes and source-system/paired-prediction identities read back.
+Raw arrays 2.775 GiB, numerical compute 35.720 s, I/O 77.845 s. CPU-constructor
+response attempts stay preserved as superseded evidence. Active derivatives,
+registered branches, selected operators, final-cell replay and the release
+forecast must use the corrected factory cohort before Phase B.

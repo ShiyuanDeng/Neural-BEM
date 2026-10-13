@@ -1,0 +1,180 @@
+{
+  "schema": "MA007-pilot-1",
+  "path": "results/validation/modal_atlas/MA-007/phaseA-atlas-003/1_initial/chunks/real_0.625_U96_B512.npz",
+  "bytes": 3163967,
+  "sha256": "b0aa3f204261b8650cb91f1eba950540ca262e176dd068c1786dceda1de167ac",
+  "arrays": {
+    "prediction": {
+      "shape": [
+        24
+      ],
+      "dtype": "complex128",
+      "bytes": 384,
+      "sha256": "984e844143e6290e5cc76ae9ef74b3d9b4c9fd8d7308c14f7338fa5b6e9254cd",
+      "units": "see identity coordinate/trace conventions"
+    },
+    "J_complete": {
+      "shape": [
+        24,
+        255
+      ],
+      "dtype": "complex128",
+      "bytes": 97920,
+      "sha256": "f8941ea927ebbf8e0642a8f23d411d972f32aac1ac445a7434faee82a2f0253f",
+      "units": "see identity coordinate/trace conventions"
+    },
+    "J_intrinsic": {
+      "shape": [
+        24,
+        255
+      ],
+      "dtype": "complex128",
+      "bytes": 97920,
+      "sha256": "7402a74129217f0d380bef9a0eebf2760d4b836b2dd9927aed7ec0cabe366b6a",
+      "units": "see identity coordinate/trace conventions"
+    },
+    "X_s": {
+      "shape": [
+        386,
+        24
+      ],
+      "dtype": "complex128",
+      "bytes": 148224,
+      "sha256": "013cdd53eca3b49cd35de992110af93d393ab932249e17e38ee780ac0091227b",
+      "units": "see identity coordinate/trace conventions"
+    },
+    "X_r": {
+      "shape": [
+        386,
+        24
+      ],
+      "dtype": "complex128",
+      "bytes": 148224,
+      "sha256": "d32c9e75660b16569ef911715615e681bb4e1dd14ca95b933622e5eb860788d5",
+      "units": "see identity coordinate/trace conventions"
+    },
+    "observed": {
+      "shape": [
+        24
+      ],
+      "dtype": "complex128",
+      "bytes": 384,
+      "sha256": "b056c778c71141630a9e031b544d13ecd4e4f69fc20bc75ecb7c9b498f2a9f77",
+      "units": "see identity coordinate/trace conventions"
+    },
+    "residual": {
+      "shape": [
+        24
+      ],
+      "dtype": "complex128",
+      "bytes": 384,
+      "sha256": "0c1563e573a42d2c06fb13f776a70f9565b5f83e91f1e068486a907f501a19f8",
+      "units": "see identity coordinate/trace conventions"
+    },
+    "A": {
+      "shape": [
+        386,
+        386
+      ],
+      "dtype": "complex128",
+      "bytes": 2383936,
+      "sha256": "75a9cf2d50c0aced144b816b28b17fbc5834efd92d26991cc8390acc2176a76d",
+      "units": "see identity coordinate/trace conventions"
+    },
+    "B_s": {
+      "shape": [
+        386,
+        24
+      ],
+      "dtype": "complex128",
+      "bytes": 148224,
+      "sha256": "b1f153ae56da94363544b67abe4717ccde06f59862a099bdcce996c4ea40e8d5",
+      "units": "see identity coordinate/trace conventions"
+    },
+    "B_r": {
+      "shape": [
+        386,
+        24
+      ],
+      "dtype": "complex128",
+      "bytes": 148224,
+      "sha256": "8dc21eb09fbfbb3de9f4edab10bda57d12f3e8232dfa1380bfe08bc936fc7104",
+      "units": "see identity coordinate/trace conventions"
+    },
+    "R": {
+      "shape": [
+        24,
+        386
+      ],
+      "dtype": "complex128",
+      "bytes": 148224,
+      "sha256": "33adb8389cc89047b0cdd54748b38cb5f0a742d9474a9cc4a61a01f0b736d1be",
+      "units": "see identity coordinate/trace conventions"
+    }
+  },
+  "identity": {
+    "role": "1_initial",
+    "parent_source_epoch": "a5815774996b43a3e6c97eaa4bb2e41a69b263345bcae5c294fb98a0f023f288",
+    "atlas_source_epoch": "1739b3b294c916287066ee69aad7b3baa9cdd5096ffb43a4c116aa624effbf37",
+    "P": 127,
+    "M": 1,
+    "K": 4,
+    "normal_coordinate_order": "constant, cos1,sin1,...",
+    "K_u_production": 64,
+    "B_work": 512,
+    "length_unit_m": 0.05,
+    "complete_units": "data per metre of ordinary grouped optimizer coordinate (export permutation applied)",
+    "intrinsic_units": "data per metre of L2(ds_package)-normalized normal coordinate",
+    "trace_order": "Dirichlet, flux; modes -Ku..Ku; RHS sources then reciprocal receivers",
+    "channels": "paired diagonal R @ X_s; source strength applied to B_s only",
+    "geometry_settings": {
+      "name": "centred_state_band_spectral_projection",
+      "length_unit_m": 0.05,
+      "projection_tolerance": 1e-05,
+      "coordinates": "real Fourier coefficients of normal distance h (m) in normalized arclength",
+      "gauge": "arclength refit on every trial",
+      "derivative_step_m": 1e-07,
+      "construction": "z + P_K[R(z+h*n)-R(z)], R = eq. 9 arclength quadrature (no splines); FD derivative of the complete trial",
+      "projection_tolerance_meaning": "grid refinement, not intentional smoothing",
+      "resampler": "eq. 9 quadrature on the uniform grid (count and 2*count); no splines",
+      "boundary_samples": true,
+      "projection_error_control": "coarse/fine diagnostic; not a rigorous bound",
+      "validity": "exact area -> Lemma 3-4 increment vs accepted-curve Y -> full |W|^2 certificate (crop + Lemma 3 tail) -> sampled test (unchanged fallback)",
+      "validity_order": "certificate_first",
+      "certificate_window": 64,
+      "full_certificate_windows": [
+        64,
+        128
+      ],
+      "full_crop_band": "max(K, 64)",
+      "regularity": "coefficient residual lower bound >= 1e-12 sum j^2|x_j|^2",
+      "shadow": false,
+      "certificate_arithmetic": "float64 with heuristic FFT rounding allowance; not interval verified",
+      "sampled_validity_fallback": true,
+      "prepare": "batched torch float64 (NU-006)",
+      "prepare_device": "cuda",
+      "chunk_bytes": 536870912,
+      "certificate": "torch float64 port of curve_certificate (NU-007)",
+      "certificate_device": "cuda"
+    },
+    "catalog": "real",
+    "frequency_hz": 625000000.0,
+    "wavenumber": 1.6042971511106172,
+    "K_u": 96,
+    "settings": {
+      "trace_minimum": 64,
+      "trace_step": 32,
+      "window_margin": 64,
+      "log_tolerance": 1e-16,
+      "radial_tolerance": 1e-15,
+      "graf_tolerance": 1e-16,
+      "series_loss": 1e-09,
+      "max_log_degree": 4000,
+      "cached_geometries": 1,
+      "coefficient_workspace": 512,
+      "trace_cutoff": null
+    }
+  },
+  "readback": "bitwise_passed",
+  "local_storage_path": "/media/drdeng/DATA/Neural_SDF_BEM_AD/MA-007-raw/results/validation/modal_atlas/MA-007/phaseA-atlas-003/1_initial/chunks/real_0.625_U96_B512.npz"
+}

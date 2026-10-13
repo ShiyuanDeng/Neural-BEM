@@ -1,0 +1,99 @@
+{
+  "schema": "MA007-pilot-1",
+  "path": "results/validation/modal_atlas/MA-007/phaseA-atlas-003/1_initial/chunks/real_2.375_feedback_U96.npz",
+  "bytes": 356703,
+  "sha256": "205d842516d6fa0b40773967f3950eabf87fab1808b671962b4fb62a7c9a354f",
+  "arrays": {
+    "retained_difference": {
+      "shape": [
+        386,
+        48
+      ],
+      "dtype": "complex128",
+      "bytes": 296448,
+      "sha256": "6b3cccbcec478681b50b3739b39aed7291a286d693bd75e621b092b0a1999091",
+      "units": "see identity coordinate/trace conventions"
+    },
+    "identity_residual": {
+      "shape": [
+        386,
+        48
+      ],
+      "dtype": "complex128",
+      "bytes": 296448,
+      "sha256": "902e47e65537cb218a256fec9cc3536fe8d75b8c7fc61f6d5ea79584b8a8939e",
+      "units": "see identity coordinate/trace conventions"
+    },
+    "relative_difference": {
+      "shape": [
+        48
+      ],
+      "dtype": "float64",
+      "bytes": 384,
+      "sha256": "e4c4414abb3a0d1d8e93c6a9e4379937e23ed41b0640fab445b4a206333eb9fa",
+      "units": "see identity coordinate/trace conventions"
+    },
+    "relative_identity_residual": {
+      "shape": [
+        48
+      ],
+      "dtype": "float64",
+      "bytes": 384,
+      "sha256": "4793ab1aa320a40f09a7ef8bb08a534e27823802eb0655504e65f23933382c82",
+      "units": "see identity coordinate/trace conventions"
+    }
+  },
+  "identity": {
+    "role": "1_initial",
+    "parent_source_epoch": "a5815774996b43a3e6c97eaa4bb2e41a69b263345bcae5c294fb98a0f023f288",
+    "atlas_source_epoch": "1739b3b294c916287066ee69aad7b3baa9cdd5096ffb43a4c116aa624effbf37",
+    "P": 127,
+    "M": 1,
+    "K": 4,
+    "normal_coordinate_order": "constant, cos1,sin1,...",
+    "K_u_production": 64,
+    "B_work": 512,
+    "length_unit_m": 0.05,
+    "complete_units": "data per metre of ordinary grouped optimizer coordinate (export permutation applied)",
+    "intrinsic_units": "data per metre of L2(ds_package)-normalized normal coordinate",
+    "trace_order": "Dirichlet, flux; modes -Ku..Ku; RHS sources then reciprocal receivers",
+    "channels": "paired diagonal R @ X_s; source strength applied to B_s only",
+    "geometry_settings": {
+      "name": "centred_state_band_spectral_projection",
+      "length_unit_m": 0.05,
+      "projection_tolerance": 1e-05,
+      "coordinates": "real Fourier coefficients of normal distance h (m) in normalized arclength",
+      "gauge": "arclength refit on every trial",
+      "derivative_step_m": 1e-07,
+      "construction": "z + P_K[R(z+h*n)-R(z)], R = eq. 9 arclength quadrature (no splines); FD derivative of the complete trial",
+      "projection_tolerance_meaning": "grid refinement, not intentional smoothing",
+      "resampler": "eq. 9 quadrature on the uniform grid (count and 2*count); no splines",
+      "boundary_samples": true,
+      "projection_error_control": "coarse/fine diagnostic; not a rigorous bound",
+      "validity": "exact area -> Lemma 3-4 increment vs accepted-curve Y -> full |W|^2 certificate (crop + Lemma 3 tail) -> sampled test (unchanged fallback)",
+      "validity_order": "certificate_first",
+      "certificate_window": 64,
+      "full_certificate_windows": [
+        64,
+        128
+      ],
+      "full_crop_band": "max(K, 64)",
+      "regularity": "coefficient residual lower bound >= 1e-12 sum j^2|x_j|^2",
+      "shadow": false,
+      "certificate_arithmetic": "float64 with heuristic FFT rounding allowance; not interval verified",
+      "sampled_validity_fallback": true,
+      "prepare": "batched torch float64 (NU-006)",
+      "prepare_device": "cuda",
+      "chunk_bytes": 536870912,
+      "certificate": "torch float64 port of curve_certificate (NU-007)",
+      "certificate_device": "cuda"
+    },
+    "catalog": "real",
+    "frequency_hz": 2375000000.0,
+    "K_u": 96,
+    "K_top": 128,
+    "definition": "K_top sub-block reduced system, not independent small assembly"
+  },
+  "readback": "bitwise_passed",
+  "local_storage_path": "/media/drdeng/DATA/Neural_SDF_BEM_AD/MA-007-raw/results/validation/modal_atlas/MA-007/phaseA-atlas-003/1_initial/chunks/real_2.375_feedback_U96.npz"
+}

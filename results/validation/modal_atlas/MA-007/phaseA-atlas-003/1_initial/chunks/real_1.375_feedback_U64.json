@@ -1,0 +1,109 @@
+{
+  "schema": "MA007-pilot-1",
+  "path": "results/validation/modal_atlas/MA-007/phaseA-atlas-003/1_initial/chunks/real_1.375_feedback_U64.npz",
+  "bytes": 425854,
+  "sha256": "bc877b65aa41f8f0ac83db0b2f81149472a692a3f02dd0999f1209fa592995fd",
+  "arrays": {
+    "retained_difference": {
+      "shape": [
+        258,
+        48
+      ],
+      "dtype": "complex128",
+      "bytes": 198144,
+      "sha256": "9a9b89633af23d1fd48be9c1d3964861fbca1390360857af5a35e32fa97e25a6",
+      "units": "see identity coordinate/trace conventions"
+    },
+    "identity_residual": {
+      "shape": [
+        258,
+        48
+      ],
+      "dtype": "complex128",
+      "bytes": 198144,
+      "sha256": "6dba50d625c7471f92fc9da282e78d36068dfda8b37f64cc1c1e07eeede822a2",
+      "units": "see identity coordinate/trace conventions"
+    },
+    "relative_difference": {
+      "shape": [
+        48
+      ],
+      "dtype": "float64",
+      "bytes": 384,
+      "sha256": "515c7e9f1c23b013cddfcce5467ae167e0e788d178df00b5af0f967043d0d18d",
+      "units": "see identity coordinate/trace conventions"
+    },
+    "relative_identity_residual": {
+      "shape": [
+        48
+      ],
+      "dtype": "float64",
+      "bytes": 384,
+      "sha256": "bc054bd2c26049543077793f03a0b0b05fa4c49d3b051edb5814004ecc3f8af7",
+      "units": "see identity coordinate/trace conventions"
+    },
+    "feedback_vector": {
+      "shape": [
+        258,
+        48
+      ],
+      "dtype": "complex128",
+      "bytes": 198144,
+      "sha256": "aec1a1d73f71385ba7255507212f66cd730817f83cfcf199a64547a2d9234da6",
+      "units": "see identity coordinate/trace conventions"
+    }
+  },
+  "identity": {
+    "role": "1_initial",
+    "parent_source_epoch": "a5815774996b43a3e6c97eaa4bb2e41a69b263345bcae5c294fb98a0f023f288",
+    "atlas_source_epoch": "1739b3b294c916287066ee69aad7b3baa9cdd5096ffb43a4c116aa624effbf37",
+    "P": 127,
+    "M": 1,
+    "K": 4,
+    "normal_coordinate_order": "constant, cos1,sin1,...",
+    "K_u_production": 64,
+    "B_work": 512,
+    "length_unit_m": 0.05,
+    "complete_units": "data per metre of ordinary grouped optimizer coordinate (export permutation applied)",
+    "intrinsic_units": "data per metre of L2(ds_package)-normalized normal coordinate",
+    "trace_order": "Dirichlet, flux; modes -Ku..Ku; RHS sources then reciprocal receivers",
+    "channels": "paired diagonal R @ X_s; source strength applied to B_s only",
+    "geometry_settings": {
+      "name": "centred_state_band_spectral_projection",
+      "length_unit_m": 0.05,
+      "projection_tolerance": 1e-05,
+      "coordinates": "real Fourier coefficients of normal distance h (m) in normalized arclength",
+      "gauge": "arclength refit on every trial",
+      "derivative_step_m": 1e-07,
+      "construction": "z + P_K[R(z+h*n)-R(z)], R = eq. 9 arclength quadrature (no splines); FD derivative of the complete trial",
+      "projection_tolerance_meaning": "grid refinement, not intentional smoothing",
+      "resampler": "eq. 9 quadrature on the uniform grid (count and 2*count); no splines",
+      "boundary_samples": true,
+      "projection_error_control": "coarse/fine diagnostic; not a rigorous bound",
+      "validity": "exact area -> Lemma 3-4 increment vs accepted-curve Y -> full |W|^2 certificate (crop + Lemma 3 tail) -> sampled test (unchanged fallback)",
+      "validity_order": "certificate_first",
+      "certificate_window": 64,
+      "full_certificate_windows": [
+        64,
+        128
+      ],
+      "full_crop_band": "max(K, 64)",
+      "regularity": "coefficient residual lower bound >= 1e-12 sum j^2|x_j|^2",
+      "shadow": false,
+      "certificate_arithmetic": "float64 with heuristic FFT rounding allowance; not interval verified",
+      "sampled_validity_fallback": true,
+      "prepare": "batched torch float64 (NU-006)",
+      "prepare_device": "cuda",
+      "chunk_bytes": 536870912,
+      "certificate": "torch float64 port of curve_certificate (NU-007)",
+      "certificate_device": "cuda"
+    },
+    "catalog": "real",
+    "frequency_hz": 1375000000.0,
+    "K_u": 64,
+    "K_top": 128,
+    "definition": "K_top sub-block reduced system, not independent small assembly"
+  },
+  "readback": "bitwise_passed",
+  "local_storage_path": "/media/drdeng/DATA/Neural_SDF_BEM_AD/MA-007-raw/results/validation/modal_atlas/MA-007/phaseA-atlas-003/1_initial/chunks/real_1.375_feedback_U64.npz"
+}
