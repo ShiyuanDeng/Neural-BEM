@@ -68,3 +68,24 @@ NPZ references and hashes; expansion reproduces the original numerical content.
 This closes the instrumentation pair, not the C0 recording pilot: its complete
 five-role atlas, local probes, regeneration and the Phase B release gate remain
 required. The machine-readable state lists those outstanding steps.
+
+## First response-atlas attempt: retained implementation defect
+
+`phaseA-atlas-001` completed all 114 prescribed frequency/catalog cells at the
+five C0 roles, with separately assembled snapshots at every attempted cutoff.
+Hash/shape/dtype read-back and stored source-system/prediction identities pass
+for all 1,363 chunks (6.544 GiB). Numerical compute was 110.681 s; serialization
+and read-back during collection took 166.157 s. This is not a complete atlas:
+active-objective step tests, local probes, selected derivatives and regeneration
+are still outstanding.
+
+The response qualification implementation incorrectly also gated on intrinsic
+diagnostic Jacobian columns. Section 3.3's threshold is for the complete-trial
+Jacobian. All 19 initial-circle cells were therefore labeled unqualified from
+extremely weak intrinsic directions, despite stable complete-trial responses.
+The other 95 cells passed both response comparisons. Preserve all raw arrays
+and flags, correct the gate to the specified complete-trial response, retain
+intrinsic errors as separately labeled diagnostics, reseal and rerun the five
+roles. This correction changes no threshold, direction coverage, solver or
+geometry algorithm. It is an implementation correction, not a research policy
+decision or a physical workspace-failure conclusion.

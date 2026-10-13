@@ -71,6 +71,42 @@ def validate_recording(folder):
     return value
 
 
+def validate_atlas(folder):
+    """Hash/read-back and retained operator identities; no new physics calls."""
+    atlas=read(folder/'response_atlas.json')
+    expected={a['artifact']:a for role in atlas['roles'] for cell in role['cells'] for a in cell['artifacts']}
+    rows=[]
+    for path in sorted(folder.glob('*/chunks/*.json')):
+        receipt=read(path); artifact=c.ROOT/receipt['path']
+        if digest(artifact)!=receipt['sha256']:
+            raise ValueError('Atlas chunk hash changed: '+str(artifact))
+        with np.load(artifact,allow_pickle=False) as loaded:
+            arrays={k:loaded[k] for k in loaded.files}
+        for name,metadata in receipt['arrays'].items():
+            array=arrays[name]
+            if (list(array.shape)!=metadata['shape'] or str(array.dtype)!=metadata['dtype'] or
+                hashlib.sha256(array.tobytes()).hexdigest()!=metadata['sha256']):
+                raise ValueError('Atlas array shape/dtype/hash defect: '+str(artifact)+'/'+name)
+        row=dict(path=receipt['path'],bytes=receipt['bytes'],sha256=receipt['sha256'],passed=True)
+        if 'A' in arrays:
+            source_residual=float(np.linalg.norm(arrays['A']@arrays['X_s']-arrays['B_s'])/np.linalg.norm(arrays['B_s']))
+            prediction=np.einsum('ri,ir->r',arrays['R'],arrays['X_s'])
+            norm_floor=1e-14*max(np.linalg.norm(arrays['observed']),1e-30)
+            recorded_residual=expected[receipt['path']]['system_residual']
+            row.update(system_residual=source_residual,recorded_system_residual=recorded_residual,
+                residual_receipt_error=abs(source_residual-recorded_residual)/max(recorded_residual,1e-15),
+                paired_prediction_error=relative(prediction,arrays['prediction'],norm_floor),
+                reciprocal_system_residual=float(np.linalg.norm(arrays['A']@arrays['X_r']-arrays['B_r'])/
+                                                max(np.linalg.norm(arrays['B_r']),1e-30)))
+            row['passed']=row['residual_receipt_error']<=1e-12 and row['paired_prediction_error']<=1e-10
+        rows.append(row)
+    value=dict(readback_passed=all(x['passed'] for x in rows),rows=rows,chunks_verified=len(rows),
+        raw_array_bytes=sum(x['bytes'] for x in rows),status=atlas['status'],
+        full_atlas_complete=atlas['full_atlas_complete'],pending=atlas['pending'])
+    write(folder/'readback.json',value)
+    return value
+
+
 def report(folder):
     pilot=read(folder/'pilot.json')
     chunks=[]
@@ -109,9 +145,9 @@ def report(folder):
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--folder',type=Path,required=True)
-    parser.add_argument('--kind',choices=('pilot','control'),default='pilot')
+    parser.add_argument('--kind',choices=('pilot','control','atlas'),default='pilot')
     args=parser.parse_args()
-    value=(report(args.folder.resolve()) if args.kind=='pilot' else validate_recording(args.folder.resolve()))
+    value={'pilot':report,'control':validate_recording,'atlas':validate_atlas}[args.kind](args.folder.resolve())
     print(value['chunks_verified'],'chunks verified')
 
 
