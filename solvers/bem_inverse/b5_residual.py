@@ -1,4 +1,4 @@
-"""B5. Complex measurement differences → normalized real residual and loss.
+"""B5. Predicted data + observations → normalized real residual and loss.
 
 Inputs have axes (receiver, frequency, optional trailing coordinate axes).
 Rows stack all real entries followed by all imaginary entries.

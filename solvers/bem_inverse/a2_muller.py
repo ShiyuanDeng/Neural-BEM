@@ -1,4 +1,4 @@
-"""A2. Per-frequency boundary-collocation-free Müller physics on a prepared ModalGeometry.
+"""A2. Geometry arrays → modal Müller matrix (one frequency, on a prepared ModalGeometry).
 
 Traces are Fourier coefficients |m|<=K_trace of the flux state (u, J d_n u),
 J=|z'(t)|. The Müller system is [[I-K, V], [-T, I+K']] with the Maue form of

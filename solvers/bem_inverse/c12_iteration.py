@@ -1,4 +1,8 @@
-"""C12. Accepted-step damping; state commitment and callbacks stay in fit_stage."""
+"""C12. Accepted step → damping / stopping / continuation.
+
+This module holds the damping rules. Committing the state, callbacks and the
+stop tests stay visible in fit_stage.
+"""
 import numpy as np
 from . import checks
 

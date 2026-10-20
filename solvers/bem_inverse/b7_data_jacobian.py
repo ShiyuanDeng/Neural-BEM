@@ -1,4 +1,4 @@
-"""B7. Complete-trial velocities → complex receiver-data Jacobian.
+"""B7. Geometry derivatives + forward/reciprocal traces → complex data Jacobian.
 
 Velocities have axes (Cartesian coefficient, update coordinate). Traces have
 axes (modal coefficient, source/receiver). One reciprocal batch serves every

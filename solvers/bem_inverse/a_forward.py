@@ -1,14 +1,15 @@
-"""A1–A4 orchestration. Boundary-collocation-free modal Müller service, with NodalKress's contract.
+"""A1–A4 (and the B7 call) for modal Müller physics: ModalMuller, the forward service.
 
-One evaluation runs six separately timed stages:
+Stored coefficients c → predicted measurements, with the factors and traces
+that B7 reuses. One evaluation runs these separately timed stages:
 
-1. geometry: frequency-independent Laurent arrays, the certified log|W|^2
-   interval, and Chebyshev/regular-wave bases (cached per curve and window);
-2. waves: Graf source and receiver coefficients at one wavenumber;
-3. assembly: the modal Müller matrix;
-4. factorization: dense LU;
-5. fields: traces and paired receiver data;
-6. jacobian: reciprocal solve and Hadamard contraction (derivative only).
+1. geometry (A1): frequency-independent Laurent arrays, the certified log|W|^2
+   interval and Chebyshev/regular-wave bases, cached per curve and window;
+2. assembly (A2): the modal Müller matrix A_f at one frequency;
+3. waves (A3): Graf source, receiver and reciprocal coefficients;
+4. factorization (A4): dense LU of A_f;
+5. fields (A4): traces u_D and q, then paired receiver data;
+6. jacobian (B7, derivative only): reciprocal solve and Hadamard contraction.
 
 Resolution tokens are 8*K_trace, where K_trace is the trace cutoff. The factor
 only satisfies the shared FitStage guard token > 2*K_geometry, which dates from
@@ -16,18 +17,17 @@ nodal counts; the service never samples nodes. The coefficient window is
 K_trace+window_margin, so a refined token raises both the trace cutoff and the
 window. Log, radial, Graf and wave-series lengths are chosen from explicit
 error bounds or coefficient decay. When a bound fails, the service raises
-ValueError, and LM records a numerical refusal.
+ValueError, and fit_stage records a numerical refusal.
 
-Execution.device selects where geometry preparation and assembly run.
-``cpu`` is the reference path. ``auto`` uses CUDA when available and falls back
-to the CPU after device out-of-memory, recording it. ``cuda`` fails instead of
-falling back. On CUDA, geometry preparation and assembly run in modal_cuda.
-Scalar Bessel/Hankel values, Graf waves, LU, fields and the Jacobian stay on the
-CPU, so handles hold no device memory.
+Execution.device selects where A1 preparation and A2 assembly run. ``cpu`` is
+the reference path. ``auto`` uses CUDA when available and falls back to the CPU
+after device out-of-memory, recording it. ``cuda`` fails instead of falling
+back. On CUDA, A1 and A2 run in modal_cuda. Scalar Bessel/Hankel values, Graf
+waves, LU, fields and the Jacobian stay on the CPU, so handles hold no device
+memory.
 
-Selecting ``solver='modal_muller'`` needs ``register()``, or
-``python -m experiments.cleaned_interface.modal_muller <command> --solver modal_muller``.
-Registration is explicit; campaign entry points live under experiments.cleaned_interface.
+Selecting ``solver='modal_muller'`` needs ``register()``. Campaign entry points
+live under experiments/cleaned_interface.
 """
 from . import checks
 from collections import OrderedDict

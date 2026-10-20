@@ -1,6 +1,6 @@
 """Frequency dispatch and cached production/refined stage evaluations.
 
-The numerical maps are B5/B8; A1–A4 and B7 come from the selected physics.
+Dispatches A1–A4 and B7 (from the selected physics) per frequency, then applies B5/B8.
 Refined results keep predictions only, preserving the lifetime of LU factors.
 """
 import hashlib

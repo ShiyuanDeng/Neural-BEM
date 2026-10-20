@@ -1,4 +1,4 @@
-"""A4. Modal Müller matrix → boundary traces → paired measurements.
+"""A4. Matrix + source RHS → boundary traces → predicted measurements.
 
 A_f is (2*(2*K_trace+1), 2*(2*K_trace+1)); columns of the right-hand side
 and traces are sources. Trace rows stack u_D and speed-weighted flux q.

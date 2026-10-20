@@ -1,4 +1,4 @@
-"""B8. Complex data Jacobian → real J → gradient g and curvature H_GN.
+"""B8. Complex data Jacobian → residual Jacobian J → Gauss–Newton quantities g and H_GN.
 
 Data blocks have axes (receiver, coordinate), one block per frequency. J has
 axes (real measurement, coordinate). Separate functions preserve the original

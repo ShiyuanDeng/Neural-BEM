@@ -23,9 +23,13 @@ from .continuation.forward import ordered_calls, solve, shape_jacobian
 from .continuation.geometry import FourierCurve, grid_size, integer
 from .continuation.geometry_runtime import geometry_validated
 from .continuation.updates import UpdateRefused
-from .continuation.globalization import damping_floor, accepted_damping, shortened_stagnation, insufficient_progress
+from .c9_lm import damping_floor, hanke_damping
+from .c12_iteration import accepted_damping
+from .checks import shortened_stagnation, insufficient_progress
 
-
+# Names below that this file does not itself use stay importable from here:
+# `continuation.lm_backend` is an alias of this module, and older callers and
+# tests take FitStage, Ledger, Objective, normalize, ... from it.
 from .stage_types import (FitStage, BackendConfig, Evaluation, StageResult, StageEntry,
                           StageCheckpoint, checkpoint_signature, ResolutionResponse,
                           ScheduleResult, stage_record)
@@ -37,7 +41,6 @@ from .objective import Objective
 from .recording import observe
 from .b5_residual import normalize
 from .checks import acceptance, relative_columns, resolution_check, inside_box
-from .c9_lm import hanke_damping
 from .c10_geometry_trial import control_step
 from . import b8_gauss_newton, c9_lm, c10_geometry_trial, c11_trial_evaluation, c12_iteration, checks
 
@@ -205,10 +208,10 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
 
     def gradient_frame(evaluation):
         nonlocal current,stage,objective
-        # B6. Complete-trial Cartesian coefficient velocities at this accepted curve.
+        # B6. Complete-trial Cartesian coefficient velocities at this curve.
         space = update.prepare(evaluation.curve, stage.update_modes, stage.curve_modes)
         ledger.reserve(4 * m)  # Jacobian plus one production/refined step opportunity
-        # B7–B8. Reuse forward factors; normalize the complex data derivative to J.
+        # B7–B8. Reuse the forward factors for the data Jacobian; normalize it to real J.
         J = objective.jacobian(evaluation, update, space)
         model_residual = (objective.model_residual(evaluation) if hasattr(objective, 'model_residual')
                           else evaluation.residual)
@@ -318,8 +321,12 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
                 outcome, stop_reason = 'PAUSED', 'accepted_state_pause'
                 break
             iteration += 1
-            # B8, C9. H_GN = J.T @ J; construct D and choose the retry damping.
+            # One iteration = one accepted step. J and g (B7–B8) were built at the
+            # end of the previous iteration, or at stage entry for the first one.
+            # B8. H_GN = J.T @ J, formed once per iteration from that J.
             H_GN = b8_gauss_newton.curvature(J)
+            # C9. Damping metric D, then the starting damping lambda_trial. The
+            # configured rule is 'agreement' (floor), 'hanke', or the carried value.
             D = c9_lm.damping_matrix(H_GN, space, update, config, smoothing)
             accepted = None
             lambda_trial = damping
@@ -333,7 +340,9 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
             if config.damping_rule == "hanke":
                 lambda_trial, attainable = hanke_damping(J, current.residual, D, config.hanke_ratio)
                 rule = dict(hanke_lambda=float(lambda_trial), hanke_attainable=bool(attainable))
-            # C9. Each damping retry solves for new optimizer coordinates.
+            # Outer retry loop (C9): each pass solves (H_GN + lambda_trial D) a_raw = -g.
+            # A singular system, or a pass whose backtracking finds no accepted step,
+            # multiplies lambda_trial by damping_increase and tries again.
             for _ in range(config.max_damping_trials):
                 try:
                     a_raw = c9_lm.solve_proposal(g, H_GN, D, lambda_trial)
@@ -352,11 +361,17 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
                     gradient=g, normal=H_GN, metric=D, damping=lambda_trial,
                     raw_proposed=observed_raw_proposal, bounded_proposed=a_bounded, controller_floor=floor,
                     stage=stage, config=config, ledger=ledger)
-                # C10. Bound once, then successively halve the coordinate proposal.
+                # Inner backtracking loop (C10 → C11): try a_used = 0.5**backtrack * a_bounded.
+                # `continue` below means "this length failed, halve it". Each failure
+                # records its reason in `trial` (refused, outside_domain, nondecreasing,
+                # numerical_rejection, acceptance_margin). `restart` means the base
+                # changed (working-set rebuild or resolution promotion): redo this
+                # iteration from the new base without counting it.
                 for backtrack in range(config.max_backtracks + 1):
                     if config.damping_rule == 'agreement':
                         ledger.reserve(0)  # deadline/work check before geometry, even after pure refusals
                         checks.require_geometry_proposal_allowance(geometry_proposals, config.geometry_proposal_cap)
+                    # C10. Halved step, skipped when it is below the relative tolerance.
                     a_used = 0.5 ** backtrack * a_bounded
                     if checks.step_too_small(a_used, scale, config.relative_step_tolerance):
                         continue
@@ -381,6 +396,9 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
                             trial.update(status='refused', reason='repeated_clipped_proposal', geometry_constructed=False)
                             continue
                         seen_steps.add(key)
+                    # C10. Build the finite geometry trial. The update runs its own
+                    # checks (intermediate curve, refit agreement, final candidate)
+                    # and raises UpdateRefused, which counts as a rejected length.
                     geometry_proposals += 1
                     trial['geometry_constructed'] = True
                     geometry_started = perf_counter()
@@ -412,6 +430,8 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
                     if not admissible(candidate_curve):
                         trial.update(status="refused", reason="outside_domain")
                         continue
+                    # A1–A4, B5. Production evaluation of the trial (C11 reuses the
+                    # forward solve and residual; it does not add a new solver).
                     if hasattr(objective, 'candidate'):
                         from bem_inverse.working_frequency import WorkingSetChanged
                         try:
@@ -431,9 +451,13 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
                         raise NumericalFailure("production evaluation failed at candidate state")
                     checks.require_finite_trial(candidate)
                     trial.update(loss=candidate.loss)
+                    # C11. First test: the production loss must decrease.
                     if checks.production_nondecreasing(candidate.loss, current.loss):
                         trial["status"] = "nondecreasing"
                         continue
+                    # C11. Refined evaluations, field agreement and gain margin; see
+                    # validate() above. None means rejected (halve again); an
+                    # exception means the base itself must be rebuilt.
                     before_checks = len(acceptance_checks)
                     try:
                         qualified = validate(current, candidate)
@@ -481,7 +505,9 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
                 if accuracy_limited:
                     outcome = 'KU_CAP_UNRESOLVED' if qualified_controller else 'ACCURACY_LIMITED_TRIALS'
                 break
-            # C12. Commit only the accepted geometry; preserve callback/rebuild order.
+            # C12. Accepted step: commit it, set the next damping, call on_accept,
+            # rebuild J and g at the new state, then test the stopping conditions.
+            # Callback, rebuild and stop-test order is part of the preserved behaviour.
             current, a_used, used_damping, trial = accepted
             accepted_steps = iteration
             if config.damping_rule == 'agreement':

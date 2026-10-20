@@ -1,4 +1,4 @@
-"""B6. Normal optimizer coordinates → complete-trial coefficient velocities.
+"""B6. Optimizer coordinates → complete-trial geometry derivatives (coefficient velocities).
 
 For each of the 2*M+1 coordinates (metres), apply positive/negative geometry
 perturbations and differentiate the projected arclength-reset map at zero.

@@ -1,4 +1,4 @@
-"""C11. Refined trial evaluation and recorded production/refined decisions.
+"""C11. Trial geometry → production/refined evaluation → accept or reject (records).
 
 Evaluations own predictions; Objective owns its exact-coefficient refined cache.
 These functions do not decide whether to retry, promote, or stop the optimizer:

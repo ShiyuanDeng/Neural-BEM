@@ -1,4 +1,4 @@
-"""C9. Gauss–Newton quantities → damped local-coordinate proposal.
+"""C9. Gauss–Newton quantities → LM proposal (damped local-coordinate step).
 
 J is (real measurement, update coordinate); g is (coordinate,);
 H_GN and D are (coordinate, coordinate). Proposals are in metres.

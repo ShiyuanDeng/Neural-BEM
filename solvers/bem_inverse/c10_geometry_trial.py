@@ -1,4 +1,4 @@
-"""C10. Local coordinate proposal → finite stored Cartesian geometry.
+"""C10. LM proposal → finite geometry trial (stored Cartesian coefficients).
 
 The normal displacement is expressed in normalized arclength and measured in
 metres. After moving the boundary, spectral quadrature resets arclength and

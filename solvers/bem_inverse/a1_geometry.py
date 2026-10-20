@@ -1,4 +1,4 @@
-"""A1. Frequency-independent Laurent geometry for boundary-collocation-free Müller physics.
+"""A1. Stored Cartesian Fourier/Laurent geometry → frequency-independent coefficient geometry.
 
 A curve z(t)=sum_j z_j exp(ijt), in package units, becomes centred coefficient
 arrays in w=exp(i theta) (target, first axis) and v=exp(i phi) (source,
