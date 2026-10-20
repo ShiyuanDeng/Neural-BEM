@@ -8,6 +8,7 @@ dated implementation status and proposed work should be read with the
 
 | Reference | Scope |
 |---|---|
+| [Canonical inverse information chain](inverse_information_chain.md) | User's A1–C12 explanation framework, fixed terminology, and links to the maintained modal inverse |
 | [Borges–Rachh–Greengard paper](papers/README.md) | Local PDF and provenance for shape/frequency continuation |
 | [ibim_shape_derivative.md](ibim_shape_derivative.md) | Older MOD shape derivative and code mapping |
 | [nystrom_reference_study.md](nystrom_reference_study.md) | Independent smooth-boundary precision reference |

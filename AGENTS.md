@@ -10,14 +10,56 @@
 - `cp` (including `cp?`) means **commit and push** the current workspace changes
   to the current branch's configured remote. Treat it as an action request;
   do not ask the user to expand the abbreviation or reconfirm the operation.
+  Do not validate documentation when asked to `cp`: no documentation tests,
+  linting, link checks, or separate review pass. Write documentation carefully
+  when creating or editing it instead.
 - After each new experiment run, automatically commit and push its code,
   documentation, and results to the current branch's configured remote,
   including failed-run evidence. No separate `cp` request or confirmation is
-  needed; validate first, then verify the push and final working-tree status.
+  needed; apply the minimum relevant code/result validation below, then verify
+  the push and final working-tree status.
 - When asked to make the working tree clean, preserve the work by committing
   it. Do not discard changes to achieve a clean status.
-- Run appropriate validation before committing, then verify the push and the
-  final working-tree status.
+- Before committing code or experimental results, use only the minimum
+  relevant validation. Reuse checks already completed for the unchanged code;
+  a `cp` request is not a reason to rerun them. Documentation does not require
+  validation. Verify the push and final working-tree status.
+
+# Terminal answers
+
+- These rules apply to every agent, including agents assigned part of a task,
+  and to both progress updates and final answers.
+- Keep every paragraph to at most three terminal lines. Use short sentences
+  and split longer explanations into separate paragraphs or short bullets.
+- Use plain, direct language. Do not use words such as "audit", "gate", or
+  "pilot", or similar fancy process language. Describe what happens in ordinary
+  words; use necessary technical terms only when they help explain the work.
+- For code questions, especially "where" questions, answer in at most three
+  lines. Keep explanations as short as possible and never exceed one page.
+  Explain roles intuitively in words; avoid equations and raw LaTeX in replies.
+- For inverse-solver explanations, use the user's A1–C12 information chain and
+  fixed terminology in [the canonical code map](docs/reference/inverse_information_chain.md).
+  Place the requested function in that chain and link its actual implementation.
+  Read the relevant section and code before explaining; distinguish the default
+  pipeline from optional research variants.
+
+# Implementation plans, test scope, and runtime
+
+- Start every implementation plan with one or a few explicit questions the
+  work aims to answer. Tie the proposed work and experiments to those questions.
+- Unless the user explicitly asks for rigorous implementation/validation,
+  keep test numbers to a minimum. Omit tests unrelated to the stated aims;
+  do not add tests merely to make a plan appear comprehensive.
+- For long tasks, runtime is the first priority. Choose the shortest practical
+  route that answers the questions, reuse existing evidence, and avoid
+  unnecessary setup, repeated runs, and extra computation for recording.
+- Use the established working pipeline and its existing checks. Do not add
+  extra tests or repeat checks of working components unless a relevant change
+  or observed failure requires it. Preserve the agreed experiment scope and
+  run count.
+- Record the necessary evidence during the requested runs and analyze saved
+  results where possible. If those results cannot answer a question, report
+  the limitation; an unresolved answer does not authorize extra experiments.
 
 # Which experiments to run
 

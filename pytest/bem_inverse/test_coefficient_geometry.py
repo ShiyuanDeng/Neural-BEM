@@ -7,6 +7,7 @@ import pytest
 from bem_inverse.coefficient_geometry import CoefficientGeometry, crop
 from bem_inverse.continuation.geometry import FourierCurve
 from bem_inverse.interval_geometry import IntervalGeometry
+from bem_inverse.coefficient_validity import certify_pair
 from bem_inverse.spectral import spectral_project
 from bem_inverse.analytic_projection import projection_derivatives
 
@@ -76,3 +77,19 @@ def test_interval_regularity_tail_is_not_discarded():
     result=verifier.certify(curve)
     assert result['outcome']=='valid'
     assert result['omitted_derivative_bound'] >= 100e-14
+
+
+def test_complete_coefficient_acceptance_and_first_unresolved_stop():
+    curve=FourierCurve(crop(FourierCurve.circle(1.3).coefficients,8))
+    model=CoefficientGeometry(curve,2,band=64,speed_method='residual_newton',accuracy_mode='coefficients')
+    a=np.array([.001,0,0,0,0])
+    candidate,moved,_=model.trial(a)
+    verifier=IntervalGeometry(max_seconds=.1,max_depth=10)
+    base=verifier.certify(curve.coefficients)
+    with patch.object(FourierCurve,'values',side_effect=AssertionError('samples')):
+        result=certify_pair(curve.coefficients,candidate,moved,moved,base,verifier=verifier)
+        assert result['accepted'] and len(result['checks'])==3
+        crossing=np.zeros(5,complex)
+        crossing[3:]=1
+        refused=certify_pair(curve.coefficients,candidate,crossing,moved,base,verifier=verifier)
+        assert not refused['accepted'] and len(refused['checks'])==1
