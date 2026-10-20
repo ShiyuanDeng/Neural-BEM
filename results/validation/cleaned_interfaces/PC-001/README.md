@@ -1,5 +1,8 @@
 # PC-001: node-free versus nodal pipelines on TG-002 (N0 stopped by the user)
 
+**On the `organised` branch only this README and `M1/` (the default `modal_fixed` arm) are
+kept.** `N0/`, `N1/`, the logs, report and figures remain on `feature/shape-frequency-continuation`.
+
 Plan: [iteration 27](../../../../docs/iterations/cleaned_interfaces/iteration_27/03_plan.md),
 approved by the user ("go"). Code at launch: `583b4e0f`. Launched 2026-10-04 19:42 BST
 (`python -m experiments.benchmark.pc001 run --arm all`, order M1, N1, N0; 2 workers, CUDA).

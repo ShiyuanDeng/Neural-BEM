@@ -1,9 +1,8 @@
 # The benchmark (TG-002): run new experiments on these scenes
 
-**This is the only scene set for new inverse experiments.** Everything else that defines
-scenes (the CI-001 36-case set, SC-0xx, MA-00x, TG-001 and others) is legacy. It is kept in
-place only to reproduce recorded evidence; see [LEGACY.md](LEGACY.md). Do not add far-start
-cases or a grid-search initializer to new experiments. The user retired both on 2026-10-04.
+**This is the only scene set for new inverse experiments.** Older scene sets were removed on
+this branch; they remain on `feature/shape-frequency-continuation`. Do not add far-start cases
+or a grid-search initializer to new experiments. The user retired both on 2026-10-04.
 
 ![TG-002 scenes](../../results/validation/cleaned_interfaces/TG-002/gallery.png)
 
@@ -66,22 +65,13 @@ python -m experiments.benchmark run --pipeline nodal_fixed --cases all --run-dir
 
 | File | Role |
 |---|---|
-| `ng003.py` | Reciprocal-residual speed bootstrap and output coefficient error budget; 243/279 moves construct with all small/1 mm moves retained. [Plan](../../docs/iterations/node_free_geometry/NG-003_plan.md), [results](../../docs/iterations/node_free_geometry/NG-003_results.md). |
-| `ng002.py` | Newton speed and directed Horner proof ablations on the frozen NG-001 panel; construction and base proofs only. [Plan](../../docs/iterations/node_free_geometry/NG-002_plan.md), [results](../../docs/iterations/node_free_geometry/NG-002_results.md). |
-| `ng001.py` | Track 7 coefficient geometry replay against the current setup on frozen TG-002 states/moves; no fitting. [Plan](../../docs/iterations/node_free_geometry/NG-001_plan.md), [results](../../docs/iterations/node_free_geometry/NG-001_results.md); `--report` regenerates numeric summaries. |
-| `cg001.py`, `cg001_completion.py`, `cg002.py`, `cg003.py`, `cg001_report.py`, `cg003_report.py` | Track 12 complex-radius studies: local fold transport qualified; fixed detours and 92 directed loop trials return no real minimum. [Results](../../docs/iterations/complex_geometry/README.md); reports read saved evidence only. |
 | `scenes.py` | Scene shapes, frozen placements, the start, case IDs |
 | `campaign.py` | Input generation and seal, CI-001-shaped rows, `keep_start`, the fit runner, `summarize`, gallery |
-| `pc002.py`, `pc002_validation.py` | Approved fair nodal+spline run and read-only receipt validation ([results](../../docs/iterations/cleaned_interfaces/iteration_28/05_results.md)); `python -m experiments.benchmark.pc002 report` regenerates the table/gallery |
-| `gc001.py`, `gc001_aliasing.py`, `gc001_report.py`, focused tests | Completed geometry-only spline/spectral replay and attribution on saved TG-002 states ([results](../../docs/iterations/cleaned_interfaces/iteration_30/01_results.md)); no fitting or physics calls; `python -m experiments.benchmark.gc001_report` validates/regenerates the table |
-| `dp001.py`, `dp001_report.py`, focused tests | Frozen E versus damping feedback and exact reuse; 26/30 retained and median paired successful-output speedup 1.134x ([results](../../docs/iterations/CI-SPD/DP-001_results.md)); report regeneration performs no fitting |
-| `cs001.py`, `cs001_report.py` | Completed eight-pair four-phase continuation screen: revised 4/8 versus control 5/8, 1.499x median speedup on retained successes, one regression ([results](../../docs/iterations/CI-SPD/CS-001_results.md)); report regeneration performs no fitting |
-| `gs001.py`, `gs001_adapter.py`, `gs001_report.py` | Single-frequency known-material GauGal probe on C-shape 13.3: TV repair permits 0.461% native data residual at 0.5 GHz, but the contour remains near the start circle (28.1 mm sampled RMS); [results](../../docs/iterations/CI-SPD/GS-001_results.md), retained native-TV failure and read-only report |
-| `pc001.py` | Three-arm pipeline comparison N0/N1/M1 and its side-by-side report ([plan](../../docs/iterations/cleaned_interfaces/iteration_27/03_plan.md)) |
-| `nl001.py` | First pre-registered experiment: grid search on or off ([plan](../../docs/iterations/cleaned_interfaces/iteration_26/03_plan.md)) |
+| `pc001.py` | Three-arm pipeline comparison N0/N1/M1 and its report; its `M1` arm is the kept reference run ([plan](../../docs/iterations/cleaned_interfaces/iteration_27/03_plan.md)) |
 | `test_benchmark.py` | Frozen placements, valid truths, no truth access during fitting |
+| `assets/aphex_twin_logo.svg` | Vendored public-domain logo outline for the `aphex_twin` scene |
 
 For a new experiment, write a pre-registered plan in `docs/iterations/cleaned_interfaces/`
-or the relevant iteration track and a small driver like `nl001.py`.
+or the relevant iteration track and a small driver like `pc001.py`.
 User approval of the requested experiment work authorizes its run; record the
 tracking ID without requesting a separate ID confirmation.

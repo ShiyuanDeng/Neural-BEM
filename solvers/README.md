@@ -1,95 +1,11 @@
-# Solvers and inverse implementations
-
-The maintained cleaned SC/MA inverse is [`bem_inverse`](bem_inverse/README.md).
-It owns the continuation runner, solver services, and shared numerical code;
-campaign drivers remain under `experiments/cleaned_interface`.
-
-Other inverse paths include [Implicit MLP + Method B](../docs/pipelines/implicit_mlp.md),
-[Explicit Cartesian Fourier](../docs/pipelines/explicit_cartesian_fourier.md),
-and [Explicit Radial Fourier](../docs/pipelines/explicit_radial_fourier.md).
-The neural adjoint gradient is validated, but current neural recovery fails its
-acceptance checks. Explicit radial reconstruction succeeds in recorded controls;
-neural fitting/export has separate outcomes. See the
-[architecture](../docs/current_architecture.md) and [results catalogue](../results/README.md).
-
-## Package ownership
+# Solvers
 
 | Package | Role |
 |---|---|
-| [`bem_inverse`](bem_inverse/README.md) | Maintained cleaned SC/MA inverse, shared continuation numerics, and explicit nodal/modal services |
-| `gpr_bem_ref` | Frozen original and selector default |
-| `gpr_bem_mod` | Maintained compressed-cloud forward, older neural B-scan adjoint, and ordered inverse comparison peer |
-| `gpr_bem_kress` | Ordered Müller/Kress forward, multi-component assembly and opt-in single-interface discrete derivatives |
-| `ordered_boundary` | Continuous exact/Fourier producers and immutable ordered BIE node geometry |
-| `periodic_kress` | Shared periodic logarithmic product weights |
-| `sdf_to_ordered_boundary` | Extraction/projection, Methods A/B/C, and experimental conversion studies |
-| `sdf_inverse` | Neural Kress-adjoint inverse, Method-B reverse, explicit radial inverse, neural representation, and archived parameter controls |
-| `sdf_bem_multicomponent` | Automatic loop extraction, multi-Kress forward, and prescribed split demonstration |
-| `nystrom_ref` | Independent smooth-boundary forward oracle |
-| `multicylinder_ref` | Independent multiple-cylinder oracle |
-| `gprmax_ref` | Cached FDTD physics cross-check |
-| `kernel_diff_ref` | Perfect-sampling circle diagnostic |
-| `gpr_bem_kdiff`, `gpr_bem_qbx` | Frozen/archived compressed-cloud operator experiments |
-| `gpr_bem_ndiff` | Unsupported normal-offset experiment |
+| [`bem_inverse/`](bem_inverse/README.md) | The inverse pipeline: problem, policy, runner, modal Müller physics, geometry updates |
+| [`gpr_bem_kress/`](gpr_bem_kress/README.md) | Nodal Kress/Nyström Müller solver; generated the TG-002 data and serves as the `nodal_kress` control |
+| [`ordered_boundary/`](ordered_boundary/README.md) | Ordered periodic curve geometry and validity checks |
+| `periodic_kress/` | Periodic Kress logarithmic quadrature weights |
 
-Solver-specific operators and materials stay in their solver packages.
-`PeriodicCurve2D` supplies the common ordered geometry to Kress, or copied
-nodes, normals and weights to the MOD adapter. Kress has its own material
-value type and is not a MOD submodule.
-
-## Selector-backed and direct-import paths
-
-`solver_select.py` aliases either REF or MOD to `gpr_bem` for older drivers
-and shared tests. `--solver` overrides the `SOLVER` environment variable;
-if both are absent, REF is selected. Use `--solver=mod` explicitly for MOD.
-The two remain separate packages so a comparison can
-import both in one interpreter. Kress is a direct import, not a selector alias.
-
-```bash
-python run_ibim_rectangular_scan_forward.py --solver=mod
-python run_ibim_circle_inverse_bscan.py --solver=mod
-python -m pytest pytest/gpr_bem_shared --solver=mod
-```
-
-The rectangular forward output goes under
-`results/demos/rectangular_loop_forward_{ref,mod}`. Older B-scan inverse
-output goes under `results/legacy/inverse/ibim/`.
-These commands are for the user; no solver or test was run during cleanup.
-
-## Current inverse entry points
-
-| Driver | Actual geometry ownership and derivative |
-|---|---|
-| `run_implicit_mlp_inverse.py` | Implicit MLP + Method B: direct neural-weight Kress-adjoint updates and actual re-extracted candidate acceptance |
-| `run_explicit_radial_fourier_inverse.py` | Explicit Radial Fourier: coefficient finite differences and neural fitting/audits according to policy |
-| `run_sdf_inverse_comparison.py` | Shared driver: Kress `siren_*` cases use adjoint by default; analytic/frozen-feature controls use parameter FD; explicit `--optimizer parameter_fd` retains the neural numerical reference |
-| `run_sdf_representation_ablation.py` | Explicit radial state; strict, curve-only and final-export policies |
-| `run_neural_metric_comparison.py` | Explicit radial state; Kress objective adjoint and frozen neural metrics |
-| `run_material_inverse_comparison.py` | Fixed or radial-K2 shape and one interior permittivity; analytic Kress derivatives |
-| `run_material_robustness_comparison.py` | Same shape/material model; training-only continuation and bounded restarts |
-
-`run_mlp_sdf_inverse_comparison.py` remains the old compatibility name for
-Explicit Radial Fourier. Its `legacy_strict` policy governs neural fitting to
-the explicit curve. It never makes neural weights the accepted shape state.
-
-The implicit neural path combines the Kress geometry reverse with a
-branch-local reverse of extraction/Method B into all trainable weights.
-Connectivity changes are not differentiated. Archived
-[known-shape-family controls](../docs/legacy/known_shape_family_controls.md)
-use 3–7 parameters in supplied families and are distinct from full-network
-inversion. Their default outputs go to the legacy archive; full neural
-cases go to `results/inverse/implicit_mlp`.
-
-## Detailed documentation and reproduction
-
-- [Runnable diagnostic commands](../docs/reproduction.md).
-- [Radial ownership and MLP policies](../docs/pipelines/explicit_radial_fourier.md).
-- [Shape/material and derivative controls](../docs/pipelines/explicit_radial_shape_material.md).
-- [Geometry foundation](ordered_boundary/README.md) and [Kress implementation](gpr_bem_kress/README.md).
-- [Technical references](../docs/reference/README.md).
-- [Historical inverse development](../docs/reports/inverse_development_through_2026-09-06.md).
-- [Closed QBX decision](../docs/legacy/qbx_closure.md).
-
-Keep failed runs and exact original source/observation identities. A new run
-gets a fresh directory under its actual pipeline, rather than overwriting a
-historical bundle or promoting progress-only acceptance into a recovery claim.
+Set `PYTHONPATH=solvers:.` from the repository root. Other solver packages were removed
+on this branch and remain on `feature/shape-frequency-continuation`.

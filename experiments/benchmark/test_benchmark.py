@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 
 from experiments.cleaned_interface import benchmark as ci
-from . import campaign as c, nl001, pc001, scenes as S
+from . import campaign as c, pc001, scenes as S
 
 
 def test_ten_scenes_three_contrasts_one_start():
@@ -48,13 +48,6 @@ def test_keep_start_skips_the_grid_and_returns_the_start():
     problem = type('P', (), dict(initial=S.start_fixture()))()
     curve, record = c.keep_start(problem, None, None, Ledger(), seen.append)
     assert curve is problem.initial and record['grid_search'] is False and Ledger.reserved == [0] and seen
-
-
-def test_nl001_arms_differ_only_in_localization():
-    a, b = nl001.ARMS['A'], nl001.ARMS['B']
-    assert {k for k in a if a[k] != b[k]} == {'localization'}
-    assert a['solver'] == 'modal_muller' and a['geometry_update'] == 'certified_spectral'
-    assert nl001.WORKERS <= c.MAX_WORKERS
 
 
 def test_rows_never_expose_truth_to_fitting(monkeypatch):

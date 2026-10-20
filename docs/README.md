@@ -1,47 +1,18 @@
-# Documentation map
+# Docs
 
-Use the [repository guide](../README.md) for the active code map and the
-[maintained cleaned inverse](../solvers/bem_inverse/README.md) for its API,
-dependencies, and checks. Read the guides relevant to the task; the dated
-research records below retain their original scope.
+- [`reference/inverse_information_chain.md`](reference/inverse_information_chain.md):
+  the A1–C12 information chain and the code that implements each step.
+- [`reference/modal_radial_coefficients.md`](reference/modal_radial_coefficients.md):
+  derivation of the modal radial coefficients.
+- [`reference/node_free_scope.md`](reference/node_free_scope.md): which steps still sample
+  the curve.
+- [`reference/gpr_bem_kress_implementation.md`](reference/gpr_bem_kress_implementation.md):
+  the nodal Kress reference solver.
+- [`iterations/README.md`](iterations/README.md) and
+  [`iterations/implementation_principles.md`](iterations/implementation_principles.md):
+  how to plan and record a new experiment.
+- [`iterations/cleaned_interfaces/iteration_27/03_plan.md`](iterations/cleaned_interfaces/iteration_27/03_plan.md):
+  the plan behind the kept PC-001 reference run.
 
-## Implementation and reproduction
-
-| Task | Guide |
-|---|---|
-| Develop or call the cleaned SC/MA inverse | [bem_inverse](../solvers/bem_inverse/README.md) |
-| Prepare, inspect, or reproduce cleaned-interface campaigns | [Campaign commands and numerical limits](../experiments/cleaned_interface/README.md) |
-| Understand solver and reference packages | [Solver map](../solvers/README.md) |
-| Run package/solver regressions | [Validation guide](../pytest/README.md) |
-| Work on implicit MLP, Cartesian, or radial inverse paths | [Implicit MLP](pipelines/implicit_mlp.md), [Cartesian Fourier](pipelines/explicit_cartesian_fourier.md), [radial Fourier](pipelines/explicit_radial_fourier.md) |
-| Reproduce continuation research | [Shape/frequency continuation](pipelines/shape_frequency_continuation.md) |
-| Reproduce older pipeline comparisons | [Reproduction commands](reproduction.md) |
-
-## Research and evidence
-
-- [Architectural experiment backlog](reports/architectural_experiment_backlog_2026-10-11.md):
-  thirteen ideas ranked by deviation from the current pipeline, for standalone
-  scientific comparisons, with research-agent instructions and brief closeouts.
-- [Track 13 convexification](iterations/convexification/README.md): literature,
-  transmission-field regularity and paired-data limitations; CVX-002 implements
-  joint reference-field inversion with augmented Cauchy data. Low-contrast
-  images improve, but weighting and grid refinement do not deliver recovery.
-- [Local-radius theory diagnostics](iterations/theory_radius/README.md): empirical
-  fixed-chart stability, archived handoff applicability, and stationary branches.
-- [Cleaned-interface track](iterations/cleaned_interfaces/README.md): CI, NU,
-  and node-free reviews; historical FM-001/FM-002 records remain there.
-- [Relaxed-BIE track](iterations/relaxed_bie/README.md): current interpretation,
-  mathematical/evidence links, literature and GPU review, and the
-  RB-001 numerical-resolution follow-up.
-- [Results catalogue](../results/README.md): saved runs, including failures.
-- [Iteration index](iterations/README.md): dated plans, decisions, and reports.
-- [Research reports](reports/README.md) and [October 2 exploration](reports/exploration_2026-10-02.md).
-- [Baselines](baselines/README.md), [technical references](reference/README.md),
-  and [legacy records](legacy/README.md).
-- [Broader architecture record](current_architecture.md): existing geometry and
-  solver paths; use the package guide for the extracted cleaned-interface layout.
-
-The [previous dashboard](legacy/dashboard_2026-10-03.md) and
-[previous repository overview](legacy/repository_overview_2026-10-03.md) preserve
-the former landing pages. Their dated status and approval statements are
-historical records, not a replacement for the current task instructions.
+Earlier experiment history, pipeline guides and reports remain on
+`feature/shape-frequency-continuation`. Some links in the kept files point there.

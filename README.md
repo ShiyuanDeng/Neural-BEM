@@ -1,83 +1,46 @@
-# Neural SDF BEM AD
+# Neural SDF BEM AD: organised
 
-Research code for 2-D dielectric transmission, boundary-element forward
-modeling, and inverse geometry reconstruction.
+This branch holds only the latest 2-D inverse pipeline: modal Müller physics with the
+certified spectral geometry update (`modal_fixed`), run on the TG-002 benchmark. It is the
+starting point for a clean rewrite.
 
-**Start with [`solvers/bem_inverse`](solvers/bem_inverse/README.md) for the
-maintained cleaned SC/MA inverse.** It provides the problem/observation API,
-continuation policy, solver services, geometry updates, and numerical audits.
-Campaign catalogs, truth-based scoring, and dated studies live separately in
-`experiments/` and `results/`.
+Everything else was removed here: legacy solvers, root `run_*.py` drivers, older
+experiments, their results and their docs. They remain on
+`feature/shape-frequency-continuation`. To restore one path, run
+`git checkout feature/shape-frequency-continuation -- <path>`.
 
-## Run and validate
+## What is here
 
-From the repository root, use the existing EMNerf environment:
+| Location | Role |
+|---|---|
+| [`experiments/benchmark/`](experiments/benchmark/README.md) | TG-002 scenes, the CLI, the fit runner and recovery scoring |
+| `experiments/cleaned_interface/benchmark.py` | CI-001 helpers TG-002 still uses: acquisition ring, observations, scoring |
+| `experiments/cleaned_interface/*`, `experiments/shape_continuation/*` | Other files only forward imports to `bem_inverse` |
+| [`solvers/bem_inverse/`](solvers/bem_inverse/README.md) | The inverse: problem, policy, runner, modal physics, geometry updates |
+| `solvers/gpr_bem_kress/`, `ordered_boundary/`, `periodic_kress/` | Nodal Kress reference solver, which generated the data, and curve geometry |
+| `pytest/` | Tests for the kept packages |
+| `results/validation/cleaned_interfaces/TG-002/` | Sealed benchmark inputs |
+| [`results/validation/cleaned_interfaces/PC-001/`](results/validation/cleaned_interfaces/PC-001/README.md) `M1/` | Reference run of the default method: 26/30 recovered |
+| [`docs/reference/`](docs/README.md) | A1–C12 code map, modal coefficient derivation, node-free scope, Kress guide |
+
+The kept code is every file the benchmark CLI imports, found by tracing imports from
+`experiments/benchmark`. Kept tests import only that code. Some kept modules still carry
+opt-in research options; the rewrite decides which of them stay.
+
+## Run
+
+From the repository root, in the EMNerf environment:
 
 ```bash
 export PYTHONPATH=solvers:.
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
-CI_PY=/home/drdeng/miniconda3/envs/EMNerf/bin/python
+PY=/home/drdeng/miniconda3/envs/EMNerf/bin/python
 
-# Check the package boundary and the cleaned numerical/campaign contracts.
-"$CI_PY" -m pytest pytest/bem_inverse experiments/cleaned_interface -q
-
-# Inspect the existing campaign without launching fits.
-"$CI_PY" -m experiments.cleaned_interface inventory
-"$CI_PY" -m experiments.cleaned_interface plan --cases modal__c4__development_c
+"$PY" -m experiments.benchmark verify                    # check the sealed inputs
+"$PY" -m experiments.benchmark plan --cases aphex_twin__c13.3
+"$PY" -m experiments.benchmark run --cases circle__c0.5 --run-dir <fresh dir>
+"$PY" -m pytest experiments/benchmark pytest -q
 ```
 
-The [campaign guide](experiments/cleaned_interface/README.md) documents input
-preparation, source seals, CPU/CUDA selection, and fresh output directories.
-The default numerical policy and solver selection are unchanged by package
-isolation. Historical import paths continue to work.
-
-## Where to work
-
-| Location | Role |
-|---|---|
-| [`solvers/bem_inverse/`](solvers/bem_inverse/README.md) | Maintained cleaned inverse implementation and public API |
-| [`solvers/gpr_bem_kress/`](solvers/gpr_bem_kress/README.md), [`solvers/ordered_boundary/`](solvers/ordered_boundary/README.md) | Reusable physics and ordered-boundary geometry used by the inverse |
-| [`experiments/cleaned_interface/`](experiments/cleaned_interface/README.md) | Campaigns, qualification, historical regressions, and compatibility imports |
-| [`experiments/shape_continuation/`](experiments/shape_continuation/README.md), `experiments/modal_atlas/` | Research drivers; extracted shared numerics forward to `bem_inverse` |
-| [`pytest/`](pytest/README.md) | Package and solver regression tests |
-| [`solvers/`](solvers/README.md) | Other inverse implementations and independent reference solvers |
-| [`docs/`](docs/README.md) | Pipeline guides, dated reports, and research history |
-| [`results/`](results/README.md) | Recorded evidence, inputs, source snapshots, and failures |
-
-For cleaned-interface code changes, search `solvers/bem_inverse` first. Search
-historical evidence explicitly when needed, for example:
-
-```bash
-rg 'make_backend' solvers/bem_inverse experiments/cleaned_interface pytest/bem_inverse
-rg 'discrepancy' docs/iterations/cleaned_interfaces
-```
-
-## Numerical scope and evidence
-
-The cleaned CI-001 campaign recorded **28/36 configurations passing its frozen
-contract and 34/36 recovered**. Seven noisy cases fail the residual gate after
-discrepancy stopping; matched runtime retention was not established.
-[Campaign report](docs/iterations/cleaned_interfaces/iteration_03/01_results.md).
-Extraction does not change those results or promote experimental methods.
-
-`nodal_kress` remains the default. `modal_muller` requires explicit registration;
-geometry selection is separate. The modal method is boundary-collocation-free,
-but the complete inverse still uses quadrature and sampled checks. See the
-[campaign guide](experiments/cleaned_interface/README.md) for capabilities and
-limits, including opt-in full-matrix observations and geometry variants.
-
-Other research paths remain available: [implicit MLP](docs/pipelines/implicit_mlp.md),
-[Cartesian Fourier/topology](docs/pipelines/explicit_cartesian_fourier.md),
-[radial Fourier](docs/pipelines/explicit_radial_fourier.md), and
-[shape/frequency continuation](docs/pipelines/shape_frequency_continuation.md).
-Their claims and defaults are documented in their own guides.
-
-The [relaxed-BIE research track](docs/iterations/relaxed_bie/README.md) owns
-the current FM-001/FM-002 interpretation, literature/GPU review and RB-001
-resolution-recovery experiment. Its sealed historical evidence remains at
-the original paths.
-
-The previous long [repository overview](docs/legacy/repository_overview_2026-10-03.md)
-and [research dashboard](docs/legacy/dashboard_2026-10-03.md) are preserved as
-historical snapshots. Reference solvers, experimental code, and recorded
-results remain in place.
+A fit of `circle__c0.5` on this branch reproduces the PC-001 `M1` result to about nine
+significant figures.
