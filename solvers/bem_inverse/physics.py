@@ -4,6 +4,7 @@ Resolution integers are opaque backend profile tokens to the runner. The
 nodal service maps them to nodes; future modal services own their trace and
 assembly workspace settings. Neither the policy nor LM may inspect handles.
 """
+from . import checks
 from dataclasses import dataclass, field, asdict
 from threading import Lock
 from typing import Protocol
@@ -187,7 +188,7 @@ class NodalKress:
 
     def _damped(self, shape, observation, contrast, nodes):
         k = complex(observation.wavenumber)
-        if k.real <= 0 or k.imag < 0 or not np.isfinite(k) or contrast <= 0 or not np.isfinite(contrast):
+        if checks.invalid_nodal_material(k, contrast):
             raise ValueError('Invalid damped material/wavenumber')
         curve, adapter, prepared = self._geometry_cache.get(shape, nodes, self.execution.device,
             enabled=self.execution.nodal_geometry_reuse == 'per_curve')
@@ -239,7 +240,7 @@ class NodalKress:
             prediction = receiver.apply_state(traces)
             if acquisition.paired:
                 prediction = np.diag(prediction).copy()
-        if not np.isfinite(prediction).all():
+        if checks.nonfinite_prediction(prediction):
             raise FloatingPointError('Nonfinite damped prediction')
         state = F.ForwardState(curve, k, ki, acquisition, matrix, factors, traces,
                                prediction, residual, ('cuda-damped' if k.imag else 'cuda') if device else 'cpu-damped')
@@ -280,7 +281,7 @@ class NodalKress:
             else:
                 h = lu_solve(state.factors, rhs, trans=2)
                 residual = np.linalg.norm(state.matrix.conj().T@h-rhs)/np.linalg.norm(rhs)
-            if not np.isfinite(h).all() or residual > 1e-10:
+            if checks.unqualified_nodal_adjoint(h, residual):
                 raise FloatingPointError('Unqualified adjoint Mueller solve')
         except Exception:
             self._record('failed_relaxation_adjoints', perf_counter()-started)
@@ -331,7 +332,7 @@ class NodalKress:
         self._record('derivatives', perf_counter()-started)
         norms = np.linalg.norm(jacobian.reshape(-1, jacobian.shape[-1]), axis=0)
         paired = np.r_[norms[0], np.hypot(norms[1::2], norms[2::2])]
-        if not np.isfinite(paired).all() or paired.max() <= 0:
+        if checks.unobservable_frontier(paired):
             raise FloatingPointError('No finite nonzero observable frontier')
         frontier = int(np.flatnonzero(paired >= threshold * paired.max()).max())
         return dict(frontier=frontier, column_profile=paired, threshold=threshold, top=top, work_units=2)

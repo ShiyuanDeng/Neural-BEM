@@ -3,6 +3,7 @@
 T_z(a) = z + P_K[A(z+h(a)n)-A(z)]. Units follow BorgesUpdate. The derivative
 uses finite differences of GEOMETRY ONLY; the data derivative is reciprocal.
 """
+from . import checks
 from dataclasses import dataclass
 import time
 import numpy as np
@@ -37,10 +38,7 @@ def project(curve, coefficients, band, count, length_unit_m, *, validate=False):
     moved=FourierCurve.from_samples(z+h*normal,count//2-1)
     n=moved.nodes(count)
     if validate:
-        if n.signed_area<=0 or np.min(n.speeds)<1e-6*np.mean(n.speeds):
-            raise UpdateRefused('irregular_parameterization','Invalid displaced curve.')
-        if self_intersections(n.points):
-            raise UpdateRefused('self_intersection','Displaced curve self-intersects.')
+        checks.require_sampled_moved_curve(n)
     angles,_=arclength_angles(n)
     inverse=CubicSpline(np.r_[angles,2*np.pi],np.r_[n.parameters,2*np.pi])
     zz=moved.values(count)
@@ -57,8 +55,7 @@ class ProjectedUpdate(BorgesUpdate):
     def __init__(self,length_unit_m,*,projection_tolerance=1e-5,derivative_step_m=1e-7):
         super().__init__(length_unit_m,projection_tolerance=projection_tolerance)
         self.derivative_step_m=float(derivative_step_m)
-        if not np.isfinite(self.derivative_step_m) or self.derivative_step_m<=0:
-            raise ValueError('Positive finite derivative step required.')
+        checks.require_derivative_step(self.derivative_step_m)
         self.counts=dict(preparations=0,geometry_projections=0,trial_constructions=0,
                          refused_trials=0,preparation_seconds=0.,trial_seconds=0.)
 
@@ -129,8 +126,7 @@ class ProjectedUpdate(BorgesUpdate):
             f=space.curve.coefficients+fine-space.fine_base_projection
             error=float(np.max(np.abs(values(c-f,2*space.count))))
             radius=space.curve.nodes(space.count).perimeter/(2*np.pi)
-            if error/radius>self.projection_tolerance:
-                raise UpdateRefused('unresolved_projection',f'geometry grid refinement {error/radius:g}')
+            checks.require_projection_agreement(error, radius, self.projection_tolerance)
             candidate=FourierCurve(c)
             candidate.validate()
             return candidate,dict(projection_error=error,projection_relative=error/radius,

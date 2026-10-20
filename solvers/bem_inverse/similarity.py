@@ -1,4 +1,5 @@
 """Exact translation and uniform scaling about the stored Cartesian zero mode."""
+from . import checks
 from dataclasses import dataclass
 from time import perf_counter
 
@@ -44,7 +45,7 @@ class SimilarityUpdate(BorgesUpdate):
         curve.validate()
         # Signed area / pi = sum_m m |c_m|^2, exact for Fourier storage.
         radius = float(self.length_unit_m*np.sqrt(np.sum(curve.modes*abs(curve.coefficients)**2)))
-        if not np.isfinite(radius) or radius <= 0:
+        if checks.invalid_similarity_radius(radius):
             raise ValueError('Similarity needs positive finite enclosed area.')
         derivative = np.zeros((len(curve.coefficients), 3), complex)
         derivative[curve.band, :2] = np.array([1., 1j])/self.length_unit_m
@@ -89,7 +90,7 @@ class SimilarityUpdate(BorgesUpdate):
         try:
             step = self._checked(space, coefficients)
             factor = float(1+step[2]/space.radius_m)
-            if not np.isfinite(factor) or factor <= 0:
+            if checks.invalid_similarity_factor(factor):
                 raise UpdateRefused('invalid_scale', 'Similarity scale must be finite and strictly positive.')
             if not np.any(step):
                 candidate = space.curve

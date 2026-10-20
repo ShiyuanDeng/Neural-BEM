@@ -6,6 +6,7 @@ The displacement is projected through the same Nyquist removal as the finite
 trial. This differentiates the quadrature actually computed, not a continuum
 integration-by-parts approximation. It does not remove quadrature nodes.
 """
+from . import checks
 import time
 
 import numpy as np
@@ -34,7 +35,7 @@ def projection_derivatives(curve, update_modes, band, count, length_unit_m):
     base = moved.nodes(count)
     z, z_prime = moved.values(count), moved.values(count, 1)
     sigma = base.speeds
-    if not np.all(np.isfinite(sigma)) or np.min(sigma) <= 0:
+    if checks.irregular_projection_derivative(sigma):
         raise ValueError('Projection derivative requires a regular curve.')
     alpha, length = arclength_angles(base)
     mean = length/(2*np.pi)
@@ -55,7 +56,7 @@ def projection_derivatives(curve, update_modes, band, count, length_unit_m):
         k = orders[start:start+32, None]
         phase = np.exp(-1j*k*alpha)
         out[start:start+32] = (phase@dweights-1j*k*(phase@(weights[:, None]*dalpha)))/count
-    if not np.isfinite(out).all():
+    if checks.nonfinite_projection_derivative(out):
         raise ValueError('Non-finite projection derivative.')
     return out
 

@@ -1,4 +1,5 @@
 """Cartesian Fourier storage; arclength is a gauge, not a radial constraint."""
+from .. import checks
 from dataclasses import dataclass
 import operator
 
@@ -75,10 +76,7 @@ class FourierCurve:
     def validate(self):
         # Sampled feasibility, not a certificate between arbitrary sample points.
         curve = self.nodes(grid_size(self.band))
-        if curve.signed_area <= 0 or np.min(curve.speeds) < 1e-6 * np.mean(curve.speeds):
-            raise ValueError("Curve must be regular and counterclockwise.")
-        if self_intersections(curve.points):
-            raise ValueError("Curve self-intersects.")
+        checks.require_sampled_stored_curve(curve)
         return curve
 
 
@@ -92,8 +90,7 @@ def arclength_angles(curve):
     oscillation = (np.fft.ifft(primitive) * count).real
     distance = speed[0].real * curve.parameters + oscillation - oscillation[0]
     length = 2 * np.pi * speed[0].real
-    if np.any(np.diff(np.r_[distance, length]) <= 0):
-        raise ValueError("Non-monotone arclength map.")
+    checks.require_arclength_monotone(np.diff(np.r_[distance, length]))
     return 2 * np.pi * distance / length, float(length)
 
 
@@ -174,10 +171,7 @@ def displaced(curve, coefficients, storage_band, *, filter_index=0, step=1.0,
 
 def _refit_samples(curve, band, count, tolerance):
     nodes = curve.nodes(count)
-    if nodes.signed_area <= 0 or np.min(nodes.speeds) < 1e-6 * np.mean(nodes.speeds):
-        raise ValueError("Invalid displaced curve.")
-    if self_intersections(nodes.points):
-        raise ValueError("Displaced curve self-intersects.")
+    checks.require_refit_curve(nodes)
     angles, _ = arclength_angles(nodes)
     inverse = CubicSpline(np.r_[angles, 2 * np.pi], np.r_[nodes.parameters, 2 * np.pi])
     z = curve.values(count)
@@ -185,7 +179,6 @@ def _refit_samples(curve, band, count, tolerance):
     target = interpolant(inverse(nodes.parameters))
     result = FourierCurve.from_samples(target, band)
     error = float(np.max(np.abs(result.values(count) - target)))
-    if error > tolerance * nodes.perimeter / (2 * np.pi):
-        raise ValueError(f"Arclength projection unresolved: {error / (nodes.perimeter / (2*np.pi)):.3g} relative.")
+    checks.require_spline_projection(error, tolerance, nodes.perimeter)
     result.validate()
     return result, error

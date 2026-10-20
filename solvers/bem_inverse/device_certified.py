@@ -19,12 +19,13 @@ only reports its degree. Everything else is NU-006 unchanged.
 
 Campaigns and diagnostics remain under experiments.cleaned_interface.
 """
+from . import checks
 import time
 import numpy as np
 import torch
 from scipy.fft import next_fast_len
 from .n_update import curve_certificate, derivative_norm
-from .batched import BatchedCertifiedUpdate
+from .b6_geometry_derivatives import BatchedCertifiedUpdate
 
 
 EPS = np.finfo(float).eps
@@ -39,11 +40,9 @@ def _degree(upper, beta, tolerance, max_degree):
     root_upper, root_lower = np.sqrt(upper), np.sqrt(beta)
     ratio = (root_upper-root_lower)/(root_upper+root_lower)
     degree = 1
-    while 2*ratio**(degree+1)/((degree+1)*(1-ratio)) > tolerance:
+    while checks.log_tail_exceeds(ratio, degree, tolerance):
         degree += 1
-        if degree > max_degree:
-            raise ValueError(f'log|W|^2 needs more than {max_degree} Chebyshev terms '
-                             f'(beta/Lambda={beta/upper:.3g}); curve is nearly self-touching.')
+        checks.require_log_degree(degree, max_degree, beta, upper)
     return degree, ratio
 
 
@@ -60,16 +59,14 @@ def device_certificate(curve, window, device, *, tolerance=1e-12, max_degree=400
     product = _convolve(quotient, quotient.flip(0, 1).conj())
     ww = (product+product.flip(0, 1).conj())/2
     upper = float(ww.abs().sum())
-    if not np.isfinite(upper) or upper <= 0 or not np.isfinite(tolerance) or tolerance <= 0:
-        raise ValueError('Positive finite modulus norm and log tolerance required.')
+    checks.require_modulus_domain(upper, tolerance)
     half = (ww.shape[0]-1)//2
     grid = max(64, next_fast_len(4*half+4))
     spectrum = torch.zeros((grid, grid), dtype=torch.complex128, device=device)
     index = torch.arange(-half, half+1, device=device) % grid
     spectrum[index[:, None], index[None, :]] = ww
     sampled = float(torch.fft.ifft2(spectrum).real.min())*grid*grid
-    if not sampled > 0:
-        raise ValueError(f'Inconclusive interval proposal: sampled min |W|^2 = {sampled:g}.')
+    checks.require_positive_modulus_sample(sampled)
     beta = sampled/2
     degree, ratio = _degree(upper, beta, tolerance, max_degree)
     mapped = 2*ww/(upper-beta)
@@ -98,12 +95,10 @@ def device_certificate(curve, window, device, *, tolerance=1e-12, max_degree=400
     norm = float(inverse.abs().sum())
     allowance = 80*product.numel()*EPS*upper*norm
     lower = (1-residual-allowance)/norm
-    if not np.isfinite([residual, norm, allowance, lower]).all() or norm <= 0:
-        raise ValueError('Non-finite reciprocal residual certificate.')
+    checks.require_finite_certificate(residual, norm, allowance, lower)
     recomputed = False
-    if lower < beta:
-        if not lower > 0:
-            raise ValueError(f'|W|^2 lower bound not certified (coefficient residual {residual:.3g}).')
+    if checks.interval_needs_recompute(lower, beta):
+        checks.require_positive_certificate(lower, residual)
         beta, recomputed = lower, True
         degree, _ = _degree(upper, beta, tolerance, max_degree)
     return dict(window=window, rho=residual, allowance=allowance, reciprocal_l1=norm, beta=beta, Lambda=upper,

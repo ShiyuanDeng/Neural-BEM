@@ -20,6 +20,7 @@ The assembled matrix returns to the host. Several parts stay on the CPU:
 Handles therefore hold no device memory. The CPU modules remain the reference,
 and the two agree to roundoff.
 """
+from . import checks
 from threading import Lock
 from time import perf_counter
 from functools import lru_cache
@@ -28,8 +29,8 @@ import numpy as np
 from scipy.fft import next_fast_len
 import torch
 
-from .modal_geometry import EPS, Multiplier, WaveArrays, half, reflect
-from .modal_operator import radial_coefficients
+from .a1_geometry import EPS, Multiplier, WaveArrays, half, reflect
+from .a2_muller import radial_coefficients
 
 COMPLEX = torch.complex128
 
@@ -145,26 +146,22 @@ def log_modulus(ww, band, tolerance=1e-16, max_degree=4000):
     started = perf_counter()
     device = ww.device
     upper = float(ww.abs().sum())
-    if not np.isfinite(upper) or upper <= 0 or not np.isfinite(tolerance) or tolerance <= 0:
-        raise ValueError('Positive finite modulus norm and log tolerance required.')
+    checks.require_modulus_domain(upper, tolerance)
     k = half(ww)
     grid = max(64, next_fast_len(4*k+4))
     spectrum = torch.zeros((grid, grid), dtype=COMPLEX, device=device)
     index = torch.arange(-k, k+1, device=device) % grid
     spectrum[index[:, None], index[None, :]] = ww
     sampled = float(torch.fft.ifftn(spectrum).real.min())*grid*grid
-    if not sampled > 0:
-        raise ValueError(f'Inconclusive interval proposal: sampled min |W|^2 = {sampled:g}.')
+    checks.require_positive_modulus_sample(sampled)
     beta, certificate = sampled/2, None
     for attempt in range(2):
         root_upper, root_lower = np.sqrt(upper), np.sqrt(beta)
         ratio = (root_upper-root_lower)/(root_upper+root_lower)
         degree = 1
-        while 2*ratio**(degree+1)/((degree+1)*(1-ratio)) > tolerance:
+        while checks.log_tail_exceeds(ratio, degree, tolerance):
             degree += 1
-            if degree > max_degree:
-                raise ValueError(f'log|W|^2 needs more than {max_degree} Chebyshev terms '
-                                 f'(beta/Lambda={beta/upper:.3g}); curve is nearly self-touching.')
+            checks.require_log_degree(degree, max_degree, beta, upper)
         mapped = 2*ww/(upper-beta)
         mapped[k, k] -= (upper+beta)/(upper-beta)
         multiply = DeviceRealMultiplier(mapped, band)
@@ -186,17 +183,14 @@ def log_modulus(ww, band, tolerance=1e-16, max_degree=4000):
         norm = float(inverse.abs().sum())
         allowance = 80*product.numel()*EPS*upper*norm
         lower = (1-residual-allowance)/norm
-        if not np.isfinite([residual, norm, allowance, lower]).all() or norm <= 0:
-            raise ValueError('Non-finite reciprocal residual certificate.')
+        checks.require_finite_certificate(residual, norm, allowance, lower)
         certificate = dict(residual=residual, allowance=allowance, reciprocal_l1=norm, lower=lower,
                            arithmetic_verified=False, rounding_model='heuristic FFT allowance')
-        if lower >= beta:
+        if checks.interval_certified(lower, beta):
             break
-        if not lower > 0:
-            raise ValueError(f'|W|^2 lower bound not certified (coefficient residual {residual:.3g}).')
+        checks.require_positive_certificate(lower, residual)
         beta = lower
-    if not bool(torch.isfinite(log).all()):
-        raise ValueError('Non-finite log modulus coefficients.')
+    checks.require_finite_log_coefficients(log, device=True)
     return log, dict(upper=upper, lower=beta, sampled_minimum=sampled, proposal_grid=grid, degree=degree,
                      series_bound=float(2*ratio**(degree+1)/((degree+1)*(1-ratio))),
                      recomputed=bool(attempt), certificate=certificate,
@@ -216,8 +210,7 @@ class DeviceModalGeometry:
             raise ValueError('Coefficient window must be positive.')
         self.coefficients, self.band, self.curve_band, self.device = z, band, k, device
         self.normal = curve.modes*z
-        if not float(np.pi*np.sum(curve.modes*np.abs(z)**2)) > 0:
-            raise ValueError('Curve must be counterclockwise (positive signed area).')
+        checks.require_positive_orientation(float(np.pi*np.sum(curve.modes*np.abs(z)**2)))
         coefficients, normal = _tensor(z, device), _tensor(self.normal, device)
         target, source, normal_t, normal_s = torch.zeros((4, 2*k+1, 2*k+1), dtype=COMPLEX, device=device)
         target[:, k], source[k], normal_t[:, k], normal_s[k] = coefficients, coefficients, normal, normal
@@ -269,8 +262,7 @@ def assembly_indices(band, cutoff, device_name):
 def kernel_matrix(log_part, smooth, cutoff):
     """modal_operator.kernel_matrix on the device."""
     band = half(log_part)
-    if cutoff > band:
-        raise ValueError('Trace cutoff must fit inside the coefficient window.')
+    checks.require_trace_workspace(cutoff, band)
     modes, a, b, mask, symbol, sm, sn, pm, pn, identity = assembly_indices(band, cutoff, str(log_part.device))
     diagonals = torch.where(mask, log_part[a, b], 0)
     product = _convolve(diagonals, symbol[None, :], 1)

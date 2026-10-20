@@ -1,0 +1,240 @@
+{
+  "array_comparisons": {
+    "A_f": {
+      "exact": true,
+      "maximum_absolute_difference": 0.0
+    },
+    "H_GN": {
+      "exact": false,
+      "maximum_absolute_difference": 5.684341886080802e-14
+    },
+    "J": {
+      "exact": false,
+      "maximum_absolute_difference": 1.7763568394002505e-15
+    },
+    "backtrack_True": {
+      "exact": true,
+      "maximum_absolute_difference": 0.0
+    },
+    "base_failure_True": {
+      "exact": true,
+      "maximum_absolute_difference": 0.0
+    },
+    "c_trial": {
+      "exact": true,
+      "maximum_absolute_difference": 0.0
+    },
+    "coefficient_velocities": {
+      "exact": true,
+      "maximum_absolute_difference": 0.0
+    },
+    "exhaust_True": {
+      "exact": true,
+      "maximum_absolute_difference": 0.0
+    },
+    "g": {
+      "exact": false,
+      "maximum_absolute_difference": 1.5103178373568403e-17
+    },
+    "modal_endpoint": {
+      "exact": false,
+      "maximum_absolute_difference": 2.667105355533125e-14
+    },
+    "normal_weights": {
+      "exact": true,
+      "maximum_absolute_difference": 0.0
+    },
+    "prediction": {
+      "exact": true,
+      "maximum_absolute_difference": 0.0
+    },
+    "receiver": {
+      "exact": true,
+      "maximum_absolute_difference": 0.0
+    },
+    "reciprocal_rhs": {
+      "exact": true,
+      "maximum_absolute_difference": 0.0
+    },
+    "reciprocal_traces": {
+      "exact": true,
+      "maximum_absolute_difference": 0.0
+    },
+    "refine_False": {
+      "exact": true,
+      "maximum_absolute_difference": 0.0
+    },
+    "refine_True": {
+      "exact": true,
+      "maximum_absolute_difference": 0.0
+    },
+    "residual": {
+      "exact": true,
+      "maximum_absolute_difference": 0.0
+    },
+    "resume": {
+      "exact": true,
+      "maximum_absolute_difference": 0.0
+    },
+    "source_rhs": {
+      "exact": true,
+      "maximum_absolute_difference": 0.0
+    },
+    "traces": {
+      "exact": true,
+      "maximum_absolute_difference": 0.0
+    }
+  },
+  "baseline_commit": "060aaaddface29a1cb6d0e8af617aff46761b854",
+  "baseline_precision_evidence": {
+    "cuda_available": false,
+    "repeated_unchanged_capture_max_abs_H_GN": 2.1316282072803006e-14,
+    "repeated_unchanged_capture_max_abs_J": 1.7763568394002505e-15,
+    "tolerances_changed": false,
+    "validity_order_changed_acceptance_or_reason": 0,
+    "validity_order_max_abs_coefficient_difference": 2.5118156724168674e-17
+  },
+  "branch": "organised",
+  "exact_control_records": {
+    "agreement": true,
+    "alternate": true,
+    "backtrack_True": true,
+    "base_failure_True": true,
+    "callback_stop": true,
+    "exhaust_True": true,
+    "geometry_trial": true,
+    "hanke": true,
+    "qualified_accept": true,
+    "qualified_refuse": true,
+    "quota": true,
+    "refine_False": true,
+    "refine_True": true,
+    "resume": true,
+    "terminal": true,
+    "wall": true,
+    "working": true
+  },
+  "longdouble_mantissa_bits": 52,
+  "modal": {
+    "acceptance_decisions_equal": true,
+    "accepted_steps": {
+      "baseline": 2,
+      "exact": true,
+      "rewritten": 2
+    },
+    "callback_iterations_equal": true,
+    "dispatched_counts_equal": true,
+    "geometry_proposals": {
+      "baseline": 2,
+      "exact": true,
+      "rewritten": 2
+    },
+    "outcome": {
+      "baseline": "NORMAL_OPTIMIZER_RETURN",
+      "exact": true,
+      "rewritten": "NORMAL_OPTIMIZER_RETURN"
+    },
+    "stop_reason": {
+      "baseline": "maximum_iterations",
+      "exact": true,
+      "rewritten": "maximum_iterations"
+    },
+    "trial_statuses_equal": true,
+    "work": {
+      "baseline": {
+        "cap": 300,
+        "failed": {},
+        "reciprocal_batches": {
+          "modal_reference:derivative": 8
+        },
+        "solves": {
+          "modal_reference:acceptance_validation": 6,
+          "modal_reference:candidate": 4,
+          "modal_reference:initial_objective": 2,
+          "modal_reference:reference": 2
+        },
+        "stage": "modal_reference",
+        "stage_quota": null,
+        "stage_units": 22,
+        "work_units": 22
+      },
+      "exact": true,
+      "rewritten": {
+        "cap": 300,
+        "failed": {},
+        "reciprocal_batches": {
+          "modal_reference:derivative": 8
+        },
+        "solves": {
+          "modal_reference:acceptance_validation": 6,
+          "modal_reference:candidate": 4,
+          "modal_reference:initial_objective": 2,
+          "modal_reference:reference": 2
+        },
+        "stage": "modal_reference",
+        "stage_quota": null,
+        "stage_units": 22,
+        "work_units": 22
+      }
+    }
+  },
+  "numpy": "1.26.3",
+  "platform": "macOS-26.5.1-arm64-arm-64bit",
+  "python": "3.12.1",
+  "tests": {
+    "after_optional_condition_moves": {
+      "files": [
+        "test_similarity.py",
+        "test_nodal_fair.py",
+        "test_refactor_contract.py"
+      ],
+      "passed": 11,
+      "skipped": 4
+    },
+    "baseline_bem_inverse": {
+      "failed": 6,
+      "passed": 80,
+      "skipped": 4
+    },
+    "broad_rewritten_suite": {
+      "command": "python3 -m pytest pytest/bem_inverse pytest/gpr_bem_kress pytest/ordered_boundary -q",
+      "failed": 10,
+      "note": "One new comparison-fixture failure was JSON list versus in-memory tuple representation, corrected without changing solver code or reference values.",
+      "passed": 162,
+      "skipped": 15
+    },
+    "corrected_control_and_resolution_tests": {
+      "deselected": 1,
+      "passed": 11
+    },
+    "existing_failure_families": [
+      {
+        "baseline_reproduced": true,
+        "cases": 6,
+        "reason": "This arm64 NumPy longdouble has 52 mantissa bits; the existing test requires extended precision.",
+        "test": "test_scaled_bessel_recurrence_against_high_precision"
+      },
+      {
+        "baseline_reproduced": true,
+        "reason": "Strict coefficient-byte equality; baseline accepted/refused outcomes and refusal reasons agree.",
+        "test": "test_both_orders_decide_identically[cpu]"
+      },
+      {
+        "baseline_reproduced": true,
+        "reason": "Intermittent strict coefficient equality; baseline separate rerun differs by at most 3.61e-18 in the reported real coefficients.",
+        "test": "test_real_projected_stage_and_policy_resume_match_uninterrupted"
+      },
+      {
+        "baseline_reproduced": true,
+        "reason": "Strict equality in unchanged reference physics; roundoff.",
+        "test": "test_cross_blocks_are_weighted_exterior_only_kernels"
+      },
+      {
+        "baseline_reproduced": true,
+        "reason": "Strict equality in unchanged reference physics; roundoff.",
+        "test": "test_one_component_ordered_boundary_reproduces_existing_system_exactly"
+      }
+    ],
+    "existing_tests_modified": false
+  }
+}

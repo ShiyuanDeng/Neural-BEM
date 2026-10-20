@@ -9,10 +9,10 @@ def make_update(name, length_unit_m, execution, *, default=None):
         from .geometry import ProjectedUpdate
         return ProjectedUpdate(length_unit_m)
     if name == 'spectral':
-        from .spectral import SpectralProjectedUpdate
+        from .c10_geometry_trial import SpectralProjectedUpdate
         return SpectralProjectedUpdate(length_unit_m)
     if name == 'certified_spectral':
-        from .batched import BatchedCertifiedUpdate
+        from .b6_geometry_derivatives import BatchedCertifiedUpdate
         order = getattr(execution, 'validity_order', 'certificate_first')
         update = BatchedCertifiedUpdate(length_unit_m, device=None if execution.device == 'auto' else execution.device,
                                         order=order)

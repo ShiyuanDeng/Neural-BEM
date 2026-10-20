@@ -6,6 +6,15 @@ NumPy, SciPy, PyTorch, and the sibling `gpr_bem_kress`, `ordered_boundary`, and
 research drivers, or saved results. Use the existing EMNerf environment; this
 is a source-tree package following the repository's `solvers/` convention.
 
+## Reading the implementation
+
+Use the [A1–C12 code map](../../docs/reference/inverse_information_chain.md):
+`runner.fit()` → `fit_stage.fit_stage()` → `a1_geometry.py` through
+`c12_iteration.py`. The actual retry loops stay in `fit_stage.py`; numerical
+conditions are grouped in `checks.py`. `endpoint.py` owns independent endpoint
+calculations, `objective.py` owns dispatch/caches, and `work.py` owns charging.
+Old import paths remain compatible and call this implementation.
+
 ## API
 
 From the repository root, set `PYTHONPATH=solvers:.`. The numerical package
@@ -65,7 +74,8 @@ result = pipelines.fit(problem, "modal_fixed", execution=Execution(device="auto"
 |---|---|---|---|
 | `nodal_baseline` | `nodal_kress` | `spline` | hard stop (CI-001) |
 | `nodal_fixed` | `nodal_kress` | `certified_spectral` | one promotion to N1024/2048 (`ResolutionResponse`) |
-| `modal_fixed` | `modal_muller` | `certified_spectral` | hard stop; no modal response exists, and one is refused |
+| `modal_fixed` | `modal_muller` | `certified_spectral` | hard stop; optional `modal_response` is a separate recipe |
+| `modal_response` | `modal_muller` | `certified_spectral` | optional promotion to trace cutoffs 128/160 |
 
 A pipeline only fills `fit`'s physics, geometry-update and resolution slots; policy, start
 and localization stay with the caller. Results gain `pipeline` and `resolution_promoted`.
@@ -263,27 +273,17 @@ code.
 
 ## Validation
 
-From the repository root:
+On this organized branch, the retained tests are under `pytest/`:
 
 ```bash
-export PYTHONPATH=solvers:.
-export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
-CI_PY=/home/drdeng/miniconda3/envs/EMNerf/bin/python
-
-"$CI_PY" -m pytest pytest/bem_inverse experiments/cleaned_interface -q
+PYTHONPATH=solvers:. OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
+  python3 -m pytest pytest/bem_inverse -q
 ```
 
-`pytest/bem_inverse` guards the package boundary, compatibility, and standalone
-execution. The existing cleaned-interface suite retains its historical
-fixtures and independent comparisons: forward fields, complete-trial
-derivatives, CPU/CUDA execution, audit equivalence, and bounded inverse paths.
+Shared geometry and physical solver checks remain in `pytest/ordered_boundary`
+and `pytest/gpr_bem_kress`. Earlier references above to removed campaign test
+folders describe the historical source layout, not runnable commands here.
 
-For changes to shared continuation or lower-level physics/geometry, also run:
-
-```bash
-"$CI_PY" -m pytest experiments/shape_continuation \
-  pytest/gpr_bem_kress pytest/ordered_boundary -q
-```
-
-These are bounded checks, not the 36-case campaign. Package extraction changes
-code ownership, not recovery claims or runtime qualifications.
+The [refactor status](../../docs/reference/inverse_refactor_status.md) records
+before/after comparisons and the local platform's existing precision limits.
+No full inverse benchmark is required for this readability refactor.

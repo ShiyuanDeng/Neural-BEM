@@ -1,4 +1,5 @@
 """Truth-free policy interpreter. Every physics operation uses the chosen service."""
+from . import checks
 from contextlib import contextmanager
 from dataclasses import dataclass, replace
 import signal
@@ -8,12 +9,13 @@ import traceback
 import numpy as np
 
 from bem_inverse.continuation.geometry_runtime import geometry_runtime, geometry_validated
-from bem_inverse.continuation.lm_backend import (
+from .fit_stage import (
     Ledger, Objective, Stop, fit_stage, NORMAL_RETURN, STAGE_QUOTA)
 from .geometry import ProjectedUpdate, resize, cleanup
 from .geometry_selection import make_update, describe_plan, operation_record
 from .io import write, curve_record
 from .localization import localize
+from .endpoint import audit, deadline
 from .physics import make_backend
 from .policy import CumulativePolicy, readable_plan
 
@@ -37,143 +39,6 @@ class FitResume:
     accepted: tuple = ()
     localization: object = None
     initial_audit: object = None
-
-
-@contextmanager
-def deadline(seconds):
-    """Bound audits in campaign worker main threads; restore an outer timer."""
-    if current_thread() is not main_thread():
-        yield
-        return
-    def expired(signum, frame):
-        raise TimeoutError('Independent numerical audit exceeded its wall budget')
-    handler = signal.signal(signal.SIGALRM, expired)
-    previous = signal.setitimer(signal.ITIMER_REAL, seconds)
-    started = perf_counter()
-    try:
-        yield
-    finally:
-        signal.setitimer(signal.ITIMER_REAL, 0)
-        signal.signal(signal.SIGALRM, handler)
-        if previous[0]:
-            signal.setitimer(signal.ITIMER_REAL, max(1e-6, previous[0]-(perf_counter()-started)), previous[1])
-
-
-@geometry_validated
-def audit(curve, stage, config, problem, physics, update, seconds):
-    """SC-042 numerical gates, recomputed via the selected backend on all real data."""
-    count = len(problem.real)
-    stage = replace(stage, observations=problem.real, weights=tuple(np.ones(count)/count),
-                    curve_modes=curve.band,
-                    discrepancy_tolerances=tuple(1e-5 if o.frequency_hz <= .5e9 else 1e-7 for o in problem.real))
-    reference_nodes = (physics.audit_reference_resolution(stage)
-                       if hasattr(physics, 'audit_reference_resolution') else None)
-    independent_reference = reference_nodes is not None
-    ledger = Ledger(cap=(8 if independent_reference else 6)*count+16, seconds=seconds, endpoint_reserve=0)
-    execution = getattr(physics, 'execution', None)
-    batch = min(getattr(execution, 'audit_frequency_batch', 1), getattr(execution, 'frequency_threads', 1))
-    started = perf_counter()
-    try:
-        with deadline(seconds):
-            # Each frequency is independent. Keep only one coarse/fine pair of
-            # dense systems long enough to extract the reciprocal derivatives.
-            # Normalization/stacking below is exactly Objective's common map.
-            from bem_inverse.continuation.lm_backend import normalize
-            observed = np.column_stack([o.scattered.reshape(-1) for o in problem.real])
-            space = update.prepare(curve, stage.update_modes, curve.band)
-            low_columns, high_columns, coarse_jac, fine_jac = [], [], [], []
-            reference_columns, reference_jac = [], []
-            def evaluate(shape, observation, nodes, category):
-                with ledger._lock:
-                    ledger.reserve(1)
-                    ledger.charge('solve', category)
-                try:
-                    return physics.evaluate(shape, observation, problem.contrast, nodes)
-                except (ValueError, FloatingPointError, np.linalg.LinAlgError):
-                    with ledger._lock:
-                        ledger.fail(category)
-                    raise
-            def derivative(state, category='derivative'):
-                with ledger._lock:
-                    ledger.reserve(1)
-                    ledger.charge('reciprocal', category)
-                block = physics.derivative(state, update, space)
-                return block.reshape(-1, block.shape[-1])
-            def batches(function):
-                # Return arrays only; factorized systems die inside each worker.
-                for begin in range(0, count, batch):
-                    items = problem.real[begin:begin+batch]
-                    if batch == 1:
-                        yield function(items[0])
-                    else:
-                        with physics.ordered_calls(function, items) as calls:
-                            for call in calls:
-                                yield call()
-            def field_pair(observation):
-                low = evaluate(curve, observation, stage.nodes, 'audit_base')
-                high = evaluate(curve, observation, stage.refined_nodes, 'audit_fine')
-                lp = np.array(low.prediction, copy=True).reshape(-1)
-                hp = np.array(high.prediction, copy=True).reshape(-1)
-                ja, jb = derivative(low), derivative(high)
-                rp = jr = None
-                if independent_reference:
-                    reference = evaluate(curve, observation, reference_nodes, 'audit_reference')
-                    rp = np.array(reference.prediction, copy=True).reshape(-1)
-                    jr = derivative(reference, 'audit_reference')
-                return lp, hp, ja, jb, rp, jr
-            for lp, hp, ja, jb, rp, jr in batches(field_pair):
-                low_columns.append(lp); high_columns.append(hp)
-                coarse_jac.append(ja); fine_jac.append(jb)
-                if independent_reference:
-                    reference_columns.append(rp); reference_jac.append(jr)
-            low_prediction, high_prediction = np.column_stack(low_columns), np.column_stack(high_columns)
-            ja = normalize(np.stack(coarse_jac, axis=1), observed, stage.weights, config.residual_floor)
-            jb = normalize(np.stack(fine_jac, axis=1), observed, stage.weights, config.residual_floor)
-            fields = np.linalg.norm(low_prediction-high_prediction, axis=0)/np.linalg.norm(high_prediction, axis=0)
-            colnorm = np.linalg.norm(jb, axis=0)
-            derivative = np.linalg.norm(ja-jb, axis=0)/np.maximum(colnorm, 1e-30)
-            direction = np.random.default_rng(42001).normal(size=ja.shape[1])
-            direction /= np.linalg.norm(direction)
-            residuals = []
-            for sign in (1, -1):
-                candidate = update.trial(space, sign*1e-7*direction)[0]
-                predictions = []
-                def finite_difference(observation):
-                    state = evaluate(candidate, observation, stage.refined_nodes, 'audit_fd')
-                    return np.array(state.prediction, copy=True).reshape(-1)
-                predictions.extend(batches(finite_difference))
-                residuals.append(normalize(np.column_stack(predictions)-observed, observed,
-                                           stage.weights, config.residual_floor))
-            fd = (residuals[0]-residuals[1])/2e-7
-            error = float(np.linalg.norm(fd-jb@direction)/max(np.linalg.norm(fd), 1e-30))
-            residual = normalize(high_prediction-observed, observed, stage.weights, config.residual_floor)
-            row = dict(passed=bool(np.all(fields <= stage.discrepancy_tolerances) and
-                max(derivative) <= 1e-3 and error <= 1e-3), field_relative=fields,
-                jacobian_relative=derivative, jacobian_column_norm=colnorm, full_trial_fd_relative=error,
-                fine_loss=.5*float(residual@residual),
-                relative_residual=np.linalg.norm(high_prediction-observed, axis=0)/np.linalg.norm(observed, axis=0))
-            if independent_reference:
-                reference_prediction = np.column_stack(reference_columns)
-                jr = normalize(np.stack(reference_jac, axis=1), observed, stage.weights, config.residual_floor)
-                reference_fields = (np.linalg.norm(reference_prediction-high_prediction, axis=0)
-                                    /np.linalg.norm(high_prediction, axis=0))
-                reference_derivative = np.linalg.norm(jr-jb, axis=0)/np.maximum(colnorm, 1e-30)
-                row.update(reference_nodes=reference_nodes, reference_refined_nodes=stage.refined_nodes,
-                           reference_field_relative=reference_fields, reference_jacobian_relative=reference_derivative)
-                row['passed'] = bool(row['passed'] and np.all(reference_fields <= stage.discrepancy_tolerances)
-                                     and np.all(reference_derivative <= 1e-3))
-            if all(o.scattered.ndim == 2 for o in problem.real):
-                paired_prediction = np.column_stack([np.diag(high_prediction[:,i].reshape(o.scattered.shape))
-                                                     for i,o in enumerate(problem.real)])
-                paired_observed = np.column_stack([np.diag(o.scattered) for o in problem.real])
-                row['paired_relative_residual'] = (np.linalg.norm(paired_prediction-paired_observed,axis=0)
-                                                  /np.linalg.norm(paired_observed,axis=0))
-    except Exception:
-        row = dict(passed=False, traceback=traceback.format_exc())
-    return dict(row, work=ledger.snapshot(), seconds=perf_counter()-started, solver=physics.name,
-                frequency_batch=batch,
-                update_modes=stage.update_modes, storage_band=curve.band,
-                production_resolution=stage.nodes, refined_resolution=stage.refined_nodes)
 
 
 def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=None, physics=None,
@@ -312,10 +177,12 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
                     next_damping=resume.stage.damping, curve=record_curve(curve),
                     remaining_operations=[operation_record(op, record_settings) for op in queue]))
             fit_started = perf_counter()-historical_seconds
+            # C12. Policy operations may insert stages; retain the live queue.
             while queue:
                 op = queue.pop(0)
                 if op.kind in ('adaptive','adaptive_bridge'):
                     op,adaptive_state=policy.resolve_adaptive(op,problem,physics,adaptive_state)
+                # Optional initialization, then explicit cleanup and stage entry.
                 if op.kind == 'localize':
                     ledger.begin_stage(op.label, None)
                     carried = None
@@ -422,6 +289,7 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
                         if result.outcome==NORMAL_RETURN and getattr(result,'committed_evaluation',None) is not None:
                             checkpoint(result.accepted_steps,result.committed_evaluation)
                     else:
+                        # A–B–C. Run one resolved stage and retain its accepted endpoint.
                         result = fit_stage(curve, op.stage, problem.contrast, update, op.optimizer, ledger,
                                            on_accept=checkpoint, physics=physics, resume=resumed_stage,
                                            resolution_response=resolution_response, entry=entry,
@@ -463,6 +331,7 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
                     save('checkpoint.json', dict(stages=stages, curve=record_curve(curve), work=ledger.snapshot()))
                     event(op, 'stage returned', outcome=result.outcome, stop=result.stop_reason,
                           final_loss=result.final_loss)
+                    # C12. Only normal return or a stage quota advances the queue.
                     if result.outcome not in (NORMAL_RETURN, STAGE_QUOTA):
                         outcome, detail = result.outcome, result.detail
                         event(op, 'hard or numerical stop; remaining stages skipped; final audit next')
@@ -474,6 +343,7 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
                         break
                 elif op.kind == 'skip':
                     event(op,'SKIPPED_IDENTICAL',work=ledger.snapshot())
+                # C12. The measured frontier determines additional policy stages.
                 elif op.kind == 'frontier':
                     ledger.begin_stage(op.label, None)
                     ledger.reserve(2)

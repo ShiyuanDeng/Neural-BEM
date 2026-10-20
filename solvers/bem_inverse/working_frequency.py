@@ -1,4 +1,5 @@
 """ON-001 subset proposal model with unchanged full production/refined acceptance."""
+from . import checks
 from dataclasses import replace
 import numpy as np
 from .continuation.lm_backend import Objective, Evaluation, normalize
@@ -42,12 +43,12 @@ class WorkingObjective(Objective):
     def _choose(self, evaluation):
         residual = self.relative_residuals(evaluation)
         wanted = set(self.indices) | set(self.anchors)
-        if residual.max() < .01:
+        if checks.working_catalog_near_solution(residual):
             wanted = set(range(self.count))
         elif self.anchor_count == 5:
             excluded = [i for i in range(self.count) if i not in self.anchors]
             wanted.update(sorted(excluded, key=lambda i: (-residual[i], i))[:2])
-        if len(wanted) > 9:
+        if checks.working_catalog_too_large(wanted):
             wanted = set(range(self.count))
         indices = tuple(sorted(wanted))
         if indices != self.indices:
@@ -96,7 +97,7 @@ class WorkingObjective(Objective):
         increase = self.relative_residuals(candidate)**2-self.relative_residuals(base)**2
         added = max(omitted, key=lambda i: (increase[i], -i))
         wanted = set(self.indices) | {added}
-        if len(wanted) > 9:
+        if checks.working_catalog_too_large(wanted):
             wanted = set(range(self.count))
         previous = self.indices
         self.indices = tuple(sorted(wanted))
@@ -118,7 +119,7 @@ class WorkingObjective(Objective):
         model_residual = self.model_residual(base)
         base_loss = .5*float(model_residual@model_residual)
         self.last_trial.update(working_base_loss=base_loss, working_candidate_loss=subset_loss)
-        if subset_loss >= base_loss:
+        if checks.working_subset_nondecreasing(subset_loss, base_loss):
             self.last_trial["working_status"] = "subset_nondecreasing"
             return None
         expanded = self._expand(selected, self.indices)
@@ -127,7 +128,7 @@ class WorkingObjective(Objective):
             return None
         self.last_trial.update(full_candidate_loss=expanded.loss,
                                maximum_full_residual=float(self.relative_residuals(expanded).max()))
-        if expanded.loss >= base.loss:
+        if checks.working_full_nondecreasing(expanded, base):
             self.last_trial["working_status"] = "full_nondecreasing"
             self.reject(base, expanded)
         return expanded

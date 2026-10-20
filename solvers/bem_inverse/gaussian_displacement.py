@@ -3,6 +3,7 @@
 The raw ambient map has a global lower Lipschitz bound. The projected stored
 curve still requires independent regularity/simplicity/refinement validation.
 """
+from . import checks
 from dataclasses import dataclass, field
 from time import perf_counter
 import numpy as np
@@ -81,7 +82,7 @@ def projection_tangent(curve, directions, band, count):
     base = moved.nodes(count)
     z, z_prime = moved.values(count), moved.values(count, 1)
     sigma = base.speeds
-    if not np.all(np.isfinite(sigma)) or np.min(sigma) <= 0:
+    if checks.irregular_projection_derivative(sigma):
         raise ValueError('Projection derivative requires a regular curve.')
     alpha, length = arclength_angles(base)
     mean = length/(2*np.pi)
@@ -102,7 +103,7 @@ def projection_tangent(curve, directions, band, count):
         k = orders[start:start+32, None]
         phase = np.exp(-1j*k*alpha)
         out[start:start+32] = (phase@dweights-1j*k*(phase@(weights[:, None]*dalpha)))/count
-    if not np.isfinite(out).all():
+    if checks.nonfinite_projection_derivative(out):
         raise ValueError('Non-finite projection derivative.')
     return out
 
@@ -148,19 +149,19 @@ class GaussianDisplacement(ProjectedUpdate):
         basis = np.column_stack((np.ones(controls), np.cos(phase), np.sin(phase)))
         prescribed = normals[:, None]*basis/self.length_unit_m
         width = self.width_factor*float(np.median(abs(np.roll(centres, -1)-centres)))
-        if not width > 0:
+        if checks.nonpositive_gaussian_width(width):
             raise UpdateRefused("gaussian_interpolation", "Nonpositive Gaussian width")
         K = kernel(centres, centres, width)
         saddle = np.zeros((controls+1, controls+1))
         saddle[:-1, :-1] = K+1e-10*np.eye(controls)
         saddle[-1, :-1] = saddle[:-1, -1] = 1.
         condition = float(np.linalg.cond(saddle))
-        if not condition <= 1e12:
+        if checks.ill_conditioned_gaussian_interpolation(condition):
             self.counts["interpolation_refusals"] += 1
             raise UpdateRefused("gaussian_interpolation", f"condition {condition:g} > 1e12")
         coefficients = lu_solve(lu_factor(saddle), np.vstack((prescribed, np.zeros((1, prescribed.shape[1])))))
         relative = np.linalg.norm(K@coefficients[:-1]+coefficients[-1]-prescribed, axis=0)/np.linalg.norm(prescribed, axis=0)
-        if max(relative) > 1e-4:
+        if checks.inaccurate_gaussian_coordinates(relative):
             self.counts["interpolation_refusals"] += 1
             raise UpdateRefused("gaussian_interpolation", f"coordinate interpolation error {max(relative):g}")
         self.counts["interpolation_seconds"] += perf_counter()-started
@@ -196,11 +197,11 @@ class GaussianDisplacement(ProjectedUpdate):
         alpha = min(1., .8/C) if C > 0 else 1.
         if C > .8:
             nonzero = abs(w) > 0
-            if np.any(~nonzero & (abs(dw) > 0)):
+            if checks.gaussian_norm_kink(nonzero, dw):
                 raise ValueError("Gaussian norm kink requires a one-sided derivative")
             gradient = np.exp(-.5)*float(np.real(np.sum(np.conj(w[nonzero])*dw[nonzero]/abs(w[nonzero]))))/space.width
             dalpha = -alpha*gradient/C
-        elif abs(C-.8) <= 1e-12:
+        elif checks.gaussian_clipping_kink(C):
             raise ValueError("Gaussian clipping kink requires one-sided checks")
         else:
             dalpha = 0.
@@ -223,7 +224,7 @@ class GaussianDisplacement(ProjectedUpdate):
             target = space.prescribed@a
             error = float(np.linalg.norm(kernel(space.centres, space.centres, space.width)@w+b-target)
                           /max(np.linalg.norm(target), np.finfo(float).tiny))
-            if error > 1e-4:
+            if checks.inaccurate_gaussian_direction(error):
                 self.counts["interpolation_refusals"] += 1
                 raise UpdateRefused("gaussian_interpolation", f"direction interpolation error {error:g}")
             C = float(np.exp(-.5)*sum(abs(w))/space.width)
@@ -244,7 +245,7 @@ class GaussianDisplacement(ProjectedUpdate):
                 moved = FourierCurve.from_samples(raw, count//2-1)
                 sampled_started = perf_counter()
                 raw_nodes = moved.nodes(count)
-                if raw_nodes.signed_area <= 0 or min(raw_nodes.speeds) < 1e-6*np.mean(raw_nodes.speeds):
+                if checks.irregular_gaussian_trial(raw_nodes):
                     raise UpdateRefused("irregular_parameterization", "Invalid Gaussian displaced curve")
                 if self_intersections(raw_nodes.points):
                     raise UpdateRefused("self_intersection", "Gaussian displaced curve self-intersects")
@@ -262,7 +263,7 @@ class GaussianDisplacement(ProjectedUpdate):
             self.last_trial.update(projection_relative=refinement/radius, projection_error=refinement,
                 raw_maximum_displacement_m=float(max(abs(raw_values[0]-space.curve.values(space.count))))*self.length_unit_m,
                 intentional_projection_mm=smoothing[0]*self.length_unit_m*1e3)
-            if refinement/radius > self.projection_tolerance:
+            if checks.unresolved_gaussian_projection(refinement, radius, self.projection_tolerance):
                 raise UpdateRefused("unresolved_projection", f"Gaussian projection grid refinement {refinement/radius:g}")
             candidate = FourierCurve(c)
             raw_curve = FourierCurve.from_samples(raw_values[0], space.count//2-1)

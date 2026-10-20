@@ -4,6 +4,7 @@ Qualification reuses the ordinary objective, LM model, clipping and trial map.
 Witness fields never supply a move above a production cap. This backend does
 not select scenes, compare research arms, or change the ordinary defaults.
 """
+from . import checks
 from contextlib import contextmanager
 from dataclasses import replace
 import hashlib
@@ -42,9 +43,8 @@ def displacement_comparison(base,lower,higher,length_unit_m,*,linear=False):
         row=dict(rms_difference_m=rms,maximum_difference_m=maximum,reference_rms_m=reference_rms,
             reference_maximum_m=reference_max,quadrature_points=count,
             displacement_definition='linear complete Cartesian tangent' if linear else 'finite centered trial displacement')
-        row['equivalent']=(rms<=max(1e-6,.01*reference_rms) and rms<=1e-5 and
-                           maximum<=max(5e-6,.01*reference_max) and maximum<=5e-5)
-        if previous is not None and abs(rms-previous[0])<=1e-7 and abs(maximum-previous[1])<=5e-7:
+        row['equivalent']=checks.displacement_equivalent(rms, maximum, reference_rms, reference_max)
+        if checks.displacement_quadrature_resolved(previous, rms, maximum):
             row['quadrature_resolved']=True
             arrays=dict(parameters=nodes.parameters,weights=weights,lower_displacement_m=low,
                         higher_displacement_m=high)
@@ -80,7 +80,7 @@ class IndependentModalMuller(ModalMuller):
 
     def select_stage(self,curve,stage,config,contrast,update,ledger):
         floor=trace_cutoff(stage.nodes)
-        if floor>self.trace_cap:
+        if checks.trace_floor_exceeds_cap(floor, self.trace_cap):
             raise ValueError('Scheduled floor exceeds the hard trace cap.')
         self.actual_cutoff=max(self.actual_cutoff,floor)
         self._frames.clear()
@@ -145,8 +145,8 @@ class IndependentModalMuller(ModalMuller):
             carried_lambda=carried,
             proposal_comparison=move,used_lambda=used,lower_cutoff=lower['cutoff'],higher_cutoff=higher['cutoff'],
             lower_workspace=lower['workspace'],higher_workspace=higher['workspace'],
-            passed=bool(np.all(fields<=lower['stage'].discrepancy_tolerances) and np.all(columns<=1e-3) and
-                gradient_error<=gradient_limit and move['equivalent']))
+            passed=checks.modal_qualification_passed(fields, lower['stage'].discrepancy_tolerances,
+                columns, gradient_error, gradient_limit, move['equivalent']))
         arrays.update(lower_J=lower['matrix'],higher_J=higher['matrix'],lower_r=a.residual,higher_r=b.residual,
             base_coefficients=a.curve.coefficients,
             field_denominators=np.linalg.norm(b.prediction,axis=0),

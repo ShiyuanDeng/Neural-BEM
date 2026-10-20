@@ -2,6 +2,7 @@
 from dataclasses import replace
 from time import perf_counter
 import numpy as np
+from . import checks
 from .continuation.lm_backend import normalize, NumericalFailure
 
 
@@ -46,8 +47,7 @@ def select_stage(physics, curve, stage, config, contrast, update, ledger):
         ja = normalize(np.stack(low_jac, axis=1), observed, stage.weights, config.residual_floor)
         jb = normalize(np.stack(high_jac, axis=1), observed, stage.weights, config.residual_floor)
         derivatives = np.linalg.norm(ja-jb, axis=0)/np.maximum(np.linalg.norm(jb, axis=0), 1e-30)
-        passed = bool(np.all(np.isfinite(fields)) and np.all(np.isfinite(derivatives)) and
-                      np.all(fields <= stage.discrepancy_tolerances) and np.all(derivatives <= 1e-3))
+        passed = checks.nodal_profile_passed(fields, derivatives, stage.discrepancy_tolerances)
         attempts.append(dict(nodes=nodes, refined_nodes=finer, field_relative=fields,
                              jacobian_relative=derivatives, passed=passed))
         if passed:

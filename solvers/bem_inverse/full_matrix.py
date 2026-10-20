@@ -8,6 +8,7 @@ only a positive curvature approximation; it never supplies the gradient.
 Every accepted trial uses the exact reduced loss at both resolutions.
 No truth enters this module.
 """
+from . import checks
 from dataclasses import dataclass, fields, replace
 import numpy as np
 
@@ -19,17 +20,17 @@ from .policy import CumulativePolicy
 
 def receiver_weights(h, rows, tau, *, paired=False):
     """Compute the positive Hermitian square root from H=A^{-H}C^H."""
-    if not np.isfinite(tau) or tau <= 0:
+    if checks.invalid_relaxation_tau(tau):
         raise ValueError('Relaxation tau must be finite and positive, or None for the ordinary objective.')
     h, rows = np.asarray(h), np.asarray(rows)
     lam = float(tau*np.median(np.sum(abs(rows)**2, axis=1)))
-    if not np.isfinite(lam) or lam <= 0 or not np.isfinite(h).all():
+    if checks.invalid_relaxation_scale(lam, h):
         raise FloatingPointError('Nonpositive/nonfinite receiver relaxation scale')
     if paired:
         return np.sqrt(lam/(np.sum(abs(h)**2, axis=0)+lam))
     gram = h.conj().T@h
     values, vectors = np.linalg.eigh((gram+gram.conj().T)/2)
-    if values.min() < -1e-12*max(float(values.max()), np.finfo(float).tiny):
+    if checks.indefinite_receiver_gram(values):
         raise FloatingPointError('Receiver Gram matrix is not positive semidefinite')
     return (vectors*np.sqrt(lam/(np.maximum(values, 0)+lam)))@vectors.conj().T
 
@@ -50,7 +51,7 @@ class RelaxedStage(FitStage):
 
     def __post_init__(self):
         super().__post_init__()
-        if self.relaxed_tau is not None and (not np.isfinite(self.relaxed_tau) or self.relaxed_tau <= 0):
+        if checks.invalid_optional_relaxation_tau(self.relaxed_tau):
             raise ValueError('Relaxation tau must be finite and positive, or None.')
 
     @classmethod
