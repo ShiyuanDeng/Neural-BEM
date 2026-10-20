@@ -21,6 +21,7 @@ experiments, their results and their docs. They remain on
 | `pytest/` | Tests for the kept packages |
 | `results/validation/cleaned_interfaces/TG-002/` | Sealed benchmark inputs |
 | [`results/validation/cleaned_interfaces/PC-001/`](results/validation/cleaned_interfaces/PC-001/README.md) `M1/` | Reference run of the default method: 26/30 recovered |
+| [`docs/evidence.md`](docs/evidence.md) | Why each part of the pipeline was chosen, with the supporting numbers |
 | [`docs/reference/`](docs/README.md) | A1–C12 code map, modal coefficient derivation, node-free scope, Kress guide |
 
 The kept code is every file the benchmark CLI imports, found by tracing imports from

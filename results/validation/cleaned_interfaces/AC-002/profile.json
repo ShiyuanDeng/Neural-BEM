@@ -1,0 +1,385 @@
+{
+  "study": "AC-002",
+  "scene": "TG-002 c_shape",
+  "contrast": 13.3,
+  "frequency_hz": 2500000000.0,
+  "trace_cutoff": 96,
+  "coefficient_window": 160,
+  "threads": 1,
+  "repetitions": 3,
+  "python": "3.9.25",
+  "numpy": "2.0.2",
+  "torch": "2.8.0+cu128",
+  "gpu": "NVIDIA GeForce RTX 5090",
+  "source_sha256": {
+    "/home/drdeng/Neural_SDF_BEM_AD/experiments/benchmark/radial_forward_profile.py": "471bdc5f890f06b232ce6018581ec1a3f7ea4ed4346afff735d02e194753b44c",
+    "/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/modal_muller.py": "b9d766b32a1f54e8543f9cd9e9d3ddaf53cbf6ee8c0aa5b36bd40f2d8421bbd8",
+    "/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/modal_operator.py": "a57c57107dcb482323f4ca1ee72a90bc0fa11a9a283e11afb3d06b8f8a938e7b",
+    "/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/modal_geometry.py": "c0647d469496ca3199b40439769338c7957c57da93bb84bc8fa58e12fc192cd8",
+    "/home/drdeng/Neural_SDF_BEM_AD/solvers/bem_inverse/modal_cuda.py": "039c878cac6cb80a5d5204d9ba7acfe485b3e8a5bcf9e07258072cb749827b2b"
+  },
+  "timing_scope": "Exclusive instrumented wall time; CUDA boundary synchronization; initialization excluded",
+  "rows": [
+    {
+      "device": "cpu",
+      "cache": "fresh",
+      "repetition": 0,
+      "total_seconds": 0.38184938160702586,
+      "exclusive_seconds": {
+        "radial_chebyshev_setup": 0.002565809991210699,
+        "log_chebyshev_and_certificate": 0.21226132521405816,
+        "geometry": 0.004534633830189705,
+        "scalar_analytic_coefficients": 0.002890144009143114,
+        "radial_chebyshev_extension": 0.08600343810394406,
+        "radial_coefficient_contraction": 0.009961178991943598,
+        "assembly": 0.052653269842267036,
+        "waves": 0.007185942959040403,
+        "factorization": 0.0026608342304825783,
+        "fields": 0.001053225714713335,
+        "overhead": 7.957872003316879e-05
+      },
+      "field_relative_difference": 0.0,
+      "radial_degree": 62,
+      "log_degree": 147
+    },
+    {
+      "device": "cpu",
+      "cache": "reused",
+      "repetition": 0,
+      "total_seconds": 0.06854181690141559,
+      "exclusive_seconds": {
+        "scalar_analytic_coefficients": 0.0029082060791552067,
+        "radial_chebyshev_extension": 2.8070062398910522e-06,
+        "radial_coefficient_contraction": 0.009446059819310904,
+        "assembly": 0.04875760618597269,
+        "waves": 0.0030120378360152245,
+        "factorization": 0.002655389718711376,
+        "fields": 0.0010576527565717697,
+        "overhead": 0.0007020574994385242
+      },
+      "field_relative_difference": 0.0,
+      "radial_degree": 62,
+      "log_degree": 147
+    },
+    {
+      "device": "cpu",
+      "cache": "fresh",
+      "repetition": 1,
+      "total_seconds": 0.38445110619068146,
+      "exclusive_seconds": {
+        "radial_chebyshev_setup": 0.0034751719795167446,
+        "log_chebyshev_and_certificate": 0.21264678705483675,
+        "geometry": 0.004439506679773331,
+        "scalar_analytic_coefficients": 0.0029545556753873825,
+        "radial_chebyshev_extension": 0.089593973942101,
+        "radial_coefficient_contraction": 0.010213020257651806,
+        "assembly": 0.05012853676453233,
+        "waves": 0.007198547013103962,
+        "factorization": 0.0026663998141884804,
+        "fields": 0.001051116269081831,
+        "overhead": 8.349074050784111e-05
+      },
+      "field_relative_difference": 0.0,
+      "radial_degree": 62,
+      "log_degree": 147
+    },
+    {
+      "device": "cpu",
+      "cache": "reused",
+      "repetition": 1,
+      "total_seconds": 0.06699545821174979,
+      "exclusive_seconds": {
+        "scalar_analytic_coefficients": 0.002914121840149164,
+        "radial_chebyshev_extension": 2.411194145679474e-06,
+        "radial_coefficient_contraction": 0.009523382876068354,
+        "assembly": 0.0477517731487751,
+        "waves": 0.0029710298404097557,
+        "factorization": 0.002667662687599659,
+        "fields": 0.0010872497223317623,
+        "overhead": 7.782690227031708e-05
+      },
+      "field_relative_difference": 0.0,
+      "radial_degree": 62,
+      "log_degree": 147
+    },
+    {
+      "device": "cpu",
+      "cache": "fresh",
+      "repetition": 2,
+      "total_seconds": 0.380232494790107,
+      "exclusive_seconds": {
+        "radial_chebyshev_setup": 0.0030596088618040085,
+        "log_chebyshev_and_certificate": 0.20909396326169372,
+        "geometry": 0.0042669218964874744,
+        "scalar_analytic_coefficients": 0.0029124142602086067,
+        "radial_chebyshev_extension": 0.08678257279098034,
+        "radial_coefficient_contraction": 0.010346248280256987,
+        "assembly": 0.052830236963927746,
+        "waves": 0.007169070187956095,
+        "factorization": 0.0026489999145269394,
+        "fields": 0.001039343886077404,
+        "overhead": 8.311448618769646e-05
+      },
+      "field_relative_difference": 0.0,
+      "radial_degree": 62,
+      "log_degree": 147
+    },
+    {
+      "device": "cpu",
+      "cache": "reused",
+      "repetition": 2,
+      "total_seconds": 0.06576410494744778,
+      "exclusive_seconds": {
+        "scalar_analytic_coefficients": 0.0028687180019915104,
+        "radial_chebyshev_extension": 2.6528723537921906e-06,
+        "radial_coefficient_contraction": 0.009547492023557425,
+        "assembly": 0.04638005746528506,
+        "waves": 0.003188083879649639,
+        "factorization": 0.002663652878254652,
+        "fields": 0.0010384111665189266,
+        "overhead": 7.50366598367691e-05
+      },
+      "field_relative_difference": 0.0,
+      "radial_degree": 62,
+      "log_degree": 147
+    },
+    {
+      "device": "cuda",
+      "cache": "fresh",
+      "repetition": 0,
+      "total_seconds": 0.048799706157296896,
+      "exclusive_seconds": {
+        "radial_chebyshev_setup": 0.0005733342841267586,
+        "log_chebyshev_and_certificate": 0.022480225190520287,
+        "geometry": 0.0010487637482583523,
+        "scalar_analytic_coefficients": 0.0030385879799723625,
+        "radial_chebyshev_extension": 0.00856929924339056,
+        "radial_coefficient_contraction": 0.0006420458666980267,
+        "assembly": 0.0015693139284849167,
+        "waves": 0.007042406126856804,
+        "factorization": 0.0026881680823862553,
+        "fields": 0.00104624405503273,
+        "overhead": 0.00010131765156984329
+      },
+      "field_relative_difference": 0.0,
+      "radial_degree": 62,
+      "log_degree": 147
+    },
+    {
+      "device": "cuda",
+      "cache": "reused",
+      "repetition": 0,
+      "total_seconds": 0.012881889007985592,
+      "exclusive_seconds": {
+        "scalar_analytic_coefficients": 0.0028327773325145245,
+        "radial_chebyshev_extension": 2.356618642807007e-05,
+        "radial_coefficient_contraction": 0.0006483830511569977,
+        "assembly": 0.001571599394083023,
+        "waves": 0.002755132969468832,
+        "factorization": 0.003846599720418453,
+        "fields": 0.0010995417833328247,
+        "overhead": 0.00010428857058286667
+      },
+      "field_relative_difference": 0.0,
+      "radial_degree": 62,
+      "log_degree": 147
+    },
+    {
+      "device": "cuda",
+      "cache": "fresh",
+      "repetition": 1,
+      "total_seconds": 0.04823835100978613,
+      "exclusive_seconds": {
+        "radial_chebyshev_setup": 0.0003226860426366329,
+        "log_chebyshev_and_certificate": 0.022467143833637238,
+        "geometry": 0.0010018497705459595,
+        "scalar_analytic_coefficients": 0.002955554984509945,
+        "radial_chebyshev_extension": 0.008429410867393017,
+        "radial_coefficient_contraction": 0.0006304052658379078,
+        "assembly": 0.0014826948754489422,
+        "waves": 0.007082745898514986,
+        "factorization": 0.0027225911617279053,
+        "fields": 0.001045621931552887,
+        "overhead": 9.764637798070908e-05
+      },
+      "field_relative_difference": 0.0,
+      "radial_degree": 62,
+      "log_degree": 147
+    },
+    {
+      "device": "cuda",
+      "cache": "reused",
+      "repetition": 1,
+      "total_seconds": 0.011447963304817677,
+      "exclusive_seconds": {
+        "scalar_analytic_coefficients": 0.0028273961506783962,
+        "radial_chebyshev_extension": 2.506515011191368e-05,
+        "radial_coefficient_contraction": 0.0006522131152451038,
+        "assembly": 0.001492006704211235,
+        "waves": 0.0027506649494171143,
+        "factorization": 0.002588369883596897,
+        "fields": 0.0010327883064746857,
+        "overhead": 7.94590450823307e-05
+      },
+      "field_relative_difference": 0.0,
+      "radial_degree": 62,
+      "log_degree": 147
+    },
+    {
+      "device": "cuda",
+      "cache": "fresh",
+      "repetition": 2,
+      "total_seconds": 0.048013724852353334,
+      "exclusive_seconds": {
+        "radial_chebyshev_setup": 0.0003064032644033432,
+        "log_chebyshev_and_certificate": 0.022489864844828844,
+        "geometry": 0.0009260089136660099,
+        "scalar_analytic_coefficients": 0.0028573148883879185,
+        "radial_chebyshev_extension": 0.008430244401097298,
+        "radial_coefficient_contraction": 0.0006242324598133564,
+        "assembly": 0.0014855582267045975,
+        "waves": 0.006991424132138491,
+        "factorization": 0.0027100490406155586,
+        "fields": 0.0010917219333350658,
+        "overhead": 0.0001009027473628521
+      },
+      "field_relative_difference": 0.0,
+      "radial_degree": 62,
+      "log_degree": 147
+    },
+    {
+      "device": "cuda",
+      "cache": "reused",
+      "repetition": 2,
+      "total_seconds": 0.011620794888585806,
+      "exclusive_seconds": {
+        "scalar_analytic_coefficients": 0.002853007987141609,
+        "radial_chebyshev_extension": 2.9404647648334503e-05,
+        "radial_coefficient_contraction": 0.0006715105846524239,
+        "assembly": 0.0015114359557628632,
+        "waves": 0.002851959317922592,
+        "factorization": 0.0025989003479480743,
+        "fields": 0.0010243849828839302,
+        "overhead": 8.019106462597847e-05
+      },
+      "field_relative_difference": 0.0,
+      "radial_degree": 62,
+      "log_degree": 147
+    }
+  ],
+  "summaries": [
+    {
+      "device": "cpu",
+      "cache": "fresh",
+      "mean_seconds": 0.3821776608626048,
+      "mean_stage_seconds": {
+        "assembly": 0.05187068119024237,
+        "factorization": 0.0026587446530659995,
+        "fields": 0.0010478952899575233,
+        "geometry": 0.004413687468816836,
+        "log_chebyshev_and_certificate": 0.21133402517686287,
+        "overhead": 8.206131557623546e-05,
+        "radial_chebyshev_extension": 0.08745999494567513,
+        "radial_chebyshev_setup": 0.003033530277510484,
+        "radial_coefficient_contraction": 0.010173482509950796,
+        "scalar_analytic_coefficients": 0.002919037981579701,
+        "waves": 0.00718452005336682
+      },
+      "percent": {
+        "assembly": 13.572400090880821,
+        "factorization": 0.6956829049256844,
+        "fields": 0.2741906179425406,
+        "geometry": 1.1548784559659504,
+        "log_chebyshev_and_certificate": 55.29732551606117,
+        "overhead": 0.02147203355398028,
+        "radial_chebyshev_extension": 22.88464342690023,
+        "radial_chebyshev_setup": 0.7937487164120398,
+        "radial_coefficient_contraction": 2.6619772822379137,
+        "scalar_analytic_coefficients": 0.7637908440255783,
+        "waves": 1.879890111094091
+      }
+    },
+    {
+      "device": "cpu",
+      "cache": "reused",
+      "mean_seconds": 0.06710046002020438,
+      "mean_stage_seconds": {
+        "assembly": 0.04762981226667762,
+        "factorization": 0.002662235094855229,
+        "fields": 0.0010611045484741528,
+        "overhead": 0.00028497368718187016,
+        "radial_chebyshev_extension": 2.6236909131209054e-06,
+        "radial_coefficient_contraction": 0.009505644906312227,
+        "scalar_analytic_coefficients": 0.002897015307098627,
+        "waves": 0.0030570505186915398
+      },
+      "percent": {
+        "assembly": 70.98284013602287,
+        "factorization": 3.9675362792648707,
+        "fields": 1.581367025136113,
+        "overhead": 0.4246970692839702,
+        "radial_chebyshev_extension": 0.00391009377928392,
+        "radial_coefficient_contraction": 14.166288731031077,
+        "scalar_analytic_coefficients": 4.317429874886576,
+        "waves": 4.555930790595239
+      }
+    },
+    {
+      "device": "cuda",
+      "cache": "fresh",
+      "mean_seconds": 0.048350594006478786,
+      "mean_stage_seconds": {
+        "assembly": 0.0015125223435461521,
+        "factorization": 0.0027069360949099064,
+        "fields": 0.0010611959733068943,
+        "geometry": 0.0009922074774901073,
+        "log_chebyshev_and_certificate": 0.02247907795632879,
+        "overhead": 9.995559230446815e-05,
+        "radial_chebyshev_extension": 0.008476318170626959,
+        "radial_chebyshev_setup": 0.0004008078637222449,
+        "radial_coefficient_contraction": 0.0006322278641164303,
+        "scalar_analytic_coefficients": 0.002950485950956742,
+        "waves": 0.0070388587191700935
+      },
+      "percent": {
+        "assembly": 3.128239424201242,
+        "factorization": 5.598558095371461,
+        "fields": 2.1947940767070997,
+        "geometry": 2.0521102126628588,
+        "log_chebyshev_and_certificate": 46.491834109249375,
+        "overhead": 0.2067308465560413,
+        "radial_chebyshev_extension": 17.530949401554746,
+        "radial_chebyshev_setup": 0.8289616124851295,
+        "radial_coefficient_contraction": 1.307590686541957,
+        "scalar_analytic_coefficients": 6.102274463394159,
+        "waves": 14.557957071275927
+      }
+    },
+    {
+      "device": "cuda",
+      "cache": "reused",
+      "mean_seconds": 0.011983549067129692,
+      "mean_stage_seconds": {
+        "assembly": 0.0015250140180190404,
+        "factorization": 0.0030112899839878082,
+        "fields": 0.0010522383575638135,
+        "overhead": 8.797956009705861e-05,
+        "radial_chebyshev_extension": 2.601199472943942e-05,
+        "radial_coefficient_contraction": 0.0006573689170181751,
+        "scalar_analytic_coefficients": 0.0028377271567781768,
+        "waves": 0.0027859190789361796
+      },
+      "percent": {
+        "assembly": 12.725896222197495,
+        "factorization": 25.128532182904266,
+        "fields": 8.780690525564363,
+        "overhead": 0.7341694818806425,
+        "radial_chebyshev_extension": 0.21706419845844407,
+        "radial_coefficient_contraction": 5.485594570821319,
+        "scalar_analytic_coefficients": 23.680189740799978,
+        "waves": 23.247863077373495
+      }
+    }
+  ],
+  "passed": true
+}

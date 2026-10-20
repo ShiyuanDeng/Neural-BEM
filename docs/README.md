@@ -1,5 +1,7 @@
 # Docs
 
+- [`evidence.md`](evidence.md): why the pipeline looks the way it does. Each tested
+  choice, its numbers, the four unrecovered cases and what is still unknown.
 - [`reference/inverse_information_chain.md`](reference/inverse_information_chain.md):
   the A1–C12 information chain and the code that implements each step.
 - [`reference/modal_radial_coefficients.md`](reference/modal_radial_coefficients.md):
@@ -14,5 +16,6 @@
 - [`iterations/cleaned_interfaces/iteration_27/03_plan.md`](iterations/cleaned_interfaces/iteration_27/03_plan.md):
   the plan behind the kept PC-001 reference run.
 
-Earlier experiment history, pipeline guides and reports remain on
-`feature/shape-frequency-continuation`. Some links in the kept files point there.
+The dated iteration logs were removed; `evidence.md` keeps their conclusions and
+numbers. The full logs remain on `feature/shape-frequency-continuation`. Some links in
+the kept files point there.
