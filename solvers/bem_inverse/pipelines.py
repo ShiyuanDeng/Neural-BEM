@@ -8,9 +8,9 @@ pipeline sees the same stages and data.
 | Name | Physics | Geometry update | Unresolved trial |
 |---|---|---|---|
 | ``nodal_baseline`` | nodal Kress | spline (CI-001) | hard stop (CI-001) |
-| ``nodal_fixed`` | nodal Kress | certified spectral (NU-003/005/006/007a) | promote once to N1024/2048 (RB-001) |
-| ``modal_fixed`` | modal Müller (scaled Graf, finer profile) | certified spectral | hard stop |
-| ``modal_response`` | modal Müller | certified spectral | promote once to K_trace 128/160 (opt-in, PS-001) |
+| ``nodal_fixed`` | nodal Kress | sampled spectral (batched preparation) | promote once to N1024/2048 (RB-001) |
+| ``modal_fixed`` | modal Müller (scaled Graf, finer profile) | sampled spectral | hard stop |
+| ``modal_response`` | modal Müller | sampled spectral | promote once to K_trace 128/160 (opt-in, PS-001) |
 
 The nodal response (RB-001) is qualified. Modal resolutions are tokens 8*K_trace,
 and a modal stage's own profile follows its storage band; ``modal_response``
@@ -53,11 +53,11 @@ class Pipeline:
 PIPELINES = {p.name: p for p in (
     Pipeline('nodal_baseline', 'nodal_kress', 'spline', None,
              'CI-001 baseline: nodal Kress, spline projected update, hard stop on an unresolved trial'),
-    Pipeline('nodal_fixed', 'nodal_kress', 'certified_spectral', (1024, 2048),
-             'Nodal Kress with every applicable fix: certified spectral update, RB-001 resolution response'),
-    Pipeline('modal_fixed', 'modal_muller', 'certified_spectral', None,
-             'Node-free: modal Müller physics, certified spectral update; hard stop on an unresolved trial'),
-    Pipeline('modal_response', 'modal_muller', 'certified_spectral', (1024, 1280),
+    Pipeline('nodal_fixed', 'nodal_kress', 'spectral', (1024, 2048),
+             'Nodal Kress with sampled spectral update and RB-001 resolution response'),
+    Pipeline('modal_fixed', 'modal_muller', 'spectral', None,
+             'Node-free: modal Müller physics, sampled spectral update; hard stop on an unresolved trial'),
+    Pipeline('modal_response', 'modal_muller', 'spectral', (1024, 1280),
              'modal_fixed with one promotion of an unresolved trial to K_trace 128/160 (the K_geometry=192 '
              'profile); unresolved trials at that ceiling are rejected, not fatal'),
 )}

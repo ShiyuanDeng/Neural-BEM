@@ -23,6 +23,37 @@ def grid_size(band):
     return 2 ** int(np.ceil(np.log2(max(1024, 16 * (2 * band + 1)))))
 
 
+def values(coefficients, count):
+    """Evaluate centred Fourier coefficients, including columns of derivatives."""
+    band = len(coefficients)//2
+    spectrum = np.zeros((count,) + coefficients.shape[1:], complex)
+    spectrum[np.arange(-band, band+1) % count] = coefficients
+    return np.fft.ifft(spectrum, axis=0)*count
+
+
+def signed_area(coefficients):
+    """Signed area of the continuous Fourier curve, computed from coefficients."""
+    modes = np.arange(-(len(coefficients)//2), len(coefficients)//2+1)
+    return float(np.pi*np.sum(modes*np.abs(coefficients)**2))
+
+
+def speed_ratio(curve):
+    speeds = curve.nodes(grid_size(curve.band)).speeds
+    return float(np.max(speeds)/np.min(speeds))
+
+
+def resize(curve, band):
+    """Exact centred coefficient crop/pad, without arclength refitting."""
+    if band < curve.band:
+        return FourierCurve(curve.coefficients[curve.band-band:curve.band+band+1])
+    return FourierCurve(np.pad(curve.coefficients, (band-curve.band,)*2))
+
+
+def cleanup(curve, retained_band=64, storage_band=192):
+    """Crop Cartesian coefficients, then zero-pad; invoked by the policy."""
+    return resize(resize(curve, retained_band), storage_band)
+
+
 @dataclass(frozen=True)
 class FourierCurve:
     """Physical complex coefficients ordered -K,...,K; no conjugacy constraint."""

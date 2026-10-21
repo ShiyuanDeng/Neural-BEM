@@ -1,33 +1,35 @@
 """Explicit geometry selection without process-global experiment substitution."""
-GEOMETRY_UPDATES = ('spline', 'spectral', 'certified_spectral', 'analytic_spectral', 'gaussian_lipschitz')
+GEOMETRY_UPDATES = ('spline', 'spectral', 'certified_spectral', 'analytic_spectral', 'gaussian_lipschitz', 'similarity')
 
 
 def make_update(name, length_unit_m, execution, *, default=None):
     if name is None and default is not None:
         return default(length_unit_m)  # preserve existing experiment wrappers
     if name == 'spline' or name is None:
-        from .geometry import ProjectedUpdate
+        from .geometry_update_methods.spline import ProjectedUpdate
         return ProjectedUpdate(length_unit_m)
     if name == 'spectral':
-        from .c10_geometry_trial import SpectralProjectedUpdate
-        return SpectralProjectedUpdate(length_unit_m)
+        from .geometry_update_methods.spectral import SpectralProjectedUpdate
+        return SpectralProjectedUpdate(length_unit_m,
+                                       device=None if execution.device == 'auto' else execution.device,
+                                       batched=True)
     if name == 'certified_spectral':
-        from .b6_geometry_derivatives import BatchedCertifiedUpdate
+        from .geometry_update_methods.certified_spectral import BatchedCertifiedUpdate
         order = getattr(execution, 'validity_order', 'certificate_first')
         update = BatchedCertifiedUpdate(length_unit_m, device=None if execution.device == 'auto' else execution.device,
                                         order=order)
         if update.device == 'cuda':
-            from .device_certified import DeviceCertifiedUpdate
+            from .geometry_update_methods.certified_spectral import DeviceCertifiedUpdate
             return DeviceCertifiedUpdate(length_unit_m, device=update.device, order=order)
         return update
     if name == 'gaussian_lipschitz':
-        from .gaussian_displacement import GaussianDisplacement
+        from .geometry_update_methods.gaussian_lipschitz import GaussianDisplacement
         return GaussianDisplacement(length_unit_m, device=None if execution.device == 'auto' else execution.device)
     if name == 'analytic_spectral':
-        from .analytic_projection import AnalyticSpectralUpdate
+        from .geometry_update_methods.analytic_spectral import AnalyticSpectralUpdate
         return AnalyticSpectralUpdate(length_unit_m)
     if name == 'similarity':
-        from .similarity import SimilarityUpdate
+        from .geometry_update_methods.similarity import SimilarityUpdate
         return SimilarityUpdate(length_unit_m)
     raise ValueError(f'Unknown geometry update {name!r}; choose from {GEOMETRY_UPDATES}.')
 

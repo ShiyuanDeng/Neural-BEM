@@ -8,12 +8,17 @@ is a source-tree package following the repository's `solvers/` convention.
 
 ## Reading the implementation
 
-Use the [A1–C12 code map](../../docs/reference/inverse_information_chain.md):
-`runner.fit()` → `fit_stage.fit_stage()` → `a1_geometry.py` through
-`c12_iteration.py`. The actual retry loops stay in `fit_stage.py`; numerical
-conditions are grouped in `checks.py`. `endpoint.py` owns independent endpoint
-calculations, `objective.py` owns dispatch/caches, and `work.py` owns charging.
-Old import paths remain compatible and call this implementation.
+Use the [inverse information chain](../../docs/reference/inverse_information_chain.md):
+`runner.fit()` → `fit_stage.fit_stage()` → the selected mathematical module.
+The retry loops stay in `fit_stage.py`; numerical conditions live in `checks.py`.
+
+Each file in `geometry_update_methods/` owns its preparation, stored data,
+measurements and `geometry_update()` entry point, without update-class
+inheritance. Ordinary curve operations live in `continuation/geometry.py`.
+
+`endpoint.py` owns independent endpoint calculations, `objective.py` owns
+dispatch/caches, and `work.py` owns charging. Old geometry paths retain
+compatibility exports and call these implementations.
 
 ## API
 
@@ -45,9 +50,9 @@ has an opt-in implementation, `bem_inverse.continuation_policy.ShapeFrequencyPol
 exact translation/scaling initialization at damped 0.25 GHz, the preserved
 frequency ladder and M/K progression, four full-catalog stages with
 (M,K_geometry)=(11,24)/(15,32)/(19,40)/(25,52), then full release at (95,192).
-Use it with `geometry_update="certified_spectral"`; stage-local similarity
-affects the initial fit only, and independent audits retain the selected
-ordinary geometry update. The default `CumulativePolicy` remains unchanged.
+The recorded CS-001 comparison used `geometry_update="certified_spectral"`;
+stage-local similarity affects the initial fit only, and independent endpoint
+checks retain the selected ordinary geometry update. The default `CumulativePolicy` remains unchanged.
 The bounded paired TG-002 [CS-001 validation](../../docs/iterations/CI-SPD/CS-001_results.md)
 recovered 4/8 versus 5/8 for the current-policy control: 1.499x median
 speedup on four retained successes, but a C-shape recovery regression.
@@ -60,7 +65,7 @@ To select modal physics explicitly:
 ```python
 from bem_inverse.modal_muller import register
 register()
-result = fit(problem, solver="modal_muller", geometry_update="certified_spectral")
+result = fit(problem, solver="modal_muller", geometry_update="spectral")
 ```
 
 To select a complete named recipe instead of individual slots:
@@ -73,18 +78,32 @@ result = pipelines.fit(problem, "modal_fixed", execution=Execution(device="auto"
 | Pipeline | Physics | Geometry update | Unresolved trial |
 |---|---|---|---|
 | `nodal_baseline` | `nodal_kress` | `spline` | hard stop (CI-001) |
-| `nodal_fixed` | `nodal_kress` | `certified_spectral` | one promotion to N1024/2048 (`ResolutionResponse`) |
-| `modal_fixed` | `modal_muller` | `certified_spectral` | hard stop; optional `modal_response` is a separate recipe |
-| `modal_response` | `modal_muller` | `certified_spectral` | optional promotion to trace cutoffs 128/160 |
+| `nodal_fixed` | `nodal_kress` | `spectral` | one promotion to N1024/2048 (`ResolutionResponse`) |
+| `modal_fixed` | `modal_muller` | `spectral` | hard stop; optional `modal_response` is a separate recipe |
+| `modal_response` | `modal_muller` | `spectral` | optional promotion to trace cutoffs 128/160 |
 
 A pipeline only fills `fit`'s physics, geometry-update and resolution slots; policy, start
 and localization stay with the caller. Results gain `pipeline` and `resolution_promoted`.
 
-Calling `fit` without a pipeline keeps the legacy default: `nodal_kress` with the spline projected update. Supported
-explicit geometry names are `spline`, `spectral`, `certified_spectral`,
-`analytic_spectral`, and `gaussian_lipschitz`; the last two are experimental
-and the Gaussian map failed ON-001 curved-state qualification. Device selection and physics
-selection remain independent. See the
+The maintained named pipelines and TG-002 now use sampled spectral geometry
+with batched preparation. Each moved curve and final candidate must pass direct
+area, minimum-speed and sampled-intersection checks.
+
+Removing certificates changes which trials are accepted: sampled checks are
+decisive and do not establish continuous-curve simplicity. This refactor includes
+no new inverse experiment and establishes no runtime improvement.
+
+`certified_spectral` remains an explicit optional method with the previous
+certificate decisions. Historical reference selections and results keep that
+meaning; certificate-order settings affect only this optional method.
+
+Calling bare `fit()` keeps `nodal_kress` with the spline projected update.
+Supported geometry names are `spline`, `spectral`, `certified_spectral`,
+`analytic_spectral`, `gaussian_lipschitz`, and `similarity`.
+
+Analytic spectral and Gaussian updates remain experimental; the Gaussian map
+failed ON-001 curved-state qualification. Device and physics selection remain
+independent. See the
 [campaign guide](../../experiments/cleaned_interface/README.md) for numerical
 limits, execution semantics, and the recorded evidence.
 
@@ -105,7 +124,8 @@ reach clipping and subset proposals closed screen-negative. The experimental
 `gaussian_lipschitz` geometry selector retains its complete discrete tangent
 and one-time ambient scaling, but failed ON-001 curved-state finite-trial
 qualification under the unchanged endpoint gate. It is not a qualified
-replacement for `certified_spectral`. No recipe default was changed.
+replacement for the `certified_spectral` method used in that experiment.
+ON-001 itself changed no recipe default.
 
 ## CI-SPD feedback and exact reuse (DP-001)
 

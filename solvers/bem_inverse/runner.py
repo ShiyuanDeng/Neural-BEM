@@ -11,7 +11,8 @@ import numpy as np
 from bem_inverse.continuation.geometry_runtime import geometry_runtime, geometry_validated
 from .fit_stage import (
     Ledger, Objective, Stop, fit_stage, NORMAL_RETURN, STAGE_QUOTA)
-from .geometry import ProjectedUpdate, resize, cleanup
+from .continuation.geometry import resize, cleanup
+from .geometry_update_methods.spline import ProjectedUpdate
 from .geometry_selection import make_update, describe_plan, operation_record
 from .io import write, curve_record
 from .localization import localize

@@ -13,6 +13,7 @@ import traceback
 import numpy as np
 from .continuation.geometry_runtime import geometry_validated
 from .work import Ledger
+from .geometry_update_methods import bind_geometry_update
 from . import checks
 
 @contextmanager
@@ -39,6 +40,7 @@ def deadline(seconds):
 @geometry_validated
 def audit(curve, stage, config, problem, physics, update, seconds):
     """SC-042 numerical gates, recomputed via the selected backend on all real data."""
+    geometry_update = bind_geometry_update(update)
     count = len(problem.real)
     stage = replace(stage, observations=problem.real, weights=tuple(np.ones(count)/count),
                     curve_modes=curve.band,
@@ -113,7 +115,7 @@ def audit(curve, stage, config, problem, physics, update, seconds):
             direction /= np.linalg.norm(direction)
             residuals = []
             for sign in (1, -1):
-                candidate = update.trial(space, sign*1e-7*direction)[0]
+                candidate = geometry_update(curve, sign*1e-7*direction, prepared=space)[0]
                 predictions = []
                 def finite_difference(observation):
                     state = evaluate(candidate, observation, stage.refined_nodes, 'audit_fd')

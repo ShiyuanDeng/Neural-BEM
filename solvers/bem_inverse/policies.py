@@ -99,7 +99,7 @@ EVIDENCE = dict(
     PS001='docs/iterations/CI-SPD/PS-001_plan.md')
 
 POLICIES = {p.name: p for p in (
-    Policy('baseline', None, 'CumulativePolicy defaults with modal Müller and certified spectral geometry',
+    Policy('baseline', None, 'CumulativePolicy defaults with modal Müller and sampled spectral geometry',
            'default', schedule='cumulative', pipeline='modal_fixed', evidence=EVIDENCE['ON001'],
            targets='reference recipe (ON-001 B, PC-001 M1)'),
     Policy('accuracy_exit', 'baseline', 'Stop at an accepted full-catalog state with maximum residual <= 0.003 '
@@ -121,15 +121,15 @@ POLICIES = {p.name: p for p in (
     Policy('working_frequencies', 'accuracy_exit', 'Propose steps from five anchors plus two residual-selected '
            'frequencies; accept on the full catalog', 'rejected', options=(('working_anchors', 5),),
            evidence=EVIDENCE['ON001'], targets='per-step physics cost (ON-001 EW)'),
-    Policy('validity_first', 'feedback', 'Run the sampled validity test before the full |W|^2 certificate; '
-           'the certificate only overturns a sampled refusal', 'candidate',
+    Policy('validity_first', 'feedback', 'Retain sampled-first order for optional certified geometry; '
+           'ordinary spectral geometry already uses sampled checks', 'candidate',
            execution=(('validity_order', 'sampled_first'),), exact=True, evidence=EVIDENCE['PS001'],
            targets='inconclusive full certificates on complex curves (aphex: 30 of 49 fit seconds)'),
     Policy('entry_reuse', 'feedback', "Carry each stage's evaluated endpoint into the next stage when curve, "
            'catalog and resolution are unchanged', 'candidate', execution=(('stage_entry_reuse', True),),
            exact=True, evidence=EVIDENCE['PS001'],
            targets='repeated production and refined solves at every K192 stage entry'),
-    Policy('exact_fast', 'validity_first', 'Add stage-entry reuse to sampled-first validity', 'candidate',
+    Policy('exact_fast', 'validity_first', 'Add stage-entry reuse; retain the optional certificate-order setting', 'candidate',
            execution=(('stage_entry_reuse', True),), exact=True, evidence=EVIDENCE['PS001'],
            targets='both exact repairs together'),
     Policy('compact_release', 'exact_fast', 'Store every full-catalog stage at K_geometry=2M+2 instead of 192',

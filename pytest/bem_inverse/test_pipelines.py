@@ -11,21 +11,24 @@ def test_presets_and_their_slots():
     base, fixed, modal = (P.get(n) for n in ('nodal_baseline', 'nodal_fixed', 'modal_fixed'))
     response = P.get('modal_response')
     assert (response.solver, response.geometry_update, response.resolution_response) == (
-        'modal_muller', 'certified_spectral', (1024, 1280))
+        'modal_muller', 'spectral', (1024, 1280))
     assert {k for k, v in response.settings().items() if modal.settings()[k] != v} == {
         'name', 'resolution_response', 'description'}
     assert (base.solver, base.geometry_update, base.resolution_response) == ('nodal_kress', 'spline', None)
-    assert (fixed.solver, fixed.geometry_update, fixed.resolution_response) == ('nodal_kress', 'certified_spectral', (1024, 2048))
-    assert (modal.solver, modal.geometry_update, modal.resolution_response) == ('modal_muller', 'certified_spectral', None)
+    assert (fixed.solver, fixed.geometry_update, fixed.resolution_response) == ('nodal_kress', 'spectral', (1024, 2048))
+    assert (modal.solver, modal.geometry_update, modal.resolution_response) == ('modal_muller', 'spectral', None)
     # The two fixed pipelines differ only in physics and the nodal-only response.
     assert {k for k, v in fixed.settings().items() if modal.settings()[k] != v} == {
         'name', 'solver', 'resolution_response', 'description'}
 
 
-def test_baseline_geometry_is_fit_default():
+def test_geometry_defaults_preserve_spline_and_batch_spectral():
     execution = Execution(device='cpu', frequency_threads=1)
-    from bem_inverse.geometry import ProjectedUpdate
+    from bem_inverse.geometry_update_methods.spline import ProjectedUpdate
     assert type(make_update('spline', .05, execution)) is type(make_update(None, .05, execution, default=ProjectedUpdate))
+    spectral = make_update(P.get('modal_fixed').geometry_update, .05, execution)
+    assert spectral.batched and spectral.device == 'cpu'
+    assert 'certificate' not in spectral.settings()['validity']
 
 
 def test_components_are_built_from_the_recipe(monkeypatch):

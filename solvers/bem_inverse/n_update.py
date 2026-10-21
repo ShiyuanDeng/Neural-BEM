@@ -36,7 +36,9 @@ from scipy.signal import fftconvolve
 from bem_inverse.continuation.geometry import FourierCurve, grid_size, integer
 from bem_inverse.continuation.updates import LocalSpace, UpdateRefused, _refusal, speed_ratio
 from .geometry import values, resize
-from .modal_geometry import log_modulus, real_product
+from .modal_geometry import real_product
+from .geometry_update_methods.certificates import curve_certificate, derivative_norm
+from .continuation.geometry import signed_area
 
 
 def centred(array, band):
@@ -67,22 +69,11 @@ def l1(array, axis=-1):
     return np.sum(np.abs(array), axis=axis)
 
 
-def derivative_norm(coefficients):
-    """nu(f) = sum |j||f_j| (Lemma 4 bounds the divided difference by this)."""
-    band = (coefficients.shape[-1]-1)//2
-    return l1(np.arange(-band, band+1)*coefficients)
-
-
 def speed_squared(coefficients):
     """Exact coefficients of S=|z'|^2, band 2K (real Laurent polynomial)."""
     modes = np.arange(-(len(coefficients)//2), len(coefficients)//2+1)
     derivative = 1j*modes*coefficients
     return real_product(derivative, derivative, 1)
-
-
-def signed_area(coefficients):
-    modes = np.arange(-(len(coefficients)//2), len(coefficients)//2+1)
-    return float(np.pi*np.sum(modes*np.abs(coefficients)**2))
 
 
 def tangential_terms(coefficients, update_modes, mean_speed_squared):
@@ -99,25 +90,6 @@ def tangential_terms(coefficients, update_modes, mean_speed_squared):
     nonzero = order != 0
     psi[:, nonzero] = -g[:, nonzero]/(1j*order[nonzero])/mean_speed_squared
     return fftconvolve(psi, first[None, :], axes=-1), psi
-
-
-def curve_certificate(curve, window, *, tolerance=1e-12, max_degree=4000):
-    """rho_c=||1-|W|^2 Y||_1 and ||Y||_1 for the accepted curve (modal_geometry construction)."""
-    started = time.perf_counter()
-    z, k = curve.coefficients, curve.band
-    quotient = np.zeros((2*k+1, 2*k+1), complex)
-    for j in range(1, k+1):
-        r = np.arange(j)
-        quotient[k+j-1-r, k+r] += z[k+j]
-        quotient[k-1-r, k-j+r] -= z[k-j]
-    _, interval = log_modulus(real_product(quotient, quotient, 2), window, tolerance, max_degree)
-    cert = interval['certificate']
-    return dict(window=window, rho=cert['residual'], allowance=cert['allowance'],
-                reciprocal_l1=cert['reciprocal_l1'], beta=interval['lower'], Lambda=interval['upper'],
-                log_degree=interval['degree'], nu=float(derivative_norm(z)),
-                arithmetic_verified=False, rounding_model='heuristic FFT allowance',
-                proposal_grid=interval['proposal_grid'],
-                seconds=time.perf_counter()-started)
 
 
 @dataclass(frozen=True)

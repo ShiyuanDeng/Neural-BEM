@@ -10,10 +10,11 @@ from dataclasses import replace
 import hashlib
 import numpy as np
 from .modal_muller import ModalMuller, ModalSettings, token, trace_cutoff
-from .continuation.lm_backend import Objective, NumericalFailure, Stop, control_step, resolution_check, observe
+from .continuation.lm_backend import Objective, NumericalFailure, Stop, resolution_check, observe
 from .continuation.globalization import damping_floor
-from .continuation.geometry import grid_size
-from .geometry import values
+from .continuation.geometry import grid_size, values
+from .errors import UpdateRefused
+from .geometry_update_methods import bind_geometry_update, control_step
 
 TRACE_LADDER=(64,96,128,160,192,256,320)
 
@@ -226,14 +227,13 @@ class IndependentModalMuller(ModalMuller):
         higher=self._frame(base.curve,stage,config,contrast,space,update,ledger,cutoff+32)
         bounded,_=self._proposal(higher,config,space,update,trial['damping'],used=trial['damping'])
         fine_step=bounded*.5**trial['backtrack']
+        geometry_update=bind_geometry_update(update)
         try:
-            finer_curve,finer_geometry=update.trial(space,fine_step)
+            finer_curve,finer_geometry=geometry_update(base.curve,fine_step,prepared=space)
             from .continuation.lm_backend import inside_box
             if not inside_box(finer_curve,config.domain_box):
-                from .continuation.updates import UpdateRefused
                 raise UpdateRefused('outside_domain','higher-cutoff proposal leaves the existing domain')
         except Exception as exc:
-            from .continuation.updates import UpdateRefused
             if not isinstance(exc,UpdateRefused): raise
             row=dict(passed=False,reason='witness_geometry_refusal',detail=exc.reason,stage=stage.label)
             observe(self,'qualification',kind_detail='accepted_move',row=row,

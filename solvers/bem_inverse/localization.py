@@ -5,7 +5,7 @@ import numpy as np
 
 from bem_inverse.continuation.geometry import FourierCurve
 from bem_inverse.continuation.geometry_runtime import geometry_validated
-from .geometry import resize
+from .continuation.geometry import resize
 
 
 @geometry_validated

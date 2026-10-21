@@ -38,7 +38,8 @@ Shapes keep their historical definitions; only the placement is new.
 ## Default method for new experiments
 
 - **Physics:** `modal_muller`, the node-free Fourier–Galerkin service.
-- **Geometry update:** `certified_spectral` (NU-006).
+- **Geometry update:** `spectral`, with direct sampled validity checks and batched preparation.
+  The optional `certified_spectral` method remains available for explicit comparisons.
 - **Localization:** `none`. `keep_start` keeps the centred start, and the 0.25 GHz damped
   warm-up moves it.
 - **Policy:** otherwise the default `CumulativePolicy`.

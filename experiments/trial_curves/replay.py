@@ -1,19 +1,20 @@
 """Geometry-only replay of one outer iteration at a fixed base boundary.
 
-Given the saved base state (curve, J, g, H_GN, D, damping), run the real C9 solve, C10 step
-control and ``update.trial`` for every damping trial x halving. No loss test and no ``validate``.
-A wrapper on ``update.check`` only records each curve that C10 builds, including refused ones.
+Given the saved base state (curve, J, g, H_GN, D, damping), run the real LM solve,
+step control and geometry update for every damping trial x halving. No loss test.
+A wrapper on ``check_geometry`` records intermediate curves, including refused ones.
 """
 import pickle
 from pathlib import Path
 
 import numpy as np
 
-from bem_inverse import c9_lm, c10_geometry_trial, checks
+from bem_inverse import c9_lm, checks
 from bem_inverse.checks import step_too_small
+from bem_inverse.geometry_update_methods import bind_geometry_update, control_step
 from bem_inverse.geometry_selection import make_update
 from bem_inverse.physics import Execution
-from bem_inverse.continuation.updates import UpdateRefused
+from bem_inverse.errors import UpdateRefused
 
 
 def load(path):
@@ -32,18 +33,19 @@ def load(path):
 
 
 def replay(it, length_unit_m, scale=1.0, lambdas=None):
-    """Every damping trial x halving for one base. Returns one row per attempt, with the curves C10 built."""
+    """Replay the retained certified method on a saved base; return its constructed curves."""
     update = make_update('certified_spectral', length_unit_m, Execution(device='cpu'))
+    geometry_update = bind_geometry_update(update)
     space = it["space"]
     config, g, H, D = it['config'], it['g'], it['H'], it['D']
     built = []
-    original = update.check
+    original = update.check_geometry
 
     def recording_check(space_, coefficients, role, sampled):
         built.append((role, np.array(coefficients, copy=True)))
         return original(space_, coefficients, role, sampled)
 
-    update.check = recording_check
+    update.check_geometry = recording_check
     rows, lam = [], it['damping_trials'][0]
     if lambdas is not None:   # explicit list, e.g. [0.] for a plain Gauss-Newton step
         schedule = list(lambdas)
@@ -57,7 +59,7 @@ def replay(it, length_unit_m, scale=1.0, lambdas=None):
             if lambdas is None:
                 lam *= config.damping_increase
             continue
-        a_bounded = c10_geometry_trial.control_step(a_raw, space, update, config)
+        a_bounded = control_step(a_raw, space, update, config)
         for backtrack in range(config.max_backtracks + 1):
             a_used = 0.5**backtrack*a_bounded
             row = dict(damping_trial=damping_trial, lam=lam, backtrack=backtrack, a=a_used,
@@ -68,7 +70,7 @@ def replay(it, length_unit_m, scale=1.0, lambdas=None):
                 continue
             built.clear()
             try:
-                candidate, report = update.trial(space, a_used)
+                candidate, report = geometry_update(space.curve, a_used, prepared=space)
                 row.update(candidate=candidate.coefficients.copy(), report=report)
             except UpdateRefused as exc:
                 row.update(status='refused', reason=exc.reason, detail=exc.detail)

@@ -2,8 +2,8 @@
 
 Each check exposes its quantity, comparison and existing threshold source.
 Callers retain the original invocation point and response. No check solves
-physics or mutates optimizer state. Certificate checks may record their own
-geometry evidence and use the selected update's cached certificate.
+physics or mutates optimizer state. Geometry-validity certificate decisions
+and their records live with the optional certified spectral method.
 """
 import numpy as np
 from scipy.spatial import cKDTree
@@ -217,7 +217,7 @@ def hanke_below_target(excess):
     return excess < 0
 
 
-# C10. Geometry construction, coefficient certificates and sampled fallback.
+# Geometry construction and direct validity checks.
 
 def inside_box(curve, box):
     if box is None:
@@ -229,10 +229,32 @@ def inside_box(curve, box):
 
 
 
+def check_area(coefficients):
+    """Require positive finite continuous signed area."""
+    from .continuation.geometry import signed_area
+    from .errors import UpdateRefused
+    area = signed_area(coefficients)
+    if not np.isfinite(area) or area <= 0:
+        raise UpdateRefused('irregular_parameterization', 'Curve area must be positive.')
+
+
+def check_speed(speeds):
+    """Require the existing minimum-speed fraction on the supplied grid."""
+    from .errors import UpdateRefused
+    if not np.isfinite(speeds).all() or np.min(speeds) < 1e-6*np.mean(speeds) or np.min(speeds) <= 0:
+        raise UpdateRefused('irregular_parameterization', 'Curve speed is too small.')
+
+
+def check_intersection(points):
+    """Reject crossing or touching nonadjacent sampled segments."""
+    from .errors import UpdateRefused
+    if self_intersections(points):
+        raise UpdateRefused('self_intersection', 'Curve self-intersects.')
+
+
 def require_sampled_moved_curve(nodes):
     """Run before refitting each moved curve, preserving refusal precedence."""
-    from .continuation.updates import UpdateRefused
-    from .continuation.validation import self_intersections
+    from .errors import UpdateRefused
     if nodes.signed_area <= 0 or np.min(nodes.speeds) < 1e-6*np.mean(nodes.speeds):
         raise UpdateRefused('irregular_parameterization', 'Invalid displaced curve.')
     if self_intersections(nodes.points):
@@ -242,7 +264,6 @@ def require_sampled_moved_curve(nodes):
 
 def require_sampled_stored_curve(nodes):
     """Final stored-curve sampled test; messages differ from moved-curve checks."""
-    from .continuation.validation import self_intersections
     if nodes.signed_area <= 0 or np.min(nodes.speeds) < 1e-6*np.mean(nodes.speeds):
         raise ValueError('Curve must be regular and counterclockwise.')
     if self_intersections(nodes.points):
@@ -259,8 +280,8 @@ def require_refit_curve(nodes):
 
 
 def require_projection_agreement(error, radius, tolerance):
-    """C10 grid/doubled-grid position discrepancy, scaled by perimeter radius."""
-    from .continuation.updates import UpdateRefused
+    """Grid/doubled-grid position discrepancy, scaled by perimeter radius."""
+    from .errors import UpdateRefused
     if error/radius > tolerance:
         raise UpdateRefused('unresolved_projection', f'geometry grid refinement {error/radius:g}')
 
@@ -281,147 +302,6 @@ def require_geometry_proposal_allowance(proposals, cap):
     from .errors import GeometryProposalCap
     if proposals >= cap:
         raise GeometryProposalCap('stage geometry proposal cap reached')
-
-
-
-def regularity_floor(x):
-    """lambda needed so |x'|^2 >= lambda implies min|x'| >= 1e-6 mean|x'| (mean|x'| <= sqrt(sum j^2|x_j|^2))."""
-    from .c10_geometry_trial import SPEED_FACTOR
-    modes = np.arange(-(len(x)//2), len(x)//2+1)
-    return SPEED_FACTOR**2*float(np.sum(modes**2*np.abs(x)**2))
-
-
-
-def increment_bound(certificate, change):
-    """Lemma 3 with Lemma 4: (bound, lambda); bound < 1 certifies |W_new|^2 >= lambda on the torus."""
-    from .n_update import derivative_norm
-    nu_d = float(derivative_norm(change))
-    bound = certificate['rho']+certificate['allowance']+(2*certificate['nu']*nu_d+nu_d**2)*certificate['reciprocal_l1']
-    return bound, (1-bound)/certificate['reciprocal_l1'], nu_d
-
-
-
-def certificate_cheap(self, space, x):
-    """Tiers 1-2: ('refused'|'increment'|None, record, regularity floor)."""
-    from .c10_geometry_trial import pad, WINDOW, FULL_WINDOWS
-    from .continuation.geometry import FourierCurve
-    from .continuation.updates import UpdateRefused
-    from .n_update import signed_area
-    area = signed_area(x)
-    row = dict(band=len(x)//2, signed_area=area)
-    if not area > 0:
-        return 'refused', row, None
-    floor = regularity_floor(x)
-    base = self._base(space)
-    if base is not None:
-        K = max(len(x)//2, space.curve.band)
-        bound, lower, nu_d = increment_bound(base, pad(x, K)-pad(space.curve.coefficients, K))
-        row.update(increment_bound=bound, increment_lower=lower, increment_nu=nu_d)
-        if bound < 1 and lower >= floor:
-            return 'increment', row, floor
-    return None, row, floor
-
-
-
-def certificate_full(self, space, x, row, floor):
-    """Tier 3 on the crop of ``x`` with its Lemma 3 tail: 'full' or None; updates ``row``."""
-    from .c10_geometry_trial import pad, WINDOW, FULL_WINDOWS
-    from .continuation.geometry import FourierCurve
-    from .continuation.updates import UpdateRefused
-    from .n_update import signed_area
-    crop = min(len(x)//2, max(space.curve.band, WINDOW))
-    cropped = FourierCurve(pad(x, crop))
-    tail = pad(x, len(x)//2)-pad(cropped.coefficients, len(x)//2)
-    for window in FULL_WINDOWS:
-        own = self._certificate(cropped, window)
-        if own is None:
-            self.counts['full_certificate_failures'] += 1
-            row.setdefault('full_failed_windows', []).append(window)
-            continue
-        bound, lower, nu_t = increment_bound(own, tail)
-        row.update(full_window=window, full_bound=bound, full_lower=lower, tail_nu=nu_t, full_rho=own['rho'],
-                   full_reciprocal_l1=own['reciprocal_l1'], full_log_degree=own['log_degree'])
-        if bound < 1 and lower >= floor:
-            return 'full'
-    return None
-
-
-
-def certificate_certify(self, space, x):
-    """Tiers 1-3 for coefficients ``x`` (any band): ('refused'|'increment'|'full'|None, record)."""
-    from .c10_geometry_trial import pad, WINDOW, FULL_WINDOWS
-    from .continuation.geometry import FourierCurve
-    from .continuation.updates import UpdateRefused
-    from .n_update import signed_area
-    tier, row, floor = self._cheap(space, x)
-    if tier is None:
-        tier = self._full(space, x, row, floor)
-    return tier, row
-
-
-
-def certificate_check_sampled_first(self, space, x, role, sampled):
-    """The certificate_first accept set, with the full certificate only after a sampled refusal."""
-    from .c10_geometry_trial import pad, WINDOW, FULL_WINDOWS
-    from .continuation.geometry import FourierCurve
-    from .continuation.updates import UpdateRefused
-    from .n_update import signed_area
-    tier, row, floor = self._cheap(space, x)
-    if tier == 'refused':
-        self.counts[f'{role}_area_refused'] += 1
-        self.records.append(dict(row, role=role, tier='area_refused'))
-        raise UpdateRefused('irregular_parameterization', f'exact signed area {row["signed_area"]:g} <= 0')
-    if tier == 'increment':
-        self.counts[f'{role}_increment'] += 1
-        self.records.append(dict(row, role=role, tier='increment'))
-        return
-    try:
-        self._sampled(sampled)
-    except (UpdateRefused, ValueError):
-        if self._full(space, x, row, floor) == 'full':
-            self.counts[f'{role}_full_override'] += 1
-            self.records.append(dict(row, role=role, tier='full_override'))
-            return
-        self.counts[f'{role}_sampled_refused'] += 1
-        self.records.append(dict(row, role=role, tier='sampled_refused'))
-        raise
-    self.counts[f'{role}_sampled_accepted'] += 1
-    self.records.append(dict(row, role=role, tier='sampled_accepted'))
-
-
-
-def certificate_check(self, space, x, role, sampled):
-    """Tiered decision for one curve; ``sampled`` runs the unchanged test (raises on refusal)."""
-    from .c10_geometry_trial import pad, WINDOW, FULL_WINDOWS
-    from .continuation.geometry import FourierCurve
-    from .continuation.updates import UpdateRefused
-    from .n_update import signed_area
-    if self.order == 'sampled_first':
-        return self._check_sampled_first(space, x, role, sampled)
-    tier, row = self.certify(space, x)
-    if tier == 'refused':
-        self.counts[f'{role}_area_refused'] += 1
-        self.records.append(dict(row, role=role, tier='area_refused'))
-        raise UpdateRefused('irregular_parameterization', f'exact signed area {row["signed_area"]:g} <= 0')
-    if tier is not None:
-        self.counts[f'{role}_{tier}'] += 1
-        if self.shadow:
-            try:
-                self._sampled(sampled)
-                row['shadow'] = 'accepted'
-            except (UpdateRefused, ValueError) as exc:
-                row['shadow'] = 'refused: '+str(exc)
-                self.counts['shadow_disagreements'] += 1
-        self.records.append(dict(row, role=role, tier=tier))
-        return
-    try:
-        self._sampled(sampled)
-    except (UpdateRefused, ValueError):
-        self.counts[f'{role}_sampled_refused'] += 1
-        self.records.append(dict(row, role=role, tier='sampled_refused'))
-        raise
-    self.counts[f'{role}_sampled_accepted'] += 1
-    self.records.append(dict(row, role=role, tier='sampled_accepted'))
 
 
 

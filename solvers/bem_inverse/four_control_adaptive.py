@@ -9,7 +9,7 @@ import traceback
 import numpy as np
 from .continuation.lm_backend import (Objective,StageResult,Stop,StageQuota,TrialSolveCap,TrialWallLimit,
     NORMAL_RETURN,STAGE_QUOTA,fit_stage,normalize,observe)
-from .geometry import resize
+from .continuation.geometry import resize
 from .modal_muller import ModalMuller,ModalSettings,token
 from .modal_accuracy import IndependentModalMuller,WorkspaceEpochRequired,WorkspaceUnresolved
 from .four_control_policy import truncated_levels

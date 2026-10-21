@@ -10,7 +10,7 @@ import numpy as np
 from gpr_bem_kress.geometry_pullback import _difference_matrices, _special_function
 from gpr_bem_kress.operators import MullerAssemblyConfig
 from .continuation.forward import _solve
-from .geometry import values
+from .continuation.geometry import values
 
 
 def reduced_gradient(state, observed, tau, h, rows, space):

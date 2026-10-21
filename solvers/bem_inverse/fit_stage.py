@@ -22,7 +22,6 @@ from ordered_boundary.validation_cache import fit_geometry_validation
 from .continuation.forward import ordered_calls, solve, shape_jacobian
 from .continuation.geometry import FourierCurve, grid_size, integer
 from .continuation.geometry_runtime import geometry_validated
-from .continuation.updates import UpdateRefused
 from .c9_lm import damping_floor, hanke_damping
 from .c12_iteration import accepted_damping
 from .checks import shortened_stagnation, insufficient_progress
@@ -35,14 +34,14 @@ from .stage_types import (FitStage, BackendConfig, Evaluation, StageResult, Stag
                           ScheduleResult, stage_record)
 from .stage_types import _PromoteBase
 from .errors import (Stop, StageQuota, TrialSolveCap, TrialWallLimit, NumericalFailure,
-                     GeometryProposalCap, NORMAL_RETURN, STAGE_QUOTA)
+                     GeometryProposalCap, UpdateRefused, NORMAL_RETURN, STAGE_QUOTA)
 from .work import Ledger
 from .objective import Objective
 from .recording import observe
 from .b5_residual import normalize
 from .checks import acceptance, relative_columns, resolution_check, inside_box
-from .c10_geometry_trial import control_step
-from . import b8_gauss_newton, c9_lm, c10_geometry_trial, c11_trial_evaluation, c12_iteration, checks
+from .geometry_update_methods import bind_geometry_update, control_step
+from . import b8_gauss_newton, c9_lm, c11_trial_evaluation, c12_iteration, checks
 
 
 
@@ -65,6 +64,7 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
     this stage's endpoint as ``StageResult.final_entry`` for the next stage.
     """
     started = perf_counter()
+    geometry_update = bind_geometry_update(update)
     if curve.band != stage.curve_modes:
         raise ValueError("Pass the curve at the stage storage band.")
     if resolution_response is not None:
@@ -351,7 +351,7 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
                     continue
                 raw_norm = float(np.linalg.norm(a_raw))
                 observed_raw_proposal = a_raw.copy() if getattr(physics, 'observer', None) is not None else None
-                a_bounded = c10_geometry_trial.control_step(a_raw, space, update, config)
+                a_bounded = control_step(a_raw, space, update, config)
                 clipping = {}
                 if config.reach_fraction:
                     from bem_inverse.reach import clip_direction
@@ -361,7 +361,7 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
                     gradient=g, normal=H_GN, metric=D, damping=lambda_trial,
                     raw_proposed=observed_raw_proposal, bounded_proposed=a_bounded, controller_floor=floor,
                     stage=stage, config=config, ledger=ledger)
-                # Inner backtracking loop (C10 → C11): try a_used = 0.5**backtrack * a_bounded.
+                # Backtracking: construct and evaluate a_used = 0.5**backtrack * a_bounded.
                 # `continue` below means "this length failed, halve it". Each failure
                 # records its reason in `trial` (refused, outside_domain, nondecreasing,
                 # numerical_rejection, acceptance_margin). `restart` means the base
@@ -371,7 +371,7 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
                     if config.damping_rule == 'agreement':
                         ledger.reserve(0)  # deadline/work check before geometry, even after pure refusals
                         checks.require_geometry_proposal_allowance(geometry_proposals, config.geometry_proposal_cap)
-                    # C10. Halved step, skipped when it is below the relative tolerance.
+                    # Halve the step and skip it when it is below the relative tolerance.
                     a_used = 0.5 ** backtrack * a_bounded
                     if checks.step_too_small(a_used, scale, config.relative_step_tolerance):
                         continue
@@ -396,14 +396,14 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
                             trial.update(status='refused', reason='repeated_clipped_proposal', geometry_constructed=False)
                             continue
                         seen_steps.add(key)
-                    # C10. Build the finite geometry trial. The update runs its own
+                    # Build the finite geometry trial. The selected method runs its own
                     # checks (intermediate curve, refit agreement, final candidate)
                     # and raises UpdateRefused, which counts as a rejected length.
                     geometry_proposals += 1
                     trial['geometry_constructed'] = True
                     geometry_started = perf_counter()
                     try:
-                        candidate_curve, geometry = update.trial(space, a_used)
+                        candidate_curve, geometry = geometry_update(current.curve, a_used, prepared=space)
                         trial.update(geometry)
                         if 'a_used' in geometry:
                             a_used = np.asarray(geometry['a_used'], float)

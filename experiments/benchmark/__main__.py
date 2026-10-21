@@ -22,7 +22,7 @@ def main():
                         help='named recipe from bem_inverse.pipelines; replaces --solver/--geometry-update')
     parser.add_argument('--solver', choices=('modal_muller', 'nodal_kress'), help='default modal_muller')
     parser.add_argument('--geometry-update', choices=('spline', 'spectral', 'certified_spectral', 'analytic_spectral'),
-                        help='default certified_spectral')
+                        help='default spectral (sampled validity checks, batched preparation)')
     parser.add_argument('--localization', default='none', choices=c.LOCALIZATION,
                         help='none (default): keep the centred start; grid: legacy SC-050 disk search')
     parser.add_argument('--device', choices=('auto', 'cpu', 'cuda'), default='auto')
@@ -35,7 +35,7 @@ def main():
         parser.error('--pipeline sets the solver and geometry update; do not pass them too')
     if not args.pipeline and not args.policy:
         args.solver = args.solver or 'modal_muller'
-        args.geometry_update = args.geometry_update or 'certified_spectral'
+        args.geometry_update = args.geometry_update or 'spectral'
     execution = Execution(args.device, args.frequency_threads)
     cases = list(S.CASES) if args.cases in (None, ['all']) else args.cases
     if args.command == 'prepare':
