@@ -16,9 +16,34 @@ Each file in `geometry_update_methods/` owns its preparation, stored data,
 measurements and `geometry_update()` entry point, without update-class
 inheritance. Ordinary curve operations live in `continuation/geometry.py`.
 
-`endpoint.py` owns independent endpoint calculations, `objective.py` owns
-dispatch/caches, and `work.py` owns charging. Old geometry paths retain
-compatibility exports and call these implementations.
+The `forward_solvers/` folder sits beside `geometry_update_methods/`. Its
+`modal_muller.forward_solve()` and `nodal_kress.forward_solve()` functions own
+the forward calculations. `fit_stage()` selects a function with `bind_forward_solve(physics)`,
+dispatches it over active frequencies with `solve_frequencies()`, then explicitly
+forms the B5 residual and loss. The physics context retains execution settings,
+geometry caches, counters and the derivative interface; returned forward states
+retain factors and traces. Neither forward function uses the measured data.
+
+```python
+from bem_inverse import Execution
+from bem_inverse.forward_solvers import modal_muller
+context = modal_muller.ModalMuller(Execution(device="cpu"))
+prediction = modal_muller.forward_solve(
+    curve, observation, contrast, resolution, context=context,
+)
+```
+
+The context is optional for standalone calls; repeated calls should share it to
+reuse geometry. Resolution keeps its existing meaning: `8*K_trace` for modal
+physics and node count for nodal physics. `physics.evaluate()`, `a_forward`, and the old top-level
+`modal_muller`/`nodal_kress` imports remain compatibility entry points. Custom physics adapters keep their selected
+`evaluate()` implementation.
+
+`endpoint.py` owns independent endpoint calculations, `objective.py` retains
+refined-result caching, Jacobian dispatch and optional research objectives, and
+`work.py` owns charging. Ordinary stage forward solves no longer pass through
+`Objective.production()`. Refined and compatibility calls use the same standalone
+functions through `forward_batch.py`. Old geometry paths retain compatibility exports.
 
 ## API
 
@@ -86,7 +111,7 @@ A pipeline only fills `fit`'s physics, geometry-update and resolution slots; pol
 and localization stay with the caller. Results gain `pipeline` and `resolution_promoted`.
 
 The maintained named pipelines and TG-002 now use sampled spectral geometry
-with batched preparation. Each moved curve and final candidate must pass direct
+with batched preparation. Each final candidate must pass direct
 area, minimum-speed and sampled-intersection checks.
 
 Removing certificates changes which trials are accepted: sampled checks are

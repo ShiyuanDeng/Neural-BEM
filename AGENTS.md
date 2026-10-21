@@ -27,6 +27,10 @@
 
 # Terminal answers
 
+- When invoking a named agent, read its instructions before delegation.
+  Preserve its required response format when presenting its findings. Check
+  the final answer against those instructions; shorten content without
+  replacing the required structure.
 - These rules apply to every agent, including agents assigned part of a task,
   and to both progress updates and final answers.
 - Keep every paragraph to at most three terminal lines. Use short sentences
@@ -88,3 +92,12 @@
 - Preserve reference solvers, frozen inputs, source snapshots, and failed-run
   evidence. Dated plans and archived dashboards describe historical work;
   they do not select the current implementation.
+
+# Cleanup collaboration
+
+- For cleanup work, start with [the workflow index](docs/cleanup/agents.md),
+  then read your assigned role's instructions and the selected range's shared
+  document. Keep user decisions and implementation status in that document.
+- Before proposing cleanup changes, read
+  [the user decision log](docs/cleanup/user_decisions.md). Add each new user
+  decision or correction there with the user's reason and the rule it implies.

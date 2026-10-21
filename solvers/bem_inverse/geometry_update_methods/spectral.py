@@ -1,10 +1,11 @@
 """Spectral arclength update with direct area, speed and intersection checks.
 
 Preparation batches the complete geometry derivative when requested. A trial
-moves the boundary, checks it, resets arclength and subtracts the base projection.
+moves the boundary, resets arclength, subtracts the base projection and checks
+the resulting curve.
 """
 from .. import checks
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 import time
 import numpy as np
 from ..continuation.geometry import (
@@ -16,6 +17,25 @@ import torch
 
 CHUNK_BYTES = 2**29
 CONSTRUCTION = 'z + P_K[R(z+h*n)-R(z)], R = eq. 9 arclength quadrature (no splines); FD derivative of the complete trial'
+
+
+@dataclass(frozen=True)
+class Grid:
+    """The accepted curve sampled at uniform nodes, as every trial reads it."""
+    nodes: object        # accepted-curve nodes
+    values: np.ndarray   # boundary points z
+    normal: np.ndarray   # unit normals n
+    basis: np.ndarray    # column j: normal-distance shape of update coefficient j
+
+
+def sample_grid(curve, count, update_modes):
+    """Sample ``curve`` at ``count`` nodes with the normal basis of ``update_modes``."""
+    nodes = curve.nodes(count)
+    grid = Grid(nodes, curve.values(count), nodes.normals@np.array([1, 1j]),
+                normal_basis(nodes, update_modes))
+    for array in (grid.values, grid.normal, grid.basis):
+        array.setflags(write=False)
+    return grid
 
 
 @dataclass(frozen=True)
@@ -31,11 +51,9 @@ class Prepared:
     base_projection: np.ndarray
     fine_base_projection: np.ndarray
     count: int
+    grid: Grid
+    fine_grid: Grid
     preparation_seconds: float
-    cache: dict = field(default_factory=dict, compare=False)
-
-
-ProjectedSpace = Prepared
 
 
 def arclength_quadrature(moved, nodes, band):
@@ -59,23 +77,19 @@ def arclength_quadrature(moved, nodes, band):
     evaluated = coefficients[band]+np.conj(powers[1:]).T@positive[1:]+powers[1:].T@negative
     return coefficients, float(np.max(np.abs(evaluated-w)))
 
-def spectral_project(curve, coefficients, band, count, length_unit_m, *, validate=False):
-    """``geometry.project`` with A replaced by ``arclength_quadrature``; same signature and checks."""
-    nodes = curve.nodes(count)
-    z = curve.values(count)
-    h = normal_basis(nodes, len(coefficients)//2)@coefficients/length_unit_m
-    normal = nodes.normals@np.array([1, 1j])
-    moved = FourierCurve.from_samples(z+h*normal, count//2-1)
-    n = moved.nodes(count)
-    if validate:
-        checks.check_area(moved.coefficients)
-        checks.check_speed(n.speeds)
-        checks.check_intersection(n.points)
-    return arclength_quadrature(moved, n, band)
+def push_and_refit(grid, coefficients, band, length_unit_m):
+    """Move every sample by h along its normal, then refit the moved curve in arclength.
+
+    Returns ``arclength_quadrature`` of the moved curve: coefficients |k| <= band and crop error.
+    """
+    count = grid.nodes.num_nodes
+    h = grid.basis@coefficients/length_unit_m
+    moved = FourierCurve.from_samples(grid.values+h*grid.normal, count//2-1)
+    return arclength_quadrature(moved, moved.nodes(count), band)
 
 
 def batched_projection(curve, steps, band, count, length_unit_m, device):
-    """``spectral_project(curve, a, band, count, unit)[0]`` for every row a of ``steps``."""
+    """``push_and_refit(sample_grid(curve, count, m), a, band, unit)[0]`` for every row a of ``steps``."""
     nodes = curve.nodes(count)
     z = torch.as_tensor(curve.values(count), device=device)
     basis = torch.as_tensor(normal_basis(nodes, steps.shape[1]//2), device=device)
@@ -150,9 +164,9 @@ class SpectralProjectedUpdate:
             raise _refusal(exc) from exc
         return shape, float(error)
 
-    def _project(self, *args, **kwargs):
+    def _project(self, grid, coefficients, band):
         self.counts['geometry_projections'] += 1
-        return spectral_project(*args, **kwargs)
+        return push_and_refit(grid, coefficients, band, self.length_unit_m)
 
     def prepare(self, curve, update_modes, curve_modes):
         started = time.perf_counter()
@@ -166,6 +180,7 @@ class SpectralProjectedUpdate:
                      orders=np.concatenate(([0], harmonics, harmonics)),
                      labels=('a0', *[f'a{m}' for m in harmonics], *[f'b{m}' for m in harmonics]))
         count = grid_size(max(curve_modes, update_modes))
+        grid, fine_grid = sample_grid(curve, count, update_modes), sample_grid(curve, 2*count, update_modes)
         dim = len(plain['orders'])
         eye = np.eye(dim)*self.derivative_step_m
         steps = np.vstack((np.zeros(dim), eye, -eye))
@@ -186,19 +201,20 @@ class SpectralProjectedUpdate:
             base = coarse[0]
         else:
             zeros = np.zeros(dim)
-            base = self._project(curve, zeros, curve_modes, count, self.length_unit_m)[0]
-            fine = self._project(curve, zeros, curve_modes, 2*count, self.length_unit_m)[0]
+            base = self._project(grid, zeros, curve_modes)[0]
+            fine = self._project(fine_grid, zeros, curve_modes)[0]
             columns = []
             for step in eye:
-                plus = self._project(curve, step, curve_modes, count, self.length_unit_m)[0]
-                minus = self._project(curve, -step, curve_modes, count, self.length_unit_m)[0]
+                plus = self._project(grid, step, curve_modes)[0]
+                minus = self._project(grid, -step, curve_modes)[0]
                 columns.append((plus-minus)/(2*self.derivative_step_m))
             derivatives = np.stack(columns, axis=1)
         elapsed = time.perf_counter()-started
         self.counts['preparations'] += 1
         self.counts['preparation_seconds'] += elapsed
         return Prepared(**plain, derivatives=derivatives, base_projection=base,
-                        fine_base_projection=fine, count=count, preparation_seconds=elapsed)
+                        fine_base_projection=fine, count=count, grid=grid, fine_grid=fine_grid,
+                        preparation_seconds=elapsed)
 
     def velocities(self,space,nodes):
         vectors=values(space.derivatives,nodes.num_nodes)
@@ -228,29 +244,21 @@ class SpectralProjectedUpdate:
             raise ValueError(f"Expected {len(space.orders)} finite update coefficients.")
         return a
 
-    def _base_grid(self, space, count, dimension):
-        key = ('base_grid', count, dimension)
-        if key not in space.cache:
-            nodes = space.curve.nodes(count)
-            arrays = (normal_basis(nodes, dimension//2), space.curve.values(count),
-                      nodes.normals@np.array([1, 1j]))
-            for array in arrays:
-                array.setflags(write=False)
-            space.cache[key] = (nodes, *arrays)
-        return space.cache[key]
-
-    def geometry_update(self, curve, normal_update, *, prepared):
-        return geometry_update(curve, normal_update, prepared=prepared, settings=self)
+    def geometry_update(self, normal_update, *, prepared):
+        return geometry_update(normal_update, prepared=prepared, settings=self)
 
     def trial(self, space, coefficients):
         """Compatibility entry point; use the same implementation as the fitter."""
-        return geometry_update(space.curve, coefficients, prepared=space, settings=self)
+        return geometry_update(coefficients, prepared=space, settings=self)
 
 
-def geometry_update(curve, normal_update, *, prepared, settings):
-    """Move, check and refit a trial on both grids; retain the centred increment."""
-    if curve is not prepared.curve and not np.array_equal(curve.coefficients, prepared.curve.coefficients):
-        raise ValueError('Prepared geometry belongs to a different curve.')
+def geometry_update(normal_update, *, prepared, settings):
+    """Move and refit on both grids, retain the centred increment, then check the result.
+
+    The moved curves are not checked: refitting and centring change them, so
+    only the final curve is the boundary that is used.
+    """
+    curve = prepared.curve
     started = time.perf_counter()
     settings.counts['trial_constructions'] += 1
     a = settings._checked(prepared, normal_update)
@@ -261,24 +269,11 @@ def geometry_update(curve, normal_update, *, prepared, settings):
                 intentional_projection_mm=0., finite_path=settings.name)
 
         projections = []
-        for count in (prepared.count, 2*prepared.count):
+        for grid in (prepared.grid, prepared.fine_grid):
             settings.counts['geometry_projections'] += 1
-            nodes, basis, base, normal = settings._base_grid(prepared, count, len(a))
-            h = basis@a/settings.length_unit_m
-            moved = FourierCurve.from_samples(base+h*normal, count//2-1)
-
-            checked_at = time.perf_counter()
-            try:
-                checks.check_area(moved.coefficients)
-                moved_nodes = moved.nodes(count)
-                checks.check_speed(moved_nodes.speeds)
-                checks.check_intersection(moved_nodes.points)
-            finally:
-                settings.counts['sampled_seconds'] += time.perf_counter()-checked_at
-
             projected_at = time.perf_counter()
             try:
-                projections.append(arclength_quadrature(moved, moved_nodes, prepared.curve_modes))
+                projections.append(push_and_refit(grid, a, prepared.curve_modes, settings.length_unit_m))
             finally:
                 settings.counts['projection_seconds'] += time.perf_counter()-projected_at
 
@@ -287,7 +282,7 @@ def geometry_update(curve, normal_update, *, prepared, settings):
         c_trial = curve.coefficients+coarse-prepared.base_projection
         c_refined = curve.coefficients+fine-prepared.fine_base_projection
         error = float(np.max(np.abs(values(c_trial-c_refined, 2*prepared.count))))
-        radius = settings._base_grid(prepared, prepared.count, len(a))[0].perimeter/(2*np.pi)
+        radius = prepared.grid.nodes.perimeter/(2*np.pi)
         checks.require_projection_agreement(error, radius, settings.projection_tolerance)
 
         candidate = FourierCurve(c_trial)

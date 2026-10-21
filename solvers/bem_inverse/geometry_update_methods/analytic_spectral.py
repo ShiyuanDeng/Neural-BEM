@@ -4,7 +4,7 @@ Preparation differentiates speed, its normalized arclength primitive, the
 quadrature weight and the phase. The finite trial is the sampled spectral
 method in ``spectral.geometry_update``; no validity certificate is used here.
 """
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from time import perf_counter
 
 import numpy as np
@@ -13,7 +13,7 @@ from .. import checks
 from ..continuation.geometry import (FourierCurve, arclength_angles, grid_size,
                                      integer, normal_basis, reparameterize, values)
 from ..errors import refusal_from_value_error
-from .spectral import spectral_project, geometry_update as spectral_geometry_update
+from .spectral import Grid, push_and_refit, sample_grid, geometry_update as spectral_geometry_update
 
 
 @dataclass(frozen=True)
@@ -30,7 +30,8 @@ class Prepared:
     fine_base_projection: np.ndarray
     count: int
     preparation_seconds: float
-    cache: dict = field(default_factory=dict, compare=False)
+    grid: Grid
+    fine_grid: Grid
 
 
 def projection_derivatives(curve, update_modes, band, count, length_unit_m):
@@ -123,15 +124,16 @@ class AnalyticSpectralUpdate:
         labels = ('a0', *[f'a{m}' for m in harmonics], *[f'b{m}' for m in harmonics])
         count = grid_size(max(curve_modes, update_modes))
         zeros = np.zeros(len(orders))
-        base = spectral_project(curve, zeros, curve_modes, count, self.length_unit_m)[0]
-        fine = spectral_project(curve, zeros, curve_modes, 2*count, self.length_unit_m)[0]
+        grid, fine_grid = sample_grid(curve, count, update_modes), sample_grid(curve, 2*count, update_modes)
+        base = push_and_refit(grid, zeros, curve_modes, self.length_unit_m)[0]
+        fine = push_and_refit(fine_grid, zeros, curve_modes, self.length_unit_m)[0]
         derivatives = projection_derivatives(curve, update_modes, curve_modes, count, self.length_unit_m)
         elapsed = perf_counter()-started
         self.counts['preparations'] += 1
         self.counts['geometry_projections'] += 2
         self.counts['preparation_seconds'] += elapsed
         return Prepared(curve, update_modes, curve_modes, self.length_unit_m, orders, labels,
-                        derivatives, base, fine, count, elapsed)
+                        derivatives, base, fine, count, elapsed, grid, fine_grid)
 
     def regauge(self, curve, curve_modes):
         integer(curve_modes, 'curve_modes')
@@ -147,17 +149,6 @@ class AnalyticSpectralUpdate:
         if a.shape != (len(space.orders),) or not np.isfinite(a).all():
             raise ValueError(f'Expected {len(space.orders)} finite update coefficients.')
         return a
-
-    def _base_grid(self, space, count, dimension):
-        key = ('base_grid', count, dimension)
-        if key not in space.cache:
-            nodes = space.curve.nodes(count)
-            arrays = (normal_basis(nodes, dimension//2), space.curve.values(count),
-                      nodes.normals @ np.array([1, 1j]))
-            for array in arrays:
-                array.setflags(write=False)
-            space.cache[key] = (nodes, *arrays)
-        return space.cache[key]
 
     def velocities(self, space, nodes):
         vectors = values(space.derivatives, nodes.num_nodes)
@@ -179,19 +170,19 @@ class AnalyticSpectralUpdate:
         basis = self.velocities(space, nodes)*self.length_unit_m
         return basis.T @ ((nodes.arc_length_weights/nodes.perimeter)[:, None]*basis)
 
-    def geometry_update(self, curve, normal_update, *, prepared):
-        return geometry_update(curve, normal_update, prepared=prepared, settings=self)
+    def geometry_update(self, normal_update, *, prepared):
+        return geometry_update(normal_update, prepared=prepared, settings=self)
 
     def trial(self, space, coefficients):
         """Compatibility entry point for older callers."""
-        return self.geometry_update(space.curve, coefficients, prepared=space)
+        return self.geometry_update(coefficients, prepared=space)
 
 
-def geometry_update(curve, normal_update, *, prepared, settings):
+def geometry_update(normal_update, *, prepared, settings):
     """Use the sampled spectral trial; only its prepared derivative differs.
 
-    ``spectral.geometry_update`` constructs both moved curves, checks area,
-    speed and intersections, projects in arclength, checks grid agreement,
-    and applies the same three checks to the stored candidate.
+    ``spectral.geometry_update`` constructs both moved curves, projects them in
+    arclength, checks grid agreement, and checks area, speed and intersections
+    of the stored candidate.
     """
-    return spectral_geometry_update(curve, normal_update, prepared=prepared, settings=settings)
+    return spectral_geometry_update(normal_update, prepared=prepared, settings=settings)

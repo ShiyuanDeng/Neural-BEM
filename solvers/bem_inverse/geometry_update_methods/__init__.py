@@ -8,7 +8,7 @@ def bind_geometry_update(update):
     if method is not None:
         return method
 
-    def geometry_update(curve, normal_update, *, prepared):
+    def geometry_update(normal_update, *, prepared):
         return update.trial(prepared, normal_update)
 
     return geometry_update

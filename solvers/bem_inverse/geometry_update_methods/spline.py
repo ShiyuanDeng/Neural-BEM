@@ -144,17 +144,15 @@ class ProjectedUpdate:
             raise ValueError(f"Expected {len(space.orders)} finite update coefficients.")
         return a
 
-    def geometry_update(self, curve, normal_update, *, prepared):
-        return geometry_update(curve, normal_update, prepared=prepared, settings=self)
+    def geometry_update(self, normal_update, *, prepared):
+        return geometry_update(normal_update, prepared=prepared, settings=self)
 
     def trial(self, space, coefficients):
         """Compatibility entry point; use the same implementation as the fitter."""
-        return geometry_update(space.curve, coefficients, prepared=space, settings=self)
+        return geometry_update(coefficients, prepared=space, settings=self)
 
 
-def geometry_update(curve, normal_update, *, prepared, settings):
-    if curve is not prepared.curve and not np.array_equal(curve.coefficients, prepared.curve.coefficients):
-        raise ValueError('Prepared geometry belongs to a different curve.')
+def geometry_update(normal_update, *, prepared, settings):
     started=time.perf_counter()
     settings.counts['trial_constructions']+=1
     a=settings._checked(prepared,normal_update)

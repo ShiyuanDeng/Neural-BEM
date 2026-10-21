@@ -121,12 +121,12 @@ class BorgesUpdate:
         change = -(second + kappa[:, None] ** 2 * basis)
         return mass + smoothing_m**4 * (change.T @ (weights[:, None] * change))
 
-    def geometry_update(self, curve, normal_update, *, prepared):
-        return geometry_update(curve, normal_update, prepared=prepared, settings=self)
+    def geometry_update(self, normal_update, *, prepared):
+        return geometry_update(normal_update, prepared=prepared, settings=self)
 
     def trial(self, space, coefficients):
         """Compatibility entry point; use the same implementation as the fitter."""
-        return geometry_update(space.curve, coefficients, prepared=space, settings=self)
+        return geometry_update(coefficients, prepared=space, settings=self)
 
     @staticmethod
     def _checked(space, coefficients):
@@ -136,7 +136,7 @@ class BorgesUpdate:
         return a
 
 
-def geometry_update(curve, normal_update, *, prepared, settings):
+def geometry_update(normal_update, *, prepared, settings):
     a = settings._checked(prepared, normal_update)
     try:
         step = displaced(prepared.curve, a / settings.length_unit_m, prepared.curve_modes,

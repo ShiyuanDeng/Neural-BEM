@@ -1,4 +1,4 @@
-"""Compatibility import: modal physics service. Canonical code: ``bem_inverse.a_forward``."""
+"""Compatibility import; implementation lives in forward_solvers/modal_muller.py."""
 import sys
-from bem_inverse import a_forward as _implementation
+from .forward_solvers import modal_muller as _implementation
 sys.modules[__name__] = _implementation

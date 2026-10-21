@@ -110,24 +110,23 @@ class SimilarityUpdate:
             raise ValueError(f'Expected {len(space.orders)} finite update coefficients.')
         return a
 
-    def geometry_update(self, curve, normal_update, *, prepared):
-        return geometry_update(curve, normal_update, prepared=prepared, settings=self)
+    def geometry_update(self, normal_update, *, prepared):
+        return geometry_update(normal_update, prepared=prepared, settings=self)
 
     def trial(self, space, coefficients):
         """Compatibility entry point for older callers."""
-        return self.geometry_update(space.curve, coefficients, prepared=space)
+        return self.geometry_update(coefficients, prepared=space)
 
 
-def geometry_update(curve, normal_update, *, prepared, settings):
+def geometry_update(normal_update, *, prepared, settings):
     """Translate the zero mode and uniformly scale every nonzero mode.
 
     The prepared base is validated once. A finite positive scale preserves
     its regularity, orientation and lack of intersections without resampling.
     ``normal_update`` contains (translation_x, translation_y, radius_change).
     """
-    if curve is not prepared.curve and not np.array_equal(curve.coefficients, prepared.curve.coefficients):
-        raise ValueError('Prepared geometry belongs to a different curve.')
     space, method = prepared, settings
+    curve = space.curve
     started = perf_counter()
     method.counts['trial_constructions'] += 1
     try:

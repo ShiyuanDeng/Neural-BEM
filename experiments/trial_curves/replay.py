@@ -70,7 +70,7 @@ def replay(it, length_unit_m, scale=1.0, lambdas=None):
                 continue
             built.clear()
             try:
-                candidate, report = geometry_update(space.curve, a_used, prepared=space)
+                candidate, report = geometry_update(a_used, prepared=space)
                 row.update(candidate=candidate.coefficients.copy(), report=report)
             except UpdateRefused as exc:
                 row.update(status='refused', reason=exc.reason, detail=exc.detail)

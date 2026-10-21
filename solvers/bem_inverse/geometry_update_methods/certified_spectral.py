@@ -15,7 +15,7 @@ from ..continuation.geometry import (
     FourierCurve, grid_size, integer, normal_basis, reparameterize,
     signed_area, speed_ratio, values,
 )
-from .spectral import CHUNK_BYTES, arclength_quadrature, batched_projection, spectral_project
+from .spectral import CHUNK_BYTES, arclength_quadrature, batched_projection, push_and_refit, sample_grid
 from .certificates import curve_certificate, derivative_norm, device_certificate, increment_bound, regularity_floor
 
 CONSTRUCTION = 'z + P_K[R(z+h*n)-R(z)], R = eq. 9 arclength quadrature (no splines); FD derivative of the complete trial'
@@ -120,9 +120,9 @@ class CertifiedSpectralUpdate:
             raise refusal_from_value_error(exc) from exc
         return shape, float(error)
 
-    def _project(self, *args, **kwargs):
+    def _project(self, grid, coefficients, band):
         self.counts['geometry_projections'] += 1
-        return spectral_project(*args, **kwargs)
+        return push_and_refit(grid, coefficients, band, self.length_unit_m)
 
     def prepare(self, curve, update_modes, curve_modes):
         """Differentiate this method's spectral projection and save both base grids."""
@@ -151,13 +151,14 @@ class CertifiedSpectralUpdate:
                 started = time.perf_counter()
         if coarse is None:
             zeros = np.zeros(dim)
-            base = self._project(curve, zeros, curve_modes, count, self.length_unit_m)[0]
-            fine = self._project(curve, zeros, curve_modes, 2*count, self.length_unit_m)[0]
+            grid, fine_grid = sample_grid(curve, count, update_modes), sample_grid(curve, 2*count, update_modes)
+            base = self._project(grid, zeros, curve_modes)[0]
+            fine = self._project(fine_grid, zeros, curve_modes)[0]
             columns = []
             for j in range(dim):
                 step = np.eye(dim)[j]*self.derivative_step_m
-                plus = self._project(curve, step, curve_modes, count, self.length_unit_m)[0]
-                minus = self._project(curve, -step, curve_modes, count, self.length_unit_m)[0]
+                plus = self._project(grid, step, curve_modes)[0]
+                minus = self._project(grid, -step, curve_modes)[0]
                 columns.append((plus-minus)/(2*self.derivative_step_m))
             derivatives = np.stack(columns, axis=1)
         else:
@@ -316,19 +317,18 @@ class CertifiedSpectralUpdate:
             space.cache[key] = (nodes, *arrays)
         return space.cache[key]
 
-    def geometry_update(self, curve, normal_update, *, prepared):
-        return geometry_update(curve, normal_update, prepared=prepared, settings=self)
+    def geometry_update(self, normal_update, *, prepared):
+        return geometry_update(normal_update, prepared=prepared, settings=self)
 
     def trial(self, space, coefficients):
         """Compatibility entry point; the finite construction is below."""
-        return geometry_update(space.curve, coefficients, prepared=space, settings=self)
+        return geometry_update(coefficients, prepared=space, settings=self)
 
 
-def geometry_update(curve, normal_update, *, prepared, settings):
+def geometry_update(normal_update, *, prepared, settings):
     """Move along normals, check, project at two grids, then check the stored curve."""
-    if curve is not prepared.curve and not np.array_equal(curve.coefficients, prepared.curve.coefficients):
-        raise ValueError('Prepared geometry belongs to a different curve.')
     space, method = prepared, settings
+    curve = space.curve
     started = time.perf_counter()
     method.counts['trial_constructions'] += 1
     method.records = []

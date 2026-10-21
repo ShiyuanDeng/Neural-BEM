@@ -281,24 +281,23 @@ class GaussianDisplacement:
         moved = FourierCurve.from_samples(raw, space.count//2-1)
         return projection_tangent(moved, (velocity@used_direction)[:, None], space.curve_modes, space.count)[:, 0]
 
-    def geometry_update(self, curve, normal_update, *, prepared):
-        return geometry_update(curve, normal_update, prepared=prepared, settings=self)
+    def geometry_update(self, normal_update, *, prepared):
+        return geometry_update(normal_update, prepared=prepared, settings=self)
 
     def trial(self, space, coefficients):
         """Compatibility entry point for older callers."""
-        return self.geometry_update(space.curve, coefficients, prepared=space)
+        return self.geometry_update(coefficients, prepared=space)
 
 
-def geometry_update(curve, normal_update, *, prepared, settings):
+def geometry_update(normal_update, *, prepared, settings):
     """Interpolate, scale once, displace, and project a Gaussian ambient field.
 
     Check both moved curves before arclength projection. Check the final stored
     curve after grid agreement. Preserve the scaled coordinates in ``a_used``
     even if a later check refuses the trial.
     """
-    if curve is not prepared.curve and not np.array_equal(curve.coefficients, prepared.curve.coefficients):
-        raise ValueError('Prepared geometry belongs to a different curve.')
     space, method = prepared, settings
+    curve = space.curve
     started = perf_counter()
     method.counts["trial_constructions"] += 1
     a = method._checked(space, normal_update)

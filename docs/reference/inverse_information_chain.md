@@ -19,7 +19,7 @@ Optional policies change controls and stopping; identify them explicitly.
   visible operation queue and calls the canonical `fit_stage()`.
 - [`FitStage`](../../solvers/bem_inverse/stage_types.py#L13)
   describes one phase: data, weights, update/storage bands, resolution, and work.
-- [`fit_stage()`](../../solvers/bem_inverse/fit_stage.py#L48)
+- [`fit_stage()`](../../solvers/bem_inverse/fit_stage.py#L52)
   runs the phase. Its iteration, damping-retry and backtracking loops remain
   visible in that function. Existing callers and tests reach this implementation.
 
@@ -32,10 +32,18 @@ retry. Rejected trials retain the current accepted geometry.
 Start with `runner.fit()` → `fit_stage.fit_stage()` → the selected mathematical
 module. Geometry preparation and finite trials live together in each file under
 `geometry_update_methods/`, without an update-class inheritance chain.
-`Objective` preserves frequency dispatch and exact refined-result caching;
-`a_forward.ModalMuller` preserves the physics service and device/cache ownership.
-The old `continuation.lm_backend`, `modal_*`, `spectral`, `certified` and
-`batched` import paths resolve to the moved implementation.
+The sibling folder `forward_solvers/` contains `modal_muller.forward_solve()`
+and `nodal_kress.forward_solve()`, which run the forward calculations as
+standalone functions. The ordinary fit loop selects one through
+`bind_forward_solve(physics)`, dispatches active frequencies with
+`forward_batch.solve_frequencies()`, then separately calculates B5.
+`Objective` retains exact refined-result caching and Jacobian dispatch; its
+compatibility evaluation methods use the same forward functions. Optional
+research objectives keep their own residual construction.
+The physics context preserves execution settings, geometry caches and counters;
+the returned forward states retain factors and traces. The old `a_forward`,
+`continuation.lm_backend`, `modal_geometry`, `modal_operator`, `spectral`,
+`certified` and `batched` import paths resolve to the maintained implementations.
 
 | Section | Module and mathematical entry points |
 |---|---|
@@ -73,8 +81,8 @@ divided differences, logarithmic geometry, speed-weighted normals, and waves.
 
 Code: [`FourierCurve`](../../solvers/bem_inverse/continuation/geometry.py#L27),
 [`ModalGeometry.__init__()`](../../solvers/bem_inverse/a1_geometry.py#L265),
-and [`ModalMuller._geometry()`](../../solvers/bem_inverse/a_forward.py#L174).
-The last method caches geometry by exact curve coefficients, window, and device.
+and [`prepare_geometry()`](../../solvers/bem_inverse/forward_solvers/modal_muller.py#L174).
+The last function caches geometry by exact curve coefficients, window, and device.
 
 ### A2. Geometry arrays → modal Müller matrix
 
@@ -89,7 +97,7 @@ The local blocks `v`, `k`, `kp`, and `t` are the exterior/interior combinations
 needed by the Müller system. Assembly builds their differences directly.
 Radial coefficients use analytic Bessel products; there is no radial sampling.
 
-[`ModalMuller._matrix()`](../../solvers/bem_inverse/a_forward.py#L197)
+[`assemble_matrix()`](../../solvers/bem_inverse/forward_solvers/modal_muller.py#L198)
 selects CPU or [CUDA assembly](../../solvers/bem_inverse/modal_cuda.py).
 The geometry coefficient workspace is distinct from all three shape/trace bands.
 
@@ -101,7 +109,7 @@ These supply the source RHS, receiver evaluation, and reciprocal RHS.
 
 Code: [`point_kernels()`](../../solvers/bem_inverse/a3_waves.py#L67),
 using [`WaveArrays`](../../solvers/bem_inverse/a1_geometry.py#L215).
-[`ModalMuller._evaluate()`](../../solvers/bem_inverse/modal_muller.py)
+[`_solve()`](../../solvers/bem_inverse/forward_solvers/modal_muller.py#L130)
 requests both sets through Graf/addition-theorem expansions.
 
 ### A4. Matrix + source RHS → boundary traces → predicted measurements
@@ -110,12 +118,16 @@ Input: `A_f` and source RHS. Factor the matrix and solve for boundary traces.
 The stacked trace state contains `u_D` followed by `q`, the speed-weighted
 normal flux. Contract the traces with receiver coefficients to obtain data.
 
-Code: [`ModalMuller._evaluate()`](../../solvers/bem_inverse/modal_muller.py).
+Code: [`forward_solve()`](../../solvers/bem_inverse/forward_solvers/modal_muller.py#L108) calls
+[`_solve()`](../../solvers/bem_inverse/forward_solvers/modal_muller.py#L130) for A1–A4.
 It stores factors, forward traces, and the reciprocal RHS in `ModalState`.
 The current implementation uses CPU LU even when matrix assembly uses CUDA.
 
-[`Objective._predict()`](../../solvers/bem_inverse/objective.py#L43)
-dispatches A2–A4 over active frequencies and collects their predictions.
+[`solve_frequencies()`](../../solvers/bem_inverse/forward_batch.py#L11)
+dispatches the selected forward function over active frequencies and collects
+predictions and retained forward states. The ordinary stage calls it directly,
+then calls `residual_evaluation()` for B5; `Objective.production()` remains a
+compatibility entry point rather than the ordinary loop's forward entry point.
 The current modal service uses paired point sources and receivers.
 
 ## B. Predicted measurements + geometry directions → residual Jacobian
@@ -139,9 +151,9 @@ Input: current `c_m` and the normal-harmonic update coordinates `a_i`.
 Output: one Cartesian coefficient velocity for each optimizer coordinate.
 The coordinates and the stored Cartesian coefficients are different quantities.
 
-Code: [`SpectralProjectedUpdate.prepare()`](../../solvers/bem_inverse/geometry_update_methods/spectral.py#L157)
+Code: [`SpectralProjectedUpdate.prepare()`](../../solvers/bem_inverse/geometry_update_methods/spectral.py#L171)
 defines coordinates and builds velocities using centered finite differences of
-projected geometry. [`batched_projection()`](../../solvers/bem_inverse/geometry_update_methods/spectral.py#L77)
+projected geometry. [`batched_projection()`](../../solvers/bem_inverse/geometry_update_methods/spectral.py#L91)
 evaluates the base and all positive/negative moves together.
 
 The differentiated map includes normal displacement, arclength reset, and
@@ -161,8 +173,8 @@ Convert each B6 coefficient velocity into its normal-displacement weight,
 including the boundary-speed factor. Solve the reciprocal RHS using the
 existing Müller factors, then contract forward traces, reciprocal traces, and weights.
 
-Code: [`ModalMuller.derivative()`](../../solvers/bem_inverse/a_forward.py#L309),
-[`_contract()`](../../solvers/bem_inverse/a_forward.py#L288), and
+Code: [`ModalMuller.derivative()`](../../solvers/bem_inverse/forward_solvers/modal_muller.py#L341),
+[`_contract()`](../../solvers/bem_inverse/forward_solvers/modal_muller.py#L320), and
 [`hadamard()`](../../solvers/bem_inverse/b7_data_jacobian.py#L30).
 
 The reciprocal RHS is solved as a batch of receiver columns once per frequency
@@ -175,8 +187,8 @@ Apply the same normalization, square-root weights, and real/imaginary stacking
 as B5 to obtain `J`. Combine `J` with `r` for gradient `g`, and with itself
 for the Gauss–Newton matrix `H_GN`.
 
-Code: [`Objective.jacobian()`](../../solvers/bem_inverse/objective.py#L99),
-[`gradient_frame()`](../../solvers/bem_inverse/fit_stage.py#L206),
+Code: [`Objective.jacobian()`](../../solvers/bem_inverse/objective.py#L69),
+[`gradient_frame()`](../../solvers/bem_inverse/fit_stage.py#L225),
 and [`b8_gauss_newton.curvature()`](../../solvers/bem_inverse/b8_gauss_newton.py).
 The live stage loop uses `J`, `g`, `H_GN`, `D`, `lambda_trial`, `a_raw`,
 `a_bounded` and `a_used`. Historical checkpoint fields keep their old names.
@@ -201,14 +213,15 @@ Cartesian band. The centered increment subtracts the base projection.
 
 Code: [`control_step()`](../../solvers/bem_inverse/geometry_update_methods/__init__.py),
 [backtracking and the selected `geometry_update()`](../../solvers/bem_inverse/fit_stage.py),
-[`spectral.geometry_update()`](../../solvers/bem_inverse/geometry_update_methods/spectral.py#L250),
-and [`arclength_quadrature()`](../../solvers/bem_inverse/geometry_update_methods/spectral.py#L41).
+[`spectral.geometry_update()`](../../solvers/bem_inverse/geometry_update_methods/spectral.py#L255),
+and [`arclength_quadrature()`](../../solvers/bem_inverse/geometry_update_methods/spectral.py#L59).
 
 The centered construction preserves the original stored curve for a zero step.
 The active method directly calls [`check_area`, `check_speed`, and
-`check_intersection`](../../solvers/bem_inverse/checks.py#L232) on each moved curve
-and the final candidate. Area uses Fourier coefficients; speed and intersection
-checks use sampled nodes. Sampled checks decide validity without certificates.
+`check_intersection`](../../solvers/bem_inverse/checks.py#L232) on the final
+candidate. The moved curves are not checked: refitting and centring change
+them, so only the final curve is the boundary that is used. Area uses Fourier
+coefficients; speed and intersection checks use sampled nodes. Sampled checks decide validity without certificates.
 
 The optional [`certified_spectral`](../../solvers/bem_inverse/geometry_update_methods/certified_spectral.py)
 method retains certificate decisions and sampled fallback in its own file.
@@ -230,7 +243,7 @@ compare current/candidate losses at both working and finer resolutions.
 Check the candidate's prediction discrepancy at every active frequency.
 
 Code: [candidate evaluation](../../solvers/bem_inverse/fit_stage.py),
-[`validate()`](../../solvers/bem_inverse/fit_stage.py#L115),
+[`validate()`](../../solvers/bem_inverse/fit_stage.py#L133),
 [`checked_pair()`](../../solvers/bem_inverse/c11_trial_evaluation.py#L21),
 and [`resolution_check()` / `acceptance()`](../../solvers/bem_inverse/checks.py).
 

@@ -115,7 +115,7 @@ def audit(curve, stage, config, problem, physics, update, seconds):
             direction /= np.linalg.norm(direction)
             residuals = []
             for sign in (1, -1):
-                candidate = geometry_update(curve, sign*1e-7*direction, prepared=space)[0]
+                candidate = geometry_update(sign*1e-7*direction, prepared=space)[0]
                 predictions = []
                 def finite_difference(observation):
                     state = evaluate(candidate, observation, stage.refined_nodes, 'audit_fd')

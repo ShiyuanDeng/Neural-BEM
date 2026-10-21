@@ -37,11 +37,13 @@ from .errors import (Stop, StageQuota, TrialSolveCap, TrialWallLimit, NumericalF
                      GeometryProposalCap, UpdateRefused, NORMAL_RETURN, STAGE_QUOTA)
 from .work import Ledger
 from .objective import Objective
+from .forward_batch import solve_frequencies
+from .forward_solvers import bind_forward_solve
 from .recording import observe
 from .b5_residual import normalize
 from .checks import acceptance, relative_columns, resolution_check, inside_box
 from .geometry_update_methods import bind_geometry_update, control_step
-from . import b8_gauss_newton, c9_lm, c11_trial_evaluation, c12_iteration, checks
+from . import b5_residual, b8_gauss_newton, c9_lm, c11_trial_evaluation, c12_iteration, checks
 
 
 
@@ -65,6 +67,7 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
     """
     started = perf_counter()
     geometry_update = bind_geometry_update(update)
+    forward_solve = bind_forward_solve(physics)  # modal_muller.forward_solve or nodal_kress.forward_solve
     if curve.band != stage.curve_modes:
         raise ValueError("Pass the curve at the stage storage band.")
     if resolution_response is not None:
@@ -96,6 +99,17 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
     resume_iteration = 0
     geometry_proposals = 0
 
+    def residual_evaluation(curve, batch):
+        """B5 only: turn the forward predictions into this stage's residual/loss."""
+        if batch is None:
+            return None
+        prediction, forwards = batch
+        evaluation = b5_residual.evaluate(curve, prediction, forwards, objective.observed,
+                                          stage.weights, config.residual_floor)
+        observe(objective.physics, 'objective', stage=stage, config=config, ledger=ledger,
+                evaluation=evaluation, observed=objective.observed)
+        return evaluation
+
     def admissible(candidate_curve):
         return inside_box(candidate_curve, config.domain_box)
 
@@ -110,8 +124,9 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
         return promotion_objective
 
     def promote(fine):
-        nonlocal stage, objective, physics
+        nonlocal stage, objective, physics, forward_solve
         stage, objective, physics = fine.stage, fine, fine.physics
+        forward_solve = bind_forward_solve(physics)
         resolution_events.append(dict(action='promoted', nodes=stage.nodes, refined_nodes=stage.refined_nodes,
                                       work=ledger.snapshot()))
 
@@ -201,8 +216,9 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
         return rebuilt, True
 
     def adopt_qualification(frame):
-        nonlocal stage,objective,current
+        nonlocal stage,objective,current,forward_solve
         stage,objective,current=frame['stage'],frame['objective'],frame['evaluation']
+        forward_solve = bind_forward_solve(objective.physics)
         resolution_events.append(dict(action='modal_qualification_promotion',nodes=stage.nodes,
             refined_nodes=stage.refined_nodes,work=ledger.snapshot()))
 
@@ -280,8 +296,14 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
                 if entry.refined_prediction is not None:
                     objective.reusable_refined[entry.curve_bytes] = entry.refined_prediction
             else:
-                # A1–A4, B5. Predictions, retained factors/traces, normalized r and loss.
-                current = objective.production(curve, "initial_objective")
+                if type(objective) is Objective:
+                    # A1–A4. Selected standalone solver, once per active frequency.
+                    batch = solve_frequencies(curve, stage.observations, contrast, stage.nodes,
+                        "initial_objective", forward_solve=forward_solve, ledger=ledger,
+                        physics=objective.physics, failures=objective.failures)
+                    current = residual_evaluation(curve, batch)  # B5: r and loss.
+                else:
+                    current = objective.production(curve, "initial_objective")
             if current is None:
                 raise NumericalFailure("initial state is not solver-ready")
             initial_loss = current.loss
@@ -397,13 +419,12 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
                             continue
                         seen_steps.add(key)
                     # Build the finite geometry trial. The selected method runs its own
-                    # checks (intermediate curve, refit agreement, final candidate)
-                    # and raises UpdateRefused, which counts as a rejected length.
+                    # checks and raises UpdateRefused, which counts as a rejected length.
                     geometry_proposals += 1
                     trial['geometry_constructed'] = True
                     geometry_started = perf_counter()
                     try:
-                        candidate_curve, geometry = geometry_update(current.curve, a_used, prepared=space)
+                        candidate_curve, geometry = geometry_update(a_used, prepared=space)
                         trial.update(geometry)
                         if 'a_used' in geometry:
                             a_used = np.asarray(geometry['a_used'], float)
@@ -442,9 +463,15 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
                             restart = True
                             break
                         trial.update(objective.last_trial)
-                    else:
-                        # C11 reuses A1–A4 and B5, keeping this trial separate from current.
+                    elif type(objective) is not Objective:
+                        # Optional research objectives retain their own residual construction.
                         candidate = objective.production(candidate_curve, "candidate")
+                    else:
+                        # A1–A4 at this trial boundary; B5 remains a separate operation.
+                        batch = solve_frequencies(candidate_curve, stage.observations, contrast, stage.nodes,
+                            "candidate", forward_solve=forward_solve, ledger=ledger,
+                            physics=objective.physics, failures=objective.failures)
+                        candidate = residual_evaluation(candidate_curve, batch)
                     if candidate is None:
                         trial.update(status='physics_failed', reason='production_evaluation_failed',
                                      physics_failures=deepcopy(getattr(objective, 'failures', [])))
