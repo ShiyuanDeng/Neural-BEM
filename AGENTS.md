@@ -73,8 +73,8 @@
   `--localization none`.
 - Far-start cases and the SC-050 grid-search initializer are retired (user,
   2026-10-04). Do not add them to new experiments. Every older scene set (CI-001
-  36 cases, SC-0xx, MA-00x, FM/RB/TR cases, TG-001) is legacy. It stays in place
-  only because seals hash its paths; see `experiments/benchmark/LEGACY.md`.
+  36 cases, SC-0xx, MA-00x, FM/RB/TR cases, TG-001) is legacy. This branch
+  removed them; they remain on `feature/shape-frequency-continuation`.
 - Each new experiment gets a pre-registered plan in `docs/iterations/`.
   User approval of the requested experiment work is sufficient authorization
   to run it; do not require a separate approval naming its tracking ID.
@@ -95,9 +95,9 @@
 
 # Cleanup collaboration
 
-- For cleanup work, start with [the workflow index](docs/cleanup/agents.md),
-  then read your assigned role's instructions and the selected range's shared
-  document. Keep user decisions and implementation status in that document.
+- For cleanup work, read the selected range's shared document in
+  `docs/cleanup/`. Keep user decisions and implementation status in that
+  document.
 - Before proposing cleanup changes, read
   [the user decision log](docs/cleanup/user_decisions.md). Add each new user
   decision or correction there with the user's reason and the rule it implies.

@@ -108,9 +108,9 @@ questions.
   forces it. "For performance" or "for flexibility" is not a reason.
 - Never propose a forwarding method, compatibility alias, re-export, or kept
   class chain as a way to save caller edits. Propose changing the callers.
-- Old import paths may still exist for legacy drivers or sealed evidence
-  (`experiments/benchmark/LEGACY.md`). Removing one is a decision. Grep for its
-  users and say which would break.
+- Old import paths still exist for legacy drivers and sealed evidence (see
+  "Compatibility and source provenance" in `solvers/bem_inverse/README.md`).
+  Removing one is a decision. Grep for its users and say which would break.
 
 # Check before you claim
 
