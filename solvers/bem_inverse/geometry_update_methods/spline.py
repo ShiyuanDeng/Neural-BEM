@@ -124,9 +124,6 @@ class ProjectedUpdate:
             raise ValueError(f"Expected {len(space.orders)} finite update coefficients.")
         return a
 
-    def geometry_update(self, normal_update, *, prepared):
-        return geometry_update(normal_update, prepared=prepared, settings=self)
-
 
 def geometry_update(normal_update, *, prepared, settings):
     started=time.perf_counter()

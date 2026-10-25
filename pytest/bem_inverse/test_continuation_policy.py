@@ -68,7 +68,8 @@ def test_runner_switches_only_initial_fit_and_reports_the_final_stage(monkeypatc
     def fake_fit(curve, stage, contrast, update, config, ledger, **kwargs):
         calls.append((stage.label, isinstance(update, SimilarityUpdate)))
         if len(calls) == 1:
-            final = update.geometry_update([.013, -.008, -.006], prepared=update.prepare(curve, 0, curve.band))[0]
+            trial = kwargs['geometry_update']
+            final = trial([.013, -.008, -.006], prepared=update.prepare(curve, 0, curve.band))[0]
             inherited.append(final)
         else:
             np.testing.assert_array_equal(curve.coefficients, resize(inherited[0], curve.band).coefficients)
@@ -77,7 +78,8 @@ def test_runner_switches_only_initial_fit_and_reports_the_final_stage(monkeypatc
             'NUMERICAL_FAILURE' if failure else 'NORMAL_OPTIMIZER_RETURN',
             'gradient_tolerance', True, 1, 1., .5, [], [], detail='fixture' if failure else None)
     monkeypatch.setattr(runner, 'fit_stage', fake_fit)
-    result = runner.fit(problem, physics=physics, policy=ShapeFrequencyPolicy(), output=tmp_path,
+    result = runner.fit(problem, physics=physics, forward_solve=lambda *args: None,
+        policy=ShapeFrequencyPolicy(), output=tmp_path,
         geometry_update='spectral', localization_adapter=lambda p, *args: (p.initial, {}))
     assert calls[0] == ('initialize_translation_scale', True)
     assert all(not similarity for _, similarity in calls[1:])

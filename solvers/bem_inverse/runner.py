@@ -14,7 +14,6 @@ from .fit_stage import fit_stage
 from .work import Ledger
 from .errors import Stop, NORMAL_RETURN, STAGE_QUOTA
 from .continuation.geometry import resize, cleanup
-from .geometry_update_methods.spline import ProjectedUpdate
 from .geometry_selection import make_update, describe_plan, operation_record
 from .io import write, curve_record
 from .localization import localize
@@ -39,11 +38,13 @@ class FitResume:
 
 
 def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=None, physics=None,
-        on_event=None, geometry_adapter=None, localization_adapter=None, geometry_update=None, resume=None):
+        forward_solve=None, on_event=None, geometry_adapter=None, localization_adapter=None,
+        geometry_update=None, resume=None):
     """Run from the prescribed start. This function cannot read truth or scene IDs.
 
-    ``physics`` is dependency injection for qualified registered services/tests;
-    ordinary callers choose only ``solver`` plus independent execution settings.
+    ``physics`` and its ``forward_solve`` are dependency injection for qualified
+    services and tests; ordinary callers choose only ``solver`` plus independent
+    execution settings, and ``make_backend`` builds both.
     Optional geometry/localization adapters extend the input representation while
     retaining this interpreter, policy operations and optimizer. They must
     declare their adaptations in the returned settings/receipt.
@@ -52,14 +53,16 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
     The result's ``final_stage`` names the last fitted stage's M, storage band and
     any stage-local geometry update, which an endpoint audit needs.
     """
-    physics = physics or make_backend(solver, execution)
+    if physics is None:
+        physics, forward_solve = make_backend(solver, execution)
+    elif forward_solve is None:
+        raise ValueError('Pass the forward_solve of the injected physics context.')
     if geometry_adapter is not None and geometry_update is not None:
         raise ValueError('Choose geometry_update or geometry_adapter, not both.')
     policy = policy or CumulativePolicy()
     resize_curve = resize if geometry_adapter is None else geometry_adapter.resize
     cleanup_curve = cleanup if geometry_adapter is None else geometry_adapter.cleanup
     record_curve = curve_record if geometry_adapter is None else geometry_adapter.record
-    create_update = ProjectedUpdate if geometry_adapter is None else geometry_adapter.update
     initialize = localize if localization_adapter is None else localization_adapter
     physics.validate(problem)
     operations = list(policy.operations(problem, physics))
@@ -67,8 +70,9 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
     first = next(op for op in operations if op.kind == 'fit')
     curve = resize_curve(problem.initial, first.stage.curve_modes)
     last = first
-    selected_update = (create_update(problem.length_unit_m) if geometry_adapter is not None else
-                       make_update(geometry_update, problem.length_unit_m, physics.execution, default=create_update))
+    # The selected method's update object and its trial-curve (geometry_update) function.
+    selected_update, selected_trial = (geometry_adapter.update(problem.length_unit_m) if geometry_adapter is not None
+                                       else make_update(geometry_update, problem.length_unit_m, physics.execution))
     update_settings = selected_update.settings()
     stage_updates = {}
     record_settings = update_settings if geometry_update is not None else {}
@@ -152,9 +156,9 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
                         if op.fit_geometry_update not in stage_updates:
                             stage_updates[op.fit_geometry_update] = make_update(
                                 op.fit_geometry_update, problem.length_unit_m, physics.execution)
-                        update = stage_updates[op.fit_geometry_update]
+                        update, trial_curve = stage_updates[op.fit_geometry_update]
                     else:
-                        update = selected_update
+                        update, trial_curve = selected_update, selected_trial
                     last = op
                     curve = resize_curve(curve, op.stage.curve_modes)
                     if resumed_stage is None:
@@ -175,7 +179,8 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
                     entry, carried = carried, None
                     # A–B–C. Run one resolved stage and retain its accepted endpoint.
                     result = fit_stage(curve, op.stage, problem.contrast, update, op.optimizer, ledger,
-                                       on_accept=accepted_state, physics=physics, resume=resumed_stage,
+                                       physics=physics, forward_solve=forward_solve, geometry_update=trial_curve,
+                                       on_accept=accepted_state, resume=resumed_stage,
                                        entry=entry, retain_final=reuse_entries)
                     resumed_stage = None
                     curve = result.curve
@@ -210,11 +215,16 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
                 elif op.kind == 'frontier':
                     ledger.begin_stage(op.label, None)
                     ledger.reserve(2)
-                    # Frontier is a complete solve+derivative diagnostic; never free work.
-                    ledger.charge('solve', 'frontier')
-                    ledger.charge('reciprocal', 'frontier')
-                    measured = physics.observable_frontier(curve, problem.real[-1], problem.contrast,
-                        policy.frontier_top, policy.frontier_threshold)
+                    # Frontier: one refined solve at the highest real frequency, then its
+                    # paired-Jacobian column profile. A charged diagnostic, never free work.
+                    resolution = physics.resolution_profile(curve.band)['refined']
+                    with ledger.calls(lambda o: forward_solve(curve, o, problem.contrast, resolution),
+                                      (problem.real[-1],), 'solve', 'frontier', threads=1) as calls:
+                        state = calls[0]()
+                    with ledger.calls(lambda s: physics.observable_frontier(s, policy.frontier_top,
+                                                                            policy.frontier_threshold),
+                                      (state,), 'reciprocal', 'frontier', threads=1) as calls:
+                        measured = calls[0]()
                     tail = policy.tail(problem, physics, measured['frontier'])
                     event(op, 'frontier measured; releases resolved' if tail else 'frontier at or below completed band',
                           measured=measured, resolved_operations=[operation_record(item, record_settings) for item in tail])
@@ -246,8 +256,8 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
         geometry_update=geometry_update, geometry_settings=update_settings)
     if stage_updates:
         row['stage_geometry_updates'] = {name: dict(settings=item.settings(), work=dict(item.counts))
-                                        for name, item in stage_updates.items()}
-        for item in stage_updates.values():
+                                        for name, (item, _) in stage_updates.items()}
+        for item, _ in stage_updates.values():
             for key, value in item.counts.items():
                 row['geometry_work'][key] = row['geometry_work'].get(key, 0)+value
     if resume is not None:

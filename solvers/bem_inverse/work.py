@@ -2,6 +2,7 @@
 from contextlib import contextmanager
 from threading import RLock
 from time import perf_counter
+from .continuation.forward import ordered_calls
 from .errors import StageQuota, TrialSolveCap, TrialWallLimit
 
 class Ledger:
@@ -9,6 +10,7 @@ class Ledger:
 
     A reservation raises before a batch whose declared maximum would cross
     the stage quota (a normal stage end) or the total cap/wall (a hard stop).
+    Every charged solve or derivative goes through ``calls``.
     """
 
     def __init__(self, cap=8012, seconds=7200.0, clock=perf_counter, endpoint_reserve=12,
@@ -20,7 +22,6 @@ class Ledger:
         self.stage = None
         self.stage_start = 0
         self.stage_quota = None
-        self.endpoint = False
         self.solves = {}
         self.failed = {}
         self.reciprocal = {}
@@ -28,15 +29,25 @@ class Ledger:
         self._lock = RLock()
 
     @contextmanager
-    def calls(self, calls_for, function, items, kind, category):
-        """Opt-in accounting at dispatch; default retains historical SPD receipts."""
+    def calls(self, function, items, kind, category, *, threads):
+        """Deferred ``function(item)`` calls on ``threads`` workers, each charged once; consume in order.
+
+        By default each call is reserved and charged when it is consumed (the SPD
+        receipts). Strict dispatch reserves the complete batch before a pool starts
+        any work and charges each call when a worker starts it. Either way a call
+        that raises is recorded as failed.
+        """
         items = tuple(items)
         if not self.strict_dispatch:
-            with calls_for(function, items) as calls:
+            with ordered_calls(function, items, threads=threads) as calls:
                 def consume(call):
                     self.reserve(1)
                     self.charge(kind, category)
-                    return call()
+                    try:
+                        return call()
+                    except Exception:
+                        self.fail(category)
+                        raise
                 yield [lambda call=call: consume(call) for call in calls]
             return
         self.reserve(len(items))  # complete batch, before a pool starts any work
@@ -50,7 +61,7 @@ class Ledger:
                 with self._lock:
                     self.fail(category)
                 raise
-        with calls_for(dispatched, items) as calls:
+        with ordered_calls(dispatched, items, threads=threads) as calls:
             yield calls
 
     def begin_stage(self, label, quota):
@@ -76,7 +87,7 @@ class Ledger:
         return ledger
 
     def reserve(self, maximum):
-        overhead = self.endpoint_reserve if self.stage is not None and not self.endpoint else 0
+        overhead = self.endpoint_reserve if self.stage is not None else 0
         spent = self.units - self.stage_start
         if self.clock() - self.started >= self.seconds:
             raise TrialWallLimit("hard wall limit")
@@ -88,14 +99,6 @@ class Ledger:
             raise StageQuota("next complete batch and endpoint reserve exceed the stage quota")
         if self.units + maximum + overhead > self.cap:
             raise TrialSolveCap("next complete batch and endpoint reserve exceed the total cap")
-
-    @contextmanager
-    def endpoint_scope(self):
-        previous, self.endpoint = self.endpoint, True
-        try:
-            yield
-        finally:
-            self.endpoint = previous
 
     def charge(self, kind, category):
         store = self.solves if kind == "solve" else self.reciprocal

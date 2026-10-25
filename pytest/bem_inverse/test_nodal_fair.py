@@ -3,10 +3,11 @@ from concurrent.futures import ThreadPoolExecutor
 from dataclasses import replace
 import numpy as np
 import pytest
-from bem_inverse.physics import Execution, NodalKress
+from bem_inverse.physics import Execution
+from bem_inverse.forward_solvers.nodal_kress import NodalKress, forward_solve
 from bem_inverse.nodal_geometry import GeometryCache
 from bem_inverse.continuation.geometry import FourierCurve
-from bem_inverse.geometry_update_methods.spline import ProjectedUpdate
+from bem_inverse.geometry_update_methods.spline import ProjectedUpdate, geometry_update
 from bem_inverse.continuation.geometry import resize
 from bem_inverse.continuation.geometry_runtime import geometry_runtime
 from gpr_bem_kress import cuda_assembly as CA
@@ -55,17 +56,18 @@ def test_cached_fields_jacobian_and_full_trial_match_reference(damped):
     catalog = problem.damped if damped else problem.real
     with geometry_runtime('both'):
         for observation in (catalog[0], catalog[-1]):
-            a = uncached.evaluate(curve, observation, problem.contrast, 194)
-            b = cached.evaluate(curve, observation, problem.contrast, 194)
-            reference = cpu.evaluate(curve, observation, problem.contrast, 194)
+            a = forward_solve(curve, observation, problem.contrast, 194, context=uncached)
+            b = forward_solve(curve, observation, problem.contrast, 194, context=cached)
+            reference = forward_solve(curve, observation, problem.contrast, 194, context=cpu)
             np.testing.assert_allclose(b.prediction, a.prediction, rtol=1e-11, atol=1e-12)
             np.testing.assert_allclose(b.prediction, reference.prediction, rtol=1e-9, atol=1e-11)
             ja, jb = (p.derivative(x, update, space) for p,x in ((uncached,a),(cached,b)))
             np.testing.assert_allclose(jb, ja, rtol=1e-10, atol=1e-10)
             direction = np.array([1., .2, -.1, .15, -.2, .1, .05]); direction /= np.linalg.norm(direction)
             eps = 1e-7
-            predictions = [cached.evaluate(update.geometry_update(sign*eps*direction, prepared=space)[0], observation,
-                                           problem.contrast, 194).prediction for sign in (1, -1)]
+            predictions = [forward_solve(geometry_update(sign*eps*direction, prepared=space, settings=update)[0],
+                                         observation, problem.contrast, 194, context=cached).prediction
+                           for sign in (1, -1)]
             fd = (predictions[0]-predictions[1])/(2*eps)
             assert np.linalg.norm(fd-jb@direction)/np.linalg.norm(fd) < 1e-3
     assert cached.receipt()['geometry_cache']['hits'] >= 1

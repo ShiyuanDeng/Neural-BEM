@@ -1,7 +1,8 @@
 """Modal Müller functions: forward_solve runs A1–A4; ModalMuller retains fit-local state.
 
 Read forward_solve() → _solve() for A1–A4. The context class below holds
-execution settings, caches, counters and the retained service interface.
+execution settings, caches and counters, and owns the derivative, the
+resolution profile and the frontier.
 
 Stored coefficients c → predicted measurements, with the factors and traces
 that B7 reuses. One evaluation runs these separately timed stages:
@@ -49,7 +50,7 @@ from ..a1_geometry import ModalGeometry, real_product
 from ..a2_muller import muller_matrix
 from ..a3_waves import point_kernels
 from .. import a4_fields, b7_data_jacobian
-from ..physics import NodalKress, Prediction, register_backend
+from ..physics import Counters, Prediction, register_backend
 
 
 TOKENS_PER_MODE = 8
@@ -115,14 +116,14 @@ def forward_solve(curve, observation, contrast, resolution, *, context=None):
         from ..physics import Execution
         context = ModalMuller(Execution())
     started = perf_counter()
-    context._record('evaluation_attempts')
+    context.counters.record('evaluation_attempts')
     try:
         prediction = _solve(curve, observation, contrast, trace_cutoff(int(resolution)), context=context)
     except Exception:
-        context._record('failed_evaluations', perf_counter()-started)
+        context.counters.record('failed_evaluations', perf_counter()-started)
         raise
-    context._record('evaluations', perf_counter()-started, prediction.diagnostics['device'],
-                 prediction.diagnostics['fallback'])
+    context.counters.record('evaluations', perf_counter()-started, prediction.diagnostics['device'],
+                            prediction.diagnostics['fallback'])
     return prediction
 
 
@@ -180,7 +181,7 @@ def prepare_geometry(curve, window, device, *, context):
                 context._geometries.popitem(last=False)
         else:
             context._geometries.move_to_end(key)
-            context._counts['geometry_cache_hits'] += 1
+            context.counters.count('geometry_cache_hits')
     with slot[0]:
         if slot[1] is None:
             options = dict(log_tolerance=context.settings.log_tolerance, max_log_degree=context.settings.max_log_degree)
@@ -209,14 +210,14 @@ def assemble_matrix(curve, window, k, ki, cutoff, *, context):
         with context._stage('assembly'):
             queued = perf_counter()
             with CA._device_work:
-                context._record('assembly_gpu_queue', perf_counter()-queued)
+                context.counters.record('assembly_gpu_queue', perf_counter()-queued)
                 timing = {}
                 try:
                     matrix = modal_cuda.muller_matrix(geometry, k, ki, cutoff,
                         tolerance=context.settings.radial_tolerance, timing=timing)
                 finally:
                     for kind, elapsed in timing.items():
-                        context._record(kind, elapsed)
+                        context.counters.record(kind, elapsed)
                 return geometry, (*matrix, 'cuda-modal', None)
     except Exception as exc:
         if context.execution.device != 'auto' or not CA.out_of_memory(exc):
@@ -238,23 +239,11 @@ class ModalMuller:
         self.execution = execution_settings
         self.settings = settings or ModalSettings()
         self.observer = observer
-        self._lock = Lock()
+        self._lock = Lock()  # guards the geometry cache
         self._geometries = OrderedDict()
-        self._counts = dict(evaluation_attempts=0, evaluations=0, failed_evaluations=0,
-                            derivative_attempts=0, derivatives=0, failed_derivatives=0, disk_batches=0,
-                            geometry_cache_hits=0)
-        self._devices = {}
-        self._fallbacks = {}
-        self._seconds = {}
-
-    def _record(self, kind, seconds=0., device=None, fallback=None):
-        with self._lock:
-            self._counts[kind] = self._counts.get(kind, 0)+1
-            self._seconds[kind] = self._seconds.get(kind, 0.)+seconds
-            if device:
-                self._devices[device] = self._devices.get(device, 0)+1
-            if fallback:
-                self._fallbacks[fallback] = self._fallbacks.get(fallback, 0)+1
+        self.counters = Counters(evaluation_attempts=0, evaluations=0, failed_evaluations=0,
+                                 derivative_attempts=0, derivatives=0, failed_derivatives=0, disk_batches=0,
+                                 geometry_cache_hits=0)
 
     @contextmanager
     def _stage(self, kind):
@@ -262,7 +251,7 @@ class ModalMuller:
         try:
             yield
         finally:
-            self._record(kind, perf_counter()-started)
+            self.counters.record(kind, perf_counter()-started)
 
     def validate(self, problem):
         if problem.material != 'equal_density_homogeneous' or not isinstance(problem.initial, FourierCurve):
@@ -294,13 +283,6 @@ class ModalMuller:
                                   f'raise coefficient window by {s.trace_step}; ')+
                                'frontier and endpoint audit only')
 
-    def ordered_calls(self, function, items):
-        return F.ordered_calls(function, items, threads=self.execution.frequency_threads)
-
-    def evaluate(self, curve, observation, contrast, resolution):
-        """Compatibility entry point; mathematics lives in `forward_solve`."""
-        return forward_solve(curve, observation, contrast, resolution, context=self)
-
     def _contract(self, state, weights):
         jacobian, reciprocal = b7_data_jacobian.reciprocal_jacobian(state, weights)
         checks.require_finite_data_jacobian(jacobian)
@@ -312,14 +294,14 @@ class ModalMuller:
 
     def _derivative(self, state, weights):
         started = perf_counter()
-        self._record('derivative_attempts')
+        self.counters.record('derivative_attempts')
         try:
             with self._stage('jacobian'):
                 result = self._contract(state, weights)
         except Exception:
-            self._record('failed_derivatives', perf_counter()-started)
+            self.counters.record('failed_derivatives', perf_counter()-started)
             raise
-        self._record('derivatives', perf_counter()-started)
+        self.counters.record('derivatives', perf_counter()-started)
         return result
 
     def derivative(self, prediction, update, space):
@@ -333,10 +315,11 @@ class ModalMuller:
         weights = b7_data_jacobian.normal_velocity_weights(state.coefficients, velocities)
         return self._derivative(state, weights)
 
-    def observable_frontier(self, curve, observation, contrast, top, threshold):
-        from bem_inverse.normal_basis import orthonormal_normal_basis
-        state = self.evaluate(curve, observation, contrast,
-                              self.resolution_profile(curve.band)['refined'])._handle
+    def observable_frontier(self, prediction, top, threshold):
+        """Highest normal mode whose paired Jacobian column passes ``threshold``, from a forward solve."""
+        from ..normal_basis import orthonormal_normal_basis
+        state = prediction._handle
+        curve = FourierCurve(state.coefficients)
         # Geometry-side samples of h(s(t))|z'(t)|: arclength harmonics need the arclength map.
         width = 2*state.cutoff
         count = int(2**np.ceil(np.log2(max(1024, 4*(2*width+2*top+curve.band+1)))))
@@ -350,34 +333,30 @@ class ModalMuller:
         frontier = int(np.flatnonzero(paired >= threshold*paired.max()).max())
         return dict(frontier=frontier, column_profile=paired, threshold=threshold, top=top, work_units=2)
 
-    # The exact homogeneous-disk Mie grid does not depend on the boundary discretization.
-    disk_landscape = NodalKress.disk_landscape
-
     def receipt(self):
-        with self._lock:
-            stages = ('geometry', 'waves', 'assembly', 'factorization', 'fields', 'jacobian')
-            return dict(solver=self.name, execution=asdict(self.execution), settings=asdict(self.settings),
-                counts=dict(self._counts), devices=dict(self._devices), fallback_reasons=dict(self._fallbacks),
-                seconds=dict(self._seconds), stage_seconds={k: self._seconds.get(k, 0.) for k in stages},
-                work_semantics='actual dispatched evaluations and derivative batches, including speculative threads; '
-                               'optimizer ledger separately retains SPD reservation/charge semantics',
-                localization_model='exact homogeneous disk Mie series, qualified by selected backend',
-                discretization='Fourier-Galerkin traces |m|<=K_trace; Chebyshev radial and log|W|^2 '
-                               'expansions on window K_trace+margin; Graf sources/receivers; no boundary collocation',
-                sampling=dict(operator_boundary_collocation=False, interval_proposal_torus_grid=True,
-                              frontier_geometry_quadrature=True, end_to_end_sample_free=False),
-                certificate_arithmetic='exact-arithmetic residual inequality with heuristic FFT allowance; '
-                                       'not interval verified',
-                execution_note='Execution.device selects geometry preparation and assembly (modal_cuda on CUDA); '
-                               'scalar kernels, Graf waves, LU, fields and Jacobian on the CPU; '
-                               'Execution.acceleration selects only the Mie grid; Execution.resolution is not used',
-                retained_state=f'up to {self.settings.cached_geometries} prepared geometries per device '
-                               '(device arrays for CUDA); LU factors on the host in handles')
+        recorded = self.counters.snapshot()
+        stages = ('geometry', 'waves', 'assembly', 'factorization', 'fields', 'jacobian')
+        return dict(solver=self.name, execution=asdict(self.execution), settings=asdict(self.settings),
+            **recorded, stage_seconds={k: recorded['seconds'].get(k, 0.) for k in stages},
+            work_semantics='actual dispatched evaluations and derivative batches, including speculative threads; '
+                           'optimizer ledger separately retains SPD reservation/charge semantics',
+            localization_model='exact homogeneous disk Mie series, qualified by selected backend',
+            discretization='Fourier-Galerkin traces |m|<=K_trace; Chebyshev radial and log|W|^2 '
+                           'expansions on window K_trace+margin; Graf sources/receivers; no boundary collocation',
+            sampling=dict(operator_boundary_collocation=False, interval_proposal_torus_grid=True,
+                          frontier_geometry_quadrature=True, end_to_end_sample_free=False),
+            certificate_arithmetic='exact-arithmetic residual inequality with heuristic FFT allowance; '
+                                   'not interval verified',
+            execution_note='Execution.device selects geometry preparation and assembly (modal_cuda on CUDA); '
+                           'scalar kernels, Graf waves, LU, fields and Jacobian on the CPU; '
+                           'Execution.acceleration selects only the Mie grid; Execution.resolution is not used',
+            retained_state=f'up to {self.settings.cached_geometries} prepared geometries per device '
+                           '(device arrays for CUDA); LU factors on the host in handles')
 
 
 def register():
     """Make ``solver='modal_muller'`` available through make_backend (idempotent)."""
     try:
-        register_backend('modal_muller', ModalMuller)
+        register_backend('modal_muller', ModalMuller, forward_solve)
     except ValueError:
         pass

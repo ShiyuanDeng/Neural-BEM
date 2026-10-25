@@ -16,7 +16,7 @@ from bem_inverse.errors import Stop
 from bem_inverse.fit_stage import fit_stage
 from bem_inverse.work import Ledger
 from bem_inverse.continuation.geometry import FourierCurve
-from test_resolution_resume import ScalarUpdate, scalar_stage
+from test_resolution_resume import ScalarUpdate, scalar_stage, scalar_trial
 
 
 def stable(value):
@@ -61,7 +61,8 @@ def control_paths():
             if mode == 'callback_stop' and i == 1:
                 raise Stop('reference callback stop')
         result = fit_stage(FourierCurve.circle(2), stage, .5, ScalarUpdate(),
-                           config, ledger, physics=physics, on_accept=callback)
+                           config, ledger, physics=physics, forward_solve=physics.forward_solve,
+                           geometry_update=scalar_trial, on_accept=callback)
         records[mode] = dict(result=stage_record(result), calls=stable(physics.calls),
                              derivatives=physics.derivatives, callbacks=callbacks)
     return records

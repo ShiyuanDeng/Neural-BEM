@@ -10,40 +10,36 @@ is a source-tree package following the repository's `solvers/` convention.
 
 Use the [inverse information chain](../../docs/reference/inverse_information_chain.md):
 `runner.fit()` → `fit_stage.fit_stage()` → the selected mathematical module.
-The retry loops stay in `fit_stage.py`; numerical conditions live in `checks.py`.
+`fit_stage()` keeps the iteration, damping-retry and backtracking loops visible.
+Two local steps carry the mathematics: `evaluate` (A1–A4 forward solves, then
+the B5 residual) and `linearize` (B6–B8). A trial curve is accepted when its
+loss is lower than the current loss. Numerical conditions live in `checks.py`.
 
-Each file in `geometry_update_methods/` owns its preparation, stored data,
-measurements and `geometry_update()` entry point, without update-class
-inheritance. Ordinary curve operations live in `continuation/geometry.py`.
+`fit_stage()` receives the selected methods as functions, chosen once where the
+method is selected:
 
-The `forward_solvers/` folder sits beside `geometry_update_methods/`. Its
-`modal_muller.forward_solve()` and `nodal_kress.forward_solve()` functions own
-the forward calculations. `fit_stage()` selects a function with `bind_forward_solve(physics)`,
-dispatches it over active frequencies with `solve_frequencies()`, then explicitly
-forms the B5 residual and loss. The physics context retains execution settings,
-geometry caches, counters and the derivative interface; returned forward states
-retain factors and traces. Neither forward function uses the measured data.
+- `forward_solve(curve, observation, contrast, resolution)` comes from
+  `physics.make_backend(solver)`, together with its physics context. Each file in
+  `forward_solvers/` owns one context class (`ModalMuller`, `NodalKress`), its
+  `forward_solve`, the reciprocal derivative, the resolution profile and the
+  frontier, and registers the class with the function.
+- `geometry_update(normal_update, *, prepared)` comes from
+  `geometry_selection.make_update(name)`, together with its update object. Each
+  file in `geometry_update_methods/` owns its preparation, stored data,
+  measurements and `geometry_update()` function. Ordinary curve operations live
+  in `continuation/geometry.py`.
+
+`work.Ledger` charges every solve and derivative through `Ledger.calls`, which
+also runs the active frequencies on the configured threads.
 
 ```python
-from bem_inverse import Execution
-from bem_inverse.forward_solvers import modal_muller
-context = modal_muller.ModalMuller(Execution(device="cpu"))
-prediction = modal_muller.forward_solve(
-    curve, observation, contrast, resolution, context=context,
-)
+from bem_inverse import Execution, make_backend
+context, forward_solve = make_backend('nodal_kress', Execution(device='cpu'))
+prediction = forward_solve(curve, observation, contrast, resolution)
 ```
 
-The context is optional for standalone calls; repeated calls should share it to
-reuse geometry. Resolution keeps its existing meaning: `8*K_trace` for modal
-physics and node count for nodal physics. `physics.evaluate()`, `a_forward`, and the old top-level
-`modal_muller`/`nodal_kress` imports remain compatibility entry points. Custom physics adapters keep their selected
-`evaluate()` implementation.
-
-`endpoint.py` owns independent endpoint calculations, `objective.py` retains
-refined-result caching, Jacobian dispatch and optional research objectives, and
-`work.py` owns charging. Ordinary stage forward solves no longer pass through
-`Objective.production()`. Refined and compatibility calls use the same standalone
-functions through `forward_batch.py`. Old geometry paths retain compatibility exports.
+Repeated calls should reuse one context, which caches geometry. Resolution is
+`8*K_trace` for modal physics and the node count for nodal physics.
 
 ## API
 
@@ -66,32 +62,12 @@ result = fit(
 )
 ```
 
-`Problem` contains fitting inputs, never truth geometry or a scene ID. The
-runner returns unscored numerical results and audits. Campaign code owns
-synthetic-data generation, truth loading, and recovery scoring.
-
-The [agreed continuation schedule](../../docs/iterations/CI-SPD/CONTINUATION_SCHEDULE.md)
-has an opt-in implementation, `bem_inverse.continuation_policy.ShapeFrequencyPolicy`:
-exact translation/scaling initialization at damped 0.25 GHz, the preserved
-frequency ladder and M/K progression, four full-catalog stages with
-(M,K_geometry)=(11,24)/(15,32)/(19,40)/(25,52), then full release at (95,192).
-The recorded CS-001 comparison used `geometry_update="certified_spectral"`;
-stage-local similarity affects the initial fit only, and independent endpoint
-checks retain the selected ordinary geometry update. The default `CumulativePolicy` remains unchanged.
-The bounded paired TG-002 [CS-001 validation](../../docs/iterations/CI-SPD/CS-001_results.md)
-recovered 4/8 versus 5/8 for the current-policy control: 1.499x median
-speedup on four retained successes, but a C-shape recovery regression.
-The compact shape storage selects lower modal trace cutoffs, and the
-regression stopped at the candidate-resolution gate. This configuration
-is not qualified for promotion; full release was not reached by this screen.
-
-To select modal physics explicitly:
-
-```python
-from bem_inverse.modal_muller import register
-register()
-result = fit(problem, solver="modal_muller", geometry_update="spectral")
-```
+`Problem` contains fitting inputs, never truth geometry or a scene ID. `fit`
+returns the unscored endpoint and `final_stage` (its M, storage band and any
+stage-local geometry update). It does not check itself at a finer resolution;
+an independent endpoint audit belongs to the caller. The TG-002 campaign runs
+[`experiments/benchmark/audit.py`](../../experiments/benchmark/audit.py) after
+`fit` returns, then scores against truth.
 
 To select a complete named recipe instead of individual slots:
 
@@ -100,221 +76,72 @@ from bem_inverse import pipelines
 result = pipelines.fit(problem, "modal_fixed", execution=Execution(device="auto"), output="path/to/run")
 ```
 
-| Pipeline | Physics | Geometry update | Unresolved trial |
-|---|---|---|---|
-| `nodal_baseline` | `nodal_kress` | `spline` | hard stop (CI-001) |
-| `nodal_fixed` | `nodal_kress` | `spectral` | one promotion to N1024/2048 (`ResolutionResponse`) |
-| `modal_fixed` | `modal_muller` | `spectral` | hard stop; optional `modal_response` is a separate recipe |
-| `modal_response` | `modal_muller` | `spectral` | optional promotion to trace cutoffs 128/160 |
+| Pipeline | Physics | Geometry update |
+|---|---|---|
+| `nodal_baseline` | `nodal_kress` | `spline` (CI-001) |
+| `nodal_fixed` | `nodal_kress` | `spectral` |
+| `modal_fixed` | `modal_muller` | `spectral` (the TG-002 default) |
 
-A pipeline only fills `fit`'s physics, geometry-update and resolution slots; policy, start
-and localization stay with the caller. Results gain `pipeline` and `resolution_promoted`.
+A pipeline fills only `fit`'s physics and geometry-update slots; policy, start
+and localization stay with the caller. Selecting `solver='modal_muller'`
+directly needs `forward_solvers.modal_muller.register()` first. Bare `fit()`
+keeps `nodal_kress` with the spline update. Supported geometry names are
+`spline`, `spectral`, `certified_spectral`, `analytic_spectral`,
+`gaussian_lipschitz`, and `similarity`.
 
-The maintained named pipelines and TG-002 now use sampled spectral geometry
-with batched preparation. Each final candidate must pass direct
-area, minimum-speed and sampled-intersection checks.
-
-Removing certificates changes which trials are accepted: sampled checks are
-decisive and do not establish continuous-curve simplicity. This refactor includes
-no new inverse experiment and establishes no runtime improvement.
-
-`certified_spectral` remains an explicit optional method with the previous
-certificate decisions. Historical reference selections and results keep that
-meaning; certificate-order settings affect only this optional method.
-
-Calling bare `fit()` keeps `nodal_kress` with the spline projected update.
-Supported geometry names are `spline`, `spectral`, `certified_spectral`,
-`analytic_spectral`, `gaussian_lipschitz`, and `similarity`.
-
+Every geometry update builds its trial curve from one N-point refit and checks
+the final curve: coefficient area, sampled minimum speed and sampled segment
+intersections. `certified_spectral` keeps its optional certificate decisions.
 Analytic spectral and Gaussian updates remain experimental; the Gaussian map
-failed ON-001 curved-state qualification. Device and physics selection remain
-independent. See the
-[campaign guide](../../experiments/cleaned_interface/README.md) for numerical
-limits, execution semantics, and the recorded evidence.
+failed ON-001 curved-state qualification.
 
-## ON-001 opt-in controls
+[`policies.py`](policies.py) names recipes as a parent plus one change; run
+`python -m experiments.benchmark policies` for the table. The opt-in
+four-phase schedule is `continuation_policy.ShapeFrequencyPolicy` (CS-001).
+The agreement damping rule with its two progress exits is DP-001's. Both were
+measured before the finer re-evaluations were removed (NR-001); their result
+pages are on `feature/shape-frequency-continuation`.
 
-`CumulativePolicy(required_accuracy=.003)` requests a passed current endpoint
-audit at accepted full-real-catalog states meeting the maximum per-frequency
-residual criterion. Failed audits remain charged and retry only after the
-residual halves or the geometry/physics resolution changes. Optional
-`audit_aggregate_seconds=30` reserves ten seconds for the terminal audit.
-The ordinary defaults retain the original schedule and separate audit budgets.
+`Execution(nodal_geometry_reuse="per_curve")` reuses exact-curve CUDA nodal
+geometry within a fit; `nodal_resolution_profile="band_matched"` seeds the nodal
+resolution from the storage band (PC-002, planned on `feature/shape-frequency-continuation`).
 
-ON-001 confirmed this E rule on all 30 TG-002 pairs: 26/30 recovered in
-both arms, median paired audited-output speedup 1.546x, no new recovery. Evidence:
-[iteration 31](../../docs/iterations/cleaned_interfaces/iteration_31/01_results.md).
-`reach_fraction` and `working_anchors` retain the tested research controllers;
-reach clipping and subset proposals closed screen-negative. The experimental
-`gaussian_lipschitz` geometry selector retains its complete discrete tangent
-and one-time ambient scaling, but failed ON-001 curved-state finite-trial
-qualification under the unchanged endpoint gate. It is not a qualified
-replacement for the `certified_spectral` method used in that experiment.
-ON-001 itself changed no recipe default.
-
-## CI-SPD feedback and exact reuse (DP-001)
-
-`CumulativePolicy(damping_rule="agreement", avoid_terminal_linearization=True)`
-selects gain/accepted-fraction damping feedback with a scaled curvature floor,
-pre-geometry budget checks, a stage proposal cap and a shortened-progress stop.
-The schedule default remains unchanged. `Execution(audit_frequency_batch=2)`
-streams two frequencies concurrently within the configured frequency threads;
-the default is one. The ordinary acceptance, validity and endpoint checks
-remain active. Terminal tangent omission preserves callback and checkpoint
-requirements. The approved [DP-001 comparison](../../docs/iterations/CI-SPD/DP-001_results.md)
-retained 26/30 TG-002 recoveries, with no new recovery or regression. All 26
-recovered outputs were faster: median paired speedup 1.134x and 8.4% less
-summed output time including failures. The four failed cases still stop at
-the numerical-resolution gate, and their summed time increased. This supports
-the combined recipe under the tested contract, not case-8 recovery or an
-isolated speed claim for each change. These switches remain opt-in.
-
-Immutable base geometry and resolution-only assembly arrays are cached, and
-wave expansions append missing cells. Receipts retain candidate exceptions,
-actual geometry proposals, failed phase timings and exclusive audit phases.
-CUDA assembly reports lock/prior-work wait, event device span, synchronized
-host span and host transfer; these are nested measurements, not additional
-runner wall time. Bounded tests establish numerical equivalence; inverse
-recovery and runtime evidence comes from the paired campaign.
-
-## RG-001 opt-in resolution gate
-
-`CumulativePolicy(resolution_gate="decision")` retains the existing
-production/refined gain acceptance decision when a candidate exceeds the
-stage's absolute field tolerance. Receipts record the mode, per-frequency
-overshoot ratios, accepted-overshoot count and largest accepted overshoot.
-Failed or non-finite evaluations stop both modes; endpoint audit tolerances
-remain unchanged. The default gate is `"absolute"`.
-
-RG-001 retained all 26 TG-002 recoveries and their accepted paths bitwise,
-with no new recovery. Aphex 4 improved from 1.685 to 0.664 mm RMS, but its
-Hausdorff and field gates failed. Larger-budget diagnostics did not produce
-qualified endpoints. Decision mode remains experimental; the study supports
-a follow-up on modal resolution response. See the
-[RG-001 results](../../docs/iterations/cleaned_interfaces/iteration_31/05_results.md).
-
-## Experimental fair nodal profile (PC-002)
-
-`Execution(nodal_geometry_reuse="per_curve", nodal_resolution_profile="band_matched",
-resolution=130, device="cuda")` opts into fit-local exact-curve CUDA geometry
-reuse and stage-entry nodal accuracy selection. Legacy defaults remain fixed512
-and reuse off. The seed matches modal trace dimension, rounded to even N and
-increased to resolve stored geometry. Each selected pair must pass every
-active field tolerance and the normalized Jacobian-column 1e-3 gate; trial
-acceptance retains its existing refinement check. Selection work counts in
-stage/global budgets. Endpoint audits compare the native profile and an
-independent N1024 result against N2048, including the full-trial derivative.
-
-The cache retains at most four entries and 256 MiB each of host/device geometry.
-Its exact key includes coefficient bytes, shape, dtype, nodes and device; it
-contains no frequency kernels, matrices, factors or acquisition waves.
-Receipts report builds, hits, memory, timing and stage-selected resolutions.
-LU and reciprocal solves use CUDA; receiver/incident waves and Jacobian
-contractions remain on CPU. See the
-[PC-002 priority plan](../../docs/iterations/cleaned_interfaces/iteration_28/03_plan.md).
+`fit_stage(..., pause_after=k)` returns a `StageCheckpoint` after an accepted
+state with the current Jacobian, gradient, next damping, history and ledger.
+`resume=checkpoint` checks the matching stage, update, curve and ledger;
+`Ledger.restore` keeps elapsed time and stage/global work. `runner.FitResume`
+carries the checkpoint and the remaining operation queue.
 
 ## Code map
 
-`coefficient_geometry` is an isolated NG-001 engine for centred arclength
-updates and complete directional tangents without curve quadrature.
-`interval_geometry` uses the optional `mpmath` dependency for directed arc
-range certificates and direct increment reuse. They are not registered fit
-strategies; approximation residuals remain float64. See the
-[component results](../../docs/iterations/node_free_geometry/NG-001_results.md)
-for accuracy, unresolved cases and complete cost.
-The [NG-002 follow-up](../../docs/iterations/node_free_geometry/NG-002_results.md)
-adds opt-in `speed_method="newton"` within this isolated engine and directed
-Laurent Horner proof evaluation. All 31 saved bases prove within five seconds;
-178/279 finite moves construct accurately with the declared band escalation.
-New-move admissibility and complete-trial improvement are not established.
-
-`complex_radius` is an isolated research instrument for genuinely complex
-disk radii, exact transmission jets and scalar holomorphic continuation.
-[Track 12](../../docs/iterations/complex_geometry/README.md) qualified local
-fold monodromy but found no real endpoint for three fixed measured-data
-detours. It does not implement complex FourierCurve geometry or enter `fit`.
-
-Modal radial coefficients are now constructed directly from analytic Bessel
-products, including the regularized Hankel terms through their Neumann series.
-CPU and CUDA assembly share this path; it performs no radial sampling or DCT.
-Derivatives and the removable material-difference quotient are formed in
-coefficient space. See the [derivation](../../docs/reference/modal_radial_coefficients.md)
-and [AC-001 validation](../../docs/iterations/CI-SPD/AC-001_results.md).
-The retained `radial_functions` evaluator serves as an independent test reference.
-Geometry-side steps still sample the curve. These include the trial move and
-arclength reset, validity fallback, domain box and frontier. The
-[sampling scope](../../docs/reference/node_free_scope.md) lists them.
-
 | Modules | Responsibility |
 |---|---|
-| `problem`, `physics`, `policy`, `runner` | Input contract, solver service/registration, executable policy, and fitting/audits |
-| `geometry`, `geometry_selection` | Projected finite trial and explicit update selection |
-| `spectral`, `certified`, `batched`, `analytic_projection` | Extracted selectable geometry mathematics |
-| `modal_geometry`, `modal_operator`, `modal_muller`, `modal_cuda` | Fourier–Galerkin Müller service and execution |
-| `continuation/` | Shared Fourier curves, forward operations, geometry validation, and LM optimizer |
-| `nodal_geometry`, `nodal_resolution` | Fit-local exact nodal geometry reuse and truth-free stage profile qualification |
-| `normal_basis`, `mie_localize`, `mie_grid`, `damped_cuda` | Frontier basis, exact-disk localization, and damped execution |
-| `full_matrix`, `relaxed_gradient` | Opt-in full-matrix relaxation, complete reduced-loss gradient, and prefix policy |
-| `n_update`, `n_reparam`, `device_certified` | Retained opt-in research geometry implementations; not promoted to defaults |
-| `pipelines` | Named recipes (`nodal_baseline`, `nodal_fixed`, `modal_fixed`) that fill `fit`'s slots |
+| `problem`, `physics`, `policy`, `policies`, `pipelines`, `runner` | Inputs, physics registry and counters, the executable policy, named recipes, the operation queue |
+| `fit_stage`, `stage_types`, `work`, `errors` | One stage's loops, its records, work charging and stop codes |
+| `forward_solvers/`, `forward_batch` | Physics contexts and forward solves; dispatch over active frequencies |
+| `a1_geometry`, `a2_muller`, `a3_waves`, `a4_fields`, `modal_cuda` | Modal Müller A1–A4 mathematics and its CUDA assembly |
+| `b5_residual`, `b7_data_jacobian`, `b8_gauss_newton`, `c9_lm`, `c12_iteration`, `checks` | Residual, data Jacobian, Gauss–Newton, LM proposal, damping and the numerical conditions |
+| `geometry_selection`, `geometry_update_methods/`, `continuation/` | Geometry methods and their selection; curves, the nodal forward model, geometry caching |
+| `localization`, `mie_localize`, `mie_grid`, `normal_basis`, `reach`, `nodal_geometry`, `damped_cuda` | Exact-disk localization, frontier basis, reach clipping, nodal geometry reuse and damped CUDA assembly |
 | `io` | Portable numerical receipts |
 
 Dependency direction is campaigns → `bem_inverse` → reusable solver/geometry
-packages. Put new campaign selection, benchmark paths, and truth scoring in
-`experiments/cleaned_interface/`, not in this package.
+packages. Put campaign selection, benchmark paths, endpoint audits and truth
+scoring in `experiments/`, not in this package.
 
-Relaxed fitting uses an analytic reverse derivative of the discrete Kress
-objective after eliminating the auxiliary field. It includes derivatives of
-the system, sources, receiver rows and median-row-norm penalty, composed with
-the selected projected geometry tangent. The LM gradient is complete; its
-positive curvature model still uses frozen-weight receiver sensitivities.
-The reverse geometry assembly runs on CPU and reuses existing CPU/CUDA LU
-factors for one additional correction solve per frequency. Median ordering
-and kernel branches are locally fixed; the objective is piecewise smooth.
-This capability currently belongs to the nodal backend, not modal Müller.
-Its experiment history and proposed numerical-resolution follow-up are indexed
-in the [relaxed-BIE research track](../../docs/iterations/relaxed_bie/README.md).
+Modal radial coefficients come directly from analytic Bessel products; see the
+[derivation](../../docs/reference/modal_radial_coefficients.md). Geometry-side
+steps still sample the curve: the trial move and arclength reset, validity
+checks, the domain box and the frontier
+([sampling scope](../../docs/reference/node_free_scope.md)).
 
-Ordinary nodal stages also support an opt-in `ResolutionResponse` in
-`continuation.lm_backend`. It checks retained bases and candidates, promotes
-to a declared finer pair when qualified, rebuilds the production linearization,
-and otherwise continues the existing backtracking search. The default remains
-the original hard stop. Accuracy-limited exhaustion and an unresolved finer
-base have explicit outcomes. The response enables work accounting before
-threaded dispatch.
+## Removed in the 2026-10 reorganisation
 
-`fit_stage(..., pause_after=k)` returns a `StageCheckpoint` after an accepted
-state. It retains the current residual/Jacobian, next damping, refined cache,
-history and consumed ledger state; `resume=checkpoint` validates the matching
-stage, objective, update, curve and ledger. `Ledger.restore` preserves elapsed
-time and stage/global work. At the policy level, `runner.FitResume` carries
-that checkpoint and the remaining resolved operation queue. The
-[RB-001 driver](../../experiments/relaxed_bie/README.md) reconstructs these
-states from qualified archived evidence and owns the historical input mapping.
-
-## Compatibility and source provenance
-
-The former runtime modules in `experiments.cleaned_interface`, six shared
-modules in `experiments.shape_continuation`, and `modal_atlas.mie_localize`
-forward to the same module objects here. This preserves class identity,
-registration, historical pickle lookups, and experiments that temporarily
-replace module attributes. Mixed NU modules retain their campaign commands
-and re-export the extracted classes and functions.
-
-Existing campaign CLIs are unchanged. They run legacy scene sets; new experiments use
-[`experiments/benchmark`](../../experiments/benchmark/README.md) (TG-002):
-
-```bash
-python -m experiments.cleaned_interface inventory
-python -m experiments.cleaned_interface plan --cases modal__c4__development_c
-python -m experiments.cleaned_interface.modal_muller --help
-```
-
-CI-001 and FM-001 seals include `solvers/**/*.py`, including this package.
-Saved source archives and manifests are preserved. A pre-extraction seal
-correctly refuses the changed checkout; reproduce it with its recorded sources
-or prepare a fresh campaign directory. Do not rewrite old seals to accept new
-code.
+[The plan](../../docs/cleanup/bem_inverse_architecture_2026-10-24.md) lists
+what went and why: compatibility shims and old import paths, the research
+controllers and objectives, refined C11 solves and resolution promotion, the
+2N-point geometry check, nodal stage selection, and the in-fit audits.
+Historical results that used them keep their recorded meaning.
 
 ## Validation
 
@@ -326,9 +153,6 @@ PYTHONPATH=solvers:. OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 
 ```
 
 Shared geometry and physical solver checks remain in `pytest/ordered_boundary`
-and `pytest/gpr_bem_kress`. Earlier references above to removed campaign test
-folders describe the historical source layout, not runnable commands here.
-
-The [refactor status](../../docs/reference/inverse_refactor_status.md) records
-before/after comparisons and the local platform's existing precision limits.
-No full inverse benchmark is required for this readability refactor.
+and `pytest/gpr_bem_kress`. Six extended-precision Bessel comparisons fail on
+platforms whose `longdouble` has 52 mantissa bits; two validity-order and one
+resume exact-equality test are intermittent at about 1e-16.

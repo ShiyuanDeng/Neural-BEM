@@ -1,36 +1,45 @@
-"""Explicit geometry selection without process-global experiment substitution."""
+"""Explicit geometry selection: each name gives one update object and its geometry_update function."""
+from functools import partial
+
 GEOMETRY_UPDATES = ('spline', 'spectral', 'certified_spectral', 'analytic_spectral', 'gaussian_lipschitz', 'similarity')
 
 
-def make_update(name, length_unit_m, execution, *, default=None):
-    if name is None and default is not None:
-        return default(length_unit_m)  # preserve existing experiment wrappers
+def make_update(name, length_unit_m, execution):
+    """(update, geometry_update): the method's settings object and its trial-curve function.
+
+    ``geometry_update(normal_update, *, prepared)`` builds and checks one trial curve.
+    ``None`` selects the spline update of a bare ``fit``.
+    """
+    device = None if execution.device == 'auto' else execution.device
     if name == 'spline' or name is None:
-        from .geometry_update_methods.spline import ProjectedUpdate
-        return ProjectedUpdate(length_unit_m)
+        from .geometry_update_methods import spline
+        update = spline.ProjectedUpdate(length_unit_m)
+        return update, partial(spline.geometry_update, settings=update)
     if name == 'spectral':
-        from .geometry_update_methods.spectral import SpectralProjectedUpdate
-        return SpectralProjectedUpdate(length_unit_m,
-                                       device=None if execution.device == 'auto' else execution.device,
-                                       batched=True)
+        from .geometry_update_methods import spectral
+        update = spectral.SpectralProjectedUpdate(length_unit_m, device=device, batched=True)
+        return update, partial(spectral.geometry_update, settings=update)
     if name == 'certified_spectral':
-        from .geometry_update_methods.certified_spectral import CertifiedSpectralUpdate
+        from .geometry_update_methods import certified_spectral
         order = getattr(execution, 'validity_order', 'certificate_first')
-        update = CertifiedSpectralUpdate(length_unit_m, device=None if execution.device == 'auto' else execution.device,
-                                         batched=True, order=order)
+        update = certified_spectral.CertifiedSpectralUpdate(length_unit_m, device=device, batched=True, order=order)
         if update.device == 'cuda':
-            return CertifiedSpectralUpdate(length_unit_m, device=update.device, batched=True,
-                                           certificate_device=True, order=order)
-        return update
+            update = certified_spectral.CertifiedSpectralUpdate(length_unit_m, device=update.device, batched=True,
+                                                                certificate_device=True, order=order)
+        return update, partial(certified_spectral.geometry_update, settings=update)
     if name == 'gaussian_lipschitz':
-        from .geometry_update_methods.gaussian_lipschitz import GaussianDisplacement
-        return GaussianDisplacement(length_unit_m, device=None if execution.device == 'auto' else execution.device)
+        from .geometry_update_methods import gaussian_lipschitz
+        update = gaussian_lipschitz.GaussianDisplacement(length_unit_m, device=device)
+        return update, partial(gaussian_lipschitz.geometry_update, settings=update)
     if name == 'analytic_spectral':
-        from .geometry_update_methods.analytic_spectral import AnalyticSpectralUpdate
-        return AnalyticSpectralUpdate(length_unit_m)
+        # Analytic preparation; the trial curve is the sampled spectral construction.
+        from .geometry_update_methods import analytic_spectral, spectral
+        update = analytic_spectral.AnalyticSpectralUpdate(length_unit_m)
+        return update, partial(spectral.geometry_update, settings=update)
     if name == 'similarity':
-        from .geometry_update_methods.similarity import SimilarityUpdate
-        return SimilarityUpdate(length_unit_m)
+        from .geometry_update_methods import similarity
+        update = similarity.SimilarityUpdate(length_unit_m)
+        return update, partial(similarity.geometry_update, settings=update)
     raise ValueError(f'Unknown geometry update {name!r}; choose from {GEOMETRY_UPDATES}.')
 
 

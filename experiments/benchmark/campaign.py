@@ -19,6 +19,7 @@ import traceback
 
 import numpy as np
 
+from bem_inverse.continuation.forward import ordered_calls
 from bem_inverse.continuation.geometry_runtime import geometry_runtime
 from bem_inverse.geometry_selection import make_update
 from bem_inverse.io import read, write, digest, curve_record, curve_from, portable
@@ -87,7 +88,7 @@ def generate(output=INPUTS, execution=None):
     output = Path(output)
     manifest = verify(output)
     execution = execution or Execution(device='cpu', acceleration='reference', frequency_threads=4)
-    physics = make_backend('nodal_kress', execution)
+    physics, forward_solve = make_backend('nodal_kress', execution)
     failures = []
     for scene in S.SCENES:
         truth = curve_from(read(output/'inputs'/scene/'truth.json'))
@@ -103,8 +104,8 @@ def generate(output=INPUTS, execution=None):
                 columns = []
                 with geometry_runtime(execution.geometry):
                     for n in QUALIFICATION_NODES:
-                        with physics.ordered_calls(lambda o: physics.evaluate(truth, o, contrast, n).prediction,
-                                                   template) as calls:
+                        with ordered_calls(lambda o: forward_solve(truth, o, contrast, n).prediction,
+                                           template, threads=execution.frequency_threads) as calls:
                             columns.append(np.column_stack([call() for call in calls]))
                 coarse, clean = columns
                 relative = np.linalg.norm(coarse-clean, axis=0)/np.linalg.norm(clean, axis=0)
@@ -191,6 +192,7 @@ def problem(case, output=INPUTS):
 
 
 def _physics(solver, execution):
+    """The physics context for ``solver`` and its forward solve."""
     if solver == 'modal_muller':
         from bem_inverse.forward_solvers.modal_muller import register
         register()
@@ -205,8 +207,9 @@ def _fit(problem, settings, execution, folder, adapter, on_event):
     if 'pipeline' in settings:
         return P.fit(problem, settings['pipeline']['name'], execution=execution, output=folder,
                      localization_adapter=adapter, on_event=on_event)
+    physics, forward_solve = _physics(settings['solver'], execution)
     return fit(problem, solver=settings['solver'], execution=execution,
-               physics=_physics(settings['solver'], execution), output=folder,
+               physics=physics, forward_solve=forward_solve, output=folder,
                geometry_update=settings['geometry_update'], localization_adapter=adapter, on_event=on_event)
 
 
@@ -221,10 +224,11 @@ def geometry_update_for(settings):
 def endpoint_audit(problem, result, settings, folder):
     """Audit the returned curve with fresh physics and the run's ordinary geometry update."""
     execution = Execution(**settings['execution'])
-    update = make_update(geometry_update_for(settings), problem.length_unit_m, execution)
+    physics, forward_solve = physics_for(settings)
+    update, geometry_update = make_update(geometry_update_for(settings), problem.length_unit_m, execution)
     with geometry_runtime(execution.geometry):
         row = A.audit(curve_from(result['final_curve']), A.audited_modes(result['final_stage']), problem,
-                      physics_for(settings), update, settings['audit_seconds'])
+                      physics, forward_solve, update, geometry_update, settings['audit_seconds'])
     write(folder/'final_audit.json', row)
     print(folder.name, 'final_audit', 'endpoint '+('qualified' if row['passed'] else 'refused'), flush=True)
     return row
@@ -345,7 +349,7 @@ def run(run_dir, cases, *, localization, execution, solver=None, geometry_update
     rows = [row(c, output) for c in cases]
     open_run(run_dir, cases, settings, output=output, experiment=experiment)
     # Preflight every input and capability before the first fit.
-    physics = physics_for(settings)
+    physics, _ = physics_for(settings)
     for r in rows:
         physics.validate(ci.fitting_problem(r, run_dir))
     jobs = [(run_dir, r, settings) for r in rows]

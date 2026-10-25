@@ -34,4 +34,20 @@ varies between identical runs.
   0.25 GHz warm-up grows this to about 1e-10. Step 1 sits inside this spread.
 - PC-001 M1 (CUDA, `certified_spectral`) also used 1,488 total units on this case.
 
-`comparison.txt` is the output of `compare_runs.py` for both pairs.
+`comparison.txt` is the output of `compare_runs.py` for every pair.
+
+## Step 3 result
+
+Step 3 is compared with the same case from the NR-001 TG-002 run (step 2 code,
+`a373a8ea5`, run with 2 workers on this machine).
+
+| Run | Code | Outcome | Accepted states | Fit units | Total units | Largest coefficient difference |
+|---|---|---|---:|---:|---:|---:|
+| `../M1/runs/peanut__c4` | `a373a8ea5` | recovered | 50 | 937 | 1,051 | — |
+| `step3_peanut__c4` | step 3 | recovered | 50 | 937 | 1,051 | 8.6e-11 |
+
+- Every trial decision, every stage's work units and the accepted path are
+  identical; so are the endpoint audit's units and charges (114).
+- The difference sits inside the 1.6e-10 run-to-run spread measured above.
+- The deterministic control-path fixtures match the step 2 reference exactly
+  (`pytest/bem_inverse/test_refactor_contract.py`).

@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 import torch
 
-from bem_inverse.geometry_update_methods.certified_spectral import CertifiedSpectralUpdate
+from bem_inverse.geometry_update_methods.certified_spectral import CertifiedSpectralUpdate, geometry_update
 from bem_inverse.continuation.geometry import FourierCurve
 from bem_inverse.errors import UpdateRefused
 from bem_inverse.geometry_selection import make_update
@@ -21,7 +21,7 @@ def lobed(band=20, lobes=5, depth=.18):
 
 def outcome(update, space, step):
     try:
-        candidate, info = update.geometry_update(step, prepared=space)
+        candidate, info = geometry_update(step, prepared=space, settings=update)
     except UpdateRefused as exc:
         return ('refused', exc.reason)
     return ('accepted', candidate.coefficients.tobytes())
@@ -38,9 +38,9 @@ def steps(dimension, seed=7):
 
 def pair(order_first='certificate_first', device='cpu'):
     execution = Execution(device=device, frequency_threads=1)
-    first = make_update('certified_spectral', UNIT, execution)
-    second = make_update('certified_spectral', UNIT, Execution(device=device, frequency_threads=1,
-                                                              validity_order='sampled_first'))
+    first, _ = make_update('certified_spectral', UNIT, execution)
+    second, _ = make_update('certified_spectral', UNIT, Execution(device=device, frequency_threads=1,
+                                                                 validity_order='sampled_first'))
     assert (first.order, second.order) == (order_first, 'sampled_first')
     return first, second
 

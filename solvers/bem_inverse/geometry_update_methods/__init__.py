@@ -2,11 +2,6 @@
 import numpy as np
 
 
-def bind_geometry_update(update):
-    """The selected method's ``geometry_update(normal_update, *, prepared)``."""
-    return update.geometry_update
-
-
 def control_step(proposed, space, update, config):
     """Apply the configured step control before backtracking."""
     if config.step_control == 'coefficient':

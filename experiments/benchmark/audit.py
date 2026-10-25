@@ -16,8 +16,8 @@ import traceback
 import numpy as np
 
 from bem_inverse.b5_residual import normalize
+from bem_inverse.continuation.forward import ordered_calls
 from bem_inverse.continuation.geometry_runtime import geometry_validated
-from bem_inverse.geometry_update_methods import bind_geometry_update
 from bem_inverse.stage_types import BackendConfig
 from bem_inverse.work import Ledger
 
@@ -59,18 +59,21 @@ def deadline(seconds):
 
 
 @geometry_validated
-def audit(curve, update_modes, problem, physics, update, seconds):
-    """SC-042 numerical gates at ``curve`` with ``update_modes`` coordinates, on all real data."""
-    geometry_update = bind_geometry_update(update)
+def audit(curve, update_modes, problem, physics, forward_solve, update, geometry_update, seconds):
+    """SC-042 numerical gates at ``curve`` with ``update_modes`` coordinates, on all real data.
+
+    ``forward_solve`` belongs to ``physics`` and ``geometry_update`` to ``update``.
+    """
     count = len(problem.real)
     weights = tuple(np.ones(count)/count)
     tolerances = field_tolerances(problem.real)
     profile = physics.resolution_profile(curve.band)
     nodes, refined_nodes = profile['production'], profile['refined']
     residual_floor = BackendConfig.residual_floor
-    ledger = Ledger(cap=6*count+16, seconds=seconds, endpoint_reserve=0)
-    execution = getattr(physics, 'execution', None)
-    batch = min(getattr(execution, 'audit_frequency_batch', 1), getattr(execution, 'frequency_threads', 1))
+    # Strict dispatch charges each call when a frequency worker starts it.
+    ledger = Ledger(cap=6*count+16, seconds=seconds, endpoint_reserve=0, strict_dispatch=True)
+    execution = physics.execution
+    batch = min(execution.audit_frequency_batch, execution.frequency_threads)
     started = perf_counter()
     try:
         with deadline(seconds):
@@ -80,21 +83,14 @@ def audit(curve, update_modes, problem, physics, update, seconds):
             observed = np.column_stack([o.scattered.reshape(-1) for o in problem.real])
             space = update.prepare(curve, update_modes, curve.band)
             low_columns, high_columns, coarse_jac, fine_jac = [], [], [], []
+            def charged(function, item, kind, category):
+                with ledger.calls(function, (item,), kind, category, threads=1) as calls:
+                    return calls[0]()
             def evaluate(shape, observation, resolution, category):
-                with ledger._lock:
-                    ledger.reserve(1)
-                    ledger.charge('solve', category)
-                try:
-                    return physics.evaluate(shape, observation, problem.contrast, resolution)
-                except (ValueError, FloatingPointError, np.linalg.LinAlgError):
-                    with ledger._lock:
-                        ledger.fail(category)
-                    raise
+                return charged(lambda o: forward_solve(shape, o, problem.contrast, resolution),
+                               observation, 'solve', category)
             def derivative(state, category='derivative'):
-                with ledger._lock:
-                    ledger.reserve(1)
-                    ledger.charge('reciprocal', category)
-                block = physics.derivative(state, update, space)
+                block = charged(lambda s: physics.derivative(s, update, space), state, 'reciprocal', category)
                 return block.reshape(-1, block.shape[-1])
             def batches(function):
                 # Return arrays only; factorized systems die inside each worker.
@@ -103,7 +99,7 @@ def audit(curve, update_modes, problem, physics, update, seconds):
                     if batch == 1:
                         yield function(items[0])
                     else:
-                        with physics.ordered_calls(function, items) as calls:
+                        with ordered_calls(function, items, threads=execution.frequency_threads) as calls:
                             for call in calls:
                                 yield call()
             def field_pair(observation):

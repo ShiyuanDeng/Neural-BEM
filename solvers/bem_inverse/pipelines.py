@@ -56,6 +56,7 @@ def get(name):
 
 
 def physics(pipeline, execution=None):
+    """The pipeline's physics context and its forward solve, bound to that context."""
     pipeline = get(pipeline)
     if pipeline.solver == 'modal_muller':
         from .forward_solvers.modal_muller import register
@@ -66,14 +67,15 @@ def physics(pipeline, execution=None):
 def fit(problem, pipeline, *, execution=None, **options):
     """``runner.fit`` with the pipeline's slots filled; other options pass through unchanged.
 
-    The pipeline owns ``solver``, ``physics`` and ``geometry_update``.
+    The pipeline owns ``solver``, ``physics``, ``forward_solve`` and ``geometry_update``.
     """
     pipeline = get(pipeline)
-    owned = {'solver', 'physics', 'geometry_update', 'geometry_adapter'} & set(options)
+    owned = {'solver', 'physics', 'forward_solve', 'geometry_update', 'geometry_adapter'} & set(options)
     if owned:
         raise ValueError(f'The pipeline sets {sorted(owned)}; do not pass them')
     execution = execution or Execution()
-    result = _fit(problem, solver=pipeline.solver, execution=execution, physics=physics(pipeline, execution),
+    context, forward_solve = physics(pipeline, execution)
+    result = _fit(problem, solver=pipeline.solver, execution=execution, physics=context, forward_solve=forward_solve,
                   geometry_update=pipeline.geometry_update, **options)
     result.update(pipeline=pipeline.settings())
     return result

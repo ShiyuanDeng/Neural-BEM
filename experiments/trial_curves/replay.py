@@ -8,7 +8,7 @@ import numpy as np
 
 from bem_inverse import c9_lm, checks
 from bem_inverse.checks import step_too_small
-from bem_inverse.geometry_update_methods import bind_geometry_update, control_step
+from bem_inverse.geometry_update_methods import control_step
 from bem_inverse.geometry_selection import make_update
 from bem_inverse.physics import Execution
 from bem_inverse.errors import UpdateRefused
@@ -31,8 +31,7 @@ def group(events):
 
 def replay(it, length_unit_m, scale=1.0, lambdas=None):
     """Replay the retained certified method on a saved base; return its constructed curves."""
-    update = make_update('certified_spectral', length_unit_m, Execution(device='cpu'))
-    geometry_update = bind_geometry_update(update)
+    update, geometry_update = make_update('certified_spectral', length_unit_m, Execution(device='cpu'))
     space = it["space"]
     config, g, H, D = it['config'], it['g'], it['H'], it['D']
     built = []

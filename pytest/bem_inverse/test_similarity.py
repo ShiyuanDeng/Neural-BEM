@@ -4,7 +4,7 @@ import pytest
 
 from bem_inverse.continuation.geometry import FourierCurve
 from bem_inverse.errors import UpdateRefused
-from bem_inverse.geometry_update_methods.similarity import SimilarityUpdate
+from bem_inverse.geometry_update_methods.similarity import SimilarityUpdate, geometry_update
 
 
 @pytest.mark.parametrize('unit', [1., .05])
@@ -15,13 +15,13 @@ def test_similarity_preserves_circle_and_physical_radius(unit):
     np.testing.assert_allclose(space.radius_m, .35, rtol=2e-16)
     assert tuple(space.orders) == (1, 1, 0)
     step = np.array([.013, -.017, -.012])
-    trial, details = update.geometry_update(step, prepared=space)
+    trial, details = geometry_update(step, prepared=space, settings=update)
     centre = .03+.04j+complex(*step[:2])
     np.testing.assert_allclose(abs(trial.values(2048)*unit-centre), .338, rtol=0, atol=3e-16)
     np.testing.assert_allclose(trial.coefficients[1]*unit, centre, rtol=0, atol=1e-17)
     assert details['refits'] == 0 and details['intrinsic_validity_preserved']
     np.testing.assert_allclose(details['equivalent_radius_m'], .338)
-    assert update.geometry_update([0, 0, 0], prepared=space)[0] is curve
+    assert geometry_update([0, 0, 0], prepared=space, settings=update)[0] is curve
     nodes = curve.nodes(2048)
     physical_velocity = update.velocities(space, nodes)*unit
     np.testing.assert_allclose(physical_velocity[:, :2], nodes.normals, atol=1e-15)
@@ -39,7 +39,7 @@ def test_similarity_curved_shape_scaling_tangent_and_normal_measure(unit):
     update = SimilarityUpdate(unit)
     space = update.prepare(curve, 3, curve.band)
     step = np.array([.013, -.017, .008])
-    trial, details = update.geometry_update(step, prepared=space)
+    trial, details = geometry_update(step, prepared=space, settings=update)
     keep = np.arange(len(physical)) != curve.band
     factor = 1+step[2]/space.radius_m
     np.testing.assert_array_equal(trial.coefficients[keep], curve.coefficients[keep]*factor)
@@ -49,8 +49,8 @@ def test_similarity_curved_shape_scaling_tangent_and_normal_measure(unit):
     np.testing.assert_allclose(trial_nodes.signed_area/curve.validate().signed_area, factor**2, rtol=1e-14)
     for j in range(3):
         delta = np.eye(3)[j]*1e-7
-        plus, _ = update.geometry_update(delta, prepared=space)
-        minus, _ = update.geometry_update(-delta, prepared=space)
+        plus, _ = geometry_update(delta, prepared=space, settings=update)
+        minus, _ = geometry_update(-delta, prepared=space, settings=update)
         np.testing.assert_allclose((plus.coefficients-minus.coefficients)/2e-7,
                                    space.derivatives[:, j], rtol=2e-9, atol=1e-11)
     actual_motion = (trial.values(2048)-curve.values(2048))*unit
@@ -69,10 +69,10 @@ def test_similarity_rejects_invalid_base_or_scale():
     space = update.prepare(FourierCurve.circle(.2), 0, 1)
     for radius_change in (-.2, -.3):
         with pytest.raises(UpdateRefused, match='invalid_scale'):
-            update.geometry_update([0, 0, radius_change], prepared=space)
+            geometry_update([0, 0, radius_change], prepared=space, settings=update)
     assert update.counts['refused_trials'] == 2
     for step in ([0, 0], [0, 0, np.nan], [0, 0, np.inf]):
         with pytest.raises(ValueError):
-            update.geometry_update(step, prepared=space)
+            geometry_update(step, prepared=space, settings=update)
     with pytest.raises(ValueError):
         update.prepare(space.curve, 0, 2)

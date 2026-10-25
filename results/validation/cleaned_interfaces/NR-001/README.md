@@ -42,7 +42,7 @@ and their audits fail on field agreement.
 | hook__c13.3 | release_M11 | 2 | 1,180 → 695 | 8.28 |
 
 Compared with PC-001 M1, aphex_twin__c4 now stops four stages earlier (it reached
-`release_M11`), aphex_twin__c13.3 one stage later, and the other two in the same stage.
+`release_M11`), aphex_twin__c13.3 two stages later, and the other two in the same stage.
 
 Wall time: median 206 s per case and 7,674 s summed on this CPU (PC-001 M1 on
 CUDA: 31 s and 1,031 s). These are not comparable; work units are.

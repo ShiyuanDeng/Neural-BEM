@@ -199,7 +199,7 @@ def fit(problem, name, *, execution=None, contract=None, **options):
     The policy owns the schedule object and the pipeline slots. ``execution`` gives
     devices and threads; the policy adds its execution options to it.
     """
-    owned = {'policy', 'solver', 'physics', 'geometry_update', 'geometry_adapter'} & set(options)
+    owned = {'policy', 'solver', 'physics', 'forward_solve', 'geometry_update', 'geometry_adapter'} & set(options)
     if owned:
         raise ValueError(f'The policy sets {sorted(owned)}; do not pass them')
     contract = dict(contract or {})

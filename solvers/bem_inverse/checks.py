@@ -248,18 +248,6 @@ def require_sampled_stored_curve(nodes):
         raise ValueError('Curve self-intersects.')
 
 
-def require_refit_curve(nodes):
-    if nodes.signed_area <= 0 or np.min(nodes.speeds) < 1e-6 * np.mean(nodes.speeds):
-        raise ValueError("Invalid displaced curve.")
-    if self_intersections(nodes.points):
-        raise ValueError("Displaced curve self-intersects.")
-
-
-def require_spline_projection(error, tolerance, perimeter):
-    if error > tolerance * perimeter / (2 * np.pi):
-        raise ValueError(f"Arclength projection unresolved: {error / (perimeter / (2*np.pi)):.3g} relative.")
-
-
 def step_too_small(a, scale, tolerance):
     return np.linalg.norm(a) / scale <= tolerance
 
@@ -403,35 +391,3 @@ def irregular_projection_derivative(sigma):
 
 def nonfinite_projection_derivative(out):
     return not np.isfinite(out).all()
-
-
-def nonpositive_gaussian_width(width):
-    return not width > 0
-
-
-def ill_conditioned_gaussian_interpolation(condition):
-    return not condition <= 1e12
-
-
-def inaccurate_gaussian_coordinates(relative):
-    return max(relative) > 1e-4
-
-
-def gaussian_norm_kink(nonzero, dw):
-    return np.any(~nonzero & (abs(dw) > 0))
-
-
-def gaussian_clipping_kink(C):
-    return abs(C-.8) <= 1e-12
-
-
-def inaccurate_gaussian_direction(error):
-    return error > 1e-4
-
-
-def invalid_similarity_radius(radius):
-    return not np.isfinite(radius) or radius <= 0
-
-
-def invalid_similarity_factor(factor):
-    return not np.isfinite(factor) or factor <= 0

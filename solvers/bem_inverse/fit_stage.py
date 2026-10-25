@@ -8,10 +8,12 @@ lengths and numerical failures. Two local steps carry the mathematics:
 conditions.
 
 FitStage supplies active observations, M, K_geometry, the backend resolution
-token and the iteration/quota limits. The selected update supplies
-normal-coordinate geometry and its complete-trial tangent; the selected physics
-supplies fields and reciprocal derivatives. A trial curve is accepted when its
-loss is lower than the current loss; nothing is re-solved at a finer resolution.
+token and the iteration/quota limits. The caller passes the selected methods:
+``forward_solve`` (one frequency, A1–A4) with its physics context, which supplies
+reciprocal derivatives, and ``geometry_update`` (one trial curve, C10) with its
+update object, which supplies normal-coordinate geometry and the complete-trial
+tangent. A trial curve is accepted when its loss is lower than the current loss;
+nothing is re-solved at a finer resolution.
 """
 from dataclasses import replace
 from copy import deepcopy
@@ -26,17 +28,16 @@ from .c9_lm import damping_floor, hanke_damping
 from .stage_types import StageResult, StageEntry, StageCheckpoint, checkpoint_signature
 from .errors import Stop, StageQuota, NumericalFailure, UpdateRefused, NORMAL_RETURN, STAGE_QUOTA
 from .forward_batch import solve_frequencies
-from .forward_solvers import bind_forward_solve
 from .recording import observe
-from .geometry_update_methods import bind_geometry_update, control_step
+from .geometry_update_methods import control_step
 from . import b5_residual, b8_gauss_newton, c9_lm, c12_iteration, checks
 
 
 
 @fit_geometry_validation
 @geometry_validated
-def fit_stage(curve, stage, contrast, update, config, ledger, *, physics, on_accept=None,
-              resume=None, pause_after=None, entry=None, retain_final=False):
+def fit_stage(curve, stage, contrast, update, config, ledger, *, physics, forward_solve, geometry_update,
+              on_accept=None, resume=None, pause_after=None, entry=None, retain_final=False):
     """Run one stage, optionally under a fit-local ``geometry_validation`` cache.
 
     Exact reuse and spatial intersection checks are enabled by default. Use
@@ -51,8 +52,6 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, physics, on_acc
     endpoint as ``StageResult.final_entry`` for the next stage.
     """
     started = perf_counter()
-    geometry_update = bind_geometry_update(update)
-    forward_solve = bind_forward_solve(physics)  # modal_muller.forward_solve or nodal_kress.forward_solve
     if curve.band != stage.curve_modes:
         raise ValueError("Pass the curve at the stage storage band.")
     signature = checkpoint_signature(stage, contrast, config, update) if resume is not None or pause_after is not None else None
@@ -64,6 +63,7 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, physics, on_acc
                 raise ValueError('Resume ledger mismatch: '+key)
     observed = np.column_stack([o.scattered.reshape(-1) for o in stage.observations])
     m = len(stage.observations)
+    threads = physics.execution.frequency_threads
     failures = []
     history, trials = [], []
     accepted_steps, converged, stop_reason, outcome, detail = 0, False, "maximum_iterations", NORMAL_RETURN, None
@@ -82,7 +82,8 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, physics, on_acc
         """
         if reused is None:
             batch = solve_frequencies(curve, stage.observations, contrast, stage.nodes, category,
-                                      forward_solve=forward_solve, ledger=ledger, physics=physics, failures=failures)
+                                      forward_solve=forward_solve, ledger=ledger, threads=threads,
+                                      physics=physics, failures=failures)
             if batch is None:
                 return None
         else:
@@ -102,8 +103,8 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, physics, on_acc
         ledger.reserve(2 * m)  # the Jacobian, then one trial evaluation
         # B7. Reciprocal derivatives reuse each frequency's forward factors.
         blocks = []
-        with ledger.calls(physics.ordered_calls, lambda forward: physics.derivative(forward, update, space),
-                          evaluation.forwards, "reciprocal", "derivative") as calls:
+        with ledger.calls(lambda forward: physics.derivative(forward, update, space),
+                          evaluation.forwards, "reciprocal", "derivative", threads=threads) as calls:
             for call in calls:
                 block = call()
                 blocks.append(block.reshape(-1, block.shape[-1]))

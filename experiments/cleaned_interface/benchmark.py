@@ -19,7 +19,7 @@ from time import perf_counter
 import traceback
 import numpy as np
 
-from bem_inverse.continuation.forward import PointSourceAcquisition
+from bem_inverse.continuation.forward import PointSourceAcquisition, ordered_calls
 from bem_inverse.continuation.geometry import FourierCurve
 from bem_inverse.continuation.geometry_runtime import geometry_runtime, geometry_validated
 from bem_inverse.io import read, write, digest, curve_from, portable
@@ -274,7 +274,7 @@ def augment(output, execution, *, allow_new_damped_data=False, reuse_from=None):
                     copied_seal_sha256=digest(source/'augmentation.json'))
         write(output/'augmentation.json',result)
         return result
-    physics = make_backend('nodal_kress', execution)
+    physics, forward_solve = make_backend('nodal_kress', execution)
     for row in manifest['cases']:
         if 'damped' in row:
             continue
@@ -291,7 +291,8 @@ def augment(output, execution, *, allow_new_damped_data=False, reuse_from=None):
         with geometry_runtime(execution.geometry):
             columns = []
             for n in (1024,2048):
-                with physics.ordered_calls(lambda o: physics.evaluate(truth,o,row['contrast'],n).prediction, template) as calls:
+                with ordered_calls(lambda o: forward_solve(truth,o,row['contrast'],n).prediction, template,
+                                   threads=execution.frequency_threads) as calls:
                     columns.append(np.column_stack([call() for call in calls]))
         a, clean = columns
         relative = np.linalg.norm(a-clean,axis=0)/np.linalg.norm(clean,axis=0)
@@ -391,9 +392,9 @@ def run(output, execution, *, solver='nodal_kress', workers=1, cases=None, geome
         raise ValueError('Unknown cases: '+str(set(cases)-ids))
     rows = [r for r in manifest['cases'] if cases is None or r['id'] in cases]
     # Preflight every requested input and capability before launching any fit.
-    backend = make_backend(solver,execution)
+    backend, _ = make_backend(solver,execution)
     if geometry_update is not None:
-        from .geometry_selection import make_update
+        from bem_inverse.geometry_selection import make_update
         make_update(geometry_update, 1., execution)  # reject unknown selections before any fit
     policy = CumulativePolicy()
     for row in rows:

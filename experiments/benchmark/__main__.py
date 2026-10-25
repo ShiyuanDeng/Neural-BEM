@@ -59,9 +59,9 @@ def main():
         problem, recipe = c.problem(cases[0]), R.recipe(args.policy)
         run_execution = R.execution_for(args.policy, execution)
         pipeline = P.get(recipe.pipeline)
-        plan = R.build(args.policy, **R.BENCHMARK_CONTRACT).plan(problem, P.physics(pipeline, run_execution))
+        plan = R.build(args.policy, **R.BENCHMARK_CONTRACT).plan(problem, P.physics(pipeline, run_execution)[0])
         plan = describe_plan(plan, make_update(pipeline.geometry_update, problem.length_unit_m,
-                                               run_execution).settings(), override_operations=True)
+                                               run_execution)[0].settings(), override_operations=True)
         print(readable_plan(plan))
         entry = R.get(args.policy)
         print(f'\nPolicy {entry.name} ({entry.status}; lineage {" -> ".join(recipe.lineage)}): {entry.change}.')
@@ -77,8 +77,8 @@ def main():
         problem = c.problem(cases[0])
         solver, update = ((P.get(args.pipeline).solver, P.get(args.pipeline).geometry_update) if args.pipeline
                           else (args.solver, args.geometry_update))
-        plan = CumulativePolicy().plan(problem, c._physics(solver, execution))
-        plan = describe_plan(plan, make_update(update, problem.length_unit_m, execution).settings(),
+        plan = CumulativePolicy().plan(problem, c._physics(solver, execution)[0])
+        plan = describe_plan(plan, make_update(update, problem.length_unit_m, execution)[0].settings(),
                              override_operations=True)
         print(readable_plan(plan))
         if args.pipeline:

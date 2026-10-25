@@ -3,7 +3,8 @@ import pytest
 
 from bem_inverse import pipelines as P
 from bem_inverse.geometry_selection import make_update
-from bem_inverse.physics import Execution, NodalKress
+from bem_inverse.physics import Execution
+from bem_inverse.forward_solvers.nodal_kress import NodalKress
 
 
 def test_presets_and_their_slots():
@@ -21,8 +22,8 @@ def test_presets_and_their_slots():
 def test_geometry_defaults_preserve_spline_and_batch_spectral():
     execution = Execution(device='cpu', frequency_threads=1)
     from bem_inverse.geometry_update_methods.spline import ProjectedUpdate
-    assert type(make_update('spline', .05, execution)) is type(make_update(None, .05, execution, default=ProjectedUpdate))
-    spectral = make_update(P.get('modal_fixed').geometry_update, .05, execution)
+    assert type(make_update('spline', .05, execution)[0]) is type(make_update(None, .05, execution)[0]) is ProjectedUpdate
+    spectral, _ = make_update(P.get('modal_fixed').geometry_update, .05, execution)
     assert spectral.batched and spectral.device == 'cpu'
     assert 'certificate' not in spectral.settings()['validity']
 
@@ -32,8 +33,8 @@ def test_components_are_built_from_the_recipe(monkeypatch):
     # Registering modal here must not leak into suites that expect it unregistered.
     monkeypatch.setattr(physics, '_BACKENDS', dict(physics._BACKENDS))
     execution = Execution(device='cpu', frequency_threads=2)
-    assert type(P.physics('nodal_fixed', execution)) is NodalKress
-    assert P.physics('modal_fixed', execution).name == 'modal_muller'
+    assert type(P.physics('nodal_fixed', execution)[0]) is NodalKress
+    assert P.physics('modal_fixed', execution)[0].name == 'modal_muller'
 
 
 def test_pipeline_owns_its_slots():

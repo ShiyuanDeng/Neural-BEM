@@ -1,5 +1,4 @@
 """Exact translation and uniform scaling about the stored Cartesian zero mode."""
-from .. import checks
 from dataclasses import dataclass
 from time import perf_counter
 
@@ -7,6 +6,15 @@ import numpy as np
 
 from ..continuation.geometry import FourierCurve, grid_size, integer
 from ..errors import UpdateRefused
+
+
+# Checks of this method; callers raise their own refusals.
+def invalid_similarity_radius(radius):
+    return not np.isfinite(radius) or radius <= 0
+
+
+def invalid_similarity_factor(factor):
+    return not np.isfinite(factor) or factor <= 0
 
 
 @dataclass(frozen=True)
@@ -54,7 +62,7 @@ class SimilarityUpdate:
         curve.validate()
         # Signed area / pi = sum_m m |c_m|^2, exact for Fourier storage.
         radius = float(self.length_unit_m*np.sqrt(np.sum(curve.modes*abs(curve.coefficients)**2)))
-        if checks.invalid_similarity_radius(radius):
+        if invalid_similarity_radius(radius):
             raise ValueError('Similarity needs positive finite enclosed area.')
         derivative = np.zeros((len(curve.coefficients), 3), complex)
         derivative[curve.band, :2] = np.array([1., 1j])/self.length_unit_m
@@ -100,9 +108,6 @@ class SimilarityUpdate:
             raise ValueError(f'Expected {len(space.orders)} finite update coefficients.')
         return a
 
-    def geometry_update(self, normal_update, *, prepared):
-        return geometry_update(normal_update, prepared=prepared, settings=self)
-
 
 def geometry_update(normal_update, *, prepared, settings):
     """Translate the zero mode and uniformly scale every nonzero mode.
@@ -118,7 +123,7 @@ def geometry_update(normal_update, *, prepared, settings):
     try:
         step = method._checked(space, normal_update)
         factor = float(1+step[2]/space.radius_m)
-        if checks.invalid_similarity_factor(factor):
+        if invalid_similarity_factor(factor):
             raise UpdateRefused('invalid_scale', 'Similarity scale must be finite and strictly positive.')
         if not np.any(step):
             candidate = curve

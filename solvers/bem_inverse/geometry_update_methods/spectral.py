@@ -224,9 +224,6 @@ class SpectralProjectedUpdate:
             raise ValueError(f"Expected {len(space.orders)} finite update coefficients.")
         return a
 
-    def geometry_update(self, normal_update, *, prepared):
-        return geometry_update(normal_update, prepared=prepared, settings=self)
-
 
 def geometry_update(normal_update, *, prepared, settings):
     """Move and refit on the N-point grid, retain the centred increment, then check the result.

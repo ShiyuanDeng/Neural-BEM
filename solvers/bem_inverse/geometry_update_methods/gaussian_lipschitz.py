@@ -16,6 +16,31 @@ from ..errors import UpdateRefused, refusal_from_value_error
 from .spectral import arclength_quadrature
 
 
+# Checks of this method; callers raise their own refusals.
+def nonpositive_gaussian_width(width):
+    return not width > 0
+
+
+def ill_conditioned_gaussian_interpolation(condition):
+    return not condition <= 1e12
+
+
+def inaccurate_gaussian_coordinates(relative):
+    return max(relative) > 1e-4
+
+
+def gaussian_norm_kink(nonzero, dw):
+    return np.any(~nonzero & (abs(dw) > 0))
+
+
+def gaussian_clipping_kink(C):
+    return abs(C-.8) <= 1e-12
+
+
+def inaccurate_gaussian_direction(error):
+    return error > 1e-4
+
+
 @dataclass(frozen=True)
 class GaussianSpace:
     """Projection and Gaussian-field data tied to one accepted curve."""
@@ -204,19 +229,19 @@ class GaussianDisplacement:
         basis = np.column_stack((np.ones(controls), np.cos(phase), np.sin(phase)))
         prescribed = normals[:, None]*basis/self.length_unit_m
         width = self.width_factor*float(np.median(abs(np.roll(centres, -1)-centres)))
-        if checks.nonpositive_gaussian_width(width):
+        if nonpositive_gaussian_width(width):
             raise UpdateRefused("gaussian_interpolation", "Nonpositive Gaussian width")
         K = kernel(centres, centres, width)
         saddle = np.zeros((controls+1, controls+1))
         saddle[:-1, :-1] = K+1e-10*np.eye(controls)
         saddle[-1, :-1] = saddle[:-1, -1] = 1.
         condition = float(np.linalg.cond(saddle))
-        if checks.ill_conditioned_gaussian_interpolation(condition):
+        if ill_conditioned_gaussian_interpolation(condition):
             self.counts["interpolation_refusals"] += 1
             raise UpdateRefused("gaussian_interpolation", f"condition {condition:g} > 1e12")
         coefficients = lu_solve(lu_factor(saddle), np.vstack((prescribed, np.zeros((1, prescribed.shape[1])))))
         relative = np.linalg.norm(K@coefficients[:-1]+coefficients[-1]-prescribed, axis=0)/np.linalg.norm(prescribed, axis=0)
-        if checks.inaccurate_gaussian_coordinates(relative):
+        if inaccurate_gaussian_coordinates(relative):
             self.counts["interpolation_refusals"] += 1
             raise UpdateRefused("gaussian_interpolation", f"coordinate interpolation error {max(relative):g}")
         self.counts["interpolation_seconds"] += perf_counter()-started
@@ -251,11 +276,11 @@ class GaussianDisplacement:
         alpha = min(1., .8/C) if C > 0 else 1.
         if C > .8:
             nonzero = abs(w) > 0
-            if checks.gaussian_norm_kink(nonzero, dw):
+            if gaussian_norm_kink(nonzero, dw):
                 raise ValueError("Gaussian norm kink requires a one-sided derivative")
             gradient = np.exp(-.5)*float(np.real(np.sum(np.conj(w[nonzero])*dw[nonzero]/abs(w[nonzero]))))/space.width
             dalpha = -alpha*gradient/C
-        elif checks.gaussian_clipping_kink(C):
+        elif gaussian_clipping_kink(C):
             raise ValueError("Gaussian clipping kink requires one-sided checks")
         else:
             dalpha = 0.
@@ -264,9 +289,6 @@ class GaussianDisplacement:
         raw = space.curve.values(space.count)+alpha*(velocity@a)
         moved = FourierCurve.from_samples(raw, space.count//2-1)
         return projection_tangent(moved, (velocity@used_direction)[:, None], space.curve_modes, space.count)[:, 0]
-
-    def geometry_update(self, normal_update, *, prepared):
-        return geometry_update(normal_update, prepared=prepared, settings=self)
 
 
 def geometry_update(normal_update, *, prepared, settings):
@@ -290,7 +312,7 @@ def geometry_update(normal_update, *, prepared, settings):
         target = space.prescribed@a
         error = float(np.linalg.norm(kernel(space.centres, space.centres, space.width)@w+b-target)
                       /max(np.linalg.norm(target), np.finfo(float).tiny))
-        if checks.inaccurate_gaussian_direction(error):
+        if inaccurate_gaussian_direction(error):
             method.counts["interpolation_refusals"] += 1
             raise UpdateRefused("gaussian_interpolation", f"direction interpolation error {error:g}")
         C = float(np.exp(-.5)*sum(abs(w))/space.width)

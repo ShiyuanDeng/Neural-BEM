@@ -302,9 +302,6 @@ class CertifiedSpectralUpdate:
             space.cache[key] = (nodes, *arrays)
         return space.cache[key]
 
-    def geometry_update(self, normal_update, *, prepared):
-        return geometry_update(normal_update, prepared=prepared, settings=self)
-
 
 def geometry_update(normal_update, *, prepared, settings):
     """Move along normals, check, refit on the N-point grid, then check the stored curve."""

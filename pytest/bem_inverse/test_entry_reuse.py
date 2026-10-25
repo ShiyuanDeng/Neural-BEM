@@ -9,25 +9,23 @@ from bem_inverse import runner
 from bem_inverse.fit_stage import fit_stage
 from bem_inverse.stage_types import BackendConfig, FitStage, StageResult
 from bem_inverse.work import Ledger
-from bem_inverse.continuation.forward import ordered_calls
 from bem_inverse.continuation.geometry import FourierCurve
 from bem_inverse.forward_solvers.modal_muller import ModalMuller
 from bem_inverse.physics import Execution, Prediction
 from bem_inverse.policy import CumulativePolicy
 from test_continuation_policy import fixture
-from test_resolution_resume import ScalarUpdate
+from test_resolution_resume import ScalarUpdate, scalar_trial
 
 
 class TwoFrequencyPhysics:
     """Deterministic radius model: prediction k*r plus a tiny resolution term."""
 
+    execution = SimpleNamespace(frequency_threads=2)
+
     def __init__(self):
         self.calls = []
 
-    def ordered_calls(self, function, items):
-        return ordered_calls(function, items, threads=2)
-
-    def evaluate(self, curve, obs, contrast, nodes):
+    def forward_solve(self, curve, obs, contrast, nodes):
         radius = curve.coefficients[-1].real
         self.calls.append((nodes, round(radius, 12), obs.wavenumber))
         return Prediction(np.array([obs.wavenumber*radius*(1+1e-12/nodes)], complex), dict(nodes=nodes), nodes)
@@ -48,10 +46,12 @@ def run(reuse, *, strict=False):
     config = BackendConfig(step_bounds_m=(.15,)*3, max_damping_trials=2)
     ledger.begin_stage('first', first.quota)
     a = fit_stage(FourierCurve.circle(2), first, .5, ScalarUpdate(), config, ledger, physics=physics,
+                  forward_solve=physics.forward_solve, geometry_update=scalar_trial,
                      retain_final=True)
     ledger.begin_stage('second', second.quota)
     before = len(physics.calls)
     b = fit_stage(a.curve, second, .5, ScalarUpdate(), config, ledger, physics=physics,
+                  forward_solve=physics.forward_solve, geometry_update=scalar_trial,
                      entry=a.final_entry if reuse else None)
     return a, b, ledger.snapshot(), len(physics.calls)-before, second
 
@@ -94,7 +94,8 @@ def test_runner_carries_entries_between_stages_and_drops_them_at_cleanup(monkeyp
                            [], [], final_entry=('endpoint', stage.label), entry_reused=kwargs['entry'] is not None)
     monkeypatch.setattr(runner, 'fit_stage', fake_fit)
     monkeypatch.setattr(physics, 'observable_frontier', lambda *args: dict(frontier=0))
-    result = runner.fit(problem, physics=physics, policy=CumulativePolicy(), output=tmp_path,
+    result = runner.fit(problem, physics=physics, forward_solve=lambda *args: None,
+        policy=CumulativePolicy(), output=tmp_path,
         geometry_update='spectral', localization_adapter=lambda p, *args: (p.initial, {}))
     labels = [label for label, _, _ in seen]
     assert labels[0] == 'warmup_025_damped' and 'fixed_M25' in labels

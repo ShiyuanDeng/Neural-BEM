@@ -1,8 +1,8 @@
 """Analytic derivative of the complete discrete spectral geometry update.
 
 Preparation differentiates speed, its normalized arclength primitive, the
-quadrature weight and the phase. The finite trial is the sampled spectral
-method in ``spectral.geometry_update``; no validity certificate is used here.
+quadrature weight and the phase. The trial curve is the sampled spectral
+construction, ``spectral.geometry_update``; no validity certificate is used here.
 """
 from dataclasses import dataclass
 from time import perf_counter
@@ -12,7 +12,7 @@ import numpy as np
 from .. import checks
 from ..continuation.geometry import (FourierCurve, arclength_angles, grid_size,
                                      integer, normal_basis, values)
-from .spectral import Grid, push_and_refit, sample_grid, geometry_update as spectral_geometry_update
+from .spectral import Grid, push_and_refit, sample_grid
 
 
 @dataclass(frozen=True)
@@ -151,15 +151,3 @@ class AnalyticSpectralUpdate:
         nodes = space.curve.nodes(space.count)
         basis = self.velocities(space, nodes)*self.length_unit_m
         return basis.T @ ((nodes.arc_length_weights/nodes.perimeter)[:, None]*basis)
-
-    def geometry_update(self, normal_update, *, prepared):
-        return geometry_update(normal_update, prepared=prepared, settings=self)
-
-
-def geometry_update(normal_update, *, prepared, settings):
-    """Use the sampled spectral trial; only its prepared derivative differs.
-
-    ``spectral.geometry_update`` moves the curve, refits it in arclength on the
-    N-point grid, and checks area, speed and intersections of the stored trial curve.
-    """
-    return spectral_geometry_update(normal_update, prepared=prepared, settings=settings)
