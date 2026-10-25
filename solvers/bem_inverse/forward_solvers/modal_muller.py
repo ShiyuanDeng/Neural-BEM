@@ -49,7 +49,6 @@ from ..a1_geometry import ModalGeometry, real_product
 from ..a2_muller import muller_matrix
 from ..a3_waves import point_kernels
 from .. import a4_fields, b7_data_jacobian
-from ..b7_data_jacobian import hadamard  # historical modal_muller export
 from ..physics import NodalKress, Prediction, register_backend
 
 
@@ -301,21 +300,9 @@ class ModalMuller:
     def ordered_calls(self, function, items):
         return F.ordered_calls(function, items, threads=self.execution.frequency_threads)
 
-    def _geometry(self, curve, window, device):
-        """Compatibility entry point; mathematics lives in `prepare_geometry`."""
-        return prepare_geometry(curve, window, device, context=self)
-
-    def _matrix(self, curve, window, k, ki, cutoff):
-        """Compatibility entry point; mathematics lives in `assemble_matrix`."""
-        return assemble_matrix(curve, window, k, ki, cutoff, context=self)
-
     def evaluate(self, curve, observation, contrast, resolution):
         """Compatibility entry point; mathematics lives in `forward_solve`."""
         return forward_solve(curve, observation, contrast, resolution, context=self)
-
-    def _evaluate(self, curve, observation, contrast, cutoff):
-        """Compatibility entry point; mathematics lives in `_solve`."""
-        return _solve(curve, observation, contrast, cutoff, context=self)
 
     def _contract(self, state, weights):
         jacobian, reciprocal = b7_data_jacobian.reciprocal_jacobian(state, weights)
@@ -397,7 +384,3 @@ def register():
         register_backend('modal_muller', ModalMuller)
     except ValueError:
         pass
-
-# Preserve historical pickle names for forward-state objects.
-for _type in (ModalSettings, ModalState, ModalMuller):
-    _type.__module__ = "bem_inverse.modal_muller"

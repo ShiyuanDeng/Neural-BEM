@@ -1,4 +1,1 @@
-"""Compatibility entry point; maintained API: :mod:`bem_inverse`."""
-from bem_inverse import Observation, Problem, Execution, make_backend, register_backend, CumulativePolicy
-
-__all__ = ['Observation', 'Problem', 'Execution', 'make_backend', 'register_backend', 'CumulativePolicy']
+"""Legacy CI-001 campaign tools; `benchmark.py` is reused by the TG-002 benchmark."""

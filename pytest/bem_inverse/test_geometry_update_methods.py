@@ -42,9 +42,9 @@ def test_sampled_spectral_reports_crossing_and_preserves_the_base():
     assert refusal.value.reason == 'self_intersection'
     assert update.counts['refused_trials'] == 1
     np.testing.assert_array_equal(curve.coefficients, before)
-    # The compatibility entry must produce the same refusal and count the call once.
+    # A repeated call refuses again and is counted once more.
     with pytest.raises(UpdateRefused) as repeated:
-        update.trial(prepared, step)
+        update.geometry_update(step, prepared=prepared)
     assert repeated.value.reason == 'self_intersection'
     assert update.counts['trial_constructions'] == 2
     assert update.counts['refused_trials'] == 2

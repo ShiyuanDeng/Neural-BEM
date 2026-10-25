@@ -4,8 +4,7 @@ from dataclasses import dataclass, field
 import time
 import numpy as np
 from ..continuation.geometry import (
-    FourierCurve, arclength_angles, grid_size, normal_basis, integer,
-    reparameterize, values, speed_ratio,
+    FourierCurve, arclength_angles, grid_size, normal_basis, integer, values, speed_ratio,
 )
 from ..errors import UpdateRefused, refusal_from_value_error as _refusal
 from scipy.interpolate import CubicSpline
@@ -26,9 +25,6 @@ class Prepared:
     count: int
     preparation_seconds: float
     cache: dict = field(default_factory=dict, compare=False)
-
-
-ProjectedSpace = Prepared
 
 
 def project(curve, coefficients, band, count, length_unit_m, *, validate=False):
@@ -75,15 +71,6 @@ class ProjectedUpdate:
                     construction='z + P_K[A(z+h n)-A(z)]',
                     projection_tolerance_meaning='grid refinement, not intentional smoothing')
 
-    def regauge(self, curve, curve_modes):
-        """Express an input curve in this strategy's gauge at storage band K."""
-        integer(curve_modes, "curve_modes")
-        try:
-            shape, error = reparameterize(curve, curve_modes, tolerance=self.projection_tolerance)
-        except ValueError as exc:
-            raise _refusal(exc) from exc
-        return shape, float(error)
-
     def _project(self,*args,**kwargs):
         self.counts['geometry_projections']+=1
         return project(*args,**kwargs)
@@ -113,7 +100,7 @@ class ProjectedUpdate:
         elapsed=time.perf_counter()-started
         self.counts['preparations']+=1
         self.counts['preparation_seconds']+=elapsed
-        return ProjectedSpace(**plain,derivatives=np.stack(derivatives,axis=1),
+        return Prepared(**plain,derivatives=np.stack(derivatives,axis=1),
             base_projection=base,fine_base_projection=fine,count=count,preparation_seconds=elapsed)
 
     def velocities(self,space,nodes):
@@ -146,10 +133,6 @@ class ProjectedUpdate:
 
     def geometry_update(self, normal_update, *, prepared):
         return geometry_update(normal_update, prepared=prepared, settings=self)
-
-    def trial(self, space, coefficients):
-        """Compatibility entry point; use the same implementation as the fitter."""
-        return geometry_update(coefficients, prepared=space, settings=self)
 
 
 def geometry_update(normal_update, *, prepared, settings):

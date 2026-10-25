@@ -190,7 +190,7 @@ def problem(case, output=INPUTS):
 
 def _physics(solver, execution):
     if solver == 'modal_muller':
-        from bem_inverse.modal_muller import register
+        from bem_inverse.forward_solvers.modal_muller import register
         register()
     return make_backend(solver, execution)
 

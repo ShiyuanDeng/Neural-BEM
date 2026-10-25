@@ -16,7 +16,6 @@ units, wall seconds, audit allowances, model logging) to every policy alike.
 | ``decision_gate`` | accuracy_exit | unresolved trials keep their gain decision (RG-001) | experimental |
 | ``four_phase`` | feedback | similarity start, four compact all-frequency stages, full release (CS-001) | candidate |
 | ``reach_clip`` | baseline | reach-scaled steps (ON-001 G) | rejected |
-| ``working_frequencies`` | accuracy_exit | seven-frequency proposals (ON-001 EW) | rejected |
 | ``validity_first`` | feedback | sampled validity before the full certificate (exact) | candidate |
 | ``entry_reuse`` | feedback | carry each stage endpoint into the next stage (exact) | candidate |
 | ``exact_fast`` | validity_first | plus stage-entry reuse (exact) | candidate |
@@ -118,9 +117,6 @@ POLICIES = {p.name: p for p in (
            evidence=EVIDENCE['CS001'], targets='the agreed four-phase schedule (CS-001 revised)'),
     Policy('reach_clip', 'baseline', 'Scale each step by a sampled reach estimate (factor 0.8)', 'rejected',
            options=(('reach_fraction', .8),), evidence=EVIDENCE['ON001'], targets='invalid proposals (ON-001 G)'),
-    Policy('working_frequencies', 'accuracy_exit', 'Propose steps from five anchors plus two residual-selected '
-           'frequencies; accept on the full catalog', 'rejected', options=(('working_anchors', 5),),
-           evidence=EVIDENCE['ON001'], targets='per-step physics cost (ON-001 EW)'),
     Policy('validity_first', 'feedback', 'Retain sampled-first order for optional certified geometry; '
            'ordinary spectral geometry already uses sampled checks', 'candidate',
            execution=(('validity_order', 'sampled_first'),), exact=True, evidence=EVIDENCE['PS001'],

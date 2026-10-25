@@ -3,7 +3,8 @@ from dataclasses import replace
 from time import perf_counter
 import numpy as np
 from . import checks
-from .continuation.lm_backend import normalize, NumericalFailure
+from .b5_residual import normalize
+from .errors import NumericalFailure
 
 
 def ladder(seed):

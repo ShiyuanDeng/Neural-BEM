@@ -1,22 +1,19 @@
 """Truth-free policy interpreter. Every physics operation uses the chosen service."""
-from . import checks
-from contextlib import contextmanager
 from dataclasses import dataclass, replace
-import signal
-from threading import current_thread, main_thread
 from time import perf_counter
 import traceback
 import numpy as np
 
-from bem_inverse.continuation.geometry_runtime import geometry_runtime, geometry_validated
-from .fit_stage import (
-    Ledger, Objective, Stop, fit_stage, NORMAL_RETURN, STAGE_QUOTA)
+from bem_inverse.continuation.geometry_runtime import geometry_runtime
+from .fit_stage import fit_stage
+from .work import Ledger
+from .errors import Stop, NORMAL_RETURN, STAGE_QUOTA
 from .continuation.geometry import resize, cleanup
 from .geometry_update_methods.spline import ProjectedUpdate
 from .geometry_selection import make_update, describe_plan, operation_record
 from .io import write, curve_record
 from .localization import localize
-from .endpoint import audit, deadline
+from .endpoint import audit
 from .physics import make_backend
 from .policy import CumulativePolicy, readable_plan
 
@@ -116,7 +113,6 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
     # solves when curve, catalog and resolution are unchanged (charges are replayed).
     reuse_entries = bool(getattr(physics.execution, 'stage_entry_reuse', False) and geometry_adapter is None)
     carried = None
-    adaptive_state = None
     if resume is not None:
         if not resume.operations or resume.operations[0].label != resume.stage.stage.label:
             raise ValueError('Resume queue must begin with the checkpoint stage')
@@ -135,10 +131,7 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
     def save(name, value):
         if output is not None:
             from pathlib import Path
-            io_started=perf_counter()
             write(Path(output)/name, value)
-            if ledger is not None and getattr(physics,'qualified_controller',False):
-                ledger.started+=perf_counter()-io_started
 
     def event(op, reason, **values):
         decisions.append(dict(index=len(decisions), operation=operation_record(op, record_settings), reason=reason, **values))
@@ -181,8 +174,6 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
             # C12. Policy operations may insert stages; retain the live queue.
             while queue:
                 op = queue.pop(0)
-                if op.kind in ('adaptive','adaptive_bridge'):
-                    op,adaptive_state=policy.resolve_adaptive(op,problem,physics,adaptive_state)
                 # Optional initialization, then explicit cleanup and stage entry.
                 if op.kind == 'localize':
                     ledger.begin_stage(op.label, None)
@@ -229,7 +220,7 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
                     event(op, 'resolved stage entered', work=ledger.snapshot(), resolution_selection=selection)
                     if op.fit_geometry_update is not None:
                         save(op.label+'_geometry.json', update.settings())
-                    def checkpoint(iteration, evaluation):
+                    def accepted_state(iteration, evaluation):
                         nonlocal early_endpoint, early_retry_residual, early_retry_resolution, fit_started, curve
                         curve=evaluation.curve
                         observed = np.column_stack([o.scattered.reshape(-1) for o in op.stage.observations])
@@ -269,32 +260,12 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
                         if checked['passed']:
                             early_endpoint = (evaluation.curve.coefficients.tobytes(), checked)
                             raise RequiredAccuracyReached('full real catalog meets required accuracy; audit passed')
-                    objective_options = {}
-                    anchors = getattr(policy, 'working_anchors', 0)
-                    full_real = (len(op.stage.observations) == len(problem.real) and
-                                 all(a is b for a, b in zip(op.stage.observations, problem.real)))
-                    if anchors and full_real and len(problem.real) == 19:
-                        from functools import partial
-                        from .working_frequency import WorkingObjective
-                        objective_options['objective_factory'] = partial(WorkingObjective, anchor_count=anchors)
-                    if getattr(op.stage, 'relaxed_tau', None) is not None:
-                        from .full_matrix import RelaxedObjective
-                        objective_options['objective_factory'] = RelaxedObjective
                     entry, carried = carried, None
-                    if (op.details or {}).get('adaptive_decision'):
-                        from .four_control_adaptive import decision_slot
-                        result,op,adaptive_state=decision_slot(problem,curve,op,policy,physics,update,ledger,adaptive_state)
-                        last_stage,last_config=op.stage,op.optimizer
-                        event(op,'adaptive slot returned at saved endpoint',outcome=result.outcome,
-                            stop=result.stop_reason,actual_controls=adaptive_state['controls'])
-                        if result.outcome==NORMAL_RETURN and getattr(result,'committed_evaluation',None) is not None:
-                            checkpoint(result.accepted_steps,result.committed_evaluation)
-                    else:
-                        # A–B–C. Run one resolved stage and retain its accepted endpoint.
-                        result = fit_stage(curve, op.stage, problem.contrast, update, op.optimizer, ledger,
-                                           on_accept=checkpoint, physics=physics, resume=resumed_stage,
-                                           resolution_response=resolution_response, entry=entry,
-                                           retain_final=reuse_entries, **objective_options)
+                    # A–B–C. Run one resolved stage and retain its accepted endpoint.
+                    result = fit_stage(curve, op.stage, problem.contrast, update, op.optimizer, ledger,
+                                       on_accept=accepted_state, physics=physics, resume=resumed_stage,
+                                       resolution_response=resolution_response, entry=entry,
+                                       retain_final=reuse_entries)
                     resumed_stage = None
                     curve = result.curve
                     carried = result.final_entry if reuse_entries else None
@@ -322,10 +293,6 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
                             physics = resolution_response.physics or physics
                             last_stage = replace(last_stage, nodes=result.final_nodes,
                                                  refined_nodes=result.final_refined_nodes)
-                    elif getattr(physics,'qualified_controller',False):
-                        row.update(nodes=result.final_nodes,refined_nodes=result.final_refined_nodes,
-                            resolution_events=result.resolution_events)
-                        last_stage=replace(last_stage,nodes=result.final_nodes,refined_nodes=result.final_refined_nodes)
                     stages.append(row)
                     save(op.label+'.json', dict(row, history=result.history, trials=result.trials,
                                                acceptance_checks=result.acceptance_checks))

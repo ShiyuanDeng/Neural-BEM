@@ -8,8 +8,11 @@ from bem_inverse.physics import Execution, NodalKress, Prediction
 from bem_inverse.nodal_geometry import GeometryCache
 from bem_inverse.nodal_resolution import select_stage
 from bem_inverse.continuation.geometry import FourierCurve
-from bem_inverse.continuation.lm_backend import FitStage, BackendConfig, Ledger, NumericalFailure
-from bem_inverse.geometry import ProjectedUpdate, resize
+from bem_inverse.stage_types import FitStage, BackendConfig
+from bem_inverse.work import Ledger
+from bem_inverse.errors import NumericalFailure
+from bem_inverse.geometry_update_methods.spline import ProjectedUpdate
+from bem_inverse.continuation.geometry import resize
 from bem_inverse.continuation.geometry_runtime import geometry_runtime
 from gpr_bem_kress import cuda_assembly as CA
 
@@ -87,7 +90,7 @@ def test_cached_fields_jacobian_and_full_trial_match_reference(damped):
             np.testing.assert_allclose(jb, ja, rtol=1e-10, atol=1e-10)
             direction = np.array([1., .2, -.1, .15, -.2, .1, .05]); direction /= np.linalg.norm(direction)
             eps = 1e-7
-            predictions = [cached.evaluate(update.trial(space, sign*eps*direction)[0], observation,
+            predictions = [cached.evaluate(update.geometry_update(sign*eps*direction, prepared=space)[0], observation,
                                            problem.contrast, 194).prediction for sign in (1, -1)]
             fd = (predictions[0]-predictions[1])/(2*eps)
             assert np.linalg.norm(fd-jb@direction)/np.linalg.norm(fd) < 1e-3

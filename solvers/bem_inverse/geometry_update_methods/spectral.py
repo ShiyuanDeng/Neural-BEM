@@ -9,8 +9,7 @@ from dataclasses import dataclass
 import time
 import numpy as np
 from ..continuation.geometry import (
-    FourierCurve, arclength_angles, grid_size, normal_basis, integer,
-    reparameterize, values, speed_ratio,
+    FourierCurve, arclength_angles, grid_size, normal_basis, integer, values, speed_ratio,
 )
 from ..errors import UpdateRefused, refusal_from_value_error as _refusal
 import torch
@@ -155,15 +154,6 @@ class SpectralProjectedUpdate:
                     prepare_device=self.device if self.batched else 'cpu', chunk_bytes=CHUNK_BYTES,
                     projection_tolerance_meaning='grid refinement, not intentional smoothing')
 
-    def regauge(self, curve, curve_modes):
-        """Express an input curve in this strategy's gauge at storage band K."""
-        integer(curve_modes, "curve_modes")
-        try:
-            shape, error = reparameterize(curve, curve_modes, tolerance=self.projection_tolerance)
-        except ValueError as exc:
-            raise _refusal(exc) from exc
-        return shape, float(error)
-
     def _project(self, grid, coefficients, band):
         self.counts['geometry_projections'] += 1
         return push_and_refit(grid, coefficients, band, self.length_unit_m)
@@ -246,10 +236,6 @@ class SpectralProjectedUpdate:
 
     def geometry_update(self, normal_update, *, prepared):
         return geometry_update(normal_update, prepared=prepared, settings=self)
-
-    def trial(self, space, coefficients):
-        """Compatibility entry point; use the same implementation as the fitter."""
-        return geometry_update(coefficients, prepared=space, settings=self)
 
 
 def geometry_update(normal_update, *, prepared, settings):

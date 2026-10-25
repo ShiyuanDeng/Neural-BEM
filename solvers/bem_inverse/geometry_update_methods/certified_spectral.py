@@ -12,7 +12,7 @@ import torch
 from .. import checks
 from ..errors import UpdateRefused, refusal_from_value_error
 from ..continuation.geometry import (
-    FourierCurve, grid_size, integer, normal_basis, reparameterize,
+    FourierCurve, grid_size, integer, normal_basis,
     signed_area, speed_ratio, values,
 )
 from .spectral import CHUNK_BYTES, arclength_quadrature, batched_projection, push_and_refit, sample_grid
@@ -111,14 +111,6 @@ class CertifiedSpectralUpdate:
             settings.update(certificate='torch float64 port of curve_certificate (NU-007)',
                             certificate_device=self.device)
         return settings
-
-    def regauge(self, curve, curve_modes):
-        integer(curve_modes, 'curve_modes')
-        try:
-            shape, error = reparameterize(curve, curve_modes, tolerance=self.projection_tolerance)
-        except ValueError as exc:
-            raise refusal_from_value_error(exc) from exc
-        return shape, float(error)
 
     def _project(self, grid, coefficients, band):
         self.counts['geometry_projections'] += 1
@@ -320,10 +312,6 @@ class CertifiedSpectralUpdate:
     def geometry_update(self, normal_update, *, prepared):
         return geometry_update(normal_update, prepared=prepared, settings=self)
 
-    def trial(self, space, coefficients):
-        """Compatibility entry point; the finite construction is below."""
-        return geometry_update(coefficients, prepared=space, settings=self)
-
 
 def geometry_update(normal_update, *, prepared, settings):
     """Move along normals, check, project at two grids, then check the stored curve."""
@@ -372,13 +360,3 @@ def geometry_update(normal_update, *, prepared, settings):
         raise refusal_from_value_error(exc) from exc
     finally:
         method.counts['trial_seconds'] += time.perf_counter()-started
-
-
-def BatchedCertifiedUpdate(length_unit_m, *, device=None, **kwargs):
-    """Compatibility constructor for batched preparation without subclass layers."""
-    return CertifiedSpectralUpdate(length_unit_m, device=device, batched=True, **kwargs)
-
-
-def DeviceCertifiedUpdate(length_unit_m, *, device=None, **kwargs):
-    """Compatibility constructor for batched preparation and device certificates."""
-    return CertifiedSpectralUpdate(length_unit_m, device=device, batched=True, certificate_device=True, **kwargs)

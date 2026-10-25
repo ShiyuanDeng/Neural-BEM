@@ -4,10 +4,21 @@ import sys
 
 from experiments.benchmark import campaign as c
 from experiments.cleaned_interface import benchmark as ci
-from experiments.trial_curves.replay import load, replay
+from experiments.trial_curves.replay import group, replay
+
+# The saved capture names two classes by the module paths they had when it was made.
+OLD_NAMES = {'bem_inverse.c10_geometry_trial': 'bem_inverse.geometry_update_methods.certified_spectral',
+             'bem_inverse.continuation.lm_backend': 'bem_inverse.stage_types'}
+
+
+class Unpickler(pickle.Unpickler):
+    def find_class(self, module, name):
+        return super().find_class(OLD_NAMES.get(module, module), name)
+
 
 case, stage, out = 'aphex_twin__c13.3', sys.argv[1], sys.argv[2]
-iterations = load('results/trial_curves/aphex_c13.3.pkl')
+with open('results/trial_curves/aphex_c13.3.pkl', 'rb') as saved:
+    iterations = group(Unpickler(saved).load())
 number = next(i for i, x in enumerate(iterations) if x['stage'] == stage)
 it = iterations[number]
 row = next(r for r in c.descriptors() if r['id'] == case)

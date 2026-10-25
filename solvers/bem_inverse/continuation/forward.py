@@ -1,11 +1,10 @@
 """Equal-density transmission, dimensionless k, plane waves, full aperture."""
 from concurrent.futures import ThreadPoolExecutor
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from contextlib import contextmanager, nullcontext
 from contextvars import copy_context
 from functools import partial
 import os
-from time import perf_counter
 
 import numpy as np
 from scipy.linalg import lu_factor, lu_solve
@@ -108,43 +107,6 @@ def same_acquisition(first, second):
     return np.array_equal(first.directions, second.directions)
 
 
-class BudgetExceeded(RuntimeError):
-    pass
-
-
-@dataclass
-class Work:
-    max_forwards: int = 600
-    max_seconds: float = 600.0
-    attempted: int = 0
-    completed: int = 0
-    failed: int = 0
-    jacobians: int = 0
-    factorizations: int = 0
-    rhs_columns: int = 0
-    seconds: dict = field(default_factory=dict)
-    started: float = field(default_factory=perf_counter, repr=False)
-
-    def check(self):
-        if self.attempted >= self.max_forwards or perf_counter() - self.started >= self.max_seconds:
-            raise BudgetExceeded("Forward/time budget exhausted.")
-
-    def summary(self):
-        counters = {name: getattr(self, name) for name in
-                    ("attempted", "completed", "failed", "jacobians", "factorizations", "rhs_columns")}
-        return dict(counters, seconds=dict(self.seconds))
-
-
-@contextmanager
-def timed(work, name):
-    started = perf_counter()
-    try:
-        yield
-    finally:
-        if work is not None:
-            work.seconds[name] = work.seconds.get(name, 0.0) + perf_counter() - started
-
-
 def frequency_threads(threads=None):
     """Threads for independent frequency systems: SC_FREQUENCY_THREADS, default 8."""
     count = int(os.environ.get("SC_FREQUENCY_THREADS", "8") if threads is None else threads)
@@ -211,13 +173,11 @@ def forward_backend(selection=None):
     return value
 
 
-def _dense_system(curve, wavenumber, ki, assemble, device, fallback, work):
+def _dense_system(curve, wavenumber, ki, assemble, device, fallback):
     """System matrix and LU factors; device states keep host matrices and host LU factors."""
-    with timed(work, "assembly"):
-        matrix = (cuda_assembly.build_system_matrix(curve, wavenumber, ki) if device
-                  else assemble(curve, wavenumber, ki).system_matrix)
-    with timed(work, "factorization"):
-        factors = cuda_assembly.DeviceFactors(matrix, fallback=fallback) if device else lu_factor(matrix)
+    matrix = (cuda_assembly.build_system_matrix(curve, wavenumber, ki) if device
+              else assemble(curve, wavenumber, ki).system_matrix)
+    factors = cuda_assembly.DeviceFactors(matrix, fallback=fallback) if device else lu_factor(matrix)
     return (factors.host if device else matrix), factors
 
 
@@ -233,69 +193,54 @@ def _solve(matrix, factors, rhs):
 
 
 @geometry_validated
-def solve(shape, wavenumber, contrast, acquisition, nodes, *, work=None, execution_backend=None):
+def solve(shape, wavenumber, contrast, acquisition, nodes, *, execution_backend=None):
     """contrast=ki²/k²; geometry and all lengths are in one declared unit."""
     if not np.isfinite(wavenumber) or wavenumber <= 0 or not np.isfinite(contrast) or contrast <= 0:
         raise ValueError("Wavenumber and contrast must be positive.")
-    if work is not None:
-        work.check()
-        work.attempted += 1
-    try:
-        curve = shape.nodes(nodes)
-        assemble, receivers, incident = _operators(curve)
-        ki = wavenumber * np.sqrt(contrast)
-        # The CUDA backend covers single curves and ordered multi-component boundaries with real wavenumbers.
-        selected = os.environ.get("SC_FORWARD_BACKEND", "auto") if execution_backend is None else execution_backend
-        device = forward_backend(selected) == "cuda" and cuda_assembly.supported(curve, wavenumber, ki)
-        if execution_backend == "cuda" and not device:
-            raise ValueError("Explicit CUDA execution does not support this geometry/wavenumber.")
-        fallback = device and selected == "auto"
-        backend = "cuda" if device else "cpu"
-        # Outside a fit cache, a CUDA solve validates its boundary once for all three builders (exact reuse).
-        local = device and current_validation_cache() is None
-        # Explicit scope prevents ambient acceleration/device contexts changing the model.
-        with (validation_cache("cache") if local else nullcontext()), execution(kernels="reference", device="cpu"):
-            try:
-                matrix, factors = _dense_system(curve, wavenumber, ki, assemble, device, fallback, work)
-            except Exception as exc:
-                # Under auto, device out-of-memory falls back to the CPU reference for this solve.
-                if not (fallback and cuda_assembly.out_of_memory(exc)):
-                    raise
-                cuda_assembly.record_fallback("forward assembly")
-                backend = "cpu-fallback"
-                matrix, factors = _dense_system(curve, wavenumber, ki, assemble, False, False, work)
-            with timed(work, "receiver_operator"):
-                receiver = receivers(curve, acquisition.receivers, wavenumber)
-            if isinstance(acquisition, PointSourceAcquisition):
-                field, normal = incident(
-                    curve, acquisition.sources, wavenumber, acquisition.strength)
-                field, normal = field.T, normal.T
-            else:
-                field = np.exp(1j * wavenumber * (curve.points @ acquisition.directions.T))
-                normal = 1j * wavenumber * (curve.normals @ acquisition.directions.T) * field
-            rhs = np.vstack((field, normal))
-            if work is not None:
-                work.factorizations += 1
-                work.rhs_columns += rhs.shape[1]
-            with timed(work, "forward_solve"):
-                traces, residual = _solve(matrix, factors, rhs)
-                prediction = receiver.apply_state(traces)
-                if isinstance(acquisition, PointSourceAcquisition) and acquisition.paired:
-                    prediction = np.diag(prediction).copy()
-        if not np.isfinite(prediction).all():
-            raise FloatingPointError("Nonfinite scattered field.")
-    except Exception:
-        if work is not None:
-            work.failed += 1
-        raise
-    if work is not None:
-        work.completed += 1
+    curve = shape.nodes(nodes)
+    assemble, receivers, incident = _operators(curve)
+    ki = wavenumber * np.sqrt(contrast)
+    # The CUDA backend covers single curves and ordered multi-component boundaries with real wavenumbers.
+    selected = os.environ.get("SC_FORWARD_BACKEND", "auto") if execution_backend is None else execution_backend
+    device = forward_backend(selected) == "cuda" and cuda_assembly.supported(curve, wavenumber, ki)
+    if execution_backend == "cuda" and not device:
+        raise ValueError("Explicit CUDA execution does not support this geometry/wavenumber.")
+    fallback = device and selected == "auto"
+    backend = "cuda" if device else "cpu"
+    # Outside a fit cache, a CUDA solve validates its boundary once for all three builders (exact reuse).
+    local = device and current_validation_cache() is None
+    # Explicit scope prevents ambient acceleration/device contexts changing the model.
+    with (validation_cache("cache") if local else nullcontext()), execution(kernels="reference", device="cpu"):
+        try:
+            matrix, factors = _dense_system(curve, wavenumber, ki, assemble, device, fallback)
+        except Exception as exc:
+            # Under auto, device out-of-memory falls back to the CPU reference for this solve.
+            if not (fallback and cuda_assembly.out_of_memory(exc)):
+                raise
+            cuda_assembly.record_fallback("forward assembly")
+            backend = "cpu-fallback"
+            matrix, factors = _dense_system(curve, wavenumber, ki, assemble, False, False)
+        receiver = receivers(curve, acquisition.receivers, wavenumber)
+        if isinstance(acquisition, PointSourceAcquisition):
+            field, normal = incident(
+                curve, acquisition.sources, wavenumber, acquisition.strength)
+            field, normal = field.T, normal.T
+        else:
+            field = np.exp(1j * wavenumber * (curve.points @ acquisition.directions.T))
+            normal = 1j * wavenumber * (curve.normals @ acquisition.directions.T) * field
+        rhs = np.vstack((field, normal))
+        traces, residual = _solve(matrix, factors, rhs)
+        prediction = receiver.apply_state(traces)
+        if isinstance(acquisition, PointSourceAcquisition) and acquisition.paired:
+            prediction = np.diag(prediction).copy()
+    if not np.isfinite(prediction).all():
+        raise FloatingPointError("Nonfinite scattered field.")
     return ForwardState(curve, wavenumber, ki, acquisition, matrix,
                         factors, traces, prediction, residual, backend)
 
 
 @geometry_validated
-def shape_jacobian(state, normal_displacements, *, work=None):
+def shape_jacobian(state, normal_displacements):
     """Continuous Hadamard derivative with Kress traces and periodic quadrature.
 
     This is bilinear reciprocity, without conjugation. It is qualified against
@@ -304,34 +249,27 @@ def shape_jacobian(state, normal_displacements, *, work=None):
     h = np.asarray(normal_displacements, float)
     if h.ndim != 2 or h.shape[0] != state.curve.num_nodes or not np.isfinite(h).all():
         raise ValueError("Normal displacement basis must have shape (nodes, parameters).")
-    if work is not None:
-        if perf_counter() - work.started >= work.max_seconds:
-            raise BudgetExceeded("Time budget exhausted before Jacobian.")
-        work.jacobians += 1
-        work.rhs_columns += len(state.acquisition.receivers)
-    with timed(work, "reciprocal_solve"):
-        with execution(kernels="reference", device="cpu"):
-            incident = _operators(state.curve)[2]
-            d, n = incident(state.curve, state.acquisition.receivers, state.wavenumber)
-        reciprocal, _ = _solve(state.matrix, state.factors, np.concatenate((d, n), axis=1).T)
+    with execution(kernels="reference", device="cpu"):
+        incident = _operators(state.curve)[2]
+        d, n = incident(state.curve, state.acquisition.receivers, state.wavenumber)
+    reciprocal, _ = _solve(state.matrix, state.factors, np.concatenate((d, n), axis=1).T)
     count = state.curve.num_nodes
-    with timed(work, "jacobian_contraction"):
-        # Dense matrix products are much faster than the four-index einsum at
-        # large illumination/update counts. Cap the temporary at about 32 MiB.
-        sources = state.traces[:count]
-        receivers = reciprocal[:count].T
-        value = np.empty((sources.shape[1], receivers.shape[0], h.shape[1]), complex)
-        block = max(1, (32 * 1024 ** 2) // (16 * count * sources.shape[1]))
-        for start in range(0, h.shape[1], block):
-            stop = min(start + block, h.shape[1])
-            weighted = (h[:, start:stop, None] * state.curve.arc_length_weights[:, None, None]
-                        * sources[:, None, :])
-            product = receivers @ weighted.reshape(count, -1)
-            value[:, :, start:stop] = product.reshape(receivers.shape[0], stop-start, sources.shape[1]).transpose(2, 0, 1)
-        value *= state.interior_wavenumber ** 2 - state.wavenumber ** 2
-        if isinstance(state.acquisition, PointSourceAcquisition) and state.acquisition.paired:
-            indices = np.arange(len(state.acquisition.sources))
-            value = value[indices, indices, :]
+    # Dense matrix products are much faster than the four-index einsum at
+    # large illumination/update counts. Cap the temporary at about 32 MiB.
+    sources = state.traces[:count]
+    receivers = reciprocal[:count].T
+    value = np.empty((sources.shape[1], receivers.shape[0], h.shape[1]), complex)
+    block = max(1, (32 * 1024 ** 2) // (16 * count * sources.shape[1]))
+    for start in range(0, h.shape[1], block):
+        stop = min(start + block, h.shape[1])
+        weighted = (h[:, start:stop, None] * state.curve.arc_length_weights[:, None, None]
+                    * sources[:, None, :])
+        product = receivers @ weighted.reshape(count, -1)
+        value[:, :, start:stop] = product.reshape(receivers.shape[0], stop-start, sources.shape[1]).transpose(2, 0, 1)
+    value *= state.interior_wavenumber ** 2 - state.wavenumber ** 2
+    if isinstance(state.acquisition, PointSourceAcquisition) and state.acquisition.paired:
+        indices = np.arange(len(state.acquisition.sources))
+        value = value[indices, indices, :]
     if not np.isfinite(value).all():
         raise FloatingPointError("Nonfinite shape Jacobian.")
     return value

@@ -49,6 +49,3 @@ class NumericalFailure(Stop):
 class GeometryProposalCap(Stop):
     code = 'GEOMETRY_PROPOSAL_CAP'
 
-
-for _type in (Stop, StageQuota, TrialSolveCap, TrialWallLimit, NumericalFailure, GeometryProposalCap,):
-    _type.__module__ = "bem_inverse.continuation.lm_backend"

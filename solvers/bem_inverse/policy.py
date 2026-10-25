@@ -7,7 +7,7 @@ shared algorithm change relative to DF and need the all-36 retention run.
 from dataclasses import dataclass, asdict, replace
 import numpy as np
 
-from bem_inverse.continuation.lm_backend import BackendConfig, FitStage, stage_record
+from .stage_types import BackendConfig, FitStage, stage_record
 
 
 @dataclass(frozen=True)
@@ -71,7 +71,6 @@ class CumulativePolicy:
     # Optional ON-001 rules. Defaults preserve the established recipe.
     audit_aggregate_seconds: object = None
     required_accuracy: object = None
-    working_anchors: int = 0
     reach_fraction: float = 0.0
     log_model: bool = False
     damping_rule: str = 'schedule'

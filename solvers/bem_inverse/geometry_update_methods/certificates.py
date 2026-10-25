@@ -9,7 +9,7 @@ import numpy as np
 import torch
 from scipy.fft import next_fast_len
 from .. import checks
-from ..modal_geometry import log_modulus, real_product
+from ..a1_geometry import log_modulus, real_product
 
 EPS = np.finfo(float).eps
 SPEED_FACTOR = 1e-6

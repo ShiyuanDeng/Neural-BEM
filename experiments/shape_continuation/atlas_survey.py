@@ -15,9 +15,9 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from .forward import solve, shape_jacobian
-from .geometry import normal_basis, grid_size, integer
-from .lm_backend import normalize
+from bem_inverse.continuation.forward import solve, shape_jacobian
+from bem_inverse.continuation.geometry import normal_basis, grid_size, integer
+from bem_inverse.b5_residual import normalize
 
 
 @dataclass(frozen=True)

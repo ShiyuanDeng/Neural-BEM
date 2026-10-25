@@ -57,7 +57,7 @@ def audit(curve, stage, config, problem, physics, update, seconds):
             # Each frequency is independent. Keep only one coarse/fine pair of
             # dense systems long enough to extract the reciprocal derivatives.
             # Normalization/stacking below is exactly Objective's common map.
-            from bem_inverse.continuation.lm_backend import normalize
+            from .b5_residual import normalize
             observed = np.column_stack([o.scattered.reshape(-1) for o in problem.real])
             space = update.prepare(curve, stage.update_modes, curve.band)
             low_columns, high_columns, coarse_jac, fine_jac = [], [], [], []

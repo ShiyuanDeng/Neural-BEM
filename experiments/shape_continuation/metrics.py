@@ -71,7 +71,7 @@ def area_error(truth, recovered, count=4096):
     Retain both directed differences to expose that interpretation. N/2N is
     an empirical polygon refinement check, not a continuous-curve certificate.
     """
-    from .geometry import integer
+    from bem_inverse.continuation.geometry import integer
     count = integer(count, "area samples", minimum=3)
     def score(n):
         vertices = [np.column_stack((z.real, z.imag))

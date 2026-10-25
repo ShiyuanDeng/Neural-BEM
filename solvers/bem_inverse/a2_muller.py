@@ -253,7 +253,3 @@ def muller_matrix(geometry, ko, ki, cutoff, *, tolerance=1e-15, workers=1, basis
 
 
 
-
-# Historical modal_operator imports; these are the canonical section functions.
-from .a3_waves import series_terms, scaled_hankel, graf_order, point_kernels
-from .b7_data_jacobian import hadamard

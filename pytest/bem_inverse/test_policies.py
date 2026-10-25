@@ -5,7 +5,7 @@ import pytest
 
 from bem_inverse import policies as R
 from bem_inverse.continuation_policy import ShapeFrequencyPolicy
-from bem_inverse.modal_muller import ModalMuller
+from bem_inverse.forward_solvers.modal_muller import ModalMuller
 from bem_inverse.physics import Execution
 from bem_inverse.policy import CumulativePolicy
 from test_continuation_policy import fixture

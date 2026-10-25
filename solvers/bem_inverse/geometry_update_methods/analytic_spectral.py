@@ -11,7 +11,7 @@ import numpy as np
 
 from .. import checks
 from ..continuation.geometry import (FourierCurve, arclength_angles, grid_size,
-                                     integer, normal_basis, reparameterize, values)
+                                     integer, normal_basis, values)
 from ..errors import refusal_from_value_error
 from .spectral import Grid, push_and_refit, sample_grid, geometry_update as spectral_geometry_update
 
@@ -135,14 +135,6 @@ class AnalyticSpectralUpdate:
         return Prepared(curve, update_modes, curve_modes, self.length_unit_m, orders, labels,
                         derivatives, base, fine, count, elapsed, grid, fine_grid)
 
-    def regauge(self, curve, curve_modes):
-        integer(curve_modes, 'curve_modes')
-        try:
-            shape, error = reparameterize(curve, curve_modes, tolerance=self.projection_tolerance)
-        except ValueError as exc:
-            raise refusal_from_value_error(exc) from exc
-        return shape, float(error)
-
     @staticmethod
     def _checked(space, coefficients):
         a = np.asarray(coefficients, float)
@@ -172,10 +164,6 @@ class AnalyticSpectralUpdate:
 
     def geometry_update(self, normal_update, *, prepared):
         return geometry_update(normal_update, prepared=prepared, settings=self)
-
-    def trial(self, space, coefficients):
-        """Compatibility entry point for older callers."""
-        return self.geometry_update(coefficients, prepared=space)
 
 
 def geometry_update(normal_update, *, prepared, settings):

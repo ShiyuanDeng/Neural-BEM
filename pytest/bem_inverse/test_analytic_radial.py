@@ -4,7 +4,7 @@ import pytest
 from numpy.polynomial.chebyshev import chebval
 from scipy.fft import dct
 
-from bem_inverse import modal_operator as operator
+from bem_inverse import a2_muller as operator
 
 
 def dct_reference(ko, ki, upper, count=2048):

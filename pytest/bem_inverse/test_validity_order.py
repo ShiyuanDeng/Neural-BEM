@@ -3,9 +3,9 @@ import numpy as np
 import pytest
 import torch
 
-from bem_inverse.certified import CertifiedSpectralUpdate
+from bem_inverse.geometry_update_methods.certified_spectral import CertifiedSpectralUpdate
 from bem_inverse.continuation.geometry import FourierCurve
-from bem_inverse.continuation.updates import UpdateRefused
+from bem_inverse.errors import UpdateRefused
 from bem_inverse.geometry_selection import make_update
 from bem_inverse.physics import Execution
 
@@ -21,7 +21,7 @@ def lobed(band=20, lobes=5, depth=.18):
 
 def outcome(update, space, step):
     try:
-        candidate, info = update.trial(space, step)
+        candidate, info = update.geometry_update(step, prepared=space)
     except UpdateRefused as exc:
         return ('refused', exc.reason)
     return ('accepted', candidate.coefficients.tobytes())

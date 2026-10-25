@@ -19,16 +19,16 @@ from time import perf_counter
 import traceback
 import numpy as np
 
-from experiments.shape_continuation.forward import PointSourceAcquisition
-from experiments.shape_continuation.geometry import FourierCurve
-from experiments.shape_continuation.geometry_runtime import geometry_runtime, geometry_validated
+from bem_inverse.continuation.forward import PointSourceAcquisition
+from bem_inverse.continuation.geometry import FourierCurve
+from bem_inverse.continuation.geometry_runtime import geometry_runtime, geometry_validated
+from bem_inverse.io import read, write, digest, curve_from, portable
+from bem_inverse.problem import Observation, Problem
+from bem_inverse.physics import Execution, make_backend
+from bem_inverse.policy import CumulativePolicy
+from bem_inverse.runner import fit
 from experiments.shape_continuation.metrics import boundary_distance
 from experiments.shape_continuation.atlas_survey import symmetric_rms_distance
-from .io import read, write, digest, curve_from, portable
-from .problem import Observation, Problem
-from .physics import Execution, make_backend
-from .policy import CumulativePolicy
-from .runner import fit
 
 ROOT = Path(__file__).resolve().parents[2]
 BASE = ROOT/'results/validation/shape_continuation'

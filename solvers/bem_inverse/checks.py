@@ -19,12 +19,10 @@ def require_positive_orientation(area):
         raise ValueError('Curve must be counterclockwise (positive signed area).')
 
 
-
 def require_modulus_domain(upper, tolerance):
     """The coefficient l1 upper bound and requested log accuracy must be positive."""
     if not np.isfinite(upper) or upper <= 0 or not np.isfinite(tolerance) or tolerance <= 0:
         raise ValueError('Positive finite modulus norm and log tolerance required.')
-
 
 
 def require_positive_modulus_sample(sampled):
@@ -33,11 +31,9 @@ def require_positive_modulus_sample(sampled):
         raise ValueError(f'Inconclusive interval proposal: sampled min |W|^2 = {sampled:g}.')
 
 
-
 def log_tail_exceeds(ratio, degree, tolerance):
     """Unchanged geometric bound for the omitted logarithm series."""
     return 2*ratio**(degree+1)/((degree+1)*(1-ratio)) > tolerance
-
 
 
 def require_log_degree(degree, maximum, beta, upper):
@@ -46,17 +42,14 @@ def require_log_degree(degree, maximum, beta, upper):
                          f'(beta/Lambda={beta/upper:.3g}); curve is nearly self-touching.')
 
 
-
 def require_finite_certificate(residual, norm, allowance, lower):
     """Residual evidence must be finite and the reciprocal l1 norm positive."""
     if not np.isfinite([residual, norm, allowance, lower]).all() or norm <= 0:
         raise ValueError('Non-finite reciprocal residual certificate.')
 
 
-
 def interval_certified(lower, beta):
     return lower >= beta
-
 
 
 def interval_needs_recompute(lower, beta):
@@ -64,11 +57,9 @@ def interval_needs_recompute(lower, beta):
     return lower < beta
 
 
-
 def require_positive_certificate(lower, residual):
     if not lower > 0:
         raise ValueError(f'|W|^2 lower bound not certified (coefficient residual {residual:.3g}).')
-
 
 
 def require_finite_log_coefficients(log, *, device=False):
@@ -90,11 +81,9 @@ def require_radial_domain(ko, ki, upper, tolerance):
         raise ValueError('Finite nonzero wavenumbers, upper > 0 and 0 < tolerance < 1 required.')
 
 
-
 def require_finite_radial_coefficients(coefficients):
     if not np.all(np.isfinite(coefficients)):
         raise ValueError('Non-finite analytic radial Chebyshev coefficients.')
-
 
 
 def radial_series_converged(small, count, ko, ki, tail, tolerance, size):
@@ -102,17 +91,14 @@ def radial_series_converged(small, count, ko, ki, tail, tolerance, size):
     return np.all(small[:, count//2]) and (ko == ki or np.all(tail <= tolerance*size))
 
 
-
 def require_trace_workspace(cutoff, band):
     if cutoff > band:
         raise ValueError('Trace cutoff must fit inside the coefficient window.')
 
 
-
 def require_geometry_workspace(window, cutoff, geometry_band):
     if window < max(cutoff, geometry_band):
         raise ValueError('Coefficient workspace must contain trace and geometry bands.')
-
 
 
 def require_material_frequency(k, contrast):
@@ -143,17 +129,14 @@ def require_graf_separation(distance, radius):
                          'coefficient bounding circle of the curve.')
 
 
-
 def require_wave_cancellation(loss, series_loss, x):
     if loss > series_loss:
         raise ValueError(f'Regular-wave series cancellation {loss:.2g} exceeds {series_loss:g} (|k| rho={x:.3g}).')
 
 
-
 def graf_tail_orders(tail, tolerance):
     """Indices whose finite omitted-tail bound passes for every point."""
     return np.flatnonzero(np.all(np.isfinite(tail) & (tail <= tolerance), axis=1))
-
 
 
 def graf_tail_is_bounded(increasing, ratio):
@@ -186,7 +169,6 @@ def require_derivative_step(step):
         raise ValueError('Positive finite derivative step required.')
 
 
-
 def require_arclength_monotone(gaps):
     """Works on the existing NumPy or device differences without transfer."""
     if bool((gaps <= 0).any()):
@@ -200,7 +182,6 @@ def require_finite_data_jacobian(J_data):
         raise FloatingPointError('Nonfinite modal shape Jacobian.')
 
 
-
 def require_gradient(g, coordinate_count):
     if g.shape != (coordinate_count,) or not np.isfinite(g).all():
         raise FloatingPointError('Invalid objective gradient')
@@ -210,7 +191,6 @@ def require_gradient(g, coordinate_count):
 
 def hanke_floor_attains_target(excess):
     return excess >= 0
-
 
 
 def hanke_below_target(excess):
@@ -226,7 +206,6 @@ def inside_box(curve, box):
     z = curve.values(grid_size(curve.band))
     (x0, y0), (x1, y1) = box
     return bool(np.all(z.real > x0) and np.all(z.real < x1) and np.all(z.imag > y0) and np.all(z.imag < y1))
-
 
 
 def check_area(coefficients):
@@ -261,14 +240,12 @@ def require_sampled_moved_curve(nodes):
         raise UpdateRefused('self_intersection', 'Displaced curve self-intersects.')
 
 
-
 def require_sampled_stored_curve(nodes):
     """Final stored-curve sampled test; messages differ from moved-curve checks."""
     if nodes.signed_area <= 0 or np.min(nodes.speeds) < 1e-6*np.mean(nodes.speeds):
         raise ValueError('Curve must be regular and counterclockwise.')
     if self_intersections(nodes.points):
         raise ValueError('Curve self-intersects.')
-
 
 
 def require_refit_curve(nodes):
@@ -278,7 +255,6 @@ def require_refit_curve(nodes):
         raise ValueError("Displaced curve self-intersects.")
 
 
-
 def require_projection_agreement(error, radius, tolerance):
     """Grid/doubled-grid position discrepancy, scaled by perimeter radius."""
     from .errors import UpdateRefused
@@ -286,23 +262,19 @@ def require_projection_agreement(error, radius, tolerance):
         raise UpdateRefused('unresolved_projection', f'geometry grid refinement {error/radius:g}')
 
 
-
 def require_spline_projection(error, tolerance, perimeter):
     if error > tolerance * perimeter / (2 * np.pi):
         raise ValueError(f"Arclength projection unresolved: {error / (perimeter / (2*np.pi)):.3g} relative.")
-
 
 
 def step_too_small(a, scale, tolerance):
     return np.linalg.norm(a) / scale <= tolerance
 
 
-
 def require_geometry_proposal_allowance(proposals, cap):
     from .errors import GeometryProposalCap
     if proposals >= cap:
         raise GeometryProposalCap('stage geometry proposal cap reached')
-
 
 
 def self_intersections(points, relative_tolerance=1e-12):
@@ -321,7 +293,6 @@ def self_intersections(points, relative_tolerance=1e-12):
     return memoized_validation("hybrid_self_intersection",
         lambda: (array_key(points), array_key(np.asarray(relative_tolerance))),
         lambda: _self_intersections(points, relative_tolerance))
-
 
 
 def _self_intersections(points, relative_tolerance):
@@ -367,11 +338,9 @@ def relative_columns(a, b):
     return np.linalg.norm(a - b, axis=0) / np.linalg.norm(b, axis=0)
 
 
-
 def require_finite_trial(candidate):
     if not np.isfinite(candidate.loss) or not np.isfinite(candidate.prediction).all():
         raise NumericalFailure('non-finite production evaluation at candidate state')
-
 
 
 def production_nondecreasing(candidate_loss, current_loss):
@@ -379,15 +348,12 @@ def production_nondecreasing(candidate_loss, current_loss):
     return candidate_loss >= current_loss
 
 
-
 def fields_agree(discrepancy, tolerances):
     return bool(np.all(np.isfinite(discrepancy)) and np.all(discrepancy <= tolerances))
 
 
-
 def fields_unresolved(discrepancy, tolerances):
     return not np.all(np.isfinite(discrepancy)) or np.any(discrepancy > tolerances)
-
 
 
 def acceptance(base, candidate, refined_base, refined_candidate, config):
@@ -397,7 +363,6 @@ def acceptance(base, candidate, refined_base, refined_candidate, config):
     uncertainty = config.cross_resolution_factor * abs(dp - dr)
     return dict(production_gain=dp, refined_gain=dr, margin=margin,
                 disagreement_allowance=uncertainty, accepted=bool(min(dp, dr) > margin + uncertainty))
-
 
 
 def resolution_check(base, candidate, refined_base, refined_candidate, stage, config):
@@ -429,25 +394,20 @@ def loss_converged(loss, tolerance):
     return loss <= tolerance
 
 
-
 def gradient_converged(g, tolerance):
     return np.linalg.norm(g, ord=np.inf) <= tolerance
-
 
 
 def severely_shortened(fraction):
     return fraction <= .25
 
 
-
 def poor_model_agreement(gain_ratio):
     return gain_ratio is None or not np.isfinite(gain_ratio) or gain_ratio < .25
 
 
-
 def shortened_or_marginal(fraction, gain_ratio):
     return fraction < .75 or gain_ratio < .75
-
 
 
 def shortened_stagnation(history, window, minimum_progress):
@@ -459,14 +419,12 @@ def shortened_stagnation(history, window, minimum_progress):
             (start-end)/max(abs(start), np.finfo(float).tiny) < minimum_progress)
 
 
-
 def insufficient_progress(history, window, minimum_progress):
     """Plain accepted-loss progress exit, without a shortened-step condition."""
     if len(history) <= window:
         return False
     start, end = history[-window-1]['loss'], history[-1]['loss']
     return (start-end)/max(abs(start), np.finfo(float).tiny) < minimum_progress
-
 
 
 def require_observable_frontier(paired):
@@ -483,10 +441,6 @@ def invalid_nodal_material(k, contrast):
 
 def nonfinite_prediction(prediction):
     return not np.isfinite(prediction).all()
-
-
-def unqualified_nodal_adjoint(h, residual):
-    return not np.isfinite(h).all() or residual > 1e-10
 
 
 def unobservable_frontier(paired):
@@ -525,10 +479,6 @@ def inaccurate_gaussian_direction(error):
     return error > 1e-4
 
 
-def irregular_gaussian_trial(raw_nodes):
-    return raw_nodes.signed_area <= 0 or min(raw_nodes.speeds) < 1e-6*np.mean(raw_nodes.speeds)
-
-
 def unresolved_gaussian_projection(refinement, radius, tolerance):
     return refinement/radius > tolerance
 
@@ -541,60 +491,10 @@ def invalid_similarity_factor(factor):
     return not np.isfinite(factor) or factor <= 0
 
 
-def invalid_relaxation_tau(tau):
-    return not np.isfinite(tau) or tau <= 0
-
-
-def invalid_relaxation_scale(lam, h):
-    return not np.isfinite(lam) or lam <= 0 or not np.isfinite(h).all()
-
-
-def indefinite_receiver_gram(values):
-    return values.min() < -1e-12*max(float(values.max()), np.finfo(float).tiny)
-
-
-def invalid_optional_relaxation_tau(tau):
-    return tau is not None and (not np.isfinite(tau) or tau <= 0)
-
-
-def working_catalog_near_solution(residual):
-    return residual.max() < .01
-
-
-def working_catalog_too_large(wanted):
-    return len(wanted) > 9
-
-
-def working_subset_nondecreasing(subset_loss, base_loss):
-    return subset_loss >= base_loss
-
-
-def working_full_nondecreasing(expanded, base):
-    return expanded.loss >= base.loss
-
-
-def displacement_quadrature_resolved(previous, rms, maximum):
-    return previous is not None and abs(rms-previous[0])<=1e-7 and abs(maximum-previous[1])<=5e-7
-
-
-def trace_floor_exceeds_cap(floor, trace_cap):
-    return floor > trace_cap
-
-
-# Optional C11. Stage-entry nodal and independent-modal qualification.
+# Optional C11. Stage-entry nodal qualification.
 def nodal_profile_passed(fields, derivatives, tolerances):
     return bool(np.all(np.isfinite(fields)) and np.all(np.isfinite(derivatives)) and
                 np.all(fields <= tolerances) and np.all(derivatives <= 1e-3))
-
-
-def displacement_equivalent(rms, maximum, reference_rms, reference_max):
-    return (rms<=max(1e-6,.01*reference_rms) and rms<=1e-5 and
-            maximum<=max(5e-6,.01*reference_max) and maximum<=5e-5)
-
-
-def modal_qualification_passed(fields, tolerances, columns, gradient_error, gradient_limit, equivalent):
-    return bool(np.all(fields<=tolerances) and np.all(columns<=1e-3) and
-                gradient_error<=gradient_limit and equivalent)
 
 
 # Endpoint. Independent field, Jacobian and complete-trial checks.
@@ -603,7 +503,6 @@ def endpoint_passed(fields, field_tolerances, derivative, full_trial_error):
     """Existing all-frequency field, per-column Jacobian and directional FD tests."""
     return bool(np.all(fields <= field_tolerances) and
                 max(derivative) <= 1e-3 and full_trial_error <= 1e-3)
-
 
 
 def endpoint_reference_passed(passed, fields, field_tolerances, derivative):

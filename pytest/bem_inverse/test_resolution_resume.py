@@ -5,7 +5,10 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
-from bem_inverse.continuation import lm_backend as lm
+from bem_inverse.errors import TrialSolveCap
+from bem_inverse.fit_stage import fit_stage
+from bem_inverse.stage_types import BackendConfig, FitStage, ResolutionResponse
+from bem_inverse.work import Ledger
 from bem_inverse.continuation.forward import ordered_calls
 from bem_inverse.continuation.geometry import FourierCurve
 from bem_inverse.physics import Prediction
@@ -20,8 +23,8 @@ class ScalarUpdate:
     def prepare(self, curve, *_):
         return SimpleNamespace(curve=curve, orders=np.array([0]))
 
-    def trial(self, space, step):
-        return FourierCurve.circle(space.curve.coefficients[-1].real+step[0]), {}
+    def geometry_update(self, normal_update, *, prepared):
+        return FourierCurve.circle(prepared.curve.coefficients[-1].real+normal_update[0]), {}
 
 
 class ScalarPhysics:
@@ -55,18 +58,18 @@ class ScalarPhysics:
 def setup(mode='refine', iterations=2, nodes=8):
     physics = ScalarPhysics(mode)
     observation = SimpleNamespace(scattered=np.array([.1], complex), wavenumber=1.)
-    stage = lm.FitStage('scalar', (observation,), (1.,), (1e-3,), 0, 1,
+    stage = FitStage('scalar', (observation,), (1.,), (1e-3,), 0, 1,
                         nodes, 2*nodes, iterations)
-    config = lm.BackendConfig(step_bounds_m=(.8, .8, .8), max_damping_trials=1)
-    ledger = lm.Ledger(cap=500, endpoint_reserve=0)
+    config = BackendConfig(step_bounds_m=(.8, .8, .8), max_damping_trials=1)
+    ledger = Ledger(cap=500, endpoint_reserve=0)
     ledger.begin_stage(stage.label, None)
     return physics, stage, config, ledger
 
 
 def run(mode, *, nodes=8, response=True, iterations=2):
     physics, stage, config, ledger = setup(mode, iterations, nodes)
-    result = lm.fit_stage(FourierCurve.circle(2), stage, .5, ScalarUpdate(), config, ledger,
-        physics=physics, resolution_response=lm.ResolutionResponse(16, 32, physics) if response else None)
+    result = fit_stage(FourierCurve.circle(2), stage, .5, ScalarUpdate(), config, ledger,
+        physics=physics, resolution_response=ResolutionResponse(16, 32, physics) if response else None)
     return result, physics, ledger
 
 
@@ -110,7 +113,7 @@ def test_implementation_errors_are_not_resolution_retries():
 
 
 def restore(work):
-    ledger = lm.Ledger(cap=work['cap'], endpoint_reserve=0)
+    ledger = Ledger(cap=work['cap'], endpoint_reserve=0)
     ledger.units = work['work_units']
     ledger.stage, ledger.stage_quota = work['stage'], work['stage_quota']
     ledger.stage_start = ledger.units-work['stage_units']
@@ -121,13 +124,13 @@ def restore(work):
 
 def test_pause_resume_preserves_damping_trajectory_counters_and_cache():
     physics, stage, config, ledger = setup('refine', iterations=4, nodes=16)
-    full = lm.fit_stage(FourierCurve.circle(2), stage, .5, ScalarUpdate(), config, ledger, physics=physics)
+    full = fit_stage(FourierCurve.circle(2), stage, .5, ScalarUpdate(), config, ledger, physics=physics)
     physics2, _, _, split_ledger = setup('refine', iterations=4, nodes=16)
-    part = lm.fit_stage(FourierCurve.circle(2), stage, .5, ScalarUpdate(), config, split_ledger,
+    part = fit_stage(FourierCurve.circle(2), stage, .5, ScalarUpdate(), config, split_ledger,
                         physics=physics2, pause_after=2)
     assert part.outcome == 'PAUSED'
     checkpoint = part.checkpoint
-    resumed = lm.fit_stage(part.curve, stage, .5, ScalarUpdate(), config, restore(checkpoint.work),
+    resumed = fit_stage(part.curve, stage, .5, ScalarUpdate(), config, restore(checkpoint.work),
                            physics=physics2, resume=checkpoint)
     assert np.array_equal(full.curve.coefficients, resumed.curve.coefficients)
     assert full.accepted_steps == resumed.accepted_steps
@@ -139,16 +142,16 @@ def test_pause_resume_preserves_damping_trajectory_counters_and_cache():
     bad = restore(checkpoint.work)
     bad.units += 1
     with pytest.raises(ValueError, match='ledger mismatch'):
-        lm.fit_stage(part.curve, stage, .5, ScalarUpdate(), config, bad, physics=physics2, resume=checkpoint)
+        fit_stage(part.curve, stage, .5, ScalarUpdate(), config, bad, physics=physics2, resume=checkpoint)
     with pytest.raises(ValueError, match='does not match'):
-        lm.fit_stage(part.curve, stage, .6, ScalarUpdate(), config, restore(checkpoint.work),
+        fit_stage(part.curve, stage, .6, ScalarUpdate(), config, restore(checkpoint.work),
                      physics=physics2, resume=checkpoint)
 
 
 def test_threaded_batch_cap_checked_before_any_dispatch():
-    ledger = lm.Ledger(cap=3, endpoint_reserve=0, strict_dispatch=True)
+    ledger = Ledger(cap=3, endpoint_reserve=0, strict_dispatch=True)
     observed = []
-    with pytest.raises(lm.TrialSolveCap):
+    with pytest.raises(TrialSolveCap):
         with ledger.calls(lambda f, items: ordered_calls(f, items, threads=4),
                           lambda x: observed.append(x), range(4), 'solve', 'test') as calls:
             for call in calls:
@@ -157,7 +160,7 @@ def test_threaded_batch_cap_checked_before_any_dispatch():
 
 
 def test_all_threaded_failures_charged_even_after_first_consumer_raises():
-    ledger = lm.Ledger(cap=20, endpoint_reserve=0, strict_dispatch=True)
+    ledger = Ledger(cap=20, endpoint_reserve=0, strict_dispatch=True)
     observed = []
     def fail(x):
         observed.append(x)
@@ -173,7 +176,8 @@ def test_all_threaded_failures_charged_even_after_first_consumer_raises():
 def test_real_projected_stage_and_policy_resume_match_uninterrupted(tmp_path):
     from bem_inverse import Observation, Problem, Execution
     from bem_inverse.continuation.forward import PointSourceAcquisition
-    from bem_inverse.geometry import ProjectedUpdate, resize
+    from bem_inverse.geometry_update_methods.spline import ProjectedUpdate
+    from bem_inverse.continuation.geometry import resize
     from bem_inverse.physics import NodalKress
     from bem_inverse.policy import CumulativePolicy, Operation
     from bem_inverse.runner import fit, FitResume
@@ -205,9 +209,9 @@ def test_real_projected_stage_and_policy_resume_match_uninterrupted(tmp_path):
         return dict(passed=True, work=dict(work_units=0), seconds=0)
     full = fit(problem, physics=physics, policy=policy, audit_adapter=audit)
     first, second = policy.operations(problem, physics)[1:3]
-    ledger = lm.Ledger(cap=policy.fit_units, seconds=policy.fit_seconds)
+    ledger = Ledger(cap=policy.fit_units, seconds=policy.fit_seconds)
     ledger.begin_stage(first.label, first.stage.quota)
-    part = lm.fit_stage(resize(problem.initial, 4), first.stage, problem.contrast,
+    part = fit_stage(resize(problem.initial, 4), first.stage, problem.contrast,
                         ProjectedUpdate(problem.length_unit_m), first.optimizer, ledger,
                         physics=physics, pause_after=1)
     assert part.outcome == 'PAUSED'

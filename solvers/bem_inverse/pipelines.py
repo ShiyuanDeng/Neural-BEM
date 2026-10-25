@@ -21,7 +21,7 @@ Omitting a pipeline keeps ``fit``'s legacy default.
 """
 from dataclasses import asdict, dataclass, replace
 
-from .continuation.lm_backend import ResolutionResponse
+from .stage_types import ResolutionResponse
 from .geometry_selection import GEOMETRY_UPDATES
 from .physics import Execution, make_backend
 from .runner import fit as _fit
@@ -74,7 +74,7 @@ def get(name):
 def physics(pipeline, execution=None):
     pipeline = get(pipeline)
     if pipeline.solver == 'modal_muller':
-        from .modal_muller import register
+        from .forward_solvers.modal_muller import register
         register()
     return make_backend(pipeline.solver, execution or Execution())
 

@@ -6,15 +6,15 @@ import pytest
 
 from bem_inverse.continuation_policy import ShapeFrequencyPolicy
 from bem_inverse.continuation.geometry import FourierCurve
-from bem_inverse.continuation.lm_backend import StageResult
+from bem_inverse.stage_types import StageResult
 from bem_inverse.continuation.forward import PointSourceAcquisition
-from bem_inverse.geometry import resize
+from bem_inverse.continuation.geometry import resize
 from bem_inverse.geometry_selection import describe_plan
-from bem_inverse.modal_muller import ModalMuller
+from bem_inverse.forward_solvers.modal_muller import ModalMuller
 from bem_inverse.physics import Execution
 from bem_inverse.policy import CumulativePolicy
 from bem_inverse.problem import Problem, Observation
-from bem_inverse.similarity import SimilarityUpdate
+from bem_inverse.geometry_update_methods.similarity import SimilarityUpdate
 from bem_inverse import runner
 
 
@@ -72,7 +72,7 @@ def test_runner_switches_only_initial_fit_and_keeps_spectral_audits(monkeypatch,
     def fake_fit(curve, stage, contrast, update, config, ledger, **kwargs):
         calls.append((stage.label, isinstance(update, SimilarityUpdate)))
         if len(calls) == 1:
-            final = update.trial(update.prepare(curve, 0, curve.band), [.013, -.008, -.006])[0]
+            final = update.geometry_update([.013, -.008, -.006], prepared=update.prepare(curve, 0, curve.band))[0]
             inherited.append(final)
         else:
             np.testing.assert_array_equal(curve.coefficients, resize(inherited[0], curve.band).coefficients)

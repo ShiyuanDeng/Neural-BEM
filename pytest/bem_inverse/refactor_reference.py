@@ -12,12 +12,15 @@ import sys
 import numpy as np
 
 from bem_inverse import Observation
-from bem_inverse.continuation import lm_backend as lm
+from bem_inverse.errors import Stop
+from bem_inverse.fit_stage import fit_stage
+from bem_inverse.objective import Objective
+from bem_inverse.stage_types import BackendConfig, FitStage, ResolutionResponse
+from bem_inverse.work import Ledger
 from bem_inverse.continuation.forward import PointSourceAcquisition
-from bem_inverse.continuation.geometry import FourierCurve
-from bem_inverse.batched import BatchedCertifiedUpdate
-from bem_inverse.geometry import resize
-from bem_inverse.modal_muller import ModalMuller, ModalSettings
+from bem_inverse.continuation.geometry import FourierCurve, resize
+from bem_inverse.geometry_update_methods.certified_spectral import CertifiedSpectralUpdate
+from bem_inverse.forward_solvers.modal_muller import ModalMuller, ModalSettings
 from bem_inverse.physics import Execution
 from test_resolution_resume import ScalarUpdate, setup
 
@@ -49,34 +52,10 @@ def stage_record(result):
 
 def control_paths():
     """Small fixtures exercise optional responses without a physical inverse run."""
-    from bem_inverse.working_frequency import WorkingSetChanged
-
-    class AlternateObjective(lm.Objective):
-        def model_residual(self, evaluation):
-            return evaluation.residual
-
-        def gradient(self, evaluation, update, space, matrix):
-            return matrix.T @ evaluation.residual
-
-    class WorkingRetry(lm.Objective):
-        restarted = False
-
-        def candidate(self, base, curve):
-            if not self.restarted:
-                self.restarted = True
-                raise WorkingSetChanged('reference working-set restart')
-            self.last_trial = {}
-            return self.production(curve, 'candidate')
-
-        last_trial = {}
-
     records = {}
-    for mode in ('agreement', 'hanke', 'terminal', 'alternate', 'working',
-                 'qualified_accept', 'qualified_refuse', 'callback_stop',
-                 'quota', 'wall'):
-        physics, stage, config, _ = setup('backtrack' if mode == 'qualified_refuse' else 'refine',
-                                         iterations=2, nodes=16)
-        ledger = lm.Ledger(cap=500, seconds=10, endpoint_reserve=0, clock=lambda: 0.)
+    for mode in ('agreement', 'hanke', 'terminal', 'callback_stop', 'quota', 'wall'):
+        physics, stage, config, _ = setup('refine', iterations=2, nodes=16)
+        ledger = Ledger(cap=500, seconds=10, endpoint_reserve=0, clock=lambda: 0.)
         ledger.begin_stage(stage.label, 3 if mode == 'quota' else None)
         if mode == 'wall':
             ledger.clock = lambda: 11.
@@ -84,31 +63,15 @@ def control_paths():
             config = replace(config, damping_rule=mode)
         if mode == 'terminal':
             config = replace(config, avoid_terminal_linearization=True)
-        callbacks, qualification = [], []
-        if mode.startswith('qualified'):
-            physics.qualified_controller = True
-            def qualify_linearization(*args):
-                qualification.append('linearization')
-            def qualify_candidate(*args):
-                qualification.append('candidate')
-                return True
-            def refuse_candidate(*args):
-                qualification.append('refuse')
-                return False
-            physics.qualify_linearization = qualify_linearization
-            physics.qualify_candidate = qualify_candidate
-            physics.respond_resolution_failure = refuse_candidate
+        callbacks = []
         def callback(i, evaluation):
             callbacks.append((i, evaluation.loss))
             if mode == 'callback_stop' and i == 1:
-                raise lm.Stop('reference callback stop')
-        factory = AlternateObjective if mode == 'alternate' else WorkingRetry if mode == 'working' else None
-        result = lm.fit_stage(FourierCurve.circle(2), stage, .5, ScalarUpdate(),
-                              config, ledger, physics=physics, on_accept=callback,
-                              objective_factory=factory)
+                raise Stop('reference callback stop')
+        result = fit_stage(FourierCurve.circle(2), stage, .5, ScalarUpdate(),
+                           config, ledger, physics=physics, on_accept=callback)
         records[mode] = dict(result=stage_record(result), calls=stable(physics.calls),
-                             derivatives=physics.derivatives, callbacks=callbacks,
-                             qualification=qualification)
+                             derivatives=physics.derivatives, callbacks=callbacks)
     return records
 
 
@@ -120,11 +83,11 @@ def capture():
     ):
         physics, stage, config, ledger = setup(mode, iterations=2)
         callbacks = []
-        result = lm.fit_stage(
+        result = fit_stage(
             FourierCurve.circle(2), stage, .5, ScalarUpdate(), config, ledger,
             physics=physics,
             on_accept=lambda i, e: callbacks.append((i, e.loss, e.curve.coefficients.copy())),
-            resolution_response=lm.ResolutionResponse(16, 32, physics) if response else None,
+            resolution_response=ResolutionResponse(16, 32, physics) if response else None,
         )
         key = f'{mode}_{response}'
         records[key] = dict(result=stage_record(result), calls=stable(physics.calls),
@@ -132,11 +95,11 @@ def capture():
         arrays[key] = result.curve.coefficients
 
     physics, stage, config, ledger = setup('refine', iterations=4, nodes=16)
-    part = lm.fit_stage(FourierCurve.circle(2), stage, .5, ScalarUpdate(), config,
+    part = fit_stage(FourierCurve.circle(2), stage, .5, ScalarUpdate(), config,
                         ledger, physics=physics, pause_after=2)
     checkpoint = part.checkpoint
-    restored = lm.Ledger.restore(checkpoint.work, seconds=3600, endpoint_reserve=0)
-    resumed = lm.fit_stage(part.curve, stage, .5, ScalarUpdate(), config, restored,
+    restored = Ledger.restore(checkpoint.work, seconds=3600, endpoint_reserve=0)
+    resumed = fit_stage(part.curve, stage, .5, ScalarUpdate(), config, restored,
                            physics=physics, resume=checkpoint)
     records['resume'] = dict(part=stage_record(part), result=stage_record(resumed),
                              calls=stable(physics.calls), derivatives=physics.derivatives,
@@ -167,13 +130,13 @@ def capture():
         observations.append(replace(observation, scattered=data))
     events.clear()
     curve = resize(FourierCurve.circle(1.03), 4)
-    update = BatchedCertifiedUpdate(.05, device='cpu')
-    stage = lm.FitStage('modal_reference', tuple(observations), (.5, .5),
+    update = CertifiedSpectralUpdate(.05, device='cpu', batched=True)
+    stage = FitStage('modal_reference', tuple(observations), (.5, .5),
                         (1e-3, 1e-3), 1, 4, 64, 128, 2, resolution_kind='modal')
-    config = lm.BackendConfig()
-    ledger = lm.Ledger(cap=300, seconds=3600, endpoint_reserve=0)
+    config = BackendConfig()
+    ledger = Ledger(cap=300, seconds=3600, endpoint_reserve=0)
     ledger.begin_stage(stage.label, None)
-    objective = lm.Objective(stage, .5, config, ledger, physics=physics)
+    objective = Objective(stage, .5, config, ledger, physics=physics)
     evaluation = objective.production(curve, 'reference')
     space = update.prepare(curve, 1, 4)
     J = objective.jacobian(evaluation, update, space)
@@ -182,11 +145,11 @@ def capture():
                   coefficient_velocities=space.derivatives, J=J,
                   g=J.T@evaluation.residual, H_GN=J.T@J)
     a = np.array([.0001, -.0002, .00015])
-    candidate, report = update.trial(space, a)
+    candidate, report = update.geometry_update(a, prepared=space)
     arrays['c_trial'] = candidate.coefficients
     records['geometry_trial'] = stable(report)
     callbacks = []
-    result = lm.fit_stage(curve, stage, .5, update, config, ledger, physics=physics,
+    result = fit_stage(curve, stage, .5, update, config, ledger, physics=physics,
                           on_accept=lambda i, e: callbacks.append((i, e.loss)),
                           retain_final=True)
     arrays['modal_endpoint'] = result.curve.coefficients

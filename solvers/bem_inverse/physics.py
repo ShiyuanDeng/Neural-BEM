@@ -8,7 +8,6 @@ from . import checks
 from dataclasses import dataclass, field, asdict
 from threading import Lock
 from typing import Protocol
-from contextlib import contextmanager
 from time import perf_counter
 
 import numpy as np
@@ -17,7 +16,6 @@ from bem_inverse.continuation import forward as F
 from bem_inverse.continuation.geometry import FourierCurve
 from bem_inverse.continuation.geometry_runtime import geometry_validated
 from gpr_bem_kress import cuda_assembly as CA
-from gpr_bem_kress.execution import execution
 
 
 @dataclass(frozen=True)
@@ -95,8 +93,9 @@ def register_backend(name, factory):
 
 def make_backend(solver='nodal_kress', execution_settings=None):
     if solver == 'modal_muller' and solver not in _BACKENDS:
-        raise NotImplementedError('Native modal_muller is not yet qualified for the complete-trial '
-                                  'derivative/complex-frequency contract. No nodal fallback was selected.')
+        raise ValueError("modal_muller is not registered. Call "
+                         "bem_inverse.forward_solvers.modal_muller.register() first, or use a named "
+                         "pipeline. No nodal fallback was selected.")
     if solver not in _BACKENDS:
         raise ValueError(f'Unknown solver {solver!r}; registered: {sorted(_BACKENDS)}')
     return _BACKENDS[solver](execution_settings or Execution())
@@ -170,11 +169,6 @@ class NodalKress:
         from .forward_solvers.nodal_kress import forward_solve
         return forward_solve(curve, observation, contrast, resolution, context=self)
 
-    def _damped(self, shape, observation, contrast, nodes):
-        """Compatibility entry point for the standalone nodal solver."""
-        from .forward_solvers.nodal_kress import damped_forward_solve
-        return damped_forward_solve(shape, observation, contrast, nodes, context=self)
-
     @geometry_validated
     def derivative(self, prediction, update, space):
         started = perf_counter()
@@ -190,58 +184,6 @@ class NodalKress:
             self._record('factor_fallbacks', fallback='reciprocal device solve OOM; retained host LU')
         self._record('derivatives', perf_counter()-started)
         return result
-
-    @geometry_validated
-    def relaxation_components(self, prediction):
-        """Reuse the forward LU for H=A^{-H}C^H; return backend-owned receiver rows."""
-        from scipy.linalg import lu_solve
-        started = perf_counter()
-        state = prediction._handle
-        if hasattr(state, '_relaxation_components'):
-            return state._relaxation_components
-        self._record('relaxation_adjoint_attempts')
-        try:
-            with execution(kernels='reference', device='cpu'):
-                rows = F._operators(state.curve)[1](state.curve, state.acquisition.receivers,
-                                                    state.wavenumber).state_rows
-            rhs = rows.conj().T
-            if isinstance(state.factors, CA.DeviceFactors):
-                h, residual = state.factors.solve(rhs, adjoint=True)
-            else:
-                h = lu_solve(state.factors, rhs, trans=2)
-                residual = np.linalg.norm(state.matrix.conj().T@h-rhs)/np.linalg.norm(rhs)
-            if checks.unqualified_nodal_adjoint(h, residual):
-                raise FloatingPointError('Unqualified adjoint Mueller solve')
-        except Exception:
-            self._record('failed_relaxation_adjoints', perf_counter()-started)
-            raise
-        self._record('relaxation_adjoints', perf_counter()-started)
-        state._relaxation_components = (h, rows)
-        return h, rows
-
-    @geometry_validated
-    def relaxation_gradient(self, prediction, observed, tau, update, space):
-        from .relaxed_gradient import reduced_gradient
-        started = perf_counter()
-        self._record('relaxed_gradient_attempts')
-        state = prediction._handle
-        h, rows = self.relaxation_components(prediction)
-        before = getattr(state.factors, 'fallback_count', 0)
-        try:
-            gradient, diagnostics = reduced_gradient(state, observed, tau, h, rows, space)
-        except Exception:
-            self._record('failed_relaxed_gradients', perf_counter()-started)
-            raise
-        if getattr(state.factors, 'fallback_count', 0) > before:
-            self._record('factor_fallbacks', fallback='relaxed correction device solve OOM; retained host LU')
-        prediction.diagnostics['relaxed_gradient'] = diagnostics
-        self._record('relaxed_gradients', perf_counter()-started)
-        return gradient
-
-    def relaxation_weights(self, prediction, tau):
-        from .full_matrix import receiver_weights
-        h, rows = self.relaxation_components(prediction)
-        return receiver_weights(h, rows, tau, paired=prediction._handle.acquisition.paired)
 
     @geometry_validated
     def observable_frontier(self, curve, observation, contrast, top, threshold):

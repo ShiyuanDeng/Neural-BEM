@@ -245,15 +245,6 @@ class _PromoteBase(Exception):
 
 
 
-@dataclass
-class ScheduleResult:
-    status: str
-    curve: FourierCurve
-    stages: list
-    regauge_error: float
-    reason: Optional[str] = None
-    detail: Optional[str] = None
-
 
 
 def stage_record(stage):
@@ -262,7 +253,3 @@ def stage_record(stage):
     record["wavenumbers"] = [o.wavenumber for o in stage.observations]
     return record
 
-
-# Keep existing checkpoint signatures and serialized import paths.
-for _type in (FitStage, BackendConfig, Evaluation, StageResult, StageEntry, StageCheckpoint, ResolutionResponse, _PromoteBase, ScheduleResult,):
-    _type.__module__ = "bem_inverse.continuation.lm_backend"

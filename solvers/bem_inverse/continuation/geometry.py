@@ -7,7 +7,7 @@ import numpy as np
 from scipy.interpolate import CubicSpline
 
 from ordered_boundary import PeriodicCurve2D
-from .validation import self_intersections
+from ..checks import self_intersections
 
 
 def integer(value, name, minimum=1):

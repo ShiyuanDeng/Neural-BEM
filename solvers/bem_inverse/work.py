@@ -126,5 +126,3 @@ class Ledger:
                     reciprocal_batches=dict(self.reciprocal), failed=dict(self.failed),
                     seconds=self.clock() - self.started)
 
-
-Ledger.__module__ = "bem_inverse.continuation.lm_backend"

@@ -10,7 +10,7 @@ from pathlib import Path
 
 import numpy as np
 
-from bem_inverse import modal_muller
+from bem_inverse.forward_solvers import modal_muller
 from experiments.benchmark import campaign as c, scenes as S
 
 case, out = sys.argv[1], Path(sys.argv[2])

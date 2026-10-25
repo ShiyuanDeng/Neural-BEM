@@ -6,11 +6,12 @@ import numpy as np
 import pytest
 
 from bem_inverse import runner
-from bem_inverse.continuation import lm_backend as lm
+from bem_inverse.fit_stage import fit_stage
+from bem_inverse.stage_types import BackendConfig, FitStage, StageResult
+from bem_inverse.work import Ledger
 from bem_inverse.continuation.forward import ordered_calls
 from bem_inverse.continuation.geometry import FourierCurve
-from bem_inverse.continuation.lm_backend import StageResult
-from bem_inverse.modal_muller import ModalMuller
+from bem_inverse.forward_solvers.modal_muller import ModalMuller
 from bem_inverse.physics import Execution, Prediction
 from bem_inverse.policy import CumulativePolicy
 from test_continuation_policy import fixture
@@ -37,20 +38,20 @@ class TwoFrequencyPhysics:
 
 def stages():
     observations = tuple(SimpleNamespace(scattered=np.array([k*1.6], complex), wavenumber=k) for k in (1., 2.))
-    first = lm.FitStage('first', observations, (.5, .5), (1e-3, 1e-3), 0, 1, 8, 16, 1, 40)
+    first = FitStage('first', observations, (.5, .5), (1e-3, 1e-3), 0, 1, 8, 16, 1, 40)
     return first, replace(first, label='second', iterations=4)
 
 
 def run(reuse, *, strict=False):
     physics, (first, second) = TwoFrequencyPhysics(), stages()
-    ledger = lm.Ledger(cap=500, clock=lambda: 0., endpoint_reserve=0, strict_dispatch=strict)
-    config = lm.BackendConfig(step_bounds_m=(.15,)*3, max_damping_trials=2)
+    ledger = Ledger(cap=500, clock=lambda: 0., endpoint_reserve=0, strict_dispatch=strict)
+    config = BackendConfig(step_bounds_m=(.15,)*3, max_damping_trials=2)
     ledger.begin_stage('first', first.quota)
-    a = lm.fit_stage(FourierCurve.circle(2), first, .5, ScalarUpdate(), config, ledger, physics=physics,
+    a = fit_stage(FourierCurve.circle(2), first, .5, ScalarUpdate(), config, ledger, physics=physics,
                      retain_final=True)
     ledger.begin_stage('second', second.quota)
     before = len(physics.calls)
-    b = lm.fit_stage(a.curve, second, .5, ScalarUpdate(), config, ledger, physics=physics,
+    b = fit_stage(a.curve, second, .5, ScalarUpdate(), config, ledger, physics=physics,
                      entry=a.final_entry if reuse else None)
     return a, b, ledger.snapshot(), len(physics.calls)-before, second
 

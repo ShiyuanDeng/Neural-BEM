@@ -3,15 +3,8 @@ import numpy as np
 
 
 def bind_geometry_update(update):
-    """Use the new entry point, retaining external adapters with the old API."""
-    method = getattr(update, 'geometry_update', None)
-    if method is not None:
-        return method
-
-    def geometry_update(normal_update, *, prepared):
-        return update.trial(prepared, normal_update)
-
-    return geometry_update
+    """The selected method's ``geometry_update(normal_update, *, prepared)``."""
+    return update.geometry_update
 
 
 def control_step(proposed, space, update, config):

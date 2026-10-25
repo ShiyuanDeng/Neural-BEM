@@ -14,13 +14,13 @@ def make_update(name, length_unit_m, execution, *, default=None):
                                        device=None if execution.device == 'auto' else execution.device,
                                        batched=True)
     if name == 'certified_spectral':
-        from .geometry_update_methods.certified_spectral import BatchedCertifiedUpdate
+        from .geometry_update_methods.certified_spectral import CertifiedSpectralUpdate
         order = getattr(execution, 'validity_order', 'certificate_first')
-        update = BatchedCertifiedUpdate(length_unit_m, device=None if execution.device == 'auto' else execution.device,
-                                        order=order)
+        update = CertifiedSpectralUpdate(length_unit_m, device=None if execution.device == 'auto' else execution.device,
+                                         batched=True, order=order)
         if update.device == 'cuda':
-            from .geometry_update_methods.certified_spectral import DeviceCertifiedUpdate
-            return DeviceCertifiedUpdate(length_unit_m, device=update.device, order=order)
+            return CertifiedSpectralUpdate(length_unit_m, device=update.device, batched=True,
+                                           certificate_device=True, order=order)
         return update
     if name == 'gaussian_lipschitz':
         from .geometry_update_methods.gaussian_lipschitz import GaussianDisplacement

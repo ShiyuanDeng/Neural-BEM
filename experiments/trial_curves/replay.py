@@ -4,9 +4,6 @@ Given the saved base state (curve, J, g, H_GN, D, damping), run the real LM solv
 step control and geometry update for every damping trial x halving. No loss test.
 A wrapper on ``check_geometry`` records intermediate curves, including refused ones.
 """
-import pickle
-from pathlib import Path
-
 import numpy as np
 
 from bem_inverse import c9_lm, checks
@@ -17,10 +14,10 @@ from bem_inverse.physics import Execution
 from bem_inverse.errors import UpdateRefused
 
 
-def load(path):
+def group(events):
     """Proposal events grouped as iterations: consecutive proposals on the same base, plus real trial rows."""
     iterations = []
-    for kind, row in pickle.loads(Path(path).read_bytes()):
+    for kind, row in events:
         if kind == 'proposal':
             same = iterations and iterations[-1]['stage'] == row['stage'] and \
                 np.array_equal(iterations[-1]['coefficients'], row['coefficients'])

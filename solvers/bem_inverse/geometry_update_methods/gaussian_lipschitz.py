@@ -11,7 +11,7 @@ from scipy.interpolate import CubicSpline
 from scipy.linalg import lu_factor, lu_solve
 import torch
 from ..continuation.geometry import (FourierCurve, grid_size, arclength_angles,
-                                     integer, reparameterize, values, speed_ratio)
+                                     integer, values, speed_ratio)
 from ..errors import UpdateRefused, refusal_from_value_error
 from .spectral import arclength_quadrature
 
@@ -154,14 +154,6 @@ class GaussianDisplacement:
             tangent='analytic derivative of complete discrete projection of interpolated Gaussian field at zero',
             device=self.device)
 
-    def regauge(self, curve, curve_modes):
-        integer(curve_modes, 'curve_modes')
-        try:
-            shape, error = reparameterize(curve, curve_modes, tolerance=self.projection_tolerance)
-        except ValueError as exc:
-            raise refusal_from_value_error(exc) from exc
-        return shape, float(error)
-
     @staticmethod
     def _checked(space, coefficients):
         a = np.asarray(coefficients, float)
@@ -283,10 +275,6 @@ class GaussianDisplacement:
 
     def geometry_update(self, normal_update, *, prepared):
         return geometry_update(normal_update, prepared=prepared, settings=self)
-
-    def trial(self, space, coefficients):
-        """Compatibility entry point for older callers."""
-        return self.geometry_update(coefficients, prepared=space)
 
 
 def geometry_update(normal_update, *, prepared, settings):
