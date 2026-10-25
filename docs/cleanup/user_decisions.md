@@ -115,11 +115,19 @@ the spectral trial.
 `prepare` stores both grids as plain fields (`grid`, `fine_grid`). Implemented
 for spectral and analytic; certified keeps its own cache.
 
-### D6. Binders — open
+### D6. Binders — removed (provisional, review pending)
 
 **User's view.** "why cant you pass geometry_update function, and forward
 solver function into fit_stage()? the binder is soo dumb." Details and the
 remaining choice: [binder note](geometry_update_forward_binders_2026-10-21.md).
+
+**Status.** Implemented in step 3 of the
+[architecture note](bem_inverse_architecture_2026-10-24.md) as D8 allowed.
+`make_update(name)` returns the update object with its module's
+`geometry_update`; `make_backend(solver)` returns the physics context with its
+`forward_solve`. `fit_stage()` takes both functions; both binders, the one-line
+`geometry_update` methods and the `evaluate` forwarders are gone. The user
+reviews this shape after the build (D8).
 
 ### D7. Finer re-evaluations — remove (direction decided 2026-10-25)
 
@@ -154,8 +162,8 @@ loops only produce one accepted curve, hence no need for the stall test. just
 keep the loss decrease requirement in backtracking candidates." A trial curve
 is accepted when its loss is lower than the current loss; the margin goes.
 
-**Status.** Not implemented. Plan and status:
-[architecture note](bem_inverse_architecture_2026-10-24.md).
+**Status.** Implemented in step 2 (2026-10-25). NR-001 ran TG-002 on it; see the
+[architecture note](bem_inverse_architecture_2026-10-24.md) for results.
 
 ### D8. Round-1 cleanup items (2026-10-25)
 
@@ -203,8 +211,9 @@ function, the object and the attribute; never use "it" for a code element.
 
 ## Open
 
-- **D6, binders.** Provisionally: pass the functions (D8). Revisit after the
-  build; see the binder note.
+- **D6 and card E, after the build.** Both are implemented provisionally (D8):
+  functions passed into `fit_stage()`, and every charge through `Ledger.calls`.
+  The user reviews them; see the architecture note's implementation notes.
 - **Exact-match test (DECISION).** `test_geometry_update_methods.py` requires
   the spectral and certified trials to match bit for bit. Since D1, some runs
   differ by 3e-17 with identical inputs; before D1, 20 of 20 runs matched.

@@ -6,7 +6,8 @@ question at a time. User decisions and their reasons also go into
 [the decision log](user_decisions.md) (D7, D8). Terms are in
 [GLOSSARY.md](../../GLOSSARY.md).
 
-Status: plan final (2026-10-25). Nothing implemented.
+Status: implemented 2026-10-25 (steps 1–4); NR-001 run done. Q3 and Q4 await
+the user's review. See [Implementation notes](#implementation-notes).
 
 ## Questions this work answers
 
@@ -259,3 +260,67 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *,
         stop if the loss or gradient is below tolerance or the step is too small
     return StageResult(...)
 ```
+
+## Implementation notes
+
+Commits on `organised`: step 1 `105af6380`, its check `a8f534175` (with a fix,
+`a745fcb10`, for three step-2 deletions that commit picked up by mistake),
+step 2 with the NR-001 plan `a373a8ea5`, NR-001 results `c68730d72`, step 3
+`425e49be6`, then these step 4 documents.
+
+### Question 3: TG-002 without finer re-evaluations (NR-001)
+
+[Results](../../results/validation/cleaned_interfaces/NR-001/README.md). 26/30
+recovered, the same 26 as PC-001 M1, with 28% fewer fit units (median 1,849 →
+1,330). The same four cases fail (aphex_twin ×3, hook__c13.3), now when the
+modal forward solve refuses a nearly self-touching trial curve; their endpoint
+audits fail. All three predictions held.
+
+### Checks for identical numbers
+
+PC-001 M1 used `certified_spectral` on CUDA, so it cannot match a CPU run of
+`spectral`. The step 1 check instead reran the unchanged code on this machine
+(Apple M1 Pro, CPU): [NR-001 checks](../../results/validation/cleaned_interfaces/NR-001/checks/README.md).
+
+- Two runs of the unchanged code differ by 1.6e-10 in accepted coefficients,
+  with identical decisions and work units. Steps 1 and 3 sit inside that spread.
+- The scalar control-path fixtures are deterministic. Their saved reference was
+  regenerated from the step 2 source; step 3 matches it exactly.
+
+### Where the build departs from the plan
+
+- **Spline update (D7).** Q12 named four geometry updates; `spline`
+  (`nodal_baseline`) had the same 2N-point refit and agreement check, so it lost
+  them too.
+- **Reservation.** Each linearization now reserves 2 units per active frequency
+  (Jacobian and one trial evaluation) instead of 4, since the two refined trial
+  solves are gone. Stage quotas end slightly later.
+- **Localization.** "First candidate" is the best grid point after its
+  coordinate refinement. The rule fields that only ranked several starts
+  (`max_ranked`, `max_starts`, `distinct_*`, `qualification_tolerance`) went.
+- **Policies.** `accuracy_exit` lost its only option (`required_accuracy`), so it
+  went and `feedback` now descends from `baseline`. `decision_gate`,
+  `resolution_response`, `adaptive_resolution` and `working_frequencies` went with
+  their mechanisms. Policies no longer list audit operations.
+- **Audit.** It takes the resolution pair from `resolution_profile()`, so the
+  band-matched nodal profile no longer adds an independent N1024 reference.
+- **Q3 shape.** `make_update(name)` returns `(update, geometry_update)` and
+  `make_backend(solver)` returns `(context, forward_solve)`; `runner.fit` and
+  `pipelines.fit` pass both into `fit_stage()`. Choosing them in `pipelines.py`
+  alone was not enough, because the runner builds stage-local updates by name.
+- **Card D.** One `Counters` object (in `physics.py`) replaces the two copied
+  `_record` methods; `disk_landscape` moved to `localization.py`, its only
+  caller; the `ordered_calls` methods went because `Ledger.calls(threads=...)`
+  now runs the frequencies.
+- **Card E.** The endpoint audit also charges through `Ledger.calls`, on a
+  strict ledger; its numbers are unchanged.
+- **More orphans.** After step 1, `regauge`, `ScheduleResult`, the Borges
+  update, `reparameterize`, `displaced`, `gaussian_filter`, `CurveStep`, two
+  spline-refit checks, `refine_resolution` and the certified constructor
+  functions had no callers; they went.
+
+### Not adapted
+
+The legacy CI-001 runner in `experiments/cleaned_interface/benchmark.py` still
+reads `final_audit_passed` from `fit()`. CI-001 inputs are not on this branch,
+so it cannot run here; the TG-002 campaign reuses only its helpers.

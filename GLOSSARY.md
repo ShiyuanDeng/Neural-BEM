@@ -42,6 +42,12 @@ One physics solve at one frequency, giving predicted measurements and
 boundary traces for a curve.
 _Avoid_: physics evaluation
 
+**Physics context**:
+The object that holds one physics' execution settings, geometry caches and
+counters. Its forward solve and derivative use it; `make_backend` returns the
+context with its forward solve.
+_Avoid_: service, backend
+
 **Evaluation**:
 A curve together with its predictions, residual and loss at the working
 resolution.

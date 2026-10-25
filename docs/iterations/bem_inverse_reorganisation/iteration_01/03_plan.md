@@ -6,6 +6,10 @@ Approval: the user asked to implement every change in
 ("implement all changes proposed"). That plan includes this run (Q15). Branch:
 the existing `organised`. No new branch or worktree. Owner: Claude.
 
+**Executed 2026-10-25**, one run, no setting changes:
+[results](../../../../results/validation/cleaned_interfaces/NR-001/README.md).
+26/30 recovered (the same 26 as PC-001 M1); P1–P3 hold.
+
 ## Question
 
 How does TG-002 behave once the fit judges every trial curve at its working

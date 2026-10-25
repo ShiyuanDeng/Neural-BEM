@@ -1,6 +1,7 @@
 # Canonical inverse-solver information chain
 
-User-supplied explanation framework, mapped to the maintained code on 2026-10-21.
+User-supplied explanation framework, mapped to the maintained code on 2026-10-21
+and updated for the 2026-10-25 reorganisation (no finer re-evaluations, D7).
 Preserve the labels below; the geometry-update step uses its descriptive name.
 Explain in words; code-location answers should take at most three lines.
 
@@ -10,18 +11,19 @@ Optional policies change controls and stopping; identify them explicitly.
 
 ## Entry points and loops
 
-- [Benchmark `run_case()` and `_fit()`](../../experiments/benchmark/campaign.py#L198)
-  construct the fitting problem and invoke the solver.
+- [Benchmark `run_case()`](../../experiments/benchmark/campaign.py#L237) and
+  [`_fit()`](../../experiments/benchmark/campaign.py#L202) construct the fitting
+  problem, invoke the solver, then run the endpoint audit.
 - [Pipeline recipes](../../solvers/bem_inverse/pipelines.py) select physics
   and geometry; [named policies](../../solvers/bem_inverse/policies.py)
   also select schedule, optimizer options, and execution options.
 - [Runner `fit()`](../../solvers/bem_inverse/runner.py) executes the
   visible operation queue and calls the canonical `fit_stage()`.
 - [`FitStage`](../../solvers/bem_inverse/stage_types.py#L13)
-  describes one phase: data, weights, update/storage bands, resolution, and work.
-- [`fit_stage()`](../../solvers/bem_inverse/fit_stage.py#L52)
-  runs the phase. Its iteration, damping-retry and backtracking loops remain
-  visible in that function. Existing callers and tests reach this implementation.
+  describes one stage: data, weights, update/storage bands, working resolution, and work.
+- [`fit_stage()`](../../solvers/bem_inverse/fit_stage.py#L39)
+  runs the stage. Its iteration, damping-retry and backtracking loops remain
+  visible in that function.
 
 The chain below describes dependencies. Cached geometry, factors, predictions,
 and derivatives can be reused; the code need not recompute every item on every
@@ -30,44 +32,47 @@ retry. Rejected trials retain the current accepted geometry.
 ## Reading the canonical implementation
 
 Start with `runner.fit()` → `fit_stage.fit_stage()` → the selected mathematical
-module. Geometry preparation and finite trials live together in each file under
-`geometry_update_methods/`, without an update-class inheritance chain.
-The sibling folder `forward_solvers/` contains `modal_muller.forward_solve()`
-and `nodal_kress.forward_solve()`, which run the forward calculations as
-standalone functions. The ordinary fit loop selects one through
-`bind_forward_solve(physics)`, dispatches active frequencies with
-`forward_batch.solve_frequencies()`, then separately calculates B5.
-`Objective` retains exact refined-result caching and Jacobian dispatch; its
-compatibility evaluation methods use the same forward functions. Optional
-research objectives keep their own residual construction.
-The physics context preserves execution settings, geometry caches and counters;
-the returned forward states retain factors and traces. The old `a_forward`,
-`continuation.lm_backend`, `modal_geometry`, `modal_operator`, `spectral`,
-`certified` and `batched` import paths resolve to the maintained implementations.
+module. `fit_stage()` has two local steps: `evaluate` runs A1–A4 at every active
+frequency and then B5; `linearize` runs B6–B8. The caller passes the selected
+methods as functions:
+
+- `forward_solve` comes from `physics.make_backend()` with its physics context.
+  Each file in `forward_solvers/` owns one context, its `forward_solve`, the
+  reciprocal derivative, the resolution profile and the frontier.
+- `geometry_update` comes from `geometry_selection.make_update()` with its update
+  object. Each file in `geometry_update_methods/` owns its preparation and its
+  trial curve, without an update-class inheritance chain.
+
+`forward_batch.solve_frequencies()` dispatches one forward solve per active
+frequency through `Ledger.calls`, which charges every solve and derivative.
+The physics context keeps execution settings, geometry caches and counters;
+the returned forward states keep factors and traces.
 
 | Section | Module and mathematical entry points |
 |---|---|
 | A1 | `a1_geometry.ModalGeometry`, `log_modulus`, `WaveArrays` |
 | A2 | `a2_muller.radial_coefficients`, `kernel_matrix`, `muller_matrix` |
 | A3 | `a3_waves.point_kernels`, `graf_order`, `scaled_hankel` |
-| A4 | `a4_fields.factorize`, `solve_and_predict` |
-| B5 | `b5_residual.evaluate`, `normalize` |
+| A4 | `a4_fields.factorize`, `solve_and_predict`; `forward_solvers.modal_muller.forward_solve` |
+| B5 | `b5_residual.evaluate`, `normalize`; `fit_stage` local `evaluate` |
 | B6 | `geometry_update_methods.spectral.SpectralProjectedUpdate.prepare`, `batched_projection` |
 | B7 | `b7_data_jacobian.normal_velocity_weights`, `reciprocal_jacobian`, `hadamard` |
-| B8 | `b8_gauss_newton.residual_jacobian`, `gradient`, `curvature` |
+| B8 | `b8_gauss_newton.residual_jacobian`, `gradient`, `curvature`; `fit_stage` local `linearize` |
 | C9 | `c9_lm.damping_matrix`, `solve_proposal`, `hanke_damping`, `damping_floor` |
 | Geometry update | `geometry_update_methods.control_step`; `geometry_update_methods.spectral.geometry_update`, `arclength_quadrature` |
-| C11 | `c11_trial_evaluation.refined_pair`, `checked_pair`; explicit response branches in `fit_stage.validate` |
+| C11 | `checks.production_nondecreasing`, in the backtracking loop of `fit_stage` |
 | C12 | `c12_iteration.scheduled_damping`, `accepted_damping`; visible commitment/callback/rebuild sequence in `fit_stage` |
 
 [`checks.py`](../../solvers/bem_inverse/checks.py) contains numerical conditions,
 including direct area, minimum-speed and sampled-intersection checks. Optional
-certificate mathematics lives in [`geometry_update_methods/certificates.py`](../../solvers/bem_inverse/geometry_update_methods/certificates.py).
-[`endpoint.py`](../../solvers/bem_inverse/endpoint.py) retains the independent
-endpoint calculations and their original frequency batching and time limits.
+certificate mathematics lives in [`geometry_update_methods/certificates.py`](../../solvers/bem_inverse/geometry_update_methods/certificates.py);
+the Gaussian and similarity methods keep their own checks in their files.
+The [endpoint audit](../../experiments/benchmark/audit.py#L62) is not part of the
+fit: the benchmark runs it after `fit()` returns.
 
-The [refactor status](inverse_refactor_status.md) records the source baseline,
-comparisons, existing test limitations and supported optional paths.
+The [refactor status](inverse_refactor_status.md) records the earlier A1–C12
+refactor; the [2026-10 reorganisation plan](../cleanup/bem_inverse_architecture_2026-10-24.md)
+records what was removed since.
 
 ## A. Stored geometry → predicted measurements
 
@@ -79,7 +84,7 @@ boundary through its Fourier series. These are the persistent shape state.
 Output: frequency-independent coefficient arrays for squared distances,
 divided differences, logarithmic geometry, speed-weighted normals, and waves.
 
-Code: [`FourierCurve`](../../solvers/bem_inverse/continuation/geometry.py#L27),
+Code: [`FourierCurve`](../../solvers/bem_inverse/continuation/geometry.py#L57),
 [`ModalGeometry.__init__()`](../../solvers/bem_inverse/a1_geometry.py#L265),
 and [`prepare_geometry()`](../../solvers/bem_inverse/forward_solvers/modal_muller.py#L174).
 The last function caches geometry by exact curve coefficients, window, and device.
@@ -123,11 +128,10 @@ Code: [`forward_solve()`](../../solvers/bem_inverse/forward_solvers/modal_muller
 It stores factors, forward traces, and the reciprocal RHS in `ModalState`.
 The current implementation uses CPU LU even when matrix assembly uses CUDA.
 
-[`solve_frequencies()`](../../solvers/bem_inverse/forward_batch.py#L11)
+[`solve_frequencies()`](../../solvers/bem_inverse/forward_batch.py#L10)
 dispatches the selected forward function over active frequencies and collects
-predictions and retained forward states. The ordinary stage calls it directly,
-then calls `residual_evaluation()` for B5; `Objective.production()` remains a
-compatibility entry point rather than the ordinary loop's forward entry point.
+predictions and retained forward states. The stage's local
+[`evaluate`](../../solvers/bem_inverse/fit_stage.py#L77) calls it and then B5.
 The current modal service uses paired point sources and receivers.
 
 ## B. Predicted measurements + geometry directions → residual Jacobian
@@ -143,7 +147,7 @@ normalized frequency losses equally; declared noise enables different weights.
 
 Code: [`normalize()`](../../solvers/bem_inverse/b5_residual.py#L21),
 [`b5_residual.evaluate()`](../../solvers/bem_inverse/b5_residual.py),
-and [`CumulativePolicy._config()`](../../solvers/bem_inverse/policy.py#L106).
+and [`CumulativePolicy._config()`](../../solvers/bem_inverse/policy.py#L96).
 
 ### B6. Optimizer coordinates → complete-trial geometry derivatives
 
@@ -151,21 +155,21 @@ Input: current `c_m` and the normal-harmonic update coordinates `a_i`.
 Output: one Cartesian coefficient velocity for each optimizer coordinate.
 The coordinates and the stored Cartesian coefficients are different quantities.
 
-Code: [`SpectralProjectedUpdate.prepare()`](../../solvers/bem_inverse/geometry_update_methods/spectral.py#L171)
+Code: [`SpectralProjectedUpdate.prepare()`](../../solvers/bem_inverse/geometry_update_methods/spectral.py#L154)
 defines coordinates and builds velocities using centered finite differences of
-projected geometry. [`batched_projection()`](../../solvers/bem_inverse/geometry_update_methods/spectral.py#L91)
+projected geometry. [`batched_projection()`](../../solvers/bem_inverse/geometry_update_methods/spectral.py#L88)
 evaluates the base and all positive/negative moves together.
 
 The differentiated map includes normal displacement, arclength reset, and
 projection. This is a geometry finite difference, not a finite difference of
 the forward solver. Validity decisions are checks around the smooth trial map.
 
-[`make_update()`](../../solvers/bem_inverse/geometry_selection.py#L5) selects
-`SpectralProjectedUpdate` with batched preparation on the requested device.
-Its method-owned `Prepared` record retains derivatives and both base projections;
-remaining trial-grid arrays are cached lazily. Other geometry methods own their
-preparation and measurements in their respective files. Ordinary curve tools
-stay in [`continuation/geometry.py`](../../solvers/bem_inverse/continuation/geometry.py).
+[`make_update()`](../../solvers/bem_inverse/geometry_selection.py#L7) selects
+`SpectralProjectedUpdate` with batched preparation on the requested device,
+together with `spectral.geometry_update`. Its method-owned `Prepared` record
+retains the derivatives, the base projection and the N-point grid. Other
+geometry methods own their preparation and measurements in their respective
+files. Ordinary curve tools stay in [`continuation/geometry.py`](../../solvers/bem_inverse/continuation/geometry.py).
 
 ### B7. Geometry derivatives + forward/reciprocal traces → complex data Jacobian
 
@@ -173,8 +177,8 @@ Convert each B6 coefficient velocity into its normal-displacement weight,
 including the boundary-speed factor. Solve the reciprocal RHS using the
 existing Müller factors, then contract forward traces, reciprocal traces, and weights.
 
-Code: [`ModalMuller.derivative()`](../../solvers/bem_inverse/forward_solvers/modal_muller.py#L341),
-[`_contract()`](../../solvers/bem_inverse/forward_solvers/modal_muller.py#L320), and
+Code: [`ModalMuller.derivative()`](../../solvers/bem_inverse/forward_solvers/modal_muller.py#L307),
+[`_contract()`](../../solvers/bem_inverse/forward_solvers/modal_muller.py#L286), and
 [`hadamard()`](../../solvers/bem_inverse/b7_data_jacobian.py#L30).
 
 The reciprocal RHS is solved as a batch of receiver columns once per frequency
@@ -187,11 +191,11 @@ Apply the same normalization, square-root weights, and real/imaginary stacking
 as B5 to obtain `J`. Combine `J` with `r` for gradient `g`, and with itself
 for the Gauss–Newton matrix `H_GN`.
 
-Code: [`Objective.jacobian()`](../../solvers/bem_inverse/objective.py#L69),
-[`gradient_frame()`](../../solvers/bem_inverse/fit_stage.py#L225),
-and [`b8_gauss_newton.curvature()`](../../solvers/bem_inverse/b8_gauss_newton.py).
+Code: the stage's local [`linearize`](../../solvers/bem_inverse/fit_stage.py#L99),
+[`b8_gauss_newton.residual_jacobian()`](../../solvers/bem_inverse/b8_gauss_newton.py)
+and [`curvature()`](../../solvers/bem_inverse/b8_gauss_newton.py).
 The live stage loop uses `J`, `g`, `H_GN`, `D`, `lambda_trial`, `a_raw`,
-`a_bounded` and `a_used`. Historical checkpoint fields keep their old names.
+`a_bounded` and `a_used`. Checkpoint fields keep their old names.
 
 ## C. Jacobian → LM proposal → accepted stored geometry
 
@@ -207,57 +211,43 @@ The default metric uses the diagonal of `H_GN` with a positive floor.
 
 ### Geometry update. LM proposal → finite geometry trial
 
-Bound the proposal, then try successively halved steps. Construct each candidate
-by normal displacement, spectral arclength reset, and restriction to the stored
-Cartesian band. The centered increment subtracts the base projection.
+Bound the proposal, then try successively halved steps. Construct each trial
+curve by normal displacement, spectral arclength reset on the N-point grid, and
+restriction to the stored Cartesian band. The centered increment subtracts the
+base projection.
 
 Code: [`control_step()`](../../solvers/bem_inverse/geometry_update_methods/__init__.py),
-[backtracking and the selected `geometry_update()`](../../solvers/bem_inverse/fit_stage.py),
-[`spectral.geometry_update()`](../../solvers/bem_inverse/geometry_update_methods/spectral.py#L255),
-and [`arclength_quadrature()`](../../solvers/bem_inverse/geometry_update_methods/spectral.py#L59).
+[backtracking and the passed `geometry_update`](../../solvers/bem_inverse/fit_stage.py#L253),
+[`spectral.geometry_update()`](../../solvers/bem_inverse/geometry_update_methods/spectral.py#L228),
+and [`arclength_quadrature()`](../../solvers/bem_inverse/geometry_update_methods/spectral.py#L56).
 
 The centered construction preserves the original stored curve for a zero step.
 The active method directly calls [`check_area`, `check_speed`, and
-`check_intersection`](../../solvers/bem_inverse/checks.py#L232) on the final
-candidate. The moved curves are not checked: refitting and centring change
-them, so only the final curve is the boundary that is used. Area uses Fourier
+`check_intersection`](../../solvers/bem_inverse/checks.py#L211) on the final
+trial curve. The moved curve is not checked: refitting and centring change
+it, so only the final curve is the boundary that is used. Area uses Fourier
 coefficients; speed and intersection checks use sampled nodes. Sampled checks decide validity without certificates.
 
 The optional [`certified_spectral`](../../solvers/bem_inverse/geometry_update_methods/certified_spectral.py)
 method retains certificate decisions and sampled fallback in its own file.
-Explicit old imports and `trial()` calls reach the same retained implementation.
 
-Geometry refinement constructs the candidate on a grid and a doubled grid.
-It evaluates their coefficient difference as boundary-position differences,
-then compares the maximum difference, divided by perimeter-based radius,
-against `projection_tolerance` (default `1e-5`).
+There is no second, doubled-grid refit and no grid-agreement check (D7, Q12).
+Output is `c_trial`, in the same stored Cartesian band. Exhausted backtracks
+lead to a larger damping value and a newly computed proposal.
 
-This geometry check is separate from C11 physics refinement. Its two grids do
-not change `K_geometry`. Output is `c_trial`, in the same stored Cartesian band.
-Exhausted backtracks lead to a larger damping value and a newly computed proposal.
+### C11. Trial curve → evaluation → accept or reject
 
-### C11. Trial geometry → production/refined evaluation → accept or reject
+Evaluate the trial curve at the stage's working resolution (A1–A4, then B5).
+Accept it when its loss is lower than the current loss; otherwise halve the
+step. Nothing is re-solved at a finer resolution, and there is no gain margin.
 
-Evaluate the candidate at working physics resolution. If its loss decreases,
-compare current/candidate losses at both working and finer resolutions.
-Check the candidate's prediction discrepancy at every active frequency.
+Code: [the acceptance test](../../solvers/bem_inverse/fit_stage.py#L294) and
+[`production_nondecreasing()`](../../solvers/bem_inverse/checks.py#L324).
+An accepted trial curve replaces the current shape in
+[the C12 state commitment](../../solvers/bem_inverse/fit_stage.py#L311).
 
-Code: [candidate evaluation](../../solvers/bem_inverse/fit_stage.py),
-[`validate()`](../../solvers/bem_inverse/fit_stage.py#L133),
-[`checked_pair()`](../../solvers/bem_inverse/c11_trial_evaluation.py#L21),
-and [`resolution_check()` / `acceptance()`](../../solvers/bem_inverse/checks.py).
-
-Acceptance needs improvement at both resolutions exceeding the margin and
-the allowance for disagreement. The default also requires prediction agreement.
-The current-shape prediction discrepancy has an additional optional check.
-
-An accepted candidate replaces the current shape in
-[the C12 state commitment](../../solvers/bem_inverse/fit_stage.py).
-Ordinary rejections try another backtrack or damping value.
-
-Numerical failures are different: in the default `modal_fixed` recipe,
-an unresolved candidate or failed physics evaluation can stop fitting.
-Optional resolution-response policies can refine or reject instead.
+Numerical failures are different: a failed or non-finite physics evaluation
+of the trial curve stops the stage.
 
 ### C12. Accepted step → damping / stopping / continuation
 
@@ -275,14 +265,15 @@ If this stage continues, repeat the chain with the accepted coefficients,
 reusing available results. If it finishes normally or exhausts its stage
 quota, the runner may advance; other stopping outcomes can end fitting.
 
-[`CumulativePolicy.operations()`](../../solvers/bem_inverse/policy.py#L137)
-and [`tail()`](../../solvers/bem_inverse/policy.py#L207) choose subsequent stages.
+[`CumulativePolicy.operations()`](../../solvers/bem_inverse/policy.py#L125)
+and [`tail()`](../../solvers/bem_inverse/policy.py#L185) choose subsequent stages.
 The runner carries the accepted boundary forward, applying scheduled cleanup
 or storage resizing when required.
 
 Stages may change active frequencies, `M`, `K_geometry`, and the physics
-resolution profile, which determines `K_trace`. The returned endpoint also
-undergoes [independent numerical checks](../../solvers/bem_inverse/endpoint.py).
+resolution profile, which determines `K_trace`. After `fit()` returns, the
+benchmark checks the endpoint independently in
+[`experiments/benchmark/audit.py`](../../experiments/benchmark/audit.py#L62).
 
 ## Fixed terminology
 
@@ -304,8 +295,9 @@ undergoes [independent numerical checks](../../solvers/bem_inverse/endpoint.py).
 | `D` | LM damping metric/matrix. |
 | `c_trial` | Stored Cartesian coefficients returned by the complete finite geometry trial. |
 
-`FitStage.nodes` and `refined_nodes` are modal resolution tokens, each eight
-times `K_trace`, on this path. They are not the geometry-update sample counts.
+`FitStage.nodes` is the working modal resolution token, eight times `K_trace`,
+on this path. It is not the geometry-update sample count. The endpoint audit
+also uses the profile's refined token.
 The coefficient workspace is another resolution setting, separate from `K_trace`.
 
 The optimizer now calls its curvature `H_GN`; geometric normals remain
@@ -318,8 +310,8 @@ Answer the requested question briefly: identify its location in this chain, stat
 what information enters and leaves, and explain why the next part needs it.
 Link the relevant function; do not reproduce the whole chain for every question.
 
-Keep geometry projection accuracy, physics resolution and loss acceptance
-(C11), and final endpoint checks distinct. Keep `M`, `K_geometry`, `K_trace`,
+Keep geometry construction, the working physics resolution and loss acceptance
+(C11), and the endpoint audit after the fit distinct. Keep `M`, `K_geometry`, `K_trace`,
 and the coefficient workspace distinct.
 
 Use this as the shared explanation structure, not as a frozen implementation
