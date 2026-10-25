@@ -49,7 +49,9 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
     retaining this interpreter, policy operations and optimizer. They must
     declare their adaptations in the returned settings/receipt.
     ``geometry_update`` explicitly selects a maintained update without a global
-    substitution; it cannot be combined with a representation adapter.
+    substitution; it cannot be combined with a representation adapter, whose
+    ``update(length_unit_m)`` must return ``(update, geometry_update)`` as
+    ``make_update`` does.
     The result's ``final_stage`` names the last fitted stage's M, storage band and
     any stage-local geometry update, which an endpoint audit needs.
     """
@@ -209,8 +211,6 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
                         event(op, 'full real catalog reached declared-noise discrepancy; skip remaining releases/tail',
                               loss=result.final_loss, threshold=op.details['noise_threshold'])
                         break
-                elif op.kind == 'skip':
-                    event(op,'SKIPPED_IDENTICAL',work=ledger.snapshot())
                 # C12. The measured frontier determines additional policy stages.
                 elif op.kind == 'frontier':
                     ledger.begin_stage(op.label, None)
@@ -225,6 +225,7 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
                                                                             policy.frontier_threshold),
                                       (state,), 'reciprocal', 'frontier', threads=1) as calls:
                         measured = calls[0]()
+                    del state  # release the refined system before the tail stages
                     tail = policy.tail(problem, physics, measured['frontier'])
                     event(op, 'frontier measured; releases resolved' if tail else 'frontier at or below completed band',
                           measured=measured, resolved_operations=[operation_record(item, record_settings) for item in tail])

@@ -63,6 +63,7 @@ def localize(problem, physics, rule, ledger, on_progress=None):
         ledger.reserve(0)
         losses.append(disk_landscape(physics, obs, problem.contrast, centers[i:i+rule.batch_centers], radii, cutoff))
     landscape = np.where(inside, np.concatenate(losses), np.inf)
+    landscape[np.isnan(landscape)] = np.inf  # a failed grid point never wins
     grid_seconds = perf_counter()-started
 
     def loss(p):
