@@ -13,7 +13,9 @@ token and the iteration/quota limits. The caller passes the selected methods:
 reciprocal derivatives, and ``geometry_update`` (one trial curve, C10) with its
 update object, which supplies normal-coordinate geometry and the complete-trial
 tangent. A trial curve is accepted when its loss is lower than the current loss;
-nothing is re-solved at a finer resolution.
+nothing is re-solved at a finer resolution. An optional ``penalty`` (the level
+penalty) stacks extra residual rows under the data residual, so the loss, J, g,
+the damping and the accept test all include them.
 """
 from dataclasses import replace
 from copy import deepcopy
@@ -37,7 +39,7 @@ from . import b5_residual, b8_gauss_newton, c9_lm, c12_iteration, checks
 @fit_geometry_validation
 @geometry_validated
 def fit_stage(curve, stage, contrast, update, config, ledger, *, physics, forward_solve, geometry_update,
-              on_accept=None, resume=None, pause_after=None, entry=None, retain_final=False):
+              on_accept=None, resume=None, pause_after=None, entry=None, retain_final=False, penalty=None):
     """Run one stage, optionally under a fit-local ``geometry_validation`` cache.
 
     Exact reuse and spatial intersection checks are enabled by default. Use
@@ -50,10 +52,15 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, physics, forwar
     solves when it matches this stage exactly; their charges are replayed, so
     decisions and receipts are unchanged. ``retain_final`` returns this stage's
     endpoint as ``StageResult.final_entry`` for the next stage.
+
+    ``penalty`` (a ``level_penalty.LevelPenalty``) sets its weight from the data
+    loss at stage entry; without it every number is unchanged.
     """
     started = perf_counter()
     if curve.band != stage.curve_modes:
         raise ValueError("Pass the curve at the stage storage band.")
+    if penalty is not None and (resume is not None or pause_after is not None):
+        raise ValueError('A level penalty does not support stage checkpoints.')
     signature = checkpoint_signature(stage, contrast, config, update) if resume is not None or pause_after is not None else None
     if resume is not None:
         if resume.signature != signature or not np.array_equal(curve.coefficients, resume.current.curve.coefficients):
@@ -73,6 +80,7 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, physics, forwar
     reach_cache = {}
     resume_iteration = 0
     geometry_proposals = 0
+    penalty_weight = None
 
     def evaluate(curve, category, reused=None):
         """A1–A4 at every active frequency, then B5: residual r and loss. None if a solve fails.
@@ -92,6 +100,8 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, physics, forwar
             batch = reused
         prediction, forwards = batch
         evaluation = b5_residual.evaluate(curve, prediction, forwards, observed, stage.weights, config.residual_floor)
+        if penalty_weight is not None:
+            evaluation = penalty.stacked(evaluation, penalty_weight)
         observe(physics, 'objective', stage=stage, config=config, ledger=ledger,
                 evaluation=evaluation, observed=observed)
         return evaluation
@@ -110,6 +120,8 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, physics, forwar
                 blocks.append(block.reshape(-1, block.shape[-1]))
         # B8. The B5 map applied to each data derivative column gives J; then g = J.T r.
         J = b8_gauss_newton.residual_jacobian(blocks, observed, stage.weights, config.residual_floor)
+        if penalty is not None:
+            J = np.vstack((J, penalty.jacobian(evaluation.curve.coefficients, space.derivatives, penalty_weight)))
         g = b8_gauss_newton.gradient(J, evaluation.residual)
         checks.require_gradient(g, J.shape[1])
         observe(physics, 'linearization', evaluation=evaluation, space=space, J=J,
@@ -128,6 +140,8 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, physics, forwar
             row.update({k: trial[k] for k in ("maximum_normal_m", "rms_normal_m",
                                                "speed_ratio", "accepted_fraction", "gain_ratio",
                                                "damping_feedback", "damping_floor") if k in trial})
+        if penalty is not None:
+            row.update(penalty.record(evaluation, penalty_weight))
         if g is None:
             row['terminal_linearization_skipped'] = True
         history.append(row)
@@ -156,6 +170,10 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, physics, forwar
                                (np.array(entry.prediction, copy=True), entry.forwards) if reusable else None)
             if current is None:
                 raise NumericalFailure("initial state is not solver-ready")
+            if penalty is not None:
+                # lambda_J is set once per stage from the data loss at entry.
+                penalty_weight = penalty.weight(current.loss)
+                current = penalty.stacked(current, penalty_weight)
             initial_loss = current.loss
             if on_accept is not None:
                 on_accept(0, current)
@@ -287,7 +305,9 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, physics, forwar
                     evaluation = evaluate(c_trial, "candidate")
                     if evaluation is None:
                         trial.update(status='physics_failed', reason='production_evaluation_failed',
-                                     physics_failures=deepcopy(failures))
+                                     physics_failures=deepcopy(failures),
+                                     coefficients=dict(real=c_trial.coefficients.real.tolist(),
+                                                       imag=c_trial.coefficients.imag.tolist()))
                         raise NumericalFailure("production evaluation failed at candidate state")
                     checks.require_finite_trial(evaluation)
                     trial.update(loss=evaluation.loss)

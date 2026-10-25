@@ -25,6 +25,7 @@ from bem_inverse.geometry_selection import make_update
 from bem_inverse.io import read, write, digest, curve_record, curve_from, portable
 from bem_inverse.physics import Execution, make_backend
 from bem_inverse.runner import fit
+from bem_inverse.level_penalty import LevelPenalty
 from bem_inverse import pipelines as P
 from bem_inverse import policies as R
 from experiments.cleaned_interface import benchmark as ci
@@ -210,7 +211,8 @@ def _fit(problem, settings, execution, folder, adapter, on_event):
     physics, forward_solve = _physics(settings['solver'], execution)
     return fit(problem, solver=settings['solver'], execution=execution,
                physics=physics, forward_solve=forward_solve, output=folder,
-               geometry_update=settings['geometry_update'], localization_adapter=adapter, on_event=on_event)
+               geometry_update=settings['geometry_update'], localization_adapter=adapter, on_event=on_event,
+               penalty=LevelPenalty() if settings.get('level_penalty') else None)
 
 
 def geometry_update_for(settings):
@@ -276,8 +278,11 @@ def run_case(job):
 
 
 def settings_for(*, localization, execution, solver=None, geometry_update=None, pipeline=None, policy=None,
-                 contract=None):
+                 contract=None, level_penalty=False):
     """The single setting of one run directory: a policy, a pipeline, or solver plus update.
+
+    ``level_penalty`` (GU-001) adds the level penalty to the loss; it is allowed only
+    with the ``n_update`` geometry update, which in turn requires it.
 
     ``audit_seconds`` is the endpoint audit's wall allowance: the TG-002 policy contract's
     30 s for a policy, otherwise the 300 s that ``CumulativePolicy`` once carried.
@@ -289,6 +294,8 @@ def settings_for(*, localization, execution, solver=None, geometry_update=None, 
         raise ValueError('Without a policy or pipeline, pass both solver and geometry_update')
     if localization not in LOCALIZATION:
         raise ValueError(f'localization must be one of {LOCALIZATION}')
+    if bool(level_penalty) != (geometry_update == 'n_update'):
+        raise ValueError('The level penalty runs with the n_update geometry update only, and n_update with it')
     if policy is not None:
         contract = dict(R.BENCHMARK_CONTRACT if contract is None else contract)
         return portable(dict(policy=R.settings(policy, contract), localization=localization,
@@ -297,6 +304,8 @@ def settings_for(*, localization, execution, solver=None, geometry_update=None, 
         raise ValueError('A contract applies to named policies only')
     method = (dict(pipeline=P.get(pipeline).settings()) if pipeline is not None else
               dict(solver=solver, geometry_update=geometry_update))
+    if level_penalty:
+        method['level_penalty'] = True
     return portable(dict(method, localization=localization, execution=asdict(execution), audit_seconds=A.SECONDS))
 
 
@@ -332,7 +341,7 @@ def run_fresh(job):
 
 
 def run(run_dir, cases, *, localization, execution, solver=None, geometry_update=None, pipeline=None,
-        policy=None, contract=None, workers=1, output=INPUTS, experiment=None):
+        policy=None, contract=None, workers=1, output=INPUTS, experiment=None, level_penalty=False):
     """Fit ``cases`` into ``run_dir``. One run directory holds exactly one setting.
 
     Select a named ``policy`` (``bem_inverse.policies``, under the TG-002 contract unless
@@ -343,7 +352,8 @@ def run(run_dir, cases, *, localization, execution, solver=None, geometry_update
     if not 1 <= workers <= MAX_WORKERS:
         raise ValueError(f'workers must be 1..{MAX_WORKERS}')
     settings = settings_for(localization=localization, execution=execution, solver=solver,
-                            geometry_update=geometry_update, pipeline=pipeline, policy=policy, contract=contract)
+                            geometry_update=geometry_update, pipeline=pipeline, policy=policy, contract=contract,
+                            level_penalty=level_penalty)
     run_dir = Path(run_dir)
     verify(output, require_inputs=True)
     rows = [row(c, output) for c in cases]

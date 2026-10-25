@@ -87,11 +87,21 @@ and localization stay with the caller. Selecting `solver='modal_muller'`
 directly needs `forward_solvers.modal_muller.register()` first. Bare `fit()`
 keeps `nodal_kress` with the spline update. Supported geometry names are
 `spline`, `spectral`, `certified_spectral`, `analytic_spectral`,
-`gaussian_lipschitz`, and `similarity`.
+`gaussian_lipschitz`, `similarity`, and the three GU-001 updates
+`uncentred_spectral`, `n_update` and `slider`.
 
-Every geometry update builds its trial curve from one N-point refit and checks
-the final curve: coefficient area, sampled minimum speed and sampled segment
-intersections. `certified_spectral` keeps its optional certificate decisions.
+Every geometry update checks the final trial curve: coefficient area, sampled
+minimum speed and sampled segment intersections. The spectral family builds
+the trial curve from one N-point refit; `n_update` and `slider` add an exact
+linear coefficient step with no refit.
+
+The GU-001 updates keep the gauge in three ways. `uncentred_spectral` stores
+the arclength refit R(w_a) itself. `n_update` moves along N = -i z' and slides
+along z', and runs with the level penalty
+([`level_penalty.py`](level_penalty.py), `fit(..., penalty=LevelPenalty())`),
+which adds speed-unevenness rows under the data residual. `slider` takes the
+linear step that moves the boundary normally and keeps the relative speed
+change even. Terms are in [the glossary](../../GLOSSARY.md). `certified_spectral` keeps its optional certificate decisions.
 Analytic spectral and Gaussian updates remain experimental; the Gaussian map
 failed ON-001 curved-state qualification.
 
@@ -118,6 +128,7 @@ carries the checkpoint and the remaining operation queue.
 |---|---|
 | `problem`, `physics`, `policy`, `policies`, `pipelines`, `runner` | Inputs, physics registry and counters, the executable policy, named recipes, the operation queue |
 | `fit_stage`, `stage_types`, `work`, `errors` | One stage's loops, its records, work charging and stop codes |
+| `level_penalty` | Optional speed-unevenness rows added to the loss (GU-001) |
 | `forward_solvers/`, `forward_batch` | Physics contexts and forward solves; dispatch over active frequencies |
 | `a1_geometry`, `a2_muller`, `a3_waves`, `a4_fields`, `modal_cuda` | Modal Müller A1–A4 mathematics and its CUDA assembly |
 | `b5_residual`, `b7_data_jacobian`, `b8_gauss_newton`, `c9_lm`, `c12_iteration`, `checks` | Residual, data Jacobian, Gauss–Newton, LM proposal, damping and the numerical conditions |

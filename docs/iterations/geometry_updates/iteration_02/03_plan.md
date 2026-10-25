@@ -139,3 +139,10 @@ rerun.
 
 Commit and push code, this plan, results and any failure evidence to
 `organised`. The next scene is chosen from what hook c13.3 shows.
+
+## Departures found while building
+
+Recorded in [05_implementation.md](05_implementation.md): the penalty rows carry
+2√λ_J so that they add λ_J E to the 0.5‖r‖² loss; failed physics trials save
+their curve (a second, record-only `fit_stage` edit); four arms use two
+frequency threads each.

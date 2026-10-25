@@ -1,7 +1,8 @@
 """Explicit geometry selection: each name gives one update object and its geometry_update function."""
 from functools import partial
 
-GEOMETRY_UPDATES = ('spline', 'spectral', 'certified_spectral', 'analytic_spectral', 'gaussian_lipschitz', 'similarity')
+GEOMETRY_UPDATES = ('spline', 'spectral', 'certified_spectral', 'analytic_spectral', 'gaussian_lipschitz', 'similarity',
+                    'uncentred_spectral', 'n_update', 'slider')
 
 
 def make_update(name, length_unit_m, execution):
@@ -19,6 +20,18 @@ def make_update(name, length_unit_m, execution):
         from .geometry_update_methods import spectral
         update = spectral.SpectralProjectedUpdate(length_unit_m, device=device, batched=True)
         return update, partial(spectral.geometry_update, settings=update)
+    if name == 'uncentred_spectral':
+        from .geometry_update_methods import uncentred_spectral
+        update = uncentred_spectral.UncentredSpectralUpdate(length_unit_m, device=device)
+        return update, partial(uncentred_spectral.geometry_update, settings=update)
+    if name == 'n_update':
+        from .geometry_update_methods import n_update
+        update = n_update.NUpdate(length_unit_m)
+        return update, partial(n_update.geometry_update, settings=update)
+    if name == 'slider':
+        from .geometry_update_methods import slider
+        update = slider.SliderUpdate(length_unit_m)
+        return update, partial(slider.geometry_update, settings=update)
     if name == 'certified_spectral':
         from .geometry_update_methods import certified_spectral
         order = getattr(execution, 'validity_order', 'certificate_first')

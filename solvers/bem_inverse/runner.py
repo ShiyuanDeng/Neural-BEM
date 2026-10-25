@@ -39,7 +39,7 @@ class FitResume:
 
 def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=None, physics=None,
         forward_solve=None, on_event=None, geometry_adapter=None, localization_adapter=None,
-        geometry_update=None, resume=None):
+        geometry_update=None, resume=None, penalty=None):
     """Run from the prescribed start. This function cannot read truth or scene IDs.
 
     ``physics`` and its ``forward_solve`` are dependency injection for qualified
@@ -54,6 +54,7 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
     ``make_update`` does.
     The result's ``final_stage`` names the last fitted stage's M, storage band and
     any stage-local geometry update, which an endpoint audit needs.
+    ``penalty`` (a ``level_penalty.LevelPenalty``) is added to every stage's loss.
     """
     if physics is None:
         physics, forward_solve = make_backend(solver, execution)
@@ -76,6 +77,7 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
     selected_update, selected_trial = (geometry_adapter.update(problem.length_unit_m) if geometry_adapter is not None
                                        else make_update(geometry_update, problem.length_unit_m, physics.execution))
     update_settings = selected_update.settings()
+    penalty_settings = None if penalty is None else penalty.settings()
     stage_updates = {}
     record_settings = update_settings if geometry_update is not None else {}
     plan = describe_plan(plan, update_settings, override_operations=geometry_update is not None)
@@ -121,7 +123,8 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
         from pathlib import Path
         (Path(output)/'plan.md').write_text(readable_plan(plan))
     save('configuration.json', dict(initial=record_curve(curve), contrast=problem.contrast,
-         solver=physics.name, execution=physics.receipt()['execution'], update=update_settings, plan=plan))
+         solver=physics.name, execution=physics.receipt()['execution'], update=update_settings, plan=plan,
+         level_penalty=penalty_settings))
     with geometry_runtime(physics.execution.geometry):
         try:
             strict = getattr(physics.execution, 'nodal_resolution_profile', 'fixed') == 'band_matched'
@@ -183,7 +186,7 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
                     result = fit_stage(curve, op.stage, problem.contrast, update, op.optimizer, ledger,
                                        physics=physics, forward_solve=forward_solve, geometry_update=trial_curve,
                                        on_accept=accepted_state, resume=resumed_stage,
-                                       entry=entry, retain_final=reuse_entries)
+                                       entry=entry, retain_final=reuse_entries, penalty=penalty)
                     resumed_stage = None
                     curve = result.curve
                     carried = result.final_entry if reuse_entries else None
@@ -254,7 +257,7 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
         fit_and_localization_units=0 if ledger is None else ledger.units,
         total_seconds=perf_counter()-started,
         physics=physics.receipt(), geometry_work=dict(selected_update.counts),
-        geometry_update=geometry_update, geometry_settings=update_settings)
+        geometry_update=geometry_update, geometry_settings=update_settings, level_penalty=penalty_settings)
     if stage_updates:
         row['stage_geometry_updates'] = {name: dict(settings=item.settings(), work=dict(item.counts))
                                         for name, (item, _) in stage_updates.items()}

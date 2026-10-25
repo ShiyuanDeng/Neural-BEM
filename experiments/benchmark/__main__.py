@@ -21,8 +21,11 @@ def main():
     parser.add_argument('--pipeline', choices=sorted(PIPELINES),
                         help='named recipe from bem_inverse.pipelines; replaces --solver/--geometry-update')
     parser.add_argument('--solver', choices=('modal_muller', 'nodal_kress'), help='default modal_muller')
-    parser.add_argument('--geometry-update', choices=('spline', 'spectral', 'certified_spectral', 'analytic_spectral'),
+    parser.add_argument('--geometry-update', choices=('spline', 'spectral', 'certified_spectral', 'analytic_spectral',
+                                                      'uncentred_spectral', 'n_update', 'slider'),
                         help='default spectral (sampled validity checks, batched preparation)')
+    parser.add_argument('--level-penalty', action='store_true',
+                        help='GU-001: add the speed-unevenness penalty to the loss; only with n_update, which needs it')
     parser.add_argument('--localization', default='none', choices=c.LOCALIZATION,
                         help='none (default): keep the centred start; grid: legacy SC-050 disk search')
     parser.add_argument('--device', choices=('auto', 'cpu', 'cuda'), default='auto')
@@ -94,7 +97,7 @@ def main():
         method = (dict(policy=args.policy) if args.policy else dict(pipeline=args.pipeline) if args.pipeline else
                   dict(solver=args.solver, geometry_update=args.geometry_update))
         value = c.run(args.run_dir, cases, localization=args.localization, execution=execution,
-                      workers=args.workers, **method)
+                      workers=args.workers, level_penalty=args.level_penalty, **method)
     print(json.dumps(portable(value), indent=2))
 
 
