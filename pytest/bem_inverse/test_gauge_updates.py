@@ -2,6 +2,8 @@
 from functools import partial
 
 import numpy as np
+import pytest
+import torch
 
 from bem_inverse import Execution, FourierCurve
 from bem_inverse.continuation.geometry import normal_basis, resize, speed_ratio
@@ -69,20 +71,32 @@ def test_slider_moves_normally_and_keeps_the_relative_speed_change_even():
         return np.sqrt(weights@(moved-requested)**2/(weights@requested**2)), np.sqrt(weights@uneven**2)
 
     normal_error, uneven = errors(*make_update('slider', UNIT, Execution(device='cpu')))
-    plain = slider.SliderUpdate(UNIT, xi=0.)  # plain least-squares normal move, which drifts
+    plain = slider.SliderUpdate(UNIT, xi=0., device='cpu')  # plain least-squares normal move, which drifts
     _, plain_uneven = errors(plain, partial(slider.geometry_update, settings=plain))
     assert normal_error < .1
     assert uneven < .2*plain_uneven
+
+
+@pytest.mark.skipif(not torch.cuda.is_available(), reason='needs CUDA')
+def test_slider_cuda_preparation_matches_the_numpy_reference():
+    circle = resize(FourierCurve.from_samples(np.exp(2j*np.pi*np.arange(64)/64), 1), 8)
+    for curve, modes in ((uneven_curve(), 3), (circle, 3)):
+        cpu, cuda = (slider.SliderUpdate(UNIT, device=device).prepare(curve, modes, curve.band)
+                     for device in ('cpu', 'cuda'))
+        assert cuda.rank == cpu.rank
+        assert np.linalg.norm(cuda.derivatives-cpu.derivatives) <= 1e-6*np.linalg.norm(cpu.derivatives)
+    assert cuda.rank == 4*8+2-1  # the circle's parameter shift moves nothing: one dropped direction
 
 
 def test_level_penalty_is_the_speed_spread_and_its_rows_have_the_right_slope():
     curve = uneven_curve()
     speed2 = np.abs(curve.values(4*curve.band+1, 1))**2  # J^2 has band 2K, its square 4K
     np.testing.assert_allclose(unevenness(curve.coefficients), np.mean((speed2/np.mean(speed2)-1)**2), rtol=1e-12)
-    penalty = LevelPenalty()
+    assert LevelPenalty().settings()['fraction'] == .01
+    penalty = LevelPenalty(fraction=.1)
     weight = penalty.weight(3.)
     rows = penalty.rows(curve.coefficients, weight)
-    np.testing.assert_allclose(.5*rows@rows, .03*unevenness(curve.coefficients), rtol=1e-12)
+    np.testing.assert_allclose(.5*rows@rows, .3*unevenness(curve.coefficients), rtol=1e-12)
     update, _ = make_update('n_update', UNIT, Execution(device='cpu'))
     derivatives = update.prepare(curve, 2, curve.band).derivatives
     step = np.eye(10)[7]*1e-7

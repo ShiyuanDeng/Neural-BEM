@@ -14,7 +14,7 @@ import numpy as np
 
 from .a1_geometry import real_product
 
-FRACTION = .01  # lambda_J = FRACTION x data loss at stage entry; GU-001 tries no other value
+FRACTION = .01  # default lambda_J = FRACTION x data loss at stage entry (GU-001); GU-002 passes others
 
 
 def speed_squared(coefficients):
@@ -31,14 +31,19 @@ def unevenness(coefficients):
 
 
 class LevelPenalty:
+    def __init__(self, fraction=FRACTION):
+        if isinstance(fraction, bool) or not np.isfinite(fraction) or fraction <= 0:
+            raise ValueError('The level penalty fraction must be a positive number.')
+        self.fraction = float(fraction)
+
     def settings(self):
-        return dict(name='level_penalty', fraction=FRACTION,
+        return dict(name='level_penalty', fraction=self.fraction,
                     loss='data loss + lambda_J E, E = sum_{m!=0} |rho_m|^2/rho_0^2, rho = coefficients of |z\'|^2',
                     weight='lambda_J = fraction x data loss at stage entry, once per stage')
 
     def weight(self, data_loss):
         """lambda_J for a stage whose entry data loss is ``data_loss``."""
-        return FRACTION*float(data_loss)
+        return self.fraction*float(data_loss)
 
     def rows(self, coefficients, weight):
         rho = speed_squared(coefficients)

@@ -22,7 +22,7 @@ import numpy as np
 
 from bem_inverse.continuation.geometry import speed_ratio
 from bem_inverse.io import curve_from, read, write
-from bem_inverse.level_penalty import unevenness
+from bem_inverse.level_penalty import FRACTION, unevenness
 from bem_inverse.physics import Execution
 from . import campaign as c, scenes as S
 
@@ -30,7 +30,7 @@ OUTPUT = c.ROOT/'results/validation/cleaned_interfaces/GU-001'
 CASE = 'hook__c13.3'
 ARMS = dict(spectral=dict(geometry_update='spectral'),
             uncentred=dict(geometry_update='uncentred_spectral'),
-            n_update=dict(geometry_update='n_update', level_penalty=True),
+            n_update=dict(geometry_update='n_update', level_penalty=FRACTION),
             slider=dict(geometry_update='slider'))
 # Four arms share eight cores: two frequency threads each.
 EXECUTION = Execution(device='auto', frequency_threads=2)
@@ -45,9 +45,9 @@ def _curve(record):
     return curve_from(dict(real=record['real'], imag=record['imag']))
 
 
-def steps(arm):
+def steps(arm, output=OUTPUT, case=CASE):
     """One row per accepted curve (and each stage entry), in fit order, from the saved stage records."""
-    folder = OUTPUT/arm/'runs'/CASE
+    folder = output/arm/'runs'/case
     rows = []
     for stage in read(folder/'result.json')['stages']:
         record = read(folder/(stage['stage']+'.json'))
@@ -64,9 +64,9 @@ def steps(arm):
     return rows
 
 
-def failed_trial(arm):
+def failed_trial(arm, output=OUTPUT, case=CASE):
     """The trial curve the physics refused at the end of the fit, from its failure record."""
-    folder = OUTPUT/arm/'runs'/CASE
+    folder = output/arm/'runs'/case
     last = read(folder/'result.json')['stages'][-1]['stage']
     trials = read(folder/(last+'.json'))['trials']
     if not trials or trials[-1].get('status') != 'physics_failed':
@@ -74,9 +74,9 @@ def failed_trial(arm):
     return dict(trials[-1], coefficients=trials[-1]['physics_failures'][0]['candidate_coefficients'])
 
 
-def summary(arm):
-    result = read(OUTPUT/arm/'runs'/CASE/'result.json')
-    rows = steps(arm)
+def summary(arm, output=OUTPUT, case=CASE):
+    result = read(output/arm/'runs'/case/'result.json')
+    rows = steps(arm, output, case)
     last = rows[-1]
     stage = result['stages'][-1]
     geometry = result['geometry_work']

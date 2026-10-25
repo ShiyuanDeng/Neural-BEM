@@ -31,6 +31,9 @@ class Execution:
     # evaluated endpoint across an unchanged curve, catalog and resolution.
     validity_order: str = 'certificate_first'
     stage_entry_reuse: bool = False
+    # B6 preparation device: 'follow' uses ``device``; 'cpu' keeps the geometry update's
+    # preparation on the CPU under GPU physics (GU-002's same-machine slider reference).
+    preparation_device: str = 'follow'
 
     def __post_init__(self):
         if self.device not in ('auto', 'cpu', 'cuda'):
@@ -51,6 +54,8 @@ class Execution:
             raise ValueError('validity_order must be certificate_first or sampled_first')
         if not isinstance(self.stage_entry_reuse, bool):
             raise ValueError('stage_entry_reuse must be a bool')
+        if self.preparation_device not in ('follow', 'cpu'):
+            raise ValueError('preparation_device must be follow or cpu')
         minimum = 512 if self.nodal_resolution_profile == 'fixed' else 8
         if self.resolution < minimum or self.resolution % 2:
             raise ValueError(f'The nodal accuracy profile needs an even resolution >={minimum}')

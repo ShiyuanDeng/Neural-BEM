@@ -98,10 +98,16 @@ linear coefficient step with no refit.
 The GU-001 updates keep the gauge in three ways. `uncentred_spectral` stores
 the arclength refit R(w_a) itself. `n_update` moves along N = -i z' and slides
 along z', and runs with the level penalty
-([`level_penalty.py`](level_penalty.py), `fit(..., penalty=LevelPenalty())`),
-which adds speed-unevenness rows under the data residual. `slider` takes the
-linear step that moves the boundary normally and keeps the relative speed
-change even. Terms are in [the glossary](../../GLOSSARY.md). `certified_spectral` keeps its optional certificate decisions.
+([`level_penalty.py`](level_penalty.py), `fit(..., penalty=LevelPenalty(fraction))`,
+fraction 0.01 by default), which adds speed-unevenness rows under the data
+residual. `slider` takes the linear step that moves the boundary normally and
+keeps the relative speed change even.
+
+Like spectral, the slider prepares on CUDA when CUDA is available (GU-002): it
+solves with float64 `eigh` and the NumPy `lstsq` cutoff. NumPy on the CPU stays
+the reference. `Execution(preparation_device="cpu")` keeps every geometry
+update's preparation on the CPU under GPU physics. Terms are in
+[the glossary](../../GLOSSARY.md). `certified_spectral` keeps its optional certificate decisions.
 Analytic spectral and Gaussian updates remain experimental; the Gaussian map
 failed ON-001 curved-state qualification.
 

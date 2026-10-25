@@ -12,6 +12,8 @@ def make_update(name, length_unit_m, execution):
     ``None`` selects the spline update of a bare ``fit``.
     """
     device = None if execution.device == 'auto' else execution.device
+    if getattr(execution, 'preparation_device', 'follow') == 'cpu':
+        device = 'cpu'
     if name == 'spline' or name is None:
         from .geometry_update_methods import spline
         update = spline.ProjectedUpdate(length_unit_m)
@@ -30,7 +32,7 @@ def make_update(name, length_unit_m, execution):
         return update, partial(n_update.geometry_update, settings=update)
     if name == 'slider':
         from .geometry_update_methods import slider
-        update = slider.SliderUpdate(length_unit_m)
+        update = slider.SliderUpdate(length_unit_m, device=device)
         return update, partial(slider.geometry_update, settings=update)
     if name == 'certified_spectral':
         from .geometry_update_methods import certified_spectral

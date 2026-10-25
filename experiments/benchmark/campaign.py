@@ -212,7 +212,7 @@ def _fit(problem, settings, execution, folder, adapter, on_event):
     return fit(problem, solver=settings['solver'], execution=execution,
                physics=physics, forward_solve=forward_solve, output=folder,
                geometry_update=settings['geometry_update'], localization_adapter=adapter, on_event=on_event,
-               penalty=LevelPenalty() if settings.get('level_penalty') else None)
+               penalty=LevelPenalty(settings['level_penalty']) if settings.get('level_penalty') else None)
 
 
 def geometry_update_for(settings):
@@ -278,11 +278,12 @@ def run_case(job):
 
 
 def settings_for(*, localization, execution, solver=None, geometry_update=None, pipeline=None, policy=None,
-                 contract=None, level_penalty=False):
+                 contract=None, level_penalty=None):
     """The single setting of one run directory: a policy, a pipeline, or solver plus update.
 
-    ``level_penalty`` (GU-001) adds the level penalty to the loss; it is allowed only
-    with the ``n_update`` geometry update, which in turn requires it.
+    ``level_penalty`` (GU-001), the penalty fraction, adds the level penalty to the
+    loss; it is allowed only with the ``n_update`` geometry update, which in turn
+    requires it. GU-001 saved ``True`` for the fraction 0.01; such settings are refused.
 
     ``audit_seconds`` is the endpoint audit's wall allowance: the TG-002 policy contract's
     30 s for a policy, otherwise the 300 s that ``CumulativePolicy`` once carried.
@@ -294,7 +295,7 @@ def settings_for(*, localization, execution, solver=None, geometry_update=None, 
         raise ValueError('Without a policy or pipeline, pass both solver and geometry_update')
     if localization not in LOCALIZATION:
         raise ValueError(f'localization must be one of {LOCALIZATION}')
-    if bool(level_penalty) != (geometry_update == 'n_update'):
+    if (level_penalty is not None) != (geometry_update == 'n_update'):
         raise ValueError('The level penalty runs with the n_update geometry update only, and n_update with it')
     if policy is not None:
         contract = dict(R.BENCHMARK_CONTRACT if contract is None else contract)
@@ -304,8 +305,8 @@ def settings_for(*, localization, execution, solver=None, geometry_update=None, 
         raise ValueError('A contract applies to named policies only')
     method = (dict(pipeline=P.get(pipeline).settings()) if pipeline is not None else
               dict(solver=solver, geometry_update=geometry_update))
-    if level_penalty:
-        method['level_penalty'] = True
+    if level_penalty is not None:
+        method['level_penalty'] = LevelPenalty(level_penalty).fraction
     return portable(dict(method, localization=localization, execution=asdict(execution), audit_seconds=A.SECONDS))
 
 
@@ -341,7 +342,7 @@ def run_fresh(job):
 
 
 def run(run_dir, cases, *, localization, execution, solver=None, geometry_update=None, pipeline=None,
-        policy=None, contract=None, workers=1, output=INPUTS, experiment=None, level_penalty=False):
+        policy=None, contract=None, workers=1, output=INPUTS, experiment=None, level_penalty=None):
     """Fit ``cases`` into ``run_dir``. One run directory holds exactly one setting.
 
     Select a named ``policy`` (``bem_inverse.policies``, under the TG-002 contract unless
