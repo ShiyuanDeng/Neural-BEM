@@ -25,6 +25,8 @@ scope) are in
 6. Before proposing to replace an object argument, list every attribute the
    function reads, writes and calls on it (L1).
 7. Question the shape of an interface, not only the code inside it (L3).
+8. The fit does not re-run physics or geometry at a finer resolution to
+   check itself (D7).
 
 ## How the user wants findings presented
 
@@ -45,6 +47,10 @@ scope) are in
 - When asked for open items, list only open ones.
 - While the user is still deciding, record concerns next to the plan instead
   of pushing decision prompts.
+- To explain a reorganisation, show a short pseudocode sketch of the resulting
+  loop with each line tagged by its chain step. User: "its really the level of
+  clarity of code that i hope to see in acc repo." Name every object in the
+  sketch by what it does; explain any new object before using it.
 
 ## Decisions
 
@@ -115,6 +121,61 @@ for spectral and analytic; certified keeps its own cache.
 solver function into fit_stage()? the binder is soo dumb." Details and the
 remaining choice: [binder note](geometry_update_forward_binders_2026-10-21.md).
 
+### D7. Finer re-evaluations — remove (direction decided 2026-10-25)
+
+Source: discussion of the 2026-10-24 architecture review of
+`solvers/bem_inverse/` at commit `aeedb28ff`.
+
+**Proposed.** Claude sketched the reorganised `fit_stage()` with a
+resolution-response module (hard stop or promotion) returning a "verdict", and
+a deepened `Objective` holding refined evaluations.
+
+**Decided.** Remove everything that re-evaluates at a finer resolution. User:
+"i was meaning to get rid of everything related to finer re-evaluations, this
+includes running physics at finer resolutions, and checking geometry update
+precisions at finer resolutions." The user also did not like the `Objective`
+class ("i dont understand its use and name") or the unexplained `verdict`.
+
+**What this covers.** C11 refined solves, the two-resolution gain test and
+field agreement; resolution promotion (`ResolutionResponse`, `nodal_fixed` and
+`modal_response` promotion); the geometry update's second, 2N-sample refit and
+its agreement check; nodal stage selection; localization's two-resolution
+qualification.
+
+**Follow-up decisions (2026-10-25), accepting Claude's recommendations.**
+The endpoint audit moves to `experiments/benchmark/` and runs after `fit()`
+returns. The geometry update keeps only its N-point refit, so accepted trial
+curves stay bit-identical. `Objective` and `WorkingObjective` are deleted;
+`fit_stage()` uses local `evaluate` and `linearize` steps.
+
+**C11 acceptance.** Claude proposed keeping the margin on the working gain.
+The user first asked for a stall test, then decided: "damping and backtracking
+loops only produce one accepted curve, hence no need for the stall test. just
+keep the loss decrease requirement in backtracking candidates." A trial curve
+is accepted when its loss is lower than the current loss; the margin goes.
+
+**Status.** Not implemented. Plan and status:
+[architecture note](bem_inverse_architecture_2026-10-24.md).
+
+### D8. Round-1 cleanup items (2026-10-25)
+
+Accepted as Claude recommended: delete the unreachable research code rather
+than move it (card A); delete the shims in the package and in `experiments/`,
+drop the class module overrides, and map old names only when loading the one
+saved pickle (card F); move only the Gaussian and similarity checks to their
+method files (card G); three small fixes. The user asked for "a minimalist
+glossary.md" in addition to the chain map's symbol table.
+
+Passing `geometry_update` and `forward_solve` into `fit_stage()` (D6) and
+charging only through `Ledger.calls` (card E) are provisional. User: "im not
+100 percent sure but i will see how the build turns out."
+
+Also accepted ("yes to all"): keep the three implementation steps separate so
+the pure reorganisations can be checked for identical numbers; one full
+TG-002 run after the maths change, with the 13,412-unit budget unchanged;
+"trial curve" as the term, not "candidate"; the optional `agreement` damping
+keeps its progress exits.
+
 ## Lessons from agent mistakes
 
 ### L1. Proposal built on half the facts
@@ -142,7 +203,8 @@ function, the object and the attribute; never use "it" for a code element.
 
 ## Open
 
-- **D6, binders.** See the binder note.
+- **D6, binders.** Provisionally: pass the functions (D8). Revisit after the
+  build; see the binder note.
 - **Exact-match test (DECISION).** `test_geometry_update_methods.py` requires
   the spectral and certified trials to match bit for bit. Since D1, some runs
   differ by 3e-17 with identical inputs; before D1, 20 of 20 runs matched.
