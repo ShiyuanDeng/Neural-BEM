@@ -14,6 +14,10 @@ plan with yes to allyour questions. i expect to see: speedups ratio on hook
 c13.3 against spectral baseline and cpu slider; and how three weighs perform on
 that scene for soft constraint.” “Soft constraint” is the level penalty.
 
+**Ran 2026-10-25:** the CUDA slider passes, and no penalty weight recovers hook,
+so the Aphex step did not run. See
+[the GU-002 results](../../../../results/validation/cleaned_interfaces/GU-002/README.md).
+
 The requested ratios need two same-machine reference fits that the earlier
 draft excluded: a spectral baseline and a slider with CPU preparation. They are
 added below; nothing else changes in scope.
