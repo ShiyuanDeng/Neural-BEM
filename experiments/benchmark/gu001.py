@@ -137,23 +137,23 @@ def report():
     return markdown(rows)
 
 
-def video(arm):
+def video(arm, output=OUTPUT, case=CASE, experiment='GU-001'):
     """Every accepted curve over the fit with the truth overlaid; a failed trial curve ends it."""
     import matplotlib
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
     from matplotlib.animation import FFMpegWriter
     ink, muted, surface, accent, track = '#0b0b0b', '#52514e', '#fcfcfb', '#eda100', '#2a78d6'
-    scene = CASE.split('__')[0]
+    scene = case.split('__')[0]
     truth = S.CENTER+S.LENGTH*curve_from(read(c.INPUTS/'inputs'/scene/'truth.json')).values(2048)
-    frames = [(r, False) for r in steps(arm)]
-    failed = failed_trial(arm)
+    frames = [(r, False) for r in steps(arm, output, case)]
+    failed = failed_trial(arm, output, case)
     if failed is not None:
         frames.append((dict(frames[-1][0], coefficients=failed['coefficients'], stage=frames[-1][0]['stage'],
                             speed_ratio=failed.get('speed_ratio', float('nan'))), True))
     fig, ax = plt.subplots(figsize=(6, 6), facecolor=surface)
     writer = FFMpegWriter(fps=8)
-    with writer.saving(fig, str(OUTPUT/arm/f'{arm}.mp4'), dpi=120):
+    with writer.saving(fig, str(output/arm/f'{arm}.mp4'), dpi=120):
         for number, (row, is_failed) in enumerate(frames):
             ax.clear()
             ax.set_facecolor(surface)
@@ -166,7 +166,7 @@ def video(arm):
             ax.set_ylim(*[100*S.CENTER.imag+d for d in (-10, 10)])
             ax.set_aspect('equal')
             ax.legend(loc='lower right', fontsize=8, frameon=False)
-            ax.set_title(f"GU-001 {arm}, {CASE}", color=ink, fontsize=11, loc='left')
+            ax.set_title(f"{experiment} {arm}, {case}", color=ink, fontsize=11, loc='left')
             label = 'FAILED TRIAL (physics refused)' if is_failed else f"loss {row['loss']:.3g}"
             ax.text(.02, .97, f"{row['stage']}  step {row['iteration']}\n{label}\nspeed ratio {row['speed_ratio']:.3f}",
                     transform=ax.transAxes, va='top', fontsize=9, color=muted)
@@ -176,7 +176,7 @@ def video(arm):
                 for _ in range(15):  # hold the last frame
                     writer.grab_frame()
     plt.close(fig)
-    return str(OUTPUT/arm/f'{arm}.mp4')
+    return str(output/arm/f'{arm}.mp4')
 
 
 def main():

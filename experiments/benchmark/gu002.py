@@ -10,6 +10,7 @@ single-threaded BLAS (OMP/OPENBLAS/MKL_NUM_THREADS=1).
     python -m experiments.benchmark.gu002 expand --method slider   # the three Aphex cases, if both directions work
     python -m experiments.benchmark.gu002 report               # tables from the saved results
     python -m experiments.benchmark.gu002 figure               # final curves from saved history
+    python -m experiments.benchmark.gu002 videos --arm penalty_1   # one video per arm from saved history
 """
 import argparse
 from dataclasses import replace
@@ -359,7 +360,7 @@ def figure():
 
 def main():
     parser = argparse.ArgumentParser(description='GU-002 CUDA slider preparation and level penalties on hook c13.3')
-    parser.add_argument('command', choices=('compare', 'run', 'expand', 'report', 'figure'))
+    parser.add_argument('command', choices=('compare', 'run', 'expand', 'report', 'figure', 'videos'))
     parser.add_argument('--arm', choices=list(ARMS))
     parser.add_argument('--method', choices=('slider', 'penalty'))
     args = parser.parse_args()
@@ -376,6 +377,9 @@ def main():
         print(json.dumps(expand(args.method), indent=2, default=str))
     elif args.command == 'report':
         print(report())
+    elif args.command == 'videos':
+        for arm in [args.arm] if args.arm else [a for a in ARMS if _result(a) is not None]:
+            print(gu001.video(arm, OUTPUT, CASE, 'GU-002'))
     else:
         print(figure())
 
