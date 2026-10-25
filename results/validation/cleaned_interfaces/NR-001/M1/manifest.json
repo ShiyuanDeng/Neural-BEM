@@ -1,0 +1,96 @@
+{
+  "experiment": null,
+  "inputs": "results/validation/cleaned_interfaces/TG-002/manifest.json",
+  "inputs_sha256": "34375b59a40ed8e945904b246d3022bdeeeacb2291fced1bafc16f6861be7b00",
+  "settings": {
+    "pipeline": {
+      "name": "modal_fixed",
+      "solver": "modal_muller",
+      "geometry_update": "spectral",
+      "description": "Node-free: modal M\u00fcller physics, sampled spectral update"
+    },
+    "localization": "none",
+    "execution": {
+      "device": "auto",
+      "frequency_threads": 4,
+      "acceleration": "spd016",
+      "geometry": "both",
+      "resolution": 512,
+      "nodal_geometry_reuse": "off",
+      "nodal_resolution_profile": "fixed",
+      "audit_frequency_batch": 1,
+      "validity_order": "certificate_first",
+      "stage_entry_reuse": false
+    },
+    "audit_seconds": 300.0
+  },
+  "cases": [
+    "circle__c0.5",
+    "circle__c4",
+    "circle__c13.3",
+    "kite__c0.5",
+    "kite__c4",
+    "kite__c13.3",
+    "peanut__c0.5",
+    "peanut__c4",
+    "peanut__c13.3",
+    "star__c0.5",
+    "star__c4",
+    "star__c13.3",
+    "asymmetric__c0.5",
+    "asymmetric__c4",
+    "asymmetric__c13.3",
+    "c_shape__c0.5",
+    "c_shape__c4",
+    "c_shape__c13.3",
+    "hook__c0.5",
+    "hook__c4",
+    "hook__c13.3",
+    "cross__c0.5",
+    "cross__c4",
+    "cross__c13.3",
+    "cog__c0.5",
+    "cog__c4",
+    "cog__c13.3",
+    "aphex_twin__c0.5",
+    "aphex_twin__c4",
+    "aphex_twin__c13.3"
+  ],
+  "environment": {
+    "python": "3.12.1 (v3.12.1:2305ca5144, Dec  7 2023, 17:23:38) [Clang 13.0.0 (clang-1300.0.29.30)]",
+    "platform": "macOS-26.5.1-arm64-arm-64bit",
+    "machine": "Seans-Macbook-Pro-2.local",
+    "gpu": null,
+    "torch": "2.3.1",
+    "numpy": "1.26.3",
+    "threadpools": [
+      {
+        "user_api": "blas",
+        "internal_api": "openblas",
+        "num_threads": 1,
+        "prefix": "libopenblas",
+        "filepath": "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/numpy/.dylibs/libopenblas64_.0.dylib",
+        "version": "0.3.23.dev",
+        "threading_layer": "pthreads",
+        "architecture": "armv8"
+      }
+    ],
+    "blas_threads": {
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1"
+    },
+    "inherited_sc": {
+      "SC_FORWARD_BACKEND": null,
+      "SC_FREQUENCY_THREADS": null,
+      "SC_GEOMETRY_RUNTIME": null
+    },
+    "load_average": [
+      2.2763671875,
+      2.36962890625,
+      2.96337890625
+    ]
+  },
+  "commit": "a373a8ea5bfb724daf6ba92303629f415de12412",
+  "status": ""
+}
