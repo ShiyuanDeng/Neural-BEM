@@ -184,6 +184,26 @@ TG-002 run after the maths change, with the 13,412-unit budget unchanged;
 "trial curve" as the term, not "candidate"; the optional `agreement` damping
 keeps its progress exits.
 
+### D9. Departures from the plan, found while building (2026-10-25)
+
+After the build, Claude listed where it went beyond the plan
+([implementation notes](bem_inverse_architecture_2026-10-24.md#implementation-notes)).
+User: "i agree with you on decisions."
+
+Accepted: the spline update loses its doubled-grid check under D7 (Q12 did not
+name it); each linearization reserves 2 units per frequency instead of 4;
+`accuracy_exit`, `decision_gate`, `resolution_response`, `adaptive_resolution`
+and `working_frequencies` go with their mechanisms, and `feedback` descends from
+`baseline`; `make_update` returns `(update, geometry_update)` and `make_backend`
+returns `(context, forward_solve)` because the runner builds stage-local updates
+by name; localization keeps the best grid point after coordinate refinement.
+
+Rule that follows: when a removed mechanism leaves a policy, option or check with
+no remaining effect, delete it with the mechanism.
+
+**Not decided.** Claude's review of the build raised three DECISION items and
+gave options but no recommendation, so no choice is recorded; they stay in Open.
+
 ## Lessons from agent mistakes
 
 ### L1. Proposal built on half the facts
@@ -222,3 +242,21 @@ function, the object and the attribute; never use "it" for a code element.
 - **`_project` counting wrapper (OBVIOUS).** In `spectral.py` and
   `certified_spectral.py` it only adds 1 to `geometry_projections` before
   calling `push_and_refit`. Count once, as the batched path does.
+- **Band-matched nodal endpoint check (DECISION).** The moved audit takes both
+  resolutions from `resolution_profile()` and dropped the old 2048-node floor
+  and independent N1024/2048 reference. Options: restore that rule in
+  `experiments/benchmark/audit.py`, or accept it (band-matched is experimental;
+  `modal_fixed` is unaffected).
+- **Failure records in `Ledger.calls` (DECISION).** It records a failure for any
+  exception, including derivative failures, so failure receipts differ from the
+  step 2 code on crash paths only. Options: keep, or record numerical
+  exceptions only.
+- **Strict dispatch switch (DECISION).** `runner.fit` still turns it on only for
+  `nodal_resolution_profile='band_matched'`, a link left from the deleted nodal
+  stage selection. Options: an explicit `Execution` or `Ledger` option, or drop it.
+- **Legacy CI-001 runner (OBVIOUS).** `experiments/cleaned_interface/benchmark.py`
+  reads `final_audit_passed` from `fit()`, which no longer returns it. Run the
+  endpoint audit there or delete the runner; CI-001 inputs are not on this branch.
+- **Repeated code (OBVIOUS).** The single-call charge pattern appears three
+  times (`audit.py`, twice in `runner.py`), and the settings → method lookup
+  three times in `campaign.py`.
