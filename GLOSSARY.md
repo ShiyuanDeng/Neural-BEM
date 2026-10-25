@@ -61,3 +61,43 @@ _Avoid_: projection, trial method
 A comparison of fields and Jacobian at two resolutions on the curve a fit
 returns; the benchmark runs it, the fit does not.
 _Avoid_: qualification, resolution check
+
+**Gauge**:
+The choice of parameterisation of a boundary, meaning the speed at which the
+parameter moves along it. Many coefficient vectors describe the same boundary
+in different gauges. The arclength gauge has constant speed.
+_Avoid_: parameterisation drift (for the gauge itself)
+
+**Speed unevenness**:
+How far the speed |z'| varies along the curve, relative to its mean. It is
+zero in the arclength gauge.
+_Avoid_: level, non-uniformity
+
+**Centred update**:
+The geometry update that keeps the stored coefficients and adds only the
+change of the arclength refit caused by the step. A zero step returns the same
+coefficients. Any existing speed unevenness is kept.
+
+**Uncentred refit**:
+The geometry update that stores the arclength refit of the moved boundary
+directly, so every accepted curve is in the arclength gauge, up to the crop to
+the storage band.
+
+**N-update**:
+The geometry update that moves each point along the unnormalised normal
+N = -i z' (length |z'|) and optionally slides it along the tangent z'. Both
+amounts are real series of the update band, so the step is exact in
+coefficients before the crop.
+_Avoid_: naive update, normal push
+
+**Level penalty**:
+A term added to the data loss that grows with speed unevenness. It acts on the
+unevenness of the curve itself, not on its change, so it is nonzero for a
+zero step.
+_Avoid_: soft constraint, regulariser
+
+**Slider**:
+The geometry update that turns a requested normal push into one linear
+coefficient step. The step moves the boundary normally and keeps the relative
+speed change equal everywhere, so the speed unevenness before the step is kept.
+_Avoid_: tangential correction
