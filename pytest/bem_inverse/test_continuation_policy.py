@@ -49,8 +49,8 @@ def test_prefix_is_exactly_preserved_and_four_shapes_use_full_real_catalog():
                len(o.stage.observations) == len(problem.real) for o in shapes)
     assert not any(o.kind in ('frontier', 'cleanup') or o.cleanup_band for o in revised)
     plan = describe_plan(policy.plan(problem, physics), {'construction': 'spectral'})
-    assert plan['operations'][2]['geometry_update'] == 'similarity'
-    assert plan['operations'][3]['geometry_update'] == 'spectral'
+    assert plan['operations'][1]['geometry_update'] == 'similarity'
+    assert plan['operations'][2]['geometry_update'] == 'spectral'
 
 
 @pytest.mark.parametrize('settings', [dict(shape_bands=(11, 15, 19)),
@@ -62,13 +62,9 @@ def test_non_increasing_or_incomplete_ladders_are_refused(settings):
 
 
 @pytest.mark.parametrize('failure', [False, True])
-def test_runner_switches_only_initial_fit_and_keeps_spectral_audits(monkeypatch, tmp_path, failure):
+def test_runner_switches_only_initial_fit_and_reports_the_final_stage(monkeypatch, tmp_path, failure):
     physics, problem = ModalMuller(Execution(device='cpu')), fixture()
-    calls, audited, inherited = [], [], []
-    def fake_audit(curve, stage, config, problem, physics, update, seconds):
-        assert not isinstance(update, SimilarityUpdate)
-        audited.append((stage.update_modes, curve.coefficients.copy()))
-        return dict(passed=True, relative_residual=np.ones(len(problem.real)), seconds=0., work={})
+    calls, inherited = [], []
     def fake_fit(curve, stage, contrast, update, config, ledger, **kwargs):
         calls.append((stage.label, isinstance(update, SimilarityUpdate)))
         if len(calls) == 1:
@@ -79,16 +75,15 @@ def test_runner_switches_only_initial_fit_and_keeps_spectral_audits(monkeypatch,
             final = curve
         return StageResult(stage.label, final,
             'NUMERICAL_FAILURE' if failure else 'NORMAL_OPTIMIZER_RETURN',
-            'gradient_tolerance', True, 1, 1., .5, [], [], [], detail='fixture' if failure else None)
+            'gradient_tolerance', True, 1, 1., .5, [], [], detail='fixture' if failure else None)
     monkeypatch.setattr(runner, 'fit_stage', fake_fit)
     result = runner.fit(problem, physics=physics, policy=ShapeFrequencyPolicy(), output=tmp_path,
-        geometry_update='spectral', localization_adapter=lambda p, *args: (p.initial, {}),
-        audit_adapter=fake_audit)
+        geometry_update='spectral', localization_adapter=lambda p, *args: (p.initial, {}))
     assert calls[0] == ('initialize_translation_scale', True)
     assert all(not similarity for _, similarity in calls[1:])
     assert len(calls) == (1 if failure else 11)
-    assert len(audited) == 2 and audited[0][0] == 1
-    assert audited[-1][0] == (1 if failure else 95)
+    final = result['final_stage']
+    assert (final['M'], final['fit_geometry_update']) == ((0, 'similarity') if failure else (95, None))
     np.testing.assert_array_equal(result['final_curve']['real'],
         resize(inherited[0], 4 if failure else 192).coefficients.real)
     assert result['outcome'] == ('NUMERICAL_FAILURE' if failure else 'COMPLETED_SCHEDULE')

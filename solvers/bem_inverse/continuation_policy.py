@@ -8,9 +8,9 @@ from .policy import CumulativePolicy
 class ShapeFrequencyPolicy(CumulativePolicy):
     """Keep the frequency ladder, then grow both normal and storage bands.
 
-    Stage-local similarity changes only the initial fitting subspace. The
-    runner retains its selected ordinary geometry update for numerical audits.
-    Full release means the configured validated ceiling, with all gates active.
+    Stage-local similarity changes only the initial fitting subspace; every later
+    stage uses the selected ordinary geometry update. Full release means the
+    configured validated ceiling.
     """
     name: str = 'shape_frequency_continuation'
     version: str = '0.1.0'
@@ -47,7 +47,8 @@ class ShapeFrequencyPolicy(CumulativePolicy):
         final = self._fit(problem, physics, f'full_release_M{self.full_release_band}', problem.real,
             self.full_release_band, self.storage_band, self.shape_quota,
             purpose='Release the full configured validated shape bandwidth')
-        return (prior[0], prior[1], initialization, *prefix, *shapes, final, prior[-1])
+        localize = next(op for op in prior if op.kind == 'localize')
+        return (localize, initialization, *prefix, *shapes, final)
 
     def plan(self, problem, physics):
         plan = super().plan(problem, physics)
@@ -55,5 +56,5 @@ class ShapeFrequencyPolicy(CumulativePolicy):
             'circle-preserving lowest-frequency translation/scale initialization',
             'unchanged damped frequency ladder and explicit real return',
             'four increasing full-catalog shape/storage stages then full configured release',
-            'ordinary selected geometry update retained for all independent audits']
+            'ordinary selected geometry update for every stage after the initialization']
         return plan

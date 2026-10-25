@@ -1,7 +1,7 @@
 """ON-001 Gaussian ambient displacement, Lipschitz-scaled once, then projected.
 
 The raw ambient map has a global lower Lipschitz bound. The projected stored
-curve still requires independent regularity/simplicity/refinement validation.
+curve still requires independent regularity and simplicity validation.
 """
 from .. import checks
 from dataclasses import dataclass, field
@@ -27,7 +27,6 @@ class GaussianSpace:
     labels: tuple
     derivatives: np.ndarray
     base_projection: np.ndarray
-    fine_base_projection: np.ndarray
     count: int
     preparation_seconds: float
     centres: np.ndarray
@@ -122,14 +121,10 @@ def projection_tangent(curve, directions, band, count):
 class GaussianDisplacement:
     name = "gaussian_lipschitz_displacement"
 
-    def __init__(self, length_unit_m, *, width_factor=2., device=None,
-                 projection_tolerance=1e-5, derivative_step_m=1e-7):
+    def __init__(self, length_unit_m, *, width_factor=2., device=None, derivative_step_m=1e-7):
         if not np.isfinite(length_unit_m) or length_unit_m <= 0:
             raise ValueError('length_unit_m must be positive.')
-        if not np.isfinite(projection_tolerance) or projection_tolerance <= 0:
-            raise ValueError('projection_tolerance must be positive.')
         self.length_unit_m = float(length_unit_m)
-        self.projection_tolerance = float(projection_tolerance)
         self.derivative_step_m = float(derivative_step_m)
         checks.require_derivative_step(self.derivative_step_m)
         self.width_factor = float(width_factor)
@@ -141,16 +136,14 @@ class GaussianDisplacement:
         self.last_trial = {}
 
     def settings(self):
-        return dict(name=self.name, length_unit_m=self.length_unit_m,
-            projection_tolerance=self.projection_tolerance, derivative_step_m=self.derivative_step_m,
+        return dict(name=self.name, length_unit_m=self.length_unit_m, derivative_step_m=self.derivative_step_m,
             coordinates='real Fourier coefficients of normal distance h (m) in normalized arclength',
             gauge='arclength refit on every trial',
-            projection_tolerance_meaning='grid refinement, not intentional smoothing',
             construction='z + P_K[R(z+alpha*v_a(z))-R(z)]',
             displacement='v=b+sum w exp(-distance^2/(2 width^2)); alpha=min(1,.8/C), applied once',
             width_factor=self.width_factor, ridge=1e-10, condition_limit=1e12,
             interpolation_relative_tolerance=1e-4, control_count='max(32,2*(2M+1))',
-            raw_lower_lipschitz=.2, projected_validity='sampled area, speed, intersections and grid doubling',
+            raw_lower_lipschitz=.2, projected_validity='sampled area, speed and intersections',
             tangent='analytic derivative of complete discrete projection of interpolated Gaussian field at zero',
             device=self.device)
 
@@ -230,19 +223,18 @@ class GaussianDisplacement:
         dim = len(orders)
         zero = np.zeros((2*curve_modes+1, dim), complex)
         space = GaussianSpace(**coordinates, derivatives=zero, base_projection=zero[:, 0],
-            fine_base_projection=zero[:, 0], count=count, preparation_seconds=0., centres=centres, width=width,
+            count=count, preparation_seconds=0., centres=centres, width=width,
             weights=coefficients[:-1], translation=coefficients[-1], prescribed=prescribed, condition=condition)
         projection_started = perf_counter()
-        coarse = project_batch(curve.values(count)[None], curve_modes, self.device)[0]
-        fine = project_batch(curve.values(2*count)[None], curve_modes, self.device)[0]
+        base = project_batch(curve.values(count)[None], curve_modes, self.device)[0]
         derivatives = projection_tangent(curve, self._velocities(space, count), curve_modes, count)
         self.counts["projection_seconds"] += perf_counter()-projection_started
         elapsed = perf_counter()-started
         self.counts["preparations"] += 1
-        self.counts["geometry_projections"] += 2
+        self.counts["geometry_projections"] += 1
         self.counts["preparation_seconds"] += elapsed
-        return GaussianSpace(**coordinates, derivatives=derivatives, base_projection=coarse,
-            fine_base_projection=fine, count=count, preparation_seconds=elapsed, centres=centres, width=width,
+        return GaussianSpace(**coordinates, derivatives=derivatives, base_projection=base,
+            count=count, preparation_seconds=elapsed, centres=centres, width=width,
             weights=space.weights, translation=space.translation, prescribed=prescribed,
             condition=condition, cache=space.cache)
 
@@ -280,8 +272,8 @@ class GaussianDisplacement:
 def geometry_update(normal_update, *, prepared, settings):
     """Interpolate, scale once, displace, and project a Gaussian ambient field.
 
-    Check both moved curves before arclength projection. Check the final stored
-    curve after grid agreement. Preserve the scaled coordinates in ``a_used``
+    Check the moved curve before arclength projection, then the final stored
+    curve. Preserve the scaled coordinates in ``a_used``
     even if a later check refuses the trial.
     """
     space, method = prepared, settings
@@ -293,7 +285,7 @@ def geometry_update(normal_update, *, prepared, settings):
     try:
         if not np.any(a):
             return curve, dict(a_used=a.tolist(), gaussian_alpha=1., gaussian_C=0.,
-                raw_lower_lipschitz=1., projection_relative=0., maximum_normal_m=0., rms_normal_m=0.)
+                raw_lower_lipschitz=1., maximum_normal_m=0., rms_normal_m=0.)
         w, b = space.weights@a, space.translation@a
         target = space.prescribed@a
         error = float(np.linalg.norm(kernel(space.centres, space.centres, space.width)@w+b-target)
@@ -311,38 +303,26 @@ def geometry_update(normal_update, *, prepared, settings):
             gaussian_width_solver=space.width, gaussian_condition=space.condition,
             gaussian_interpolation_relative=error, raw_lower_lipschitz=1-alpha*C,
             scaling="original fitted field scaled exactly once")
-        projected, raw_values, smoothing = [], [], []
         projection_started = perf_counter()
         sampled_before = method.counts["sampled_seconds"]
-        for count in (space.count, 2*space.count):
-            raw = curve.values(count)+alpha*(method._velocities(space, count)@a)
-            moved = FourierCurve.from_samples(raw, count//2-1)
-            sampled_started = perf_counter()
-            checks.check_area(moved.coefficients)
-            raw_nodes = moved.nodes(count)
-            checks.check_speed(raw_nodes.speeds)
-            checks.check_intersection(raw_nodes.points)
-            method.counts["sampled_seconds"] += perf_counter()-sampled_started
-            p, sm = arclength_quadrature(moved, raw_nodes, space.curve_modes)
-            projected.append(p)
-            raw_values.append(raw)
-            smoothing.append(sm)
-            method.counts["geometry_projections"] += 1
+        raw = curve.values(space.count)+alpha*(method._velocities(space, space.count)@a)
+        moved = FourierCurve.from_samples(raw, space.count//2-1)
+        sampled_started = perf_counter()
+        checks.check_area(moved.coefficients)
+        raw_nodes = moved.nodes(space.count)
+        checks.check_speed(raw_nodes.speeds)
+        checks.check_intersection(raw_nodes.points)
+        method.counts["sampled_seconds"] += perf_counter()-sampled_started
+        refit, smoothing = arclength_quadrature(moved, raw_nodes, space.curve_modes)
+        method.counts["geometry_projections"] += 1
         method.counts["projection_seconds"] += perf_counter()-projection_started-(method.counts["sampled_seconds"]-sampled_before)
-        c = curve.coefficients+projected[0]-space.base_projection
-        f = curve.coefficients+projected[1]-space.fine_base_projection
-        refinement = float(max(abs(values(c-f, 2*space.count))))
-        radius = curve.nodes(space.count).perimeter/(2*np.pi)
-        method.last_trial.update(projection_relative=refinement/radius, projection_error=refinement,
-            raw_maximum_displacement_m=float(max(abs(raw_values[0]-curve.values(space.count))))*method.length_unit_m,
-            intentional_projection_mm=smoothing[0]*method.length_unit_m*1e3)
-        if checks.unresolved_gaussian_projection(refinement, radius, method.projection_tolerance):
-            raise UpdateRefused("unresolved_projection", f"Gaussian projection grid refinement {refinement/radius:g}")
-        candidate = FourierCurve(c)
-        raw_curve = FourierCurve.from_samples(raw_values[0], space.count//2-1)
-        alpha_angles, _ = arclength_angles(raw_curve.nodes(space.count))
+        candidate = FourierCurve(curve.coefficients+refit-space.base_projection)
+        method.last_trial.update(
+            raw_maximum_displacement_m=float(max(abs(raw-curve.values(space.count))))*method.length_unit_m,
+            intentional_projection_mm=smoothing*method.length_unit_m*1e3)
+        alpha_angles, _ = arclength_angles(raw_nodes)
         represented = np.exp(1j*alpha_angles[:, None]*candidate.modes)@candidate.coefficients
-        method.last_trial['raw_projected_displacement_mm'] = float(max(abs(represented-raw_values[0])))*method.length_unit_m*1e3
+        method.last_trial['raw_projected_displacement_mm'] = float(max(abs(represented-raw)))*method.length_unit_m*1e3
         sampled_started = perf_counter()
         checks.check_area(candidate.coefficients)
         candidate_nodes = candidate.nodes(grid_size(candidate.band))

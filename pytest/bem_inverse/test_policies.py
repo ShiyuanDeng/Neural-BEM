@@ -39,11 +39,11 @@ def test_exact_entries_change_only_how_work_is_done():
 def test_archived_recipes_resolve_to_their_recorded_settings():
     recipe = R.recipe('four_phase')
     assert (recipe.schedule, recipe.pipeline) == ('four_phase', 'modal_fixed')
-    assert recipe.options == dict(required_accuracy=.003, damping_rule='agreement', avoid_terminal_linearization=True)
+    assert recipe.options == dict(damping_rule='agreement', avoid_terminal_linearization=True)
     assert recipe.execution == dict(audit_frequency_batch=2)
-    assert R.recipe('decision_gate').options == dict(required_accuracy=.003, resolution_gate='decision')
-    assert R.recipe('adaptive_resolution').pipeline == 'modal_response'
-    assert R.recipe('adaptive_resolution').execution == dict(
+    assert R.recipe('compact_release').options == dict(damping_rule='agreement', avoid_terminal_linearization=True,
+                                                       release_storage='compact')
+    assert R.recipe('compact_release').execution == dict(
         audit_frequency_batch=2, validity_order='sampled_first', stage_entry_reuse=True)
 
 
@@ -53,7 +53,7 @@ def test_build_applies_the_contract_uniformly():
         assert isinstance(built, ShapeFrequencyPolicy if name == 'four_phase' else CumulativePolicy)
         assert {k: getattr(built, k) for k in R.CONTRACT} == R.BENCHMARK_CONTRACT
     with pytest.raises(ValueError, match='Contract fields'):
-        R.build('baseline', required_accuracy=.001)
+        R.build('baseline', audit_seconds=30.)
     with pytest.raises(ValueError, match='not a policy option'):
         R.Policy('x', 'baseline', 'x', 'candidate', options=(('fit_seconds', 1.),))
     with pytest.raises(ValueError, match='not a policy execution option'):
@@ -79,7 +79,8 @@ def test_every_policy_plans_on_a_problem():
     problem, physics = fixture(), ModalMuller(Execution(device='cpu'))
     for name in R.POLICIES:
         plan = R.build(name, **R.BENCHMARK_CONTRACT).plan(problem, physics)
-        assert plan['operations'][0]['operation'] == 'audit' and plan['operations'][-1]['operation'] == 'audit'
+        assert plan['operations'][0]['operation'] == 'localize'
+        assert not any(op['operation'] == 'audit' for op in plan['operations'])
 
 
 def test_compact_storage_changes_only_full_catalog_storage():

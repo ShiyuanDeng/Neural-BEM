@@ -292,10 +292,7 @@ class ModalMuller:
                     refinement=f'raise K_trace by {s.trace_step}; '
                                + ('hold coefficient workspace fixed; ' if s.coefficient_workspace else
                                   f'raise coefficient window by {s.trace_step}; ')+
-                               'refuse candidates outside per-frequency tolerance')
-
-    def refine_resolution(self, resolution):
-        return token(trace_cutoff(resolution)+self.settings.trace_step)
+                               'frontier and endpoint audit only')
 
     def ordered_calls(self, function, items):
         return F.ordered_calls(function, items, threads=self.execution.frequency_threads)

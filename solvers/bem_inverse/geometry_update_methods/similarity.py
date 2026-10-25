@@ -6,7 +6,7 @@ from time import perf_counter
 import numpy as np
 
 from ..continuation.geometry import FourierCurve, grid_size, integer
-from ..errors import UpdateRefused, refusal_from_value_error
+from ..errors import UpdateRefused
 
 
 @dataclass(frozen=True)
@@ -35,7 +35,6 @@ class SimilarityUpdate:
         if not np.isfinite(length_unit_m) or length_unit_m <= 0:
             raise ValueError('length_unit_m must be positive.')
         self.length_unit_m = float(length_unit_m)
-        self.projection_tolerance = 1e-7
         self.counts = dict(preparations=0, preparation_seconds=0.,
                            trial_constructions=0, trial_seconds=0., refused_trials=0)
 
@@ -127,8 +126,7 @@ def geometry_update(normal_update, *, prepared, settings):
             c = curve.coefficients*factor
             c[curve.band] = curve.coefficients[curve.band]+complex(*step[:2])/method.length_unit_m
             candidate = FourierCurve(c)
-        return candidate, dict(method.measure(space, step), projection_error=0.,
-            projection_relative=0., refits=0, finite_path=method.name,
+        return candidate, dict(method.measure(space, step), refits=0, finite_path=method.name,
             translation_m=step[:2].tolist(), scale_factor=factor,
             equivalent_radius_m=space.radius_m*factor, intrinsic_validity_preserved=True)
     except UpdateRefused:

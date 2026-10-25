@@ -15,33 +15,29 @@ class FitStage:
     label: str
     observations: tuple  # inverse.Observation, one per active frequency (F)
     weights: tuple  # objective weight per active frequency
-    discrepancy_tolerances: tuple  # production/refined agreement per frequency
     update_modes: int  # M
     curve_modes: int  # K
-    nodes: int  # N for the objective and Jacobian
-    refined_nodes: int  # acceptance and numerical-regime check
+    nodes: int  # resolution token for the objective and Jacobian (N, or 8*K_trace)
     iterations: int  # LM iteration cap
     quota: Optional[int] = None  # work units for this stage
     resolution_kind: str = 'nodal'
 
     def __post_init__(self):
         count = len(self.observations)
-        if not count or len(self.weights) != count or len(self.discrepancy_tolerances) != count:
-            raise ValueError("One weight and tolerance is required per active observation.")
+        if not count or len(self.weights) != count:
+            raise ValueError("One weight is required per active observation.")
         if any(not np.isfinite(w) or w < 0 for w in self.weights) or not any(self.weights):
             raise ValueError("Weights must be finite, nonnegative and not all zero.")
-        for name in ("curve_modes", "nodes", "refined_nodes"):
+        for name in ("curve_modes", "nodes"):
             integer(getattr(self, name), name)
         integer(self.update_modes, "update_modes", minimum=0)
         integer(self.iterations, "iterations", minimum=0)
         if self.resolution_kind not in ('nodal', 'modal'):
             raise ValueError('resolution_kind must be nodal or modal.')
-        if self.refined_nodes <= self.nodes:
-            raise ValueError('Resolution must refine strictly.')
-        if self.resolution_kind == 'modal' and (self.nodes % 8 or self.refined_nodes % 8):
+        if self.resolution_kind == 'modal' and self.nodes % 8:
             raise ValueError('Modal resolution tokens must be positive multiples of eight.')
         if self.resolution_kind == 'nodal' and self.nodes <= 2 * self.curve_modes:
-            raise ValueError("Nodes must resolve the curve band and refine strictly.")
+            raise ValueError("Nodes must resolve the curve band.")
         if self.quota is not None:
             integer(self.quota, "quota")
 
@@ -60,9 +56,6 @@ class BackendConfig:
     relative_step_tolerance: float = 1e-7
     scaling_floor: float = 1.0
     step_bounds_m: tuple = (0.012, 0.018, 0.006)
-    acceptance_absolute_margin: float = 1e-14
-    acceptance_relative_margin: float = 1e-8
-    cross_resolution_factor: float = 5.0
     residual_floor: float = 1e-12
     domain_box: Optional[tuple] = None  # ((xmin, ymin), (xmax, ymax)) in package units
     # "coefficient" clips each coordinate to `step_bounds_m` (SPD's rule, the
@@ -88,7 +81,6 @@ class BackendConfig:
     log_model: bool = False
     # ON-001 opt-in; sampled reach is a proxy, never an admissibility certificate.
     reach_fraction: float = 0.0
-    resolution_gate: str = "absolute"
     # CI-SPD feedback is opt-in until recovery retention is measured.
     damping_floor_relative: float = 1e-6
     geometry_proposal_cap: int = 2000
@@ -98,8 +90,6 @@ class BackendConfig:
     plain_progress_exit: bool = False
 
     def __post_init__(self):
-        if self.resolution_gate not in ("absolute", "decision"):
-            raise ValueError("resolution_gate must be 'absolute' or 'decision'")
         if not 0 <= self.reach_fraction <= 1:
             raise ValueError("reach_fraction must lie in [0, 1]")
         if self.damping_rule not in ("schedule", "hanke", "agreement"):
@@ -145,14 +135,10 @@ class StageResult:
     final_loss: float
     history: list
     trials: list
-    acceptance_checks: list
     detail: Optional[str] = None
     work: dict = field(default_factory=dict)
     seconds: float = 0.0
     checkpoint: object = field(default=None, repr=False)
-    resolution_events: list = field(default_factory=list)
-    final_nodes: Optional[int] = None
-    final_refined_nodes: Optional[int] = None
     physics_failures: list = field(default_factory=list)
     geometry_proposals: int = 0
     final_entry: object = field(default=None, repr=False)
@@ -164,26 +150,23 @@ class StageResult:
 class StageEntry:
     """An evaluated stage endpoint offered to the next stage for exact reuse.
 
-    The production prediction keeps its factorized forward states, so the next
-    stage builds its own Jacobian without new solves. ``refined_prediction`` is
-    present when the stage already validated this curve. Reuse requires the same
-    curve bytes, active catalog (identical objects), contrast, physics service and
-    both resolutions; the ledger is charged exactly as the replaced solves.
+    The prediction keeps its factorized forward states, so the next stage builds
+    its own Jacobian without new solves. Reuse requires the same curve bytes,
+    active catalog (identical objects), contrast, physics service and resolution;
+    the ledger is charged exactly as the replaced solves.
     """
     curve_bytes: bytes = field(repr=False)
     band: int
     nodes: int
-    refined_nodes: int
     observations: tuple = field(repr=False)
     contrast: float
     physics: object = field(repr=False)
     prediction: np.ndarray = field(repr=False)
     forwards: tuple = field(repr=False)
-    refined_prediction: object = field(default=None, repr=False)
 
     def matches(self, curve, stage, contrast, physics):
         return bool(curve.band == self.band and curve.coefficients.tobytes() == self.curve_bytes and
-                    stage.nodes == self.nodes and stage.refined_nodes == self.refined_nodes and
+                    stage.nodes == self.nodes and
                     len(stage.observations) == len(self.observations) and
                     all(a is b for a, b in zip(stage.observations, self.observations)) and
                     float(contrast) == self.contrast and physics is self.physics and
@@ -195,9 +178,8 @@ class StageEntry:
 class StageCheckpoint:
     """Accepted-state restart, retaining the exact linearization and next damping.
 
-    No LU factors are needed until the next accepted candidate. Cached refined
-    values are part of the state so pause/resume does not add solves or reset
-    quotas. The caller must restore the matching ledger before resuming.
+    No LU factors are needed until the next accepted trial curve. The caller
+    must restore the matching ledger before resuming.
     """
     signature: str
     stage: FitStage
@@ -211,8 +193,6 @@ class StageCheckpoint:
     work: dict
     history: list
     trials: list
-    checks: list
-    refined_cache: dict
 
 
 
@@ -220,30 +200,6 @@ def checkpoint_signature(stage, contrast, config, update):
     # Hashing pickle bytes does not deserialize or execute any external input.
     return hashlib.sha256(pickle.dumps((stage, float(contrast), config, update.settings()),
                                       protocol=5)).hexdigest()
-
-
-
-@dataclass(frozen=True)
-class ResolutionResponse:
-    """One opt-in promotion followed by ordinary backtracking at the upper pair.
-
-    The caller supplies the same physics service at the finer execution profile
-    (RB-001 uses one frequency worker). This mechanism is for ordinary losses.
-    """
-    production_nodes: int = 1024
-    refined_nodes: int = 2048
-    physics: object = field(default=None, repr=False, compare=False)
-
-    def __post_init__(self):
-        if self.production_nodes <= 0 or self.refined_nodes <= self.production_nodes:
-            raise ValueError('Resolution response must refine strictly')
-
-
-
-class _PromoteBase(Exception):
-    pass
-
-
 
 
 

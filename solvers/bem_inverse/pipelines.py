@@ -1,27 +1,20 @@
 """Named inverse pipelines: one recipe per physics, with the fixes that apply to it.
 
-``runner.fit`` has interchangeable slots: physics, geometry update and the
-response to an unresolved trial. A pipeline fills those slots by name and adds
-no numerics. Policy, start and localization stay with the caller, so every
-pipeline sees the same stages and data.
+``runner.fit`` has interchangeable slots: physics and geometry update. A pipeline
+fills those slots by name and adds no numerics. Policy, start and localization
+stay with the caller, so every pipeline sees the same stages and data.
 
-| Name | Physics | Geometry update | Unresolved trial |
-|---|---|---|---|
-| ``nodal_baseline`` | nodal Kress | spline (CI-001) | hard stop (CI-001) |
-| ``nodal_fixed`` | nodal Kress | sampled spectral (batched preparation) | promote once to N1024/2048 (RB-001) |
-| ``modal_fixed`` | modal Müller (scaled Graf, finer profile) | sampled spectral | hard stop |
-| ``modal_response`` | modal Müller | sampled spectral | promote once to K_trace 128/160 (opt-in, PS-001) |
+| Name | Physics | Geometry update |
+|---|---|---|
+| ``nodal_baseline`` | nodal Kress | spline (CI-001) |
+| ``nodal_fixed`` | nodal Kress | sampled spectral (batched preparation) |
+| ``modal_fixed`` | modal Müller (scaled Graf, finer profile) | sampled spectral |
 
-The nodal response (RB-001) is qualified. Modal resolutions are tokens 8*K_trace,
-and a modal stage's own profile follows its storage band; ``modal_response``
-promotes an unresolved trial once to the K_geometry=192 profile (tokens
-1024/1280) and rejects unresolved trials at that ceiling instead of stopping.
-It reuses the same modal service and is unqualified until its PS-001 screen.
-Omitting a pipeline keeps ``fit``'s legacy default.
+Every pipeline accepts a trial curve when its loss decreases; none re-solves at a
+finer resolution. Omitting a pipeline keeps ``fit``'s legacy default.
 """
-from dataclasses import asdict, dataclass, replace
+from dataclasses import asdict, dataclass
 
-from .stage_types import ResolutionResponse
 from .geometry_selection import GEOMETRY_UPDATES
 from .physics import Execution, make_backend
 from .runner import fit as _fit
@@ -32,7 +25,6 @@ class Pipeline:
     name: str
     solver: str
     geometry_update: str
-    resolution_response: tuple = None  # (production, refined) nodes after one promotion
     description: str = ''
 
     def __post_init__(self):
@@ -40,26 +32,18 @@ class Pipeline:
             raise ValueError(f'Unknown solver {self.solver!r}')
         if self.geometry_update not in GEOMETRY_UPDATES:
             raise ValueError(f'Unknown geometry update {self.geometry_update!r}; choose from {GEOMETRY_UPDATES}')
-        if self.resolution_response is not None:
-            production, refined = self.resolution_response
-            ResolutionResponse(production, refined)  # validates strict refinement
-            if self.solver == 'modal_muller' and (production % 8 or refined % 8):
-                raise ValueError('modal_muller resolution tokens are multiples of 8 (8*K_trace)')
 
     def settings(self):
         return asdict(self)
 
 
 PIPELINES = {p.name: p for p in (
-    Pipeline('nodal_baseline', 'nodal_kress', 'spline', None,
-             'CI-001 baseline: nodal Kress, spline projected update, hard stop on an unresolved trial'),
-    Pipeline('nodal_fixed', 'nodal_kress', 'spectral', (1024, 2048),
-             'Nodal Kress with sampled spectral update and RB-001 resolution response'),
-    Pipeline('modal_fixed', 'modal_muller', 'spectral', None,
-             'Node-free: modal Müller physics, sampled spectral update; hard stop on an unresolved trial'),
-    Pipeline('modal_response', 'modal_muller', 'spectral', (1024, 1280),
-             'modal_fixed with one promotion of an unresolved trial to K_trace 128/160 (the K_geometry=192 '
-             'profile); unresolved trials at that ceiling are rejected, not fatal'),
+    Pipeline('nodal_baseline', 'nodal_kress', 'spline',
+             'CI-001 baseline: nodal Kress, spline projected update'),
+    Pipeline('nodal_fixed', 'nodal_kress', 'spectral',
+             'Nodal Kress with sampled spectral update'),
+    Pipeline('modal_fixed', 'modal_muller', 'spectral',
+             'Node-free: modal Müller physics, sampled spectral update'),
 )}
 
 
@@ -79,45 +63,17 @@ def physics(pipeline, execution=None):
     return make_backend(pipeline.solver, execution or Execution())
 
 
-def resolution_response(pipeline, execution=None):
-    """The response with its finer physics service, or None. RB-001/FM-005 use the same construction."""
-    pipeline = get(pipeline)
-    if pipeline.resolution_response is None:
-        return None
-    production, refined = pipeline.resolution_response
-    if pipeline.solver == 'modal_muller':
-        return ResolutionResponse(production, refined, None)  # tokens select K_trace in the same service
-    finer = replace(execution or Execution(), resolution=production)
-    return ResolutionResponse(production, refined, make_backend(pipeline.solver, finer))
-
-
-def promoted(result, pipeline):
-    """Whether a stage promoted its resolution (fit records this itself only on resume).
-
-    Recorded promotion events decide when present: a modal stage can start at the ceiling
-    profile because of its own storage band. Older receipts fall back to stage resolutions.
-    """
-    pipeline = get(pipeline)
-    if pipeline.resolution_response is None:
-        return False
-    stages = result.get('stages', ())
-    if any('resolution_events' in row for row in stages):
-        return any(event.get('action') == 'promoted' for row in stages for event in row.get('resolution_events', ()))
-    return any(row.get('nodes') == pipeline.resolution_response[0] for row in stages)
-
-
 def fit(problem, pipeline, *, execution=None, **options):
     """``runner.fit`` with the pipeline's slots filled; other options pass through unchanged.
 
-    The pipeline owns ``solver``, ``physics``, ``geometry_update`` and ``resolution_response``.
+    The pipeline owns ``solver``, ``physics`` and ``geometry_update``.
     """
     pipeline = get(pipeline)
-    owned = {'solver', 'physics', 'geometry_update', 'resolution_response', 'geometry_adapter'} & set(options)
+    owned = {'solver', 'physics', 'geometry_update', 'geometry_adapter'} & set(options)
     if owned:
         raise ValueError(f'The pipeline sets {sorted(owned)}; do not pass them')
     execution = execution or Execution()
     result = _fit(problem, solver=pipeline.solver, execution=execution, physics=physics(pipeline, execution),
-                  geometry_update=pipeline.geometry_update,
-                  resolution_response=resolution_response(pipeline, execution), **options)
-    result.update(pipeline=pipeline.settings(), resolution_promoted=promoted(result, pipeline))
+                  geometry_update=pipeline.geometry_update, **options)
+    result.update(pipeline=pipeline.settings())
     return result

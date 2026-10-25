@@ -21,7 +21,6 @@ class Prepared:
     labels: tuple
     derivatives: np.ndarray
     base_projection: np.ndarray
-    fine_base_projection: np.ndarray
     count: int
     preparation_seconds: float
     cache: dict = field(default_factory=dict, compare=False)
@@ -51,13 +50,10 @@ def project(curve, coefficients, band, count, length_unit_m, *, validate=False):
 class ProjectedUpdate:
     name = "centred_state_band_projection"
 
-    def __init__(self, length_unit_m, *, projection_tolerance=1e-5, derivative_step_m=1e-7):
+    def __init__(self, length_unit_m, *, derivative_step_m=1e-7):
         if not np.isfinite(length_unit_m) or length_unit_m <= 0:
             raise ValueError('length_unit_m must be positive.')
-        if not np.isfinite(projection_tolerance) or projection_tolerance <= 0:
-            raise ValueError('projection_tolerance must be positive.')
         self.length_unit_m = float(length_unit_m)
-        self.projection_tolerance = float(projection_tolerance)
         self.derivative_step_m = float(derivative_step_m)
         checks.require_derivative_step(self.derivative_step_m)
         self.counts = dict(preparations=0, geometry_projections=0, trial_constructions=0,
@@ -65,11 +61,9 @@ class ProjectedUpdate:
 
     def settings(self):
         return dict(name=self.name, length_unit_m=self.length_unit_m,
-                    projection_tolerance=self.projection_tolerance,
                     coordinates='real Fourier coefficients of normal distance h (m) in normalized arclength',
                     gauge='arclength refit on every trial', derivative_step_m=self.derivative_step_m,
-                    construction='z + P_K[A(z+h n)-A(z)]',
-                    projection_tolerance_meaning='grid refinement, not intentional smoothing')
+                    construction='z + P_K[A(z+h n)-A(z)]')
 
     def _project(self,*args,**kwargs):
         self.counts['geometry_projections']+=1
@@ -90,7 +84,6 @@ class ProjectedUpdate:
         dim=len(plain['orders'])
         zeros=np.zeros(dim)
         base=self._project(curve,zeros,curve_modes,count,self.length_unit_m)[0]
-        fine=self._project(curve,zeros,curve_modes,2*count,self.length_unit_m)[0]
         derivatives=[]
         for j in range(dim):
             step=np.eye(dim)[j]*self.derivative_step_m
@@ -101,7 +94,7 @@ class ProjectedUpdate:
         self.counts['preparations']+=1
         self.counts['preparation_seconds']+=elapsed
         return Prepared(**plain,derivatives=np.stack(derivatives,axis=1),
-            base_projection=base,fine_base_projection=fine,count=count,preparation_seconds=elapsed)
+            base_projection=base,count=count,preparation_seconds=elapsed)
 
     def velocities(self,space,nodes):
         vectors=values(space.derivatives,nodes.num_nodes)
@@ -141,25 +134,16 @@ def geometry_update(normal_update, *, prepared, settings):
     a=settings._checked(prepared,normal_update)
     try:
         if not np.any(a):
-            return prepared.curve,dict(projection_error=0.,projection_relative=0.,
-                maximum_normal_m=0.,rms_normal_m=0.,refits=2,speed_ratio=speed_ratio(prepared.curve),
-                intentional_projection_mm=0.,finite_path=settings.name)
-        coarse,smoothing=settings._project(prepared.curve,a,prepared.curve_modes,prepared.count,
-                                       settings.length_unit_m,validate=True)
-        fine,_=settings._project(prepared.curve,a,prepared.curve_modes,2*prepared.count,
-                             settings.length_unit_m,validate=True)
-        c=prepared.curve.coefficients+coarse-prepared.base_projection
-        f=prepared.curve.coefficients+fine-prepared.fine_base_projection
-        error=float(np.max(np.abs(values(c-f,2*prepared.count))))
-        radius=prepared.curve.nodes(prepared.count).perimeter/(2*np.pi)
-        checks.require_projection_agreement(error, radius, settings.projection_tolerance)
-        candidate=FourierCurve(c)
+            return prepared.curve,dict(maximum_normal_m=0.,rms_normal_m=0.,refits=1,
+                speed_ratio=speed_ratio(prepared.curve),intentional_projection_mm=0.,finite_path=settings.name)
+        refit,smoothing=settings._project(prepared.curve,a,prepared.curve_modes,prepared.count,
+                                      settings.length_unit_m,validate=True)
+        candidate=FourierCurve(prepared.curve.coefficients+refit-prepared.base_projection)
         checks.check_area(candidate.coefficients)
         final_nodes = candidate.nodes(grid_size(candidate.band))
         checks.check_speed(final_nodes.speeds)
         checks.check_intersection(final_nodes.points)
-        return candidate,dict(projection_error=error,projection_relative=error/radius,
-            **settings.measure(prepared,a),speed_ratio=speed_ratio(candidate),refits=2,
+        return candidate,dict(**settings.measure(prepared,a),speed_ratio=speed_ratio(candidate),refits=1,
             intentional_projection_mm=smoothing*settings.length_unit_m*1e3,finite_path=settings.name)
     except UpdateRefused:
         settings.counts['refused_trials']+=1

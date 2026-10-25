@@ -1,16 +1,11 @@
-"""Exact-geometry reuse and accuracy-selected nodal stage profiles."""
+"""Exact-geometry reuse and the band-matched nodal profile seed."""
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import replace
-from types import SimpleNamespace
 import numpy as np
 import pytest
-from bem_inverse.physics import Execution, NodalKress, Prediction
+from bem_inverse.physics import Execution, NodalKress
 from bem_inverse.nodal_geometry import GeometryCache
-from bem_inverse.nodal_resolution import select_stage
 from bem_inverse.continuation.geometry import FourierCurve
-from bem_inverse.stage_types import FitStage, BackendConfig
-from bem_inverse.work import Ledger
-from bem_inverse.errors import NumericalFailure
 from bem_inverse.geometry_update_methods.spline import ProjectedUpdate
 from bem_inverse.continuation.geometry import resize
 from bem_inverse.continuation.geometry_runtime import geometry_runtime
@@ -44,27 +39,6 @@ def test_profile_seed_resolves_geometry_and_defaults_keep_floor():
     assert NodalKress(Execution()).resolution_profile(8)['production'] == 512
 
 
-@pytest.mark.parametrize('refuse', [False, True])
-def test_selection_charges_escalation_and_refusal(refuse):
-    observations = (SimpleNamespace(scattered=np.array([1.+0j])),)
-    stage = FitStage('selection', observations, (1.,), (1e-7,), 1, 8, 130, 194, 1)
-    class Physics:
-        def evaluate(self, curve, observation, contrast, resolution):
-            value = 1.+(1./resolution if refuse or resolution == 130 else 0.)
-            return Prediction(np.array([value]), {}, resolution)
-        def derivative(self, prediction, update, space):
-            return np.array([[1.+0j]])
-    ledger = Ledger(cap=1000, seconds=10, endpoint_reserve=0)
-    update = SimpleNamespace(prepare=lambda *args: None)
-    if refuse:
-        with pytest.raises(NumericalFailure):
-            select_stage(Physics(), object(), stage, BackendConfig(), 4., update, ledger)
-        assert ledger.units > 8
-    else:
-        chosen, receipt = select_stage(Physics(), object(), stage, BackendConfig(), 4., update, ledger)
-        assert (chosen.nodes, chosen.refined_nodes) == (194, 258)
-        assert receipt['escalated'] and ledger.units == 8
-
 
 @pytest.mark.skipif(not CA.available(), reason='CUDA unavailable')
 @pytest.mark.parametrize('damped', [False, True])
@@ -95,26 +69,3 @@ def test_cached_fields_jacobian_and_full_trial_match_reference(damped):
             fd = (predictions[0]-predictions[1])/(2*eps)
             assert np.linalg.norm(fd-jb@direction)/np.linalg.norm(fd) < 1e-3
     assert cached.receipt()['geometry_cache']['hits'] >= 1
-
-
-@pytest.mark.skipif(not CA.available(), reason='CUDA unavailable')
-@pytest.mark.parametrize('backend_name', ['nodal_kress', 'opaque_probe'])
-def test_native_profile_audit_is_checked_against_independent_reference(backend_name):
-    from experiments.benchmark import campaign as c
-    from bem_inverse.runner import audit
-    from bem_inverse.policy import CumulativePolicy
-    problem = c.problem('circle__c4')
-    physics = NodalKress(Execution(device='cuda', resolution=130, nodal_geometry_reuse='per_curve',
-                                  nodal_resolution_profile='band_matched'))
-    physics.name = backend_name  # reference tokens belong to the service, not runner name checks
-    op = next(o for o in CumulativePolicy().operations(problem, physics) if o.kind == 'fit')
-    problem = replace(problem, real=(problem.real[0], problem.real[-1]),
-                      damped=(problem.damped[0], problem.damped[-1]))
-    curve = resize(problem.initial, op.stage.curve_modes)
-    with geometry_runtime('both'):
-        row = audit(curve, physics.audit_stage(op.stage), op.optimizer, problem, physics,
-                    ProjectedUpdate(problem.length_unit_m), 60)
-    assert row['passed'], row
-    assert row['production_resolution'] == 130
-    assert (row['reference_nodes'], row['reference_refined_nodes']) == (1024, 2048)
-    assert row['work']['work_units'] == 8*len(problem.real)

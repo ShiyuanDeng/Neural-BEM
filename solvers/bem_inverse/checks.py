@@ -1,4 +1,4 @@
-"""Mathematical and numerical conditions, ordered by A1–C12 and endpoint.
+"""Mathematical and numerical conditions, ordered by A1–C12.
 
 Each check exposes its quantity, comparison and existing threshold source.
 Callers retain the original invocation point and response. No check solves
@@ -255,13 +255,6 @@ def require_refit_curve(nodes):
         raise ValueError("Displaced curve self-intersects.")
 
 
-def require_projection_agreement(error, radius, tolerance):
-    """Grid/doubled-grid position discrepancy, scaled by perimeter radius."""
-    from .errors import UpdateRefused
-    if error/radius > tolerance:
-        raise UpdateRefused('unresolved_projection', f'geometry grid refinement {error/radius:g}')
-
-
 def require_spline_projection(error, tolerance, perimeter):
     if error > tolerance * perimeter / (2 * np.pi):
         raise ValueError(f"Arclength projection unresolved: {error / (perimeter / (2*np.pi)):.3g} relative.")
@@ -332,10 +325,7 @@ def _self_intersections(points, relative_tolerance):
     return int(np.count_nonzero(proper | touching))
 
 
-# C11. Production/refined agreement and acceptance.
-
-def relative_columns(a, b):
-    return np.linalg.norm(a - b, axis=0) / np.linalg.norm(b, axis=0)
+# C11. Trial acceptance.
 
 
 def require_finite_trial(candidate):
@@ -346,46 +336,6 @@ def require_finite_trial(candidate):
 def production_nondecreasing(candidate_loss, current_loss):
     # Retain >=, including its original NaN behavior; finiteness is checked first.
     return candidate_loss >= current_loss
-
-
-def fields_agree(discrepancy, tolerances):
-    return bool(np.all(np.isfinite(discrepancy)) and np.all(discrepancy <= tolerances))
-
-
-def fields_unresolved(discrepancy, tolerances):
-    return not np.all(np.isfinite(discrepancy)) or np.any(discrepancy > tolerances)
-
-
-def acceptance(base, candidate, refined_base, refined_candidate, config):
-    dp, dr = base - candidate, refined_base - refined_candidate
-    margin = max(config.acceptance_absolute_margin + config.acceptance_relative_margin * base,
-                 config.acceptance_absolute_margin + config.acceptance_relative_margin * refined_base)
-    uncertainty = config.cross_resolution_factor * abs(dp - dr)
-    return dict(production_gain=dp, refined_gain=dr, margin=margin,
-                disagreement_allowance=uncertainty, accepted=bool(min(dp, dr) > margin + uncertainty))
-
-
-def resolution_check(base, candidate, refined_base, refined_candidate, stage, config):
-    """Gain decision and field qualification, retaining the pre-gate decision."""
-    states = (base, candidate, refined_base, refined_candidate)
-    if any(s is None for s in states):
-        raise NumericalFailure("production or refined evaluation failed")
-    if any(not np.isfinite(s.loss) or not np.isfinite(s.prediction).all() for s in states):
-        raise NumericalFailure("non-finite production or refined evaluation")
-    discrepancy = relative_columns(candidate.prediction, refined_candidate.prediction)
-    if not np.isfinite(discrepancy).all():
-        raise NumericalFailure("non-finite prediction discrepancy")
-    row = dict(acceptance(*(s.loss for s in states), config),
-               prediction_discrepancy=discrepancy.tolist(),
-               refined_base_loss=refined_base.loss, refined_candidate_loss=refined_candidate.loss,
-               gate=config.resolution_gate,
-               prediction_discrepancy_ratios=(discrepancy/np.asarray(stage.discrepancy_tolerances)).tolist())
-    accurate = bool(np.all(discrepancy <= stage.discrepancy_tolerances))
-    if not accurate:
-        row['numerical_obstruction'] = True
-        if config.resolution_gate == 'absolute':
-            row['accepted'] = False
-    return row, accurate
 
 
 # C12. Damping feedback, stopping and continuation.
@@ -479,31 +429,9 @@ def inaccurate_gaussian_direction(error):
     return error > 1e-4
 
 
-def unresolved_gaussian_projection(refinement, radius, tolerance):
-    return refinement/radius > tolerance
-
-
 def invalid_similarity_radius(radius):
     return not np.isfinite(radius) or radius <= 0
 
 
 def invalid_similarity_factor(factor):
     return not np.isfinite(factor) or factor <= 0
-
-
-# Optional C11. Stage-entry nodal qualification.
-def nodal_profile_passed(fields, derivatives, tolerances):
-    return bool(np.all(np.isfinite(fields)) and np.all(np.isfinite(derivatives)) and
-                np.all(fields <= tolerances) and np.all(derivatives <= 1e-3))
-
-
-# Endpoint. Independent field, Jacobian and complete-trial checks.
-
-def endpoint_passed(fields, field_tolerances, derivative, full_trial_error):
-    """Existing all-frequency field, per-column Jacobian and directional FD tests."""
-    return bool(np.all(fields <= field_tolerances) and
-                max(derivative) <= 1e-3 and full_trial_error <= 1e-3)
-
-
-def endpoint_reference_passed(passed, fields, field_tolerances, derivative):
-    return bool(passed and np.all(fields <= field_tolerances) and np.all(derivative <= 1e-3))

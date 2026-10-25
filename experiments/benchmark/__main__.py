@@ -83,9 +83,7 @@ def main():
         print(readable_plan(plan))
         if args.pipeline:
             p = P.get(args.pipeline)
-            print(f'\nPipeline {p.name}: {p.description}. Resolution response: '
-                  + ('none (hard stop)' if p.resolution_response is None else
-                     'one promotion to N{}/{}'.format(*p.resolution_response)))
+            print(f'\nPipeline {p.name}: {p.description}.')
         if args.localization == 'none':
             print('\nNOTE: --localization none replaces operation "damped_localization" with keep_start '
                   '(no grid search); the 0.25 GHz warm-up then moves the start circle.')

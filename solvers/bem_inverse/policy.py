@@ -20,13 +20,8 @@ class LocalizationRule:
     radius_max_m: float = .075
     radius_step_m: float = .001
     batch_centers: int = 800
-    max_ranked: int = 5000
-    max_starts: int = 5
-    distinct_center_m: float = .008
-    distinct_radius_m: float = .004
     refinement_steps_m: tuple = (.004, .004, .001)
     refinement_iterations: int = 12
-    qualification_tolerance: float = 1e-7
     cutoff_padding: int = 30
 
 
@@ -67,15 +62,11 @@ class CumulativePolicy:
     version: str = '1.0.0'
     fit_units: int = 13412
     fit_seconds: float = 1800.
-    audit_seconds: float = 300.
     # Optional ON-001 rules. Defaults preserve the established recipe.
-    audit_aggregate_seconds: object = None
-    required_accuracy: object = None
     reach_fraction: float = 0.0
     log_model: bool = False
     damping_rule: str = 'schedule'
     avoid_terminal_linearization: bool = False
-    resolution_gate: str = 'absolute'
     # 'fixed' stores every full-catalog stage at storage_band (the established recipe);
     # 'compact' stores each at K_geometry=2M+2, as the frequency-ladder prefix does. The
     # backend derives its trace cutoff from storage, so compact stages also solve smaller
@@ -104,7 +95,7 @@ class CumulativePolicy:
 
     def _config(self, problem, observations):
         config = BackendConfig(domain_box=problem.domain_box, log_model=self.log_model,
-                               reach_fraction=self.reach_fraction, resolution_gate=self.resolution_gate,
+                               reach_fraction=self.reach_fraction,
                                damping_rule=self.damping_rule, avoid_terminal_linearization=self.avoid_terminal_linearization)
         count = len(observations)
         weights = tuple(np.ones(count)/count)
@@ -120,13 +111,11 @@ class CumulativePolicy:
              purpose='Release shape detail', cleanup=None):
         config, weights, expected = self._config(problem, observations)
         profile = physics.resolution_profile(storage)
-        stage = FitStage(label, tuple(observations), weights,
-            tuple(1e-5 if o.frequency_hz <= .5e9 else 1e-7 for o in observations),
-            band, storage, profile['production'], profile['refined'], iterations, quota,
+        stage = FitStage(label, tuple(observations), weights, band, storage, profile['production'], iterations, quota,
             resolution_kind='modal' if profile.get('kind')=='modal_muller' else 'nodal')
         return Operation('fit', label, purpose, 'previous operation completed or exhausted its stage quota',
-            'advance on normal/quota return; any hard/numerical failure goes to final audit; '
-            'full real catalog at declared noise discrepancy goes directly to final audit',
+            'advance on normal/quota return; any hard/numerical failure ends the fit; '
+            'full real catalog at declared noise discrepancy ends the fit',
             stage, config, cleanup, dict(accuracy_profile=profile, expected_noise_loss=expected,
                 noise_threshold=config.loss_tolerance if expected else None,
                 weight_rule='(norm(data)/sigma)^2 normalized' if expected else 'equal frequency weights',
@@ -140,18 +129,14 @@ class CumulativePolicy:
                 raise ValueError(f'{self.name} requires frequencies {required}')
         real = {o.frequency_hz: o for o in problem.real}
         damped = {o.frequency_hz: o for o in problem.damped}
-        operations = [Operation('audit', 'initial_audit', 'Qualify the prescribed original start',
-            'before localization', 'localize if qualified; otherwise final failure',
-            details=dict(scope='all real frequencies, complete-trial Jacobian/FD', seconds=self.audit_seconds))]
-        operations.append(Operation('localize', 'damped_localization',
+        operations = [Operation('localize', 'damped_localization',
             'Find a data-supported circle using low-frequency damped data',
-            'original-start audit passed', 'warm-up at first qualified refined circle; failure goes to final audit',
+            'fit start', 'warm-up at the refined best grid circle; failure ends the fit',
             details=dict(asdict(self.localization), gamma=self.gamma,
                 objective='0.5*mean((norm(pred-data)/norm(data))^2); equal frequency weights',
                 cutoff='ceil(max(abs(k))*sqrt(max(contrast,1))*max(radius/length_unit)+30)',
-                refinement='best of six coordinate neighbors; halve steps if none improves',
-                qualification='selected backend, production/refined circle predictions; first qualified start',
-                bounds_m=problem.bounds_m)))
+                refinement='best of six coordinate neighbors from the best grid point; halve steps if none improves',
+                bounds_m=problem.bounds_m))]
         operations.append(self._fit(problem, physics, 'warmup_025_damped', (damped[.25e9],), 1, 4, 600, 44,
                                     'Warm up localized circle at 0.25 GHz'))
         for number, quota in enumerate(self.prefix_quotas, 1):
@@ -174,7 +159,7 @@ class CumulativePolicy:
         operations.append(Operation('frontier', 'observable_frontier',
             'Measure the paired-Jacobian frontier at the current curve and highest real frequency',
             'fixed schedule completed and real-catalog noise discrepancy not reached',
-            'append fixed stages up to frontier; otherwise final audit', details=dict(
+            'append fixed stages up to frontier; otherwise the fit returns', details=dict(
                 formula='max(p: paired_column_norm[p] >= threshold*max(paired_column_norm))',
                 threshold=self.frontier_threshold, top=self.frontier_top, step=self.frontier_step,
                 first=self.fixed_bands[-1]+self.frontier_step,
@@ -183,12 +168,6 @@ class CumulativePolicy:
                 noise_rule='stop releases/tail once full real-catalog loss <= 1.1^2*expected noise loss',
                 possible_bands=list(range(self.fixed_bands[-1]+self.frontier_step,
                                           self.frontier_top+1, self.frontier_step)))))
-        operations.append(Operation('audit', 'final_audit', 'Qualify the returned endpoint independently',
-            'every exit, including a hard stop or refusal', 'return unscored curve and diagnostics',
-            details=dict(scope='all real frequencies; last actual M; field/column Jacobian/complete-trial FD',
-                         field_tolerances='1e-5 at <=0.5 GHz; 1e-7 otherwise',
-                         jacobian_tolerance=1e-3, fd_tolerance=1e-3, fd_step_m=1e-7,
-                         fd_seed=42001, seconds=self.audit_seconds, backend='selected solver')))
         return self._explicit_cleanup(operations)
 
     def _explicit_cleanup(self, operations):
@@ -234,8 +213,7 @@ class CumulativePolicy:
 def readable_plan(plan):
     """Render the executable operation records; no separately maintained stage text."""
     lines=[f'# {plan["policy"]} v{plan["version"]}', '',
-           f'Fitting budget: {plan["fit_units"]} SPD work units, {plan["fit_seconds"]:g} seconds including localization.',
-           'Independent initial and final audits have separate budgets.', '',
+           f'Fitting budget: {plan["fit_units"]} SPD work units, {plan["fit_seconds"]:g} seconds including localization.', '',
            'M controls the normal update. K_geometry stores the Cartesian curve. '
            'K_trace and assembly workspace belong to the selected physics service.', '']
     for index,op in enumerate(plan['operations'],1):
@@ -247,7 +225,6 @@ def readable_plan(plan):
                 f'Wavenumbers: {s["wavenumbers"]}; damping Im(k)/Re(k): {s["damping"]}.',
                 f'Weights: {s["weights"]}.',
                 f'M={s["M"]}; K_geometry={s["K_geometry"]}; resolution profile: {op["details"]["accuracy_profile"]}.',
-                f'Field agreement tolerances: {s["discrepancy_tolerances"]}.',
                 f'Budget: {s["iterations"]} iterations, {s["quota"]} work units.',
                 f'Update: {op["geometry_update"]}. Cleanup: {op["cleanup"]}.',
                 f'Stopping: {op["details"]["stopping"]}.',

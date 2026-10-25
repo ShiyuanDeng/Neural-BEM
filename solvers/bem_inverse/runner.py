@@ -1,5 +1,10 @@
-"""Truth-free policy interpreter. Every physics operation uses the chosen service."""
-from dataclasses import dataclass, replace
+"""Truth-free policy interpreter. Every physics operation uses the chosen service.
+
+``fit`` runs the policy's operations and returns the unscored endpoint and its
+final stage. An independent endpoint audit belongs to the caller and runs after
+``fit`` returns.
+"""
+from dataclasses import dataclass
 from time import perf_counter
 import traceback
 import numpy as np
@@ -13,13 +18,8 @@ from .geometry_update_methods.spline import ProjectedUpdate
 from .geometry_selection import make_update, describe_plan, operation_record
 from .io import write, curve_record
 from .localization import localize
-from .endpoint import audit
 from .physics import make_backend
 from .policy import CumulativePolicy, readable_plan
-
-
-class RequiredAccuracyReached(Stop):
-    code = 'REQUIRED_ACCURACY_REACHED'
 
 
 @dataclass(frozen=True)
@@ -36,21 +36,21 @@ class FitResume:
     decisions: tuple = ()
     accepted: tuple = ()
     localization: object = None
-    initial_audit: object = None
 
 
 def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=None, physics=None,
-        on_event=None, geometry_adapter=None, localization_adapter=None, audit_adapter=None, geometry_update=None,
-        resume=None, resolution_response=None):
+        on_event=None, geometry_adapter=None, localization_adapter=None, geometry_update=None, resume=None):
     """Run from the prescribed start. This function cannot read truth or scene IDs.
 
     ``physics`` is dependency injection for qualified registered services/tests;
     ordinary callers choose only ``solver`` plus independent execution settings.
     Optional geometry/localization adapters extend the input representation while
-    retaining this interpreter, policy operations, optimizer and audit. They must
+    retaining this interpreter, policy operations and optimizer. They must
     declare their adaptations in the returned settings/receipt.
     ``geometry_update`` explicitly selects a maintained update without a global
     substitution; it cannot be combined with a representation adapter.
+    The result's ``final_stage`` names the last fitted stage's M, storage band and
+    any stage-local geometry update, which an endpoint audit needs.
     """
     physics = physics or make_backend(solver, execution)
     if geometry_adapter is not None and geometry_update is not None:
@@ -61,54 +61,26 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
     record_curve = curve_record if geometry_adapter is None else geometry_adapter.record
     create_update = ProjectedUpdate if geometry_adapter is None else geometry_adapter.update
     initialize = localize if localization_adapter is None else localization_adapter
-    selected_audit = audit if audit_adapter is None else audit_adapter
-    audit_spent, early_audits = 0., []
-    audit_phase_seconds = dict(initial=0., early=0., terminal=0.)
-    early_endpoint = None
-    early_retry_residual = None
-    early_retry_resolution = None
-    def numerical_audit(curve, stage, config, problem, physics, update, seconds, *, phase='terminal'):
-        nonlocal audit_spent
-        aggregate = getattr(policy, 'audit_aggregate_seconds', None)
-        if aggregate is not None:
-            remaining = max(0., aggregate-audit_spent)
-            seconds = min(seconds, max(0., remaining-(10. if phase != 'terminal' else 0.)))
-        if seconds <= 0:
-            return dict(passed=False, seconds=0., work=dict(work_units=0), reason='audit allowance exhausted')
-        if hasattr(physics, 'audit_stage'):
-            stage = physics.audit_stage(stage)
-        started_audit = perf_counter()
-        previous_role=getattr(physics,'calculation_role','production')
-        physics.calculation_role=phase+'_audit'
-        try:row = selected_audit(curve, stage, config, problem, physics, update, seconds)
-        finally:physics.calculation_role=previous_role
-        audit_phase_seconds[phase] += perf_counter()-started_audit
-        audit_spent += row['seconds']
-        return row
     physics.validate(problem)
     operations = list(policy.operations(problem, physics))
     plan = policy.plan(problem, physics)
     first = next(op for op in operations if op.kind == 'fit')
     curve = resize_curve(problem.initial, first.stage.curve_modes)
-    last_stage, last_config = first.stage, first.optimizer
-    update = (create_update(problem.length_unit_m) if geometry_adapter is not None else
-              make_update(geometry_update, problem.length_unit_m, physics.execution, default=create_update))
-    update_settings = update.settings()
-    audit_update = update
+    last = first
+    selected_update = (create_update(problem.length_unit_m) if geometry_adapter is not None else
+                       make_update(geometry_update, problem.length_unit_m, physics.execution, default=create_update))
+    update_settings = selected_update.settings()
     stage_updates = {}
     record_settings = update_settings if geometry_update is not None else {}
     plan = describe_plan(plan, update_settings, override_operations=geometry_update is not None)
     stages, decisions, accepted = [], [], []
     outcome, detail = 'COMPLETED_SCHEDULE', None
-    initial_audit, final_audit, localization = {}, {}, {}
-    original_audit = {}
+    localization = {}
     ledger = None
     fit_seconds = 0.
     started = perf_counter()
     historical_seconds = 0.
-    original_resolution = (first.stage.nodes, first.stage.refined_nodes) if resolution_response is not None else None
     resumed_stage = None
-    promoted = False
     # Exact stage-entry reuse: the previous endpoint replaces the next stage's initial
     # solves when curve, catalog and resolution are unchanged (charges are replayed).
     reuse_entries = bool(getattr(physics.execution, 'stage_entry_reuse', False) and geometry_adapter is None)
@@ -121,10 +93,9 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
         if geometry_adapter is not None:
             raise ValueError('Resume is not qualified with a geometry representation adapter')
         curve = resume.stage.current.curve
-        last_stage, last_config = resume.operations[0].stage, resume.operations[0].optimizer
-        original_resolution = (last_stage.nodes, last_stage.refined_nodes)
+        last = resume.operations[0]
         stages, decisions, accepted = list(resume.stages), list(resume.decisions), list(resume.accepted)
-        localization, initial_audit = resume.localization or {}, resume.initial_audit or {}
+        localization = resume.localization or {}
         historical_seconds = resume.stage.work['seconds']
         resumed_stage = resume.stage
 
@@ -144,28 +115,15 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
         from pathlib import Path
         (Path(output)/'plan.md').write_text(readable_plan(plan))
     save('configuration.json', dict(initial=record_curve(curve), contrast=problem.contrast,
-         solver=physics.name, execution=physics.receipt()['execution'], update=update.settings(), plan=plan))
+         solver=physics.name, execution=physics.receipt()['execution'], update=update_settings, plan=plan))
     with geometry_runtime(physics.execution.geometry):
         try:
+            strict = getattr(physics.execution, 'nodal_resolution_profile', 'fixed') == 'band_matched'
             if resume is None:
-                audit_stage = (replace(first.stage, update_modes=1)
-                               if first.fit_geometry_update == 'similarity' else first.stage)
-                initial_audit = numerical_audit(curve, audit_stage, first.optimizer, problem, physics, audit_update, policy.audit_seconds, phase='initial')
-                save('initial_audit.json', initial_audit)
-                event(operations[0], 'original start '+('qualified' if initial_audit['passed'] else 'refused'),
-                      passed=initial_audit['passed'])
-                if not initial_audit['passed']:
-                    raise ValueError('Original-start numerical audit failed')
-                ledger = Ledger(cap=policy.fit_units, seconds=policy.fit_seconds,
-                                strict_dispatch=(resolution_response is not None or
-                                    getattr(physics,'strict_dispatch',False) or
-                                    getattr(physics.execution, 'nodal_resolution_profile', 'fixed') == 'band_matched'))
-                queue = list(operations[1:-1])
+                ledger = Ledger(cap=policy.fit_units, seconds=policy.fit_seconds, strict_dispatch=strict)
+                queue = list(operations)
             else:
-                ledger = Ledger.restore(resume.stage.work, seconds=policy.fit_seconds,
-                                        strict_dispatch=(resolution_response is not None or
-                                    getattr(physics,'strict_dispatch',False) or
-                                    getattr(physics.execution, 'nodal_resolution_profile', 'fixed') == 'band_matched'))
+                ledger = Ledger.restore(resume.stage.work, seconds=policy.fit_seconds, strict_dispatch=strict)
                 queue = list(resume.operations)
                 save('resume.json', dict(work=resume.stage.work, iteration=resume.stage.iteration,
                     next_damping=resume.stage.damping, curve=record_curve(curve),
@@ -181,8 +139,7 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
                     curve, localization = initialize(problem, physics, policy.localization, ledger,
                         lambda rows: save('localization_progress.json', dict(candidates=rows)))
                     save('localization.json', localization)
-                    event(op, localization.get('reason', 'first refined candidate passing selected-backend qualification'),
-                          initialization=localization)
+                    event(op, localization.get('reason', 'refined best grid circle'), initialization=localization)
                 elif op.kind == 'cleanup':
                     ledger.reserve(0)
                     carried = None
@@ -197,31 +154,16 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
                                 op.fit_geometry_update, problem.length_unit_m, physics.execution)
                         update = stage_updates[op.fit_geometry_update]
                     else:
-                        update = audit_update
-                    if resolution_response is not None:
-                        # The stage's own (unpromoted) profile; constant for nodal recipes, while a
-                        # modal profile follows each stage's storage band.
-                        original_resolution = (op.stage.nodes, op.stage.refined_nodes)
-                    if promoted:
-                        op = replace(op, stage=replace(op.stage, nodes=resolution_response.production_nodes,
-                                                       refined_nodes=resolution_response.refined_nodes))
-                    last_stage, last_config = op.stage, op.optimizer
+                        update = selected_update
+                    last = op
                     curve = resize_curve(curve, op.stage.curve_modes)
                     if resumed_stage is None:
                         ledger.begin_stage(op.label, op.stage.quota)
-                    selection = None
-                    if resumed_stage is None and hasattr(physics, 'select_stage'):
-                        selected, selection = physics.select_stage(curve, op.stage, op.optimizer,
-                                                                   problem.contrast, update, ledger)
-                        op = replace(op, stage=selected)
-                        last_stage = selected
-                        if selection is not None:
-                            save(op.label+'_resolution.json', selection)
-                    event(op, 'resolved stage entered', work=ledger.snapshot(), resolution_selection=selection)
+                    event(op, 'resolved stage entered', work=ledger.snapshot())
                     if op.fit_geometry_update is not None:
                         save(op.label+'_geometry.json', update.settings())
                     def accepted_state(iteration, evaluation):
-                        nonlocal early_endpoint, early_retry_residual, early_retry_resolution, fit_started, curve
+                        nonlocal curve
                         curve=evaluation.curve
                         observed = np.column_stack([o.scattered.reshape(-1) for o in op.stage.observations])
                         maximum_stage_residual = float(max(np.linalg.norm(evaluation.prediction-observed, axis=0)
@@ -230,42 +172,11 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
                             active_frequency_count=len(op.stage.observations), stage=op.label, iteration=iteration, M=op.stage.update_modes,
                             loss=evaluation.loss, units=ledger.units, curve=record_curve(evaluation.curve)))
                         save('accepted.json', dict(states=accepted))
-                        threshold = getattr(policy, 'required_accuracy', None)
-                        full_real = (len(op.stage.observations) == len(problem.real) and
-                                     all(a is b for a, b in zip(op.stage.observations, problem.real)))
-                        if threshold is None or not full_real:
-                            return
-                        residuals = np.linalg.norm(evaluation.prediction-np.column_stack(
-                            [o.scattered.reshape(-1) for o in problem.real]), axis=0)/np.linalg.norm(
-                            np.column_stack([o.scattered.reshape(-1) for o in problem.real]), axis=0)
-                        maximum = float(max(residuals))
-                        resolution = (op.stage.nodes, op.stage.refined_nodes, evaluation.curve.band)
-                        if maximum > threshold or (early_retry_residual is not None and
-                                (maximum > early_retry_residual/2 or maximum == early_retry_residual) and resolution == early_retry_resolution):
-                            return
-                        aggregate = getattr(policy, 'audit_aggregate_seconds', None)
-                        if aggregate is not None and aggregate-audit_spent <= 10.:
-                            return
-                        before = perf_counter()
-                        checked = numerical_audit(evaluation.curve, op.stage, op.optimizer, problem,
-                                                  physics, audit_update, policy.audit_seconds, phase='early')
-                        elapsed = perf_counter()-before
-                        # Optional audit has its own aggregate budget, not the fit wall allowance.
-                        ledger.started += elapsed
-                        fit_started += elapsed
-                        early_audits.append(dict(checked, stage=op.label, iteration=iteration,
-                                                maximum_residual=maximum))
-                        save('early_audits.json', dict(audits=early_audits))
-                        early_retry_residual, early_retry_resolution = maximum, resolution
-                        if checked['passed']:
-                            early_endpoint = (evaluation.curve.coefficients.tobytes(), checked)
-                            raise RequiredAccuracyReached('full real catalog meets required accuracy; audit passed')
                     entry, carried = carried, None
                     # A–B–C. Run one resolved stage and retain its accepted endpoint.
                     result = fit_stage(curve, op.stage, problem.contrast, update, op.optimizer, ledger,
                                        on_accept=accepted_state, physics=physics, resume=resumed_stage,
-                                       resolution_response=resolution_response, entry=entry,
-                                       retain_final=reuse_entries)
+                                       entry=entry, retain_final=reuse_entries)
                     resumed_stage = None
                     curve = result.curve
                     carried = result.final_entry if reuse_entries else None
@@ -273,36 +184,20 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
                         outcome=result.outcome, stop=result.stop_reason, detail=result.detail,
                         accepted_steps=result.accepted_steps, initial_loss=result.initial_loss,
                         final_loss=result.final_loss, seconds=result.seconds, work=ledger.snapshot(),
-                        curve=record_curve(curve), nodes=op.stage.nodes, refined_nodes=op.stage.refined_nodes,
-                        resolution_selection=selection)
+                        curve=record_curve(curve), nodes=op.stage.nodes)
                     if reuse_entries:
                         row['entry_reused'] = result.entry_reused
                     row.update(physics_failures=getattr(result, 'physics_failures', []),
                                geometry_proposals=getattr(result, 'geometry_proposals', len(result.trials)))
-                    overshoots = [check for check in result.acceptance_checks
-                                  if check.get('accepted') and check.get('numerical_obstruction')]
-                    row.update(resolution_gate=op.optimizer.resolution_gate,
-                               accepted_resolution_overshoots=len(overshoots),
-                               largest_accepted_resolution_overshoot=max(
-                                   (max(check['prediction_discrepancy_ratios']) for check in overshoots), default=0.))
-                    if resolution_response is not None:
-                        row.update(nodes=result.final_nodes, refined_nodes=result.final_refined_nodes,
-                                   resolution_events=result.resolution_events)
-                        if result.final_nodes == resolution_response.production_nodes:
-                            promoted = True
-                            physics = resolution_response.physics or physics
-                            last_stage = replace(last_stage, nodes=result.final_nodes,
-                                                 refined_nodes=result.final_refined_nodes)
                     stages.append(row)
-                    save(op.label+'.json', dict(row, history=result.history, trials=result.trials,
-                                               acceptance_checks=result.acceptance_checks))
+                    save(op.label+'.json', dict(row, history=result.history, trials=result.trials))
                     save('checkpoint.json', dict(stages=stages, curve=record_curve(curve), work=ledger.snapshot()))
                     event(op, 'stage returned', outcome=result.outcome, stop=result.stop_reason,
                           final_loss=result.final_loss)
                     # C12. Only normal return or a stage quota advances the queue.
                     if result.outcome not in (NORMAL_RETURN, STAGE_QUOTA):
                         outcome, detail = result.outcome, result.detail
-                        event(op, 'hard or numerical stop; remaining stages skipped; final audit next')
+                        event(op, 'hard or numerical stop; remaining stages skipped')
                         break
                     if policy.at_noise_discrepancy(op, result.final_loss, problem):
                         outcome = 'NOISE_DISCREPANCY_REACHED'
@@ -329,55 +224,25 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
             fit_seconds = perf_counter()-fit_started
         except Stop as exc:
             outcome, detail = exc.code, str(exc)
-            if hasattr(exc, 'resolution_selection'):
-                save('resolution_selection_failure.json', exc.resolution_selection)
         except Exception:
             outcome, detail = 'EXCEPTION', traceback.format_exc()
         finally:
             if ledger is not None and not fit_seconds:
                 fit_seconds = perf_counter()-ledger.started
-            # Preserve endpoint before audits or external scoring can fail.
             fitting_snapshot=None if ledger is None else ledger.snapshot()
             if fitting_snapshot is not None:fit_seconds=fitting_snapshot['seconds']
             save('unscored.json', dict(outcome=outcome, detail=detail, final_curve=record_curve(curve),
                  stages=stages, fit_work=fitting_snapshot))
-            event(operations[-1], 'fit returned; audit endpoint', outcome=outcome)
-            if ledger is None and initial_audit and not initial_audit['passed']:
-                # No localization or fitting occurred: this is the identical
-                # already-audited endpoint. Do not repeat a failed dense audit.
-                final_audit = dict(initial_audit, reused_identical_initial_audit=True,
-                    original_audit_work=initial_audit.get('work'), seconds=0.,
-                    work=dict(work_units=0, solves={}, reciprocal_batches={}, failed={}))
-            elif early_endpoint is not None and curve.coefficients.tobytes() == early_endpoint[0]:
-                final_audit = dict(early_endpoint[1], reused_identical_early_audit=True, seconds=0.,
-                                   work=dict(work_units=0))
-            else:
-                audit_stage = (replace(last_stage, update_modes=1)
-                               if update is not audit_update and last_stage.update_modes == 0 else last_stage)
-                final_audit = numerical_audit(curve, audit_stage, last_config, problem, physics, audit_update, policy.audit_seconds)
-                if (promoted and original_resolution is not None and
-                        tuple(original_resolution) != (last_stage.nodes, last_stage.refined_nodes)):
-                    original_stage = replace(last_stage, nodes=original_resolution[0],
-                                             refined_nodes=original_resolution[1])
-                    original_audit = numerical_audit(curve, original_stage, last_config, problem, physics,
-                                                     audit_update, policy.audit_seconds)
-                    save('original_resolution_audit.json', original_audit)
-                    final_audit = dict(final_audit, resolution_changed=True,
-                        original_resolution=list(original_resolution), original_resolution_passed=original_audit['passed'])
             if hasattr(physics, 'close'):
                 physics.close()
-            save('final_audit.json', final_audit)
-            event(operations[-1], 'endpoint '+('qualified' if final_audit['passed'] else 'refused'),
-                  passed=final_audit['passed'])
     row = dict(policy=policy.name, policy_version=policy.version, outcome=outcome, detail=detail,
         final_curve=record_curve(curve), stages=stages, decisions=decisions, localization=localization,
+        final_stage=dict(label=last.label, M=last.stage.update_modes, K_geometry=last.stage.curve_modes,
+                         nodes=last.stage.nodes, fit_geometry_update=last.fit_geometry_update),
         fit_work=fitting_snapshot, fit_and_localization_seconds=fit_seconds,
         fit_and_localization_units=0 if ledger is None else ledger.units,
-        initial_audit_passed=initial_audit.get('passed', False), final_audit_passed=final_audit['passed'],
-        relative_residual=final_audit.get('relative_residual'),
-        audit_units=sum(a.get('work', {}).get('work_units', 0) for a in (initial_audit, final_audit, original_audit, *early_audits)),
-        total_seconds=perf_counter()-started, audit_seconds=audit_spent, early_audits=early_audits,
-        physics=physics.receipt(), geometry_work=dict(audit_update.counts),
+        total_seconds=perf_counter()-started,
+        physics=physics.receipt(), geometry_work=dict(selected_update.counts),
         geometry_update=geometry_update, geometry_settings=update_settings)
     if stage_updates:
         row['stage_geometry_updates'] = {name: dict(settings=item.settings(), work=dict(item.counts))
@@ -385,21 +250,10 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
         for item in stage_updates.values():
             for key, value in item.counts.items():
                 row['geometry_work'][key] = row['geometry_work'].get(key, 0)+value
-    row['exclusive_wall_seconds'] = dict(initial_audit=audit_phase_seconds['initial'],
-        fit_and_localization=fit_seconds, early_audits=audit_phase_seconds['early'],
-        terminal_audits=audit_phase_seconds['terminal'])
-    row['total_units'] = row['fit_and_localization_units']+row['audit_units']
-    row.update(resolution_gate=policy.resolution_gate,
-               accepted_resolution_overshoots=sum(s['accepted_resolution_overshoots'] for s in stages),
-               largest_accepted_resolution_overshoot=max(
-                   (s['largest_accepted_resolution_overshoot'] for s in stages), default=0.))
     if resume is not None:
         row.update(resumed=True, historical_seconds=historical_seconds,
                    fresh_fit_seconds=max(0., fit_seconds-historical_seconds),
                    historical_units=resume.stage.work['work_units'],
-                   fresh_fit_units=row['fit_and_localization_units']-resume.stage.work['work_units'],
-                   resolution_promoted=promoted)
-    if 'paired_relative_residual' in final_audit:
-        row['paired_relative_residual'] = final_audit['paired_relative_residual']
+                   fresh_fit_units=row['fit_and_localization_units']-resume.stage.work['work_units'])
     save('fit_result.json', row)
     return row

@@ -2,10 +2,11 @@
 
 Inputs live in ``results/validation/cleaned_interfaces/TG-002`` and are sealed
 by hash. Fits go to a separate run directory per experiment arm. Fitting
-receives a ``Problem`` only; truth is read by scoring after the fit and its
-independent audit return. Scoring and recovery gates are CI-001's, reused
-unchanged: RMS <= 1 mm, Hausdorff upper bound <= 2 mm, per-frequency residual
-<= max(0.003, 3 x noise), and a passed final numerical audit.
+receives a ``Problem`` only. After ``fit`` returns, ``audit.audit`` checks the
+endpoint independently; truth is read only by scoring after that. Scoring and
+recovery gates are CI-001's, reused unchanged: RMS <= 1 mm, Hausdorff upper
+bound <= 2 mm, per-frequency residual <= max(0.003, 3 x noise), and a passed
+final numerical audit.
 """
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from dataclasses import asdict
@@ -19,13 +20,14 @@ import traceback
 import numpy as np
 
 from bem_inverse.continuation.geometry_runtime import geometry_runtime
+from bem_inverse.geometry_selection import make_update
 from bem_inverse.io import read, write, digest, curve_record, curve_from, portable
 from bem_inverse.physics import Execution, make_backend
 from bem_inverse.runner import fit
 from bem_inverse import pipelines as P
 from bem_inverse import policies as R
 from experiments.cleaned_interface import benchmark as ci
-from . import scenes as S
+from . import audit as A, scenes as S
 
 ROOT = ci.ROOT
 INPUTS = ROOT/'results/validation/cleaned_interfaces/TG-002'
@@ -208,6 +210,26 @@ def _fit(problem, settings, execution, folder, adapter, on_event):
                geometry_update=settings['geometry_update'], localization_adapter=adapter, on_event=on_event)
 
 
+def geometry_update_for(settings):
+    if 'policy' in settings:
+        return P.get(settings['policy']['recipe']['pipeline']).geometry_update
+    if 'pipeline' in settings:
+        return P.get(settings['pipeline']['name']).geometry_update
+    return settings['geometry_update']
+
+
+def endpoint_audit(problem, result, settings, folder):
+    """Audit the returned curve with fresh physics and the run's ordinary geometry update."""
+    execution = Execution(**settings['execution'])
+    update = make_update(geometry_update_for(settings), problem.length_unit_m, execution)
+    with geometry_runtime(execution.geometry):
+        row = A.audit(curve_from(result['final_curve']), A.audited_modes(result['final_stage']), problem,
+                      physics_for(settings), update, settings['audit_seconds'])
+    write(folder/'final_audit.json', row)
+    print(folder.name, 'final_audit', 'endpoint '+('qualified' if row['passed'] else 'refused'), flush=True)
+    return row
+
+
 def run_case(job):
     run_dir, case_row, settings = job
     run_dir = Path(run_dir)
@@ -220,9 +242,17 @@ def run_case(job):
     execution = Execution(**settings['execution'])
     started = perf_counter()
     try:
-        result = _fit(ci.fitting_problem(case_row, run_dir), settings, execution, folder,
+        problem = ci.fitting_problem(case_row, run_dir)
+        result = _fit(problem, settings, execution, folder,
             keep_start if settings['localization'] == 'none' else None,
             lambda e: print(case_row['id'], e['operation']['label'], e['reason'], flush=True))
+        audited = endpoint_audit(problem, result, settings, folder)
+        result.update(final_audit_passed=audited['passed'], relative_residual=audited.get('relative_residual'),
+                      audit_units=audited['work']['work_units'], audit_seconds=audited['seconds'],
+                      total_units=result['fit_and_localization_units']+audited['work']['work_units'],
+                      total_seconds=result['total_seconds']+audited['seconds'])
+        if 'paired_relative_residual' in audited:
+            result['paired_relative_residual'] = audited['paired_relative_residual']
         # ON-001 boundary: case entry to the returned, audited numerical output; scoring excluded.
         result['audited_output_seconds'] = perf_counter()-started
         # The inverse and its independent audit have returned before target access.
@@ -243,7 +273,11 @@ def run_case(job):
 
 def settings_for(*, localization, execution, solver=None, geometry_update=None, pipeline=None, policy=None,
                  contract=None):
-    """The single setting of one run directory: a policy, a pipeline, or solver plus update."""
+    """The single setting of one run directory: a policy, a pipeline, or solver plus update.
+
+    ``audit_seconds`` is the endpoint audit's wall allowance: the TG-002 policy contract's
+    30 s for a policy, otherwise the 300 s that ``CumulativePolicy`` once carried.
+    """
     chosen = sum(x is not None for x in (pipeline, policy)) + (solver is not None or geometry_update is not None)
     if chosen > 1:
         raise ValueError('Choose one of a policy, a pipeline, or solver/geometry_update')
@@ -254,12 +288,12 @@ def settings_for(*, localization, execution, solver=None, geometry_update=None, 
     if policy is not None:
         contract = dict(R.BENCHMARK_CONTRACT if contract is None else contract)
         return portable(dict(policy=R.settings(policy, contract), localization=localization,
-                             execution=asdict(R.execution_for(policy, execution))))
+                             execution=asdict(R.execution_for(policy, execution)), audit_seconds=A.POLICY_SECONDS))
     if contract is not None:
         raise ValueError('A contract applies to named policies only')
     method = (dict(pipeline=P.get(pipeline).settings()) if pipeline is not None else
               dict(solver=solver, geometry_update=geometry_update))
-    return portable(dict(method, localization=localization, execution=asdict(execution)))
+    return portable(dict(method, localization=localization, execution=asdict(execution), audit_seconds=A.SECONDS))
 
 
 def physics_for(settings):
@@ -343,7 +377,7 @@ def summarize(run_dir):
             hausdorff_upper_mm=m.get('hausdorff_upper_mm'), maximum_residual=r.get('maximum_residual'),
             audit=r.get('final_audit_passed'), units=r.get('total_units'), seconds=r.get('total_seconds'),
             audited_output_seconds=r.get('audited_output_seconds'),
-            resolution_promoted=r.get('resolution_promoted'),
+            resolution_promoted=r.get('resolution_promoted'),  # recorded by PC-001-era runs only
             last_stage=(r.get('stages') or [{}])[-1].get('stage'), detail=_short(r.get('detail'))))
     summary = dict(completed=len(rows), recovered=sum(r['recovered'] for r in rows),
                    by_contrast={S.tag(c): sum(r['recovered'] for r in rows if r['contrast'] == c) for c in S.CONTRASTS},

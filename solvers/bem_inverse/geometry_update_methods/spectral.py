@@ -48,10 +48,8 @@ class Prepared:
     labels: tuple
     derivatives: np.ndarray
     base_projection: np.ndarray
-    fine_base_projection: np.ndarray
     count: int
     grid: Grid
-    fine_grid: Grid
     preparation_seconds: float
 
 
@@ -124,13 +122,10 @@ def batched_projection(curve, steps, band, count, length_unit_m, device):
 class SpectralProjectedUpdate:
     name = "centred_state_band_spectral_projection"
 
-    def __init__(self, length_unit_m, *, projection_tolerance=1e-5, derivative_step_m=1e-7, device=None, batched=False):
+    def __init__(self, length_unit_m, *, derivative_step_m=1e-7, device=None, batched=False):
         if not np.isfinite(length_unit_m) or length_unit_m <= 0:
             raise ValueError('length_unit_m must be positive.')
-        if not np.isfinite(projection_tolerance) or projection_tolerance <= 0:
-            raise ValueError('projection_tolerance must be positive.')
         self.length_unit_m = float(length_unit_m)
-        self.projection_tolerance = float(projection_tolerance)
         self.derivative_step_m = float(derivative_step_m)
         checks.require_derivative_step(self.derivative_step_m)
         self.counts = dict(preparations=0, geometry_projections=0, trial_constructions=0,
@@ -143,16 +138,14 @@ class SpectralProjectedUpdate:
 
     def settings(self):
         return dict(name=self.name, length_unit_m=self.length_unit_m,
-                    projection_tolerance=self.projection_tolerance,
                     coordinates='real Fourier coefficients of normal distance h (m) in normalized arclength',
                     gauge='arclength refit on every trial', derivative_step_m=self.derivative_step_m,
                     construction=CONSTRUCTION,
-                    resampler='eq. 9 quadrature on the uniform grid (count and 2*count); no splines',
-                    boundary_samples=True, projection_error_control='coarse/fine diagnostic; not a rigorous bound',
+                    resampler='eq. 9 quadrature on the uniform grid; no splines',
+                    boundary_samples=True,
                     validity='coefficient area, sampled minimum speed and segment intersections',
                     prepare='batched torch float64' if self.batched else 'coordinate finite differences',
-                    prepare_device=self.device if self.batched else 'cpu', chunk_bytes=CHUNK_BYTES,
-                    projection_tolerance_meaning='grid refinement, not intentional smoothing')
+                    prepare_device=self.device if self.batched else 'cpu', chunk_bytes=CHUNK_BYTES)
 
     def _project(self, grid, coefficients, band):
         self.counts['geometry_projections'] += 1
@@ -170,7 +163,7 @@ class SpectralProjectedUpdate:
                      orders=np.concatenate(([0], harmonics, harmonics)),
                      labels=('a0', *[f'a{m}' for m in harmonics], *[f'b{m}' for m in harmonics]))
         count = grid_size(max(curve_modes, update_modes))
-        grid, fine_grid = sample_grid(curve, count, update_modes), sample_grid(curve, 2*count, update_modes)
+        grid = sample_grid(curve, count, update_modes)
         dim = len(plain['orders'])
         eye = np.eye(dim)*self.derivative_step_m
         steps = np.vstack((np.zeros(dim), eye, -eye))
@@ -178,21 +171,19 @@ class SpectralProjectedUpdate:
         if use_batch:
             try:
                 coarse = batched_projection(curve, steps, curve_modes, count, self.length_unit_m, self.device)
-                fine = batched_projection(curve, steps[:1], curve_modes, 2*count, self.length_unit_m, self.device)[0]
             except torch.OutOfMemoryError as exc:
                 torch.cuda.empty_cache()
                 self.counts['prepare_fallbacks'] += 1
                 self.fallback_reasons[type(exc).__name__] = self.fallback_reasons.get(type(exc).__name__, 0)+1
                 use_batch = False
         if use_batch:
-            self.counts['geometry_projections'] += len(steps)+1
+            self.counts['geometry_projections'] += len(steps)
             derivatives = ((coarse[1:dim+1]-coarse[dim+1:])/(2*self.derivative_step_m)).T.copy()
             self.counts['batched_preparations'] += 1
             base = coarse[0]
         else:
             zeros = np.zeros(dim)
             base = self._project(grid, zeros, curve_modes)[0]
-            fine = self._project(fine_grid, zeros, curve_modes)[0]
             columns = []
             for step in eye:
                 plus = self._project(grid, step, curve_modes)[0]
@@ -202,8 +193,7 @@ class SpectralProjectedUpdate:
         elapsed = time.perf_counter()-started
         self.counts['preparations'] += 1
         self.counts['preparation_seconds'] += elapsed
-        return Prepared(**plain, derivatives=derivatives, base_projection=base,
-                        fine_base_projection=fine, count=count, grid=grid, fine_grid=fine_grid,
+        return Prepared(**plain, derivatives=derivatives, base_projection=base, count=count, grid=grid,
                         preparation_seconds=elapsed)
 
     def velocities(self,space,nodes):
@@ -239,9 +229,9 @@ class SpectralProjectedUpdate:
 
 
 def geometry_update(normal_update, *, prepared, settings):
-    """Move and refit on both grids, retain the centred increment, then check the result.
+    """Move and refit on the N-point grid, retain the centred increment, then check the result.
 
-    The moved curves are not checked: refitting and centring change them, so
+    The moved curve is not checked: refitting and centring change it, so
     only the final curve is the boundary that is used.
     """
     curve = prepared.curve
@@ -250,28 +240,16 @@ def geometry_update(normal_update, *, prepared, settings):
     a = settings._checked(prepared, normal_update)
     try:
         if not np.any(a):
-            return curve, dict(projection_error=0., projection_relative=0.,
-                maximum_normal_m=0., rms_normal_m=0., refits=2, speed_ratio=speed_ratio(curve),
+            return curve, dict(maximum_normal_m=0., rms_normal_m=0., refits=1, speed_ratio=speed_ratio(curve),
                 intentional_projection_mm=0., finite_path=settings.name)
 
-        projections = []
-        for grid in (prepared.grid, prepared.fine_grid):
-            settings.counts['geometry_projections'] += 1
-            projected_at = time.perf_counter()
-            try:
-                projections.append(push_and_refit(grid, a, prepared.curve_modes, settings.length_unit_m))
-            finally:
-                settings.counts['projection_seconds'] += time.perf_counter()-projected_at
-
-        coarse, smoothing = projections[0]
-        fine, _ = projections[1]
-        c_trial = curve.coefficients+coarse-prepared.base_projection
-        c_refined = curve.coefficients+fine-prepared.fine_base_projection
-        error = float(np.max(np.abs(values(c_trial-c_refined, 2*prepared.count))))
-        radius = prepared.grid.nodes.perimeter/(2*np.pi)
-        checks.require_projection_agreement(error, radius, settings.projection_tolerance)
-
-        candidate = FourierCurve(c_trial)
+        settings.counts['geometry_projections'] += 1
+        projected_at = time.perf_counter()
+        try:
+            refit, smoothing = push_and_refit(prepared.grid, a, prepared.curve_modes, settings.length_unit_m)
+        finally:
+            settings.counts['projection_seconds'] += time.perf_counter()-projected_at
+        candidate = FourierCurve(curve.coefficients+refit-prepared.base_projection)
         checked_at = time.perf_counter()
         try:
             checks.check_area(candidate.coefficients)
@@ -280,8 +258,7 @@ def geometry_update(normal_update, *, prepared, settings):
             checks.check_intersection(final_nodes.points)
         finally:
             settings.counts['sampled_seconds'] += time.perf_counter()-checked_at
-        return candidate, dict(projection_error=error, projection_relative=error/radius,
-            **settings.measure(prepared, a), speed_ratio=speed_ratio(candidate), refits=2,
+        return candidate, dict(**settings.measure(prepared, a), speed_ratio=speed_ratio(candidate), refits=1,
             intentional_projection_mm=smoothing*settings.length_unit_m*1e3, finite_path=settings.name)
     except UpdateRefused:
         settings.counts['refused_trials'] += 1

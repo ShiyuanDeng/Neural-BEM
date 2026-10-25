@@ -54,9 +54,9 @@ def test_both_orders_decide_identically(device):
     assert all(x == y for x, y in decisions)
     assert {x[0] for x, _ in decisions} == {'accepted', 'refused'}   # both branches exercised
     # The full certificate now runs only after a sampled refusal.
-    full_first = sum(first.counts[f'{r}_full'] for r in ('moved_coarse', 'moved_fine', 'candidate'))
+    full_first = sum(first.counts[f'{r}_full'] for r in ('moved', 'candidate'))
     assert full_first > 0
-    assert sum(second.counts[f'{r}_full'] for r in ('moved_coarse', 'moved_fine', 'candidate')) == 0
+    assert sum(second.counts[f'{r}_full'] for r in ('moved', 'candidate')) == 0
     assert second.counts['certificate_seconds'] < first.counts['certificate_seconds']
 
 
@@ -73,7 +73,7 @@ def test_certificates_still_overturn_sampled_refusals():
     assert all(x == y for x, y in decisions)
     accepted = sum(x[0] == 'accepted' for x, _ in decisions)
     assert accepted > 0 and accepted < len(decisions)
-    assert sum(second.counts[f'{r}_full_override'] for r in ('moved_coarse', 'moved_fine', 'candidate')) > 0
+    assert sum(second.counts[f'{r}_full_override'] for r in ('moved', 'candidate')) > 0
 
 
 def test_settings_record_the_order_and_shadow_needs_certificates_first():

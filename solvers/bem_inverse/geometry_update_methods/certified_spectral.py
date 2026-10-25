@@ -22,7 +22,7 @@ CONSTRUCTION = 'z + P_K[R(z+h*n)-R(z)], R = eq. 9 arclength quadrature (no splin
 WINDOW = 64
 FULL_WINDOWS = (64, 128)
 SPEED_FACTOR = 1e-6
-ROLES = ('moved_coarse', 'moved_fine', 'candidate')
+ROLES = ('moved', 'candidate')
 TIERS = ('area_refused', 'increment', 'full', 'sampled_accepted', 'sampled_refused', 'full_override')
 ORDERS = ('certificate_first', 'sampled_first')
 VALIDITY = ('exact area -> Lemma 3-4 increment vs accepted-curve Y -> full |W|^2 certificate '
@@ -49,7 +49,6 @@ class CertifiedSpace:
     labels: tuple
     derivatives: np.ndarray
     base_projection: np.ndarray
-    fine_base_projection: np.ndarray
     count: int
     preparation_seconds: float
     cache: dict = field(default_factory=dict, compare=False)
@@ -59,15 +58,12 @@ class CertifiedSpectralUpdate:
     """Self-contained optional method; batching and certificate device are settings."""
     name = 'centred_state_band_spectral_projection'
 
-    def __init__(self, length_unit_m, *, projection_tolerance=1e-5, derivative_step_m=1e-7,
+    def __init__(self, length_unit_m, *, derivative_step_m=1e-7,
                  window=WINDOW, shadow=False, order='certificate_first', batched=False,
                  device=None, certificate_device=False):
         if not np.isfinite(length_unit_m) or length_unit_m <= 0:
             raise ValueError('length_unit_m must be positive.')
-        if not np.isfinite(projection_tolerance) or projection_tolerance <= 0:
-            raise ValueError('projection_tolerance must be positive.')
         self.length_unit_m = float(length_unit_m)
-        self.projection_tolerance = float(projection_tolerance)
         self.derivative_step_m = float(derivative_step_m)
         checks.require_derivative_step(self.derivative_step_m)
         if order not in ORDERS:
@@ -92,12 +88,11 @@ class CertifiedSpectralUpdate:
 
     def settings(self):
         settings = dict(name=self.name, length_unit_m=self.length_unit_m,
-            projection_tolerance=self.projection_tolerance,
             coordinates='real Fourier coefficients of normal distance h (m) in normalized arclength',
             gauge='arclength refit on every trial', derivative_step_m=self.derivative_step_m,
-            construction=CONSTRUCTION, projection_tolerance_meaning='grid refinement, not intentional smoothing',
-            resampler='eq. 9 quadrature on the uniform grid (count and 2*count); no splines',
-            boundary_samples=True, projection_error_control='coarse/fine diagnostic; not a rigorous bound',
+            construction=CONSTRUCTION,
+            resampler='eq. 9 quadrature on the uniform grid; no splines',
+            boundary_samples=True,
             validity=VALIDITY if self.order == 'certificate_first' else VALIDITY_SAMPLED_FIRST,
             validity_order=self.order, certificate_window=self.window,
             full_certificate_windows=FULL_WINDOWS, full_crop_band='max(K, 64)',
@@ -117,7 +112,7 @@ class CertifiedSpectralUpdate:
         return push_and_refit(grid, coefficients, band, self.length_unit_m)
 
     def prepare(self, curve, update_modes, curve_modes):
-        """Differentiate this method's spectral projection and save both base grids."""
+        """Differentiate this method's spectral projection and save the base refit."""
         started = time.perf_counter()
         update_modes = integer(update_modes, 'update_modes', minimum=0)
         integer(curve_modes, 'curve_modes')
@@ -134,7 +129,6 @@ class CertifiedSpectralUpdate:
             steps = np.vstack((np.zeros(dim), eye, -eye))
             try:
                 coarse = batched_projection(curve, steps, curve_modes, count, self.length_unit_m, self.device)
-                fine = batched_projection(curve, steps[:1], curve_modes, 2*count, self.length_unit_m, self.device)[0]
             except torch.OutOfMemoryError as exc:
                 torch.cuda.empty_cache()
                 self.counts['prepare_fallbacks'] += 1
@@ -143,9 +137,8 @@ class CertifiedSpectralUpdate:
                 started = time.perf_counter()
         if coarse is None:
             zeros = np.zeros(dim)
-            grid, fine_grid = sample_grid(curve, count, update_modes), sample_grid(curve, 2*count, update_modes)
+            grid = sample_grid(curve, count, update_modes)
             base = self._project(grid, zeros, curve_modes)[0]
-            fine = self._project(fine_grid, zeros, curve_modes)[0]
             columns = []
             for j in range(dim):
                 step = np.eye(dim)[j]*self.derivative_step_m
@@ -154,7 +147,7 @@ class CertifiedSpectralUpdate:
                 columns.append((plus-minus)/(2*self.derivative_step_m))
             derivatives = np.stack(columns, axis=1)
         else:
-            self.counts['geometry_projections'] += len(steps)+1
+            self.counts['geometry_projections'] += len(steps)
             self.counts['batched_preparations'] += 1
             base = coarse[0]
             derivatives = ((coarse[1:dim+1]-coarse[dim+1:])/(2*self.derivative_step_m)).T.copy()
@@ -162,7 +155,7 @@ class CertifiedSpectralUpdate:
         self.counts['preparations'] += 1
         self.counts['preparation_seconds'] += elapsed
         return CertifiedSpace(curve, update_modes, curve_modes, self.length_unit_m, orders, labels,
-            derivatives, base, fine, count, elapsed)
+            derivatives, base, count, elapsed)
 
     @staticmethod
     def _checked(space, coefficients):
@@ -314,7 +307,7 @@ class CertifiedSpectralUpdate:
 
 
 def geometry_update(normal_update, *, prepared, settings):
-    """Move along normals, check, project at two grids, then check the stored curve."""
+    """Move along normals, check, refit on the N-point grid, then check the stored curve."""
     space, method = prepared, settings
     curve = space.curve
     started = time.perf_counter()
@@ -323,33 +316,24 @@ def geometry_update(normal_update, *, prepared, settings):
     a = method._checked(space, normal_update)
     try:
         if not np.any(a):
-            return curve, dict(projection_error=0., projection_relative=0., maximum_normal_m=0.,
-                rms_normal_m=0., refits=2, speed_ratio=speed_ratio(curve),
+            return curve, dict(maximum_normal_m=0., rms_normal_m=0., refits=1, speed_ratio=speed_ratio(curve),
                 intentional_projection_mm=0., finite_path=method.name)
-        projections = []
-        for count, role in ((space.count, 'moved_coarse'), (2*space.count, 'moved_fine')):
-            method.counts['geometry_projections'] += 1
-            nodes, basis, base, normal = method._base_grid(space, count, len(a))
-            h = basis@a/method.length_unit_m
-            moved = FourierCurve.from_samples(base+h*normal, count//2-1)
-            moved_nodes = moved.nodes(count)
-            method.check_geometry(space, moved.coefficients, role, moved_nodes)
-            projection_started = time.perf_counter()
-            try:
-                projections.append(arclength_quadrature(moved, moved_nodes, space.curve_modes))
-            finally:
-                method.counts['projection_seconds'] += time.perf_counter()-projection_started
-        (coarse, smoothing), (fine, _) = projections
-        trial = curve.coefficients+coarse-space.base_projection
-        refined = curve.coefficients+fine-space.fine_base_projection
-        error = float(np.max(np.abs(values(trial-refined, 2*space.count))))
-        radius = method._base_grid(space, space.count, len(a))[0].perimeter/(2*np.pi)
-        checks.require_projection_agreement(error, radius, method.projection_tolerance)
+        method.counts['geometry_projections'] += 1
+        nodes, basis, base, normal = method._base_grid(space, space.count, len(a))
+        h = basis@a/method.length_unit_m
+        moved = FourierCurve.from_samples(base+h*normal, space.count//2-1)
+        moved_nodes = moved.nodes(space.count)
+        method.check_geometry(space, moved.coefficients, 'moved', moved_nodes)
+        projection_started = time.perf_counter()
+        try:
+            refit, smoothing = arclength_quadrature(moved, moved_nodes, space.curve_modes)
+        finally:
+            method.counts['projection_seconds'] += time.perf_counter()-projection_started
+        trial = curve.coefficients+refit-space.base_projection
         candidate = FourierCurve(trial)
         method.check_geometry(space, trial, 'candidate', candidate)
         tiers = {row['role']: row['tier'] for row in method.records}
-        return candidate, dict(projection_error=error, projection_relative=error/radius,
-            **method.measure(space, a), speed_ratio=speed_ratio(candidate), refits=2,
+        return candidate, dict(**method.measure(space, a), speed_ratio=speed_ratio(candidate), refits=1,
             intentional_projection_mm=smoothing*method.length_unit_m*1e3, finite_path=method.name,
             validity_tiers=tiers)
     except UpdateRefused:

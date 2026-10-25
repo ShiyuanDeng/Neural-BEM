@@ -72,7 +72,6 @@ class PhysicsBackend(Protocol):
 
     def validate(self, problem): ...
     def resolution_profile(self, storage_band): ...
-    def refine_resolution(self, resolution): ...
     def evaluate(self, curve, observation, contrast, resolution) -> Prediction: ...
     def derivative(self, prediction, update, space): ...
     def ordered_calls(self, function, items): ...
@@ -143,17 +142,14 @@ class NodalKress:
             n = 2*int(np.ceil(max(8, 2*trace+1, 2*storage_band+1)/2))
             return dict(production=n, refined=min(n+64, 1024) if n < 1024 else 2*n, kind='nodal_kress',
                         nodal_resolution=n, K_trace=trace, coefficient_workspace=None,
-                        refinement='stage-selected fields and Jacobian; next +64 nodes, then 2048')
+                        refinement='next +64 nodes up to 1024, then double; frontier and endpoint audit only')
         n = max(self.execution.resolution, 2 * (storage_band + 1))
         return dict(production=n, refined=2*n, kind='nodal_kress',
                     nodal_resolution=n, K_trace=None, coefficient_workspace=None,
-                    refinement='double nodes; refuse candidates outside per-frequency tolerance')
+                    refinement='double nodes; frontier and endpoint audit only')
 
     def ordered_calls(self, function, items):
         return F.ordered_calls(function, items, threads=self.execution.frequency_threads)
-
-    def refine_resolution(self, resolution):
-        return 2*resolution
 
     def _ray_table(self):
         # Assembly callers also hold the device lock; publication is serialized.
@@ -232,21 +228,6 @@ class NodalKress:
                 value = landscape_variant(observations, contrast, centers, radii, cutoff)
         self._record('disk_batches', perf_counter()-started, device, reason)
         return value
-
-    def select_stage(self, curve, stage, config, contrast, update, ledger):
-        if self.execution.nodal_resolution_profile == 'fixed':
-            return stage, None
-        from .nodal_resolution import select_stage
-        return select_stage(self, curve, stage, config, contrast, update, ledger)
-
-    def audit_stage(self, stage):
-        if self.execution.nodal_resolution_profile == 'band_matched':
-            from dataclasses import replace
-            return replace(stage, refined_nodes=max(2048, stage.refined_nodes))
-        return stage
-
-    def audit_reference_resolution(self, stage):
-        return 1024 if self.execution.nodal_resolution_profile == 'band_matched' else None
 
     def close(self):
         self._geometry_cache.clear()

@@ -17,7 +17,6 @@ def test_sampled_spectral_matches_certified_construction_without_certificates():
     reference = certified.prepare(curve, 2, curve.band)
     np.testing.assert_array_equal(current.derivatives, reference.derivatives)
     np.testing.assert_array_equal(current.base_projection, reference.base_projection)
-    np.testing.assert_array_equal(current.fine_base_projection, reference.fine_base_projection)
 
     zero, _ = sampled.geometry_update(np.zeros(5), prepared=current)
     assert zero is curve
@@ -25,7 +24,7 @@ def test_sampled_spectral_matches_certified_construction_without_certificates():
     candidate, report = sampled.geometry_update(step, prepared=current)
     expected, _ = certified.geometry_update(step, prepared=reference)
     np.testing.assert_array_equal(candidate.coefficients, expected.coefficients)
-    assert report['projection_relative'] < sampled.projection_tolerance
+    assert report['refits'] == 1
     assert sampled.counts['trial_constructions'] == 2
     assert not any('certificate' in key for key in sampled.counts)
 

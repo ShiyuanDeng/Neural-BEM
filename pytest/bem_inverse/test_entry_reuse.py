@@ -19,7 +19,7 @@ from test_resolution_resume import ScalarUpdate
 
 
 class TwoFrequencyPhysics:
-    """Deterministic radius model: prediction k*r, refined adds a tiny resolution term."""
+    """Deterministic radius model: prediction k*r plus a tiny resolution term."""
 
     def __init__(self):
         self.calls = []
@@ -38,7 +38,7 @@ class TwoFrequencyPhysics:
 
 def stages():
     observations = tuple(SimpleNamespace(scattered=np.array([k*1.6], complex), wavenumber=k) for k in (1., 2.))
-    first = FitStage('first', observations, (.5, .5), (1e-3, 1e-3), 0, 1, 8, 16, 1, 40)
+    first = FitStage('first', observations, (.5, .5), 0, 1, 8, 1, 40)
     return first, replace(first, label='second', iterations=4)
 
 
@@ -60,24 +60,23 @@ def run(reuse, *, strict=False):
 def test_reused_entry_reproduces_the_stage_and_its_charges(strict):
     a0, fresh, ledger0, calls0, _ = run(False, strict=strict)
     a1, reused, ledger1, calls1, _ = run(True, strict=strict)
-    assert a1.final_entry is not None and a1.final_entry.refined_prediction is not None
+    assert a1.final_entry is not None
     assert not fresh.entry_reused and reused.entry_reused
     assert fresh.accepted_steps >= 1
     for key in ('outcome', 'stop_reason', 'accepted_steps', 'initial_loss', 'final_loss'):
         assert getattr(fresh, key) == getattr(reused, key)
     assert fresh.history == reused.history and fresh.trials == reused.trials
-    assert fresh.acceptance_checks == reused.acceptance_checks
     np.testing.assert_array_equal(fresh.curve.coefficients, reused.curve.coefficients)
     assert ledger0 == ledger1
-    # The base production and the base refined solve at both frequencies are skipped.
-    assert calls0-calls1 == 4
+    # The base solve at both frequencies is skipped.
+    assert calls0-calls1 == 2
 
 
 def test_entry_requires_the_same_curve_catalog_and_resolution():
     a, _, _, _, second = run(False)
     entry = a.final_entry
     assert entry.matches(a.curve, second, .5, entry.physics)
-    assert not entry.matches(a.curve, replace(second, nodes=10, refined_nodes=20), .5, entry.physics)
+    assert not entry.matches(a.curve, replace(second, nodes=10), .5, entry.physics)
     assert not entry.matches(FourierCurve.circle(1.7), second, .5, entry.physics)
     assert not entry.matches(a.curve, second, .6, entry.physics)
     assert not entry.matches(a.curve, second, .5, object())
@@ -92,13 +91,11 @@ def test_runner_carries_entries_between_stages_and_drops_them_at_cleanup(monkeyp
     def fake_fit(curve, stage, contrast, update, config, ledger, **kwargs):
         seen.append((stage.label, kwargs['entry'], kwargs['retain_final']))
         return StageResult(stage.label, curve, 'NORMAL_OPTIMIZER_RETURN', 'gradient_tolerance', True, 0, 1., 1.,
-                           [], [], [], final_entry=('endpoint', stage.label), entry_reused=kwargs['entry'] is not None)
-    def fake_audit(curve, stage, config, problem, physics, update, seconds):
-        return dict(passed=True, relative_residual=np.ones(len(problem.real)), seconds=0., work={})
+                           [], [], final_entry=('endpoint', stage.label), entry_reused=kwargs['entry'] is not None)
     monkeypatch.setattr(runner, 'fit_stage', fake_fit)
     monkeypatch.setattr(physics, 'observable_frontier', lambda *args: dict(frontier=0))
     result = runner.fit(problem, physics=physics, policy=CumulativePolicy(), output=tmp_path,
-        geometry_update='spectral', localization_adapter=lambda p, *args: (p.initial, {}), audit_adapter=fake_audit)
+        geometry_update='spectral', localization_adapter=lambda p, *args: (p.initial, {}))
     labels = [label for label, _, _ in seen]
     assert labels[0] == 'warmup_025_damped' and 'fixed_M25' in labels
     for index, (label, entry, retain) in enumerate(seen):

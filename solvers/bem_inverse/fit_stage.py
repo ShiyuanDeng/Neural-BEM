@@ -1,14 +1,17 @@
 """One stage of the inverse: A1–A4 → B5–B8 → C9–C12.
 
 The main function below retains the actual iteration, damping retry and
-backtracking loops. It owns the accepted state and explicit responses to
-rejections, numerical failures and optional resolution changes. Numbered
-modules compute the mathematics; checks.py evaluates numerical conditions.
+backtracking loops. It owns the accepted state and the responses to rejected
+lengths and numerical failures. Two local steps carry the mathematics:
+``evaluate`` (A1–A4 forward solves, then the B5 residual) and ``linearize``
+(B6 update space, B7 derivatives, B8 J and g). checks.py evaluates numerical
+conditions.
 
-FitStage supplies active observations, M, K_geometry, backend resolution tokens
-and the iteration/quota limits. The selected update supplies normal-coordinate
-geometry and its complete-trial tangent; the selected physics supplies fields
-and reciprocal derivatives. Work and callback ordering are preserved.
+FitStage supplies active observations, M, K_geometry, the backend resolution
+token and the iteration/quota limits. The selected update supplies
+normal-coordinate geometry and its complete-trial tangent; the selected physics
+supplies fields and reciprocal derivatives. A trial curve is accepted when its
+loss is lower than the current loss; nothing is re-solved at a finer resolution.
 """
 from dataclasses import replace
 from copy import deepcopy
@@ -20,22 +23,20 @@ from ordered_boundary.validation_cache import fit_geometry_validation
 
 from .continuation.geometry_runtime import geometry_validated
 from .c9_lm import damping_floor, hanke_damping
-from .stage_types import StageResult, StageEntry, StageCheckpoint, checkpoint_signature, _PromoteBase
+from .stage_types import StageResult, StageEntry, StageCheckpoint, checkpoint_signature
 from .errors import Stop, StageQuota, NumericalFailure, UpdateRefused, NORMAL_RETURN, STAGE_QUOTA
-from .objective import Objective
 from .forward_batch import solve_frequencies
 from .forward_solvers import bind_forward_solve
 from .recording import observe
 from .geometry_update_methods import bind_geometry_update, control_step
-from . import b5_residual, b8_gauss_newton, c9_lm, c11_trial_evaluation, c12_iteration, checks
+from . import b5_residual, b8_gauss_newton, c9_lm, c12_iteration, checks
 
 
 
 @fit_geometry_validation
 @geometry_validated
-def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None, physics=None,
-              resume=None, pause_after=None, resolution_response=None,
-              entry=None, retain_final=False):
+def fit_stage(curve, stage, contrast, update, config, ledger, *, physics, on_accept=None,
+              resume=None, pause_after=None, entry=None, retain_final=False):
     """Run one stage, optionally under a fit-local ``geometry_validation`` cache.
 
     Exact reuse and spatial intersection checks are enabled by default. Use
@@ -44,20 +45,16 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
     generic cache callback's ``num_nodes`` is unset for this stage interface;
     resolutions remain available in the caller's FitStage record.
 
-    ``entry`` (a previous stage's ``StageEntry``) replaces the initial production
-    solve and the base refined solve when it matches this stage exactly; charges
-    are replayed, so decisions and receipts are unchanged. ``retain_final`` returns
-    this stage's endpoint as ``StageResult.final_entry`` for the next stage.
+    ``entry`` (a previous stage's ``StageEntry``) replaces the initial forward
+    solves when it matches this stage exactly; their charges are replayed, so
+    decisions and receipts are unchanged. ``retain_final`` returns this stage's
+    endpoint as ``StageResult.final_entry`` for the next stage.
     """
     started = perf_counter()
     geometry_update = bind_geometry_update(update)
     forward_solve = bind_forward_solve(physics)  # modal_muller.forward_solve or nodal_kress.forward_solve
     if curve.band != stage.curve_modes:
         raise ValueError("Pass the curve at the stage storage band.")
-    if resolution_response is not None:
-        if stage.nodes > resolution_response.production_nodes or stage.refined_nodes > resolution_response.refined_nodes:
-            raise ValueError('Starting resolution exceeds the response ceiling')
-        ledger.strict_dispatch = True
     signature = checkpoint_signature(stage, contrast, config, update) if resume is not None or pause_after is not None else None
     if resume is not None:
         if resume.signature != signature or not np.array_equal(curve.coefficients, resume.current.curve.coefficients):
@@ -65,120 +62,53 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
         for key in ('work_units', 'stage', 'stage_units', 'stage_quota', 'cap', 'solves', 'reciprocal_batches', 'failed'):
             if ledger.snapshot()[key] != resume.work[key]:
                 raise ValueError('Resume ledger mismatch: '+key)
-    objective = Objective(stage, contrast, config, ledger, physics=physics)
-    m = objective.count
-    history, trials, acceptance_checks = [], [], []
+    observed = np.column_stack([o.scattered.reshape(-1) for o in stage.observations])
+    m = len(stage.observations)
+    failures = []
+    history, trials = [], []
     accepted_steps, converged, stop_reason, outcome, detail = 0, False, "maximum_iterations", NORMAL_RETURN, None
     current = None
     initial_loss = float("nan")
     checkpoint = None
-    resolution_events = []
-    promotion_objective = None
     reach_cache = {}
     resume_iteration = 0
     geometry_proposals = 0
 
-    def residual_evaluation(curve, batch):
-        """B5 only: turn the forward predictions into this stage's residual/loss."""
-        if batch is None:
-            return None
+    def evaluate(curve, category, reused=None):
+        """A1–A4 at every active frequency, then B5: residual r and loss. None if a solve fails.
+
+        ``reused`` is an exactly matching previous endpoint (prediction, forward states);
+        its solves are charged as if they ran, but not repeated.
+        """
+        if reused is None:
+            batch = solve_frequencies(curve, stage.observations, contrast, stage.nodes, category,
+                                      forward_solve=forward_solve, ledger=ledger, physics=physics, failures=failures)
+            if batch is None:
+                return None
+        else:
+            ledger.reserve(m)
+            ledger.replay('solve', category, m)
+            batch = reused
         prediction, forwards = batch
-        evaluation = b5_residual.evaluate(curve, prediction, forwards, objective.observed,
-                                          stage.weights, config.residual_floor)
-        observe(objective.physics, 'objective', stage=stage, config=config, ledger=ledger,
-                evaluation=evaluation, observed=objective.observed)
+        evaluation = b5_residual.evaluate(curve, prediction, forwards, observed, stage.weights, config.residual_floor)
+        observe(physics, 'objective', stage=stage, config=config, ledger=ledger,
+                evaluation=evaluation, observed=observed)
         return evaluation
 
-    def admissible(candidate_curve):
-        return checks.inside_box(candidate_curve, config.domain_box)
-
-
-    def finer_objective():
-        nonlocal promotion_objective
-        if promotion_objective is None:
-            finer = replace(stage, nodes=resolution_response.production_nodes,
-                            refined_nodes=resolution_response.refined_nodes)
-            promotion_objective = Objective(finer, contrast, config, ledger,
-                                            physics=resolution_response.physics or physics)
-        return promotion_objective
-
-    def promote(fine):
-        nonlocal stage, objective, physics, forward_solve
-        stage, objective, physics = fine.stage, fine, fine.physics
-        forward_solve = bind_forward_solve(physics)
-        resolution_events.append(dict(action='promoted', nodes=stage.nodes, refined_nodes=stage.refined_nodes,
-                                      work=ledger.snapshot()))
-
-    def validate(base, candidate):
-        """C11. Ordinary acceptance, optional refinement, and explicit restart responses."""
-        rb, rc = c11_trial_evaluation.refined_pair(objective, base, candidate, ledger)
-        row, base_ok, candidate_ok = c11_trial_evaluation.checked_pair(base, candidate, rb, rc, stage, config, acceptance_checks=acceptance_checks, physics=physics, ledger=ledger,
-                                                  check_base=resolution_response is not None)
-        if resolution_response is None:
-            if not candidate_ok and config.resolution_gate == 'absolute':
-                raise NumericalFailure("candidate leaves the frozen numerical-resolution regime")
-            return candidate if row['accepted'] else None
-        if base_ok and candidate_ok:
-            return candidate if row['accepted'] else None
-        if stage.nodes == resolution_response.production_nodes:
-            if not base_ok:
-                raise NumericalFailure('unresolved accepted base at maximum permitted resolution')
-            resolution_events.append(dict(action='reject_inaccurate_candidate', check=deepcopy(row),
-                                          work=ledger.snapshot()))
-            return None
-        fine = finer_objective()
-        ledger.reserve(2*m)
-        rrb, rrc = fine.refined(base.curve), fine.refined(candidate.curve)
-        finer_row, fine_base_ok, fine_candidate_ok = c11_trial_evaluation.checked_pair(rb, rc, rrb, rrc, fine.stage, config, acceptance_checks=acceptance_checks, physics=physics, ledger=ledger, check_base=True)
-        resolution_events.append(dict(action='refinement_attempt', check=deepcopy(finer_row),
-                                      work=ledger.snapshot()))
-        if not fine_base_ok:
-            raise NumericalFailure('unresolved accepted base at maximum permitted resolution')
-        if finer_row['accepted'] and fine_candidate_ok:
-            # Rebuild the factorized production evaluation at the promoted N.
-            # Its refined counterpart remains in the fine objective's cache.
-            rebuilt = fine.production(candidate.curve, 'promotion_candidate')
-            if rebuilt is None:
-                raise NumericalFailure('promoted candidate factorization failed')
-            repeat, _, _ = c11_trial_evaluation.checked_pair(rb, rebuilt, rrb, rrc, fine.stage, config, acceptance_checks=acceptance_checks, physics=physics, ledger=ledger, check_base=True)
-            if not repeat['accepted']:
-                raise NumericalFailure('promoted candidate changed during factorization rebuild')
-            promote(fine)
-            return rebuilt
-        if not base_ok:
-            promote(fine)
-            raise _PromoteBase()
-        return None
-
-    def qualified_base(evaluation):
-        """No retry may start from an unresolved retained state."""
-        refined = objective.refined(evaluation.curve)
-        if refined is None:
-            raise NumericalFailure('retained base refinement failed')
-        discrepancy = checks.relative_columns(evaluation.prediction, refined.prediction)
-        if checks.fields_agree(discrepancy, stage.discrepancy_tolerances):
-            return evaluation, False
-        if stage.nodes == resolution_response.production_nodes:
-            raise NumericalFailure('unresolved accepted base at maximum permitted resolution')
-        fine = finer_objective()
-        finer = fine.refined(evaluation.curve)
-        if finer is None:
-            raise NumericalFailure('retained base finer solve failed')
-        discrepancy = checks.relative_columns(refined.prediction, finer.prediction)
-        if checks.fields_unresolved(discrepancy, stage.discrepancy_tolerances):
-            raise NumericalFailure('unresolved accepted base at maximum permitted resolution')
-        rebuilt = fine.production(evaluation.curve, 'promotion_base')
-        if rebuilt is None:
-            raise NumericalFailure('promoted base factorization failed')
-        promote(fine)
-        return rebuilt, True
-
-    def gradient_frame(evaluation):
+    def linearize(evaluation):
+        """B6–B8 at an evaluated curve: update space, residual Jacobian J and gradient g."""
         # B6. Complete-trial Cartesian coefficient velocities at this curve.
         space = update.prepare(evaluation.curve, stage.update_modes, stage.curve_modes)
-        ledger.reserve(4 * m)  # Jacobian plus one production/refined step opportunity
-        # B7–B8. Reuse the forward factors for the data Jacobian; normalize it to real J.
-        J = objective.jacobian(evaluation, update, space)
+        ledger.reserve(2 * m)  # the Jacobian, then one trial evaluation
+        # B7. Reciprocal derivatives reuse each frequency's forward factors.
+        blocks = []
+        with ledger.calls(physics.ordered_calls, lambda forward: physics.derivative(forward, update, space),
+                          evaluation.forwards, "reciprocal", "derivative") as calls:
+            for call in calls:
+                block = call()
+                blocks.append(block.reshape(-1, block.shape[-1]))
+        # B8. The B5 map applied to each data derivative column gives J; then g = J.T r.
+        J = b8_gauss_newton.residual_jacobian(blocks, observed, stage.weights, config.residual_floor)
         g = b8_gauss_newton.gradient(J, evaluation.residual)
         checks.require_gradient(g, J.shape[1])
         observe(physics, 'linearization', evaluation=evaluation, space=space, J=J,
@@ -194,13 +124,11 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
                                      imag=evaluation.curve.coefficients.imag.tolist()),
                    work=ledger.snapshot())
         if trial is not None:
-            row.update({k: trial[k] for k in ("maximum_normal_m", "rms_normal_m", "projection_relative",
+            row.update({k: trial[k] for k in ("maximum_normal_m", "rms_normal_m",
                                                "speed_ratio", "accepted_fraction", "gain_ratio",
                                                "damping_feedback", "damping_floor") if k in trial})
         if g is None:
             row['terminal_linearization_skipped'] = True
-        if resolution_response is not None:
-            row.update(nodes=stage.nodes, refined_nodes=stage.refined_nodes)
         history.append(row)
         observe(physics, 'accepted_history', row=row, evaluation=evaluation, ledger=ledger)
 
@@ -210,8 +138,7 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
             return
         checkpoint = StageCheckpoint(checkpoint_signature(stage, contrast, config, update), stage,
             replace(current, forwards=()), J.copy(), g.copy(), accepted_steps, damping,
-            initial_loss, scale, deepcopy(ledger.snapshot()), deepcopy(history), deepcopy(trials),
-            deepcopy(acceptance_checks), dict(objective.refined_cache))
+            initial_loss, scale, deepcopy(ledger.snapshot()), deepcopy(history), deepcopy(trials))
 
     scale = max(float(np.linalg.norm(curve.coefficients) * update.length_unit_m), 1.0)
     smoothing = None
@@ -221,41 +148,26 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
 
     reusable = entry is not None and resume is None and entry.matches(curve, stage, contrast, physics)
     try:
-        if not admissible(curve):
+        if not checks.inside_box(curve, config.domain_box):
             raise NumericalFailure("initial state leaves the geometry domain")
         if resume is None:
-            if reusable:
-                current = objective.reused(curve, entry.prediction, entry.forwards, "initial_objective")
-                if entry.refined_prediction is not None:
-                    objective.reusable_refined[entry.curve_bytes] = entry.refined_prediction
-            else:
-                # A1–A4. Selected standalone solver, once per active frequency.
-                batch = solve_frequencies(curve, stage.observations, contrast, stage.nodes,
-                    "initial_objective", forward_solve=forward_solve, ledger=ledger,
-                    physics=objective.physics, failures=objective.failures)
-                current = residual_evaluation(curve, batch)  # B5: r and loss.
+            current = evaluate(curve, "initial_objective",
+                               (np.array(entry.prediction, copy=True), entry.forwards) if reusable else None)
             if current is None:
                 raise NumericalFailure("initial state is not solver-ready")
             initial_loss = current.loss
             if on_accept is not None:
                 on_accept(0, current)
-            if resolution_response is not None:
-                current, _ = qualified_base(current)
             damping = config.initial_damping
-            space, J, g = gradient_frame(current)
+            space, J, g = linearize(current)
             record(0, current, g, np.zeros(J.shape[1]), damping, damping)
         else:
             current, J, g = resume.current, resume.matrix.copy(), resume.gradient.copy()
-            history, trials, acceptance_checks = deepcopy((resume.history, resume.trials, resume.checks))
+            history, trials = deepcopy((resume.history, resume.trials))
             geometry_proposals = sum(t.get('geometry_constructed', True) for t in trials)
             accepted_steps, resume_iteration = resume.iteration, resume.iteration
             damping, initial_loss, scale = resume.damping, resume.initial_loss, resume.scale
-            objective.refined_cache = dict(resume.refined_cache)
             space = update.prepare(current.curve, stage.update_modes, stage.curve_modes)
-            if resolution_response is not None:
-                current, changed = qualified_base(current)
-                if changed:
-                    space, J, g = gradient_frame(current)
         capture()
         if checks.loss_converged(current.loss, config.loss_tolerance):
             converged, stop_reason = True, "loss_tolerance"
@@ -279,8 +191,6 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
             accepted = None
             lambda_trial = damping
             rule = None
-            restart = False
-            accuracy_limited = False
             seen_steps = set()
             floor = damping_floor(H_GN, D, config.damping_floor_relative) if config.damping_rule == 'agreement' else 0.
             if floor:
@@ -311,10 +221,7 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
                     stage=stage, config=config, ledger=ledger)
                 # Backtracking: construct and evaluate a_used = 0.5**backtrack * a_bounded.
                 # `continue` below means "this length failed, halve it". Each failure
-                # records its reason in `trial` (refused, outside_domain, nondecreasing,
-                # numerical_rejection, acceptance_margin). `restart` means the base
-                # changed (resolution promotion): redo this iteration from the new
-                # base without counting it.
+                # records its reason in `trial` (refused, outside_domain, nondecreasing).
                 for backtrack in range(config.max_backtracks + 1):
                     if config.damping_rule == 'agreement':
                         ledger.reserve(0)  # deadline/work check before geometry, even after pure refusals
@@ -335,8 +242,6 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
                     if config.log_model or feedback:
                         trial.update(predicted_decrease=float(-(g @ a_used) - 0.5 * a_used @ H_GN @ a_used),
                                      **(rule or {}))
-                    if resolution_response is not None:
-                        trial.update(proposal_nodes=stage.nodes, proposal_refined_nodes=stage.refined_nodes)
                     trials.append(trial)
                     if feedback:
                         key = np.ascontiguousarray(a_used).tobytes()
@@ -344,13 +249,13 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
                             trial.update(status='refused', reason='repeated_clipped_proposal', geometry_constructed=False)
                             continue
                         seen_steps.add(key)
-                    # Build the finite geometry trial. The selected method runs its own
+                    # C10. Build the trial curve. The selected method runs its own
                     # checks and raises UpdateRefused, which counts as a rejected length.
                     geometry_proposals += 1
                     trial['geometry_constructed'] = True
                     geometry_started = perf_counter()
                     try:
-                        candidate_curve, geometry = geometry_update(a_used, prepared=space)
+                        c_trial, geometry = geometry_update(a_used, prepared=space)
                         trial.update(geometry)
                         if 'a_used' in geometry:
                             a_used = np.asarray(geometry['a_used'], float)
@@ -371,67 +276,36 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
                         continue
                     if config.log_model:
                         trial["geometry_seconds"] = perf_counter()-geometry_started
-                    observe(physics, 'geometry_trial', base=current.curve, candidate=candidate_curve,
+                    observe(physics, 'geometry_trial', base=current.curve, candidate=c_trial,
                         step=a_used, space=space, trial=trial, ledger=ledger,
                         certificates=deepcopy(getattr(update,'records',[])))
-                    if not admissible(candidate_curve):
+                    if not checks.inside_box(c_trial, config.domain_box):
                         trial.update(status="refused", reason="outside_domain")
                         continue
-                    # A1–A4 at this trial boundary; B5 remains a separate operation.
-                    batch = solve_frequencies(candidate_curve, stage.observations, contrast, stage.nodes,
-                        "candidate", forward_solve=forward_solve, ledger=ledger,
-                        physics=objective.physics, failures=objective.failures)
-                    candidate = residual_evaluation(candidate_curve, batch)
-                    if candidate is None:
+                    # A1–A4 → B5 at the trial curve.
+                    evaluation = evaluate(c_trial, "candidate")
+                    if evaluation is None:
                         trial.update(status='physics_failed', reason='production_evaluation_failed',
-                                     physics_failures=deepcopy(objective.failures))
+                                     physics_failures=deepcopy(failures))
                         raise NumericalFailure("production evaluation failed at candidate state")
-                    checks.require_finite_trial(candidate)
-                    trial.update(loss=candidate.loss)
-                    # C11. First test: the production loss must decrease.
-                    if checks.production_nondecreasing(candidate.loss, current.loss):
+                    checks.require_finite_trial(evaluation)
+                    trial.update(loss=evaluation.loss)
+                    # C11. The trial is accepted when its loss is lower than the current loss.
+                    if checks.production_nondecreasing(evaluation.loss, current.loss):
                         trial["status"] = "nondecreasing"
                         continue
-                    # C11. Refined evaluations, field agreement and gain margin; see
-                    # validate() above. None means rejected (halve again); an
-                    # exception means the base itself must be rebuilt.
-                    before_checks = len(acceptance_checks)
-                    try:
-                        qualified = validate(current, candidate)
-                    except _PromoteBase:
-                        trial.update(status='base_promotion_retry', nodes=stage.nodes)
-                        current = objective.production(current.curve, 'promotion_base')
-                        if current is None:
-                            raise NumericalFailure('promoted base factorization failed')
-                        space, J, g = gradient_frame(current)
-                        restart = True
-                        break
-                    if qualified is None:
-                        inaccurate = any(c.get('numerical_obstruction', False) for c in acceptance_checks[before_checks:])
-                        accuracy_limited |= inaccurate
-                        trial["status"] = "numerical_rejection" if inaccurate else "acceptance_margin"
-                        continue
-                    candidate = qualified
-                    if resolution_response is not None:
-                        trial.update(original_production_loss=trial['loss'], loss=candidate.loss,
-                                     nodes=stage.nodes, refined_nodes=stage.refined_nodes)
                     if config.log_model or feedback:
-                        trial["actual_decrease"] = current.loss-candidate.loss
+                        trial["actual_decrease"] = current.loss-evaluation.loss
                         pred = trial["predicted_decrease"]
                         trial["gain_ratio"] = trial["actual_decrease"]/pred if pred > 0 else None
                     trial["status"] = "accepted"
-                    accepted = (candidate, a_used, lambda_trial, trial)
+                    accepted = (evaluation, a_used, lambda_trial, trial)
                     break
-                if accepted is not None or restart:
+                if accepted is not None:
                     break
                 lambda_trial *= config.damping_increase
-            if restart:
-                iteration -= 1  # same iteration, original quota and damping
-                continue
             if accepted is None:
-                stop_reason = "accuracy_limited_trials_exhausted" if accuracy_limited else "no_decreasing_step"
-                if accuracy_limited:
-                    outcome = 'ACCURACY_LIMITED_TRIALS'
+                stop_reason = "no_decreasing_step"
                 break
             # C12. Accepted step: commit it, set the next damping, call on_accept,
             # rebuild J and g at the new state, then test the stopping conditions.
@@ -446,15 +320,14 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
             if on_accept is not None:
                 on_accept(iteration, current)
             terminal = checks.loss_converged(current.loss, config.loss_tolerance) or iteration >= stage.iterations
-            if (config.avoid_terminal_linearization and terminal and pause_after is None and
-                    resume is None and resolution_response is None):
+            if config.avoid_terminal_linearization and terminal and pause_after is None and resume is None:
                 # on_accept has already observed the current evaluation; no callback
-                # receives a tangent. Checkpoint/resolution-response paths retain it.
+                # receives a tangent. Checkpoint paths retain it.
                 record(iteration, current, None, a_used, used_damping, damping, trial)
                 if checks.loss_converged(current.loss, config.loss_tolerance):
                     converged, stop_reason = True, 'loss_tolerance'
                 break
-            space, J, g = gradient_frame(current)
+            space, J, g = linearize(current)
             record(iteration, current, g, a_used, used_damping, damping, trial)
             capture()
             if (config.damping_rule == 'agreement' and not checks.loss_converged(current.loss, config.loss_tolerance) and
@@ -477,20 +350,12 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, on_accept=None,
         outcome, stop_reason, detail = STAGE_QUOTA, None, str(exc)
     except Stop as exc:
         outcome, stop_reason, detail = exc.code, None, str(exc)
-    if resolution_response is not None and trials and 'status' not in trials[-1]:
-        trials[-1].update(status=outcome, reason=detail)
     final = curve if current is None else current.curve
     final_entry = None
     if retain_final and current is not None and len(current.forwards) == m:
-        key = current.curve.coefficients.tobytes()
-        refined = objective.refined_cache.get(key)
-        final_entry = StageEntry(key, current.curve.band, stage.nodes, stage.refined_nodes, tuple(stage.observations),
-            float(contrast), physics, current.prediction, current.forwards,
-            refined.prediction if refined is not None else objective.reusable_refined.get(key))
+        final_entry = StageEntry(current.curve.coefficients.tobytes(), current.curve.band, stage.nodes,
+            tuple(stage.observations), float(contrast), physics, current.prediction, current.forwards)
     return StageResult(stage.label, final, outcome, stop_reason, converged, accepted_steps, initial_loss,
-                       float("nan") if current is None else current.loss, history, trials, acceptance_checks,
+                       float("nan") if current is None else current.loss, history, trials,
                        detail, ledger.snapshot(), perf_counter() - started, checkpoint,
-                       resolution_events, stage.nodes, stage.refined_nodes,
-                       deepcopy(objective.failures), geometry_proposals,
-                       final_entry, reusable)
-
+                       deepcopy(failures), geometry_proposals, final_entry, reusable)

@@ -12,7 +12,6 @@ import numpy as np
 from .. import checks
 from ..continuation.geometry import (FourierCurve, arclength_angles, grid_size,
                                      integer, normal_basis, values)
-from ..errors import refusal_from_value_error
 from .spectral import Grid, push_and_refit, sample_grid, geometry_update as spectral_geometry_update
 
 
@@ -27,11 +26,9 @@ class Prepared:
     labels: tuple
     derivatives: np.ndarray
     base_projection: np.ndarray
-    fine_base_projection: np.ndarray
     count: int
     preparation_seconds: float
     grid: Grid
-    fine_grid: Grid
 
 
 def projection_derivatives(curve, update_modes, band, count, length_unit_m):
@@ -82,17 +79,13 @@ class AnalyticSpectralUpdate:
     """Analytic preparation with the same finite map as sampled spectral."""
     name = 'centred_state_band_spectral_projection'
 
-    def __init__(self, length_unit_m, *, projection_tolerance=1e-5,
-                 derivative_step_m=1e-7, window=64, shadow=False,
+    def __init__(self, length_unit_m, *, derivative_step_m=1e-7, window=64, shadow=False,
                  order='certificate_first'):
         if window != 64 or shadow or order != 'certificate_first':
             raise ValueError('Certificate settings require the certified_spectral method.')
         if not np.isfinite(length_unit_m) or length_unit_m <= 0:
             raise ValueError('length_unit_m must be positive.')
-        if not np.isfinite(projection_tolerance) or projection_tolerance <= 0:
-            raise ValueError('projection_tolerance must be positive.')
         self.length_unit_m = float(length_unit_m)
-        self.projection_tolerance = float(projection_tolerance)
         self.derivative_step_m = float(derivative_step_m)
         checks.require_derivative_step(self.derivative_step_m)
         self.counts = dict(preparations=0, geometry_projections=0, trial_constructions=0,
@@ -101,15 +94,13 @@ class AnalyticSpectralUpdate:
         self.last_trial = {}
 
     def settings(self):
-        return dict(name=self.name, length_unit_m=self.length_unit_m,
-            projection_tolerance=self.projection_tolerance, derivative_step_m=None,
+        return dict(name=self.name, length_unit_m=self.length_unit_m, derivative_step_m=None,
             coordinates='real Fourier coefficients of normal distance h (m) in normalized arclength',
             gauge='arclength refit on every trial',
             construction='z + P_K[R(z+h*n)-R(z)], analytic derivative of discrete quadrature',
             derivative='analytic derivative of discrete quadrature (NF-001; experimental)',
-            projection_tolerance_meaning='grid refinement, not intentional smoothing',
-            resampler='eq. 9 quadrature on the uniform grid (count and 2*count); no splines',
-            boundary_samples=True, projection_error_control='coarse/fine diagnostic; not a rigorous bound',
+            resampler='eq. 9 quadrature on the uniform grid; no splines',
+            boundary_samples=True,
             validity='coefficient area, sampled speed and sampled segment intersections',
             sampled_validity_fallback=False)
 
@@ -124,16 +115,15 @@ class AnalyticSpectralUpdate:
         labels = ('a0', *[f'a{m}' for m in harmonics], *[f'b{m}' for m in harmonics])
         count = grid_size(max(curve_modes, update_modes))
         zeros = np.zeros(len(orders))
-        grid, fine_grid = sample_grid(curve, count, update_modes), sample_grid(curve, 2*count, update_modes)
+        grid = sample_grid(curve, count, update_modes)
         base = push_and_refit(grid, zeros, curve_modes, self.length_unit_m)[0]
-        fine = push_and_refit(fine_grid, zeros, curve_modes, self.length_unit_m)[0]
         derivatives = projection_derivatives(curve, update_modes, curve_modes, count, self.length_unit_m)
         elapsed = perf_counter()-started
         self.counts['preparations'] += 1
-        self.counts['geometry_projections'] += 2
+        self.counts['geometry_projections'] += 1
         self.counts['preparation_seconds'] += elapsed
         return Prepared(curve, update_modes, curve_modes, self.length_unit_m, orders, labels,
-                        derivatives, base, fine, count, elapsed, grid, fine_grid)
+                        derivatives, base, count, elapsed, grid)
 
     @staticmethod
     def _checked(space, coefficients):
@@ -169,8 +159,7 @@ class AnalyticSpectralUpdate:
 def geometry_update(normal_update, *, prepared, settings):
     """Use the sampled spectral trial; only its prepared derivative differs.
 
-    ``spectral.geometry_update`` constructs both moved curves, projects them in
-    arclength, checks grid agreement, and checks area, speed and intersections
-    of the stored candidate.
+    ``spectral.geometry_update`` moves the curve, refits it in arclength on the
+    N-point grid, and checks area, speed and intersections of the stored trial curve.
     """
     return spectral_geometry_update(normal_update, prepared=prepared, settings=settings)
