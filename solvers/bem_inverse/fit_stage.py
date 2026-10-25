@@ -305,9 +305,7 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, physics, forwar
                     evaluation = evaluate(c_trial, "candidate")
                     if evaluation is None:
                         trial.update(status='physics_failed', reason='production_evaluation_failed',
-                                     physics_failures=deepcopy(failures),
-                                     coefficients=dict(real=c_trial.coefficients.real.tolist(),
-                                                       imag=c_trial.coefficients.imag.tolist()))
+                                     physics_failures=deepcopy(failures))
                         raise NumericalFailure("production evaluation failed at candidate state")
                     checks.require_finite_trial(evaluation)
                     trial.update(loss=evaluation.loss)

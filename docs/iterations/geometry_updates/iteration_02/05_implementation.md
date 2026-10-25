@@ -34,9 +34,10 @@ one addition to `fit_stage`, as planned.
   that direction.
 - **Slider and N-update metric.** Both support only the default Marquardt
   damping. The N-update's tangential columns have no normal move.
-- **Failed trial curve.** When the physics refuses a trial curve, its
-  coefficients are now saved in that trial's record. The video's last frame
-  needs it. Nothing else in the record changed.
+- **Failed trial curve.** The run's code (`645fc19e3`) also saved a
+  physics-refused trial curve in the trial record. That duplicated the
+  `candidate_coefficients` the physics failure record already holds, so it was
+  removed after the run. The videos read the failure record.
 - **CLI form.** All four arms run as
   `--solver modal_muller --geometry-update <name>`. For `spectral` this is the
   same physics and update as `--pipeline modal_fixed`; the CLI does not
@@ -48,9 +49,9 @@ one addition to `fit_stage`, as planned.
   column against its own norm. The constant slide s_0 is a parameter shift,
   which is in band, so its data column is exactly zero (the other s columns
   are near zero while the curve content stays below K − M). The N-update
-  audit is therefore expected to fail on those columns. The audit is
-  unchanged; the report shows which columns fail. Recovery needs the audit,
-  but no column of the plan's table does.
+  audit was therefore expected to fail on those columns. The audit is
+  unchanged. In the run it did not: the zero column agreed between the two
+  resolutions (worst column 8.6e-5); the audit failed on field agreement.
 - **Stop tests with the penalty.** The loss tolerance and the noise stop
   compare the penalised loss. Neither applies to noiseless hook c13.3.
 - **E for every arm.** History rows keep the full coefficients. The report

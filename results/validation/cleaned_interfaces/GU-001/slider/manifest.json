@@ -1,0 +1,63 @@
+{
+  "experiment": "GU-001 arm slider",
+  "inputs": "results/validation/cleaned_interfaces/TG-002/manifest.json",
+  "inputs_sha256": "34375b59a40ed8e945904b246d3022bdeeeacb2291fced1bafc16f6861be7b00",
+  "settings": {
+    "solver": "modal_muller",
+    "geometry_update": "slider",
+    "localization": "none",
+    "execution": {
+      "device": "auto",
+      "frequency_threads": 2,
+      "acceleration": "spd016",
+      "geometry": "both",
+      "resolution": 512,
+      "nodal_geometry_reuse": "off",
+      "nodal_resolution_profile": "fixed",
+      "audit_frequency_batch": 1,
+      "validity_order": "certificate_first",
+      "stage_entry_reuse": false
+    },
+    "audit_seconds": 300.0
+  },
+  "cases": [
+    "hook__c13.3"
+  ],
+  "environment": {
+    "python": "3.12.1 (v3.12.1:2305ca5144, Dec  7 2023, 17:23:38) [Clang 13.0.0 (clang-1300.0.29.30)]",
+    "platform": "macOS-26.5.1-arm64-arm-64bit",
+    "machine": "Seans-Macbook-Pro-2.local",
+    "gpu": null,
+    "torch": "2.3.1",
+    "numpy": "1.26.3",
+    "threadpools": [
+      {
+        "user_api": "blas",
+        "internal_api": "openblas",
+        "num_threads": 1,
+        "prefix": "libopenblas",
+        "filepath": "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/numpy/.dylibs/libopenblas64_.0.dylib",
+        "version": "0.3.23.dev",
+        "threading_layer": "pthreads",
+        "architecture": "armv8"
+      }
+    ],
+    "blas_threads": {
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1"
+    },
+    "inherited_sc": {
+      "SC_FORWARD_BACKEND": null,
+      "SC_FREQUENCY_THREADS": null,
+      "SC_GEOMETRY_RUNTIME": null
+    },
+    "load_average": [
+      4.2734375,
+      3.94140625,
+      3.7919921875
+    ]
+  },
+  "commit": "645fc19e31a0b6149e286d343edd888a64913b23",
+  "status": "?? results/validation/cleaned_interfaces/GU-001/\n"
+}

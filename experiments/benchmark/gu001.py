@@ -65,13 +65,13 @@ def steps(arm):
 
 
 def failed_trial(arm):
-    """The trial curve the last stage failed on, when the fit ended on one."""
+    """The trial curve the physics refused at the end of the fit, from its failure record."""
     folder = OUTPUT/arm/'runs'/CASE
     last = read(folder/'result.json')['stages'][-1]['stage']
-    for trial in reversed(read(folder/(last+'.json'))['trials']):
-        if 'coefficients' in trial:
-            return trial
-    return None
+    trials = read(folder/(last+'.json'))['trials']
+    if not trials or trials[-1].get('status') != 'physics_failed':
+        return None
+    return dict(trials[-1], coefficients=trials[-1]['physics_failures'][0]['candidate_coefficients'])
 
 
 def summary(arm):
@@ -79,19 +79,21 @@ def summary(arm):
     rows = steps(arm)
     last = rows[-1]
     stage = result['stages'][-1]
+    geometry = result['geometry_work']
     return dict(arm=arm, outcome=result['outcome'], stop=stage.get('stop'), last_stage=stage['stage'],
                 detail=c._short(result.get('detail')), recovered=result['recovered'],
                 audit=result.get('final_audit_passed'), data_loss=last['data_loss'], penalty_loss=last['penalty_loss'],
                 rms_mm=result['metrics']['rms_mm'], hausdorff_mm=result['metrics']['hausdorff_mm'],
                 fit_seconds=result['fit_and_localization_seconds'], fit_units=result['fit_and_localization_units'],
+                geometry_seconds=geometry['preparation_seconds']+geometry['trial_seconds'],
+                preparations=geometry['preparations'], trials=geometry['trial_constructions'],
+                stage_speed_ratios={r['stage']: r['speed_ratio'] for r in rows},
                 speed_ratio=speed_ratio(curve_from(result['final_curve'])),
                 maximum_speed_ratio=max(r['speed_ratio'] for r in rows), final_E=last['level_E'],
                 maximum_E=max(r['level_E'] for r in rows), accepted=sum(r['iteration'] > 0 for r in rows),
                 maximum_zero_step_jump_mm=max((r['zero_step_jump_mm'] for r in rows
                                                if r['zero_step_jump_mm'] is not None), default=None),
-                maximum_crop_mm=max((r['crop_mm'] for r in rows if r['crop_mm'] is not None), default=None),
-                maximum_normal_mm=max((r['maximum_normal_mm'] for r in rows
-                                       if r['maximum_normal_mm'] is not None), default=None))
+                maximum_crop_mm=max((r['crop_mm'] for r in rows if r['crop_mm'] is not None), default=None))
 
 
 def _g(value, spec):
@@ -107,12 +109,17 @@ def markdown(rows):
         lines.append(f"| {r['arm']} | {outcome} | {loss} | {r['rms_mm']:.2f} | {r['hausdorff_mm']:.2f} | "
                      f"{r['fit_seconds']:.0f} s, {r['fit_units']} units | {r['speed_ratio']:.3f} |")
     lines += ['', '| Arm | Accepted steps | Max speed ratio | Final E | Max E | Max zero-step jump (mm) | '
-              'Max crop (mm) | Max normal move (mm) | Audit |', '|---|---:|---:|---:|---:|---:|---:|---:|---|']
+              'Max crop (mm) | Geometry s | s per unit | Audit |', '|---|---:|---:|---:|---:|---:|---:|---:|---:|---|']
     for r in rows:
         lines.append(f"| {r['arm']} | {r['accepted']} | {r['maximum_speed_ratio']:.3f} | {r['final_E']:.2e} | "
                      f"{r['maximum_E']:.2e} | {_g(r['maximum_zero_step_jump_mm'], '.3f')} | "
-                     f"{_g(r['maximum_crop_mm'], '.2e')} | {_g(r['maximum_normal_mm'], '.2f')} | "
-                     f"{'passed' if r['audit'] else 'failed'} |")
+                     f"{_g(r['maximum_crop_mm'], '.2e')} | {r['geometry_seconds']:.0f} | "
+                     f"{r['fit_seconds']/r['fit_units']:.3f} | {'passed' if r['audit'] else 'failed'} |")
+    stages = list(dict.fromkeys(k for r in rows for k in r['stage_speed_ratios']))
+    lines += ['', 'Speed ratio of the last accepted curve in each stage:', '',
+              '| Stage | '+' | '.join(r['arm'] for r in rows)+' |', '|---|'+'---:|'*len(rows)]
+    for stage in stages:
+        lines.append(f'| {stage} | '+' | '.join(_g(r['stage_speed_ratios'].get(stage), '.3f') for r in rows)+' |')
     return '\n'.join(lines)+'\n'
 
 
