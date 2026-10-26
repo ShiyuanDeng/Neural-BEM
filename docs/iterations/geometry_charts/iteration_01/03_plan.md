@@ -112,7 +112,30 @@ If question 2 is positive:
 - compare with NR-001.
 
 Otherwise write the near-touch next step as a proposal; do not run it.
-Stop all computation by 07:00 on 2026-10-27.
+The user removed the historical 07:00 deadline when launching the agents.
+Continuation still waits for the main answer and coordinator discussion.
+
+## Execution clarification, recorded before the first run
+
+The saved `physics_failures` include `candidate_coefficients`. Rebuild the
+LM step as planned and compare the resulting curve with these exact saved
+coefficients, in addition to the three recorded scalar measurements.
+
+The chart retains length, normalized positive log-speed density, tangent
+angle and position. Keeping the speed density preserves each stored curve's
+parameter, enabling a direct coefficient round trip. Closure uses two angle
+corrections. The normal component of the saved B6 coefficient velocity is
+the first-order target. Cropping back to K can lose positivity: measure and
+check the actual cropped curve before physics, without claiming otherwise.
+
+Classify a refusal from its measured divided-difference minimum, including
+the possibility that neither a near-cusp nor a near-touch explains it.
+Report continuous local refinements of a 1024-by-1024 torus search; these
+are numerical estimates, not rigorous lower bounds. Distant approach means
+parameter separation at least pi/4. This cutoff is a reported diagnostic.
+
+Use the recorded spectral map for historical reproduction. This is a saved
+step study, not a new inverse experiment; no new fit is authorized here.
 
 ## Saved work
 
