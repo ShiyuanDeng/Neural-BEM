@@ -1,0 +1,378 @@
+{
+  "stages": [
+    {
+      "stage": "warmup_025_damped",
+      "M": 1,
+      "K_geometry": 4,
+      "outcome": "NORMAL_OPTIMIZER_RETURN",
+      "stop": "no_decreasing_step",
+      "detail": null,
+      "accepted_steps": 9,
+      "initial_loss": 0.8536248503527448,
+      "final_loss": 0.12677396788731432,
+      "seconds": 0.42726112250238657,
+      "work": {
+        "work_units": 20,
+        "stage": "warmup_025_damped",
+        "stage_units": 20,
+        "stage_quota": 600,
+        "cap": 13412,
+        "solves": {
+          "warmup_025_damped:initial_objective": 1,
+          "warmup_025_damped:candidate": 9
+        },
+        "reciprocal_batches": {
+          "warmup_025_damped:derivative": 10
+        },
+        "failed": {},
+        "seconds": 0.44962041825056076
+      },
+      "curve": {
+        "real": [
+          1.1909733524646679e-11,
+          5.588610022036854e-12,
+          -1.0838389942640966e-11,
+          -2.2784502341668282e-11,
+          -0.36021606463360517,
+          1.4155309082912049,
+          -3.0776722923947946e-11,
+          -1.580045792101165e-11,
+          -3.1272403916453095e-11
+        ],
+        "imag": [
+          8.636864041856326e-12,
+          1.085003511322619e-12,
+          2.4942827515731076e-11,
+          -3.313356629040046e-11,
+          -0.5044671070503,
+          0.4862584990372034,
+          1.2185214291611796e-11,
+          2.932843644030276e-11,
+          -3.163289909672516e-11
+        ]
+      },
+      "nodes": 512,
+      "physics_failures": [],
+      "geometry_proposals": 9
+    },
+    {
+      "stage": "stage_1_damped",
+      "M": 3,
+      "K_geometry": 8,
+      "outcome": "NORMAL_OPTIMIZER_RETURN",
+      "stop": "no_decreasing_step",
+      "detail": null,
+      "accepted_steps": 11,
+      "initial_loss": 5.721340848578481,
+      "final_loss": 0.00772672582576811,
+      "seconds": 0.2692679101601243,
+      "work": {
+        "work_units": 44,
+        "stage": "stage_1_damped",
+        "stage_units": 24,
+        "stage_quota": 1000,
+        "cap": 13412,
+        "solves": {
+          "warmup_025_damped:initial_objective": 1,
+          "warmup_025_damped:candidate": 9,
+          "stage_1_damped:initial_objective": 1,
+          "stage_1_damped:candidate": 11
+        },
+        "reciprocal_batches": {
+          "warmup_025_damped:derivative": 10,
+          "stage_1_damped:derivative": 12
+        },
+        "failed": {},
+        "seconds": 0.7694284813478589
+      },
+      "curve": {
+        "real": [
+          -0.0002562220284436472,
+          0.0002831002908770343,
+          0.00031898930505545165,
+          -0.0020040173557156816,
+          -0.003091509772935485,
+          -0.015711720943045057,
+          -0.049690203904705244,
+          -0.0035775948855214933,
+          -0.44171947719500776,
+          0.6250778445018925,
+          0.003990317461242223,
+          -0.023324839044312807,
+          0.005415925316603048,
+          -0.0036175132832511852,
+          0.001544943760301406,
+          -0.002306036790970749,
+          -0.001752456331967332
+        ],
+        "imag": [
+          0.0002154934377851131,
+          0.0002944840421507897,
+          -0.0002998676389226499,
+          0.00022725692114132406,
+          -0.0003069938845603994,
+          0.0015816879757299884,
+          0.043200163728342324,
+          -0.08152638819654948,
+          -0.5713213498308476,
+          0.36004870677597944,
+          -0.0049573808679981455,
+          0.009393192314714503,
+          -0.030804029747578107,
+          -0.010359223652967507,
+          0.0015313034244993553,
+          -0.00029139691323702607,
+          0.0018412191974766464
+        ]
+      },
+      "nodes": 512,
+      "physics_failures": [],
+      "geometry_proposals": 11
+    },
+    {
+      "stage": "stage_2_damped",
+      "M": 5,
+      "K_geometry": 12,
+      "outcome": "NUMERICAL_FAILURE",
+      "stop": null,
+      "detail": "production evaluation failed at candidate state",
+      "accepted_steps": 3,
+      "initial_loss": 0.6451674826685635,
+      "final_loss": 0.14914245088914418,
+      "seconds": 0.37048251181840897,
+      "work": {
+        "work_units": 65,
+        "stage": "stage_2_damped",
+        "stage_units": 21,
+        "stage_quota": 1250,
+        "cap": 13412,
+        "solves": {
+          "warmup_025_damped:initial_objective": 1,
+          "warmup_025_damped:candidate": 9,
+          "stage_1_damped:initial_objective": 1,
+          "stage_1_damped:candidate": 11,
+          "stage_2_damped:initial_objective": 2,
+          "stage_2_damped:candidate": 11
+        },
+        "reciprocal_batches": {
+          "warmup_025_damped:derivative": 10,
+          "stage_1_damped:derivative": 12,
+          "stage_2_damped:derivative": 8
+        },
+        "failed": {
+          "stage_2_damped:candidate": 1
+        },
+        "seconds": 1.191943402402103
+      },
+      "curve": {
+        "real": [
+          7.737336194245365e-05,
+          -0.0007571906220431486,
+          -0.005654811895865476,
+          0.007913964929108539,
+          -0.008181214524601587,
+          0.002144467042284612,
+          0.01571012023538585,
+          0.001239813031765857,
+          0.05192652120800485,
+          -0.01187352304258069,
+          -0.017754058183190476,
+          -0.0035884102889149356,
+          -0.43888800347758716,
+          0.37541194185187543,
+          0.09779801036187355,
+          0.001283864688863334,
+          -0.03509626433283393,
+          0.0528992223513991,
+          -0.013920022525428611,
+          0.0008136427967339628,
+          -0.0008716531267644313,
+          -0.0028037184871561615,
+          -0.0027134852719638263,
+          0.0025908187740144805,
+          -0.0016212868361313003
+        ],
+        "imag": [
+          0.0018187796769854336,
+          0.0014135704316510557,
+          0.0010294062561316836,
+          0.004057598723442801,
+          -0.009528081755634583,
+          -0.007116668120446498,
+          -0.0013521314928296333,
+          0.02451514374839968,
+          -0.04450174207283712,
+          0.04983906918829313,
+          0.05189377976435226,
+          -0.170382716252653,
+          -0.6674909098200388,
+          0.4072500765780274,
+          0.04573940825143996,
+          -0.001084294121433745,
+          -0.013393386940858003,
+          -0.009895769298297656,
+          0.019315783769490565,
+          0.027851857170771637,
+          0.0027186745014514497,
+          -0.012214280492618058,
+          0.009586011980911305,
+          0.00034908571825556663,
+          0.00017558694126130496
+        ]
+      },
+      "nodes": 512,
+      "physics_failures": [
+        {
+          "exception_type": "ValueError",
+          "message": "log|W|^2 needs more than 4000 Chebyshev terms (beta/Lambda=1.66e-05); curve is nearly self-touching.",
+          "traceback": "Traceback (most recent call last):\n  File \"/home/drdeng/Neural_SDF_BEM_AD_organised/solvers/bem_inverse/forward_batch.py\", line 25, in predict\n    state = forward_solve(curve, observation, contrast, nodes)\n  File \"/home/drdeng/Neural_SDF_BEM_AD_organised/solvers/bem_inverse/forward_solvers/modal_muller.py\", line 121, in forward_solve\n    prediction = _solve(curve, observation, contrast, trace_cutoff(int(resolution)), context=context)\n  File \"/home/drdeng/Neural_SDF_BEM_AD_organised/solvers/bem_inverse/forward_solvers/modal_muller.py\", line 142, in _solve\n    geometry, (A_f, radial, device, fallback) = assemble_matrix(curve, window, k, ki, cutoff, context=context)\n  File \"/home/drdeng/Neural_SDF_BEM_AD_organised/solvers/bem_inverse/forward_solvers/modal_muller.py\", line 209, in assemble_matrix\n    geometry = prepare_geometry(curve, window, device, context=context)\n  File \"/home/drdeng/Neural_SDF_BEM_AD_organised/solvers/bem_inverse/forward_solvers/modal_muller.py\", line 194, in prepare_geometry\n    slot[1] = DeviceModalGeometry(curve, window, device=device, **options)\n  File \"/home/drdeng/Neural_SDF_BEM_AD_organised/solvers/bem_inverse/modal_cuda.py\", line 229, in __init__\n    self.log, self.log_interval = log_modulus(_real_product(quotient, quotient, 2), band,\n  File \"/home/drdeng/Neural_SDF_BEM_AD_organised/solvers/bem_inverse/modal_cuda.py\", line 164, in log_modulus\n    checks.require_log_degree(degree, max_degree, beta, upper)\n  File \"/home/drdeng/Neural_SDF_BEM_AD_organised/solvers/bem_inverse/checks.py\", line 41, in require_log_degree\n    raise ValueError(f'log|W|^2 needs more than {maximum} Chebyshev terms '\nValueError: log|W|^2 needs more than 4000 Chebyshev terms (beta/Lambda=1.66e-05); curve is nearly self-touching.\n",
+          "category": "candidate",
+          "resolution": 512,
+          "frequency_hz": 500000000.0,
+          "wavenumber": {
+            "real": 1.283437720888494,
+            "imag": 0.3208594302221235
+          },
+          "candidate_sha256": "c6e8c55c9e293b83fddfb244956ca67622aba49a7dd8f1e5d925085b05a5c5b5",
+          "candidate_coefficients": {
+            "real": [
+              0.001399390813867187,
+              -0.004620896018179305,
+              -0.0030431516702268896,
+              0.00975367095751416,
+              -0.014023585283601012,
+              0.01139307250219565,
+              0.013054964727841631,
+              0.011597985185816978,
+              0.043064986494187246,
+              -0.01512493456930673,
+              -0.011991615471722838,
+              0.012419341519170929,
+              -0.44405352974128276,
+              0.36717176846706745,
+              0.09834732884578007,
+              0.03384981564352189,
+              -0.059175859834967516,
+              0.04947218160845168,
+              0.0029635219344156657,
+              -0.004217743289573921,
+              -0.003466658796098803,
+              0.004040546235412745,
+              -0.010078424842543869,
+              0.0014456020483928924,
+              0.0021308455813446973
+            ],
+            "imag": [
+              0.0025064115112910885,
+              -0.000712260592791588,
+              0.005736338901781251,
+              -0.0033768074909004573,
+              -0.009044542576876972,
+              -0.008054908182519614,
+              0.005872979015171595,
+              0.024397672651133892,
+              -0.05617098429204791,
+              0.07609363975392211,
+              0.03415887022772949,
+              -0.19278711306194707,
+              -0.6661307810037952,
+              0.3733270916933539,
+              0.07089238061122191,
+              0.01238740992102405,
+              -0.02668176331380126,
+              -0.0006458103022360031,
+              0.0044080581108468355,
+              0.02867756747323387,
+              0.02100463747376507,
+              -0.016153097656159115,
+              0.0029469575262457506,
+              0.0058589418257301105,
+              0.00047186705990426064
+            ]
+          }
+        }
+      ],
+      "geometry_proposals": 11
+    }
+  ],
+  "curve": {
+    "real": [
+      7.737336194245365e-05,
+      -0.0007571906220431486,
+      -0.005654811895865476,
+      0.007913964929108539,
+      -0.008181214524601587,
+      0.002144467042284612,
+      0.01571012023538585,
+      0.001239813031765857,
+      0.05192652120800485,
+      -0.01187352304258069,
+      -0.017754058183190476,
+      -0.0035884102889149356,
+      -0.43888800347758716,
+      0.37541194185187543,
+      0.09779801036187355,
+      0.001283864688863334,
+      -0.03509626433283393,
+      0.0528992223513991,
+      -0.013920022525428611,
+      0.0008136427967339628,
+      -0.0008716531267644313,
+      -0.0028037184871561615,
+      -0.0027134852719638263,
+      0.0025908187740144805,
+      -0.0016212868361313003
+    ],
+    "imag": [
+      0.0018187796769854336,
+      0.0014135704316510557,
+      0.0010294062561316836,
+      0.004057598723442801,
+      -0.009528081755634583,
+      -0.007116668120446498,
+      -0.0013521314928296333,
+      0.02451514374839968,
+      -0.04450174207283712,
+      0.04983906918829313,
+      0.05189377976435226,
+      -0.170382716252653,
+      -0.6674909098200388,
+      0.4072500765780274,
+      0.04573940825143996,
+      -0.001084294121433745,
+      -0.013393386940858003,
+      -0.009895769298297656,
+      0.019315783769490565,
+      0.027851857170771637,
+      0.0027186745014514497,
+      -0.012214280492618058,
+      0.009586011980911305,
+      0.00034908571825556663,
+      0.00017558694126130496
+    ]
+  },
+  "work": {
+    "work_units": 65,
+    "stage": "stage_2_damped",
+    "stage_units": 21,
+    "stage_quota": 1250,
+    "cap": 13412,
+    "solves": {
+      "warmup_025_damped:initial_objective": 1,
+      "warmup_025_damped:candidate": 9,
+      "stage_1_damped:initial_objective": 1,
+      "stage_1_damped:candidate": 11,
+      "stage_2_damped:initial_objective": 2,
+      "stage_2_damped:candidate": 11
+    },
+    "reciprocal_batches": {
+      "warmup_025_damped:derivative": 10,
+      "stage_1_damped:derivative": 12,
+      "stage_2_damped:derivative": 8
+    },
+    "failed": {
+      "stage_2_damped:candidate": 1
+    },
+    "seconds": 1.192774715833366
+  }
+}
