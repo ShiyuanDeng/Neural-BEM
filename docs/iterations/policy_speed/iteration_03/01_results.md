@@ -27,7 +27,7 @@ Final numerical checks are timed separately from fitting.
 
 ### Why hook took many iterations
 
-GU-002 spent 15.926 s on 40 accepted iterations in M11/M15, with no rejected
+GU-002 spent 15.925 s on 40 accepted iterations in M11/M15, with no rejected
 trials there. PS-002 cut iterations by leaving earlier stages at higher losses;
 its later M43/M49 stages cost 9.703 s and included eight rejected trials.
 
@@ -88,6 +88,10 @@ Circle's maximum final Jacobian discrepancy was 0.003476 against the unchanged
 0.001 tolerance. Its field and residual checks passed. This remains a failure;
 no tolerance was relaxed and no replacement fit was run.
 
+The worst circle column has norm 4.72e-10 and absolute disagreement 1.64e-12
+in normalized residual coordinates. This is a numerical qualification regression
+in a weak direction; it does not demonstrate a failed shape reconstruction.
+
 On aphex, H3 completed its schedule and reached RMS 0.01682 mm, Hausdorff upper
 bound 0.08409 mm and maximum residual 0.0000431. Its field discrepancy reached
 0.0000332 and Jacobian discrepancy 0.003248, so the final checks still failed.
@@ -110,6 +114,14 @@ The saved baseline lacks the new raw/clipped sizes, tiny-skip/retry counts and
 batch wall timers. Frequency-thread timings overlap and are not summed as wall
 time. Losses and gradients are interpreted within each fixed stage only.
 
+Seventeen new-run stages lost their last accepted history row when rebuilding
+the Jacobian hit a quota. Their final losses and curves remain saved, but their
+accepted-history timestamps and endpoint gradients are unavailable.
+
+Four affected stages belong to D1; the hook plot marks its missing history rows.
+H1, H3 and D2 have complete accepted histories. The counts, recovered outcomes
+and measured fit times above do not depend on the omitted rows.
+
 These are single fits and historical references, not repeatability estimates or
 30-case evidence. Bundled effects remain partly unresolved. No further fit is
 scheduled; the 13-fit allowance is exhausted.
@@ -120,11 +132,17 @@ The targeted adapter, recording, policy, stage-entry reuse and continuation
 checks passed. The recording check preserved accepted decisions, final curve
 and charged work. Frozen TG-002 hashes were verified before the fits.
 
-Standards review found no issues. Spec review found one unsupported preparation
-setting before any fit; it was fixed and checked. No unresolved review issue
-remains. The plan's small-check scope replaced a broad test campaign.
+The original checks caught an unsupported preparation setting before any fit.
+Follow-up review fixed recording after a post-acceptance quota stop and added
+a process lock to enforce one fit at a time. No additional fit was run.
+
+Reports now distinguish consumed slots from completed results and mark missing
+history rows without inventing timestamps or endpoint gradients. Focused checks
+confirm these changes; the original raw run records remain unchanged.
 
 
 Detailed stages: [PS-003 evidence](../../../../results/validation/cleaned_interfaces/PS-003/README.md).
 
 ![Hook loss versus iterations and time](../../../../results/validation/cleaned_interfaces/PS-003/hook_loss.png)
+
+[Supervisor assessment](02_assessment.md).

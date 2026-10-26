@@ -1,6 +1,7 @@
 """PS-003's declared adapter and scalar-recording boundaries; no benchmark fits."""
 from dataclasses import replace
 import numpy as np
+import pytest
 
 from bem_inverse import policies
 from bem_inverse.physics import Execution
@@ -66,3 +67,49 @@ def test_scalar_recording_preserves_accepted_decisions_and_charges():
     assert b.diagnostics['damping_attempts'] >= b.accepted_steps
     assert 'raw_step_norm_m' in b.trials[0]
     assert 'recent_relative_decrease' in b.history[-1]
+
+
+def test_campaign_refuses_concurrent_and_exhausted_runs_without_fitting(tmp_path, monkeypatch):
+    monkeypatch.setattr(ps003, 'OUTPUT', tmp_path)
+    with ps003.campaign_lock():
+        with pytest.raises(RuntimeError, match='only one fit at a time'):
+            ps003.run('H1')
+    monkeypatch.setattr(ps003, 'next_run', lambda: None)
+    with pytest.raises(RuntimeError, match='no further fits'):
+        ps003.run(None)
+    assert not list(tmp_path.iterdir())
+
+
+def test_report_counts_interrupted_slot_and_keeps_assessment_link(tmp_path, monkeypatch):
+    output, track = tmp_path/'output', tmp_path/'track'
+    monkeypatch.setattr(ps003, 'OUTPUT', output)
+    monkeypatch.setattr(ps003, 'TRACK', track)
+    monkeypatch.setattr(ps003, 'SAVED', {})
+    monkeypatch.setattr(ps003, 'next_run', lambda: 'H2')
+    campaign.write(output/'H1/manifest.json', dict(cases=[ps003.HOOK], comparison=dict(reference='GU-002')))
+    campaign.write(output/'H1/interrupted.json', dict(consumes_fit_slot=True))
+    assessment = track/'iteration_03/02_assessment.md'
+    assessment.parent.mkdir(parents=True)
+    assessment.write_text('Saved assessment.\n')
+    ps003.report()
+    report = (output/'README.md').read_text()
+    assert 'Consumed fits: 1/13. Completed result files: 0.' in report
+    assert 'INTERRUPTED' in campaign.read(output/'comparison.json')['H1']['outcome']
+    assert 'Attempts without a result file: H1.' in (track/'README.md').read_text()
+    for page in (output/'README.md', track/'README.md', track/'iteration_03/01_results.md'):
+        assert '02_assessment.md' in page.read_text()
+    assert assessment.read_text() == 'Saved assessment.\n'
+
+
+def test_stage_rows_marks_missing_history_without_inventing_values(tmp_path, monkeypatch):
+    monkeypatch.setattr(ps003, 'result', lambda *args: dict(stages=[dict(
+        stage='quota', accepted_steps=2)]))
+    campaign.write(tmp_path/'runs'/ps003.HOOK/'quota.json', dict(history=[
+        dict(gradient_inf=1., loss=1., work=dict(seconds=0.)),
+        dict(gradient_inf=.5, loss=.5, step_norm_m=.1, work=dict(seconds=1.))], trials=[]))
+    row = ps003.stage_rows(tmp_path, ps003.HOOK)[0]
+    assert row['accepted_history_count'] == 1
+    assert row['missing_accepted_history_states'] == 1
+    assert row['final_gradient'] is None
+    assert row['losses'] == [1., .5]
+    assert row['accepted_timestamps'] == [0., 1.]

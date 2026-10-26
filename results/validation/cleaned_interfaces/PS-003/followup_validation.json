@@ -1,0 +1,79 @@
+{
+  "purpose": "Coordinator and three-agent implementation/evidence assessment requested after the 13 planned fits already existed.",
+  "reviewed_source_revision": "1dfd2c8c31e3a4efb02551f399c83041abb78398",
+  "agents": {
+    "count": 3,
+    "model": "gpt-6.1-sol",
+    "reasoning_effort": "high",
+    "roles": [
+      "numerical implementation",
+      "campaign implementation",
+      "saved evidence and supervisor assessment"
+    ]
+  },
+  "new_fit_attempts": 0,
+  "existing_fit_attempts": 13,
+  "next_fit": null,
+  "reference_reruns": 0,
+  "changes": [
+    "Keep accepted history when the subsequent linearization stops, with unknown gradient explicitly null.",
+    "Enforce one campaign process and refuse an exhausted schedule.",
+    "Distinguish consumed attempts from completed results.",
+    "Expose missing historical accepted states and withhold their endpoint gradients.",
+    "Refresh saved-data reports and plots, and add supervisor assessment."
+  ],
+  "validation": [
+    {
+      "reported_by": "solver_review",
+      "command": "PYTHONPATH=solvers:. OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 /home/drdeng/miniconda3/envs/EMNerf/bin/python -m pytest pytest/bem_inverse/test_diagnostic_quota_history.py -q",
+      "passed": 1,
+      "seconds": 0.12,
+      "note": "Regression failed before the fix. Confirms unchanged curve, decisions, callbacks, physics calls and charged work."
+    },
+    {
+      "reported_by": "campaign_review",
+      "command": "PYTHONPATH=solvers:. OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 /home/drdeng/miniconda3/envs/EMNerf/bin/python -m pytest pytest/bem_inverse/test_ps003.py -q",
+      "passed": 5,
+      "seconds": 0.21
+    },
+    {
+      "reported_by": "campaign_review",
+      "command": "PYTHONPATH=solvers:. OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 /home/drdeng/miniconda3/envs/EMNerf/bin/python -m pytest pytest/bem_inverse/test_ps003.py::test_stage_rows_marks_missing_history_without_inventing_values -q",
+      "passed": 1,
+      "seconds": 0.19,
+      "note": "Only affected test repeated after withholding the unavailable endpoint gradient."
+    }
+  ],
+  "saved_evidence_checks": {
+    "planned_manifests": 13,
+    "settings_and_order_match": true,
+    "frozen_selection": "H3",
+    "missing_terminal_accepted_history_rows": 17,
+    "affected_arms": [
+      "D1",
+      "O2B",
+      "O2S",
+      "O4B",
+      "O4S"
+    ],
+    "raw_runs_modified": false,
+    "hook_winner_histories_complete": true
+  },
+  "cross_review": "Numerical and campaign agents reviewed each other\u2019s fixes. The stale endpoint-gradient label was found and corrected.",
+  "figures": {
+    "source": "Saved histories only; no additional solves.",
+    "paths": [
+      "hook_loss.png",
+      "hook_loss.svg"
+    ],
+    "visually_inspected": true
+  },
+  "assessment": "docs/iterations/policy_speed/iteration_03/02_assessment.md",
+  "question_status": {
+    "Q1": "partly answered; damping and update-band effects remain inseparable",
+    "Q2": "answered for measured hook fits",
+    "Q3": "answered for the four specified cases; circle numerical qualification regresses"
+  },
+  "default_policy_changed": false,
+  "full_suite_run": false
+}

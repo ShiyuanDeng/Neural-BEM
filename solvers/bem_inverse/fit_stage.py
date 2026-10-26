@@ -158,7 +158,8 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, physics, forwar
                 gradient=g, stage=stage, config=config, ledger=ledger)
         return space, J, g
 
-    def record(iteration, evaluation, g, a_used, damping, next_damping, trial=None):
+    def record(iteration, evaluation, g, a_used, damping, next_damping, trial=None, *,
+               linearization_stop=None):
         row = dict(iteration=iteration, loss=evaluation.loss, relative_l2=evaluation.relative_l2,
                    gradient_inf=None if g is None else float(np.linalg.norm(g, ord=np.inf)),
                    step_norm_m=float(np.linalg.norm(a_used)), damping=float(damping),
@@ -173,7 +174,10 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, physics, forwar
         if penalty is not None:
             row.update(penalty.record(evaluation, penalty_weight))
         if g is None:
-            row['terminal_linearization_skipped'] = True
+            if linearization_stop is None:
+                row['terminal_linearization_skipped'] = True
+            else:
+                row['linearization_interrupted'] = linearization_stop
         if diagnostics:
             window = config.progress_window
             previous = history[-window]['loss'] if len(history) >= window else None
@@ -397,7 +401,15 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, physics, forwar
                 if checks.loss_converged(current.loss, config.loss_tolerance):
                     converged, stop_reason = True, 'loss_tolerance'
                 break
-            space, J, g = linearize(current)
+            try:
+                space, J, g = linearize(current)
+            except Stop as exc:
+                # The acceptance and callback already happened. Keep that state
+                # even if its new tangent cannot finish within the work/time limit.
+                if diagnostics:
+                    record(iteration, current, None, a_used, used_damping, damping, trial,
+                           linearization_stop=exc.code)
+                raise
             record(iteration, current, g, a_used, used_damping, damping, trial)
             capture()
             if (not checks.loss_converged(current.loss, config.loss_tolerance) and

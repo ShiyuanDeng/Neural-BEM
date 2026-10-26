@@ -1,5 +1,7 @@
 """PS-003: the pre-registered, sequential GPU slider comparisons (at most 13 fits)."""
 import argparse
+from contextlib import contextmanager
+import fcntl
 import os
 import subprocess
 import traceback
@@ -99,8 +101,30 @@ def next_run():
     return None
 
 
+@contextmanager
+def campaign_lock():
+    """Refuse overlapping fits without leaving a stale lock file after interruption."""
+    OUTPUT.mkdir(parents=True, exist_ok=True)
+    descriptor = os.open(OUTPUT, os.O_RDONLY)
+    try:
+        try:
+            fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError as error:
+            raise RuntimeError('Another PS-003 fit is running; only one fit at a time is permitted') from error
+        yield
+    finally:
+        os.close(descriptor)
+
+
 def run(run_id):
+    with campaign_lock():
+        return _run(run_id)
+
+
+def _run(run_id):
     expected = next_run()
+    if expected is None:
+        raise RuntimeError('Planned PS-003 fits are complete; no further fits are permitted')
     if run_id != expected:
         raise ValueError(f'Next permitted fit is {expected}; existing attempts cannot be retried')
     if any(os.environ.get(k) != '1' for k in ('OMP_NUM_THREADS', 'OPENBLAS_NUM_THREADS', 'MKL_NUM_THREADS')):
@@ -146,17 +170,21 @@ def stage_rows(folder, case):
     for stage in result(folder, case).get('stages', []):
         detail = read(folder/'runs'/case/(stage['stage']+'.json'))
         history, trials = detail['history'], detail['trials']
+        accepted_history_count = max(0, len(history)-1)
+        missing_history = max(0, stage['accepted_steps']-accepted_history_count)
         row = {k: stage.get(k) for k in ('stage', 'M', 'K_geometry', 'nodes', 'F', 'seconds',
                 'accepted_steps', 'initial_loss', 'final_loss', 'stop', 'diagnostics', 'entry_reused')}
         row.update(rejected=sum(t.get('status') != 'accepted' for t in trials),
             maximum_backtrack=max([t['backtrack'] for t in trials] or [0]),
             entry_gradient=history[0]['gradient_inf'] if history else None,
-            final_gradient=history[-1]['gradient_inf'] if history else None,
+            final_gradient=history[-1]['gradient_inf'] if history and not missing_history else None,
             accepted_timestamps=[h['work']['seconds'] for h in history],
             losses=[h['loss'] for h in history],
             raw_norms=[t['raw_step_norm_m'] for t in trials if 'raw_step_norm_m' in t],
             clipped_norms=[t['clipped_step_norm_m'] for t in trials if 'clipped_step_norm_m' in t],
-            used_norms=[h['step_norm_m'] for h in history[1:]])
+            used_norms=[h['step_norm_m'] for h in history[1:]],
+            accepted_history_count=accepted_history_count,
+            missing_accepted_history_states=missing_history)
         rows.append(row)
     return rows
 
@@ -165,20 +193,23 @@ def report():
     OUTPUT.mkdir(parents=True, exist_ok=True)
     rows = {name: summarize_row(result(folder)) for name, folder in SAVED.items()}
     stages = {name: stage_rows(folder, HOOK) for name, folder in SAVED.items()}
-    completed = []
+    consumed, completed = [], []
     for manifest_path in sorted(OUTPUT.glob('*/manifest.json')):
         manifest = read(manifest_path)
         key, case = manifest_path.parent.name, manifest['cases'][0]
         row = result(manifest_path.parent, case)
         rows[key] = dict(summarize_row(row), case=case, reference=manifest['comparison']['reference'])
         stages[key] = stage_rows(manifest_path.parent, case)
-        completed.append(key)
+        consumed.append(key)
+        if row:
+            completed.append(key)
     write(OUTPUT/'comparison.json', rows)
     write(OUTPUT/'stages.json', stages)
-    next_id = next_run() if completed else 'H1'
+    next_id = next_run() if consumed else 'H1'
     lines = ['# PS-003: GPU slider policy comparisons', '',
         'Questions: why are hook fits slow, which declared policy helps, and does slider recover other TG-002 cases?', '',
-        f'Consumed fits: {len(completed)}/13. Next fit: {next_id or "none; planned fits complete"}.', '',
+        f'Consumed fits: {len(consumed)}/13. Completed result files: {len(completed)}. '
+        f'Next fit: {next_id or "none; planned fits complete"}.', '',
         'Saved GU-002 and PS-002 are references, not concurrent controls. No reference reruns.', '',
         '| Run | Case | Recovered | Fit s | Final checks s | Accepted | Actual calls | Charged units | RMS mm |',
         '|---|---|---|---:|---:|---:|---:|---:|---:|']
@@ -189,7 +220,7 @@ def report():
             row['fit_seconds'], row['check_seconds'], row['accepted'], row['actual_calls'],
             row['charged_units'], row['rms_mm']))+' |')
     lines += ['', '## Saved-run explanation', '',
-        'GU-002 used 40 accepted iterations and 15.926 s in M11/M15, with no rejected trials there.',
+        'GU-002 used 40 accepted iterations and 15.925 s in M11/M15, with no rejected trials there.',
         'Its loss fell from 0.14065 to 0.024019. Releasing M19 then reached 0.000072 in four iterations.',
         'This is consistent with restricted update directions, but the saved run alone cannot establish the cause.', '',
         'PS-002 left stage_3_damped after six iterations at loss 0.005709; GU-002 used 19 and reached 0.000656.',
@@ -209,6 +240,11 @@ def report():
         'All fits use CUDA physics/preparation, four frequency threads, single-threaded BLAS, a centred start,',
         '13,412 units / 120 s fit limits and 300 s final-check limits. Four-phase uses similarity only at warm-up.',
         'One fit per setting cannot establish repeatability or a 30-case result. Defaults remain unchanged.', '']
+    assessment_path = TRACK/'iteration_03/02_assessment.md'
+    assessment = ('[Supervisor assessment](../../../../docs/iterations/policy_speed/iteration_03/02_assessment.md).\n'
+                  if assessment_path.exists() else '')
+    if assessment:
+        lines += [assessment]
     findings_path = OUTPUT/'findings.md'
     findings = findings_path.read_text() if findings_path.exists() else ''
     if findings:
@@ -220,11 +256,16 @@ def report():
         '\n'.join(lines[:lines.index('## Stage evidence')]))+ '\n\nDetailed stages: '
         '[PS-003 evidence](../../../../results/validation/cleaned_interfaces/PS-003/README.md).\n\n'
         '![Hook loss versus iterations and time](../../../../results/validation/cleaned_interfaces/PS-003/hook_loss.png)\n')
+    if assessment:
+        with page.open('a') as stream:
+            stream.write('\n[Supervisor assessment](02_assessment.md).\n')
     (TRACK/'README.md').write_text('# Policy speed\n\nCurrent work: [PS-003 results](iteration_03/01_results.md).\n'
-        f'Consumed fits: {len(completed)}/13. Completed attempts: {", ".join(completed) or "none"}.\n'
+        f'Consumed fits: {len(consumed)}/13. Completed attempts: {", ".join(completed) or "none"}.\n'
+        f'Attempts without a result file: {", ".join(k for k in consumed if k not in completed) or "none"}.\n'
         f'Exact next fit: {next_id or "none; planned fits complete"}.\n\n'
         'Plan: [PS-003](iteration_02/03_plan.md). Saved references: GU-002 and PS-002.\n'
-        'The default policy is unchanged. No retries or extra fits are authorized.\n')
+        'The default policy is unchanged. No retries or extra fits are authorized.\n'+
+        ('\n[Supervisor assessment](iteration_03/02_assessment.md).\n' if assessment else ''))
     return rows
 
 
@@ -239,7 +280,9 @@ def figures():
     max_seconds = max(result(folder).get('fit_and_localization_seconds', 0.) for folder in arms.values())
     for (key, folder), pair in zip(arms.items(), axes):
         offset = 0
-        for stage in stage_rows(folder, HOOK):
+        arm_stages = stage_rows(folder, HOOK)
+        missing = sum(s['missing_accepted_history_states'] for s in arm_stages)
+        for stage in arm_stages:
             losses = stage['losses']
             xs = [offset+i for i in range(len(losses))]
             for ax, x in zip(pair, (xs, stage['accepted_timestamps'])):
@@ -254,7 +297,8 @@ def figures():
             ax.set_ylim(1e-15, 2)
             row = result(folder)
             ax.set_title(f"{key}: {'recovered' if row.get('recovered') else 'failed'}, "
-                         f"{row.get('fit_and_localization_seconds', 0.):.2f} s")
+                         f"{row.get('fit_and_localization_seconds', 0.):.2f} s"+
+                         (f'; {missing} missing history rows' if missing else ''))
             ax.grid(axis='y', alpha=.15)
             ax.set_ylabel('Stage loss')
         pair[0].set_xlim(-2, max_iterations+2)
