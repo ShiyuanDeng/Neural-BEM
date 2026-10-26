@@ -146,19 +146,46 @@ curve. One full step fails closure and one self-intersects. No main-study fits.
 
 ## Track C — IS-001: iterative solves against LU
 
-**Status:** not started.
+**Status:** complete. No inverse fits or production changes.
 
-**Answer:** _pending_
+**Answer:** retain LU at Ku64/128. At matched field accuracy, cold and
+anchored global/full-block GMRES both cost more than LU. The first measured
+solve-only win is Ku512, outside the replayed working sizes.
 
-**Numbers:** _pending_
+**Numbers:** all 48 RHS, real/damped 2.5 GHz. LU costs 2.73/2.74 ms at Ku64 and
+14.57/14.45 ms at Ku128; anchored global costs 10.37/8.65 and 35.17/29.26 ms;
+full block 25.01/25.46 and 49.61/49.50 ms. Successful field errors ≤ 5.20e-12.
 
-**For D04:** _pending_
+Cached forward+Jacobian duration is 12.07/12.60 ms at Ku64 and 30.80/31.24 ms
+at Ku128. LU factorization takes 13–14%/36–38%; with both trace solves,
+21–22%/47–49%. First-use forward calls cost 64–296 ms, including preparation.
 
-**For Haibing item 5 and recommendation 4:** _pending_
+At Ku512, 2050 unknowns: LU 618 ms; fastest anchored method 455 ms real/block
+or 436 ms damped/global, excluding 570 ms anchor setup. Repayment needs four
+hypothetical equal-cost targets; only one target per anchor was measured.
 
-**Limits:** _pending_
+**For D04:** close the current-workload speed claim for these dense
+implementations. There is no win through Ku256. A matrix-free action or
+actual repeated large targets would require separate evidence.
 
-**Evidence:** _pending_
+**For Haibing item 5 and recommendation 4:** cost profiling changes the
+historical split, but lower iteration counts still lose at current sizes.
+A 1.139 mm accepted stress step gives right-residual operator norm 274.18 and
+spectral radius 1.203 at real frequency, breaking stationary contraction.
+GMRES still converges, at 56.2 ms versus LU 2.62 ms; contraction below one is
+sufficient for stationary correction, not necessary for GMRES convergence.
+
+**Limits:** one hook state pair per working size, contrast 13.3, highest
+real/damped frequency; dense assembled matrices. First-use timings have
+one observation each. Cached 2.5 GHz shares are not full-catalog or fit timings.
+Cold global real-frequency failures and unbalanced-RHS accuracy failure
+are retained. The stress step was accepted, not refused or halved.
+
+**Evidence:** [results](../linear_solves/iteration_01/01_results.md),
+[execution notes](../linear_solves/iteration_01/04_execution.md),
+[structured summary](../../../results/validation/cleaned_interfaces/IS-001/summary.json),
+[solver table](../../../results/validation/cleaned_interfaces/IS-001/solver_table.csv),
+[crossover plot](../../../results/validation/cleaned_interfaces/IS-001/crossover_real.svg).
 
 ---
 
