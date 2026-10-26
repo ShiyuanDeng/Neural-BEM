@@ -6,7 +6,7 @@ from bem_inverse import policies
 from bem_inverse.physics import Execution
 from bem_inverse.forward_solvers.modal_muller import ModalMuller
 from bem_inverse.policy import CumulativePolicy
-from experiments.benchmark import campaign
+from experiments.benchmark import campaign, ps003
 from test_continuation_policy import fixture
 from test_entry_reuse import TwoFrequencyPhysics, ScalarUpdate, scalar_trial, stages
 from bem_inverse.fit_stage import fit_stage
@@ -25,6 +25,11 @@ def test_slider_adaptation_preserves_policy_and_controls_only_full_catalog():
         assert settings['execution']['stage_entry_reuse'] == (name == 'compact_release')
         assert campaign.geometry_update_for(campaign.settings_for(policy=name,
             localization='none', execution=Execution())) == 'spectral'
+    _, settings, _ = ps003.specification('D1')
+    assert campaign.adapted_policy(settings).release_bands == (19,)
+    assert settings['execution']['device'] == 'cuda'
+    assert settings['execution']['preparation_device'] == 'follow'
+    assert settings['audit_seconds'] == 300.
     base = policies.build('four_phase', **policies.BENCHMARK_CONTRACT)
     fixed = replace(base, full_catalog_trace_cutoff=128)
     a, b = base.operations(problem, physics), fixed.operations(problem, physics)

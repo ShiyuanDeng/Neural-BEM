@@ -82,7 +82,7 @@ def specification(run_id):
             name, options, reference = saved['policy']['recipe']['name'], saved['policy_adapter']['options'], selected['run']
     settings = c.settings_for(policy=name, policy_geometry_update='slider',
         policy_options=dict(options, record_diagnostics=True), contract=CONTRACT, localization='none',
-        execution=Execution(device='cuda', preparation_device='cuda', frequency_threads=4))
+        execution=Execution(device='cuda', preparation_device='follow', frequency_threads=4))
     return case, settings, dict(reference=reference, change=reason)
 
 
