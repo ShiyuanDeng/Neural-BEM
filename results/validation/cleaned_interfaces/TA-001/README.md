@@ -114,5 +114,6 @@ taskset -c 6-11 env PYTHONPATH=solvers:. OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=
 [Plan](../../../../docs/iterations/geometry_charts/iteration_01/03_plan.md),
 [driver](../../../../experiments/geometry_charts/replay.py),
 [Haibing item 3](../../../../Haibing_directions.md#3-coefficient-based-geometry-safe-region).
-The main answer warrants the four pre-planned continuation fits; their
-results belong in a separate continuation receipt, not in this replay table.
+The main answer led to the four pre-planned continuation fits.
+[They recover 0/4 cases](continuation/README.md), as in NR-001. The chart
+remains experimental; those results do not change this saved-step table.

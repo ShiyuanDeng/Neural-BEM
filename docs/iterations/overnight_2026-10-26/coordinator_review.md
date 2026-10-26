@@ -68,9 +68,11 @@ matched fractions. It corrects the earlier blanket near-touch explanation.
 This is the most constructive local result; recovery requires the separate
 continuation evidence and cannot be inferred from lower local losses.
 
-IS-001's completed production-size comparisons support keeping LU at Ku64
-and Ku128 for the tested implementation. Its larger-size and anchor-stress
-results will determine the range of that conclusion.
+IS-001 supports keeping LU at Ku64 and Ku128 for these implementations.
+The first measured solve-only crossover is Ku512; a roughly 570 ms anchor
+needs four equal-cost future targets to repay the fastest method. Those
+future targets were not observed. A 1.139 mm accepted step breaks stationary
+contraction at real frequency, while GMRES still converges more slowly than LU.
 
 ## Are the questions answered?
 
@@ -80,7 +82,7 @@ results will determine the range of that conclusion.
 | FI: worthwhile saving? | No qualified saving for either tested arm. | CPU timings cannot establish CUDA savings; no accurate candidate warranted timing again. |
 | FI: does high contrast break it? | Failure also occurs at contrast 4. | Shape and contrast are confounded; a causal contrast effect is not isolated. |
 | TA: what causes the refusals? | Different local/nonlocal geometric features are measured. | These are numerical minima, and features do not alone establish certificate-failure causality. |
-| TA: does the chart help? | Three matched saved steps pass physics at lower loss. | Full-fit continuation must be assessed separately. |
+| TA: does the chart help? | Three matched saved steps improve, but the four fresh fits recover 0/4. | The local advantage does not establish a reliable trajectory. |
 | TA: does the simple coefficient bound help? | It is inconclusive at all four accepted bases. | This does not reject sharper bounds or prove invalidity. |
 | IS: where does time go? | Current CUDA/CPU components, first-use and cached times are recorded. | Only the highest real/damped frequency, not the full fit. |
 | IS: can iterations beat LU now? | No for both tested dense iterative methods at Ku64/128. | This is not a lower bound on all possible iterative implementations. |
@@ -88,7 +90,45 @@ results will determine the range of that conclusion.
 
 ## Final supervisor assessment
 
-Pending the final four-fit continuation evidence. The component studies
-already support concrete decisions, rather than only reporting working
-prototype code. Their limitations should be part of the progress report.
+**Satisfactory as a focused research-progress report; not a demonstrated
+solver advance.** The work answers the registered operational decisions,
+preserves negative results, and distinguishes local success from recovery.
+No implementation blocker remains in the reviewed experiment paths.
+
+The four fresh chart fits recover **0/4**, the same count as NR-001. Hook
+reaches M15 rather than stopping in M11 and lowers RMS error from 8.281 to
+6.193 mm, still far above the 1 mm requirement. All three aphex RMS errors
+worsen. Passing final numerical checks on two early endpoints is not
+recovery: their data residuals and shape errors remain large.
+
+A supervisor can reasonably count three concrete contributions:
+
+1. A quantified negative result rules out the tested full-band polynomial
+   approximation, without overclaiming that frequency reuse is impossible.
+2. Reconstructed failures correct a misleading common-cause explanation.
+   The chart changes local acceptance, but four fresh trajectories show
+   that this mechanism alone does not solve the recovery problem.
+3. Current production profiles and matched-accuracy solves explain why LU
+   remains appropriate, and identify the size/reuse conditions for reconsidering it.
+
+A supervisor expecting a new recovery, a production speed-up, or a general
+convergence guarantee would **not** have that evidence here. The appropriate
+progress claim is stronger diagnosis and better experiment selection.
+
+## Decisions after review
+
+- Keep exact frequency evaluation and LU in the maintained solver.
+- Keep the chart experimental. Prioritize understanding the new recorded
+  geometry refusals before combining it with a barrier or step rule.
+- Treat rational/phase-adjusted frequency surrogates and large-system anchor
+  reuse as separate future hypotheses, not already validated improvements.
+- Do not run further fits to search for a favorable result. The prescribed
+  four-fit continuation is exhausted; the negative answer is itself complete.
+
+The review led to concrete iterations: corrected saved-state provenance,
+benchmark-matched Jacobian errors, actual block GMRES, RHS normalization,
+finite-band chart checks, safe closure backtracking, an independent chart
+implementation review, and the pre-planned full-fit continuation.
+The stopping reason is sufficient evidence for these scoped decisions,
+not time pressure or a requirement to produce positive results.
 

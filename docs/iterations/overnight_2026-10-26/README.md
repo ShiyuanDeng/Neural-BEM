@@ -1,9 +1,13 @@
 # Overnight component studies, 2026-10-26: questions and answers
 
-Three agents work in parallel overnight. Each answers one question from
-[`directions.md`](../../directions.md) using saved TG-002 states, with no new
-inverse fits. Each fills in **its own section below** before 07:00 on
-2026-10-27, so this page is the morning report.
+**Complete:** three GPT-6.1 agents with high reasoning implemented the tracks
+in parallel, followed by coordinator review and corrections. The user removed
+the original time limit. Main studies used saved TG-002 states; the positive
+chart replay triggered exactly four planned continuation fits.
+
+The results support research decisions, but no production speed-up or new
+recovery. See the [coordinator assessment](coordinator_review.md) for what
+is answered, what remains uncertain, and what a supervisor can reasonably claim.
 
 | Track | ID | Direction | Question in one line | Plan |
 |---|---|---|---|---|
@@ -24,7 +28,7 @@ proposed upgrades. Each track tests one of its claims with our numbers.
 |---|---|---|
 | FI-001 | 2, 7, 9 | Frequency enters through scalar coefficients on shared geometry (item 2). A projected reduced model still needs the full matrix (item 7). |
 | TA-001 | 3 and its prior-work list | The quantity behind every refusal is the `|W|` lower bound. The coefficient bound may often be inconclusive for non-convex shapes. |
-| IS-001 | 5, recommendation 4 | Profile assembly against LU at the final size first. Anchored GMRES needs a contraction below one, which an LM step may break. |
+| IS-001 | 5, recommendation 4 | Profile assembly against LU at the final size first. Test anchor contraction and solve cost. Contraction below one suffices for stationary corrections; it is not required by GMRES. |
 
 ## Policy and saved states for all three tracks
 
@@ -114,20 +118,22 @@ H3's actual final saved state is K136/Ku128, correcting the plan's K192.
 
 ## Track B — TA-001: tangent-angle chart replay
 
-**Status:** main replay complete; planned continuation being prepared.
+**Status:** main replay and exactly four continuation fits complete.
 
 **Answer:** Three of four chart trials pass physics and lower exact loss at
 the original refused fraction. The exception, aphex c0.5, has a distant
 near-touch. The failures are mixed, so positive speed alone is insufficient.
+The four fresh default-policy chart fits recover 0/4, as in NR-001.
 
 **Numbers:** Loss decreases: aphex c4 0.861%, aphex c13.3 11.245%, hook c13.3
 1.462%. Original minimum speed / mean: 6.12e-8, 0.0443 and 0.1955. Aphex c0.5
 has speed / mean 0.8242 but a distant gap of 0.481 mm. Maximum reconstruction
 error is 3.03e-9 mm; maximum round-trip error is 6.48e-14 mm.
 
-**For D08:** The finite map changes acceptance while keeping the same B6
-derivative to first order. This justifies the four planned continuation fits.
-It does not demonstrate recovery. The c0.5 near-touch needs another remedy.
+**For D08:** The finite map changes local acceptance with the same B6
+derivative, but the full trajectories still fail. All four new failed
+candidates have off-diagonal minima, speed / mean 0.231–0.726 and distant
+gaps 0.118/0.245/1.127/6.799 mm. Keep the chart experimental.
 
 **For Haibing item 3:** The simple coefficient bound is inconclusive on all
 four accepted states, with lower bounds -3.186, -1.923, -6.073 and -6.187.
@@ -136,10 +142,14 @@ This confirms the review's warning for non-convex curves.
 **Limits:** Torus minima are numerical estimates. Distant gaps exclude
 parameter separation below pi/4. The chart retains log-speed density and
 tangential gauge; positivity before cropping does not certify the stored
-curve. One full step fails closure and one self-intersects. No main-study fits.
+curve. One full step fails closure and one self-intersects. No fits for replay.
+Continuation RMS errors are 7.874/5.940/5.975/6.193 mm. Hook improves RMS
+but fails the final field/full-trial check; no quality claim follows from
+its later stopping stage. No extra fits or maintained-solver changes.
 
 **Evidence:** [full results and figures](../../../results/validation/cleaned_interfaces/TA-001/README.md),
 [iteration answer](../geometry_charts/iteration_01/01_results.md),
+[continuation answer](../geometry_charts/iteration_02/01_results.md),
 [prototype](../../../experiments/geometry_charts/replay.py).
 
 ---
@@ -189,8 +199,33 @@ are retained. The stress step was accepted, not refused or halved.
 
 ---
 
-## Morning synthesis
+## Coordinator synthesis
 
-Written in the morning, not by the overnight agents. IS-001's cost breakdown
-bounds what FI-001 can save. TA-001's refusal types decide whether the next
-geometry step is a chart or a self-touch barrier.
+**Keep exact frequency evaluation and LU. Keep the chart experimental.**
+
+- FI-001 rejects the tested full-band polynomial: 0/36 settings pass.
+  It does not reject other approximation families or identify a causal
+  high-contrast effect.
+- IS-001 shows why fewer linear iterations do not automatically save time.
+  Both tested iterative implementations lose at Ku64/128. The Ku512 crossover
+  needs four hypothetical equal-cost reuses to repay the fastest anchor.
+- TA-001 corrects the blanket near-touch explanation and proves a local
+  finite-map benefit in 3/4 refusals. Four fresh fits still recover 0/4.
+  Hook improves RMS but uses 2,152 versus 695 work units and fails its final check.
+
+IS-001 bounds an ideal solve-only saving at about 21–22% of cached Ku64
+and 47–49% of cached Ku128 forward-plus-Jacobian work at 2.5 GHz. These are
+not whole-fit bounds. FI-001 also skips assembly or waves, but every tested
+approximation fails accuracy. Its CPU timings cannot be combined directly
+with IS-001's CUDA/CPU profile to claim production speed-up.
+
+Positive speed addresses one local pathology; the new failed chart trials
+still have nonlocal divided-difference minima. A separation barrier and
+investigation of hook's high-frequency geometry are future proposals,
+not demonstrated remedies. No further fit was run to seek a favorable result.
+
+**Supervisor assessment:** satisfactory evidence for focused research progress,
+not yet a solver breakthrough. The contribution is quantified rejection of
+two current acceleration choices, a corrected failure mechanism, and a clear
+limit on chart-only improvements. The [full review](coordinator_review.md)
+records the implementation checks, iterations and unresolved questions.

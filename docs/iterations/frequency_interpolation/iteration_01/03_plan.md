@@ -13,7 +13,7 @@
 
 **Plan finalized 2026-10-26.** The user asked for 2–3 directions "to be
 experimented overnight" and chose D02 among them. Execution starts when the
-user launches this track's agent. Status: **NOT STARTED**.
+user launches this track's agent. Status: **COMPLETE**; see [results](01_results.md).
 
 Shared rules and the morning report: [overnight README](../../overnight_2026-10-26/README.md).
 Fill in Track A there. Direction: [D02](../../../directions.md#d02-reuse-a-library-of-physical-responses).
