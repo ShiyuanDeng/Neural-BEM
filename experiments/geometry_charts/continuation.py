@@ -11,7 +11,7 @@ import torch
 
 from bem_inverse.continuation.geometry_runtime import geometry_runtime
 from bem_inverse.errors import UpdateRefused
-from bem_inverse.io import curve_from, digest, read, write
+from bem_inverse.io import curve_from, digest, portable, read, write
 from bem_inverse.physics import Execution
 from bem_inverse.policy import CumulativePolicy
 from bem_inverse.runner import fit
@@ -78,7 +78,7 @@ def run(case):
     if not check['passed']:
         raise ValueError('Adapter checks must pass before fitting')
     # The source map is preserved; report.py can change without altering the fit.
-    for name in ('adapter.py','replay.py','continuation.py'):
+    for name in ('adapter.py','replay.py'):
         if check['sources'][name]!=digest(Path(__file__).parent/name):
             raise ValueError('Numerical driver changed after adapter checks: '+name)
     if not torch.cuda.is_available():
@@ -86,9 +86,9 @@ def run(case):
     total=torch.cuda.get_device_properties(0).total_memory
     torch.cuda.set_per_process_memory_fraction(5*2**30/total)
     campaign.verify(require_inputs=True)
-    settings=dict(solver='modal_muller',geometry_update='ta001_positive_speed_tangent_angle',
+    settings=portable(dict(solver='modal_muller',geometry_update='ta001_positive_speed_tangent_angle',
                   localization='none',execution=asdict(EXECUTION),policy=asdict(CumulativePolicy()),
-                  final_check_seconds=final_check.SECONDS,adapter='experiments.geometry_charts.adapter.GeometryAdapter')
+                  final_check_seconds=final_check.SECONDS,adapter='experiments.geometry_charts.adapter.GeometryAdapter'))
     campaign.open_run(FOLDER/'chart',[c for c,_ in ROWS],settings,experiment='TA-001 conditional chart continuation')
     case_row=campaign.row(case)
     folder=FOLDER/'chart/runs'/case

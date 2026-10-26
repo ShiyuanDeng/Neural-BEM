@@ -1,0 +1,639 @@
+{
+  "stage": "stage_1_damped",
+  "M": 3,
+  "K_geometry": 8,
+  "outcome": "NUMERICAL_FAILURE",
+  "stop": null,
+  "detail": "production evaluation failed at candidate state",
+  "accepted_steps": 3,
+  "initial_loss": 0.04064801609370142,
+  "final_loss": 0.021224571366037878,
+  "seconds": 0.5249932268634439,
+  "work": {
+    "work_units": 28,
+    "stage": "stage_1_damped",
+    "stage_units": 10,
+    "stage_quota": 1000,
+    "cap": 13412,
+    "solves": {
+      "warmup_025_damped:initial_objective": 1,
+      "warmup_025_damped:candidate": 8,
+      "stage_1_damped:initial_objective": 1,
+      "stage_1_damped:candidate": 5
+    },
+    "reciprocal_batches": {
+      "warmup_025_damped:derivative": 9,
+      "stage_1_damped:derivative": 4
+    },
+    "failed": {
+      "stage_1_damped:candidate": 1
+    },
+    "seconds": 0.9935901612043381
+  },
+  "curve": {
+    "real": [
+      -0.001568798744712035,
+      0.0002246703508691876,
+      -0.013738013223337281,
+      0.0095368924138448,
+      -0.034450435983597094,
+      -0.009878939087650584,
+      -0.09206204840328372,
+      -0.05190870831483764,
+      -0.4076167235832957,
+      0.3132745833257775,
+      0.10309967169128197,
+      -0.08990675695642289,
+      0.023723221714478836,
+      -0.0013561787093945613,
+      -0.009197576138362378,
+      -0.00021745966668250603,
+      0.0008138709421644723
+    ],
+    "imag": [
+      -0.0018160293951583525,
+      0.00613637390567921,
+      -0.0011022146367612718,
+      0.009051720074692673,
+      0.0053752587105690775,
+      -0.0384137686744851,
+      0.0740404489798974,
+      -0.10934041176834242,
+      -0.6651434247199188,
+      0.3362454238113727,
+      0.022870890923183652,
+      -0.03388981431787155,
+      -0.04488274929215445,
+      -0.02650925945547289,
+      0.009353914560520302,
+      -0.0023230680732841545,
+      0.0030468970604703763
+    ]
+  },
+  "nodes": 512,
+  "physics_failures": [
+    {
+      "exception_type": "ValueError",
+      "message": "|W|^2 lower bound not certified (coefficient residual 2.88).",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/drdeng/Neural_SDF_BEM_AD_organised/solvers/bem_inverse/forward_batch.py\", line 25, in predict\n    state = forward_solve(curve, observation, contrast, nodes)\n  File \"/home/drdeng/Neural_SDF_BEM_AD_organised/solvers/bem_inverse/forward_solvers/modal_muller.py\", line 121, in forward_solve\n    prediction = _solve(curve, observation, contrast, trace_cutoff(int(resolution)), context=context)\n  File \"/home/drdeng/Neural_SDF_BEM_AD_organised/solvers/bem_inverse/forward_solvers/modal_muller.py\", line 142, in _solve\n    geometry, (A_f, radial, device, fallback) = assemble_matrix(curve, window, k, ki, cutoff, context=context)\n  File \"/home/drdeng/Neural_SDF_BEM_AD_organised/solvers/bem_inverse/forward_solvers/modal_muller.py\", line 209, in assemble_matrix\n    geometry = prepare_geometry(curve, window, device, context=context)\n  File \"/home/drdeng/Neural_SDF_BEM_AD_organised/solvers/bem_inverse/forward_solvers/modal_muller.py\", line 194, in prepare_geometry\n    slot[1] = DeviceModalGeometry(curve, window, device=device, **options)\n  File \"/home/drdeng/Neural_SDF_BEM_AD_organised/solvers/bem_inverse/modal_cuda.py\", line 229, in __init__\n    self.log, self.log_interval = log_modulus(_real_product(quotient, quotient, 2), band,\n  File \"/home/drdeng/Neural_SDF_BEM_AD_organised/solvers/bem_inverse/modal_cuda.py\", line 191, in log_modulus\n    checks.require_positive_certificate(lower, residual)\n  File \"/home/drdeng/Neural_SDF_BEM_AD_organised/solvers/bem_inverse/checks.py\", line 62, in require_positive_certificate\n    raise ValueError(f'|W|^2 lower bound not certified (coefficient residual {residual:.3g}).')\nValueError: |W|^2 lower bound not certified (coefficient residual 2.88).\n",
+      "category": "candidate",
+      "resolution": 512,
+      "frequency_hz": 500000000.0,
+      "wavenumber": {
+        "real": 1.283437720888494,
+        "imag": 0.3208594302221235
+      },
+      "candidate_sha256": "8ee4e143ec3eb601bc7a98c3d312e7ac89f3811e67edacaf4fecb4b381e94caa",
+      "candidate_coefficients": {
+        "real": [
+          -0.0100282073151673,
+          0.002834844447331462,
+          -0.01732652942388701,
+          0.009713525376287079,
+          -0.044391671802194436,
+          -0.024314854599598514,
+          -0.025884735610018403,
+          0.011336170281659931,
+          -0.4195154295167701,
+          0.33825731264949477,
+          0.1718409029807736,
+          -0.0775076301886845,
+          -0.01620650067846185,
+          0.02033176446504468,
+          -0.025855190980231247,
+          -0.004084779463508619,
+          0.008705588729248561
+        ],
+        "imag": [
+          0.006852683001882869,
+          -0.0006459257923938235,
+          0.01009509554294876,
+          -0.0169117090253488,
+          0.008802618659901,
+          -0.061433027821491404,
+          0.09000527068145059,
+          -0.1841767179559889,
+          -0.6437079350379635,
+          0.2264698531657659,
+          0.12678141560775474,
+          -0.05024901853067257,
+          0.0015103253856979153,
+          -0.038338780821810685,
+          -0.01372502611317477,
+          -0.0062506147508591264,
+          -0.0008678747048489899
+        ]
+      }
+    }
+  ],
+  "geometry_proposals": 7,
+  "history": [
+    {
+      "iteration": 0,
+      "loss": 0.04064801609370142,
+      "relative_l2": 0.28512459063960593,
+      "gradient_inf": 9.372251351582227,
+      "step_norm_m": 0.0,
+      "damping": 0.001,
+      "next_damping": 0.001,
+      "step_m": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "coefficients": {
+        "real": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          -1.3031677310933578e-11,
+          2.0248182456223953e-11,
+          -1.2943031087538069e-12,
+          9.206303717794948e-12,
+          -0.43380464377303596,
+          0.4506171048350134,
+          -1.3645468057370026e-11,
+          -8.597361714880776e-12,
+          -2.2052647399659184e-12,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "imag": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          5.941934221835509e-12,
+          -1.2372097286631831e-11,
+          9.705442314389096e-12,
+          -1.0544488103008058e-11,
+          -0.6118069967626535,
+          0.2835339826511589,
+          1.4788919108228742e-11,
+          8.830577266466302e-12,
+          2.342594594434176e-11,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "work": {
+        "work_units": 20,
+        "stage": "stage_1_damped",
+        "stage_units": 2,
+        "stage_quota": 1000,
+        "cap": 13412,
+        "solves": {
+          "warmup_025_damped:initial_objective": 1,
+          "warmup_025_damped:candidate": 8,
+          "stage_1_damped:initial_objective": 1
+        },
+        "reciprocal_batches": {
+          "warmup_025_damped:derivative": 9,
+          "stage_1_damped:derivative": 1
+        },
+        "failed": {},
+        "seconds": 0.4914092803373933
+      }
+    },
+    {
+      "iteration": 1,
+      "loss": 0.021821698708558455,
+      "relative_l2": 0.20891002229935476,
+      "gradient_inf": 3.100365350325733,
+      "step_norm_m": 0.005539741698488929,
+      "damping": 0.001,
+      "next_damping": 0.0003,
+      "step_m": [
+        -0.0011186974122448237,
+        -0.0009064823598494567,
+        -0.003,
+        -0.0018073498232678538,
+        -0.00010298966275063057,
+        -0.003,
+        0.0027089525028681596
+      ],
+      "coefficients": {
+        "real": [
+          3.4690451779187745e-05,
+          -9.453973459880004e-05,
+          -2.3108620794783146e-05,
+          -0.00023087989527624327,
+          -0.002242828516932331,
+          0.0008246622805417634,
+          -0.037885170395842174,
+          -0.011580068824733421,
+          -0.44805246635044865,
+          0.40748344802966086,
+          0.007502442731143222,
+          -0.019801127877620298,
+          -6.973201001700311e-05,
+          -3.8208275772699114e-05,
+          0.0011572721802632856,
+          -0.0007588683419093491,
+          -6.90541160062079e-05
+        ],
+        "imag": [
+          3.034392779711251e-05,
+          6.456542979787626e-05,
+          -9.159124085799525e-05,
+          0.001334011770812781,
+          -0.0009165810208534811,
+          -0.0007789971357440465,
+          0.01583213653537581,
+          -0.05625610223255433,
+          -0.6232055233181891,
+          0.2716542535602135,
+          -0.005940323650422845,
+          0.0039450352907090475,
+          -0.019959171066343064,
+          -0.0007655238770814818,
+          0.0011553941480466799,
+          0.0005366411125486631,
+          2.0819262329017075e-05
+        ]
+      },
+      "work": {
+        "work_units": 23,
+        "stage": "stage_1_damped",
+        "stage_units": 5,
+        "stage_quota": 1000,
+        "cap": 13412,
+        "solves": {
+          "warmup_025_damped:initial_objective": 1,
+          "warmup_025_damped:candidate": 8,
+          "stage_1_damped:initial_objective": 1,
+          "stage_1_damped:candidate": 2
+        },
+        "reciprocal_batches": {
+          "warmup_025_damped:derivative": 9,
+          "stage_1_damped:derivative": 2
+        },
+        "failed": {},
+        "seconds": 0.5384993441402912
+      },
+      "maximum_normal_m": 0.007246450643251071,
+      "rms_normal_m": 0.003996262127641176,
+      "speed_ratio": 1.0048697517369385
+    },
+    {
+      "iteration": 2,
+      "loss": 0.02168019933406964,
+      "relative_l2": 0.20823159863032145,
+      "gradient_inf": 12.024467941684888,
+      "step_norm_m": 0.006076072525544509,
+      "damping": 0.0003,
+      "next_damping": 8.999999999999999e-05,
+      "step_m": [
+        0.0006811213861876318,
+        0.000451913679303575,
+        -0.003,
+        -0.003,
+        0.000500504764625647,
+        -0.003,
+        0.003
+      ],
+      "coefficients": {
+        "real": [
+          0.0005082467319383753,
+          -0.001728787131688112,
+          -0.0015116770818472116,
+          -0.002045423879768773,
+          -0.01568956186674024,
+          0.0029981338717184553,
+          -0.08851068303525766,
+          -0.02697144424595701,
+          -0.43099896078988803,
+          0.3616492467716703,
+          0.03816250939561578,
+          -0.05225778722921535,
+          0.005192130758659705,
+          -0.003697710428487286,
+          0.0021085753703067337,
+          -0.0027030015160909343,
+          0.0006723581591168825
+        ],
+        "imag": [
+          0.00039284185325664644,
+          0.0013001376915347633,
+          -0.0018034216345453073,
+          0.008718749335485254,
+          -0.006012645511308885,
+          -0.009841030789398901,
+          0.030204225982512753,
+          -0.1003421883264489,
+          -0.6400984375152834,
+          0.3121776714798724,
+          -0.019095839036195286,
+          -0.003072949383140369,
+          -0.04497762397058788,
+          -0.004956085165177787,
+          0.005699282360412926,
+          0.0007356119776594928,
+          0.0006791947104645699
+        ]
+      },
+      "work": {
+        "work_units": 25,
+        "stage": "stage_1_damped",
+        "stage_units": 7,
+        "stage_quota": 1000,
+        "cap": 13412,
+        "solves": {
+          "warmup_025_damped:initial_objective": 1,
+          "warmup_025_damped:candidate": 8,
+          "stage_1_damped:initial_objective": 1,
+          "stage_1_damped:candidate": 3
+        },
+        "reciprocal_batches": {
+          "warmup_025_damped:derivative": 9,
+          "stage_1_damped:derivative": 3
+        },
+        "failed": {},
+        "seconds": 0.5745279313996434
+      },
+      "maximum_normal_m": 0.008771147315125972,
+      "rms_normal_m": 0.004323386963344326,
+      "speed_ratio": 1.0566950121351268
+    },
+    {
+      "iteration": 3,
+      "loss": 0.021224571366037878,
+      "relative_l2": 0.20603189736561606,
+      "gradient_inf": 16.408044165253084,
+      "step_norm_m": 0.005224674243012051,
+      "damping": 8.999999999999999e-05,
+      "next_damping": 2.6999999999999996e-05,
+      "step_m": [
+        0.0012588380490328342,
+        0.001367511202466411,
+        -0.0029159045509709785,
+        0.00024033994127962066,
+        0.00040412039732432893,
+        -0.0025085374642813737,
+        0.0029708794455590545
+      ],
+      "coefficients": {
+        "real": [
+          -0.001568798744712035,
+          0.0002246703508691876,
+          -0.013738013223337281,
+          0.0095368924138448,
+          -0.034450435983597094,
+          -0.009878939087650584,
+          -0.09206204840328372,
+          -0.05190870831483764,
+          -0.4076167235832957,
+          0.3132745833257775,
+          0.10309967169128197,
+          -0.08990675695642289,
+          0.023723221714478836,
+          -0.0013561787093945613,
+          -0.009197576138362378,
+          -0.00021745966668250603,
+          0.0008138709421644723
+        ],
+        "imag": [
+          -0.0018160293951583525,
+          0.00613637390567921,
+          -0.0011022146367612718,
+          0.009051720074692673,
+          0.0053752587105690775,
+          -0.0384137686744851,
+          0.0740404489798974,
+          -0.10934041176834242,
+          -0.6651434247199188,
+          0.3362454238113727,
+          0.022870890923183652,
+          -0.03388981431787155,
+          -0.04488274929215445,
+          -0.02650925945547289,
+          0.009353914560520302,
+          -0.0023230680732841545,
+          0.0030468970604703763
+        ]
+      },
+      "work": {
+        "work_units": 27,
+        "stage": "stage_1_damped",
+        "stage_units": 9,
+        "stage_quota": 1000,
+        "cap": 13412,
+        "solves": {
+          "warmup_025_damped:initial_objective": 1,
+          "warmup_025_damped:candidate": 8,
+          "stage_1_damped:initial_objective": 1,
+          "stage_1_damped:candidate": 4
+        },
+        "reciprocal_batches": {
+          "warmup_025_damped:derivative": 9,
+          "stage_1_damped:derivative": 4
+        },
+        "failed": {},
+        "seconds": 0.6601658333092928
+      },
+      "maximum_normal_m": 0.00729363232798633,
+      "rms_normal_m": 0.0038089531314288356,
+      "speed_ratio": 1.2194962600514032
+    }
+  ],
+  "trials": [
+    {
+      "iteration": 1,
+      "damping": 0.001,
+      "backtrack": 0,
+      "step_norm_m": 0.011079483396977858,
+      "geometry_constructed": true,
+      "maximum_normal_m": 0.014492901286502142,
+      "rms_normal_m": 0.007992524255282352,
+      "speed_ratio": 1.0387332871758115,
+      "finite_path": "ta001_positive_speed_tangent_angle",
+      "refits": 0,
+      "closure_residual_package": 1.3877787807814457e-17,
+      "closure_corrections": [
+        0.17015089240432454,
+        0.002168679873347879
+      ],
+      "minimum_chart_speed_package": 0.4894787154155309,
+      "tangent_projection_error_mm": 0.5384607653771821,
+      "chart_length_m": 0.15377427375205893,
+      "loss": 0.07060653586861089,
+      "status": "nondecreasing"
+    },
+    {
+      "iteration": 1,
+      "damping": 0.001,
+      "backtrack": 1,
+      "step_norm_m": 0.005539741698488929,
+      "geometry_constructed": true,
+      "maximum_normal_m": 0.007246450643251071,
+      "rms_normal_m": 0.003996262127641176,
+      "speed_ratio": 1.0048697517369385,
+      "finite_path": "ta001_positive_speed_tangent_angle",
+      "refits": 0,
+      "closure_residual_package": 1.962615573354719e-17,
+      "closure_corrections": [
+        0.0377930516819587,
+        0.007284307663486952
+      ],
+      "minimum_chart_speed_package": 0.510487350113454,
+      "tangent_projection_error_mm": 0.06649665376482669,
+      "chart_length_m": 0.160374330969548,
+      "loss": 0.021821698708558455,
+      "status": "accepted"
+    },
+    {
+      "iteration": 2,
+      "damping": 0.0003,
+      "backtrack": 0,
+      "step_norm_m": 0.012152145051089018,
+      "geometry_constructed": true,
+      "closure_residual_package": 2.1942709178604383e-17,
+      "minimum_chart_speed_package": 0.6611402897496735,
+      "status": "refused",
+      "reason": "self_intersection",
+      "detail": "Curve self-intersects."
+    },
+    {
+      "iteration": 2,
+      "damping": 0.0003,
+      "backtrack": 1,
+      "step_norm_m": 0.006076072525544509,
+      "geometry_constructed": true,
+      "maximum_normal_m": 0.008771147315125972,
+      "rms_normal_m": 0.004323386963344326,
+      "speed_ratio": 1.0566950121351268,
+      "finite_path": "ta001_positive_speed_tangent_angle",
+      "refits": 0,
+      "closure_residual_package": 1.3877787807814457e-17,
+      "closure_corrections": [
+        0.055059266545060714,
+        -0.010705444096308558
+      ],
+      "minimum_chart_speed_package": 0.5815405101669744,
+      "tangent_projection_error_mm": 0.5556359669502104,
+      "chart_length_m": 0.18570947617663336,
+      "loss": 0.02168019933406964,
+      "status": "accepted"
+    },
+    {
+      "iteration": 3,
+      "damping": 8.999999999999999e-05,
+      "backtrack": 0,
+      "step_norm_m": 0.010449348486024102,
+      "geometry_constructed": true,
+      "closure_residual_package": 3.469446951953614e-18,
+      "minimum_chart_speed_package": 0.7617188125691828,
+      "status": "refused",
+      "reason": "self_intersection",
+      "detail": "Curve self-intersects."
+    },
+    {
+      "iteration": 3,
+      "damping": 8.999999999999999e-05,
+      "backtrack": 1,
+      "step_norm_m": 0.005224674243012051,
+      "geometry_constructed": true,
+      "maximum_normal_m": 0.00729363232798633,
+      "rms_normal_m": 0.0038089531314288356,
+      "speed_ratio": 1.2194962600514032,
+      "finite_path": "ta001_positive_speed_tangent_angle",
+      "refits": 0,
+      "closure_residual_package": 1.5515838457795457e-17,
+      "closure_corrections": [
+        0.12696019013502527,
+        -0.09928770022095419
+      ],
+      "minimum_chart_speed_package": 0.6676443914802762,
+      "tangent_projection_error_mm": 3.315111101963963,
+      "chart_length_m": 0.22712094657679663,
+      "loss": 0.021224571366037878,
+      "status": "accepted"
+    },
+    {
+      "iteration": 4,
+      "damping": 2.6999999999999996e-05,
+      "backtrack": 0,
+      "step_norm_m": 0.009345622092771379,
+      "geometry_constructed": true,
+      "maximum_normal_m": 0.012501199886244155,
+      "rms_normal_m": 0.006811107713506789,
+      "speed_ratio": 1.8352376680617368,
+      "finite_path": "ta001_positive_speed_tangent_angle",
+      "refits": 0,
+      "closure_residual_package": 1.5515838457795457e-17,
+      "closure_corrections": [
+        0.14125322757950196,
+        0.054573304011048235
+      ],
+      "minimum_chart_speed_package": 0.6557615356910907,
+      "tangent_projection_error_mm": 8.932080508949909,
+      "chart_length_m": 0.2606138537765957,
+      "status": "physics_failed",
+      "reason": "production_evaluation_failed",
+      "physics_failures": [
+        {
+          "exception_type": "ValueError",
+          "message": "|W|^2 lower bound not certified (coefficient residual 2.88).",
+          "traceback": "Traceback (most recent call last):\n  File \"/home/drdeng/Neural_SDF_BEM_AD_organised/solvers/bem_inverse/forward_batch.py\", line 25, in predict\n    state = forward_solve(curve, observation, contrast, nodes)\n  File \"/home/drdeng/Neural_SDF_BEM_AD_organised/solvers/bem_inverse/forward_solvers/modal_muller.py\", line 121, in forward_solve\n    prediction = _solve(curve, observation, contrast, trace_cutoff(int(resolution)), context=context)\n  File \"/home/drdeng/Neural_SDF_BEM_AD_organised/solvers/bem_inverse/forward_solvers/modal_muller.py\", line 142, in _solve\n    geometry, (A_f, radial, device, fallback) = assemble_matrix(curve, window, k, ki, cutoff, context=context)\n  File \"/home/drdeng/Neural_SDF_BEM_AD_organised/solvers/bem_inverse/forward_solvers/modal_muller.py\", line 209, in assemble_matrix\n    geometry = prepare_geometry(curve, window, device, context=context)\n  File \"/home/drdeng/Neural_SDF_BEM_AD_organised/solvers/bem_inverse/forward_solvers/modal_muller.py\", line 194, in prepare_geometry\n    slot[1] = DeviceModalGeometry(curve, window, device=device, **options)\n  File \"/home/drdeng/Neural_SDF_BEM_AD_organised/solvers/bem_inverse/modal_cuda.py\", line 229, in __init__\n    self.log, self.log_interval = log_modulus(_real_product(quotient, quotient, 2), band,\n  File \"/home/drdeng/Neural_SDF_BEM_AD_organised/solvers/bem_inverse/modal_cuda.py\", line 191, in log_modulus\n    checks.require_positive_certificate(lower, residual)\n  File \"/home/drdeng/Neural_SDF_BEM_AD_organised/solvers/bem_inverse/checks.py\", line 62, in require_positive_certificate\n    raise ValueError(f'|W|^2 lower bound not certified (coefficient residual {residual:.3g}).')\nValueError: |W|^2 lower bound not certified (coefficient residual 2.88).\n",
+          "category": "candidate",
+          "resolution": 512,
+          "frequency_hz": 500000000.0,
+          "wavenumber": {
+            "real": 1.283437720888494,
+            "imag": 0.3208594302221235
+          },
+          "candidate_sha256": "8ee4e143ec3eb601bc7a98c3d312e7ac89f3811e67edacaf4fecb4b381e94caa",
+          "candidate_coefficients": {
+            "real": [
+              -0.0100282073151673,
+              0.002834844447331462,
+              -0.01732652942388701,
+              0.009713525376287079,
+              -0.044391671802194436,
+              -0.024314854599598514,
+              -0.025884735610018403,
+              0.011336170281659931,
+              -0.4195154295167701,
+              0.33825731264949477,
+              0.1718409029807736,
+              -0.0775076301886845,
+              -0.01620650067846185,
+              0.02033176446504468,
+              -0.025855190980231247,
+              -0.004084779463508619,
+              0.008705588729248561
+            ],
+            "imag": [
+              0.006852683001882869,
+              -0.0006459257923938235,
+              0.01009509554294876,
+              -0.0169117090253488,
+              0.008802618659901,
+              -0.061433027821491404,
+              0.09000527068145059,
+              -0.1841767179559889,
+              -0.6437079350379635,
+              0.2264698531657659,
+              0.12678141560775474,
+              -0.05024901853067257,
+              0.0015103253856979153,
+              -0.038338780821810685,
+              -0.01372502611317477,
+              -0.0062506147508591264,
+              -0.0008678747048489899
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
