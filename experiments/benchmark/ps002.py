@@ -40,7 +40,7 @@ def report():
                          hausdorff_upper_mm=result.get('metrics', {}).get('hausdorff_upper_mm'),
                          maximum_residual=result.get('maximum_residual'))
     a, b = rows.values()
-    comparison = dict(arms=rows, speedup=a['fit_seconds']/b['fit_seconds'] if b['fit_seconds'] else None,
+    comparison = dict(arms=rows, fit_time_ratio=a['fit_seconds']/b['fit_seconds'] if b['fit_seconds'] else None,
                       options=OPTIONS, baseline_rerun=False)
     write(OUTPUT/'comparison.json', comparison)
     lines = ['# PS-002: 5% over two accepted iterations', '',
@@ -50,7 +50,8 @@ def report():
     for name, r in rows.items():
         lines.append(f"| {name} | {r['recovered']} | {r['accepted_iterations']} | {r['fit_seconds']} | "
                      f"{r['work_units']} | {r['rms_mm']} |")
-    lines += ['', f"Fit-time ratio (saved baseline / new): {comparison['speedup']}.", '',
+    lines += ['', f"Fit-time ratio (saved baseline / new): {comparison['fit_time_ratio']}.",
+              'A ratio involving failed recovery is not a speedup to a recovered result.', '',
               'Only stage progress exits changed. The rule is active in every stage, including warm-up.',
               'K/M/Ku/F choices, scheduled LM damping, backtracking and final recovery checks are unchanged.',
               'Earlier exits change later curves; the dynamically selected final bands may therefore differ.', '',
@@ -69,11 +70,14 @@ def report():
     for ax, (name, folder) in zip(axes, arms.items()):
         offset = 0
         result = results[name]
+        tail_start = None
         for s in result.get('stages', []):
             history = read(folder/'runs'/CASE/(s['stage']+'.json'))['history']
             xs = [offset+h['iteration'] for h in history]
             ax.semilogy(xs, [h['loss'] for h in history], marker='.', lw=1.5)
-            if s['accepted_steps']:
+            if s['stage'].startswith('fixed_') and tail_start is None:
+                tail_start = offset
+            if s['accepted_steps'] and not s['stage'].startswith('fixed_'):
                 ax.text((xs[0]+xs[-1])/2, 1.02,
                         s['stage'].replace('warmup_025_damped', 'warm-up').replace('stage_', 'D')
                         .replace('_undamped', ' real').replace('_damped', '').replace('release_', '').replace('fixed_', ''),
@@ -81,12 +85,16 @@ def report():
             if offset:
                 ax.axvline(offset, color='.8', lw=.6, ls=':')
             offset += s['accepted_steps']
+        if tail_start is not None:
+            ax.text((tail_start+offset)/2, 1.02, 'M25–'+str(result['stages'][-1]['M']),
+                    ha='center', va='bottom', transform=ax.get_xaxis_transform(), fontsize=8)
         ax.set_title(f"{name}: {offset} accepted, {rows[name]['fit_seconds']:.2f} s", pad=60)
+        ax.set_ylim(1e-15, 2)
         ax.set_xlabel('Cumulative accepted iteration')
         ax.set_ylabel('Data loss (log scale)')
         ax.grid(axis='y', alpha=.2)
     fig.suptitle('Hook c13.3 | unchanged LM; earlier stage exits', y=.99)
-    fig.text(.5, .015, 'Lines break at stage changes. Loss catalogs can change; compare decreases within each stage.', ha='center', fontsize=9)
+    fig.text(.5, .015, 'Same loss scale; separate iteration axes. Lines break where stage objectives or update bands change.', ha='center', fontsize=9)
     fig.tight_layout(rect=(0, .045, 1, .93))
     fig.savefig(OUTPUT/'loss_vs_iteration.png', dpi=170)
     fig.savefig(OUTPUT/'loss_vs_iteration.svg')
