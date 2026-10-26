@@ -115,3 +115,13 @@ One unsuccessful construction does not necessarily close the whole direction.
 **Experiment**:
 A bounded comparison that answers a specific question about a direction.
 Its conclusion applies to the construction and conditions actually tested.
+
+**Anchoring**:
+Reusing physical calculations from a reference shape for nearby shapes.
+Operator anchoring approximates the changed operator; anchor-LU reuse uses
+the reference factorization to help solve the full current operator.
+
+**Reduced trace model**:
+An approximation of boundary field and flux traces by combinations of a
+smaller set of representative trace patterns. Its unknowns are the weights
+of those patterns rather than every original trace coefficient.

@@ -204,6 +204,22 @@ no remaining effect, delete it with the mechanism.
 **Not decided.** Claude's review of the build raised three DECISION items and
 gave options but no recommendation, so no choice is recorded; they stay in Open.
 
+### D10. Continue from analysis to useful follow-up experiments
+
+**Decided 2026-10-26.** The user asked to change the rule that stops agents
+from doing further experiments after analysis.
+
+**Reason.** The blanket stop prevents an agent from investigating the next
+question exposed by its results within already requested research work.
+
+**Rule.** Pre-register and run the smallest evidence-driven follow-up on the
+same authorized question without per-ID reapproval. Keep explicit user-set
+hard limits and exclusions; preserve earlier results and original criteria.
+
+**Status.** Updated `AGENTS.md`, the iteration workflow and implementation
+principles. Agent-written run counts can be amended prospectively; a different
+research question or departure from explicit user limits still needs a decision.
+
 ## Lessons from agent mistakes
 
 ### L1. Proposal built on half the facts

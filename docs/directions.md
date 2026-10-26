@@ -26,6 +26,30 @@ The briefs specify the next useful research step. Their unresolved mathematics
 is part of that step. Detailed run budgets and numerical criteria belong in a
 pre-registered plan under `docs/iterations/` when a direction is selected.
 
+### Current selection: presentation experiments, 2026-10-26
+
+The user excludes further compact modal / reduced trace-model work from the
+current experiments because that direction was already tested. Haibing's
+item 7 is therefore removed from the shortlist; the evidence remains below.
+
+Anchoring is a separate idea. Haibing's item 5 keeps the full current trace
+system and reuses a reference factorization to help solve it. The proposed
+combination is anchoring plus item 8 error measurements, without trace reduction.
+The user accepted the remaining scope on 2026-10-26: item 3 is a diagnostic
+on unchanged moves; the result is measured accuracy/cost with exact fallback.
+
+The finalized [AN-001 plan](iterations/anchoring/iteration_01/03_plan.md) fixes
+the component comparison and presentation outputs. No new inverse campaign
+is part of this first experiment.
+
+LAU-003/004 are the closest earlier reduced-model experiments. Their
+forward/adjoint and tangent-enriched spaces overlap strongly with item 7's
+aim, although its two-sided projection is not the identical construction.
+
+Rule for the current work: do not add reduced trace spaces or modal compression
+to anchoring under another name. The technical briefs below preserve possible
+research questions; they do not override this selection or request new runs.
+
 ## Where a direction changes the solver
 
 Use the [canonical A1–C12 map][chain] and [glossary][glossary] for exact terms.
@@ -75,30 +99,47 @@ checks its endpoint afterward. Research variants and historical defaults differ.
 
 The benefit column describes an optimistic mechanism, not a promised speedup.
 Ranking favors a connection to the limitations above; uncertainty is retained.
+Updated 2026-10-26: full-trace anchoring is first. Excluded compact-model
+directions remain documented but have no active interest rank.
 
 | Rank | Direction | Where | Optimistic intended benefit | Effort | Evidence status |
 |---:|---|---|---|---|---|
-| 1 | [D01 Reuse physics for nearby shapes](#d01-reuse-physics-for-nearby-shapes) | A1–A4 | Avoid rebuilding expensive physics for every trial | Medium | Earlier first-order construction failed; changed construction needed |
-| 2 | [D08 Make useful shape moves easier](#d08-make-useful-shape-moves-easier) | B6, geometry update; sometimes A1 | Avoid wasted or obstructed moves; recover hard shapes | Medium–high | Related slider success; proposed new charts untested |
-| 3 | [D03 Keep fewer physics modes without losing shape information](#d03-keep-fewer-physics-modes-without-losing-shape-information) | A2, A4, B7 | Reduce assembly, solve and derivative cost together | Medium–high | Some forward compression; common derivative target failed |
-| 4 | [D02 Reuse a library of physical responses](#d02-reuse-a-library-of-physical-responses) | A2–A4, B7 | Amortize construction across frequencies and shapes | High | Compact transfer failed; frequent rebuilding remained necessary |
-| 5 | [D07 Construct and check curves directly from coefficients](#d07-construct-and-check-curves-directly-from-coefficients) | B6, geometry update | Cheaper preparation or reusable validity bounds | High | NG-001–004 tested; complete checking remains restrictive |
-| 6 | [D04 Solve through matrix actions and reuse previous solves](#d04-solve-through-matrix-actions-and-reuse-previous-solves) | A2–A4 or B7–C9 | Reduce memory and large-system solve cost | High | Recycling components tested; current-size payoff uncertain |
-| 7 | [D06 Let fields and shape improve together](#d06-let-fields-and-shape-improve-together) | A4, B5–B8 | Avoid difficult optimization paths caused by strict elimination | High | Earlier relaxation added no recoveries |
-| 8 | [D05 Separate object response from illumination](#d05-separate-object-response-from-illumination) | A3–A4 | Reuse a response for many sources or object configurations | Medium–high | Positive multi-object components; current workload differs |
-| 9 | [D09 Share geometry work across the interaction calculation](#d09-share-geometry-work-across-the-interaction-calculation) | A1–A2 | Reduce repeated kernel construction across frequencies/media | High | Tested Ewald constructions failed |
-| 10 | [D10 Find a rough volume image before fitting its boundary](#d10-find-a-rough-volume-image-before-fitting-its-boundary) | Before A1–C12 | Enter a useful shape region without relying on boundary moves alone | High | Adapter failed; successful full handoff untested |
-| 11 | [D11 Represent the object implicitly and change the physics solver](#d11-represent-the-object-implicitly-and-change-the-physics-solver) | A1–A4, B6–B7 | Handle shapes that strain an explicit boundary representation | Very high | Related forward studies; proposed inverse unestablished |
-| 12 | [D12 Travel through complex shapes to bypass a turning point](#d12-travel-through-complex-shapes-to-bypass-a-turning-point) | Geometry/physics, C9–C12 | Reach a useful real solution along a different continuation route | Very high | Local mechanism works; tested routes did not return usefully |
-| 13 | [D13 Reconstruct an auxiliary field with a better-shaped loss](#d13-reconstruct-an-auxiliary-field-with-a-better-shaped-loss) | New inverse outside A1–C12 | Stronger convergence behavior, then recover the interface | Very high | Formulation and prototype tested; original-data recovery unestablished |
+| 1 | [D04 Full-trace anchoring](#d04-solve-through-matrix-actions-and-reuse-previous-solves) | A4, B7 | Reuse a reference LU while solving the full changed system | Medium for AN-001 | Selected: Haibing 5+8; no trace reduction |
+| 2 | [D01 Anchoring the operator construction](#d01-anchoring-physics-for-nearby-shapes) | A1–A4 | Avoid rebuilding expensive physics for every trial | Medium–high | Earlier first-order construction failed; deferred beyond AN-001 |
+| 3 | [D08 Make useful shape moves easier](#d08-make-useful-shape-moves-easier) | B6, geometry update; sometimes A1 | Avoid wasted or obstructed moves; recover hard shapes | Medium–high | GU-002 slider success and preparation speedup; other charts untested |
+| 4 | [D07 Construct and check curves directly from coefficients](#d07-construct-and-check-curves-directly-from-coefficients) | B6, geometry update | Cheaper preparation or reusable validity bounds | High for full engine | Only existing step-bound diagnostic selected for AN-001 |
+| 5 | [D05 Separate object response from illumination](#d05-separate-object-response-from-illumination) | A3–A4 | Reuse a response for many sources or object configurations | Medium–high | Positive multi-object components; current workload differs |
+| 6 | [D06 Let fields and shape improve together](#d06-let-fields-and-shape-improve-together) | A4, B5–B8 | Avoid difficult optimization paths caused by strict elimination | High | Earlier relaxation added no recoveries |
+| 7 | [D09 Share geometry work across the interaction calculation](#d09-share-geometry-work-across-the-interaction-calculation) | A1–A2 | Reduce repeated kernel construction across frequencies/media | High | Tested Ewald constructions failed |
+| 8 | [D10 Find a rough volume image before fitting its boundary](#d10-find-a-rough-volume-image-before-fitting-its-boundary) | Before A1–C12 | Enter a useful shape region without relying on boundary moves alone | High | Adapter failed; successful full handoff untested |
+| 9 | [D11 Represent the object implicitly and change the physics solver](#d11-represent-the-object-implicitly-and-change-the-physics-solver) | A1–A4, B6–B7 | Handle shapes that strain an explicit boundary representation | Very high | Related forward studies; proposed inverse unestablished |
+| 10 | [D12 Travel through complex shapes to bypass a turning point](#d12-travel-through-complex-shapes-to-bypass-a-turning-point) | Geometry/physics, C9–C12 | Reach a useful real solution along a different continuation route | Very high | Local mechanism works; tested routes did not return usefully |
+| 11 | [D13 Reconstruct an auxiliary field with a better-shaped loss](#d13-reconstruct-an-auxiliary-field-with-a-better-shaped-loss) | New inverse outside A1–C12 | Stronger convergence behavior, then recover the interface | Very high | Formulation and prototype tested; original-data recovery unestablished |
+| — | [D02 Reuse a library of physical responses](#d02-reuse-a-library-of-physical-responses) | A2–A4, B7 | Amortize construction across frequencies and shapes | High | Compact trace models excluded; operator interpolation remains separate and unselected |
+| — | [D03 Keep fewer physics modes](#d03-keep-fewer-physics-modes-without-losing-shape-information) | A2, A4, B7 | Reduce assembly, solve and derivative cost together | Medium–high | Not pursuing; preserve prior compression failures |
 
-D01 ranks first for its direct connection to changed-curve cost, despite its
-negative precedent. D08 ranks above larger physics rewrites because GU-001
-already links a finite-update change to a current failure.
+D04's anchoring variant is first because it gives a bounded, interpretable
+test of reuse without introducing a reduced model. Its complete-cost benefit
+is uncertain: it still builds the changed matrix and source/receiver waves.
 
-D04 and D05 move upward if large systems or repeated acquisitions become the
-actual workload. D12 and D13 offer scientific questions, but currently lack
-a demonstrated connection from their mechanism to the four default failures.
+D01 has greater potential to avoid construction but needs a different mechanism
+from the failed BIE-006 model. D12 and D13 still lack a demonstrated connection
+from their mechanisms to the current recovery failures.
+
+### Haibing items: order for the presentation work
+
+| Priority | Items | Decision and reason |
+|---:|---|---|
+| 1 | 5 + measured parts of 8 | AN-001: full-trace anchoring versus fresh LU, with current-operator residuals and exact fallback |
+| 2 | 3 | AN-001: measure step-bound coverage on the same moves; no clipping or altered trajectory |
+| 3 | 4 | Deferred: incremental differences only if a later method needs accurate matrix differences; no assumed assembly saving |
+| 4 | New part of 2 | Deferred: explicit singular-weight extraction needs a separate assembly-cost question |
+| 5 | 11 | Longer-term: meaningful shape-flow evidence needs more than a circle identity |
+| — | 6, 7 | Excluded from this plan: no Schur reduction or compact trace model bundled into anchoring |
+| — | 1, existing parts of 2/3/9/10 | Reuse established infrastructure and controls; do not present them as newly implemented ideas |
+
+Only the first two rows are scheduled by the AN-001 plan. The remaining ranks
+record possible interest, not conditional extra experiments after a failure.
 
 ## Shared instructions for the next experiment
 
@@ -128,10 +169,14 @@ An experiment closes with its measured outcome and limits. Update this page's
 evidence/status and next question, preserving earlier failures. User approval
 of experiment work governs execution; this directions document is not a run request.
 
-## D01 Reuse physics for nearby shapes
+## D01 Anchoring physics for nearby shapes
 
 **Technical name:** Shape-Taylor / reference-operator models.
 **Location:** A1–A4, with consistency requirements at B7 and C11.
+
+**Naming agreed 2026-10-26:** anchoring means reusing calculations from a
+reference shape. This direction approximates the changed operator; Haibing's
+item 5 instead uses the anchor's LU to solve the full current operator (D04).
 
 **Today → change.** A changed trial curve needs its own physical interaction
 calculation. Build a local approximation around an accepted curve and reuse
@@ -178,6 +223,10 @@ stay accurate over enough actual trial displacements to repay its setup?
 **Technical name:** Operator atlas, reduced basis and empirical interpolation.
 **Location:** A2–A4 and B7.
 
+**User decision, 2026-10-26:** do not continue compact trace-model experiments
+for the presentation. In particular, Haibing item 7 is not an anchoring arm.
+The following evidence and research brief are retained for reference.
+
 **Today → change.** Each new shape/frequency combination is handled directly.
 Build a small library of representative operators or fields, then interpolate
 or combine them for combinations the library has not seen.
@@ -223,6 +272,10 @@ and derivative accuracy survive long enough to repay library construction?
 **Technical name:** Derivative-preserving modal compression.
 **Location:** A2 matrix construction, A4 trace solves and B7 sensitivities.
 
+**Current selection, 2026-10-26:** excluded from the presentation experiments.
+Preserve the closed MC-001 result and the user's decision to pursue anchoring
+separately from compact modal reduction.
+
 **Today → change.** Physics retains a full window of boundary Fourier modes.
 Keep a smaller, carefully chosen space while protecting the modes needed
 to predict how measurements change when the shape moves.
@@ -267,6 +320,10 @@ steps, rather than only the current forward field?
 
 **Technical name:** Matrix-free and recycled linear algebra.
 **Location:** A2–A4; a separate variant changes B7–C9.
+
+**Selected variant, 2026-10-26:** [AN-001](iterations/anchoring/iteration_01/03_plan.md)
+tests full-trace anchor-LU reuse. It still assembles the current dense matrix;
+it is neither matrix-free nor reduced-order. The broader brief below is deferred.
 
 **Today → change.** Assemble a dense interaction matrix and factor it.
 Instead, supply a routine that applies the interaction to a vector, solve

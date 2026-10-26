@@ -22,8 +22,8 @@ stage files link to them rather than copying them.
 
 This page holds the operating rules shared by every track. Track handoffs carry
 state, not duplicate copies of these rules. Where this page and the repository
-`AGENTS.md` differ, `AGENTS.md` wins; it now treats approval of the requested
-experiment work as sufficient, without a separate approval naming the ID.
+`AGENTS.md` differ, `AGENTS.md` wins. Its follow-up rules allow evidence-driven
+experiments within authorized work without separate approval for each ID.
 
 Earlier tracks and their histories were removed on this branch. Their conclusions
 that still matter, with the supporting numbers, are in [the evidence page](../evidence.md).
@@ -45,22 +45,25 @@ changes. Do not infer the active cycle from the highest folder number.
 
 ## Approval rule
 
-**Approval applies to named experiment IDs, and to nothing else.**
+**Authorization follows the user's research question, not individual IDs.**
 
 - A proposal, a review, a results record, or a candidate list is *not*
   authorisation to implement everything it mentions.
 - A file named `03_plan.md` does not by itself establish that execution was
   approved, or that it happened. Both states must be written down explicitly —
   in the plan's own status block and in the track handoff.
-- Every experiment carries an ID of the form `TOP-001`, `BIE-001`, … Approval
-  is granted per ID: "approve BIE-001" authorises that contract, at that scope
-  and budget, and nothing adjacent to it.
+- Every experiment carries an ID of the form `TOP-001`, `BIE-001`, … for
+  traceability. Follow-ups on authorized work may receive new IDs without
+  renewed approval. Follow `AGENTS.md` for scope, budgets and exclusions.
+- After analysis, record the smallest justified follow-up before executing
+  it. A new plan or dated amendment states the evidence, hypothesis, changed
+  conditions, run count and stopping criteria; original results stay intact.
 - Status vocabulary, used verbatim:
 
   | Approval status | Meaning |
   |---|---|
   | `PROPOSED — NOT APPROVED FOR EXECUTION` | Drafted; no authority to implement or run |
-  | `APPROVED` | The user approved this ID; implementation may begin within its declared scope and budget |
+  | `APPROVED` | Covered by the user's requested work, including a documented follow-up within that authority; cite the request |
   | `SUPERSEDED` | Replaced by a later ID; say which |
   | `WITHDRAWN` | Not pursued; say why |
 
@@ -70,22 +73,22 @@ changes. Do not infer the active cycle from the highest folder number.
 
 ### From brief to execution
 
-The gates, in order. A track states which one it is at; an agent picking up a
-track does the next one and nothing beyond it.
+The steps below record progress. Continue through them within existing user
+authorization; finishing analysis or assigning a new ID is not a reason to stop.
 
-| # | Gate | Who does it | What moves it |
+| # | Step | Who does it | What moves it |
 |---|---|---|---|
 | 1 | **Brief or results** exist | any agent | — |
-| 2 | **Review** written, resolving every material recommendation | an agent who is not the brief's author, where practical | the user saying *"review TOP-001"* — or any request to review the track |
-| 3 | **Agreed `03_plan.md`** consolidating the review | an agent | the user accepting the review's recommendation |
-| 4 | **Approval of a named ID** | **the user only** | the user saying *"approve TOP-001"*. No agent may grant this, infer it, or treat silence as it |
-| 5 | **Existing checkout selected**; any new branch/worktree separately approved | the implementation owner | gate 4 passed; ask the user before creating a branch or worktree |
-| 6 | **Implementation and runs** within the contract's scope and budget | the implementation owner | gate 5 done |
+| 2 | **Review** written, resolving material recommendations | an agent who is not the brief's author, where practical | part of the requested work; use a focused review or diagnostic |
+| 3 | **Pre-registered `03_plan.md` or dated amendment** | an agent | evidence supports a bounded comparison within the authorized question |
+| 4 | **Authorization recorded** | the implementation owner | cite the user's request covering the work; ask only for a new question or departure from explicit limits |
+| 5 | **Existing checkout selected**; any new branch/worktree separately approved | the implementation owner | step 4 recorded; ask before creating a branch or worktree |
+| 6 | **Implementation and runs** within the contract's scope and budget | the implementation owner | step 5 done |
 | 7 | **Closeout**: results open the next iteration | owner + reviewer | runs complete |
 
-Without gate 4 an agent may read, review, propose, and write documents. It may
-**not** change numerical code, alter an experiment configuration, or launch a
-run — not even a small one, and not as "just checking".
+Without a user request authorizing experiment work, an agent may read, review,
+propose and write documents. A document alone grants no execution authority.
+Existing authorization continues through follow-ups under `AGENTS.md`.
 
 **User override adopted 2026-09-14:** work in the existing
 `/home/drdeng/Neural_SDF_BEM_AD` checkout on `feature/ordered-boundary-nystrom`.

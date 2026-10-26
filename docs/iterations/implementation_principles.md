@@ -97,7 +97,11 @@ Before editing numerical code, write a short file/API map, list the proposed cha
 
 Keep defaults unchanged during qualification. Make an experimental flag either graduate through a measured decision or remain clearly experimental; do not accumulate undocumented production alternatives.
 
-When a defect blocks the experiment, repair it within the declared scope, revalidate both arms and retain provenance. If the required repair changes the scientific intervention or shared physical interface, stop with a scoped proposal instead of folding it into the current experiment.
+When a defect blocks the experiment, repair it within the authorized question,
+use the relevant checks and retain provenance. If the repair changes the
+intervention or physical interface, record a separate comparison or amendment
+before measuring; preserve the original result and controls. Ask only when
+the change exceeds the user's question or explicit limits.
 
 ## 10. Review once, then execute the approved contract
 
@@ -105,7 +109,14 @@ Use one implementation owner and an independent reviewer where available. Record
 
 The reviewer checks the intervention, controls, data isolation, budgets and material numerical risks. Resolve disagreements as accept, reject, defer, or a named bounded diagnostic. Avoid repeated full-plan rewrites when a small amendment suffices.
 
-Once the user approves an ID and its conditional stages, agents may proceed through stages whose gates pass without repeatedly asking for the same approval. They may not change the scope or authorize another ID. Per the user's 2026-09-14 override, branch or additional-worktree creation always needs separate explicit approval, including in full-access mode; an approved experiment, plan or ZIP does not grant it. Use the existing checkout sequentially by default, and never mutate a checkout being measured.
+Authorization follows the user's requested work. Apply the follow-up rules in
+`AGENTS.md`: analyze saved evidence, pre-register the smallest useful next
+comparison and execute within the same question and explicit user limits.
+A new experiment ID does not require another approval.
+
+Branch or additional-worktree creation still requires separate explicit user
+approval. Use the existing checkout sequentially by default, and never mutate
+a checkout being measured.
 
 ## 11. Count work and preserve negative evidence
 

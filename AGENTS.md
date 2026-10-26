@@ -59,11 +59,23 @@
   unnecessary setup, repeated runs, and extra computation for recording.
 - Use the established working pipeline and its existing checks. Do not add
   extra tests or repeat checks of working components unless a relevant change
-  or observed failure requires it. Preserve the agreed experiment scope and
-  run count.
+  or observed failure requires it. Keep experiments focused on the user's
+  question and respect explicit user-set budgets, deadlines and exclusions.
 - Record the necessary evidence during the requested runs and analyze saved
-  results where possible. If those results cannot answer a question, report
-  the limitation; an unresolved answer does not authorize extra experiments.
+  results where possible. When analysis exposes an unresolved question within
+  the authorized work, choose and run the smallest useful follow-up rather
+  than stopping at the analysis or asking for routine reapproval.
+- Follow-up authority carries across experiment IDs. Agents may repair a
+  failed run, test an explanation, or compare a promising refinement on the
+  same research question. Before running, record the evidence, hypothesis,
+  changed conditions, bounded run count and stopping criteria in a new plan
+  or dated amendment. Preserve earlier results and their original criteria.
+- Agent-written run counts and generic "no further experiments" statements
+  are initial planning limits, not permanent approval barriers. Amend them
+  prospectively when evidence warrants a follow-up. Explicit user-imposed
+  hard limits and excluded directions still apply; ask before exceeding them
+  or taking up a different research question. Stop when the question is
+  answered or no useful next experiment fits the remaining budget.
 
 # Which experiments to run
 
