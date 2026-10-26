@@ -39,7 +39,7 @@ def machine():
         gpu=subprocess.check_output(['nvidia-smi','--query-gpu=name,utilization.gpu,memory.used,memory.total',
                                      '--format=csv,noheader'],text=True).strip(),
         blas={k:os.environ.get(k) for k in ('OMP_NUM_THREADS','OPENBLAS_NUM_THREADS','MKL_NUM_THREADS')},
-        rss_peak_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024)
+        rss_peak_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024,source_sha256=digest(Path(__file__)))
 
 
 def inputs():
@@ -212,7 +212,7 @@ def block_gmres(A,B,precondition=None,rtol=1e-12,max_blocks=60):
         scalar_krylov_columns=int(H.shape[1]))
 
 
-def accuracy(A,B,R,X,reference):
+def accuracy(A,B,R,X,reference,weights):
     ns=B.shape[1]//2
     predict=lambda T:np.einsum('ri,ir->r',R,T[:,:ns])
     pred=predict(reference)
@@ -222,7 +222,9 @@ def accuracy(A,B,R,X,reference):
     from scipy.signal import fftconvolve
     moment=lambda T:fftconvolve(T[:count,:ns],T[:count,ns:],axes=0)
     J=moment(reference)
-    return dict(jacobian_moment_relative=float(np.linalg.norm(moment(X)-J)/np.linalg.norm(J)),trace_relative=float(np.linalg.norm(X-reference)/np.linalg.norm(reference)),
+    actual=lambda T:b7_data_jacobian.hadamard(T[:count,:ns],T[:count,ns:],weights,cutoff,1.)
+    actual_ref=actual(reference)
+    return dict(jacobian_relative=float(np.linalg.norm(actual(X)-actual_ref)/np.linalg.norm(actual_ref)),jacobian_moment_relative=float(np.linalg.norm(moment(X)-J)/np.linalg.norm(J)),trace_relative=float(np.linalg.norm(X-reference)/np.linalg.norm(reference)),
         forward_relative=float(np.linalg.norm(X[:,:ns]-reference[:,:ns])/np.linalg.norm(reference[:,:ns])),
         reciprocal_relative=float(np.linalg.norm(X[:,ns:]-reference[:,ns:])/np.linalg.norm(reference[:,ns:])),
         prediction_relative=float(np.linalg.norm(predict(X)-pred)/np.linalg.norm(pred)),
@@ -232,6 +234,9 @@ def accuracy(A,B,R,X,reference):
 def solves(path):
     data=np.load(path);A=data['current_A'];anchor=data['anchor_A'];B=data['B'];R=data['R']
     reference=lu_solve(lu_factor(A),B);records=[]
+    name=path.stem.split('_Ku')[0];curve=inputs()[name]
+    space=SliderUpdate(.05,device='cpu').prepare(curve,67 if name=='final' else 11,curve.band)
+    weights=b7_data_jacobian.normal_velocity_weights(curve.coefficients,space.derivatives)
     # LU setup and both 24-column solves match the production separation.
     anchor_times=[]
     for repeat in range(3):
@@ -240,13 +245,13 @@ def solves(path):
         started=perf_counter();X=np.hstack((lu_solve(factor,B[:,:24]),lu_solve(factor,B[:,24:])))
         solve_seconds=perf_counter()-started
         records.append(dict(method='LU',repeat=repeat,seconds=factor_seconds+solve_seconds,
-            factor_seconds=factor_seconds,solve_seconds=solve_seconds,accuracy=accuracy(A,B,R,X,reference)))
+            factor_seconds=factor_seconds,solve_seconds=solve_seconds,accuracy=accuracy(A,B,R,X,reference,weights)))
     for method,prec,solver in [('cold_global_GMRES',None,global_gmres),('anchored_global_GMRES',P,global_gmres),
                               ('cold_block_GMRES',None,block_gmres),('anchored_block_GMRES',P,block_gmres)]:
         for repeat in range(3):
             started=perf_counter();X,info=solver(A,B,prec);elapsed=perf_counter()-started
             records.append(dict(method=method,repeat=repeat,seconds=elapsed,**info,
-                                accuracy=accuracy(A,B,R,X,reference)))
+                                accuracy=accuracy(A,B,R,X,reference,weights)))
     # Error operator for stationary anchor corrections. Its norm need not be <1
     # for GMRES convergence; exact singular norm and spectral radius are saved.
     E=np.eye(len(A),dtype=complex)-A@lu_solve(P,np.eye(len(A)))
