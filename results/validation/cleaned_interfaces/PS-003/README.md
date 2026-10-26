@@ -2,7 +2,7 @@
 
 Questions: why are hook fits slow, which declared policy helps, and does slider recover other TG-002 cases?
 
-Consumed fits: 3/13. Next fit: D1.
+Consumed fits: 4/13. Next fit: D2.
 
 Saved GU-002 and PS-002 are references, not concurrent controls. No reference reruns.
 
@@ -10,6 +10,7 @@ Saved GU-002 and PS-002 are references, not concurrent controls. No reference re
 |---|---|---|---:|---:|---:|---:|---:|---:|
 | GU-002 | hook__c13.3 | True | 30.29 | 2.52 | 125 | 2978 | 2978 | 0.0002302 |
 | PS-002 | hook__c13.3 | False | 25.49 | 3.469 | 58 | 1676 | 1672 | 6.605 |
+| D1 | hook__c13.3 | False | 43.48 | 3.175 | 117 | 3040 | 3036 | 0.5129 |
 | H1 | hook__c13.3 | True | 25.46 | 1.95 | 119 | 2558 | 2558 | 0.0002482 |
 | H2 | hook__c13.3 | False | 26.86 | 2.046 | 129 | 3012 | 3012 | 0.06962 |
 | H3 | hook__c13.3 | True | 16.26 | 1.701 | 122 | 2653 | 2653 | 0.0004252 |
@@ -63,6 +64,19 @@ Thread-level physics times overlap and are not wall-time totals. New batch timer
 | PS-002 | fixed_M43 (43/192/128/—) | 2 | 3.357 | 0.2972 | 0.2943 | 3 | progress_exit |
 | PS-002 | fixed_M49 (49/192/128/—) | 2 | 6.346 | 0.2943 | 0.2894 | 5 | progress_exit |
 | PS-002 | fixed_M55 (55/192/128/—) | 0 | 0.3045 | 0.2894 | 0.2894 | 1 | — |
+| D1 | warmup_025_damped (1/4/64/1) | 11 | 0.5938 | 0.6269 | 0.03623 | 0 | no_decreasing_step |
+| D1 | stage_1_damped (3/8/64/1) | 7 | 0.1485 | 0.05039 | 0.009603 | 0 | no_decreasing_step |
+| D1 | stage_2_damped (5/12/64/2) | 8 | 0.2804 | 0.01972 | 0.009124 | 1 | no_decreasing_step |
+| D1 | stage_3_damped (7/16/64/3) | 19 | 1.542 | 0.0077 | 0.000656 | 8 | no_decreasing_step |
+| D1 | stage_4_damped (9/20/64/4) | 8 | 0.9263 | 0.001229 | 0.0002032 | 0 | no_decreasing_step |
+| D1 | stage_4_undamped (9/20/64/4) | 16 | 1.33 | 0.07096 | 0.008344 | 0 | no_decreasing_step |
+| D1 | release_M19 (19/192/128/19) | 22 | 10.79 | 0.1406 | 0.02162 | 7 | maximum_iterations |
+| D1 | fixed_M25 (25/192/128/19) | 5 | 3.31 | 0.02162 | 0.0162 | 4 | — |
+| D1 | fixed_M31 (31/192/128/19) | 6 | 3.015 | 0.0162 | 0.01008 | 1 | — |
+| D1 | fixed_M37 (37/192/128/19) | 5 | 3.364 | 0.01008 | 0.007931 | 3 | — |
+| D1 | fixed_M43 (43/192/128/19) | 5 | 4.841 | 0.007931 | 0.007194 | 4 | — |
+| D1 | fixed_M49 (49/192/128/19) | 3 | 5.884 | 0.007194 | 0.006922 | 7 | — |
+| D1 | fixed_M55 (55/192/128/19) | 2 | 7.052 | 0.006922 | 0.006876 | 7 | — |
 | H1 | warmup_025_damped (1/4/64/1) | 11 | 0.583 | 0.6269 | 0.03623 | 0 | no_decreasing_step |
 | H1 | stage_1_damped (3/8/64/1) | 7 | 0.1465 | 0.05039 | 0.009603 | 0 | no_decreasing_step |
 | H1 | stage_2_damped (5/12/64/2) | 8 | 0.2743 | 0.01972 | 0.009124 | 1 | no_decreasing_step |
