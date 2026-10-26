@@ -268,10 +268,14 @@ class ModalMuller:
             raise RuntimeError('Explicit CUDA execution requested, but no CUDA device is available.')
         return 'cuda' if selected != 'cpu' and CA.available() else 'cpu'
 
-    def resolution_profile(self, storage_band):
+    def resolution_profile(self, storage_band, *, trace_cutoff=None):
         s = self.settings
         production = (s.trace_cutoff if s.trace_cutoff is not None else
                       max(s.trace_minimum, s.trace_step*(int(np.ceil(storage_band/64))+1)))
+        if trace_cutoff is not None:
+            if isinstance(trace_cutoff, bool) or not isinstance(trace_cutoff, int) or trace_cutoff < 1:
+                raise ValueError('Trace cutoff must be a positive integer.')
+            production = trace_cutoff
         refined = production+s.trace_step
         workspace = lambda k: s.coefficient_workspace or k+s.window_margin
         return dict(production=token(production), refined=token(refined), kind='modal_muller',

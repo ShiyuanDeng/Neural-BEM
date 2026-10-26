@@ -88,6 +88,7 @@ class BackendConfig:
     minimum_relative_progress: float = .01
     avoid_terminal_linearization: bool = False
     plain_progress_exit: bool = False
+    record_diagnostics: bool = False
 
     def __post_init__(self):
         if not 0 <= self.reach_fraction <= 1:
@@ -143,6 +144,7 @@ class StageResult:
     geometry_proposals: int = 0
     final_entry: object = field(default=None, repr=False)
     entry_reused: bool = False
+    diagnostics: dict = field(default_factory=dict)
 
 
 

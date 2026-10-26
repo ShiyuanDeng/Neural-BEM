@@ -69,6 +69,10 @@ class CumulativePolicy:
     avoid_terminal_linearization: bool = False
     # Opt-in stage progress exit, independent of the LM damping rule.
     plain_progress_exit: bool = False
+    # Optional controls for full-catalog resolution and delayed progress exits.
+    full_catalog_trace_cutoff: object = None
+    progress_exit_minimum_modes: int = 0
+    record_diagnostics: bool = False
     progress_window: int = 5
     minimum_relative_progress: float = .01
     # 'fixed' stores every full-catalog stage at storage_band (the established recipe);
@@ -101,7 +105,8 @@ class CumulativePolicy:
         config = BackendConfig(domain_box=problem.domain_box, log_model=self.log_model,
                                reach_fraction=self.reach_fraction,
                                damping_rule=self.damping_rule, avoid_terminal_linearization=self.avoid_terminal_linearization,
-                               plain_progress_exit=self.plain_progress_exit, progress_window=self.progress_window,
+                               plain_progress_exit=self.plain_progress_exit, record_diagnostics=self.record_diagnostics,
+                               progress_window=self.progress_window,
                                minimum_relative_progress=self.minimum_relative_progress)
         count = len(observations)
         weights = tuple(np.ones(count)/count)
@@ -116,7 +121,14 @@ class CumulativePolicy:
     def _fit(self, problem, physics, label, observations, band, storage, quota, iterations=22,
              purpose='Release shape detail', cleanup=None):
         config, weights, expected = self._config(problem, observations)
-        profile = physics.resolution_profile(storage)
+        if band < self.progress_exit_minimum_modes:
+            config = replace(config, plain_progress_exit=False)
+        full_real = len(observations) == len(problem.real) and all(
+            a is b for a, b in zip(observations, problem.real))
+        if full_real and self.full_catalog_trace_cutoff is not None:
+            profile = physics.resolution_profile(storage, trace_cutoff=self.full_catalog_trace_cutoff)
+        else:
+            profile = physics.resolution_profile(storage)
         stage = FitStage(label, tuple(observations), weights, band, storage, profile['production'], iterations, quota,
             resolution_kind='modal' if profile.get('kind')=='modal_muller' else 'nodal')
         return Operation('fit', label, purpose, 'previous operation completed or exhausted its stage quota',

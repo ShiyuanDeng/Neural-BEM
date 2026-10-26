@@ -195,6 +195,9 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
                         accepted_steps=result.accepted_steps, initial_loss=result.initial_loss,
                         final_loss=result.final_loss, seconds=result.seconds, work=ledger.snapshot(),
                         curve=record_curve(curve), nodes=op.stage.nodes)
+                    if result.diagnostics:
+                        row.update(diagnostics=result.diagnostics, F=len(op.stage.observations),
+                                   Ku=op.stage.nodes//8 if op.stage.resolution_kind == 'modal' else None)
                     if reuse_entries:
                         row['entry_reused'] = result.entry_reused
                     row.update(physics_failures=getattr(result, 'physics_failures', []),

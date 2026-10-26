@@ -9,7 +9,7 @@ bound <= 2 mm, per-frequency residual <= max(0.003, 3 x noise), and a passed
 final numerical audit.
 """
 from concurrent.futures import ProcessPoolExecutor, as_completed
-from dataclasses import asdict
+from dataclasses import asdict, replace
 import multiprocessing
 from pathlib import Path
 import subprocess
@@ -204,6 +204,14 @@ def _physics(solver, execution):
 def _fit(problem, settings, execution, folder, adapter, on_event):
     if 'policy' in settings:
         spec = settings['policy']
+        if 'policy_adapter' in settings:
+            adaptation = settings['policy_adapter']
+            physics, forward_solve = physics_for(settings)
+            return fit(problem, physics=physics, forward_solve=forward_solve, execution=execution,
+                solver=P.get(spec['recipe']['pipeline']).solver,
+                geometry_update=adaptation['geometry_update'], output=folder,
+                localization_adapter=adapter, on_event=on_event,
+                policy=adapted_policy(settings))
         return R.fit(problem, spec['recipe']['name'], execution=execution, contract=spec['contract'], output=folder,
                      localization_adapter=adapter, on_event=on_event)
     if 'pipeline' in settings:
@@ -217,7 +225,19 @@ def _fit(problem, settings, execution, folder, adapter, on_event):
                penalty=LevelPenalty(settings['level_penalty']) if settings.get('level_penalty') else None)
 
 
+def adapted_policy(settings):
+    """Build the explicitly adapted policy, restoring tuple options after JSON transport."""
+    spec = settings['policy']
+    built = R.build(spec['recipe']['name'], **spec['contract'])
+    options = settings['policy_adapter']['options']
+    options = {key: tuple(value) if isinstance(getattr(built, key), tuple) else value
+               for key, value in options.items()}
+    return replace(built, **options)
+
+
 def geometry_update_for(settings):
+    if 'policy_adapter' in settings:
+        return settings['policy_adapter']['geometry_update']
     if 'policy' in settings:
         return P.get(settings['policy']['recipe']['pipeline']).geometry_update
     if 'pipeline' in settings:
@@ -280,7 +300,8 @@ def run_case(job):
 
 
 def settings_for(*, localization, execution, solver=None, geometry_update=None, pipeline=None, policy=None,
-                 contract=None, level_penalty=None, cumulative_options=None):
+                 contract=None, level_penalty=None, cumulative_options=None,
+                 policy_geometry_update=None, policy_options=None):
     """The single setting of one run directory: a policy, a pipeline, or solver plus update.
 
     ``level_penalty`` (GU-001), the penalty fraction, adds the level penalty to the
@@ -301,10 +322,22 @@ def settings_for(*, localization, execution, solver=None, geometry_update=None, 
         raise ValueError(f'localization must be one of {LOCALIZATION}')
     if (level_penalty is not None) != (geometry_update == 'n_update'):
         raise ValueError('The level penalty runs with the n_update geometry update only, and n_update with it')
+    if (policy_geometry_update is not None or policy_options is not None) and policy is None:
+        raise ValueError('Policy adaptation requires a named policy')
     if policy is not None:
         contract = dict(R.BENCHMARK_CONTRACT if contract is None else contract)
-        return portable(dict(policy=R.settings(policy, contract), localization=localization,
-                             execution=asdict(R.execution_for(policy, execution)), audit_seconds=A.POLICY_SECONDS))
+        settings = dict(policy=R.settings(policy, contract), localization=localization,
+                        execution=asdict(R.execution_for(policy, execution)), audit_seconds=A.POLICY_SECONDS)
+        if policy_geometry_update is not None or policy_options is not None:
+            if policy_geometry_update != 'slider':
+                raise ValueError('The explicit policy adapter currently supports slider only')
+            options = dict(policy_options or {})
+            if set(options) & set(R.CONTRACT):
+                raise ValueError('Set budgets through contract, not policy options')
+            built = replace(R.build(policy, **contract), **options)
+            settings.update(policy_adapter=dict(geometry_update='slider', options=options,
+                                                resolved_policy=asdict(built)), audit_seconds=A.SECONDS)
+        return portable(settings)
     if contract is not None:
         raise ValueError('A contract applies to named policies only')
     method = (dict(pipeline=P.get(pipeline).settings()) if pipeline is not None else
@@ -350,7 +383,7 @@ def run_fresh(job):
 
 def run(run_dir, cases, *, localization, execution, solver=None, geometry_update=None, pipeline=None,
         policy=None, contract=None, workers=1, output=INPUTS, experiment=None, level_penalty=None,
-        cumulative_options=None):
+        cumulative_options=None, policy_geometry_update=None, policy_options=None):
     """Fit ``cases`` into ``run_dir``. One run directory holds exactly one setting.
 
     Select a named ``policy`` (``bem_inverse.policies``, under the TG-002 contract unless
@@ -362,7 +395,8 @@ def run(run_dir, cases, *, localization, execution, solver=None, geometry_update
         raise ValueError(f'workers must be 1..{MAX_WORKERS}')
     settings = settings_for(localization=localization, execution=execution, solver=solver,
                             geometry_update=geometry_update, pipeline=pipeline, policy=policy, contract=contract,
-                            level_penalty=level_penalty, cumulative_options=cumulative_options)
+                            level_penalty=level_penalty, cumulative_options=cumulative_options,
+                            policy_geometry_update=policy_geometry_update, policy_options=policy_options)
     run_dir = Path(run_dir)
     verify(output, require_inputs=True)
     rows = [row(c, output) for c in cases]

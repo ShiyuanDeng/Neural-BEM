@@ -81,6 +81,21 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, physics, forwar
     resume_iteration = 0
     geometry_proposals = 0
     penalty_weight = None
+    diagnostics = dict(damping_attempts=0, damping_retries=0, singular_proposals=0,
+                       tiny_proposal_skips=0, preparation_seconds=0., forward_batch_seconds=0.,
+                       reciprocal_batch_seconds=0.) if config.record_diagnostics else {}
+    counters = getattr(physics, 'counters', None)
+    initial_counts = counters.snapshot()['counts'] if diagnostics and counters is not None else {}
+
+    def forward_scalars(evaluation):
+        # Existing scalar diagnostics only; never create another solve or geometry.
+        values = {}
+        for forward in evaluation.forwards:
+            for key, value in forward.diagnostics.items():
+                if isinstance(value, (int, float, np.integer, np.floating)) and np.isfinite(value):
+                    limits = values.setdefault(key, [float(value), float(value)])
+                    limits[0], limits[1] = min(limits[0], value), max(limits[1], value)
+        return values
 
     def evaluate(curve, category, reused=None):
         """A1–A4 at every active frequency, then B5: residual r and loss. None if a solve fails.
@@ -89,9 +104,14 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, physics, forwar
         its solves are charged as if they ran, but not repeated.
         """
         if reused is None:
-            batch = solve_frequencies(curve, stage.observations, contrast, stage.nodes, category,
-                                      forward_solve=forward_solve, ledger=ledger, threads=threads,
-                                      physics=physics, failures=failures)
+            batch_started = perf_counter()
+            try:
+                batch = solve_frequencies(curve, stage.observations, contrast, stage.nodes, category,
+                                          forward_solve=forward_solve, ledger=ledger, threads=threads,
+                                          physics=physics, failures=failures)
+            finally:
+                if diagnostics:
+                    diagnostics['forward_batch_seconds'] += perf_counter()-batch_started
             if batch is None:
                 return None
         else:
@@ -109,15 +129,25 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, physics, forwar
     def linearize(evaluation):
         """B6–B8 at an evaluated curve: update space, residual Jacobian J and gradient g."""
         # B6. Complete-trial Cartesian coefficient velocities at this curve.
-        space = update.prepare(evaluation.curve, stage.update_modes, stage.curve_modes)
+        preparation_started = perf_counter()
+        try:
+            space = update.prepare(evaluation.curve, stage.update_modes, stage.curve_modes)
+        finally:
+            if diagnostics:
+                diagnostics['preparation_seconds'] += perf_counter()-preparation_started
         ledger.reserve(2 * m)  # the Jacobian, then one trial evaluation
         # B7. Reciprocal derivatives reuse each frequency's forward factors.
         blocks = []
-        with ledger.calls(lambda forward: physics.derivative(forward, update, space),
-                          evaluation.forwards, "reciprocal", "derivative", threads=threads) as calls:
-            for call in calls:
-                block = call()
-                blocks.append(block.reshape(-1, block.shape[-1]))
+        reciprocal_started = perf_counter()
+        try:
+            with ledger.calls(lambda forward: physics.derivative(forward, update, space),
+                              evaluation.forwards, "reciprocal", "derivative", threads=threads) as calls:
+                for call in calls:
+                    block = call()
+                    blocks.append(block.reshape(-1, block.shape[-1]))
+        finally:
+            if diagnostics:
+                diagnostics['reciprocal_batch_seconds'] += perf_counter()-reciprocal_started
         # B8. The B5 map applied to each data derivative column gives J; then g = J.T r.
         J = b8_gauss_newton.residual_jacobian(blocks, observed, stage.weights, config.residual_floor)
         if penalty is not None:
@@ -144,6 +174,15 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, physics, forwar
             row.update(penalty.record(evaluation, penalty_weight))
         if g is None:
             row['terminal_linearization_skipped'] = True
+        if diagnostics:
+            window = config.progress_window
+            previous = history[-window]['loss'] if len(history) >= window else None
+            row.update(recent_relative_decrease=None if previous is None else
+                       (previous-evaluation.loss)/max(abs(previous), np.finfo(float).tiny),
+                       diagnostics=dict(diagnostics), physics_ranges=forward_scalars(evaluation))
+            if trial is not None:
+                row.update({k: trial[k] for k in ('raw_step_norm_m', 'clipped_step_norm_m',
+                            'backtrack', 'damping_retry')})
         history.append(row)
         observe(physics, 'accepted_history', row=row, evaluation=evaluation, ledger=ledger)
 
@@ -220,10 +259,15 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, physics, forwar
             # Outer retry loop (C9): each pass solves (H_GN + lambda_trial D) a_raw = -g.
             # A singular system, or a pass whose backtracking finds no accepted step,
             # multiplies lambda_trial by damping_increase and tries again.
-            for _ in range(config.max_damping_trials):
+            for damping_retry in range(config.max_damping_trials):
+                if diagnostics:
+                    diagnostics['damping_attempts'] += 1
+                    diagnostics['damping_retries'] += int(damping_retry > 0)
                 try:
                     a_raw = c9_lm.solve_proposal(g, H_GN, D, lambda_trial)
                 except np.linalg.LinAlgError:
+                    if diagnostics:
+                        diagnostics['singular_proposals'] += 1
                     lambda_trial *= config.damping_increase
                     continue
                 raw_norm = float(np.linalg.norm(a_raw))
@@ -248,9 +292,14 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, physics, forwar
                     # Halve the step and skip it when it is below the relative tolerance.
                     a_used = 0.5 ** backtrack * a_bounded
                     if checks.step_too_small(a_used, scale, config.relative_step_tolerance):
+                        if diagnostics:
+                            diagnostics['tiny_proposal_skips'] += 1
                         continue
                     trial = dict(iteration=iteration, damping=float(lambda_trial), backtrack=backtrack,
                                  step_norm_m=float(np.linalg.norm(a_used)), **clipping)
+                    if diagnostics:
+                        trial.update(raw_step_norm_m=raw_norm, clipped_step_norm_m=float(np.linalg.norm(a_bounded)),
+                                     damping_retry=damping_retry)
                     feedback = config.damping_rule == 'agreement'
                     if feedback:
                         fraction = float(np.linalg.norm(a_used)/max(raw_norm, np.finfo(float).tiny))
@@ -309,6 +358,8 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, physics, forwar
                         raise NumericalFailure("production evaluation failed at candidate state")
                     checks.require_finite_trial(evaluation)
                     trial.update(loss=evaluation.loss)
+                    if diagnostics:
+                        trial['physics_ranges'] = forward_scalars(evaluation)
                     # C11. The trial is accepted when its loss is lower than the current loss.
                     if checks.production_nondecreasing(evaluation.loss, current.loss):
                         trial["status"] = "nondecreasing"
@@ -374,7 +425,12 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, physics, forwar
     if retain_final and current is not None and len(current.forwards) == m:
         final_entry = StageEntry(current.curve.coefficients.tobytes(), current.curve.band, stage.nodes,
             tuple(stage.observations), float(contrast), physics, current.prediction, current.forwards)
+    if diagnostics and counters is not None:
+        counts = counters.snapshot()['counts']
+        diagnostics['actual_calls'] = {key: counts.get(key, 0)-initial_counts.get(key, 0)
+                                      for key in ('evaluation_attempts', 'derivative_attempts',
+                                                  'failed_evaluations', 'failed_derivatives')}
     return StageResult(stage.label, final, outcome, stop_reason, converged, accepted_steps, initial_loss,
                        float("nan") if current is None else current.loss, history, trials,
                        detail, ledger.snapshot(), perf_counter() - started, checkpoint,
-                       deepcopy(failures), geometry_proposals, final_entry, reusable)
+                       deepcopy(failures), geometry_proposals, final_entry, reusable, diagnostics)
