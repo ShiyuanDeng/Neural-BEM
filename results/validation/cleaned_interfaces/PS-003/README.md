@@ -2,7 +2,7 @@
 
 Questions: why are hook fits slow, which declared policy helps, and does slider recover other TG-002 cases?
 
-Consumed fits: 0/13. Next fit: H1.
+Consumed fits: 1/13. Next fit: H2.
 
 Saved GU-002 and PS-002 are references, not concurrent controls. No reference reruns.
 
@@ -10,6 +10,7 @@ Saved GU-002 and PS-002 are references, not concurrent controls. No reference re
 |---|---|---|---:|---:|---:|---:|---:|---:|
 | GU-002 | hook__c13.3 | True | 30.29 | 2.52 | 125 | 2978 | 2978 | 0.0002302 |
 | PS-002 | hook__c13.3 | False | 25.49 | 3.469 | 58 | 1676 | 1672 | 6.605 |
+| H1 | hook__c13.3 | True | 25.46 | 1.95 | 119 | 2558 | 2558 | 0.0002482 |
 
 ## Saved-run explanation
 
@@ -60,6 +61,23 @@ Thread-level physics times overlap and are not wall-time totals. New batch timer
 | PS-002 | fixed_M43 (43/192/128/—) | 2 | 3.357 | 0.2972 | 0.2943 | 3 | progress_exit |
 | PS-002 | fixed_M49 (49/192/128/—) | 2 | 6.346 | 0.2943 | 0.2894 | 5 | progress_exit |
 | PS-002 | fixed_M55 (55/192/128/—) | 0 | 0.3045 | 0.2894 | 0.2894 | 1 | — |
+| H1 | warmup_025_damped (1/4/64/1) | 11 | 0.583 | 0.6269 | 0.03623 | 0 | no_decreasing_step |
+| H1 | stage_1_damped (3/8/64/1) | 7 | 0.1465 | 0.05039 | 0.009603 | 0 | no_decreasing_step |
+| H1 | stage_2_damped (5/12/64/2) | 8 | 0.2743 | 0.01972 | 0.009124 | 1 | no_decreasing_step |
+| H1 | stage_3_damped (7/16/64/3) | 20 | 1.491 | 0.0077 | 0.0006484 | 6 | no_decreasing_step |
+| H1 | stage_4_damped (9/20/64/4) | 7 | 0.5955 | 0.00113 | 0.0001789 | 0 | no_decreasing_step |
+| H1 | stage_4_undamped (9/20/64/4) | 22 | 1.691 | 0.08043 | 0.008048 | 0 | maximum_iterations |
+| H1 | release_M11 (11/192/128/19) | 17 | 6.772 | 0.1273 | 0.02477 | 0 | no_decreasing_step |
+| H1 | release_M15 (15/192/128/19) | 14 | 5.679 | 0.02477 | 0.01663 | 0 | no_decreasing_step |
+| H1 | release_M19 (19/192/128/19) | 4 | 1.829 | 0.01663 | 5.122e-05 | 0 | no_decreasing_step |
+| H1 | fixed_M25 (25/192/128/19) | 2 | 1.203 | 5.122e-05 | 2.585e-06 | 0 | no_decreasing_step |
+| H1 | fixed_M31 (31/192/128/19) | 2 | 1.063 | 2.585e-06 | 3.094e-07 | 0 | no_decreasing_step |
+| H1 | fixed_M37 (37/192/128/19) | 1 | 0.6745 | 3.094e-07 | 1.031e-08 | 0 | no_decreasing_step |
+| H1 | fixed_M43 (43/192/128/19) | 1 | 0.6804 | 1.031e-08 | 9.235e-10 | 0 | no_decreasing_step |
+| H1 | fixed_M49 (49/192/128/19) | 2 | 1.093 | 9.235e-10 | 2.052e-13 | 0 | no_decreasing_step |
+| H1 | fixed_M55 (55/192/128/19) | 1 | 0.7052 | 2.052e-13 | 4.552e-14 | 0 | no_decreasing_step |
+| H1 | fixed_M61 (61/192/128/19) | 0 | 0.262 | 4.552e-14 | 4.552e-14 | 0 | no_decreasing_step |
+| H1 | fixed_M67 (67/192/128/19) | 0 | 0.2592 | 4.552e-14 | 4.552e-14 | 0 | no_decreasing_step |
 
 Full scalar records, settings, histories and failures are in each run directory.
 All fits use CUDA physics/preparation, four frequency threads, single-threaded BLAS, a centred start,

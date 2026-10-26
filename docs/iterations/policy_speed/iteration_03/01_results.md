@@ -2,7 +2,7 @@
 
 Questions: why are hook fits slow, which declared policy helps, and does slider recover other TG-002 cases?
 
-Consumed fits: 0/13. Next fit: H1.
+Consumed fits: 1/13. Next fit: H2.
 
 Saved GU-002 and PS-002 are references, not concurrent controls. No reference reruns.
 
@@ -10,6 +10,7 @@ Saved GU-002 and PS-002 are references, not concurrent controls. No reference re
 |---|---|---|---:|---:|---:|---:|---:|---:|
 | GU-002 | hook__c13.3 | True | 30.29 | 2.52 | 125 | 2978 | 2978 | 0.0002302 |
 | PS-002 | hook__c13.3 | False | 25.49 | 3.469 | 58 | 1676 | 1672 | 6.605 |
+| H1 | hook__c13.3 | True | 25.46 | 1.95 | 119 | 2558 | 2558 | 0.0002482 |
 
 ## Saved-run explanation
 
