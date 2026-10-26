@@ -59,3 +59,10 @@ This changes the numerical scaling, not the requested accuracy or scene.
 Cold baselines run at the requested production sizes Ku64/128. The larger
 Ku256/512 studies compare anchored methods to LU only, which answers the
 registered crossover question without repeating an unrelated cold baseline.
+
+Coordinator review stopped repeated failed 1800-action solves. The remaining
+size loop was interrupted during a repeated cold failure; its log and partial
+records are preserved. Resume skips all saved repetitions and runs a failing
+method only until its first failure; successful methods retain three timings.
+The large-step pair is an early accepted-step stress test, not a recorded
+refused or halved trial. Report its measured physical displacement explicitly.

@@ -242,6 +242,9 @@ def solves(path):
     reference=lu_solve(lu_factor(A),B);records=[]
     scales=np.linalg.norm(B,axis=0);balanced=B/scales[None,:]
     output_stem=path.stem+'_balanced'
+    partial_path=OUT/(output_stem+'_partial.json')
+    if partial_path.exists():
+        records=read(partial_path)['records']
     name=path.stem.split('_Ku')[0];curve=inputs()[name]
     space=SliderUpdate(.05,device='cpu').prepare(curve,67 if name=='final' else 11,curve.band)
     weights=b7_data_jacobian.normal_velocity_weights(curve.coefficients,space.derivatives)
@@ -249,6 +252,8 @@ def solves(path):
     anchor_times=[]
     for repeat in range(3):
         started=perf_counter();P=lu_factor(anchor);anchor_times.append(perf_counter()-started)
+        if any(r['method']=='LU' and r['repeat']==repeat for r in records):
+            continue
         started=perf_counter();factor=lu_factor(A);factor_seconds=perf_counter()-started
         started=perf_counter();X=np.hstack((lu_solve(factor,B[:,:24]),lu_solve(factor,B[:,24:])))
         solve_seconds=perf_counter()-started
@@ -259,11 +264,17 @@ def solves(path):
                               ('cold_block_GMRES',None,block_gmres),('anchored_block_GMRES',P,block_gmres)]:
         if len(A)>514 and method.startswith('cold_'):
             continue  # Larger sizes answer anchored crossover, not another cold baseline.
+        if any(r['method']==method and not r.get('converged',True) for r in records):
+            continue
         for repeat in range(3):
+            if any(r['method']==method and r['repeat']==repeat for r in records):
+                continue
             started=perf_counter();Y,info=solver(A,balanced,prec);X=Y*scales[None,:];elapsed=perf_counter()-started
             records.append(dict(method=method,repeat=repeat,seconds=elapsed,**info,
                                 accuracy=accuracy(A,B,R,X,reference,weights)))
             write(OUT/(output_stem+'_partial.json'),dict(records=records,machine=machine()))
+            if not info['converged']:
+                break
     # Error operator for stationary anchor corrections. Its norm need not be <1
     # for GMRES convergence; exact singular norm and spectral radius are saved.
     E=np.eye(len(A),dtype=complex)-A@lu_solve(P,np.eye(len(A)))
