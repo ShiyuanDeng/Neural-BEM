@@ -240,6 +240,8 @@ def solves(path):
     data=np.load(path);A=data['current_A'];B=data['B'];R=data['R']
     anchor=data['anchor_A'] if 'anchor_A' in data else np.load(path.with_name(path.stem+'_anchor.npz'))['anchor_A']
     reference=lu_solve(lu_factor(A),B);records=[]
+    scales=np.linalg.norm(B,axis=0);balanced=B/scales[None,:]
+    output_stem=path.stem+'_balanced'
     name=path.stem.split('_Ku')[0];curve=inputs()[name]
     space=SliderUpdate(.05,device='cpu').prepare(curve,67 if name=='final' else 11,curve.band)
     weights=b7_data_jacobian.normal_velocity_weights(curve.coefficients,space.derivatives)
@@ -252,14 +254,16 @@ def solves(path):
         solve_seconds=perf_counter()-started
         records.append(dict(method='LU',repeat=repeat,seconds=factor_seconds+solve_seconds,
             factor_seconds=factor_seconds,solve_seconds=solve_seconds,accuracy=accuracy(A,B,R,X,reference,weights)))
-        write(OUT/(path.stem+'_partial.json'),dict(records=records,machine=machine()))
+        write(OUT/(output_stem+'_partial.json'),dict(records=records,machine=machine()))
     for method,prec,solver in [('cold_global_GMRES',None,global_gmres),('anchored_global_GMRES',P,global_gmres),
                               ('cold_block_GMRES',None,block_gmres),('anchored_block_GMRES',P,block_gmres)]:
+        if len(A)>514 and method.startswith('cold_'):
+            continue  # Larger sizes answer anchored crossover, not another cold baseline.
         for repeat in range(3):
-            started=perf_counter();X,info=solver(A,B,prec);elapsed=perf_counter()-started
+            started=perf_counter();Y,info=solver(A,balanced,prec);X=Y*scales[None,:];elapsed=perf_counter()-started
             records.append(dict(method=method,repeat=repeat,seconds=elapsed,**info,
                                 accuracy=accuracy(A,B,R,X,reference,weights)))
-            write(OUT/(path.stem+'_partial.json'),dict(records=records,machine=machine()))
+            write(OUT/(output_stem+'_partial.json'),dict(records=records,machine=machine()))
     # Error operator for stationary anchor corrections. Its norm need not be <1
     # for GMRES convergence; exact singular norm and spectral radius are saved.
     E=np.eye(len(A),dtype=complex)-A@lu_solve(P,np.eye(len(A)))
@@ -269,8 +273,8 @@ def solves(path):
         row['observed_residual_ratio']=float((h[-1]/h[0])**(1/(len(h)-1))) if len(h)>1 and h[0]>0 else None
     result=dict(input=str(path.relative_to(ROOT)),matrix_shape=A.shape,rhs=B.shape[1],machine=machine(),
         anchor_factor_seconds=anchor_times,right_residual_operator_norm_2=norm,right_residual_operator_spectral_radius=radius,
-        records=records)
-    write(OUT/(path.stem+'_solves.json'),result)
+        rhs_column_norms=scales,rhs_scaling='per-column unit norm for Krylov; original physical units restored for accuracy',records=records)
+    write(OUT/(output_stem+'_solves.json'),result)
     return result
 
 

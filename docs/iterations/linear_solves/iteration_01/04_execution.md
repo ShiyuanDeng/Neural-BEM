@@ -45,3 +45,17 @@ true residual below 1e-12 for both methods, cold and anchored.
 Ku512 completed within 2.396 GiB peak live GPU plus 1.564 GiB peak host RSS.
 Its saved matrices are split losslessly into current and anchor files to keep
 each below the ordinary GitHub per-file limit. No extra experiment was run.
+
+The first Ku64 real solve comparison exposed an accuracy issue in an unscaled
+48-RHS block: source RHS norms are about 2e-7, reciprocal RHS about 0.2.
+An excellent aggregate residual can hide inaccurate source fields. Its
+receipt is preserved unchanged as `release_Ku64_real_solves.json` (the block
+methods missed the 1e-9 field requirement); the initial failed receipt-write
+run is also kept. Before remaining comparisons, normalize each RHS column
+to unit norm inside both Krylov methods and restore physical units for
+accuracy. Tolerance stays 1e-12. Save these as `*_balanced_solves.json`.
+This changes the numerical scaling, not the requested accuracy or scene.
+
+Cold baselines run at the requested production sizes Ku64/128. The larger
+Ku256/512 studies compare anchored methods to LU only, which answers the
+registered crossover question without repeating an unrelated cold baseline.

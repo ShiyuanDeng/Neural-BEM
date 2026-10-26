@@ -124,8 +124,9 @@ coefficients, in addition to the three recorded scalar measurements.
 The chart retains length, normalized positive log-speed density, tangent
 angle and position. Keeping the speed density preserves each stored curve's
 parameter, enabling a direct coefficient round trip. Closure uses two angle
-corrections. The normal component of the saved B6 coefficient velocity is
-the first-order target. Cropping back to K can lose positivity: measure and
+corrections. The saved B6 coefficient velocity, including its tangential
+gauge, is the first-order target. This preserves its normal velocity exactly
+after cropping. Cropping back to K can lose positivity: measure and
 check the actual cropped curve before physics, without claiming otherwise.
 
 Classify a refusal from its measured divided-difference minimum, including

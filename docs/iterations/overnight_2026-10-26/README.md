@@ -71,37 +71,76 @@ not adjectives. A negative answer is a full result.
 
 ## Track A — FI-001: frequency interpolation
 
-**Status:** not started.
+**Status:** complete; all 36 planned curve/arm/node comparisons finished.
+No inverse fits or extra frequency evaluations were run.
 
-**Answer:** _pending_
+**Answer:** neither matrix nor solved-result polynomial interpolation passes
+with 4, 6, 8, 10, 12 or 14 exact frequencies. A smallest passing node count
+was not found. No accurate 25% saving is demonstrated.
 
-**Numbers:** _pending_
+**Numbers:** at 14 nodes, worst field / stacked-J errors are 2.345 / 4.431
+(hook Ku64, matrix), 4.596 / 45.426 (hook Ku128, matrix), and 0.139 / 0.127
+(peanut c4, matrix). Field/J limits are 1e-7 above 0.5 GHz / 1e-3.
 
-**For D02:** _pending_
+The result arm's corresponding field / J errors are 3.147 / 1.387,
+3.123 / 1.668 and 2.668 / 0.691. Exact CPU physics takes 1.047, 5.872
+and 5.661 s; 14-node raw savings span 6.9–21.0%, below the 25% target.
 
-**For Haibing items 2, 7, 9:** _pending_
+Timings use cores 0–5 and single-thread BLAS; observed load was 0.06–1.27.
+GPU snapshots were idle at 900–1606 MiB. CPU-only timings and omitted node
+array packing make the raw savings an optimistic, non-CUDA comparison.
 
-**Limits:** _pending_
+**For D02:** do not use this full-band polynomial to replace exact catalog
+evaluations. All five held-out frequencies still fail at 14 nodes, including
+peanut; the failure is not confined to a single high-contrast frequency.
 
-**Evidence:** _pending_
+**For Haibing items 2, 7, 9:** shared geometry remains useful, but smooth
+scalar coefficients do not ensure a sufficiently low polynomial degree.
+Skipping assembly/solves only helps after accuracy is established.
+
+This does not test a projected reduced model or change recursive
+linearization. Sampled neighboring field changes reach 1.86–1.87 for hook
+and 1.58 for peanut; narrow resonances cannot be established from 19 samples.
+
+**Limits:** one polynomial family, three saved curves, CPU timing only.
+Shape and contrast differ together, so contrast causality is not isolated.
+H3's actual final saved state is K136/Ku128, correcting the plan's K192.
+
+**Evidence:** [results and interpretation](../frequency_interpolation/iteration_01/01_results.md),
+[36-row table](../../../results/validation/cleaned_interfaces/FI-001/table.md),
+[hook error plots](../../../results/validation/cleaned_interfaces/FI-001/fields_by_frequency.svg).
 
 ---
 
 ## Track B — TA-001: tangent-angle chart replay
 
-**Status:** not started.
+**Status:** main replay complete; planned continuation being prepared.
 
-**Answer:** _pending_
+**Answer:** Three of four chart trials pass physics and lower exact loss at
+the original refused fraction. The exception, aphex c0.5, has a distant
+near-touch. The failures are mixed, so positive speed alone is insufficient.
 
-**Numbers:** _pending_
+**Numbers:** Loss decreases: aphex c4 0.861%, aphex c13.3 11.245%, hook c13.3
+1.462%. Original minimum speed / mean: 6.12e-8, 0.0443 and 0.1955. Aphex c0.5
+has speed / mean 0.8242 but a distant gap of 0.481 mm. Maximum reconstruction
+error is 3.03e-9 mm; maximum round-trip error is 6.48e-14 mm.
 
-**For D08:** _pending_
+**For D08:** The finite map changes acceptance while keeping the same B6
+derivative to first order. This justifies the four planned continuation fits.
+It does not demonstrate recovery. The c0.5 near-touch needs another remedy.
 
-**For Haibing item 3:** _pending_
+**For Haibing item 3:** The simple coefficient bound is inconclusive on all
+four accepted states, with lower bounds -3.186, -1.923, -6.073 and -6.187.
+This confirms the review's warning for non-convex curves.
 
-**Limits:** _pending_
+**Limits:** Torus minima are numerical estimates. Distant gaps exclude
+parameter separation below pi/4. The chart retains log-speed density and
+tangential gauge; positivity before cropping does not certify the stored
+curve. One full step fails closure and one self-intersects. No main-study fits.
 
-**Evidence:** _pending_
+**Evidence:** [full results and figures](../../../results/validation/cleaned_interfaces/TA-001/README.md),
+[iteration answer](../geometry_charts/iteration_01/01_results.md),
+[prototype](../../../experiments/geometry_charts/replay.py).
 
 ---
 
