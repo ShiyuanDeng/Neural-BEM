@@ -349,7 +349,7 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, physics, forwar
             space, J, g = linearize(current)
             record(iteration, current, g, a_used, used_damping, damping, trial)
             capture()
-            if (config.damping_rule == 'agreement' and not checks.loss_converged(current.loss, config.loss_tolerance) and
+            if (not checks.loss_converged(current.loss, config.loss_tolerance) and
                     config.plain_progress_exit and
                     checks.insufficient_progress(history, config.progress_window, config.minimum_relative_progress)):
                 stop_reason = 'progress_exit'

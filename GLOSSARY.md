@@ -24,6 +24,10 @@ _Avoid_: phase
 The physics resolution at which a stage solves and judges every curve.
 _Avoid_: production resolution, refined resolution
 
+**Stage progress exit**:
+Ending a stage because recent relative loss decrease is small, while carrying
+its accepted curve into the next stage. This does not mean the whole fit has converged.
+
 **Iteration**:
 One pass of the fit loop; it ends with at most one accepted curve.
 _Avoid_: step

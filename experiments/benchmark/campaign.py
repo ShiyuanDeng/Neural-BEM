@@ -25,6 +25,7 @@ from bem_inverse.geometry_selection import make_update
 from bem_inverse.io import read, write, digest, curve_record, curve_from, portable
 from bem_inverse.physics import Execution, make_backend
 from bem_inverse.runner import fit
+from bem_inverse.policy import CumulativePolicy
 from bem_inverse.level_penalty import LevelPenalty
 from bem_inverse import pipelines as P
 from bem_inverse import policies as R
@@ -212,6 +213,7 @@ def _fit(problem, settings, execution, folder, adapter, on_event):
     return fit(problem, solver=settings['solver'], execution=execution,
                physics=physics, forward_solve=forward_solve, output=folder,
                geometry_update=settings['geometry_update'], localization_adapter=adapter, on_event=on_event,
+               policy=CumulativePolicy(**settings.get('cumulative_options', {})),
                penalty=LevelPenalty(settings['level_penalty']) if settings.get('level_penalty') else None)
 
 
@@ -278,7 +280,7 @@ def run_case(job):
 
 
 def settings_for(*, localization, execution, solver=None, geometry_update=None, pipeline=None, policy=None,
-                 contract=None, level_penalty=None):
+                 contract=None, level_penalty=None, cumulative_options=None):
     """The single setting of one run directory: a policy, a pipeline, or solver plus update.
 
     ``level_penalty`` (GU-001), the penalty fraction, adds the level penalty to the
@@ -291,6 +293,8 @@ def settings_for(*, localization, execution, solver=None, geometry_update=None, 
     chosen = sum(x is not None for x in (pipeline, policy)) + (solver is not None or geometry_update is not None)
     if chosen > 1:
         raise ValueError('Choose one of a policy, a pipeline, or solver/geometry_update')
+    if cumulative_options is not None and (policy is not None or pipeline is not None):
+        raise ValueError('Cumulative options require explicit solver/geometry_update')
     if policy is None and pipeline is None and (solver is None or geometry_update is None):
         raise ValueError('Without a policy or pipeline, pass both solver and geometry_update')
     if localization not in LOCALIZATION:
@@ -307,6 +311,9 @@ def settings_for(*, localization, execution, solver=None, geometry_update=None, 
               dict(solver=solver, geometry_update=geometry_update))
     if level_penalty is not None:
         method['level_penalty'] = LevelPenalty(level_penalty).fraction
+    if cumulative_options is not None:
+        CumulativePolicy(**cumulative_options)
+        method['cumulative_options'] = dict(cumulative_options)
     return portable(dict(method, localization=localization, execution=asdict(execution), audit_seconds=A.SECONDS))
 
 
@@ -342,7 +349,8 @@ def run_fresh(job):
 
 
 def run(run_dir, cases, *, localization, execution, solver=None, geometry_update=None, pipeline=None,
-        policy=None, contract=None, workers=1, output=INPUTS, experiment=None, level_penalty=None):
+        policy=None, contract=None, workers=1, output=INPUTS, experiment=None, level_penalty=None,
+        cumulative_options=None):
     """Fit ``cases`` into ``run_dir``. One run directory holds exactly one setting.
 
     Select a named ``policy`` (``bem_inverse.policies``, under the TG-002 contract unless
@@ -354,7 +362,7 @@ def run(run_dir, cases, *, localization, execution, solver=None, geometry_update
         raise ValueError(f'workers must be 1..{MAX_WORKERS}')
     settings = settings_for(localization=localization, execution=execution, solver=solver,
                             geometry_update=geometry_update, pipeline=pipeline, policy=policy, contract=contract,
-                            level_penalty=level_penalty)
+                            level_penalty=level_penalty, cumulative_options=cumulative_options)
     run_dir = Path(run_dir)
     verify(output, require_inputs=True)
     rows = [row(c, output) for c in cases]

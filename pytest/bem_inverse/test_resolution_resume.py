@@ -59,6 +59,23 @@ def restore(work):
     return Ledger.restore(work, seconds=7200., endpoint_reserve=0)
 
 
+def test_plain_progress_exit_uses_two_accepted_iterations_with_scheduled_damping():
+    results = []
+    for enabled in (False, True):
+        physics, stage, config, ledger = scalar_stage(iterations=4)
+        config = replace(config, step_bounds_m=(.01,)*3, plain_progress_exit=enabled,
+                         progress_window=2, minimum_relative_progress=.05)
+        result = fit_stage(FourierCurve.circle(2), stage, .5, ScalarUpdate(), config, ledger,
+                           physics=physics, forward_solve=physics.forward_solve, geometry_update=scalar_trial)
+        results.append(result)
+    full, short = results
+    assert full.accepted_steps == 4 and full.stop_reason == 'maximum_iterations'
+    assert short.accepted_steps == 2 and short.stop_reason == 'progress_exit'
+    assert short.outcome == 'NORMAL_OPTIMIZER_RETURN' and not short.converged
+    assert [h['loss'] for h in short.history] == [h['loss'] for h in full.history[:3]]
+    assert [h['next_damping'] for h in short.history] == [h['next_damping'] for h in full.history[:3]]
+
+
 def test_pause_resume_preserves_damping_trajectory_and_counters():
     physics, stage, config, ledger = scalar_stage(iterations=4, nodes=16)
     full = fit_stage(FourierCurve.circle(2), stage, .5, ScalarUpdate(), config, ledger,

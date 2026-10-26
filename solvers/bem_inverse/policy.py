@@ -67,6 +67,10 @@ class CumulativePolicy:
     log_model: bool = False
     damping_rule: str = 'schedule'
     avoid_terminal_linearization: bool = False
+    # Opt-in stage progress exit, independent of the LM damping rule.
+    plain_progress_exit: bool = False
+    progress_window: int = 5
+    minimum_relative_progress: float = .01
     # 'fixed' stores every full-catalog stage at storage_band (the established recipe);
     # 'compact' stores each at K_geometry=2M+2, as the frequency-ladder prefix does. The
     # backend derives its trace cutoff from storage, so compact stages also solve smaller
@@ -96,7 +100,9 @@ class CumulativePolicy:
     def _config(self, problem, observations):
         config = BackendConfig(domain_box=problem.domain_box, log_model=self.log_model,
                                reach_fraction=self.reach_fraction,
-                               damping_rule=self.damping_rule, avoid_terminal_linearization=self.avoid_terminal_linearization)
+                               damping_rule=self.damping_rule, avoid_terminal_linearization=self.avoid_terminal_linearization,
+                               plain_progress_exit=self.plain_progress_exit, progress_window=self.progress_window,
+                               minimum_relative_progress=self.minimum_relative_progress)
         count = len(observations)
         weights = tuple(np.ones(count)/count)
         expected = 0.

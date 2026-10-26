@@ -113,3 +113,15 @@ def test_default_policy_fields_are_unchanged():
     assert defaults['release_storage'] == 'fixed' and defaults['storage_band'] == 192
     assert {f.name for f in fields(Execution)} >= {'validity_order', 'stage_entry_reuse'}
     assert (Execution().validity_order, Execution().stage_entry_reuse) == ('certificate_first', False)
+
+
+def test_plain_progress_options_reach_every_stage_without_feedback():
+    problem, physics = fixture(), ModalMuller(Execution(device='cpu'))
+    policy = CumulativePolicy(plain_progress_exit=True, progress_window=2, minimum_relative_progress=.05)
+    operations = policy.operations(problem, physics) + policy.tail(problem, physics, 50)
+    for op in operations:
+        if op.kind == 'fit':
+            assert op.optimizer.damping_rule == 'schedule'
+            assert op.optimizer.plain_progress_exit
+            assert (op.optimizer.progress_window, op.optimizer.minimum_relative_progress) == (2, .05)
+    assert not CumulativePolicy().plain_progress_exit
