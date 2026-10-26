@@ -32,3 +32,16 @@ Raise Ku64/128/256/512 on the same release curve, checking memory before each.
 Stay below 6 GB combined host resident plus live GPU allocation. If the next
 size cannot fit, report a bounded crossover rather than extrapolating a win.
 Cores12–17, single-thread BLAS; record machine load and GPU use in receipts.
+
+Before solver timings, coordinator review added rank-aware full block Arnoldi
+alongside global GMRES. Dependent RHS columns are removed by SVD; two
+orthogonalizing passes retain the combined Krylov space. Deflation uses the
+current operator-action scale, including right preconditioning. Both solvers
+report the true residual and any nonconvergence. Check actual slider-Jacobian
+error separately from trace-product moments because cancellation may amplify
+moment error. A complex 40-by-40 system with duplicated RHS columns gave
+true residual below 1e-12 for both methods, cold and anchored.
+
+Ku512 completed within 2.396 GiB peak live GPU plus 1.564 GiB peak host RSS.
+Its saved matrices are split losslessly into current and anchor files to keep
+each below the ordinary GitHub per-file limit. No extra experiment was run.

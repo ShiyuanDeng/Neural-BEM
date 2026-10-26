@@ -86,6 +86,7 @@ def analyze():
             fig.suptitle('Local errors are diagnostic; passing uses normalized frequency-stacked columns', fontsize=10)
         fig.tight_layout()
         fig.savefig(OUT/f'{metric}_by_frequency.svg')
+        fig.savefig(f'/tmp/fi001_{metric}.png', dpi=120)
         plt.close(fig)
     fig, axes = plt.subplots(1, 3, figsize=(12, 3.6))
     for name, r in response.items():

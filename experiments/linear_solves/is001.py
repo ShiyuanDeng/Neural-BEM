@@ -236,6 +236,7 @@ def accuracy(A,B,R,X,reference,weights):
 
 
 def solves(path):
+    path=path.resolve()
     data=np.load(path);A=data['current_A'];B=data['B'];R=data['R']
     anchor=data['anchor_A'] if 'anchor_A' in data else np.load(path.with_name(path.stem+'_anchor.npz'))['anchor_A']
     reference=lu_solve(lu_factor(A),B);records=[]
@@ -251,12 +252,14 @@ def solves(path):
         solve_seconds=perf_counter()-started
         records.append(dict(method='LU',repeat=repeat,seconds=factor_seconds+solve_seconds,
             factor_seconds=factor_seconds,solve_seconds=solve_seconds,accuracy=accuracy(A,B,R,X,reference,weights)))
+        write(OUT/(path.stem+'_partial.json'),dict(records=records,machine=machine()))
     for method,prec,solver in [('cold_global_GMRES',None,global_gmres),('anchored_global_GMRES',P,global_gmres),
                               ('cold_block_GMRES',None,block_gmres),('anchored_block_GMRES',P,block_gmres)]:
         for repeat in range(3):
             started=perf_counter();X,info=solver(A,B,prec);elapsed=perf_counter()-started
             records.append(dict(method=method,repeat=repeat,seconds=elapsed,**info,
                                 accuracy=accuracy(A,B,R,X,reference,weights)))
+            write(OUT/(path.stem+'_partial.json'),dict(records=records,machine=machine()))
     # Error operator for stationary anchor corrections. Its norm need not be <1
     # for GMRES convergence; exact singular norm and spectral radius are saved.
     E=np.eye(len(A),dtype=complex)-A@lu_solve(P,np.eye(len(A)))

@@ -4,8 +4,6 @@ PYTHONPATH=solvers:. OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 
 taskset -c 0-5 python -m experiments.frequency_interpolation.study --curve hook_release
 """
 import argparse
-import csv
-from dataclasses import replace
 import os
 from pathlib import Path
 import resource
@@ -86,10 +84,12 @@ def exact_batch(curve, problem, cutoff, weights, indices):
         fields.append(prediction.prediction)
         jacobians.append(context._derivative(prediction._handle, weights))
         diagnostics.append(prediction.diagnostics)
-    elapsed = perf_counter()-started
-    return dict(matrices=np.stack(matrices), fields=np.stack(fields),
-                jacobians=np.stack(jacobians), diagnostics=diagnostics,
-                seconds=elapsed, context=context)
+    result = dict(matrices=np.stack(matrices), fields=np.stack(fields),
+                  jacobians=np.stack(jacobians), diagnostics=diagnostics, context=context)
+    # Include node-array packing in future timings. Original FI-001 receipts
+    # stopped immediately before these np.stack calls; preserve those receipts.
+    result['seconds'] = perf_counter()-started
+    return result
 
 
 def solve_matrix(matrix, curve, observation, contrast, cutoff, context, weights):
