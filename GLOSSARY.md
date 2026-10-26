@@ -101,3 +101,13 @@ The geometry update that turns a requested normal push into one linear
 coefficient step. The step moves the boundary normally and keeps the relative
 speed change equal everywhere, so the speed unevenness before the step is kept.
 _Avoid_: tangential correction
+
+## Research
+
+**Direction**:
+A family of proposed changes intended to address a particular limitation.
+One unsuccessful construction does not necessarily close the whole direction.
+
+**Experiment**:
+A bounded comparison that answers a specific question about a direction.
+Its conclusion applies to the construction and conditions actually tested.
