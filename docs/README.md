@@ -1,5 +1,8 @@
 # Docs
 
+- [`directions.md`](directions.md): 13 research directions, ranked by provisional
+  interest, with plain-language explanations, current code locations, earlier
+  and later evidence, and technical briefs for the next useful experiments.
 - [`evidence.md`](evidence.md): why the pipeline looks the way it does. Each tested
   choice, its numbers, the four unrecovered cases and what is still unknown.
 - [`reference/inverse_information_chain.md`](reference/inverse_information_chain.md):
