@@ -83,15 +83,20 @@ show the same saved reference data without interpolation.
 polynomial in production. A different family, phase removal or local
 frequency intervals would require a new plan and independent evaluation.
 
-**Item 2:** sharing exact geometry remains useful. The fresh reference
-contexts spend 18–37% of their CPU time on A1 and 59–78% on A2.
+None of items 2, 7 and 9 was tested here. This study tests a D02 idea;
+the notes below only show where its numbers touch those items.
+
+**Item 2 (not tested):** sharing exact geometry remains useful. The fresh
+reference contexts spend 18–37% of their CPU time on A1 and 59–78% on A2.
 Smooth scalar frequency dependence does not ensure a low polynomial degree.
+No Ψ_j closed form or band structure was built.
 
-**Item 7:** Arm A actually skips held-out assembly; a projected model that
-still assembles every full matrix has a different cost. Arm B also skips
-held-out waves and solves, but its output error prevents using that saving.
+**Item 7 (not tested):** Arm A actually skips held-out assembly; a projected
+model that still assembles every full matrix has a different cost. Arm B
+also skips held-out waves and solves, but its output error prevents using
+that saving. No reduced model was built.
 
-**Item 9:** recursive linearization remains the context for the 19-frequency
+**Item 9 (not tested):** recursive linearization remains the context for the 19-frequency
 catalog. These fixed-curve results give no evidence that dropping frequencies
 preserves recovery. No fit or continuation policy was changed.
 

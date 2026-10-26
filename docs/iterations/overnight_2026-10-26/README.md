@@ -19,16 +19,29 @@ Chosen by the user on 2026-10-26 from the directions document. D01, D03, D05,
 D07, D10 and D11 were crossed out; D06, D09, D12 and D13 stay as ideas but
 were not chosen for tonight. D08's slider belongs to another agent.
 
-## How each track connects to Haibing's review
+## Status of Haibing's items after tonight
 
 [Haibing's literature review](../../../Haibing_directions.md) assessed the
-proposed upgrades. Each track tests one of its claims with our numbers.
+proposed upgrades. Tonight's tracks came from the directions document, not
+from the items, so they test only item 5 and recommendation 4 directly.
 
-| Track | Haibing items | Claim the track tests |
+**Closed** below means the evidence is strong enough that the proposer
+would likely accept closing the item. Every other label leaves it open.
+
+| Item | Label | Tonight's evidence, and what is still missing |
 |---|---|---|
-| FI-001 | 2, 7, 9 | Frequency enters through scalar coefficients on shared geometry (item 2). A projected reduced model still needs the full matrix (item 7). |
-| TA-001 | 3 and its prior-work list | The quantity behind every refusal is the `|W|` lower bound. The coefficient bound may often be inconclusive for non-convex shapes. |
-| IS-001 | 5, recommendation 4 | Profile assembly against LU at the final size first. Test anchor contraction and solve cost. Contraction below one suffices for stationary corrections; it is not required by GMRES. |
+| 1 Maue form of T | Already in the solver | [A2](../../../solvers/bem_inverse/a2_muller.py) uses it. Not retested tonight. |
+| 2 Müller cancellation, Ψ_j weights, bands | Partly in the solver; rest not tested | A2 already cancels the leading singularity and uses the exact log coefficients. FI-001 tested frequency interpolation (D02), not the Ψ_j closed form or bands. |
+| 3 Coefficient step region | Checked, still open | The simple bound is negative on all four refusal starting curves, so it cannot certify any step from them. Missing: the sharper `|W|` bound already certified in [A1](../../../solvers/bem_inverse/a1_geometry.py), and steps along whole fits, not only refusals. |
+| 4 Incremental Chebyshev update | Not tested | No evidence either way. |
+| 5 Anchored GMRES, residual correction | Closed as a speed-up through Ku256; error-bound use still open | Even 3–4 iterations from an anchor 0.0005 mm away cost more than a fresh LU. One accepted 1.139 mm step has spectral radius 1.203, so the stationary error bound fails there. That is one step only. |
+| 6 Schur elimination | Not tested | No evidence either way. |
+| 7 Forward–adjoint reduced model | Not tested | FI-001 skipped held-out assembly; it built no reduced model. |
+| 8 Error control for the LM step | Not tested | No evidence either way. |
+| 9 Separate bands and frequencies | Not tested | No fit or continuation change was made. |
+| 10 Circle closed forms | Not tested | No evidence either way. |
+| 11 Riccati/ItI flow | Not tested | No evidence either way. |
+| Recommendation 4: profile LU | Done | LU is 13–14% of cached Ku64 and 36–38% of cached Ku128 forward+Jacobian time at 2.5 GHz; 0.8–8.8% at first use. |
 
 ## Policy and saved states for all three tracks
 
@@ -98,12 +111,11 @@ array packing make the raw savings an optimistic, non-CUDA comparison.
 evaluations. All five held-out frequencies still fail at 14 nodes, including
 peanut; the failure is not confined to a single high-contrast frequency.
 
-**For Haibing items 2, 7, 9:** shared geometry remains useful, but smooth
-scalar coefficients do not ensure a sufficiently low polynomial degree.
-Skipping assembly/solves only helps after accuracy is established.
+**Haibing items 2, 7, 9 (not tested):** this track tests a D02 idea. It
+builds no Ψ_j bands, no reduced model and no new continuation. It only
+shows that scalar frequency coefficients are not smooth enough to interpolate.
 
-This does not test a projected reduced model or change recursive
-linearization. Sampled neighboring field changes reach 1.86–1.87 for hook
+Sampled neighboring field changes reach 1.86–1.87 for hook
 and 1.58 for peanut; narrow resonances cannot be established from 19 samples.
 
 **Limits:** one polynomial family, three saved curves, CPU timing only.
@@ -135,9 +147,10 @@ derivative, but the full trajectories still fail. All four new failed
 candidates have off-diagonal minima, speed / mean 0.231–0.726 and distant
 gaps 0.118/0.245/1.127/6.799 mm. Keep the chart experimental.
 
-**For Haibing item 3:** The simple coefficient bound is inconclusive on all
-four accepted states, with lower bounds -3.186, -1.923, -6.073 and -6.187.
-This confirms the review's warning for non-convex curves.
+**Haibing item 3 (checked, still open):** The simple coefficient bound is
+inconclusive on all four accepted states, with lower bounds -3.186, -1.923,
+-6.073 and -6.187. This confirms the review's warning for non-convex curves.
+It does not test the sharper A1 bound or steps along whole fits.
 
 **Limits:** Torus minima are numerical estimates. Distant gaps exclude
 parameter separation below pi/4. The chart retains log-speed density and
@@ -178,8 +191,9 @@ hypothetical equal-cost targets; only one target per anchor was measured.
 implementations. There is no win through Ku256. A matrix-free action or
 actual repeated large targets would require separate evidence.
 
-**For Haibing item 5 and recommendation 4:** cost profiling changes the
-historical split, but lower iteration counts still lose at current sizes.
+**Haibing item 5 (closed as a speed-up through Ku256) and recommendation 4
+(done):** cost profiling changes the historical split, but lower iteration
+counts still lose at current sizes.
 A 1.139 mm accepted stress step gives right-residual operator norm 274.18 and
 spectral radius 1.203 at real frequency, breaking stationary contraction.
 GMRES still converges, at 56.2 ms versus LU 2.62 ms; contraction below one is
