@@ -138,6 +138,9 @@ def assemble(name,cutoff):
             del context,pred,captured;gc.collect();torch.cuda.empty_cache()
         path=OUT/f'{name}_Ku{cutoff}_{freq}.npz'
         np.savez_compressed(path,**items)
+        if path.stat().st_size>95_000_000:
+            np.savez_compressed(path.with_name(path.stem+'_anchor.npz'),anchor_A=items.pop('anchor_A'))
+            np.savez_compressed(path,**items)
         write(OUT/f'assembly_{name}_Ku{cutoff}.json',records)
     return records
 
@@ -187,6 +190,7 @@ def block_gmres(A,B,precondition=None,rtol=1e-12,max_blocks=60):
     target=Q[0].conj().T@B;history=[];X=np.zeros_like(B)
     for j in range(max_blocks):
         z=apply(Q[-1]);Z.append(z);w=A@z
+        action_scale=np.linalg.norm(w)
         oldrows=sum(widths);oldcols=H.shape[1];newcols=z.shape[1]
         column=np.zeros((oldrows,newcols),complex)
         for _ in range(2):
@@ -195,7 +199,7 @@ def block_gmres(A,B,precondition=None,rtol=1e-12,max_blocks=60):
                 coeff=q.conj().T@w;column[offset:offset+q.shape[1]]+=coeff
                 w-=q@coeff;offset+=q.shape[1]
         U,s,Vh=svd(w,full_matrices=False)
-        threshold=np.finfo(float).eps*max(A.shape)*np.linalg.norm(A,ord='fro')
+        threshold=np.finfo(float).eps*max(A.shape)*action_scale
         next_rank=min(len(A)-oldrows,int(np.count_nonzero(s>threshold)))
         bottom=s[:next_rank,None]*Vh[:next_rank]
         enlarged=np.zeros((oldrows+next_rank,oldcols+newcols),complex)
@@ -232,7 +236,8 @@ def accuracy(A,B,R,X,reference,weights):
 
 
 def solves(path):
-    data=np.load(path);A=data['current_A'];anchor=data['anchor_A'];B=data['B'];R=data['R']
+    data=np.load(path);A=data['current_A'];B=data['B'];R=data['R']
+    anchor=data['anchor_A'] if 'anchor_A' in data else np.load(path.with_name(path.stem+'_anchor.npz'))['anchor_A']
     reference=lu_solve(lu_factor(A),B);records=[]
     name=path.stem.split('_Ku')[0];curve=inputs()[name]
     space=SliderUpdate(.05,device='cpu').prepare(curve,67 if name=='final' else 11,curve.band)
@@ -256,8 +261,11 @@ def solves(path):
     # for GMRES convergence; exact singular norm and spectral radius are saved.
     E=np.eye(len(A),dtype=complex)-A@lu_solve(P,np.eye(len(A)))
     norm=float(np.linalg.norm(E,2));radius=float(np.max(abs(np.linalg.eigvals(E))))
+    for row in records:
+        h=row.get('history',[])
+        row['observed_residual_ratio']=float((h[-1]/h[0])**(1/(len(h)-1))) if len(h)>1 and h[0]>0 else None
     result=dict(input=str(path.relative_to(ROOT)),matrix_shape=A.shape,rhs=B.shape[1],machine=machine(),
-        anchor_factor_seconds=anchor_times,error_operator_norm_2=norm,error_operator_spectral_radius=radius,
+        anchor_factor_seconds=anchor_times,right_residual_operator_norm_2=norm,right_residual_operator_spectral_radius=radius,
         records=records)
     write(OUT/(path.stem+'_solves.json'),result)
     return result
