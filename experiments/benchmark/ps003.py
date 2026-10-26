@@ -209,11 +209,17 @@ def report():
         'All fits use CUDA physics/preparation, four frequency threads, single-threaded BLAS, a centred start,',
         '13,412 units / 120 s fit limits and 300 s final-check limits. Four-phase uses similarity only at warm-up.',
         'One fit per setting cannot establish repeatability or a 30-case result. Defaults remain unchanged.', '']
+    findings_path = OUTPUT/'findings.md'
+    findings = findings_path.read_text() if findings_path.exists() else ''
+    if findings:
+        lines[2:2] = findings.splitlines()+['']
     (OUTPUT/'README.md').write_text('\n'.join(lines))
     page = TRACK/'iteration_03/01_results.md'
     page.parent.mkdir(exist_ok=True)
-    page.write_text('\n'.join(lines[:lines.index('## Stage evidence')])+ '\n\nDetailed stages: '
-        '[PS-003 evidence](../../../../results/validation/cleaned_interfaces/PS-003/README.md).\n')
+    page.write_text(('# PS-003: GPU slider policy comparisons\n\n'+findings if findings else
+        '\n'.join(lines[:lines.index('## Stage evidence')]))+ '\n\nDetailed stages: '
+        '[PS-003 evidence](../../../../results/validation/cleaned_interfaces/PS-003/README.md).\n\n'
+        '![Hook loss versus iterations and time](../../../../results/validation/cleaned_interfaces/PS-003/hook_loss.png)\n')
     (TRACK/'README.md').write_text('# Policy speed\n\nCurrent work: [PS-003 results](iteration_03/01_results.md).\n'
         f'Consumed fits: {len(completed)}/13. Completed attempts: {", ".join(completed) or "none"}.\n'
         f'Exact next fit: {next_id or "none; planned fits complete"}.\n\n'
@@ -229,6 +235,8 @@ def figures():
     arms = dict(SAVED)
     arms.update({k: OUTPUT/k for k in ('H1', 'H2', 'H3', 'D1', 'D2') if (OUTPUT/k/'manifest.json').exists()})
     fig, axes = plt.subplots(len(arms), 2, figsize=(13, 2.8*len(arms)), squeeze=False)
+    max_iterations = max(sum(s['accepted_steps'] for s in stage_rows(folder, HOOK)) for folder in arms.values())
+    max_seconds = max(result(folder).get('fit_and_localization_seconds', 0.) for folder in arms.values())
     for (key, folder), pair in zip(arms.items(), axes):
         offset = 0
         for stage in stage_rows(folder, HOOK):
@@ -238,17 +246,25 @@ def figures():
                 ax.semilogy(x, losses, '.-', lw=1)
                 if x:
                     ax.axvline(x[0], color='.7', lw=.5, ls=':')
-                    ax.text(x[0], 1., stage['stage'].replace('release_', '').replace('fixed_', ''),
-                            rotation=90, fontsize=5, va='top', transform=ax.get_xaxis_transform())
+                    if stage['stage'] in ('release_M11', 'release_M15', 'release_M19', 'full_release_M95'):
+                        ax.text(x[0], .97, stage['stage'].split('_')[-1], rotation=90, fontsize=7,
+                                va='top', transform=ax.get_xaxis_transform())
             offset += stage['accepted_steps']
         for ax in pair:
             ax.set_ylim(1e-15, 2)
-            ax.set_title(key)
+            row = result(folder)
+            ax.set_title(f"{key}: {'recovered' if row.get('recovered') else 'failed'}, "
+                         f"{row.get('fit_and_localization_seconds', 0.):.2f} s")
+            ax.grid(axis='y', alpha=.15)
             ax.set_ylabel('Stage loss')
+        pair[0].set_xlim(-2, max_iterations+2)
+        pair[1].set_xlim(-.7, max_seconds+1)
         pair[0].set_xlabel('Cumulative accepted iterations')
         pair[1].set_xlabel('Fit elapsed seconds (accepted-history timestamps)')
-    fig.tight_layout()
+    fig.suptitle('Hook c13.3: fixed-stage loss histories | dotted lines mark stage entry', y=.999)
+    fig.tight_layout(rect=(0, 0, 1, .985))
     fig.savefig(OUTPUT/'hook_loss.png', dpi=150)
+    fig.savefig(OUTPUT/'hook_loss.svg')
     plt.close(fig)
 
 
