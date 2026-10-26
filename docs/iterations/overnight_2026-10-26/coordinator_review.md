@@ -72,6 +72,23 @@ IS-001's completed production-size comparisons support keeping LU at Ku64
 and Ku128 for the tested implementation. Its larger-size and anchor-stress
 results will determine the range of that conclusion.
 
+## Are the questions answered?
+
+| Question | Assessment | Remaining limit |
+|---|---|---|
+| FI: how many frequencies suffice? | None of the six tested counts, 4–14, passes on any curve. | The true minimum and other interpolation families are unknown. |
+| FI: worthwhile saving? | No qualified saving for either tested arm. | CPU timings cannot establish CUDA savings; no accurate candidate warranted timing again. |
+| FI: does high contrast break it? | Failure also occurs at contrast 4. | Shape and contrast are confounded; a causal contrast effect is not isolated. |
+| TA: what causes the refusals? | Different local/nonlocal geometric features are measured. | These are numerical minima, and features do not alone establish certificate-failure causality. |
+| TA: does the chart help? | Three matched saved steps pass physics at lower loss. | Full-fit continuation must be assessed separately. |
+| TA: does the simple coefficient bound help? | It is inconclusive at all four accepted bases. | This does not reject sharper bounds or prove invalidity. |
+| IS: where does time go? | Current CUDA/CPU components, first-use and cached times are recorded. | Only the highest real/damped frequency, not the full fit. |
+| IS: can iterations beat LU now? | No for both tested dense iterative methods at Ku64/128. | This is not a lower bound on all possible iterative implementations. |
+| IS: when could they win? | First measured solve-only win at Ku512; four equal-cost reuses repay the best anchor. | Reuse is modeled, not observed over four changing targets. |
+
 ## Final supervisor assessment
 
-Pending the remaining crossover and four-fit continuation evidence.
+Pending the final four-fit continuation evidence. The component studies
+already support concrete decisions, rather than only reporting working
+prototype code. Their limitations should be part of the progress report.
+
