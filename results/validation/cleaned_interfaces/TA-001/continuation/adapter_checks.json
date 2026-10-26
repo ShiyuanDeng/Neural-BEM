@@ -1,0 +1,100 @@
+{
+  "checks": [
+    {
+      "case": "aphex_twin__c0.5",
+      "zero_step_exact": true,
+      "derivative_checks": [
+        {
+          "step_m": 1e-07,
+          "relative_error": 6.210222497731238e-11
+        },
+        {
+          "step_m": 5e-08,
+          "relative_error": 4.837079083936036e-11
+        }
+      ],
+      "passed": true
+    },
+    {
+      "case": "aphex_twin__c4",
+      "zero_step_exact": true,
+      "derivative_checks": [
+        {
+          "step_m": 1e-07,
+          "relative_error": 9.886726500070549e-11
+        },
+        {
+          "step_m": 5e-08,
+          "relative_error": 2.6720194983941887e-11
+        }
+      ],
+      "passed": true,
+      "closure_exception": {
+        "type": "UpdateRefused",
+        "reason": "chart_closure",
+        "detail": "closure did not converge: 6.08"
+      }
+    },
+    {
+      "case": "aphex_twin__c13.3",
+      "zero_step_exact": true,
+      "derivative_checks": [
+        {
+          "step_m": 1e-07,
+          "relative_error": 1.8714887523110583e-10
+        },
+        {
+          "step_m": 5e-08,
+          "relative_error": 7.422365309383035e-11
+        }
+      ],
+      "passed": true
+    },
+    {
+      "case": "hook__c13.3",
+      "zero_step_exact": true,
+      "derivative_checks": [
+        {
+          "step_m": 1e-07,
+          "relative_error": 2.2530870317591815e-09
+        },
+        {
+          "step_m": 5e-08,
+          "relative_error": 5.518349401387937e-10
+        }
+      ],
+      "passed": true
+    }
+  ],
+  "passed": true,
+  "environment": {
+    "commit": "0b3234e618350ae8218781ef57f5373ee2e0da2e",
+    "load": [
+      1.27734375,
+      0.83740234375,
+      0.5078125
+    ],
+    "cpu_affinity": [
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "blas": {
+      "OMP_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1"
+    },
+    "gpu": "not used",
+    "max_rss_mb": 2178.5078125
+  },
+  "sources": {
+    "continuation.py": "9643c031f3c83b97a2589368949b46946b08c78f2d6fc2ee4f95da2c00944544",
+    "replay.py": "d1f97ec0f9a637b2d8c83597e267aa3323d1bcc6f3f0d4fdca8919b58423a1b5",
+    "report.py": "db8b6a68bc1bc31149b6145d7cff68d437421a3ec12b73e7d05bb750cc77e82b",
+    "adapter.py": "3c2b5e44a646feaafd402ed454ff6cab4e6488967e5b3b1811e455262668040c",
+    "__init__.py": "471467d2b0210c5088c397817d57fdb3d3b16218b2f5c1786e5f8a6836400443"
+  }
+}

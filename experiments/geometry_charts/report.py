@@ -25,12 +25,14 @@ def label(metrics, case):
 def main():
     rows=[]
     details=[]
+    matched_improvements=0
     for case,stage in ROWS:
         rebuild=read(OUTPUT/'rebuild'/f'{case}.json')
         classification=read(OUTPUT/'classification'/f'{case}.json')
         replay=read(OUTPUT/'replay'/f'{case}.json')
         original=classification['original']
         matched=next(t for t in replay['trials'] if t['backtrack']==rebuild['failed_backtrack'])
+        matched_improvements+=bool(matched['lower_exact_loss'])
         improving=[t for t in replay['trials'] if t['lower_exact_loss']]
         best=min(improving,key=lambda t:t['physics']['loss']) if improving else matched
         _,_,_,config=inputs(case,stage)
@@ -108,7 +110,7 @@ def main():
                      f'{row["matched_min_speed_over_mean"]:.6g} | {row["matched_distant_approach_mm"]:.3f} |')
     (OUTPUT/'table.md').write_text('\n'.join(lines)+'\n')
     write(OUTPUT/'summary.json',dict(rows=rows,checks=details,
-                                   question_2_positive=sum(r['matched_loss'] is not None and r['matched_loss']<r['accepted_loss'] for r in rows),
+                                   question_2_positive=matched_improvements,
                                    source_sha256={str(p.relative_to(Path(__file__).resolve().parents[2])):digest(p)
                                                   for p in Path(__file__).parent.glob('*.py')}))
     print('\n'.join(lines))
