@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mom-esi"
+version = "0.1.0"
+description = "A compact 2-D TM method-of-moments electromagnetic forward simulator"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = ["numpy>=1.24", "scipy>=1.10"]
+
+[project.optional-dependencies]
+test = ["pytest>=7"]
+
+[project.scripts]
+mom-esi = "mom_esi.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
