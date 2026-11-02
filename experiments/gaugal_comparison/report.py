@@ -138,6 +138,20 @@ def tuning_and_forward(destination):
                         f"{setting['finite_cases']}/3 |")
         text += ['', 'The circle cases are tuning data, so their final scores are not held-out scores. '
                  'No further settings were selected using the other 27 cases.', '']
+        text += ['| Step / circle | Stop | Observed limitations | Evidence |', '|---|---|---|---|']
+        for setting in tuning['table']:
+            for saved in setting['rows']:
+                folder = f"step{setting['step']}"
+                path = GGB/'G1_tuning'/folder/(saved['case']+'.json')
+                data = read(path)
+                row = dict(contrast=data.get('traced', {}).get('traced_contrast'),
+                           maximum_residual=data.get('maximum_residual'), **data.get('boundary', {}))
+                row['meets_shared_limits'] = shared_limits(row)
+                info = E.gaugal_evidence(data, path, row, float(saved['case'].split('__c')[1]), REPO)
+                text.append(f"| {setting['step']:g} / {saved['case']} | {data.get('stop_reason')} | "
+                            f"{cell(info['failure_reason'])} | "
+                            f"{link(str(path.relative_to(REPO)), destination, 'result')} |")
+        text.append('')
     records = []
     for path in sorted((RESULTS/'FW-001/F2_gaugal_sweep').glob('*.json')):
         data = read(path)
@@ -338,6 +352,15 @@ def make_report(preview=False):
         'recoveries, and two cases timed out. Supplied-contrast BEM removes the degree cap; S2 retains '
         'its earlier numerical settings. Full source paths and all scores are in '
         '[comparison.csv](comparison.csv) and [comparison.json](comparison.json).', '',
+        '| Arm | Material information | Representation / start | Frequency data |',
+        '|---|---|---|---|',
+        '| BEM supplied contrast | True contrast supplied | One homogeneous object bounded by a Fourier curve; centred 65 mm circle | Real and damped continuation catalogs |',
+        '| BEM material recovery | Truth-free weak-scatterer contrast estimate | Same single-object curve prior and centred circle | Real and damped continuation catalogs |',
+        '| GauGal | No true contrast supplied; common susceptibility bounds | 2,601 Gaussian coefficients; zero susceptibility start | 19 real frequencies |', '',
+        'Each real frequency has 24 complex source–receiver measurements: 456 complex observations '
+        'in total. GauGal’s 201×201 grid is used for quadrature and images, while its 51×51 lattice '
+        'contains the unknown coefficients. BEM’s single homogeneous region is a stronger shape '
+        'and material prior than GauGal’s spatially varying image.', '',
         '**GauGal adaptation.** One susceptibility image is fitted to a sum of energy-normalized '
         'frequency losses on 24 source–receiver pairs at 19 real frequencies. Gaussian lattice 51×51, '
         '201×201 quadrature pixels, width 0.7 lattice spacing, TV lambda scale 0.5, susceptibility '
@@ -363,6 +386,13 @@ def make_report(preview=False):
         'contrast estimates and Hausdorff bounds are in the CSV. BEM seconds include the fit and final checks; '
         'GauGal seconds include process, operator build and scoring, so they are not pure optimizer '
         'speed ratios. CSV/JSON also separate the available component times. Failed BEM fits can stop early.', '',
+        'The overnight machine has an NVIDIA GeForce RTX 5090 (32,607 MiB reported), '
+        'an Intel Core Ultra 9 285K and Python 3.9.25. At 02:42 London, the active GauGal '
+        'worker was the only GPU compute process. The broad forward sweeps remained paused. '
+        'Report scoring briefly ran on the CPU while tuning continued.', '',
+        'Image scores use the relative-to-background permittivity image. Pixel-exact BEM '
+        'rasterizations can produce zero image RRMSE and very large finite PSNR/SNR from '
+        'the metric routines’ denominator floors; this does not imply an exactly recovered curve.', '',
         '**Reading failure reasons.** A trial curve can be refused while the last accepted curve '
         'passes numerical checks. A failed positive-lower-bound calculation is inconclusive; '
         'it does not establish that the trial curve is invalid. The four supplied-contrast failures '
