@@ -544,3 +544,29 @@ saved forward cases and earlier S4/S4b failures/timeouts remain explicit.
 Verification uses report generation from saved records, inspection of galleries
 and checking all 90 selected outcomes. The existing runner continues to preserve
 each run and will load the updated report module after the final G2 case.
+
+### Final G1/G2 outcome, 2026-11-02 morning
+
+**G1.** All nine tuning fits completed with finite image scores. Step 0.05 won
+with mean circle image RRMSE 0.369480. The incomplete-setting fallback was not
+needed. The shared setting was frozen before the 27 non-circle cases.
+
+**G2.** All 30 cases completed 80 iterations. No process failed or timed out.
+Summed subprocess time was 10,485.56 s (2.91 hours); median time was about 340 s.
+The original supervisor generated and pushed the all-case report at 05:46 London.
+
+**Comparison.** Supplied-contrast S1/S3 recovers 26/30, and material-recovery S2
+recovers 23/30. Both meet the shared shape/field limits on 26 cases. GauGal meets
+those limits on 0/30 under this frozen setting and budget.
+
+GauGal's median boundary RMS is 2.01 mm at contrast 0.5, 40.4 mm at contrast 4,
+and 28.3 mm at contrast 13.3. Circle c4 has no closed contour and is excluded
+from the boundary median; its other saved scores remain in the comparison.
+
+The GauGal maximum field residual ranges from 0.08362 to 1.077, against 0.003.
+Across its fits, 69,927 of 91,770 recorded inner solves missed their tolerance.
+These observations do not isolate the causes of reconstruction error.
+
+**Delivery.** The report includes all 90 arm/case rows, every requested score,
+three galleries, per-arm stopping/failure tables, and saved evidence for the
+earlier S4/S4b timeouts. The frozen BEM selection and GauGal settings were retained.

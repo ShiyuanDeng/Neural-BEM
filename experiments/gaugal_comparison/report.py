@@ -1,5 +1,6 @@
 """Render the frozen three-arm TG-002 comparison from saved results only."""
 import argparse
+from collections import Counter
 import csv
 import json
 import os
@@ -330,6 +331,16 @@ def make_report(preview=False):
         '| Arm | Saved images | Finite boundaries | Shared shape/field limits | Full BEM recovery | Median RMS mm | '
         'Median image RRMSE | Median recorded seconds |',
         '|---|---:|---:|---:|---:|---:|---:|---:|']
+    if summary['complete']:
+        stops = Counter(r['gaugal'].get('stop_reason', 'unrecorded') for r in rows)
+        execution = '; '.join(f'{count} × {reason}' for reason, count in sorted(stops.items()))
+        residuals = [r['gaugal']['maximum_residual'] for r in rows
+                     if finite(r['gaugal'].get('maximum_residual'))]
+        detail = f'**Actual GauGal stops:** {execution}. An iteration-limit exit records the budget stop; it does not establish convergence.'
+        if residuals:
+            detail += f' Maximum field residuals range from {fmt(min(residuals), 4)} to {fmt(max(residuals), 4)} against the 0.003 limit.'
+        # Place this account before the aggregate table, after the data description.
+        text[ text.index('## Aggregate results'):text.index('## Aggregate results') ] = [detail, '']
     for key in LABELS:
         count = sum(images[r['case'], key] is not None for r in rows)
         boundaries = sum(finite(r[key].get('rms_mm')) for r in rows)

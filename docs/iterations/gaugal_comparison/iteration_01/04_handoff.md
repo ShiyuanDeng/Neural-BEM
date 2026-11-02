@@ -1,5 +1,33 @@
 # Overnight comparison handoff — 2026-11-02
 
+## Completed — 2026-11-02 morning
+
+The existing supervisor finished at **05:46 London**, before the 08:00 target.
+PID 2126096 has exited. No duplicate runner or additional solver campaign was
+started during the continuation session.
+
+The full [report](report.md), [CSV](comparison.csv) and [JSON](comparison.json)
+contain all 30 cases and all three arms. Three reconstruction galleries show
+truth, both BEM outputs and GauGal, including its scored contour.
+
+Each arm has an explicit 30-row stopping/failure-reason table with source links.
+The report also retains all nine tuning outcomes, seven saved forward checks,
+and the four S4/S4b diagnostic failures or timeouts.
+
+Supplied-contrast BEM recovers **26/30**; material-recovery BEM recovers **23/30**.
+Both meet the shared shape/field limits on 26 cases. GauGal meets them on **0/30**
+under the frozen step 0.05 and 80-iteration budget.
+
+All 30 GauGal processes finished normally at 80 iterations. There were no G2
+process failures or timeouts. Circle c4 has no closed half-peak contour, so its
+boundary and traced-contrast scores remain unavailable.
+
+Final coverage checks are saved in
+`results/validation/cleaned_interfaces/GGB-002/completion_checks.json`.
+The completed supervisor console is preserved alongside them as `overnight_console.log`.
+
+The original handoff below is retained as history. Its work-to-do list is complete.
+
 ## Required outcome
 
 Finish the full TG-002 comparison by the working target of **08:00 London,

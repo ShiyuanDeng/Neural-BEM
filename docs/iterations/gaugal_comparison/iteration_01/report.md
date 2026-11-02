@@ -1,12 +1,14 @@
 # BEM and GauGal on TG-002 — 30-case comparison
 
-Generated 2026-11-02 05:46:17 GMT.
+Generated 2026-11-02 05:50:13 GMT.
 
 **All cases attempted:** GauGal outcomes for 30/30 cases. Failed and time-limited outcomes are retained.
 
 Three separate arms use the same noiseless TG-002 real-frequency observations and geometry. BEM with supplied contrast knows the true contrast. BEM material recovery and GauGal estimate it. BEM also uses damped-frequency continuation data; GauGal uses the 19 real frequencies only.
 
 The [frozen TG-002 benchmark](../../../../experiments/benchmark/README.md) supplies ten shapes at contrasts 0.5, 4 and 13.3 in a background of relative permittivity 6. The real frequencies span 0.25–2.5 GHz; all starts and measurement data are retained.
+
+**Actual GauGal stops:** 30 × iteration_limit. An iteration-limit exit records the budget stop; it does not establish convergence. Maximum field residuals range from 0.08362 to 1.077 against the 0.003 limit.
 
 ## Aggregate results
 
