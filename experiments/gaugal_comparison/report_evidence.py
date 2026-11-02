@@ -96,6 +96,11 @@ def gaugal_evidence(data, path, row, truth, repo):
     }
     reasons = [descriptions.get(stop, str(data.get('failure') or stop))]
     reasons += limit_failures(row)
+    traced = data.get('traced', {})
+    if traced.get('traces') == 0:
+        reasons.append('no closed half-peak contour; boundary scores and traced mean contrast unavailable')
+    elif traced.get('traces', 0) > 1:
+        reasons.append(f"{traced['traces']} closed half-peak contours; the longest supplies the boundary")
     if finite(row.get('contrast')):
         reasons.append(f"traced mean contrast {number(row['contrast'])}; truth {truth:g}")
     history = data.get('history', [])
@@ -123,7 +128,8 @@ def gaugal_evidence(data, path, row, truth, repo):
                 inner_solve_max_relative=largest, logged_misfit_first=first,
                 logged_misfit_last=last, build_seconds=data.get('build_seconds'),
                 optimize_seconds=data.get('optimize_seconds'),
-                process_returncode=data.get('process_returncode'))
+                process_returncode=data.get('process_returncode'),
+                closed_contours=traced.get('traces'), peak_susceptibility=traced.get('peak'))
 
 
 def json_safe(value):

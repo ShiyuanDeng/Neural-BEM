@@ -91,7 +91,8 @@ def cell(value):
 def full_tables(rows, destination):
     text = ['', '## Complete scores for each arm', '',
             'Contrast error is signed relative error in percent. PSNR and contrast SNR are in dB. '
-            'All rows, including unsuccessful fits, contribute to the reported medians.', '']
+            'Medians use available finite scores, including unsuccessful fits. Missing traces '
+            'are excluded from boundary medians.', '']
     for key, label in LABELS.items():
         text += [f'### {label}', '',
                  '| Case | RMS mm | Hausdorff upper mm | Max field residual | Contrast | Error % | Seconds | Recovery |',
@@ -243,7 +244,8 @@ def make_report(preview=False):
                'recovered', 'meets_shared_limits', 'recovery_status', 'stop_reason', 'failure_reason',
                'final_checks_passed', 'final_field_discrepancy', 'final_jacobian_discrepancy',
                'final_trial_fd_discrepancy', 'inner_solve_calls', 'inner_solves_unconverged',
-               'inner_solve_max_relative', 'process_returncode', 'source']
+               'inner_solve_max_relative', 'closed_contours', 'peak_susceptibility',
+               'process_returncode', 'source']
     with (destination/'comparison.csv').open('w', newline='') as stream:
         writer = csv.DictWriter(stream, fieldnames=columns, extrasaction='ignore')
         writer.writeheader()
@@ -315,14 +317,15 @@ def make_report(preview=False):
         'BEM with supplied contrast knows the true contrast. BEM material recovery and GauGal estimate it. '
         'BEM also uses damped-frequency continuation data; GauGal uses the 19 real frequencies only.', '',
         '## Aggregate results', '',
-        '| Arm | Saved images | Shared shape/field limits | Full BEM recovery | Median RMS mm | '
+        '| Arm | Saved images | Finite boundaries | Shared shape/field limits | Full BEM recovery | Median RMS mm | '
         'Median image RRMSE | Median recorded seconds |',
-        '|---|---:|---:|---:|---:|---:|---:|']
+        '|---|---:|---:|---:|---:|---:|---:|---:|']
     for key in LABELS:
         count = sum(images[r['case'], key] is not None for r in rows)
+        boundaries = sum(finite(r[key].get('rms_mm')) for r in rows)
         shared = sum(bool(r[key].get('meets_shared_limits')) for r in rows)
         recovered = str(sum(bool(r[key].get('recovered')) for r in rows)) if key != 'gaugal' else 'not applicable'
-        text.append(f'| {LABELS[key]} | {count} | {shared} | {recovered} | {median(key,"rms_mm")} | '
+        text.append(f'| {LABELS[key]} | {count} | {boundaries} | {shared} | {recovered} | {median(key,"rms_mm")} | '
                     f'{median(key,"rrmse")} | {median(key,"seconds")} |')
     text += ['', 'Shared limits are RMS ≤ 1 mm, Hausdorff upper bound ≤ 2 mm and maximum relative '
              'field residual ≤ 0.003. Full BEM recovery additionally requires its independent final '
@@ -393,6 +396,9 @@ def make_report(preview=False):
         'Image scores use the relative-to-background permittivity image. Pixel-exact BEM '
         'rasterizations can produce zero image RRMSE and very large finite PSNR/SNR from '
         'the metric routines’ denominator floors; this does not imply an exactly recovered curve.', '',
+        'RRMSE averages squared per-pixel relative errors. The released SingleTX SSIM routine '
+        'normalizes each image by its own maximum before its 11×11 comparison, so SSIM alone '
+        'does not measure material accuracy. Read it with contrast error and contrast SNR.', '',
         '**Reading failure reasons.** A trial curve can be refused while the last accepted curve '
         'passes numerical checks. A failed positive-lower-bound calculation is inconclusive; '
         'it does not establish that the trial curve is invalid. The four supplied-contrast failures '
