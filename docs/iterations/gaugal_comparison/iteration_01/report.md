@@ -1,6 +1,6 @@
 # BEM and GauGal on TG-002 — 30-case comparison
 
-Generated 2026-11-02 05:50:13 GMT.
+Generated 2026-11-02 11:10:04 GMT.
 
 **All cases attempted:** GauGal outcomes for 30/30 cases. Failed and time-limited outcomes are retained.
 
@@ -12,26 +12,26 @@ The [frozen TG-002 benchmark](../../../../experiments/benchmark/README.md) suppl
 
 ## Aggregate results
 
-| Arm | Saved images | Finite boundaries | Shared shape/field limits | Full BEM recovery | Median RMS mm | Median image RRMSE | Median recorded seconds |
+| Arm | Saved images | Finite boundaries | Shared shape/field limits | BEM recovered | Median RMS mm | Median image RRMSE | Median recorded seconds |
 |---|---:|---:|---:|---:|---:|---:|---:|
 | BEM: supplied contrast | 30 | 30 | 26 | 26 | 0.00336 | 0.000946 | 14.1 |
-| BEM: recovered contrast | 30 | 30 | 26 | 23 | 0.00721 | 0.00122 | 18.3 |
+| BEM: recovered contrast | 30 | 30 | 26 | 26 | 0.00721 | 0.00122 | 20.9 |
 | GauGal | 30 | 29 | 0 | not applicable | 25.2 | 0.277 | 340 |
 
-Shared limits are RMS ≤ 1 mm, Hausdorff upper bound ≤ 2 mm and maximum relative field residual ≤ 0.003. Full BEM recovery additionally requires its independent final numerical checks. GauGal has no equivalent BEM Jacobian check; its shared-limit count is not claimed as full TG-002 numerical qualification.
+Shared limits are RMS ≤ 1 mm, Hausdorff upper bound ≤ 2 mm and maximum relative field residual ≤ 0.003. BEM recovery uses the same limits. The final two-resolution check was removed on 2026-11-02 (user decision D11); the nine BEM runs it had failed were refit in place (GGB-002 amendment B1).
 
 ### Results by contrast
 
-| Contrast | Arm | Full BEM recovery | Shared limits met | Finite boundaries | Median RMS mm | Median max field residual | Median image RRMSE |
+| Contrast | Arm | BEM recovered | Shared limits met | Finite boundaries | Median RMS mm | Median max field residual | Median image RRMSE |
 |---:|---|---:|---:|---:|---:|---:|---:|
 | 0.5 | BEM: supplied contrast | 9 | 9/10 | 10/10 | 0.0077 | 1.7e-06 | 0.00066 |
 | 0.5 | BEM: recovered contrast | 9 | 9/10 | 10/10 | 0.0118 | 3.39e-06 | 0.00101 |
 | 0.5 | GauGal | not applicable | 0/10 | 10/10 | 2.01 | 0.203 | 0.0921 |
 | 4 | BEM: supplied contrast | 9 | 9/10 | 10/10 | 0.00388 | 2.34e-06 | 0.00101 |
-| 4 | BEM: recovered contrast | 9 | 10/10 | 10/10 | 0.004 | 1.73e-06 | 0.00104 |
+| 4 | BEM: recovered contrast | 10 | 10/10 | 10/10 | 0.004 | 1.73e-06 | 0.00104 |
 | 4 | GauGal | not applicable | 0/10 | 9/10 | 40.4 | 1.01 | 0.298 |
 | 13.3 | BEM: supplied contrast | 8 | 8/10 | 10/10 | 0.000888 | 1.13e-06 | 0.00133 |
-| 13.3 | BEM: recovered contrast | 5 | 7/10 | 10/10 | 0.00465 | 2.07e-05 | 0.00281 |
+| 13.3 | BEM: recovered contrast | 7 | 7/10 | 10/10 | 0.00465 | 2.07e-05 | 0.00281 |
 | 13.3 | GauGal | not applicable | 0/10 | 10/10 | 28.3 | 1 | 0.365 |
 
 Medians include unsuccessful outputs with finite scores. Missing contours contribute no boundary value; the finite-boundary counts show those exclusions.
@@ -58,7 +58,7 @@ Triples below are **supplied-contrast BEM / material-recovery BEM / GauGal**. A 
 | star__c13.3 | 0.00126 / 0.00111 / 44.7 | 3.22e-07 / 2.16e-07 / 1 | 0.00165 / 0.0016 / 0.42 | completed / 80 |
 | asymmetric__c0.5 | 0.0112 / 0.0109 / 1.79 | 3.07e-06 / 3.77e-06 / 0.238 | 0.00096 / 0.000944 / 0.0915 | completed / 80 |
 | asymmetric__c4 | 0.00402 / 0.00429 / 44 | 1.42e-06 / 1.72e-06 / 1.01 | 0.000931 / 0.000957 / 0.31 | completed / 80 |
-| asymmetric__c13.3 | 0.00297 / 37 / 32.6 | 1.94e-06 / 1.68 / 1 | 0.00166 / 0.41 / 0.384 | completed / 80 |
+| asymmetric__c13.3 | 0.00297 / 36.6 / 32.6 | 1.94e-06 / 1.56 / 1 | 0.00166 / 0.402 / 0.384 | completed / 80 |
 | c_shape__c0.5 | 0.0026 / 0.00295 / 2.05 | 3.15e-07 / 3.9e-07 / 0.253 | 0.000402 / 0.000488 / 0.11 | completed / 80 |
 | c_shape__c4 | 0.000883 / 0.000883 / 85.2 | 3e-07 / 3.26e-07 / 1.01 | 0.000492 / 0.000467 / 0.307 | completed / 80 |
 | c_shape__c13.3 | 3.76e-05 / 4.79e-05 / 42.5 | 3.1e-06 / 1.27e-06 / 0.998 | 0 / 3.04e-08 / 0.378 | completed / 80 |
@@ -67,13 +67,13 @@ Triples below are **supplied-contrast BEM / material-recovery BEM / GauGal**. A 
 | hook__c13.3 | 0.00023 / 0.00103 / 31 | 3.19e-07 / 2.6e-07 / 1 | 0.000495 / 0.00117 / 0.324 | completed / 80 |
 | cross__c0.5 | 0.00293 / 0.0113 / 1.97 | 2.55e-07 / 2.04e-06 / 0.169 | 0.0004 / 0.00107 / 0.0871 | completed / 80 |
 | cross__c4 | 0.00202 / 0.00204 / 40.4 | 5.18e-07 / 5.06e-07 / 1.03 | 0.000681 / 0.000727 / 0.29 | completed / 80 |
-| cross__c13.3 | 0.000148 / 34.5 / 95.5 | 1.02e-07 / 1.5 / 1.01 | 0.000169 / 0.364 / 0.352 | completed / 80 |
+| cross__c13.3 | 0.000148 / 32.8 / 95.5 | 1.02e-07 / 1.81 / 1.01 | 0.000169 / 0.36 / 0.352 | completed / 80 |
 | cog__c0.5 | 0.0481 / 0.0486 / 2.24 | 9.21e-06 / 8.86e-06 / 0.315 | 0.00319 / 0.0032 / 0.0955 | completed / 80 |
 | cog__c4 | 0.00841 / 0.00809 / 91.3 | 3.27e-06 / 3.3e-06 / 1.04 | 0.00172 / 0.00171 / 0.312 | completed / 80 |
-| cog__c13.3 | 0.472 / 3.25 / 17.8 | 0.247 / 1.49 / 1.05 | 0.22 / 0.556 / 0.386 | completed / 80 |
+| cog__c13.3 | 0.481 / 2.12 / 17.8 | 0.246 / 0.981 / 1.05 | 0.228 / 0.261 / 0.386 | completed / 80 |
 | aphex_twin__c0.5 | 5.98 / 0.0683 / 2.63 | 1.75 / 7.24e-06 / 0.114 | 0.185 / 0.00426 / 0.0818 | completed / 80 |
-| aphex_twin__c4 | 0.338 / 0.0791 / 19.2 | 0.0089 / 0.000967 / 0.963 | 0.0428 / 0.00914 / 0.186 | completed / 80 |
-| aphex_twin__c13.3 | 2.53 / 0.00785 / 23.7 | 1.01 / 5.48e-05 / 1 | 1.09 / 0.00401 / 0.232 | completed / 80 |
+| aphex_twin__c4 | 0.208 / 0.0791 / 19.2 | 0.00378 / 0.000984 / 0.963 | 0.0252 / 0.00914 / 0.186 | completed / 80 |
+| aphex_twin__c13.3 | 2.53 / 0.00785 / 23.7 | 0.975 / 5.48e-05 / 1 | 1.12 / 0.00401 / 0.232 | completed / 80 |
 
 ## Complete scores for each arm
 
@@ -109,10 +109,10 @@ Contrast error is signed relative error in percent. PSNR and contrast SNR are in
 | cross__c13.3 | 0.00014842 | 0.027296 | 1.0154e-07 | 13.3 | 0 | 19.627 | recovered |
 | cog__c0.5 | 0.048063 | 0.16651 | 9.2101e-06 | 0.5 | 0 | 14.099 | recovered |
 | cog__c4 | 0.0084082 | 0.044898 | 3.2654e-06 | 4 | 0 | 13.007 | recovered |
-| cog__c13.3 | 0.47189 | 1.3197 | 0.24744 | 13.3 | 0 | 55.39 | not recovered |
+| cog__c13.3 | 0.48098 | 1.3225 | 0.24608 | 13.3 | 0 | 122.78 | not recovered |
 | aphex_twin__c0.5 | 5.975 | 15.419 | 1.7479 | 0.5 | 0 | 11.103 | not recovered |
-| aphex_twin__c4 | 0.33837 | 1.2476 | 0.0089022 | 4 | 0 | 72.636 | not recovered |
-| aphex_twin__c13.3 | 2.5335 | 11.245 | 1.0094 | 13.3 | 0 | 83.611 | not recovered |
+| aphex_twin__c4 | 0.20778 | 1.0025 | 0.0037776 | 4 | 0 | 298.05 | not recovered |
+| aphex_twin__c13.3 | 2.5323 | 10.806 | 0.97517 | 13.3 | 0 | 583.53 | not recovered |
 
 | Case | RRMSE | SSIM | PSNR dB | Contrast SNR dB |
 |---|---:|---:|---:|---:|
@@ -142,10 +142,10 @@ Contrast error is signed relative error in percent. PSNR and contrast SNR are in
 | cross__c13.3 | 0.00016871 | 1 | 79.856 | 70.558 |
 | cog__c0.5 | 0.0031901 | 0.99985 | 53.001 | 39.201 |
 | cog__c4 | 0.0017188 | 0.99999 | 61.145 | 50.867 |
-| cog__c13.3 | 0.21952 | 0.98589 | 28.786 | 20.327 |
+| cog__c13.3 | 0.22782 | 0.98539 | 28.649 | 20.191 |
 | aphex_twin__c0.5 | 0.18533 | 0.90269 | 18.663 | 0.1548 |
-| aphex_twin__c4 | 0.042775 | 0.9936 | 33.828 | 18.842 |
-| aphex_twin__c13.3 | 1.0885 | 0.94046 | 19.565 | 6.3984 |
+| aphex_twin__c4 | 0.025183 | 0.99755 | 38.004 | 23.018 |
+| aphex_twin__c13.3 | 1.1232 | 0.93399 | 19.245 | 6.0789 |
 
 ### BEM: supplied contrast: per-case stopping and failure reasons
 
@@ -177,10 +177,10 @@ Contrast error is signed relative error in percent. PSNR and contrast SNR are in
 | cross__c13.3 | COMPLETED_SCHEDULE; fixed_M61: loss_tolerance | None: all TG-002 recovery checks passed. | [result](../../../../results/validation/cleaned_interfaces/MR-001/S1_slider_known_contrast/runs/cross__c13.3/result.json), [final checks](../../../../results/validation/cleaned_interfaces/MR-001/S1_slider_known_contrast/runs/cross__c13.3/final_audit.json) |
 | cog__c0.5 | COMPLETED_SCHEDULE; fixed_M37: next complete batch and endpoint reserve exceed the stage quota | None: all TG-002 recovery checks passed. | [result](../../../../results/validation/cleaned_interfaces/MR-001/S1_slider_known_contrast/runs/cog__c0.5/result.json), [final checks](../../../../results/validation/cleaned_interfaces/MR-001/S1_slider_known_contrast/runs/cog__c0.5/final_audit.json) |
 | cog__c4 | COMPLETED_SCHEDULE; fixed_M49: no_decreasing_step | None: all TG-002 recovery checks passed. | [result](../../../../results/validation/cleaned_interfaces/MR-001/S1_slider_known_contrast/runs/cog__c4/result.json), [final checks](../../../../results/validation/cleaned_interfaces/MR-001/S1_slider_known_contrast/runs/cog__c4/final_audit.json) |
-| cog__c13.3 | NUMERICAL_FAILURE; fixed_M73: production evaluation failed at candidate state | fixed_M73: \|W\|^2 lower bound not certified (coefficient residual 1.41).; field refinement discrepancy at 16 frequencies; worst tolerance ratio 1.802e+04 at 2.5 GHz; Jacobian discrepancy 0.003822 > 0.001; maximum field residual 0.2474 > 0.003 | [result](../../../../results/validation/cleaned_interfaces/MR-001/S1_slider_known_contrast/runs/cog__c13.3/result.json), [final checks](../../../../results/validation/cleaned_interfaces/MR-001/S1_slider_known_contrast/runs/cog__c13.3/final_audit.json) |
+| cog__c13.3 | COMPLETED_SCHEDULE; fixed_M85: next complete batch and endpoint reserve exceed the stage quota | maximum field residual 0.2461 > 0.003 | [result](../../../../results/validation/cleaned_interfaces/MR-001/S1_slider_known_contrast/runs/cog__c13.3/result.json) |
 | aphex_twin__c0.5 | NUMERICAL_FAILURE; stage_3_damped: production evaluation failed at candidate state | stage_3_damped: \|W\|^2 lower bound not certified (coefficient residual 1.98).; RMS (mm) 5.975 > 1; Hausdorff upper bound (mm) 15.42 > 2; maximum field residual 1.748 > 0.003 | [result](../../../../results/validation/cleaned_interfaces/MR-001/S3_slider_no_log_cap/runs/aphex_twin__c0.5/result.json), [final checks](../../../../results/validation/cleaned_interfaces/MR-001/S3_slider_no_log_cap/runs/aphex_twin__c0.5/final_audit.json) |
-| aphex_twin__c4 | NUMERICAL_FAILURE; fixed_M43: production evaluation failed at candidate state | fixed_M43: \|W\|^2 lower bound not certified (coefficient residual 2.04).; field refinement discrepancy at 16 frequencies; worst tolerance ratio 4001 at 2.375 GHz; Jacobian discrepancy 0.002837 > 0.001; maximum field residual 0.008902 > 0.003 | [result](../../../../results/validation/cleaned_interfaces/MR-001/S1_slider_known_contrast/runs/aphex_twin__c4/result.json), [final checks](../../../../results/validation/cleaned_interfaces/MR-001/S1_slider_known_contrast/runs/aphex_twin__c4/final_audit.json) |
-| aphex_twin__c13.3 | NUMERICAL_FAILURE; fixed_M37: production evaluation failed at candidate state | fixed_M37: \|W\|^2 lower bound not certified (coefficient residual 2.79).; field refinement discrepancy at 17 frequencies; worst tolerance ratio 1.02e+04 at 2.375 GHz; Jacobian discrepancy 0.002073 > 0.001; RMS (mm) 2.533 > 1; Hausdorff upper bound (mm) 11.24 > 2; maximum field residual 1.009 > 0.003 | [result](../../../../results/validation/cleaned_interfaces/MR-001/S1_slider_known_contrast/runs/aphex_twin__c13.3/result.json), [final checks](../../../../results/validation/cleaned_interfaces/MR-001/S1_slider_known_contrast/runs/aphex_twin__c13.3/final_audit.json) |
+| aphex_twin__c4 | COMPLETED_SCHEDULE; fixed_M91: next complete batch and endpoint reserve exceed the stage quota | maximum field residual 0.003778 > 0.003 | [result](../../../../results/validation/cleaned_interfaces/MR-001/S1_slider_known_contrast/runs/aphex_twin__c4/result.json) |
+| aphex_twin__c13.3 | COMPLETED_SCHEDULE; fixed_M91: no_decreasing_step | RMS (mm) 2.532 > 1; Hausdorff upper bound (mm) 10.81 > 2; maximum field residual 0.9752 > 0.003 | [result](../../../../results/validation/cleaned_interfaces/MR-001/S1_slider_known_contrast/runs/aphex_twin__c13.3/result.json) |
 
 ### BEM: recovered contrast
 
@@ -188,7 +188,7 @@ Contrast error is signed relative error in percent. PSNR and contrast SNR are in
 |---|---:|---:|---:|---:|---:|---:|---|
 | circle__c0.5 | 7.557e-06 | 0.019182 | 6.1177e-08 | 0.5 | 1.2969e-07 | 4.9469 | recovered |
 | circle__c4 | 8.6016e-06 | 0.019185 | 1.7308e-06 | 4 | 1.4577e-06 | 4.9931 | recovered |
-| circle__c13.3 | 7.6031e-06 | 0.019189 | 4.6182e-07 | 13.3 | -1.6183e-08 | 6.4336 | not recovered |
+| circle__c13.3 | 7.6031e-06 | 0.019189 | 4.6182e-07 | 13.3 | -1.6183e-08 | 7.8421 | recovered |
 | kite__c0.5 | 0.012421 | 0.060949 | 4.3611e-06 | 0.5 | -4.5099e-06 | 39.356 | recovered |
 | kite__c4 | 0.01778 | 0.066155 | 1.9985e-05 | 4 | 3.3311e-06 | 27.063 | recovered |
 | kite__c13.3 | 0.014459 | 0.064113 | 4.0118e-05 | 13.3 | 0.00024524 | 33.296 | recovered |
@@ -200,7 +200,7 @@ Contrast error is signed relative error in percent. PSNR and contrast SNR are in
 | star__c13.3 | 0.0011119 | 0.033382 | 2.1558e-07 | 13.3 | 3.4153e-08 | 40.625 | recovered |
 | asymmetric__c0.5 | 0.010946 | 0.07584 | 3.773e-06 | 0.5 | -7.1956e-06 | 14.733 | recovered |
 | asymmetric__c4 | 0.0042938 | 0.04326 | 1.7206e-06 | 4 | 2.4972e-06 | 21.769 | recovered |
-| asymmetric__c13.3 | 36.985 | 54.923 | 1.6751 | 123.28 | 826.91 | 5.9135 | not recovered |
+| asymmetric__c13.3 | 36.574 | 54.858 | 1.5554 | 120.87 | 808.78 | 1752.5 | not recovered |
 | c_shape__c0.5 | 0.0029499 | 0.045161 | 3.8967e-07 | 0.5 | -5.1701e-07 | 13.914 | recovered |
 | c_shape__c4 | 0.00088326 | 0.034739 | 3.2621e-07 | 4 | 2.0815e-07 | 17.72 | recovered |
 | c_shape__c13.3 | 4.787e-05 | 0.033403 | 1.2685e-06 | 13.3 | 7.4919e-06 | 35.124 | recovered |
@@ -209,13 +209,13 @@ Contrast error is signed relative error in percent. PSNR and contrast SNR are in
 | hook__c13.3 | 0.0010256 | 0.039539 | 2.6012e-07 | 13.3 | 1.5138e-06 | 53.683 | recovered |
 | cross__c0.5 | 0.011251 | 0.04315 | 2.0432e-06 | 0.5 | -5.0962e-05 | 10.96 | recovered |
 | cross__c4 | 0.0020387 | 0.027965 | 5.0584e-07 | 4 | 2.7749e-06 | 15.349 | recovered |
-| cross__c13.3 | 34.539 | 70.935 | 1.5032 | 73.617 | 453.51 | 11.69 | not recovered |
+| cross__c13.3 | 32.847 | 70.466 | 1.8122 | 73.816 | 455.01 | 1840.8 | not recovered |
 | cog__c0.5 | 0.048614 | 0.18648 | 8.8621e-06 | 0.5 | -5.0505e-05 | 16.568 | recovered |
 | cog__c4 | 0.0080867 | 0.046764 | 3.2976e-06 | 4 | -7.3368e-06 | 18.869 | recovered |
-| cog__c13.3 | 3.2524 | 9.536 | 1.4882 | 14.926 | 12.225 | 46.286 | not recovered |
+| cog__c13.3 | 2.1221 | 6.9802 | 0.98143 | 14.422 | 8.4364 | 473.23 | not recovered |
 | aphex_twin__c0.5 | 0.06834 | 0.25742 | 7.2365e-06 | 0.49996 | -0.0080435 | 47.974 | recovered |
-| aphex_twin__c4 | 0.079134 | 0.35914 | 0.00096687 | 4 | 0.00091084 | 89.921 | not recovered |
-| aphex_twin__c13.3 | 0.007852 | 0.057345 | 5.476e-05 | 13.3 | 0.00011806 | 83.491 | not recovered |
+| aphex_twin__c4 | 0.079134 | 0.35914 | 0.00098395 | 4 | 0.00091084 | 174.69 | recovered |
+| aphex_twin__c13.3 | 0.007852 | 0.057345 | 5.4802e-05 | 13.3 | 0.00011806 | 81.108 | recovered |
 
 | Case | RRMSE | SSIM | PSNR dB | Contrast SNR dB |
 |---|---:|---:|---:|---:|
@@ -233,7 +233,7 @@ Contrast error is signed relative error in percent. PSNR and contrast SNR are in
 | star__c13.3 | 0.0016012 | 1 | 69.644 | 61.949 |
 | asymmetric__c0.5 | 0.00094374 | 0.99999 | 63.481 | 49.695 |
 | asymmetric__c4 | 0.00095665 | 1 | 66.624 | 56.36 |
-| asymmetric__c13.3 | 0.4103 | 0.17782 | 7.8197 | -0.62463 |
+| asymmetric__c13.3 | 0.40188 | 0.18104 | 8.0033 | -0.44103 |
 | c_shape__c0.5 | 0.00048795 | 1 | 69.017 | 55.045 |
 | c_shape__c4 | 0.00046729 | 1 | 73.547 | 63.096 |
 | c_shape__c13.3 | 3.0424e-08 | 1 | 150.46 | 141.83 |
@@ -242,10 +242,10 @@ Contrast error is signed relative error in percent. PSNR and contrast SNR are in
 | hook__c13.3 | 0.0011697 | 1 | 70.079 | 60.064 |
 | cross__c0.5 | 0.0010677 | 0.99998 | 62.144 | 47.505 |
 | cross__c4 | 0.00072654 | 1 | 68.776 | 57.658 |
-| cross__c13.3 | 0.36404 | 0.29423 | 8.8756 | -0.42225 |
+| cross__c13.3 | 0.36013 | 0.29345 | 8.9716 | -0.32621 |
 | cog__c0.5 | 0.0031964 | 0.99984 | 52.879 | 39.079 |
 | cog__c4 | 0.0017087 | 0.99999 | 61.342 | 51.064 |
-| cog__c13.3 | 0.5557 | 0.90845 | 16.884 | 8.4253 |
+| cog__c13.3 | 0.26109 | 0.93 | 19.398 | 10.94 |
 | aphex_twin__c0.5 | 0.0042648 | 0.99971 | 50.116 | 31.608 |
 | aphex_twin__c4 | 0.0091449 | 0.99962 | 46.154 | 31.168 |
 | aphex_twin__c13.3 | 0.004014 | 0.99999 | 60.314 | 47.147 |
@@ -256,7 +256,7 @@ Contrast error is signed relative error in percent. PSNR and contrast SNR are in
 |---|---|---|---|
 | circle__c0.5 | COMPLETED_SCHEDULE; fixed_M37: loss_tolerance | None: all TG-002 recovery checks passed. | [result](../../../../results/validation/cleaned_interfaces/MR-001/S2_slider_material_weak_start/runs/circle__c0.5/result.json), [final checks](../../../../results/validation/cleaned_interfaces/MR-001/S2_slider_material_weak_start/runs/circle__c0.5/final_audit.json) |
 | circle__c4 | COMPLETED_SCHEDULE; fixed_M37: no_decreasing_step | None: all TG-002 recovery checks passed. | [result](../../../../results/validation/cleaned_interfaces/MR-001/S2_slider_material_weak_start/runs/circle__c4/result.json), [final checks](../../../../results/validation/cleaned_interfaces/MR-001/S2_slider_material_weak_start/runs/circle__c4/final_audit.json) |
-| circle__c13.3 | COMPLETED_SCHEDULE; fixed_M37: no_decreasing_step | Jacobian discrepancy 0.002607 > 0.001; contrast start 1.729, warm-up end 8.966, final 13.3; truth 13.3 | [result](../../../../results/validation/cleaned_interfaces/MR-001/S2_slider_material_weak_start/runs/circle__c13.3/result.json), [final checks](../../../../results/validation/cleaned_interfaces/MR-001/S2_slider_material_weak_start/runs/circle__c13.3/final_audit.json) |
+| circle__c13.3 | COMPLETED_SCHEDULE; fixed_M37: no_decreasing_step | None: all TG-002 recovery checks passed. | [result](../../../../results/validation/cleaned_interfaces/MR-001/S2_slider_material_weak_start/runs/circle__c13.3/result.json) |
 | kite__c0.5 | COMPLETED_SCHEDULE; fixed_M37: next complete batch and endpoint reserve exceed the stage quota | None: all TG-002 recovery checks passed. | [result](../../../../results/validation/cleaned_interfaces/MR-001/S2_slider_material_weak_start/runs/kite__c0.5/result.json), [final checks](../../../../results/validation/cleaned_interfaces/MR-001/S2_slider_material_weak_start/runs/kite__c0.5/final_audit.json) |
 | kite__c4 | COMPLETED_SCHEDULE; fixed_M37: next complete batch and endpoint reserve exceed the stage quota | None: all TG-002 recovery checks passed. | [result](../../../../results/validation/cleaned_interfaces/MR-001/S2_slider_material_weak_start/runs/kite__c4/result.json), [final checks](../../../../results/validation/cleaned_interfaces/MR-001/S2_slider_material_weak_start/runs/kite__c4/final_audit.json) |
 | kite__c13.3 | COMPLETED_SCHEDULE; fixed_M37: next complete batch and endpoint reserve exceed the stage quota | None: all TG-002 recovery checks passed. | [result](../../../../results/validation/cleaned_interfaces/MR-001/S2_slider_material_weak_start/runs/kite__c13.3/result.json), [final checks](../../../../results/validation/cleaned_interfaces/MR-001/S2_slider_material_weak_start/runs/kite__c13.3/final_audit.json) |
@@ -268,7 +268,7 @@ Contrast error is signed relative error in percent. PSNR and contrast SNR are in
 | star__c13.3 | COMPLETED_SCHEDULE; fixed_M85: loss_tolerance | None: all TG-002 recovery checks passed. | [result](../../../../results/validation/cleaned_interfaces/MR-001/S2_slider_material_weak_start/runs/star__c13.3/result.json), [final checks](../../../../results/validation/cleaned_interfaces/MR-001/S2_slider_material_weak_start/runs/star__c13.3/final_audit.json) |
 | asymmetric__c0.5 | COMPLETED_SCHEDULE; fixed_M37: next complete batch and endpoint reserve exceed the stage quota | None: all TG-002 recovery checks passed. | [result](../../../../results/validation/cleaned_interfaces/MR-001/S2_slider_material_weak_start/runs/asymmetric__c0.5/result.json), [final checks](../../../../results/validation/cleaned_interfaces/MR-001/S2_slider_material_weak_start/runs/asymmetric__c0.5/final_audit.json) |
 | asymmetric__c4 | COMPLETED_SCHEDULE; fixed_M49: next complete batch and endpoint reserve exceed the stage quota | None: all TG-002 recovery checks passed. | [result](../../../../results/validation/cleaned_interfaces/MR-001/S2_slider_material_weak_start/runs/asymmetric__c4/result.json), [final checks](../../../../results/validation/cleaned_interfaces/MR-001/S2_slider_material_weak_start/runs/asymmetric__c4/final_audit.json) |
-| asymmetric__c13.3 | NUMERICAL_FAILURE; stage_1_damped: production evaluation failed at candidate state | stage_1_damped: \|W\|^2 lower bound not certified (coefficient residual 1.22).; field refinement discrepancy at 16 frequencies; worst tolerance ratio 337.6 at 2.375 GHz; RMS (mm) 36.99 > 1; Hausdorff upper bound (mm) 54.92 > 2; maximum field residual 1.675 > 0.003; contrast start 1.454, warm-up end 120.9, final 123.3; truth 13.3 | [result](../../../../results/validation/cleaned_interfaces/MR-001/S2_slider_material_weak_start/runs/asymmetric__c13.3/result.json), [final checks](../../../../results/validation/cleaned_interfaces/MR-001/S2_slider_material_weak_start/runs/asymmetric__c13.3/final_audit.json) |
+| asymmetric__c13.3 | COMPLETED_SCHEDULE; fixed_M37: no_decreasing_step | RMS (mm) 36.57 > 1; Hausdorff upper bound (mm) 54.86 > 2; maximum field residual 1.555 > 0.003; contrast start 1.454, warm-up end 120.9, final 120.9; truth 13.3 | [result](../../../../results/validation/cleaned_interfaces/MR-001/S2_slider_material_weak_start/runs/asymmetric__c13.3/result.json) |
 | c_shape__c0.5 | COMPLETED_SCHEDULE; fixed_M37: loss_tolerance | None: all TG-002 recovery checks passed. | [result](../../../../results/validation/cleaned_interfaces/MR-001/S2_slider_material_weak_start/runs/c_shape__c0.5/result.json), [final checks](../../../../results/validation/cleaned_interfaces/MR-001/S2_slider_material_weak_start/runs/c_shape__c0.5/final_audit.json) |
 | c_shape__c4 | COMPLETED_SCHEDULE; fixed_M43: loss_tolerance | None: all TG-002 recovery checks passed. | [result](../../../../results/validation/cleaned_interfaces/MR-001/S2_slider_material_weak_start/runs/c_shape__c4/result.json), [final checks](../../../../results/validation/cleaned_interfaces/MR-001/S2_slider_material_weak_start/runs/c_shape__c4/final_audit.json) |
 | c_shape__c13.3 | COMPLETED_SCHEDULE; fixed_M67: no_decreasing_step | None: all TG-002 recovery checks passed. | [result](../../../../results/validation/cleaned_interfaces/MR-001/S2_slider_material_weak_start/runs/c_shape__c13.3/result.json), [final checks](../../../../results/validation/cleaned_interfaces/MR-001/S2_slider_material_weak_start/runs/c_shape__c13.3/final_audit.json) |
@@ -277,13 +277,13 @@ Contrast error is signed relative error in percent. PSNR and contrast SNR are in
 | hook__c13.3 | COMPLETED_SCHEDULE; fixed_M67: loss_tolerance | None: all TG-002 recovery checks passed. | [result](../../../../results/validation/cleaned_interfaces/MR-001/S2_slider_material_weak_start/runs/hook__c13.3/result.json), [final checks](../../../../results/validation/cleaned_interfaces/MR-001/S2_slider_material_weak_start/runs/hook__c13.3/final_audit.json) |
 | cross__c0.5 | COMPLETED_SCHEDULE; fixed_M37: gradient_tolerance | None: all TG-002 recovery checks passed. | [result](../../../../results/validation/cleaned_interfaces/MR-001/S2_slider_material_weak_start/runs/cross__c0.5/result.json), [final checks](../../../../results/validation/cleaned_interfaces/MR-001/S2_slider_material_weak_start/runs/cross__c0.5/final_audit.json) |
 | cross__c4 | COMPLETED_SCHEDULE; fixed_M43: no_decreasing_step | None: all TG-002 recovery checks passed. | [result](../../../../results/validation/cleaned_interfaces/MR-001/S2_slider_material_weak_start/runs/cross__c4/result.json), [final checks](../../../../results/validation/cleaned_interfaces/MR-001/S2_slider_material_weak_start/runs/cross__c4/final_audit.json) |
-| cross__c13.3 | NUMERICAL_FAILURE; stage_2_damped: production evaluation failed at candidate state | stage_2_damped: log\|W\|^2 needs more than 4000 Chebyshev terms (beta/Lambda=1.02e-05); curve is nearly self-touching.; field refinement discrepancy at 16 frequencies; worst tolerance ratio 890.1 at 1.375 GHz; RMS (mm) 34.54 > 1; Hausdorff upper bound (mm) 70.93 > 2; maximum field residual 1.503 > 0.003; contrast start 1.212, warm-up end 241.7, final 73.62; truth 13.3 | [result](../../../../results/validation/cleaned_interfaces/MR-001/S2_slider_material_weak_start/runs/cross__c13.3/result.json), [final checks](../../../../results/validation/cleaned_interfaces/MR-001/S2_slider_material_weak_start/runs/cross__c13.3/final_audit.json) |
+| cross__c13.3 | COMPLETED_SCHEDULE; fixed_M37: no_decreasing_step | RMS (mm) 32.85 > 1; Hausdorff upper bound (mm) 70.47 > 2; maximum field residual 1.812 > 0.003; contrast start 1.212, warm-up end 241.7, final 73.82; truth 13.3 | [result](../../../../results/validation/cleaned_interfaces/MR-001/S2_slider_material_weak_start/runs/cross__c13.3/result.json) |
 | cog__c0.5 | COMPLETED_SCHEDULE; fixed_M37: next complete batch and endpoint reserve exceed the stage quota | None: all TG-002 recovery checks passed. | [result](../../../../results/validation/cleaned_interfaces/MR-001/S2_slider_material_weak_start/runs/cog__c0.5/result.json), [final checks](../../../../results/validation/cleaned_interfaces/MR-001/S2_slider_material_weak_start/runs/cog__c0.5/final_audit.json) |
 | cog__c4 | COMPLETED_SCHEDULE; fixed_M49: no_decreasing_step | None: all TG-002 recovery checks passed. | [result](../../../../results/validation/cleaned_interfaces/MR-001/S2_slider_material_weak_start/runs/cog__c4/result.json), [final checks](../../../../results/validation/cleaned_interfaces/MR-001/S2_slider_material_weak_start/runs/cog__c4/final_audit.json) |
-| cog__c13.3 | NUMERICAL_FAILURE; release_M15: production evaluation failed at candidate state | release_M15: \|W\|^2 lower bound not certified (coefficient residual 1.76).; field refinement discrepancy at 18 frequencies; worst tolerance ratio 1.366e+04 at 2.5 GHz; Jacobian discrepancy 0.002978 > 0.001; full-trial finite-difference discrepancy 0.007446 > 0.001; RMS (mm) 3.252 > 1; Hausdorff upper bound (mm) 9.536 > 2; maximum field residual 1.488 > 0.003; contrast start 1.393, warm-up end 169.1, final 14.93; truth 13.3 | [result](../../../../results/validation/cleaned_interfaces/MR-001/S2_slider_material_weak_start/runs/cog__c13.3/result.json), [final checks](../../../../results/validation/cleaned_interfaces/MR-001/S2_slider_material_weak_start/runs/cog__c13.3/final_audit.json) |
+| cog__c13.3 | COMPLETED_SCHEDULE; fixed_M91: no_decreasing_step | RMS (mm) 2.122 > 1; Hausdorff upper bound (mm) 6.98 > 2; maximum field residual 0.9814 > 0.003; contrast start 1.393, warm-up end 169.1, final 14.42; truth 13.3 | [result](../../../../results/validation/cleaned_interfaces/MR-001/S2_slider_material_weak_start/runs/cog__c13.3/result.json) |
 | aphex_twin__c0.5 | COMPLETED_SCHEDULE; fixed_M37: next complete batch and endpoint reserve exceed the stage quota | None: all TG-002 recovery checks passed. | [result](../../../../results/validation/cleaned_interfaces/MR-001/S2_slider_material_weak_start/runs/aphex_twin__c0.5/result.json), [final checks](../../../../results/validation/cleaned_interfaces/MR-001/S2_slider_material_weak_start/runs/aphex_twin__c0.5/final_audit.json) |
-| aphex_twin__c4 | COMPLETED_SCHEDULE; fixed_M79: next complete batch and endpoint reserve exceed the stage quota | field refinement discrepancy at 16 frequencies; worst tolerance ratio 623.8 at 2.375 GHz; Jacobian discrepancy 0.002654 > 0.001; contrast start 1.501, warm-up end 2.675, final 4; truth 4 | [result](../../../../results/validation/cleaned_interfaces/MR-001/S2_slider_material_weak_start/runs/aphex_twin__c4/result.json), [final checks](../../../../results/validation/cleaned_interfaces/MR-001/S2_slider_material_weak_start/runs/aphex_twin__c4/final_audit.json) |
-| aphex_twin__c13.3 | COMPLETED_SCHEDULE; fixed_M73: next complete batch and endpoint reserve exceed the stage quota | field refinement discrepancy at 13 frequencies; worst tolerance ratio 13.37 at 2.5 GHz; Jacobian discrepancy 0.004618 > 0.001; contrast start 1.52, warm-up end 13.48, final 13.3; truth 13.3 | [result](../../../../results/validation/cleaned_interfaces/MR-001/S2_slider_material_weak_start/runs/aphex_twin__c13.3/result.json), [final checks](../../../../results/validation/cleaned_interfaces/MR-001/S2_slider_material_weak_start/runs/aphex_twin__c13.3/final_audit.json) |
+| aphex_twin__c4 | COMPLETED_SCHEDULE; fixed_M79: next complete batch and endpoint reserve exceed the stage quota | None: all TG-002 recovery checks passed. | [result](../../../../results/validation/cleaned_interfaces/MR-001/S2_slider_material_weak_start/runs/aphex_twin__c4/result.json) |
+| aphex_twin__c13.3 | COMPLETED_SCHEDULE; fixed_M73: next complete batch and endpoint reserve exceed the stage quota | None: all TG-002 recovery checks passed. | [result](../../../../results/validation/cleaned_interfaces/MR-001/S2_slider_material_weak_start/runs/aphex_twin__c13.3/result.json) |
 
 ### GauGal
 
@@ -411,7 +411,7 @@ The final common budget is at most 80 outer iterations and 400 seconds of optimi
 
 **Forward-model limitation.** The existing seven-case sweep did not identify any tested lattice meeting 1% error across those cases at the tested frequencies from 0.75 GHz upwards. All 19 real frequencies are retained under the morning-priority amendment. This measures this TG-002 adaptation under its stated budget; it is not a reproduction of GauGal’s published benchmark and does not establish an intrinsic ranking of the methods.
 
-**Scores and times.** All three image arms are rasterized on the same 1 mm grid. RRMSE, SSIM and PSNR use relative permittivity; contrast SNR uses susceptibility. GauGal’s longest closed half-peak contour supplies its boundary and mean interior contrast. All image scores, contrast estimates and Hausdorff bounds are in the CSV. BEM seconds include the fit and final checks; GauGal seconds include process, operator build and scoring, so they are not pure optimizer speed ratios. CSV/JSON also separate the available component times. Failed BEM fits can stop early.
+**Scores and times.** All three image arms are rasterized on the same 1 mm grid. RRMSE, SSIM and PSNR use relative permittivity; contrast SNR uses susceptibility. GauGal’s longest closed half-peak contour supplies its boundary and mean interior contrast. All image scores, contrast estimates and Hausdorff bounds are in the CSV. BEM seconds include the fit and its final residual (and the final check for runs before D11); GauGal seconds include process, operator build and scoring, so they are not pure optimizer speed ratios. CSV/JSON also separate the available component times. Failed BEM fits can stop early.
 
 The overnight machine has an NVIDIA GeForce RTX 5090 (32,607 MiB reported), an Intel Core Ultra 9 285K and Python 3.9.25. At 02:42 London, the active GauGal worker was the only GPU compute process. The broad forward sweeps remained paused. Report scoring briefly ran on the CPU while tuning continued.
 

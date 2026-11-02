@@ -56,7 +56,7 @@ def bem_evidence(data, path, row, truth, frequencies, repo):
         check_reasons.append(f'Jacobian discrepancy {number(jacobian)} > 0.001')
     if finite(fd) and fd > .001:
         check_reasons.append(f'full-trial finite-difference discrepancy {number(fd)} > 0.001')
-    if not checks.get('passed') and not check_reasons:
+    if check_path.exists() and not checks.get('passed') and not check_reasons:
         check_reasons.append('final numerical check did not pass; see saved check file')
     stop = f"{data['outcome']}; {last.get('stage', 'no stage')}: " + str(
         last.get('stop') or last.get('detail') or last.get('outcome', 'unavailable'))
@@ -72,7 +72,7 @@ def bem_evidence(data, path, row, truth, frequencies, repo):
                 recovery_status='recovered' if data['recovered'] else 'not recovered',
                 failure_reason='None: all TG-002 recovery checks passed.' if data['recovered']
                 else '; '.join(reasons) or stop,
-                evidence=[str(path.relative_to(repo)), str(check_path.relative_to(repo))],
+                evidence=[str(p.relative_to(repo)) for p in (path, check_path) if p.exists()],
                 final_checks_passed=checks.get('passed'),
                 final_field_discrepancy=max(fields, default=None),
                 final_field_failed_frequencies=field_failed,

@@ -570,3 +570,58 @@ These observations do not isolate the causes of reconstruction error.
 **Delivery.** The report includes all 90 arm/case rows, every requested score,
 three galleries, per-arm stopping/failure tables, and saved evidence for the
 earlier S4/S4b timeouts. The frozen BEM selection and GauGal settings were retained.
+
+### Amendment B1, 2026-11-02: drop the final check and rerun its failures
+
+**Question.** Without the final two-resolution check, which BEM runs count as
+recovered, and does the 30-case comparison change?
+
+**Evidence.** The final check failed on 9 of the 60 BEM runs. Three of them
+(S2 circle c13.3, aphex twin c4 and c13.3) meet the shape and field limits.
+The check runs after `fit()` and does not change the fitted curve.
+
+**User decision.** Remove the check and rerun the runs it failed (user decision
+D11). Replace the comparison data with the new runs.
+
+**Changed conditions.** Recovery is RMS <= 1 mm, Hausdorff upper bound <= 2 mm
+and field residual <= 0.003 at every frequency. The residual is computed at the
+fit's production resolution, not the refined one. Fit settings are unchanged:
+the S1 manifest settings, and for S2 the weak start with `MaterialUnknown`.
+
+**Runs.** Nine fits, each run once:
+- S1 known contrast: cog c13.3, aphex twin c4, aphex twin c13.3.
+- S2 material: circle c13.3, asymmetric c13.3, cross c13.3, cog c13.3,
+  aphex twin c4, aphex twin c13.3.
+
+User, during the run: "just rewrite data in those cases". The nine case folders
+in `MR-001/S1_slider_known_contrast/runs/` and `MR-001/S2_slider_material_weak_start/runs/`
+are overwritten in place. The earlier versions remain in git history (commit 5ef75c710).
+
+**Stopping rule.** Stop after the nine runs. Regenerate the report and figures
+from the MR-001 runs.
+
+**B1 outcome, 2026-11-02.** All nine refits completed. Recovered-contrast S2 now
+recovers 26/30 (was 23): circle c13.3 (7.6e-6 mm), aphex twin c4 (0.079 mm) and
+aphex twin c13.3 (0.0079 mm). Supplied-contrast S1/S3 stays at 26/30.
+
+| Case | Arm | Before | After |
+|---|---|---|---|
+| circle c13.3 | S2 | check failed, 7.6e-6 mm | recovered, 7.6e-6 mm |
+| aphex twin c4 | S2 | check failed, 0.079 mm | recovered, 0.079 mm |
+| aphex twin c13.3 | S2 | check failed, 0.0079 mm | recovered, 0.0079 mm |
+| aphex twin c4 | S1 | 0.34 mm, residual 0.0089 | 0.21 mm, residual 0.0038 |
+| cog c13.3 | S1 | 0.47 mm, residual 0.25 | 0.48 mm, residual 0.25 |
+| aphex twin c13.3 | S1 | 2.5 mm | 2.5 mm |
+| asymmetric c13.3 | S2 | 37 mm, contrast 123 | 37 mm, contrast 121 |
+| cross c13.3 | S2 | 35 mm, contrast 74 | 33 mm, contrast 74 |
+| cog c13.3 | S2 | 3.3 mm, contrast 14.9 | 2.1 mm, contrast 14.4 |
+
+The refits ran on the current solver code, not the MR-001 commits. Since then
+`f85787d2a` removed the default log-degree cap and `bae92f1ed` allowed a sampled
+log interval. Six refits that stopped with `NUMERICAL_FAILURE` before now
+complete the schedule, and several take much longer: asymmetric and cross c13.3
+went from under 15 s to about 30 minutes each. The three check-only cases give
+the same curves as before.
+
+Logs: `results/validation/cleaned_interfaces/GGB-002/B1_known.log`,
+`B1_material_part1.log` (stopped to put the check-only cases first) and `B1_material.log`.

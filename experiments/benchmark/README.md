@@ -17,13 +17,12 @@ or a grid-search initializer to new experiments. The user retired both on 2026-1
 - **Data:** the frozen CI-001 acquisition (24 source/receiver pairs on a 0.30 m ring) and
   the 19-frequency catalog (0.25–2.5 GHz). Real and damped (k(1 + 0.25i)) catalogs, noiseless,
   computed with CPU reference `nodal_kress` and qualified by N1024/N2048 doubling at 1e-8.
-- **Recovery:** the unchanged CI-001 gates. The final audit passes, RMS ≤ 1 mm, the Hausdorff
-  upper bound ≤ 2 mm, and the per-frequency residual ≤ max(0.003, 3 × noise).
-- **Endpoint audit:** `audit.py` runs after `fit()` returns and before truth is read. It
-  compares fields, Jacobian columns and a complete-trial finite difference at the
-  production and refined resolutions of the returned curve. The fit itself never solves
-  at a finer resolution (decision D7, NR-001). Its wall allowance is 300 s, or 30 s for a
-  named policy.
+- **Recovery:** RMS ≤ 1 mm, the Hausdorff upper bound ≤ 2 mm, and the per-frequency
+  residual ≤ max(0.003, 3 × noise). `final_residual` computes the residual of the returned
+  curve at the fit's own resolution, after `fit()` returns and before truth is read.
+- **No final check:** the two-resolution endpoint audit (`audit.py`) no longer runs or
+  counts towards recovery (user decision D11, 2026-11-02). Runs saved before then keep
+  their `final_audit.json`. The fit itself never solves at a finer resolution (D7).
 
 | Scene | Tests | Shape source |
 |---|---|---|
@@ -75,7 +74,7 @@ python -m experiments.benchmark run --pipeline nodal_fixed --cases all --run-dir
 |---|---|
 | `scenes.py` | Scene shapes, frozen placements, the start, case IDs |
 | `campaign.py` | Input generation and seal, CI-001-shaped rows, `keep_start`, the fit runner, `summarize`, gallery |
-| `audit.py` | The endpoint audit that `run_case` runs after each fit |
+| `audit.py` | The former endpoint audit; still imported by two studies, not run by `run_case` |
 | `pc001.py` | Three-arm pipeline comparison N0/N1/M1 and its report; its `M1` arm is the kept reference run ([plan](../../docs/iterations/cleaned_interfaces/iteration_27/03_plan.md)) |
 | `test_benchmark.py` | Frozen placements, valid truths, no truth access during fitting |
 | `assets/aphex_twin_logo.svg` | Vendored public-domain logo outline for the `aphex_twin` scene |

@@ -2,11 +2,11 @@
 
 Inputs live in ``results/validation/cleaned_interfaces/TG-002`` and are sealed
 by hash. Fits go to a separate run directory per experiment arm. Fitting
-receives a ``Problem`` only. After ``fit`` returns, ``audit.audit`` checks the
-endpoint independently; truth is read only by scoring after that. Scoring and
-recovery gates are CI-001's, reused unchanged: RMS <= 1 mm, Hausdorff upper
-bound <= 2 mm, per-frequency residual <= max(0.003, 3 x noise), and a passed
-final numerical audit.
+receives a ``Problem`` only. After ``fit`` returns, ``final_residual`` computes
+the field residual of the returned curve; truth is read only by scoring after
+that. Recovery: RMS <= 1 mm, Hausdorff upper bound <= 2 mm and per-frequency
+residual <= max(0.003, 3 x noise). The final two-resolution check (``audit.py``)
+no longer runs here (user decision D11, 2026-11-02).
 """
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from dataclasses import asdict, replace
@@ -245,17 +245,29 @@ def geometry_update_for(settings):
     return settings['geometry_update']
 
 
-def endpoint_audit(problem, result, settings, folder):
-    """Audit the returned curve with fresh physics and the run's ordinary geometry update."""
+def final_residual(problem, result, settings):
+    """Relative field residual of the returned curve on all real data, at the fit's own resolution."""
     execution = Execution(**settings['execution'])
     physics, forward_solve = physics_for(settings)
-    update, geometry_update = make_update(geometry_update_for(settings), problem.length_unit_m, execution)
+    curve = curve_from(result['final_curve'])
+    nodes = physics.resolution_profile(curve.band)['production']
+    started = perf_counter()
+    residual = []
     with geometry_runtime(execution.geometry):
-        row = A.audit(curve_from(result['final_curve']), A.audited_modes(result['final_stage']), problem,
-                      physics, forward_solve, update, geometry_update, settings['audit_seconds'])
-    write(folder/'final_audit.json', row)
-    print(folder.name, 'final_audit', 'endpoint '+('qualified' if row['passed'] else 'refused'), flush=True)
-    return row
+        for observation in problem.real:
+            state = forward_solve(curve, observation, problem.contrast, nodes)
+            prediction = np.asarray(state.prediction).reshape(-1)
+            observed = np.asarray(observation.scattered).reshape(-1)
+            residual.append(float(np.linalg.norm(prediction-observed)/np.linalg.norm(observed)))
+    if hasattr(physics, 'close'):
+        physics.close()
+    return dict(relative_residual=residual, seconds=perf_counter()-started, resolution=nodes)
+
+
+def recovered(metrics, residual, limits):
+    """TG-002 recovery: shape limits and the per-frequency field residual (no final check, D11)."""
+    return bool(metrics['rms_mm'] <= 1. and metrics['hausdorff_upper_mm'] <= 2. and
+                np.all(np.asarray(residual) <= limits))
 
 
 def run_case(job):
@@ -274,23 +286,18 @@ def run_case(job):
         result = _fit(problem, settings, execution, folder,
             keep_start if settings['localization'] == 'none' else None,
             lambda e: print(case_row['id'], e['operation']['label'], e['reason'], flush=True))
-        audited = endpoint_audit(problem, result, settings, folder)
-        result.update(final_audit_passed=audited['passed'], relative_residual=audited.get('relative_residual'),
-                      audit_units=audited['work']['work_units'], audit_seconds=audited['seconds'],
-                      total_units=result['fit_and_localization_units']+audited['work']['work_units'],
-                      total_seconds=result['total_seconds']+audited['seconds'])
-        if 'paired_relative_residual' in audited:
-            result['paired_relative_residual'] = audited['paired_relative_residual']
-        # ON-001 boundary: case entry to the returned, audited numerical output; scoring excluded.
-        result['audited_output_seconds'] = perf_counter()-started
-        # The inverse and its independent audit have returned before target access.
+        checked = final_residual(problem, result, settings)
+        result.update(relative_residual=checked['relative_residual'], residual_seconds=checked['seconds'],
+                      residual_resolution=checked['resolution'], total_units=result['fit_and_localization_units'],
+                      total_seconds=result['total_seconds']+checked['seconds'])
+        # ON-001 boundary: case entry to the returned numerical output; scoring excluded.
+        result['output_seconds'] = perf_counter()-started
+        # The inverse and its residual have returned before target access.
         metrics = ci.score(case_row, curve_from(result['final_curve']))
         limits = ci.residual_limits(case_row)
-        residual = result.get('relative_residual')
+        residual = result['relative_residual']
         result.update(case=case_row, settings=settings, metrics=metrics, residual_limits=limits,
-            recovered=bool(result['final_audit_passed'] and metrics['rms_mm'] <= 1. and
-                           metrics['hausdorff_upper_mm'] <= 2. and residual is not None and np.all(residual <= limits)),
-            maximum_residual=None if residual is None else float(max(residual)))
+            recovered=recovered(metrics, residual, limits), maximum_residual=float(max(residual)))
     except Exception:
         result = dict(case=case_row, settings=settings, outcome='WORKER_EXCEPTION', recovered=False,
                       traceback=traceback.format_exc())

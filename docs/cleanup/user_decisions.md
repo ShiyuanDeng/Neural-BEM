@@ -220,6 +220,30 @@ hard limits and exclusions; preserve earlier results and original criteria.
 principles. Agent-written run counts can be amended prospectively; a different
 research question or departure from explicit user limits still needs a decision.
 
+### D11. Final two-resolution check — removed from recovery (2026-11-02)
+
+**Context.** In the GGB-002 comparison, three BEM runs had the right shape and
+field residual but were marked "not recovered" by the endpoint check. That check
+compares fields and Jacobian columns at the production and refined resolutions.
+
+**Decided.** User: "dont mind it just delete that, and run the cases that were
+previously identified as false by that check again real quick. replace currect
+data with that version".
+
+**Reason.** It is the last finer re-evaluation left after D7. Recovery should
+rest on the shape limits and the field residual only.
+
+**Rule.** TG-002 runs no longer call the endpoint check. Recovery is RMS <= 1 mm,
+Hausdorff upper bound <= 2 mm and per-frequency field residual within its limit,
+with the residual computed at the fit's own resolution. The nine affected MR-001
+case folders were overwritten (user: "just rewrite data in those cases"); the
+earlier versions stay in git history.
+
+**Status.** `campaign.run_case` and `mr001.run_case` call `final_residual`
+instead. `audit.py` stays for the two studies that import it directly
+(`frequency_interpolation`, `geometry_charts`). GGB-002 amendment B1 reran the
+nine affected runs.
+
 ## Lessons from agent mistakes
 
 ### L1. Proposal built on half the facts

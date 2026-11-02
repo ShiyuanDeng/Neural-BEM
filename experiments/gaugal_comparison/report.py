@@ -328,7 +328,7 @@ def make_report(preview=False):
         'ten shapes at contrasts 0.5, 4 and 13.3 in a background of relative permittivity 6. '
         'The real frequencies span 0.25–2.5 GHz; all starts and measurement data are retained.', '',
         '## Aggregate results', '',
-        '| Arm | Saved images | Finite boundaries | Shared shape/field limits | Full BEM recovery | Median RMS mm | '
+        '| Arm | Saved images | Finite boundaries | Shared shape/field limits | BEM recovered | Median RMS mm | '
         'Median image RRMSE | Median recorded seconds |',
         '|---|---:|---:|---:|---:|---:|---:|---:|']
     if summary['complete']:
@@ -349,11 +349,11 @@ def make_report(preview=False):
         text.append(f'| {LABELS[key]} | {count} | {boundaries} | {shared} | {recovered} | {median(key,"rms_mm")} | '
                     f'{median(key,"rrmse")} | {median(key,"seconds")} |')
     text += ['', 'Shared limits are RMS ≤ 1 mm, Hausdorff upper bound ≤ 2 mm and maximum relative '
-             'field residual ≤ 0.003. Full BEM recovery additionally requires its independent final '
-             'numerical checks. GauGal has no equivalent BEM Jacobian check; its shared-limit count is '
-             'not claimed as full TG-002 numerical qualification.', '',
+             'field residual ≤ 0.003. BEM recovery uses the same limits. The final two-resolution check '
+             'was removed on 2026-11-02 (user decision D11); the nine BEM runs it had failed were refit '
+             'in place (GGB-002 amendment B1).', '',
              '### Results by contrast', '',
-             '| Contrast | Arm | Full BEM recovery | Shared limits met | Finite boundaries | Median RMS mm | Median max field residual | Median image RRMSE |',
+             '| Contrast | Arm | BEM recovered | Shared limits met | Finite boundaries | Median RMS mm | Median max field residual | Median image RRMSE |',
              '|---:|---|---:|---:|---:|---:|---:|---:|']
     for contrast in (.5, 4., 13.3):
         selected = [r for r in rows if r['contrast'] == contrast]
@@ -424,7 +424,7 @@ def make_report(preview=False):
         '**Scores and times.** All three image arms are rasterized on the same 1 mm grid. RRMSE, SSIM and '
         'PSNR use relative permittivity; contrast SNR uses susceptibility. GauGal’s longest closed '
         'half-peak contour supplies its boundary and mean interior contrast. All image scores, '
-        'contrast estimates and Hausdorff bounds are in the CSV. BEM seconds include the fit and final checks; '
+        'contrast estimates and Hausdorff bounds are in the CSV. BEM seconds include the fit and its final residual (and the final check for runs before D11); '
         'GauGal seconds include process, operator build and scoring, so they are not pure optimizer '
         'speed ratios. CSV/JSON also separate the available component times. Failed BEM fits can stop early.', '',
         'The overnight machine has an NVIDIA GeForce RTX 5090 (32,607 MiB reported), '

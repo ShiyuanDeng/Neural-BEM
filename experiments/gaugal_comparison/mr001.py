@@ -12,8 +12,9 @@ Start rules (recorded before fitting):
   caches and ledger are untouched; its time is recorded separately.
 - ``near_truth`` (R3): 1.2 x the true contrast, only to diagnose R2 failures.
 
-The endpoint check runs at the recovered contrast. Truth is read only to score
-after the fit and its check have returned.
+The final field residual is computed at the recovered contrast. Truth is read
+only to score after the fit and its residual have returned. The final
+two-resolution check no longer runs (user decision D11, 2026-11-02).
 
     PYTHONPATH=solvers:. OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
         python -m experiments.gaugal_comparison.mr001 --cases all --start weak \
@@ -84,23 +85,20 @@ def run_case(run_dir, case_row, settings, start_rule, material):
                      on_event=lambda e: print(case_row['id'], e['operation']['label'], e['reason'], flush=True),
                      policy=CumulativePolicy(**settings.get('cumulative_options', {})), material=material)
         final_contrast = float(result['final_contrast'])
-        audited = C.endpoint_audit(replace(problem, contrast=final_contrast), result, settings, folder)
-        result.update(final_audit_passed=audited['passed'], relative_residual=audited.get('relative_residual'),
-                      audit_units=audited['work']['work_units'], audit_seconds=audited['seconds'],
-                      total_units=result['fit_and_localization_units']+audited['work']['work_units'],
-                      total_seconds=result['total_seconds']+audited['seconds']+start_record['seconds'])
-        result['audited_output_seconds'] = perf_counter()-started
-        # The fit and its endpoint check have returned; truth is read from here on.
+        checked = C.final_residual(replace(problem, contrast=final_contrast), result, settings)
+        result.update(relative_residual=checked['relative_residual'], residual_seconds=checked['seconds'],
+                      residual_resolution=checked['resolution'], total_units=result['fit_and_localization_units'],
+                      total_seconds=result['total_seconds']+checked['seconds']+start_record['seconds'])
+        result['output_seconds'] = perf_counter()-started
+        # The fit and its residual have returned; truth is read from here on.
         metrics = ci.score(case_row, curve_from(result['final_curve']))
         limits = ci.residual_limits(case_row)
-        residual = result.get('relative_residual')
+        residual = result['relative_residual']
         true = float(case_row['contrast'])
         result.update(case=case_row, settings=settings, metrics=metrics, residual_limits=limits,
             contrast_start=start, contrast_start_record=start_record, contrast_true=true,
             contrast_final=final_contrast, contrast_relative_error=final_contrast/true-1.,
-            recovered=bool(result['final_audit_passed'] and metrics['rms_mm'] <= 1. and
-                           metrics['hausdorff_upper_mm'] <= 2. and residual is not None and np.all(residual <= limits)),
-            maximum_residual=None if residual is None else float(max(residual)))
+            recovered=C.recovered(metrics, residual, limits), maximum_residual=float(max(residual)))
     except Exception:
         result = dict(case=case_row, settings=settings, outcome='WORKER_EXCEPTION', recovered=False,
                       traceback=traceback.format_exc())
