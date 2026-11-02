@@ -43,16 +43,18 @@ Shapes keep their historical definitions; only the placement is new.
 ## Default method for new experiments
 
 - **Physics:** `modal_muller`, the node-free Fourier–Galerkin service.
-- **Geometry update:** `spectral`, with direct sampled validity checks and batched preparation.
-  The optional `certified_spectral` method remains available for explicit comparisons.
+- **Geometry update:** `slider` (user decision, 2026-11-02). It prepares on CUDA when available
+  (GU-002) and recovered hook c13.3, which `spectral` does not (GU-001). It has not yet run on all
+  30 cases. `spectral`, the default until then, and `certified_spectral` remain available with
+  `--geometry-update`.
 - **Localization:** `none`. `keep_start` keeps the centred start, and the 0.25 GHz damped
   warm-up moves it.
 - **Policy:** otherwise the default `CumulativePolicy`.
 
 These are the CLI defaults. `--localization grid` and `--solver nodal_kress` exist only as
 controls. `--pipeline nodal_baseline|nodal_fixed|modal_fixed` selects a named recipe from
-`bem_inverse.pipelines` instead of `--solver`/`--geometry-update`; `modal_fixed` is the default
-method above.
+`bem_inverse.pipelines` instead of `--solver`/`--geometry-update`; `modal_fixed` is the earlier
+`modal_muller` + `spectral` default.
 
 ## Commands (repository root, EMNerf environment)
 

@@ -68,14 +68,26 @@ def pixel_grid(cells, half_width=BOX_HALF_WIDTH_M):
 
 
 def fill_fraction(boundary, x, y, supersample=8):
-    """Area fraction of each square cell inside the boundary (sub-cell sampling)."""
+    """Area fraction of each square cell inside the boundary.
+
+    Cell centres decide cells away from the boundary; only cells within one
+    cell of a centre change are sub-sampled supersample x supersample.
+    """
     step = float(x[0, 1]-x[0, 0])
+    inside = Polygon(np.column_stack((boundary.real, boundary.imag)))
+    centre = inside.contains_points(np.column_stack((x.reshape(-1), y.reshape(-1)))).reshape(x.shape)
+    padded = np.pad(centre, 1, mode='edge')
+    mixed = np.zeros_like(centre)
+    for dy in (-1, 0, 1):
+        for dx in (-1, 0, 1):
+            mixed |= padded[1+dy:1+dy+centre.shape[0], 1+dx:1+dx+centre.shape[1]] != centre
+    fraction = centre.astype(float)
     offsets = (np.arange(supersample)+.5)/supersample-.5
     ox, oy = np.meshgrid(offsets*step, offsets*step)
-    inside = Polygon(np.column_stack((boundary.real, boundary.imag)))
-    points = np.stack((x[..., None, None]+ox, y[..., None, None]+oy), -1).reshape(-1, 2)
-    hits = inside.contains_points(points).reshape(*x.shape, supersample*supersample)
-    return hits.mean(-1)
+    rows, cols = np.nonzero(mixed)
+    points = np.stack((x[rows, cols][:, None, None]+ox, y[rows, cols][:, None, None]+oy), -1).reshape(-1, 2)
+    fraction[rows, cols] = inside.contains_points(points).reshape(len(rows), -1).mean(-1)
+    return fraction
 
 
 def relative_error(predicted, observed):

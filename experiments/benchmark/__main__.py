@@ -23,7 +23,7 @@ def main():
     parser.add_argument('--solver', choices=('modal_muller', 'nodal_kress'), help='default modal_muller')
     parser.add_argument('--geometry-update', choices=('spline', 'spectral', 'certified_spectral', 'analytic_spectral',
                                                       'uncentred_spectral', 'n_update', 'slider'),
-                        help='default spectral (sampled validity checks, batched preparation)')
+                        help='default slider (user decision 2026-11-02; CUDA preparation when available)')
     parser.add_argument('--level-penalty', type=float, metavar='FRACTION',
                         help='GU-001: add the speed-unevenness penalty, weight FRACTION x stage-entry data loss '
                              '(0.01 in GU-001); only with n_update, which needs it')
@@ -39,7 +39,7 @@ def main():
         parser.error('--pipeline sets the solver and geometry update; do not pass them too')
     if not args.pipeline and not args.policy:
         args.solver = args.solver or 'modal_muller'
-        args.geometry_update = args.geometry_update or 'spectral'
+        args.geometry_update = args.geometry_update or 'slider'
     execution = Execution(args.device, args.frequency_threads)
     cases = list(S.CASES) if args.cases in (None, ['all']) else args.cases
     if args.command == 'prepare':

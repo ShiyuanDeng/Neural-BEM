@@ -193,3 +193,66 @@ which fail numerically. The hypothesis is rejected. MR-001's answer is R2 with
 R3: truth-free material recovery works at contrasts 0.5 and 4; at 13.3 it
 needs a start near the truth. R2 is the material-recovery arm for GGB-002.
 No further MR-001 follow-up is run under this amendment.
+
+## Amendment 2026-11-02: FW-001 sweeps the Gaussian width
+
+**Evidence.** Smoke tests on `circle__c4`. With the lattice on the pixel grid
+(51 on 51), GauGal's operator matches MoM at the same 4 mm cells (9.4e-4 at
+0.25 GHz, 12.8% at 1.38 GHz; MoM 9.4e-4, 12.6%), so the adapter is right. On a
+lattice coarser than the 1 mm pixel grid, the released width (0.35 × lattice
+spacing) leaves gaps between Gaussians: a 51 lattice gives 3.6% at 0.25 GHz and
+48% at 1.38 GHz. Width 0.7 gives 6.8e-4 and 3.2%. The released case had lattice
+56 on 64 pixels, where the narrow width is harmless. The iterative forward
+solve often stops at its 100-iteration cap.
+
+**Changed conditions.** F2 runs lattices 51 and 101 at widths 0.7 and 1.0, and
+the pixel-grid lattice 201 at the released 0.35, all on 201 pixels, at five
+frequencies (0.25, 0.75, 1.25, 1.75, 2.5 GHz), all 30 cases. The forward check
+raises the iteration cap to 2000 so discretisation error is measured on its
+own; iteration counts are recorded. The chosen lattice and width then run all
+19 frequencies to set GauGal's frequency cutoff (≤ 1% at every frequency used).
+F1 (MoM) runs as planned. G1 tunes around the chosen width; the inverse keeps
+GauGal's released cap of 100 with warm starts.
+
+**Runs.** F1: 3 cell sizes × 30 × 19. F2: 5 settings × 30 × 5, then 1 × 30 × 19.
+F1 runs on the CPU while F2 uses the GPU; their times are reported as measured
+under that sharing.
+
+## User decisions 2026-11-02: slider default, forward check paused
+
+The user asked: "thought modal muller plus slider update fixed all tg002
+scenes?" The records show the slider ran on five TG-002 cases only (hook c13.3
+recovered; aphex c13.3 reached 0.017 mm RMS but failed the final Jacobian
+check; no 30-case campaign). The user then said: "change the default update to
+slider. then pause forward verification with mom or whatever thats supposed to
+do."
+
+- The benchmark CLI default geometry update is now `slider`; `spectral` stays
+  available. R1–R4 above used `spectral`.
+- FW-001 is paused: F1 (MoM) stopped after 3 cases and F2 (GauGal operator
+  sweep) after 7. Their per-case files are complete and the commands resume
+  from them. GGB-002 waits.
+- The user had expected only BEM material-recovery runs; the forward checks had
+  been started on the reading that the two tracks could run together.
+
+## Amendment 2026-11-02: MR-001 with the slider (S1, S2)
+
+**Question.** With the slider default, how many TG-002 cases does a
+known-contrast fit recover, and does truth-free material recovery keep them?
+
+**Runs.** S1: known-contrast control, all 30 cases, CLI defaults (`modal_muller`
++ `slider`), one worker, single-threaded BLAS. S2: material recovery with R2's
+weak-scatterer start, settings copied from S1. One run each.
+
+**Expected.** S1 recovers hook c13.3 in addition to R1's 26, if the GU-002/PS-003
+result carries over; aphex may still fail the final Jacobian check. S2 should
+match R2 at contrasts 0.5 and 4; at 13.3 the start problem seen in R2 is not
+changed by the geometry update.
+
+**Stopping.** Report S1 and S2 against R1 and R2. Any further fix of the
+13.3 start needs a new dated amendment.
+
+**S1 outcome (2026-11-02).** 25/30 (8 / 9 / 8). Against R1 (`spectral`): gains
+hook c13.3 (RMS 0.0002 mm); loses hook c0.5 and cog c13.3, both ending in
+"production evaluation failed at candidate state". Aphex ×3 still fail (aphex c4
+reaches 0.34 mm but fails the final check). Summed time 607 s, median 13.7 s.

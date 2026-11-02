@@ -80,7 +80,7 @@ result = pipelines.fit(problem, "modal_fixed", execution=Execution(device="auto"
 |---|---|---|
 | `nodal_baseline` | `nodal_kress` | `spline` (CI-001) |
 | `nodal_fixed` | `nodal_kress` | `spectral` |
-| `modal_fixed` | `modal_muller` | `spectral` (the TG-002 default) |
+| `modal_fixed` | `modal_muller` | `spectral` (the TG-002 default until 2026-11-02; the CLI default is now `slider`) |
 
 A pipeline fills only `fit`'s physics and geometry-update slots; policy, start
 and localization stay with the caller. Selecting `solver='modal_muller'`
