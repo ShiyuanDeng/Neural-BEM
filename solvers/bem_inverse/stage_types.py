@@ -145,6 +145,7 @@ class StageResult:
     final_entry: object = field(default=None, repr=False)
     entry_reused: bool = False
     diagnostics: dict = field(default_factory=dict)
+    contrast: Optional[float] = None  # final contrast under material recovery only
 
 
 

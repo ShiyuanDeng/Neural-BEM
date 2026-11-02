@@ -1,5 +1,7 @@
 """Command-line entry point for a single permittivity image."""
 
+from __future__ import annotations
+
 import argparse
 from pathlib import Path
 

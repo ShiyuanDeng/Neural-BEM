@@ -5,6 +5,8 @@ are image y-coordinates (top to bottom); columns are x-coordinates. Physics
 vectors order cells by x first, then y, i.e. ``grid.T.reshape(-1)``.
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 
 import numpy as np

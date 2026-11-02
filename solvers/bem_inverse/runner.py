@@ -39,7 +39,7 @@ class FitResume:
 
 def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=None, physics=None,
         forward_solve=None, on_event=None, geometry_adapter=None, localization_adapter=None,
-        geometry_update=None, resume=None, penalty=None):
+        geometry_update=None, resume=None, penalty=None, material=None):
     """Run from the prescribed start. This function cannot read truth or scene IDs.
 
     ``physics`` and its ``forward_solve`` are dependency injection for qualified
@@ -55,6 +55,9 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
     The result's ``final_stage`` names the last fitted stage's M, storage band and
     any stage-local geometry update, which an endpoint audit needs.
     ``penalty`` (a ``level_penalty.LevelPenalty``) is added to every stage's loss.
+    ``material`` (a ``material.MaterialUnknown``, MR-001) also fits log(contrast),
+    starting from ``problem.contrast`` and carried from stage to stage; the result
+    then reports ``final_contrast``. Without it every number is unchanged.
     """
     if physics is None:
         physics, forward_solve = make_backend(solver, execution)
@@ -62,6 +65,9 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
         raise ValueError('Pass the forward_solve of the injected physics context.')
     if geometry_adapter is not None and geometry_update is not None:
         raise ValueError('Choose geometry_update or geometry_adapter, not both.')
+    if material is not None and (resume is not None or penalty is not None):
+        raise ValueError('Material recovery does not support resume or the level penalty.')
+    contrast_now = problem.contrast  # changes only under material recovery
     policy = policy or CumulativePolicy()
     resize_curve = resize if geometry_adapter is None else geometry_adapter.resize
     cleanup_curve = cleanup if geometry_adapter is None else geometry_adapter.cleanup
@@ -124,7 +130,7 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
         (Path(output)/'plan.md').write_text(readable_plan(plan))
     save('configuration.json', dict(initial=record_curve(curve), contrast=problem.contrast,
          solver=physics.name, execution=physics.receipt()['execution'], update=update_settings, plan=plan,
-         level_penalty=penalty_settings))
+         level_penalty=penalty_settings, **({} if material is None else dict(material=material.settings()))))
     with geometry_runtime(physics.execution.geometry):
         try:
             strict = getattr(physics.execution, 'nodal_resolution_profile', 'fixed') == 'band_matched'
@@ -183,10 +189,11 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
                         save('accepted.json', dict(states=accepted))
                     entry, carried = carried, None
                     # A–B–C. Run one resolved stage and retain its accepted endpoint.
-                    result = fit_stage(curve, op.stage, problem.contrast, update, op.optimizer, ledger,
+                    result = fit_stage(curve, op.stage, contrast_now, update, op.optimizer, ledger,
                                        physics=physics, forward_solve=forward_solve, geometry_update=trial_curve,
                                        on_accept=accepted_state, resume=resumed_stage,
-                                       entry=entry, retain_final=reuse_entries, penalty=penalty)
+                                       entry=entry, retain_final=reuse_entries, penalty=penalty,
+                                       **({} if material is None else dict(material=material)))
                     resumed_stage = None
                     curve = result.curve
                     carried = result.final_entry if reuse_entries else None
@@ -195,6 +202,9 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
                         accepted_steps=result.accepted_steps, initial_loss=result.initial_loss,
                         final_loss=result.final_loss, seconds=result.seconds, work=ledger.snapshot(),
                         curve=record_curve(curve), nodes=op.stage.nodes)
+                    if material is not None:
+                        row.update(entry_contrast=contrast_now, contrast=result.contrast)
+                        contrast_now = result.contrast
                     if result.diagnostics:
                         row.update(diagnostics=result.diagnostics, F=len(op.stage.observations),
                                    Ku=op.stage.nodes//8 if op.stage.resolution_kind == 'modal' else None)
@@ -224,7 +234,7 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
                     # Frontier: one refined solve at the highest real frequency, then its
                     # paired-Jacobian column profile. A charged diagnostic, never free work.
                     resolution = physics.resolution_profile(curve.band)['refined']
-                    with ledger.calls(lambda o: forward_solve(curve, o, problem.contrast, resolution),
+                    with ledger.calls(lambda o: forward_solve(curve, o, contrast_now, resolution),
                                       (problem.real[-1],), 'solve', 'frontier', threads=1) as calls:
                         state = calls[0]()
                     with ledger.calls(lambda s: physics.observable_frontier(s, policy.frontier_top,
@@ -261,6 +271,8 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
         total_seconds=perf_counter()-started,
         physics=physics.receipt(), geometry_work=dict(selected_update.counts),
         geometry_update=geometry_update, geometry_settings=update_settings, level_penalty=penalty_settings)
+    if material is not None:
+        row.update(material=material.settings(), initial_contrast=problem.contrast, final_contrast=contrast_now)
     if stage_updates:
         row['stage_geometry_updates'] = {name: dict(settings=item.settings(), work=dict(item.counts))
                                         for name, (item, _) in stage_updates.items()}

@@ -15,7 +15,9 @@ update object, which supplies normal-coordinate geometry and the complete-trial
 tangent. A trial curve is accepted when its loss is lower than the current loss;
 nothing is re-solved at a finer resolution. An optional ``penalty`` (the level
 penalty) stacks extra residual rows under the data residual, so the loss, J, g,
-the damping and the accept test all include them.
+the damping and the accept test all include them. An optional ``material`` (a
+``material.MaterialUnknown``, MR-001) appends log(contrast) to the update vector;
+without it every number is unchanged.
 """
 from dataclasses import replace
 from copy import deepcopy
@@ -39,7 +41,8 @@ from . import b5_residual, b8_gauss_newton, c9_lm, c12_iteration, checks
 @fit_geometry_validation
 @geometry_validated
 def fit_stage(curve, stage, contrast, update, config, ledger, *, physics, forward_solve, geometry_update,
-              on_accept=None, resume=None, pause_after=None, entry=None, retain_final=False, penalty=None):
+              on_accept=None, resume=None, pause_after=None, entry=None, retain_final=False, penalty=None,
+              material=None):
     """Run one stage, optionally under a fit-local ``geometry_validation`` cache.
 
     Exact reuse and spatial intersection checks are enabled by default. Use
@@ -61,6 +64,9 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, physics, forwar
         raise ValueError("Pass the curve at the stage storage band.")
     if penalty is not None and (resume is not None or pause_after is not None):
         raise ValueError('A level penalty does not support stage checkpoints.')
+    if material is not None and (penalty is not None or resume is not None or pause_after is not None
+                                 or config.reach_fraction):
+        raise ValueError('Material recovery does not support the level penalty, checkpoints or reach clipping.')
     signature = checkpoint_signature(stage, contrast, config, update) if resume is not None or pause_after is not None else None
     if resume is not None:
         if resume.signature != signature or not np.array_equal(curve.coefficients, resume.current.curve.coefficients):
@@ -75,6 +81,7 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, physics, forwar
     history, trials = [], []
     accepted_steps, converged, stop_reason, outcome, detail = 0, False, "maximum_iterations", NORMAL_RETURN, None
     current = None
+    contrast_now = float(contrast)  # changes only under material recovery
     initial_loss = float("nan")
     checkpoint = None
     reach_cache = {}
@@ -97,7 +104,7 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, physics, forwar
                     limits[0], limits[1] = min(limits[0], value), max(limits[1], value)
         return values
 
-    def evaluate(curve, category, reused=None):
+    def evaluate(curve, category, reused=None, contrast_value=None):
         """A1–A4 at every active frequency, then B5: residual r and loss. None if a solve fails.
 
         ``reused`` is an exactly matching previous endpoint (prediction, forward states);
@@ -106,7 +113,8 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, physics, forwar
         if reused is None:
             batch_started = perf_counter()
             try:
-                batch = solve_frequencies(curve, stage.observations, contrast, stage.nodes, category,
+                batch = solve_frequencies(curve, stage.observations,
+                                          contrast if contrast_value is None else contrast_value, stage.nodes, category,
                                           forward_solve=forward_solve, ledger=ledger, threads=threads,
                                           physics=physics, failures=failures)
             finally:
@@ -148,6 +156,16 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, physics, forwar
         finally:
             if diagnostics:
                 diagnostics['reciprocal_batch_seconds'] += perf_counter()-reciprocal_started
+        if material is not None:
+            # Material recovery: one-sided difference in log(contrast), one extra solve per frequency.
+            shifted = solve_frequencies(evaluation.curve, stage.observations,
+                                        contrast_now*np.exp(material.derivative_step), stage.nodes,
+                                        'contrast_derivative', forward_solve=forward_solve, ledger=ledger,
+                                        threads=threads, physics=physics, failures=failures)
+            if shifted is None:
+                raise NumericalFailure("contrast derivative solve failed")
+            column = (shifted[0]-evaluation.prediction)/material.derivative_step
+            blocks = [np.column_stack((block, column[:, j])) for j, block in enumerate(blocks)]
         # B8. The B5 map applied to each data derivative column gives J; then g = J.T r.
         J = b8_gauss_newton.residual_jacobian(blocks, observed, stage.weights, config.residual_floor)
         if penalty is not None:
@@ -173,6 +191,8 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, physics, forwar
                                                "damping_feedback", "damping_floor") if k in trial})
         if penalty is not None:
             row.update(penalty.record(evaluation, penalty_weight))
+        if material is not None:
+            row['contrast'] = contrast_now
         if g is None:
             if linearization_stop is None:
                 row['terminal_linearization_skipped'] = True
@@ -249,7 +269,8 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, physics, forwar
             H_GN = b8_gauss_newton.curvature(J)
             # C9. Damping metric D, then the starting damping lambda_trial. The
             # configured rule is 'agreement' (floor), 'hanke', or the carried value.
-            D = c9_lm.damping_matrix(H_GN, space, update, config, smoothing)
+            D = (c9_lm.damping_matrix(H_GN, space, update, config, smoothing) if material is None
+                 else _material_metric(H_GN, space, update, config, smoothing))
             accepted = None
             lambda_trial = damping
             rule = None
@@ -276,7 +297,8 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, physics, forwar
                     continue
                 raw_norm = float(np.linalg.norm(a_raw))
                 observed_raw_proposal = a_raw.copy() if getattr(physics, 'observer', None) is not None else None
-                a_bounded = control_step(a_raw, space, update, config)
+                a_bounded = (control_step(a_raw, space, update, config) if material is None else
+                             np.append(control_step(a_raw[:-1], space, update, config), material.bound(a_raw[-1])))
                 clipping = {}
                 if config.reach_fraction:
                     from bem_inverse.reach import clip_direction
@@ -295,12 +317,15 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, physics, forwar
                         checks.require_geometry_proposal_allowance(geometry_proposals, config.geometry_proposal_cap)
                     # Halve the step and skip it when it is below the relative tolerance.
                     a_used = 0.5 ** backtrack * a_bounded
-                    if checks.step_too_small(a_used, scale, config.relative_step_tolerance):
+                    if _step_too_small(a_used, scale, config.relative_step_tolerance, material):
                         if diagnostics:
                             diagnostics['tiny_proposal_skips'] += 1
                         continue
                     trial = dict(iteration=iteration, damping=float(lambda_trial), backtrack=backtrack,
-                                 step_norm_m=float(np.linalg.norm(a_used)), **clipping)
+                                 step_norm_m=float(np.linalg.norm(a_used if material is None else a_used[:-1])),
+                                 **clipping)
+                    if material is not None:
+                        trial.update(log_contrast_step=float(a_used[-1]), contrast=contrast_now*np.exp(a_used[-1]))
                     if diagnostics:
                         trial.update(raw_step_norm_m=raw_norm, clipped_step_norm_m=float(np.linalg.norm(a_bounded)),
                                      damping_retry=damping_retry)
@@ -327,12 +352,14 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, physics, forwar
                     trial['geometry_constructed'] = True
                     geometry_started = perf_counter()
                     try:
-                        c_trial, geometry = geometry_update(a_used, prepared=space)
+                        c_trial, geometry = geometry_update(a_used if material is None else a_used[:-1],
+                                                            prepared=space)
                         trial.update(geometry)
                         if 'a_used' in geometry:
-                            a_used = np.asarray(geometry['a_used'], float)
+                            used = np.asarray(geometry['a_used'], float)
+                            a_used = used if material is None else np.append(used, a_used[-1])
                             trial['step_m'] = a_used.tolist()
-                            trial['step_norm_m'] = float(np.linalg.norm(a_used))
+                            trial['step_norm_m'] = float(np.linalg.norm(used))
                             if feedback:
                                 trial['accepted_fraction'] = float(np.linalg.norm(a_used)/max(raw_norm, np.finfo(float).tiny))
                             if config.log_model or feedback:
@@ -355,7 +382,8 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, physics, forwar
                         trial.update(status="refused", reason="outside_domain")
                         continue
                     # A1–A4 → B5 at the trial curve.
-                    evaluation = evaluate(c_trial, "candidate")
+                    evaluation = evaluate(c_trial, "candidate",
+                                          contrast_value=None if material is None else trial['contrast'])
                     if evaluation is None:
                         trial.update(status='physics_failed', reason='production_evaluation_failed',
                                      physics_failures=deepcopy(failures))
@@ -385,6 +413,8 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, physics, forwar
             # rebuild J and g at the new state, then test the stopping conditions.
             # Callback, rebuild and stop-test order is part of the preserved behaviour.
             current, a_used, used_damping, trial = accepted
+            if material is not None:
+                contrast_now = trial['contrast']
             accepted_steps = iteration
             if config.damping_rule == 'agreement':
                 damping, trial['damping_feedback'] = c12_iteration.accepted_damping(used_damping, floor,
@@ -426,7 +456,7 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, physics, forwar
                 converged, stop_reason = True, "loss_tolerance"
             elif checks.gradient_converged(g, config.gradient_tolerance):
                 converged, stop_reason = True, "gradient_tolerance"
-            elif checks.step_too_small(a_used, scale, config.relative_step_tolerance):
+            elif _step_too_small(a_used, scale, config.relative_step_tolerance, material):
                 converged, stop_reason = True, "relative_step_tolerance"
     except StageQuota as exc:
         outcome, stop_reason, detail = STAGE_QUOTA, None, str(exc)
@@ -436,7 +466,7 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, physics, forwar
     final_entry = None
     if retain_final and current is not None and len(current.forwards) == m:
         final_entry = StageEntry(current.curve.coefficients.tobytes(), current.curve.band, stage.nodes,
-            tuple(stage.observations), float(contrast), physics, current.prediction, current.forwards)
+            tuple(stage.observations), contrast_now, physics, current.prediction, current.forwards)
     if diagnostics and counters is not None:
         counts = counters.snapshot()['counts']
         diagnostics['actual_calls'] = {key: counts.get(key, 0)-initial_counts.get(key, 0)
@@ -445,4 +475,19 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, physics, forwar
     return StageResult(stage.label, final, outcome, stop_reason, converged, accepted_steps, initial_loss,
                        float("nan") if current is None else current.loss, history, trials,
                        detail, ledger.snapshot(), perf_counter() - started, checkpoint,
-                       deepcopy(failures), geometry_proposals, final_entry, reusable, diagnostics)
+                       deepcopy(failures), geometry_proposals, final_entry, reusable, diagnostics,
+                       contrast=None if material is None else contrast_now)
+
+
+def _material_metric(H_GN, space, update, config, smoothing):
+    """The configured geometry metric plus a Marquardt entry for log(contrast)."""
+    D = np.zeros_like(H_GN)
+    D[:-1, :-1] = c9_lm.damping_matrix(H_GN[:-1, :-1], space, update, config, smoothing)
+    D[-1, -1] = max(H_GN[-1, -1], config.scaling_floor)
+    return D
+
+
+def _step_too_small(a, scale, tolerance, material):
+    if material is None:
+        return checks.step_too_small(a, scale, tolerance)
+    return checks.step_too_small(a[:-1], scale, tolerance) and abs(a[-1]) <= tolerance
