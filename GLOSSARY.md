@@ -46,6 +46,37 @@ One physics solve at one frequency, giving predicted measurements and
 boundary traces for a curve.
 _Avoid_: physics evaluation
 
+**Forward solver**:
+A method that computes the fields of a given scatterer. The method of
+moments (MoM), the boundary-element forward solve and GauGal's
+Gaussian–Galerkin operator are forward solvers.
+_Avoid_: solver (alone)
+
+**Inverse method**:
+A complete procedure that recovers a scatterer from measured fields, such as
+the boundary fit or GauGal's reconstruction. It uses a forward solver.
+_Avoid_: solver (alone)
+
+**Contrast**:
+The ratio of interior to exterior squared wavenumbers. For non-magnetic
+media it equals the relative permittivity ε_r of the object against its
+background.
+_Avoid_: contrast for ε_r − 1
+
+**Known-contrast fit**:
+A fit that is given the object's true contrast and estimates only its
+boundary.
+_Avoid_: known-material control
+
+**Material recovery**:
+Estimating the object's contrast together with its boundary, instead of
+supplying the true contrast.
+_Avoid_: joint estimation
+
+**Susceptibility**:
+ε_r − 1, written χ; GauGal and MoM call this "contrast". An object with
+ε_r = 1.3 has contrast 1.3 and susceptibility 0.3.
+
 **Physics context**:
 The object that holds one physics' execution settings, geometry caches and
 counters. Its forward solve and derivative use it; `make_backend` returns the
