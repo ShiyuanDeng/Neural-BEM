@@ -1,6 +1,7 @@
 # GauGal comparison, iteration 1: material recovery, forward check, GauGal on TG-002
 
-Prepared 2026-11-01 from a design discussion with the user. Not yet run.
+Prepared 2026-11-01 from a design discussion with the user. Execution and
+changed priorities are recorded in the dated amendments below.
 Experiment IDs: **MR-001** (BEM material recovery), **FW-001** (forward check,
 MoM as the classic baseline), **GGB-002** (GauGal on TG-002). GGB-001 is the
 earlier three-cylinder comparison kept in `~/Gau-Gal/docs/iterations/GGB-001/`.
@@ -375,3 +376,81 @@ two unstarted cases once each in separate directories under
 sequentially. This prevents one slow case from consuming the other's time.
 Do not repeat cog c13.3 or aphex c0.5. Preserve any timeout evidence, compare
 all four attempted cases together, then stop and commit and push the results.
+
+**S4b outcome (2026-11-02).** Aphex c4 completes in 149.46 s but is not
+recovered: RMS 0.2078 mm, Hausdorff upper bound 1.0025 mm, maximum data
+residual 0.003799 (limit 0.003), and maximum final Jacobian discrepancy
+0.00536. Aphex c13.3 reaches fixed_M85 before its 300 s limit (exit 124);
+preserve its stage files and checkpoint, with no final recovery claim.
+Together S4/S4b give two completed failures and two timeouts, no additional
+confirmed recoveries. The positive-bound refusal is removed as requested,
+but this experiment does not establish a recovery improvement.
+
+## User priority 2026-11-02: full BEM–GauGal comparison by morning
+
+**Question.** How does the best supported BEM implementation compare with
+GauGal across all 30 TG-002 cases, including unsuccessful fits?
+
+**User requirement.** "i expect to see full comparison of bem (the best
+version) vs gaugal on all 30 scenes by morning. is hti written in the plan"
+The original GGB-002 section included all 30 cases and a report, but no morning
+deadline. At 02:11 London time, BEM full campaigns R1/R2/S1/S2 are available;
+GauGal has no inverse results yet. S4b's two final BEM retries are running.
+
+**Target.** Deliver `report.md` in this folder by 08:00 London on 2026-11-02
+(working interpretation of "morning", subject to the user's correction).
+The report must include every case, images, shared image and boundary scores,
+field residuals, contrast estimates, runtime, and explicit failures/timeouts.
+All-case coverage does not imply all-case recovery. Do not claim a completed
+comparison until both methods have an outcome for every case.
+
+**BEM selection.** Finish S4b, then stop further BEM tuning for this delivery.
+Use saved full-campaign evidence to select the strongest supported setting,
+with a fixed selection rule stated before GauGal results are inspected.
+Working proposal: report supplied-contrast BEM and truth-free material recovery
+separately, since they use different information; the user has been asked
+which should be the main comparison. Do not silently mix per-case winners or
+use truth-assisted R3 starts as truth-free material recovery.
+
+**User confirmation.** "Both BEM versions, clearly separated." The report
+will contain supplied-contrast BEM, truth-free material recovery and GauGal
+for every case. Target time remains 08:00 London.
+
+**GauGal priority.** Proceed to GGB-002 without resuming the broad MoM sweep.
+Reuse the seven saved GauGal forward cases to inform a bounded settings and
+runtime check. Record the concrete settings, tuning count, frequency choice,
+iteration count, selection rule and remaining time budget before starting
+the inverse runs. Run a timed circle case first, then freeze one shared
+configuration after circle-only tuning and attempt all 30 cases. Report
+forward-model limitations and any frequency reduction explicitly. The earlier
+"GGB-002 waits" statement is superseded by this delivery priority.
+
+**Feasibility.** The deadline is a target, not a measured runtime guarantee:
+no GauGal inverse timing exists yet. Use that first run to choose a bounded
+campaign that fits the remaining time. If the measured cost prevents all 30
+from finishing, report this immediately and preserve the actual coverage;
+do not present missing cases as completed results.
+
+### GGB-002 T0: measure the full-frequency inverse runtime
+
+**Question.** Can a 19-frequency GauGal fit fit the remaining overnight budget,
+and does the adapter produce finite updates at its initial shared settings?
+
+**Evidence.** The saved seven-case forward sweep has no tested lattice within
+1% at 0.75 GHz and above for every tested case. Its best 0.25 GHz worst-case
+errors are 0.727% (51/.7), 0.333% (101/.7), and 0.131% (201/.35). Narrowing
+GauGal to 0.25 GHz would discard 18 of the 19 real frequencies. For the
+morning comparison, retain all 19 and report this forward-model limitation;
+the previous 1%-before-G2 rule is replaced by measured-error disclosure.
+No broad forward sweep or MoM continuation is planned.
+
+**Run.** One circle c4 timing fit, lattice 51, Gaussian width .7 times spacing,
+201-pixel quadrature, TV lambda scale .5, step 1, susceptibility bounds
+[-.9, 15], 10 outer iterations, released 100-iteration inner-solve cap,
+all 19 real frequencies. Fresh `GGB-002/T0_timing/`; 600 s outer time limit.
+This is a timing and finite-output check, not a final reconstruction.
+
+**Decision afterward.** Record build and iteration costs and the actual
+loss trajectory. Then preregister the bounded circle tuning and frozen
+all-30 run using the remaining time to 08:00. Do not infer GauGal's final
+quality from a ten-iteration timing fit. Preserve and commit this result.
