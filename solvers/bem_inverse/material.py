@@ -6,6 +6,8 @@ log(contrast). Its Jacobian column is a one-sided finite difference: one extra
 forward solve per active frequency at contrast * exp(derivative_step), charged
 to the ledger as ordinary solves. The damping metric gains the matching
 Marquardt entry, and each proposed log step is clipped to +-log_step_bound.
+Stages named in ``held_stages`` run as known-contrast stages at the current
+contrast (MR-001 R4 holds it in the damped warm-up).
 Known-contrast fits never construct this object, so their numbers are unchanged.
 """
 from dataclasses import asdict, dataclass
@@ -17,6 +19,7 @@ import numpy as np
 class MaterialUnknown:
     log_step_bound: float = .25
     derivative_step: float = 1e-6
+    held_stages: tuple = ()  # stage labels that keep the entry contrast fixed
 
     def __post_init__(self):
         if not (np.isfinite(self.log_step_bound) and self.log_step_bound > 0):
@@ -25,7 +28,8 @@ class MaterialUnknown:
             raise ValueError('derivative_step must be in (0, 1e-2)')
 
     def settings(self):
-        return dict(name='log_contrast_finite_difference', **asdict(self))
+        return dict(name='log_contrast_finite_difference', **{k: list(v) if isinstance(v, tuple) else v
+                                                            for k, v in asdict(self).items()})
 
     def bound(self, log_step):
         return float(np.clip(log_step, -self.log_step_bound, self.log_step_bound))

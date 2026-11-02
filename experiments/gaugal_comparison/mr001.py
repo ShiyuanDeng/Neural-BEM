@@ -133,10 +133,12 @@ def main():
     parser.add_argument('--start', choices=('weak', 'near_truth'), required=True)
     parser.add_argument('--settings-from', type=Path, required=True, help='known-contrast control run directory')
     parser.add_argument('--run-dir', type=Path, required=True)
+    parser.add_argument('--hold-warmup', action='store_true',
+                        help='R4: keep the start contrast fixed in warmup_025_damped')
     args = parser.parse_args()
     cases = list(S.CASES) if args.cases == ['all'] else args.cases
     settings = read(args.settings_from/'manifest.json')['settings']
-    material = MaterialUnknown()
+    material = MaterialUnknown(held_stages=('warmup_025_damped',) if args.hold_warmup else ())
     C.verify(C.INPUTS, require_inputs=True)
     rows = [C.row(c, C.INPUTS) for c in cases]
     manifest = dict(settings, material=material.settings(), contrast_start_rule=args.start,

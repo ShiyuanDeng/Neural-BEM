@@ -157,3 +157,39 @@ the traced boundary); fit time. Timed runs have the machine to themselves.
 - The 31 single-disk cylinders and GauGal's own datasets.
 - Material recovery stays a research option until R2 succeeds; the benchmark
   default is unchanged.
+
+## Amendment 2026-11-02: MR-001 R4, contrast held in the warm-up
+
+**Evidence.** R1 26/30. R2 (weak-scatterer start) 22/30: all 18 control
+successes at contrasts 0.5 and 4 recover with contrast within 1.4e-6, but only
+4 of 8 at 13.3. In asymmetric, cog, cross and peanut at 13.3, the contrast climbs
+from a start of 1.2–1.5 to 157–328 inside `warmup_025_damped`; the fit later
+fails numerically. R3 (start 1.2 × truth) recovers all four, and hook 13.3 too.
+The warm-up data barely constrain contrast at 13.3: R2's asymmetric warm-up
+reached a lower loss at contrast 185 (7.4e-3) than R3's at 9.4 (1.3e-2). In R2,
+paths that drifted to about 20 (kite, hook) were pulled back in later stages.
+
+**Hypothesis.** The single 0.25 GHz damped frequency cannot identify a dense
+object's contrast, so the warm-up wanders along a flat valley. Holding the
+contrast at its weak-scatterer start during the warm-up only, and freeing it
+from `stage_1_damped` onwards, where more frequencies constrain it, removes the
+runaway.
+
+**Changed condition.** Contrast held during `warmup_025_damped`. Everything else
+as R2, including the truth-free start.
+
+**Runs.** R4: all 30 cases, one run (about 10 minutes).
+
+**Stopping.** Adopt R4 as the material-recovery arm if it recovers all 18
+contrast-0.5/4 control successes, at least 3 of the 4 contrast-13.3 runaways,
+and keeps R2's 4 contrast-13.3 successes. Otherwise record it, report R2 and
+R3 as MR-001's answer, and allow at most one more follow-up under a new dated
+amendment.
+
+**R4 outcome (2026-11-02).** 20/30; the stopping rule is not met. Contrast 13.3
+recovered 3 (circle, c_shape, star; R2 had 4), and `kite__c4` was lost. Holding
+the low start contrast in the warm-up leaves it too low for the later stages,
+which fail numerically. The hypothesis is rejected. MR-001's answer is R2 with
+R3: truth-free material recovery works at contrasts 0.5 and 4; at 13.3 it
+needs a start near the truth. R2 is the material-recovery arm for GGB-002.
+No further MR-001 follow-up is run under this amendment.

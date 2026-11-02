@@ -1,0 +1,257 @@
+{
+  "stages": [
+    {
+      "stage": "warmup_025_damped",
+      "M": 1,
+      "K_geometry": 4,
+      "outcome": "NORMAL_OPTIMIZER_RETURN",
+      "stop": "no_decreasing_step",
+      "detail": null,
+      "accepted_steps": 17,
+      "initial_loss": 0.47673861039831805,
+      "final_loss": 0.47181942372887475,
+      "seconds": 0.7425388693809509,
+      "work": {
+        "work_units": 76,
+        "stage": "warmup_025_damped",
+        "stage_units": 76,
+        "stage_quota": 600,
+        "cap": 13412,
+        "solves": {
+          "warmup_025_damped:initial_objective": 1,
+          "warmup_025_damped:candidate": 57
+        },
+        "reciprocal_batches": {
+          "warmup_025_damped:derivative": 18
+        },
+        "failed": {},
+        "seconds": 0.7431500907987356
+      },
+      "curve": {
+        "real": [
+          -0.0007255833958062783,
+          0.0016403503739834276,
+          0.0014548932683006912,
+          -0.020870016884346025,
+          0.24155687168726797,
+          1.1158331261394139,
+          0.0004078597669364241,
+          -0.006591768985885734,
+          0.0005971902822376973
+        ],
+        "imag": [
+          2.4640352028477882e-05,
+          -0.001493804948259242,
+          0.004380816865441305,
+          -0.031267346302620014,
+          0.06703410267909606,
+          -0.020862532991938965,
+          -0.0002280449697755031,
+          0.010874126626328702,
+          -0.0022873803408632975
+        ]
+      },
+      "nodes": 512,
+      "entry_contrast": 1.2115192568625914,
+      "contrast": 1.2115192568625914,
+      "contrast_held": true,
+      "physics_failures": [],
+      "geometry_proposals": 57
+    },
+    {
+      "stage": "stage_1_damped",
+      "M": 3,
+      "K_geometry": 8,
+      "outcome": "NUMERICAL_FAILURE",
+      "stop": null,
+      "detail": "production evaluation failed at candidate state",
+      "accepted_steps": 5,
+      "initial_loss": 0.4399840647253104,
+      "final_loss": 0.2535022358328759,
+      "seconds": 1.5305053414776921,
+      "work": {
+        "work_units": 98,
+        "stage": "stage_1_damped",
+        "stage_units": 22,
+        "stage_quota": 1000,
+        "cap": 13412,
+        "solves": {
+          "warmup_025_damped:initial_objective": 1,
+          "warmup_025_damped:candidate": 57,
+          "stage_1_damped:initial_objective": 1,
+          "stage_1_damped:contrast_derivative": 6,
+          "stage_1_damped:candidate": 9
+        },
+        "reciprocal_batches": {
+          "warmup_025_damped:derivative": 18,
+          "stage_1_damped:derivative": 6
+        },
+        "failed": {
+          "stage_1_damped:candidate": 1
+        },
+        "seconds": 2.2816790491342545
+      },
+      "curve": {
+        "real": [
+          -0.0021067159485495006,
+          -0.004585721698834009,
+          0.003847788706661132,
+          0.008048940688817535,
+          -0.009908107912583234,
+          0.017261957640358462,
+          0.05459273712364893,
+          0.001387403002713736,
+          0.6197944648816835,
+          0.7069656623124156,
+          0.0032143610907242673,
+          -0.053080794229825264,
+          0.006071729631822703,
+          -0.003788821699683885,
+          0.023187524445927282,
+          -0.007431600427378675,
+          0.017727822113832448
+        ],
+        "imag": [
+          0.002049906974284202,
+          0.0013490477688582084,
+          -0.003739611031803189,
+          -0.005144825633523295,
+          0.04798256741417517,
+          -0.08831195027861817,
+          0.046461350733676014,
+          -0.09794041891308312,
+          0.30813527004867863,
+          -0.11439457733808499,
+          -0.05273707915708882,
+          0.07627267636055962,
+          0.013821916947685805,
+          0.05929787476652947,
+          0.008583687285731372,
+          0.0036133928168550983,
+          0.006176890500664535
+        ]
+      },
+      "nodes": 512,
+      "entry_contrast": 1.2115192568625914,
+      "contrast": 2.906283613453048,
+      "physics_failures": [
+        {
+          "exception_type": "ValueError",
+          "message": "|W|^2 lower bound not certified (coefficient residual 1.27).",
+          "traceback": "Traceback (most recent call last):\n  File \"/home/drdeng/Neural_SDF_BEM_AD_organised/solvers/bem_inverse/forward_batch.py\", line 25, in predict\n    state = forward_solve(curve, observation, contrast, nodes)\n  File \"/home/drdeng/Neural_SDF_BEM_AD_organised/solvers/bem_inverse/forward_solvers/modal_muller.py\", line 121, in forward_solve\n    prediction = _solve(curve, observation, contrast, trace_cutoff(int(resolution)), context=context)\n  File \"/home/drdeng/Neural_SDF_BEM_AD_organised/solvers/bem_inverse/forward_solvers/modal_muller.py\", line 142, in _solve\n    geometry, (A_f, radial, device, fallback) = assemble_matrix(curve, window, k, ki, cutoff, context=context)\n  File \"/home/drdeng/Neural_SDF_BEM_AD_organised/solvers/bem_inverse/forward_solvers/modal_muller.py\", line 209, in assemble_matrix\n    geometry = prepare_geometry(curve, window, device, context=context)\n  File \"/home/drdeng/Neural_SDF_BEM_AD_organised/solvers/bem_inverse/forward_solvers/modal_muller.py\", line 194, in prepare_geometry\n    slot[1] = DeviceModalGeometry(curve, window, device=device, **options)\n  File \"/home/drdeng/Neural_SDF_BEM_AD_organised/solvers/bem_inverse/modal_cuda.py\", line 229, in __init__\n    self.log, self.log_interval = log_modulus(_real_product(quotient, quotient, 2), band,\n  File \"/home/drdeng/Neural_SDF_BEM_AD_organised/solvers/bem_inverse/modal_cuda.py\", line 191, in log_modulus\n    checks.require_positive_certificate(lower, residual)\n  File \"/home/drdeng/Neural_SDF_BEM_AD_organised/solvers/bem_inverse/checks.py\", line 62, in require_positive_certificate\n    raise ValueError(f'|W|^2 lower bound not certified (coefficient residual {residual:.3g}).')\nValueError: |W|^2 lower bound not certified (coefficient residual 1.27).\n",
+          "category": "candidate",
+          "resolution": 512,
+          "frequency_hz": 500000000.0,
+          "wavenumber": {
+            "real": 1.283437720888494,
+            "imag": 0.3208594302221235
+          },
+          "candidate_sha256": "004d8932ee1ce1ba35c5d6a6b16077c54e4471d145af46ac25b650b9d464caee",
+          "candidate_coefficients": {
+            "real": [
+              -0.0014258615157262612,
+              -0.005287702870716152,
+              0.004738537016219241,
+              0.007224380252553548,
+              -0.006659852843788051,
+              0.012795685124517911,
+              0.05934828900288334,
+              -0.007860590083233216,
+              0.63237556073288,
+              0.6892426010938217,
+              0.013259100691009752,
+              -0.05916498577613607,
+              0.008289328367101882,
+              -0.007864578241445076,
+              0.02723767142465949,
+              -0.009198902652554894,
+              0.018589776946940275
+            ],
+            "imag": [
+              0.003261534004896197,
+              0.00032980739539469235,
+              -0.002805290788358221,
+              -0.007435377913400039,
+              0.051602212119678845,
+              -0.0924075782657791,
+              0.054042697025571976,
+              -0.1024817110889581,
+              0.2977093609147851,
+              -0.11064736963386489,
+              -0.05317811473096669,
+              0.07709330856271468,
+              0.015421895772825411,
+              0.056029992201818424,
+              0.011510088042816051,
+              0.0013902099908707326,
+              0.008214301788508306
+            ]
+          }
+        }
+      ],
+      "geometry_proposals": 14
+    }
+  ],
+  "curve": {
+    "real": [
+      -0.0021067159485495006,
+      -0.004585721698834009,
+      0.003847788706661132,
+      0.008048940688817535,
+      -0.009908107912583234,
+      0.017261957640358462,
+      0.05459273712364893,
+      0.001387403002713736,
+      0.6197944648816835,
+      0.7069656623124156,
+      0.0032143610907242673,
+      -0.053080794229825264,
+      0.006071729631822703,
+      -0.003788821699683885,
+      0.023187524445927282,
+      -0.007431600427378675,
+      0.017727822113832448
+    ],
+    "imag": [
+      0.002049906974284202,
+      0.0013490477688582084,
+      -0.003739611031803189,
+      -0.005144825633523295,
+      0.04798256741417517,
+      -0.08831195027861817,
+      0.046461350733676014,
+      -0.09794041891308312,
+      0.30813527004867863,
+      -0.11439457733808499,
+      -0.05273707915708882,
+      0.07627267636055962,
+      0.013821916947685805,
+      0.05929787476652947,
+      0.008583687285731372,
+      0.0036133928168550983,
+      0.006176890500664535
+    ]
+  },
+  "work": {
+    "work_units": 98,
+    "stage": "stage_1_damped",
+    "stage_units": 22,
+    "stage_quota": 1000,
+    "cap": 13412,
+    "solves": {
+      "warmup_025_damped:initial_objective": 1,
+      "warmup_025_damped:candidate": 57,
+      "stage_1_damped:initial_objective": 1,
+      "stage_1_damped:contrast_derivative": 6,
+      "stage_1_damped:candidate": 9
+    },
+    "reciprocal_batches": {
+      "warmup_025_damped:derivative": 18,
+      "stage_1_damped:derivative": 6
+    },
+    "failed": {
+      "stage_1_damped:candidate": 1
+    },
+    "seconds": 2.282543000765145
+  }
+}

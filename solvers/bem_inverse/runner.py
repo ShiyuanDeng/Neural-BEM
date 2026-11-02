@@ -189,11 +189,13 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
                         save('accepted.json', dict(states=accepted))
                     entry, carried = carried, None
                     # A–B–C. Run one resolved stage and retain its accepted endpoint.
+                    stage_material = (None if material is None or op.label in material.held_stages
+                                      else material)
                     result = fit_stage(curve, op.stage, contrast_now, update, op.optimizer, ledger,
                                        physics=physics, forward_solve=forward_solve, geometry_update=trial_curve,
                                        on_accept=accepted_state, resume=resumed_stage,
                                        entry=entry, retain_final=reuse_entries, penalty=penalty,
-                                       **({} if material is None else dict(material=material)))
+                                       **({} if stage_material is None else dict(material=stage_material)))
                     resumed_stage = None
                     curve = result.curve
                     carried = result.final_entry if reuse_entries else None
@@ -203,8 +205,11 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
                         final_loss=result.final_loss, seconds=result.seconds, work=ledger.snapshot(),
                         curve=record_curve(curve), nodes=op.stage.nodes)
                     if material is not None:
-                        row.update(entry_contrast=contrast_now, contrast=result.contrast)
-                        contrast_now = result.contrast
+                        if stage_material is not None:
+                            row.update(entry_contrast=contrast_now, contrast=result.contrast)
+                            contrast_now = result.contrast
+                        else:
+                            row.update(entry_contrast=contrast_now, contrast=contrast_now, contrast_held=True)
                     if result.diagnostics:
                         row.update(diagnostics=result.diagnostics, F=len(op.stage.observations),
                                    Ku=op.stage.nodes//8 if op.stage.resolution_kind == 'modal' else None)
