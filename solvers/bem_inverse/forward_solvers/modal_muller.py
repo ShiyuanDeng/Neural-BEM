@@ -76,7 +76,7 @@ class ModalSettings:
     radial_tolerance: float = 1e-15
     graf_tolerance: float = 1e-16
     series_loss: float = 1e-9
-    max_log_degree: int = 4000
+    max_log_degree: object = None
     cached_geometries: int = 4
     # Experimental independent accuracy slots. None preserves the historical
     # storage-to-trace profile and cutoff+margin coefficient window.

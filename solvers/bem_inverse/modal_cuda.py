@@ -141,7 +141,7 @@ class DeviceChebyshevArrays:
         return self._arrays[:self.count].numel()*16
 
 
-def log_modulus(ww, band, tolerance=1e-16, max_degree=4000):
+def log_modulus(ww, band, tolerance=1e-16, max_degree=None):
     """modal_geometry.log_modulus on the device; same interval rule and certificate."""
     started = perf_counter()
     device = ww.device
@@ -202,7 +202,7 @@ def log_modulus(ww, band, tolerance=1e-16, max_degree=4000):
 class DeviceModalGeometry:
     """modal_geometry.ModalGeometry with device operator arrays and CPU wave arrays."""
 
-    def __init__(self, curve, band, *, device='cuda', log_tolerance=1e-16, max_log_degree=4000):
+    def __init__(self, curve, band, *, device='cuda', log_tolerance=1e-16, max_log_degree=None):
         started = perf_counter()
         z = np.asarray(curve.coefficients, complex)
         k = curve.band

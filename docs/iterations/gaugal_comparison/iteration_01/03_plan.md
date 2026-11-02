@@ -257,6 +257,15 @@ hook c13.3 (RMS 0.0002 mm); loses hook c0.5 and cog c13.3, both ending in
 "production evaluation failed at candidate state". Aphex ×3 still fail (aphex c4
 reaches 0.34 mm but fails the final check). Summed time 607 s, median 13.7 s.
 
+**S2 outcome (2026-11-02).** 23/30 (9 / 9 / 5); R2 had 22. Recovered contrasts
+are within 8e-5 of truth. Material recovery recovers aphex c0.5 (RMS 0.068 mm),
+which no known-contrast fit has recovered, plus hook and peanut at 13.3. Circle
+c13.3 fails only the final Jacobian check (0.0026 against 1e-3; shape RMS
+7.6e-6 mm, residual 5e-7), as PS-003 saw for slider on circle c4 and aphex
+c13.3. Asymmetric and cross at 13.3 run away (to 123 and 74) from starts of
+1.45 and 1.21, the start problem seen in R2. Hook c0.5 and cog c13.3 fail as
+in S1. Median time 1.28× S1.
+
 ## Amendment 2026-11-02: S3, remove the default log-expansion degree cap
 
 **Question.** Does removing the 4,000-term cap let the two S1 cases that hit
@@ -294,11 +303,18 @@ failures did not hit this cap. Use a 15-minute outer time limit for the pair
 and preserve partial files if it is reached. These runs are the relevant
 code/result validation; commit and push the change and evidence afterward.
 
-**S2 outcome (2026-11-02).** 23/30 (9 / 9 / 5); R2 had 22. Recovered contrasts
-are within 8e-5 of truth. Material recovery recovers aphex c0.5 (RMS 0.068 mm),
-which no known-contrast fit has recovered, plus hook and peanut at 13.3. Circle
-c13.3 fails only the final Jacobian check (0.0026 against 1e-3; shape RMS
-7.6e-6 mm, residual 5e-7), as PS-003 saw for slider on circle c4 and aphex
-c13.3. Asymmetric and cross at 13.3 run away (to 123 and 74) from starts of
-1.45 and 1.21, the start problem seen in R2. Hook c0.5 and cog c13.3 fail as
-in S1. Median time 1.28× S1.
+**S3 outcome (2026-11-02).** Both runs finished; one recovered. Hook c0.5 now
+passes with RMS 0.00419 mm, Hausdorff upper bound 0.0473 mm and maximum field
+residual 3.22e-7. It took 18.20 s, versus S1's early stop at 2.42 s. Aphex c0.5
+passes the old degree limit but then fails the separate positive-lower-bound
+check (coefficient residual 1.98), at the same stage and accepted curve as S1:
+RMS 5.975 mm, 11.10 s versus 8.36 s. The GPU was free of compute jobs before
+S3 started. The run command exited 0 and retained both result files.
+
+**Validation and conclusion.** The saved hook trial also succeeds in the CPU
+implementation at 4,354 terms with the unchanged 1e-16 series target; receipt
+in `S3_slider_no_log_cap/cpu_replay.json`. The cap was the obstacle for hook,
+but removing it does not resolve aphex's lower-bound failure. Combining S1
+with these two replacements gives 26/30; this is not a new full 30-case run.
+Cog c13.3 and aphex c4/c13.3 were not rerun because their recorded failures
+were lower-bound failures, not degree-cap failures.

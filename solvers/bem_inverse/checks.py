@@ -37,7 +37,7 @@ def log_tail_exceeds(ratio, degree, tolerance):
 
 
 def require_log_degree(degree, maximum, beta, upper):
-    if degree > maximum:
+    if maximum is not None and degree > maximum:
         raise ValueError(f'log|W|^2 needs more than {maximum} Chebyshev terms '
                          f'(beta/Lambda={beta/upper:.3g}); curve is nearly self-touching.')
 

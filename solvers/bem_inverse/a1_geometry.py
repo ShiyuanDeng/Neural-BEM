@@ -144,9 +144,10 @@ class ChebyshevArrays:
         return self._arrays[:self.count].nbytes
 
 
-def log_modulus(ww, band, tolerance=1e-16, max_degree=4000, workers=1):
+def log_modulus(ww, band, tolerance=1e-16, max_degree=None, workers=1):
     """Coefficients of log|W|^2 with a residual-based interval [beta, Lambda].
 
+    The accuracy target selects the degree; there is no default degree cap.
     Lambda is the coefficient triangle bound. beta starts at half the sampled
     minimum. The same Chebyshev arrays also build v ~ 1/|W|^2. If the complete
     (untruncated) product obeys r=||1-|W|^2 v||_1<1, then on the torus
@@ -262,7 +263,7 @@ class WaveArrays:
 class ModalGeometry:
     """Everything the modal operator needs from one curve at one window B."""
 
-    def __init__(self, curve, band, *, log_tolerance=1e-16, max_log_degree=4000, workers=1):
+    def __init__(self, curve, band, *, log_tolerance=1e-16, max_log_degree=None, workers=1):
         started = perf_counter()
         z = np.asarray(curve.coefficients, complex)
         k = curve.band
