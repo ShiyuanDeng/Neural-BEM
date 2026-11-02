@@ -206,6 +206,7 @@ def diagnostic_bem(destination):
         'while fixed_M85 was active. Last completed-stage checkpoint: fixed_M79 at 289.0 s of fit work. '
         'No final numerical checks or recovery score exist. | '
         + link(prefix+'S4b_slider_sampled_log_interval/aphex_twin__c13.3/exit_code.txt', destination, 'exit 124')+', '
+        + link(prefix+'S4b_slider_sampled_log_interval/aphex_twin__c13.3/run.log', destination, 'active-stage log')+', '
         + link(prefix+'S4b_slider_sampled_log_interval/aphex_twin__c13.3/runs/aphex_twin__c13.3/checkpoint.json', destination, 'checkpoint')+' |',
         '', 'The timeout records establish budget exhaustion. They do not establish that either '
         'fit would recover with more time. The saved active stages distinguish time spent '
@@ -322,6 +323,9 @@ def make_report(preview=False):
         'Three separate arms use the same noiseless TG-002 real-frequency observations and geometry. '
         'BEM with supplied contrast knows the true contrast. BEM material recovery and GauGal estimate it. '
         'BEM also uses damped-frequency continuation data; GauGal uses the 19 real frequencies only.', '',
+        'The [frozen TG-002 benchmark](../../../../experiments/benchmark/README.md) supplies '
+        'ten shapes at contrasts 0.5, 4 and 13.3 in a background of relative permittivity 6. '
+        'The real frequencies span 0.25–2.5 GHz; all starts and measurement data are retained.', '',
         '## Aggregate results', '',
         '| Arm | Saved images | Finite boundaries | Shared shape/field limits | Full BEM recovery | Median RMS mm | '
         'Median image RRMSE | Median recorded seconds |',
@@ -402,8 +406,8 @@ def make_report(preview=False):
         'the final prediction. Their convergence tolerance is 1e-4. The saved `completed` status '
         'means the iteration budget finished, not that an accuracy target was reached.', '',
         '**Forward-model limitation.** The existing seven-case sweep did not identify any tested '
-        'lattice meeting 1% error across those cases at 0.75 GHz and above. All 19 real frequencies '
-        'are retained here rather than discarding 18 frequencies. Thus this measures this TG-002 '
+        'lattice meeting 1% error across those cases at the tested frequencies from 0.75 GHz upwards. '
+        'All 19 real frequencies are retained under the morning-priority amendment. This measures this TG-002 '
         'adaptation under its stated budget; it is not a reproduction of GauGal’s published benchmark '
         'and does not establish an intrinsic ranking of the methods.', '',
         '**Scores and times.** All three image arms are rasterized on the same 1 mm grid. RRMSE, SSIM and '

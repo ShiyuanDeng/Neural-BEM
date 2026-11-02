@@ -1,20 +1,38 @@
 # BEM and GauGal on TG-002 — 30-case comparison
 
-Generated 2026-11-02 02:40:12 GMT.
+Generated 2026-11-02 05:46:17 GMT.
 
-**INCOMPLETE:** GauGal outcomes for 0/30 cases. Failed and time-limited outcomes are retained.
+**All cases attempted:** GauGal outcomes for 30/30 cases. Failed and time-limited outcomes are retained.
 
 Three separate arms use the same noiseless TG-002 real-frequency observations and geometry. BEM with supplied contrast knows the true contrast. BEM material recovery and GauGal estimate it. BEM also uses damped-frequency continuation data; GauGal uses the 19 real frequencies only.
 
+The [frozen TG-002 benchmark](../../../../experiments/benchmark/README.md) supplies ten shapes at contrasts 0.5, 4 and 13.3 in a background of relative permittivity 6. The real frequencies span 0.25–2.5 GHz; all starts and measurement data are retained.
+
 ## Aggregate results
 
-| Arm | Saved images | Shared shape/field limits | Full BEM recovery | Median RMS mm | Median image RRMSE | Median recorded seconds |
-|---|---:|---:|---:|---:|---:|---:|
-| BEM: supplied contrast | 30 | 26 | 26 | 0.00336 | 0.000946 | 14.1 |
-| BEM: recovered contrast | 30 | 26 | 23 | 0.00721 | 0.00122 | 18.3 |
-| GauGal | 0 | 0 | not applicable | — | — | — |
+| Arm | Saved images | Finite boundaries | Shared shape/field limits | Full BEM recovery | Median RMS mm | Median image RRMSE | Median recorded seconds |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| BEM: supplied contrast | 30 | 30 | 26 | 26 | 0.00336 | 0.000946 | 14.1 |
+| BEM: recovered contrast | 30 | 30 | 26 | 23 | 0.00721 | 0.00122 | 18.3 |
+| GauGal | 30 | 29 | 0 | not applicable | 25.2 | 0.277 | 340 |
 
 Shared limits are RMS ≤ 1 mm, Hausdorff upper bound ≤ 2 mm and maximum relative field residual ≤ 0.003. Full BEM recovery additionally requires its independent final numerical checks. GauGal has no equivalent BEM Jacobian check; its shared-limit count is not claimed as full TG-002 numerical qualification.
+
+### Results by contrast
+
+| Contrast | Arm | Full BEM recovery | Shared limits met | Finite boundaries | Median RMS mm | Median max field residual | Median image RRMSE |
+|---:|---|---:|---:|---:|---:|---:|---:|
+| 0.5 | BEM: supplied contrast | 9 | 9/10 | 10/10 | 0.0077 | 1.7e-06 | 0.00066 |
+| 0.5 | BEM: recovered contrast | 9 | 9/10 | 10/10 | 0.0118 | 3.39e-06 | 0.00101 |
+| 0.5 | GauGal | not applicable | 0/10 | 10/10 | 2.01 | 0.203 | 0.0921 |
+| 4 | BEM: supplied contrast | 9 | 9/10 | 10/10 | 0.00388 | 2.34e-06 | 0.00101 |
+| 4 | BEM: recovered contrast | 9 | 10/10 | 10/10 | 0.004 | 1.73e-06 | 0.00104 |
+| 4 | GauGal | not applicable | 0/10 | 9/10 | 40.4 | 1.01 | 0.298 |
+| 13.3 | BEM: supplied contrast | 8 | 8/10 | 10/10 | 0.000888 | 1.13e-06 | 0.00133 |
+| 13.3 | BEM: recovered contrast | 5 | 7/10 | 10/10 | 0.00465 | 2.07e-05 | 0.00281 |
+| 13.3 | GauGal | not applicable | 0/10 | 10/10 | 28.3 | 1 | 0.365 |
+
+Medians include unsuccessful outputs with finite scores. Missing contours contribute no boundary value; the finite-boundary counts show those exclusions.
 
 ![Errors across all cases](comparison_figures/errors.png)
 
@@ -24,40 +42,40 @@ Triples below are **supplied-contrast BEM / material-recovery BEM / GauGal**. A 
 
 | Case | RMS mm | Maximum field residual | Image RRMSE | GauGal status / iterations |
 |---|---|---|---|---|
-| circle__c0.5 | 7.64e-06 / 7.56e-06 / — | 8.88e-08 / 6.12e-08 / — | 0 / 5.69e-10 / — | not_run / — |
-| circle__c4 | 1.06e-05 / 8.6e-06 / — | 6.25e-06 / 1.73e-06 / — | 0 / 6.44e-09 / — | not_run / — |
-| circle__c13.3 | 7.58e-06 / 7.6e-06 / — | 1.06e-07 / 4.62e-07 / — | 0 / 7.17e-11 / — | not_run / — |
-| kite__c0.5 | 0.0119 / 0.0124 / — | 3.55e-06 / 4.36e-06 / — | 0.000737 / 0.000823 / — | not_run / — |
-| kite__c4 | 0.0157 / 0.0178 / — | 1.7e-05 / 2e-05 / — | 0.00219 / 0.00248 / — | not_run / — |
-| kite__c13.3 | 0.0138 / 0.0145 / — | 3.79e-05 / 4.01e-05 / — | 0.00429 / 0.00429 / — | not_run / — |
-| peanut__c0.5 | 0.00242 / 0.00252 / — | 1.13e-07 / 1.16e-07 / — | 0.000444 / 0.000417 / — | not_run / — |
-| peanut__c4 | 0.00151 / 0.00152 / — | 1.97e-07 / 2e-07 / — | 0.000547 / 0.000547 / — | not_run / — |
-| peanut__c13.3 | 0.00052 / 0.00145 / — | 9.86e-08 / 2.63e-07 / — | 0.001 / 0.00126 / — | not_run / — |
-| star__c0.5 | 0.0211 / 0.0214 / — | 7.15e-06 / 3.01e-06 / — | 0.00178 / 0.00176 / — | not_run / — |
-| star__c4 | 0.00374 / 0.00371 / — | 7.71e-07 / 7.83e-07 / — | 0.00109 / 0.00112 / — | not_run / — |
-| star__c13.3 | 0.00126 / 0.00111 / — | 3.22e-07 / 2.16e-07 / — | 0.00165 / 0.0016 / — | not_run / — |
-| asymmetric__c0.5 | 0.0112 / 0.0109 / — | 3.07e-06 / 3.77e-06 / — | 0.00096 / 0.000944 / — | not_run / — |
-| asymmetric__c4 | 0.00402 / 0.00429 / — | 1.42e-06 / 1.72e-06 / — | 0.000931 / 0.000957 / — | not_run / — |
-| asymmetric__c13.3 | 0.00297 / 37 / — | 1.94e-06 / 1.68 / — | 0.00166 / 0.41 / — | not_run / — |
-| c_shape__c0.5 | 0.0026 / 0.00295 / — | 3.15e-07 / 3.9e-07 / — | 0.000402 / 0.000488 / — | not_run / — |
-| c_shape__c4 | 0.000883 / 0.000883 / — | 3e-07 / 3.26e-07 / — | 0.000492 / 0.000467 / — | not_run / — |
-| c_shape__c13.3 | 3.76e-05 / 4.79e-05 / — | 3.1e-06 / 1.27e-06 / — | 0 / 3.04e-08 / — | not_run / — |
-| hook__c0.5 | 0.00419 / 4.35 / — | 3.22e-07 / 1.49 / — | 0.000583 / 0.165 / — | not_run / — |
-| hook__c4 | 0.00966 / 0.00657 / — | 8.69e-06 / 6.53e-06 / — | 0.00199 / 0.00139 / — | not_run / — |
-| hook__c13.3 | 0.00023 / 0.00103 / — | 3.19e-07 / 2.6e-07 / — | 0.000495 / 0.00117 / — | not_run / — |
-| cross__c0.5 | 0.00293 / 0.0113 / — | 2.55e-07 / 2.04e-06 / — | 0.0004 / 0.00107 / — | not_run / — |
-| cross__c4 | 0.00202 / 0.00204 / — | 5.18e-07 / 5.06e-07 / — | 0.000681 / 0.000727 / — | not_run / — |
-| cross__c13.3 | 0.000148 / 34.5 / — | 1.02e-07 / 1.5 / — | 0.000169 / 0.364 / — | not_run / — |
-| cog__c0.5 | 0.0481 / 0.0486 / — | 9.21e-06 / 8.86e-06 / — | 0.00319 / 0.0032 / — | not_run / — |
-| cog__c4 | 0.00841 / 0.00809 / — | 3.27e-06 / 3.3e-06 / — | 0.00172 / 0.00171 / — | not_run / — |
-| cog__c13.3 | 0.472 / 3.25 / — | 0.247 / 1.49 / — | 0.22 / 0.556 / — | not_run / — |
-| aphex_twin__c0.5 | 5.98 / 0.0683 / — | 1.75 / 7.24e-06 / — | 0.185 / 0.00426 / — | not_run / — |
-| aphex_twin__c4 | 0.338 / 0.0791 / — | 0.0089 / 0.000967 / — | 0.0428 / 0.00914 / — | not_run / — |
-| aphex_twin__c13.3 | 2.53 / 0.00785 / — | 1.01 / 5.48e-05 / — | 1.09 / 0.00401 / — | not_run / — |
+| circle__c0.5 | 7.64e-06 / 7.56e-06 / 28.4 | 8.88e-08 / 6.12e-08 / 0.952 | 0 / 5.69e-10 / 0.351 | completed / 80 |
+| circle__c4 | 1.06e-05 / 8.6e-06 / — | 6.25e-06 / 1.73e-06 / 1.05 | 0 / 6.44e-09 / 0.332 | completed / 80 |
+| circle__c13.3 | 7.58e-06 / 7.6e-06 / 14.6 | 1.06e-07 / 4.62e-07 / 1.08 | 0 / 7.17e-11 / 0.412 | completed / 80 |
+| kite__c0.5 | 0.0119 / 0.0124 / 1.91 | 3.55e-06 / 4.36e-06 / 0.0836 | 0.000737 / 0.000823 / 0.0687 | completed / 80 |
+| kite__c4 | 0.0157 / 0.0178 / 35.2 | 1.7e-05 / 2e-05 / 1.01 | 0.00219 / 0.00248 / 0.212 | completed / 80 |
+| kite__c13.3 | 0.0138 / 0.0145 / 25.7 | 3.79e-05 / 4.01e-05 / 1.02 | 0.00429 / 0.00429 / 0.258 | completed / 80 |
+| peanut__c0.5 | 0.00242 / 0.00252 / 1.86 | 1.13e-07 / 1.16e-07 / 0.167 | 0.000444 / 0.000417 / 0.0825 | completed / 80 |
+| peanut__c4 | 0.00151 / 0.00152 / 26.1 | 1.97e-07 / 2e-07 / 1.01 | 0.000547 / 0.000547 / 0.264 | completed / 80 |
+| peanut__c13.3 | 0.00052 / 0.00145 / 14.4 | 9.86e-08 / 2.63e-07 / 0.997 | 0.001 / 0.00126 / 0.328 | completed / 80 |
+| star__c0.5 | 0.0211 / 0.0214 / 2.38 | 7.15e-06 / 3.01e-06 / 0.31 | 0.00178 / 0.00176 / 0.12 | completed / 80 |
+| star__c4 | 0.00374 / 0.00371 / 84.9 | 7.71e-07 / 7.83e-07 / 1.01 | 0.00109 / 0.00112 / 0.338 | completed / 80 |
+| star__c13.3 | 0.00126 / 0.00111 / 44.7 | 3.22e-07 / 2.16e-07 / 1 | 0.00165 / 0.0016 / 0.42 | completed / 80 |
+| asymmetric__c0.5 | 0.0112 / 0.0109 / 1.79 | 3.07e-06 / 3.77e-06 / 0.238 | 0.00096 / 0.000944 / 0.0915 | completed / 80 |
+| asymmetric__c4 | 0.00402 / 0.00429 / 44 | 1.42e-06 / 1.72e-06 / 1.01 | 0.000931 / 0.000957 / 0.31 | completed / 80 |
+| asymmetric__c13.3 | 0.00297 / 37 / 32.6 | 1.94e-06 / 1.68 / 1 | 0.00166 / 0.41 / 0.384 | completed / 80 |
+| c_shape__c0.5 | 0.0026 / 0.00295 / 2.05 | 3.15e-07 / 3.9e-07 / 0.253 | 0.000402 / 0.000488 / 0.11 | completed / 80 |
+| c_shape__c4 | 0.000883 / 0.000883 / 85.2 | 3e-07 / 3.26e-07 / 1.01 | 0.000492 / 0.000467 / 0.307 | completed / 80 |
+| c_shape__c13.3 | 3.76e-05 / 4.79e-05 / 42.5 | 3.1e-06 / 1.27e-06 / 0.998 | 0 / 3.04e-08 / 0.378 | completed / 80 |
+| hook__c0.5 | 0.00419 / 4.35 / 1.32 | 3.22e-07 / 1.49 / 0.135 | 0.000583 / 0.165 / 0.0928 | completed / 80 |
+| hook__c4 | 0.00966 / 0.00657 / 25.2 | 8.69e-06 / 6.53e-06 / 1.01 | 0.00199 / 0.00139 / 0.264 | completed / 80 |
+| hook__c13.3 | 0.00023 / 0.00103 / 31 | 3.19e-07 / 2.6e-07 / 1 | 0.000495 / 0.00117 / 0.324 | completed / 80 |
+| cross__c0.5 | 0.00293 / 0.0113 / 1.97 | 2.55e-07 / 2.04e-06 / 0.169 | 0.0004 / 0.00107 / 0.0871 | completed / 80 |
+| cross__c4 | 0.00202 / 0.00204 / 40.4 | 5.18e-07 / 5.06e-07 / 1.03 | 0.000681 / 0.000727 / 0.29 | completed / 80 |
+| cross__c13.3 | 0.000148 / 34.5 / 95.5 | 1.02e-07 / 1.5 / 1.01 | 0.000169 / 0.364 / 0.352 | completed / 80 |
+| cog__c0.5 | 0.0481 / 0.0486 / 2.24 | 9.21e-06 / 8.86e-06 / 0.315 | 0.00319 / 0.0032 / 0.0955 | completed / 80 |
+| cog__c4 | 0.00841 / 0.00809 / 91.3 | 3.27e-06 / 3.3e-06 / 1.04 | 0.00172 / 0.00171 / 0.312 | completed / 80 |
+| cog__c13.3 | 0.472 / 3.25 / 17.8 | 0.247 / 1.49 / 1.05 | 0.22 / 0.556 / 0.386 | completed / 80 |
+| aphex_twin__c0.5 | 5.98 / 0.0683 / 2.63 | 1.75 / 7.24e-06 / 0.114 | 0.185 / 0.00426 / 0.0818 | completed / 80 |
+| aphex_twin__c4 | 0.338 / 0.0791 / 19.2 | 0.0089 / 0.000967 / 0.963 | 0.0428 / 0.00914 / 0.186 | completed / 80 |
+| aphex_twin__c13.3 | 2.53 / 0.00785 / 23.7 | 1.01 / 5.48e-05 / 1 | 1.09 / 0.00401 / 0.232 | completed / 80 |
 
 ## Complete scores for each arm
 
-Contrast error is signed relative error in percent. PSNR and contrast SNR are in dB. All rows, including unsuccessful fits, contribute to the reported medians.
+Contrast error is signed relative error in percent. PSNR and contrast SNR are in dB. Medians use available finite scores, including unsuccessful fits. Missing traces are excluded from boundary medians.
 
 ### BEM: supplied contrast
 
@@ -269,104 +287,104 @@ Contrast error is signed relative error in percent. PSNR and contrast SNR are in
 
 | Case | RMS mm | Hausdorff upper mm | Max field residual | Contrast | Error % | Seconds | Recovery |
 |---|---:|---:|---:|---:|---:|---:|---|
-| circle__c0.5 | — | — | — | — | — | — | not attempted |
-| circle__c4 | — | — | — | — | — | — | not attempted |
-| circle__c13.3 | — | — | — | — | — | — | not attempted |
-| kite__c0.5 | — | — | — | — | — | — | not attempted |
-| kite__c4 | — | — | — | — | — | — | not attempted |
-| kite__c13.3 | — | — | — | — | — | — | not attempted |
-| peanut__c0.5 | — | — | — | — | — | — | not attempted |
-| peanut__c4 | — | — | — | — | — | — | not attempted |
-| peanut__c13.3 | — | — | — | — | — | — | not attempted |
-| star__c0.5 | — | — | — | — | — | — | not attempted |
-| star__c4 | — | — | — | — | — | — | not attempted |
-| star__c13.3 | — | — | — | — | — | — | not attempted |
-| asymmetric__c0.5 | — | — | — | — | — | — | not attempted |
-| asymmetric__c4 | — | — | — | — | — | — | not attempted |
-| asymmetric__c13.3 | — | — | — | — | — | — | not attempted |
-| c_shape__c0.5 | — | — | — | — | — | — | not attempted |
-| c_shape__c4 | — | — | — | — | — | — | not attempted |
-| c_shape__c13.3 | — | — | — | — | — | — | not attempted |
-| hook__c0.5 | — | — | — | — | — | — | not attempted |
-| hook__c4 | — | — | — | — | — | — | not attempted |
-| hook__c13.3 | — | — | — | — | — | — | not attempted |
-| cross__c0.5 | — | — | — | — | — | — | not attempted |
-| cross__c4 | — | — | — | — | — | — | not attempted |
-| cross__c13.3 | — | — | — | — | — | — | not attempted |
-| cog__c0.5 | — | — | — | — | — | — | not attempted |
-| cog__c4 | — | — | — | — | — | — | not attempted |
-| cog__c13.3 | — | — | — | — | — | — | not attempted |
-| aphex_twin__c0.5 | — | — | — | — | — | — | not attempted |
-| aphex_twin__c4 | — | — | — | — | — | — | not attempted |
-| aphex_twin__c13.3 | — | — | — | — | — | — | not attempted |
+| circle__c0.5 | 28.391 | 77.719 | 0.95198 | 0.83749 | 67.498 | 341.39 | shared limits not met |
+| circle__c4 | — | — | 1.0545 | — | — | 331.95 | shared limits not met |
+| circle__c13.3 | 14.553 | 15.193 | 1.0772 | 1.0179 | -92.346 | 346.95 | shared limits not met |
+| kite__c0.5 | 1.913 | 6.8521 | 0.083619 | 0.5447 | 8.9406 | 331.86 | shared limits not met |
+| kite__c4 | 35.215 | 79.01 | 1.0101 | 0.82523 | -79.369 | 338.03 | shared limits not met |
+| kite__c13.3 | 25.671 | 57.171 | 1.0179 | 1.1795 | -91.131 | 345.94 | shared limits not met |
+| peanut__c0.5 | 1.8569 | 4.2164 | 0.16709 | 0.54648 | 9.2957 | 383.38 | shared limits not met |
+| peanut__c4 | 26.144 | 57.204 | 1.0102 | 0.87525 | -78.119 | 347.38 | shared limits not met |
+| peanut__c13.3 | 14.396 | 19.862 | 0.99745 | 0.92517 | -93.044 | 358.05 | shared limits not met |
+| star__c0.5 | 2.382 | 5.6358 | 0.31026 | 0.56887 | 13.775 | 402.37 | shared limits not met |
+| star__c4 | 84.944 | 153.01 | 1.0061 | 1.1121 | -72.198 | 326.45 | shared limits not met |
+| star__c13.3 | 44.663 | 96.109 | 1.0026 | 1.145 | -91.391 | 328.68 | shared limits not met |
+| asymmetric__c0.5 | 1.7874 | 4.1813 | 0.23753 | 0.54338 | 8.6769 | 401.44 | shared limits not met |
+| asymmetric__c4 | 43.986 | 101.34 | 1.0116 | 0.88652 | -77.837 | 326.4 | shared limits not met |
+| asymmetric__c13.3 | 32.611 | 75.263 | 1.0042 | 1.1506 | -91.349 | 330.89 | shared limits not met |
+| c_shape__c0.5 | 2.0516 | 5.6781 | 0.2532 | 0.56684 | 13.368 | 407.16 | shared limits not met |
+| c_shape__c4 | 85.228 | 144.79 | 1.0054 | 1.1685 | -70.787 | 339.18 | shared limits not met |
+| c_shape__c13.3 | 42.47 | 94.745 | 0.99835 | 1.1185 | -91.59 | 329.01 | shared limits not met |
+| hook__c0.5 | 1.3237 | 3.0458 | 0.13481 | 0.56984 | 13.968 | 365.52 | shared limits not met |
+| hook__c4 | 25.161 | 41.949 | 1.0052 | 1.1876 | -70.31 | 333.3 | shared limits not met |
+| hook__c13.3 | 31.028 | 75.503 | 1.0024 | 1.1934 | -91.027 | 320.14 | shared limits not met |
+| cross__c0.5 | 1.9652 | 3.9083 | 0.16935 | 0.54761 | 9.5229 | 384.04 | shared limits not met |
+| cross__c4 | 40.399 | 94.836 | 1.0312 | 0.81445 | -79.639 | 348.8 | shared limits not met |
+| cross__c13.3 | 95.483 | 155.68 | 1.0073 | 0.87844 | -93.395 | 343.88 | shared limits not met |
+| cog__c0.5 | 2.2387 | 4.9053 | 0.3155 | 0.54371 | 8.7411 | 392.76 | shared limits not met |
+| cog__c4 | 91.317 | 154.12 | 1.0356 | 1.0987 | -72.531 | 331.29 | shared limits not met |
+| cog__c13.3 | 17.766 | 56.851 | 1.054 | 0.96829 | -92.72 | 368.71 | shared limits not met |
+| aphex_twin__c0.5 | 2.6309 | 10.792 | 0.11422 | 0.60766 | 21.533 | 317.74 | shared limits not met |
+| aphex_twin__c4 | 19.234 | 56.377 | 0.96311 | 1.2633 | -68.417 | 336.28 | shared limits not met |
+| aphex_twin__c13.3 | 23.701 | 72.205 | 1.0014 | 1.1938 | -91.024 | 326.59 | shared limits not met |
 
 | Case | RRMSE | SSIM | PSNR dB | Contrast SNR dB |
 |---|---:|---:|---:|---:|
-| circle__c0.5 | — | — | — | — |
-| circle__c4 | — | — | — | — |
-| circle__c13.3 | — | — | — | — |
-| kite__c0.5 | — | — | — | — |
-| kite__c4 | — | — | — | — |
-| kite__c13.3 | — | — | — | — |
-| peanut__c0.5 | — | — | — | — |
-| peanut__c4 | — | — | — | — |
-| peanut__c13.3 | — | — | — | — |
-| star__c0.5 | — | — | — | — |
-| star__c4 | — | — | — | — |
-| star__c13.3 | — | — | — | — |
-| asymmetric__c0.5 | — | — | — | — |
-| asymmetric__c4 | — | — | — | — |
-| asymmetric__c13.3 | — | — | — | — |
-| c_shape__c0.5 | — | — | — | — |
-| c_shape__c4 | — | — | — | — |
-| c_shape__c13.3 | — | — | — | — |
-| hook__c0.5 | — | — | — | — |
-| hook__c4 | — | — | — | — |
-| hook__c13.3 | — | — | — | — |
-| cross__c0.5 | — | — | — | — |
-| cross__c4 | — | — | — | — |
-| cross__c13.3 | — | — | — | — |
-| cog__c0.5 | — | — | — | — |
-| cog__c4 | — | — | — | — |
-| cog__c13.3 | — | — | — | — |
-| aphex_twin__c0.5 | — | — | — | — |
-| aphex_twin__c4 | — | — | — | — |
-| aphex_twin__c13.3 | — | — | — | — |
+| circle__c0.5 | 0.35148 | 0.86149 | 14.512 | 1.3496 |
+| circle__c4 | 0.33177 | 0.53999 | 9.6665 | 0.025853 |
+| circle__c13.3 | 0.41177 | 0.2729 | 7.8456 | 0.024823 |
+| kite__c0.5 | 0.06867 | 0.92461 | 27.322 | 9.87 |
+| kite__c4 | 0.21202 | 0.48372 | 14.201 | 0.27046 |
+| kite__c13.3 | 0.25778 | 0.19245 | 12.162 | 0.050894 |
+| peanut__c0.5 | 0.082489 | 0.88489 | 25.589 | 10.251 |
+| peanut__c4 | 0.26399 | 0.48455 | 11.913 | 0.096182 |
+| peanut__c13.3 | 0.32769 | 0.202 | 9.9948 | -0.0019852 |
+| star__c0.5 | 0.12026 | 0.8232 | 22.183 | 9.1454 |
+| star__c4 | 0.33821 | 0.51651 | 9.5619 | 0.046514 |
+| star__c13.3 | 0.42039 | 0.25444 | 7.7315 | 0.035971 |
+| asymmetric__c0.5 | 0.091485 | 0.86872 | 24.13 | 10.344 |
+| asymmetric__c4 | 0.31006 | 0.49884 | 10.33 | 0.066249 |
+| asymmetric__c13.3 | 0.3843 | 0.24695 | 8.4804 | 0.036142 |
+| c_shape__c0.5 | 0.11025 | 0.83508 | 22.341 | 8.3687 |
+| c_shape__c4 | 0.30695 | 0.48879 | 10.499 | 0.048952 |
+| c_shape__c13.3 | 0.37787 | 0.22655 | 8.6479 | 0.017381 |
+| hook__c0.5 | 0.092775 | 0.84984 | 24.138 | 8.7811 |
+| hook__c4 | 0.26404 | 0.48929 | 11.907 | 0.071577 |
+| hook__c13.3 | 0.32429 | 0.20527 | 10.076 | 0.060317 |
+| cross__c0.5 | 0.087078 | 0.87981 | 25.075 | 10.435 |
+| cross__c4 | 0.28994 | 0.48189 | 11.049 | -0.068235 |
+| cross__c13.3 | 0.35215 | 0.21743 | 9.331 | 0.033137 |
+| cog__c0.5 | 0.0955 | 0.85527 | 23.852 | 10.052 |
+| cog__c4 | 0.31204 | 0.48918 | 10.246 | -0.03191 |
+| cog__c13.3 | 0.38605 | 0.23879 | 8.4666 | 0.0081462 |
+| aphex_twin__c0.5 | 0.081803 | 0.9075 | 25.541 | 7.0327 |
+| aphex_twin__c4 | 0.18634 | 0.49536 | 15.321 | 0.33433 |
+| aphex_twin__c13.3 | 0.23188 | 0.17122 | 13.234 | 0.067413 |
 
 ### GauGal: per-case stopping and failure reasons
 
 | Case | Recorded stop | Observed reason / remaining failure | Saved evidence |
 |---|---|---|---|
-| circle__c0.5 | not_run | No saved outcome yet. | — |
-| circle__c4 | not_run | No saved outcome yet. | — |
-| circle__c13.3 | not_run | No saved outcome yet. | — |
-| kite__c0.5 | not_run | No saved outcome yet. | — |
-| kite__c4 | not_run | No saved outcome yet. | — |
-| kite__c13.3 | not_run | No saved outcome yet. | — |
-| peanut__c0.5 | not_run | No saved outcome yet. | — |
-| peanut__c4 | not_run | No saved outcome yet. | — |
-| peanut__c13.3 | not_run | No saved outcome yet. | — |
-| star__c0.5 | not_run | No saved outcome yet. | — |
-| star__c4 | not_run | No saved outcome yet. | — |
-| star__c13.3 | not_run | No saved outcome yet. | — |
-| asymmetric__c0.5 | not_run | No saved outcome yet. | — |
-| asymmetric__c4 | not_run | No saved outcome yet. | — |
-| asymmetric__c13.3 | not_run | No saved outcome yet. | — |
-| c_shape__c0.5 | not_run | No saved outcome yet. | — |
-| c_shape__c4 | not_run | No saved outcome yet. | — |
-| c_shape__c13.3 | not_run | No saved outcome yet. | — |
-| hook__c0.5 | not_run | No saved outcome yet. | — |
-| hook__c4 | not_run | No saved outcome yet. | — |
-| hook__c13.3 | not_run | No saved outcome yet. | — |
-| cross__c0.5 | not_run | No saved outcome yet. | — |
-| cross__c4 | not_run | No saved outcome yet. | — |
-| cross__c13.3 | not_run | No saved outcome yet. | — |
-| cog__c0.5 | not_run | No saved outcome yet. | — |
-| cog__c4 | not_run | No saved outcome yet. | — |
-| cog__c13.3 | not_run | No saved outcome yet. | — |
-| aphex_twin__c0.5 | not_run | No saved outcome yet. | — |
-| aphex_twin__c4 | not_run | No saved outcome yet. | — |
-| aphex_twin__c13.3 | not_run | No saved outcome yet. | — |
+| circle__c0.5 | iteration_limit | reached the declared 80-iteration budget; convergence not established; RMS (mm) 28.39 > 1; Hausdorff upper bound (mm) 77.72 > 2; maximum field residual 0.952 > 0.003; 5 closed half-peak contours; the longest supplies the boundary; traced mean contrast 0.8375; truth 0.5; logged mean squared relative misfit 1 → 0.3524; 2261/3059 inner solves missed their convergence tolerance (largest logged inner residual 0.1139) | [result](../../../../results/validation/cleaned_interfaces/GGB-002/G2_all/circle__c0.5.json) |
+| circle__c4 | iteration_limit | reached the declared 80-iteration budget; convergence not established; RMS (mm) unavailable; Hausdorff upper bound (mm) unavailable; maximum field residual 1.055 > 0.003; no closed half-peak contour; boundary scores and traced mean contrast unavailable; logged mean squared relative misfit 1 → 0.935; 2179/3059 inner solves missed their convergence tolerance (largest logged inner residual 0.04633) | [result](../../../../results/validation/cleaned_interfaces/GGB-002/G2_all/circle__c4.json) |
+| circle__c13.3 | iteration_limit | reached the declared 80-iteration budget; convergence not established; RMS (mm) 14.55 > 1; Hausdorff upper bound (mm) 15.19 > 2; maximum field residual 1.077 > 0.003; 2 closed half-peak contours; the longest supplies the boundary; traced mean contrast 1.018; truth 13.3; logged mean squared relative misfit 1 → 0.9291; 2312/3059 inner solves missed their convergence tolerance (largest logged inner residual 0.04813) | [result](../../../../results/validation/cleaned_interfaces/GGB-002/G2_all/circle__c13.3.json) |
+| kite__c0.5 | iteration_limit | reached the declared 80-iteration budget; convergence not established; RMS (mm) 1.913 > 1; Hausdorff upper bound (mm) 6.852 > 2; maximum field residual 0.08362 > 0.003; traced mean contrast 0.5447; truth 0.5; logged mean squared relative misfit 1 → 0.001292; 2186/3059 inner solves missed their convergence tolerance (largest logged inner residual 0.5299) | [result](../../../../results/validation/cleaned_interfaces/GGB-002/G2_all/kite__c0.5.json) |
+| kite__c4 | iteration_limit | reached the declared 80-iteration budget; convergence not established; RMS (mm) 35.21 > 1; Hausdorff upper bound (mm) 79.01 > 2; maximum field residual 1.01 > 0.003; 3 closed half-peak contours; the longest supplies the boundary; traced mean contrast 0.8252; truth 4; logged mean squared relative misfit 1 → 0.7131; 2258/3059 inner solves missed their convergence tolerance (largest logged inner residual 0.03924) | [result](../../../../results/validation/cleaned_interfaces/GGB-002/G2_all/kite__c4.json) |
+| kite__c13.3 | iteration_limit | reached the declared 80-iteration budget; convergence not established; RMS (mm) 25.67 > 1; Hausdorff upper bound (mm) 57.17 > 2; maximum field residual 1.018 > 0.003; 6 closed half-peak contours; the longest supplies the boundary; traced mean contrast 1.18; truth 13.3; logged mean squared relative misfit 1 → 0.823; 2312/3059 inner solves missed their convergence tolerance (largest logged inner residual 0.03521) | [result](../../../../results/validation/cleaned_interfaces/GGB-002/G2_all/kite__c13.3.json) |
+| peanut__c0.5 | iteration_limit | reached the declared 80-iteration budget; convergence not established; RMS (mm) 1.857 > 1; Hausdorff upper bound (mm) 4.216 > 2; maximum field residual 0.1671 > 0.003; traced mean contrast 0.5465; truth 0.5; logged mean squared relative misfit 1 → 0.01336; 2613/3059 inner solves missed their convergence tolerance (largest logged inner residual 0.3526) | [result](../../../../results/validation/cleaned_interfaces/GGB-002/G2_all/peanut__c0.5.json) |
+| peanut__c4 | iteration_limit | reached the declared 80-iteration budget; convergence not established; RMS (mm) 26.14 > 1; Hausdorff upper bound (mm) 57.2 > 2; maximum field residual 1.01 > 0.003; 10 closed half-peak contours; the longest supplies the boundary; traced mean contrast 0.8753; truth 4; logged mean squared relative misfit 1 → 0.7743; 2302/3059 inner solves missed their convergence tolerance (largest logged inner residual 0.05845) | [result](../../../../results/validation/cleaned_interfaces/GGB-002/G2_all/peanut__c4.json) |
+| peanut__c13.3 | iteration_limit | reached the declared 80-iteration budget; convergence not established; RMS (mm) 14.4 > 1; Hausdorff upper bound (mm) 19.86 > 2; maximum field residual 0.9974 > 0.003; 6 closed half-peak contours; the longest supplies the boundary; traced mean contrast 0.9252; truth 13.3; logged mean squared relative misfit 1 → 0.8313; 2381/3059 inner solves missed their convergence tolerance (largest logged inner residual 0.04347) | [result](../../../../results/validation/cleaned_interfaces/GGB-002/G2_all/peanut__c13.3.json) |
+| star__c0.5 | iteration_limit | reached the declared 80-iteration budget; convergence not established; RMS (mm) 2.382 > 1; Hausdorff upper bound (mm) 5.636 > 2; maximum field residual 0.3103 > 0.003; traced mean contrast 0.5689; truth 0.5; logged mean squared relative misfit 1 → 0.0445; 2763/3059 inner solves missed their convergence tolerance (largest logged inner residual 0.06217) | [result](../../../../results/validation/cleaned_interfaces/GGB-002/G2_all/star__c0.5.json) |
+| star__c4 | iteration_limit | reached the declared 80-iteration budget; convergence not established; RMS (mm) 84.94 > 1; Hausdorff upper bound (mm) 153 > 2; maximum field residual 1.006 > 0.003; 12 closed half-peak contours; the longest supplies the boundary; traced mean contrast 1.112; truth 4; logged mean squared relative misfit 1 → 0.8759; 2163/3059 inner solves missed their convergence tolerance (largest logged inner residual 0.1157) | [result](../../../../results/validation/cleaned_interfaces/GGB-002/G2_all/star__c4.json) |
+| star__c13.3 | iteration_limit | reached the declared 80-iteration budget; convergence not established; RMS (mm) 44.66 > 1; Hausdorff upper bound (mm) 96.11 > 2; maximum field residual 1.003 > 0.003; 14 closed half-peak contours; the longest supplies the boundary; traced mean contrast 1.145; truth 13.3; logged mean squared relative misfit 1 → 0.7642; 2174/3059 inner solves missed their convergence tolerance (largest logged inner residual 0.04535) | [result](../../../../results/validation/cleaned_interfaces/GGB-002/G2_all/star__c13.3.json) |
+| asymmetric__c0.5 | iteration_limit | reached the declared 80-iteration budget; convergence not established; RMS (mm) 1.787 > 1; Hausdorff upper bound (mm) 4.181 > 2; maximum field residual 0.2375 > 0.003; traced mean contrast 0.5434; truth 0.5; logged mean squared relative misfit 1 → 0.02632; 2756/3059 inner solves missed their convergence tolerance (largest logged inner residual 0.1286) | [result](../../../../results/validation/cleaned_interfaces/GGB-002/G2_all/asymmetric__c0.5.json) |
+| asymmetric__c4 | iteration_limit | reached the declared 80-iteration budget; convergence not established; RMS (mm) 43.99 > 1; Hausdorff upper bound (mm) 101.3 > 2; maximum field residual 1.012 > 0.003; 10 closed half-peak contours; the longest supplies the boundary; traced mean contrast 0.8865; truth 4; logged mean squared relative misfit 1 → 0.8621; 2157/3059 inner solves missed their convergence tolerance (largest logged inner residual 0.3404) | [result](../../../../results/validation/cleaned_interfaces/GGB-002/G2_all/asymmetric__c4.json) |
+| asymmetric__c13.3 | iteration_limit | reached the declared 80-iteration budget; convergence not established; RMS (mm) 32.61 > 1; Hausdorff upper bound (mm) 75.26 > 2; maximum field residual 1.004 > 0.003; 5 closed half-peak contours; the longest supplies the boundary; traced mean contrast 1.151; truth 13.3; logged mean squared relative misfit 1 → 0.8461; 2158/3059 inner solves missed their convergence tolerance (largest logged inner residual 0.0409) | [result](../../../../results/validation/cleaned_interfaces/GGB-002/G2_all/asymmetric__c13.3.json) |
+| c_shape__c0.5 | iteration_limit | reached the declared 80-iteration budget; convergence not established; RMS (mm) 2.052 > 1; Hausdorff upper bound (mm) 5.678 > 2; maximum field residual 0.2532 > 0.003; traced mean contrast 0.5668; truth 0.5; logged mean squared relative misfit 1 → 0.03059; 2796/3059 inner solves missed their convergence tolerance (largest logged inner residual 0.107) | [result](../../../../results/validation/cleaned_interfaces/GGB-002/G2_all/c_shape__c0.5.json) |
+| c_shape__c4 | iteration_limit | reached the declared 80-iteration budget; convergence not established; RMS (mm) 85.23 > 1; Hausdorff upper bound (mm) 144.8 > 2; maximum field residual 1.005 > 0.003; 8 closed half-peak contours; the longest supplies the boundary; traced mean contrast 1.169; truth 4; logged mean squared relative misfit 1 → 0.781; 2231/3059 inner solves missed their convergence tolerance (largest logged inner residual 0.08497) | [result](../../../../results/validation/cleaned_interfaces/GGB-002/G2_all/c_shape__c4.json) |
+| c_shape__c13.3 | iteration_limit | reached the declared 80-iteration budget; convergence not established; RMS (mm) 42.47 > 1; Hausdorff upper bound (mm) 94.74 > 2; maximum field residual 0.9984 > 0.003; 8 closed half-peak contours; the longest supplies the boundary; traced mean contrast 1.119; truth 13.3; logged mean squared relative misfit 1 → 0.865; 2151/3059 inner solves missed their convergence tolerance (largest logged inner residual 0.07618) | [result](../../../../results/validation/cleaned_interfaces/GGB-002/G2_all/c_shape__c13.3.json) |
+| hook__c0.5 | iteration_limit | reached the declared 80-iteration budget; convergence not established; RMS (mm) 1.324 > 1; Hausdorff upper bound (mm) 3.046 > 2; maximum field residual 0.1348 > 0.003; traced mean contrast 0.5698; truth 0.5; logged mean squared relative misfit 1 → 0.009636; 2441/3059 inner solves missed their convergence tolerance (largest logged inner residual 0.09791) | [result](../../../../results/validation/cleaned_interfaces/GGB-002/G2_all/hook__c0.5.json) |
+| hook__c4 | iteration_limit | reached the declared 80-iteration budget; convergence not established; RMS (mm) 25.16 > 1; Hausdorff upper bound (mm) 41.95 > 2; maximum field residual 1.005 > 0.003; 8 closed half-peak contours; the longest supplies the boundary; traced mean contrast 1.188; truth 4; logged mean squared relative misfit 1 → 0.7783; 2189/3059 inner solves missed their convergence tolerance (largest logged inner residual 0.1425) | [result](../../../../results/validation/cleaned_interfaces/GGB-002/G2_all/hook__c4.json) |
+| hook__c13.3 | iteration_limit | reached the declared 80-iteration budget; convergence not established; RMS (mm) 31.03 > 1; Hausdorff upper bound (mm) 75.5 > 2; maximum field residual 1.002 > 0.003; 3 closed half-peak contours; the longest supplies the boundary; traced mean contrast 1.193; truth 13.3; logged mean squared relative misfit 1 → 0.7965; 2121/3059 inner solves missed their convergence tolerance (largest logged inner residual 0.06706) | [result](../../../../results/validation/cleaned_interfaces/GGB-002/G2_all/hook__c13.3.json) |
+| cross__c0.5 | iteration_limit | reached the declared 80-iteration budget; convergence not established; RMS (mm) 1.965 > 1; Hausdorff upper bound (mm) 3.908 > 2; maximum field residual 0.1694 > 0.003; traced mean contrast 0.5476; truth 0.5; logged mean squared relative misfit 1 → 0.007717; 2580/3059 inner solves missed their convergence tolerance (largest logged inner residual 0.2312) | [result](../../../../results/validation/cleaned_interfaces/GGB-002/G2_all/cross__c0.5.json) |
+| cross__c4 | iteration_limit | reached the declared 80-iteration budget; convergence not established; RMS (mm) 40.4 > 1; Hausdorff upper bound (mm) 94.84 > 2; maximum field residual 1.031 > 0.003; 9 closed half-peak contours; the longest supplies the boundary; traced mean contrast 0.8145; truth 4; logged mean squared relative misfit 1 → 0.7493; 2329/3059 inner solves missed their convergence tolerance (largest logged inner residual 0.04153) | [result](../../../../results/validation/cleaned_interfaces/GGB-002/G2_all/cross__c4.json) |
+| cross__c13.3 | iteration_limit | reached the declared 80-iteration budget; convergence not established; RMS (mm) 95.48 > 1; Hausdorff upper bound (mm) 155.7 > 2; maximum field residual 1.007 > 0.003; 3 closed half-peak contours; the longest supplies the boundary; traced mean contrast 0.8784; truth 13.3; logged mean squared relative misfit 1 → 0.7935; 2265/3059 inner solves missed their convergence tolerance (largest logged inner residual 0.1154) | [result](../../../../results/validation/cleaned_interfaces/GGB-002/G2_all/cross__c13.3.json) |
+| cog__c0.5 | iteration_limit | reached the declared 80-iteration budget; convergence not established; RMS (mm) 2.239 > 1; Hausdorff upper bound (mm) 4.905 > 2; maximum field residual 0.3155 > 0.003; traced mean contrast 0.5437; truth 0.5; logged mean squared relative misfit 1 → 0.03696; 2701/3059 inner solves missed their convergence tolerance (largest logged inner residual 0.1157) | [result](../../../../results/validation/cleaned_interfaces/GGB-002/G2_all/cog__c0.5.json) |
+| cog__c4 | iteration_limit | reached the declared 80-iteration budget; convergence not established; RMS (mm) 91.32 > 1; Hausdorff upper bound (mm) 154.1 > 2; maximum field residual 1.036 > 0.003; 16 closed half-peak contours; the longest supplies the boundary; traced mean contrast 1.099; truth 4; logged mean squared relative misfit 1 → 0.8425; 2180/3059 inner solves missed their convergence tolerance (largest logged inner residual 0.06325) | [result](../../../../results/validation/cleaned_interfaces/GGB-002/G2_all/cog__c4.json) |
+| cog__c13.3 | iteration_limit | reached the declared 80-iteration budget; convergence not established; RMS (mm) 17.77 > 1; Hausdorff upper bound (mm) 56.85 > 2; maximum field residual 1.054 > 0.003; 11 closed half-peak contours; the longest supplies the boundary; traced mean contrast 0.9683; truth 13.3; logged mean squared relative misfit 1 → 0.8031; 2500/3059 inner solves missed their convergence tolerance (largest logged inner residual 0.03156) | [result](../../../../results/validation/cleaned_interfaces/GGB-002/G2_all/cog__c13.3.json) |
+| aphex_twin__c0.5 | iteration_limit | reached the declared 80-iteration budget; convergence not established; RMS (mm) 2.631 > 1; Hausdorff upper bound (mm) 10.79 > 2; maximum field residual 0.1142 > 0.003; traced mean contrast 0.6077; truth 0.5; logged mean squared relative misfit 1 → 0.002296; 2117/3059 inner solves missed their convergence tolerance (largest logged inner residual 0.5595) | [result](../../../../results/validation/cleaned_interfaces/GGB-002/G2_all/aphex_twin__c0.5.json) |
+| aphex_twin__c4 | iteration_limit | reached the declared 80-iteration budget; convergence not established; RMS (mm) 19.23 > 1; Hausdorff upper bound (mm) 56.38 > 2; maximum field residual 0.9631 > 0.003; 2 closed half-peak contours; the longest supplies the boundary; traced mean contrast 1.263; truth 4; logged mean squared relative misfit 1 → 0.6976; 2189/3059 inner solves missed their convergence tolerance (largest logged inner residual 0.03443) | [result](../../../../results/validation/cleaned_interfaces/GGB-002/G2_all/aphex_twin__c4.json) |
+| aphex_twin__c13.3 | iteration_limit | reached the declared 80-iteration budget; convergence not established; RMS (mm) 23.7 > 1; Hausdorff upper bound (mm) 72.21 > 2; maximum field residual 1.001 > 0.003; 8 closed half-peak contours; the longest supplies the boundary; traced mean contrast 1.194; truth 13.3; logged mean squared relative misfit 1 → 0.8142; 2162/3059 inner solves missed their convergence tolerance (largest logged inner residual 0.06666) | [result](../../../../results/validation/cleaned_interfaces/GGB-002/G2_all/aphex_twin__c13.3.json) |
 
 
 ## Methods and interpretation
@@ -375,15 +393,29 @@ Contrast error is signed relative error in percent. PSNR and contrast SNR are in
 
 The sampled-log-interval experiments S4/S4b are not selected: they added no confirmed recoveries, and two cases timed out. Supplied-contrast BEM removes the degree cap; S2 retains its earlier numerical settings. Full source paths and all scores are in [comparison.csv](comparison.csv) and [comparison.json](comparison.json).
 
+| Arm | Material information | Representation / start | Frequency data |
+|---|---|---|---|
+| BEM supplied contrast | True contrast supplied | One homogeneous object bounded by a Fourier curve; centred 65 mm circle | Real and damped continuation catalogs |
+| BEM material recovery | Truth-free weak-scatterer contrast estimate | Same single-object curve prior and centred circle | Real and damped continuation catalogs |
+| GauGal | No true contrast supplied; common susceptibility bounds | 2,601 Gaussian coefficients; zero susceptibility start | 19 real frequencies |
+
+Each real frequency has 24 complex source–receiver measurements: 456 complex observations in total. GauGal’s 201×201 grid is used for quadrature and images, while its 51×51 lattice contains the unknown coefficients. BEM’s single homogeneous region is a stronger shape and material prior than GauGal’s spatially varying image.
+
 **GauGal adaptation.** One susceptibility image is fitted to a sum of energy-normalized frequency losses on 24 source–receiver pairs at 19 real frequencies. Gaussian lattice 51×51, 201×201 quadrature pixels, width 0.7 lattice spacing, TV lambda scale 0.5, susceptibility bounds −0.9 to 15, released 100-iteration inner-solve cap. Initialization is zero susceptibility. Step sizes 1, 0.01 and 0.05 are tuned on the three circles only by mean image RRMSE. The two smaller steps replaced unrun larger steps after step 1 diverged on circle c0.5.
 
-Tuning selection is not yet available.
+Chosen common step: **0.05**.
 
 The final common budget is at most 80 outer iterations and 400 seconds of optimization, with a 480-second outer process limit. The T0 timing fit required 50.1 seconds for ten iterations, so the original 300-iteration default could not fit the morning budget. Partial images have explicit stop reasons and actual iteration counts; an iteration-limit exit does not establish convergence. Inner-solve summaries cover the whole fit, including the final prediction. Their convergence tolerance is 1e-4. The saved `completed` status means the iteration budget finished, not that an accuracy target was reached.
 
-**Forward-model limitation.** The existing seven-case sweep did not identify any tested lattice meeting 1% error across those cases at 0.75 GHz and above. All 19 real frequencies are retained here rather than discarding 18 frequencies. Thus this measures this TG-002 adaptation under its stated budget; it is not a reproduction of GauGal’s published benchmark and does not establish an intrinsic ranking of the methods.
+**Forward-model limitation.** The existing seven-case sweep did not identify any tested lattice meeting 1% error across those cases at the tested frequencies from 0.75 GHz upwards. All 19 real frequencies are retained under the morning-priority amendment. This measures this TG-002 adaptation under its stated budget; it is not a reproduction of GauGal’s published benchmark and does not establish an intrinsic ranking of the methods.
 
 **Scores and times.** All three image arms are rasterized on the same 1 mm grid. RRMSE, SSIM and PSNR use relative permittivity; contrast SNR uses susceptibility. GauGal’s longest closed half-peak contour supplies its boundary and mean interior contrast. All image scores, contrast estimates and Hausdorff bounds are in the CSV. BEM seconds include the fit and final checks; GauGal seconds include process, operator build and scoring, so they are not pure optimizer speed ratios. CSV/JSON also separate the available component times. Failed BEM fits can stop early.
+
+The overnight machine has an NVIDIA GeForce RTX 5090 (32,607 MiB reported), an Intel Core Ultra 9 285K and Python 3.9.25. At 02:42 London, the active GauGal worker was the only GPU compute process. The broad forward sweeps remained paused. Report scoring briefly ran on the CPU while tuning continued.
+
+Image scores use the relative-to-background permittivity image. Pixel-exact BEM rasterizations can produce zero image RRMSE and very large finite PSNR/SNR from the metric routines’ denominator floors; this does not imply an exactly recovered curve.
+
+RRMSE averages squared per-pixel relative errors. The released SingleTX SSIM routine normalizes each image by its own maximum before its 11×11 comparison, so SSIM alone does not measure material accuracy. Read it with contrast error and contrast SNR.
 
 **Reading failure reasons.** A trial curve can be refused while the last accepted curve passes numerical checks. A failed positive-lower-bound calculation is inconclusive; it does not establish that the trial curve is invalid. The four supplied-contrast failures all stop on that calculation in the selected records.
 
@@ -395,6 +427,28 @@ For GauGal, a budget stop explains why computation ended; the scored shape and f
 
 
 ## Tuning and saved forward evidence
+
+Frozen common step: **0.05**. [Selection and all tuning scores](../../../../results/validation/cleaned_interfaces/GGB-002/G1_tuning/tuning.json).
+
+| Step | Circle c0.5 RRMSE | Circle c4 RRMSE | Circle c13.3 RRMSE | Mean RRMSE | Finite circles |
+|---:|---:|---:|---:|---:|---:|
+| 1 | 10.482 | 0.34695 | 0.4474 | 3.7589 | 3/3 |
+| 0.01 | 0.41288 | 0.33124 | 0.40984 | 0.38465 | 3/3 |
+| 0.05 | 0.36724 | 0.33136 | 0.40984 | 0.36948 | 3/3 |
+
+The circle cases are tuning data, so their final scores are not held-out scores. No further settings were selected using the other 27 cases.
+
+| Step / circle | Stop | Observed limitations | Evidence |
+|---|---|---|---|
+| 1 / circle__c0.5 | iteration_limit | reached the declared 30-iteration budget; convergence not established; RMS (mm) 44.15 > 1; Hausdorff upper bound (mm) 84.57 > 2; maximum field residual 687.9 > 0.003; 25 closed half-peak contours; the longest supplies the boundary; traced mean contrast 6.604; truth 0.5; logged mean squared relative misfit 1 → 1.552e+04; 1140/1159 inner solves missed their convergence tolerance (largest logged inner residual 669) | [result](../../../../results/validation/cleaned_interfaces/GGB-002/G1_tuning/step1/circle__c0.5.json) |
+| 1 / circle__c4 | iteration_limit | reached the declared 30-iteration budget; convergence not established; RMS (mm) 42.89 > 1; Hausdorff upper bound (mm) 60.56 > 2; maximum field residual 1.067 > 0.003; 2 closed half-peak contours; the longest supplies the boundary; traced mean contrast 1.294; truth 4; logged mean squared relative misfit 1 → 0.8513; 1106/1159 inner solves missed their convergence tolerance (largest logged inner residual 0.01536) | [result](../../../../results/validation/cleaned_interfaces/GGB-002/G1_tuning/step1/circle__c4.json) |
+| 1 / circle__c13.3 | iteration_limit | reached the declared 30-iteration budget; convergence not established; RMS (mm) 14.26 > 1; Hausdorff upper bound (mm) 36.74 > 2; maximum field residual 1.293 > 0.003; 2 closed half-peak contours; the longest supplies the boundary; traced mean contrast 1.351; truth 13.3; logged mean squared relative misfit 1 → 0.7428; 1122/1159 inner solves missed their convergence tolerance (largest logged inner residual 0.01063) | [result](../../../../results/validation/cleaned_interfaces/GGB-002/G1_tuning/step1/circle__c13.3.json) |
+| 0.01 / circle__c0.5 | iteration_limit | reached the declared 30-iteration budget; convergence not established; RMS (mm) 2.754 > 1; Hausdorff upper bound (mm) 3.533 > 2; maximum field residual 0.9816 > 0.003; 3 closed half-peak contours; the longest supplies the boundary; traced mean contrast 0.9695; truth 0.5; logged mean squared relative misfit 1 → 0.6223; 1044/1159 inner solves missed their convergence tolerance (largest logged inner residual 0.03249) | [result](../../../../results/validation/cleaned_interfaces/GGB-002/G1_tuning/step0.01/circle__c0.5.json) |
+| 0.01 / circle__c4 | iteration_limit | reached the declared 30-iteration budget; convergence not established; RMS (mm) unavailable; Hausdorff upper bound (mm) unavailable; maximum field residual 1.004 > 0.003; no closed half-peak contour; boundary scores and traced mean contrast unavailable; logged mean squared relative misfit 1 → 0.9922; 1042/1159 inner solves missed their convergence tolerance (largest logged inner residual 0.07596) | [result](../../../../results/validation/cleaned_interfaces/GGB-002/G1_tuning/step0.01/circle__c4.json) |
+| 0.01 / circle__c13.3 | iteration_limit | reached the declared 30-iteration budget; convergence not established; RMS (mm) 27.33 > 1; Hausdorff upper bound (mm) 78.19 > 2; maximum field residual 1.012 > 0.003; 9 closed half-peak contours; the longest supplies the boundary; traced mean contrast 1.006; truth 13.3; logged mean squared relative misfit 1 → 0.9917; 1025/1159 inner solves missed their convergence tolerance (largest logged inner residual 0.05883) | [result](../../../../results/validation/cleaned_interfaces/GGB-002/G1_tuning/step0.01/circle__c13.3.json) |
+| 0.05 / circle__c0.5 | iteration_limit | reached the declared 30-iteration budget; convergence not established; RMS (mm) 2.452 > 1; Hausdorff upper bound (mm) 3.516 > 2; maximum field residual 0.9141 > 0.003; 3 closed half-peak contours; the longest supplies the boundary; traced mean contrast 0.9122; truth 0.5; logged mean squared relative misfit 1 → 0.42; 1068/1159 inner solves missed their convergence tolerance (largest logged inner residual 0.1158) | [result](../../../../results/validation/cleaned_interfaces/GGB-002/G1_tuning/step0.05/circle__c0.5.json) |
+| 0.05 / circle__c4 | iteration_limit | reached the declared 30-iteration budget; convergence not established; RMS (mm) unavailable; Hausdorff upper bound (mm) unavailable; maximum field residual 1.019 > 0.003; no closed half-peak contour; boundary scores and traced mean contrast unavailable; logged mean squared relative misfit 1 → 0.9683; 1022/1159 inner solves missed their convergence tolerance (largest logged inner residual 0.04633) | [result](../../../../results/validation/cleaned_interfaces/GGB-002/G1_tuning/step0.05/circle__c4.json) |
+| 0.05 / circle__c13.3 | iteration_limit | reached the declared 30-iteration budget; convergence not established; RMS (mm) 26.79 > 1; Hausdorff upper bound (mm) 77.14 > 2; maximum field residual 1.039 > 0.003; 6 closed half-peak contours; the longest supplies the boundary; traced mean contrast 1.022; truth 13.3; logged mean squared relative misfit 1 → 0.9695; 1045/1159 inner solves missed their convergence tolerance (largest logged inner residual 0.04813) | [result](../../../../results/validation/cleaned_interfaces/GGB-002/G1_tuning/step0.05/circle__c13.3.json) |
 
 Existing forward checks at the selected lattice and width (relative field errors). These use truth-shaped coefficients and a 2,000-iteration inner cap. The inverse uses a cap of 100. These seven cases do not certify all 30 cases.
 
@@ -420,14 +474,14 @@ S4/S4b bypassed the inconclusive bound using a sampled interval. These outputs a
 | S4 / cog__c13.3 | not recovered | field refinement discrepancy at 16 frequencies; worst tolerance ratio 3.273e+04 at 2.5 GHz; Jacobian discrepancy 0.008326 > 0.001; maximum field residual 0.246 > 0.003 | [result](../../../../results/validation/cleaned_interfaces/MR-001/S4_slider_sampled_log_interval/runs/cog__c13.3/result.json), [final checks](../../../../results/validation/cleaned_interfaces/MR-001/S4_slider_sampled_log_interval/runs/cog__c13.3/final_audit.json) |
 | S4b / aphex_twin__c4 | not recovered | field refinement discrepancy at 16 frequencies; worst tolerance ratio 4250 at 2.5 GHz; Jacobian discrepancy 0.00536 > 0.001; maximum field residual 0.003799 > 0.003 | [result](../../../../results/validation/cleaned_interfaces/MR-001/S4b_slider_sampled_log_interval/aphex_twin__c4/runs/aphex_twin__c4/result.json), [final checks](../../../../results/validation/cleaned_interfaces/MR-001/S4b_slider_sampled_log_interval/aphex_twin__c4/runs/aphex_twin__c4/final_audit.json) |
 | S4 / aphex_twin__c0.5 | timeout; no final result | The 900 s campaign limit expired while fixed_M25 was active. Last completed-stage checkpoint: release_M19 at 702.6 s of fit work. No final numerical checks or recovery score exist. | [exit 124](../../../../results/validation/cleaned_interfaces/MR-001/S4_slider_sampled_log_interval/execution_status.json), [checkpoint](../../../../results/validation/cleaned_interfaces/MR-001/S4_slider_sampled_log_interval/runs/aphex_twin__c0.5/checkpoint.json) |
-| S4b / aphex_twin__c13.3 | timeout; no final result | The 300 s case limit expired while fixed_M85 was active. Last completed-stage checkpoint: fixed_M79 at 289.0 s of fit work. No final numerical checks or recovery score exist. | [exit 124](../../../../results/validation/cleaned_interfaces/MR-001/S4b_slider_sampled_log_interval/aphex_twin__c13.3/exit_code.txt), [checkpoint](../../../../results/validation/cleaned_interfaces/MR-001/S4b_slider_sampled_log_interval/aphex_twin__c13.3/runs/aphex_twin__c13.3/checkpoint.json) |
+| S4b / aphex_twin__c13.3 | timeout; no final result | The 300 s case limit expired while fixed_M85 was active. Last completed-stage checkpoint: fixed_M79 at 289.0 s of fit work. No final numerical checks or recovery score exist. | [exit 124](../../../../results/validation/cleaned_interfaces/MR-001/S4b_slider_sampled_log_interval/aphex_twin__c13.3/exit_code.txt), [active-stage log](../../../../results/validation/cleaned_interfaces/MR-001/S4b_slider_sampled_log_interval/aphex_twin__c13.3/run.log), [checkpoint](../../../../results/validation/cleaned_interfaces/MR-001/S4b_slider_sampled_log_interval/aphex_twin__c13.3/runs/aphex_twin__c13.3/checkpoint.json) |
 
 The timeout records establish budget exhaustion. They do not establish that either fit would recover with more time. The saved active stages distinguish time spent progressing through the fit from an immediate numerical refusal.
 
 
 ## Reconstruction gallery
 
-White outlines show truth. Every saved output is displayed, including inaccurate or partial outputs. Color clipping makes severely wrong material values less visible; read the contrast labels and failure tables alongside the images.
+White outlines show truth; dashed black outlines show the selected GauGal contour used for boundary scoring. Every saved output is displayed, including inaccurate or partial outputs. Color clipping makes severely wrong material values less visible; read the contrast labels and failure tables alongside the images.
 
 ### Contrast 0.5
 
