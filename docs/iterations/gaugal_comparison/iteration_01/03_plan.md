@@ -256,3 +256,49 @@ changed by the geometry update.
 hook c13.3 (RMS 0.0002 mm); loses hook c0.5 and cog c13.3, both ending in
 "production evaluation failed at candidate state". Aphex ×3 still fail (aphex c4
 reaches 0.34 mm but fails the final check). Summed time 607 s, median 13.7 s.
+
+## Amendment 2026-11-02: S3, remove the default log-expansion degree cap
+
+**Question.** Does removing the 4,000-term cap let the two S1 cases that hit
+it complete and recover under the unchanged TG-002 criteria?
+
+**User request.** "delete that check, try again. is gpu free?" This follows
+the discussion of the 4,000-term cap. The separate positive-lower-bound
+check and the accuracy target remain unchanged.
+
+**Evidence.** S1 hook c0.5 and aphex c0.5 stop on that cap. Cog c13.3 and
+aphex c4/c13.3 instead fail the separate lower-bound check. Replaying hook's
+saved trial curve through CPU `ModalGeometry(curve, 128)` reproduced the
+4,000-term error with beta/Lambda = 1.52e-5 before editing the code.
+
+**Hypothesis.** The cap may be preventing an otherwise computable forward
+solve. If so, allowing more terms should let the fit proceed. Alternatively,
+the longer expansion may still fail the lower-bound check or a later fit step.
+This tests the user's specified change; no broader diagnosis or repeated
+baseline runs are needed.
+
+**Changed condition.** CPU and CUDA modal geometry now have no default degree
+cap, including `ModalSettings`. An explicitly supplied cap remains supported
+for optional certificate callers. The 1e-16 series target, coefficient window,
+lower-bound check, geometry update and numerical-stop handling are unchanged.
+
+**Runs.** S3: hook c0.5 and aphex c0.5, one known-contrast fit each from the
+same centred start, `modal_muller` + `slider`, localization none, one worker,
+four frequency threads and single-threaded BLAS. Fresh directory
+`results/validation/cleaned_interfaces/MR-001/S3_slider_no_log_cap/`.
+Wait for the existing S2 GPU job to finish first. Keep S1 untouched.
+
+**Stopping and comparison.** Record both outcomes, failure details, recovery
+scores and runtime against S1. Stop after these two cases: the other three S1
+failures did not hit this cap. Use a 15-minute outer time limit for the pair
+and preserve partial files if it is reached. These runs are the relevant
+code/result validation; commit and push the change and evidence afterward.
+
+**S2 outcome (2026-11-02).** 23/30 (9 / 9 / 5); R2 had 22. Recovered contrasts
+are within 8e-5 of truth. Material recovery recovers aphex c0.5 (RMS 0.068 mm),
+which no known-contrast fit has recovered, plus hook and peanut at 13.3. Circle
+c13.3 fails only the final Jacobian check (0.0026 against 1e-3; shape RMS
+7.6e-6 mm, residual 5e-7), as PS-003 saw for slider on circle c4 and aphex
+c13.3. Asymmetric and cross at 13.3 run away (to 123 and 74) from starts of
+1.45 and 1.21, the start problem seen in R2. Hook c0.5 and cog c13.3 fail as
+in S1. Median time 1.28× S1.
