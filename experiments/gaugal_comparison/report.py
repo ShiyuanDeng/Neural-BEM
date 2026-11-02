@@ -310,8 +310,9 @@ def make_report(preview=False):
     axes[0].legend(fontsize=8)
     fig.tight_layout(); fig.savefig(assets/'errors.png', dpi=160); plt.close(fig)
 
-    def median(key, metric):
-        values = [r[key].get(metric) for r in rows if finite(r[key].get(metric))]
+    def median(key, metric, subset=None):
+        subset = rows if subset is None else subset
+        values = [r[key].get(metric) for r in subset if finite(r[key].get(metric))]
         return fmt(float(np.median(values))) if values else '—'
 
     title = 'BEM and GauGal on TG-002 — 30-case comparison'
@@ -336,6 +337,23 @@ def make_report(preview=False):
              'field residual ≤ 0.003. Full BEM recovery additionally requires its independent final '
              'numerical checks. GauGal has no equivalent BEM Jacobian check; its shared-limit count is '
              'not claimed as full TG-002 numerical qualification.', '',
+             '### Results by contrast', '',
+             '| Contrast | Arm | Full BEM recovery | Shared limits met | Finite boundaries | Median RMS mm | Median max field residual | Median image RRMSE |',
+             '|---:|---|---:|---:|---:|---:|---:|---:|']
+    for contrast in (.5, 4., 13.3):
+        selected = [r for r in rows if r['contrast'] == contrast]
+        if not selected:
+            continue
+        for key in LABELS:
+            recovered = str(sum(bool(r[key].get('recovered')) for r in selected)) if key != 'gaugal' else 'not applicable'
+            shared = sum(bool(r[key].get('meets_shared_limits')) for r in selected)
+            boundaries = sum(finite(r[key].get('rms_mm')) for r in selected)
+            values = ' | '.join(median(key, metric, selected) for metric in
+                                ('rms_mm', 'maximum_residual', 'rrmse'))
+            text.append(f'| {contrast:g} | {LABELS[key]} | {recovered} | {shared}/{len(selected)} | '
+                        f'{boundaries}/{len(selected)} | {values} |')
+    text += ['', 'Medians include unsuccessful outputs with finite scores. Missing contours '
+             'contribute no boundary value; the finite-boundary counts show those exclusions.', '',
              '![Errors across all cases](comparison_figures/errors.png)', '',
              '## Per-case results', '',
              'Triples below are **supplied-contrast BEM / material-recovery BEM / GauGal**. '
