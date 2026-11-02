@@ -507,3 +507,12 @@ add further tuning after G2 starts. A time-limited image is a partial result,
 not convergence or TG-002 recovery. Score the saved images and retain missing
 or failed cases explicitly in the full 30-row comparison. Commit and push
 each completed run's results and the final report automatically.
+
+**G1 amendment before running steps 4/16.** The first step-1 circle c0.5 fit
+diverges: normalized mean squared misfit grows from 1 to 1.55e4 by iteration
+30, maximum residual 688 and image RRMSE 10.48. Larger steps are therefore
+not useful next tests. Retain step 1 as the control and replace the two
+unstarted settings with .01 and .05. Keep all three circle cases per setting,
+the same selection rule and the same total nine-fit budget. Finish the active
+step-1 circle c4 worker before restarting the supervisor with these settings;
+reuse completed files, so no completed run is repeated.
