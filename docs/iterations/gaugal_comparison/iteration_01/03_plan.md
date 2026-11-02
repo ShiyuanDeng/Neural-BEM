@@ -516,3 +516,10 @@ unstarted settings with .01 and .05. Keep all three circle cases per setting,
 the same selection rule and the same total nine-fit budget. Finish the active
 step-1 circle c4 worker before restarting the supervisor with these settings;
 reuse completed files, so no completed run is repeated.
+
+**Delivery clarification (2026-11-02).** The user requests a full comparison
+table **and reasons for failures**, not only aggregate recovery counts.
+The report must include per-arm stopping/failure reasons for every unsuccessful
+case, supported by saved evidence, with hypotheses clearly identified.
+Current process state and remaining work are in `04_handoff.md`; the detached
+overnight runner should continue when another session takes over.
