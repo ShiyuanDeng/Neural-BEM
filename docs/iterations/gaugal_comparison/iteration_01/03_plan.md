@@ -454,3 +454,56 @@ This is a timing and finite-output check, not a final reconstruction.
 loss trajectory. Then preregister the bounded circle tuning and frozen
 all-30 run using the remaining time to 08:00. Do not infer GauGal's final
 quality from a ten-iteration timing fit. Preserve and commit this result.
+
+### Frozen BEM report selection, before any GauGal inverse result
+
+Use slider for both BEM arms, following the user's default-method decision.
+For supplied contrast, use S1 with the two S3 replacements: removal of the
+degree cap changes the path only for the two cases that previously hit it.
+Both replacements are included, not just the successful hook case. This gives
+26/30 recoveries, tying spectral R1's 26/30. Report the reuse explicitly; do
+not describe it as a fresh complete campaign. S4/S4b are diagnostic variants,
+not the selected arm: they add no confirmed recoveries and introduce timeouts.
+
+For truth-free material recovery use S2, the strongest completed all-30 arm
+(23/30, versus R2's 22 and R4's 20). Keep its recorded settings and outcomes;
+do not include R3's truth-assisted starts. The supplied-contrast and material
+arms consequently have different numerical versions, which the report must
+state. Do not change these selections after seeing GauGal results.
+
+### GGB-002 G1/G2 overnight budget, recorded after T0
+
+**Question.** Which of three common step sizes gives the best circle
+reconstructions, and how does that frozen setting perform on all 30 cases
+within the morning delivery budget?
+
+**T0 outcome.** Circle c4 with 19 frequencies built in 13.42 s and used
+50.12 s for 10 iterations. Its final maximum residual was 1.084 and image
+RRMSE 0.3346; it was a timing fit, not converged. CPU/GPU memory fit the
+selected 51 lattice. At 5 s per iteration, 300 iterations on 30 cases would
+take over 12 hours, excluding tuning. The morning run therefore uses a
+smaller declared iteration budget rather than claiming the original 300.
+
+**G1.** Three settings: step sizes 1, 4, 16. Fix lattice 51, sigma scale .7,
+lambda scale .5 and all other T0 parameters. Run each on the three circle
+contrasts, 30 iterations each, maximum 170 s of optimization and 210 s outer
+wall time per fit. Select one shared setting by lowest mean image RRMSE
+over all three circles; missing or nonfinite images score infinity. If every
+setting is incomplete, prefer the one with most finite scored circles, then
+lowest mean RRMSE among those, and disclose that fallback. Maximum nine fits.
+
+**G2.** Freeze the chosen setting. Run all 30 cases with all 19 frequencies,
+80 iterations maximum, 400 s optimization allowance and 480 s outer limit
+per case, sequentially. Warm starts remain internal to each case. Circle
+cases are rerun under the same final budget and marked as tuning cases.
+Save finite intermediate images and measured fields every ten iterations,
+so an interrupted fit can be reported as partial rather than disappearing.
+Record actual iteration counts, stop reasons and failed-solve information.
+
+**Time bound and delivery.** G1 is at most 31.5 min and G2 at most four hours
+of subprocess wall time. Start immediately after the T0 result is preserved;
+reserve the remaining time before 08:00 for scoring and the report. Do not
+add further tuning after G2 starts. A time-limited image is a partial result,
+not convergence or TG-002 recovery. Score the saved images and retain missing
+or failed cases explicitly in the full 30-row comparison. Commit and push
+each completed run's results and the final report automatically.

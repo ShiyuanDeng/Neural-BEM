@@ -119,7 +119,7 @@ def forward(case, frequency_index, grid_size, *, sigma_scale=.35, pixels=PIXELS,
 
 
 def reconstruct(case, case_settings, *, frequencies=None, pixels=PIXELS, device='cuda',
-                controls=SolverControls(), verbose=False):
+                controls=SolverControls(), verbose=False, max_seconds=None, checkpoint=None):
     """GGB-002: one GauGal fit over several frequencies (FISTA + TV, shared coefficients)."""
     frequencies = list(range(len(case.frequencies_hz))) if frequencies is None else list(frequencies)
     opts = paper_options(case_settings, controls)
@@ -140,28 +140,47 @@ def reconstruct(case, case_settings, *, frequencies=None, pixels=PIXELS, device=
     tv_p, tv_q = None, None
     history = []
     start = perf_counter()
+    stop_reason = 'iteration_limit'
     for it in range(1, opts.num_iter+1):
         with torch.no_grad():
             lam = _lambda_value_for_iteration(base_lam, opts, it)
             projected = torch.clamp(momentum, min=LOWER, max=opts.contrast_max)
             grad = torch.zeros_like(coeff)
             misfit = 0.
+            evaluated_predictions = []
             for j, (m, c, w) in enumerate(zip(models, collocations, weights)):
                 g, fields[j], adjoints[j], prediction = collocation_gradient(m, c, projected, fields[j],
                                                                              adjoints[j], opts)
                 grad += w*g
                 misfit += w*float(torch.linalg.vector_norm(prediction-m.data))**2
+                evaluated_predictions.append(case.strength*torch.diagonal(prediction).cpu().numpy())
+            if not np.isfinite(misfit) or not bool(torch.isfinite(grad).all()):
+                stop_reason = 'nonfinite_gradient'
+                break
+            if checkpoint is not None and (it == 1 or it % 10 == 0):
+                checkpoint(dict(coefficients=projected.cpu().numpy(),
+                    image=render_collocation_contrast(models[0], first, projected).cpu().numpy(),
+                    predictions=np.array(evaluated_predictions), frequencies=frequencies,
+                    history=history+[dict(iteration=it, weighted_misfit=misfit, lam=lam)],
+                    build_seconds=build_seconds, optimize_seconds=perf_counter()-start,
+                    settings=asdict(case_settings), iterations=it, stop_reason='running'))
             candidate = projected-step*grad
             grid, tv_p, tv_q, _ = denoise_tv(candidate.reshape(first.grid_size, first.grid_size), lam*step,
                                              p0=tv_p, q0=tv_q, max_iter=_tv_max_iter_for_iteration(opts, it),
                                              tol=opts.tv_tol, lower_bound=LOWER, upper_bound=opts.contrast_max)
             following = grid.reshape(-1)
+            if not bool(torch.isfinite(following).all()):
+                stop_reason = 'nonfinite_update'
+                break
             q_next = .5*(1.+(1.+4.*q*q)**.5)
             momentum = following+opts.alpha*((q-1.)/q_next)*(following-coeff)
             q, coeff = q_next, following
         history.append(dict(iteration=it, weighted_misfit=misfit, lam=lam))
-        if verbose and (it == 1 or it % 50 == 0):
+        if verbose and (it == 1 or it % 10 == 0):
             print(f'[{case.case_id}] iter {it}: relative misfit^2 mean {misfit/len(frequencies):.3e}', flush=True)
+        if max_seconds is not None and perf_counter()-start >= max_seconds:
+            stop_reason = 'time_limit'
+            break
     torch.cuda.synchronize()
     optimize_seconds = perf_counter()-start
     final = torch.clamp(coeff, min=LOWER, max=opts.contrast_max)
@@ -173,4 +192,10 @@ def reconstruct(case, case_settings, *, frequencies=None, pixels=PIXELS, device=
         image = render_collocation_contrast(models[0], first, final).cpu().numpy()
     return dict(coefficients=final.cpu().numpy(), image=image, predictions=np.array(predictions),
                 frequencies=frequencies, history=history, build_seconds=build_seconds,
-                optimize_seconds=optimize_seconds, settings=asdict(case_settings))
+                optimize_seconds=optimize_seconds, settings=asdict(case_settings),
+                iterations=len(history), stop_reason=stop_reason,
+                linear_solves=[dict(frequency_hz=float(case.frequencies_hz[i]),
+                    calls=len(c.linear_solve_stats),
+                    unconverged=sum(not bool(s.get('converged', 0)) for s in c.linear_solve_stats),
+                    max_final_relative=max((s.get('final_rel', 0.) for s in c.linear_solve_stats), default=0.))
+                    for i, c in zip(frequencies, collocations)])

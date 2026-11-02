@@ -24,7 +24,9 @@ def _cases(names):
 
 def _write(path, payload):
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, indent=1, default=lambda v: v.tolist() if hasattr(v, 'tolist') else str(v)))
+    temporary = path.with_suffix(path.suffix+'.tmp')
+    temporary.write_text(json.dumps(payload, indent=1, default=lambda v: v.tolist() if hasattr(v, 'tolist') else str(v)))
+    temporary.replace(path)
 
 
 def fw_mom(args):
@@ -66,14 +68,30 @@ def fw_gaugal(args):
             print(f'{case_id}: lattice {grid} width {sigma}: worst error {worst:.3e}', flush=True)
 
 
-def gaugal_case(case_id, case_settings, frequencies, folder):
+def gaugal_case(case_id, case_settings, frequencies, folder, max_seconds=None):
     """One GGB-002 GauGal fit, saved with its scores (truth read only after the fit)."""
     from . import gaugal_arm, ggb_scoring as G
     target = folder/f'{case_id}.json'
     if target.exists():
         return json.loads(target.read_text())
     case = D.load(case_id)
-    fit = gaugal_arm.reconstruct(case, case_settings, frequencies=frequencies)
+    def checkpoint(fit):
+        folder.mkdir(parents=True, exist_ok=True)
+        temporary = folder/f'{case_id}.progress.tmp.npz'
+        np.savez_compressed(temporary, image=fit['image'], coefficients=fit['coefficients'],
+                            predictions=fit['predictions'])
+        temporary.replace(folder/f'{case_id}.progress.npz')
+        _write(folder/f'{case_id}.progress.json', {k: v for k, v in fit.items()
+                if k not in ('image', 'coefficients', 'predictions')})
+    fit = gaugal_arm.reconstruct(case, case_settings, frequencies=frequencies, verbose=True,
+                                 max_seconds=max_seconds, checkpoint=checkpoint)
+    return save_gaugal_fit(case, fit, folder)
+
+
+def save_gaugal_fit(case, fit, folder, failure=None):
+    from . import gaugal_arm, ggb_scoring as G
+    case_id = case.case_id
+    target = folder/f'{case_id}.json'
     chi = fit['image']
     folder.mkdir(parents=True, exist_ok=True)
     np.savez_compressed(folder/f'{case_id}.npz', image=chi, coefficients=fit['coefficients'],
@@ -84,7 +102,11 @@ def gaugal_case(case_id, case_settings, frequencies, folder):
                maximum_residual=float(residual.max()), settings=fit['settings'], build_seconds=fit['build_seconds'],
                optimize_seconds=fit['optimize_seconds'], traced=traced,
                traced_curve=None if curve is None else dict(real=curve.coefficients.real, imag=curve.coefficients.imag),
-               history=fit['history'][::10]+fit['history'][-1:])
+               history=fit['history'][::10]+fit['history'][-1:],
+               iterations=fit.get('iterations', len(fit['history'])),
+               linear_solves=fit.get('linear_solves'),
+               stop_reason=fit.get('stop_reason', 'iteration_limit'), failure=failure,
+               status='partial' if failure or fit.get('stop_reason') != 'iteration_limit' else 'completed')
     # Scoring: truth is read from here on.
     row.update(image=G.image_scores(chi, G.truth_image(case, gaugal_arm.PIXELS)),
                boundary=G.boundary_scores(case_id, curve), contrast_true=case.contrast)
@@ -106,7 +128,7 @@ def _gaugal_settings(args, **override):
 def ggb_run(args):
     frequencies = list(range(args.frequencies))
     for case_id in _cases(args.cases):
-        gaugal_case(case_id, _gaugal_settings(args), frequencies, args.out)
+        gaugal_case(case_id, _gaugal_settings(args), frequencies, args.out, args.max_seconds)
 
 
 def ggb_tune(args):
@@ -154,6 +176,7 @@ def main():
         p.add_argument('--step-size', type=float, default=1.)
         p.add_argument('--contrast-max', type=float, default=15.)
         p.add_argument('--num-iter', type=int, default=300)
+        p.add_argument('--max-seconds', type=float, help='optimization wall limit; save the last finite result')
         p.add_argument('--out', type=Path, required=True)
     p = sub.add_parser('ggb-run', help='GGB-002 GauGal fits with one frozen setting')
     p.add_argument('--cases', nargs='+', default=['all'])
