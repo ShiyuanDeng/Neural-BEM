@@ -268,6 +268,11 @@ def make_report(preview=False):
                               cmap='coolwarm', vmin=-1.5, vmax=1.5, interpolation='nearest')
                     curve = objects[case_id].boundary*1000
                     ax.plot(curve.real, curve.imag, color='white', lw=.6, alpha=.8)
+                    if key == 'gaugal':
+                        traced = read(REPO/row[key]['source']).get('traced_curve')
+                        if traced:
+                            boundary = 1000*S.LENGTH*curve_from(traced).values(2048)
+                            ax.plot(boundary.real, boundary.imag, color='black', ls='--', lw=.7)
                 else:
                     ax.set_facecolor('#eeeeee')
                     ax.text(.5, .5, row.get(key, {}).get('status', 'missing'),
@@ -285,7 +290,7 @@ def make_report(preview=False):
                     ax.set_xlabel(f"RMS {fmt(row[key].get('rms_mm'))} mm · "
                                   f"contrast {fmt(row[key].get('contrast'))}\n{outcome}", fontsize=8)
         fig.suptitle(f'Contrast {contrast:g} · susceptibility / |true susceptibility|\n'
-                     'Common scale −1.5–1.5; white outline is truth; values outside scale are clipped', fontsize=11)
+                     'Scale −1.5–1.5 (clipped); white: truth; dashed black: scored GauGal contour', fontsize=11)
         fig.tight_layout(rect=(0, 0, .93, .97 if len(selected)>1 else .84))
         color_axis = fig.add_axes([.95, .12, .012, .65])
         fig.colorbar(plt.cm.ScalarMappable(norm=plt.Normalize(-1.5, 1.5), cmap='coolwarm'), cax=color_axis)
@@ -418,7 +423,8 @@ def make_report(preview=False):
     text += tuning_and_forward(destination)
     text += diagnostic_bem(destination)
     text += ['', '## Reconstruction gallery', '',
-             'White outlines show truth. Every saved output is displayed, including inaccurate '
+             'White outlines show truth; dashed black outlines show the selected GauGal contour '
+             'used for boundary scoring. Every saved output is displayed, including inaccurate '
              'or partial outputs. Color clipping makes severely wrong material values less visible; '
              'read the contrast labels and failure tables alongside the images.', '']
     for contrast in (0.5, 4., 13.3):
