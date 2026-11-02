@@ -523,3 +523,24 @@ The report must include per-arm stopping/failure reasons for every unsuccessful
 case, supported by saved evidence, with hypotheses clearly identified.
 Current process state and remaining work are in `04_handoff.md`; the detached
 overnight runner should continue when another session takes over.
+
+### Report completion, 2026-11-02 02:40 London
+
+**Question.** For each arm and case, what stopped computation, which recovery
+conditions failed, and what do the saved records establish about the cause?
+
+The continuation session verified supervisor PID 2126096 and retained its
+running G1/G2 settings. The report now reads each BEM stage's recorded numerical
+refusals and final field, Jacobian and complete-trial comparisons.
+
+Each arm gets a complete score table and a separate per-case stopping/failure
+table with evidence links. CSV/JSON include contrast error, component times,
+stopping reasons and numerical-check or inner-solve summaries where recorded.
+
+GauGal budget stops, recorded loss trajectories and inner-solve failures are
+reported separately from hypotheses about the cause of image error. The seven
+saved forward cases and earlier S4/S4b failures/timeouts remain explicit.
+
+Verification uses report generation from saved records, inspection of galleries
+and checking all 90 selected outcomes. The existing runner continues to preserve
+each run and will load the updated report module after the final G2 case.
