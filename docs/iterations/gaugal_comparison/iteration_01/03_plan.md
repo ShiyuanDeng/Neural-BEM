@@ -318,3 +318,60 @@ but removing it does not resolve aphex's lower-bound failure. Combining S1
 with these two replacements gives 26/30; this is not a new full 30-case run.
 Cog c13.3 and aphex c4/c13.3 were not rerun because their recorded failures
 were lower-bound failures, not degree-cap failures.
+
+## Amendment 2026-11-02: S4, continue with the sampled log interval
+
+**Question.** Do the four remaining known-contrast failures recover when an
+inconclusive positive-lower-bound calculation no longer stops the forward solve?
+
+**User request.** "try without thatcheck now", referring to the A1 positive
+lower-bound refusal in cog c13.3 and aphex c0.5/c4/c13.3.
+
+**Evidence and hypothesis.** S1/S3 stop these four fits on a trial curve with
+coefficient residuals 1.41, 1.98, 2.04 and 2.79 respectively. These bounds are
+inconclusive. Continuing with the already-positive sampled interval may let
+the optimizer progress. The final field and Jacobian comparisons will still
+test the returned fit under the original recovery criteria.
+
+**Changed condition.** On CPU and CUDA, when the coefficient calculation
+returns a nonpositive lower bound, retain the interval whose lower endpoint
+is half the sampled minimum and use its already-computed logarithm. Do not
+substitute a negative endpoint into the square root. Record this interval as
+sampled and unverified; retain the failed bound and residual in diagnostics.
+Positive coefficient bounds still refine the interval as before. The optional
+`certified_spectral` method still requires its own positive certificate.
+No degree cap, as in S3; keep the series target, finite-value checks, geometry
+checks, trial acceptance, stage policy and final recovery criteria unchanged.
+
+**Runs.** S4: cog c13.3 and aphex c0.5/c4/c13.3, one known-contrast fit each,
+from the prescribed centred start, no localization, modal_muller + slider,
+one worker, four frequency threads and single-threaded BLAS. Fresh directory
+`results/validation/cleaned_interfaces/MR-001/S4_slider_sampled_log_interval/`.
+The GPU has no compute jobs before preparation. Preserve S1 and S3.
+
+**Validation and stopping.** Reproduce the saved S3 aphex c0.5 trial before
+editing; replay it afterward on CPU and CUDA to check both the sampled fallback
+and finite logarithm coefficients. Run the four fits with a 15-minute outer
+time limit. Report all outcomes, final errors and remaining failure reasons;
+stop after these runs and commit and push code, plan and all evidence.
+
+**S4 partial outcome (2026-11-02).** The saved aphex trial returns finite CPU
+and CUDA logarithms using the sampled interval; their relative difference is
+9.75e-14. Cog c13.3 completes in 72.64 s but is not recovered: RMS 0.481 mm,
+Hausdorff upper bound 1.323 mm, maximum data residual 0.246 (limit 0.003), and
+the final field/Jacobian comparisons fail. Aphex c0.5 passes its earlier stop
+and reaches fixed_M25, but the campaign's 900 s outer limit then expires
+(exit 124). Preserve its stage files and last checkpoint; there is no final
+recovery result. Aphex c4 and c13.3 were not reached. The GPU was released.
+
+### S4 continuation: finish the two unstarted cases
+
+**Question.** Do aphex c4 and c13.3 recover with the same sampled-interval
+fallback? The timed-out c0.5 case cannot answer this for the queued cases.
+
+**Conditions and runs.** No numerical or optimizer changes from S4. Run the
+two unstarted cases once each in separate directories under
+`MR-001/S4b_slider_sampled_log_interval/`, with a 300 s outer limit per case,
+sequentially. This prevents one slow case from consuming the other's time.
+Do not repeat cog c13.3 or aphex c0.5. Preserve any timeout evidence, compare
+all four attempted cases together, then stop and commit and push the results.

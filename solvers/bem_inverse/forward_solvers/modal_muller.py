@@ -167,6 +167,7 @@ def _solve(curve, observation, contrast, cutoff, *, context):
     return Prediction(prediction, dict(solver=context.name, device=device, resolution=token(cutoff),
         K_trace=cutoff, window=window, system_residual=residual, fallback=fallback, log_degree=interval['degree'],
         log_lower=interval['lower'], log_upper=interval['upper'], radial_upper=geometry.radial_upper,
+        log_interval_source=interval['interval_source'],
         **radial, graf_order=max(sources[2]['graf_order'], receivers[2]['graf_order']),
         series_terms=sources[2]['series_terms'], series_loss=sources[2]['series_loss']), state)
 

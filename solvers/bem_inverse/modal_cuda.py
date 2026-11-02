@@ -188,14 +188,20 @@ def log_modulus(ww, band, tolerance=1e-16, max_degree=None):
                            arithmetic_verified=False, rounding_model='heuristic FFT allowance')
         if checks.interval_certified(lower, beta):
             break
-        checks.require_positive_certificate(lower, residual)
+        if lower <= 0:
+            # Keep the positive sampled interval, matching the CPU path.
+            break
         beta = lower
     checks.require_finite_log_coefficients(log, device=True)
     return log, dict(upper=upper, lower=beta, sampled_minimum=sampled, proposal_grid=grid, degree=degree,
+                     interval_source='coefficient_residual' if lower > 0 else 'sampled_unverified',
                      series_bound=float(2*ratio**(degree+1)/((degree+1)*(1-ratio))),
                      recomputed=bool(attempt), certificate=certificate,
-                     meaning='beta <= |W|^2 <= Lambda on the torus; beta from the coefficient residual '
-                             'inequality, conditional on a heuristic rounding allowance; not interval verified',
+                     meaning=('beta <= |W|^2 <= Lambda on the torus; beta from the coefficient residual '
+                              'inequality, conditional on a heuristic rounding allowance; not interval verified'
+                              if lower > 0 else
+                              'sampled interval only; coefficient lower bound inconclusive; '
+                              'series_bound is conditional on the interval containing |W|^2'),
                      seconds=perf_counter()-started)
 
 
