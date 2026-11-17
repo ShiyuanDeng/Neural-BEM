@@ -7,7 +7,7 @@ settings, assumptions and unknowns, and it sets how subagents share the work.
 The coordinator (the main session) owns this file. Subagents never edit it.
 They report back, and the coordinator updates the status board and the cards.
 
-Last updated: 17 November 2026, 20:20 (BRG 02 started; CSI 01 finishing).
+Last updated: 17 November 2026, 20:35 (BRG 02 and CSI 02 running).
 
 ## Status board
 
@@ -16,7 +16,7 @@ Last updated: 17 November 2026, 20:20 (BRG 02 started; CSI 01 finishing).
 | Our BEM (default) | [evaluate_our_method](evaluate_our_method/) | [01](evaluate_our_method/01_measure_clean_and_noisy_recovery/results.md), [02](evaluate_our_method/02_run_ablations/results.md), run 17 Nov | TG-002 done | Extend for BRG and CSI data, later inside those investigations |
 | GauGal | [evaluate_our_method](evaluate_our_method/) | [03](evaluate_our_method/03_record_untuned_gaugal_reference/results.md), run 17 Nov | TG-002 untuned reference done | Stage 2 role open (U1) |
 | BRG | [brg_adaptation](brg_adaptation/) | [01 results](brg_adaptation/01_run_published_examples/results.md), [02 plan](brg_adaptation/02_rebuild_paper_examples/plan.md) | 01 done 17 Nov. 02 (six paper cases) started 17 Nov 20:20 | `brg` agent (Codex, astra, high effort): run the six cases; draft the BEM adaptation plan (03) meanwhile |
-| CSI family | [csi_adaptation](csi_adaptation/) | [01 plan](csi_adaptation/01_run_published_examples/plan.md) | Activity 01: both shipped examples done; paper case (2048 iterations) running since 17 Nov 19:29 | `csi` agent (Codex, sol, high effort): finish the paper case, compare with Figure 5, report |
+| CSI family | [csi_adaptation](csi_adaptation/) | [01 results](csi_adaptation/01_run_published_examples/results.md) | 01 done 17 Nov. 02 (measured Fresnel cylinder, all three methods) started 17 Nov 20:35 | `csi` agent (Codex, sol, high effort): run `dielTM_dec8f`, preview its score, cost the simulated cases |
 
 **Setup checked on 17 November 2026:** the user made the MaxwellFDFD link and
 signed in to MATLAB (online licensing). `matlab -batch` runs, the C compiler
@@ -203,6 +203,22 @@ Rules for every table:
   - The paper case is one small cylinder inside the foam and one beside it,
     not two inside.
 
+  - Result of 01: all three steps ran, 34 minutes in total. On the paper
+    case MF-CC-CSI agrees with Figure 5 by eye (two cylinders, contrast
+    near 2.5). MR-CSI gives a clean image where the paper shows a failure;
+    this is unexplained and is checked first in activity 02.
+  - Native time on the paper case: 948 s (MF-CC-CSI) and 840 s (MR-CSI)
+    for 2048 iterations, with BRG overlapping.
+  - Data table, mask, calibration and sign rules for our adapter are in
+    the last section of the
+    [01 results](csi_adaptation/01_run_published_examples/results.md).
+- **Decided for activity 02 (coordinator, 17 November):**
+  - Case `dielTM_dec8f`, all eight frequencies, 2048 iterations, all three
+    methods. The driver and paper give this case no domain or cell, so:
+    centre at the origin, half-widths 70 mm, 1.25 mm cells.
+  - The shipped antenna radius stays; it only matters for second-opus
+    cases, which table C does not use.
+
 ## Who decides
 
 On 17 November 2026 the user handed these calls to the coordinator: "you are
@@ -227,8 +243,9 @@ feedbacks. remember the big picture: to generate comparison with my bem."
   TG-002 reference only?
 - **U2.** Which investigation extends `solvers/bem_inverse/` first? The user
   said this comes "down the line in these iterations".
-- **U3.** Image threshold for CSI (and GauGal): keep protocol version 1 (half
-  the peak, with 0.3 and 0.7 kept as sensitivity scores)?
+- **U3.** Decided by the coordinator, 17 November: keep protocol version 1
+  for CSI images (half the peak, with the peak's sign; 0.3 and 0.7 kept as
+  sensitivity scores). Raw arrays are saved, so a recount needs no rerun.
 - **U4.** Simulated CSI cases: generated with their FDFD forward, our BEM
   forward, or both, cross-checked?
 - **U5.** Success cut-off for tables B and C: keep area error ≤5%, or report
@@ -255,6 +272,8 @@ needs it, and recorded here.
 | 17 Nov | BRG: draft the activity 02 plan during the 4 h run | Uses the waiting time; nothing in 02 runs yet |
 | 17 Nov | Commit at most about 5 MB per run; bulk stays local and ignored | The first hour pushed 654 MB of results |
 | 17 Nov | BRG 02: go, with the choices listed in the BRG card | The paper leaves them open; each choice follows the authors' code or their published figure |
+| 17 Nov | CSI 02: go on the measured Fresnel cylinder, with the choices in the CSI card | It is table C's measured case; its timings cost the simulated cases |
+| 17 Nov | U3: protocol version 1 threshold for CSI images | Same rule as table A; no new choice to defend |
 | 17 Nov | U2: the BRG investigation extends our solver first; `brg` drafts that plan (03), and the coordinator reviews it before any solver edit | Plane waves plus an unpaired table cover what CSI needs too |
 
 **Open with the user:** about 654 MB of result files are already pushed
