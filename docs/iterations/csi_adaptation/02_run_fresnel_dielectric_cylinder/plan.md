@@ -6,6 +6,14 @@ Authorized and started 17 November 2026. The coordinator accepted activity
 01 and opened this activity without another go. Stop after reporting it.
 Use the current branch; edit only CSI paths. No solver or scoring edits.
 
+Completed 17 November 2026: all three methods ran 2048 iterations; detached
+launcher exit 0, 5634.383 s wall time. Explicit interpolation: eight exact
+passes after one retained harness failure. Protocol-1 previews and the
+future cost model are saved. The numerical centroids expose an unverified
+mapping to the unlabelled paper drawing; no post-fit alignment was made.
+Future contrast/domain limits are recorded in `results.md`. No synthetic
+run was started. Stop here for coordinator review.
+
 The coordinator set: keep shipped radii; keep exported numerical coordinates;
 use protocol version 1 support at half the signed peak, retaining 0.3 and
 0.7 sensitivity scores. Import the existing comparison scoring functions.
@@ -61,6 +69,14 @@ of reading. This is 2 h 52 min 53 s, below four hours. Detached run limit:
 12600 s, reserving the reading allowance. See `reading.md` and the saved
 `preflight_time_model.json`. The explicit interpolation check passed all
 eight cases with zero difference; the failed first harness is retained.
+
+Reading finished before the detached inversion started at 20:22:29 UTC
+on 17 November. Launcher PID 637150 is a session/group leader with no
+terminal; MATLAB PID 637156. `setsid nohup` command and stdout are retained
+under `results/csi/fresnel/2026-11-17_diel_tm_detached.json` and the adjacent
+launcher log. `poll_run.py` records overlap in the run's `overlap.jsonl`.
+The first samples show concurrent BRG MATLAB PID 633170. All times remain
+indicative. No synthetic Fresnel-layout or TG-002 fit is authorized here.
 
 ## Commands and outputs
 

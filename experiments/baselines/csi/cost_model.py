@@ -51,6 +51,16 @@ def main():
                 'Receiver count, sparse factorization, contrast and line search can change the rate.',
                 'Forward simulation/data generation is not timed by these inverse measurements.',
                 'Relative permittivity 0.5 gives negative contrast, excluded by the unchanged positivity constraint.'])
+    domain_path=args.output.parent/'tg002_domain_check.json'
+    if domain_path.exists():
+        domain=json.loads(domain_path.read_text())
+        axis=domain['conditional_cells_per_axis']; factor=axis**2/(112*112)
+        record['tg002']['domain_check']=str(domain_path.resolve().relative_to(REPO))
+        record['tg002']['conditional_coverage_grid']=dict(
+            half_width_mm=domain['conditional_common_half_width_mm'],cells_per_axis=axis,
+            work_multiplier=factor,pooled_inverse_hours=single*20/3600*factor,
+            matched_inverse_hours=matched*20/3600*factor if matched else None,
+            status='cost scenario only; not a selected or authorized simulation setting')
     args.output.parent.mkdir(parents=True,exist_ok=True)
     args.output.write_text(json.dumps(record,indent=2)+'\n')
     print(json.dumps({k:record[k] for k in ('three_method_compute_seconds','preflight_total_seconds_with_20percent_plus_120s_and_30min_reading','tg002')},indent=2))

@@ -1,0 +1,33 @@
+{
+  "inversion": [
+    "setsid",
+    "nohup",
+    "python3",
+    "experiments/baselines/csi/run.py",
+    "diel_tm",
+    "--timeout-seconds",
+    "12600"
+  ],
+  "analysis": [
+    "python3",
+    "experiments/baselines/csi/analyze.py",
+    "results/csi/fresnel/2026-11-17_diel_tm"
+  ],
+  "score_preview": [
+    "env",
+    "PYTHONPATH=solvers:.",
+    "/home/drdeng/miniconda3/envs/EMNerf/bin/python",
+    "experiments/baselines/csi/score_preview.py",
+    "results/csi/fresnel/2026-11-17_diel_tm"
+  ],
+  "cost_model": [
+    "python3",
+    "experiments/baselines/csi/cost_model.py",
+    "results/csi/fresnel/2026-11-17_diel_tm/cost_model.json"
+  ],
+  "manifest": [
+    "python3",
+    "experiments/baselines/csi/manifest.py",
+    "results/csi/fresnel/2026-11-17_diel_tm"
+  ]
+}

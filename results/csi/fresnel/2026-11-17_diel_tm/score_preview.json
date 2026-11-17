@@ -1,0 +1,282 @@
+{
+  "protocol": {
+    "version": 1,
+    "grid_cells": 201,
+    "grid_half_width_m": 0.1,
+    "support_fraction_of_peak": 0.5,
+    "sign": "sign of the largest-magnitude image value",
+    "fill": "even-odd over all closed level lines",
+    "connectivity": "scikit-image marching squares, fully_connected=low",
+    "minimum_component": "none",
+    "empty_region": "area_error 1; boundary and centroid scores null",
+    "curve_samples": 16384,
+    "boundary_spacing_m": 5e-05,
+    "sensitivity_fractions": [
+      0.3,
+      0.7
+    ],
+    "residual_limit": "max(0.003, 3 x realized noise) per frequency"
+  },
+  "truth": {
+    "radius_mm": 15,
+    "centroid_mm": [
+      -30,
+      0
+    ],
+    "relative_permittivity": 3,
+    "relative_permittivity_uncertainty": 0.3,
+    "susceptibility": 2,
+    "source": "Belkebir and Saillard (2001), section 4.2, Figure 6(a), Figure 7, Table 1",
+    "url": "https://doi.org/10.1088/0266-5611/17/6/301",
+    "frame": "declared before inversion: rightward x/upward y of the paper drawing; no post-fit alignment",
+    "numerical_frame_alignment_verified": false,
+    "warning": "The database drawing does not label numerical axes. Drawing-frame area_error and centroid_mm are not verified physical recovery errors."
+  },
+  "methods": [
+    {
+      "method": "MF-CC-CSI",
+      "real_spread_across_frequencies": 0.0,
+      "scores": [
+        {
+          "fraction": 0.5,
+          "image_peak": 2.148847005127468,
+          "true_area_mm2": 706.858329731598,
+          "area_mm2": 736.5367556392986,
+          "components": 1,
+          "holes": 0,
+          "centroid_xy_mm": [
+            1.8874099234973092,
+            26.351259828704947
+          ],
+          "mean_susceptibility": 1.7292666547264954,
+          "mean_relative_permittivity": 2.729266654726495,
+          "mean_susceptibility_relative_error": -0.13536667263675228,
+          "mean_relative_permittivity_relative_error": -0.09024444842450163,
+          "ring_repaired": false,
+          "centroid_radius_mm": 26.418766261489864,
+          "area_relative_difference": 0.04198638490823159,
+          "unregistered_drawing_frame_metrics": {
+            "area_error": 2.0419863849082316,
+            "missing_area": 0.9999999999999999,
+            "excess_area": 1.0419863849082318,
+            "centroid_mm": 41.36660254588307
+          }
+        },
+        {
+          "fraction": 0.3,
+          "image_peak": 2.148847005127468,
+          "true_area_mm2": 706.858329731598,
+          "area_mm2": 823.2465711310737,
+          "components": 1,
+          "holes": 0,
+          "centroid_xy_mm": [
+            1.8785793053313151,
+            26.420071244933446
+          ],
+          "mean_susceptibility": 1.6413201857384168,
+          "mean_relative_permittivity": 2.641320185738417,
+          "mean_susceptibility_relative_error": -0.17933990713079162,
+          "mean_relative_permittivity_relative_error": -0.11955993808719434,
+          "ring_repaired": false,
+          "centroid_radius_mm": 26.486774526049377,
+          "area_relative_difference": 0.16465568347149495,
+          "unregistered_drawing_frame_metrics": {
+            "area_error": 2.1646556834714947,
+            "missing_area": 0.9999999999999999,
+            "excess_area": 1.1646556834714947,
+            "centroid_mm": 41.4036711308749
+          }
+        },
+        {
+          "fraction": 0.7,
+          "image_peak": 2.148847005127468,
+          "true_area_mm2": 706.858329731598,
+          "area_mm2": 540.1921969181165,
+          "components": 1,
+          "holes": 1,
+          "centroid_xy_mm": [
+            1.8891302153021152,
+            26.324418612608078
+          ],
+          "mean_susceptibility": 1.8792618295581796,
+          "mean_relative_permittivity": 2.8792618295581796,
+          "mean_susceptibility_relative_error": -0.060369085220910224,
+          "mean_relative_permittivity_relative_error": -0.04024605681394011,
+          "ring_repaired": false,
+          "centroid_radius_mm": 26.392116782520382,
+          "area_relative_difference": -0.23578435140852982,
+          "unregistered_drawing_frame_metrics": {
+            "area_error": 1.7642156485914697,
+            "missing_area": 0.9999999999999999,
+            "excess_area": 0.7642156485914698,
+            "centroid_mm": 41.35083603967769
+          }
+        }
+      ]
+    },
+    {
+      "method": "MF-MR-CSI",
+      "real_spread_across_frequencies": 0.0,
+      "scores": [
+        {
+          "fraction": 0.5,
+          "image_peak": 2.18594130006061,
+          "true_area_mm2": 706.858329731598,
+          "area_mm2": 715.6591255114716,
+          "components": 1,
+          "holes": 0,
+          "centroid_xy_mm": [
+            1.6148355836237231,
+            26.281979324651317
+          ],
+          "mean_susceptibility": 2.0121050556332567,
+          "mean_relative_permittivity": 3.0121050556332567,
+          "mean_susceptibility_relative_error": 0.00605252781662835,
+          "mean_relative_permittivity_relative_error": 0.0040350185444189,
+          "ring_repaired": false,
+          "centroid_radius_mm": 26.331542514321804,
+          "area_relative_difference": 0.012450579429707398,
+          "unregistered_drawing_frame_metrics": {
+            "area_error": 2.012450579429707,
+            "missing_area": 0.9999999999999999,
+            "excess_area": 1.0124505794297074,
+            "centroid_mm": 41.112531741562044
+          }
+        },
+        {
+          "fraction": 0.3,
+          "image_peak": 2.18594130006061,
+          "true_area_mm2": 706.858329731598,
+          "area_mm2": 758.0383877728389,
+          "components": 1,
+          "holes": 0,
+          "centroid_xy_mm": [
+            1.7162635559311756,
+            26.263488840196086
+          ],
+          "mean_susceptibility": 1.9648075603958477,
+          "mean_relative_permittivity": 2.9648075603958475,
+          "mean_susceptibility_relative_error": -0.017596219802076152,
+          "mean_relative_permittivity_relative_error": -0.011730813201384138,
+          "ring_repaired": false,
+          "centroid_radius_mm": 26.319506200772874,
+          "area_relative_difference": 0.07240497266358092,
+          "unregistered_drawing_frame_metrics": {
+            "area_error": 2.072404972663582,
+            "missing_area": 0.9999999999999999,
+            "excess_area": 1.0724049726635818,
+            "centroid_mm": 41.17878361496827
+          }
+        },
+        {
+          "fraction": 0.7,
+          "image_peak": 2.18594130006061,
+          "true_area_mm2": 706.858329731598,
+          "area_mm2": 676.7394805316228,
+          "components": 1,
+          "holes": 0,
+          "centroid_xy_mm": [
+            1.6137858394003066,
+            26.322076252338796
+          ],
+          "mean_susceptibility": 2.0609464235275428,
+          "mean_relative_permittivity": 3.0609464235275428,
+          "mean_susceptibility_relative_error": 0.03047321176377138,
+          "mean_relative_permittivity_relative_error": 0.02031547450918092,
+          "ring_repaired": false,
+          "centroid_radius_mm": 26.371499824040857,
+          "area_relative_difference": -0.04260945642588898,
+          "unregistered_drawing_frame_metrics": {
+            "area_error": 1.9573905435741112,
+            "missing_area": 0.9999999999999999,
+            "excess_area": 0.9573905435741115,
+            "centroid_mm": 41.13736930496883
+          }
+        }
+      ]
+    },
+    {
+      "method": "CSI",
+      "real_spread_across_frequencies": 0.0,
+      "scores": [
+        {
+          "fraction": 0.5,
+          "image_peak": 2.8568498638502167,
+          "true_area_mm2": 706.858329731598,
+          "area_mm2": 566.5040716912965,
+          "components": 1,
+          "holes": 1,
+          "centroid_xy_mm": [
+            1.8378292797037779,
+            26.52950526272891
+          ],
+          "mean_susceptibility": 2.2808758548628494,
+          "mean_relative_permittivity": 3.2808758548628494,
+          "mean_susceptibility_relative_error": 0.1404379274314247,
+          "mean_relative_permittivity_relative_error": 0.09362528495428313,
+          "ring_repaired": false,
+          "centroid_radius_mm": 26.59308680741101,
+          "area_relative_difference": -0.1985606622101993,
+          "unregistered_drawing_frame_metrics": {
+            "area_error": 1.8014393377898008,
+            "missing_area": 0.9999999999999999,
+            "excess_area": 0.8014393377898008,
+            "centroid_mm": 41.442273377901344
+          }
+        },
+        {
+          "fraction": 0.3,
+          "image_peak": 2.8568498638502167,
+          "true_area_mm2": 706.858329731598,
+          "area_mm2": 671.1284043894299,
+          "components": 1,
+          "holes": 0,
+          "centroid_xy_mm": [
+            1.8622724107049642,
+            26.638118612093546
+          ],
+          "mean_susceptibility": 2.0985702633817422,
+          "mean_relative_permittivity": 3.0985702633817422,
+          "mean_susceptibility_relative_error": 0.04928513169087112,
+          "mean_relative_permittivity_relative_error": 0.03285675446058067,
+          "ring_repaired": false,
+          "centroid_radius_mm": 26.70313505421484,
+          "area_relative_difference": -0.050547505545750826,
+          "unregistered_drawing_frame_metrics": {
+            "area_error": 1.94945249445425,
+            "missing_area": 0.9999999999999999,
+            "excess_area": 0.94945249445425,
+            "centroid_mm": 41.5306364791815
+          }
+        },
+        {
+          "fraction": 0.7,
+          "image_peak": 2.8568498638502167,
+          "true_area_mm2": 706.858329731598,
+          "area_mm2": 422.9805017671659,
+          "components": 1,
+          "holes": 1,
+          "centroid_xy_mm": [
+            1.7473048534226774,
+            26.24836906656343
+          ],
+          "mean_susceptibility": 2.4680388763145107,
+          "mean_relative_permittivity": 3.4680388763145107,
+          "mean_susceptibility_relative_error": 0.23401943815725534,
+          "mean_relative_permittivity_relative_error": 0.15601295877150356,
+          "ring_repaired": false,
+          "centroid_radius_mm": 26.30646218907663,
+          "area_relative_difference": -0.4016049836637332,
+          "unregistered_drawing_frame_metrics": {
+            "area_error": 1.5983950163362672,
+            "missing_area": 0.9999999999999999,
+            "excess_area": 0.5983950163362673,
+            "centroid_mm": 41.193060630531754
+          }
+        }
+      ]
+    }
+  ],
+  "adapter": "raw unmasked Re(chi), physical x/y, linear resampling to frozen 201x201 +/-100 mm grid; zero outside native domain",
+  "api_limit": "Full score() is TG-002-specific; imports support_rings, region and region_scores without edits."
+}
