@@ -7,7 +7,7 @@ settings, assumptions and unknowns, and it sets how subagents share the work.
 The coordinator (the main session) owns this file. Subagents never edit it.
 They report back, and the coordinator updates the status board and the cards.
 
-Last updated: 17 November 2026, 23:20 (BEM side to move to a second coordinator).
+Last updated: 17 November 2026, 23:40 (CSI simulated campaign approved: MF-CC-CSI only).
 
 ## Status board
 
@@ -16,7 +16,7 @@ Last updated: 17 November 2026, 23:20 (BEM side to move to a second coordinator)
 | Our BEM (default) | [evaluate_our_method](evaluate_our_method/) | [01](evaluate_our_method/01_measure_clean_and_noisy_recovery/results.md), [02](evaluate_our_method/02_run_ablations/results.md), run 17 Nov | TG-002 done | Extend for BRG and CSI data, later inside those investigations |
 | GauGal | [evaluate_our_method](evaluate_our_method/) | [03](evaluate_our_method/03_record_untuned_gaugal_reference/results.md), run 17 Nov | TG-002 untuned reference done | Stage 2 role open (U1) |
 | BRG | [brg_adaptation](brg_adaptation/) | [01 results](brg_adaptation/01_run_published_examples/results.md), [02 plan](brg_adaptation/02_rebuild_paper_examples/plan.md) | 01 done 17 Nov. 02 (six paper cases): 2 of 6 done, 4 running to k = 15. 03 (adapt our BEM to BRG data): adapter done, 1 of 6 fits run, stopped for handover | `brg` agent (Codex, astra, high effort): finish the paper cases at k = 15 and report; no more BEM work |
-| CSI family | [csi_adaptation](csi_adaptation/) | [01 results](csi_adaptation/01_run_published_examples/results.md) | 01 and [02](csi_adaptation/02_run_fresnel_dielectric_cylinder/results.md) done 17 Nov. 03 (prepare the simulated TG-002 cases) started 17 Nov 22:25 | `csi` agent (Codex, sol, high effort): fix the frame, test whether 2048 iterations are needed, time one simulated case; no campaign yet |
+| CSI family | [csi_adaptation](csi_adaptation/) | [01 results](csi_adaptation/01_run_published_examples/results.md) | 01 and [02](csi_adaptation/02_run_fresnel_dielectric_cylinder/results.md) done 17 Nov. 03 (prepare the simulated TG-002 cases) running. 04 (run the 10 simulated cases, MF-CC-CSI) approved by the user 17 Nov 23:40 | `csi` agent (Codex, sol, high effort): finish 03, then run 04 three fits at a time; 6 h budget |
 
 **Setup checked on 17 November 2026:** the user made the MaxwellFDFD link and
 signed in to MATLAB (online licensing). `matlab -batch` runs, the C compiler
@@ -54,7 +54,7 @@ one of six fits run). It stops there.
 | A. TG-002 (Stage 1) | 10 shapes at contrasts 0.5 and 4 (20 cases); contrast 13.3 for BEM only | BEM default, GauGal untuned | Done. No claims (user: claims "should wait until we see how baselines perform in stage 2") |
 | B1. BRG on TG-002 shapes (main BRG table) | 10 shapes at contrasts 0.5 and 4, with BRG-style plane-wave data | BRG, BEM with known contrast; BEM with recovered contrast as an extra row | Plan to be drafted (BRG activity 04) |
 | B2. BRG paper cases | Paper examples 1–3, six runs | BRG; BEM with known contrast up to about k = 13 | BRG: 1 of 6 done. BEM: adapter in progress |
-| C. CSI cases | Fresnel `dielTM_dec8f`, plus the 10 TG-002 shapes at contrast 4 simulated in the Fresnel layout | MF-CC-CSI, MR-CSI, CSI, BEM with recovered contrast | CSI: measured case done; simulated cases being prepared. BEM: not started |
+| C. CSI cases | Fresnel `dielTM_dec8f` (1 scene), plus the 10 TG-002 shapes at contrast 4 simulated in the Fresnel layout | Measured scene: MF-CC-CSI, MR-CSI, CSI. Simulated scenes: MF-CC-CSI only, for now. BEM with recovered contrast on both | CSI: measured scene done; simulated campaign approved by the user, starting after preparation. BEM: not started (BEM side) |
 
 Rules for every table:
 - Their code and published settings are not changed. Our method is adapted to
@@ -273,7 +273,11 @@ Rules for every table:
   - So table C's simulated cases are the 10 TG-002 shapes at contrast 4.
   - Grid 166 × 166 at 1.25 mm, because the shapes reach 96 mm.
   - Cost forecast: about 34 h for three methods, about 12 h for MF-CC-CSI
-    alone, at 2048 iterations. The campaign waits on the user's deadline.
+    alone, at 2048 iterations.
+  - User, 17 November: "okay for now keep only mf-cc-csi, and run them
+    three at time". So the simulated campaign is MF-CC-CSI only, three fits
+    at a time, 2048 iterations with snapshots at 256, 512 and 1024.
+    MR-CSI and CSI stay on the measured cylinder only, for now.
 
 ## Who decides
 
