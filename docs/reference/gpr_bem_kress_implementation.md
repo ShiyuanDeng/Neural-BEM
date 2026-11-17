@@ -534,7 +534,7 @@ earlier pre-move `/usr/bin/time` snapshot reported
 high-water mark of the entire Python test process, not isolated solver memory.
 
 The compact persisted evidence is indexed at
-[`results/ordered_boundary_nystrom/README.md`](../../results/validation/ordered_boundary_nystrom/README.md).
+[`results/ordered_boundary_nystrom/README.md`](https://github.com/ShiyuanDeng/Neural-BEM/blob/5cc25845e51b5cec4e16b4e1b3602555a023b832/results/validation/ordered_boundary_nystrom/README.md).
 The exact circle/ellipse/star run contains 27 rows over
 `N={64,128,256}` and 0.5, 2.5, and 8 GHz; all nine configured largest-`N`
 smoke checks pass. Its worst `N=256` receiver/trace errors are `1.22e-8` and
@@ -553,7 +553,7 @@ self-convergence ladder; and explicit transmission residuals, lossy physics,
 grid/bandwidth convergence through the solver, full-ring FDTD evidence, and
 normal pipeline wiring remain open. The fixed-resolution same-SDF MOD/Kress
 comparison is recorded separately in
-[`results/solver_comparisons/kress-peer-20260902/summary.md`](../../results/validation/solver_comparisons/kress-peer-20260902/summary.md).
+[`results/solver_comparisons/kress-peer-20260902/summary.md`](https://github.com/ShiyuanDeng/Neural-BEM/blob/5cc25845e51b5cec4e16b4e1b3602555a023b832/results/validation/solver_comparisons/kress-peer-20260902/summary.md).
 That comparison's acceptance helper gates receiver L2 and superiority to MOD
 at all six reported frequencies, rather than enforcing only the original
 0.5/1.5/2.5 GHz subset. The machine-readable export uses strict JSON (`null`

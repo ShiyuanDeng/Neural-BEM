@@ -4,7 +4,7 @@
 this branch; they remain on `feature/shape-frequency-continuation`. Do not add far-start cases
 or a grid-search initializer to new experiments. The user retired both on 2026-10-04.
 
-![TG-002 scenes](../../results/validation/cleaned_interfaces/TG-002/gallery.png)
+![TG-002 scenes](../../development_results/TG-002/gallery.png)
 
 ## What it is
 

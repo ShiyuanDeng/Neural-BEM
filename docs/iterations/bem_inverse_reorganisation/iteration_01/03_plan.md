@@ -7,7 +7,7 @@ Approval: the user asked to implement every change in
 the existing `organised`. No new branch or worktree. Owner: Claude.
 
 **Executed 2026-10-25**, one run, no setting changes:
-[results](../../../../results/validation/cleaned_interfaces/NR-001/README.md).
+[results](../../../../development_results/NR-001/README.md).
 26/30 recovered (the same 26 as PC-001 M1); P1–P3 hold.
 
 ## Question

@@ -16,7 +16,7 @@ that scene for soft constraint.” “Soft constraint” is the level penalty.
 
 **Ran 2026-10-25:** the CUDA slider passes, and no penalty weight recovers hook,
 so the Aphex step did not run. See
-[the GU-002 results](../../../../results/validation/cleaned_interfaces/GU-002/README.md).
+[the GU-002 results](../../../../development_results/GU-002/README.md).
 
 The requested ratios need two same-machine reference fits that the earlier
 draft excluded: a spectral baseline and a slider with CPU preparation. They are
@@ -61,7 +61,7 @@ with `eigh` but 135 ms with `gesvd`, which is slower than the CPU solve.
 
 ## Existing evidence
 
-[GU-001](../../../../results/validation/cleaned_interfaces/GU-001/README.md)
+[GU-001](../../../../development_results/GU-001/README.md)
 ran on the Mac CPU. Slider recovered hook c13.3 with about 0.0002 mm RMS.
 Its 497 s fit included 37.83 s in 142 preparations and 0.72 s constructing
 trials. That timing share need not hold with CUDA physics.

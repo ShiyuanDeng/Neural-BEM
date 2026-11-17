@@ -18,7 +18,7 @@ from experiments.benchmark import scenes as S
 from experiments.cleaned_interface import benchmark as ci
 
 ROOT = Path(__file__).resolve().parents[2]
-INPUTS = ROOT/'results/validation/cleaned_interfaces/TG-002/inputs'
+INPUTS = ROOT/'development_results/TG-002/inputs'
 BOX_HALF_WIDTH_M = .1          # every truth curve lies inside +-0.1 m of the centre
 
 

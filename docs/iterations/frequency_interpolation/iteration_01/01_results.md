@@ -16,7 +16,7 @@ frequencies, family tuning or solver changes were run.
 
 At 14 exact nodes, the five held-out frequencies are 0.875, 1.25, 1.5,
 1.625 and 1.875 GHz. All five fail the field tolerance in every row below.
-The full 36-row [table](../../../../results/validation/cleaned_interfaces/FI-001/table.md)
+The full 36-row [table](https://github.com/ShiyuanDeng/Neural-BEM/blob/af68817f7917cfa927355862dad4e3929c098321/results/validation/cleaned_interfaces/FI-001/table.md)
 also includes 4, 6, 8, 10 and 12 nodes.
 
 | Curve | Arm | Worst field error | Worst stacked J error | Exact s | Interpolated s | Raw saving |
@@ -70,11 +70,11 @@ Contrast 13.3 is not required for failure: peanut at contrast 4 also fails.
 The hook failures are larger, but shape and contrast differ together.
 This study cannot separate their effects.
 
-![Hook field errors at both resolutions](../../../../results/validation/cleaned_interfaces/FI-001/fields_by_frequency.svg)
+![Hook field errors at both resolutions](https://github.com/ShiyuanDeng/Neural-BEM/blob/af68817f7917cfa927355862dad4e3929c098321/results/validation/cleaned_interfaces/FI-001/fields_by_frequency.svg)
 
-[Local Jacobian errors](../../../../results/validation/cleaned_interfaces/FI-001/jacobians_by_frequency.svg)
+[Local Jacobian errors](https://github.com/ShiyuanDeng/Neural-BEM/blob/af68817f7917cfa927355862dad4e3929c098321/results/validation/cleaned_interfaces/FI-001/jacobians_by_frequency.svg)
 are diagnostic; their 1e-3 line is not the stacked-column decision rule.
-[Exact response norms](../../../../results/validation/cleaned_interfaces/FI-001/exact_response.svg)
+[Exact response norms](https://github.com/ShiyuanDeng/Neural-BEM/blob/af68817f7917cfa927355862dad4e3929c098321/results/validation/cleaned_interfaces/FI-001/exact_response.svg)
 show the same saved reference data without interpolation.
 
 ## Meaning for D02 and Haibing's items
@@ -157,8 +157,8 @@ checks were run. All 36 numerical comparisons and the same-output failure
 analysis completed; there were no failed executions or additional fits.
 
 - [Execution choices](04_execution.md) and [original plan](03_plan.md).
-- [Run manifests, exact outputs and per-setting JSON](../../../../results/validation/cleaned_interfaces/FI-001/).
-- [Full machine-readable table](../../../../results/validation/cleaned_interfaces/FI-001/table.csv).
-- [Saved-response analysis](../../../../results/validation/cleaned_interfaces/FI-001/response_analysis.json).
+- [Run manifests, exact outputs and per-setting JSON](https://github.com/ShiyuanDeng/Neural-BEM/tree/af68817f7917cfa927355862dad4e3929c098321/results/validation/cleaned_interfaces/FI-001).
+- [Full machine-readable table](https://github.com/ShiyuanDeng/Neural-BEM/blob/af68817f7917cfa927355862dad4e3929c098321/results/validation/cleaned_interfaces/FI-001/table.csv).
+- [Saved-response analysis](https://github.com/ShiyuanDeng/Neural-BEM/blob/af68817f7917cfa927355862dad4e3929c098321/results/validation/cleaned_interfaces/FI-001/response_analysis.json).
 - [Prototype](../../../../experiments/frequency_interpolation/study.py) and
   [analysis code](../../../../experiments/frequency_interpolation/analyze.py).

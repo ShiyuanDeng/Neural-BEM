@@ -1,11 +1,16 @@
-# Evidence behind the current pipeline
+# Development evidence for earlier pipeline choices
 
 This page records why the pipeline on this branch looks the way it does: which
 choices were tested, what each test measured, and what is still unknown. It
 replaces the dated iteration logs, which were removed with the code they described.
-Every number below comes from a data file kept on this branch; section 10 lists them.
+This is a historical development record, not the final comparison protocol.
+Compact evidence is in [development_results](../development_results/README.md);
+full run histories remain at the pinned revisions listed there.
 
-The pipeline is `modal_fixed` on TG-002: modal Müller physics, the
+The settings and recovery checks below describe those earlier runs. Current defaults
+and the revised pass rule are in the [benchmark README](../experiments/benchmark/README.md).
+
+The historical reference pipeline was `modal_fixed` on TG-002: modal Müller physics, the
 `certified_spectral` geometry update, the default `CumulativePolicy`, and the centred
 start with no grid search (`--localization none`).
 
@@ -507,22 +512,24 @@ These modules are still imported by the pipeline but have no TG-002 evidence.
 - Any recovery of aphex at any contrast.
 - The four-control schedule beyond `hook__c13.3`.
 
-## 10. Data files on this branch
+## 10. Retained files and archived runs
 
-All paths are under `results/validation/`.
+Paths below are relative to `development_results/`, except the full PC-001 run,
+which is preserved in Git. The [archive index](../development_results/archive_index.json)
+maps every original result file to its retained location or the original Git blob.
 
 | Section | Files |
 |---|---|
-| 1, 2 | `cleaned_interfaces/TG-002/` (sealed inputs); `cleaned_interfaces/PC-001/M1/` (every receipt of the reference run) |
-| 3.1 | `cleaned_interfaces/CI-001-modal-review/README.md`, `modal-muller-cuda-20261001/README.md`, `modal-muller-fixes-20261001/README.md` |
-| 3.2 | `cleaned_interfaces/PC-001/report.md`, `comparison.csv`; `cleaned_interfaces/PC-002/README.md` |
-| 3.3 | `cleaned_interfaces/AC-001/scalars.json`, `forward.json`; `cleaned_interfaces/AC-002/profile.json` |
-| 4.1 | `cleaned_interfaces/NU-005/comparison.csv`, `NU-006/comparison.csv`, `NU-006-precheck/precheck.json`, `NU-007a-20261003/README.md` |
-| 4.2 | `cleaned_interfaces/GC-001/README.md` |
-| 4.3, 5.1, 6 | `cleaned_interfaces/ON-001/final_table.md`, `final_comparison.json`; `cleaned_interfaces/inverse-pipeline-audit-20261005/receipt_analysis.json` |
-| 5.2 | `cleaned_interfaces/DP-001/table.md`, `final_comparison.json` |
-| 5.3 | `cleaned_interfaces/RG-001/table.md`, `timing_table.md`, `closeout.json` |
-| 5.4 | `cleaned_interfaces/CS-001/table.md`, `report.json` |
+| 1, 2 | `TG-002/` (sealed inputs); [PC-001/M1](https://github.com/ShiyuanDeng/Neural-BEM/tree/af68817f7917cfa927355862dad4e3929c098321/results/validation/cleaned_interfaces/PC-001/M1) (full reference run in Git) |
+| 3.1 | `CI-001-modal-review/README.md`, `modal-muller-cuda-20261001/README.md`, `modal-muller-fixes-20261001/README.md` |
+| 3.2 | `PC-001/report.md`, `comparison.csv`; `PC-002/README.md` |
+| 3.3 | `AC-001/scalars.json`, `forward.json`; `AC-002/profile.json` |
+| 4.1 | `NU-005/comparison.csv`, `NU-006/comparison.csv`, `NU-006-precheck/precheck.json`, `NU-007a-20261003/README.md` |
+| 4.2 | `GC-001/README.md` |
+| 4.3, 5.1, 6 | `ON-001/final_table.md`, `final_comparison.json`; `inverse-pipeline-audit-20261005/receipt_analysis.json` |
+| 5.2 | `DP-001/table.md`, `final_comparison.json` |
+| 5.3 | `RG-001/table.md`, `timing_table.md`, `closeout.json` |
+| 5.4 | `CS-001/table.md`, `report.json` |
 | 7.2 | `modal_atlas/MA-007/research18-001/results.md`, `results.csv`, `summary.json`, `actual_paths.json` |
 
 Links inside the kept README files may point to files that exist only on

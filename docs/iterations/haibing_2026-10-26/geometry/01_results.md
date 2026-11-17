@@ -76,7 +76,7 @@ saved Jacobian states. The [driver](../../../../experiments/haibing_geometry/stu
 finished successfully; its parameter-unit invariance check passed. There were
 no new inverse fits or forward solves and no maintained solver changes.
 
-[Per-step results and spectra](../../../../results/validation/cleaned_interfaces/HB-002-geometry/)
+[Per-step results and spectra](https://github.com/ShiyuanDeng/Neural-BEM/tree/af68817f7917cfa927355862dad4e3929c098321/results/validation/cleaned_interfaces/HB-002-geometry)
 include input SHA256 hashes, source revision, CPU affinity, load, complete
 singular spectra and A1 residual receipts. All computations used existing
 EMNerf, CPU cores 4–7, and single-thread BLAS.

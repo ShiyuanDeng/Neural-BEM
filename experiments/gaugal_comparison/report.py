@@ -18,7 +18,7 @@ from . import ggb_scoring as G, tg002_data as D
 from . import report_evidence as E
 
 REPO = Path(__file__).resolve().parents[2]
-RESULTS = REPO/'results/validation/cleaned_interfaces'
+RESULTS = REPO/'development_results'
 MR = RESULTS/'MR-001'
 GGB = RESULTS/'GGB-002'
 DEST = REPO/'docs/iterations/gaugal_comparison/iteration_01'
@@ -196,7 +196,7 @@ def diagnostic_bem(destination):
         refs = ', '.join(link(p, destination, 'result' if i == 0 else 'final checks')
                          for i, p in enumerate(info['evidence']))
         text.append(f"| {arm} / {case} | not recovered | {cell(info['failure_reason'])} | {refs} |")
-    prefix = 'results/validation/cleaned_interfaces/MR-001/'
+    prefix = 'development_results/MR-001/'
     text += [
         '| S4 / aphex_twin__c0.5 | timeout; no final result | The 900 s campaign limit expired '
         'while fixed_M25 was active. Last completed-stage checkpoint: release_M19 at 702.6 s of fit work. '
@@ -216,7 +216,7 @@ def diagnostic_bem(destination):
 
 
 def make_report(preview=False):
-    destination = GGB/'report_preview' if preview else DEST
+    destination = REPO/'results/gaugal_comparison_preview' if preview else DEST
     destination.mkdir(parents=True, exist_ok=True)
     assets = destination/'comparison_figures'
     assets.mkdir(exist_ok=True)

@@ -244,6 +244,145 @@ instead. `audit.py` stays for the two studies that import it directly
 (`frequency_interpolation`, `geometry_charts`). GGB-002 amendment B1 reran the
 nine affected runs.
 
+### D12. Stage-one baseline comparison scope (2026-11-17)
+
+**Context.** The extracted GGB-002 plan put TG-002-F in Stage 1, included
+top-frequency and gradient-descent ablations, and retained the existing
+longest-contour scoring path. The user revised the required actions.
+
+**Decided.** Move TG-002-F and production plane-wave support to Stage 2.
+User's reason: "It shouldn't delay the first baseline comparison."
+The first comparison remains on sealed TG-002.
+
+**Decided.** Prioritise four ablations: real-only versus real+damped;
+modal versus nodal BEM; adaptive versus fixed-bandwidth continuation;
+frequency continuation versus simultaneous inversion.
+
+**Rule.** Gradient descent and top-frequency-only are no longer mandatory.
+Reuse matching core runs for the ablations. Keep data, backend, bandwidth
+and frequency-schedule comparisons distinct.
+
+**Decided.** Count all reconstructed components, include material-field
+error, and make unaligned area difference the primary region metric.
+User: "not just the largest contour."
+
+**Rule.** Smaller reconstructed components remain in scoring. Freeze the
+support threshold, component convention and material-error definition;
+do not hide extra regions by scoring only a selected contour.
+
+**Decided.** Remove damped observations from the entire real-only inversion,
+including initial localisation. User: "This requires changing the current
+Problem interface."
+
+**Rule.** Represent the absent catalog explicitly in `Problem`; initialization,
+material estimation, warm-up and all fitting stages must use only real data.
+Keep TG-002's centred start and localization `none`.
+
+**Decided.** Keep report corrections, clean and 5% noisy multi-seed cases,
+independent forward validation and a frozen evaluation protocol.
+Freeze the protocol before external baselines, without waiting for every ablation.
+
+**Rule.** The protocol and core reference results prepare the first comparison;
+unfinished ablations and Stage 2 plane-wave work do not delay it.
+Record any later protocol change before the affected runs.
+
+**Status.** Revised the [stage-one actions](../iterations/gaugal_comparison/iteration_01/02_proposals/01_stage_one_actions_verified.md).
+This revision changes the action list; implementation and new experiments
+have not started.
+
+### D13. Keep GauGal native-scene and TG-002 timings separate (2026-11-17)
+
+**Context.** Asked for GauGal's cost, the agent gave the TG-002 adaptation's
+340-second median. The user reminded it that GauGal took seconds per scene
+on its own scenes.
+
+**Evidence.** Original cylinder cases 8, 13 and 14 took 0.814, 1.265 and
+0.865 seconds of optimization for 300 iterations at 0.4 GHz on the RTX 5090.
+[Saved results](/home/drdeng/Gau-Gal/docs/iterations/GGB-001/results.md).
+
+**Rule.** Retain the original seconds-per-scene result when discussing cost.
+Label the 340-second median as the 19-frequency, 80-iteration TG-002
+adaptation. The settings alone do not explain the full timing gap.
+
+**Status.** Added both timing contexts to the stage-one source checks.
+No new experiment was run.
+
+### D13. GGB-003 stage-one runs, scoring and storage (2026-11-17)
+
+**Context.** Interview on the D12 stage-one proposal. The plan is
+[GGB-003](../iterations/gaugal_comparison/iteration_02/03_plan.md).
+
+**Decided.** Stage 1 is a fair evaluation of our own method and makes no
+claims. User: claims "should wait until we see how baselines perform in
+stage 2." Other external baselines are Stage 2.
+
+**Decided.** The default method is real-only with recovered contrast, and has
+no warm-up. User: "stop calling it headline-arms, just default method";
+"scratch warm up completely."
+
+**Decided.** Only the default runs all 30 scenes. Every other run drops the
+contrast 13.3 scenes (20 scenes). User's reason: other baselines "dont have
+scenes with that high contrast and i couldnt justify it."
+
+**Decided.** Add single-frequency recoveries at 0.5, 1, 1.5 and 2 GHz on
+clean data. Noisy data and damped data never appear together.
+
+**Decided.** Start with 1% noise, three draws; raise to 5% only if 1% is good
+and time remains. User: "we have not used noise before." GauGal runs last on
+noisy cases with no tuning effort, and the report must say so.
+
+**Decided.** Success is area error alone, provisionally at most 5%, slightly
+loose, adjustable once all raw metrics exist. It is a data-analysis choice
+and never affects stopping during a fit.
+
+**Decided.** Run limit is 6 hours. An agent explores next steps in the
+remaining time, named or as it sees fit.
+
+**Decided.** Storage root is `results/`, which the user is clearing. Layout:
+`<family>/<variant>_<data>_<contrast>_<frequency>/<case>/`. User: this "would
+help us distinguish our methods with many more methods to come."
+
+**Rule.** Use the name "default method". Every run folder carries all four
+tags in fixed order. Save raw metrics per fit so a changed cut-off is a
+recount, not a rerun. Do not tune the default or GauGal in Stage 1.
+
+**Status.** Plan written; implementation and runs have not started.
+
+### D14. Separate development evidence from new results (2026-11-17)
+
+**Decided.** User: "sure leave these, rename to archive_results or more suitable
+names to reflect these are for development use, not final results. then leave the
+new results folder blank".
+
+**Reason.** The retained runs explain development choices and earlier comparisons;
+they are not the final results of the revised baseline protocol.
+
+**Rule.** Keep the agreed evidence in `development_results/`. Leave `results/`
+empty for new runs. Preserve complete historical runs in the recorded Git revision;
+do not relabel old runs as new final results.
+
+**Status.** Retained the sealed benchmark, selected BEM/GauGal reconstructions,
+settings, failures and compact checks. Updated active readers and evidence links.
+Details are in [the reorganisation record](development_results.md).
+
+### D15. GGB-003: write the code first, a cheaper agent runs it (2026-11-17)
+
+**Context.** Before any GGB-003 run, the user asked how to split the work.
+
+**Decided.** Write the code first, then run everything with a cheaper agent.
+User: "we should prob write code first then run everything with a dumber agent."
+
+**Decided.** The code writer tests little. User: "do minimal testings here,
+leave more comprehensive tests to the agent that acc runs all these methods."
+
+**Rule.** Hand over one command per planned run that resumes and stores results
+itself. The running agent does not edit solver or scoring code; it reports a
+crash instead. Wider checks belong to the runs, not to the code-writing step.
+
+**Status.** Code is in `experiments/comparison/`; see the
+[implementation record](../iterations/gaugal_comparison/iteration_02/03_plan.md#implementation-record-17-november-2026).
+No planned run has started.
+
 ## Lessons from agent mistakes
 
 ### L1. Proposal built on half the facts

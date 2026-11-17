@@ -150,9 +150,9 @@ pair. We measured one target per anchor, not four distinct trajectory
 updates. With one target the best anchored total is 1026/1007 ms, slower
 than LU. The stress step demonstrates why extrapolating reuse is unsafe.
 
-![Real-frequency crossover](../../../../results/validation/cleaned_interfaces/IS-001/crossover_real.svg)
+![Real-frequency crossover](https://github.com/ShiyuanDeng/Neural-BEM/blob/af68817f7917cfa927355862dad4e3929c098321/results/validation/cleaned_interfaces/IS-001/crossover_real.svg)
 
-![Damped-frequency crossover](../../../../results/validation/cleaned_interfaces/IS-001/crossover_damped.svg)
+![Damped-frequency crossover](https://github.com/ShiyuanDeng/Neural-BEM/blob/af68817f7917cfa927355862dad4e3929c098321/results/validation/cleaned_interfaces/IS-001/crossover_damped.svg)
 
 ## Meaning for D04 and Haibing's review
 
@@ -174,7 +174,7 @@ operator action avoids assembly. This study establishes neither condition.
 ## Evidence, implementation, and limits
 
 - [Registered plan](03_plan.md), [execution details and corrections](04_execution.md).
-- [Structured summary](../../../../results/validation/cleaned_interfaces/IS-001/summary.json), [profile CSV](../../../../results/validation/cleaned_interfaces/IS-001/profile_table.csv), [solver CSV](../../../../results/validation/cleaned_interfaces/IS-001/solver_table.csv), [contraction CSV](../../../../results/validation/cleaned_interfaces/IS-001/contraction_table.csv).
+- [Structured summary](https://github.com/ShiyuanDeng/Neural-BEM/blob/af68817f7917cfa927355862dad4e3929c098321/results/validation/cleaned_interfaces/IS-001/summary.json), [profile CSV](https://github.com/ShiyuanDeng/Neural-BEM/blob/af68817f7917cfa927355862dad4e3929c098321/results/validation/cleaned_interfaces/IS-001/profile_table.csv), [solver CSV](https://github.com/ShiyuanDeng/Neural-BEM/blob/af68817f7917cfa927355862dad4e3929c098321/results/validation/cleaned_interfaces/IS-001/solver_table.csv), [contraction CSV](https://github.com/ShiyuanDeng/Neural-BEM/blob/af68817f7917cfa927355862dad4e3929c098321/results/validation/cleaned_interfaces/IS-001/contraction_table.csv).
 - [Replay and numerical prototype](../../../../experiments/linear_solves/is001.py), [saved-result report](../../../../experiments/linear_solves/report.py). Per-run receipts retain source hashes, revision, load, errors, residual histories, block ranks and memory. Saved NPZ matrices preserve the exact comparison inputs; Ku512 uses separate anchor files.
 - Canonical chain: [A1–A4 and B7](../../../reference/inverse_information_chain.md), actual [A4 LU/fields](../../../../solvers/bem_inverse/a4_fields.py), [B7 reciprocal/Jacobian](../../../../solvers/bem_inverse/b7_data_jacobian.py). This is optional H3/slider research evidence, not the default spectral pipeline.
 - [Haibing item 5 and recommendation 4](../../../../Haibing_directions.md); its references include [Parks et al., recycled Krylov methods](https://doi.org/10.1137/040607277). No Krylov recycling was implemented here.

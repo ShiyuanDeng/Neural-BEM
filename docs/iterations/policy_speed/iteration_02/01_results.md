@@ -44,11 +44,11 @@ therefore shows the effect of the all-stage rule on this one trajectory.
 ## Evidence and checks
 
 - [Approved plan](../iteration_01/03_plan.md).
-- [Run report and stage table](../../../../results/validation/cleaned_interfaces/PS-002/README.md).
-- [Loss comparison](../../../../results/validation/cleaned_interfaces/PS-002/loss_vs_iteration.png).
-- [Machine-readable comparison](../../../../results/validation/cleaned_interfaces/PS-002/comparison.json).
-- [Result checks](../../../../results/validation/cleaned_interfaces/PS-002/validation.json).
-- [Full case records](../../../../results/validation/cleaned_interfaces/PS-002/runs/hook__c13.3).
+- [Run report and stage table](https://github.com/ShiyuanDeng/Neural-BEM/blob/af68817f7917cfa927355862dad4e3929c098321/results/validation/cleaned_interfaces/PS-002/README.md).
+- [Loss comparison](https://github.com/ShiyuanDeng/Neural-BEM/blob/af68817f7917cfa927355862dad4e3929c098321/results/validation/cleaned_interfaces/PS-002/loss_vs_iteration.png).
+- [Machine-readable comparison](https://github.com/ShiyuanDeng/Neural-BEM/blob/af68817f7917cfa927355862dad4e3929c098321/results/validation/cleaned_interfaces/PS-002/comparison.json).
+- [Result checks](https://github.com/ShiyuanDeng/Neural-BEM/blob/af68817f7917cfa927355862dad4e3929c098321/results/validation/cleaned_interfaces/PS-002/validation.json).
+- [Full case records](https://github.com/ShiyuanDeng/Neural-BEM/tree/af68817f7917cfa927355862dad4e3929c098321/results/validation/cleaned_interfaces/PS-002/runs/hook__c13.3).
 
 The code revision at launch was `4249588d4`. Twelve focused code checks passed.
 Saved configuration confirms CUDA preparation and scheduled LM damping; each

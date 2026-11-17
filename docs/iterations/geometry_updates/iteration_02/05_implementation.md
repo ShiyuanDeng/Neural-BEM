@@ -3,7 +3,7 @@
 Built on 2026-10-25 on the existing `organised` branch, in
 `/Users/sean/Projects/Neural-BEM`. No branch or worktree was created. Plan:
 [03_plan.md](03_plan.md). Results:
-[GU-001](../../../../results/validation/cleaned_interfaces/GU-001/README.md).
+[GU-001](../../../../development_results/GU-001/README.md).
 
 ## What was added
 

@@ -22,7 +22,7 @@ Fill in Track B there. Direction: [D08](../../../directions.md#d08-make-useful-s
 ## Why this question
 
 All four default failures stop on the same refusal: the modal physics cannot
-certify a lower bound on `|W|^2` ([NR-001](../../../../results/validation/cleaned_interfaces/NR-001/README.md)).
+certify a lower bound on `|W|^2` ([NR-001](../../../../development_results/NR-001/README.md)).
 `W` is the divided difference of the curve; on the diagonal it is the curve's
 speed. So a small minimum means either a near-cusp or a near-touch.
 

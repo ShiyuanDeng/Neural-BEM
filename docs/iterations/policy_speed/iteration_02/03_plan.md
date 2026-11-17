@@ -16,8 +16,8 @@ The limit is **13 new fits**, including every failed or interrupted fit.
 
 ## Saved evidence
 
-Reuse [GU-002](../../../../results/validation/cleaned_interfaces/GU-002/README.md)
-and [PS-002](../../../../results/validation/cleaned_interfaces/PS-002/README.md).
+Reuse [GU-002](../../../../development_results/GU-002/README.md)
+and [PS-002](https://github.com/ShiyuanDeng/Neural-BEM/blob/af68817f7917cfa927355862dad4e3929c098321/results/validation/cleaned_interfaces/PS-002/README.md).
 Do not rerun either reference.
 
 GU-002 recovered hook in 30.3 s and 125 accepted iterations. M11/M15 took

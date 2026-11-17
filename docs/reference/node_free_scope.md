@@ -39,7 +39,7 @@ such as **end-to-end sample-free** or **certified validity**.
 | 10 | Certificate arithmetic | Not sampling: float64 FFTs plus a heuristic allowance 80·size·ε·Λ·‖Y‖₁ | `arithmetic_verified=False`; numerical, not interval-verified | same as row 1 |
 
 **Measured use of rows 6 and 8 on TG-002** (ON-001 baseline arm `all_B`, 30 runs,
-[raw receipts](../../results/validation/cleaned_interfaces/ON-001/all_B/runs/)):
+[raw receipts](https://github.com/ShiyuanDeng/Neural-BEM/tree/5cc25845e51b5cec4e16b4e1b3602555a023b832/results/validation/cleaned_interfaces/ON-001/all_B/runs)):
 
 - The 26 recovered cases never reached the sampled validity test. All of their checks were decided by tier 2 or 3.
 - In the four unrecovered cases (aphex_twin 0.5/4/13.3 and hook 13.3), the sampled test accepted 46 moved-curve trials and refused 43. That is 89 of 2,631 trials. Aphex 13.3 accounts for 64 of them.

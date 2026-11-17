@@ -20,5 +20,5 @@ The finite-map result supports a conditional continuation study, not
 solver promotion or recovery claims. The chart retains a positive
 log-speed density and tangential gauge; constant-speed charts were not tested.
 
-[Numbers, figures, methods and limitations](../../../../results/validation/cleaned_interfaces/TA-001/README.md).
+[Numbers, figures, methods and limitations](https://github.com/ShiyuanDeng/Neural-BEM/blob/af68817f7917cfa927355862dad4e3929c098321/results/validation/cleaned_interfaces/TA-001/README.md).
 No inverse fits were run for the main answer.

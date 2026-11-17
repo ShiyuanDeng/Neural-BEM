@@ -124,7 +124,7 @@ covers a fixed accurate J and residual, not errors from approximate physics.
 
 - [Pre-registered plan](03_plan.md).
 - [Prototype](../../../../experiments/haibing_response/study.py).
-- [All saved evidence](../../../../results/validation/cleaned_interfaces/HB-003-response/README.md).
+- [All saved evidence](https://github.com/ShiyuanDeng/Neural-BEM/blob/af68817f7917cfa927355862dad4e3929c098321/results/validation/cleaned_interfaces/HB-003-response/README.md).
 
 Single-thread CPU, cores 8–11, three algebra timing repetitions; other
 tracks ran concurrently. Load and GPU-use snapshots are saved. No GPU was

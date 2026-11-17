@@ -59,7 +59,7 @@ The receiver offset is 0.2 radians. [Scenes](../../../../../experiments/benchmar
 
 **[read]** CPU `nodal_kress` generated noiseless real and damped catalogs; damping multiplies the wavenumber by `1 + 0.25i`.
 **[calculated]** All 60 saved qualification records pass N1024/N2048 agreement at the stated 1e-8 tolerance.
-This is a self-refinement check, not independent proof of absolute field accuracy. [Generator](../../../../../experiments/benchmark/campaign.py#L88), [saved inputs](../../../../../results/validation/cleaned_interfaces/TG-002/inputs/).
+This is a self-refinement check, not independent proof of absolute field accuracy. [Generator](../../../../../experiments/benchmark/campaign.py#L88), [saved inputs](../../../../../development_results/TG-002/inputs).
 
 **[read]** New runs use `modal_muller` + `slider`, with localization `none`.
 The historical comparison also uses damped continuation data; GauGal uses only the real observations.

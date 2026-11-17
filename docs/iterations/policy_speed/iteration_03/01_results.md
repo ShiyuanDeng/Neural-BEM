@@ -141,8 +141,8 @@ history rows without inventing timestamps or endpoint gradients. Focused checks
 confirm these changes; the original raw run records remain unchanged.
 
 
-Detailed stages: [PS-003 evidence](../../../../results/validation/cleaned_interfaces/PS-003/README.md).
+Detailed stages: [PS-003 evidence](https://github.com/ShiyuanDeng/Neural-BEM/blob/af68817f7917cfa927355862dad4e3929c098321/results/validation/cleaned_interfaces/PS-003/README.md).
 
-![Hook loss versus iterations and time](../../../../results/validation/cleaned_interfaces/PS-003/hook_loss.png)
+![Hook loss versus iterations and time](https://github.com/ShiyuanDeng/Neural-BEM/blob/af68817f7917cfa927355862dad4e3929c098321/results/validation/cleaned_interfaces/PS-003/hook_loss.png)
 
 [Supervisor assessment](02_assessment.md).

@@ -59,8 +59,8 @@ Original proposal: sections 7 and 20–22; review: items 1, 10 and 11.
 No literature novelty claim is made by these numerical tests.
 
 [Driver](../../../../experiments/haibing_circle/study.py),
-[numbers](../../../../results/validation/cleaned_interfaces/HB-004-circle/summary.json),
-[run output](../../../../results/validation/cleaned_interfaces/HB-004-circle/run.log).
+[numbers](https://github.com/ShiyuanDeng/Neural-BEM/blob/af68817f7917cfa927355862dad4e3929c098321/results/validation/cleaned_interfaces/HB-004-circle/summary.json),
+[run output](https://github.com/ShiyuanDeng/Neural-BEM/blob/af68817f7917cfa927355862dad4e3929c098321/results/validation/cleaned_interfaces/HB-004-circle/run.log).
 
 Command: `env PYTHONPATH=solvers:. OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1
 MKL_NUM_THREADS=1 taskset -c 12-15 /home/drdeng/miniconda3/envs/EMNerf/bin/python

@@ -123,8 +123,8 @@ Shape and contrast differ together, so contrast causality is not isolated.
 H3's actual final saved state is K136/Ku128, correcting the plan's K192.
 
 **Evidence:** [results and interpretation](../frequency_interpolation/iteration_01/01_results.md),
-[36-row table](../../../results/validation/cleaned_interfaces/FI-001/table.md),
-[hook error plots](../../../results/validation/cleaned_interfaces/FI-001/fields_by_frequency.svg).
+[36-row table](https://github.com/ShiyuanDeng/Neural-BEM/blob/af68817f7917cfa927355862dad4e3929c098321/results/validation/cleaned_interfaces/FI-001/table.md),
+[hook error plots](https://github.com/ShiyuanDeng/Neural-BEM/blob/af68817f7917cfa927355862dad4e3929c098321/results/validation/cleaned_interfaces/FI-001/fields_by_frequency.svg).
 
 ---
 
@@ -160,7 +160,7 @@ Continuation RMS errors are 7.874/5.940/5.975/6.193 mm. Hook improves RMS
 but fails the final field/full-trial check; no quality claim follows from
 its later stopping stage. No extra fits or maintained-solver changes.
 
-**Evidence:** [full results and figures](../../../results/validation/cleaned_interfaces/TA-001/README.md),
+**Evidence:** [full results and figures](https://github.com/ShiyuanDeng/Neural-BEM/blob/af68817f7917cfa927355862dad4e3929c098321/results/validation/cleaned_interfaces/TA-001/README.md),
 [iteration answer](../geometry_charts/iteration_01/01_results.md),
 [continuation answer](../geometry_charts/iteration_02/01_results.md),
 [prototype](../../../experiments/geometry_charts/replay.py).
@@ -207,9 +207,9 @@ are retained. The stress step was accepted, not refused or halved.
 
 **Evidence:** [results](../linear_solves/iteration_01/01_results.md),
 [execution notes](../linear_solves/iteration_01/04_execution.md),
-[structured summary](../../../results/validation/cleaned_interfaces/IS-001/summary.json),
-[solver table](../../../results/validation/cleaned_interfaces/IS-001/solver_table.csv),
-[crossover plot](../../../results/validation/cleaned_interfaces/IS-001/crossover_real.svg).
+[structured summary](https://github.com/ShiyuanDeng/Neural-BEM/blob/af68817f7917cfa927355862dad4e3929c098321/results/validation/cleaned_interfaces/IS-001/summary.json),
+[solver table](https://github.com/ShiyuanDeng/Neural-BEM/blob/af68817f7917cfa927355862dad4e3929c098321/results/validation/cleaned_interfaces/IS-001/solver_table.csv),
+[crossover plot](https://github.com/ShiyuanDeng/Neural-BEM/blob/af68817f7917cfa927355862dad4e3929c098321/results/validation/cleaned_interfaces/IS-001/crossover_real.svg).
 
 ---
 

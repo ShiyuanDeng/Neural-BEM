@@ -1,8 +1,8 @@
 # Neural SDF BEM AD: organised
 
-This branch holds only the latest 2-D inverse pipeline: modal Müller physics with the
-certified spectral geometry update (`modal_fixed`), run on the TG-002 benchmark. It is the
-starting point for a clean rewrite.
+This branch holds the maintained 2-D inverse pipeline: modal Müller physics with the
+`slider` geometry update, run on the TG-002 benchmark. See the benchmark README for
+current settings.
 
 Everything else was removed here: legacy solvers, root `run_*.py` drivers, older
 experiments, their results and their docs. They remain on
@@ -19,8 +19,9 @@ experiments, their results and their docs. They remain on
 | [`solvers/bem_inverse/`](solvers/bem_inverse/README.md) | The inverse: problem, policy, runner, modal physics, geometry updates |
 | `solvers/gpr_bem_kress/`, `ordered_boundary/`, `periodic_kress/` | Nodal Kress reference solver, which generated the data, and curve geometry |
 | `pytest/` | Tests for the kept packages |
-| `results/validation/cleaned_interfaces/TG-002/` | Sealed benchmark inputs |
-| [`results/validation/cleaned_interfaces/PC-001/`](results/validation/cleaned_interfaces/PC-001/README.md) `M1/` | Reference run of the default method: 26/30 recovered |
+| [`development_results/TG-002/`](development_results/TG-002/README.md) | Sealed benchmark inputs |
+| [`development_results/`](development_results/README.md) | Retained development evidence; not final comparison results |
+| `results/` | Empty directory reserved for new results |
 | [`docs/evidence.md`](docs/evidence.md) | Why each part of the pipeline was chosen, with the supporting numbers |
 | [`docs/reference/`](docs/README.md) | A1–C12 code map, modal coefficient derivation, node-free scope, Kress guide |
 

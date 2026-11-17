@@ -17,4 +17,4 @@ Keep the chart experimental. A future design should address nonlocal
 separation and the hook's visible high-frequency geometry. No further
 fit or maintained-solver change was made.
 
-[Numbers, figures, settings, failures and limitations](../../../../results/validation/cleaned_interfaces/TA-001/continuation/README.md).
+[Numbers, figures, settings, failures and limitations](https://github.com/ShiyuanDeng/Neural-BEM/blob/af68817f7917cfa927355862dad4e3929c098321/results/validation/cleaned_interfaces/TA-001/continuation/README.md).

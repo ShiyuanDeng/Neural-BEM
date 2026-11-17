@@ -1,6 +1,6 @@
 """TG-002 inputs (prepare/generate/verify) and the generic benchmark fit runner.
 
-Inputs live in ``results/validation/cleaned_interfaces/TG-002`` and are sealed
+Inputs live in ``development_results/TG-002`` and are sealed
 by hash. Fits go to a separate run directory per experiment arm. Fitting
 receives a ``Problem`` only. After ``fit`` returns, ``final_residual`` computes
 the field residual of the returned curve; truth is read only by scoring after
@@ -33,7 +33,7 @@ from experiments.cleaned_interface import benchmark as ci
 from . import audit as A, scenes as S
 
 ROOT = ci.ROOT
-INPUTS = ROOT/'results/validation/cleaned_interfaces/TG-002'
+INPUTS = ROOT/'development_results/TG-002'
 QUALIFICATION_NODES, QUALIFICATION_TOLERANCE = (1024, 2048), 1e-8
 LOCALIZATION = ('none', 'grid')
 MAX_WORKERS = 3  # each fit can peak near 8 GB; 6 workers once OOM-killed this desktop

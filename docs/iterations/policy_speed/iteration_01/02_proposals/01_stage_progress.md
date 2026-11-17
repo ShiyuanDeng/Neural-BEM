@@ -16,7 +16,7 @@ The user suspects long nearly flat stage tails and damping/backtracking that
 make increments too small. Their initial candidate is a stage exit when loss
 decreases by less than 5% over the last two iterations.
 
-The baseline is [GU-002](../../../../../results/validation/cleaned_interfaces/GU-002/README.md):
+The baseline is [GU-002](../../../../../development_results/GU-002/README.md):
 hook c13.3, modal Muller with GPU slider preparation, no localization, and the
 default `CumulativePolicy` v1.0.0. It recovered in 30.3 s, 125 accepted iterations
 and 2,978 work units. The CPU-preparation slider follows the same accepted path.
@@ -50,7 +50,7 @@ large improvement comes at iterations 12-14, after the proposed exit at 6.
 Advancing early might still recover through later stages, but these records
 cannot answer that: later stages would start from a different curve.
 
-Sources: [slider stage records](../../../../../results/validation/cleaned_interfaces/GU-002/slider/runs/hook__c13.3),
+Sources: [slider stage records](https://github.com/ShiyuanDeng/Neural-BEM/tree/af68817f7917cfa927355862dad4e3929c098321/results/validation/cleaned_interfaces/GU-002/slider/runs/hook__c13.3),
 especially `stage_3_damped.json`, `release_M11.json` and `release_M15.json`.
 Saved cutoffs cannot be added up as a predicted iteration saving or speedup.
 

@@ -17,10 +17,10 @@ This assessment reads their records; it adds no fits or reference reruns.
 
 ## What the evidence establishes
 
-[GU-002](../../../../results/validation/cleaned_interfaces/GU-002/slider/runs/hook__c13.3/result.json)
+[GU-002](https://github.com/ShiyuanDeng/Neural-BEM/blob/af68817f7917cfa927355862dad4e3929c098321/results/validation/cleaned_interfaces/GU-002/slider/runs/hook__c13.3/result.json)
 used 40 accepted M11/M15 iterations and 15.93 s, without rejected trials.
 
-[PS-002](../../../../results/validation/cleaned_interfaces/PS-002/runs/hook__c13.3/result.json) exited earlier at higher losses; M43/M49 then cost
+[PS-002](https://github.com/ShiyuanDeng/Neural-BEM/blob/af68817f7917cfa927355862dad4e3929c098321/results/validation/cleaned_interfaces/PS-002/runs/hook__c13.3/result.json) exited earlier at higher losses; M43/M49 then cost
 9.703 s, including eight rejected trials.
 
 In H1/H3, every accepted M11/M15 C9 proposal equals its bounded and used
@@ -30,7 +30,7 @@ with four damping retries and 40 skipped proposals below the step threshold.
 The local stall involves small C9 proposals, rather than bounds or C11
 rejections. Their cause remains unresolved; GU-002 lacks these diagnostics.
 
-[D1](../../../../results/validation/cleaned_interfaces/PS-003/D1/runs/hook__c13.3/result.json)
+[D1](https://github.com/ShiyuanDeng/Neural-BEM/blob/af68817f7917cfa927355862dad4e3929c098321/results/validation/cleaned_interfaces/PS-003/D1/runs/hook__c13.3/result.json)
 preserves GU-002's earlier-stage losses exactly, then omits M11/M15. It takes
 43.477 s and fails physics in M55. Earlier release is not a successful shortcut here.
 
@@ -38,7 +38,7 @@ H3 uses 122 accepted iterations, versus GU-002's 125: work becomes cheaper.
 H1 also recovers (25.455 s); H2 fails numerical checks and the residual
 limit (0.005236 > 0.003).
 
-[D2](../../../../results/validation/cleaned_interfaces/PS-003/D2/manifest.json)
+[D2](https://github.com/ShiyuanDeng/Neural-BEM/blob/af68817f7917cfa927355862dad4e3929c098321/results/validation/cleaned_interfaces/PS-003/D2/manifest.json)
 changes H3's full-catalog `K_trace` (recorded as Ku) to 128, including its
 required coefficient workspace. Both recover with 122 accepted iterations.
 
@@ -59,7 +59,7 @@ explains this saving. These optional policies leave the spectral default unchang
 | aphex c13.3 | 80.703 / no | 58.573 / no | No new recovery |
 
 Circle's H3 shape and residual errors are almost identical to baseline. Its
-[largest relative Jacobian discrepancy](../../../../results/validation/cleaned_interfaces/PS-003/O1S/runs/circle__c4/final_audit.json)
+[largest relative Jacobian discrepancy](https://github.com/ShiyuanDeng/Neural-BEM/blob/af68817f7917cfa927355862dad4e3929c098321/results/validation/cleaned_interfaces/PS-003/O1S/runs/circle__c4/final_audit.json)
 is 0.003476 in the cosine-36 column, whose refined norm is only 4.72e-10.
 
 The absolute normalized difference is 1.64e-12. The

@@ -22,8 +22,8 @@ comparisons and four other cases. The text below preserves the discussion draft.
   can change the later path. A small recent loss decrease is not enough to
   prove a stage has become unnecessary.
 
-Sources: [GU-002](../../../../../results/validation/cleaned_interfaces/GU-002/README.md),
-[PS-002](../../../../../results/validation/cleaned_interfaces/PS-002/README.md).
+Sources: [GU-002](../../../../../development_results/GU-002/README.md),
+[PS-002](https://github.com/ShiyuanDeng/Neural-BEM/blob/af68817f7917cfa927355862dad4e3929c098321/results/validation/cleaned_interfaces/PS-002/README.md).
 The stored physics timers overlap across frequency threads; their sum is not
 elapsed time. The two fits also ran on different days.
 
