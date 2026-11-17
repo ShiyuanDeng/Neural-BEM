@@ -40,3 +40,17 @@ problem. [Failure log](../../../../results/brg/examples/transmission/matlab.log)
 The full derivative workspace is 82 MB and stays local, with command and
 SHA-256 in [manifest](../../../../results/brg/examples/transmission/manifest.json).
 The compact errors and multi-component failure workspace are committed.
+
+## Data-generation first attempt
+
+17 November: the shipped star script stopped before generating data because
+its initial `save` names undefined variable `lam`. This is unused for the
+transmission example. The retry will remove only `lam` from that save call.
+[Failure log](../../../../results/brg/examples/data/matlab.log).
+
+## Shared-checkout note
+
+Commit `abade42e8` also captured CSI files staged concurrently by the CSI
+agent, although BRG staged only its own paths. The files were preserved and
+pushed. Subsequent BRG commits use explicit path-limited `git commit --only`
+to avoid this shared-index race.
