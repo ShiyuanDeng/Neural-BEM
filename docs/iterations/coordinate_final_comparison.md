@@ -7,7 +7,7 @@ settings, assumptions and unknowns, and it sets how subagents share the work.
 The coordinator (the main session) owns this file. Subagents never edit it.
 They report back, and the coordinator updates the status board and the cards.
 
-Last updated: 17 November 2026, 23:40 (CSI simulated campaign approved: MF-CC-CSI only).
+Last updated: 18 November 2026, 00:10 (CSI simulated campaign running overnight).
 
 ## Status board
 
@@ -16,7 +16,7 @@ Last updated: 17 November 2026, 23:40 (CSI simulated campaign approved: MF-CC-CS
 | Our BEM (default) | [evaluate_our_method](evaluate_our_method/) | [01](evaluate_our_method/01_measure_clean_and_noisy_recovery/results.md), [02](evaluate_our_method/02_run_ablations/results.md), run 17 Nov | TG-002 done | Extend for BRG and CSI data, later inside those investigations |
 | GauGal | [evaluate_our_method](evaluate_our_method/) | [03](evaluate_our_method/03_record_untuned_gaugal_reference/results.md), run 17 Nov | TG-002 untuned reference done | Stage 2 role open (U1) |
 | BRG | [brg_adaptation](brg_adaptation/) | [01 results](brg_adaptation/01_run_published_examples/results.md), [02 plan](brg_adaptation/02_rebuild_paper_examples/plan.md) | 01 done 17 Nov. 02 (six paper cases): 2 of 6 done, 4 running to k = 15. 03 (adapt our BEM to BRG data): adapter done, 1 of 6 fits run, stopped for handover | `brg` agent (Codex, astra, high effort): finish the paper cases at k = 15 and report; no more BEM work |
-| CSI family | [csi_adaptation](csi_adaptation/) | [01 results](csi_adaptation/01_run_published_examples/results.md) | 01 and [02](csi_adaptation/02_run_fresnel_dielectric_cylinder/results.md) done 17 Nov. 03 (prepare the simulated TG-002 cases) running. 04 (run the 10 simulated cases, MF-CC-CSI) approved by the user 17 Nov 23:40 | `csi` agent (Codex, sol, high effort): finish 03, then run 04 three fits at a time; 6 h budget |
+| CSI family | [csi_adaptation](csi_adaptation/) | [01 results](csi_adaptation/01_run_published_examples/results.md) | 01, [02](csi_adaptation/02_run_fresnel_dielectric_cylinder/results.md) and [03](csi_adaptation/03_prepare_simulated_tg002_cases/results.md) done 17 Nov. [04](csi_adaptation/04_run_simulated_tg002_cases/plan.md) (10 simulated cases, MF-CC-CSI) started 18 Nov 00:10 | `csi` agent (Codex, sol, high effort): run 04 three fits at a time, about 8 h, 9 h budget; push after each batch |
 
 **Setup checked on 17 November 2026:** the user made the MaxwellFDFD link and
 signed in to MATLAB (online licensing). `matlab -batch` runs, the C compiler
@@ -278,6 +278,17 @@ Rules for every table:
     three at time". So the simulated campaign is MF-CC-CSI only, three fits
     at a time, 2048 iterations with snapshots at 256, 512 and 1024.
     MR-CSI and CSI stay on the measured cylinder only, for now.
+  - Result of 03 (preparation, 17 November): one simulated fit costs
+    3.44 s per iteration on the 166 × 166 grid, so about 2 h per fit and
+    about 8 h for the ten in batches of three. The coordinator extended the
+    budget from 6 h to 9 h; the first estimate given to the user (4 to 5 h)
+    was too low.
+  - 2048 iterations are needed: at 1024 the support area is still 3.2%
+    from its final value, and at 512 it is 4.8%.
+  - The measured cylinder's nominal centre is (0, +30) mm on their grid.
+    Against it the set-difference area error is 34 to 38%, caused by a
+    3.6 mm centre offset; the database gives the position only as "about
+    30 mm". Size and centre are reported separately for this case.
 
 ## Who decides
 
@@ -339,6 +350,7 @@ needs it, and recorded here.
 | 17 Nov | BRG may run two paper cases at once | The user asked how long is left; three heavy workers fit, and clean timings are re-measured later |
 | 17 Nov | BRG paper cases stop at k = 15 for now and run side by side; resume to k = 30 later from saved states | The user is short of time. To k = 15 costs 10 of 65 minutes per case, and our BEM stops near k = 13 |
 | 17 Nov | Do not move BRG to the GPU | This MATLAB has no GPU toolbox, and 64% of a solve is their single-threaded Fortran kernel assembly. Dense algebra is under a third, so the best gain is about 1.3 times |
+| 18 Nov | CSI 04: budget extended from 6 h to 9 h, start now | The forecast is 8 h; it runs overnight, pushes after each batch, and can be stopped without loss |
 | 17 Nov | No high-k redesign of our solver | With TG-002 shapes as the main BRG table, the k = 13 cap only limits the paper cases |
 | 17 Nov | U2: the BRG investigation extends our solver first; `brg` drafts that plan (03), and the coordinator reviews it before any solver edit | Plane waves plus an unpaired table cover what CSI needs too |
 
