@@ -1,0 +1,16 @@
+BRG MATLAB 26.1.0.3203278 (R2026a); initial threads 1; requested/current threads 8
+BRG frequency check k=1.00 relative_residual=6.08782546814 elapsed=4.911
+BRG frequency check k=1.25 relative_residual=6.52401285489 elapsed=4.717
+BRG frequency check k=1.50 relative_residual=5.19806129334 elapsed=4.736
+BRG low_frequency_stale success=0 compute_seconds=16.542408
+{Error using assert
+True-shape residual must vanish at each frequency; stale transk violates the
+known material.
+
+Error in check_transmission (line 40)
+assert(all([records.relative_residual]<1e-8),'BRG:staleWavenumbers', ...
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in run_example (line 63)
+            check_transmission(stage,out);
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+} 

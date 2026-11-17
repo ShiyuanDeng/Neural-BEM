@@ -59,7 +59,7 @@ try
             fid=fopen(fullfile(out,'executed_script.m'),'w'); fprintf(fid,'%s',source); fclose(fid);
             evalin('base',source);
             assert(evalin('base','numel(u_meas)==17'), 'BRG:incomplete','Expected 17 frequencies');
-        case {'low_frequency_unpatched','low_frequency_fixed'}
+        case {'low_frequency_unpatched','low_frequency_stale','low_frequency_fixed'}
             check_transmission(stage,out);
         otherwise
             error('BRG:stage','Unknown stage: %s',stage);

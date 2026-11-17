@@ -80,3 +80,17 @@ transmission derivative, which requires `transk`, `transa`, and `transb`.
 [Log](../../../../results/brg/examples/low_frequency_unpatched/matlab.log).
 The next check changes only that struct copy, then checks the stale-frequency
 residual before applying the frequency fix. This is a second upstream bug.
+
+## Low-frequency stale-wavenumber check
+
+17 November: 19.30 s wall time. With only the derivative struct-copy fix,
+one inverse step from the true cavity gives relative residuals 6.087825,
+6.524013 and 5.198061 at k=1,1.25,1.5. The harness correctly fails its 1e-8
+limit. [Measurements](../../../../results/brg/examples/low_frequency_stale/check.json).
+
+Ranked explanations before the frequency patch: (1) stale transmission
+wavenumbers, predicted to vanish after synchronizing both with each k;
+(2) a misread `bc.q`, predicted to persist unless its meaning changes;
+(3) a field normalization error, predicted to persist with correct k.
+Only (1) is changed next. The derivative patch preserves the input physics
+struct; it does not change any parameter.
