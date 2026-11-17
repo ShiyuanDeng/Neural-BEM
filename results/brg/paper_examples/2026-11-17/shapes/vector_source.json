@@ -1,0 +1,10 @@
+{
+  "tool": "pdftocairo 22.02.0",
+  "commands": [
+    "pdftocairo -svg results/brg/paper_sources/local/contrast_obstacle.pdf results/brg/paper_sources/local/contrast_obstacle.svg",
+    "pdftocairo -svg results/brg/paper_sources/local/limited_data_reconstruction.pdf results/brg/paper_sources/local/limited_data_reconstruction.svg",
+    "pdftocairo -svg results/brg/paper_sources/local/cavity_reconstruction.pdf results/brg/paper_sources/local/cavity_reconstruction.svg"
+  ],
+  "extraction": "OPENBLAS_NUM_THREADS=1 python experiments/baselines/brg/recover_paper_vectors.py",
+  "geometry": "Frozen after vector comparison and fit; no later change for inverse performance."
+}

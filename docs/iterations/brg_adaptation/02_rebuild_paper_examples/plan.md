@@ -1,117 +1,173 @@
 # Rebuild the paper's single-component examples
 
-## Status and decisions
+## Status
 
-Drafted on 17 November 2026 at the coordinator's request while activity 01
-runs. **No activity 02 run is authorized or has been started.** The intended
-baseline is BRG's obstacle solver with the paper settings, followed later by
-our BEM inverse on the exact same data and known contrast.
+Activity 02 authorized by the coordinator on 17 November 2026. Run the six
+cases below, starting with glider eta 0.33. Activity 03 is a draft only.
+No solver or shared comparison files may be edited.
 
-The request names seven runs and three true shapes. The specified glider,
-star and cavity pairs define **six** runs. The seventh case is not identified.
-The paper does not provide enough information to define two of the three
-true shapes exactly. Those are blockers, not choices to fill by guessing.
+The first glider reached k=10 on 17 November: its RMS Figure 1 difference
+is 0.904393 decades and its endpoint error ratio is 0.410220. Both exceed
+the declared disagreement criterion. Finish its 117-frequency run, then
+perform the single authorized no-limit alternative, reusing the same data.
+The first candidate completed all 117 frequencies. Its terminal-launched
+supervisor disappeared before its final receipt; completed outputs and
+hashes were recovered, with a conservative wall-time budget debit. Later
+runs use `--detach` so the supervisor and timeout survive terminal sessions.
+The choice remains unfrozen until the alternative is measured.
 
-Keep the pinned public code and the approved transmission repairs 03/04.
-No tuning, grid search, extra initial guesses or noise. Source definitions,
-settings and budget must be settled before running this activity.
+## Coordinator decisions, 17 November
 
-## Questions and comparisons
+1. Six runs; seven was a legacy miscount. Order: glider 0.33, glider 10,
+   star full, star limited, cavity 0.9, cavity 2.
+2. Recover the star and cavity from vector true-curve paths in the obstacle
+   panels of `limited_data_reconstruction.pdf` and `cavity_reconstruction.pdf`.
+   Map figure coordinates using axis ticks and compare at least two panels.
+   Fit the star's 35-mode Cartesian series and report fitting error. Label
+   both shapes “recovered from the paper's figure files”, with measured
+   accuracy. No pixel tracing or unapproved substitute. Stop if recovery
+   cannot be done cleanly.
+3. Use exterior-wavenumber resolution: 100 points per wavelength for data,
+   70 for inversion. The corresponding interior counts are 100/sqrt(eta)
+   and 70/sqrt(eta): for eta 10 about 31.62 and 22.14; for eta 2 about 70.71
+   and 49.50. Once per eta>1 case, compare k=30 data against a finer grid.
+4. Keep public frequency-start behavior: no extra inverse resampling.
+5. Begin with `eps_curv=0.1`, `n_curv_min=20`, the shipped transmission
+   driver's values. Compare glider 0.33 with Figure 1's vector error curve.
+   If clearly different, allow exactly one rerun with the public default
+   (no curvature limit). Retain both and freeze whichever matches better.
+   This authorized comparison matches the paper; no further tuning/rerun.
+6. Keep the public filter sequence and zero-gradient behavior, without guards.
+7. A manufactured-solution diagnostic may use any verified interior point.
+8. Use all 117 frequencies, k=1:0.25:30. Compare Figure 1 only through k=10.
+9. Four hours per case, including data. The possible glider comparison shares
+   that case's four-hour budget and reuses its saved data. Stop on a case
+   limit, unrecoverable curve, or a crash needing more than a small patch.
+10. Record other MATLAB processes at each case start/end; do not wait for an
+    empty machine. Timings are indicative when another process overlaps.
 
-Can the public obstacle solver reproduce each fully specified paper case
-using its available options? Which settings or geometry definitions cannot
-be recovered from the public record? After those gaps are resolved, compare
-the recovered boundaries and area errors with Figures 1, 4–7.
+## Settings and checks fixed before running
 
-This activity does not change `solvers/bem_inverse/` or run our BEM method.
-It freezes BRG data, shapes and native timings for that later comparison.
-Record raw errors without choosing a new success threshold.
+Use the pinned public source and approved patches 03/04. Equal density,
+known contrast, unit-amplitude plane waves and scattered fields at radius
+10. Full counts are floor(10k) directions and receivers; limited star uses
+10 directions and 200 receivers. No noise, localization or extra starts.
 
-## Run inventory
+`optim_type='min(gn,sd)'`, `maxit=50`, `eps_res=eps_upd=1e-5`, Gaussian
+filter with the public ten-trial default. Shape-update band is
+floor(3*max(k,k_inside)); length-scaled modes are disabled. The curvature
+cutoff is the public max(20,update_band) for the shipped-limit candidate.
+The default candidate omits `eps_curv` and `n_curv_min` entirely.
 
-Here eta denotes the interior/exterior squared-wavenumber ratio. BRG's
-`bc.q` must be its positive square root, not eta itself.
+The initial unit disk follows the public RLA default: 100 nodes at k=1
+with `opts.nppw=70`. Subsequent node growth is public behavior. True-data
+sampling uses the public zero-update arclength resampling operation,
+100 exterior points per wavelength and the data-script minimum of 300.
+This resampling is for true-data generation, not an inverse frequency start.
 
-| Slot | True shape | eta | Receiver/direction counts | State |
-|---|---|---:|---|---|
-| 1 | Glider | 0.33 | floor(10k), floor(10k) | Shape fully specified |
-| 2 | Glider | 10 | floor(10k), floor(10k) | Shape fully specified |
-| 3 | 35-band Cartesian star | 0.9 | floor(10k), floor(10k) | Coefficients missing |
-| 4 | Same star | 0.9 | 200, 10 | Coefficients missing |
-| 5 | Paper cavity | 0.9 | floor(10k), floor(10k) | Exact geometry missing |
-| 6 | Same cavity | 2 | floor(10k), floor(10k) | Exact geometry missing |
-| 7 | **Unspecified by the request** | — | — | Coordinator must identify it |
+At eta>1 and k=30, compare with twice as many boundary nodes for glider eta=10
+and 25% more for cavity eta=2; record relative complex-field difference and
+both grids. The coordinator required a finer grid, without fixing its ratio.
+The cavity ratio was set before its run: recovered length 12.989 requires
+6,202 data nodes at k=30, so doubling would require a 24,808-row complex
+transmission system plus many dense auxiliary matrices and risks exceeding
+the 62 GiB machine. The 25% check uses 7,754 nodes. This changes only the
+accuracy diagnostic; no prescribed observation is replaced. Do not silently
+change the case's prescribed data grid. Verify each diagnostic source by
+point-in-polygon on the true boundary. All original field definitions,
+transmission ratios and flattened receiver/direction order are retained.
 
-The four shifted-circle examples in section 4.1 concern the volume solver;
-they are not silently substituted for slot 7. Example 4's multiple obstacles
-remain excluded by the agreed single-component scope.
+For the authorized curvature comparison, extract the 37 Figure 1 points
+at k=1:0.25:10. Compare relative area errors in log10 space, recording RMS,
+median absolute difference, and endpoint ratio. Treat RMS above 0.30 decades
+or endpoint disagreement above a factor of two as clear disagreement for
+this predeclared comparison. If triggered, run the one allowed default
+candidate and choose the smaller RMS log10 difference; report both scores.
+No case is rerun because its shape recovery is poor.
 
-## Exact shape definitions and their limits
+## Cases
 
-### Glider: complete
+| Name | Shape | eta | Receivers / directions |
+|---|---|---:|---|
+| glider_033 | Exact paper glider | 0.33 | floor(10k) / floor(10k) |
+| glider_10 | Exact paper glider | 10 | floor(10k) / floor(10k) |
+| star_full | Recovered vector star, Cartesian band 35 | 0.9 | floor(10k) / floor(10k) |
+| star_limited | Same recovered star | 0.9 | 200 / 10 |
+| cavity_09 | Recovered vector cavity | 0.9 | floor(10k) / floor(10k) |
+| cavity_2 | Same recovered cavity | 2 | floor(10k) / floor(10k) |
 
-Use `geometries.starn` with `nc=8` and 17 real coefficients in its ordering
-(constant, eight cosines, eight sines):
+## Commands, outputs and budget
 
-```text
-coefs = [0.9, 0, 0, 0.18, 0.018, 0, 0.09, 0, 0.09,
-         0, 0, 0, 0, 0, 0, 0, 0]
-```
+`python experiments/baselines/brg/run_paper.py --case glider_033 --curvature shipped --detach`
+starts the first case. Later cases use the frozen curvature choice recorded
+in `results/brg/paper_examples/2026-11-17/curvature_choice.json`. The only
+permitted alternative is `--case glider_033 --curvature default --detach` if the
+predeclared Figure 1 comparison clearly fails.
 
-The radial series uses those coefficients; Cartesian coordinates are its
-radius times cosine and sine of the parameter, from zero to one full turn.
-No translation, rotation or additional scaling. This exactly implements
-section 4.1's glider. The public helper supplies analytic parameter
-derivatives, speed, outward normal and curvature.
+Each case shares a four-hour process-wall budget across attempts and the
+allowed alternative. Save every data frequency and inverse endpoint
+atomically; resume from the last completed curve. Keep one BRG MATLAB
+process at a time. No extra process is started for source checks while a
+case is active.
 
-### Star: the paper supplies a representation, not a shape
+Raw outputs: `results/brg/paper_examples/2026-11-17/<case>/`; compact records
+and figures at most about 5 MB per run. Bulk data, dense continuation states
+and full logs remain in ignored `local/` with commands and SHA-256 values.
+Figures go in this activity's `figures/`; extracted vector paths, calibration
+and shape-fit evidence go in its owned results directory. Commit and push
+code, docs and evidence after every case or failed attempt, by explicit
+paths only. Preserve everything previously pushed.
 
-Equation 27 expands **each Cartesian coordinate** in complex Fourier modes
-from -35 through +35. It does not give the 71 coefficients for either
-coordinate. They must have conjugate symmetry for real coordinates.
-This is not the same definition as a radial 35-lobed `starn` curve.
+Success means a reproducible outcome for every case, not recovery of every
+shape. Record residual histories, iterations, exit flags, raw and normalized
+area errors, all timings, and the source of every recovered true shape.
+Stop only under the coordinator's listed conditions; otherwise complete
+all six and report. No BEM inversion is run in this activity.
 
-No coefficient table, generator or boundary sample file appears in the
-official arXiv source archive: it contains `main.tex`, a bibliography and
-figure PDFs only. The exact shape cannot be reconstructed from the text.
-Required input: both Cartesian coefficient arrays, or the original generator
-and its parameters. A boundary traced from Figure 4 would be an approximate
-replacement and needs an explicit coordinator decision and a separate label.
+## True shape definitions and measured recovery accuracy
 
-### Cavity: exact shipped shape known; exact paper shape unknown
+The glider is exact: `geometries.starn(coefs,8,n)` with coefficients
+`[0.9,0,0,0.18,0.018,0,0.09,0,0.09,0,0,0,0,0,0,0,0]`, ordered constant,
+eight cosines and eight sines. Multiply its radial series by cosine and sine
+of the parameter; no rotation, translation or scaling.
 
-Section 4.3 identifies its cavity by Figure 7, without a parameterization.
-The pinned `geometries.charlie_cavity(j,n)` gives an exact candidate family.
-For the activity 01 shipped example, `j=10.2`; its continuous construction is:
+The star and cavity are **recovered from the paper's figure files**. Their
+executable definitions are the complex Cartesian coefficient arrays in
+`results/brg/paper_examples/2026-11-17/shapes/star_fourier.mat` and
+`cavity_fourier.mat`: sum `coefficients[j]*exp(i*modes[j]*t)` for a full
+parameter turn; real and imaginary parts are x and y. Star modes are -35:35,
+as required by equation 27; cavity modes are -100:100. The latter is a
+representation chosen to reproduce the vector path, not a paper setting.
 
-```text
-rx = 1 - (j-1)/11 + 0.03*(j-1)
-ry = 1 - (j-1)/11 + 0.8*(j-1)
-X(t) = 20 + rx*cos(t);  Y(t) = ry*sin(t)
-a = (1 + 0.7*(j-1))/2
-rmax = 400*rx^2/(ry^2-rx^2) + 400 + ry^2
-rho(t) = ((X(t)^2 + Y(t)^2)/rmax)^a
-theta(t) = 2*a*atan2(Y(t),X(t))
-x(t) = rho(t)*cos(theta(t));  y(t) = rho(t)*sin(theta(t))
-```
+`recover_paper_vectors.py` selects the solid true-curve paths from both
+obstacle-solver panels, verifies connected closed paths, and calibrates each
+panel independently with its -pi/2, 0 and pi/2 axis ticks. It does not trace
+pixels. In each panel all selected paths and ticks share the same affine
+transform, which cancels when mapping their native coordinates. The legends
+identify solid as the true boundary; dashed lines are reconstructions.
 
-Use one full parameter turn without a repeated endpoint. This is an exact
-definition of the **shipped** shape, not proof of the paper shape. Its
-300-point bounds are x=[-0.88675,0.71054], y=[-0.82832,0.82832]. Figure 7's
-cavity opens upward and occupies a visibly different scale; the shipped
-one opens leftward. Neither an exact rotation/scale nor the family
-parameter is specified in the paper. Required input: the paper's generator
-with all transformations, or its boundary coefficients/samples.
+| Shape | Points in two vector panels | Cross-panel maximum / RMS | Cartesian fit point maximum / RMS | Fit to vector polyline maximum |
+|---|---:|---:|---:|---:|
+| Star | 923 / 921 | 1.060e-4 / 5.657e-5 | 5.105e-4 / 1.751e-4 | 5.594e-4 |
+| Cavity | 995 / 997 | 9.154e-5 / 3.862e-5 | 4.625e-5 / 1.596e-5 | 1.424e-4 |
 
-Do not call `charlie_cavity(10.2)` the exact Figure 7 geometry without that
-evidence. Rotating or scaling it changes the finite-k problem and is not a
-cosmetic plotting decision.
+All errors are in figure data-coordinate units. Report conservative geometric
+accuracy of about 6e-4 for the star and 2e-4 for the cavity, against the vector
+centerline, not against unknown original coefficients. Both fits retain the
+visible geometry and positive parameter orientation. The paper archive has
+no original coefficient table. Path indices, tick calibration, source hashes,
+vector samples and detailed errors are saved under `shapes/`; overlay figures
+are in this activity's `figures/`. The shipped activity 01 cavity is different
+and is not used as the paper cavity.
+
+Command: `OPENBLAS_NUM_THREADS=1 python experiments/baselines/brg/recover_paper_vectors.py`.
+Inputs are Cairo SVG exports of the original vector PDFs in the ignored
+`results/brg/paper_sources/local/`; PDF hashes are in the recovery JSONs.
 
 ## Paper settings and public-code reach
 
 Paper requirements below come from sections 2, 2.1 and 4; the reach column
-comes from the pinned source. These are the intended settings after gaps
-are resolved, not changes to the activity 01 shipped example.
+comes from the pinned source. These are the activity 02 settings; they do not change activity 01.
 
 | Requirement | Public option or wrapper operation | Reach / gap |
 |---|---|---|
@@ -121,11 +177,11 @@ are resolved, not changes to the activity 01 shipped example.
 | Radius-10 receivers, equally spaced full aperture | Explicit `tgt` and direction pairs | Reachable; floor counts, not the shipped ceiling |
 | Limited star: 200 receivers, 10 directions | Same paired data API | Reachable; full aperture with sparse angles |
 | Clean scattered field | `fields.uscat_tgt` | Reachable; no total-field or far-field-amplitude conversion |
-| Data: 100 points per wavelength | Wrapper geometry sampling before `get_fw_mats` | Reachable once wavelength convention and exact shape are fixed |
-| Inverse: 70 points per wavelength | `opts.nppw`; explicit starting sampling | Reachable, but see resolution ambiguity below |
+| Data: 100 points per wavelength | Wrapper geometry sampling before `get_fw_mats` | Reachable; exterior convention and frozen recovered curves above |
+| Inverse: 70 points per wavelength | `opts.nppw`; public starting behavior | Reachable, but see resolution ambiguity below |
 | Alpert order 16 | Hard-coded `norder=16` in `get_fw_mats` | Already used |
 | Dense direct solve | Public transmission path stores `inv(Fw_mat)` | Algorithmically direct; explicit inverse differs from paper's LU description; retain public code |
-| Unit-disk start | Explicit `src_init=geometries.ellipse(1,1,n)` | Reachable; no localization or extra starts |
+| Unit-disk start | Empty `src_init`; public unit-disk default | Reachable; 100 nodes initially, no localization or extra starts |
 | floor(3*max(k,k_inside)) update band | Set `opts.ncoeff_boundary` per frequency; disable length scaling | Reachable; omit `ncoeff_boundary_mult` so it cannot overwrite the exact band |
 | Better of GN and SD | `optim_opts.optim_type='min(gn,sd)'` | Reachable; ties choose SD in public code |
 | Gaussian filtering, ten attempts | `filter_type='gauss-conv'`, `maxit_filter=10` | Available, but sequence differs from the printed formula; see below |
@@ -134,120 +190,38 @@ are resolved, not changes to the activity 01 shipped example.
 | At most 50 iterations per frequency | `optim_opts.maxit=50` | Reachable |
 | Relative symmetric-difference area | Wrapper polygon areas divided by truth area | Reachable; also retain unnormalized area |
 
-### Gaps that options alone do not settle
+### Remaining differences from a fully specified paper experiment
 
-1. **Shape and count gaps:** missing star coefficients, missing paper cavity
-   parameterization/transforms, and the unspecified seventh run.
-2. **Wavelength definition:** section 2 says to use the larger wavenumber;
-   section 2.1 also prints a point-count formula using exterior k. Public
-   updates use exterior k. Choosing `opts.nppw=70*max(1,sqrt(eta))` realizes
-   the larger-wavenumber interpretation; choosing 70 realizes the exterior
-   formula. The data count has the corresponding ambiguity. Ask the
-   coordinator to settle it; do not infer it from the shipped example.
-3. **Resolution at the start of each frequency:** RLA does not resample the
-   previous curve before the first forward solve at the new k. Updates
-   enforce at least 300 points, even parity and no decrease from the old
-   count. A zero-update resampling call in the wrapper can set the requested
-   starting resolution, but this must be declared and agreed. The paper
-   does not specify rounding or a minimum node count.
-4. **Curvature tolerance:** the paper defines an energy-fraction bound but
-   supplies no numerical value for its tolerance. The public option defaults
-   to infinity, which imposes no useful restriction; the shipped driver's
-   0.1 is not a published choice. The implementation compares the square
-   root of the tail-energy fraction, so its `eps_curv` would need the square
-   root of a chosen paper energy tolerance. The exact curvature cutoff is
-   also not fixed by the reported update-band rule.
-5. **Filter sequence:** the printed exponent divides by sigma squared;
-   public code divides by sigma, with the same decimal sigma schedule.
-   Its ten-loop limit includes the initial unfiltered trial. Also, it filters
-   each candidate independently before comparing residuals, while the prose
-   allows accepting an already admissible candidate immediately. No option
-   makes these sequences identical. Keep public behavior unless the
-   coordinator explicitly requests a separately reported repair.
-6. **Zero gradient:** activity 01's exact-fit diagnostic exposed a zero-over-
-   zero SD step followed by a MEX crash. The public residual stop is checked
-   after updating. No guard has been applied; report any recurrence without
-   silently changing stopping rules.
-7. **Analytic check source:** the shipped cavity's `(0.85,0)` is outside its
-   true domain, invalidating that manufactured-solution estimate. Paper-case
-   verification needs a valid interior point per exact shape, or a separate
-   resolution comparison. This diagnostic does not define the measurement.
-8. **Paper notation:** the star paragraph prints an inconsistent unsquared
-   interior wavenumber. The requested eta=0.9 and section 4.1's contrast
-   definition fix the intended material ratio; record this interpretation.
-9. **Paper drivers absent:** the checked public source cannot establish the
-   authors' choices for unspecified controls. Defaults are allowed only
-   where genuinely silent, and must be named; a default that disables an
-   explicitly described restriction is not a faithful reproduction.
-10. **Glider display horizon:** Figure 1 shows error samples only through
-    k=10 (37 frequencies), although section 4's general setting extends to
-    k=30. The text does not explicitly say whether the glider stopped at 10
-    or only plots that range. The table above retains the stated 117-frequency
-    default; compare with Figure 1 only through k=10. A shorter glider run
-    needs a declared coordinator choice rather than an assumed paper limit.
+1. The analytic star/cavity coefficients are absent. The coordinator chose
+   vector recovery, whose finite accuracy is stated above. The count is six.
+2. The paper's wavelength statements disagree. The coordinator chose the
+   public exterior-k convention and required a finer-grid data check at
+   k=30 for eta>1. Public frequency-start sampling is retained.
+3. The paper omits the curvature tolerance/cutoff. Start with the public
+   shipped-driver values and apply only the authorized Figure 1 comparison.
+   The implementation compares square-root tail energy; 0.1 is used as the
+   code's tolerance, with no reinterpretation as an energy fraction.
+4. The printed Gaussian exponent divides by sigma squared; the code divides
+   by sigma and includes the unfiltered trial in its ten-attempt limit. It
+   filters each candidate before comparing them. Retain public behavior.
+5. The public exact-fit zero-gradient SD division can cause NaNs and a MEX
+   crash. No guard is authorized; record any recurrence.
+6. The shipped analytic diagnostic source is outside its cavity. These runs
+   use a point verified inside each actual true shape; it changes only the
+   manufactured-solution check, never the plane-wave observations.
+7. The star paragraph's unsquared-wavenumber notation is inconsistent.
+   Interpret eta=0.9 as the squared ratio, consistently with section 4.1.
+8. No paper drivers are public, so unspecified controls cannot be recovered
+   from them. All choices above are the coordinator's declared choices.
+9. Figure 1 displays k<=10, while section 4 states M=117. The coordinator
+   chose all 117 frequencies and a comparison only on the plotted range.
 
-## Procedure after decisions
+## Parallel drafting work
 
-1. Freeze exact shape definitions, eta values, all settings, software hashes
-   and the seven-case manifest. Record every coordinator choice above.
-2. Reuse the activity 01 MEX build and low-frequency transmission checks.
-   Check each true-shape forward solution only enough to establish the
-   measurement convention and the chosen resolution. Keep those checks
-   distinct from reconstruction scores.
-3. Generate the native BRG data and run one centred unit-disk start per case.
-   Save data and continuation states after every frequency. Run timed cases
-   alone; no CSI overlap for final table timing.
-4. Retain curves, residual histories, iterations, exit flags, wall times and
-   polygon area errors. Save plots at the paper's displayed frequencies and
-   the final frequency. A poor reconstruction is a result, not a reason to
-   tune or rerun with another start.
-5. Write `results.md`, commit and push each completed or failed run by path,
-   and stop for coordinator review. Later BEM work gets these exact fields,
-   positions, directions and known material ratios.
-
-## Budget, commands and outputs
-
-Current numerical-run budget: **zero**. Proposed later ceiling: four hours
-per case including data and inversion, at most seven cases (28 hours total).
-This is a proposal, not authorization to exceed activity 01's four-hour
-limit; the coordinator must assign the campaign budget before launch.
-The public transmission code keeps several dense boundary matrices. The
-eta=10 glider under the larger-wavenumber resolution rule can need thousands
-of boundary nodes, far above the shipped example's 500 inverse nodes.
-Estimate matrix memory after the resolution decision and before launch;
-the activity 01 timing does not establish feasibility of the paper settings.
-Do not lower resolution or change the solver to meet a budget silently.
-
-The paper runner does not exist yet. After the case manifest is complete,
-implement `experiments/baselines/brg/run_paper.py` with the intended command
-`python experiments/baselines/brg/run_paper.py --case <manifest-name>`.
-Do not present that proposed command as runnable today. Use explicit
-per-frequency options rather than editing the public numerical methods.
-
-Raw outputs: `results/brg/paper_examples/<date>/<case>/`. Keep bulk data,
-full states and full logs in ignored `local/`, with command and SHA-256.
-Commit no more than about 5 MB per run: compact boundaries, residuals,
-timings, logs and JSON. Figures: this activity's `figures/`. Code stays in
-`experiments/baselines/brg/`; any approved upstream repair gets its own patch.
-
-Success means every specified case finishes or reaches its declared limit
-with reproducible evidence, and every deviation from the paper is explicit.
-It does not mean that BRG recovers every shape; the cavity failure is one
-of the paper's reported outcomes.
-
-## Sources checked
-
-- [Paper and equations](https://arxiv.org/html/2210.11607), official v1 PDF and
-  TeX source, especially sections 2, 2.1, 4.1–4.3 and Figures 1, 4 and 7.
-- [Source archive inventory](../../../../results/brg/paper_sources/source_members.json)
-  and [download commands/checksums](../../../../results/brg/paper_sources/manifest.json).
-- [Pinned public code](https://github.com/flatironinstitute/inverse-obstacle-scattering2d/tree/bda24bddbf4562497280b671bc174ef891b47c6b):
-  `src/+geometries/starn.m`, `charlie_cavity.m`, and the RLA forward, inverse,
-  update and geometry functions inspected in activity 01.
-- [Activity 01 data conventions](../01_run_published_examples/data_handoff.md)
-  and [patch record](../../../../external/patches/brg/README.md).
-
-In the repository's [information chain](../../../reference/inverse_information_chain.md),
-these are external BRG counterparts of A1–A4, B5–B8 and the geometry-update
-controls. They are not on our default BEM inverse path; this plan does not
-authorize edits to that path.
+Read `solvers/bem_inverse/README.md` and
+`docs/reference/inverse_information_chain.md`, then draft
+`../03_adapt_bem_to_brg_data/plan.md`. Use A1–C12 terms and list minimal file
+changes for plane waves, unpaired data, fixed contrast, units and eta below
+one. Specify per-shape forward checks before any inversion, a data-contained
+frequency schedule and high-k risks. Do not edit `solvers/` or
+`experiments/comparison/`; the coordinator reviews that plan first.
