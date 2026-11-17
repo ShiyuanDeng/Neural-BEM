@@ -2,9 +2,25 @@
 
 ## Status and authority
 
-Plan only, drafted after activity 03(c), 17 November 2026. No activity 04
-forward data or inverse runs have started. The coordinator reviews this plan
-before execution. No high-k redesign is proposed.
+Baseline half authorized by the coordinator on 17 November 2026, after
+acceptance of activities 02 and 03. No BEM run or solver edit is authorized
+here. The separate BEM coordinator owns frozen plane-wave TG-002 data and
+all BEM work. The two BEM sections below are not executed in this activity.
+
+The 37-frequency sweep, floor(10k) radius-10 layout, geometry wrapper,
+public settings and frozen scoring are approved. Frozen BEM-side data do
+not yet exist: tonight uses BRG-generated data, labelled **provisional**.
+When frozen data arrive, compare fields using the threshold below and rerun
+only cases exceeding it. The request is one machine-readable JSON file,
+including coefficients and hashes, rather than a second data specification.
+
+Pilot: asymmetric eta=4, BRG data and BRG inversion only. If total case time
+is at most 15 minutes, continue the other 19 without another question.
+Caps: one hour per case and four hours elapsed for the whole campaign,
+including data, scoring and retries. At most three BRG MATLAB processes;
+keep at least 14 GB available and reduce concurrency when needed. CSI has
+three concurrent fits; record overlap. Commit and push each completed batch.
+No k=30 paper resume is authorized during CSI's overnight campaign.
 
 The user chose this as the main BRG table on 17 November: “for brg i think
 we should compare it on my tb 002 scenes, its more variety?”, then “yeah”.
@@ -70,7 +86,7 @@ only their frequency definition, not their measured fields.
 | 1.375 | 4.588289852 | | |
 
 The original spacing is 0.417117259 in k, larger than BRG's published 0.25.
-**Proposed single sweep:** insert one midpoint in each original interval.
+**Approved single sweep:** insert one midpoint in each original interval.
 This gives **37 frequencies**, k=0.834234519 to 8.342345186 with spacing
 0.208558630, preserving all 19 TG-002 labels and the exact physical range.
 Compute values from the constants, not the rounded numbers printed here.
@@ -107,7 +123,7 @@ frequency resolution, filter sequence and zero-gradient behavior unchanged.
 Use only approved upstream patches 03/04 as needed and the seven-argument
 call. Save after every frequency and resume without repeating completed work.
 
-## Cross-solver forward checks before inversion
+## Cross-solver forward checks — BEM side, not executed here
 
 For every shape and contrast, feed the **same saved BRG observations** into
 our CPU table forward on the exact scaled true coefficients. Check all
@@ -130,7 +146,7 @@ refusal separately from the true-shape cap. No redesign, tolerance loosening
 or altered truth is proposed. A failed qualification remains a table result;
 it does not justify dropping that case.
 
-## Our BEM on exactly the same data
+## Our BEM on exactly the same data — BEM side, not executed here
 
 Main table: known contrast, modal Müller + slider, real frequencies only,
 no localization, no warm-up, one centred unit-circle start. Extra row:
@@ -191,38 +207,36 @@ tables interchangeable measurements of the same inverse problem.
 
 **Time one case first:** asymmetric at eta=4, chosen before results because
 it has several harmonics, an offset start and the higher included contrast.
-Run its data generation, forward checks, BRG fit and both BEM rows once.
-Retain that case in the final table; it is not a disposable tuning run.
+Run its BRG data generation, BRG fit and frozen scoring once. Retain the
+pilot in the final table. Report phase times and the 20-case projection.
+If elapsed case time exceeds 900 seconds, stop and report. Otherwise continue
+with the other 19 under the one-hour case and four-hour campaign caps.
+No BEM qualification or inverse is performed in this baseline campaign.
 
-Proposed hard caps match the existing investigation: BRG 4 h including data,
-BEM forward qualification 30 min, and each BEM inverse 1 h. These are ceilings,
-not a forecast. After the timed first case, give the coordinator measured
-phase costs and the projected total for 20 cases before launching the other
-19. The first projection is 20 times each measured phase, with its uncertainty
-stated; refine the estimate from each completed case without rerunning one.
-No numerical total is claimed before that measurement.
-
-Parallelism follows the coordinator's current memory rule: monitor available
-memory and keep at least 14 GB free, record overlap and thread counts, and
-prioritize useful completions over clean timings. Do not exceed an authorized
-per-case limit or start a tuning rerun. Every failure and capped endpoint is
-saved and committed. This plan authorizes no runs by itself.
+Memory is checked before launch and while running. Reserve headroom for
+active BRG workers rather than relying only on instantaneous free memory.
+A resource stop preserves all completed frequency checkpoints; it is recorded
+and counts against both limits. There is no tuning rerun. Bulk observations
+remain provisional until compared with the BEM-side frozen observations.
 
 ## Commands and evidence locations
 
-After approval, add an owned `experiments/baselines/brg/run_tg002.py` wrapper:
-`--case asymmetric__c4 --phase data`, `--phase forward-check`, then
-`--phase brg`, `--phase bem-known`, and `--phase bem-recovered`.
-The initial command set is a proposed interface, not an existing runner.
+Owned commands, implemented before the pilot:
 
-Save compact outputs in `results/brg/tg002_shapes/<date>/<case>/`, with input
-contracts, constants, geometry/data hashes, frequencies, curves, per-frequency
-residuals, exit reasons, overlap and phase times. Bulk fields and continuation
-states stay ignored under local/, with reproduction command and SHA-256.
-Keep roughly 5 MB committed per run. Report figures belong in this activity's
-figures/ folder. Commit and push each run by owned paths on organised.
+- `python experiments/baselines/brg/prepare_tg002.py`: build the single JSON
+  data request, geometry inputs and geometry checks from frozen truths.
+- `python experiments/baselines/brg/run_tg002.py --case asymmetric__c4`:
+  generate provisional BRG data, invert, save each frequency and score.
+- `python experiments/baselines/brg/run_tg002.py --campaign --detach`:
+  enforce the pilot rule, budgets and memory/concurrency limits for 20 cases.
 
-Write results.md after the timed case, then update it for the full approved
-campaign. Do not edit experiments/comparison/; ask for the solver lock before
-any later core change if it has been released. The intended adapter already
-exists; no additional solver redesign is part of this plan.
+Evidence: `results/brg/tg002_shapes/2026-11-17/`; the request is
+`data_request.json` there. Compact case outputs retain curves, residuals,
+exit reasons, source hashes, overlap and phase times. Bulk fields, exact
+states and full logs stay ignored in `local/` with command and SHA-256.
+Keep at most about 5 MB per case; figures go in this activity's `figures/`.
+Commit and push each batch by explicit owned paths on `organised`.
+
+The report separates provisional BRG data, inverse and scoring times.
+Cross-solver checks and both BEM rows belong to the BEM coordinator and stay
+unexecuted here. No shared solver or comparison file is edited.

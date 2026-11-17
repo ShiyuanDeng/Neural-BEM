@@ -1,0 +1,18 @@
+Traceback (most recent call last):
+  File "/home/drdeng/Neural_SDF_BEM_AD_organised/experiments/baselines/brg/run_tg002.py", line 111, in <module>
+    if __name__=='__main__':main()
+  File "/home/drdeng/Neural_SDF_BEM_AD_organised/experiments/baselines/brg/run_tg002.py", line 108, in main
+    elif a.case:raise SystemExit(run_case(a.case,a.deadline or time.time()+3600))
+  File "/home/drdeng/Neural_SDF_BEM_AD_organised/experiments/baselines/brg/run_tg002.py", line 48, in run_case
+    with p.open('rb') as f:sha=hashlib.file_digest(f,'sha256').hexdigest()
+AttributeError: module 'hashlib' has no attribute 'file_digest'
+
+Campaign supervisor follow-on failure:
+Traceback (most recent call last):
+  File "/home/drdeng/Neural_SDF_BEM_AD_organised/experiments/baselines/brg/run_tg002.py", line 111, in <module>
+    if __name__=='__main__':main()
+  File "/home/drdeng/Neural_SDF_BEM_AD_organised/experiments/baselines/brg/run_tg002.py", line 107, in main
+    if a.campaign:campaign()
+  File "/home/drdeng/Neural_SDF_BEM_AD_organised/experiments/baselines/brg/run_tg002.py", line 70, in campaign
+    if c==CASES[0] and (receipt['case_wall_seconds']>900 or p.returncode):stop_reason='pilot over 15 minutes or failed'
+KeyError: 'case_wall_seconds'
