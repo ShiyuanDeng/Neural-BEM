@@ -64,6 +64,10 @@ Default eight compute threads, recorded rather than changed in upstream
 code. BRG currently has several MATLAB jobs, so log all overlap. Read
 `/proc/meminfo` before launching, require estimated headroom for this fit,
 and enforce at least 14 GiB MemAvailable while it runs; record MemFree too.
+For generation and the larger probe, enforce 14 GiB MemFree as well and
+require both measures to exceed 18 GiB before starting. The measured run
+was already launched with the available-memory guard; check its minimum
+unused memory from the retained monitor too.
 The monitor stops only our process group if the reserve is crossed and
 preserves the failure evidence. Do not stop or reconfigure BRG jobs.
 

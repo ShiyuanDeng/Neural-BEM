@@ -17,6 +17,9 @@ not be used as the signed numerical truth. The signed clockwise quarter
 turn from that sketch declaration is: sketch up becomes numerical right,
 and sketch left becomes numerical up. Thus (x_num,y_num)=(y_sketch,-x_sketch).
 No reflection or fitted translation is introduced.
+This is a right-handed registration of the sketch declaration, inferred
+from the labelled same-file evidence below. The unlabelled perspective
+figure alone cannot establish a unique signed Cartesian transformation.
 
 The introduction alone does not print an x/y pair on the cylinder sketch.
 For an independent **reading-only sign check**, use database first author
@@ -30,6 +33,9 @@ x=0, positive y, with the plotted vertical coordinates 0.3 to 5.3 cm.
 This is published evidence independent of our recovered images. It fixes
 the sign that an unlabelled sketch alone cannot establish. We do not use
 the published reconstructed 2.8 cm domain centre as exact ground truth.
+That companion paper lists approximate transmitter/receiver radii in
+reverse order to the CC-CSI driver. Its settings are not imported: our
+baseline keeps the shipped transmitter 0.72 m and receiver 0.76 m.
 
 The nominal true cylinder centre in exported numerical coordinates is
 therefore **(0,+30) mm**, radius 15 mm, relative permittivity 3 +/-0.3,

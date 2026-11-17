@@ -27,9 +27,9 @@ def main():
     args=parser.parse_args()
     out=REPO/f'results/csi/preparation/2026-11-17_{args.mode}'
     out.mkdir(parents=True,exist_ok=False)
-    if memory()['MemAvailable']<18*1024**3:
+    if min(memory().values())<18*1024**3:
         (out/'memory_refusal.json').write_text(json.dumps(memory(),indent=2)+'\n')
-        raise SystemExit('Less than 18 GiB available before start; preserving 14 GiB reserve')
+        raise SystemExit('Less than 18 GiB free or available before start; preserving 14 GiB reserve')
     env=dict(os.environ,CSI_REPO=str(REPO),CSI_UPSTREAM=str(UP),CSI_OUT=str(out),CSI_MODE=args.mode)
     if args.mode=='generate':
         entry=REPO/'experiments/baselines/csi/generate_synthetic.m'
@@ -87,8 +87,8 @@ def main():
                     available_bytes=mem['MemAvailable'],free_bytes=mem['MemFree']))
                 file.flush();previous=(elapsed,cpu)
             except (FileNotFoundError,psutil.NoSuchProcess,psutil.AccessDenied): pass
-            if mem['MemAvailable']<14*1024**3 or elapsed>limit:
-                record['stopped_reason']='memory reserve' if mem['MemAvailable']<14*1024**3 else 'wall limit'
+            if min(mem.values())<14*1024**3 or elapsed>limit:
+                record['stopped_reason']='memory reserve (free or available)' if min(mem.values())<14*1024**3 else 'wall limit'
                 os.killpg(child.pid,signal.SIGTERM);break
             time.sleep(1)
         record['returncode']=child.wait(timeout=30)
