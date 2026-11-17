@@ -1,0 +1,19 @@
+--- a/functions/CC_CSI_Brent.m
++++ b/owned-copy/CC_CSI_Brent_recorded.m
+@@ -40,7 +40,7 @@
+ % |eTot|, 
+ %
+ 
+-function [Mchi, time, chi, vJ, eTot] = CC_CSI_Brent(Emea, Phi, A, chi, vJ, eIncInv, eTot, pars, epsinv)
++function [Mchi, time, chi, vJ, eTot] = CC_CSI_Brent_recorded(Emea, Phi, A, chi, vJ, eIncInv, eTot, pars, epsinv)
+ 
+ interval    = 64;
+ Mchi        = cell(ceil(pars.itenum / interval) + 1, 1);
+@@ -397,6 +397,7 @@
+     
+     if mod(jj, interval) == 0
+         Mchi{kk}    = mchi{end};
++        csi_record_snapshot(jj, mchi{end}, toc(startTime));
+         kk          = kk + 1;
+     end
+     if (abs(errOld - fsb) <= 1e-5 && terflag)

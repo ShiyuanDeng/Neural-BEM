@@ -1,7 +1,9 @@
 % Own input driver using the shipped FDFD matrix and receiver kernel.
 % No upstream inverse function or forward builder is edited.
 maxNumCompThreads(8);cd(getenv('CSI_UPSTREAM'));restoredefaultpath;add_path;
-geometry=load(fullfile(getenv('CSI_REPO'),'results/csi/preparation/2026-11-17_geometry/geometry.mat'));
+geometry_path=getenv('CSI_GEOMETRY');
+if isempty(geometry_path);geometry_path=fullfile(getenv('CSI_REPO'),'results/csi/preparation/2026-11-17_geometry/geometry.mat');end
+geometry=load(geometry_path);
 raw=load('dielTM_dec8f.txt');
 para.pt=PT.TM;para.NTX=36;para.Tr=.72;para.Rr=.76;para.m_unit=.000625;
 para.showconfg=false;para.disflag=false;
@@ -65,7 +67,8 @@ end
 out=getenv('CSI_OUT');
 fid=fopen(fullfile(out,'synthetic_input.txt'),'w');
 fprintf(fid,'%.16e %.16e %.16e %.16e %.16e %.16e %.16e\n',raw.');fclose(fid);
-summary=struct('case_name','tg002_circle_c4_TM','threads',maxNumCompThreads,'forward_grid',[332 332], ...
+case_name=getenv('CSI_CASE');if isempty(case_name);case_name='tg002_circle_c4_TM';end
+summary=struct('case_name',case_name,'threads',maxNumCompThreads,'forward_grid',[332 332], ...
     'inverse_grid',[166 166],'frequencies_GHz',fre,'seconds',toc(timer),'frequencies',{reports}, ...
     'source_model','unit scalar Green source; raw incident and total fields pass unchanged through ReadFreData calibration');
 fid=fopen(fullfile(out,'forward_summary.json'),'w');fprintf(fid,'%s\n',jsonencode(summary,PrettyPrint=true));fclose(fid);

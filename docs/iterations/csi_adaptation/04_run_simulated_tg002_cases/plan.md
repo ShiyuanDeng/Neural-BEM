@@ -4,17 +4,22 @@
 
 17 November 2026. The coordinator conveyed the user's words:
 **"okay for now keep only mf-cc-csi, and run them three at time"**.
-The campaign has the go, subject to the coordinator's **6 h total budget**
-and instruction: if the timing probe says it will not fit, report before
-starting instead of cutting any cases, grid or iterations.
+The campaign was initially held at a six-hour limit because activity 03
+forecast 7.96 h. The coordinator accepted activity 03 and extended the
+limit to **9 h** on 17 November: **"Yes, the limit is extended to 9 h for
+activity 04. Start it now."** This resolves the launch hold.
 
-**Not started: the activity-03 probe forecasts 7.96 h for the requested
-four batches, exceeding 6 h.** Even perfect sharing of all work across
-three workers gives 6.65 h, before additional contention or a reduction
-to two workers. The coordinator must resolve the limit before launch.
-No activity-04 forward generation or inversion has run. Do not silently
-replace 2048 with a shorter count: the measured snapshot check also found
-no requested earlier count within 1% of the final area and mean contrast.
+Keep all ten cases, 2048 iterations and three concurrent fits. After the
+first batch, recompute the whole-campaign forecast from the measured
+concurrent rates. If it exceeds nine hours, publish the completed batch
+and stop before starting another; report to the coordinator. Do not cut
+iterations, cases or settings. The user may stop overnight at any point;
+raw snapshots already written and completed work must survive.
+
+The measured-cylinder 35% registered area error is kept separate from
+support size and the approximately 3.6 mm vertical centre offset against
+an only approximately specified 30 mm true displacement. Its full centroid
+distance was 4.108 mm; no truth or image is moved to combine these metrics.
 
 ## Question, cases and comparisons
 
@@ -108,20 +113,30 @@ per case, plus 12.393 s measured wrapper overhead. Four batches forecast
 total (about 42 s less when reusing the circle data). Ideal division by
 three is still **6.65 h**. Two-worker scheduling is slower. These rates
 were measured under BRG overlap; no clean-run or concurrent speedup is
-assumed to waive the user's six-hour limit.
+assumed to shorten the approved runs.
 
-The **current run budget is 6 h total**. Stop before starting because the
-forecast exceeds it. Once the coordinator resolves this conflict, record
-that decision here before launching. A six-hour wall monitor must preserve
-all completed/early snapshots and logs if the budget remains in force.
-No settings or cases may be cut to make the estimate fit.
+The **current run budget is 9 h total**, starting with campaign data
+preparation. A nine-hour monitor preserves completed and early snapshots
+and logs if the budget is reached. The first-batch forecast is a separate
+check before batch 2. All native per-fit times, peak memory and overlap
+are recorded. No settings or cases may be cut to make the estimate fit.
 
 ## Commands, evidence and commits
 
 The preparation commands already run are documented in activity 03.
-The campaign launcher/scoring extension is to be implemented only after
-the budget conflict is resolved, under `experiments/baselines/csi/`.
-Its exact executable command will be recorded here before any run.
+The detached campaign command, from the repository root, is:
+
+```bash
+PYTHONPATH=solvers:. setsid nohup /home/drdeng/miniconda3/envs/EMNerf/bin/python -m experiments.baselines.csi.campaign
+```
+
+The launcher records its PID and each detached MATLAB PID, exact entry
+command and driver hash. To stop, create
+`results/csi/tg002/2026-11-17_campaign/STOP` or send the launcher SIGTERM.
+It stops only its own workers, scores retained snapshots and publishes
+that partial batch. The coordinator may also send a stop instruction in
+this pane. A callback write/read check on a saved complex fixture runs
+before launch; it runs no inverse iterations.
 
 New raw evidence goes to `results/csi/tg002/2026-11-17_<case>/` (or the
 actual run date). Reports and figures belong beside this plan. Compact

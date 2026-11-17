@@ -14,3 +14,13 @@ The coordinator's reading of legacy `interp2` is that a negative exponent
 generated precisely these query coordinates, without rejecting the sign.
 No regularization formula or setting changes. The wrapper checks exact
 random-array refine/coarsen equality and restores the random-number state.
+
+## Campaign snapshot instrumentation
+
+`0003-record-raw-campaign-snapshots.patch` is applied only to the owned
+`experiments/baselines/csi/recorded/CC_CSI_Brent_recorded.m` copy. It
+renames the function and writes raw snapshots after the native history
+update. Removing those two changes restores the full upstream text.
+The external upstream file is unchanged. No arithmetic, optimizer state,
+data or solver setting is changed. The coordinator authorized early
+campaign snapshots on 17 November 2026.
