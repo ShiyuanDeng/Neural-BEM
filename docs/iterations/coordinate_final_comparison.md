@@ -7,7 +7,7 @@ settings, assumptions and unknowns, and it sets how subagents share the work.
 The coordinator (the main session) owns this file. Subagents never edit it.
 They report back, and the coordinator updates the status board and the cards.
 
-Last updated: 17 November 2026, 22:25 (CSI 02 done; CSI 03 preparing the simulated cases).
+Last updated: 17 November 2026, 23:20 (BEM side to move to a second coordinator).
 
 ## Status board
 
@@ -15,7 +15,7 @@ Last updated: 17 November 2026, 22:25 (CSI 02 done; CSI 03 preparing the simulat
 |---|---|---|---|---|
 | Our BEM (default) | [evaluate_our_method](evaluate_our_method/) | [01](evaluate_our_method/01_measure_clean_and_noisy_recovery/results.md), [02](evaluate_our_method/02_run_ablations/results.md), run 17 Nov | TG-002 done | Extend for BRG and CSI data, later inside those investigations |
 | GauGal | [evaluate_our_method](evaluate_our_method/) | [03](evaluate_our_method/03_record_untuned_gaugal_reference/results.md), run 17 Nov | TG-002 untuned reference done | Stage 2 role open (U1) |
-| BRG | [brg_adaptation](brg_adaptation/) | [01 results](brg_adaptation/01_run_published_examples/results.md), [02 plan](brg_adaptation/02_rebuild_paper_examples/plan.md) | 01 done 17 Nov. 02 (six paper cases): 1 of 6 done. 03 (adapt our BEM to BRG data): plan approved 17 Nov 21:45 | `brg` agent (Codex, astra, high effort): run the other five cases; implement 03 in stages during the waits; stop after one glider fit with our BEM |
+| BRG | [brg_adaptation](brg_adaptation/) | [01 results](brg_adaptation/01_run_published_examples/results.md), [02 plan](brg_adaptation/02_rebuild_paper_examples/plan.md) | 01 done 17 Nov. 02 (six paper cases): 2 of 6 done, 4 running to k = 15. 03 (adapt our BEM to BRG data): adapter done, 1 of 6 fits run, stopped for handover | `brg` agent (Codex, astra, high effort): finish the paper cases at k = 15 and report; no more BEM work |
 | CSI family | [csi_adaptation](csi_adaptation/) | [01 results](csi_adaptation/01_run_published_examples/results.md) | 01 and [02](csi_adaptation/02_run_fresnel_dielectric_cylinder/results.md) done 17 Nov. 03 (prepare the simulated TG-002 cases) started 17 Nov 22:25 | `csi` agent (Codex, sol, high effort): fix the frame, test whether 2048 iterations are needed, time one simulated case; no campaign yet |
 
 **Setup checked on 17 November 2026:** the user made the MaxwellFDFD link and
@@ -26,8 +26,26 @@ thread count.
 
 **Solver lock:** held by the BRG investigation (`brg` agent) since
 17 November 2026, 21:45, for
-[activity 03](brg_adaptation/03_adapt_bem_to_brg_data/plan.md). Only one
-investigation may edit `solvers/bem_inverse/` at a time.
+[activity 03](brg_adaptation/03_adapt_bem_to_brg_data/results.md). Its
+solver edits are finished and frozen (commits `f81719a31`, `4dde44c96`).
+The lock passes to the BEM-side coordinator when the user starts it. Only
+one investigation may edit `solvers/bem_inverse/` at a time.
+
+**Split planned by the user (17 November, 23:15):** a second coordinator
+with two subagents will own the BEM side. This coordinator keeps the
+baseline side.
+
+| Baseline side (this file) | BEM side (new coordinator) |
+|---|---|
+| Their code, patches and baseline runs | `solvers/bem_inverse/` and the solver lock |
+| Converting shared data into their formats | Plane-wave data on TG-002 scenes, generated and frozen there |
+| BRG and CSI results | Every BEM fit, on TG-002, BRG and CSI data |
+
+Only the frozen data files, the scoring in `experiments/comparison/` and
+the data notes cross that line. The user confirmed the data ownership with
+"yes". No new documents are created for the split until the user says so.
+BEM-side work already done here: BRG activity 03 (adapter built and tested,
+one of six fits run). It stops there.
 
 ## The final comparison
 
