@@ -69,6 +69,21 @@ an independent endpoint audit belongs to the caller. The TG-002 campaign runs
 [`experiments/benchmark/audit.py`](../../experiments/benchmark/audit.py) after
 `fit` returns, then scores against truth.
 
+A problem with real-frequency data only passes `damped=None` and runs under
+[`RealOnlyPolicy`](real_only_policy.py) (GGB-003): no localization, no warm-up and
+no damped stage. `CumulativePolicy` and disk localization refuse such a problem,
+and `RealOnlyPolicy` refuses a problem that carries a damped catalog.
+
+```python
+from bem_inverse.real_only_policy import RealOnlyPolicy
+problem = Problem(initial, real, None, contrast)
+result = fit(problem, solver="modal_muller", physics=physics, forward_solve=forward_solve,
+             geometry_update="slider", policy=RealOnlyPolicy())
+```
+
+`RealOnlyPolicy(frequency_schedule="simultaneous")` skips the frequency ladder,
+`"single"` takes a one-frequency catalog, and `fixed_band=37` holds the shape band.
+
 To select a complete named recipe instead of individual slots:
 
 ```python
@@ -132,7 +147,7 @@ carries the checkpoint and the remaining operation queue.
 
 | Modules | Responsibility |
 |---|---|
-| `problem`, `physics`, `policy`, `policies`, `pipelines`, `runner` | Inputs, physics registry and counters, the executable policy, named recipes, the operation queue |
+| `problem`, `physics`, `policy`, `real_only_policy`, `policies`, `pipelines`, `runner` | Inputs, physics registry and counters, the executable policies, named recipes, the operation queue |
 | `fit_stage`, `stage_types`, `work`, `errors` | One stage's loops, its records, work charging and stop codes |
 | `level_penalty` | Optional speed-unevenness rows added to the loss (GU-001) |
 | `forward_solvers/`, `forward_batch` | Physics contexts and forward solves; dispatch over active frequencies |

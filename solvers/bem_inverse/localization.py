@@ -43,6 +43,8 @@ def disk_landscape(physics, observations, contrast, centers, radii, cutoff):
 @geometry_validated
 def localize(problem, physics, rule, ledger, on_progress=None):
     started = perf_counter()
+    if problem.damped is None:
+        raise ValueError('Disk localization reads the damped catalog; a real-only problem keeps its prescribed start.')
     obs = problem.damped[:rule.frequencies]
     # FM-001 changes fitting acquisition, never the localization information.
     obs = tuple(o if o.acquisition.paired else replace(o,

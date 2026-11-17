@@ -118,7 +118,7 @@ class NodalKress:
             raise ValueError('nodal_kress requires a single Fourier curve and equal-density homogeneous material.')
         if any(not isinstance(o.acquisition, F.PointSourceAcquisition) or
                len(o.acquisition.sources) != len(o.acquisition.receivers)
-               for o in (*problem.real, *problem.damped)):
+               for o in problem.observations):
             raise ValueError('CI-001 disk localization requires point sources with a matched receiver diagonal.')
         if self.execution.device == 'cuda' and not CA.available():
             raise RuntimeError('Explicit CUDA execution requested, but no CUDA device is available.')

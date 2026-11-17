@@ -258,7 +258,7 @@ class ModalMuller:
         if problem.material != 'equal_density_homogeneous' or not isinstance(problem.initial, FourierCurve):
             raise ValueError('modal_muller requires a single Fourier curve and equal-density homogeneous material.')
         if any(not isinstance(o.acquisition, F.PointSourceAcquisition) or not o.acquisition.paired
-               for o in (*problem.real, *problem.damped)):
+               for o in problem.observations):
             raise ValueError('The modal Hadamard contraction and CI-001 localization require paired point sources.')
         if self.execution.device == 'cuda' and not CA.available():
             raise RuntimeError('Explicit CUDA execution requested, but no CUDA device is available.')

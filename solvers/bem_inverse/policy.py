@@ -141,6 +141,8 @@ class CumulativePolicy:
                           'stage quota', 'global work/time cap', 'numerical refusal']))
 
     def operations(self, problem, physics):
+        if problem.damped is None:
+            raise ValueError(f'{self.name} reads the damped catalog; use RealOnlyPolicy for a real-only problem.')
         required = (.25e9, *self.prefix_frequencies_hz)
         for catalog in (problem.real, problem.damped):
             if not all(any(o.frequency_hz == f for o in catalog) for f in required):
