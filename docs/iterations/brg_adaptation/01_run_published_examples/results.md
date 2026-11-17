@@ -27,3 +27,16 @@ three complex dense 2500-by-2500 solves: 0.717075 s at one thread, 0.195035 s
 at eight (3.677x); relative residual 4.04e-12.
 [Evidence](../../../../results/brg/examples/suite/matlab.log).
 These setup timings may overlap CSI and are not final comparison timings.
+
+## Transmission tests
+
+17 November: 23.97 s process wall time. The derivative script completed all
+seven modes and six step sizes; [errors](../../../../results/brg/examples/transmission/frechet_errors.json).
+The shipped script has no pass assertion. The multi-component test then
+crashed in `rla.get_fw_mats`, line 223: `src_info.L` is absent after
+`geometries.get_multi_comp`. No physics patch was made for this separate
+problem. [Failure log](../../../../results/brg/examples/transmission/matlab.log).
+
+The full derivative workspace is 82 MB and stays local, with command and
+SHA-256 in [manifest](../../../../results/brg/examples/transmission/manifest.json).
+The compact errors and multi-component failure workspace are committed.

@@ -16,6 +16,12 @@ The MATLAB wrapper sets `maxNumCompThreads(8)` and records the actual count.
 BRG may run at the same time; these are setup timings, not final table timings.
 The MaxwellFDFD system link exists; no path patch is needed.
 
+Step 1 stopped twice on 17 November: first on removed `plottools`, then on
+MR-CSI's negative `interp2` refinement factor after MF-CC-CSI completed.
+The display-only patch is saved. Waiting for the coordinator's decision on
+the regularization coarsening call; steps 2 and 3 have not started. See
+`results.md` for evidence and the proposed change, which is not applied.
+
 ## User decisions (17 November 2026)
 
 These come from the grilling session recorded in the

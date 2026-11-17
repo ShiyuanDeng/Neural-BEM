@@ -6,6 +6,7 @@ import json
 import os
 from pathlib import Path
 import subprocess
+import tarfile
 import time
 
 REPO = Path(__file__).resolve().parents[3]
@@ -16,8 +17,10 @@ ACTIVITY = REPO / 'docs/iterations/csi_adaptation/01_run_published_examples'
 def main():
     parser = argparse.ArgumentParser(__doc__)
     parser.add_argument('step', choices=['shipped_i', 'shipped_ii', 'paper_tm'])
+    parser.add_argument('--attempt', default='', help='Distinct suffix for a retained repeat')
     args = parser.parse_args()
-    out = REPO / 'results/csi/examples' / f'2026-11-17_{args.step}'
+    suffix = f'_{args.attempt}' if args.attempt else ''
+    out = REPO / 'results/csi/examples' / f'2026-11-17_{args.step}{suffix}'
     out.mkdir(parents=True, exist_ok=False)
     source = UPSTREAM / ('Inv_Fresnel_I.m' if args.step == 'shipped_i' else 'Inv_Fresnel_II.m')
     original = source.read_text()
@@ -36,6 +39,9 @@ def main():
     (out / 'upstream_driver.m').write_text(original)
     driver = out / 'executed_driver.m'
     driver.write_text(script)
+    with tarfile.open(out / 'upstream_matlab_sources.tar.gz', 'w:gz') as archive:
+        for path in sorted(UPSTREAM.rglob('*.m')):
+            archive.add(path, arcname=path.relative_to(UPSTREAM))
     env = dict(os.environ, CSI_SCRIPT=str(driver), CSI_OUT=str(out), CSI_REPO=str(REPO), CSI_UPSTREAM=str(UPSTREAM),
                CSI_FIGURES=str(ACTIVITY / 'figures'), CSI_STEP=args.step)
     command = ['matlab', '-batch', f"cd('{UPSTREAM}'); run('{REPO}/experiments/baselines/csi/run_example.m')"]
