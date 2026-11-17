@@ -55,6 +55,13 @@ do not start if the resulting point estimate exceeds four hours. Enforce a
 four-hour activity wall limit. The estimate is indicative under BRG overlap.
 No full inversion is run for calibration, grid testing or timing estimation.
 
+Preflight recorded before the long run: 7044.089 s native compute for all
+three methods; 10372.907 s including 20%, setup/export and all 30 minutes
+of reading. This is 2 h 52 min 53 s, below four hours. Detached run limit:
+12600 s, reserving the reading allowance. See `reading.md` and the saved
+`preflight_time_model.json`. The explicit interpolation check passed all
+eight cases with zero difference; the failed first harness is retained.
+
 ## Commands and outputs
 
 - Reading evidence: `results/csi/fresnel/2026-11-17_reading_check/`.

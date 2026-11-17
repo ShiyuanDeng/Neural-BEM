@@ -1,7 +1,7 @@
 % Explicit old-query-grid check; no inversion, no upstream changes.
 maxNumCompThreads(8);
 rng(17);
-checks = struct([]);
+checks = {};
 for N = [17 112]
     for complex_case = [false true]
         V = rand(N);
@@ -17,13 +17,13 @@ for N = [17 112]
             difference = max(abs(old(:)-sampled(:)));
             bound = 64*eps*max(1,max(abs(sampled(:))));
             assert(difference <= bound);
-            checks(end+1) = struct('N',N,'complex',complex_case, ...
+            checks{end+1} = struct('N',N,'complex',complex_case, ...
                 'refined_original',refined_case,'max_abs_difference',difference, ...
                 'rounding_bound',bound,'isequal',isequal(old,sampled));
         end
     end
 end
-record = struct('checks',checks,'threads',maxNumCompThreads,'matlab',version);
+record = struct('checks',{checks},'threads',maxNumCompThreads,'matlab',version);
 fid = fopen(fullfile(getenv('CSI_CHECK_OUT'),'explicit_interpolation.json'),'w');
 fprintf(fid,'%s\n',jsonencode(record,PrettyPrint=true));
 fclose(fid);
