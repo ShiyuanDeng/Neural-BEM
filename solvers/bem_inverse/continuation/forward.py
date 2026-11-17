@@ -35,6 +35,7 @@ def _operators(curve):
 class Acquisition:
     directions: np.ndarray
     receivers: np.ndarray
+    mask: object = None  # optional (direction, receiver) measured-pair mask
 
     def __post_init__(self):
         for name in ("directions", "receivers"):
@@ -45,6 +46,7 @@ class Acquisition:
                 raise ValueError("Incident directions must be unit vectors.")
             value.setflags(write=False)
             object.__setattr__(self, name, value)
+        object.__setattr__(self, 'mask', measurement_mask(self.mask, (len(self.directions), len(self.receivers))))
 
     @classmethod
     def ring(cls, illuminations, receivers, radius=10.0):
@@ -60,6 +62,8 @@ class Acquisition:
 
     @property
     def data_shape(self):
+        if self.mask is not None:
+            return (int(self.mask.sum()),)
         return (len(self.directions), len(self.receivers))
 
 
@@ -75,6 +79,7 @@ class PointSourceAcquisition:
     receivers: np.ndarray
     strength: complex = 1.0
     paired: bool = True
+    mask: object = None  # explicit unpaired table only; paired behavior is unchanged
 
     def __post_init__(self):
         for name in ("sources", "receivers"):
@@ -87,13 +92,32 @@ class PointSourceAcquisition:
             raise ValueError("Source strength must be finite.")
         if self.paired and len(self.sources) != len(self.receivers):
             raise ValueError("Paired acquisition requires equally many sources and receivers.")
-        if np.any(np.linalg.norm(self.sources[:, None] - self.receivers[None, :], axis=-1) == 0):
+        if self.paired and self.mask is not None:
+            raise ValueError('A measured-pair mask requires paired=False.')
+        mask = measurement_mask(self.mask, (len(self.sources), len(self.receivers)))
+        object.__setattr__(self, 'mask', mask)
+        coincident = np.linalg.norm(self.sources[:, None] - self.receivers[None, :], axis=-1) == 0
+        if np.any(coincident if mask is None else coincident & mask):
             raise ValueError("Sources and receivers must be distinct.")
 
     @property
     def data_shape(self):
+        if self.mask is not None:
+            return (int(self.mask.sum()),)
         return ((len(self.sources),) if self.paired
                 else (len(self.sources), len(self.receivers)))
+
+
+def measurement_mask(mask, shape):
+    """None means all pairs; an explicit mask exposes a C-order measured vector."""
+    if mask is None:
+        return None
+    value = np.asarray(mask)
+    if value.dtype != np.bool_ or value.shape != shape or not value.any():
+        raise ValueError('The measured-pair mask must be boolean, match the table, and retain at least one pair.')
+    value = value.copy()
+    value.setflags(write=False)
+    return value
 
 
 def same_acquisition(first, second):
@@ -101,6 +125,10 @@ def same_acquisition(first, second):
         return False
     if not np.array_equal(first.receivers, second.receivers):
         return False
+    first_mask, second_mask = getattr(first, 'mask', None), getattr(second, 'mask', None)
+    if first_mask is not None or second_mask is not None:
+        if not np.array_equal(first_mask, second_mask):
+            return False
     if isinstance(first, PointSourceAcquisition):
         return (np.array_equal(first.sources, second.sources)
                 and first.strength == second.strength and first.paired == second.paired)
@@ -195,6 +223,8 @@ def _solve(matrix, factors, rhs):
 @geometry_validated
 def solve(shape, wavenumber, contrast, acquisition, nodes, *, execution_backend=None):
     """contrast=ki²/k²; geometry and all lengths are in one declared unit."""
+    if getattr(acquisition, 'mask', None) is not None:
+        raise ValueError('Masked tables require the explicit CPU modal_muller table mode.')
     if not np.isfinite(wavenumber) or wavenumber <= 0 or not np.isfinite(contrast) or contrast <= 0:
         raise ValueError("Wavenumber and contrast must be positive.")
     curve = shape.nodes(nodes)

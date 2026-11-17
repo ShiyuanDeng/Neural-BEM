@@ -188,3 +188,18 @@ Shared geometry and physical solver checks remain in `pytest/ordered_boundary`
 and `pytest/gpr_bem_kress`. Six extended-precision Bessel comparisons fail on
 platforms whose `longdouble` has 52 mantissa bits; two validity-order and one
 resume exact-equality test are intermittent at about 1e-16.
+
+## Explicit CPU table forward (BRG adapter)
+
+`PlaneWaveAcquisition(directions, receivers, mask=None)` uses unit incident
+plane waves. `PointSourceAcquisition(..., paired=False, mask=None)` provides
+an unpaired point-source table. Enable `ModalSettings(table_mode=True)`
+and `Execution(device="cpu")` on `ModalMuller`; auto/CUDA table requests
+are refused. The paired TG-002 path and all defaults remain unchanged.
+
+Unmasked data have shape `(illumination, receiver)`. A boolean mask has that
+same shape; masked data are a vector selected in C order. Omitted mask means
+all pairs. A3 uses exact scaled regular-wave coefficients, including centre
+phase; A4 returns finite-range scattered fields. Existing cancellation limits
+remain in force. At this implementation stage table derivatives are refused;
+the next stage adds B7 and ragged B5/B8.

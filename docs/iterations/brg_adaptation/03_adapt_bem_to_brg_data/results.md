@@ -22,9 +22,24 @@ No solver file was edited before both reference runs finished.
 
 ## Stages
 
-- (a) A3/A4 CPU table forward and analytic disk/BRG low-k checks: pending.
+- (a) A3/A4 CPU table forward and analytic disk/BRG low-k checks: passed.
 - (b) Masked table derivatives and ragged residuals: pending.
 - (c) One end-to-end glider eta=0.33 fit and final default regression: pending.
 
 The [approved plan](plan.md) records exact modal plane waves, masks, the
 unchanged cancellation check, capped frequency prefixes and all limits.
+
+## Stage (a), 17 November
+
+Seven tests passed in 0.67 s: exact plane-wave modes/flux on a translated
+disk, disk-series tables at eta 0.33 and 2, masks, unpaired point tables,
+and explicit CPU/option validation. No upstream change was needed.
+
+The exact true glider at k=1, eta=0.33 agrees with saved BRG data to
+**1.30165e-6 relative complex error**; raising trace/workspace resolution
+changes the prediction by **1.19354e-15**. Both declared thresholds pass.
+This forward check took 0.550 s. Numerical evidence and source-data hash:
+[stage (a)](../../../../results/brg/bem_adaptation/2026-11-17/stage_a/).
+
+New behavior requires explicit table mode on CPU. Paired defaults retain
+their previous branch. Table derivatives remain refused until stage (b).

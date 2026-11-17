@@ -83,7 +83,7 @@ sqrt(eta), and never pass a negative susceptibility as `contrast`.
 ## Changes in the A1–C12 chain
 
 The table identifies the default-path code and the smallest proposed work.
-Files listed here are proposed changes, not permission to edit them yet.
+These edits are authorized under the coordinator’s solver lock.
 
 | Chain / need | Present behavior | Smallest change and files |
 |---|---|---|
@@ -184,7 +184,7 @@ eta=0.33 BEM fit and report before the other five BEM fits; no tuning reruns.
   radius. Radius-10 receivers still need these reciprocal kernels, even
   after plane-wave incident support exists. At k=30 on these shapes this is
   a likely hard limit. The coordinator fixes the current implementation: use the largest passing
-  prefix, without bypassing this refusal. A redesign is a separate proposal.
+  prefix, without bypassing this refusal. No high-k redesign will be proposed.
 - A2 radial degree and trace bandwidth rise with both k and interior k;
   glider eta=10 reaches interior k about 94.9. Its matrix can be well solved
   yet underresolved. Check trace and coefficient-workspace convergence.
@@ -248,3 +248,11 @@ After stages (a) and (b), commit and continue. After stage (c), stop and
 report the one BEM glider fit, its passing k prefix, forward and derivative
 checks, regression comparison, and timings. The other five BEM inversions
 wait for the coordinator. U5 only affects labels, not saved raw area scores.
+
+## Coordinator update: main comparison, 17 November 2026
+
+Activity 03 remains unchanged. After stage (c), draft activity 04 for
+TG-002 shapes with BRG-style data, plan only. The six paper cases remain
+a check of BRG’s own examples. No high-k redesign will be proposed.
+Two paper MATLAB jobs plus CSI may fill the three heavy-worker slots;
+implementation can continue, but BEM checks wait for an available slot.

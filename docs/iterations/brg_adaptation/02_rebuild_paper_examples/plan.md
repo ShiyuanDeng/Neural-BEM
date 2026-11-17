@@ -232,3 +232,14 @@ changes for plane waves, unpaired data, fixed contrast, units and eta below
 one. Specify per-shape forward checks before any inversion, a data-contained
 frequency schedule and high-k risks. Do not edit `solvers/` or
 `experiments/comparison/`; the coordinator reviews that plan first.
+
+## Coordinator update: concurrent paper cases, 17 November 2026
+
+Two paper cases may run together, each at eight MATLAB threads, with a
+lock per case. CSI uses the third heavy-worker slot. Do not run a heavy
+BEM check or fit while all three MATLAB slots are occupied. Start/end
+overlap records remain required; clean timings will be measured later.
+
+The six paper cases check BRG on its own examples. The main BRG table
+will use the 20 TG-002 shape/contrast cases with BRG-style data, following
+the user's new direction. Activity 04 will be planned after activity 03(c).

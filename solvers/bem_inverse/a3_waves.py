@@ -64,23 +64,13 @@ def graf_order(k, radius, distance, tolerance, maximum=1024):
 
 
 
-def point_kernels(geometry, k, point_sets, *, tolerance=1e-16, series_loss=1e-9, workers=1):
-    """Coefficients (window x points) of the incident trace and flux of G_k(. - point).
+def regular_kernels(geometry, k, order, *, tolerance=1e-16, series_loss=1e-9, workers=1):
+    """Scaled regular waves and speed-weighted flux for orders -L..L.
 
-    Regular waves depend only on k, so they are built once, at the largest
-    Graf order any point set needs. Each set then keeps its own orders. Row l
-    of the regular waves is divided by s_|l|=(k rho/2)^|l|/|l|!, and the Graf
-    factor H_l(k d) is multiplied by it, so high orders neither underflow nor
-    overflow.
+    This is the original point-kernel arithmetic, shared with exact modal
+    plane waves. The cancellation refusal and operation order are unchanged.
     """
     waves = geometry.waves
-    sets = []
-    for points in point_sets:
-        offset = points[:, 0]+1j*points[:, 1]-waves.center
-        distance = np.abs(offset)
-        checks.require_graf_separation(distance, waves.radius)
-        sets.append((offset, distance, *graf_order(k, waves.radius, distance, tolerance)))
-    order = max(row[2] for row in sets)
     x = abs(k)*waves.radius
     terms = series_terms(x, tolerance)
     loss = float(EPS*i0e(x)*np.exp(x))
@@ -101,6 +91,30 @@ def point_kernels(geometry, k, point_sets, *, tolerance=1e-16, series_loss=1e-9,
     flux = k/2*(geometry.normal_multiplier(functions[:-2]*lower, workers)
                 -geometry.conjugate_normal_multiplier(functions[2:]*upper, workers))
     values = functions[1:-1]
+    return values, flux, dict(series_terms=terms, series_loss=loss)
+
+
+def point_kernels(geometry, k, point_sets, *, tolerance=1e-16, series_loss=1e-9, workers=1):
+    """Coefficients (window x points) of the incident trace and flux of G_k(. - point).
+
+    Regular waves depend only on k, so they are built once, at the largest
+    Graf order any point set needs. Each set then keeps its own orders. Row l
+    of the regular waves is divided by s_|l|=(k rho/2)^|l|/|l|!, and the Graf
+    factor H_l(k d) is multiplied by it, so high orders neither underflow nor
+    overflow.
+    """
+    waves = geometry.waves
+    sets = []
+    for points in point_sets:
+        offset = points[:, 0]+1j*points[:, 1]-waves.center
+        distance = np.abs(offset)
+        checks.require_graf_separation(distance, waves.radius)
+        sets.append((offset, distance, *graf_order(k, waves.radius, distance, tolerance)))
+    order = max(row[2] for row in sets)
+    values, flux, info = regular_kernels(geometry, k, order, tolerance=tolerance,
+                                        series_loss=series_loss, workers=workers)
+    half_h = k*waves.radius/2
+    terms, loss = info['series_terms'], info['series_loss']
     result = []
     for offset, distance, own, ratio in sets:
         rows = slice(order-own, order+own+1)
@@ -110,3 +124,39 @@ def point_kernels(geometry, k, point_sets, *, tolerance=1e-16, series_loss=1e-9,
         result.append((values[rows].T@graf, flux[rows].T@graf,
                        dict(graf_order=own, graf_ratio=ratio, series_terms=terms, series_loss=loss)))
     return result
+
+
+def plane_wave_order(k, radius, speed_bound, tolerance, maximum=1024):
+    """Bound omitted Jacobi–Anger values and flux; no boundary quadrature.
+
+    |J_n(z)| <= (|z|/2)^n/n! exp(|z|^2/(4(n+1))). Above n>|z|/2,
+    successive bounds decrease at least geometrically with ratio x/(2(n+1)).
+    Starting the tail at L also bounds flux's shifted orders for |l|>L.
+    """
+    x = abs(k)*radius
+    for order in range(max(1, int(np.ceil(x))), maximum+1):
+        ratio = x/(2*(order+1))
+        log_term = order*np.log(x/2)-gammaln(order+1)+x*x/(4*(order+1))
+        bound = 2*np.exp(log_term)/(1-ratio)*(1+abs(k)*speed_bound)
+        if bound <= tolerance:
+            return order, float(bound)
+    raise ValueError(f'Plane-wave expansion needs more than {maximum} orders.')
+
+
+def plane_wave_kernels(geometry, k, directions, *, tolerance=1e-16, series_loss=1e-9, workers=1):
+    """Exact modal incident trace/flux for unit plane waves exp(i k d.x).
+
+    The stored regular wave l is divided by s_|l|. Its plane-wave coefficient
+    is therefore s_|l| i^l exp(-i l theta_d), times exp(i k d.center).
+    """
+    waves = geometry.waves
+    order, tail = plane_wave_order(k, waves.radius, np.sum(abs(geometry.normal)), tolerance)
+    values, flux, info = regular_kernels(geometry, k, order, tolerance=tolerance,
+                                        series_loss=series_loss, workers=workers)
+    l = np.arange(-order, order+1)
+    scaled = np.exp(abs(l)*np.log(k*waves.radius/2)-gammaln(abs(l)+1))
+    angles = np.arctan2(directions[:, 1], directions[:, 0])
+    phase = np.exp(1j*k*(directions[:, 0]*waves.center.real+directions[:, 1]*waves.center.imag))
+    coefficients = (scaled*(1j)**l)[:, None]*np.exp(-1j*l[:, None]*angles)*phase
+    return values.T@coefficients, flux.T@coefficients, dict(
+        info, graf_order=0, plane_order=order, plane_tail_bound=tail)

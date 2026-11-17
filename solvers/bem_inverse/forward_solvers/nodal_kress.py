@@ -21,6 +21,8 @@ from gpr_bem_kress.execution import execution
 @geometry_validated
 def forward_solve(curve, observation, contrast, resolution, *, context=None):
     """Nodal forward fields for one frequency, with reusable factors for B7."""
+    if getattr(observation.acquisition, 'mask', None) is not None:
+        raise ValueError('Masked tables require the explicit CPU modal_muller table mode.')
     if context is None:
         context = NodalKress(Execution())
     started = perf_counter()
@@ -43,6 +45,8 @@ def forward_solve(curve, observation, contrast, resolution, *, context=None):
 
 
 def damped_forward_solve(shape, observation, contrast, nodes, *, context):
+    if getattr(observation.acquisition, 'mask', None) is not None:
+        raise ValueError('Masked tables require the explicit CPU modal_muller table mode.')
     k = complex(observation.wavenumber)
     if checks.invalid_nodal_material(k, contrast):
         raise ValueError('Invalid damped material/wavenumber')

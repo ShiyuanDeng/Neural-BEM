@@ -23,12 +23,17 @@ def factorize(A_f):
     return lu_factor(A_f, check_finite=True)
 
 
-def solve_and_predict(A_f, factors, sources, receivers, cutoff, window, strength):
+def solve_and_predict(A_f, factors, sources, receivers, cutoff, window, strength, *, table=False, mask=None):
     """Solve all source columns and evaluate the matched receiver diagonal."""
     test, trial = window+np.arange(-cutoff, cutoff+1), window-np.arange(-cutoff, cutoff+1)
     rhs = np.vstack((sources[0][test], sources[1][test]))*strength
     traces = lu_solve(factors, rhs)
     residual = float(np.linalg.norm(A_f@traces-rhs)/np.linalg.norm(rhs))
     receiver = 2*np.pi*np.hstack((receivers[1][trial].T, -receivers[0][trial].T))
-    prediction = np.einsum('ri,ir->r', receiver, traces)
+    if table:
+        prediction = (receiver @ traces).T  # (illumination, receiver)
+        if mask is not None:
+            prediction = prediction[mask]  # C-order measured pairs only
+    else:
+        prediction = np.einsum('ri,ir->r', receiver, traces)
     return Fields(rhs, traces, residual, receiver, prediction, test)

@@ -48,7 +48,7 @@ from bem_inverse.continuation.geometry import FourierCurve
 from gpr_bem_kress import cuda_assembly as CA
 from ..a1_geometry import ModalGeometry, real_product
 from ..a2_muller import muller_matrix
-from ..a3_waves import point_kernels
+from ..a3_waves import point_kernels, plane_wave_kernels
 from .. import a4_fields, b7_data_jacobian
 from ..physics import Counters, Prediction, register_backend
 
@@ -82,8 +82,11 @@ class ModalSettings:
     # storage-to-trace profile and cutoff+margin coefficient window.
     coefficient_workspace: object = None
     trace_cutoff: object = None
+    table_mode: bool = False  # explicit CPU plane-wave/unpaired measurements
 
     def __post_init__(self):
+        if not isinstance(self.table_mode, bool):
+            raise ValueError('table_mode must be a bool.')
         if min(self.trace_minimum, self.trace_step, self.window_margin, self.cached_geometries) < 1:
             raise ValueError('Modal trace, window and cache settings must be positive.')
         for name in ('coefficient_workspace', 'trace_cutoff'):
@@ -103,6 +106,7 @@ class ModalState:
     factors: tuple
     traces: np.ndarray
     reciprocal_rhs: np.ndarray
+    table_mode: bool = False
 
 
 def forward_solve(curve, observation, contrast, resolution, *, context=None):
@@ -133,8 +137,7 @@ def _solve(curve, observation, contrast, cutoff, *, context):
     k = k.real if k.imag == 0 else k
     checks.require_material_frequency(k, contrast)
     acquisition = observation.acquisition
-    if not isinstance(acquisition, F.PointSourceAcquisition) or not acquisition.paired:
-        raise ValueError('modal_muller supports paired point-source acquisition only.')
+    table = context._table_acquisition(acquisition)
     ki = k*np.sqrt(contrast)
     window = s.coefficient_workspace or cutoff+s.window_margin
     checks.require_geometry_workspace(window, cutoff, curve.band)
@@ -143,18 +146,28 @@ def _solve(curve, observation, contrast, cutoff, *, context):
     # A3. Graf source and receiver trace/flux coefficients.
     with context._stage('waves'):
         options = dict(tolerance=s.graf_tolerance, series_loss=s.series_loss)
-        sources, receivers = point_kernels(geometry, k, (acquisition.sources, acquisition.receivers), **options)
+        if isinstance(acquisition, F.Acquisition):
+            sources = plane_wave_kernels(geometry, k, acquisition.directions, **options)
+            receivers, = point_kernels(geometry, k, (acquisition.receivers,), **options)
+            strength = 1.
+        else:
+            sources, receivers = point_kernels(geometry, k, (acquisition.sources, acquisition.receivers), **options)
+            strength = acquisition.strength
     # A4. Factor once; retain factors and traces for B7.
     with context._stage('factorization'):
         factors = a4_fields.factorize(A_f)
     with context._stage('fields'):
         window = geometry.band
-        fields = a4_fields.solve_and_predict(
-            A_f, factors, sources, receivers, cutoff, window, acquisition.strength)
+        if table:
+            fields = a4_fields.solve_and_predict(A_f, factors, sources, receivers, cutoff, window,
+                                                 strength, table=True, mask=acquisition.mask)
+        else:
+            fields = a4_fields.solve_and_predict(
+                A_f, factors, sources, receivers, cutoff, window, strength)
         rhs, traces, residual, receiver, prediction, test = fields
     checks.require_finite_prediction(prediction)
     state = ModalState(k, ki, acquisition, cutoff, curve.coefficients.copy(), factors, traces,
-                       np.vstack((receivers[0][test], receivers[1][test])))
+                       np.vstack((receivers[0][test], receivers[1][test])), table)
     if context.observer is not None:
         with context._stage('recording_io'):
             context.observer('field', dict(state=state, observation=observation,
@@ -169,7 +182,10 @@ def _solve(curve, observation, contrast, cutoff, *, context):
         log_lower=interval['lower'], log_upper=interval['upper'], radial_upper=geometry.radial_upper,
         log_interval_source=interval['interval_source'],
         **radial, graf_order=max(sources[2]['graf_order'], receivers[2]['graf_order']),
-        series_terms=sources[2]['series_terms'], series_loss=sources[2]['series_loss']), state)
+        series_terms=sources[2]['series_terms'], series_loss=sources[2]['series_loss'],
+        **(dict(table_mode=True, measured_pairs=int(prediction.size),
+                plane_order=sources[2].get('plane_order'), plane_tail_bound=sources[2].get('plane_tail_bound'))
+           if table else {})), state)
 
 
 def prepare_geometry(curve, window, device, *, context):
@@ -257,11 +273,21 @@ class ModalMuller:
     def validate(self, problem):
         if problem.material != 'equal_density_homogeneous' or not isinstance(problem.initial, FourierCurve):
             raise ValueError('modal_muller requires a single Fourier curve and equal-density homogeneous material.')
-        if any(not isinstance(o.acquisition, F.PointSourceAcquisition) or not o.acquisition.paired
-               for o in problem.observations):
-            raise ValueError('The modal Hadamard contraction and CI-001 localization require paired point sources.')
+        for observation in problem.observations:
+            self._table_acquisition(observation.acquisition)
         if self.execution.device == 'cuda' and not CA.available():
             raise RuntimeError('Explicit CUDA execution requested, but no CUDA device is available.')
+
+    def _table_acquisition(self, acquisition):
+        if isinstance(acquisition, F.PointSourceAcquisition) and acquisition.paired:
+            return False
+        if not self.settings.table_mode:
+            raise ValueError('modal_muller requires paired point sources unless ModalSettings(table_mode=True) is explicit.')
+        if self.execution.device != 'cpu':
+            raise ValueError("Modal table mode requires Execution(device='cpu'); the existing CUDA path is unchanged.")
+        if not isinstance(acquisition, (F.Acquisition, F.PointSourceAcquisition)):
+            raise ValueError('Modal table mode requires plane-wave or unpaired point-source acquisition.')
+        return True
 
     def _device(self):
         selected = self.execution.device
@@ -289,6 +315,8 @@ class ModalMuller:
                                'frontier and endpoint audit only')
 
     def _contract(self, state, weights):
+        if state.table_mode:
+            raise NotImplementedError('Table derivatives are introduced in the next BRG implementation stage.')
         jacobian, reciprocal = b7_data_jacobian.reciprocal_jacobian(state, weights)
         checks.require_finite_data_jacobian(jacobian)
         if self.observer is not None:

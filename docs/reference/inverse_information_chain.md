@@ -317,3 +317,17 @@ and the coefficient workspace distinct.
 Use this as the shared explanation structure, not as a frozen implementation
 specification. Confirm current code when answering; line anchors describe the
 checkout above and can move as implementation changes.
+
+## Explicit CPU table path (BRG, 17 November 2026)
+
+This opt-in path leaves paired TG-002 physics unchanged. In A3,
+[`plane_wave_kernels`](../../solvers/bem_inverse/a3_waves.py) combines the
+existing scaled regular waves with exact plane-wave coefficients and centre
+phase. Reciprocal receiver kernels still use point waves and the unchanged
+geometry-radius cancellation check. No angular quadrature is introduced.
+
+In A4, [`solve_and_predict`](../../solvers/bem_inverse/a4_fields.py)
+contracts every illumination with every receiver. `ModalSettings(table_mode=True)`
+and CPU execution are required. Rows are illuminations, columns receivers;
+a boolean measured-pair mask selects C-order entries. An omitted mask means
+all pairs. The default paired contraction retains its existing arithmetic.

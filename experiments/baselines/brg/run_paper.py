@@ -60,8 +60,14 @@ def main():
         write_json(output/f'launcher_{number:02d}.json',receipt)
         print(json.dumps(receipt,indent=2),flush=True)
         return
-    with (BASE / "runner.lock").open("w") as lock:
+    with (case / "local" / "runner.lock").open("w") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        active = [p for p in BASE.glob('*/*/attempt_*.json')
+                  if json.loads(p.read_text()).get('status') == 'running']
+        if any(json.loads(p.read_text()).get('case') == args.case for p in active):
+            raise SystemExit('This case already has a running attempt.')
+        if len(active) >= 2 or len(matlab_processes()) >= 3:
+            raise SystemExit('Three-heavy-worker limit: no MATLAB slot available.')
         attempts = sorted(case.glob("*/attempt_*.json"))
         now = datetime.datetime.now(datetime.timezone.utc)
         used = sum(json.loads(p.read_text()).get("wall_seconds", (now - datetime.datetime.fromisoformat(json.loads(p.read_text())["started"])).total_seconds()) for p in attempts)
