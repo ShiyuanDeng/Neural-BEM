@@ -1,0 +1,11 @@
+--- a/tests/driver_charlie_transmission.m
++++ b/tests/driver_charlie_transmission.m
+@@ -271,7 +271,7 @@
+ % src_init = geometries.ellipse(0.6,0.6,500);
+ 
+ tic; [inv_data_all,src_info_out] = rla.rla_inverse_solver(u_meas,bc,...
+-                          optim_opts,opts,src_init,lam_init,rla_path_opts,fac); toc;
++                          optim_opts,opts,src_init,lam_init,rla_path_opts); toc;
+ src_init = src_info_out;
+ 
+ nlast = size(inv_data_all);

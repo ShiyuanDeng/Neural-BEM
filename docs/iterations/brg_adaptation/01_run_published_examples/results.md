@@ -10,9 +10,11 @@ Started 17 November 2026 with the coordinator's go. In progress; the full
 | 2026-11-17 | Build in sandbox | Fortran compiled; MEX could not write MATLAB preferences | 3.52 | [log](../../../../results/brg/examples/build/matlab.log), [command](../../../../results/brg/examples/build/run.json) |
 
 The failed build is retained. MATLAB needs access outside the sandbox for
-preferences and online licensing. The retry will request that access.
+preferences and online licensing. The retry succeeded with approved access;
+the user subsequently enabled unrestricted access.
 
-| 2026-11-17 | Build with approved access | All four MEX files built | 1.87 | [log](../../../../results/brg/examples/build_retry/matlab.log) |
+Build retry: all four MEX files built in 1.87 s;
+[log](../../../../results/brg/examples/build_retry/matlab.log).
 
 Wrapper: MATLAB uses eight compute threads, disables interactive pauses,
 and exports open figures. Two script path substitutions are applied in
@@ -116,3 +118,66 @@ exact-fit corner case. Both calls keep the same data and optimizer settings.
 3.964944, with relative curve differences 0.59655, 0.27016 and 0.25518.
 The intended assertion fails at all three frequencies.
 [Evidence](../../../../results/brg/examples/low_frequency_stale_disk/check.json).
+
+## Checkpoint result: corrected unit-disk calls
+
+17 November: k=1,1.25,1.5 all pass. RLA and the direct reference produce
+identical residuals and identical curves (differences exactly zero in the
+saved double-precision results).
+[Measurements](../../../../results/brg/examples/low_frequency_fixed_disk/check.json).
+This confirms frequency plumbing and the derivative argument fix. It is
+not a full reconstruction or a check at high frequencies.
+
+The minimal physics fix is three lines in `rla_inverse_solver`: at every
+transmission frequency with `bc.q`, reset `bc.transk` to `[bc.q*kh kh]`.
+The additional one-line fix copies `bc` into the derivative call instead
+of dropping its transmission fields. See
+[patch 04](../../../../external/patches/brg/04-update-transmission-wavenumbers.patch) and
+[patch 03](../../../../external/patches/brg/03-preserve-transmission-derivative-parameters.patch).
+
+Source and paper agree that a fixed known material has both wavenumbers
+scale with frequency. The driver's `bc.q=1.5` is the interior/exterior
+wavenumber ratio; its squared ratio is 2.25 and susceptibility is 1.25.
+The proposed update restores the same material used to generate its data.
+This is an inference from the public source and the paper, not evidence of
+how the authors repaired their unpublished drivers.
+[Paper: equation 1, Remark 1.1 and section 4.1](https://arxiv.org/html/2210.11607).
+
+The stale state is actually both interior 45 and exterior 30; the incident
+wave still uses the current `kh`. Loading data in a fresh run leaves
+`bc.transk` absent, rather than stale. The fix covers both cases when `bc.q`
+is supplied. Drivers without `bc.q` retain their explicit transmission data.
+
+In the [information chain](../../../reference/inverse_information_chain.md),
+this is the BRG counterpart of A2–A4 frequency consistency and B7 derivative
+inputs. These external BRG calls are not on our default BEM inverse path.
+No `solvers/` or shared comparison code changed.
+
+## Pending decision and limits
+
+Stopped at the coordinator's requested checkpoint. The full 117-frequency
+run has not started; Figure 7 has not been compared. Activity 01 remains
+incomplete because the multi-component test failed and step 5 is pending.
+
+After the coordinator's answer, finish the wrapper to checkpoint each data
+and inverse frequency, restore the last curve on resume, and enforce a
+cumulative four-hour data-plus-inverse budget. Keep the shipped single
+unit-disk start, steepest descent and 100 iterations; no paper-setting
+substitutions in activity 01. Use seven solver arguments; the optional
+[driver patch](../../../../external/patches/brg/05-remove-obsolete-driver-argument.patch)
+removes its unused eighth argument.
+
+The multi-component missing-perimeter failure and exact-fit zero-gradient
+MEX crash remain unresolved. Neither is hidden by a success claim.
+The shipped derivative test shows roughly quadratic remainder decay in
+all seven modes, ending between 7.07e-13 and 4.99e-12; this does not validate
+its derivatives independently at unequal density.
+
+All process timings and commands are in
+[run summary](../../../../results/brg/examples/run_summary.json).
+Timing overlap with CSI is permitted for activity 01; final comparison
+timing must run alone. Two workspaces above 50 MB remain local with their
+checksums, and all committed artifacts stay below 50 MB.
+
+[Data and convention handoff](data_handoff.md).
+[Patch status and reproduction](../../../../external/patches/brg/README.md).

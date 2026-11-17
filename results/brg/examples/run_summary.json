@@ -1,0 +1,145 @@
+[
+  {
+    "stage": "build",
+    "command": [
+      "make",
+      "matlab",
+      "MEX=/usr/local/MATLAB/R2026a/bin/mex"
+    ],
+    "cwd": "/home/drdeng/neural_bem_external/inverse-obstacle-scattering2d",
+    "limit_seconds": 1800,
+    "started": "2026-11-17T19:21:53.876705+00:00",
+    "returncode": 2,
+    "wall_seconds": 3.5237014275044203
+  },
+  {
+    "stage": "build_retry",
+    "command": [
+      "make",
+      "matlab",
+      "MEX=/usr/local/MATLAB/R2026a/bin/mex"
+    ],
+    "cwd": "/home/drdeng/neural_bem_external/inverse-obstacle-scattering2d",
+    "limit_seconds": 1800,
+    "started": "2026-11-17T19:23:40.588379+00:00",
+    "returncode": 0,
+    "wall_seconds": 1.8735750503838062
+  },
+  {
+    "stage": "data",
+    "command": [
+      "matlab",
+      "-batch",
+      "addpath('/home/drdeng/Neural_SDF_BEM_AD_organised/experiments/baselines/brg'); run_example('data')"
+    ],
+    "cwd": "/home/drdeng/neural_bem_external/inverse-obstacle-scattering2d",
+    "limit_seconds": 1800,
+    "started": "2026-11-17T19:28:37.321387+00:00",
+    "returncode": 1,
+    "wall_seconds": 4.719335247762501
+  },
+  {
+    "stage": "data_retry",
+    "command": [
+      "matlab",
+      "-batch",
+      "addpath('/home/drdeng/Neural_SDF_BEM_AD_organised/experiments/baselines/brg'); run_example('data_retry')"
+    ],
+    "cwd": "/home/drdeng/neural_bem_external/inverse-obstacle-scattering2d",
+    "limit_seconds": 1800,
+    "started": "2026-11-17T19:29:09.797500+00:00",
+    "returncode": 0,
+    "wall_seconds": 11.77478897664696
+  },
+  {
+    "stage": "low_frequency_fixed",
+    "command": [
+      "matlab",
+      "-batch",
+      "addpath('/home/drdeng/Neural_SDF_BEM_AD_organised/experiments/baselines/brg'); run_example('low_frequency_fixed')"
+    ],
+    "cwd": "/home/drdeng/neural_bem_external/inverse-obstacle-scattering2d",
+    "limit_seconds": 1800,
+    "started": "2026-11-17T19:31:32.589482+00:00",
+    "returncode": -9,
+    "wall_seconds": 4.316353189758956
+  },
+  {
+    "stage": "low_frequency_fixed_disk",
+    "command": [
+      "matlab",
+      "-batch",
+      "addpath('/home/drdeng/Neural_SDF_BEM_AD_organised/experiments/baselines/brg'); run_example('low_frequency_fixed_disk')"
+    ],
+    "cwd": "/home/drdeng/neural_bem_external/inverse-obstacle-scattering2d",
+    "limit_seconds": 1800,
+    "started": "2026-11-17T19:33:42.598771+00:00",
+    "returncode": 0,
+    "wall_seconds": 10.780965022742748
+  },
+  {
+    "stage": "low_frequency_stale",
+    "command": [
+      "matlab",
+      "-batch",
+      "addpath('/home/drdeng/Neural_SDF_BEM_AD_organised/experiments/baselines/brg'); run_example('low_frequency_stale')"
+    ],
+    "cwd": "/home/drdeng/neural_bem_external/inverse-obstacle-scattering2d",
+    "limit_seconds": 1800,
+    "started": "2026-11-17T19:30:40.858198+00:00",
+    "returncode": 1,
+    "wall_seconds": 19.295430134050548
+  },
+  {
+    "stage": "low_frequency_stale_disk",
+    "command": [
+      "matlab",
+      "-batch",
+      "addpath('/home/drdeng/Neural_SDF_BEM_AD_organised/experiments/baselines/brg'); run_example('low_frequency_stale_disk')"
+    ],
+    "cwd": "/home/drdeng/neural_bem_external/inverse-obstacle-scattering2d",
+    "limit_seconds": 1800,
+    "started": "2026-11-17T19:33:02.036333+00:00",
+    "returncode": 1,
+    "wall_seconds": 15.522636819630861
+  },
+  {
+    "stage": "low_frequency_unpatched",
+    "command": [
+      "matlab",
+      "-batch",
+      "addpath('/home/drdeng/Neural_SDF_BEM_AD_organised/experiments/baselines/brg'); run_example('low_frequency_unpatched')"
+    ],
+    "cwd": "/home/drdeng/neural_bem_external/inverse-obstacle-scattering2d",
+    "limit_seconds": 1800,
+    "started": "2026-11-17T19:29:52.045748+00:00",
+    "returncode": 1,
+    "wall_seconds": 4.550214018672705
+  },
+  {
+    "stage": "suite",
+    "command": [
+      "matlab",
+      "-batch",
+      "addpath('/home/drdeng/Neural_SDF_BEM_AD_organised/experiments/baselines/brg'); run_example('suite')"
+    ],
+    "cwd": "/home/drdeng/neural_bem_external/inverse-obstacle-scattering2d",
+    "limit_seconds": 1800,
+    "started": "2026-11-17T19:24:46.051951+00:00",
+    "returncode": 0,
+    "wall_seconds": 12.077984506264329
+  },
+  {
+    "stage": "transmission",
+    "command": [
+      "matlab",
+      "-batch",
+      "addpath('/home/drdeng/Neural_SDF_BEM_AD_organised/experiments/baselines/brg'); run_example('transmission')"
+    ],
+    "cwd": "/home/drdeng/neural_bem_external/inverse-obstacle-scattering2d",
+    "limit_seconds": 1800,
+    "started": "2026-11-17T19:25:52.733042+00:00",
+    "returncode": 1,
+    "wall_seconds": 23.966251840814948
+  }
+]

@@ -11,7 +11,11 @@ Started on 17 November 2026. The user asked the coordinator to open two agents
 "to continue on csi and brg works respectively". The coordinator assigned
 activity 01 to `brg`; this supersedes the earlier "not now".
 
-Checkpoint: complete steps 1–4 and a low-frequency check of the proposed
+Checkpoint reached on 17 November: build, suite and star generation complete;
+transmission multi-component test failed. Corrected low-frequency checks
+pass. Waiting for the coordinator; no full run has started.
+
+Checkpoint instruction: complete steps 1–4 and a low-frequency check of the proposed
 step 5 physics fix, then stop for the coordinator. Do not start the full
 117-frequency run until the coordinator answers. Set eight MATLAB compute
 threads in the wrapper and measure a dense solve at one and eight threads.
