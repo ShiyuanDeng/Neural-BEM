@@ -1,8 +1,11 @@
 # Published CSI examples
 
-17 November 2026. Activity 01 resumed with the coordinator's approval of the
-legacy interpolation fix. The two initial failures below remain preserved.
-No algorithm or data change was made. No threshold was selected.
+17 November 2026. Activity 01 is complete: all three planned steps ran after
+two MATLAB compatibility fixes. MF-CC-CSI resembles Figure 5 qualitatively;
+MF-MR-CSI does not reproduce its measured-data result. The two initial
+failures remain preserved. No algorithm or data change was made. No
+threshold was selected. Total recorded run wall time, including failures,
+was 2065.727 s (34 min 26 s).
 
 ## Runs and measurements
 
@@ -133,8 +136,9 @@ or 2 h 36 min 59 s, below the four-hour limit. This uses the observed TE
 rates directly, with no discount for the smaller TM grid or fewer
 frequencies; the source count changes from 8 to 18, so it remains an
 estimate, not a bound. The launcher enforces a four-hour total wall limit.
-Step 3 may now start with the authorized paper frequencies, domain and
-2048 iterations for MF-CC-CSI and MF-MR-CSI only.
+Step 3 started only after this estimate was recorded and pushed, with the
+authorized paper frequencies, domain and 2048 iterations for MF-CC-CSI and
+MF-MR-CSI only.
 
 The analyzer exports per-source/frequency factors to `source_calibration.csv`
 for both completed steps, using the exact midpoint receiver and line-source
@@ -142,6 +146,95 @@ formulas from `ReadFreData`. For step 1 at 2 GHz, all 36 calibrated incident
 fields at the first grid point match the saved MATLAB fields to relative
 error 5.47e-15; [check](../../../../results/csi/examples/2026-11-17_shipped_i_legacy_interp2/calibration_check.json).
 No calibration is fitted to scattered fields.
+
+## Step 3 completed: the paper case
+
+17 November 2026, 19:37:42 to 20:07:40 UTC. Launch-to-output-export wall
+time was 1798.293 s (29 min 58 s), well below the recorded estimate and the
+four-hour limit. Eight MATLAB threads. The refine/coarsen check passed.
+All final contrast arrays are finite, and the compact scoring export
+matches every raw contrast array in the local full workspace exactly.
+
+Actual settings: `FoamTwinDielTM`, 7, 8, 9 and 10 GHz, 18 sources,
+110-by-110 cells at 1.5 mm. The numerical domain is x = [-82.5,82.5] mm,
+y = [-97.5,67.5] mm, implemented with half-widths 82.5 mm and centre
+[0,-15] mm. Each method ran all 2048 iterations. No CSI run was added.
+The shipped antenna correction and +0.5-degree source offset are unchanged.
+
+| Method | Native seconds | Seconds/iteration | Cost, first to last | Peak real contrast | Peak conductivity, mS/m |
+|---|---:|---:|---|---:|---:|
+| MF-CC-CSI | 948.314 | 0.463044 | 7.8843 to 0.15069 | 2.5540 | 42.977 |
+| MF-MR-CSI | 840.353 | 0.410329 | 7.0388 to 0.098431 | 2.7366 | 0 |
+
+Peaks use raw `chi` at 10 GHz. MF-CC-CSI's printed cost decreases throughout.
+MR-CSI has 295 printed increases (largest 0.00897), despite a lower final
+cost than its start; its late cost is nearly flat. Costs have different
+definitions, so this does not rank the methods' data fits or recovery.
+
+The Python launch process was terminated with signal 15 (exit 143) around
+19:51 UTC. Its MATLAB child, PID 612462, kept running without a restart or
+any lost iterations. An observer followed that same PID and kept checking
+the original four-hour wall limit. Both methods finished; MATLAB saved
+all outputs and exited. The original MATLAB OS exit code is unavailable,
+so `launch.json` leaves it null and labels wall time as launch-to-export,
+using MATLAB's UTC completion timestamp. Native method timers are intact.
+The cause of the launcher's termination is unknown. This is recorded as
+a launcher interruption, not an algorithm failure or a restarted run.
+
+Evidence: [launch](../../../../results/csi/examples/2026-11-17_paper_tm/launch.json),
+[observer](../../../../results/csi/examples/2026-11-17_paper_tm/observer.json),
+[analysis](../../../../results/csi/examples/2026-11-17_paper_tm/analysis.json),
+[compact raw contrasts](../../../../results/csi/examples/2026-11-17_paper_tm/final_contrast.mat),
+[cost history](../../../../results/csi/examples/2026-11-17_paper_tm/cost_history.csv),
+[source calibration](../../../../results/csi/examples/2026-11-17_paper_tm/source_calibration.csv),
+and [native timings/settings](../../../../results/csi/examples/2026-11-17_paper_tm/matlab_summary.json).
+
+### Figure 5 comparison outcome
+
+Compared visually with the measured-data rows (first two rows) on page 11
+of the actual [paper PDF](https://arxiv.org/pdf/1906.10814), not the synthetic
+rows. See our [native output](figures/paper_tm_figure_02.png) and the
+[labelled two-method plot](figures/2026-11-17_paper_tm_contrasts.png).
+The latter applies only their existing `rchiTV` display mask; no scoring
+threshold. Its all-zero conductivity panel uses a 0-to-1 color scale so
+zero is visibly blue. Native figures are retained without this change.
+
+- MF-CC-CSI has two high-contrast small regions near native displayed
+  positions (0,-60) and (0,-5) mm, with a broader foam ring below. Its real
+  contrast resembles the published pattern, but its peak is 2.554 rather
+  than roughly 2.2. Its small conductivity artifact reaches 30.37 mS/m
+  after their display mask (42.98 in raw output); the published measured
+  panel appears zero on a 0-to-1 mS/m scale. This is qualitative agreement
+  in the real image, not an exact reproduction.
+- MF-MR-CSI produces two smooth regions, a weak foam ring, peak real
+  contrast 2.737 and exactly zero conductivity. This differs plainly from
+  Figure 5's speckled upper feature with a real peak around 35 and very
+  large conductivity. The full two-method Figure 5 result is **not
+  reproduced**. No setting was tuned or changed to force agreement.
+- Native plotting places the first matrix dimension vertically, and the
+  second horizontally. Thus this planned numerical domain displays with
+  horizontal sample coordinates [-97.5,66] mm and vertical coordinates
+  [-82.5,81] mm. The paper labels its domain the other way around. The
+  compact export includes true primary and staggered grid coordinates
+  separately from native display vectors. This coordinate ambiguity
+  and the radius mismatch need coordinator review before claiming an
+  exact paper-settings reproduction. Neither was silently corrected.
+
+## Storage and reproducibility
+
+The coordinator changed the rule during step 3: commit about 5 MB per run,
+with full workspaces and per-frequency arrays kept local and git-ignored.
+The paper run follows it. [Ignore rules](../../../../results/csi/.gitignore)
+cover full MAT files, figure workspaces and the upstream source archive;
+`final_contrast.mat` is the small exception for later scoring. All previously
+pushed evidence remains unchanged; no files or history were removed.
+
+The [manifest](../../../../results/csi/examples/2026-11-17_paper_tm/manifest.json)
+records commands, environment paths, input hash, source revisions, patch
+and wrapper hashes, plus each output's SHA-256 and local/Git status.
+About 92 MB of complete paper-run outputs remain local. The committed
+paper data and report figures are below the new 5 MB limit; the final size
+check is recorded in `storage_check.json` beside the run.
 
 ## Figure 5 checked against the paper
 
@@ -151,8 +244,8 @@ screenshot failed. The measured-data rows show two distinct hot spots with
 MF-CC-CSI, around horizontal position zero and vertical positions -60 and
 -5 mm, with peak contrast a little above 2. The broad lower foam region is
 also visible. MR-CSI instead has a small speckled feature near the upper
-cylinder and a much larger peak, about 35. Comparison with computed images
-is pending. The reference is available; lack of an image is not the blocker.
+cylinder and a much larger peak, about 35. The reference was available for
+the final comparison above.
 
 The case geometry is one small cylinder embedded in foam and another beside
 it. The plan's original phrase "two cylinders inside" is inaccurate. The
@@ -222,6 +315,9 @@ counts from the actual upstream input tables, including `dielTM_dec8f`.
 The radius mismatch is: the shipped second-opus code uses 1.81406950 m for both antennas.
 The paper says 1.67 m; this activity keeps their shipped correction unchanged.
 
-Full forward and inverse timings, thread-isolated timings, calibration
-values and computed image levels remain pending. No support threshold,
-area score, contrast score or final-table claim is made here.
+Native inverse timings, calibration values and image levels are now saved.
+Thread-isolated final-table timings and an adapted BEM forward check remain
+later work. No support threshold, area score, contrast score or final-table
+claim is made here. The reason for the MR-CSI Figure 5 difference, the
+antenna radius and the displayed-domain interpretation remain open for
+the coordinator; this activity stops after reporting them.

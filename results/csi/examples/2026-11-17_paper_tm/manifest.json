@@ -1,0 +1,183 @@
+{
+  "command": [
+    "matlab",
+    "-batch",
+    "cd('/home/drdeng/neural_bem_external/CC-CSI'); run('/home/drdeng/Neural_SDF_BEM_AD_organised/experiments/baselines/csi/run_example.m')"
+  ],
+  "wrapper_command": [
+    "python3",
+    "experiments/baselines/csi/run.py",
+    "paper_tm",
+    "--attempt",
+    "reproduction"
+  ],
+  "environment": {
+    "CSI_SCRIPT": "/home/drdeng/Neural_SDF_BEM_AD_organised/results/csi/examples/2026-11-17_paper_tm/executed_driver.m",
+    "CSI_OUT": "/home/drdeng/Neural_SDF_BEM_AD_organised/results/csi/examples/2026-11-17_paper_tm",
+    "CSI_REPO": "/home/drdeng/Neural_SDF_BEM_AD_organised",
+    "CSI_UPSTREAM": "/home/drdeng/neural_bem_external/CC-CSI",
+    "CSI_STEP": "paper_tm",
+    "CSI_FIGURES": "/home/drdeng/Neural_SDF_BEM_AD_organised/docs/iterations/csi_adaptation/01_run_published_examples/figures"
+  },
+  "input_data": {
+    "path": "/home/drdeng/neural_bem_external/CC-CSI/FresnelData/The_second_opus/FoamTwinDielTM.txt",
+    "sha256": "d2949c5998a4cb0ae756fde3de3fcea822dd17b1ae6961a6b9dca94a4ffba32d"
+  },
+  "upstream_commit": "73a64e163da34e63fa33f8abe196b9004f45d342",
+  "wrapper_sources": [
+    {
+      "path": "experiments/baselines/csi/analyze.py",
+      "sha256": "05236abef5cd69cb4044a8ee4e1f32c956d08a2a65b1ae4b46d97a57509526e1"
+    },
+    {
+      "path": "experiments/baselines/csi/manifest.py",
+      "sha256": "627c2dcf8e9d99dbb9fe8f1ca03660ae56960a3d4a12061cbeb15323d8a80252"
+    },
+    {
+      "path": "experiments/baselines/csi/run.py",
+      "sha256": "b3cb12e6b64053d54dd1eabaf8caec5ff3a43b7d607b46b13602f43253f74524"
+    },
+    {
+      "path": "experiments/baselines/csi/run_example.m",
+      "sha256": "3acfba81b411d91db951072ca797d00d84e3f42c7baaa202e15f1e04ecae0d49"
+    },
+    {
+      "path": "experiments/baselines/csi/save_outputs.m",
+      "sha256": "fec81630986800fb74c035b6eba1d5703efff7271a7e15a2f702efcbd318b78c"
+    },
+    {
+      "path": "experiments/baselines/csi/watch.py",
+      "sha256": "b96e26c3a4d32a512aa91818904acdc0d296b866cae790a3526b21c770d33fc4"
+    }
+  ],
+  "upstream_patches": [
+    {
+      "path": "external/patches/cc-csi/0001-r2026a-remove-obsolete-plottools.patch",
+      "sha256": "ec6ec165fff7f37938ce00862d7aa7f628eff34090fa4da693f414ec3b4fc99d"
+    },
+    {
+      "path": "external/patches/cc-csi/0002-restore-legacy-interp2-coarsening.patch",
+      "sha256": "ede308a5ab59884b0f51fe7563933cafccb2c8be5c2ff89bb5f343f9964f9c91"
+    }
+  ],
+  "maxwellfdfd_commit": "690ca8d534bddb5d287089deb7246e1a81f8bdd4",
+  "started_utc": "2026-11-17T19:37:42.666100+00:00",
+  "driver_sha256": "dcedd7798f01769f9e6968d8c5450553fc27eab25462cdbd0e34b3216db73aa4",
+  "files": [
+    {
+      "path": "analysis.json",
+      "bytes": 1275,
+      "sha256": "c95777cbff09391767e9cca9964047d55264446cc70705eff121f1299b80e6d5",
+      "storage": "git"
+    },
+    {
+      "path": "cost_history.csv",
+      "bytes": 209768,
+      "sha256": "cc64a7981a7c61834e453d6f006ac626f5e9769be3b022f702ac8ae0647d3150",
+      "storage": "git"
+    },
+    {
+      "path": "executed_driver.m",
+      "bytes": 3324,
+      "sha256": "dcedd7798f01769f9e6968d8c5450553fc27eab25462cdbd0e34b3216db73aa4",
+      "storage": "git"
+    },
+    {
+      "path": "final_contrast.mat",
+      "bytes": 307876,
+      "sha256": "753c2f4d039231897f57ce971a99e7c0e4f33d108d92accc53b56db8aac7c5a6",
+      "storage": "git"
+    },
+    {
+      "path": "frequency_10GHz.mat",
+      "bytes": 21803211,
+      "sha256": "54161b4c25d2cb4e38eddda8226cf48d65ee30dc202ca0053bda21aca5b792d7",
+      "storage": "local, git-ignored"
+    },
+    {
+      "path": "frequency_7GHz.mat",
+      "bytes": 21793433,
+      "sha256": "2449faf35c1bcd1d1f2a231b7f259a8dda7b49e1ef08f32346f617d41bcc5585",
+      "storage": "local, git-ignored"
+    },
+    {
+      "path": "frequency_8GHz.mat",
+      "bytes": 21796658,
+      "sha256": "f1b355f1456d240d0e9f3daece4cc30c39d3ccc51fe47dc74b86857171b04c64",
+      "storage": "local, git-ignored"
+    },
+    {
+      "path": "frequency_9GHz.mat",
+      "bytes": 21798488,
+      "sha256": "019df641a39244442ca8bdaa4f242018b6aadf845d1dd7669c2ac684e75d15a1",
+      "storage": "local, git-ignored"
+    },
+    {
+      "path": "launch.json",
+      "bytes": 821,
+      "sha256": "d85c6147c92e621948912ed89f46fdcc1634fe4b9e17bcd78b84b3315b310038",
+      "storage": "git"
+    },
+    {
+      "path": "matlab.log",
+      "bytes": 471307,
+      "sha256": "457cea78c076c57f9b20e22764c3962ccfc7bedcf50ee1bec022281eb6ba2b5b",
+      "storage": "git"
+    },
+    {
+      "path": "matlab_summary.json",
+      "bytes": 449,
+      "sha256": "c8279454bcfdd90271b934661f8e2f5e238243ac813a2aedc5166e6f2aa30d3d",
+      "storage": "git"
+    },
+    {
+      "path": "observer.json",
+      "bytes": 210,
+      "sha256": "4aad5436c40e33eece35ca4ecd324255bcb466881d40f5a2fe54f65074b08191",
+      "storage": "git"
+    },
+    {
+      "path": "paper_tm_figure_01.fig",
+      "bytes": 64949,
+      "sha256": "e3abec5b98768d2f5d7b6dd8c5f8dbadd65937e6b6a582b55cd9dc8e4937bbec",
+      "storage": "local, git-ignored"
+    },
+    {
+      "path": "paper_tm_figure_02.fig",
+      "bytes": 119404,
+      "sha256": "ccac4439d174eb4408cc01190083b8d8e83bbd6b2094adf3facdf3461db687c9",
+      "storage": "local, git-ignored"
+    },
+    {
+      "path": "reconstruction.mat",
+      "bytes": 3910580,
+      "sha256": "5b5ab7ed6c69e9f62514cd7ce87d7282efb99b9d4cd05bc3794e05f8023a186a",
+      "storage": "local, git-ignored"
+    },
+    {
+      "path": "source_calibration.csv",
+      "bytes": 5925,
+      "sha256": "755d5a4fb9e8962408db0d302e17c3bcfa1e9a67b086faefc40b290ae99f75b8",
+      "storage": "git"
+    },
+    {
+      "path": "storage_check.json",
+      "bytes": 924,
+      "sha256": "a086917d7fc709e9fd3afb385b64c3b9a9e1b6de31d445257fcdecb1533a0e91",
+      "storage": "git"
+    },
+    {
+      "path": "upstream_driver.m",
+      "bytes": 2787,
+      "sha256": "6b8454ff9b943dc62c503d46e4d0703700bcdce23753b9e374fa8d321b8736a1",
+      "storage": "git"
+    },
+    {
+      "path": "upstream_matlab_sources.tar.gz",
+      "bytes": 50910,
+      "sha256": "fd98e43373855f123cb516f4eca987dd314b24b25b083c199624a09c8dd54b2f",
+      "storage": "local, git-ignored"
+    }
+  ],
+  "note": "Pre-rule runs may already track files now marked local; no history is removed or rewritten."
+}

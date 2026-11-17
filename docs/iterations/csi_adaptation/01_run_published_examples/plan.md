@@ -12,6 +12,11 @@ Started on 17 November 2026. The coordinator recorded the user's go to open
 two agents "to continue on csi and brg works respectively". This supersedes
 the earlier "not now". Activity 01 is authorized; stop after reporting it.
 
+Completed on 17 November 2026. All three steps finished after the two
+MATLAB compatibility fixes. Figure 5 was compared with the actual paper;
+MF-CC-CSI is qualitatively similar, while the measured-data MF-MR-CSI
+result differs. See `results.md`. No threshold was selected. Stop here.
+
 The MATLAB wrapper sets `maxNumCompThreads(8)` and records the actual count.
 BRG may run at the same time; these are setup timings, not final table timings.
 The MaxwellFDFD system link exists; no path patch is needed.
@@ -139,7 +144,8 @@ Each command limits MATLAB to 30 minutes and saves its log, source snapshot,
 outputs split by frequency, figures, and launch timing under
 `results/csi/examples/2026-11-17_<step>/`. Report figures live in `figures/`.
 Run `paper_tm` only after writing the estimate from shipped example II.
-Its limit is four hours. No source, algorithm or data patch is planned.
+Its limit is four hours. Only compatibility patches 0001 and 0002 were
+needed; no algorithm or data change was made.
 
 Steps 1 and 2 completed after patches 0001 and 0002. Before step 3, the
 observed step-2 times give 7749.688 s compute, or 9419.626 s including 20%
@@ -147,6 +153,14 @@ and 120 s setup/export allowance (2 h 37 min). This is below four hours.
 Command: `python3 experiments/baselines/csi/run.py paper_tm`.
 It keeps the shipped antenna correction; only the paper settings listed
 above change in the wrapper copy. Native CSI is omitted in this paper run.
+
+Storage decision from the coordinator while step 3 was running:
+"Commit at most about 5 MB per run: the contrast images, cost history,
+timings, logs and small JSON." Full workspaces, per-frequency arrays and
+figure workspaces stay local and are listed in `results/csi/.gitignore`.
+A manifest records commands and SHA-256 hashes. Already pushed files and
+history stay unchanged. Save a compact `final_contrast.mat` for scoring;
+it retains unthresholded solver contrasts, without display masking.
 
 Source inspection corrects two descriptions above: `xs` and `ys` in the
 shipped drivers are half-widths in millimetres, not cell counts; record the

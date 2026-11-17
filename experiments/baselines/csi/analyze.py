@@ -91,7 +91,41 @@ def main():
     repo = Path(__file__).resolve().parents[3]
     figures = repo / 'docs/iterations/csi_adaptation/01_run_published_examples/figures'
     fig.savefig(figures / f'{run.name}_costs.png', dpi=150)
-    (run / 'analysis.json').write_text(json.dumps(dict(methods=results, threshold=None), indent=2) + '\n')
+    compact = run / 'final_contrast.mat'
+    compact_equal = None
+    if compact.exists():
+        kept = loadmat(compact, simplify_cells=True)
+        compact_equal = all(np.array_equal(np.asarray(x), np.asarray(y))
+                            for index in range(1, len(results) + 1)
+                            for x, y in zip(data[f'chi{index}'], kept[f'chi{index}']))
+        assert compact_equal, 'Compact scoring contrasts differ from the full workspace'
+    if len(results) == 2:
+        paper, axes = plt.subplots(2, 2, figsize=(8, 8), layout='constrained')
+        shape = tuple(int(x) for x in data['csi_pars']['Ninv'][:2])
+        border = np.asarray(data['csi_pars']['rchiTV'], dtype=int) - 1
+        dx = float(data['para']['m_unit']) * 1000
+        extent = [data['yinv'][0]-dx/2, data['yinv'][-1]+dx/2,
+                  data['xinv'][-1]+dx/2, data['xinv'][0]-dx/2]
+        for index, result in enumerate(results, 1):
+            values = np.asarray(data[f'chi{index}'][-1]).copy()
+            values[border] = 0  # reproduce their display mask; not a scoring threshold
+            image = values.reshape(shape, order='F')
+            real_peak = np.unravel_index(np.argmax(image.real), shape)
+            result['native_display_real_peak'] = float(image.real.max())
+            result['native_display_peak_xy_mm'] = [float(data['yinv'][real_peak[1]]),
+                                                    float(data['xinv'][real_peak[0]])]
+            for column, array in enumerate((image.real, -image.imag * 1000 * data['normlz_factor'])):
+                ax = axes[index-1, column]
+                top = float(np.max(array))
+                panel = ax.imshow(array, origin='upper', extent=extent, cmap='jet', interpolation='nearest',
+                                  vmin=0, vmax=top if top > 0 else 1)
+                ax.set(xlabel='Native x / mm', ylabel='Native y / mm',
+                       title=result['method'] + (' : real contrast' if column == 0 else ' : conductivity (mS/m)'))
+                paper.colorbar(panel, ax=ax, shrink=.8)
+        paper.suptitle('FoamTwinDielTM, 7-10 GHz, 2048 iterations\nNative orientation and display mask; raw contrasts saved separately')
+        paper.savefig(figures / f'{run.name}_contrasts.png', dpi=150)
+    (run / 'analysis.json').write_text(json.dumps(dict(methods=results, threshold=None,
+                                                     compact_matches_full_workspace=compact_equal), indent=2) + '\n')
     print(json.dumps(results, indent=2))
 
 
