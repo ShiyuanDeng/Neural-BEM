@@ -1,0 +1,14 @@
+ar rcs libhelmtrans.a src/fortran/hank103.o src/fortran/prini.o src/fortran/helm_kernels.o src/fortran/formsysmatbac.o src/fortran/kern_mats.o src/fortran/lap_kernels.o src/fortran/durdec.o src/fortran/corrand4.o src/fortran/dumb_conres.o src/fortran/legeexps.o src/fortran/curve_filtering.o src/fortran/curve_resampler.o src/fortran/dfft.o src/fortran/cdjseval2d.o src/fortran/h2dcommon.o
+mv libhelmtrans.a lib-static/
+/usr/local/MATLAB/R2026a/bin/mex src/matlab/kern_mats.c lib-static/libhelmtrans.a -compatibleArrayDims -DMWF77_UNDERSCORE1    -output src/matlab/kern_mats -lm -lstdc++ -ldl -lgfortran
+Building with 'gcc'.
+MEX completed successfully.
+/usr/local/MATLAB/R2026a/bin/mex src/matlab/helm_kernels.c lib-static/libhelmtrans.a -compatibleArrayDims -DMWF77_UNDERSCORE1    -output src/matlab/helm_kernels -lm -lstdc++ -ldl -lgfortran
+Building with 'gcc'.
+MEX completed successfully.
+/usr/local/MATLAB/R2026a/bin/mex src/matlab/lap_kernels.c lib-static/libhelmtrans.a -compatibleArrayDims -DMWF77_UNDERSCORE1    -output src/matlab/lap_kernels -lm -lstdc++ -ldl -lgfortran
+Building with 'gcc'.
+MEX completed successfully.
+/usr/local/MATLAB/R2026a/bin/mex src/matlab/curve_resampler.c lib-static/libhelmtrans.a -compatibleArrayDims -DMWF77_UNDERSCORE1    -output src/matlab/curve_resampler -lm -lstdc++ -ldl -lgfortran
+Building with 'gcc'.
+MEX completed successfully.

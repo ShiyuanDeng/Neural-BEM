@@ -1,0 +1,21 @@
+--- a/tests/test_frechet_ders_trans.m
++++ b/tests/test_frechet_ders_trans.m
+@@ -1,6 +1,6 @@
+ clear
+ 
+-run ../inverse-obstacle-scattering2d/startup.m
++% startup supplied by BRG wrapper
+ 
+ % define geometry type
+ n = 300;
+--- a/examples/data_generation_scripts/starn_transmission_tensor_data.m
++++ b/examples/data_generation_scripts/starn_transmission_tensor_data.m
+@@ -32,7 +32,7 @@
+ bc.type = 'Transmission';
+ bc.invtype = 'o';
+ 
+-fname = ['../data/star' int2str(nc) '_ik1_nk' int2str(nk) '_tensor_data_' bc.type '.mat'];
++fname = ['/home/drdeng/Neural_SDF_BEM_AD_organised/results/brg/examples/data/star' int2str(nc) '_ik1_nk' int2str(nk) '_tensor_data_' bc.type '.mat'];
+ save(fname,'src_info','lam');
+ 
+ 

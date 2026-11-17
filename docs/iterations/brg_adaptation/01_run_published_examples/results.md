@@ -11,3 +11,10 @@ Started 17 November 2026 with the coordinator's go. In progress; the full
 
 The failed build is retained. MATLAB needs access outside the sandbox for
 preferences and online licensing. The retry will request that access.
+
+| 2026-11-17 | Build with approved access | All four MEX files built | 1.87 | [log](../../../../results/brg/examples/build_retry/matlab.log) |
+
+Wrapper: MATLAB uses eight compute threads, disables interactive pauses,
+and exports open figures. Two script path substitutions are applied in
+memory only; [patch](../../../../external/patches/brg/01-wrapper-script-paths.patch).
+No numerical settings are changed.
