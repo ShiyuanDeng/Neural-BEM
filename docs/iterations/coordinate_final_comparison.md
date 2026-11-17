@@ -7,7 +7,7 @@ settings, assumptions and unknowns, and it sets how subagents share the work.
 The coordinator (the main session) owns this file. Subagents never edit it.
 They report back, and the coordinator updates the status board and the cards.
 
-Last updated: 17 November 2026, 21:45 (BRG 02 at 1 of 6; BRG 03 approved; CSI 02 running).
+Last updated: 17 November 2026, 21:55 (BRG on TG-002 shapes added by the user).
 
 ## Status board
 
@@ -34,14 +34,19 @@ investigation may edit `solvers/bem_inverse/` at a time.
 | Table | Cases | Methods | State |
 |---|---|---|---|
 | A. TG-002 (Stage 1) | 10 shapes at contrasts 0.5 and 4 (20 cases); contrast 13.3 for BEM only | BEM default, GauGal untuned | Done. No claims (user: claims "should wait until we see how baselines perform in stage 2") |
-| B. BRG cases | Paper examples 1–3, seven runs | BRG, BEM with known contrast | Not started |
+| B1. BRG on TG-002 shapes (main BRG table) | 10 shapes at contrasts 0.5 and 4, with BRG-style plane-wave data | BRG, BEM with known contrast; BEM with recovered contrast as an extra row | Plan to be drafted (BRG activity 04) |
+| B2. BRG paper cases | Paper examples 1–3, six runs | BRG; BEM with known contrast up to about k = 13 | BRG: 1 of 6 done. BEM: adapter in progress |
 | C. CSI cases | Fresnel `dielTM_dec8f`, plus TG-002 shapes simulated in the Fresnel layout | MF-CC-CSI, MR-CSI, CSI, BEM with recovered contrast | Not started |
 
 Rules for every table:
 - Their code and published settings are not changed. Our method is adapted to
   their cases, and the user said: "for fair comparison we should avoid changing their code and
   settings, we should instead adapt our code to their test cases."
-- BRG and CSI are not run on TG-002.
+- CSI is not run on the sealed TG-002 data. BRG was not either, until
+  17 November: the user then chose to compare BRG on the TG-002 shapes as
+  well ("for brg i think we should compare it on my tb 002 scenes, its more
+  variety?"; then "yeah" to making it the main BRG table). BRG takes plane
+  waves only, so it gets BRG-style data on those shapes, not the sealed data.
 - Clean data first; noise only after the clean results are reviewed.
 - Our method gets exactly the data the baseline gets, and picks its own
   frequency schedule within it.
@@ -294,6 +299,8 @@ needs it, and recorded here.
 | 17 Nov | U3: protocol version 1 threshold for CSI images | Same rule as table A; no new choice to defend |
 | 17 Nov | BRG 02: stop the no-limit glider rerun at k = 10 | Both settings agree at every Figure 1 frequency; the question is answered |
 | 17 Nov | BRG 03: plan approved with changes; solver lock to BRG | Exact plane-wave coefficients instead of a projection; a pair mask so CSI can reuse it; default path must reproduce; 1 h per fit; stop after one glider fit |
+| 17 Nov | BRG may run two paper cases at once | The user asked how long is left; three heavy workers fit, and clean timings are re-measured later |
+| 17 Nov | No high-k redesign of our solver | With TG-002 shapes as the main BRG table, the k = 13 cap only limits the paper cases |
 | 17 Nov | U2: the BRG investigation extends our solver first; `brg` drafts that plan (03), and the coordinator reviews it before any solver edit | Plane waves plus an unpaired table cover what CSI needs too |
 
 **Pushed result files:** about 654 MB (561 MB CSI, 93 MB BRG) were pushed
