@@ -7,7 +7,7 @@ settings, assumptions and unknowns, and it sets how subagents share the work.
 The coordinator (the main session) owns this file. Subagents never edit it.
 They report back, and the coordinator updates the status board and the cards.
 
-Last updated: 18 November 2026, 00:10 (CSI simulated campaign running overnight).
+Last updated: 18 November 2026, 00:40 (BRG paper cases done to k = 15; BRG on TG-002 shapes started).
 
 ## Status board
 
@@ -15,7 +15,7 @@ Last updated: 18 November 2026, 00:10 (CSI simulated campaign running overnight)
 |---|---|---|---|---|
 | Our BEM (default) | [evaluate_our_method](evaluate_our_method/) | [01](evaluate_our_method/01_measure_clean_and_noisy_recovery/results.md), [02](evaluate_our_method/02_run_ablations/results.md), run 17 Nov | TG-002 done | Extend for BRG and CSI data, later inside those investigations |
 | GauGal | [evaluate_our_method](evaluate_our_method/) | [03](evaluate_our_method/03_record_untuned_gaugal_reference/results.md), run 17 Nov | TG-002 untuned reference done | Stage 2 role open (U1) |
-| BRG | [brg_adaptation](brg_adaptation/) | [01 results](brg_adaptation/01_run_published_examples/results.md), [02 plan](brg_adaptation/02_rebuild_paper_examples/plan.md) | 01 done 17 Nov. 02 (six paper cases): 2 of 6 done, 4 running to k = 15. 03 (adapt our BEM to BRG data): adapter done, 1 of 6 fits run, stopped for handover | `brg` agent (Codex, astra, high effort): finish the paper cases at k = 15 and report; no more BEM work |
+| BRG | [brg_adaptation](brg_adaptation/) | [01 results](brg_adaptation/01_run_published_examples/results.md), [02 plan](brg_adaptation/02_rebuild_paper_examples/plan.md) | 01 done 17 Nov. [02](brg_adaptation/02_rebuild_paper_examples/results.md) done to k = 15 (six cases). [03](brg_adaptation/03_adapt_bem_to_brg_data/results.md): adapter done, 1 of 6 fits run, stopped for handover. [04](brg_adaptation/04_run_brg_on_tg002_shapes/plan.md) (BRG on TG-002 shapes): baseline half started 18 Nov 00:40 | `brg` agent (Codex, astra, high effort): timed pilot, then the other 19 cases with BRG only; provisional data; no BEM work |
 | CSI family | [csi_adaptation](csi_adaptation/) | [01 results](csi_adaptation/01_run_published_examples/results.md) | 01, [02](csi_adaptation/02_run_fresnel_dielectric_cylinder/results.md) and [03](csi_adaptation/03_prepare_simulated_tg002_cases/results.md) done 17 Nov. [04](csi_adaptation/04_run_simulated_tg002_cases/plan.md) (10 simulated cases, MF-CC-CSI) started 18 Nov 00:10 | `csi` agent (Codex, sol, high effort): run 04 three fits at a time, about 8 h, 9 h budget; push after each batch |
 
 **Setup checked on 17 November 2026:** the user made the MaxwellFDFD link and
@@ -52,8 +52,8 @@ one of six fits run). It stops there.
 | Table | Cases | Methods | State |
 |---|---|---|---|
 | A. TG-002 (Stage 1) | 10 shapes at contrasts 0.5 and 4 (20 cases); contrast 13.3 for BEM only | BEM default, GauGal untuned | Done. No claims (user: claims "should wait until we see how baselines perform in stage 2") |
-| B1. BRG on TG-002 shapes (main BRG table) | 10 shapes at contrasts 0.5 and 4, with BRG-style plane-wave data | BRG, BEM with known contrast; BEM with recovered contrast as an extra row | Plan to be drafted (BRG activity 04) |
-| B2. BRG paper cases | Paper examples 1–3, six runs | BRG; BEM with known contrast up to about k = 13 | BRG: 1 of 6 done. BEM: adapter in progress |
+| B1. BRG on TG-002 shapes (main BRG table) | 10 shapes at contrasts 0.5 and 4, with BRG-style plane-wave data | BRG, BEM with known contrast; BEM with recovered contrast as an extra row | BRG: running on provisional data (activity 04). BEM: not started (BEM side) |
+| B2. BRG paper cases | Paper examples 1–3, six runs | BRG; BEM with known contrast up to about k = 10 | BRG: done to k = 15. BEM: 1 of 6 fits run; the rest go to the BEM side |
 | C. CSI cases | Fresnel `dielTM_dec8f` (1 scene), plus the 10 TG-002 shapes at contrast 4 simulated in the Fresnel layout | Measured scene: MF-CC-CSI, MR-CSI, CSI. Simulated scenes: MF-CC-CSI only, for now. BEM with recovered contrast on both | CSI: measured scene done; simulated campaign approved by the user, starting after preparation. BEM: not started (BEM side) |
 
 Rules for every table:
@@ -194,6 +194,30 @@ Rules for every table:
     identical errors. The gap is unexplained and BRG is not handicapped.
   - Star and cavity recovered from the vector figures to about 6e-4 and
     2e-4 in data units.
+- **Activity 02 result, six paper cases to k = 15 (17 November):**
+
+  | Case | Area error at k = 10 | At k = 15 |
+  |---|---|---|
+  | Glider, eta 0.33 | 0.24% | 0.052% (0.003% at k = 30) |
+  | Glider, eta 10 | 0.010% | 0.004% |
+  | Star, full data | 1.7% | 0.52% |
+  | Star, limited data | 1.7% | 0.81% |
+  | Cavity, eta 0.9 | 134% | 134% |
+  | Cavity, eta 2 | 131% | 134% |
+
+  BRG recovers the glider and the star and fails on the cavity, as its
+  paper reports. The resume to k = 30 is deferred.
+- **Activity 03 result (17 November):** the adapter is built and tested
+  (109 tests pass, a default TG-002 fit is bit-identical). Our forward
+  agrees with BRG's data to 1.3e-6 on the glider up to k = 12. The one fit
+  run, glider eta 0.33 with known contrast, took 60 s and reached 0.21%
+  area error at k = 10, then refused k = 12.
+- **Activity 04 (BRG on TG-002 shapes, coordinator 18 November):** the
+  baseline half only runs here. Sweep: TG-002's 19 frequencies plus
+  midpoints (37), which keeps the band and gives BRG steps no coarser than
+  its own rule. Data: floor(10k) directions and receivers on the radius-10
+  ring. Until the BEM side freezes the data, runs use BRG's own forward
+  and are labelled provisional. A data request file states the layout.
 - **Our BEM on BRG data (activity 03, coordinator review 17 November):**
   - Our default forward builds its incident waves from a power series that
     it refuses to use beyond about k times object radius = 17. On BRG's
@@ -351,6 +375,7 @@ needs it, and recorded here.
 | 17 Nov | BRG paper cases stop at k = 15 for now and run side by side; resume to k = 30 later from saved states | The user is short of time. To k = 15 costs 10 of 65 minutes per case, and our BEM stops near k = 13 |
 | 17 Nov | Do not move BRG to the GPU | This MATLAB has no GPU toolbox, and 64% of a solve is their single-threaded Fortran kernel assembly. Dense algebra is under a third, so the best gain is about 1.3 times |
 | 18 Nov | CSI 04: budget extended from 6 h to 9 h, start now | The forecast is 8 h; it runs overnight, pushes after each batch, and can be stopped without loss |
+| 18 Nov | BRG 04: go for the baseline half, on provisional data from BRG's forward | Cases are cheap at TG-002's frequencies; it fixes the data request for the BEM side; reruns are only needed where frozen data differs |
 | 17 Nov | No high-k redesign of our solver | With TG-002 shapes as the main BRG table, the k = 13 cap only limits the paper cases |
 | 17 Nov | U2: the BRG investigation extends our solver first; `brg` drafts that plan (03), and the coordinator reviews it before any solver edit | Plane waves plus an unpaired table cover what CSI needs too |
 
