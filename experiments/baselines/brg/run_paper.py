@@ -35,7 +35,9 @@ def main():
     parser.add_argument("--case", required=True, choices=CASES)
     parser.add_argument("--curvature", required=True, choices=["shipped", "default"])
     parser.add_argument("--detach", action="store_true", help="Keep the supervisor independent of terminal-session lifetime.")
+    parser.add_argument('--max-k',type=float,default=30.,help='Last frequency; saved higher-frequency states are retained.')
     args = parser.parse_args()
+    assert 1<=args.max_k<=30 and (args.max_k-1)*4==round((args.max_k-1)*4)
     if args.case != "glider_033":
         choice = json.loads((BASE / "curvature_choice.json").read_text())
         assert args.curvature == choice["selected"], "Use the frozen curvature setting."
@@ -50,7 +52,7 @@ def main():
     if args.detach:
         number=len(list(output.glob('launcher_*.json')))+1
         command=['setsid','nohup',sys.executable,str(Path(__file__).resolve()),
-                 '--case',args.case,'--curvature',args.curvature]
+                 '--case',args.case,'--curvature',args.curvature,'--max-k',str(args.max_k)]
         log=local/f'supervisor_{number:02d}.log'
         with log.open('w') as stream:
             child=subprocess.Popen(command,cwd=ROOT,stdin=subprocess.DEVNULL,
@@ -66,8 +68,10 @@ def main():
                   if json.loads(p.read_text()).get('status') == 'running']
         if any(json.loads(p.read_text()).get('case') == args.case for p in active):
             raise SystemExit('This case already has a running attempt.')
-        if len(active) >= 2 or len(matlab_processes()) >= 3:
-            raise SystemExit('Three-heavy-worker limit: no MATLAB slot available.')
+        available=int(next(line.split()[1] for line in Path('/proc/meminfo').read_text().splitlines()
+                           if line.startswith('MemAvailable:')))*1024
+        if available<14*1024**3:
+            raise SystemExit('Memory reserve: less than 14 GiB available; wait before launching.')
         attempts = sorted(case.glob("*/attempt_*.json"))
         now = datetime.datetime.now(datetime.timezone.utc)
         used = sum(json.loads(p.read_text()).get("wall_seconds", (now - datetime.datetime.fromisoformat(json.loads(p.read_text())["started"])).total_seconds()) for p in attempts)
@@ -80,15 +84,18 @@ def main():
         command = ["matlab", "-batch", f"addpath('{ROOT}/experiments/baselines/brg'); run_paper_case"]
         shape, eta, limited = CASES[args.case]
         record = {"case": args.case, "curvature": args.curvature, "shape": shape,
-                  "eta": eta, "limited": limited, "command": command, "cwd": str(UPSTREAM),
+                  "eta": eta, "limited": limited, "max_k":args.max_k,"command": command, "cwd": str(UPSTREAM),
                   "started": now.isoformat(), "prior_case_wall_seconds": used,
                   "remaining_seconds": remaining, "status": "running",
                   "other_matlab_at_start": matlab_processes(), "log": str(log.relative_to(ROOT))}
         write_json(path, record)
+        settings=output/'settings.json'
+        if settings.exists():
+            (output/f'settings_before_attempt_{number:02d}.json').write_bytes(settings.read_bytes())
         env = os.environ.copy()
         env.update(BRG_PAPER_CASE=args.case, BRG_CURVATURE=args.curvature,
                    BRG_REMAINING_SECONDS=str(remaining - 5), BRG_SHAPE=shape,
-                   BRG_ETA=str(eta), BRG_LIMITED=str(int(limited)))
+                   BRG_ETA=str(eta), BRG_LIMITED=str(int(limited)),BRG_MAX_K=str(args.max_k))
         start = time.monotonic()
         with log.open("w") as stream:
             result = subprocess.run(["timeout", "--signal=KILL", str(remaining), *command],
@@ -105,7 +112,7 @@ def main():
                     with item.open("rb") as stream:
                         digest = hashlib.file_digest(stream, "sha256").hexdigest()
                     manifest.append({"path": str(item.relative_to(ROOT)), "bytes": item.stat().st_size, "sha256": digest})
-        write_json(output / "bulk_manifest.json", {"command": f"python experiments/baselines/brg/run_paper.py --case {args.case} --curvature {args.curvature}", "files": manifest})
+        write_json(output / "bulk_manifest.json", {"command": f"python experiments/baselines/brg/run_paper.py --case {args.case} --curvature {args.curvature} --max-k {args.max_k}", "files": manifest})
         lines = [line for line in log.read_text(errors="replace").splitlines() if line.startswith("BRG ")]
         (output / f"progress_{number:02d}.log").write_text("\n".join(lines)+"\n")
         raise SystemExit(result.returncode)

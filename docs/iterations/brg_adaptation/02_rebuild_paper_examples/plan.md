@@ -243,3 +243,23 @@ overlap records remain required; clean timings will be measured later.
 The six paper cases check BRG on its own examples. The main BRG table
 will use the 20 TG-002 shape/contrast cases with BRG-style data, following
 the user's new direction. Activity 04 will be planned after activity 03(c).
+
+## Coordinator update: k=15 endpoints first, 17 November 2026
+
+All six cases now stop at k=15 (57 frequencies). Keep every saved state
+and all already-generated higher-frequency data. Resume to k=30 only when
+the machine is otherwise idle or the coordinator requests it. The completed
+glider eta 0.33 needs no rerun: report its saved k=15 endpoint.
+
+Launch remaining cases concurrently with eight MATLAB threads each, watching
+MemAvailable and retaining at least 14 GB. This replaces the three-worker
+limit: the coordinator measured mostly single-threaded Fortran assembly.
+Use `run_paper.py --case NAME --curvature shipped --max-k 15 --detach`.
+Per-case locks and cumulative four-hour budgets remain. Activity 03 follows
+with priority, and its ladder stops at k=15 or an earlier solver refusal.
+
+The already-running eta 10 job is allowed to reach its saved k=15 state,
+then an external wrapper watcher ends that pre-option MATLAB invocation.
+The star data-generation invocation is redirected by restarting its wrapper
+at k=15, reusing all existing data. No upstream solver change is required.
+The cavity eta 2 k=30 finer-grid check waits for the later k=30 resume.

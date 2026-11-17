@@ -8,7 +8,7 @@ ROOT=Path(__file__).resolve().parents[3]
 BASE=ROOT/'results/brg/paper_examples/2026-11-17'
 REFERENCE_LENGTH_M=1.
 C0=299792458.
-LADDER=(1.,1.25,1.5,1.75,2.,2.5,3.,3.5,4.,5.,6.,7.,8.,10.,12.,15.,20.,25.,30.)
+LADDER=(1.,1.25,1.5,1.75,2.,2.5,3.,3.5,4.,5.,6.,7.,8.,10.,12.,15.)
 
 
 def observation(case,k,mask=None):

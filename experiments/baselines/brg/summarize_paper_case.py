@@ -15,12 +15,14 @@ BASE=ROOT/'results/brg/paper_examples/2026-11-17'
 FIG=ROOT/'docs/iterations/brg_adaptation/02_rebuild_paper_examples/figures'
 
 
-def summarize(case, curvature):
+def summarize(case, curvature, max_k=None):
     out=BASE/case/curvature
     summary=json.loads((out/'summary.json').read_text())
     rows=summary['frequencies']
     if isinstance(rows,dict): rows=[rows]
     assert len(rows)==summary['inverse_frequencies']
+    if max_k is not None: rows=[r for r in rows if r['k']<=max_k]
+    suffix='' if max_k is None else f'_k{max_k:g}'
     for i,row in enumerate(rows,1):
         assert row['index']==i and row['k']==1+(i-1)*.25
         curve=loadmat(out/f'frequency_{i:03d}.mat',simplify_cells=True)['record']
@@ -31,10 +33,15 @@ def summarize(case, curvature):
     data_path=out/'data_summary.json'
     if not data_path.exists(): data_path=BASE/case/'shipped/data_summary.json'
     data=json.loads(data_path.read_text())
+    all_data_seconds=sum(r['wall_seconds'] for r in data)
+    if max_k is not None: data=[r for r in data if r['k']<=max_k]
     generated=set()
     for log in out.glob('progress_*.log'):
-        generated.update(int(i) for i in re.findall(r'BRG DATA \S+ (\d+)/117',log.read_text()))
-    stats=dict(case=case,curvature=curvature,status=summary['status'],frequencies=len(rows),
+        generated.update(int(i) for i in re.findall(r'BRG DATA \S+ (\d+)/\d+',log.read_text()))
+    generated.intersection_update(r['index'] for r in data)
+    status=summary['status'] if max_k is None else ('complete_at_target' if rows[-1]['k']==max_k else 'partial')
+    stats=dict(case=case,curvature=curvature,status=status,frequencies=len(rows),
+        requested_max_k=max_k,all_saved_data_generation_seconds=all_data_seconds,
         data_seconds=sum(r['wall_seconds'] for r in data if r['index'] in generated),
         dataset_generation_seconds=sum(r['wall_seconds'] for r in data),
         new_data_frequencies=len(generated),
@@ -54,13 +61,13 @@ def summarize(case, curvature):
     truth=loadmat(out/'truth_curve.mat',simplify_cells=True)['truth_curve']
     fig,ax=plt.subplots(figsize=(6,6))
     ax.plot(truth['xs'],truth['ys'],'k-',lw=1.5,label='True curve')
-    snapshots=[(1,'--'),(17,':'),(37,'-.'),(117,'-')] if case.startswith('glider') else [(1,'--'),(57,':'),(117,'-.')]
+    snapshots=[(1,'--'),(17,':'),(37,'-.'),(57,'-'),(117,'--')] if case.startswith('glider') else [(1,'--'),(57,':'),(117,'-.')]
     for i,style in snapshots:
         if i<=len(rows):
             curve=loadmat(out/f'frequency_{i:03d}.mat',simplify_cells=True)['record']
             ax.plot(curve['xs'],curve['ys'],style,lw=1,label=f"k={curve['k']:g}")
     ax.set(aspect='equal',xlabel='x',ylabel='y',title=f'{case}, curvature={curvature}')
-    ax.legend(fontsize=8);fig.tight_layout();fig.savefig(FIG/f'{case}_{curvature}_curves.png',dpi=150);plt.close(fig)
+    ax.legend(fontsize=8);fig.tight_layout();fig.savefig(FIG/f'{case}_{curvature}{suffix}_curves.png',dpi=150);plt.close(fig)
     fig,axes=plt.subplots(1,2,figsize=(10,4))
     ks=[r['k'] for r in rows]
     axes[0].semilogy(ks,[r['relative_area_error'] for r in rows],label='Rebuilt case')
@@ -84,9 +91,9 @@ def summarize(case, curvature):
         ax.set(xlabel='Exterior k');ax.grid(alpha=.2);ax.legend(fontsize=8)
     axes[0].set_ylabel('Relative symmetric-difference area');axes[1].set_ylabel('Relative scattered-field residual')
     fig.suptitle(f'{case}, curvature={curvature}');fig.tight_layout()
-    fig.savefig(FIG/f'{case}_{curvature}_errors.png',dpi=150);plt.close(fig)
-    (out/'metrics.json').write_text(json.dumps(stats,indent=2)+'\n')
-    if case=='glider_033' and len(rows)>=37:
+    fig.savefig(FIG/f'{case}_{curvature}{suffix}_errors.png',dpi=150);plt.close(fig)
+    (out/f'metrics{suffix}.json').write_text(json.dumps(stats,indent=2)+'\n')
+    if case=='glider_033' and len(rows)>=37 and max_k is None:
         fig,ax=plt.subplots(figsize=(6,4))
         paper=json.loads((BASE/'shapes/figure1_errors.json').read_text())['eta_033']
         ax.semilogy(paper['k'],paper['relative_area_error'],'k.',label='Paper Figure 1 vectors')
@@ -102,4 +109,5 @@ def summarize(case, curvature):
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser();parser.add_argument('--case',required=True);parser.add_argument('--curvature',required=True)
-    args=parser.parse_args();summarize(args.case,args.curvature)
+    parser.add_argument('--max-k',type=float)
+    args=parser.parse_args();summarize(args.case,args.curvature,args.max_k)

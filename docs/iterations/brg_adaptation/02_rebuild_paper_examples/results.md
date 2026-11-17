@@ -2,7 +2,7 @@
 
 ## Status
 
-Campaign started 17 November 2026. 1/6 cases complete.
+Campaign started 17 November 2026. 2/6 cases complete through k=15.
 This report is updated after each run. The full case budget is four hours,
 including data and all attempts; the optional glider alternative shares it.
 These are rebuilt paper cases, distinct from activity 01's shipped example.
@@ -10,7 +10,7 @@ These are rebuilt paper cases, distinct from activity 01's shipped example.
 ## Actual settings and provenance
 
 The [plan](plan.md) records the coordinator's decisions and all differences
-between paper prose and public code. All cases use k=1:0.25:30, known eta,
+between paper prose and public code. All current endpoints use k=1:0.25:15, known eta,
 equal density, unit-amplitude plane waves and finite-radius scattered fields.
 Full tables have floor(10k) directions and receivers at radius 10; the
 limited star has 10 directions and 200 receivers. No noise or extra starts.
@@ -63,24 +63,30 @@ include coefficients, both panels, calibration, path indices and hashes.
 
 | Case / curvature | Frequencies | Last k | Relative area error | Field residual | Iterations | Data min | Inverse min | Process min |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| glider_033 / shipped | 117/117 | 30 | 0.00311943% | 4.79883e-07 | 280 | 18.72 | 46.29 | 68.52 |
-| glider_033 / default | 48/117 | 12.75 | 0.0847641% | 5.3488e-05 | 182 | 0.00 | 5.33 | 5.42 |
+| glider_033 / shipped | 57/57 | 15 | 0.0517798% | 1.65792e-05 | 203 | 2.20 | 8.24 | 68.52 |
+| glider_10 / shipped | 57/57 | 15 | 0.00362365% | 1.16845e-06 | 335 | 2.16 | 14.40 | 35.03 |
+
+The coordinator shortened the active campaign to k=15. The completed
+glider eta 0.33 full sweep and all higher-frequency data/states are retained.
+Resumes to k=30 are low priority and require an otherwise idle machine or
+a coordinator request. Phase columns below cover only k<=15; process time
+includes any already-spent higher-frequency work.
 
 Process time includes MATLAB startup and I/O; data and inverse columns
 measure those phases separately. Fine-grid checks, when present, are listed
 below and included in process time. Per-frequency records retain k,
 iterations, residual history, exit flag, time and curve.
 
-- glider_033 / shipped: UTC 2026-11-17T20:16:16.608701+00:00 to 2026-11-17T21:24:47.514919+00:00; 117 newly generated data frequencies.
+- glider_033 / shipped: UTC 2026-11-17T20:16:16.608701+00:00 to 2026-11-17T21:24:47.514919+00:00; 57 newly generated data frequencies.
   Process time is a conservative upper bound because the terminal supervisor was lost; phase times remain measured.
-- glider_033 / default: UTC 2026-11-17T21:26:04.488949+00:00 to 2026-11-17T21:31:29.857052+00:00; 0 newly generated data frequencies.
+- glider_10 / shipped: UTC 2026-11-17T21:33:15.946290+00:00 to 2026-11-17T22:08:18.060887+00:00; 57 newly generated data frequencies.
 
 ## Curvature comparison
 
 Frozen choice: **shipped**. Both candidates have bit-for-bit identical relative area errors for all 37 Figure 1 frequencies. Retain the published shipped-driver values in this tie. Neither candidate matches Figure 1; no further tuning is authorized.
 
 - glider_033 / shipped: Figure 1 k<=10 RMS log10 difference 0.904393; median absolute difference 0.728363; k=10 area-error ratio 0.41022.
-- glider_033 / default: Figure 1 k<=10 RMS log10 difference 0.904393; median absolute difference 0.728363; k=10 area-error ratio 0.41022.
+- glider_10 / shipped: Figure 1 k<=10 RMS log10 difference 0.827051; median absolute difference 0.520904; k=10 area-error ratio 0.523732.
 
 The predeclared trigger is RMS above 0.30 decades or endpoint disagreement
 above a factor of two. Exactly one no-limit glider alternative is allowed
@@ -115,21 +121,24 @@ These are possibilities, not diagnoses or reasons to change the campaign.
 
 ## Numerical checks and failures
 
-- glider_033 / shipped: maximum interior-source diagnostic 7.34431e-07; exit flags {'2': 73, '1': 44}.
-- glider_033 / default: maximum interior-source diagnostic 7.34431e-07; exit flags {'2': 48}.
+- glider_033 / shipped: maximum interior-source diagnostic 7.34431e-07; exit flags {'2': 57}.
+- glider_10 / shipped: maximum interior-source diagnostic 1.78275e-06; exit flags {'3': 4, '2': 13, '1': 40}.
+- glider_10: k=30 data grid 3412 versus 6824 nodes; relative complex-field difference 8.21949e-12; check time 144.120 s.
 
 Exit 1 means residual stop; 2 update stop; 3 iteration limit; -1 means
 the public update returned a failure code (including filtered-step failure),
 not proof that the accepted final curve intersects itself. The manufactured
 source is verified inside each true curve and is diagnostic only.
 
-- glider_033/default/attempt_01.json: coordinator stop, not a numerical crash; return code -15; log `results/brg/paper_examples/2026-11-17/glider_033/default/local/matlab_01.log`.
+- glider_033/default/attempt_01.json: coordinator stop/redirect, not a numerical crash; return code -15; log `results/brg/paper_examples/2026-11-17/glider_033/default/local/matlab_01.log`.
 - glider_033/shipped/attempt_01.json: Terminal-launched supervisor disappeared before final receipt; reason unverified. MATLAB completed all 117 endpoints and ended. No process return code is available. Recovered receipt uses observation time as a conservative budget debit. Later runs use detached supervisors. Log: `results/brg/paper_examples/2026-11-17/glider_033/shipped/local/matlab_01.log`.
+- glider_10/shipped/attempt_01.json: coordinator stop/redirect, not a numerical crash; return code -15; log `results/brg/paper_examples/2026-11-17/glider_10/shipped/local/matlab_01.log`.
+- star_full/shipped/attempt_01.json: coordinator stop/redirect, not a numerical crash; return code -15; log `results/brg/paper_examples/2026-11-17/star_full/shipped/local/matlab_01.log`.
 
 ## Figures and evidence
 
-- glider_033 / shipped: [curves](figures/glider_033_shipped_curves.png), [errors](figures/glider_033_shipped_errors.png), [metrics](../../../../results/brg/paper_examples/2026-11-17/glider_033/shipped/metrics.json).
-- glider_033 / default: [curves](figures/glider_033_default_curves.png), [errors](figures/glider_033_default_errors.png), [metrics](../../../../results/brg/paper_examples/2026-11-17/glider_033/default/metrics.json).
+- glider_033 / shipped: [curves](figures/glider_033_shipped_k15_curves.png), [errors](figures/glider_033_shipped_k15_errors.png), [metrics](../../../../results/brg/paper_examples/2026-11-17/glider_033/shipped/metrics_k15.json).
+- glider_10 / shipped: [curves](figures/glider_10_shipped_k15_curves.png), [errors](figures/glider_10_shipped_k15_errors.png), [metrics](../../../../results/brg/paper_examples/2026-11-17/glider_10/shipped/metrics_k15.json).
 
 All bulk observations, dense continuation states and full logs stay local in
 ignored `local/` directories. Each completed attempt has a bulk manifest
@@ -137,7 +146,7 @@ with reproduction command, file sizes and SHA-256. Compact curves, residuals,
 times and logs are committed; figures are in this report folder.
 
 Commands: `python experiments/baselines/brg/run_paper.py --case <case>
---curvature <choice> --detach`, then `summarize_paper_case.py` with the case and curvature arguments,
+--curvature <choice> --max-k 15 --detach`, then `summarize_paper_case.py` with the case and curvature arguments,
 and `python experiments/baselines/brg/update_paper_report.py`.
 Resuming the run command loads each saved data frequency and the last exact
 inverse state; all attempts share the case's four-hour limit.
@@ -149,8 +158,12 @@ The data layout, signs and field definition are unchanged from the
 paper floor counts, the six case/material assignments and the frozen true geometries
 recorded here. Our adapter must consume exactly these saved observations.
 
-[Activity 03 draft](../03_adapt_bem_to_brg_data/plan.md) maps the required
+[Activity 03 report](../03_adapt_bem_to_brg_data/results.md) records the implemented
 plane-wave and full-table extensions onto A1–C12, including variable table
 sizes, fixed eta, units, per-shape forward checks and high-k risks. Known eta
 below one is already accepted by our core; it is not negative susceptibility.
-No BEM solver or shared comparison code has been edited or run.
+The CPU table adapter is implemented and the paired default regression is bit-identical.
+One BEM glider fit reached k=10 and refused k=12 under the unchanged
+cancellation check. Shared comparison code was not edited.
+The [activity 04 plan](../04_run_brg_on_tg002_shapes/plan.md) proposes the main
+BRG table on TG-002 shapes; no activity 04 run has started.

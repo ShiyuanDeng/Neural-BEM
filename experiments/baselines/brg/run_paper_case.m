@@ -9,7 +9,8 @@ cd(upstream); startup; cd(out); warning('off'); pause('off');
 set(groot,'defaultFigureVisible','off'); maxNumCompThreads(8);
 timer=tic; limit=str2double(getenv('BRG_REMAINING_SECONDS'));
 assert(isfinite(limit)&&limit>0,'Launch through run_paper.py');
-ks=1:0.25:30; nk=numel(ks);
+max_k=str2double(getenv('BRG_MAX_K')); if ~isfinite(max_k), max_k=30; end
+ks=1:0.25:max_k; nk=numel(ks);
 bc=struct('type','Transmission','invtype','o','q',sqrt(eta),'transa',[1;1],'transb',[1;1]);
 optim=struct('optim_type','min(gn,sd)','filter_type','gauss-conv','maxit',50,'eps_res',1e-5,'eps_upd',1e-5);
 if strcmp(curvature,'shipped'), optim.eps_curv=0.1; optim.n_curv_min=20; end
@@ -66,7 +67,7 @@ for i=1:nk
 end
 % Required also when all data frequencies were loaded for a resumed run.
 write_json(fullfile(out,'data_summary.json'),data_records);
-if eta>1 && ~isfile(fullfile(base,'accuracy_k30.json'))
+if eta>1 && max_k>=30 && ~isfile(fullfile(base,'accuracy_k30.json'))
     if toc(timer)>=limit, finish('budget_exhausted'); return; end
     coarse=load(fullfile(data_dir,'data_117.mat')); k=30;
     refinement_factor=2;

@@ -1,5 +1,6 @@
 """Write a cumulative report from completed case receipts; no solver work."""
 import json
+import argparse
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[3]
@@ -9,22 +10,25 @@ CASES=['glider_033','glider_10','star_full','star_limited','cavity_09','cavity_2
 
 
 def main():
+    parser=argparse.ArgumentParser();parser.add_argument('--max-k',type=int,default=30);args=parser.parse_args()
+    target=args.max_k;suffix='' if target==30 else f'_k{target}'
+    expected=round((target-1)*4)+1
     choice_path=BASE/'curvature_choice.json'
     choice=json.loads(choice_path.read_text()) if choice_path.exists() else None
     entries=[]
     for case in CASES:
-        for variant in ['shipped','default']:
-            path=BASE/case/variant/'metrics.json'
+        for variant in (['shipped','default'] if target==30 else ['shipped']):
+            path=BASE/case/variant/f'metrics{suffix}.json'
             if path.exists(): entries.append(json.loads(path.read_text()))
-    completed={r['case'] for r in entries if r['status']=='complete'}
+    completed={r['case'] for r in entries if r['status'].startswith('complete')}
     rows=[]
     for r in entries:
-        f=r['final']; rows.append(f"| {r['case']} / {r['curvature']} | {r['frequencies']}/117 | {f['k']:g} | {f['relative_area_error']*100:.6g}% | {f['residual']:.6g} | {r['iterations']} | {r['data_seconds']/60:.2f} | {r['inverse_seconds']/60:.2f} | {r['attempts_wall_seconds']/60:.2f} |")
+        f=r['final']; rows.append(f"| {r['case']} / {r['curvature']} | {r['frequencies']}/{expected} | {f['k']:g} | {f['relative_area_error']*100:.6g}% | {f['residual']:.6g} | {r['iterations']} | {r['data_seconds']/60:.2f} | {r['inverse_seconds']/60:.2f} | {r['attempts_wall_seconds']/60:.2f} |")
     text=f'''# Rebuild the paper's single-component examples: results
 
 ## Status
 
-Campaign started 17 November 2026. {len(completed)}/6 cases complete.
+Campaign started 17 November 2026. {len(completed)}/6 cases complete through k={target}.
 This report is updated after each run. The full case budget is four hours,
 including data and all attempts; the optional glider alternative shares it.
 These are rebuilt paper cases, distinct from activity 01's shipped example.
@@ -32,7 +36,7 @@ These are rebuilt paper cases, distinct from activity 01's shipped example.
 ## Actual settings and provenance
 
 The [plan](plan.md) records the coordinator's decisions and all differences
-between paper prose and public code. All cases use k=1:0.25:30, known eta,
+between paper prose and public code. All current endpoints use k=1:0.25:{target}, known eta,
 equal density, unit-amplitude plane waves and finite-radius scattered fields.
 Full tables have floor(10k) directions and receivers at radius 10; the
 limited star has 10 directions and 200 receivers. No noise or extra starts.
@@ -86,6 +90,7 @@ include coefficients, both panels, calibration, path indices and hashes.
 | Case / curvature | Frequencies | Last k | Relative area error | Field residual | Iterations | Data min | Inverse min | Process min |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
 '''+ '\n'.join(rows)+'\n\n'
+    text+='The coordinator shortened the active campaign to k=15. The completed\nglider eta 0.33 full sweep and all higher-frequency data/states are retained.\nResumes to k=30 are low priority and require an otherwise idle machine or\na coordinator request. Phase columns below cover only k<=15; process time\nincludes any already-spent higher-frequency work.\n\n' if target==15 else ''
     text+='Process time includes MATLAB startup and I/O; data and inverse columns\nmeasure those phases separately. Fine-grid checks, when present, are listed\nbelow and included in process time. Per-frequency records retain k,\niterations, residual history, exit flag, time and curve.\n\n'
     for r in entries:
         text+=f"- {r['case']} / {r['curvature']}: UTC {r.get('started')} to {r.get('ended')}; {r.get('new_data_frequencies',117)} newly generated data frequencies.\n"
@@ -140,14 +145,14 @@ These are possibilities, not diagnoses or reasons to change the campaign.
     for p in sorted(BASE.glob('*/*/attempt_*.json')):
         a=json.loads(p.read_text())
         if a.get('returncode',0):
-            label='coordinator stop, not a numerical crash' if a.get('status')=='stopped_by_coordinator' else 'failed attempt'
+            label='coordinator stop/redirect, not a numerical crash' if a.get('status') in ('stopped_by_coordinator','redirected_to_max_k','stopped_at_requested_max_k') else 'failed attempt'
             failed.append(f"- {p.relative_to(BASE)}: {label}; return code {a['returncode']}; log `{a['log']}`.")
         if a.get('supervisor_failure'): failed.append(f"- {p.relative_to(BASE)}: {a['supervisor_failure']} Later runs use detached supervisors. Log: `{a['log']}`.")
     text+='\n'.join(failed) if failed else 'No failed MATLAB attempt is recorded among the completed runs so far.'
     text+='\n\n## Figures and evidence\n\n'
     for r in entries:
-        label=f"{r['case']}_{r['curvature']}"
-        text+=f"- {r['case']} / {r['curvature']}: [curves](figures/{label}_curves.png), [errors](figures/{label}_errors.png), [metrics](../../../../results/brg/paper_examples/2026-11-17/{r['case']}/{r['curvature']}/metrics.json).\n"
+        label=f"{r['case']}_{r['curvature']}{suffix}"
+        text+=f"- {r['case']} / {r['curvature']}: [curves](figures/{label}_curves.png), [errors](figures/{label}_errors.png), [metrics](../../../../results/brg/paper_examples/2026-11-17/{r['case']}/{r['curvature']}/metrics{suffix}.json).\n"
     text+='''
 All bulk observations, dense continuation states and full logs stay local in
 ignored `local/` directories. Each completed attempt has a bulk manifest
@@ -155,7 +160,7 @@ with reproduction command, file sizes and SHA-256. Compact curves, residuals,
 times and logs are committed; figures are in this report folder.
 
 Commands: `python experiments/baselines/brg/run_paper.py --case <case>
---curvature <choice> --detach`, then `summarize_paper_case.py` with the case and curvature arguments,
+--curvature <choice> --max-k 15 --detach`, then `summarize_paper_case.py` with the case and curvature arguments,
 and `python experiments/baselines/brg/update_paper_report.py`.
 Resuming the run command loads each saved data frequency and the last exact
 inverse state; all attempts share the case's four-hour limit.
@@ -167,11 +172,15 @@ The data layout, signs and field definition are unchanged from the
 paper floor counts, the six case/material assignments and the frozen true geometries
 recorded here. Our adapter must consume exactly these saved observations.
 
-[Activity 03 draft](../03_adapt_bem_to_brg_data/plan.md) maps the required
+[Activity 03 report](../03_adapt_bem_to_brg_data/results.md) records the implemented
 plane-wave and full-table extensions onto A1–C12, including variable table
 sizes, fixed eta, units, per-shape forward checks and high-k risks. Known eta
 below one is already accepted by our core; it is not negative susceptibility.
-No BEM solver or shared comparison code has been edited or run.
+The CPU table adapter is implemented and the paired default regression is bit-identical.
+One BEM glider fit reached k=10 and refused k=12 under the unchanged
+cancellation check. Shared comparison code was not edited.
+The [activity 04 plan](../04_run_brg_on_tg002_shapes/plan.md) proposes the main
+BRG table on TG-002 shapes; no activity 04 run has started.
 '''
     DOC.write_text(text)
 
