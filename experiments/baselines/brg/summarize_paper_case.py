@@ -60,7 +60,7 @@ def summarize(case, curvature, max_k=None):
     FIG.mkdir(parents=True,exist_ok=True)
     truth=loadmat(out/'truth_curve.mat',simplify_cells=True)['truth_curve']
     fig,ax=plt.subplots(figsize=(6,6))
-    ax.plot(truth['xs'],truth['ys'],'k-',lw=1.5,label='True curve')
+    ax.plot(truth['xs'],truth['ys'],'k-',lw=1.5,label='True curve' if case.startswith('glider') else 'True curve (paper vector recovery)')
     snapshots=[(1,'--'),(17,':'),(37,'-.'),(57,'-'),(117,'--')] if case.startswith('glider') else [(1,'--'),(57,':'),(117,'-.')]
     for i,style in snapshots:
         if i<=len(rows):

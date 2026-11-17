@@ -2,7 +2,7 @@
 
 ## Status
 
-Campaign started 17 November 2026. 2/6 cases complete through k=15.
+Campaign started 17 November 2026. 3/6 cases complete through k=15.
 This report is updated after each run. The full case budget is four hours,
 including data and all attempts; the optional glider alternative shares it.
 These are rebuilt paper cases, distinct from activity 01's shipped example.
@@ -65,6 +65,7 @@ include coefficients, both panels, calibration, path indices and hashes.
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
 | glider_033 / shipped | 57/57 | 15 | 0.0517798% | 1.65792e-05 | 203 | 2.20 | 8.24 | 68.52 |
 | glider_10 / shipped | 57/57 | 15 | 0.00362365% | 1.16845e-06 | 335 | 2.16 | 14.40 | 35.03 |
+| cavity_09 / shipped | 57/57 | 15 | 134.196% | 0.846008 | 102 | 8.70 | 10.96 | 19.79 |
 
 The coordinator shortened the active campaign to k=15. The completed
 glider eta 0.33 full sweep and all higher-frequency data/states are retained.
@@ -80,6 +81,7 @@ iterations, residual history, exit flag, time and curve.
 - glider_033 / shipped: UTC 2026-11-17T20:16:16.608701+00:00 to 2026-11-17T21:24:47.514919+00:00; 57 newly generated data frequencies.
   Process time is a conservative upper bound because the terminal supervisor was lost; phase times remain measured.
 - glider_10 / shipped: UTC 2026-11-17T21:33:15.946290+00:00 to 2026-11-17T22:08:18.060887+00:00; 57 newly generated data frequencies.
+- cavity_09 / shipped: UTC 2026-11-17T22:04:28.062807+00:00 to 2026-11-17T22:24:15.773264+00:00; 57 newly generated data frequencies.
 
 ## Curvature comparison
 
@@ -123,6 +125,7 @@ These are possibilities, not diagnoses or reasons to change the campaign.
 
 - glider_033 / shipped: maximum interior-source diagnostic 7.34431e-07; exit flags {'2': 57}.
 - glider_10 / shipped: maximum interior-source diagnostic 1.78275e-06; exit flags {'3': 4, '2': 13, '1': 40}.
+- cavity_09 / shipped: maximum interior-source diagnostic 1.49366e-07; exit flags {'-1': 56, '2': 1}.
 - glider_10: k=30 data grid 3412 versus 6824 nodes; relative complex-field difference 8.21949e-12; check time 144.120 s.
 
 Exit 1 means residual stop; 2 update stop; 3 iteration limit; -1 means
@@ -137,8 +140,11 @@ source is verified inside each true curve and is diagnostic only.
 
 ## Figures and evidence
 
+Paper source panels for visual comparison: [star](figures/paper_star_reference.png) and [cavity](figures/paper_cavity_reference.png). These are direct PDF renders, not inputs to curve recovery. The obstacle-solver panels contain the paper’s k=1, 15 and 30 curves; our endpoint figures stop at the currently requested k=15.
+
 - glider_033 / shipped: [curves](figures/glider_033_shipped_k15_curves.png), [errors](figures/glider_033_shipped_k15_errors.png), [metrics](../../../../results/brg/paper_examples/2026-11-17/glider_033/shipped/metrics_k15.json).
 - glider_10 / shipped: [curves](figures/glider_10_shipped_k15_curves.png), [errors](figures/glider_10_shipped_k15_errors.png), [metrics](../../../../results/brg/paper_examples/2026-11-17/glider_10/shipped/metrics_k15.json).
+- cavity_09 / shipped: [curves](figures/cavity_09_shipped_k15_curves.png), [errors](figures/cavity_09_shipped_k15_errors.png), [metrics](../../../../results/brg/paper_examples/2026-11-17/cavity_09/shipped/metrics_k15.json).
 
 All bulk observations, dense continuation states and full logs stay local in
 ignored `local/` directories. Each completed attempt has a bulk manifest
@@ -166,4 +172,5 @@ The CPU table adapter is implemented and the paired default regression is bit-id
 One BEM glider fit reached k=10 and refused k=12 under the unchanged
 cancellation check. Shared comparison code was not edited.
 The [activity 04 plan](../04_run_brg_on_tg002_shapes/plan.md) proposes the main
-BRG table on TG-002 shapes; no activity 04 run has started.
+BRG table on TG-002 shapes; it was pushed before the ownership hold and is
+now held. No activity 04 run has started.

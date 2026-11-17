@@ -150,6 +150,7 @@ These are possibilities, not diagnoses or reasons to change the campaign.
         if a.get('supervisor_failure'): failed.append(f"- {p.relative_to(BASE)}: {a['supervisor_failure']} Later runs use detached supervisors. Log: `{a['log']}`.")
     text+='\n'.join(failed) if failed else 'No failed MATLAB attempt is recorded among the completed runs so far.'
     text+='\n\n## Figures and evidence\n\n'
+    text+='Paper source panels for visual comparison: [star](figures/paper_star_reference.png) and [cavity](figures/paper_cavity_reference.png). These are direct PDF renders, not inputs to curve recovery. The obstacle-solver panels contain the paper’s k=1, 15 and 30 curves; our endpoint figures stop at the currently requested k=15.\n\n'
     for r in entries:
         label=f"{r['case']}_{r['curvature']}{suffix}"
         text+=f"- {r['case']} / {r['curvature']}: [curves](figures/{label}_curves.png), [errors](figures/{label}_errors.png), [metrics](../../../../results/brg/paper_examples/2026-11-17/{r['case']}/{r['curvature']}/metrics{suffix}.json).\n"
@@ -180,7 +181,8 @@ The CPU table adapter is implemented and the paired default regression is bit-id
 One BEM glider fit reached k=10 and refused k=12 under the unchanged
 cancellation check. Shared comparison code was not edited.
 The [activity 04 plan](../04_run_brg_on_tg002_shapes/plan.md) proposes the main
-BRG table on TG-002 shapes; no activity 04 run has started.
+BRG table on TG-002 shapes; it was pushed before the ownership hold and is
+now held. No activity 04 run has started.
 '''
     DOC.write_text(text)
 
