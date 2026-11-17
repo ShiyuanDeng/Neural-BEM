@@ -41,6 +41,8 @@ def main():
         assert args.curvature == choice["selected"], "Use the frozen curvature setting."
     case = BASE / args.case
     output = case / args.curvature
+    if (output/'coordinator_stop.json').exists():
+        raise SystemExit('Coordinator stopped this run after its question was answered; do not resume it.')
     local = output / "local"
     local.mkdir(parents=True, exist_ok=True)
     (case / "local").mkdir(exist_ok=True)
@@ -89,6 +91,7 @@ def main():
                       ended=datetime.datetime.now(datetime.timezone.utc).isoformat(),
                       other_matlab_at_end=matlab_processes(), status="finished" if result.returncode == 0 else "failed_or_timed_out")
         write_json(path, record)
+        print(json.dumps(record, indent=2), flush=True)
         manifest = []
         for folder in [case / "local", local]:
             for item in sorted(folder.rglob("*")):
@@ -99,7 +102,6 @@ def main():
         write_json(output / "bulk_manifest.json", {"command": f"python experiments/baselines/brg/run_paper.py --case {args.case} --curvature {args.curvature}", "files": manifest})
         lines = [line for line in log.read_text(errors="replace").splitlines() if line.startswith("BRG ")]
         (output / f"progress_{number:02d}.log").write_text("\n".join(lines)+"\n")
-        print(json.dumps(record, indent=2), flush=True)
         raise SystemExit(result.returncode)
 
 

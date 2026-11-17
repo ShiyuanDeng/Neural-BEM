@@ -61,9 +61,10 @@ include coefficients, both panels, calibration, path indices and hashes.
 
 ## Outcomes
 
-| Case / curvature | Frequencies | Relative area error at last k | Field residual | Iterations | Data min | Inverse min | Process min |
-|---|---:|---:|---:|---:|---:|---:|---:|
-| glider_033 / shipped | 117/117 | 0.00311943% | 4.79883e-07 | 280 | 18.72 | 46.29 | 68.52 |
+| Case / curvature | Frequencies | Last k | Relative area error | Field residual | Iterations | Data min | Inverse min | Process min |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| glider_033 / shipped | 117/117 | 30 | 0.00311943% | 4.79883e-07 | 280 | 18.72 | 46.29 | 68.52 |
+| glider_033 / default | 48/117 | 12.75 | 0.0847641% | 5.3488e-05 | 182 | 0.00 | 5.33 | 5.42 |
 
 Process time includes MATLAB startup and I/O; data and inverse columns
 measure those phases separately. Fine-grid checks, when present, are listed
@@ -72,12 +73,14 @@ iterations, residual history, exit flag, time and curve.
 
 - glider_033 / shipped: UTC 2026-11-17T20:16:16.608701+00:00 to 2026-11-17T21:24:47.514919+00:00; 117 newly generated data frequencies.
   Process time is a conservative upper bound because the terminal supervisor was lost; phase times remain measured.
+- glider_033 / default: UTC 2026-11-17T21:26:04.488949+00:00 to 2026-11-17T21:31:29.857052+00:00; 0 newly generated data frequencies.
 
 ## Curvature comparison
 
-The first glider comparison is pending. No later case has started.
+Frozen choice: **shipped**. Both candidates have bit-for-bit identical relative area errors for all 37 Figure 1 frequencies. Retain the published shipped-driver values in this tie. Neither candidate matches Figure 1; no further tuning is authorized.
 
 - glider_033 / shipped: Figure 1 k<=10 RMS log10 difference 0.904393; median absolute difference 0.728363; k=10 area-error ratio 0.41022.
+- glider_033 / default: Figure 1 k<=10 RMS log10 difference 0.904393; median absolute difference 0.728363; k=10 area-error ratio 0.41022.
 
 The predeclared trigger is RMS above 0.30 decades or endpoint disagreement
 above a factor of two. Exactly one no-limit glider alternative is allowed
@@ -87,20 +90,46 @@ No other case is tuned.
 
 [Figure 1 comparison](figures/glider_033_figure1_comparison.png) shows both permitted candidates when available.
 
+The coordinator stopped the no-limit alternative after 48 completed
+frequencies (through k=12.75): its question was already answered by identical
+errors at all 37 Figure 1 frequencies. Its partial record is retained and
+must not be resumed. The coordinator accepted the paper gap because rebuilt
+BRG has lower errors throughout the plotted range and is not handicapped.
+No more runs will be spent on this gap.
+
+Reading alone leaves three unconfirmed candidate causes:
+
+1. The authors' actual example drivers are absent. The public filter sequence
+   and candidate acceptance differ from the printed algorithm, independently
+   of the curvature restriction that this comparison ruled out.
+2. Initial node counts, the 300-node update minimum and frequency-start
+   resampling are not fully specified in the paper. Public behavior may
+   differ from the private experiment's discretization and parameterization.
+3. The paper defines a relative polygon set-difference error but supplies no
+   scoring code, polygon resolutions or numerical Figure 1 arrays. Its
+   post-processing or normalization may differ from our documented symmetric
+   difference divided by the 2,048-point true-polygon area. The vector axis
+   calibration was checked; no axis-reading error has been found.
+
+These are possibilities, not diagnoses or reasons to change the campaign.
+
 ## Numerical checks and failures
 
 - glider_033 / shipped: maximum interior-source diagnostic 7.34431e-07; exit flags {'2': 73, '1': 44}.
+- glider_033 / default: maximum interior-source diagnostic 7.34431e-07; exit flags {'2': 48}.
 
 Exit 1 means residual stop; 2 update stop; 3 iteration limit; -1 means
 the public update returned a failure code (including filtered-step failure),
 not proof that the accepted final curve intersects itself. The manufactured
 source is verified inside each true curve and is diagnostic only.
 
+- glider_033/default/attempt_01.json: coordinator stop, not a numerical crash; return code -15; log `results/brg/paper_examples/2026-11-17/glider_033/default/local/matlab_01.log`.
 - glider_033/shipped/attempt_01.json: Terminal-launched supervisor disappeared before final receipt; reason unverified. MATLAB completed all 117 endpoints and ended. No process return code is available. Recovered receipt uses observation time as a conservative budget debit. Later runs use detached supervisors. Log: `results/brg/paper_examples/2026-11-17/glider_033/shipped/local/matlab_01.log`.
 
 ## Figures and evidence
 
 - glider_033 / shipped: [curves](figures/glider_033_shipped_curves.png), [errors](figures/glider_033_shipped_errors.png), [metrics](../../../../results/brg/paper_examples/2026-11-17/glider_033/shipped/metrics.json).
+- glider_033 / default: [curves](figures/glider_033_default_curves.png), [errors](figures/glider_033_default_errors.png), [metrics](../../../../results/brg/paper_examples/2026-11-17/glider_033/default/metrics.json).
 
 All bulk observations, dense continuation states and full logs stay local in
 ignored `local/` directories. Each completed attempt has a bulk manifest

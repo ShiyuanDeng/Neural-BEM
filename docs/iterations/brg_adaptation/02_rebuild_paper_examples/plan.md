@@ -14,7 +14,14 @@ The first candidate completed all 117 frequencies. Its terminal-launched
 supervisor disappeared before its final receipt; completed outputs and
 hashes were recovered, with a conservative wall-time budget debit. Later
 runs use `--detach` so the supervisor and timeout survive terminal sessions.
-The choice remains unfrozen until the alternative is measured.
+The alternative gives bit-for-bit identical area errors at all 37 Figure 1
+frequencies. Retain the shipped-driver values in this tie; neither option
+reproduces Figure 1. This choice is frozen for all six cases. On 17 November the coordinator stopped the alternative after 48 saved
+frequencies (k=12.75), because its question was answered. Keep that partial
+record and do not resume it. Start glider eta=10 next; spend no further runs
+on the paper gap. In results.md list at most three possible causes from
+reading alone. The coordinator accepts the gap because the rebuilt BRG
+errors are lower than the published curve and BRG is not handicapped.
 
 ## Coordinator decisions, 17 November
 

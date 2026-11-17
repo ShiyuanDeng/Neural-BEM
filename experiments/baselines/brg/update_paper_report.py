@@ -19,7 +19,7 @@ def main():
     completed={r['case'] for r in entries if r['status']=='complete'}
     rows=[]
     for r in entries:
-        f=r['final']; rows.append(f"| {r['case']} / {r['curvature']} | {r['frequencies']}/117 | {f['relative_area_error']*100:.6g}% | {f['residual']:.6g} | {r['iterations']} | {r['data_seconds']/60:.2f} | {r['inverse_seconds']/60:.2f} | {r['attempts_wall_seconds']/60:.2f} |")
+        f=r['final']; rows.append(f"| {r['case']} / {r['curvature']} | {r['frequencies']}/117 | {f['k']:g} | {f['relative_area_error']*100:.6g}% | {f['residual']:.6g} | {r['iterations']} | {r['data_seconds']/60:.2f} | {r['inverse_seconds']/60:.2f} | {r['attempts_wall_seconds']/60:.2f} |")
     text=f'''# Rebuild the paper's single-component examples: results
 
 ## Status
@@ -83,8 +83,8 @@ include coefficients, both panels, calibration, path indices and hashes.
 
 ## Outcomes
 
-| Case / curvature | Frequencies | Relative area error at last k | Field residual | Iterations | Data min | Inverse min | Process min |
-|---|---:|---:|---:|---:|---:|---:|---:|
+| Case / curvature | Frequencies | Last k | Relative area error | Field residual | Iterations | Data min | Inverse min | Process min |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
 '''+ '\n'.join(rows)+'\n\n'
     text+='Process time includes MATLAB startup and I/O; data and inverse columns\nmeasure those phases separately. Fine-grid checks, when present, are listed\nbelow and included in process time. Per-frequency records retain k,\niterations, residual history, exit flag, time and curve.\n\n'
     for r in entries:
@@ -103,6 +103,31 @@ include coefficients, both panels, calibration, path indices and hashes.
             text+=f"- {r['case']} / {r['curvature']}: Figure 1 k<=10 RMS log10 difference {c['rms_log10_difference']:.6g}; median absolute difference {c['median_absolute_log10_difference']:.6g}; k=10 area-error ratio {c['endpoint_ratio']:.6g}.\n"
     text+='\nThe predeclared trigger is RMS above 0.30 decades or endpoint disagreement\nabove a factor of two. Exactly one no-limit glider alternative is allowed\nif triggered; choose the lower RMS distance and retain both. The purpose is to\nreproduce the published result; the closer candidate may still disagree.\nNo other case is tuned.\n\n'
     text+='[Figure 1 comparison](figures/glider_033_figure1_comparison.png) shows both permitted candidates when available.\n\n'
+    if (BASE/'glider_033/default/coordinator_stop.json').exists():
+        text+='''The coordinator stopped the no-limit alternative after 48 completed
+frequencies (through k=12.75): its question was already answered by identical
+errors at all 37 Figure 1 frequencies. Its partial record is retained and
+must not be resumed. The coordinator accepted the paper gap because rebuilt
+BRG has lower errors throughout the plotted range and is not handicapped.
+No more runs will be spent on this gap.
+
+Reading alone leaves three unconfirmed candidate causes:
+
+1. The authors' actual example drivers are absent. The public filter sequence
+   and candidate acceptance differ from the printed algorithm, independently
+   of the curvature restriction that this comparison ruled out.
+2. Initial node counts, the 300-node update minimum and frequency-start
+   resampling are not fully specified in the paper. Public behavior may
+   differ from the private experiment's discretization and parameterization.
+3. The paper defines a relative polygon set-difference error but supplies no
+   scoring code, polygon resolutions or numerical Figure 1 arrays. Its
+   post-processing or normalization may differ from our documented symmetric
+   difference divided by the 2,048-point true-polygon area. The vector axis
+   calibration was checked; no axis-reading error has been found.
+
+These are possibilities, not diagnoses or reasons to change the campaign.
+
+'''
     text+='## Numerical checks and failures\n\n'
     for r in entries:
         text+=f"- {r['case']} / {r['curvature']}: maximum interior-source diagnostic {r['max_analytic_error']:.6g}; exit flags {r['exit_flags']}.\n"
@@ -114,7 +139,9 @@ include coefficients, both panels, calibration, path indices and hashes.
     failed=[]
     for p in sorted(BASE.glob('*/*/attempt_*.json')):
         a=json.loads(p.read_text())
-        if a.get('returncode',0): failed.append(f"- {p.relative_to(BASE)}: return code {a['returncode']}; log `{a['log']}`.")
+        if a.get('returncode',0):
+            label='coordinator stop, not a numerical crash' if a.get('status')=='stopped_by_coordinator' else 'failed attempt'
+            failed.append(f"- {p.relative_to(BASE)}: {label}; return code {a['returncode']}; log `{a['log']}`.")
         if a.get('supervisor_failure'): failed.append(f"- {p.relative_to(BASE)}: {a['supervisor_failure']} Later runs use detached supervisors. Log: `{a['log']}`.")
     text+='\n'.join(failed) if failed else 'No failed MATLAB attempt is recorded among the completed runs so far.'
     text+='\n\n## Figures and evidence\n\n'
