@@ -272,3 +272,7 @@ B5 weights are equal across active frequencies. All LM and slider controls
 retain their existing defaults. Accepted curves are saved at each step and
 full stage records at each return. This is an explicit BRG policy in the
 experiment wrapper; the TG-002 policy is unchanged.
+
+Coordinator update, 17 November: the ladder now ends at k=15 or the first
+solver refusal, whichever comes first. Glider eta 0.33 already qualifies
+through k=12 and refuses k=15, so its authorized fit inputs are unchanged.

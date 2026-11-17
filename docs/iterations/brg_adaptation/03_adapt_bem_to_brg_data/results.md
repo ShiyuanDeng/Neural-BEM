@@ -24,7 +24,7 @@ No solver file was edited before both reference runs finished.
 
 - (a) A3/A4 CPU table forward and analytic disk/BRG low-k checks: passed.
 - (b) Masked table derivatives and ragged residuals: passed.
-- (c) One end-to-end glider eta=0.33 fit and final default regression: pending.
+- (c) One glider eta=0.33 fit finished; numerical refusal entering k=12. Coordinator checkpoint reached.
 
 The [approved plan](plan.md) records exact modal plane waves, masks, the
 unchanged cancellation check, capped frequency prefixes and all limits.
@@ -89,3 +89,32 @@ therefore ends at k=12. No higher frequency or redesign is pursued.
 [Qualification and per-frequency records](../../../../results/brg/bem_adaptation/2026-11-17/glider_033/forward/)
 include field errors by illumination/receiver, refinement, source hashes and
 the preserved k=15 refusal. Bulk field arrays remain local with SHA-256.
+
+## Stage (c): one glider fit, 17 November
+
+The known-eta 0.33 fit took **59.758 s** (60.455 s including scoring),
+using 1,819 work units. It reached k=10 with **0.214169% area error** and
+maximum active-frequency field residual **1.28515e-4**. It began from the
+unit circle, with one CPU frequency worker, modal Müller and slider.
+
+Entering k=12 returned `NUMERICAL_FAILURE`: the reconstructed curve’s
+coefficient-based wave radius gives |k|rho=18.2 and cancellation estimate
+1.6e-9, above the unchanged 1e-9 limit. The true-shape qualification had
+passed k=12 because its wave radius is smaller. Thus the forward-qualified
+cap is 12, but the actual fitted endpoint is **k=10**. No rerun or loosening
+was attempted, and no high-k redesign is proposed.
+
+The returned accepted curve is preserved. BRG’s saved glider area errors
+are 0.241786% at k=10 and 0.0517798% at k=15 (0.00311943% at k=30).
+Those BRG scores use its documented 2,048-point truth polygon; the BEM score
+uses the frozen comparison region functions with 16,384 truth samples.
+These small endpoint differences are not a claim of superiority.
+
+[Fit and failure evidence](../../../../results/brg/bem_adaptation/2026-11-17/glider_033/inverse/)
+retains the curve, every accepted state, residuals, full numerical failure,
+source hashes, timings and bulk checksums. [Endpoint figure](figures/glider_033.png).
+Both BRG paper jobs overlapped this fit; timing is indicative.
+
+Stage (c) is reported to the coordinator. The other five BEM inversions
+remain unstarted. Activity 02 continues to its newly requested k=15
+endpoints. Activity 04 is a plan only for the main TG-002-shape comparison.

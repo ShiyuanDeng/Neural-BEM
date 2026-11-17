@@ -95,6 +95,7 @@ def main():
                    cap=qualified['cap'],fit_seconds=result['fit_and_localization_seconds'],
                    maximum_active_residual=accepted[-1]['maximum_stage_residual'] if accepted else None,
                    final_active_frequency_count=accepted[-1]['active_frequency_count'] if accepted else 0,
+                   final_active_k=observations[accepted[-1]['active_frequency_count']-1].wavenumber if accepted else None,
                    total_seconds=time.monotonic()-started,
                    other_matlab_at_end=subprocess.run(['ps','-C','MATLAB','-o','pid=,etime=,args='],
                                                      capture_output=True,text=True).stdout.splitlines())
@@ -105,7 +106,7 @@ def main():
     import matplotlib.pyplot as plt
     fig,ax=plt.subplots(figsize=(5,5));z=truth.values(4096);w=curve.values(4096)
     ax.plot(z.real,z.imag,'k-',label='True glider');ax.plot(w.real,w.imag,'r--',label='BEM, known eta 0.33')
-    ax.axis('equal');ax.legend();ax.set_title(f'Area error {100*metrics["area_error"]:.4g}%; k cap {qualified["cap"]:g}')
+    ax.axis('equal');ax.legend();ax.set_title(f'Area error {100*metrics["area_error"]:.4g}%; last fitted k={metrics["final_active_k"]:g}')
     figures=ROOT/'docs/iterations/brg_adaptation/03_adapt_bem_to_brg_data/figures';figures.mkdir(exist_ok=True)
     fig.savefig(figures/'glider_033.png',dpi=160,bbox_inches='tight');plt.close(fig)
     files=[]
