@@ -101,9 +101,47 @@ and asserts `isequal(V,Vq(1:2:end,1:2:end))`. It restores the random-number
 state before executing their driver. The check result is recorded in each
 resumed run's MATLAB log.
 
-Step 3 has no time estimate yet: step 2 has not run. Do not start it until
-step 2 supplies per-iteration times and the total estimate is below four
-hours, or the coordinator has obtained permission to exceed that limit.
+## Step 2 completed and step 3 budget
+
+17 November 2026, 19:33:04 UTC; 190.376 s total wall time. Eight threads,
+134-by-134 grid, 1.5 mm spacing, 8 sources, 2:2:10 GHz, 32 iterations.
+The refine/coarsen equality check passed. All three methods completed with
+finite contrast arrays, and costs decreased at every recorded iteration.
+
+| Method | Native seconds | Seconds/iteration | Cost, first to last | Peak real contrast | Peak conductivity, mS/m |
+|---|---:|---:|---|---:|---:|
+| MF-CC-CSI | 67.703 | 2.115727 | 3.5697 to 0.86534 | 0.8860 | 5.528 |
+| MF-MR-CSI | 53.386 | 1.668301 | 4.0190 to 1.0281 | 0.6997 | 7.167 |
+| CSI | 52.614 | 1.644203 | 0.77925 to 0.26174 | 0.4310 | 2.887 |
+
+Peaks are from raw `chi` at 10 GHz. In the
+[native output](figures/shipped_ii_figure_02.png), MF-CC-CSI shows a compact
+high-contrast cylinder above a broader low-contrast foam region. MR-CSI
+splits the upper feature into two lobes and adds diagonal streaks. CSI
+smooths the two regions together. Conductivity artifacts sit near the top
+border. This is a useful execution check, not a quantitative recovery claim.
+
+Evidence: [launch](../../../../results/csi/examples/2026-11-17_shipped_ii/launch.json),
+[analysis](../../../../results/csi/examples/2026-11-17_shipped_ii/analysis.json),
+[raw contrast](../../../../results/csi/examples/2026-11-17_shipped_ii/reconstruction.mat),
+[cost history](../../../../results/csi/examples/2026-11-17_shipped_ii/cost_history.csv).
+
+**Estimate recorded before step 3:** multiplying each of the two required
+methods' native step-2 times by 2048/32 gives 7749.688 s in total, or
+2 h 09 min 10 s. Adding 20% and 120 s for setup/export gives 9419.626 s,
+or 2 h 36 min 59 s, below the four-hour limit. This uses the observed TE
+rates directly, with no discount for the smaller TM grid or fewer
+frequencies; the source count changes from 8 to 18, so it remains an
+estimate, not a bound. The launcher enforces a four-hour total wall limit.
+Step 3 may now start with the authorized paper frequencies, domain and
+2048 iterations for MF-CC-CSI and MF-MR-CSI only.
+
+The analyzer exports per-source/frequency factors to `source_calibration.csv`
+for both completed steps, using the exact midpoint receiver and line-source
+formulas from `ReadFreData`. For step 1 at 2 GHz, all 36 calibrated incident
+fields at the first grid point match the saved MATLAB fields to relative
+error 5.47e-15; [check](../../../../results/csi/examples/2026-11-17_shipped_i_legacy_interp2/calibration_check.json).
+No calibration is fitted to scattered fields.
 
 ## Figure 5 checked against the paper
 

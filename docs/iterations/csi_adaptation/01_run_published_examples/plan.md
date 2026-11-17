@@ -141,6 +141,13 @@ outputs split by frequency, figures, and launch timing under
 Run `paper_tm` only after writing the estimate from shipped example II.
 Its limit is four hours. No source, algorithm or data patch is planned.
 
+Steps 1 and 2 completed after patches 0001 and 0002. Before step 3, the
+observed step-2 times give 7749.688 s compute, or 9419.626 s including 20%
+and 120 s setup/export allowance (2 h 37 min). This is below four hours.
+Command: `python3 experiments/baselines/csi/run.py paper_tm`.
+It keeps the shipped antenna correction; only the paper settings listed
+above change in the wrapper copy. Native CSI is omitted in this paper run.
+
 Source inspection corrects two descriptions above: `xs` and `ys` in the
 shipped drivers are half-widths in millimetres, not cell counts; record the
 actual grid from `pars.Ninv`. The paper describes one small cylinder inside

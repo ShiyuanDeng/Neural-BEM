@@ -12,6 +12,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.io import loadmat
+from scipy.special import hankel1
 
 NAMES = {'CCCSI': 'MF-CC-CSI', 'MRCSI': 'MF-MR-CSI', 'CSI': 'CSI'}
 
@@ -37,6 +38,37 @@ def main():
         writer.writerows(rows)
     data = loadmat(run / 'reconstruction.mat', simplify_cells=True)
     summary = json.loads((run / 'matlab_summary.json').read_text())
+    # Export the exact single-receiver source normalization used upstream.
+    calibration = []
+    raw = data['rawdat']
+    para = data['para']
+    for frequency, omega in zip(data['fre'], data['csi_pars']['omega']):
+        table = raw[raw[:, 2] == frequency]
+        count = len(table) // int(para['NTX'])
+        selected = table[count // 2::count]
+        tx, rx = np.deg2rad(selected[:, 0]), np.deg2rad(selected[:, 1])
+        dx = para['Rr'] * np.cos(rx) - para['Tr'] * np.cos(tx)
+        dy = para['Rr'] * np.sin(rx) - para['Tr'] * np.sin(tx)
+        distance = np.hypot(dx, dy)
+        k = omega / para['m_unit']
+        if 'TM' in summary['case_name']:
+            unit_incident = omega / 4 * hankel1(0, -k * distance + 0j) * omega**2 / (-1j * omega)
+        else:  # PT.TE, measured tangential electric field
+            radial = 1j * k / 4 * hankel1(1, -k * distance + 0j) / (distance + np.finfo(float).eps)
+            unit_incident = -dy * radial * np.cos(rx + np.pi / 2) + dx * radial * np.sin(rx + np.pi / 2)
+        measured = selected[:, 5] + 1j * selected[:, 6]
+        factors = measured / unit_incident
+        for source, factor in enumerate(factors, 1):
+            calibration.append(dict(frequency_GHz=float(frequency), source=source,
+                                    receiver_within_source_1based=count // 2 + 1,
+                                    source_angle_deg=float(selected[source-1, 0]),
+                                    receiver_angle_deg=float(selected[source-1, 1]),
+                                    normalized_omega=float(omega), factor_real=float(factor.real),
+                                    factor_imag=float(factor.imag)))
+    with (run / 'source_calibration.csv').open('w') as file:
+        writer = csv.DictWriter(file, fieldnames=list(calibration[0]))
+        writer.writeheader()
+        writer.writerows(calibration)
     results = []
     fig, ax = plt.subplots(figsize=(6, 4), layout='constrained')
     for index, seconds in enumerate(summary['time_seconds'], 1):
