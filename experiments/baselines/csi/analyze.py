@@ -89,7 +89,8 @@ def main():
     ax.legend()
     ax.grid(alpha=.2)
     repo = Path(__file__).resolve().parents[3]
-    figures = repo / 'docs/iterations/csi_adaptation/01_run_published_examples/figures'
+    launch = json.loads((run / 'launch.json').read_text())
+    figures = repo / launch.get('activity', 'docs/iterations/csi_adaptation/01_run_published_examples') / 'figures'
     fig.savefig(figures / f'{run.name}_costs.png', dpi=150)
     compact = run / 'final_contrast.mat'
     compact_equal = None

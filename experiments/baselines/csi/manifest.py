@@ -32,7 +32,7 @@ def main():
                   wrapper_command=['python3', 'experiments/baselines/csi/run.py', launch['step'], '--attempt', 'reproduction'],
                   environment=dict(CSI_SCRIPT=str((run / 'executed_driver.m').resolve()), CSI_OUT=str(run.resolve()),
                                    CSI_REPO=str(repo), CSI_UPSTREAM=str(upstream), CSI_STEP=launch['step'],
-                                   CSI_FIGURES=str(repo / 'docs/iterations/csi_adaptation/01_run_published_examples/figures')),
+                                   CSI_FIGURES=str(repo / launch.get('activity', 'docs/iterations/csi_adaptation/01_run_published_examples') / 'figures')),
                   input_data=dict(path=str(data_path), sha256=hashlib.sha256(data_path.read_bytes()).hexdigest()),
                   upstream_commit=launch['upstream_commit'],
                   wrapper_sources=[dict(path=str(p.relative_to(repo)), sha256=hashlib.sha256(p.read_bytes()).hexdigest())
