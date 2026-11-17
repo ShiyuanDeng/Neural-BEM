@@ -7,7 +7,7 @@ settings, assumptions and unknowns, and it sets how subagents share the work.
 The coordinator (the main session) owns this file. Subagents never edit it.
 They report back, and the coordinator updates the status board and the cards.
 
-Last updated: 17 November 2026, 21:55 (BRG on TG-002 shapes added by the user).
+Last updated: 17 November 2026, 22:15 (BRG paper cases capped at k = 15 for now).
 
 ## Status board
 
@@ -300,6 +300,8 @@ needs it, and recorded here.
 | 17 Nov | BRG 02: stop the no-limit glider rerun at k = 10 | Both settings agree at every Figure 1 frequency; the question is answered |
 | 17 Nov | BRG 03: plan approved with changes; solver lock to BRG | Exact plane-wave coefficients instead of a projection; a pair mask so CSI can reuse it; default path must reproduce; 1 h per fit; stop after one glider fit |
 | 17 Nov | BRG may run two paper cases at once | The user asked how long is left; three heavy workers fit, and clean timings are re-measured later |
+| 17 Nov | BRG paper cases stop at k = 15 for now and run side by side; resume to k = 30 later from saved states | The user is short of time. To k = 15 costs 10 of 65 minutes per case, and our BEM stops near k = 13 |
+| 17 Nov | Do not move BRG to the GPU | This MATLAB has no GPU toolbox, and 64% of a solve is their single-threaded Fortran kernel assembly. Dense algebra is under a third, so the best gain is about 1.3 times |
 | 17 Nov | No high-k redesign of our solver | With TG-002 shapes as the main BRG table, the k = 13 cap only limits the paper cases |
 | 17 Nov | U2: the BRG investigation extends our solver first; `brg` drafts that plan (03), and the coordinator reviews it before any solver edit | Plane waves plus an unpaired table cover what CSI needs too |
 
