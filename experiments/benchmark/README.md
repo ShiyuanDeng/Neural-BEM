@@ -75,7 +75,7 @@ python -m experiments.benchmark run --pipeline nodal_fixed --cases all --run-dir
 | `scenes.py` | Scene shapes, frozen placements, the start, case IDs |
 | `campaign.py` | Input generation and seal, CI-001-shaped rows, `keep_start`, the fit runner, `summarize`, gallery |
 | `audit.py` | The former endpoint audit; still imported by two studies, not run by `run_case` |
-| `pc001.py` | Three-arm pipeline comparison N0/N1/M1 and its report; its `M1` arm is the kept reference run ([plan](../../docs/iterations/cleaned_interfaces/iteration_27/03_plan.md)) |
+| `pc001.py` | Three-arm pipeline comparison N0/N1/M1 and its report; its `M1` arm is the kept reference run ([plan](../../../Neural_SDF_BEM_AD/docs/iterations/cleaned_interfaces/iteration_27/03_plan.md)) |
 | `test_benchmark.py` | Frozen placements, valid truths, no truth access during fitting |
 | `assets/aphex_twin_logo.svg` | Vendored public-domain logo outline for the `aphex_twin` scene |
 

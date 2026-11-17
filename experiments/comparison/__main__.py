@@ -1,4 +1,6 @@
-"""GGB-003 driver. Run from the repository root with the EMNerf Python:
+"""Baseline generation for the 17 November 2026 run.
+
+Run from the repository root with the EMNerf Python:
 
     python -m experiments.comparison list
     python -m experiments.comparison run bem/default_clean_uc_fc
@@ -213,11 +215,12 @@ def summary(root, keys=None):
 
 
 def import_command(args):
-    """Bring the saved clean GGB-002 GauGal endpoints into this layout and score them."""
+    """Bring the saved clean GauGal endpoints from 2 November 2026 into this layout and score them."""
     from . import gaugal
-    source = R.ROOT/'development_results/GGB-002/G2_all'
+    legacy_results = R.ROOT.parent/'Neural_SDF_BEM_AD/development_results'
+    source = legacy_results/'GGB-002/G2_all'
     run = R.parse('gaugal/default_clean_uc_fs')
-    manifest = read(R.ROOT/'development_results/GGB-002/overnight_manifest.json')
+    manifest = read(legacy_results/'GGB-002/overnight_manifest.json')
     settings = dict(gaugal.settings(run), imported_from='development_results/GGB-002/G2_all',
                     original_commit=manifest['commit'], note='GGB-002 fits copied without refitting')
     cases = [c for c in R.CASES_ALL if (source/f'{c}.json').exists() and (source/f'{c}.npz').exists()]
@@ -284,7 +287,7 @@ def main():
     p.set_defaults(call=score_command)
     p = sub.add_parser('metrics', help='rebuild metrics.csv from the saved fits and scores')
     p.set_defaults(call=metrics_command)
-    p = sub.add_parser('import-ggb002', help='copy the saved clean GauGal fits into this layout and score them')
+    p = sub.add_parser('import-gaugal-2026-11-02', help='copy the saved clean GauGal fits into this layout and score them')
     p.set_defaults(call=import_command)
     p = sub.add_parser('clean', help='remove case folders left unfinished by an interrupted run')
     p.set_defaults(call=clean_command)

@@ -270,7 +270,7 @@ step 2 with the NR-001 plan `a373a8ea5`, NR-001 results `c68730d72`, step 3
 
 ### Question 3: TG-002 without finer re-evaluations (NR-001)
 
-[Results](../../development_results/NR-001/README.md). 26/30
+[Results](../../../Neural_SDF_BEM_AD/development_results/NR-001/README.md). 26/30
 recovered, the same 26 as PC-001 M1, with 28% fewer fit units (median 1,849 →
 1,330). The same four cases fail (aphex_twin ×3, hook__c13.3), now when the
 modal forward solve refuses a nearly self-touching trial curve; their endpoint
@@ -280,7 +280,7 @@ audits fail. All three predictions held.
 
 PC-001 M1 used `certified_spectral` on CUDA, so it cannot match a CPU run of
 `spectral`. The step 1 check instead reran the unchanged code on this machine
-(Apple M1 Pro, CPU): [NR-001 checks](../../development_results/NR-001/checks/README.md).
+(Apple M1 Pro, CPU): [NR-001 checks](../../../Neural_SDF_BEM_AD/development_results/NR-001/checks/README.md).
 
 - Two runs of the unchanged code differ by 1.6e-10 in accepted coefficients,
   with identical decisions and work units. Steps 1 and 3 sit inside that spread.

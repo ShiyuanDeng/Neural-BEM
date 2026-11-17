@@ -8,7 +8,7 @@ the code now contradicts it.
 
 Earlier geometry-update decisions (method-local files, flat classes, delivery
 scope) are in
-[iteration 01 concerns](../iterations/geometry_updates/iteration_01/04_concerns.md).
+[iteration 01 concerns](../../../Neural_SDF_BEM_AD/docs/iterations/geometry_updates/iteration_01/04_concerns.md).
 
 ## Rules that follow from the decisions
 
@@ -222,7 +222,7 @@ research question or departure from explicit user limits still needs a decision.
 
 ### D11. Final two-resolution check — removed from recovery (2026-11-02)
 
-**Context.** In the GGB-002 comparison, three BEM runs had the right shape and
+**Context.** In the 2 November 2026 run comparison, three BEM runs had the right shape and
 field residual but were marked "not recovered" by the endpoint check. That check
 compares fields and Jacobian columns at the production and refined resolutions.
 
@@ -241,12 +241,12 @@ earlier versions stay in git history.
 
 **Status.** `campaign.run_case` and `mr001.run_case` call `final_residual`
 instead. `audit.py` stays for the two studies that import it directly
-(`frequency_interpolation`, `geometry_charts`). GGB-002 amendment B1 reran the
+(`frequency_interpolation`, `geometry_charts`). 2 November 2026 run amendment B1 reran the
 nine affected runs.
 
 ### D12. Stage-one baseline comparison scope (2026-11-17)
 
-**Context.** The extracted GGB-002 plan put TG-002-F in Stage 1, included
+**Context.** The extracted 2 November 2026 run plan put TG-002-F in Stage 1, included
 top-frequency and gradient-descent ablations, and retained the existing
 longest-contour scoring path. The user revised the required actions.
 
@@ -286,7 +286,7 @@ Freeze the protocol before external baselines, without waiting for every ablatio
 unfinished ablations and Stage 2 plane-wave work do not delay it.
 Record any later protocol change before the affected runs.
 
-**Status.** Revised the [stage-one actions](../iterations/gaugal_comparison/iteration_01/02_proposals/01_stage_one_actions_verified.md).
+**Status.** Revised the [stage-one actions](../../../Neural_SDF_BEM_AD/docs/iterations/baseline_generation/02_proposals/01_stage_one_actions_verified.md).
 This revision changes the action list; implementation and new experiments
 have not started.
 
@@ -307,10 +307,10 @@ adaptation. The settings alone do not explain the full timing gap.
 **Status.** Added both timing contexts to the stage-one source checks.
 No new experiment was run.
 
-### D13. GGB-003 stage-one runs, scoring and storage (2026-11-17)
+### D13. 17 November 2026 run stage-one runs, scoring and storage (2026-11-17)
 
 **Context.** Interview on the D12 stage-one proposal. The plan is
-[GGB-003](../iterations/gaugal_comparison/iteration_02/03_plan.md).
+[17 November 2026 run](../../../Neural_SDF_BEM_AD/docs/iterations/baseline_generation/03_plan.md).
 
 **Decided.** Stage 1 is a fair evaluation of our own method and makes no
 claims. User: claims "should wait until we see how baselines perform in
@@ -365,9 +365,9 @@ do not relabel old runs as new final results.
 settings, failures and compact checks. Updated active readers and evidence links.
 Details are in [the reorganisation record](development_results.md).
 
-### D15. GGB-003: write the code first, a cheaper agent runs it (2026-11-17)
+### D15. 17 November 2026 run: write the code first, a cheaper agent runs it (2026-11-17)
 
-**Context.** Before any GGB-003 run, the user asked how to split the work.
+**Context.** Before any 17 November 2026 run run, the user asked how to split the work.
 
 **Decided.** Write the code first, then run everything with a cheaper agent.
 User: "we should prob write code first then run everything with a dumber agent."
@@ -380,8 +380,145 @@ itself. The running agent does not edit solver or scoring code; it reports a
 crash instead. Wider checks belong to the runs, not to the code-writing step.
 
 **Status.** Code is in `experiments/comparison/`; see the
-[implementation record](../iterations/gaugal_comparison/iteration_02/03_plan.md#implementation-record-17-november-2026).
+[implementation record](../../../Neural_SDF_BEM_AD/docs/iterations/baseline_generation/03_plan.md#implementation-record-17-november-2026).
 No planned run has started.
+
+### D16. Retain Stage 1 documentation and code reference (2026-11-17)
+
+**Decided.** User: "only retain a few iterations" and "for now i want to only
+leave the relevant stage 1 work". General README and other documents outside
+iteration folders can go. Keep `reference/`: "that helps with code understanding".
+Update `cleanup/` to record the change.
+
+**Reason.** Apply the results-folder cleanup approach to documentation: keep the
+current work easy to find and remove old development material from the active tree.
+
+**Rule.** Under `docs/`, retain the Stage 1 proposal and 17 November 2026 run plan, code reference,
+and cleanup decisions. Preserve removed history in Git. Do not delete uncommitted
+Stage 2 decisions without first settling their preservation.
+
+**Status.** Completed under D17 and D18: the Stage 1 files use the descriptive
+name, and unwanted docs have moved to the original workspace. See
+[the documentation cleanup record](documentation.md).
+
+### D17. Descriptive iteration names and dated run names (2026-11-17)
+
+**Decided.** User: "stop using this letter name that have no information in it"
+and "just call it the run we had at <when>". Name the current iteration
+`baseline_generation`.
+
+**Reason.** Run names should communicate when the work happened; iteration
+folders should communicate what the work does.
+
+**Rule.** Use the run date in current prose and the purpose when needed to
+distinguish runs. Keep original strings in saved evidence and source paths.
+Do not conflate the November TG-002 comparison with the October SingleTX work.
+
+**Status.** Moved the Stage 1 proposal and plan to
+[`baseline_generation/`](../../../Neural_SDF_BEM_AD/docs/iterations/baseline_generation/03_plan.md), updated
+links and current labels, and renamed the saved-fit import command to
+`import-gaugal-2026-11-02`. Numerical settings and saved results are unchanged.
+
+### D18. Move removed docs and results into the original workspace (2026-11-17)
+
+**Decided.** User: "delete, but when you do that can you move those that were
+not in the original unorganised foler to the unorganised folder" so that
+"all legacy docs and results will be there", including earlier cleanups.
+
+**Reason.** Historical documentation and results should remain directly available
+in one legacy workspace, rather than being recoverable only from Git history.
+
+**Rule.** Before deletion in `organised`, preserve missing historical material in
+`/home/drdeng/Neural_SDF_BEM_AD`. Keep both versions when a path differs. Include
+the four uncommitted Stage 2 documents; their transfer is now authorized.
+Use existing branches and worktrees.
+
+**Status.** Completed: 7,116 files preserved, including 204 differing versions,
+and 61 unwanted documentation files removed here. Sources, destinations and
+verification are recorded in [the documentation cleanup record](documentation.md).
+
+### D19. Remove the remaining legacy-result copies (2026-11-17)
+
+**Decided.** User: "also move legacy results to there if you havent".
+
+**Reason.** Legacy outputs should live in the original workspace, rather than
+remaining duplicated under the organised workspace's `development_results/`.
+
+**Rule.** Verify the remaining legacy copies in the original workspace before
+removing them here. Keep the sealed TG-002 input bundle used by current runs.
+Read historical comparison outputs from the original workspace.
+
+**Status.** Removed 486 verified legacy duplicates and replaced the development
+README with an input-location note. The import and historical figure readers
+load all 30 cases from the original workspace. Current results and sealed inputs
+are unchanged; no fitting or rescoring was performed.
+
+### D20. Agent instructions follow the cleaned layout (2026-11-17)
+
+**Requested.** User: "help me clean up agents.md ... and the one about
+iteration structure of docs, and other problems related to agentic workflow."
+
+**Reason.** After D14–D18, `AGENTS.md` and the readability reviewer still sent
+agents to the legacy checkout, deleted workflow pages, removed compatibility
+imports and the old `spectral` default.
+
+**Rule.** `AGENTS.md` carries the short iteration layout and the experiment
+rules the deleted workflow pages held. This log is the one place for shared
+decisions and lessons; agent memories point here rather than copy it.
+
+**Follow-up.** After checking the Claude Code and Codex guidance, the user
+said: "yes i think we should mke it shorter." `AGENTS.md` keeps only rules an
+agent cannot find in the code or READMEs. Claude Code now asks before
+commands that create a branch or worktree.
+
+**Status.** Implemented; see [the agent instructions record](agent_instructions.md).
+
+### D21. Action-based iteration folders with adjacent plans and results (2026-11-17)
+
+**Decided.** The user requested folders that name "what is to be done or what
+is done, so always with an action", then approved the minimal instruction
+draft: "yep write this".
+
+**Rule.** Use `docs/iterations/<action>/<NN>_<activity>/`, with `plan.md` and
+`results.md` together. Both folder names describe actions; run dates and
+settings belong in the documents. Keep earlier conditions and findings.
+
+**Status.** Saved the iteration instructions as `docs/iterations/AGENTS.md`
+(merged into the root `AGENTS.md` under D23) and
+replaced the root instruction's old folder convention with a pointer there.
+The instruction file was saved first; D22 records the subsequent migration.
+
+### D22. Apply the action-based structure to current iterations (2026-11-17)
+
+**Decided.** User: "reorganise current iterations" after approving D21.
+
+**Rule.** Separate the completed study into clean/noisy recovery, ablations and
+its untuned GauGal reference. Give each activity a `plan.md` and `results.md`.
+Preserve the original combined documents before rewriting their organisation.
+
+**Status.** Completed under `evaluate_our_method/`, with six plan/result files.
+The original combined plan and proposal are in the legacy workspace; the
+results summaries use all 370 saved scores without fitting or rescoring.
+See [the cleanup record](documentation.md#reorganise-current-iterations-2026-11-17).
+
+### D23. Iteration rules live in the root instructions (2026-11-17)
+
+**Decided.** Merge `docs/iterations/AGENTS.md` into the root `AGENTS.md`.
+User: "i agree we should merge". Codex loads only the root file when it starts
+at the root, and Claude Code loads a folder's file only after reading inside
+it. Starting an iteration is the user's most common request.
+
+**Decided.** User: "if results.md are present, definitely start a new
+numbered iteration. if not, default to editing current plan."
+
+**Rule.** If an activity has `results.md`, further work opens the next
+numbered activity. Otherwise edit that activity's `plan.md`. This replaces
+dated plan amendments. The investigation the user starts covers its
+follow-up activities; ask before leaving its topic or exceeding the user's
+limits.
+
+**Status.** Implemented in the root `AGENTS.md` "Iterations" section; the
+separate file was removed.
 
 ## Lessons from agent mistakes
 

@@ -1,7 +1,7 @@
 """Side-by-side figures of the final GGB-002 recoveries, drawn from saved results only.
 
-Reads docs/iterations/gaugal_comparison/iteration_01/comparison.json (written by
-report.py) and the saved curves/images it points to. Runs no solves.
+Reads the original workspace's docs/iterations/gaugal_comparison/iteration_01/
+comparison.json and the saved curves/images it points to. Runs no solves.
 
     PYTHONPATH=solvers:. python -m experiments.gaugal_comparison.recovery_figures
 """
@@ -19,7 +19,7 @@ from bem_inverse.io import curve_from
 from experiments.benchmark import scenes as S
 from . import tg002_data as D
 
-REPO = Path(__file__).resolve().parents[2]
+REPO = Path(__file__).resolve().parents[2].parent/'Neural_SDF_BEM_AD'
 DEST = REPO/'docs/iterations/gaugal_comparison/iteration_01'
 FIGURES = DEST/'comparison_figures'
 

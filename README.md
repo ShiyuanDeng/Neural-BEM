@@ -4,10 +4,10 @@ This branch holds the maintained 2-D inverse pipeline: modal Müller physics wit
 `slider` geometry update, run on the TG-002 benchmark. See the benchmark README for
 current settings.
 
-Everything else was removed here: legacy solvers, root `run_*.py` drivers, older
-experiments, their results and their docs. They remain on
-`feature/shape-frequency-continuation`. To restore one path, run
-`git checkout feature/shape-frequency-continuation -- <path>`.
+Legacy solvers and experiments remain in `/home/drdeng/Neural_SDF_BEM_AD`.
+That workspace now also holds the documentation and results removed during
+cleanup. The [transfer index](../Neural_SDF_BEM_AD/legacy_from_organised/2026-11-17/README.md)
+locates added files and separately preserved versions.
 
 ## What is here
 
@@ -20,10 +20,13 @@ experiments, their results and their docs. They remain on
 | `solvers/gpr_bem_kress/`, `ordered_boundary/`, `periodic_kress/` | Nodal Kress reference solver, which generated the data, and curve geometry |
 | `pytest/` | Tests for the kept packages |
 | [`development_results/TG-002/`](development_results/TG-002/README.md) | Sealed benchmark inputs |
-| [`development_results/`](development_results/README.md) | Retained development evidence; not final comparison results |
-| `results/` | Empty directory reserved for new results |
-| [`docs/evidence.md`](docs/evidence.md) | Why each part of the pipeline was chosen, with the supporting numbers |
-| [`docs/reference/`](docs/README.md) | A1–C12 code map, modal coefficient derivation, node-free scope, Kress guide |
+| [`development_results/`](development_results/README.md) | Sealed benchmark input bundle; historical outputs live in the original workspace |
+| `results/` | Current comparison fits, raw scores, noise and execution records |
+| [Clean and noisy recovery](docs/iterations/evaluate_our_method/01_measure_clean_and_noisy_recovery/results.md) | Default-method plan and results from 17 November 2026 |
+| [Ablations](docs/iterations/evaluate_our_method/02_run_ablations/results.md) | Contrast, data, backend, shape-band and frequency comparisons |
+| [Untuned GauGal reference](docs/iterations/evaluate_our_method/03_record_untuned_gaugal_reference/results.md) | Older clean imports and the new noisy reference run |
+| [`docs/cleanup/`](docs/cleanup/documentation.md) | Recorded decisions and completed cleanup work |
+| [`docs/reference/`](docs/reference) | A1–C12 code map, modal coefficient derivation, node-free scope, Kress guide |
 
 The kept code is every file the benchmark CLI imports, found by tracing imports from
 `experiments/benchmark`. Kept tests import only that code. Some kept modules still carry

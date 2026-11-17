@@ -1,0 +1,36 @@
+{
+  "checkout_root": "~/neural_bem_external",
+  "note": "Upstream code is cloned next to this repository so both worktrees share one copy. Keep each checkout at the commit below during the comparison; record any change in external/patches/.",
+  "sources": {
+    "cc-csi": {
+      "used_for": ["mfccsi", "mrcsi", "csi"],
+      "url": "https://github.com/TUDsun/CC-CSI",
+      "checkout": "CC-CSI",
+      "commit": "73a64e163da34e63fa33f8abe196b9004f45d342",
+      "commit_date": "2020-01-02",
+      "language": "MATLAB",
+      "requires": ["maxwellfdfd"],
+      "upstream_install": "Put MaxwellFDFD on the MATLAB path, then run add_path.m. Upstream tested MATLAB R2019a.",
+      "papers": ["https://arxiv.org/abs/1906.10864", "https://arxiv.org/abs/1906.10814"]
+    },
+    "maxwellfdfd": {
+      "used_for": ["dependency of cc-csi"],
+      "url": "https://github.com/wsshin/maxwellfdfd",
+      "checkout": "maxwellfdfd",
+      "commit": "690ca8d534bddb5d287089deb7246e1a81f8bdd4",
+      "commit_date": "2025-04-15",
+      "language": "MATLAB"
+    },
+    "brg": {
+      "used_for": ["brg"],
+      "url": "https://github.com/flatironinstitute/inverse-obstacle-scattering2d",
+      "checkout": "inverse-obstacle-scattering2d",
+      "commit": "bda24bddbf4562497280b671bc174ef891b47c6b",
+      "commit_date": "2024-07-09",
+      "language": "MATLAB with Fortran MEX files",
+      "upstream_install": "Needs gfortran and GNU make. Run `make install` to build the MEX files, then startup.m in MATLAB; tests/test_all.m checks the build.",
+      "papers": ["https://arxiv.org/abs/2210.11607", "https://arxiv.org/abs/2104.13489"],
+      "found_via": "mrachh/rla-monograph-tests loads this library in its cavity example."
+    }
+  }
+}

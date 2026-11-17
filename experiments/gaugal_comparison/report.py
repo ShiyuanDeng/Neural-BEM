@@ -17,7 +17,8 @@ from experiments.benchmark import scenes as S
 from . import ggb_scoring as G, tg002_data as D
 from . import report_evidence as E
 
-REPO = Path(__file__).resolve().parents[2]
+# Historical outputs and the report now live in the original workspace.
+REPO = Path(__file__).resolve().parents[2].parent/'Neural_SDF_BEM_AD'
 RESULTS = REPO/'development_results'
 MR = RESULTS/'MR-001'
 GGB = RESULTS/'GGB-002'

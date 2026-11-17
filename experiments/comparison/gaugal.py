@@ -1,6 +1,6 @@
 """The GauGal family: one reconstruction of one case, saved as ``fit.json`` and ``fit.npz``.
 
-``default`` is the setting GGB-002 ended with, used here with no further tuning:
+``default`` uses the setting from the 2 November 2026 run, with no further tuning:
 lattice 51, width 0.7, TV weight 0.5, step 0.05, susceptibility limit 15,
 80 iterations, a 400 s optimization limit, all 19 real frequencies at once.
 It was chosen on clean data, so these numbers are a reference, not a fair baseline.

@@ -70,7 +70,7 @@ an independent endpoint audit belongs to the caller. The TG-002 campaign runs
 `fit` returns, then scores against truth.
 
 A problem with real-frequency data only passes `damped=None` and runs under
-[`RealOnlyPolicy`](real_only_policy.py) (GGB-003): no localization, no warm-up and
+[`RealOnlyPolicy`](real_only_policy.py) (17 November 2026 run): no localization, no warm-up and
 no damped stage. `CumulativePolicy` and disk localization refuse such a problem,
 and `RealOnlyPolicy` refuses a problem that carries a damped catalog.
 

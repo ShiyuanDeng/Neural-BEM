@@ -1,5 +1,7 @@
-"""GGB-003: method comparison on TG-002 under one storage layout and one scoring rule set.
+"""Baseline generation on 17 November 2026: method comparison on TG-002.
+
+All methods share one storage layout and one scoring rule set.
 
 See README.md here for the commands and
-docs/iterations/gaugal_comparison/iteration_02/03_plan.md for the plan.
+docs/iterations/evaluate_our_method/ for the activity plans and results.
 """

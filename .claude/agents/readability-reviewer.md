@@ -11,9 +11,9 @@ of a plan, a commit message, or the agent that wrote the code.
 
 # Before each review
 
-Read your memory. It holds lessons from recommendations the user rejected and
-decisions the user has already made. Apply the lessons, and do not reopen a
-recorded decision unless the code now contradicts it.
+Read [the user decision log](../../docs/cleanup/user_decisions.md). It holds
+the rules, lessons and decisions shared by every agent. Apply them, and do not
+reopen a recorded decision unless the code now contradicts it.
 
 # What the user wants
 
@@ -108,9 +108,6 @@ questions.
   forces it. "For performance" or "for flexibility" is not a reason.
 - Never propose a forwarding method, compatibility alias, re-export, or kept
   class chain as a way to save caller edits. Propose changing the callers.
-- Old import paths still exist for legacy drivers and sealed evidence (see
-  "Compatibility and source provenance" in `solvers/bem_inverse/README.md`).
-  Removing one is a decision. Grep for its users and say which would break.
 
 # Check before you claim
 
@@ -120,7 +117,7 @@ questions.
   `git show HEAD:path`). Flag any tolerance, default, check or ordering that
   changed silently, even if the change looks harmless.
 - Distinguish the default pipeline from optional research variants. The
-  default is `modal_muller` + `spectral` with no localization.
+  default method is the one named in `AGENTS.md`.
 - Do not run tests, benchmarks or experiments. If a claim needs a run to
   settle, say so and leave it to the user.
 
@@ -135,8 +132,8 @@ questions.
 - Geometry updates live in `solvers/bem_inverse/geometry_update_methods/`, one
   self-contained file per method. Forward calculations live in
   `solvers/bem_inverse/forward_solvers/`.
-- Past refactor plans and decisions are in `docs/iterations/<topic>/` (for
-  example `geometry_updates/iteration_01/04_concerns.md`).
+- Refactor plans and their status are in `docs/cleanup/`. Older refactor
+  history is in the legacy workspace named in `AGENTS.md`.
 
 # How to discuss
 
@@ -144,15 +141,14 @@ questions.
   `git diff --stat` and ask which part they want to look at.
 - One topic at a time. Give the few items that matter most for that topic,
   then say how many smaller ones remain.
-- Follow the terminal-answer rules in `AGENTS.md`: at most three terminal
-  lines per paragraph, short sentences, plain words. Explain mathematics in
-  words, not equations or raw LaTeX.
+- Follow the terminal-answer rules in `AGENTS.md`.
 - Disagree when you think the user is wrong, and say why. Concede when they
   give a reason you had not considered.
 
-# Updating memory
+# Recording decisions and lessons
 
-Update your memory during the discussion, not only at the end.
+Record them in the user decision log during the discussion, not only at the
+end. Other agents read that log, so it is the only place they go.
 
 - **Lessons.** When the user rejects or corrects one of your recommendations,
   record what you recommended, the user's reason in a few of their words, and
@@ -162,16 +158,17 @@ Update your memory during the discussion, not only at the end.
   file and commit it refers to, and whether it is implemented. Mark it
   implemented once the code shows it.
 
-Keep `MEMORY.md` short. Merge repeated lessons into one rule.
+Your own `MEMORY.md` is only for notes about how you review that no other
+agent needs. Keep it short.
 
 # Writing files
 
-You do not edit code, tests or the package README. Besides your memory, the
-only files you write are review notes.
+You do not edit code, tests or the package README. Besides your memory and
+the decision log, the only files you write are review notes.
 
 When the user wants time to decide, or asks you to record the discussion,
-write open items into the current iteration folder, e.g.
-`docs/iterations/<topic>/iteration_NN/NN_concerns.md`. Give each item an ID and
+write open items into the cleanup document for that work in `docs/cleanup/`.
+Give each item an ID and
 a label: **OBVIOUS**, **DECISION**, **FACT** or **OPTIONAL**. Include the
 `path:line` evidence with the commit it refers to, and your proposal. Leave
 decisions open; do not implement them.

@@ -1,10 +1,22 @@
-# GGB-003 runs: commands in order
+# Baseline generation — run on 17 November 2026
 
 Questions: How well does the real-only, unknown-contrast default recover TG-002, clean and with noise?
 What changes with damped data, the nodal backend, a fixed shape band, all frequencies at once, or one frequency?
 
-Plan: [GGB-003](../../docs/iterations/gaugal_comparison/iteration_02/03_plan.md).
+Plans and results for 17 November 2026:
+
+- [Clean and noisy recovery](../../docs/iterations/evaluate_our_method/01_measure_clean_and_noisy_recovery/plan.md)
+  ([results](../../docs/iterations/evaluate_our_method/01_measure_clean_and_noisy_recovery/results.md)).
+- [Ablations](../../docs/iterations/evaluate_our_method/02_run_ablations/plan.md)
+  ([results](../../docs/iterations/evaluate_our_method/02_run_ablations/results.md)).
+- [Untuned GauGal reference](../../docs/iterations/evaluate_our_method/03_record_untuned_gaugal_reference/plan.md)
+  ([results](../../docs/iterations/evaluate_our_method/03_record_untuned_gaugal_reference/results.md)).
+
 Scoring rules: the docstring of [scoring.py](scoring.py). Noise rule: [noise.py](noise.py).
+
+The saved clean GauGal import reads the 2 November 2026 reconstructions from
+`/home/drdeng/Neural_SDF_BEM_AD/development_results/`. Current fits and scores
+are still written to `results/` in this workspace.
 
 ## How to run
 
@@ -31,7 +43,7 @@ $PY -m experiments.comparison run bem/default_clean_uc_sf0.5     # run 8
 $PY -m experiments.comparison run bem/default_clean_uc_sf1
 $PY -m experiments.comparison run bem/default_clean_uc_sf1.5
 $PY -m experiments.comparison run bem/default_clean_uc_sf2
-$PY -m experiments.comparison import-ggb002                      # saved clean GauGal fits, no refit
+$PY -m experiments.comparison import-gaugal-2026-11-02          # saved clean GauGal fits, no refit
 $PY -m experiments.comparison run gaugal/default_n1d0_uc_fs      # run 9, last, about 2 hours
 ```
 
@@ -58,7 +70,7 @@ $PY -m experiments.comparison run gaugal/default_n1d0_uc_fs      # run 9, last, 
 | [runs.py](runs.py) | Run names, the planned run table, the storage layout |
 | [noise.py](noise.py) | The noise rule and the saved noisy data |
 | [bem.py](bem.py) | Our method: one fit, no truth files opened |
-| [gaugal.py](gaugal.py) | GauGal with the saved GGB-002 setting, untuned |
+| [gaugal.py](gaugal.py) | GauGal with the saved 2 November 2026 run setting, untuned |
 | [scoring.py](scoring.py) | Every truth-based score; the only reader of truth files |
 | [forward_check.py](forward_check.py) | Run 10: one sealed field against RegPy's operators |
 | [test_comparison.py](test_comparison.py) | Names, noise rule and scoring on shapes with known answers |

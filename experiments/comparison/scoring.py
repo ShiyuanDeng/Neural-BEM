@@ -1,6 +1,6 @@
 """Truth-based scores of one saved fit. Only this module opens truth files.
 
-The rules below are fixed before any GGB-003 run. A later change gets a new
+The rules below are fixed before the 17 November 2026 run. A later change gets a new
 ``PROTOCOL['version']`` and a dated note in the plan; old fits are rescored,
 not refitted.
 

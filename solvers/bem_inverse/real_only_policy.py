@@ -1,4 +1,4 @@
-"""The schedule for a problem that holds real-frequency data only (GGB-003).
+"""The real-only schedule used for baseline generation on 17 November 2026.
 
 It refuses a ``Problem`` that carries a damped catalog, so no stage can read one.
 There is no localization and no warm-up: the first fit stage starts from the
