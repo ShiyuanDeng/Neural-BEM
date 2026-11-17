@@ -1,0 +1,20 @@
+gfortran -fPIC -O3 -funroll-loops -std=legacy -w   -c -o src/fortran/hank103.o src/fortran/hank103.f
+gfortran -fPIC -O3 -funroll-loops -std=legacy -w   -c -o src/fortran/prini.o src/fortran/prini.f
+gfortran -fPIC -O3 -funroll-loops -std=legacy -w   -c -o src/fortran/helm_kernels.o src/fortran/helm_kernels.f
+gfortran -fPIC -O3 -funroll-loops -std=legacy -w   -c -o src/fortran/formsysmatbac.o src/fortran/formsysmatbac.f
+gfortran -fPIC -O3 -funroll-loops -std=legacy -w   -c -o src/fortran/kern_mats.o src/fortran/kern_mats.f
+gfortran -fPIC -O3 -funroll-loops -std=legacy -w   -c -o src/fortran/lap_kernels.o src/fortran/lap_kernels.f
+gfortran -fPIC -O3 -funroll-loops -std=legacy -w   -c -o src/fortran/durdec.o src/fortran/durdec.f
+gfortran -fPIC -O3 -funroll-loops -std=legacy -w   -c -o src/fortran/corrand4.o src/fortran/corrand4.f
+gfortran -fPIC -O3 -funroll-loops -std=legacy -w   -c -o src/fortran/dumb_conres.o src/fortran/dumb_conres.f
+gfortran -fPIC -O3 -funroll-loops -std=legacy -w   -c -o src/fortran/legeexps.o src/fortran/legeexps.f
+gfortran -fPIC -O3 -funroll-loops -std=legacy -w   -c -o src/fortran/curve_filtering.o src/fortran/curve_filtering.f
+gfortran -fPIC -O3 -funroll-loops -std=legacy -w   -c -o src/fortran/curve_resampler.o src/fortran/curve_resampler.f
+gfortran -fPIC -O3 -funroll-loops -std=legacy -w   -c -o src/fortran/dfft.o src/fortran/dfft.f
+gfortran -fPIC -O3 -funroll-loops -std=legacy -w   -c -o src/fortran/cdjseval2d.o src/fortran/cdjseval2d.f
+gfortran -fPIC -O3 -funroll-loops -std=legacy -w   -c -o src/fortran/h2dcommon.o src/fortran/h2dcommon.f
+ar rcs libhelmtrans.a src/fortran/hank103.o src/fortran/prini.o src/fortran/helm_kernels.o src/fortran/formsysmatbac.o src/fortran/kern_mats.o src/fortran/lap_kernels.o src/fortran/durdec.o src/fortran/corrand4.o src/fortran/dumb_conres.o src/fortran/legeexps.o src/fortran/curve_filtering.o src/fortran/curve_resampler.o src/fortran/dfft.o src/fortran/cdjseval2d.o src/fortran/h2dcommon.o
+mv libhelmtrans.a lib-static/
+/usr/local/MATLAB/R2026a/bin/mex src/matlab/kern_mats.c lib-static/libhelmtrans.a -compatibleArrayDims -DMWF77_UNDERSCORE1    -output src/matlab/kern_mats -lm -lstdc++ -ldl -lgfortran
+Unable to access preferences folder /home/drdeng/.matlab/R2026a. Preferences folder must be writable.
+make: *** [makefile:94: matlab] Error 255
