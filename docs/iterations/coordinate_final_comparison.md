@@ -7,7 +7,7 @@ settings, assumptions and unknowns, and it sets how subagents share the work.
 The coordinator (the main session) owns this file. Subagents never edit it.
 They report back, and the coordinator updates the status board and the cards.
 
-Last updated: 17 November 2026, 20:35 (BRG 02 and CSI 02 running).
+Last updated: 17 November 2026, 21:45 (BRG 02 at 1 of 6; BRG 03 approved; CSI 02 running).
 
 ## Status board
 
@@ -15,7 +15,7 @@ Last updated: 17 November 2026, 20:35 (BRG 02 and CSI 02 running).
 |---|---|---|---|---|
 | Our BEM (default) | [evaluate_our_method](evaluate_our_method/) | [01](evaluate_our_method/01_measure_clean_and_noisy_recovery/results.md), [02](evaluate_our_method/02_run_ablations/results.md), run 17 Nov | TG-002 done | Extend for BRG and CSI data, later inside those investigations |
 | GauGal | [evaluate_our_method](evaluate_our_method/) | [03](evaluate_our_method/03_record_untuned_gaugal_reference/results.md), run 17 Nov | TG-002 untuned reference done | Stage 2 role open (U1) |
-| BRG | [brg_adaptation](brg_adaptation/) | [01 results](brg_adaptation/01_run_published_examples/results.md), [02 plan](brg_adaptation/02_rebuild_paper_examples/plan.md) | 01 done 17 Nov. 02 (six paper cases) started 17 Nov 20:20 | `brg` agent (Codex, astra, high effort): run the six cases; draft the BEM adaptation plan (03) meanwhile |
+| BRG | [brg_adaptation](brg_adaptation/) | [01 results](brg_adaptation/01_run_published_examples/results.md), [02 plan](brg_adaptation/02_rebuild_paper_examples/plan.md) | 01 done 17 Nov. 02 (six paper cases): 1 of 6 done. 03 (adapt our BEM to BRG data): plan approved 17 Nov 21:45 | `brg` agent (Codex, astra, high effort): run the other five cases; implement 03 in stages during the waits; stop after one glider fit with our BEM |
 | CSI family | [csi_adaptation](csi_adaptation/) | [01 results](csi_adaptation/01_run_published_examples/results.md) | 01 done 17 Nov. 02 (measured Fresnel cylinder, all three methods) started 17 Nov 20:35 | `csi` agent (Codex, sol, high effort): run `dielTM_dec8f`, preview its score, cost the simulated cases |
 
 **Setup checked on 17 November 2026:** the user made the MaxwellFDFD link and
@@ -24,8 +24,10 @@ is gcc 11, and the shipped `DGradient.mexa64` loads in R2026a. MATLAB starts
 with one compute thread on this CPU, so each wrapper sets and records its
 thread count.
 
-**Solver lock:** `solvers/bem_inverse/` is free. Only one investigation may
-edit it at a time. The coordinator records the holder here.
+**Solver lock:** held by the BRG investigation (`brg` agent) since
+17 November 2026, 21:45, for
+[activity 03](brg_adaptation/03_adapt_bem_to_brg_data/plan.md). Only one
+investigation may edit `solvers/bem_inverse/` at a time.
 
 ## The final comparison
 
@@ -162,6 +164,22 @@ Rules for every table:
     the paper's Figure 1 on the first glider case.
   - 4 h per case, all 117 frequencies.
 
+- **Activity 02 so far (17 November):**
+  - Glider, eta 0.33: 0.003% area error at k = 30; 68 minutes.
+  - Its error is 2 to 8 times below the paper's Figure 1 up to k = 10. The
+    curvature limit is not the cause: the driver's value and no limit give
+    identical errors. The gap is unexplained and BRG is not handicapped.
+  - Star and cavity recovered from the vector figures to about 6e-4 and
+    2e-4 in data units.
+- **Our BEM on BRG data (activity 03, coordinator review 17 November):**
+  - Our default forward builds its incident waves from a power series that
+    it refuses to use beyond about k times object radius = 17. On BRG's
+    unit-size shapes that is about k = 13.
+  - So our method will use BRG's data up to that k, not to 30. The table
+    must show BRG at the same k as well as at k = 30.
+  - Lifting the limit needs a redesign of that series. It is not part of
+    activity 03 and would be proposed separately.
+
 ### CSI family (MF-CC-CSI, MR-CSI, CSI)
 
 - **Code:** `~/neural_bem_external/CC-CSI` at `73a64e1`, with MaxwellFDFD at
@@ -274,11 +292,14 @@ needs it, and recorded here.
 | 17 Nov | BRG 02: go, with the choices listed in the BRG card | The paper leaves them open; each choice follows the authors' code or their published figure |
 | 17 Nov | CSI 02: go on the measured Fresnel cylinder, with the choices in the CSI card | It is table C's measured case; its timings cost the simulated cases |
 | 17 Nov | U3: protocol version 1 threshold for CSI images | Same rule as table A; no new choice to defend |
+| 17 Nov | BRG 02: stop the no-limit glider rerun at k = 10 | Both settings agree at every Figure 1 frequency; the question is answered |
+| 17 Nov | BRG 03: plan approved with changes; solver lock to BRG | Exact plane-wave coefficients instead of a projection; a pair mask so CSI can reuse it; default path must reproduce; 1 h per fit; stop after one glider fit |
 | 17 Nov | U2: the BRG investigation extends our solver first; `brg` drafts that plan (03), and the coordinator reviews it before any solver edit | Plane waves plus an unpaired table cover what CSI needs too |
 
-**Open with the user:** about 654 MB of result files are already pushed
-(561 MB CSI, 93 MB BRG). Removing them needs a history rewrite, so it waits
-for the user's word.
+**Pushed result files:** about 654 MB (561 MB CSI, 93 MB BRG) were pushed
+in the first hour. The user freed disk space and said "alr should be enough
+space now", so they stay and history is not rewritten. The 5 MB per run
+rule stays for new runs.
 
 ## How subagents work
 
