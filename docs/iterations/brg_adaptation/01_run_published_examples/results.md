@@ -70,3 +70,13 @@ local with its command and checksum recorded. Only the output path and
 undefined `lam` save were changed in memory;
 [patch](../../../../external/patches/brg/02-remove-undefined-lam-save.patch),
 [executed source](../../../../results/brg/examples/data_retry/executed_script.m).
+
+## Low-frequency check: first attempt
+
+17 November: 4.55 s wall time. The actual inverse path crashed before a
+residual could be checked: `update_inverse_iterate` replaces `bc` with a
+struct containing only `type` and `invtype`, then passes it to the
+transmission derivative, which requires `transk`, `transa`, and `transb`.
+[Log](../../../../results/brg/examples/low_frequency_unpatched/matlab.log).
+The next check changes only that struct copy, then checks the stale-frequency
+residual before applying the frequency fix. This is a second upstream bug.

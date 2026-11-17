@@ -1,0 +1,23 @@
+BRG MATLAB 26.1.0.3203278 (R2026a); initial threads 1; requested/current threads 8
+BRG low_frequency_unpatched success=0 compute_seconds=2.215241
+{Unrecognized field name "transk".
+
+Error in rla.get_frechet_ders (line 116)
+             zks = bc.transk; a = bc.transa; b = bc.transb;
+                   ^^^^^^^^^
+Error in rla.update_inverse_iterate (line 257)
+    frechet_mats = rla.get_frechet_ders(kh,mats,src_info,u_meas,fields,bc_use,opts_use);
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in rla.inverse_solver (line 244)
+           rla.update_inverse_iterate(kh,src_use,mats,fields,u_meas,bc,optim_opts_use,opts_use);
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in rla.rla_inverse_solver (line 190)
+       [inv_data_all{i},src_out] = rla.inverse_solver(kh,src_info,bc, ...
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in check_transmission (line 28)
+    [inv,curve]=rla.rla_inverse_solver(data(i),bc,optim,opts,truth,[],[]);
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in run_example (line 63)
+            check_transmission(stage,out);
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+} 
