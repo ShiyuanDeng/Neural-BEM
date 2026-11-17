@@ -317,7 +317,9 @@ def _self_intersections(points, relative_tolerance):
 
 
 def require_finite_trial(candidate):
-    if not np.isfinite(candidate.loss) or not np.isfinite(candidate.prediction).all():
+    finite = (all(np.isfinite(p).all() for p in candidate.prediction)
+              if isinstance(candidate.prediction, tuple) else np.isfinite(candidate.prediction).all())
+    if not np.isfinite(candidate.loss) or not finite:
         raise NumericalFailure('non-finite production evaluation at candidate state')
 
 

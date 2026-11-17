@@ -8,7 +8,7 @@ from .recording import observe
 
 @geometry_validated
 def solve_frequencies(curve, observations, contrast, nodes, category, *,
-                      forward_solve, ledger, threads, physics=None, failures=None):
+                      forward_solve, ledger, threads, physics=None, failures=None, ragged_data=False):
     """Run A1–A4 at each frequency; return predictions and retained forward states.
 
     No observations are subtracted here. The caller performs B5 separately.
@@ -46,4 +46,4 @@ def solve_frequencies(curve, observations, contrast, nodes, category, *,
                 return None
             columns.append(np.asarray(value.prediction).reshape(-1))
             forwards.append(value)
-    return np.column_stack(columns), tuple(forwards)
+    return (tuple(columns) if ragged_data else np.column_stack(columns)), tuple(forwards)

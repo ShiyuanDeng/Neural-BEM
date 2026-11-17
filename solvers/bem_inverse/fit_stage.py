@@ -33,6 +33,7 @@ from .stage_types import StageResult, StageEntry, StageCheckpoint, checkpoint_si
 from .errors import Stop, StageQuota, NumericalFailure, UpdateRefused, NORMAL_RETURN, STAGE_QUOTA
 from .forward_batch import solve_frequencies
 from .recording import observe
+from .data_blocks import FrequencyBlocks
 from .geometry_update_methods import control_step
 from . import b5_residual, b8_gauss_newton, c9_lm, c12_iteration, checks
 
@@ -74,7 +75,10 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, physics, forwar
         for key in ('work_units', 'stage', 'stage_units', 'stage_quota', 'cap', 'solves', 'reciprocal_batches', 'failed'):
             if ledger.snapshot()[key] != resume.work[key]:
                 raise ValueError('Resume ledger mismatch: '+key)
-    observed = np.column_stack([o.scattered.reshape(-1) for o in stage.observations])
+    layout = (FrequencyBlocks.from_observations(stage.observations, stage.weights, config.residual_floor)
+              if stage.ragged_data else None)
+    observed = (layout.observed if layout is not None else
+                np.column_stack([o.scattered.reshape(-1) for o in stage.observations]))
     m = len(stage.observations)
     threads = physics.execution.frequency_threads
     failures = []
@@ -116,7 +120,7 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, physics, forwar
                 batch = solve_frequencies(curve, stage.observations,
                                           contrast if contrast_value is None else contrast_value, stage.nodes, category,
                                           forward_solve=forward_solve, ledger=ledger, threads=threads,
-                                          physics=physics, failures=failures)
+                                          physics=physics, failures=failures, ragged_data=stage.ragged_data)
             finally:
                 if diagnostics:
                     diagnostics['forward_batch_seconds'] += perf_counter()-batch_started
@@ -127,7 +131,8 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, physics, forwar
             ledger.replay('solve', category, m)
             batch = reused
         prediction, forwards = batch
-        evaluation = b5_residual.evaluate(curve, prediction, forwards, observed, stage.weights, config.residual_floor)
+        evaluation = (b5_residual.evaluate_blocks(curve, prediction, forwards, layout) if layout is not None else
+                      b5_residual.evaluate(curve, prediction, forwards, observed, stage.weights, config.residual_floor))
         if penalty_weight is not None:
             evaluation = penalty.stacked(evaluation, penalty_weight)
         observe(physics, 'objective', stage=stage, config=config, ledger=ledger,
@@ -161,13 +166,18 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, physics, forwar
             shifted = solve_frequencies(evaluation.curve, stage.observations,
                                         contrast_now*np.exp(material.derivative_step), stage.nodes,
                                         'contrast_derivative', forward_solve=forward_solve, ledger=ledger,
-                                        threads=threads, physics=physics, failures=failures)
+                                        threads=threads, physics=physics, failures=failures, ragged_data=stage.ragged_data)
             if shifted is None:
                 raise NumericalFailure("contrast derivative solve failed")
-            column = (shifted[0]-evaluation.prediction)/material.derivative_step
-            blocks = [np.column_stack((block, column[:, j])) for j, block in enumerate(blocks)]
+            if layout is not None:
+                columns = [(a-b)/material.derivative_step for a, b in zip(shifted[0], evaluation.prediction)]
+                blocks = [np.column_stack((block, column)) for block, column in zip(blocks, columns)]
+            else:
+                column = (shifted[0]-evaluation.prediction)/material.derivative_step
+                blocks = [np.column_stack((block, column[:, j])) for j, block in enumerate(blocks)]
         # B8. The B5 map applied to each data derivative column gives J; then g = J.T r.
-        J = b8_gauss_newton.residual_jacobian(blocks, observed, stage.weights, config.residual_floor)
+        J = (b8_gauss_newton.block_jacobian(blocks, layout) if layout is not None else
+             b8_gauss_newton.residual_jacobian(blocks, observed, stage.weights, config.residual_floor))
         if penalty is not None:
             J = np.vstack((J, penalty.jacobian(evaluation.curve.coefficients, space.derivatives, penalty_weight)))
         g = b8_gauss_newton.gradient(J, evaluation.residual)
@@ -230,7 +240,8 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, physics, forwar
             raise NumericalFailure("initial state leaves the geometry domain")
         if resume is None:
             current = evaluate(curve, "initial_objective",
-                               (np.array(entry.prediction, copy=True), entry.forwards) if reusable else None)
+                               ((tuple(np.array(p, copy=True) for p in entry.prediction) if stage.ragged_data else
+                                 np.array(entry.prediction, copy=True)), entry.forwards) if reusable else None)
             if current is None:
                 raise NumericalFailure("initial state is not solver-ready")
             if penalty is not None:
@@ -466,7 +477,7 @@ def fit_stage(curve, stage, contrast, update, config, ledger, *, physics, forwar
     final_entry = None
     if retain_final and current is not None and len(current.forwards) == m:
         final_entry = StageEntry(current.curve.coefficients.tobytes(), current.curve.band, stage.nodes,
-            tuple(stage.observations), contrast_now, physics, current.prediction, current.forwards)
+            tuple(stage.observations), contrast_now, physics, current.prediction, current.forwards, stage.ragged_data)
     if diagnostics and counters is not None:
         counts = counters.snapshot()['counts']
         diagnostics['actual_calls'] = {key: counts.get(key, 0)-initial_counts.get(key, 0)

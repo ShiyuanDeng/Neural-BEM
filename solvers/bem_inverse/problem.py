@@ -49,8 +49,11 @@ class Problem:
     bounds_m: tuple = ((.2, .2), (.8, .8))
     material: str = 'equal_density_homogeneous'
     damping_ratio: float = .25
+    allow_variable_acquisition: bool = False
 
     def __post_init__(self):
+        if not isinstance(self.allow_variable_acquisition, bool):
+            raise ValueError('allow_variable_acquisition must be a bool.')
         if not np.isfinite(self.contrast) or self.contrast <= 0:
             raise ValueError('Positive finite contrast required.')
         if not np.isfinite(self.length_unit_m) or self.length_unit_m <= 0:
@@ -70,7 +73,7 @@ class Problem:
         for catalog in (self.real,) if self.damped is None else (self.real, self.damped):
             if any(b.frequency_hz <= a.frequency_hz for a, b in zip(catalog, catalog[1:])):
                 raise ValueError('Observation catalogs must be strictly increasing.')
-            if not all(same_acquisition(catalog[0].acquisition, o.acquisition) for o in catalog):
+            if not self.allow_variable_acquisition and not all(same_acquisition(catalog[0].acquisition, o.acquisition) for o in catalog):
                 raise ValueError('The cumulative policy requires one acquisition across frequencies.')
             sigma = [o.sigma_real_imag > 0 for o in catalog]
             if any(sigma) and not all(sigma):

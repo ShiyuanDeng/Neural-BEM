@@ -209,9 +209,10 @@ and ragged B5/B8; check derivatives and paired-data regressions; finally add
 the explicit schedule and run the per-case true-shape checks. No inversion
 before all relevant forward checks pass.
 
-Proposed experiment entry point, to be added under owned paths:
-`python experiments/baselines/brg/run_bem_adaptation.py --phase forward`
-then `--phase inverse --case <case>` only after recorded forward acceptance.
+Experiment entry points under owned paths:
+`python experiments/baselines/brg/check_forward_prefix.py --case glider_033`,
+then `python experiments/baselines/brg/run_bem_adaptation.py --case glider_033`
+only after recorded forward acceptance and the final default regression.
 Use `results/brg/bem_adaptation/<date>/<case>/` for compact manifests,
 per-frequency errors, curve histories and timings; `local/` for ignored bulk
 with commands and SHA-256. Report figures belong in this activity's
@@ -256,3 +257,18 @@ TG-002 shapes with BRG-style data, plan only. The six paper cases remain
 a check of BRG’s own examples. No high-k redesign will be proposed.
 Two paper MATLAB jobs plus CSI may fill the three heavy-worker slots;
 implementation can continue, but BEM checks wait for an available slot.
+
+## Stage (c) executable settings before the first fit
+
+The wrapper uses the existing 22-iteration stage cap and the existing first
+four prefix quotas (1000, 1250, 1750, 4000 work units). Later prefix stages
+use the existing 1500-unit release quota. The global default work cap stays
+13,412 units; the coordinator’s wall cap is 3600 s. No quota is selected
+from an inverse result. The update band is the existing floor(3k) rule,
+with storage band 2M+2; its maximum follows the qualified data prefix.
+
+The final frontier is recorded as a diagnostic, without extra inverse stages.
+B5 weights are equal across active frequencies. All LM and slider controls
+retain their existing defaults. Accepted curves are saved at each step and
+full stage records at each return. This is an explicit BRG policy in the
+experiment wrapper; the TG-002 policy is unchanged.

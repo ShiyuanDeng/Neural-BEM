@@ -33,3 +33,11 @@ def normalize(values, observed, weights, floor=1e-12):
     scaled = values / scales.reshape(shape) * np.sqrt(np.asarray(weights, float)).reshape(shape)
     tail = values.shape[2:]
     return np.concatenate((scaled.real.reshape((-1,) + tail), scaled.imag.reshape((-1,) + tail)))
+
+
+def evaluate_blocks(curve, prediction, forwards, layout):
+    """B5 for explicitly ragged measured-pair blocks, using their shared layout."""
+    from .stage_types import Evaluation
+    r = layout.normalize(layout.differences(prediction))
+    return Evaluation(curve, 0.5*float(r@r), layout.relative(prediction), r,
+                      tuple(prediction), tuple(forwards))

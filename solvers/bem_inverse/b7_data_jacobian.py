@@ -22,6 +22,10 @@ def reciprocal_jacobian(state, weights):
     count = 2*state.cutoff+1
     reciprocal = lu_solve(state.factors, state.reciprocal_rhs)
     material_difference = state.interior_wavenumber**2-state.wavenumber**2
+    if state.table_mode:
+        J_data = table_hadamard(state.traces[:count], reciprocal[:count], weights,
+                               state.cutoff, material_difference, state.acquisition.mask)
+        return J_data, reciprocal
     J_data = hadamard(state.traces[:count], reciprocal[:count], weights,
                       state.cutoff, material_difference)
     return J_data, reciprocal
@@ -33,3 +37,22 @@ def hadamard(traces, reciprocal, weights, cutoff, factor):
     centre = (len(weights)-1)//2
     n = min(centre, 2*cutoff)
     return 2*np.pi*factor*moments[2*cutoff-n:2*cutoff+n+1][::-1].T@weights[centre-n:centre+n+1]
+
+
+def table_hadamard(traces, reciprocal, weights, cutoff, factor, mask=None, receiver_block=8):
+    """All illumination/receiver pairs, blocked before contraction with updates.
+
+    Only a modes-by-illumination-by-small-receiver-block tensor is formed.
+    The result follows A4: (illumination, receiver, coordinate), or masked rows.
+    Reciprocity is bilinear, without complex conjugation.
+    """
+    result = np.empty((traces.shape[1], reciprocal.shape[1], weights.shape[1]), complex)
+    centre = (len(weights)-1)//2
+    n = min(centre, 2*cutoff)
+    for start in range(0, reciprocal.shape[1], receiver_block):
+        stop = min(start+receiver_block, reciprocal.shape[1])
+        moments = fftconvolve(traces[:, :, None], reciprocal[:, None, start:stop], axes=0)
+        selected = moments[2*cutoff-n:2*cutoff+n+1][::-1]
+        result[:, start:stop] = 2*np.pi*factor*np.einsum(
+            'msr,mp->srp', selected, weights[centre-n:centre+n+1], optimize=True)
+    return result if mask is None else result[mask]

@@ -201,5 +201,14 @@ Unmasked data have shape `(illumination, receiver)`. A boolean mask has that
 same shape; masked data are a vector selected in C order. Omitted mask means
 all pairs. A3 uses exact scaled regular-wave coefficients, including centre
 phase; A4 returns finite-range scattered fields. Existing cancellation limits
-remain in force. At this implementation stage table derivatives are refused;
-the next stage adds B7 and ragged B5/B8.
+remain in force. B7 reuses the LU factors for all reciprocal receivers and
+blocks the pair contraction. It uses the same mask and order as A4.
+
+For changing counts, set `Problem(allow_variable_acquisition=True)` and
+use `FitStage(ragged_data=True)` in an explicit policy. B5/B8 share
+`FrequencyBlocks`: each frequency is normalized by its own measured-data
+norm and assigned its declared weight. Rows concatenate frequency blocks,
+then all real followed by all imaginary entries; no missing pairs are padded.
+Stage receipts record offsets and wavenumbers. The recovered-contrast option
+uses these same blocks for its material derivative. Existing policies and
+paired TG-002 defaults retain their rectangular layout and arithmetic.

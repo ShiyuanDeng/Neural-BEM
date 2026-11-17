@@ -19,6 +19,11 @@ def gradient(J, r):
     return J.T @ r
 
 
+def block_jacobian(blocks, layout):
+    """The exact same frequency offsets and scales used by B5."""
+    return layout.normalize(blocks)
+
+
 def curvature(J):
     """Gauss–Newton curvature, evaluated only when the stage starts an iteration."""
     return J.T @ J

@@ -331,3 +331,15 @@ contracts every illumination with every receiver. `ModalSettings(table_mode=True
 and CPU execution are required. Rows are illuminations, columns receivers;
 a boolean measured-pair mask selects C-order entries. An omitted mask means
 all pairs. The default paired contraction retains its existing arithmetic.
+
+B7’s [`table_hadamard`](../../solvers/bem_inverse/b7_data_jacobian.py) uses
+nonconjugated forward/reciprocal products for all measured pairs and the
+unchanged signed material factor, including eta below one. Receiver blocking
+avoids a modes-by-pairs-by-updates intermediate. It is opt-in, CPU only.
+
+B5 and B8 use the same [`FrequencyBlocks`](../../solvers/bem_inverse/data_blocks.py)
+when `FitStage.ragged_data=True`: measured rows only, frequency-major complex
+blocks, per-frequency normalization, then real/imaginary stacking. The B8
+material column and C12 maximum-residual record follow that layout. Variable
+acquisitions require `Problem.allow_variable_acquisition=True`; matched
+real/damped rules still apply. C9, slider, C11 and C12 decisions are unchanged.

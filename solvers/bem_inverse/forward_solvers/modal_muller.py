@@ -315,8 +315,6 @@ class ModalMuller:
                                'frontier and endpoint audit only')
 
     def _contract(self, state, weights):
-        if state.table_mode:
-            raise NotImplementedError('Table derivatives are introduced in the next BRG implementation stage.')
         jacobian, reciprocal = b7_data_jacobian.reciprocal_jacobian(state, weights)
         checks.require_finite_data_jacobian(jacobian)
         if self.observer is not None:
@@ -360,6 +358,8 @@ class ModalMuller:
         samples = orthonormal_normal_basis(nodes, top)*nodes.speeds[:, None]
         weights = (np.fft.fft(samples, axis=0)/count)[np.arange(-width, width+1) % count]
         jacobian = self._derivative(state, weights)
+        if state.table_mode:
+            jacobian = jacobian.reshape(-1, jacobian.shape[-1])
         norms = np.linalg.norm(jacobian, axis=0)
         paired = np.r_[norms[0], np.hypot(norms[1::2], norms[2::2])]
         checks.require_observable_frontier(paired)

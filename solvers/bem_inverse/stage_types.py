@@ -21,8 +21,11 @@ class FitStage:
     iterations: int  # LM iteration cap
     quota: Optional[int] = None  # work units for this stage
     resolution_kind: str = 'nodal'
+    ragged_data: bool = False  # explicit per-frequency measurement blocks
 
     def __post_init__(self):
+        if not isinstance(self.ragged_data, bool):
+            raise ValueError('ragged_data must be a bool.')
         count = len(self.observations)
         if not count or len(self.weights) != count:
             raise ValueError("One weight is required per active observation.")
@@ -166,10 +169,11 @@ class StageEntry:
     physics: object = field(repr=False)
     prediction: np.ndarray = field(repr=False)
     forwards: tuple = field(repr=False)
+    ragged_data: bool = False
 
     def matches(self, curve, stage, contrast, physics):
         return bool(curve.band == self.band and curve.coefficients.tobytes() == self.curve_bytes and
-                    stage.nodes == self.nodes and
+                    stage.nodes == self.nodes and stage.ragged_data == self.ragged_data and
                     len(stage.observations) == len(self.observations) and
                     all(a is b for a, b in zip(stage.observations, self.observations)) and
                     float(contrast) == self.contrast and physics is self.physics and
@@ -209,6 +213,10 @@ def checkpoint_signature(stage, contrast, config, update):
 def stage_record(stage):
     """Portable description of a stage without observation arrays."""
     record = {k: v for k, v in asdict(stage).items() if k != "observations"}
+    if not stage.ragged_data:
+        record.pop('ragged_data')  # preserve legacy receipts
+    else:
+        record['data_offsets'] = np.cumsum([0]+[o.scattered.size for o in stage.observations]).tolist()
     record["wavenumbers"] = [o.wavenumber for o in stage.observations]
     return record
 

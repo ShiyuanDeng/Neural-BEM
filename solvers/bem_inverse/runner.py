@@ -180,9 +180,15 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
                     def accepted_state(iteration, evaluation):
                         nonlocal curve
                         curve=evaluation.curve
-                        observed = np.column_stack([o.scattered.reshape(-1) for o in op.stage.observations])
-                        maximum_stage_residual = float(max(np.linalg.norm(evaluation.prediction-observed, axis=0)
-                                                          /np.linalg.norm(observed, axis=0)))
+                        if op.stage.ragged_data:
+                            from .data_blocks import FrequencyBlocks
+                            layout = FrequencyBlocks.from_observations(op.stage.observations, op.stage.weights,
+                                                                       op.optimizer.residual_floor)
+                            maximum_stage_residual = layout.maximum_relative(evaluation.prediction)
+                        else:
+                            observed = np.column_stack([o.scattered.reshape(-1) for o in op.stage.observations])
+                            maximum_stage_residual = float(max(np.linalg.norm(evaluation.prediction-observed, axis=0)
+                                                              /np.linalg.norm(observed, axis=0)))
                         accepted.append(dict(maximum_stage_residual=maximum_stage_residual,
                             active_frequency_count=len(op.stage.observations), stage=op.label, iteration=iteration, M=op.stage.update_modes,
                             loss=evaluation.loss, units=ledger.units, curve=record_curve(evaluation.curve)))
