@@ -94,3 +94,17 @@ wavenumbers, predicted to vanish after synchronizing both with each k;
 (3) a field normalization error, predicted to persist with correct k.
 Only (1) is changed next. The derivative patch preserves the input physics
 struct; it does not change any parameter.
+
+## Corrected-frequency exact-fit diagnostic crash
+
+17 November: 4.32 s wall time. Updating both wavenumbers makes the exact
+true-shape data residual zero. The shipped steepest-descent code computes
+a zero-over-zero step before testing its residual stop; NaN geometry reaches
+`curve_resampler.mexa64`, which segfaults.
+[Redacted log](../../../../results/brg/examples/low_frequency_fixed/matlab.log).
+No optimizer or MEX patch is proposed at this checkpoint.
+
+The diagnostic is revised to start from the shipped unit disk and compare
+one RLA step with a direct single-frequency inverse call supplied the correct
+wavenumbers. This tests the actual frequency-loop boundary without the
+exact-fit corner case. Both calls keep the same data and optimizer settings.

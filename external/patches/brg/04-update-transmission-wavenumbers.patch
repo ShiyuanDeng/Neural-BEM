@@ -1,0 +1,12 @@
+--- a/src/+rla/rla_inverse_solver.m
++++ b/src/+rla/rla_inverse_solver.m
+@@ -182,6 +182,9 @@
+    
+    for i=1:npath
+        kh = u_meas{ik_list(i)}.kh;
++       if (strcmpi(bc.type,'t') || strcmpi(bc.type,'Transmission')) && isfield(bc,'q')
++           bc.transk = [bc.q*kh kh];
++       end
+        if(isfield(opts,'use_lscaled_modes'))
+           if(opts.use_lscaled_modes)
+              opts.ncoeff_boundary_mult = 2*src_info.L/2/pi;

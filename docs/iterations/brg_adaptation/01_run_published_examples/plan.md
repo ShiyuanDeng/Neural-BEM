@@ -147,3 +147,9 @@ shape isolates frequency handling: require relative residual below 1e-8.
 The unpatched run starts with stale [45,30], exactly as after generation.
 This is a diagnostic, not a reconstruction result or a change of baseline
 settings. A fixed run must use the same harness and inputs.
+
+Diagnostic refinement, 17 November: the exact-true-shape test exposed an
+unrelated zero-gradient MEX crash after the frequency fix. Repeat at k=1,
+1.25,1.5 from the shipped unit disk, one iteration, comparing the RLA output
+to a direct correctly parameterized single-frequency call. Require residual
+and curve differences below 1e-10. Retain the prior failed diagnostic.

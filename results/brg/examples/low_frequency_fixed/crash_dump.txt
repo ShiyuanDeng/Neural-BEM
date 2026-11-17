@@ -1,0 +1,57 @@
+
+--------------------------------------------------------------------------------
+          Segmentation violation detected at 2026-11-17 19:31:36 +0000
+--------------------------------------------------------------------------------
+
+Configuration:
+  Crash Decoding           : Disabled - No sandbox or build area path
+  Crash Mode               : continue (default)
+  Default Encoding         : UTF-8
+  Deployed                 : false
+  GNU C Library            : 2.35 stable
+  Graphics Driver          : Uninitialized software 
+  Graphics card 1          : 0x10de ( 0x10de ) 0x2b85 Version 570.211.1.0 (0-0-0)
+  Graphics card 2          : 0x8086 ( 0x8086 ) 0x7d67 Version 0.0.0.0 (0-0-0)
+  MATLAB Architecture      : glnxa64
+  MATLAB Entitlement ID    : 1345133
+  MATLAB Root              : /usr/local/MATLAB/R2026a
+  MATLAB Version           : 26.1.0.3203278 (R2026a)
+  OpenGL                   : software
+  Operating System         : Ubuntu 22.04.5 LTS
+  Process ID               : 607393
+  Processor ID             : x86 Family 6 Model 198 Stepping 2, GenuineIntel
+  Session Key              : <REDACTED>
+  Window System            : No active display
+
+Fault Count: 1
+
+
+Abnormal termination:
+Segmentation violation
+
+Current Thread: 'MCR 0 interpret' id 126708207314496
+
+Register State (from fault):
+  RAX = 00000000000000c7  RBX = 0000733ca91741c0
+  RCX = 0000733d8daf8700  RDX = 000000000000018e
+  RSP = 0000733d8daf8568  RBP = 0000733ca916a540
+  RSI = 0000000000000190  RDI = 0000733d8daf72a0
+
+   R8 = 00000000000000c9   R9 = 0000733d8daf6a88
+  R10 = 0000733d8daf72a0  R11 = 0000733d8daf72a0
+  R12 = 0000733ca914ca00  R13 = 0000733d8daf87d0
+  R14 = 0000733ca9152ea0  R15 = 0000733cea3d0b70
+
+  RIP = 0000733cea3d2d72  EFL = 0000000000010202
+
+   CS = 0033   FS = 0000   GS = 0000
+
+Stack Trace (from fault):
+[  0] 0x0000733cea3d2d72 /home/drdeng/neural_bem_external/inverse-obstacle-scattering2d/src/matlab/curve_resampler.mexa64+00114034
+[  1] 0x0000733d8db75580                                   <unknown-module>+00000000
+
+
+This error was detected while a MEX-file was running. If the MEX-file
+is not an official MathWorks function, please examine its source code
+for errors. Please consult the External Interfaces Guide for information
+on debugging MEX-files.
