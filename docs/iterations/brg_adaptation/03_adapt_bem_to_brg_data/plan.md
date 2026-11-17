@@ -276,3 +276,11 @@ experiment wrapper; the TG-002 policy is unchanged.
 Coordinator update, 17 November: the ladder now ends at k=15 or the first
 solver refusal, whichever comes first. Glider eta 0.33 already qualifies
 through k=12 and refuses k=15, so its authorized fit inputs are unchanged.
+
+## Ownership hold after stage (c)
+
+The coordinator has stopped BEM work at the completed one-glider checkpoint
+while separate BEM ownership is arranged. No other fit or further solver
+edit is authorized here. The results report contains the full changed-file,
+option, test and default-regression handover. The already-pushed activity 04
+draft is held; it was created before the coordinator’s hold message.

@@ -118,3 +118,92 @@ Both BRG paper jobs overlapped this fit; timing is indicative.
 Stage (c) is reported to the coordinator. The other five BEM inversions
 remain unstarted. Activity 02 continues to its newly requested k=15
 endpoints. Activity 04 is a plan only for the main TG-002-shape comparison.
+
+## Solver handover at the coordinator's stage (c) stop
+
+BEM implementation and runs stop here. No other BEM case has run and no
+further solver edit is planned by this agent. The coordinator is arranging
+separate BEM ownership. Activity 04's plan had already been created and
+pushed in `a8ca0b993` before the hold arrived; it is now held without further
+work. It has no runs. Existing pushed history is retained.
+
+### Every changed solver file
+
+The complete list below is the diff from the saved pre-edit reference
+`46fc141e0` through stage (b), `4dde44c96`. Stage (c) made no further solver
+edit. Reference and experiment wrappers are outside the solver package.
+
+| File | Chain / change |
+|---|---|
+| [__init__.py](../../../../solvers/bem_inverse/__init__.py) | Exports `PlaneWaveAcquisition`, an alias of the existing plane-wave acquisition. |
+| [continuation/forward.py](../../../../solvers/bem_inverse/continuation/forward.py) | Acquisition masks, shape validation, measured-pair order and acquisition equality; direct legacy nodal calls refuse masks. |
+| [a3_waves.py](../../../../solvers/bem_inverse/a3_waves.py) | A3 extracts unchanged regular-wave arithmetic for reuse; adds exact scaled plane-wave coefficients, centre phase and a tail bound. |
+| [a4_fields.py](../../../../solvers/bem_inverse/a4_fields.py) | A4 adds explicit full-table contraction and masked C-order selection; retains paired einsum. |
+| [forward_solvers/modal_muller.py](../../../../solvers/bem_inverse/forward_solvers/modal_muller.py) | Explicit CPU table dispatch, plane-wave RHS, table state/diagnostics, B7 dispatch and flattened table frontier norms. |
+| [forward_solvers/nodal_kress.py](../../../../solvers/bem_inverse/forward_solvers/nodal_kress.py) | Clear refusal of unsupported masked tables; unmasked legacy behavior unchanged. |
+| [b7_data_jacobian.py](../../../../solvers/bem_inverse/b7_data_jacobian.py) | B7 all-pair nonconjugated reciprocal contraction in receiver blocks, followed by the same mask as A4. |
+| [data_blocks.py](../../../../solvers/bem_inverse/data_blocks.py) | New shared B5/B8 frequency-block offsets, scales, normalization and relative residuals. |
+| [b5_residual.py](../../../../solvers/bem_inverse/b5_residual.py) | Explicit ragged evaluation; original rectangular evaluation unchanged. |
+| [b8_gauss_newton.py](../../../../solvers/bem_inverse/b8_gauss_newton.py) | Explicit block Jacobian uses exactly the B5 map. |
+| [forward_batch.py](../../../../solvers/bem_inverse/forward_batch.py) | Optional tuple of variable-size frequency predictions; default remains column_stack. |
+| [fit_stage.py](../../../../solvers/bem_inverse/fit_stage.py) | Explicit ragged B5/B8 branches, block-aware material column, copied/reused frequency blocks. No LM or acceptance-rule change. |
+| [stage_types.py](../../../../solvers/bem_inverse/stage_types.py) | Ragged opt-in, matching layout in StageEntry reuse, offsets in new stage receipts; omit default-false field from legacy receipts. |
+| [problem.py](../../../../solvers/bem_inverse/problem.py) | Explicit allowance for variable acquisitions across frequencies; matched real/damped checks retained. |
+| [runner.py](../../../../solvers/bem_inverse/runner.py) | C12 accepted-state maximum relative residual supports frequency blocks. No continuation decision change. |
+| [checks.py](../../../../solvers/bem_inverse/checks.py) | Finite-trial check accepts a tuple of frequency blocks. Cancellation threshold is unchanged. |
+| [README.md](../../../../solvers/bem_inverse/README.md) | Documents new options, layout, CPU restriction and default preservation. |
+
+Also updated the [A1–C12 reference](../../../reference/inverse_information_chain.md).
+No CUDA implementation, geometry-update module or shared comparison/scoring
+file was edited. Only stages (a)/(b) changed the core.
+
+### New options and defaults
+
+| Entry point | New option / default | Meaning when enabled |
+|---|---|---|
+| `ModalSettings` | `table_mode=False` | `True` enables unpaired point or plane-wave tables, with explicit `Execution(device='cpu')`. Auto/CUDA requests are refused for this new mode. |
+| `PlaneWaveAcquisition` / existing `Acquisition` | `mask=None` | None measures all direction/receiver pairs; a boolean mask selects C-order rows. Unmasked shape is `(direction,receiver)`, masked shape `(measured_pairs,)`. |
+| `PointSourceAcquisition` | `mask=None` | Mask is available only with existing `paired=False`; the existing `paired=True` default is unchanged. |
+| `Problem` | `allow_variable_acquisition=False` | Allows changing real acquisition/counts across frequencies. Real/damped pairs still must match. |
+| `FitStage` | `ragged_data=False` | Uses shared frequency blocks and records offsets. Existing policies keep their rectangular branch. |
+| `solve_frequencies` | `ragged_data=False` | Internal dispatch returns a tuple only when explicitly requested. |
+| `solve_and_predict` | `table=False`, `mask=None` | Internal A4 table contraction; default paired arithmetic unchanged. |
+| `ModalState` / `StageEntry` | `table_mode=False` / `ragged_data=False` | Internal state markers prevent cross-layout reuse. |
+
+`plane_wave_kernels` is a new A3 function, not a changed default selection.
+`series_loss=1e-9` and all material positivity rules remain unchanged. Known
+contrast still means `material=None`; eta below one required no new option.
+The BRG schedule lives only in the experiment wrapper, not a default policy.
+
+### Tests added and retained proof
+
+- [test_table_forward.py](../../../../pytest/bem_inverse/test_table_forward.py):
+  seven cases covering translated-disk modal values/flux, independent disk
+  scattering at eta 0.33 and 2, masks, unpaired point tables and refusals.
+- [test_table_derivative.py](../../../../pytest/bem_inverse/test_table_derivative.py):
+  six cases covering every table entry against paired contractions, full and
+  masked complete-slider differences, equal-frequency residual/Jacobian
+  order, explicit variable acquisition, material columns and entry reuse.
+- Experiment checks preserve the true-glider BRG comparison, two-step full
+  and masked derivative errors, and all qualified-prefix frequencies.
+
+The saved pre-edit CPU suite passed 96 tests with 3 CUDA-only skips. The
+post-edit suite passed 109 with the same 3 skips. Both use the pinned EMNerf
+CPU environment, single-threaded BLAS and the same existing test suite.
+
+The default TG-002 `circle__c0.5` fit used the existing comparison runner,
+`modal_muller` + `slider`, real data, recovered contrast, default settings
+and its 120 s limit, with CPU execution pinned. Before/after arrays are
+byte-identical: 385 complex curve coefficients, all 19-by-24 complex
+predictions and the 201-by-201 material image. Returned eta is identical
+at 0.5000000000469913; maximum residual is 2.0105158339865096e-7.
+
+Stable decisions, stage outcomes and work are also identical: 596 units,
+402 forward solves, 194 derivative batches, 17 accepted steps, 10 stages.
+Only clocks and added default-false receipt fields are excluded from record
+comparison. Source hashes pin both versions; no solver edit followed this
+passing comparison. See [machine-readable proof](../../../../results/brg/bem_adaptation/2026-11-17/regression/comparison.json).
+
+Commit sequence: `f81719a31` (A3/A4), `4dde44c96` (B7/B5/B8),
+`da5690467` (default-path proof), `3abcc6759` (forward prefix),
+`a8ca0b993` (one-fit checkpoint and then-authorized activity 04 draft).

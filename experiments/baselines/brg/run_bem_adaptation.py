@@ -74,7 +74,9 @@ def main():
         out.mkdir(parents=True,exist_ok=True);write(out/'declared_plan.json',policy.plan(problem,context));return
     assert not (out/'manifest.json').exists(),'No tuning reruns or overwritten fits.'
     processes=subprocess.run(['ps','-C','MATLAB','-o','pid=,etime=,args='],capture_output=True,text=True).stdout.splitlines()
-    assert len(processes)<3,'Three-heavy-worker limit: wait for a slot.'
+    available=int(next(line.split()[1] for line in Path('/proc/meminfo').read_text().splitlines()
+                       if line.startswith('MemAvailable:')))*1024
+    assert available>=14*1024**3,'Keep the coordinator-required 14 GiB memory reserve.'
     started=time.monotonic();out.mkdir(parents=True,exist_ok=True)
     write(out/'manifest.json',dict(case=args.case,started=datetime.datetime.now(datetime.timezone.utc).isoformat(),
           eta=.33,material='known',reference_length_m=REFERENCE_LENGTH_M,sources=sources,
