@@ -1,0 +1,32 @@
+{
+  "k": 15.0,
+  "passes": false,
+  "source": "results/brg/paper_examples/2026-11-17/glider_033/local/data_057.mat",
+  "source_sha256": "f0e0fa3db37d3f5e88391416d0b19e0ed35fd44957aa5527f82c1e10cc3f3f75",
+  "profile": {
+    "production": 512,
+    "refined": 768,
+    "kind": "modal_muller",
+    "nodal_resolution": null,
+    "token": "8*K_trace",
+    "K_trace": 64,
+    "K_trace_refined": 96,
+    "coefficient_workspace": {
+      "production": 128,
+      "refined": 160
+    },
+    "refinement": "raise K_trace by 32; raise coefficient window by 32; frontier and endpoint audit only"
+  },
+  "data_record": {
+    "index": 57,
+    "k": 15,
+    "points": 1706,
+    "directions": 150,
+    "receivers": 150,
+    "wall_seconds": 6.311679,
+    "err_est": 2.93347769351772e-12
+  },
+  "exception": "ValueError('Regular-wave series cancellation 4.3e-09 exceeds 1e-09 (|k| rho=19.2).')",
+  "traceback": "Traceback (most recent call last):\n  File \"/home/drdeng/Neural_SDF_BEM_AD_organised/experiments/baselines/brg/check_forward_prefix.py\", line 39, in check_one\n    a=forward_solve(curve,obs,eta,profile['production'],context=context)\n  File \"/home/drdeng/Neural_SDF_BEM_AD_organised/solvers/bem_inverse/forward_solvers/modal_muller.py\", line 125, in forward_solve\n    prediction = _solve(curve, observation, contrast, trace_cutoff(int(resolution)), context=context)\n  File \"/home/drdeng/Neural_SDF_BEM_AD_organised/solvers/bem_inverse/forward_solvers/modal_muller.py\", line 150, in _solve\n    sources = plane_wave_kernels(geometry, k, acquisition.directions, **options)\n  File \"/home/drdeng/Neural_SDF_BEM_AD_organised/solvers/bem_inverse/a3_waves.py\", line 154, in plane_wave_kernels\n    values, flux, info = regular_kernels(geometry, k, order, tolerance=tolerance,\n  File \"/home/drdeng/Neural_SDF_BEM_AD_organised/solvers/bem_inverse/a3_waves.py\", line 77, in regular_kernels\n    checks.require_wave_cancellation(loss, series_loss, x)\n  File \"/home/drdeng/Neural_SDF_BEM_AD_organised/solvers/bem_inverse/checks.py\", line 134, in require_wave_cancellation\n    raise ValueError(f'Regular-wave series cancellation {loss:.2g} exceeds {series_loss:g} (|k| rho={x:.3g}).')\nValueError: Regular-wave series cancellation 4.3e-09 exceeds 1e-09 (|k| rho=19.2).\n",
+  "wall_seconds": 0.250073105096817
+}

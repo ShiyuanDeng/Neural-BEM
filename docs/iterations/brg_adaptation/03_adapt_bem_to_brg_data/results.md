@@ -74,3 +74,18 @@ records and work counts also match exactly after excluding clock fields.
 and [after reference](../../../../results/brg/bem_adaptation/2026-11-17/regression/after/)
 retain the evidence. The complete after-check process took 98.323 s.
 No default behavior change was observed; the new paths require explicit options.
+
+## Glider eta 0.33 forward prefix
+
+All 15 ladder frequencies from k=1 through **k=12** pass. Maximum relative
+BRG field difference is **1.30165e-06**; maximum
+refinement difference is **4.86729e-10**.
+The complete qualification took **13.013 s** of its 30-minute budget.
+
+At k=15 the unchanged regular-wave cancellation check refuses the solve:
+4.3e-9 exceeds 1e-9 at geometry-radius product 19.2. The approved BEM prefix
+therefore ends at k=12. No higher frequency or redesign is pursued.
+
+[Qualification and per-frequency records](../../../../results/brg/bem_adaptation/2026-11-17/glider_033/forward/)
+include field errors by illumination/receiver, refinement, source hashes and
+the preserved k=15 refusal. Bulk field arrays remain local with SHA-256.
