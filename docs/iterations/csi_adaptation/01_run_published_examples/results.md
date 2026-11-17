@@ -1,7 +1,7 @@
-# Published CSI examples: stopped for the coordinator
+# Published CSI examples
 
-17 November 2026. Activity 01 remains incomplete. Two attempts of step 1
-ran; neither reached the end of all three methods. Steps 2 and 3 did not run.
+17 November 2026. Activity 01 resumed with the coordinator's approval of the
+legacy interpolation fix. The two initial failures below remain preserved.
 No algorithm or data change was made. No threshold was selected.
 
 ## Runs and measurements
@@ -32,16 +32,48 @@ MF-CC-CSI's printed `err` fell at every recorded iteration, from 2.6810 to
 0.108; `FC` from 0.434 to 0.172. The printed `ChiErr` compares against the
 initial guess when no truth is supplied; it is not a recovery score.
 
-No reconstruction arrays or figures were saved: the first wrapper saved only
+In the initial two failures, no reconstruction arrays or figures were saved:
+the first wrapper saved only
 after all three methods, and the second method failed. Thus there is no
 honest visual judgement yet of the computed U shape. The wrapper now saves
 completed methods' reconstruction arrays on a future failure. No rerun was
-started after discovering the MR-CSI issue.
+started until the coordinator approved patch 0002.
 
-## Failures and the decision needed
+## Step 1 completed after the compatibility fixes
+
+17 November 2026, 19:30:22 UTC; 50.041 s total launch-to-exit wall time.
+Eight MATLAB threads. The random-array refine/coarsen check returned true.
+All three methods completed 16 iterations with finite raw contrast arrays;
+each method's reported cost decreased at every recorded iteration.
+
+| Method | Native seconds | Cost, first to last | Peak real contrast | Peak conductivity, mS/m |
+|---|---:|---|---:|---:|
+| MF-CC-CSI | 9.436 | 2.6810 to 1.2202 | 0.3690 | 130.74 |
+| MF-MR-CSI | 9.621 | 2.6309 to 1.5710 | 0.1608 | 95.62 |
+| CSI | 8.827 | 0.35441 to 0.041413 | 0.6852 | 320.89 |
+
+Peaks use raw `chi` at the last frequency, 16 GHz. Costs have different
+definitions across methods and must not be ranked against one another.
+In the [native output](figures/shipped_i_figure_02.png), MF-CC-CSI and
+MF-MR-CSI show the metal U's two arms and joining bar, with a stronger
+conductivity image. CSI gives a rounded central blob at 16 iterations.
+Thus successful execution and falling costs do not imply that every method
+recovers the U in this short shipped test. No threshold or shape score.
+
+Evidence: [launch](../../../../results/csi/examples/2026-11-17_shipped_i_legacy_interp2/launch.json),
+[analysis](../../../../results/csi/examples/2026-11-17_shipped_i_legacy_interp2/analysis.json),
+[raw contrast](../../../../results/csi/examples/2026-11-17_shipped_i_legacy_interp2/reconstruction.mat),
+[cost history](../../../../results/csi/examples/2026-11-17_shipped_i_legacy_interp2/cost_history.csv).
+All open figures and per-frequency initial/final fields are saved. This
+run also saved dense forward operators, with every file below 50 MB.
+Later runs omit deterministic dense operators to avoid needless large
+files; they retain measured/incident data, all raw contrast outputs,
+initial/final fields and exact upstream MATLAB sources.
+
+## Failures and MATLAB compatibility fixes
 
 `show_InitGuess.m` used `plottools('on')`, removed in R2026a. A display-only
-fix comments out that command. It is the only applied upstream change:
+fix comments out that command:
 [patch](../../../../external/patches/cc-csi/0001-r2026a-remove-obsolete-plottools.patch).
 The original failed attempt was committed and pushed as `262ba5528`.
 
@@ -50,14 +82,24 @@ The original failed attempt was committed and pushed as `262ba5528`.
 at lines 315 and 319 for the regularization line-search terms. Current
 [MathWorks documentation](https://www.mathworks.com/help/matlab/ref/interp2.html)
 requires a nonnegative refinement factor. I have not established the
-historical behavior of the authors' MATLAB release.
+historical behavior independently of the coordinator's source reading below.
 
-Proposed change, **not applied**: replace those three negative-refinement
-calls with sampling every `2^intrao` entries in each dimension, beginning at
-index 1. Each array was made on the grid refined by `interp2(...,intrao)`,
-so this selects the original grid nodes. This is a plausible intended
-coarsening, but it lies inside MR-CSI's regularization and needs the
-coordinator's decision under the no-algorithm-change rule.
+The coordinator approved and I applied
+[patch 0002](../../../../external/patches/cc-csi/0002-restore-legacy-interp2-coarsening.patch),
+replacing only those three calls with sampling every `2^intrao` entries in
+each dimension from index 1. **Coordinator's reading of the legacy function:**
+`interp2(V,n)` built query coordinates `1:1/2^n:ncols` (and the same for
+rows), without checking the sign. For `n=-1`, it queried `1:2:end`; linear
+interpolation at the existing nodes returns their exact values. Refinement
+at line 209 changes N to 2N-1, and this sampling restores N entries, as the
+later arithmetic requires. This restores legacy behavior rather than
+changing the regularization mathematics. Further compatibility fixes may
+proceed when the old behavior is clear, as authorized by the coordinator.
+
+The wrapper checks a seeded random 17-by-17 array V, sets `Vq=interp2(V,1)`,
+and asserts `isequal(V,Vq(1:2:end,1:2:end))`. It restores the random-number
+state before executing their driver. The check result is recorded in each
+resumed run's MATLAB log.
 
 Step 3 has no time estimate yet: step 2 has not run. Do not start it until
 step 2 supplies per-iteration times and the total estimate is below four
@@ -138,6 +180,9 @@ counts from the actual upstream input tables, including `dielTM_dec8f`.
   `1.67 + (0.20066/0.6964)/2`, about 1.81407 m. The paper text says 1.67 m.
   Keep this difference visible for the coordinator; do not silently switch
   either the baseline or our matched forward check to another radius.
+
+The radius mismatch is: the shipped second-opus code uses 1.81406950 m for both antennas.
+The paper says 1.67 m; this activity keeps their shipped correction unchanged.
 
 Full forward and inverse timings, thread-isolated timings, calibration
 values and computed image levels remain pending. No support threshold,

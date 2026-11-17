@@ -3,6 +3,14 @@ maxNumCompThreads(8);
 cd(getenv('CSI_UPSTREAM'));
 set(groot, 'defaultFigureVisible', 'off');
 fprintf('CSI wrapper: MATLAB %s, compute threads %d\n', version, maxNumCompThreads);
+csi_rng = rng;
+rng(0);
+V = rand(17, 17);
+Vq = interp2(V, 1);
+csi_coarsening_equal = isequal(V, Vq(1:2:end, 1:2:end));
+assert(csi_coarsening_equal, 'Legacy interp2 coarsening check failed');
+fprintf('Legacy interp2 check: N=17, isequal=%d\n', csi_coarsening_equal);
+rng(csi_rng);
 try
     eval(fileread(getenv('CSI_SCRIPT')));
     run(fullfile(getenv('CSI_REPO'), 'experiments/baselines/csi/save_outputs.m'));

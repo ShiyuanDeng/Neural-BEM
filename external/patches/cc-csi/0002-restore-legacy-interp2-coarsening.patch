@@ -1,0 +1,27 @@
+diff --git a/functions/MR_CSI_Brent.m b/functions/MR_CSI_Brent.m
+index ab43edf..e121304 100644
+--- a/functions/MR_CSI_Brent.m
++++ b/functions/MR_CSI_Brent.m
+@@ -214,7 +214,7 @@ while jj < pars.itenum + 1
+     bx          = myDGradientx(b2chix, intv);
+     by          = myDGradienty(b2chiy, intv);
+     vgTVq       = -2 * (bx + by);
+-    vgTV        = interp2(vgTVq, -intrao);
++    vgTV        = vgTVq(1:2^intrao:end, 1:2^intrao:end);
+     vgTV(rchiTV)    = 0;
+     
+     % +++++++++++++++++ sum(vnuChi, 2) +++++++++++++++++
+@@ -312,11 +312,11 @@ while jj < pars.itenum + 1
+     vnuChiComq      = interp2(reshape(vnuChiCom, N(1), N(2)), intrao);
+     [d_x, d_y]      = myDGradient(vnuChiComq, intv);
+     vb1q            = 2 * real((gx .* conj(d_x) + gy .* conj(d_y)) ./ (TVb2 + eps));
+-    vb1             = interp2(vb1q, -intrao);
++    vb1             = vb1q(1:2^intrao:end, 1:2^intrao:end);
+     vb1(rchiTV)     = 0;
+     d1              = sum(sum(vb1));
+     vb2q            = (d_x .* conj(d_x) + d_y .* conj(d_y)) ./ (TVb2 + eps);
+-    vb2             = interp2(vb2q, -intrao);
++    vb2             = vb2q(1:2^intrao:end, 1:2^intrao:end);
+     vb2(rchiTV)     = 0;
+     d2              = sum(sum(vb2));
+     

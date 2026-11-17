@@ -32,10 +32,12 @@ def main():
         script = script.replace('xs              = 100;', 'xs              = 82.5;')
         script = script.replace('ys              = 100;', 'ys              = 82.5;')
         script = script.replace('= 32;                   % set iteration number', '= 2048;                 % set iteration number')
-        # Paper uses two methods. Keep a zero-size CSI placeholder for the saver/display.
+        # Paper uses two methods; do not manufacture a third result.
         start = script.index("pars.recstr\t= ['RecMF' str '_CSI'];")
         end = script.index('%% save the inversion output', start)
-        script = script[:start] + 'mchi3 = mchi2; chi3 = chi2; vJ3 = vJ2; eTot3 = eTot2; time3 = NaN;\n\n' + script[end:]
+        script = script[:start] + script[end:]
+        display = (UPSTREAM / 'show_output.m').read_text().split('mchi3{oi}')[0]
+        script = script.replace('run show_output.m', display)
     (out / 'upstream_driver.m').write_text(original)
     driver = out / 'executed_driver.m'
     driver.write_text(script)

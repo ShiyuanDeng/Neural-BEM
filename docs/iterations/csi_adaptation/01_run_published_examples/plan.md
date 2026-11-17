@@ -18,9 +18,12 @@ The MaxwellFDFD system link exists; no path patch is needed.
 
 Step 1 stopped twice on 17 November: first on removed `plottools`, then on
 MR-CSI's negative `interp2` refinement factor after MF-CC-CSI completed.
-The display-only patch is saved. Waiting for the coordinator's decision on
-the regularization coarsening call; steps 2 and 3 have not started. See
-`results.md` for evidence and the proposed change, which is not applied.
+The display-only patch is saved. The coordinator approved patch 0002 on
+17 November: replace only the three negative `interp2` calls by sampling
+`X(1:2^intrao:end,1:2^intrao:end)`, restoring the legacy query grid. Resume
+steps 1 to 3, checking random-array refine/coarsen equality first. Similar
+MATLAB compatibility fixes may proceed when old behavior is clear; stop
+for unclear behavior or a mathematical change. See `results.md` for evidence.
 
 ## User decisions (17 November 2026)
 
