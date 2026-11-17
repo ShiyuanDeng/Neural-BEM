@@ -181,3 +181,14 @@ checksums, and all committed artifacts stay below 50 MB.
 
 [Data and convention handoff](data_handoff.md).
 [Patch status and reproduction](../../../../external/patches/brg/README.md).
+
+## Full shipped example authorized, 17 November
+
+The coordinator approved patches 03 and 04 and the full step 5 run; their
+source/branch review is recorded in the plan. The first launch stopped
+before data generation because MATLAB cannot JSON-encode complex-typed
+coefficients, even with zero imaginary parts. This is a wrapper metadata
+error; the retry converts only the metadata copy to real values.
+The failed attempt and its bulk-log checksum are retained in
+`results/brg/examples/shipped_cavity_full/attempt_01.json` and
+`bulk_manifest.json`. Its wall time counts toward the four-hour limit.

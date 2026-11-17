@@ -13,7 +13,8 @@ activity 01 to `brg`; this supersedes the earlier "not now".
 
 Checkpoint reached on 17 November: build, suite and star generation complete;
 transmission multi-component test failed. Corrected low-frequency checks
-pass. Waiting for the coordinator; no full run has started.
+pass. The coordinator approved patches 03 and 04 and instructed the full
+shipped-example run on 17 November. Preparing/resuming step 5 below.
 
 Checkpoint instruction: complete steps 1–4 and a low-frequency check of the proposed
 step 5 physics fix, then stop for the coordinator. Do not start the full
@@ -157,3 +158,41 @@ unrelated zero-gradient MEX crash after the frequency fix. Repeat at k=1,
 1.25,1.5 from the shipped unit disk, one iteration, comparing the RLA output
 to a direct correctly parameterized single-frequency call. Require residual
 and curve differences below 1e-10. Retain the prior failed diagnostic.
+
+## Coordinator decision: full shipped example, 17 November
+
+The coordinator approved patches 03 and 04 after reviewing the pinned
+source and both upstream branches. Their review: `bc.q` is set by the driver
+and otherwise unread in `src/+rla/`; the driver says `transk` changes at
+every frequency and generates data with `[kh*bc.q kh]`. Patch 04 repeats
+that operation in the frequency loop. Patch 03 passes the fields already
+read by the transmission derivative and changes no other boundary type.
+Neither `issue-computefields-trans-bug` nor `devel-impedance` has an
+alternative fix to copy. This is the coordinator's review.
+
+Run `python experiments/baselines/brg/run_full.py`. It invokes
+`run_shipped_cavity.m` with eight compute threads, the shipped settings and
+a seven-argument solver call. Generate the full data set before inversion,
+as in the driver. Save each completed frequency atomically. Resume from
+the last saved exact curve state; do not repeat completed frequencies.
+
+The four-hour limit covers all attempts' MATLAB process wall time, including
+data generation, inversion and saving. A hard process timeout enforces the
+remaining budget. An interrupted frequency is repeated on resume only if
+there is budget left. This is the shipped example, never a table B result.
+
+Outputs: `results/brg/examples/shipped_cavity_full/` holds compact curves,
+residual histories, iteration counts, exit flags, timings, JSON and commands.
+Its ignored `local/` holds data, exact continuation states and full logs.
+Commit bulk-file commands and SHA-256 values, not bulk arrays. Commit about
+5 MB at most for this run; retain everything previously pushed unchanged.
+The comparison figure goes under this activity's `figures/shipped_cavity_full/`.
+
+At the end report the driver's unnormalized symmetric-difference area and
+the normalized area error separately, with the true/recovered cavity figure.
+CSI may overlap, so timings remain indicative. Use path-limited commits
+because the Git index is shared.
+
+While step 5 runs, draft activity 02 for the paper's examples 1–3, seven
+runs as requested. Give exact shapes, reachable settings and every gap.
+Do not run activity 02.
