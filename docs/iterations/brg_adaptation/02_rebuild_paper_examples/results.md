@@ -2,7 +2,7 @@
 
 ## Status
 
-Campaign started 17 November 2026. 5/6 cases complete through k=15.
+Campaign started 17 November 2026. 6/6 cases complete through k=15.
 This report is updated after each run. The full case budget is four hours,
 including data and all attempts; the optional glider alternative shares it.
 These are rebuilt paper cases, distinct from activity 01's shipped example.
@@ -65,6 +65,7 @@ include coefficients, both panels, calibration, path indices and hashes.
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
 | glider_033 / shipped | 57/57 | 15 | 0.0517798% | 1.65792e-05 | 203 | 2.20 | 8.24 | 68.52 |
 | glider_10 / shipped | 57/57 | 15 | 0.00362365% | 1.16845e-06 | 335 | 2.16 | 14.40 | 35.03 |
+| star_full / shipped | 57/57 | 15 | 0.523044% | 0.000816685 | 592 | 2.30 | 89.27 | 103.86 |
 | star_limited / shipped | 57/57 | 15 | 0.805104% | 0.000335598 | 535 | 2.41 | 76.28 | 78.83 |
 | cavity_09 / shipped | 57/57 | 15 | 134.196% | 0.846008 | 102 | 8.70 | 10.96 | 19.79 |
 | cavity_2 / shipped | 57/57 | 15 | 134.087% | 0.762657 | 129 | 8.62 | 45.21 | 54.00 |
@@ -80,6 +81,12 @@ the cavity at both contrasts. Our large cavity errors agree with that
 qualitative outcome; they do not establish identical reconstructions. See
 the [paper](https://arxiv.org/pdf/2210.11607) and the source panels below.
 
+Both star endpoints closely follow the recovered true curve at k=15,
+as the paper’s obstacle panels show qualitatively. The k=1 outlines differ
+visibly from the paper’s plotted outlines. These rebuilt cases therefore
+provide a reproducible public-code check, not an exact reproduction of the
+authors’ unavailable experiment drivers. No extra tuning run was made.
+
 Process time includes MATLAB startup and I/O; data and inverse columns
 measure those phases separately. Fine-grid checks, when present, are listed
 below and included in process time. Per-frequency records retain k,
@@ -88,6 +95,7 @@ iterations, residual history, exit flag, time and curve.
 - glider_033 / shipped: UTC 2026-11-17T20:16:16.608701+00:00 to 2026-11-17T21:24:47.514919+00:00; 57 newly generated data frequencies.
   Process time is a conservative upper bound because the terminal supervisor was lost; phase times remain measured.
 - glider_10 / shipped: UTC 2026-11-17T21:33:15.946290+00:00 to 2026-11-17T22:08:18.060887+00:00; 57 newly generated data frequencies.
+- star_full / shipped: UTC 2026-11-17T21:49:26.601598+00:00 to 2026-11-17T23:33:51.533206+00:00; 57 newly generated data frequencies.
 - star_limited / shipped: UTC 2026-11-17T22:04:28.037267+00:00 to 2026-11-17T23:23:18.045784+00:00; 57 newly generated data frequencies.
 - cavity_09 / shipped: UTC 2026-11-17T22:04:28.062807+00:00 to 2026-11-17T22:24:15.773264+00:00; 57 newly generated data frequencies.
 - cavity_2 / shipped: UTC 2026-11-17T22:04:28.080930+00:00 to 2026-11-17T22:58:28.302750+00:00; 57 newly generated data frequencies.
@@ -136,6 +144,7 @@ These are possibilities, not diagnoses or reasons to change the campaign.
 
 - glider_033 / shipped: maximum interior-source diagnostic 7.34431e-07; exit flags {'2': 57}.
 - glider_10 / shipped: maximum interior-source diagnostic 1.78275e-06; exit flags {'3': 4, '2': 13, '1': 40}.
+- star_full / shipped: maximum interior-source diagnostic 0.000501696; exit flags {'2': 17, '3': 4, '-1': 36}.
 - star_limited / shipped: maximum interior-source diagnostic 0.000501696; exit flags {'2': 16, '3': 4, '-1': 37}.
 - cavity_09 / shipped: maximum interior-source diagnostic 1.49366e-07; exit flags {'-1': 56, '2': 1}.
 - cavity_2 / shipped: maximum interior-source diagnostic 2.26727e-07; exit flags {'-1': 57}.
@@ -146,6 +155,12 @@ Exit 1 means residual stop; 2 update stop; 3 iteration limit; -1 means
 the public update returned a failure code (including filtered-step failure),
 not proof that the accepted final curve intersects itself. The manufactured
 source is verified inside each true curve and is diagnostic only.
+
+All 342 target-frequency records have finite saved curves and residual
+histories. Their data files and exact continuation states are present. No
+NaN/Inf or crash message was found in the completed MATLAB logs; the known
+zero-gradient failure was not observed. Every case stayed within four hours.
+[Completion check](../../../../results/brg/paper_examples/2026-11-17/completion_k15.json).
 
 - glider_033/default/attempt_01.json: coordinator stop/redirect, not a numerical crash; return code -15; log `results/brg/paper_examples/2026-11-17/glider_033/default/local/matlab_01.log`.
 - glider_033/shipped/attempt_01.json: Terminal-launched supervisor disappeared before final receipt; reason unverified. MATLAB completed all 117 endpoints and ended. No process return code is available. Recovered receipt uses observation time as a conservative budget debit. Later runs use detached supervisors. Log: `results/brg/paper_examples/2026-11-17/glider_033/shipped/local/matlab_01.log`.
@@ -158,6 +173,7 @@ Paper source panels for visual comparison: [star](figures/paper_star_reference.p
 
 - glider_033 / shipped: [curves](figures/glider_033_shipped_k15_curves.png), [errors](figures/glider_033_shipped_k15_errors.png), [metrics](../../../../results/brg/paper_examples/2026-11-17/glider_033/shipped/metrics_k15.json).
 - glider_10 / shipped: [curves](figures/glider_10_shipped_k15_curves.png), [errors](figures/glider_10_shipped_k15_errors.png), [metrics](../../../../results/brg/paper_examples/2026-11-17/glider_10/shipped/metrics_k15.json).
+- star_full / shipped: [curves](figures/star_full_shipped_k15_curves.png), [errors](figures/star_full_shipped_k15_errors.png), [metrics](../../../../results/brg/paper_examples/2026-11-17/star_full/shipped/metrics_k15.json).
 - star_limited / shipped: [curves](figures/star_limited_shipped_k15_curves.png), [errors](figures/star_limited_shipped_k15_errors.png), [metrics](../../../../results/brg/paper_examples/2026-11-17/star_limited/shipped/metrics_k15.json).
 - cavity_09 / shipped: [curves](figures/cavity_09_shipped_k15_curves.png), [errors](figures/cavity_09_shipped_k15_errors.png), [metrics](../../../../results/brg/paper_examples/2026-11-17/cavity_09/shipped/metrics_k15.json).
 - cavity_2 / shipped: [curves](figures/cavity_2_shipped_k15_curves.png), [errors](figures/cavity_2_shipped_k15_errors.png), [metrics](../../../../results/brg/paper_examples/2026-11-17/cavity_2/shipped/metrics_k15.json).

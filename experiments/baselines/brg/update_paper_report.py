@@ -92,6 +92,8 @@ include coefficients, both panels, calibration, path indices and hashes.
 '''+ '\n'.join(rows)+'\n\n'
     text+='The coordinator shortened the active campaign to k=15. The completed\nglider eta 0.33 full sweep and all higher-frequency data/states are retained.\nResumes to k=30 are low priority and require an otherwise idle machine or\na coordinator request. Phase columns below cover only k<=15; process time\nincludes any already-spent higher-frequency work.\n\n' if target==15 else ''
     text+='The paper’s section 4.3 reports that its obstacle solver fails to resolve\nthe cavity at both contrasts. Our large cavity errors agree with that\nqualitative outcome; they do not establish identical reconstructions. See\nthe [paper](https://arxiv.org/pdf/2210.11607) and the source panels below.\n\n'
+    if target==15 and {'star_full','star_limited'}.issubset(completed):
+        text+='Both star endpoints closely follow the recovered true curve at k=15,\nas the paper’s obstacle panels show qualitatively. The k=1 outlines differ\nvisibly from the paper’s plotted outlines. These rebuilt cases therefore\nprovide a reproducible public-code check, not an exact reproduction of the\nauthors’ unavailable experiment drivers. No extra tuning run was made.\n\n'
     text+='Process time includes MATLAB startup and I/O; data and inverse columns\nmeasure those phases separately. Fine-grid checks, when present, are listed\nbelow and included in process time. Per-frequency records retain k,\niterations, residual history, exit flag, time and curve.\n\n'
     for r in entries:
         text+=f"- {r['case']} / {r['curvature']}: UTC {r.get('started')} to {r.get('ended')}; {r.get('new_data_frequencies',117)} newly generated data frequencies.\n"
@@ -148,6 +150,9 @@ These are possibilities, not diagnoses or reasons to change the campaign.
     if target==15 and not (BASE/'cavity_2/accuracy_k30.json').exists():
         text+='- Cavity eta 2: the k=30 finer-grid check is deferred with the coordinator’s k=30 hold; it has not been performed.\n'
     text+='\nExit 1 means residual stop; 2 update stop; 3 iteration limit; -1 means\nthe public update returned a failure code (including filtered-step failure),\nnot proof that the accepted final curve intersects itself. The manufactured\nsource is verified inside each true curve and is diagnostic only.\n\n'
+    completion=BASE/'completion_k15.json'
+    if target==15 and completion.exists():
+        text+='All 342 target-frequency records have finite saved curves and residual\nhistories. Their data files and exact continuation states are present. No\nNaN/Inf or crash message was found in the completed MATLAB logs; the known\nzero-gradient failure was not observed. Every case stayed within four hours.\n[Completion check](../../../../results/brg/paper_examples/2026-11-17/completion_k15.json).\n\n'
     failed=[]
     for p in sorted(BASE.glob('*/*/attempt_*.json')):
         a=json.loads(p.read_text())

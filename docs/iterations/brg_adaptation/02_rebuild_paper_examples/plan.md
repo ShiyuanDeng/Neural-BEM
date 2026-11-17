@@ -8,6 +8,11 @@ and at least 14 GB available memory. Keep all higher-frequency evidence;
 k=30 resumes are low priority, only on an idle machine or coordinator request.
 The later dated coordinator updates below supersede the original run order.
 
+All six k=15 endpoints finished on 17 November 2026, by 23:33 UTC. The
+342 target-frequency records, data files and continuation states were checked.
+No case hit four hours; minimum observed available memory was 18.18 GiB.
+The k=30 remainder and cavity eta=2 finer-grid check remain deferred.
+
 Activity 03 has reached its one-glider checkpoint and is stopped. Its report
 contains the solver handover; further BEM work awaits the coordinator’s new
 ownership arrangement. Shared comparison files remain unedited.
