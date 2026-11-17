@@ -7,7 +7,7 @@ settings, assumptions and unknowns, and it sets how subagents share the work.
 The coordinator (the main session) owns this file. Subagents never edit it.
 They report back, and the coordinator updates the status board and the cards.
 
-Last updated: 17 November 2026, 22:15 (BRG paper cases capped at k = 15 for now).
+Last updated: 17 November 2026, 22:25 (CSI 02 done; CSI 03 preparing the simulated cases).
 
 ## Status board
 
@@ -16,7 +16,7 @@ Last updated: 17 November 2026, 22:15 (BRG paper cases capped at k = 15 for now)
 | Our BEM (default) | [evaluate_our_method](evaluate_our_method/) | [01](evaluate_our_method/01_measure_clean_and_noisy_recovery/results.md), [02](evaluate_our_method/02_run_ablations/results.md), run 17 Nov | TG-002 done | Extend for BRG and CSI data, later inside those investigations |
 | GauGal | [evaluate_our_method](evaluate_our_method/) | [03](evaluate_our_method/03_record_untuned_gaugal_reference/results.md), run 17 Nov | TG-002 untuned reference done | Stage 2 role open (U1) |
 | BRG | [brg_adaptation](brg_adaptation/) | [01 results](brg_adaptation/01_run_published_examples/results.md), [02 plan](brg_adaptation/02_rebuild_paper_examples/plan.md) | 01 done 17 Nov. 02 (six paper cases): 1 of 6 done. 03 (adapt our BEM to BRG data): plan approved 17 Nov 21:45 | `brg` agent (Codex, astra, high effort): run the other five cases; implement 03 in stages during the waits; stop after one glider fit with our BEM |
-| CSI family | [csi_adaptation](csi_adaptation/) | [01 results](csi_adaptation/01_run_published_examples/results.md) | 01 done 17 Nov. 02 (measured Fresnel cylinder, all three methods) started 17 Nov 20:35 | `csi` agent (Codex, sol, high effort): run `dielTM_dec8f`, preview its score, cost the simulated cases |
+| CSI family | [csi_adaptation](csi_adaptation/) | [01 results](csi_adaptation/01_run_published_examples/results.md) | 01 and [02](csi_adaptation/02_run_fresnel_dielectric_cylinder/results.md) done 17 Nov. 03 (prepare the simulated TG-002 cases) started 17 Nov 22:25 | `csi` agent (Codex, sol, high effort): fix the frame, test whether 2048 iterations are needed, time one simulated case; no campaign yet |
 
 **Setup checked on 17 November 2026:** the user made the MaxwellFDFD link and
 signed in to MATLAB (online licensing). `matlab -batch` runs, the C compiler
@@ -36,7 +36,7 @@ investigation may edit `solvers/bem_inverse/` at a time.
 | A. TG-002 (Stage 1) | 10 shapes at contrasts 0.5 and 4 (20 cases); contrast 13.3 for BEM only | BEM default, GauGal untuned | Done. No claims (user: claims "should wait until we see how baselines perform in stage 2") |
 | B1. BRG on TG-002 shapes (main BRG table) | 10 shapes at contrasts 0.5 and 4, with BRG-style plane-wave data | BRG, BEM with known contrast; BEM with recovered contrast as an extra row | Plan to be drafted (BRG activity 04) |
 | B2. BRG paper cases | Paper examples 1–3, six runs | BRG; BEM with known contrast up to about k = 13 | BRG: 1 of 6 done. BEM: adapter in progress |
-| C. CSI cases | Fresnel `dielTM_dec8f`, plus TG-002 shapes simulated in the Fresnel layout | MF-CC-CSI, MR-CSI, CSI, BEM with recovered contrast | Not started |
+| C. CSI cases | Fresnel `dielTM_dec8f`, plus the 10 TG-002 shapes at contrast 4 simulated in the Fresnel layout | MF-CC-CSI, MR-CSI, CSI, BEM with recovered contrast | CSI: measured case done; simulated cases being prepared. BEM: not started |
 
 Rules for every table:
 - Their code and published settings are not changed. Our method is adapted to
@@ -241,6 +241,21 @@ Rules for every table:
     centre at the origin, half-widths 70 mm, 1.25 mm cells.
   - The shipped antenna radius stays; it only matters for second-opus
     cases, which table C does not use.
+
+  - Result of 02 (measured cylinder `dielTM_dec8f`, 17 November): all
+    three methods ran 2048 iterations, about 32 minutes each. Support area
+    against the nominal cylinder: +4.2% (MF-CC-CSI), +1.3% (MF-MR-CSI),
+    -19.9% (CSI). Mean permittivity 2.73, 3.01 and 3.28; the truth is
+    3 ± 0.3. The Fresnel frame is not yet matched to their grid axes.
+  - The MR-CSI difference from Figure 5 stays unexplained after a reading
+    check. The interpolation patch is exact on eight test arrays.
+- **Decided for the simulated cases (coordinator, 17 November):**
+  - Contrast 0.5 is left out for CSI. In vacuum it is a negative
+    susceptibility, which their projection forbids.
+  - So table C's simulated cases are the 10 TG-002 shapes at contrast 4.
+  - Grid 166 × 166 at 1.25 mm, because the shapes reach 96 mm.
+  - Cost forecast: about 34 h for three methods, about 12 h for MF-CC-CSI
+    alone, at 2048 iterations. The campaign waits on the user's deadline.
 
 ## Who decides
 
