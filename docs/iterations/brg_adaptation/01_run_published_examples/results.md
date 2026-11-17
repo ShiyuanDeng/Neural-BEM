@@ -108,3 +108,11 @@ The diagnostic is revised to start from the shipped unit disk and compare
 one RLA step with a direct single-frequency inverse call supplied the correct
 wavenumbers. This tests the actual frequency-loop boundary without the
 exact-fit corner case. Both calls keep the same data and optimizer settings.
+
+## Unit-disk diagnostic, stale frequencies
+
+17 November: the direct reference residuals after one step were 1.324969,
+2.096010 and 1.889293. RLA with stale [45,30] gave 4.668302, 4.697863 and
+3.964944, with relative curve differences 0.59655, 0.27016 and 0.25518.
+The intended assertion fails at all three frequencies.
+[Evidence](../../../../results/brg/examples/low_frequency_stale_disk/check.json).

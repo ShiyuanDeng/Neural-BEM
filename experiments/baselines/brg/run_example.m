@@ -61,6 +61,8 @@ try
             assert(evalin('base','numel(u_meas)==17'), 'BRG:incomplete','Expected 17 frequencies');
         case {'low_frequency_unpatched','low_frequency_stale','low_frequency_fixed'}
             check_transmission(stage,out);
+        case {'low_frequency_stale_disk','low_frequency_fixed_disk'}
+            check_transmission_disk(stage,out);
         otherwise
             error('BRG:stage','Unknown stage: %s',stage);
     end

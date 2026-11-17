@@ -1,0 +1,15 @@
+BRG MATLAB 26.1.0.3203278 (R2026a); initial threads 1; requested/current threads 8
+BRG disk check k=1.00 reference=1.32496856537 RLA=4.66830216759 difference=3.34333360222 curve_difference=0.596548092176
+BRG disk check k=1.25 reference=2.09601002889 RLA=4.69786340733 difference=2.60185337844 curve_difference=0.270159202648
+BRG disk check k=1.50 reference=1.88929313269 RLA=3.96494350047 difference=2.07565036777 curve_difference=0.255179775348
+BRG low_frequency_stale_disk success=0 compute_seconds=10.907201
+{Error using assert
+RLA must reproduce the correctly parameterized direct frequency solve.
+
+Error in check_transmission_disk (line 34)
+assert(all([records.residual_difference]<1e-10) && all([records.curve_difference]<1e-10), ...
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in run_example (line 65)
+            check_transmission_disk(stage,out);
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+} 
