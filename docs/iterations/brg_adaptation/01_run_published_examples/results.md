@@ -1,7 +1,94 @@
-# BRG published examples: activity 01
+# BRG shipped examples: activity 01
 
-Started 17 November 2026 with the coordinator's go. In progress; the full
-117-frequency run is held for the step 5 physics checkpoint.
+Activity 01 finished on 17 November 2026. The full **shipped example**
+completed all 117 data and inverse frequencies after the coordinator approved
+patches 03/04. This is not a table B result. The cavity was not recovered
+accurately: final relative area error is 57.5954%. Earlier test failures remain
+recorded below; they were not repaired or hidden.
+
+## Full shipped example: final result
+
+| Measurement | Result |
+|---|---:|
+| Data / inverse frequencies | 117 / 117 |
+| Exterior wavenumbers | 1 through 30, step 0.25 |
+| Known interior/exterior wavenumber ratio | 1.5 |
+| Known squared material ratio | 2.25 |
+| MATLAB compute threads | 8 |
+| Total inverse iterations | 302 |
+| Final relative data residual | 0.7933549307 |
+| Driver's unnormalized symmetric-difference area | 0.3896366096 |
+| Driver's 300-point truth polygon area | 0.6765062059 |
+| Relative area error | 0.5759542280 (57.5954%) |
+| Data generation compute time | 122.04 s |
+| Inverse compute time | 1118.52 s |
+| Successful process wall time | 1395.81 s (23 min 15.81 s) |
+| All full-run attempts, including metadata failure | 1398.93 s (23 min 18.93 s) |
+
+The data time includes the shipped analytic check. Inverse time measures
+solver calls; process wall time also includes startup, checkpoint writes
+and figure exports. CSI overlapped, so none of these times is a final
+comparison timing. The four-hour cap was not reached.
+
+Eighty-seven frequencies ended with public exit flag -1 (no accepted valid
+or decreasing step); thirty ended with flag 2 (small update). None ended
+on the residual threshold or the 100-iteration limit. The longest fit was
+60 iterations at k=16.75. Completion of the loop is not convergence to the
+true shape. Each frequency's original flag and full residual history are kept.
+
+[Metrics](../../../../results/brg/examples/shipped_cavity_full/metrics.json),
+[per-frequency table](../../../../results/brg/examples/shipped_cavity_full/frequency_summary.csv),
+[compact progress log](../../../../results/brg/examples/shipped_cavity_full/progress.log),
+[settings](../../../../results/brg/examples/shipped_cavity_full/settings.json).
+
+![True and recovered shipped cavity at k=1,15,30](figures/shipped_cavity_full/cavity_at_paper_frequencies.png)
+
+![Residual and iteration history](figures/shipped_cavity_full/frequency_history.png)
+
+The final curve follows part of the right-hand arc but misses the long
+left-hand arms and opening, and retains a narrow central pinch. It fails to
+resolve the cavity. This agrees qualitatively with the failure seen in
+Figure 7, not with an exact numerical reproduction: the shipped geometry,
+material ratio and optimization settings differ from the paper cases.
+[Paper, section 4.3 and Figure 7](https://arxiv.org/html/2210.11607).
+
+## Saving, checks and storage
+
+The wrapper atomically saved every data frequency, every exact continuation
+state and every compact inverse record. Restarting the same command skips
+completed frequencies and uses the last saved state; it shares the remaining
+four-hour budget across attempts. The only restart in this run followed the
+metadata failure before data generation, so a mid-inversion resume was not
+needed and is not claimed as a tested interruption case.
+
+`python experiments/baselines/brg/summarize_full.py` checked all 117 compact
+records: ordered frequencies, finite boundaries and residuals, history
+length equal to iteration count, and final residual equal to the history
+endpoint. The approved upstream source hashes were unchanged. Both final
+plots were visually checked. No extra solver tests or fits were run.
+
+The full run's committed compact files occupy about 1.01 MB and its three
+report figures about 0.28 MB, below the approximately 5 MB limit. The 237
+bulk files total 233.20 MB and remain in ignored `local/`, with
+[commands and SHA-256 values](../../../../results/brg/examples/shipped_cavity_full/bulk_manifest.json).
+No previously pushed evidence was removed or rewritten in Git history.
+
+Run command: `python experiments/baselines/brg/run_full.py`.
+[Attempt records](../../../../results/brg/examples/shipped_cavity_full/attempt_02.json)
+and [source state](../../../../results/brg/examples/shipped_cavity_full/source_state.json)
+make the settings and repairs explicit. The run began at 19:41:31 UTC and
+finished at approximately 20:04:47 UTC on 17 November.
+
+## Activity 02 handoff
+
+The requested [paper-example plan](../02_rebuild_paper_examples/plan.md) is
+drafted; no activity 02 run was made. It maps each setting to public options
+and gives the exact glider and shipped-cavity definitions. Exact paper
+star coefficients and cavity geometry remain unavailable in the checked
+paper/source archive, and the six named cases do not identify a seventh
+run. It also records resolution, curvature and filtering gaps for the
+coordinator to resolve before a paper-case campaign.
+
 
 ## Run record
 
@@ -153,11 +240,11 @@ this is the BRG counterpart of A2–A4 frequency consistency and B7 derivative
 inputs. These external BRG calls are not on our default BEM inverse path.
 No `solvers/` or shared comparison code changed.
 
-## Pending decision and limits
+## Checkpoint disposition (before coordinator approval)
 
-Stopped at the coordinator's requested checkpoint. The full 117-frequency
-run has not started; Figure 7 has not been compared. Activity 01 remains
-incomplete because the multi-component test failed and step 5 is pending.
+Stopped at the coordinator's requested checkpoint. At this checkpoint the full 117-frequency
+run had not started and Figure 7 had not been compared. The later
+coordinator approval below supersedes that hold.
 
 After the coordinator's answer, finish the wrapper to checkpoint each data
 and inverse frequency, restore the last curve on resume, and enforce a
@@ -173,7 +260,7 @@ The shipped derivative test shows roughly quadratic remainder decay in
 all seven modes, ending between 7.07e-13 and 4.99e-12; this does not validate
 its derivatives independently at unequal density.
 
-All process timings and commands are in
+Pre-full-run process timings and commands are in
 [run summary](../../../../results/brg/examples/run_summary.json).
 Timing overlap with CSI is permitted for activity 01; final comparison
 timing must run alone. Two workspaces above 50 MB remain local with their
@@ -192,3 +279,36 @@ error; the retry converts only the metadata copy to real values.
 The failed attempt and its bulk-log checksum are retained in
 `results/brg/examples/shipped_cavity_full/attempt_01.json` and
 `bulk_manifest.json`. Its wall time counts toward the four-hour limit.
+
+## Shipped analytic-check source
+
+The shipped data generator uses `opts.src_in=[0.85;0]` for its manufactured
+solution check. The true 300-point cavity has maximum x=0.71054, so this
+point is outside. The unused alternative `[0.6;0]` in the driver's comment
+is inside. The reported `err_est` values near one therefore cannot certify
+forward accuracy. This check is separate from plane-wave measurement
+generation and does not alter its output. The shipped settings were kept.
+[Point check](../../../../results/brg/examples/shipped_cavity_full/analytic_source_check.json).
+
+## Paper-shape identity
+
+The prior plan's description of the shipped cavity as the same paper cavity
+was not established. Figure 7 opens upward; the shipped curve opens leftward
+and has different visible scale. Its exact definition is known from public
+code, but the paper text does not specify its own cavity parameterization.
+Compare the recovery failure qualitatively, not as a reproduction of the
+paper's numerical error. Activity 02 records this geometry gap.
+
+## Coordinator report
+
+```text
+Activity: brg_adaptation/01_run_published_examples, 17 November 2026
+Runs: 117/117 data and 117/117 inverse frequencies; full-run attempt wall time 0:23
+Result: shipped cavity area error 0.38963661; relative area error 57.5954%; final residual 0.793355
+Result: 302 iterations; eight compute threads; suite 3/3; star generation 17/17
+Failures: multi-component test missing L; exact-fit diagnostic MEX crash; full-run metadata retry (logs linked above)
+Upstream patches: external/patches/brg/01–04 used as needed; 03/04 approved; 05 unnecessary with seven arguments
+Changes to our code: experiments/baselines/brg wrappers only; no BEM or shared comparison changes
+New unknowns: paper star/cavity definitions, seventh case, resolution/roughness/filter choices; shipped analytic check invalid
+Proposed next activity: review drafted 02_rebuild_paper_examples plan; needs user decision: none now, coordinator gaps listed
+```

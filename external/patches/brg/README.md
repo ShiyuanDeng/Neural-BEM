@@ -7,8 +7,8 @@ Upstream: `flatironinstitute/inverse-obstacle-scattering2d`, commit
 |---|---|---|
 | `01-wrapper-script-paths.patch` | Applied in memory by the wrapper | Supply startup once and place generated data under BRG results |
 | `02-remove-undefined-lam-save.patch` | Applied in memory on `data_retry` | Remove an undefined, unused impedance variable from the transmission save |
-| `03-preserve-transmission-derivative-parameters.patch` | Applied to external checkout for checks; proposed for full run | Copy `bc` so the geometry derivative receives all transmission parameters |
-| `04-update-transmission-wavenumbers.patch` | Applied to external checkout for checks; proposed for full run | Set both wavenumbers at each RLA frequency from the driver's fixed ratio |
+| `03-preserve-transmission-derivative-parameters.patch` | Applied to external checkout; coordinator approved for full run | Copy `bc` so the geometry derivative receives all transmission parameters |
+| `04-update-transmission-wavenumbers.patch` | Applied to external checkout; coordinator approved for full run | Set both wavenumbers at each RLA frequency from the driver's fixed ratio |
 | `05-remove-obsolete-driver-argument.patch` | Proposed only; not applied | Remove the unused eighth driver argument; the wrapper already calls with seven |
 
 Only patches 03 and 04 alter files in the external checkout. Their total is
@@ -36,3 +36,8 @@ upstream MEX. The accepted check uses the shipped unit-disk start instead.
 
 [Results](../../../docs/iterations/brg_adaptation/01_run_published_examples/results.md)
 and `checkpoint_source_hashes.json` record the checked source state.
+
+The coordinator approved 03 and 04 on 17 November after checking the pinned
+source and both upstream branches. Activity 01's full shipped run uses these
+repairs with unchanged numerical settings. Its wrapper calls seven arguments
+and therefore does not require applying 05 to the unused original driver.

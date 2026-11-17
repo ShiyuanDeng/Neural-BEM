@@ -99,7 +99,7 @@ Use one full parameter turn without a repeated endpoint. This is an exact
 definition of the **shipped** shape, not proof of the paper shape. Its
 300-point bounds are x=[-0.88675,0.71054], y=[-0.82832,0.82832]. Figure 7's
 cavity opens upward and occupies a visibly different scale; the shipped
-one opens rightward. Neither an exact rotation/scale nor the family
+one opens leftward. Neither an exact rotation/scale nor the family
 parameter is specified in the paper. Required input: the paper's generator
 with all transformations, or its boundary coefficients/samples.
 
@@ -179,6 +179,12 @@ are resolved, not changes to the activity 01 shipped example.
    authors' choices for unspecified controls. Defaults are allowed only
    where genuinely silent, and must be named; a default that disables an
    explicitly described restriction is not a faithful reproduction.
+10. **Glider display horizon:** Figure 1 shows error samples only through
+    k=10 (37 frequencies), although section 4's general setting extends to
+    k=30. The text does not explicitly say whether the glider stopped at 10
+    or only plots that range. The table above retains the stated 117-frequency
+    default; compare with Figure 1 only through k=10. A shorter glider run
+    needs a declared coordinator choice rather than an assumed paper limit.
 
 ## Procedure after decisions
 
@@ -205,6 +211,12 @@ Current numerical-run budget: **zero**. Proposed later ceiling: four hours
 per case including data and inversion, at most seven cases (28 hours total).
 This is a proposal, not authorization to exceed activity 01's four-hour
 limit; the coordinator must assign the campaign budget before launch.
+The public transmission code keeps several dense boundary matrices. The
+eta=10 glider under the larger-wavenumber resolution rule can need thousands
+of boundary nodes, far above the shipped example's 500 inverse nodes.
+Estimate matrix memory after the resolution decision and before launch;
+the activity 01 timing does not establish feasibility of the paper settings.
+Do not lower resolution or change the solver to meet a budget silently.
 
 The paper runner does not exist yet. After the case manifest is complete,
 implement `experiments/baselines/brg/run_paper.py` with the intended command

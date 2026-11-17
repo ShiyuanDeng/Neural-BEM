@@ -60,12 +60,14 @@ def main():
         selected.append(records[-1])
     fig, axes = plt.subplots(1, len(selected), figsize=(4 * len(selected), 4), squeeze=False,
                              constrained_layout=True)
+    extent = 1.12 * max(float(np.max(np.abs(curve[key])))
+                        for curve in [truth, *selected] for key in ["xs", "ys"])
     for ax, row in zip(axes[0], selected):
         for curve, color, name in [(truth, "#252525", "True cavity"),
                                     (row, "#ce4b16", "BRG recovered")]:
             ax.plot(np.r_[curve["xs"], curve["xs"][0]], np.r_[curve["ys"], curve["ys"][0]],
                     color=color, linewidth=1.6, label=name)
-        ax.set(xlim=(-1.15, 1.15), ylim=(-1.15, 1.15), xlabel="x", ylabel="y",
+        ax.set(xlim=(-extent, extent), ylim=(-extent, extent), xlabel="x", ylabel="y",
                title=f"k = {row['k']:g} · residual {row['residual']:.3f}")
         ax.set_aspect("equal"); ax.grid(alpha=0.2)
     axes[0, 0].legend(loc="upper left", fontsize=9)

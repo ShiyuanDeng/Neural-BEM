@@ -68,7 +68,9 @@ real-contrast paper cavity case.
 
 ## Geometry, settings and timings
 
-The cavity is `geometries.charlie_cavity(10.2,n)`. Geometry structs contain
+The shipped cavity is `geometries.charlie_cavity(10.2,n)`. Its identity with
+the paper cavity is unverified; the paper figure differs in orientation
+and scale. Geometry structs contain
 `xs`, `ys`, parameter derivatives, speed, curvature, parameter step and
 perimeter; use the ordered Cartesian boundary for later shape scoring.
 The driver saves an initial 300-point truth, then generates at the larger
@@ -83,10 +85,25 @@ Eight MATLAB compute threads are recorded in every stage's metadata.
 The three corrected one-step RLA calls took 1.13, 1.14 and 1.16 s; those are
 diagnostic timings, not complete-fit timings. MATLAB launch and export time
 are included in each `run.json` wall time but excluded from inner timings.
-CSI may have overlapped these runs. Full-run timing, runtime at k=30 and
-native-versus-adapted BEM timings remain pending.
+CSI may have overlapped these runs. The full shipped run took 1395.81 s process wall time (122.04 s data,
+1118.52 s inverse calls); the k=30 solve took 4.39 s for one iteration.
+These are indicative because CSI overlapped. Native-versus-adapted BEM
+timings remain pending.
 
 In the [information chain](../../../reference/inverse_information_chain.md),
 the later adapter needs A3 plane-wave inputs, A4 unpaired receiver/direction
 tables and B5 the same observed scattered field. These BRG wrappers are
 outside the default BEM path; no maintained solver file was edited.
+
+## Full shipped run storage
+
+The resumable wrapper writes one `local/data_NNN.mat` per frequency under
+`results/brg/examples/shipped_cavity_full/`; its `measurement` struct uses
+the same field layout described above. `frequency_NNN.mat` holds the compact
+final curve and residual/timing record. Exact continuation structs are
+`local/state_NNN.mat`, with full logs alongside them. Bulk files remain
+local; `bulk_manifest.json` carries commands and SHA-256 values.
+
+The generator's `err_est` is invalid for this shipped cavity because its
+manufactured-solution source is outside the object. It does not measure
+the plane-wave data error. Keep this limitation visible when importing data.

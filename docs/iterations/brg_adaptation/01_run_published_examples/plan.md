@@ -1,4 +1,4 @@
-# Run the published BRG examples
+# Run the shipped BRG examples
 
 Questions: does the BRG package (inverse-obstacle-scattering2d) build and run
 on this machine? Does its transmission inverse run on its own example?
@@ -14,7 +14,9 @@ activity 01 to `brg`; this supersedes the earlier "not now".
 Checkpoint reached on 17 November: build, suite and star generation complete;
 transmission multi-component test failed. Corrected low-frequency checks
 pass. The coordinator approved patches 03 and 04 and instructed the full
-shipped-example run on 17 November. Preparing/resuming step 5 below.
+shipped-example run on 17 November. Step 5 finished all 117 frequencies in
+23 min 19 s including its failed metadata launch. Activity 01 is finished
+with the documented transmission-test failure; see `results.md`.
 
 Checkpoint instruction: complete steps 1–4 and a low-frequency check of the proposed
 step 5 physics fix, then stop for the coordinator. Do not start the full
@@ -92,8 +94,10 @@ repository, its branches and `mrachh/rla-monograph-tests` have no glider or
    - 10k directions × 10k receivers at radius 10;
    - steepest descent, at most 100 iterations per frequency, unit-disk start.
 
-   Compare by eye with the paper's Figure 7 (the same cavity at ratios 0.9 and
-   2). There the obstacle solver fails to resolve the cavity.
+   Compare qualitatively with the paper's Figure 7, which uses cavity cases
+   at ratios 0.9 and 2. Exact identity of the paper and shipped shapes is
+   unverified; orientation and scale differ. There the obstacle solver fails
+   to resolve the cavity.
 
 Known problems in step 5, to debug and record:
 
@@ -121,7 +125,8 @@ matlab -batch "run('<repo>/experiments/baselines/brg/run_example.m')" 2>&1 | tee
 - The build and steps 2–4 finish without error, and the tests pass.
 - Step 5 runs through all 117 frequencies with the interior wavenumber
   matching each frequency. Its residual history and final curve are saved.
-- The step 5 result agrees with Figure 7 of the paper by eye.
+- Plot the step 5 result beside the true shipped cavity and discuss it
+  qualitatively alongside Figure 7; do not claim an exact paper reproduction.
 - Any patch is small, saved and explained.
 
 ## Run limits
