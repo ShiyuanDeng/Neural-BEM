@@ -74,7 +74,8 @@ def main():
         result['within_one_percent']=differences['area_mm2']<=.01 and differences['mean_relative_permittivity']<=.01
     record=dict(mode=args.mode,protocol_version=1,raw_unmasked=True,truth_based_alignment=False,
         mean_contrast_definition='relative permittivity = 1 + susceptibility',snapshots=results,
-        minimum_checked_iterations_within_one_percent=min(r['iterations'] for r in results if r['within_one_percent']),
+        convergence_assessment=args.mode=='snapshots',
+        minimum_checked_iterations_within_one_percent=(min(r['iterations'] for r in results if r['within_one_percent']) if args.mode=='snapshots' else None),
         resources=resource_summary(run,summary,launch))
     if args.mode=='probe':
         full=loadmat(run/'full_history.mat',simplify_cells=True)

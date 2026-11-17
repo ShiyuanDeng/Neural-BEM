@@ -26,8 +26,17 @@ def main():
     if launch.exists():
         record['launch']=json.loads(launch.read_text())
         record['wrapper_command']=['python3','experiments/baselines/csi/run_preparation.py',args.purpose]
+    elif args.purpose=='cost':record['command']='python3 experiments/baselines/csi/preparation_cost.py'
     else:record['command']='env PYTHONPATH=solvers:. /home/drdeng/miniconda3/envs/EMNerf/bin/python -m experiments.baselines.csi.'+('prepare_geometry' if args.purpose=='geometry' else 'register_saved')
     inputs=[]
+    if args.purpose=='frame':inputs.append(REPO/'results/csi/fresnel/2026-11-17_diel_tm/final_contrast.mat')
+    if args.purpose=='geometry':inputs.append(REPO/'experiments/benchmark/scenes.py')
+    if args.purpose=='cost':
+        inputs.extend(sorted((REPO/'results/csi').rglob('matlab_summary.json')))
+        inputs.extend(REPO/'results/csi/preparation'/p for p in (
+            '2026-11-17_probe/launch.json','2026-11-17_probe/scores.json',
+            '2026-11-17_snapshots/scores.json','2026-11-17_generate/forward_summary.json',
+            '2026-11-17_generate/launch.json'))
     if args.purpose in ('generate','probe'):inputs.append(REPO/'results/csi/preparation/2026-11-17_geometry/geometry.mat')
     if args.purpose=='probe':inputs.append(REPO/'results/csi/preparation/2026-11-17_generate/synthetic_input.txt')
     if args.purpose in ('generate','snapshots'):
