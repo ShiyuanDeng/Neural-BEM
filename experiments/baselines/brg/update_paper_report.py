@@ -91,12 +91,17 @@ include coefficients, both panels, calibration, path indices and hashes.
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
 '''+ '\n'.join(rows)+'\n\n'
     text+='The coordinator shortened the active campaign to k=15. The completed\nglider eta 0.33 full sweep and all higher-frequency data/states are retained.\nResumes to k=30 are low priority and require an otherwise idle machine or\na coordinator request. Phase columns below cover only k<=15; process time\nincludes any already-spent higher-frequency work.\n\n' if target==15 else ''
+    text+='The paper’s section 4.3 reports that its obstacle solver fails to resolve\nthe cavity at both contrasts. Our large cavity errors agree with that\nqualitative outcome; they do not establish identical reconstructions. See\nthe [paper](https://arxiv.org/pdf/2210.11607) and the source panels below.\n\n'
     text+='Process time includes MATLAB startup and I/O; data and inverse columns\nmeasure those phases separately. Fine-grid checks, when present, are listed\nbelow and included in process time. Per-frequency records retain k,\niterations, residual history, exit flag, time and curve.\n\n'
     for r in entries:
         text+=f"- {r['case']} / {r['curvature']}: UTC {r.get('started')} to {r.get('ended')}; {r.get('new_data_frequencies',117)} newly generated data frequencies.\n"
         if r.get('process_time_is_upper_bound'):
             text+='  Process time is a conservative upper bound because the terminal supervisor was lost; phase times remain measured.\n'
     text+='\n'
+    monitor=BASE/'resource_monitor_k15.jsonl'
+    if monitor.exists():
+        resources=[json.loads(line) for line in monitor.read_text().splitlines()]
+        text+=f"Resource monitor: minimum observed available memory {min(r['available_gib'] for r in resources):.2f} GiB; maximum observed MATLAB process count {max(len(r['matlab_pid_rss_kib']) for r in resources)}. Samples are every 10 s, from {resources[0]['utc']}. The required reserve is 14 GB. [Resource log](../../../../results/brg/paper_examples/2026-11-17/resource_monitor_k15.jsonl).\n\n"
     text+='## Curvature comparison\n\n'
     if choice:
         text+=f"Frozen choice: **{choice['selected']}**. {choice['reason']}\n\n"
@@ -140,6 +145,8 @@ These are possibilities, not diagnoses or reasons to change the campaign.
         p=BASE/case/'accuracy_k30.json'
         if p.exists():
             a=json.loads(p.read_text());text+=f"- {case}: k=30 data grid {a['coarse_points']} versus {a['fine_points']} nodes; relative complex-field difference {a['relative_field_difference']:.6g}; check time {a['wall_seconds']:.3f} s.\n"
+    if target==15 and not (BASE/'cavity_2/accuracy_k30.json').exists():
+        text+='- Cavity eta 2: the k=30 finer-grid check is deferred with the coordinator’s k=30 hold; it has not been performed.\n'
     text+='\nExit 1 means residual stop; 2 update stop; 3 iteration limit; -1 means\nthe public update returned a failure code (including filtered-step failure),\nnot proof that the accepted final curve intersects itself. The manufactured\nsource is verified inside each true curve and is diagnostic only.\n\n'
     failed=[]
     for p in sorted(BASE.glob('*/*/attempt_*.json')):

@@ -2,9 +2,15 @@
 
 ## Status
 
-Activity 02 authorized by the coordinator on 17 November 2026. Run the six
-cases below, starting with glider eta 0.33. Activity 03 is a draft only.
-No solver or shared comparison files may be edited.
+Activity 02 was authorized by the coordinator on 17 November 2026. The
+current target is all six saved k=15 endpoints, using concurrent paper cases
+and at least 14 GB available memory. Keep all higher-frequency evidence;
+k=30 resumes are low priority, only on an idle machine or coordinator request.
+The later dated coordinator updates below supersede the original run order.
+
+Activity 03 has reached its one-glider checkpoint and is stopped. Its report
+contains the solver handover; further BEM work awaits the coordinator’s new
+ownership arrangement. Shared comparison files remain unedited.
 
 The first glider reached k=10 on 17 November: its RMS Figure 1 difference
 is 0.904393 decades and its endpoint error ratio is 0.410220. Both exceed
