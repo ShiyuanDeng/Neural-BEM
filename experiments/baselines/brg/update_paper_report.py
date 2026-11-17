@@ -161,15 +161,17 @@ These are possibilities, not diagnoses or reasons to change the campaign.
     for r in entries:
         label=f"{r['case']}_{r['curvature']}{suffix}"
         text+=f"- {r['case']} / {r['curvature']}: [curves](figures/{label}_curves.png), [errors](figures/{label}_errors.png), [metrics](../../../../results/brg/paper_examples/2026-11-17/{r['case']}/{r['curvature']}/metrics{suffix}.json).\n"
-    text+='''
+    text+=f'''
 All bulk observations, dense continuation states and full logs stay local in
 ignored `local/` directories. Each completed attempt has a bulk manifest
 with reproduction command, file sizes and SHA-256. Compact curves, residuals,
 times and logs are committed; figures are in this report folder.
 
 Commands: `python experiments/baselines/brg/run_paper.py --case <case>
---curvature <choice> --max-k 15 --detach`, then `summarize_paper_case.py` with the case and curvature arguments,
-and `python experiments/baselines/brg/update_paper_report.py`.
+--curvature shipped --max-k {target} --detach`, then
+`python experiments/baselines/brg/summarize_paper_case.py --case <case>
+--curvature shipped --max-k {target}`, and
+`python experiments/baselines/brg/update_paper_report.py --max-k {target}`.
 Resuming the run command loads each saved data frequency and the last exact
 inverse state; all attempts share the case's four-hour limit.
 

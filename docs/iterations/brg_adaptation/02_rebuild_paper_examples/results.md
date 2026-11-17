@@ -2,7 +2,7 @@
 
 ## Status
 
-Campaign started 17 November 2026. 4/6 cases complete through k=15.
+Campaign started 17 November 2026. 5/6 cases complete through k=15.
 This report is updated after each run. The full case budget is four hours,
 including data and all attempts; the optional glider alternative shares it.
 These are rebuilt paper cases, distinct from activity 01's shipped example.
@@ -65,6 +65,7 @@ include coefficients, both panels, calibration, path indices and hashes.
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
 | glider_033 / shipped | 57/57 | 15 | 0.0517798% | 1.65792e-05 | 203 | 2.20 | 8.24 | 68.52 |
 | glider_10 / shipped | 57/57 | 15 | 0.00362365% | 1.16845e-06 | 335 | 2.16 | 14.40 | 35.03 |
+| star_limited / shipped | 57/57 | 15 | 0.805104% | 0.000335598 | 535 | 2.41 | 76.28 | 78.83 |
 | cavity_09 / shipped | 57/57 | 15 | 134.196% | 0.846008 | 102 | 8.70 | 10.96 | 19.79 |
 | cavity_2 / shipped | 57/57 | 15 | 134.087% | 0.762657 | 129 | 8.62 | 45.21 | 54.00 |
 
@@ -87,10 +88,11 @@ iterations, residual history, exit flag, time and curve.
 - glider_033 / shipped: UTC 2026-11-17T20:16:16.608701+00:00 to 2026-11-17T21:24:47.514919+00:00; 57 newly generated data frequencies.
   Process time is a conservative upper bound because the terminal supervisor was lost; phase times remain measured.
 - glider_10 / shipped: UTC 2026-11-17T21:33:15.946290+00:00 to 2026-11-17T22:08:18.060887+00:00; 57 newly generated data frequencies.
+- star_limited / shipped: UTC 2026-11-17T22:04:28.037267+00:00 to 2026-11-17T23:23:18.045784+00:00; 57 newly generated data frequencies.
 - cavity_09 / shipped: UTC 2026-11-17T22:04:28.062807+00:00 to 2026-11-17T22:24:15.773264+00:00; 57 newly generated data frequencies.
 - cavity_2 / shipped: UTC 2026-11-17T22:04:28.080930+00:00 to 2026-11-17T22:58:28.302750+00:00; 57 newly generated data frequencies.
 
-Resource monitor: minimum observed available memory 26.56 GiB; maximum observed MATLAB process count 5. Samples are every 10 s, from 2026-11-17T22:10:20.755251+00:00. The required reserve is 14 GB. [Resource log](../../../../results/brg/paper_examples/2026-11-17/resource_monitor_k15.jsonl).
+Resource monitor: minimum observed available memory 18.18 GiB; maximum observed MATLAB process count 5. Samples are every 10 s, from 2026-11-17T22:10:20.755251+00:00. The required reserve is 14 GB. [Resource log](../../../../results/brg/paper_examples/2026-11-17/resource_monitor_k15.jsonl).
 
 ## Curvature comparison
 
@@ -134,6 +136,7 @@ These are possibilities, not diagnoses or reasons to change the campaign.
 
 - glider_033 / shipped: maximum interior-source diagnostic 7.34431e-07; exit flags {'2': 57}.
 - glider_10 / shipped: maximum interior-source diagnostic 1.78275e-06; exit flags {'3': 4, '2': 13, '1': 40}.
+- star_limited / shipped: maximum interior-source diagnostic 0.000501696; exit flags {'2': 16, '3': 4, '-1': 37}.
 - cavity_09 / shipped: maximum interior-source diagnostic 1.49366e-07; exit flags {'-1': 56, '2': 1}.
 - cavity_2 / shipped: maximum interior-source diagnostic 2.26727e-07; exit flags {'-1': 57}.
 - glider_10: k=30 data grid 3412 versus 6824 nodes; relative complex-field difference 8.21949e-12; check time 144.120 s.
@@ -155,6 +158,7 @@ Paper source panels for visual comparison: [star](figures/paper_star_reference.p
 
 - glider_033 / shipped: [curves](figures/glider_033_shipped_k15_curves.png), [errors](figures/glider_033_shipped_k15_errors.png), [metrics](../../../../results/brg/paper_examples/2026-11-17/glider_033/shipped/metrics_k15.json).
 - glider_10 / shipped: [curves](figures/glider_10_shipped_k15_curves.png), [errors](figures/glider_10_shipped_k15_errors.png), [metrics](../../../../results/brg/paper_examples/2026-11-17/glider_10/shipped/metrics_k15.json).
+- star_limited / shipped: [curves](figures/star_limited_shipped_k15_curves.png), [errors](figures/star_limited_shipped_k15_errors.png), [metrics](../../../../results/brg/paper_examples/2026-11-17/star_limited/shipped/metrics_k15.json).
 - cavity_09 / shipped: [curves](figures/cavity_09_shipped_k15_curves.png), [errors](figures/cavity_09_shipped_k15_errors.png), [metrics](../../../../results/brg/paper_examples/2026-11-17/cavity_09/shipped/metrics_k15.json).
 - cavity_2 / shipped: [curves](figures/cavity_2_shipped_k15_curves.png), [errors](figures/cavity_2_shipped_k15_errors.png), [metrics](../../../../results/brg/paper_examples/2026-11-17/cavity_2/shipped/metrics_k15.json).
 
@@ -164,8 +168,10 @@ with reproduction command, file sizes and SHA-256. Compact curves, residuals,
 times and logs are committed; figures are in this report folder.
 
 Commands: `python experiments/baselines/brg/run_paper.py --case <case>
---curvature <choice> --max-k 15 --detach`, then `summarize_paper_case.py` with the case and curvature arguments,
-and `python experiments/baselines/brg/update_paper_report.py`.
+--curvature shipped --max-k 15 --detach`, then
+`python experiments/baselines/brg/summarize_paper_case.py --case <case>
+--curvature shipped --max-k 15`, and
+`python experiments/baselines/brg/update_paper_report.py --max-k 15`.
 Resuming the run command loads each saved data frequency and the last exact
 inverse state; all attempts share the case's four-hour limit.
 
