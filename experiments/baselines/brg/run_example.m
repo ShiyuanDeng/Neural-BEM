@@ -50,9 +50,13 @@ try
             evalin('base','clear');
             evalin('base',fileread(fullfile(upstream,'tests','test_transmission_multi.m')));
             assert(evalin('base','ipass==1'), 'BRG:testFailure','Transmission multi test failed');
-        case 'data'
+        case {'data','data_retry'}
             source = fileread(fullfile(upstream,'examples','data_generation_scripts','starn_transmission_tensor_data.m'));
             source = strrep(source,'''../data/star''', ['''' out '/star''']);
+            if strcmp(stage,'data_retry')
+                source = strrep(source,'save(fname,''src_info'',''lam'');','save(fname,''src_info'');');
+            end
+            fid=fopen(fullfile(out,'executed_script.m'),'w'); fprintf(fid,'%s',source); fclose(fid);
             evalin('base',source);
             assert(evalin('base','numel(u_meas)==17'), 'BRG:incomplete','Expected 17 frequencies');
         case {'low_frequency_unpatched','low_frequency_fixed'}

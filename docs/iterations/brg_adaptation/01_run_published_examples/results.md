@@ -54,3 +54,19 @@ Commit `abade42e8` also captured CSI files staged concurrently by the CSI
 agent, although BRG staged only its own paths. The files were preserved and
 pushed. Subsequent BRG commits use explicit path-limited `git commit --only`
 to avoid this shared-index race.
+
+## Data-generation retry
+
+17 November: completed 17/17 frequencies, k=1 through 5, with 90 directions
+and 90 receivers (8100 scattered-field entries per frequency).
+Process wall time 11.77 s. Analytic error estimates range from
+6.22e-07 to 2.72e-05;
+[summary](../../../../results/brg/examples/data_retry/data_summary.json).
+The original dissipative transmission parameters are unchanged. This star
+example is not the clean equal-density cavity baseline.
+
+The data file is committed. The full workspace exceeds 50 MB and stays
+local with its command and checksum recorded. Only the output path and
+undefined `lam` save were changed in memory;
+[patch](../../../../external/patches/brg/02-remove-undefined-lam-save.patch),
+[executed source](../../../../results/brg/examples/data_retry/executed_script.m).
