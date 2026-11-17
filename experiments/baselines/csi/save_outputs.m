@@ -1,0 +1,33 @@
+% Called after the unmodified driver; save without altering solver outputs.
+csi_out = getenv('CSI_OUT');
+csi_pars = pars;
+csi_pars = rmfield(csi_pars, 'XBP'); % large initial sources saved per frequency below
+save(fullfile(csi_out, 'reconstruction.mat'), 'mchi1', 'mchi2', 'mchi3', ...
+    'chi1', 'chi2', 'chi3', 'time1', 'time2', 'time3', 'xinv', 'yinv', ...
+    'fre', 'para', 'centre', 'xs', 'ys', 'regSize', 'rawdat', 'csi_pars', ...
+    'normlz_factor', '-v7');
+for csi_f = 1:numel(fre)
+    evidence = struct('Emea', Emea{csi_f}, 'Einc', Einc{csi_f}, ...
+        'Phi', Phi{csi_f}, 'A', A{csi_f}, 'chi_initial', chiinv{csi_f}, ...
+        'vJ_initial', vJ{csi_f}, 'eTot_initial', eTotInv{csi_f});
+    for csi_method = 1:3
+        evidence.(['vJ' num2str(csi_method)]) = eval(sprintf('vJ%d{csi_f}', csi_method));
+        evidence.(['eTot' num2str(csi_method)]) = eval(sprintf('eTot%d{csi_f}', csi_method));
+    end
+    save(fullfile(csi_out, sprintf('frequency_%gGHz.mat', fre(csi_f))), ...
+        '-struct', 'evidence', '-v7');
+end
+csi_figs = findall(groot, 'Type', 'figure');
+for csi_i = 1:numel(csi_figs)
+    csi_name = sprintf('%s_figure_%02d', getenv('CSI_STEP'), csi_figs(csi_i).Number);
+    savefig(csi_figs(csi_i), fullfile(csi_out, [csi_name '.fig']));
+    exportgraphics(csi_figs(csi_i), fullfile(getenv('CSI_FIGURES'), [csi_name '.png']), 'Resolution', 140);
+end
+summary = struct('case_name', str, 'matlab', version, 'threads', maxNumCompThreads, ...
+    'frequencies_GHz', fre, 'Ninv', pars.Ninv, 'iterations', pars.itenum, ...
+    'source_count', para.NTX, 'time_seconds', [time1 time2 time3], ...
+    'cell_size_m', para.m_unit, 'source_radius_m', para.Tr, 'receiver_radius_m', para.Rr);
+fid = fopen(fullfile(csi_out, 'matlab_summary.json'), 'w');
+fprintf(fid, '%s\n', jsonencode(summary, PrettyPrint=true));
+fclose(fid);
+fprintf('CSI wrapper: outputs saved; compute threads %d\n', maxNumCompThreads);
