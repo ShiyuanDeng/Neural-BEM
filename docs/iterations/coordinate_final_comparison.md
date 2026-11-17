@@ -7,7 +7,7 @@ settings, assumptions and unknowns, and it sets how subagents share the work.
 The coordinator (the main session) owns this file. Subagents never edit it.
 They report back, and the coordinator updates the status board and the cards.
 
-Last updated: 17 November 2026, 19:45 (activity 01 under way).
+Last updated: 17 November 2026, 20:20 (BRG 02 started; CSI 01 finishing).
 
 ## Status board
 
@@ -15,7 +15,7 @@ Last updated: 17 November 2026, 19:45 (activity 01 under way).
 |---|---|---|---|---|
 | Our BEM (default) | [evaluate_our_method](evaluate_our_method/) | [01](evaluate_our_method/01_measure_clean_and_noisy_recovery/results.md), [02](evaluate_our_method/02_run_ablations/results.md), run 17 Nov | TG-002 done | Extend for BRG and CSI data, later inside those investigations |
 | GauGal | [evaluate_our_method](evaluate_our_method/) | [03](evaluate_our_method/03_record_untuned_gaugal_reference/results.md), run 17 Nov | TG-002 untuned reference done | Stage 2 role open (U1) |
-| BRG | [brg_adaptation](brg_adaptation/) | [01 plan](brg_adaptation/01_run_published_examples/plan.md) | Activity 01: build, tests and data generation done; both physics fixes approved; full step 5 run started 17 Nov 19:40 | `brg` agent (Codex, astra, high effort): finish the run, then report; it drafts the activity 02 plan meanwhile |
+| BRG | [brg_adaptation](brg_adaptation/) | [01 results](brg_adaptation/01_run_published_examples/results.md), [02 plan](brg_adaptation/02_rebuild_paper_examples/plan.md) | 01 done 17 Nov. 02 (six paper cases) started 17 Nov 20:20 | `brg` agent (Codex, astra, high effort): run the six cases; draft the BEM adaptation plan (03) meanwhile |
 | CSI family | [csi_adaptation](csi_adaptation/) | [01 plan](csi_adaptation/01_run_published_examples/plan.md) | Activity 01: both shipped examples done; paper case (2048 iterations) running since 17 Nov 19:29 | `csi` agent (Codex, sol, high effort): finish the paper case, compare with Figure 5, report |
 
 **Setup checked on 17 November 2026:** the user made the MaxwellFDFD link and
@@ -150,6 +150,18 @@ Rules for every table:
     [data_handoff.md](brg_adaptation/01_run_published_examples/data_handoff.md).
   - The shipped star data example is dissipative, so it is not a paper case.
 
+  - Result of 01: their shipped cavity example ran all 117 frequencies in
+    23 minutes. Area error 57.6%; it does not resolve the cavity, as the
+    paper also reports for its own cavity.
+- **Decided for activity 02 (coordinator, 17 November):**
+  - Six runs, not seven; the earlier count was a slip.
+  - The star and paper cavity are recovered from the paper's vector figure
+    files, and labelled so.
+  - Points per wavelength follow the public code (exterior wavenumber).
+  - Curvature limit: the shipped driver's values, checked by reproducing
+    the paper's Figure 1 on the first glider case.
+  - 4 h per case, all 117 frequencies.
+
 ### CSI family (MF-CC-CSI, MR-CSI, CSI)
 
 - **Code:** `~/neural_bem_external/CC-CSI` at `73a64e1`, with MaxwellFDFD at
@@ -242,6 +254,8 @@ needs it, and recorded here.
 | 17 Nov | BRG: approve patches 03 and 04, start the full run | Matches the driver's own data generation; upstream branches have no fix |
 | 17 Nov | BRG: draft the activity 02 plan during the 4 h run | Uses the waiting time; nothing in 02 runs yet |
 | 17 Nov | Commit at most about 5 MB per run; bulk stays local and ignored | The first hour pushed 654 MB of results |
+| 17 Nov | BRG 02: go, with the choices listed in the BRG card | The paper leaves them open; each choice follows the authors' code or their published figure |
+| 17 Nov | U2: the BRG investigation extends our solver first; `brg` drafts that plan (03), and the coordinator reviews it before any solver edit | Plane waves plus an unpaired table cover what CSI needs too |
 
 **Open with the user:** about 654 MB of result files are already pushed
 (561 MB CSI, 93 MB BRG). Removing them needs a history rewrite, so it waits
