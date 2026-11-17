@@ -18,3 +18,12 @@ Wrapper: MATLAB uses eight compute threads, disables interactive pauses,
 and exports open figures. Two script path substitutions are applied in
 memory only; [patch](../../../../external/patches/brg/01-wrapper-script-paths.patch).
 No numerical settings are changed.
+
+## Suite and thread check
+
+17 November: upstream `test_all.m` passed 3/3. Process wall time 12.08 s.
+MATLAB R2026a started with one compute thread; wrapper set eight. Median of
+three complex dense 2500-by-2500 solves: 0.717075 s at one thread, 0.195035 s
+at eight (3.677x); relative residual 4.04e-12.
+[Evidence](../../../../results/brg/examples/suite/matlab.log).
+These setup timings may overlap CSI and are not final comparison timings.

@@ -133,3 +133,17 @@ matlab -batch "run('<repo>/experiments/baselines/brg/run_example.m')" 2>&1 | tee
 - Report figures: `docs/iterations/brg_adaptation/01_run_published_examples/figures/`.
 - Patches: `external/patches/brg/`.
 - After running: `results.md` here, then commit and push.
+
+## Checkpoint commands and checks
+
+Run each stage with `python experiments/baselines/brg/run_stage.py STAGE`,
+where STAGE is `build`, `suite`, `transmission`, `data`,
+`low_frequency_unpatched`, then `low_frequency_fixed`. Failed attempts are
+kept in separate folders. MATLAB and MEX need approved sandbox access.
+
+The physics check uses the shipped cavity at k = 1, 1.25, 1.5, its 500-point
+minimum and ceil(10k) angles/receivers. One inverse step from the exact true
+shape isolates frequency handling: require relative residual below 1e-8.
+The unpatched run starts with stale [45,30], exactly as after generation.
+This is a diagnostic, not a reconstruction result or a change of baseline
+settings. A fixed run must use the same harness and inputs.
