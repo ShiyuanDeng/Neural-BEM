@@ -61,3 +61,16 @@ Evidence: [stage (b)](../../../../results/brg/bem_adaptation/2026-11-17/stage_b/
 These short checks ran while three MATLAB jobs were active. The longer
 default regression and BEM inverse wait for a heavy-worker slot. No CUDA
 code, LM acceptance rule, slider formula or upstream BRG file changed.
+
+## Default-path regression after the final solver edit
+
+The full CPU suite passed **109 tests, with 3 CUDA-only skips**, in 55.44 s.
+The default TG-002 `circle__c0.5` fit completed in 35.8640 s. Its curve
+coefficients, predicted complex fields and material image are **bit-identical**
+to the pre-edit reference. Contrast, residuals, accepted decisions, stage
+records and work counts also match exactly after excluding clock fields.
+
+[Comparison](../../../../results/brg/bem_adaptation/2026-11-17/regression/comparison.json)
+and [after reference](../../../../results/brg/bem_adaptation/2026-11-17/regression/after/)
+retain the evidence. The complete after-check process took 98.323 s.
+No default behavior change was observed; the new paths require explicit options.
