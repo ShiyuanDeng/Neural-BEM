@@ -127,3 +127,22 @@ watcher. The process writes its log under the owned `local/` folder and
 commits/pushes each newly completed check. It cannot launch inverse fits.
 Capacity after the CSI batch is recorded separately in
 [`capacity_after_csi_batch.json`](../../../../results/bem/baseline_data/brg_tg002/2026-11-18/capacity_after_csi_batch.json).
+
+## First-fit go from the new coordinator, 18 November
+
+The new coordinator accepted the 16 checked cases and fixed wrapper settings.
+"GO for the first known-contrast fit, circle__c4, now. Do not wait for cog
+and aphex_twin; the baseline run may need hours."
+
+Three execution-only changes: require each case's own passing qualification
+and unchanged input hashes; permit other BEM work and the manifest watcher
+under the memory guard, counting only B1 fit workers against concurrency 1;
+require a case's known fit before its recovered fit, not all 20 known fits.
+The order remains known fits for checked cases, then recovered. Late cases
+run known then recovered after their checks pass. No scientific setting changes.
+
+Keep the existing watch-checks process running beside circle__c4 known.
+After this first fit, stop and report outcome, last stage, work units, fit
+seconds, seconds per unit, peak host/GPU memory, area error and forecast.
+Use the system date for timestamps. Only the coordinator raises concurrency.
+This note supersedes the earlier all-20 check/known-row launch blocks.

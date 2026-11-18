@@ -67,3 +67,10 @@ The watch-checks command picks up newly finished manifests without repeating che
 
 All 40 inverse fits remain unrun. After all checks, stop for the coordinator go.
 First fit is known-contrast circle__c4; stop again to report its measured cost.
+
+## First-fit authorization, 18 November
+
+The incoming coordinator accepted the 16 checked cases and wrapper settings,
+and authorized circle__c4 known now. Four pending baseline manifests do not
+block checked cases. The plan records the three execution-only wrapper changes.
+The manifest watcher remains active. First-fit concurrency stays one.

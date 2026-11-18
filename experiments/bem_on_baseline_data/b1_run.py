@@ -21,6 +21,7 @@ from bem_inverse.io import curve_from, curve_record
 import b1_data as D
 
 DOC = ROOT/'docs/iterations/adapt_bem_to_baseline_data/06_fit_brg_tg002_cases'
+B1_FIT_CONCURRENCY = 1  # Only the BEM coordinator may raise this setting.
 
 
 @dataclass(frozen=True)
@@ -277,7 +278,7 @@ def fit_worker(case, row, out):
                 length_unit_m=problem.length_unit_m, origin_m=problem.origin_m,
                 bounds_m=problem.bounds_m, start_curve=curve_record(problem.initial),
                 torch_threads=torch.get_num_threads(), torch_interop_threads=torch.get_num_interop_threads(),
-                time_limit='disabled', geometry_update='slider', localization='none', noise_level=None))
+                time_limit='disabled', b1_fit_concurrency=B1_FIT_CONCURRENCY, geometry_update='slider', localization='none', noise_level=None))
     try:
         if row=='recovered':
             contrast, initialization = weak_start(physics, problem.initial, problem.real[0])
@@ -361,18 +362,36 @@ def commit_owned(message):
     subprocess.run(['git', 'status', '--short', '--', *paths], cwd=ROOT, check=True)
 
 
+def other_b1_fits():
+    # Count other logical B1 fits, merging each supervisor with its own worker.
+    import os
+    found = {}
+    for path in Path('/proc').glob('[0-9]*/cmdline'):
+        try:
+            pid = int(path.parent.name)
+            args = path.read_bytes().decode().split('\0')
+            if pid == os.getpid() or not args or 'python' not in Path(args[0]).name:
+                continue
+            if not any(Path(a).name=='b1_run.py' for a in args[1:]) or not any(a in ('fit', '_fit') for a in args[1:]):
+                continue
+            ppid = int((path.parent/'stat').read_text().split()[3])
+            found[pid] = dict(pid=pid, ppid=ppid, command=args)
+        except (OSError, UnicodeError, ValueError):
+            pass
+    return [r for r in found.values() if r['ppid'] not in found]
+
+
 def fit_case(case, row):
-    summary = json.loads((BASE/'check_summary.json').read_text())
-    assert len(summary['cases'])==20 and all(r.get('checked')==37 for r in summary['cases']), 'All 20 checks must be reported first.'
     qualification = json.loads((BASE/case/'checks/qualification.json').read_text())
     assert qualification['passes'], 'Failed case is blocked; report to coordinator.'
     checked_inputs = json.loads((BASE/case/'checks/inputs.json').read_text())
     current_inputs = D.verify_files(case)
     assert current_inputs['passes'] and current_inputs['files']==checked_inputs['files'], 'Checked observations changed.'
     assert provenance()['solver_hashes']==qualification['end']['solver_hashes'], 'Solver changed after checks.'
-    assert not bem_jobs(), 'Another BEM command is running; preserve capacity.'
+    active = other_b1_fits()
+    assert len(active) < B1_FIT_CONCURRENCY, f'B1 fit concurrency limit {B1_FIT_CONCURRENCY}; active={active}'
     if row=='recovered':
-        assert all(list((BASE/c/'known').glob('attempt_*/metrics.json')) for c in D.CASES), 'Known-contrast row must finish first.'
+        assert list((BASE/case/'known').glob('attempt_*/metrics.json')), 'This case needs its known-contrast fit first.'
     base = BASE/case/row
     earlier = sorted(base.glob('attempt_*'))
     for old in earlier:
