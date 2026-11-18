@@ -1,7 +1,7 @@
 # Fit the remaining ten-frequency CSI cases: results
 
 18 November 2026. Runner: bem-ten. [Plan](plan.md).
-State: 5/6 new GPU fits recorded; 9/10 ten-frequency results available.
+State: 6/6 new GPU fits recorded; 10/10 ten-frequency results available.
 
 ## Settings and evidence
 
@@ -45,7 +45,7 @@ A clear gain halves the five-frequency area error. A score above 5% is a miss.
 | cog | five | COMPLETED_SCHEDULE | full_8_M49 | 3619 | 247.363 | 4.000492089 | 2.860390 |
 | cog | ten | COMPLETED_SCHEDULE | full_6_M37 | 3178 | 36.220 | 4.001349644 | 1.450649 |
 | aphex_twin | five | COMPLETED_SCHEDULE | full_6_M37 | 3039 | 194.896 | 3.996963087 | 5.960888 |
-| aphex_twin | ten | pending | — | — | — | — | — |
+| aphex_twin | ten | COMPLETED_SCHEDULE | full_6_M37 | 6562 | 267.970 | 3.998133556 | 5.769998 |
 
 ## Area error of every saved stage: the six new fits
 
@@ -135,6 +135,22 @@ Saved scores are reused when this report is updated.
 | cog | full_4_M25 | 25 | STAGE_QUOTA_REACHED | 1.555328 |
 | cog | full_5_M31 | 31 | STAGE_QUOTA_REACHED | 1.519285 |
 | cog | full_6_M37 | 37 | STAGE_QUOTA_REACHED | 1.450649 |
+| aphex_twin | ladder_1_real | 0 | NORMAL_OPTIMIZER_RETURN | 504.375399 |
+| aphex_twin | ladder_2_real | 1 | NORMAL_OPTIMIZER_RETURN | 113.349183 |
+| aphex_twin | ladder_3_real | 2 | NORMAL_OPTIMIZER_RETURN | 84.056566 |
+| aphex_twin | ladder_4_real | 3 | NORMAL_OPTIMIZER_RETURN | 74.159045 |
+| aphex_twin | ladder_5_real | 3 | NORMAL_OPTIMIZER_RETURN | 75.164171 |
+| aphex_twin | ladder_6_real | 4 | STAGE_QUOTA_REACHED | 75.715564 |
+| aphex_twin | ladder_7_real | 5 | STAGE_QUOTA_REACHED | 45.246981 |
+| aphex_twin | ladder_8_real | 6 | STAGE_QUOTA_REACHED | 26.359591 |
+| aphex_twin | ladder_9_real | 7 | STAGE_QUOTA_REACHED | 21.772176 |
+| aphex_twin | ladder_10_real | 7 | NORMAL_OPTIMIZER_RETURN | 21.899736 |
+| aphex_twin | full_1_M11 | 11 | NORMAL_OPTIMIZER_RETURN | 12.785721 |
+| aphex_twin | full_2_M15 | 15 | NORMAL_OPTIMIZER_RETURN | 5.553309 |
+| aphex_twin | full_3_M19 | 19 | STAGE_QUOTA_REACHED | 6.104372 |
+| aphex_twin | full_4_M25 | 25 | STAGE_QUOTA_REACHED | 5.986088 |
+| aphex_twin | full_5_M31 | 31 | STAGE_QUOTA_REACHED | 5.856925 |
+| aphex_twin | full_6_M37 | 37 | STAGE_QUOTA_REACHED | 5.769998 |
 
 ## Run records for the six new fits
 
@@ -145,29 +161,38 @@ Saved scores are reused when this report is updated.
 | c_shape | 2026-11-18T11:55:15+00:00 | `feff0daa4` | False | 38.170 | 1.947 / 0.827 |
 | cross | 2026-11-18T11:57:00+00:00 | `6d7c2e673` | False | 38.184 | 1.941 / 0.827 |
 | cog | 2026-11-18T11:58:14+00:00 | `225946ae0` | False | 32.916 | 1.945 / 0.827 |
+| aphex_twin | 2026-11-18T11:59:38+00:00 | `12a5117e2` | False | 32.374 | 1.964 / 0.827 |
 
 Evidence: [ten-frequency fits](../../../../results/bem/baseline_data/csi_ten_frequency/2026-11-18/).
 Each attempt has manifest.json, fit.json, metrics.json and bulk_manifest.json; logs are in logs/.
 [Saved stage scores](../../../../results/bem/baseline_data/csi_ten_frequency/2026-11-18/remaining_stage_scores.json)
 include fit-file SHA-256 and run provenance. Fit-local histories stay ignored with their hashes.
 
-## Progress
+## Outlines
 
-Clear gains among the 9 recorded ten-frequency results: 2.
-Final all-ten count and figure wait for the remaining fits.
+![Six new fits over truth and five-frequency fits](figures/outlines.png)
+
+## Conclusion
+
+All-ten clear-gain count: 2/10 (circle, star).
+Ten-frequency misses above 5%: 1/10 (aphex_twin).
+All ten final area errors are lower than their five-frequency references.
+Cross and cog fall just short of the strict halving rule; neither is counted as a clear gain.
+The checked figure shows less waviness on several shapes, while the Aphex Twin notch remains inaccurate.
+The six new fits complete the BEM side of the paired ten-frequency table.
 
 ## Failures
 
-Fit failures: none recorded.
+Run failures: none. Aphex Twin is a quality miss at 5.770% area error.
 No fit or data check was rerun. Activity 08 retains its earlier pending-input launch receipt.
 
 ```text
 Activity: adapt_bem_to_baseline_data/10_fit_remaining_csi_tables_at_ten_frequencies
-Runs: 5/6 new GPU fits; four activity 08 fits copied; no new forward checks
-Result: 9/10 results available; 2 clear gains; 0 misses above 5%
-Failures: none
+Runs: 6/6 new GPU fits; four activity 08 fits copied; no new forward checks
+Result: 10/10 results available; 2 clear gains; 1 misses above 5%
+Failures: no run failure; aphex_twin is a quality miss at 5.770%
 Upstream patches: none
 Changes to our code: none; unchanged activity 08 runner and settings
 New unknowns: paired MF-CC-CSI results on the ten-frequency tables
-Proposed next activity: finish the remaining authorized fits
+Proposed next activity: coordinator pairs this BEM table with the baseline ten-frequency results
 ```
