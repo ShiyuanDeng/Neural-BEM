@@ -3,7 +3,7 @@
 ## Status and settings
 
 Started 2026-11-18T02:28:20.793603+00:00; queue state `running`;
-18/20 cases have scores. Last update: 2026-11-18T02:57:48.012047+00:00.
+19/20 cases have scores. Last update: 2026-11-18T03:00:23.182443+00:00.
 These are **provisional BRG-forward data**, identical to activity 04 by
 SHA-256. This is the control row alongside its shipped-limit row.
 
@@ -52,6 +52,7 @@ compact metrics and figure. No new success cutoff is selected.
 | c_shape__c0.5 | complete | 37/37 | 0.052557715 | 0.0015837012 | 0.0537632 | 1.67175e-05 | 371.38 | 31.29 | 2.17 | 415.74 |
 | hook__c0.5 | complete | 37/37 | 0.57706138 | 0.64609499 | 0.480827 | 0.531757 | 336.81 | 8.47 | 2.44 | 354.34 |
 | cross__c0.5 | complete | 37/37 | 0.0009136554 | 0.0009236177 | 2.39723e-06 | 2.13474e-06 | 237.30 | 18.58 | 2.01 | 264.84 |
+| cog__c0.5 | complete | 37/37 | 0.0023331311 | 0.0027778689 | 2.53093e-05 | 4.43155e-05 | 357.76 | 22.59 | 1.97 | 389.35 |
 | circle__c0.5 | complete | 37/37 | 2.3469481e-08 | 2.3469481e-08 | 1.03264e-10 | 1.03264e-10 | 83.83 | 15.38 | 2.12 | 108.32 |
 | circle__c4 | complete | 37/37 | 2.0352808e-06 | 2.0352808e-06 | 4.87606e-10 | 4.87606e-10 | 52.10 | 18.07 | 2.00 | 79.22 |
 
@@ -59,7 +60,7 @@ compact metrics and figure. No new success cutoff is selected.
 
 Kite eta 0.5 pilot: 374.85 s. It ran alone before the rest.
 
-Aggregate case wall time: 92.32 min. New data-generation time: zero.
+Aggregate case wall time: 98.81 min. New data-generation time: zero.
 
 Minimum sampled available memory: 29.86 GiB; maximum simultaneous control workers: 6. Each launch checks fresh shared memory, reserves at least 3 GiB for the new BRG fit and retains the 14 GiB floor plus 2 GiB margin, allowing for other queues and B1 reservations. The guard delays starts; it never kills running fits.
 
@@ -79,6 +80,7 @@ Minimum sampled available memory: 29.86 GiB; maximum simultaneous control worker
 - c_shape__c0.5: saved-output check passed; [metrics](../../../../results/brg/tg002_no_curvature/2026-11-18/c_shape__c0.5/metrics.json), [figure](figures/c_shape__c0.5.png).
 - hook__c0.5: saved-output check passed; [metrics](../../../../results/brg/tg002_no_curvature/2026-11-18/hook__c0.5/metrics.json), [figure](figures/hook__c0.5.png).
 - cross__c0.5: saved-output check passed; [metrics](../../../../results/brg/tg002_no_curvature/2026-11-18/cross__c0.5/metrics.json), [figure](figures/cross__c0.5.png).
+- cog__c0.5: saved-output check passed; [metrics](../../../../results/brg/tg002_no_curvature/2026-11-18/cog__c0.5/metrics.json), [figure](figures/cog__c0.5.png).
 - circle__c0.5: saved-output check passed; [metrics](../../../../results/brg/tg002_no_curvature/2026-11-18/circle__c0.5/metrics.json), [figure](figures/circle__c0.5.png).
 - circle__c4: saved-output check passed; [metrics](../../../../results/brg/tg002_no_curvature/2026-11-18/circle__c4/metrics.json), [figure](figures/circle__c4.png).
 
@@ -106,6 +108,7 @@ The first two columns count the selected final geometry/filter code on rejected 
 | c_shape__c0.5 | 0 | 0 | 13 |
 | hook__c0.5 | 0 | 34 | 36 |
 | cross__c0.5 | 0 | 0 | 0 |
+| cog__c0.5 | 0 | 0 | 4 |
 | circle__c0.5 | 0 | 0 | 6 |
 | circle__c4 | 0 | 0 | 0 |
 
