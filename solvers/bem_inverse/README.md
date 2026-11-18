@@ -189,13 +189,17 @@ and `pytest/gpr_bem_kress`. Six extended-precision Bessel comparisons fail on
 platforms whose `longdouble` has 52 mantissa bits; two validity-order and one
 resume exact-equality test are intermittent at about 1e-16.
 
-## Explicit CPU table forward (BRG adapter)
+## Explicit table forward
 
 `PlaneWaveAcquisition(directions, receivers, mask=None)` uses unit incident
 plane waves. `PointSourceAcquisition(..., paired=False, mask=None)` provides
 an unpaired point-source table. Enable `ModalSettings(table_mode=True)`
-and `Execution(device="cpu")` on `ModalMuller`; auto/CUDA table requests
-are refused. The paired TG-002 path and all defaults remain unchanged.
+on `ModalMuller`. `Execution.device` accepts `"cpu"`, `"cuda"` or `"auto"`, selecting the same
+A1 geometry and A2 assembly path as paired measurements. CUDA geometry supplies
+host arrays to A3; waves, A4 LU/fields and B7 derivatives remain on the CPU.
+Auto retains its existing CPU fallback when CUDA is unavailable or runs out
+of memory; explicit CUDA fails instead. The paired TG-002 path and all defaults
+remain unchanged.
 
 Unmasked data have shape `(illumination, receiver)`. A boolean mask has that
 same shape; masked data are a vector selected in C order. Omitted mask means

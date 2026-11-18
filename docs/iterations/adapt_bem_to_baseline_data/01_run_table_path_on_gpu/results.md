@@ -2,7 +2,9 @@
 
 18 November 2026. Owner: `bem-gpu`. In progress; solver lock retained.
 The coordinator approved the narrow guard removal and stale wording fixes.
-All three clean pre-edit references are complete. The approved edit is next.
+All three clean pre-edit references are complete. The approved solver edit
+was made at 00:27 UTC. All proofs pass. Solver remains dirty and awaits
+the coordinator's full-diff review before committing.
 
 ## Clean CPU reference
 
@@ -27,8 +29,7 @@ the measured peak and leaves at least 16 GiB before subsequent launches.
 
 ## Pending
 
-Approved edit, CPU/GPU table checks, CPU/GPU default
-comparisons, CUDA-visible suite, and coordinator diff review before solver commit.
+Only coordinator diff review, commit/push, and solver-lock release remain.
 
 ## First clean GPU reference
 
@@ -58,3 +59,91 @@ sections are also identical. The frozen repeatability envelope is **zero**:
 the post-edit GPU reference must therefore be exact, including stable records.
 No thresholds have moved. [Second reference](../../../../results/bem/baseline_data/gpu_table_path/2026-11-18/gpu_before_2/)
 and [frozen envelope](../../../../results/bem/baseline_data/gpu_table_path/2026-11-18/gpu_repeatability.json).
+
+## GPU table agreement after the approved edit
+
+The solver edit removes the two-line CPU-only guard, updates its settings
+comment, and removes "CPU" from the three nodal masked-table refusal messages.
+No other solver logic changed. The module docstring already described the
+CPU/CUDA split correctly and needed no edit. README and chain are updated.
+
+Eight focused checks passed: both illumination kinds, masked/unmasked, and
+both explicit CUDA and auto (confirmed `cuda-modal`, without fallback).
+The shared curve is translated and noncircular; the same CPU-prepared slider
+space isolates the assembly change. Point sources use complex strength.
+All masked predictions and derivative rows equal full-table C-order selection.
+
+| Table | Mask | Prediction relative L2 | B7 shape derivative relative L2 | Material-column relative L2 |
+|---|---|---:|---:|---:|
+| plane | full | 9.30171e-16 | 3.52800e-16 | 1.47217e-13 |
+| plane | masked | 1.01129e-15 | 3.38931e-16 | 1.48257e-13 |
+| point | full | 1.63819e-15 | 6.27883e-16 | 2.70791e-13 |
+| point | masked | 1.57321e-15 | 6.19144e-16 | 2.84008e-13 |
+
+Auto gives the same errors as explicit CUDA. All are below the fixed **1e-10**
+limit. Material columns use a common central contrast step of 1e-3. Existing
+complete-slider derivative checks remain in the full suite.
+
+Pytest: **8 passed in 2.31 s**. Guarded wall time 3.604 s;
+peak child RSS 1.435 GiB; minimum available
+memory 20.204 GiB. No failures or limit stops.
+[Per-case errors, log, XML and provenance](../../../../results/bem/baseline_data/gpu_table_path/2026-11-18/table_checks/).
+All post-edit executions are marked solver-dirty validation checks, not
+reported baseline comparison fits. Their evidence remains uncommitted until
+the coordinator reviews the full solver diff, as explicitly requested.
+
+## CPU default after the edit
+
+The post-edit CPU check completed the same schedule in 43.958 s
+fit time (52.515 s guarded process time). All 385 complex
+coefficients, 19-by-24 complex predictions and the 201-by-201 float material
+image are **byte-identical** to the clean pre-edit CPU reference. All 15
+stable record sections match, including decisions, residuals and work.
+Clocks are excluded using the copied BRG comparison rule.
+
+Peak child RSS 1.746 GiB; minimum available host
+memory 18.543 GiB. No failure or limit stop.
+[Run](../../../../results/bem/baseline_data/gpu_table_path/2026-11-18/cpu_after/),
+[exact comparison](../../../../results/bem/baseline_data/gpu_table_path/2026-11-18/cpu_comparison.json).
+
+## GPU default after the edit
+
+The post-edit GPU check completed the same schedule in 5.314 s
+fit time (8.216 s guarded process time). Every saved array
+and all 15 stable record sections are **byte-identical** to the first clean
+GPU reference, satisfying the frozen zero repeatability envelope exactly.
+No threshold was changed and no extra fit was needed.
+
+Peak child RSS 1.826 GiB; minimum available host
+memory 19.019 GiB. No failure or limit stop.
+[Run](../../../../results/bem/baseline_data/gpu_table_path/2026-11-18/gpu_after/),
+[GPU comparison](../../../../results/bem/baseline_data/gpu_table_path/2026-11-18/gpu_comparison.json).
+
+## Full suite and pre-commit review
+
+CUDA-visible `pytest/bem_inverse`: **121 passed, zero skips,
+failures or errors**, 74.209 s pytest time. Guarded wall
+time 75.596 s; peak child RSS 1.945 GiB;
+minimum available host memory 19.193 GiB.
+[Suite log, XML and receipt](../../../../results/bem/baseline_data/gpu_table_path/2026-11-18/suite_after/).
+
+All **5/5 planned default fits** are complete. Total guarded check time is
+**281.378 s**, within the one-hour budget.
+Peak child RSS over all checks was **1.945 GiB**;
+minimum available memory was **18.543 GiB**.
+No failures, tuning reruns, threshold changes or additional solver edits.
+
+All three pre-edit solver source-hash maps agree. All four post-edit checks
+(table check, CPU/GPU defaults, full suite) also agree. Only the three approved
+Python files differ. The paired default remains exact on CPU and GPU; table
+predictions and derivatives agree much more closely than the fixed 1e-10 limit.
+[Machine-readable summary](../../../../results/bem/baseline_data/gpu_table_path/2026-11-18/verification_summary.json).
+
+The [complete solver/docs/tests diff](../../../../results/bem/baseline_data/gpu_table_path/2026-11-18/solver_review.diff)
+is saved for coordinator review: three solver Python files, solver README,
+information chain, updated refusal test, and the new eight-case GPU test.
+SHA-256: `c7266b91c6957c1384ffda35565821e490328f3209dac3e790b00d12004b86fa`.
+The three pre-edit reference commits are pushed: `59dd6b919`, `6a5258daa`,
+`78f084ca9`. Post-edit code and evidence are held uncommitted as requested.
+Solver lock is still held. No new unknowns; commit and release need the
+coordinator's diff review, not a new user decision.

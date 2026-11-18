@@ -318,7 +318,7 @@ Use this as the shared explanation structure, not as a frozen implementation
 specification. Confirm current code when answering; line anchors describe the
 checkout above and can move as implementation changes.
 
-## Explicit CPU table path (BRG, 17 November 2026)
+## Explicit table path (GPU support, 18 November 2026)
 
 This opt-in path leaves paired TG-002 physics unchanged. In A3,
 [`plane_wave_kernels`](../../solvers/bem_inverse/a3_waves.py) combines the
@@ -328,14 +328,22 @@ geometry-radius cancellation check. No angular quadrature is introduced.
 
 In A4, [`solve_and_predict`](../../solvers/bem_inverse/a4_fields.py)
 contracts every illumination with every receiver. `ModalSettings(table_mode=True)`
-and CPU execution are required. Rows are illuminations, columns receivers;
+is required. Rows are illuminations, columns receivers;
 a boolean measured-pair mask selects C-order entries. An omitted mask means
 all pairs. The default paired contraction retains its existing arithmetic.
 
 B7’s [`table_hadamard`](../../solvers/bem_inverse/b7_data_jacobian.py) uses
 nonconjugated forward/reciprocal products for all measured pairs and the
 unchanged signed material factor, including eta below one. Receiver blocking
-avoids a modes-by-pairs-by-updates intermediate. It is opt-in, CPU only.
+avoids a modes-by-pairs-by-updates intermediate. It is opt-in.
+
+Table mode accepts the same CPU/CUDA/auto execution selection as paired
+measurements. [`assemble_matrix`](../../solvers/bem_inverse/forward_solvers/modal_muller.py)
+runs A1 geometry and A2 assembly on the selected device. Both geometry classes
+supply host wave arrays and normal multipliers to A3. A4 LU/fields and B7
+remain on the CPU, including when A1–A2 use CUDA. Existing auto fallback and
+explicit-CUDA failure rules are unchanged; the paired default bypasses the
+table opt-in check.
 
 B5 and B8 use the same [`FrequencyBlocks`](../../solvers/bem_inverse/data_blocks.py)
 when `FitStage.ragged_data=True`: measured rows only, frequency-major complex

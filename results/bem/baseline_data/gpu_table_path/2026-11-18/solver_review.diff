@@ -1,0 +1,234 @@
+diff --git a/docs/reference/inverse_information_chain.md b/docs/reference/inverse_information_chain.md
+index 70310dce4..4114dc4d9 100644
+--- a/docs/reference/inverse_information_chain.md
++++ b/docs/reference/inverse_information_chain.md
+@@ -318,7 +318,7 @@ Use this as the shared explanation structure, not as a frozen implementation
+ specification. Confirm current code when answering; line anchors describe the
+ checkout above and can move as implementation changes.
+ 
+-## Explicit CPU table path (BRG, 17 November 2026)
++## Explicit table path (GPU support, 18 November 2026)
+ 
+ This opt-in path leaves paired TG-002 physics unchanged. In A3,
+ [`plane_wave_kernels`](../../solvers/bem_inverse/a3_waves.py) combines the
+@@ -328,14 +328,22 @@ geometry-radius cancellation check. No angular quadrature is introduced.
+ 
+ In A4, [`solve_and_predict`](../../solvers/bem_inverse/a4_fields.py)
+ contracts every illumination with every receiver. `ModalSettings(table_mode=True)`
+-and CPU execution are required. Rows are illuminations, columns receivers;
++is required. Rows are illuminations, columns receivers;
+ a boolean measured-pair mask selects C-order entries. An omitted mask means
+ all pairs. The default paired contraction retains its existing arithmetic.
+ 
+ B7’s [`table_hadamard`](../../solvers/bem_inverse/b7_data_jacobian.py) uses
+ nonconjugated forward/reciprocal products for all measured pairs and the
+ unchanged signed material factor, including eta below one. Receiver blocking
+-avoids a modes-by-pairs-by-updates intermediate. It is opt-in, CPU only.
++avoids a modes-by-pairs-by-updates intermediate. It is opt-in.
++
++Table mode accepts the same CPU/CUDA/auto execution selection as paired
++measurements. [`assemble_matrix`](../../solvers/bem_inverse/forward_solvers/modal_muller.py)
++runs A1 geometry and A2 assembly on the selected device. Both geometry classes
++supply host wave arrays and normal multipliers to A3. A4 LU/fields and B7
++remain on the CPU, including when A1–A2 use CUDA. Existing auto fallback and
++explicit-CUDA failure rules are unchanged; the paired default bypasses the
++table opt-in check.
+ 
+ B5 and B8 use the same [`FrequencyBlocks`](../../solvers/bem_inverse/data_blocks.py)
+ when `FitStage.ragged_data=True`: measured rows only, frequency-major complex
+diff --git a/pytest/bem_inverse/test_table_forward.py b/pytest/bem_inverse/test_table_forward.py
+index b25995937..a58028452 100644
+--- a/pytest/bem_inverse/test_table_forward.py
++++ b/pytest/bem_inverse/test_table_forward.py
+@@ -1,4 +1,4 @@
+-"""Explicit CPU tables: analytic plane waves, disk scattering, masks and refusals."""
++"""Explicit tables: analytic plane waves, disk scattering, masks and refusals."""
+ import numpy as np
+ import pytest
+ from scipy.special import jv, jvp, hankel1, h1vp
+@@ -58,11 +58,11 @@ def test_full_or_masked_disk_table_matches_independent_mie_series(eta,masked):
+     assert np.linalg.norm(prediction.prediction-expected)/np.linalg.norm(expected)<1e-10
+ 
+ 
+-def test_new_mode_is_explicit_cpu_only_and_mask_validation_is_strict():
++def test_new_mode_is_explicit_and_mask_validation_is_strict():
+     acq=acquisition();obs=Observation(1.,acq,np.ones(acq.data_shape),1.)
+-    for context,match in [(ModalMuller(Execution(device='cpu')),'table_mode=True'),
+-                          (ModalMuller(Execution(device='auto'),ModalSettings(table_mode=True)),"device='cpu'")]:
+-        with pytest.raises(ValueError,match=match):
++    for device in ('cpu', 'cuda', 'auto'):
++        context = ModalMuller(Execution(device=device))
++        with pytest.raises(ValueError,match='table_mode=True'):
+             forward_solve(FourierCurve.circle(),obs,.33,512,context=context)
+     with pytest.raises(ValueError,match='mask'):
+         acquisition(np.ones((3,7),int))
+diff --git a/solvers/bem_inverse/README.md b/solvers/bem_inverse/README.md
+index be397bffe..a3a95e9a8 100644
+--- a/solvers/bem_inverse/README.md
++++ b/solvers/bem_inverse/README.md
+@@ -189,13 +189,17 @@ and `pytest/gpr_bem_kress`. Six extended-precision Bessel comparisons fail on
+ platforms whose `longdouble` has 52 mantissa bits; two validity-order and one
+ resume exact-equality test are intermittent at about 1e-16.
+ 
+-## Explicit CPU table forward (BRG adapter)
++## Explicit table forward
+ 
+ `PlaneWaveAcquisition(directions, receivers, mask=None)` uses unit incident
+ plane waves. `PointSourceAcquisition(..., paired=False, mask=None)` provides
+ an unpaired point-source table. Enable `ModalSettings(table_mode=True)`
+-and `Execution(device="cpu")` on `ModalMuller`; auto/CUDA table requests
+-are refused. The paired TG-002 path and all defaults remain unchanged.
++on `ModalMuller`. `Execution.device` accepts `"cpu"`, `"cuda"` or `"auto"`, selecting the same
++A1 geometry and A2 assembly path as paired measurements. CUDA geometry supplies
++host arrays to A3; waves, A4 LU/fields and B7 derivatives remain on the CPU.
++Auto retains its existing CPU fallback when CUDA is unavailable or runs out
++of memory; explicit CUDA fails instead. The paired TG-002 path and all defaults
++remain unchanged.
+ 
+ Unmasked data have shape `(illumination, receiver)`. A boolean mask has that
+ same shape; masked data are a vector selected in C order. Omitted mask means
+diff --git a/solvers/bem_inverse/continuation/forward.py b/solvers/bem_inverse/continuation/forward.py
+index ad5b99860..7f7aba00d 100644
+--- a/solvers/bem_inverse/continuation/forward.py
++++ b/solvers/bem_inverse/continuation/forward.py
+@@ -224,7 +224,7 @@ def _solve(matrix, factors, rhs):
+ def solve(shape, wavenumber, contrast, acquisition, nodes, *, execution_backend=None):
+     """contrast=ki²/k²; geometry and all lengths are in one declared unit."""
+     if getattr(acquisition, 'mask', None) is not None:
+-        raise ValueError('Masked tables require the explicit CPU modal_muller table mode.')
++        raise ValueError('Masked tables require the explicit modal_muller table mode.')
+     if not np.isfinite(wavenumber) or wavenumber <= 0 or not np.isfinite(contrast) or contrast <= 0:
+         raise ValueError("Wavenumber and contrast must be positive.")
+     curve = shape.nodes(nodes)
+diff --git a/solvers/bem_inverse/forward_solvers/modal_muller.py b/solvers/bem_inverse/forward_solvers/modal_muller.py
+index 49735d3ef..d0d739635 100644
+--- a/solvers/bem_inverse/forward_solvers/modal_muller.py
++++ b/solvers/bem_inverse/forward_solvers/modal_muller.py
+@@ -82,7 +82,7 @@ class ModalSettings:
+     # storage-to-trace profile and cutoff+margin coefficient window.
+     coefficient_workspace: object = None
+     trace_cutoff: object = None
+-    table_mode: bool = False  # explicit CPU plane-wave/unpaired measurements
++    table_mode: bool = False  # explicit plane-wave/unpaired measurements
+ 
+     def __post_init__(self):
+         if not isinstance(self.table_mode, bool):
+@@ -283,8 +283,6 @@ class ModalMuller:
+             return False
+         if not self.settings.table_mode:
+             raise ValueError('modal_muller requires paired point sources unless ModalSettings(table_mode=True) is explicit.')
+-        if self.execution.device != 'cpu':
+-            raise ValueError("Modal table mode requires Execution(device='cpu'); the existing CUDA path is unchanged.")
+         if not isinstance(acquisition, (F.Acquisition, F.PointSourceAcquisition)):
+             raise ValueError('Modal table mode requires plane-wave or unpaired point-source acquisition.')
+         return True
+diff --git a/solvers/bem_inverse/forward_solvers/nodal_kress.py b/solvers/bem_inverse/forward_solvers/nodal_kress.py
+index 65e8fbc30..ed224e571 100644
+--- a/solvers/bem_inverse/forward_solvers/nodal_kress.py
++++ b/solvers/bem_inverse/forward_solvers/nodal_kress.py
+@@ -22,7 +22,7 @@ from gpr_bem_kress.execution import execution
+ def forward_solve(curve, observation, contrast, resolution, *, context=None):
+     """Nodal forward fields for one frequency, with reusable factors for B7."""
+     if getattr(observation.acquisition, 'mask', None) is not None:
+-        raise ValueError('Masked tables require the explicit CPU modal_muller table mode.')
++        raise ValueError('Masked tables require the explicit modal_muller table mode.')
+     if context is None:
+         context = NodalKress(Execution())
+     started = perf_counter()
+@@ -46,7 +46,7 @@ def forward_solve(curve, observation, contrast, resolution, *, context=None):
+ 
+ def damped_forward_solve(shape, observation, contrast, nodes, *, context):
+     if getattr(observation.acquisition, 'mask', None) is not None:
+-        raise ValueError('Masked tables require the explicit CPU modal_muller table mode.')
++        raise ValueError('Masked tables require the explicit modal_muller table mode.')
+     k = complex(observation.wavenumber)
+     if checks.invalid_nodal_material(k, contrast):
+         raise ValueError('Invalid damped material/wavenumber')
+diff --git a/pytest/bem_inverse/test_table_gpu.py b/pytest/bem_inverse/test_table_gpu.py
+new file mode 100644
+index 000000000..f3420a536
+--- /dev/null
++++ b/pytest/bem_inverse/test_table_gpu.py
+@@ -0,0 +1,82 @@
++"""A1–A4/B7 table agreement using CUDA assembly and the shared host wave path."""
++from dataclasses import replace
++import json
++import os
++from pathlib import Path
++
++import numpy as np
++import pytest
++import torch
++
++from bem_inverse import Execution, FourierCurve, Observation, PlaneWaveAcquisition, PointSourceAcquisition
++from bem_inverse.continuation.geometry import resize
++from bem_inverse.forward_solvers.modal_muller import ModalMuller, ModalSettings, forward_solve
++from bem_inverse.geometry_selection import make_update
++
++
++@pytest.fixture(scope='module')
++def table_results():
++    if not torch.cuda.is_available():
++        pytest.skip('CUDA table comparison requires a GPU')
++    curve = resize(FourierCurve.circle(.8, .15-.2j), 8)
++    coefficients = curve.coefficients.copy()
++    coefficients[curve.band-2] = .03+.01j
++    coefficients[curve.band+3] = .04-.01j
++    curve = FourierCurve(coefficients)
++    theta = np.array([.2, 1.3, 2.7])
++    directions = np.c_[np.cos(theta), np.sin(theta)]
++    phi = np.arange(7)*2*np.pi/7
++    receivers = 10*np.c_[np.cos(phi), np.sin(phi)]
++    acquisitions = dict(plane=PlaneWaveAcquisition(directions, receivers),
++                        point=PointSourceAcquisition(4*directions, receivers,
++                                                     strength=1.3+.2j, paired=False))
++    mask = np.arange(21).reshape(3, 7)%3 != 0
++    update, _ = make_update('slider', 1., Execution(device='cpu', frequency_threads=1))
++    space = update.prepare(curve, 3, 8)
++    contexts = {device: ModalMuller(Execution(device=device, frequency_threads=1),
++                                   ModalSettings(table_mode=True)) for device in ('cpu', 'cuda', 'auto')}
++    rows = {}
++    try:
++        for kind, acquisition in acquisitions.items():
++            eta = .33 if kind == 'plane' else 2.
++            for masked in (False, True):
++                acq = replace(acquisition, mask=mask if masked else None)
++                obs = Observation(1., acq, np.ones(acq.data_shape), 1.)
++                for device, context in contexts.items():
++                    state = forward_solve(curve, obs, eta, 512, context=context)
++                    jacobian = context.derivative(state, update, space)
++                    h = 1e-3
++                    plus = forward_solve(curve, obs, eta+h, 512, context=context).prediction
++                    minus = forward_solve(curve, obs, eta-h, 512, context=context).prediction
++                    rows[kind, masked, device] = dict(prediction=state.prediction, jacobian=jacobian,
++                                                      material=(plus-minus)/(2*h), diagnostics=state.diagnostics)
++    finally:
++        contexts.clear()
++    return rows, mask
++
++
++@pytest.mark.parametrize('kind', ['plane', 'point'])
++@pytest.mark.parametrize('masked', [False, True])
++@pytest.mark.parametrize('device', ['cuda', 'auto'])
++def test_cpu_gpu_tables_and_derivatives_agree(table_results, kind, masked, device):
++    rows, mask = table_results
++    cpu = rows[kind, masked, 'cpu']
++    gpu = rows[kind, masked, device]
++    assert gpu['diagnostics']['device'] == 'cuda-modal'
++    assert gpu['diagnostics']['fallback'] is None
++    metrics = {}
++    for field in ('prediction', 'jacobian', 'material'):
++        a, b = cpu[field], gpu[field]
++        assert a.shape == b.shape
++        error = float(np.linalg.norm(a-b)/np.linalg.norm(a))
++        metrics[field] = error
++        assert error < 1e-10, (field, error)
++        if masked:
++            np.testing.assert_array_equal(b, rows[kind, False, device][field][mask])
++    print(json.dumps(dict(kind=kind, masked=masked, device=device, relative_l2=metrics)))
++    if directory := os.environ.get('BEM_GPU_TABLE_EVIDENCE'):
++        out = Path(directory)
++        out.mkdir(parents=True, exist_ok=True)
++        (out/f'{kind}_{"masked" if masked else "full"}_{device}.json').write_text(
++            json.dumps(dict(kind=kind, masked=masked, device=device, relative_l2=metrics,
++                            threshold=1e-10, passed=True), indent=2)+'\n')

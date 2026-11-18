@@ -224,7 +224,7 @@ def _solve(matrix, factors, rhs):
 def solve(shape, wavenumber, contrast, acquisition, nodes, *, execution_backend=None):
     """contrast=ki²/k²; geometry and all lengths are in one declared unit."""
     if getattr(acquisition, 'mask', None) is not None:
-        raise ValueError('Masked tables require the explicit CPU modal_muller table mode.')
+        raise ValueError('Masked tables require the explicit modal_muller table mode.')
     if not np.isfinite(wavenumber) or wavenumber <= 0 or not np.isfinite(contrast) or contrast <= 0:
         raise ValueError("Wavenumber and contrast must be positive.")
     curve = shape.nodes(nodes)

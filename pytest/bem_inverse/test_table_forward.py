@@ -1,4 +1,4 @@
-"""Explicit CPU tables: analytic plane waves, disk scattering, masks and refusals."""
+"""Explicit tables: analytic plane waves, disk scattering, masks and refusals."""
 import numpy as np
 import pytest
 from scipy.special import jv, jvp, hankel1, h1vp
@@ -58,11 +58,11 @@ def test_full_or_masked_disk_table_matches_independent_mie_series(eta,masked):
     assert np.linalg.norm(prediction.prediction-expected)/np.linalg.norm(expected)<1e-10
 
 
-def test_new_mode_is_explicit_cpu_only_and_mask_validation_is_strict():
+def test_new_mode_is_explicit_and_mask_validation_is_strict():
     acq=acquisition();obs=Observation(1.,acq,np.ones(acq.data_shape),1.)
-    for context,match in [(ModalMuller(Execution(device='cpu')),'table_mode=True'),
-                          (ModalMuller(Execution(device='auto'),ModalSettings(table_mode=True)),"device='cpu'")]:
-        with pytest.raises(ValueError,match=match):
+    for device in ('cpu', 'cuda', 'auto'):
+        context = ModalMuller(Execution(device=device))
+        with pytest.raises(ValueError,match='table_mode=True'):
             forward_solve(FourierCurve.circle(),obs,.33,512,context=context)
     with pytest.raises(ValueError,match='mask'):
         acquisition(np.ones((3,7),int))

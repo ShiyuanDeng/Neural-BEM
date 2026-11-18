@@ -82,7 +82,7 @@ class ModalSettings:
     # storage-to-trace profile and cutoff+margin coefficient window.
     coefficient_workspace: object = None
     trace_cutoff: object = None
-    table_mode: bool = False  # explicit CPU plane-wave/unpaired measurements
+    table_mode: bool = False  # explicit plane-wave/unpaired measurements
 
     def __post_init__(self):
         if not isinstance(self.table_mode, bool):
@@ -283,8 +283,6 @@ class ModalMuller:
             return False
         if not self.settings.table_mode:
             raise ValueError('modal_muller requires paired point sources unless ModalSettings(table_mode=True) is explicit.')
-        if self.execution.device != 'cpu':
-            raise ValueError("Modal table mode requires Execution(device='cpu'); the existing CUDA path is unchanged.")
         if not isinstance(acquisition, (F.Acquisition, F.PointSourceAcquisition)):
             raise ValueError('Modal table mode requires plane-wave or unpaired point-source acquisition.')
         return True
