@@ -1,0 +1,513 @@
+{
+  "case": "glider_10",
+  "started": "2026-11-18T00:22:33.849905+00:00",
+  "solver_start": {
+    "commit": "3da19bb0f240a6fa9862afd50929013c31a7ee89",
+    "solver_dirty": false,
+    "solver_status": "",
+    "source_hashes": {
+      "solvers/bem_inverse/__init__.py": "cfa565055bb248891a293146088ebdbd7f99faa7bfa2a423f9a2d907024622a4",
+      "solvers/bem_inverse/a1_geometry.py": "b402a2448d0d557feb2f7d62bfdd5c9c9c7dd7c11e73b9b222fc7be769239efb",
+      "solvers/bem_inverse/a2_muller.py": "e5caa5bc198db8bebac39a872df104dfe095e16a488a2bfe20bff5031886428d",
+      "solvers/bem_inverse/a3_waves.py": "9fee421adc06eb1248c3c4945dd317d0c28c4411f84a2f8ecbd5e904832f79f6",
+      "solvers/bem_inverse/a4_fields.py": "732f679ced6692fda132533a3c7940b05afe87b6118c3a6b52e6354468780795",
+      "solvers/bem_inverse/b5_residual.py": "11dbda7c7fe558a47a01dec318aa8c69fbe41c43aecea292f3e44499b69dc473",
+      "solvers/bem_inverse/b7_data_jacobian.py": "6e56264e52c886514d280df25bfc1b5072138c74ff9b6ff566c300808389ba07",
+      "solvers/bem_inverse/b8_gauss_newton.py": "de413b19b02e682fd90003bd352d231ad3f5420fe2e9124ca16eaca53f149fc9",
+      "solvers/bem_inverse/c12_iteration.py": "57ef44ba54890fccce458858e5db3485a10e4ab439812b94c8f062e75da332d2",
+      "solvers/bem_inverse/c9_lm.py": "6b11627daf8501a29a5275406874759a5add014a7cfdc74df439e86aa9b60044",
+      "solvers/bem_inverse/checks.py": "fe1eb247fa28cf62661696fad6ced92d00f947baf5a0159cadd7d59debad5635",
+      "solvers/bem_inverse/continuation/__init__.py": "86ba4f139e92f8cc8e6c4017bcf818d39fa6fc8ecc93546ac6de9682bc979a05",
+      "solvers/bem_inverse/continuation/forward.py": "ab1c106312b978a8b1bf775940badd6d2f2a13812e9f9f82f3b201535b920861",
+      "solvers/bem_inverse/continuation/geometry.py": "62eb4900febfd584dde729d28deb9658be7549a37543dda9ec023b360ecdb427",
+      "solvers/bem_inverse/continuation/geometry_runtime.py": "cb7c7f3aeea9e0ed238f70b25527078b1101f462393920159fa7ee196ab0e1d4",
+      "solvers/bem_inverse/continuation_policy.py": "986fb93f4f4f4bfdce4f110064511bdf0b18f6439412c923362e042519f0543c",
+      "solvers/bem_inverse/damped_cuda.py": "407013d896ddfd68ee484a8d7c9907fe90a0cc3d5c9e7c5d5c3077b9c75be09e",
+      "solvers/bem_inverse/data_blocks.py": "58547d8762d5119b947d40f5cfb7dca74317de9e674dcc08ea09de1a29c6dbdb",
+      "solvers/bem_inverse/errors.py": "a0ebbeeb129440002f420e0b458c47bd293baecb6e7905501cb143037f350151",
+      "solvers/bem_inverse/fit_stage.py": "08ba45ce438c1cfbe7a85473d38ca16946cc3e0ae1507624175e29028331cd55",
+      "solvers/bem_inverse/forward_batch.py": "62c9f4f1cffe22b9c4b7eef8329b22b23c55a8707a8c0f0e7ed37b3cb9747971",
+      "solvers/bem_inverse/forward_solvers/__init__.py": "6b0608efa2f6127c2bb7376f8d6f0f88fd6cf67a41399f23b37a3f716393140f",
+      "solvers/bem_inverse/forward_solvers/modal_muller.py": "0a0953210ed516df326bbb9a39058048f1e10de3c7b6910745a7a1ce323880c2",
+      "solvers/bem_inverse/forward_solvers/nodal_kress.py": "5e451c8508a9ce07ab60aa3f31b1bf798e3ce9b4c80986d8d737587fa35437ff",
+      "solvers/bem_inverse/geometry_selection.py": "e82d99a508f3fdb4a4ca0181012945985399330a202f100c3a91d13a4d9b5fdb",
+      "solvers/bem_inverse/geometry_update_methods/__init__.py": "641d8487179ea3e6a920c7bb0f4250478bba03eb3116a3ad102775dccbf7682e",
+      "solvers/bem_inverse/geometry_update_methods/analytic_spectral.py": "3ec4aeca1643e839eec1bf6f599dc86e6e6d2648b9ac16b4d69ebd751859ae37",
+      "solvers/bem_inverse/geometry_update_methods/certificates.py": "f070f514c7aa965431d1bd8f0c01babc2e89d461feeb14c7b4b0f17e59d0c505",
+      "solvers/bem_inverse/geometry_update_methods/certified_spectral.py": "f208d288a94e0e3717e03ffa0dae195eb98459e24d5a7f70b8ccece46ca9b7d6",
+      "solvers/bem_inverse/geometry_update_methods/gaussian_lipschitz.py": "fe021f512ef67982359c8cb7a77e021da7088bb2969095506d598cdea3e66538",
+      "solvers/bem_inverse/geometry_update_methods/n_update.py": "1a5bd26ac7647aedff0218d4b99e2ee5e9e8869a2d05315db55b4d742b403fbb",
+      "solvers/bem_inverse/geometry_update_methods/similarity.py": "9463a73f98606cfe06b261c52cb86157a5a7618bbbeaafb5088d3234879148be",
+      "solvers/bem_inverse/geometry_update_methods/slider.py": "04fb02f1720ef759c16b9d46826c3cc35b7d54b2ba437ce23d5c0eb7ee39017f",
+      "solvers/bem_inverse/geometry_update_methods/spectral.py": "0714e8a0162a17b044adde4a2aae1233fdd4582be2f3f27963db83b1f18334d5",
+      "solvers/bem_inverse/geometry_update_methods/spline.py": "485574b991e307b40327b349369211a744def103c380f2d632bed7cae3fd7c8b",
+      "solvers/bem_inverse/geometry_update_methods/uncentred_spectral.py": "448d061c4be848bf469ee0c1a4722935c3ba92aa1587ed943ea4ea914e6ebbfa",
+      "solvers/bem_inverse/io.py": "b9f9fd20ead7f5a40d5636e96517e1087391d73910ee1632cb94636cbcc6d9ad",
+      "solvers/bem_inverse/level_penalty.py": "e56bfc56fb9fea1aaf1a84dd3b0f2253be10f2b7933cf87cba234ffae2286036",
+      "solvers/bem_inverse/localization.py": "506b2718aa7f13d98d22584ddd95e242064f41f2de3bfb3419ed8ea3a806e78a",
+      "solvers/bem_inverse/material.py": "982d606d2d7cac5bf87026c6099feaf8e91ce8de5f12c973ffa08479a9643c67",
+      "solvers/bem_inverse/mie_grid.py": "88b1d08bea24cd80b7cbd169ab39c6fbe25c7d5a8c5b92b6b3b4b6f9613e6b9b",
+      "solvers/bem_inverse/mie_localize.py": "c32a2c2a533070a4016c7d092f212c1e5bbf3709957572c9d3193702de9b1229",
+      "solvers/bem_inverse/modal_cuda.py": "73e96af9e27719ab671cd87790de6867fda2d5c01fbcb60fca19a032b4f887b5",
+      "solvers/bem_inverse/nodal_geometry.py": "1154eb1e2b42f53d240e3ea748587ca166cda115526952528838179141d8189a",
+      "solvers/bem_inverse/normal_basis.py": "b2388c9bd74e10301910145eacf92bd8df89789ee2857f237bae60091c1a5ced",
+      "solvers/bem_inverse/physics.py": "b83adcf77ea779855f4e075c40a14a890a2b016f146f7d3cdf0d31b2a1e09034",
+      "solvers/bem_inverse/pipelines.py": "4992b38accae1a52e0a835cdb5bab5033ee048883ce43ef930a724ef74c15318",
+      "solvers/bem_inverse/policies.py": "d3f060e128683320db54b705c7d93b8654fe75f63bd370ff1c934a57edaae06c",
+      "solvers/bem_inverse/policy.py": "ff31233d68156118cc4079e17b445575a00aaaa87562942f49ed76cc897d6885",
+      "solvers/bem_inverse/problem.py": "9283eceeb1a06deff239ab0e3473ac67e134be75421f74f5623c04f79a13fb26",
+      "solvers/bem_inverse/reach.py": "ed9fcfa9746d27dd60298c57457d247709289932429ddb0c8c3c89ff63151b92",
+      "solvers/bem_inverse/real_only_policy.py": "b5e8a45a671623e65ca22e4ae462b97638afcf75cd1344518a45b7f37d0980fa",
+      "solvers/bem_inverse/recording.py": "f55ebba403120ac51c2f579d404effcadfe4cb5e6253682d8ff9bbd30cf3daef",
+      "solvers/bem_inverse/runner.py": "bb75e97482e80874aa7563d8c653c11523084387f30b8430ef981de3c54fb537",
+      "solvers/bem_inverse/stage_types.py": "af094f0d3bdcd75ebc956b1ac45b49c19ef3c0302f34724f9f60e09c778e50fb",
+      "solvers/bem_inverse/work.py": "c8409710bf5dc5e724d8cfd08689ee494430b50e140c7562374db385b907c628"
+    }
+  },
+  "ladder": [
+    1.0,
+    1.25,
+    1.5,
+    1.75,
+    2.0,
+    2.5,
+    3.0,
+    3.5,
+    4.0,
+    5.0,
+    6.0,
+    7.0,
+    8.0,
+    10.0,
+    12.0,
+    15.0
+  ],
+  "passing_prefix": [
+    1.0,
+    1.25,
+    1.5,
+    1.75,
+    2.0,
+    2.5,
+    3.0,
+    3.5,
+    4.0,
+    5.0,
+    6.0
+  ],
+  "attempted": [
+    1.0,
+    1.25,
+    1.5,
+    1.75,
+    2.0,
+    2.5,
+    3.0,
+    3.5,
+    4.0,
+    5.0,
+    6.0,
+    7.0
+  ],
+  "thresholds": {
+    "brg": 1e-05,
+    "refinement": 1e-06
+  },
+  "series_loss": 1e-06,
+  "shape": {
+    "case": "glider_10",
+    "shape": "glider",
+    "eta": 10.0,
+    "limited": false,
+    "true_curve_band": 9,
+    "wave_radius": 1.278,
+    "k15_radius": 19.17,
+    "k15_series_estimate": 4.3089807955796126e-09,
+    "series_loss": 1e-06,
+    "k15_passes_series_limit": true,
+    "geometry_origin": "analytic glider"
+  },
+  "stop_reason": "BRG/refinement threshold failed",
+  "runs": [
+    {
+      "command": [
+        "/home/drdeng/miniconda3/envs/EMNerf/bin/python",
+        "/home/drdeng/Neural_SDF_BEM_AD_organised/experiments/bem_on_baseline_data/brg_paper.py",
+        "_forward",
+        "--case",
+        "glider_10",
+        "--one",
+        "1.0"
+      ],
+      "returncode": 0,
+      "stop_reason": null,
+      "wall_seconds": 1.2097199345007539,
+      "peak_rss_bytes": 238329856,
+      "minimum_available_bytes": 22132723712
+    },
+    {
+      "command": [
+        "/home/drdeng/miniconda3/envs/EMNerf/bin/python",
+        "/home/drdeng/Neural_SDF_BEM_AD_organised/experiments/bem_on_baseline_data/brg_paper.py",
+        "_forward",
+        "--case",
+        "glider_10",
+        "--one",
+        "1.25"
+      ],
+      "returncode": 0,
+      "stop_reason": null,
+      "wall_seconds": 1.1147510409355164,
+      "peak_rss_bytes": 240730112,
+      "minimum_available_bytes": 22033276928
+    },
+    {
+      "command": [
+        "/home/drdeng/miniconda3/envs/EMNerf/bin/python",
+        "/home/drdeng/Neural_SDF_BEM_AD_organised/experiments/bem_on_baseline_data/brg_paper.py",
+        "_forward",
+        "--case",
+        "glider_10",
+        "--one",
+        "1.5"
+      ],
+      "returncode": 0,
+      "stop_reason": null,
+      "wall_seconds": 1.108212229795754,
+      "peak_rss_bytes": 249032704,
+      "minimum_available_bytes": 21653868544
+    },
+    {
+      "command": [
+        "/home/drdeng/miniconda3/envs/EMNerf/bin/python",
+        "/home/drdeng/Neural_SDF_BEM_AD_organised/experiments/bem_on_baseline_data/brg_paper.py",
+        "_forward",
+        "--case",
+        "glider_10",
+        "--one",
+        "1.75"
+      ],
+      "returncode": 0,
+      "stop_reason": null,
+      "wall_seconds": 1.1094776820391417,
+      "peak_rss_bytes": 250818560,
+      "minimum_available_bytes": 21752074240
+    },
+    {
+      "command": [
+        "/home/drdeng/miniconda3/envs/EMNerf/bin/python",
+        "/home/drdeng/Neural_SDF_BEM_AD_organised/experiments/bem_on_baseline_data/brg_paper.py",
+        "_forward",
+        "--case",
+        "glider_10",
+        "--one",
+        "2.0"
+      ],
+      "returncode": 0,
+      "stop_reason": null,
+      "wall_seconds": 1.2094893557950854,
+      "peak_rss_bytes": 258080768,
+      "minimum_available_bytes": 21709594624
+    },
+    {
+      "command": [
+        "/home/drdeng/miniconda3/envs/EMNerf/bin/python",
+        "/home/drdeng/Neural_SDF_BEM_AD_organised/experiments/bem_on_baseline_data/brg_paper.py",
+        "_forward",
+        "--case",
+        "glider_10",
+        "--one",
+        "2.5"
+      ],
+      "returncode": 0,
+      "stop_reason": null,
+      "wall_seconds": 1.3132729679346085,
+      "peak_rss_bytes": 263589888,
+      "minimum_available_bytes": 21876379648
+    },
+    {
+      "command": [
+        "/home/drdeng/miniconda3/envs/EMNerf/bin/python",
+        "/home/drdeng/Neural_SDF_BEM_AD_organised/experiments/bem_on_baseline_data/brg_paper.py",
+        "_forward",
+        "--case",
+        "glider_10",
+        "--one",
+        "3.0"
+      ],
+      "returncode": 0,
+      "stop_reason": null,
+      "wall_seconds": 1.1164870150387287,
+      "peak_rss_bytes": 272973824,
+      "minimum_available_bytes": 21844529152
+    },
+    {
+      "command": [
+        "/home/drdeng/miniconda3/envs/EMNerf/bin/python",
+        "/home/drdeng/Neural_SDF_BEM_AD_organised/experiments/bem_on_baseline_data/brg_paper.py",
+        "_forward",
+        "--case",
+        "glider_10",
+        "--one",
+        "3.5"
+      ],
+      "returncode": 0,
+      "stop_reason": null,
+      "wall_seconds": 1.2151486473158002,
+      "peak_rss_bytes": 280924160,
+      "minimum_available_bytes": 21963931648
+    },
+    {
+      "command": [
+        "/home/drdeng/miniconda3/envs/EMNerf/bin/python",
+        "/home/drdeng/Neural_SDF_BEM_AD_organised/experiments/bem_on_baseline_data/brg_paper.py",
+        "_forward",
+        "--case",
+        "glider_10",
+        "--one",
+        "4.0"
+      ],
+      "returncode": 0,
+      "stop_reason": null,
+      "wall_seconds": 1.2097691101953387,
+      "peak_rss_bytes": 285749248,
+      "minimum_available_bytes": 21895712768
+    },
+    {
+      "command": [
+        "/home/drdeng/miniconda3/envs/EMNerf/bin/python",
+        "/home/drdeng/Neural_SDF_BEM_AD_organised/experiments/bem_on_baseline_data/brg_paper.py",
+        "_forward",
+        "--case",
+        "glider_10",
+        "--one",
+        "5.0"
+      ],
+      "returncode": 0,
+      "stop_reason": null,
+      "wall_seconds": 1.2124763997271657,
+      "peak_rss_bytes": 301436928,
+      "minimum_available_bytes": 21922766848
+    },
+    {
+      "command": [
+        "/home/drdeng/miniconda3/envs/EMNerf/bin/python",
+        "/home/drdeng/Neural_SDF_BEM_AD_organised/experiments/bem_on_baseline_data/brg_paper.py",
+        "_forward",
+        "--case",
+        "glider_10",
+        "--one",
+        "6.0"
+      ],
+      "returncode": 0,
+      "stop_reason": null,
+      "wall_seconds": 1.2105992930009961,
+      "peak_rss_bytes": 315777024,
+      "minimum_available_bytes": 21979205632
+    },
+    {
+      "command": [
+        "/home/drdeng/miniconda3/envs/EMNerf/bin/python",
+        "/home/drdeng/Neural_SDF_BEM_AD_organised/experiments/bem_on_baseline_data/brg_paper.py",
+        "_forward",
+        "--case",
+        "glider_10",
+        "--one",
+        "7.0"
+      ],
+      "returncode": 0,
+      "stop_reason": null,
+      "wall_seconds": 1.315315700136125,
+      "peak_rss_bytes": 326504448,
+      "minimum_available_bytes": 21859667968
+    }
+  ],
+  "cap": 6.0,
+  "passes": false,
+  "wall_seconds": 14.368186163716018,
+  "solver_end": {
+    "commit": "26d95baf257697d2aed6052c21d96f0a75e633ff",
+    "solver_dirty": false,
+    "solver_status": "",
+    "source_hashes": {
+      "solvers/bem_inverse/__init__.py": "cfa565055bb248891a293146088ebdbd7f99faa7bfa2a423f9a2d907024622a4",
+      "solvers/bem_inverse/a1_geometry.py": "b402a2448d0d557feb2f7d62bfdd5c9c9c7dd7c11e73b9b222fc7be769239efb",
+      "solvers/bem_inverse/a2_muller.py": "e5caa5bc198db8bebac39a872df104dfe095e16a488a2bfe20bff5031886428d",
+      "solvers/bem_inverse/a3_waves.py": "9fee421adc06eb1248c3c4945dd317d0c28c4411f84a2f8ecbd5e904832f79f6",
+      "solvers/bem_inverse/a4_fields.py": "732f679ced6692fda132533a3c7940b05afe87b6118c3a6b52e6354468780795",
+      "solvers/bem_inverse/b5_residual.py": "11dbda7c7fe558a47a01dec318aa8c69fbe41c43aecea292f3e44499b69dc473",
+      "solvers/bem_inverse/b7_data_jacobian.py": "6e56264e52c886514d280df25bfc1b5072138c74ff9b6ff566c300808389ba07",
+      "solvers/bem_inverse/b8_gauss_newton.py": "de413b19b02e682fd90003bd352d231ad3f5420fe2e9124ca16eaca53f149fc9",
+      "solvers/bem_inverse/c12_iteration.py": "57ef44ba54890fccce458858e5db3485a10e4ab439812b94c8f062e75da332d2",
+      "solvers/bem_inverse/c9_lm.py": "6b11627daf8501a29a5275406874759a5add014a7cfdc74df439e86aa9b60044",
+      "solvers/bem_inverse/checks.py": "fe1eb247fa28cf62661696fad6ced92d00f947baf5a0159cadd7d59debad5635",
+      "solvers/bem_inverse/continuation/__init__.py": "86ba4f139e92f8cc8e6c4017bcf818d39fa6fc8ecc93546ac6de9682bc979a05",
+      "solvers/bem_inverse/continuation/forward.py": "ab1c106312b978a8b1bf775940badd6d2f2a13812e9f9f82f3b201535b920861",
+      "solvers/bem_inverse/continuation/geometry.py": "62eb4900febfd584dde729d28deb9658be7549a37543dda9ec023b360ecdb427",
+      "solvers/bem_inverse/continuation/geometry_runtime.py": "cb7c7f3aeea9e0ed238f70b25527078b1101f462393920159fa7ee196ab0e1d4",
+      "solvers/bem_inverse/continuation_policy.py": "986fb93f4f4f4bfdce4f110064511bdf0b18f6439412c923362e042519f0543c",
+      "solvers/bem_inverse/damped_cuda.py": "407013d896ddfd68ee484a8d7c9907fe90a0cc3d5c9e7c5d5c3077b9c75be09e",
+      "solvers/bem_inverse/data_blocks.py": "58547d8762d5119b947d40f5cfb7dca74317de9e674dcc08ea09de1a29c6dbdb",
+      "solvers/bem_inverse/errors.py": "a0ebbeeb129440002f420e0b458c47bd293baecb6e7905501cb143037f350151",
+      "solvers/bem_inverse/fit_stage.py": "08ba45ce438c1cfbe7a85473d38ca16946cc3e0ae1507624175e29028331cd55",
+      "solvers/bem_inverse/forward_batch.py": "62c9f4f1cffe22b9c4b7eef8329b22b23c55a8707a8c0f0e7ed37b3cb9747971",
+      "solvers/bem_inverse/forward_solvers/__init__.py": "6b0608efa2f6127c2bb7376f8d6f0f88fd6cf67a41399f23b37a3f716393140f",
+      "solvers/bem_inverse/forward_solvers/modal_muller.py": "0a0953210ed516df326bbb9a39058048f1e10de3c7b6910745a7a1ce323880c2",
+      "solvers/bem_inverse/forward_solvers/nodal_kress.py": "5e451c8508a9ce07ab60aa3f31b1bf798e3ce9b4c80986d8d737587fa35437ff",
+      "solvers/bem_inverse/geometry_selection.py": "e82d99a508f3fdb4a4ca0181012945985399330a202f100c3a91d13a4d9b5fdb",
+      "solvers/bem_inverse/geometry_update_methods/__init__.py": "641d8487179ea3e6a920c7bb0f4250478bba03eb3116a3ad102775dccbf7682e",
+      "solvers/bem_inverse/geometry_update_methods/analytic_spectral.py": "3ec4aeca1643e839eec1bf6f599dc86e6e6d2648b9ac16b4d69ebd751859ae37",
+      "solvers/bem_inverse/geometry_update_methods/certificates.py": "f070f514c7aa965431d1bd8f0c01babc2e89d461feeb14c7b4b0f17e59d0c505",
+      "solvers/bem_inverse/geometry_update_methods/certified_spectral.py": "f208d288a94e0e3717e03ffa0dae195eb98459e24d5a7f70b8ccece46ca9b7d6",
+      "solvers/bem_inverse/geometry_update_methods/gaussian_lipschitz.py": "fe021f512ef67982359c8cb7a77e021da7088bb2969095506d598cdea3e66538",
+      "solvers/bem_inverse/geometry_update_methods/n_update.py": "1a5bd26ac7647aedff0218d4b99e2ee5e9e8869a2d05315db55b4d742b403fbb",
+      "solvers/bem_inverse/geometry_update_methods/similarity.py": "9463a73f98606cfe06b261c52cb86157a5a7618bbbeaafb5088d3234879148be",
+      "solvers/bem_inverse/geometry_update_methods/slider.py": "04fb02f1720ef759c16b9d46826c3cc35b7d54b2ba437ce23d5c0eb7ee39017f",
+      "solvers/bem_inverse/geometry_update_methods/spectral.py": "0714e8a0162a17b044adde4a2aae1233fdd4582be2f3f27963db83b1f18334d5",
+      "solvers/bem_inverse/geometry_update_methods/spline.py": "485574b991e307b40327b349369211a744def103c380f2d632bed7cae3fd7c8b",
+      "solvers/bem_inverse/geometry_update_methods/uncentred_spectral.py": "448d061c4be848bf469ee0c1a4722935c3ba92aa1587ed943ea4ea914e6ebbfa",
+      "solvers/bem_inverse/io.py": "b9f9fd20ead7f5a40d5636e96517e1087391d73910ee1632cb94636cbcc6d9ad",
+      "solvers/bem_inverse/level_penalty.py": "e56bfc56fb9fea1aaf1a84dd3b0f2253be10f2b7933cf87cba234ffae2286036",
+      "solvers/bem_inverse/localization.py": "506b2718aa7f13d98d22584ddd95e242064f41f2de3bfb3419ed8ea3a806e78a",
+      "solvers/bem_inverse/material.py": "982d606d2d7cac5bf87026c6099feaf8e91ce8de5f12c973ffa08479a9643c67",
+      "solvers/bem_inverse/mie_grid.py": "88b1d08bea24cd80b7cbd169ab39c6fbe25c7d5a8c5b92b6b3b4b6f9613e6b9b",
+      "solvers/bem_inverse/mie_localize.py": "c32a2c2a533070a4016c7d092f212c1e5bbf3709957572c9d3193702de9b1229",
+      "solvers/bem_inverse/modal_cuda.py": "73e96af9e27719ab671cd87790de6867fda2d5c01fbcb60fca19a032b4f887b5",
+      "solvers/bem_inverse/nodal_geometry.py": "1154eb1e2b42f53d240e3ea748587ca166cda115526952528838179141d8189a",
+      "solvers/bem_inverse/normal_basis.py": "b2388c9bd74e10301910145eacf92bd8df89789ee2857f237bae60091c1a5ced",
+      "solvers/bem_inverse/physics.py": "b83adcf77ea779855f4e075c40a14a890a2b016f146f7d3cdf0d31b2a1e09034",
+      "solvers/bem_inverse/pipelines.py": "4992b38accae1a52e0a835cdb5bab5033ee048883ce43ef930a724ef74c15318",
+      "solvers/bem_inverse/policies.py": "d3f060e128683320db54b705c7d93b8654fe75f63bd370ff1c934a57edaae06c",
+      "solvers/bem_inverse/policy.py": "ff31233d68156118cc4079e17b445575a00aaaa87562942f49ed76cc897d6885",
+      "solvers/bem_inverse/problem.py": "9283eceeb1a06deff239ab0e3473ac67e134be75421f74f5623c04f79a13fb26",
+      "solvers/bem_inverse/reach.py": "ed9fcfa9746d27dd60298c57457d247709289932429ddb0c8c3c89ff63151b92",
+      "solvers/bem_inverse/real_only_policy.py": "b5e8a45a671623e65ca22e4ae462b97638afcf75cd1344518a45b7f37d0980fa",
+      "solvers/bem_inverse/recording.py": "f55ebba403120ac51c2f579d404effcadfe4cb5e6253682d8ff9bbd30cf3daef",
+      "solvers/bem_inverse/runner.py": "bb75e97482e80874aa7563d8c653c11523084387f30b8430ef981de3c54fb537",
+      "solvers/bem_inverse/stage_types.py": "af094f0d3bdcd75ebc956b1ac45b49c19ef3c0302f34724f9f60e09c778e50fb",
+      "solvers/bem_inverse/work.py": "c8409710bf5dc5e724d8cfd08689ee494430b50e140c7562374db385b907c628"
+    }
+  },
+  "bulk_files": [
+    {
+      "path": "results/bem/baseline_data/brg_paper/2026-11-18/glider_10/forward/local/k_1.25.log",
+      "bytes": 99,
+      "sha256": "4c0aa35416e76773aaf37f519b72fafd9c6cf245841a0ee5edb6ab80572d7fbf"
+    },
+    {
+      "path": "results/bem/baseline_data/brg_paper/2026-11-18/glider_10/forward/local/k_1.25.npz",
+      "bytes": 5839,
+      "sha256": "9cc9fe0822a5f0786e709d250e6782d3ae330897cb2d8f1a1b31d22fb6a07ad1"
+    },
+    {
+      "path": "results/bem/baseline_data/brg_paper/2026-11-18/glider_10/forward/local/k_1.5.log",
+      "bytes": 98,
+      "sha256": "13e380988e1ef047b4acc8cac7ca2239f60777625c99eb7b43b8cc46977df47a"
+    },
+    {
+      "path": "results/bem/baseline_data/brg_paper/2026-11-18/glider_10/forward/local/k_1.5.npz",
+      "bytes": 8551,
+      "sha256": "1d7dcb133e4202a8a8315e1b075c1759938e1268bde00b59a8e6eae651620162"
+    },
+    {
+      "path": "results/bem/baseline_data/brg_paper/2026-11-18/glider_10/forward/local/k_1.75.log",
+      "bytes": 101,
+      "sha256": "0e0281d6c0465bbde8dd9dd9f2d1932673f7ab5e4f9da5e30a4d750904b08f13"
+    },
+    {
+      "path": "results/bem/baseline_data/brg_paper/2026-11-18/glider_10/forward/local/k_1.75.npz",
+      "bytes": 10954,
+      "sha256": "08d5f00810cda04fdbe44e95e53a4b123c105a465f169fb1147573d09334a395"
+    },
+    {
+      "path": "results/bem/baseline_data/brg_paper/2026-11-18/glider_10/forward/local/k_1.log",
+      "bytes": 99,
+      "sha256": "1b17b27bb1d0618169c3ecefa5d3d9b1bd633e5004cef14cc72c3b3c434d36db"
+    },
+    {
+      "path": "results/bem/baseline_data/brg_paper/2026-11-18/glider_10/forward/local/k_1.npz",
+      "bytes": 4223,
+      "sha256": "0c5a3999dfef6feb5453b0efc3daa0c8c2c2f1defc32e84f9ddb91a3406cfb10"
+    },
+    {
+      "path": "results/bem/baseline_data/brg_paper/2026-11-18/glider_10/forward/local/k_2.5.log",
+      "bytes": 100,
+      "sha256": "56d580998711b81335cb41db52b8fb69fdd4bf9349ae0eb5c2939405e0324aae"
+    },
+    {
+      "path": "results/bem/baseline_data/brg_paper/2026-11-18/glider_10/forward/local/k_2.5.npz",
+      "bytes": 22766,
+      "sha256": "ec6a8fc90bc5b4aa8c847f25978606f8a1c78024fe8c5882b23a8449309572d8"
+    },
+    {
+      "path": "results/bem/baseline_data/brg_paper/2026-11-18/glider_10/forward/local/k_2.log",
+      "bytes": 99,
+      "sha256": "c2a185c0c139774a0153858ad77d3f685f2112030ee69df0b13016da5c26dd47"
+    },
+    {
+      "path": "results/bem/baseline_data/brg_paper/2026-11-18/glider_10/forward/local/k_2.npz",
+      "bytes": 14609,
+      "sha256": "10d30abeccbc69e11732fbb12de473b022db58775046c0f8781184de9052b94a"
+    },
+    {
+      "path": "results/bem/baseline_data/brg_paper/2026-11-18/glider_10/forward/local/k_3.5.log",
+      "bytes": 100,
+      "sha256": "f1de14a2531ccb13182cf085d7517ef18eea9c8075e81b7ea5c5755fa00cdf1f"
+    },
+    {
+      "path": "results/bem/baseline_data/brg_paper/2026-11-18/glider_10/forward/local/k_3.5.npz",
+      "bytes": 45411,
+      "sha256": "9475b0d4a2641817177b9a6163c3b5d68ca4c2f511f3b50e4ce91628d68609f9"
+    },
+    {
+      "path": "results/bem/baseline_data/brg_paper/2026-11-18/glider_10/forward/local/k_3.log",
+      "bytes": 100,
+      "sha256": "0bc331967922fb5f4804b86c6886fc0cc1b648faef6b68ee02e2baefc48367b0"
+    },
+    {
+      "path": "results/bem/baseline_data/brg_paper/2026-11-18/glider_10/forward/local/k_3.npz",
+      "bytes": 33027,
+      "sha256": "0b9fc864da96bd7a008c4b2529c0c537261f674eadd98b29cba41b1c72e355fa"
+    },
+    {
+      "path": "results/bem/baseline_data/brg_paper/2026-11-18/glider_10/forward/local/k_4.log",
+      "bytes": 99,
+      "sha256": "1eb883e2928915d901faac614a1adeb46870d6fa775ebf338da8b0e336f536b2"
+    },
+    {
+      "path": "results/bem/baseline_data/brg_paper/2026-11-18/glider_10/forward/local/k_4.npz",
+      "bytes": 59234,
+      "sha256": "2509fc570874542992b7d2217cfae2c01090f8285857c0db470821fc44651f70"
+    },
+    {
+      "path": "results/bem/baseline_data/brg_paper/2026-11-18/glider_10/forward/local/k_5.log",
+      "bytes": 99,
+      "sha256": "0fc5316e3532d0aa6f46a9c00be7ab03ea65d2e66ed0c4f2b05aee2bc9966a0c"
+    },
+    {
+      "path": "results/bem/baseline_data/brg_paper/2026-11-18/glider_10/forward/local/k_5.npz",
+      "bytes": 96483,
+      "sha256": "ff968ebbc3c60992d9ce91886ad20ddc92fe4f2f136735e134218a568cbf8e36"
+    },
+    {
+      "path": "results/bem/baseline_data/brg_paper/2026-11-18/glider_10/forward/local/k_6.log",
+      "bytes": 99,
+      "sha256": "6c1559e15bd8fcd6fe8b01030f1936083c2c0a5c47cb7ae17a2a4067365f8262"
+    },
+    {
+      "path": "results/bem/baseline_data/brg_paper/2026-11-18/glider_10/forward/local/k_6.npz",
+      "bytes": 147523,
+      "sha256": "1096e9746c23c97f37b3fa04ba135edb83ed0c6fe124b1697d4a9af6f5b301fb"
+    },
+    {
+      "path": "results/bem/baseline_data/brg_paper/2026-11-18/glider_10/forward/local/k_7.log",
+      "bytes": 100,
+      "sha256": "98d8ffab5f5fd8ab3c7491d63d604cc132d124e136b748ce7362c9e0c1e73f28"
+    },
+    {
+      "path": "results/bem/baseline_data/brg_paper/2026-11-18/glider_10/forward/local/k_7.npz",
+      "bytes": 207371,
+      "sha256": "9200bf858209bea8cbb49a4930a7bebdc5d237b5baf8542cdc089e0eae9724b4"
+    }
+  ]
+}
