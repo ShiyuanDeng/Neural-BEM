@@ -1,7 +1,7 @@
 # Ten-frequency CSI tables and fits: results
 
 18 November 2026. Runner: `bem-ten`. Plan: [plan.md](plan.md).
-State: tables and checks complete; no fit started. Waiting for the coordinator's go.
+State: tables and checks complete; 1/4 GPU fits recorded.
 The dry policy accepts band 0 at 0.25 GHz. No policy change was made.
 
 ## Data
@@ -86,30 +86,97 @@ Any fit refusal stays a failure; there is no workaround or rerun.
 
 ## Fits
 
-Not started. The coordinator must give the go after this check table and stage list.
-Four planned GPU fits: circle, star, kite and hook, one pass each, sequentially.
-Stage scores, final residuals and outline comparison remain pending.
+The coordinator accepted the checks and dry plan and gave the go on 18 November 2026.
+Fits ran detached, one at a time here, sharing the GPU with activity 09.
+Times are indicative. No rerun, tuning or elapsed-time stop was used.
 
-Five-frequency references: circle 0.97%, star 2.34%, kite 3.80%, hook 3.59% area error.
-The frequency-count question is unanswered until the ten-frequency fits finish.
+Settings: centred 65 mm circle; modal_muller + slider; real data only;
+no localization, warm-up or declared noise; recovered contrast from the weak start.
+Series limit 1e-9; 13412 work units. The ten-stage ladder and quotas are unchanged.
+
+| Shape | Data | Outcome | Last stage | Work units | Fit seconds | Contrast | Area error (%) |
+|---|---|---|---|---:|---:|---:|---:|
+| circle | five frequencies | COMPLETED_SCHEDULE | full_6_M37 | 4477 | 199.658 | 4.000202526 | 0.968039 |
+| circle | ten frequencies | COMPLETED_SCHEDULE | full_6_M37 | 5867 | 130.072 | 4.001086944 | 0.170636 |
+
+Pending fits: star, kite, hook.
+
+## Area error at every saved stage
+
+Every saved stage curve is decoded from fit.json with bem_inverse.io.curve_from,
+then scored with csi_fit.score(case, curve, contrast). No solve is run.
+Area error is symmetric difference area divided by true area, in percent.
+
+| Shape | Data | Stage | Top GHz | Shape band | Area error (%) |
+|---|---|---|---:|---:|---:|
+| circle | five | ladder_1_real | 0.5 | 1 | 2.564571 |
+| circle | five | ladder_2_real | 1 | 3 | 0.190815 |
+| circle | five | ladder_3_real | 1.5 | 4 | 0.073965 |
+| circle | five | ladder_4_real | 2 | 6 | 0.078862 |
+| circle | five | ladder_5_real | 2.5 | 7 | 0.080929 |
+| circle | five | full_1_M11 | 2.5 | 11 | 0.429744 |
+| circle | five | full_2_M15 | 2.5 | 15 | 0.638376 |
+| circle | five | full_3_M19 | 2.5 | 19 | 0.727294 |
+| circle | five | full_4_M25 | 2.5 | 25 | 0.792986 |
+| circle | five | full_5_M31 | 2.5 | 31 | 0.910797 |
+| circle | five | full_6_M37 | 2.5 | 37 | 0.968039 |
+| circle | ten | ladder_1_real | 0.25 | 0 | 65.956150 |
+| circle | ten | ladder_2_real | 0.5 | 1 | 1.996955 |
+| circle | ten | ladder_3_real | 0.75 | 2 | 0.770509 |
+| circle | ten | ladder_4_real | 1 | 3 | 0.331402 |
+| circle | ten | ladder_5_real | 1.25 | 3 | 0.260833 |
+| circle | ten | ladder_6_real | 1.5 | 4 | 0.088474 |
+| circle | ten | ladder_7_real | 1.75 | 5 | 0.088163 |
+| circle | ten | ladder_8_real | 2 | 6 | 0.079118 |
+| circle | ten | ladder_9_real | 2.25 | 7 | 0.070518 |
+| circle | ten | ladder_10_real | 2.5 | 7 | 0.068498 |
+| circle | ten | full_1_M11 | 2.5 | 11 | 0.124051 |
+| circle | ten | full_2_M15 | 2.5 | 15 | 0.148983 |
+| circle | ten | full_3_M19 | 2.5 | 19 | 0.163547 |
+| circle | ten | full_4_M25 | 2.5 | 25 | 0.163642 |
+| circle | ten | full_5_M31 | 2.5 | 31 | 0.165737 |
+| circle | ten | full_6_M37 | 2.5 | 37 | 0.170636 |
+
+## Per-frequency data mismatch
+
+Percent relative scattered-field mismatch. True shape: worst of the two checked resolutions.
+Final fit: saved wrapper final_residual at its own working resolution.
+Only saved values are read here; no extra forward solve is run.
+
+| Shape | Curve | 0.25 GHz | 0.5 GHz | 0.75 GHz | 1 GHz | 1.25 GHz | 1.5 GHz | 1.75 GHz | 2 GHz | 2.25 GHz | 2.5 GHz |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| circle | true | 0.245503 | 0.442034 | 0.305160 | 0.172326 | 0.188260 | 0.134680 | 0.195902 | 0.126049 | 0.226631 | 0.176721 |
+| circle | ten-frequency final | 0.285771 | 0.410793 | 0.295896 | 0.154770 | 0.175323 | 0.142591 | 0.164124 | 0.120777 | 0.138404 | 0.101913 |
+| circle | five-frequency final | not used | 0.402493 | not used | 0.145990 | not used | 0.146974 | not used | 0.115867 | not used | 0.097416 |
+
+## Run records
+
+| Shape | Start UTC | Commit | Solver dirty | Start GiB | Peak host / GPU GiB |
+|---|---|---|---|---:|---:|
+| circle | 2026-11-18T11:37:09+00:00 | `068501c18` | False | 35.149 | 1.966 / 0.827 |
+
+Evidence: [fit comparison and saved stage scores](../../../../results/bem/baseline_data/csi_ten_frequency/2026-11-18/fit_comparison.json).
+Each fit has manifest.json, fit.json, metrics.json, a log and bulk_manifest.json.
+Fit-local histories stay local and ignored; bulk_manifest.json records their SHA-256.
+
+## Conclusion
+
+Pending: no conclusion before all four fits return.
 
 ## Failures kept
 
-The first batch check was launched before star was frozen. Circle completed successfully;
-then the command stopped on the missing star SHA-256 file, before a star check began.
-The same command resumed after all tables were frozen and skipped the saved circle result.
-
-No check was repeated. No forward table or fit was rerun.
-Receipt: [launch failure](../../../../results/bem/baseline_data/csi_ten_frequency/2026-11-18/check_launch_failure.json).
-There were no numerical data failures and no 1% failures.
+The first batch check began before star was frozen. Circle finished; star had not begun.
+The command stopped on the missing star SHA-256 file. The later command skipped circle.
+No check or fit was repeated. The launch failure receipt is kept in the results folder.
+No numerical data, 1% check or fit failure.
 
 ```text
 Activity: adapt_bem_to_baseline_data/08_fit_csi_tables_at_ten_frequencies
-Runs: 10 data runs; 10 BEM true-shape checks; 1 dry plan; 0/4 fits
-Result: all tables frozen; all old-frequency bytes equal; all checks pass; dry policy accepts band 0
-Failures: one early batch launch stopped on pending star input; kept; no check repeated
+Runs: 10 data runs; 10 BEM checks; 1 dry plan; 1/4 GPU fits
+Result: all data and checks pass; clear area-error gain on 1/4 shapes; fits pending
+Failures: early batch launch met pending star input; no numerical failure
 Upstream patches: none
-Changes to our code: two new data drivers, a thin BEM runner and a saved-check report script; existing code unchanged
-New unknowns: ten-frequency outline quality and whether the optimizer completes the band-0 stage
-Proposed next activity: coordinator go for the four planned GPU fits in this activity
+Changes to our code: new data drivers, thin runner and saved-result report scripts; existing code unchanged
+New unknowns: remaining fits
+Proposed next activity: finish the remaining authorized fits
 ```

@@ -179,3 +179,17 @@ the dry plan is accepted. Each run records HEAD and solver dirty state.
 Bulk tables and material maps stay ignored; compact records contain SHA-256.
 The old five-frequency blocks must match in the raw generated table as well
 as the final frozen table. No numerical tolerance replaces the byte check.
+
+## Coordinator go, 18 November 2026
+
+The coordinator accepted the checks and dry plan, including band 0 at
+0.25 GHz, and released the four GPU fits. At most two BEM fits together
+with activity 09; this activity launches one at a time. Times are indicative.
+Keep any band-0 failure; no rerun or workaround. Finish stage scores,
+per-frequency residuals and the outline figure, then commit and push.
+
+Saved-result reporting command (no forward solve), after each returned fit:
+
+```bash
+/home/drdeng/miniconda3/envs/EMNerf/bin/python -B experiments/bem_on_baseline_data/csi_ten_frequency_fit_report.py
+```
