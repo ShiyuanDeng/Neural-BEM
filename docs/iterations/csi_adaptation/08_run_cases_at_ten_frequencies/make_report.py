@@ -115,6 +115,7 @@ def draw_images(rows, path, plt):
         axis.contour(x, y, np.sign(peak) * image, levels=[.5 * abs(peak)], colors=SURFACE, linewidths=1.3)
         axis.plot(boundary.real * 1000, boundary.imag * 1000, color=AMBER, lw=1.4, ls=(0, (4, 3)))
         axis.set_aspect('equal')
+        axis.set_xticks([-50, 0, 50])
         axis.set_title(row['shape'], fontsize=11.5, color=INK, weight='bold', pad=20)
         five = row['csi_five_frequency_percent']
         detail = f"area error {row['area_error_percent']:.2f}%"
@@ -261,8 +262,10 @@ def text(rows, campaign, activity, complete):
     lines += [f'- Mean permittivity inside the half-peak support runs from {min(permittivity):.3f} to '
               f'{max(permittivity):.3f} against truth 4; it is below 4 on '
               f'{sum(value < 4 for value in permittivity)} of {len(rows)} shapes.',
-              f"- Every final support is one piece without holes: "
-              f"{'yes' if all(row['components'] == 1 and row['holes'] == 0 for row in rows) else 'no, see the scores'}."]
+              '- The final half-peak support is one piece without holes on '
+              f"{sum(row['components'] == 1 and row['holes'] == 0 for row in rows)} of {len(rows)} shapes"
+              + ''.join(f"; {row['shape']} has {row['components']} pieces and {row['holes']} holes"
+                        for row in rows if row['components'] != 1 or row['holes'] != 0) + '.']
     lines += ['', '## Error during the fit', '',
               'Area error at half the image peak at each saved snapshot. The reported number is the one at 2048.', '',
               '| Shape | 256 | 512 | 1024 | 2048 | Lowest at |', '|---|---:|---:|---:|---:|---:|']
@@ -276,7 +279,11 @@ def text(rows, campaign, activity, complete):
                      + f' | {lowest} |')
     lines += ['', f'The error is lowest at an earlier snapshot than 2048 on {len(early)} of {len(rows)} shapes'
               + (f" ({', '.join(early)})." if early else '.'),
-              'No stopping rule picks the earlier snapshot without knowing the truth, so 2048 stays the reported number.', '',
+              'No stopping rule picks the earlier snapshot without knowing the truth, so 2048 stays the reported number.',
+              'Shapes whose error was still falling at 2048: '
+              + (', '.join(row['shape'] for row in rows if row['area_error_by_iteration']['2048']
+                           < row['area_error_by_iteration']['1024'] < row['area_error_by_iteration']['512']) or 'none')
+              + '. More iterations might lower those; that was not tested.', '',
               '## Limits', '',
               '- The table reports the fixed half-peak rule. The 0.3 and 0.7 columns show how much the cut-off matters.',
               '- Times are shared-machine times with up to three fits at once; they are not isolated timings.',

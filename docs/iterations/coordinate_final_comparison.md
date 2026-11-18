@@ -25,12 +25,11 @@ again at about 03:40 UTC.
 - The five-frequency pass is complete (07:47 UTC): data frozen and
   checked for all ten shapes, ten BEM fits, seven MF-CC-CSI fits, no
   failure. Numbers: "Table C, simulated shapes: the numbers" below.
-- **Running now: MF-CC-CSI at ten frequencies** (0.25 to 2.5 GHz in
-  0.25 GHz steps) on all ten shapes. Detached launcher PID 1227833,
-  started 11:57 UTC: **already running, do not relaunch**. See
-  "Ten-frequency run" below.
+- The ten-frequency pass is complete too (21:12 UTC): MF-CC-CSI at 0.25
+  to 2.5 GHz in 0.25 GHz steps on all ten shapes, ten fits, no failure.
+  Numbers: "Table C, simulated shapes: ten frequencies" below. Its
+  launcher has exited; **nothing of this side is running**.
 - No agent pane is open: `csi`, `csi-data` and `bem-watch` are closed.
-  The coordinator runs this launcher itself.
 - BRG: both 20-case rows on the TG-002 shapes are complete. The `brg` pane
   is closed.
 - BEM side: every BEM table is filled (B1 40 fits, B2, C measured, C
@@ -74,17 +73,13 @@ again at about 03:40 UTC.
   its own `ceiling.json` (three) and starts a fit only if 14 + 2 GiB
   stays free after 8 GiB is reserved per fit. That allowed two fits at
   first and three from 12:04 UTC, when the BEM side's fits had ended.
-- To cut the queue without stopping a fit: set `max_csi_fits` to 0 in
-  that `ceiling.json`. The `STOP` file stops running fits too; do not
-  use it unless the user says so.
-- If the launcher dies: fits already running continue. Restart it with
-  `--resume` (command in the plan); it never restarts a launched fit.
-- Forecast, not a limit: about 2.5 to 3 h per fit; star and hook near
-  14:45 UTC, the first four near 17:30, all ten near 22:30 with three at
-  a time.
-- After the run: write `results.md` and a figure for activity 08, fill
-  "Table C, simulated shapes: ten frequencies" below, tell the BEM
-  coordinator (`w2:p1`).
+- Outcome: the launcher exited at 21:12 UTC with state `completed all
+  outcomes`, 9:14 after its start. Ten fits, all 2048 iterations, no
+  failure, no alert, no fit stopped. Nothing is left to resume.
+- Report: [08 results](csi_adaptation/08_run_cases_at_ten_frequencies/results.md),
+  built from saved files by `make_report.py` in that folder, with two
+  figures. The table below is filled. The BEM coordinator (`w2:p1`) was
+  told at the end.
 
 **The plan for the simulated cases of table C.** The user, 18 November
 03:43 UTC, in this pane:
@@ -308,14 +303,15 @@ its table is frozen and checks 1 to 3 passed for it.
 - 20:21 UTC: `peanut` done (`baf49ebb5`): 5.47%, all 2048 iterations,
   10030 s. Nine of ten are in. `aphex_twin` runs alone, at iteration
   1014 (20:23 UTC), due near 21:10 UTC.
-- Next: the last fit (the launcher pushes it). Then run the report
-  script for `results.md` and the figures, finish the ten-frequency
-  table, and tell the BEM coordinator. Ask the user only on a failed
-  or stuck fit that needs a decision.
-- Watchers to re-arm after a restart: none is needed for correctness. A
-  background loop on launcher PID 1227833, on new `outcome.json` files
-  and on `alerts.jsonl` in `results/csi/tg002/2026-11-18_ten_frequency/`
-  wakes the coordinator.
+- 21:12 UTC: `aphex_twin` done (`99b8119b4`): 27.93%, all 2048
+  iterations, 6902 s; 23.36% at five frequencies. Its support splits
+  into two pieces. The launcher exited: all ten outcomes are in.
+- 21:20 UTC: `results.md` and two figures for activity 08 written from
+  the saved files; the ten-frequency table is complete; the BEM
+  coordinator is told.
+- Next: nothing runs. Open points are under "Waiting on the user" and
+  "Open for the coordinator" below.
+- Watchers to re-arm after a restart: none. The launcher has exited.
 
 **Timing, measured 05:05 UTC on the shared machine.**
 - Data: 303 s for all ten tables.
@@ -404,7 +400,7 @@ this file before each edit and commit it by path.
 | Our BEM (default) | [evaluate_our_method](evaluate_our_method/) | [01](evaluate_our_method/01_measure_clean_and_noisy_recovery/results.md), [02](evaluate_our_method/02_run_ablations/results.md), run 17 Nov | TG-002 done. BEM side started 18 Nov: GPU table path, six BRG paper cases, CSI adapter | Status in [coordinate_bem_side.md](coordinate_bem_side.md) |
 | GauGal | [evaluate_our_method](evaluate_our_method/) | [03](evaluate_our_method/03_record_untuned_gaugal_reference/results.md), run 17 Nov | TG-002 untuned reference done | Stage 2 role open (U1) |
 | BRG | [brg_adaptation](brg_adaptation/) | [01 results](brg_adaptation/01_run_published_examples/results.md), [02 plan](brg_adaptation/02_rebuild_paper_examples/plan.md) | 01 done 17 Nov. [02](brg_adaptation/02_rebuild_paper_examples/results.md) done to k = 15 (six cases). [03](brg_adaptation/03_adapt_bem_to_brg_data/results.md): adapter done, 1 of 6 fits run, stopped for handover. [04](brg_adaptation/04_run_brg_on_tg002_shapes/plan.md) (BRG on TG-002 shapes): baseline half started 18 Nov 00:40 | `brg` agent idle since 03:26 UTC. Activities 04 and 05 are reported: both 20-case rows complete, [05 results](brg_adaptation/05_run_brg_without_curvature_limit/results.md) pushed in `4198a0bba`. No next BRG activity is open. Deferred, only if the user still wants it: the paper cases from k = 15 to 30 |
-| CSI family | [csi_adaptation](csi_adaptation/) | [01 results](csi_adaptation/01_run_published_examples/results.md) | 01, [02](csi_adaptation/02_run_fresnel_dielectric_cylinder/results.md) and [03](csi_adaptation/03_prepare_simulated_tg002_cases/results.md) done 17 Nov. [04](csi_adaptation/04_run_simulated_tg002_cases/results.md): batch 1 (circle, kite, peanut at eight frequencies) done 18 Nov 02:00 UTC, kept as a separate result, with a [review pack](csi_adaptation/04_run_simulated_tg002_cases/review_pack.md). [05](csi_adaptation/05_run_simulated_tg002_cases_at_1_to_3_ghz/results.md): ten eight-frequency tables frozen; no fit ran. [06](csi_adaptation/06_prepare_five_frequency_data/results.md): ten five-frequency tables frozen and checked, 18 Nov 04:05 UTC. [07](csi_adaptation/07_run_seven_cases_at_five_frequencies/results.md): seven MF-CC-CSI fits at the five frequencies done 07:47 UTC, no failure; area error 3.7 to 23.4% | [08](csi_adaptation/08_run_cases_at_ten_frequencies/plan.md) runs since 18 Nov 11:57 UTC: MF-CC-CSI at ten frequencies on all ten shapes, two fits at a time (restart notes). Still open for the coordinator: threshold sensitivity, and MR-CSI against the paper's Figure 5 |
+| CSI family | [csi_adaptation](csi_adaptation/) | [01 results](csi_adaptation/01_run_published_examples/results.md) | 01, [02](csi_adaptation/02_run_fresnel_dielectric_cylinder/results.md) and [03](csi_adaptation/03_prepare_simulated_tg002_cases/results.md) done 17 Nov. [04](csi_adaptation/04_run_simulated_tg002_cases/results.md): batch 1 (circle, kite, peanut at eight frequencies) done 18 Nov 02:00 UTC, kept as a separate result, with a [review pack](csi_adaptation/04_run_simulated_tg002_cases/review_pack.md). [05](csi_adaptation/05_run_simulated_tg002_cases_at_1_to_3_ghz/results.md): ten eight-frequency tables frozen; no fit ran. [06](csi_adaptation/06_prepare_five_frequency_data/results.md): ten five-frequency tables frozen and checked, 18 Nov 04:05 UTC. [07](csi_adaptation/07_run_seven_cases_at_five_frequencies/results.md): seven MF-CC-CSI fits at the five frequencies done 07:47 UTC, no failure; area error 3.7 to 23.4%. [08](csi_adaptation/08_run_cases_at_ten_frequencies/results.md): ten MF-CC-CSI fits at ten frequencies (0.25 to 2.5 GHz) done 21:12 UTC, no failure; area error 3.5 to 27.9% | Still open for the coordinator: threshold sensitivity, and MR-CSI against the paper's Figure 5 |
 
 **Setup checked on 17 November 2026:** the user made the MaxwellFDFD link and
 signed in to MATLAB (online licensing). `matlab -batch` runs, the C compiler
@@ -549,18 +545,37 @@ reported. BEM numbers are read from
 | cog | 1.45% | 4.0013 | 36 s | 14.86% | 18.1% / 18.2% | 3.70 | 8232 s |
 | c_shape | 1.60% | 4.0028 | 75 s | 15.94% | 10.3% / 44.8% | 3.86 | 9933 s |
 | peanut | 1.19% | 4.0018 | 86 s | 5.47% | 12.2% / 24.5% | 3.80 | 10030 s |
-| aphex_twin | 5.77% | 3.9981 | 268 s | running | | | |
+| aphex_twin | 5.77% | 3.9981 | 268 s | 27.93% | 30.7% / 66.9% | 3.49 | 6902 s |
 
 - BEM, all ten in (12:07 UTC, reported by the BEM coordinator and read
   from its files): every fit completed its schedule, on the same table
   hashes. Mean 1.88%, median 1.32%. At five frequencies the same ten gave
   mean 2.71%, median 2.47%.
-- MF-CC-CSI, nine of ten in (20:21 UTC): `hook` 16.22% against 16.52%
-  at five frequencies; `star` 6.60% against 3.72%; `asymmetric` 7.24%
-  against 6.67%; `cross` 11.73% against 11.97%; `cog` 14.86% against
-  13.29%; `c_shape` 15.94% against 16.03%; `circle` 3.46%, `kite`
-  13.76% and `peanut` 5.47% (none run at five frequencies). Evidence:
-  `results/csi/tg002/2026-11-18_ten_frequency/<shape>/scores.json`.
+- MF-CC-CSI, all ten in (21:12 UTC): every fit ran 2048 iterations, on
+  the same table hashes; no failure. Mean 12.32%, median 12.74%. BEM has
+  the lower error on all ten; the CSI error is 4.3 (`kite`) to 20.3
+  (`circle`) times the BEM error.
+- Five against ten frequencies, on the seven shapes MF-CC-CSI fitted at
+  both counts: CSI is lower at ten on three (`hook` 16.52 to 16.22%,
+  `cross` 11.97 to 11.73%, `c_shape` 16.03 to 15.94%) and higher on four
+  (`star` 3.72 to 6.60%, `asymmetric` 6.67 to 7.24%, `cog` 13.29 to
+  14.86%, `aphex_twin` 23.36 to 27.93%). Its mean moves from 13.08% to
+  14.36%. BEM on the same seven is lower on all seven; its mean moves
+  from 2.96% to 2.04%.
+- `circle`, `kite` and `peanut` have no five-frequency CSI fit. Their
+  separate eight-frequency results (13.67%, 16.11%, 21.13%) use another
+  frequency set, so the gap to 3.46%, 13.76% and 5.47% is not an effect
+  of the count alone.
+- During the fit: on seven of ten shapes the CSI error was lowest at an
+  earlier saved snapshot (256 or 512 iterations) than at 2048. The
+  reported number stays the one at 2048. `cog`, `peanut` and
+  `aphex_twin` were still falling at 2048.
+- Report and images:
+  [08 results](csi_adaptation/08_run_cases_at_ten_frequencies/results.md),
+  [the ten images](csi_adaptation/08_run_cases_at_ten_frequencies/figures/final_ten_shapes.png),
+  [five against ten](csi_adaptation/08_run_cases_at_ten_frequencies/figures/area_error_five_and_ten_frequencies.png).
+  Evidence: `results/csi/tg002/2026-11-18_ten_frequency/<shape>/scores.json`.
+  No claims are drawn here; the user decides the wording.
 - BEM side's table beside five frequencies:
   [its activity 10](adapt_bem_to_baseline_data/10_fit_remaining_csi_tables_at_ten_frequencies/results.md).
 
