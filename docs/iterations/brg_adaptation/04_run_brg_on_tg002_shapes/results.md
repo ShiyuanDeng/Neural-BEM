@@ -175,8 +175,8 @@ The shared checkout can contain CSI/coordinator changes: do not stage them.
 ## Status and ownership
 
 Campaign started 2026-11-17T23:41:28.138975+00:00; 19/20 cases have saved scores.
-Queue state: `running`; last update 2026-11-18T02:18:32.208358+00:00.
-Complete 37-frequency cases: 17/20.
+Queue state: `running`; last update 2026-11-18T02:28:14.251242+00:00.
+Complete 37-frequency cases: 18/20.
 All data and results here are **provisional BRG-forward data**. The BEM side
 owns generating and freezing the shared plane-wave data. These are TG-002
 shapes with BRG-style observations, not the sealed TG-002 measurements.
@@ -254,7 +254,7 @@ This final-curve evaluation has its own time column. No BEM solve is involved.
 | cross__c0.5 | complete | 37/37 | 0.0009136554 | 2.39723e-06 | 21.61 | 626.03 | 20.59 | 2.11 | 676.93 |
 | cross__c4 | complete | 37/37 | 0.24642363 | 0.81336 | 20.34 | 589.70 | 16.93 | 2.24 | 635.22 |
 | cog__c0.5 | complete | 37/37 | 0.0023331311 | 2.53093e-05 | 21.37 | 378.10 | 21.50 | 1.96 | 428.02 |
-| aphex_twin__c0.5 | incomplete (failed) | 0/37 | 1 | not saved | 0.00 | 0.00 | 0.00 | 1.47 | 4.56 |
+| aphex_twin__c0.5 | complete | 37/37 | 0.80147523 | 0.559174 | 18.11 | 435.28 | 13.05 | 2.11 | 479.97 |
 | aphex_twin__c4 | incomplete (failed) | 0/37 | 1 | not saved | 0.00 | 0.00 | 0.00 | 1.42 | 4.76 |
 
 ## Timed pilot and forecast
@@ -269,8 +269,8 @@ inverse 239.14 min and residual checks
 257.27 min before parallelism. This is a one-shape estimate, not a
 promise for thin strokes or deep concavities. No case is rerun to tune it.
 
-Completed-case aggregate wall time: 254.68 min across 19 cases.
-A running-mean projection for all 20 is 268.08 min before parallelism; the still-unrun difficult shapes make this uncertain.
+Completed-case aggregate wall time: 262.60 min across 19 cases.
+A running-mean projection for all 20 is 276.42 min before parallelism; the still-unrun difficult shapes make this uncertain.
 
 Memory: minimum observed available 15.10 GiB; maximum active BRG workers 2. The required reserve is 14 GB. Start/end CSI/MATLAB overlap is retained in each attempt.
 
@@ -297,7 +297,7 @@ Counts below read the existing MATLAB logs only. Geometry/filter ier 2 means cur
 | cross__c0.5 | 37 | 13 | 0 | 13 |
 | cross__c4 | 37 | 37 | 0 | 37 |
 | cog__c0.5 | 37 | 18 | 0 | 21 |
-| aphex_twin__c0.5 | 0 | 0 | 0 | 0 |
+| aphex_twin__c0.5 | 37 | 30 | 0 | 34 |
 | aphex_twin__c4 | 0 | 0 | 0 | 0 |
 
 The coordinator identified curvature rejection as the reason stalled curves could no longer move. Kite at eta 0.5 stops moving after the first frequency's sixth iteration. Activity [05](../05_run_brg_without_curvature_limit/plan.md) is authorized to remove only the curvature limit, reuse these hashed data, and retain this shipped-limit row. Its queue starts only after this queue ends.
@@ -306,7 +306,7 @@ The coordinator identified curvature rejection as the reason stalled curves coul
 
 Saved-output checks cover 19/19 scored cases. They read existing curves and histories, file counts, receipts, logs and manifest sizes; no inversion or scoring was repeated. Each receipt is saved as `saved_output_check.json` beside its metrics.
 
-Issues: aphex_twin__c0.5: no inverse summary; failed before any saved frequency; aphex_twin__c0.5: failed receipt; aphex_twin__c4: no inverse summary; failed before any saved frequency; aphex_twin__c4: failed receipt
+Issues: aphex_twin__c4: no inverse summary; failed before any saved frequency; aphex_twin__c4: failed receipt
 
 - asymmetric__c4: maximum data-geometry resampling point error 1.66371e-15 BRG units; [metrics](../../../../results/brg/tg002_shapes/2026-11-17/asymmetric__c4/metrics.json), [curve](figures/asymmetric__c4.png).
   Wrapper failure: Python 3.10 lacks hashlib.file_digest; MATLAB and scoring completed. Receipt repaired with streaming SHA-256; no numerical rerun. See `supervisor_failure.log` in this case folder.
@@ -327,7 +327,7 @@ Issues: aphex_twin__c0.5: no inverse summary; failed before any saved frequency;
 - cross__c0.5: maximum data-geometry resampling point error 2.0479e-15 BRG units; [metrics](../../../../results/brg/tg002_shapes/2026-11-17/cross__c0.5/metrics.json), [curve](figures/cross__c0.5.png).
 - cross__c4: maximum data-geometry resampling point error 2.0479e-15 BRG units; [metrics](../../../../results/brg/tg002_shapes/2026-11-17/cross__c4/metrics.json), [curve](figures/cross__c4.png).
 - cog__c0.5: maximum data-geometry resampling point error 2.40835e-15 BRG units; [metrics](../../../../results/brg/tg002_shapes/2026-11-17/cog__c0.5/metrics.json), [curve](figures/cog__c0.5.png).
-- aphex_twin__c0.5: maximum data-geometry resampling point error 0 BRG units; [metrics](../../../../results/brg/tg002_shapes/2026-11-17/aphex_twin__c0.5/metrics.json), [curve](figures/aphex_twin__c0.5.png).
+- aphex_twin__c0.5: maximum data-geometry resampling point error 2.45256e-15 BRG units; [metrics](../../../../results/brg/tg002_shapes/2026-11-17/aphex_twin__c0.5/metrics.json), [curve](figures/aphex_twin__c0.5.png).
   Attempt 2026-11-18T02:09:11.638360+00:00: return code 1; ; log `results/brg/tg002_shapes/2026-11-17/aphex_twin__c0.5/local/matlab_01.log`.
 - aphex_twin__c4: maximum data-geometry resampling point error 0 BRG units; [metrics](../../../../results/brg/tg002_shapes/2026-11-17/aphex_twin__c4/metrics.json), [curve](figures/aphex_twin__c4.png).
   Attempt 2026-11-18T02:09:16.642678+00:00: return code 1; ; log `results/brg/tg002_shapes/2026-11-17/aphex_twin__c4/local/matlab_01.log`.
