@@ -1,6 +1,6 @@
 # Frozen 1–3 GHz data for the BEM side
 
-Available: 7/10 complete parent tables. Updated 2026-11-18T01:38:02.074748+00:00.
+Available: 8/10 complete parent tables. Updated 2026-11-18T01:39:04.388832+00:00.
 All full parent tables use the unchanged 0.625 mm generator, contrast 4, eight frequencies.
 Fixed parent pattern: results/csi/tg002/2026-11-18_low_band_data/{shape}/forward/synthetic_input.txt.
 A .sha256 sidecar is beside every parent table. The BEM side reads only.
@@ -59,4 +59,11 @@ Parent: `/home/drdeng/Neural_SDF_BEM_AD_organised/results/csi/tg002/2026-11-18_l
 Parent SHA-256: `88a8a421f9386e7027723c12bb45069cd665f652562422b0601211a45601b4f5`.
 Selected: `/home/drdeng/Neural_SDF_BEM_AD_organised/results/csi/tg002/2026-11-18_low_band_data/hook/selected/synthetic_input.txt`.
 Selected SHA-256: `9a678a7dc9ab85034c17aff52376295640d4954ff34a950b3c12c50a19c843d7`.
+
+## cross
+
+Parent: `/home/drdeng/Neural_SDF_BEM_AD_organised/results/csi/tg002/2026-11-18_low_band_data/cross/forward/synthetic_input.txt`.
+Parent SHA-256: `deb65e2c42aec306b91669d82f99723a4e6c66529a450e8583bcc808382b0c51`.
+Selected: `/home/drdeng/Neural_SDF_BEM_AD_organised/results/csi/tg002/2026-11-18_low_band_data/cross/selected/synthetic_input.txt`.
+Selected SHA-256: `5c71ff39aa0f9a13458664d605ae797f5a150c723078483cdccbc46a015a6df4`.
 
