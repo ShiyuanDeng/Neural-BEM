@@ -68,7 +68,7 @@ Ask the user before any of these:
 
 | Order | Work | Table | Data | State |
 |---|---|---|---|---|
-| 1 | Table path on the GPU | all | none | Not started |
+| 1 | Table path on the GPU | all | none | Done 18 Nov; default fit unchanged on CPU and GPU |
 | 1 | Six BRG paper cases, known contrast, to k = 15 | B2 | Saved by BRG, ready | 1 of 6 run to k = 10 by the `brg` agent |
 | 1 | Measured Fresnel cylinder `dielTM_dec8f` | C | Ready | Not started |
 | 2 | Ten TG-002 shapes at contrast 4, simulated in the Fresnel layout | C | Made by the CSI campaign, as each case finishes | Not started |
@@ -391,7 +391,7 @@ data convention is in doubt.
 
 | Work | Agent | State | Next step |
 |---|---|---|---|
-| Table path on the GPU | `bem-gpu` | [Plan](adapt_bem_to_baseline_data/01_run_table_path_on_gpu/plan.md) written; planned change approved 00:21. Taking pre-edit references | Read its diff before the commit |
+| Table path on the GPU | `bem-gpu` | Done and proven 00:31; diff approved 00:33 ([results](adapt_bem_to_baseline_data/01_run_table_path_on_gpu/results.md)). Committing. Then a proposal, no code, for the series limit | Confirm the commit; the lock is then free. Read the proposal |
 | BRG paper cases | `bem-brg` | Wrapper written. [Forward checks](adapt_bem_to_baseline_data/02_fit_brg_paper_cases/results.md): `glider_033` passes to k = 15; `glider_10` needs more resolution; cavity refused above k = 8. No fit yet | Fix the resolution, finish the forward checks, CPU pass |
 | CSI adapter | `bem-csi` | Review stop 1 passed 00:27. Writing the adapter and forward checks | Review stop 2: mismatch per frequency |
 | CSI fits | `bem-csi-run` | Not started | Launch after the adapter passes |
@@ -411,6 +411,9 @@ data convention is in doubt.
 | 18 Nov, 00:29 | BRG forward resolution: one trace-cutoff minimum for all six cases, set in the wrapper (`ModalSettings(trace_minimum=K)`). K is the smallest multiple of 32 at which every true shape passes the two forward thresholds, plus one step of 32. Fixed before any fit | `glider_10` failed the forward check at k = 7 (3.9e-5). The refined solve agrees with BRG, so it is resolution: the default profile ignores the interior wavenumber, which is 3.2 times the exterior one at eta 10. A setting, not a solver edit or a method change |
 | 18 Nov, 00:29 | BRG cavity: run the prefix rule as far as the series admits and record where it ends. No loosening beyond 1e-6. The redesign question goes to the user | True cavity wave radius 2.919, so the series refuses above k = 8 even at 1e-6 |
 
+| 18 Nov, 00:33 | `bem-gpu`'s diff approved for commit. It is the approved edit only: the two-line device check, one comment, three message wordings, README and chain, the refusal test, and a new eight-case GPU test | All proofs pass. CPU and GPU default fits are byte-identical before and after; the two pre-edit GPU runs were byte-identical too. Tables agree between CPU and GPU to 2.8e-13 against a 1e-10 limit. 121 tests pass |
+| 18 Nov, 00:33 | `bem-gpu` drafts a proposal, with no solver code, for lifting the series limit: activity `05_lift_series_limit` | The user agreed to "propose a solver redesign only if a case still stops below 15". The cavity does |
+
 ## Waiting on the user
 
 - **Cavity below k = 15.** At 1e-6 the series admits k times wave radius
@@ -428,7 +431,10 @@ Unknowns the work will settle:
 - Whether 1e-6 reaches k = 15 on the star and cavity. Measured 18 Nov on
   the true shapes: star 1.557 (passes, 6% room), cavity 2.919 (refused
   above k = 8). The fitted star is still open.
-- Whether GPU runs of the default fit repeat bit for bit.
+- Whether GPU runs of the default fit repeat bit for bit. Settled
+  18 Nov: yes, on `circle__c0.5`, twice before the edit and once after.
+  The fit takes 5.3 s on the GPU and 43 s on the CPU pin, and peaks at
+  1.8 GB of host memory.
 - Whether the CSI adapter needs any solver edit.
 - The grid error in the simulated data. The planning coordinator's rough,
   unmeasured guess is several percent at 8 GHz and much less at low
