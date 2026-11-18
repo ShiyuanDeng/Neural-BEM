@@ -7,8 +7,9 @@ settings, assumptions and unknowns, and it sets how subagents share the work.
 The coordinator (the main session) owns this file. Subagents never edit it.
 They report back, and the coordinator updates the status board and the cards.
 
-Last updated: 18 November 2026, 07:50 UTC (five-frequency pass complete:
-all ten BEM fits and all seven MF-CC-CSI fits are in; table C has numbers).
+Last updated: 18 November 2026, 07:55 UTC (five-frequency pass complete
+and reported: ten BEM fits, seven MF-CC-CSI fits, table C has numbers; all
+three agent panes are closed).
 
 ## Restart notes (18 November 2026, 03:55 UTC)
 
@@ -22,7 +23,10 @@ again at about 03:40 UTC.
 - The five-frequency pass is complete (07:47 UTC): data frozen and
   checked for all ten shapes, ten BEM fits, seven MF-CC-CSI fits, no
   failure. Numbers: "Table C, simulated shapes: the numbers" below.
-- Nothing is running on the baseline side. No launcher to re-arm.
+- Nothing is running on the baseline side. No launcher to re-arm, and
+  no agent pane is open: `csi`, `csi-data` and `bem-watch` are closed.
+  A new task starts a new agent, briefed from this file and the activity
+  folders.
 - BRG: both 20-case rows on the TG-002 shapes are complete. The `brg` pane
   is closed.
 - BEM side: every BEM table is filled (B1 40 fits, B2, C measured, C
@@ -85,7 +89,7 @@ its table is frozen and checks 1 to 3 passed for it.
 | Name | Pane | Model | Job | Activity |
 |---|---|---|---|---|
 | `csi-data` | closed 07:48 UTC (was `w1:p9`) | Codex `gpt-6-astra`, high, full access | Done. It prepared, checked and froze the ten five-frequency tables. No fit | `csi_adaptation/06_prepare_five_frequency_data` |
-| `csi` | `w1:p8`, top right | Codex `gpt-6.1-sol`, high, full access | Launch and watch the seven MF-CC-CSI fits; score and report | `csi_adaptation/07_run_seven_cases_at_five_frequencies` |
+| `csi` | closed 07:53 UTC (was `w1:p8`) | Codex `gpt-6.1-sol`, high, full access | Done. It launched and watched the seven MF-CC-CSI fits, scored and reported them | `csi_adaptation/07_run_seven_cases_at_five_frequencies` |
 | `bem-watch` | closed 05:13 UTC (was `w1:pA`) | Codex `gpt-6.1-sol`, high | Done. It watched the BEM side's ten checks and ten fits, read only, and edited nothing | None |
 
 - `csi` reads first: `AGENTS.md`, this file, then the
@@ -193,10 +197,21 @@ its table is frozen and checks 1 to 3 passed for it.
   shapes: the table on disk, its `.sha256` file, CSI's `data.json` and
   the BEM `manifest.json` carry one SHA-256 per shape.
 - 07:48 UTC: `csi-data` pane closed (idle since 04:06, all pushed).
+- 07:51 UTC, final report from `csi` (`bc9ed9d3f`): 7 of 7 fits, 2048
+  iterations each, 3 h 46 min wall time, no fit failure, no new upstream
+  patch (the output-only patch 0003 is reused), no BEM or scoring edit.
+  [Results](csi_adaptation/07_run_seven_cases_at_five_frequencies/results.md),
+  [figure](csi_adaptation/07_run_seven_cases_at_five_frequencies/figures/final_seven_shapes.png),
+  summary in `results/csi/tg002/2026-11-18_five_frequency/final_summary.json`.
+  One publishing hiccup, no effect on any fit: a blank last line in the
+  saved driver tripped the git whitespace check before the first push; a
+  result-only git attribute fixed it and the driver hash is unchanged.
+- 07:52 UTC: the BEM coordinator checked the table C numbers against its
+  own files (`3c3396a16`).
+- 07:53 UTC: `csi` pane closed. No agent pane is open on this side.
 - Agents send reports into this pane as text starting "From <name>".
-- Next: the report block from `csi`, then close its pane. After that the
-  baseline side has no open run. Open points are under "Waiting on the
-  user" and "Open for the coordinator".
+- Next: nothing is queued. Open points are under "Waiting on the user"
+  and "Open for the coordinator".
 - Watchers to re-arm after a restart: none is needed for correctness. A
   fallback loop on the launcher PID and on
   `results/bem/baseline_data/csi_five_frequency/2026-11-18/*/cuda/attempt_*/metrics.json`
@@ -406,6 +421,9 @@ the BEM column: the BEM numbers are from the five-frequency tables.
 | circle | 13.67% | 22.3% / 4.7% | 3.43 | 9711 s | 0.97% |
 | kite | 16.11% | 41.0% / 44.4% | 3.25 | 9682 s | 3.80% |
 | peanut | 21.13% | 36.1% / 25.7% | 3.21 | 9701 s | 1.54% |
+
+Images: [the seven MF-CC-CSI fits](csi_adaptation/07_run_seven_cases_at_five_frequencies/figures/final_seven_shapes.png),
+with the true boundary and the half-peak contour.
 
 Evidence: BEM `results/bem/baseline_data/csi_five_frequency/2026-11-18/<shape>__c4/cuda/attempt_01/metrics.json`;
 CSI `results/csi/tg002/2026-11-18_five_frequency/<shape>/scores.json`;
