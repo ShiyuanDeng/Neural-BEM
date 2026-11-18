@@ -3,8 +3,9 @@
 ## Coordinator review stop, 18 November 2026
 
 Completed once, on CUDA. No later inverse fit has started. The manifest
-watcher remains running for the four unfinished cog/aphex_twin cases.
-The 16 available cases pass their 37-frequency checks; the coordinator
+watcher remains running for the three unfinished cases: cog__c4 and
+aphex_twin at both contrasts. Cog__c0.5 passed while this report was prepared;
+17 cases now pass all 37 checks. At fit launch 16 cases were qualified; the coordinator
 explicitly allowed this first fit without waiting for the remaining four.
 
 System UTC: worker launch 2026-11-18T02:06:07.580121+00:00; end 2026-11-18T02:06:15.927304+00:00.
@@ -72,4 +73,4 @@ report writer can replace results.md with a checks-only summary after a new
 manifest arrives. This immutable first-fit report and raw metrics remain safe.
 The on-disk writer now includes saved fit metrics. Refresh the idle watcher
 before the next batch to load that reporting fix; no numerical job should be
-stopped. The coordinator was asked to handle this at the first-fit stop.
+stopped. This is flagged for coordinator review at the first-fit stop.
