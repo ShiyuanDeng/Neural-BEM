@@ -1,6 +1,6 @@
 # Shared five-frequency frozen observations
 
-Updated 2026-11-18T04:04:30Z.
+All 10/10 tables frozen. Updated 2026-11-18T04:04:30Z.
 
 Column order: source index, receiver index, GHz, total real, total imaginary, incident real, incident imaginary.
 1764 source–receiver pairs; 36 sources and 49 receivers per source. Seven columns, %.16e format.
