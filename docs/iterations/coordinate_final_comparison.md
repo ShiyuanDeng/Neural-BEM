@@ -40,8 +40,8 @@ these runs stops on time.
 **Workers.** A resource monitor (pane `w3:p1`, set up by the user about
 02:10 UTC) allocates workers across both sides every 10 minutes. It set BRG
 to at most four fits (`results/brg/resource_policy.json`, 02:20 UTC) and
-then six (02:40 UTC), with the 14 GiB floor plus a 2 GiB margin. Six holds
-only while CSI is held: when CSI is released, new BRG launches are deferred
+then six (02:40 UTC) and eight (02:51 UTC), with the 14 GiB floor plus a
+2 GiB margin. The raised ceiling holds only while CSI is held: when CSI is released, new BRG launches are deferred
 and no running fit is stopped. The coordinator passes these to `brg` and
 adds no resource loop of its own.
 
