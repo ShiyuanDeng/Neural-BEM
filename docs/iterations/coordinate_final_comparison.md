@@ -305,8 +305,12 @@ its table is frozen and checks 1 to 3 passed for it.
 - 20:15 UTC: `c_shape` done (`3777b02d5`): 15.94%, all 2048 iterations,
   9933 s; 16.03% at five frequencies. Eight of ten are in. `peanut` is
   at iteration 1982 and `aphex_twin` at 901 (20:17 UTC).
-- Next: each fit as it ends (the launcher pushes it). Then `results.md`,
-  the figure and the ten-frequency table. Ask the user only on a failed
+- 20:21 UTC: `peanut` done (`baf49ebb5`): 5.47%, all 2048 iterations,
+  10030 s. Nine of ten are in. `aphex_twin` runs alone, at iteration
+  1014 (20:23 UTC), due near 21:10 UTC.
+- Next: the last fit (the launcher pushes it). Then run the report
+  script for `results.md` and the figures, finish the ten-frequency
+  table, and tell the BEM coordinator. Ask the user only on a failed
   or stuck fit that needs a decision.
 - Watchers to re-arm after a restart: none is needed for correctness. A
   background loop on launcher PID 1227833, on new `outcome.json` files
@@ -544,18 +548,18 @@ reported. BEM numbers are read from
 | cross | 1.07% | 4.0009 | 47 s | 11.73% | 12.2% / 39.0% | 3.83 | 9860 s |
 | cog | 1.45% | 4.0013 | 36 s | 14.86% | 18.1% / 18.2% | 3.70 | 8232 s |
 | c_shape | 1.60% | 4.0028 | 75 s | 15.94% | 10.3% / 44.8% | 3.86 | 9933 s |
-| peanut | 1.19% | 4.0018 | 86 s | running | | | |
+| peanut | 1.19% | 4.0018 | 86 s | 5.47% | 12.2% / 24.5% | 3.80 | 10030 s |
 | aphex_twin | 5.77% | 3.9981 | 268 s | running | | | |
 
 - BEM, all ten in (12:07 UTC, reported by the BEM coordinator and read
   from its files): every fit completed its schedule, on the same table
   hashes. Mean 1.88%, median 1.32%. At five frequencies the same ten gave
   mean 2.71%, median 2.47%.
-- MF-CC-CSI, eight of ten in (20:15 UTC): `hook` 16.22% against 16.52%
+- MF-CC-CSI, nine of ten in (20:21 UTC): `hook` 16.22% against 16.52%
   at five frequencies; `star` 6.60% against 3.72%; `asymmetric` 7.24%
   against 6.67%; `cross` 11.73% against 11.97%; `cog` 14.86% against
-  13.29%; `c_shape` 15.94% against 16.03%; `circle` 3.46% and `kite`
-  13.76% (neither run at five frequencies). Evidence:
+  13.29%; `c_shape` 15.94% against 16.03%; `circle` 3.46%, `kite`
+  13.76% and `peanut` 5.47% (none run at five frequencies). Evidence:
   `results/csi/tg002/2026-11-18_ten_frequency/<shape>/scores.json`.
 - BEM side's table beside five frequencies:
   [its activity 10](adapt_bem_to_baseline_data/10_fit_remaining_csi_tables_at_ten_frequencies/results.md).
