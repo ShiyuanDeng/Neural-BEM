@@ -39,8 +39,11 @@ these runs stops on time.
 
 **Workers.** A resource monitor (pane `w3:p1`, set up by the user about
 02:10 UTC) allocates workers across both sides every 10 minutes. It set BRG
-to at most four fits (`results/brg/resource_policy.json`, 02:20 UTC), with
-the 14 GiB floor. The coordinator adds no resource loop of its own.
+to at most four fits (`results/brg/resource_policy.json`, 02:20 UTC) and
+then six (02:40 UTC), with the 14 GiB floor plus a 2 GiB margin. Six holds
+only while CSI is held: when CSI is released, new BRG launches are deferred
+and no running fit is stopped. The coordinator passes these to `brg` and
+adds no resource loop of its own.
 
 **No result-generating run is stopped because of a time limit, unless the
 user says so** (user, 18 November 01:24 UTC, see "Who decides"). A stuck or
