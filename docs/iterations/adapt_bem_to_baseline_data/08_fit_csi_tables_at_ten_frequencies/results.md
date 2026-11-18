@@ -1,7 +1,7 @@
 # Ten-frequency CSI tables and fits: results
 
 18 November 2026. Runner: `bem-ten`. Plan: [plan.md](plan.md).
-State: tables and checks complete; 3/4 GPU fits recorded.
+State: tables and checks complete; 4/4 GPU fits recorded.
 The dry policy accepts band 0 at 0.25 GHz. No policy change was made.
 
 ## Data
@@ -81,8 +81,8 @@ It may append bands 43, 49, 55, 61, 67, 73, 79, 85 or 91,
 all ten frequencies, quota 304 each, within the same global work limit.
 
 Evidence: [dry plan](../../../../results/bem/baseline_data/csi_ten_frequency/2026-11-18/policy_dry_check.json).
-The plan is a dry construction, not proof that the optimizer completes band 0.
-Any fit refusal stays a failure; there is no workaround or rerun.
+All four GPU fits completed the band-0 stage and their full schedule.
+No refusal, workaround or rerun occurred.
 
 ## Fits
 
@@ -102,8 +102,8 @@ Series limit 1e-9; 13412 work units. The ten-stage ladder and quotas are unchang
 | star | ten frequencies | COMPLETED_SCHEDULE | full_6_M37 | 2522 | 61.864 | 4.001308345 | 1.016269 |
 | kite | five frequencies | COMPLETED_SCHEDULE | full_6_M37 | 3500 | 194.045 | 4.002384294 | 3.796632 |
 | kite | ten frequencies | COMPLETED_SCHEDULE | full_6_M37 | 5622 | 160.248 | 4.001533701 | 3.210032 |
-
-Pending fits: hook.
+| hook | five frequencies | COMPLETED_SCHEDULE | full_6_M37 | 2312 | 162.049 | 4.005380405 | 3.590275 |
+| hook | ten frequencies | COMPLETED_SCHEDULE | full_6_M37 | 4695 | 163.713 | 4.003194758 | 2.443489 |
 
 ## Area error at every saved stage
 
@@ -194,6 +194,33 @@ Area error is symmetric difference area divided by true area, in percent.
 | kite | ten | full_4_M25 | 2.5 | 25 | 3.314554 |
 | kite | ten | full_5_M31 | 2.5 | 31 | 3.321760 |
 | kite | ten | full_6_M37 | 2.5 | 37 | 3.210032 |
+| hook | five | ladder_1_real | 0.5 | 1 | 90.263373 |
+| hook | five | ladder_2_real | 1 | 3 | 92.940396 |
+| hook | five | ladder_3_real | 1.5 | 4 | 30.798331 |
+| hook | five | ladder_4_real | 2 | 6 | 6.366013 |
+| hook | five | ladder_5_real | 2.5 | 7 | 4.436534 |
+| hook | five | full_1_M11 | 2.5 | 11 | 1.987685 |
+| hook | five | full_2_M15 | 2.5 | 15 | 1.999900 |
+| hook | five | full_3_M19 | 2.5 | 19 | 3.799261 |
+| hook | five | full_4_M25 | 2.5 | 25 | 3.748605 |
+| hook | five | full_5_M31 | 2.5 | 31 | 3.696052 |
+| hook | five | full_6_M37 | 2.5 | 37 | 3.590275 |
+| hook | ten | ladder_1_real | 0.25 | 0 | 200.492417 |
+| hook | ten | ladder_2_real | 0.5 | 1 | 79.392214 |
+| hook | ten | ladder_3_real | 0.75 | 2 | 84.070114 |
+| hook | ten | ladder_4_real | 1 | 3 | 84.101939 |
+| hook | ten | ladder_5_real | 1.25 | 3 | 82.405566 |
+| hook | ten | ladder_6_real | 1.5 | 4 | 29.357915 |
+| hook | ten | ladder_7_real | 1.75 | 5 | 27.649810 |
+| hook | ten | ladder_8_real | 2 | 6 | 6.093339 |
+| hook | ten | ladder_9_real | 2.25 | 7 | 5.725794 |
+| hook | ten | ladder_10_real | 2.5 | 7 | 5.782427 |
+| hook | ten | full_1_M11 | 2.5 | 11 | 2.977239 |
+| hook | ten | full_2_M15 | 2.5 | 15 | 1.940500 |
+| hook | ten | full_3_M19 | 2.5 | 19 | 2.512585 |
+| hook | ten | full_4_M25 | 2.5 | 25 | 2.479786 |
+| hook | ten | full_5_M31 | 2.5 | 31 | 2.452250 |
+| hook | ten | full_6_M37 | 2.5 | 37 | 2.443489 |
 
 ## Per-frequency data mismatch
 
@@ -212,6 +239,9 @@ Only saved values are read here; no extra forward solve is run.
 | kite | true | 0.161455 | 0.122862 | 0.146080 | 0.190502 | 0.151881 | 0.168532 | 0.237958 | 0.200074 | 0.155529 | 0.285510 |
 | kite | ten-frequency final | 0.103177 | 0.150673 | 0.184366 | 0.161354 | 0.099260 | 0.095511 | 0.096553 | 0.055218 | 0.076503 | 0.070169 |
 | kite | five-frequency final | not used | 0.139163 | not used | 0.166465 | not used | 0.093804 | not used | 0.060311 | not used | 0.070641 |
+| hook | true | 0.176264 | 0.206659 | 0.189010 | 0.173926 | 0.143333 | 0.162682 | 0.185256 | 0.140420 | 0.131334 | 0.187653 |
+| hook | ten-frequency final | 0.152077 | 0.233327 | 0.216683 | 0.140449 | 0.100364 | 0.119235 | 0.103760 | 0.104388 | 0.097416 | 0.101513 |
+| hook | five-frequency final | not used | 0.218987 | not used | 0.147834 | not used | 0.120558 | not used | 0.105351 | not used | 0.105833 |
 
 ## Run records
 
@@ -220,14 +250,27 @@ Only saved values are read here; no extra forward solve is run.
 | circle | 2026-11-18T11:37:09+00:00 | `068501c18` | False | 35.149 | 1.966 / 0.827 |
 | star | 2026-11-18T11:40:19+00:00 | `33e0a6579` | False | 36.569 | 1.948 / 0.827 |
 | kite | 2026-11-18T11:41:57+00:00 | `b00d4a220` | False | 36.536 | 1.959 / 0.827 |
+| hook | 2026-11-18T11:45:01+00:00 | `2f21e47ec` | False | 36.758 | 1.940 / 0.827 |
 
 Evidence: [fit comparison and saved stage scores](../../../../results/bem/baseline_data/csi_ten_frequency/2026-11-18/fit_comparison.json).
 Each fit has manifest.json, fit.json, metrics.json, a log and bulk_manifest.json.
 Fit-local histories stay local and ignored; bulk_manifest.json records their SHA-256.
 
+## Outlines
+
+![Truth and five- and ten-frequency outlines](figures/outlines.png)
+
+The five-frequency reference spans 0.5–2.5 GHz; the new list also adds 0.25 GHz.
+Line styles distinguish the two fitted curves where they overlap.
+
 ## Conclusion
 
-Pending: no conclusion before all four fits return.
+Clear gain (area error at most half the saved five-frequency value): 2/4 shapes (circle, star).
+By the fixed criterion, frequency count is not the main cause on these CSI data.
+All four final area errors are lower. In the checked figure, circle and star look smoother;
+waviness remains on kite and hook. Ten frequencies reduce the error but do not remove it.
+Circle still grows from 0.0685% area error at the end of the ladder to 0.1706% at band 37.
+Activity 09 checks the separate effect of data error.
 
 ## Failures kept
 
@@ -238,11 +281,11 @@ No numerical data, 1% check or fit failure.
 
 ```text
 Activity: adapt_bem_to_baseline_data/08_fit_csi_tables_at_ten_frequencies
-Runs: 10 data runs; 10 BEM checks; 1 dry plan; 3/4 GPU fits
-Result: all data and checks pass; clear area-error gain on 2/4 shapes; fits pending
+Runs: 10 data runs; 10 BEM checks; 1 dry plan; 4/4 GPU fits
+Result: all data and checks pass; clear area-error gain on 2/4 shapes
 Failures: early batch launch met pending star input; no numerical failure
 Upstream patches: none
 Changes to our code: new data drivers, thin runner and saved-result report scripts; existing code unchanged
-New unknowns: remaining fits
-Proposed next activity: finish the remaining authorized fits
+New unknowns: cause of remaining outline error; activity 09 checks data error
+Proposed next activity: coordinator compares activities 08 and 09; no further run proposed
 ```

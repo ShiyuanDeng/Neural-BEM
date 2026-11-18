@@ -133,6 +133,9 @@ def main():
             (' ('+', '.join(gains)+').' if gains else '.'),
             ('By the fixed criterion, frequency count matters.' if len(gains)>=3 else
              'By the fixed criterion, frequency count is not the main cause on these CSI data.'),
+            'All four final area errors are lower. In the checked figure, circle and star look smoother;',
+            'waviness remains on kite and hook. Ten frequencies reduce the error but do not remove it.',
+            'Circle still grows from 0.0685% area error at the end of the ladder to 0.1706% at band 37.',
             'Activity 09 checks the separate effect of data error.', '']
     else:
         lines += ['## Conclusion', '', 'Pending: no conclusion before all four fits return.', '']
@@ -157,6 +160,10 @@ def main():
     import re
     prefix = re.sub(r'State: tables and checks complete; [0-4]/4 GPU fits recorded\.',
                     f'State: tables and checks complete; {len(completed)}/4 GPU fits recorded.', prefix)
+    if all_done and not failures:
+        prefix = prefix.replace(
+            'The plan is a dry construction, not proof that the optimizer completes band 0.\nAny fit refusal stays a failure; there is no workaround or rerun.',
+            'All four GPU fits completed the band-0 stage and their full schedule.\nNo refusal, workaround or rerun occurred.')
     (DOC/'results.md').write_text(prefix+'\n'.join(lines))
     print(json.dumps({s: dict(outcome=p['ten']['metrics']['outcome'], area_percent=100*p['ten']['metrics']['score']['area_error'] if 'score' in p['ten']['metrics'] else None)
                       for s, p in completed.items()}, indent=2))
