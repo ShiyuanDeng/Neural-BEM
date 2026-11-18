@@ -3,7 +3,7 @@
 ## Status and settings
 
 Started 2026-11-18T02:28:20.793603+00:00; queue state `running`;
-4/20 cases have scores. Last update: 2026-11-18T02:43:56.916267+00:00.
+5/20 cases have scores. Last update: 2026-11-18T02:46:42.151438+00:00.
 These are **provisional BRG-forward data**, identical to activity 04 by
 SHA-256. This is the control row alongside its shipped-limit row.
 
@@ -40,12 +40,13 @@ compact metrics and figure. No new success cutoff is selected.
 | asymmetric__c0.5 | complete | 37/37 | 0.11053017 | 0.005359107 | 0.133603 | 0.000625268 | 293.03 | 19.79 | 2.04 | 321.55 |
 | kite__c4 | complete | 37/37 | 0.46463161 | 0.54391802 | 0.861585 | 1.03227 | 242.05 | 8.67 | 2.34 | 259.70 |
 | peanut__c0.5 | complete | 37/37 | 0.11768157 | 0.0068889169 | 0.116288 | 0.000871915 | 242.06 | 13.54 | 1.88 | 264.24 |
+| peanut__c4 | complete | 37/37 | 0.50390252 | 0.17578467 | 1.30272 | 0.916535 | 241.24 | 8.31 | 2.16 | 258.57 |
 
 ## Time, limits and saved-output checks
 
 Kite eta 0.5 pilot: 374.85 s. It ran alone before the rest.
 
-Aggregate case wall time: 20.34 min. New data-generation time: zero.
+Aggregate case wall time: 24.65 min. New data-generation time: zero.
 
 Minimum sampled available memory: 29.88 GiB; maximum simultaneous control workers: 5. Each launch checks fresh shared memory, reserves at least 3 GiB for the new BRG fit and retains the 14 GiB floor plus 2 GiB margin, allowing for other queues and B1 reservations. The guard delays starts; it never kills running fits.
 
@@ -53,6 +54,7 @@ Minimum sampled available memory: 29.88 GiB; maximum simultaneous control worker
 - asymmetric__c0.5: saved-output check passed; [metrics](../../../../results/brg/tg002_no_curvature/2026-11-18/asymmetric__c0.5/metrics.json), [figure](figures/asymmetric__c0.5.png).
 - kite__c4: saved-output check passed; [metrics](../../../../results/brg/tg002_no_curvature/2026-11-18/kite__c4/metrics.json), [figure](figures/kite__c4.png).
 - peanut__c0.5: saved-output check passed; [metrics](../../../../results/brg/tg002_no_curvature/2026-11-18/peanut__c0.5/metrics.json), [figure](figures/peanut__c0.5.png).
+- peanut__c4: saved-output check passed; [metrics](../../../../results/brg/tg002_no_curvature/2026-11-18/peanut__c4/metrics.json), [figure](figures/peanut__c4.png).
 
 ## Frequency-ending rejection codes
 
@@ -64,6 +66,7 @@ The first two columns count the selected final geometry/filter code on rejected 
 | asymmetric__c0.5 | 0 | 0 | 31 |
 | kite__c4 | 0 | 35 | 37 |
 | peanut__c0.5 | 0 | 0 | 34 |
+| peanut__c4 | 0 | 36 | 37 |
 
 ## Interpretation and next step
 
