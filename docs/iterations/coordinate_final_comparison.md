@@ -153,21 +153,31 @@ its table is frozen and checks 1 to 3 passed for it.
   04:05; five wait for a slot.
 - 04:05 UTC: the monitor's ceilings: no data job, two CSI fits, two BEM
   GPU jobs. The last B1 fit has ended.
+- 05:05 UTC, CSI: three fits run (`star`, `asymmetric`, `c_shape`); the
+  monitor raised the ceiling to three at about 04:10. Measured over the
+  first 100 iterations: 2.19, 2.24 and 2.49 s per iteration. At 05:00
+  `asymmetric` was at iteration 1380 of 2048. `hook`, `cross`, `cog` and
+  `aphex_twin` wait for a slot. No failed or stopped fit.
+- 05:05 UTC, BEM (read from its `metrics.json` files; the BEM coordinator
+  reports them): eight of ten fits done, all completed their schedule.
+  Area error: circle 0.97%, asymmetric 1.29%, peanut 1.54%, cross 2.10%,
+  star 2.34%, c_shape 2.60%, hook 3.59%, kite 3.80%. Contrast found 4.0002
+  to 4.0054. 47 to 200 s per fit. `cog` runs; `aphex_twin` follows.
 - Agents send reports into this pane as text starting "From <name>".
-- Next: `csi`'s measured seconds per iteration; the ten BEM fits (from
-  `bem-watch` and the BEM coordinator); then each CSI fit as it ends.
-  Ask the user only on a failed or stuck fit that needs a decision.
+- Next: the last two BEM fits; each CSI fit as it ends (`csi` scores and
+  pushes it); then both final reports. Ask the user only on a failed or
+  stuck fit that needs a decision.
 - Watchers to re-arm after a restart: none is needed for correctness. A
   fallback loop on the launcher PID and on
   `results/bem/baseline_data/csi_five_frequency/2026-11-18/*/cuda/attempt_*/metrics.json`
   catches a silent stop.
 
-**Estimates, scaled and not measured.** Re-time after the first 100
-iterations.
-- Data: about 5 s per frequency and shape, so minutes for all ten.
-- BEM: 71 to 178 s per fit in the early look at 1 to 3 GHz.
-- CSI: 4.74 s per iteration at eight frequencies, so about 3 s at five
-  and about 1 h 40 min per fit. Seven fits three at a time: about 5 h.
+**Timing, measured 05:05 UTC on the shared machine.**
+- Data: 303 s for all ten tables.
+- BEM: 47 to 200 s per fit on the GPU.
+- CSI: about 2.4 s per iteration with three fits at once, so about
+  1 h 25 min per fit. Forecast, not a limit: the first three end near
+  05:30 UTC and all seven near 07:10 UTC.
 
 **Waiting on the user. Do not decide these.**
 1. The BRG paper cases from k = 15 to 30: deferred on 17 November for lack
