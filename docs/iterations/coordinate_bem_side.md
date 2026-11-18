@@ -64,7 +64,7 @@ tables carry a grid error that the fit follows?
 | Activity | Change from activity 07 | Agent | Pane | Model |
 |---|---|---|---|---|
 | [08: CSI tables at ten frequencies](adapt_bem_to_baseline_data/08_fit_csi_tables_at_ten_frequencies/plan.md) | The frequency list: 0.25 to 2.5 GHz in 0.25 GHz steps. Same CSI forward | `bem-ten` | `w2:pB`, bottom right | Codex `gpt-6.1-sol`, medium, full access |
-| [09: tables from our own forward](adapt_bem_to_baseline_data/09_fit_tables_from_our_forward/plan.md) | The data source: our forward in the same Fresnel layout, same five frequencies | `bem-own` | `w2:pA`, top right | Codex `gpt-6-astra`, high, full access |
+| [09: tables from our own forward](adapt_bem_to_baseline_data/09_fit_tables_from_our_forward/plan.md) | The data source: our forward in the same Fresnel layout, same five frequencies | `bem-own` | closed 11:52 UTC (was `w2:pA`), work committed, paths clean | Codex `gpt-6-astra`, high, full access |
 
 The starting evidence (read from the saved fits, no new run) is in the
 activity 08 plan. The criteria for reading the result are fixed in both
@@ -171,8 +171,8 @@ wait); before any fit (waits for a go). `bem-own`: before the first fit
 (waits for a go).
 
 **Next, in order:** read the activity 10 results when `bem-ten` reports
-(watcher: `agent wait bem-ten`); close `bem-own` (done, paths clean) and
-then `bem-ten`; add the ten-frequency BEM numbers to the BEM text of the
+(watcher: `agent wait bem-ten`); close `bem-ten` when its paths are clean
+(`bem-own` was closed 11:52); add the ten-frequency BEM numbers to the BEM text of the
 main file once the baseline side has a ten-frequency row. The baseline
 coordinator (`w1:p1`) was briefed for the CSI fit at ten frequencies (see
 the note below).
