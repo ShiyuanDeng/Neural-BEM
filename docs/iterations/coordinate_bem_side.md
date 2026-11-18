@@ -391,11 +391,18 @@ data convention is in doubt.
 
 | Work | Agent | State | Next step |
 |---|---|---|---|
-| Table path on the GPU | `bem-gpu` | Launched 18 Nov 00:25 | Review its planned change before any solver edit |
+| Table path on the GPU | `bem-gpu` | [Plan](adapt_bem_to_baseline_data/01_run_table_path_on_gpu/plan.md) written; planned change approved 00:25. Taking pre-edit references | Read its diff before the commit |
 | BRG paper cases | `bem-brg` | Launched 18 Nov 00:25 | Wrapper, forward checks, CPU pass |
 | CSI adapter | `bem-csi` | Launched 18 Nov 00:25 | Review stop 1: its plan |
 | CSI fits | `bem-csi-run` | Not started | Launch after the adapter passes |
 | Table B1 | none | Held | Wait for the user |
+
+## Coordinator decisions
+
+| Date | Decision | Reason |
+|---|---|---|
+| 18 Nov, 00:25 | Go for `bem-gpu`'s solver edit: remove the device check in `ModalMuller._table_acquisition`, and fix the wording that calls table mode CPU-only. Nothing else without a new proposal | The paired default returns before that check, so it cannot change. Both geometry classes give A3 the same host fields; A4 and B7 work on host arrays after either assembly. No dataset name or constant |
+| 18 Nov, 00:25 | `bem-gpu` takes its three pre-edit references (CPU once, GPU twice) before the edit. Its limits are fixed in its plan: 1e-10 between CPU and GPU tables; the GPU default inside the measured run-to-run spread | A reference taken after the edit proves nothing; limits set before the results |
 
 ## Open points
 
