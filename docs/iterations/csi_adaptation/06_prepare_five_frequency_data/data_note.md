@@ -1,6 +1,6 @@
 # Shared five-frequency frozen observations
 
-Updated 2026-11-18T04:00:59Z.
+Updated 2026-11-18T04:01:32Z.
 
 Column order: source index, receiver index, GHz, total real, total imaginary, incident real, incident imaginary.
 1764 source–receiver pairs; 36 sources and 49 receivers per source. Seven columns, %.16e format.
@@ -40,4 +40,12 @@ SHA-256: `debf658e6c4542a5760c42cfd00129851e01c6dd5480ca94a4f3930bad19736d`.
 Parent SHA-256: `2bab1e12b87839fe0263428b163e2905b4db8615620a57ee78ee08bc8d07c13c`.
 Checks: 8820 finite rows; exact pair order, mask and copied line bytes; maximum native residual 3.75625e-12; maximum reproduction relative L2 0.
 Evidence: [manifest](../../../../results/csi/tg002/2026-11-18_five_frequency_data/peanut/manifest.json), [checks](../../../../results/csi/tg002/2026-11-18_five_frequency_data/peanut/checks.json).
+
+## star
+
+Path: `/home/drdeng/Neural_SDF_BEM_AD_organised/results/csi/tg002/2026-11-18_five_frequency_data/star/forward/synthetic_input.txt`.
+SHA-256: `243dc047b84693446216afa9435fa03e2da3cf1611b1e1cddcebbd5f8e64c637`.
+Parent SHA-256: `fc14e91b1e8a09b1ef33d7604659703a5ba738b4748a68a1938ea40d60bd0ed4`.
+Checks: 8820 finite rows; exact pair order, mask and copied line bytes; maximum native residual 4.24142e-12; maximum reproduction relative L2 0.
+Evidence: [manifest](../../../../results/csi/tg002/2026-11-18_five_frequency_data/star/manifest.json), [checks](../../../../results/csi/tg002/2026-11-18_five_frequency_data/star/checks.json).
 
