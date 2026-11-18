@@ -27,5 +27,19 @@ the measured peak and leaves at least 16 GiB before subsequent launches.
 
 ## Pending
 
-Two clean GPU references, approved edit, CPU/GPU table checks, CPU/GPU default
+Second clean GPU reference, approved edit, CPU/GPU table checks, CPU/GPU default
 comparisons, CUDA-visible suite, and coordinator diff review before solver commit.
+
+## First clean GPU reference
+
+Started 00:25:38 UTC, ended 00:25:47 UTC, source commit `59dd6b919`.
+Solver clean at both ends. Same default case/settings, explicit CUDA and
+four frequency threads; no warm-up. **COMPLETED_SCHEDULE**, 5.507 s fit time,
+596 units, 402 forward solves, 194 derivative batches, 17 steps, 10 stages.
+Contrast **0.5000000000469924**, maximum residual **2.0105161224902063e-7**.
+
+Guarded wall time **9.231 s**, child peak RSS **1.820 GiB**, minimum available
+host memory **19.451 GiB**. CUDA peak allocated **0.896 GiB**, reserved
+**1.223 GiB**. No failures. This is the first GPU repeatability reference;
+its small numerical difference from CPU is not a before/after code change.
+[Evidence](../../../../results/bem/baseline_data/gpu_table_path/2026-11-18/gpu_before_1/).
