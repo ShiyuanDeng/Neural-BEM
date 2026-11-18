@@ -295,6 +295,13 @@ its table is frozen and checks 1 to 3 passed for it.
   9860 s; 11.97% at five frequencies. `peanut` started; `cog` is at
   iteration 540, `c_shape` at 68. Six of ten are in. `cog` is due near
   19:40 UTC, `c_shape` and `peanut` near 20:15, `aphex_twin` near 22:25.
+- 17:39 UTC: the report script for activity 08 is written and tested on
+  the six finished shapes (`1c8d3c558`). It reads saved files only. Run
+  it once after the last fit; the command is at the end of the script.
+- 19:16 UTC: `cog` done (`0d4d1ebd9`): 14.86%, all 2048 iterations,
+  8232 s; 13.29% at five frequencies. `aphex_twin`, the last shape,
+  started. `c_shape` is at iteration 1333, `peanut` at 1257 (19:17 UTC);
+  both are due near 20:20 UTC, `aphex_twin` near 22:00.
 - Next: each fit as it ends (the launcher pushes it). Then `results.md`,
   the figure and the ten-frequency table. Ask the user only on a failed
   or stuck fit that needs a decision.
@@ -532,19 +539,20 @@ reported. BEM numbers are read from
 | kite | 3.21% | 4.0015 | 160 s | 13.76% | 12.8% / 39.6% | 3.81 | 9793 s |
 | asymmetric | 0.93% | 4.0019 | 55 s | 7.24% | 11.4% / 26.7% | 3.81 | 9882 s |
 | cross | 1.07% | 4.0009 | 47 s | 11.73% | 12.2% / 39.0% | 3.83 | 9860 s |
-| cog | 1.45% | 4.0013 | 36 s | running | | | |
+| cog | 1.45% | 4.0013 | 36 s | 14.86% | 18.1% / 18.2% | 3.70 | 8232 s |
 | c_shape | 1.60% | 4.0028 | 75 s | running | | | |
 | peanut | 1.19% | 4.0018 | 86 s | running | | | |
-| aphex_twin | 5.77% | 3.9981 | 268 s | queued | | | |
+| aphex_twin | 5.77% | 3.9981 | 268 s | running | | | |
 
 - BEM, all ten in (12:07 UTC, reported by the BEM coordinator and read
   from its files): every fit completed its schedule, on the same table
   hashes. Mean 1.88%, median 1.32%. At five frequencies the same ten gave
   mean 2.71%, median 2.47%.
-- MF-CC-CSI, six of ten in (17:34 UTC): `hook` 16.22% against 16.52%
+- MF-CC-CSI, seven of ten in (19:16 UTC): `hook` 16.22% against 16.52%
   at five frequencies; `star` 6.60% against 3.72%; `asymmetric` 7.24%
-  against 6.67%; `cross` 11.73% against 11.97%; `circle` 3.46% and
-  `kite` 13.76% (neither run at five frequencies). Evidence:
+  against 6.67%; `cross` 11.73% against 11.97%; `cog` 14.86% against
+  13.29%; `circle` 3.46% and `kite` 13.76% (neither run at five
+  frequencies). Evidence:
   `results/csi/tg002/2026-11-18_ten_frequency/<shape>/scores.json`.
 - BEM side's table beside five frequencies:
   [its activity 10](adapt_bem_to_baseline_data/10_fit_remaining_csi_tables_at_ten_frequencies/results.md).
