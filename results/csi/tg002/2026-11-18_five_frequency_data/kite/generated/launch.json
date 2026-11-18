@@ -1,0 +1,81 @@
+{
+  "started_utc": "2026-11-18T04:00:13Z",
+  "command": [
+    "matlab",
+    "-batch",
+    "run('/home/drdeng/Neural_SDF_BEM_AD_organised/experiments/baselines/csi/generate_five_frequency_data.m')"
+  ],
+  "environment": {
+    "CSI_REPO": "/home/drdeng/Neural_SDF_BEM_AD_organised",
+    "CSI_UPSTREAM": "/home/drdeng/neural_bem_external/CC-CSI",
+    "CSI_OUT": "/home/drdeng/Neural_SDF_BEM_AD_organised/results/csi/tg002/2026-11-18_five_frequency_data/kite/generated",
+    "CSI_PARENT": "/home/drdeng/Neural_SDF_BEM_AD_organised/results/csi/tg002/2026-11-18_low_band_data/kite/forward/synthetic_input.txt",
+    "CSI_GEOMETRY": "/home/drdeng/Neural_SDF_BEM_AD_organised/results/csi/tg002/2026-11-18_low_band_data/kite/truth/geometry.mat",
+    "CSI_CASE": "tg002_kite_c4_TM"
+  },
+  "matlab_pid": 975509,
+  "threads": 8,
+  "upstream_commit": "73a64e163da34e63fa33f8abe196b9004f45d342",
+  "capacity_before_launch": {
+    "utc": "2026-11-18T04:00:13Z",
+    "policy": {
+      "max_data_jobs": 1,
+      "max_csi_fits": 2,
+      "max_bem_fits": 1,
+      "updated": "2026-11-18T03:51:27Z",
+      "authority": "Resource allocation assistant, responding to baseline coordinator w1:p1's request in this session. The coordinator relayed the user's 18 November 2026 03:43 UTC instruction to queue preparation, checks and fits by available capacity without interrupting existing fits; recorded in docs/iterations/coordinate_final_comparison.md.",
+      "scope": "Initial ceilings for NEW launches only. Existing jobs continue unchanged. No elapsed-time stop or automatic interruption.",
+      "floor_gib": 14,
+      "margin_gib": 2,
+      "worker_reservation_gib": {
+        "matlab_data": 3,
+        "mf_cc_csi_fit": 6,
+        "bem_fit": 4
+      },
+      "memory_rule": "Before every launch, subtract the new worker reservation and outstanding growth reservations for active workers across both coordinators from current MemAvailable. Launch only if at least floor_gib + margin_gib remains. Count existing worker memory only through its outstanding growth, since current MemAvailable already excludes resident memory. Ceilings do not override this check.",
+      "bem_scope": "One BEM fit across B1 and simulated C combined; the active B1 fit occupies this slot. GPU forward checks share the same single GPU-job slot. This is a ceiling, not a stop instruction.",
+      "bem_application": "Recorded for the BEM coordinator to apply. No BEM launcher was changed to consume this file; delivery to w2:p1 remains pending.",
+      "cpu_basis": {
+        "logical_cpus": 24,
+        "data_threads_per_job": 8,
+        "estimated_cores_per_csi_fit": 5,
+        "bem_frequency_threads": 4,
+        "initial_combined_core_allowance": 22
+      },
+      "sample": {
+        "observed_at_utc": "2026-11-18T03:50:48Z",
+        "available_host_gib": 37.01,
+        "host_load_1_5_15_min": [
+          1.4,
+          1.52,
+          2.08
+        ],
+        "gpu_memory_used_mib": 2897,
+        "gpu_memory_total_mib": 32607,
+        "gpu_utilization_percent": 94,
+        "active_bem_case": "aphex_twin__c4",
+        "active_bem_row": "known",
+        "active_bem_worker_pid": 898809,
+        "active_matlab_jobs": 0
+      },
+      "rationale": "One eight-thread data job, two CSI fits at about five cores each, and one four-thread BEM worker leave two of 24 logical CPUs as headroom if work overlaps. The GPU is already busy, so spare GPU memory alone does not justify another concurrent GPU job.",
+      "recheck": "Take a fresh sample after data preparation finishes or the active B1 fit exits. Consider raising max_csi_fits to three once no data jobs remain. This note does not automatically change any ceiling.",
+      "notification_status": "Pane notices to w1:p1 and w2:p1 are pending: this session has no HERDR_ENV=1, and the Herdr skill prohibits controlling its session from outside Herdr. No agents were prompted directly."
+    },
+    "available_bytes": 37197447168,
+    "required_bytes": 20401094656.0,
+    "outstanding_growth_bytes": 0.0,
+    "workers": [],
+    "existing_data_jobs": 0
+  },
+  "nice": 10,
+  "time_stop": false,
+  "returncode": 0,
+  "finished_utc": "2026-11-18T04:00:33Z",
+  "wall_seconds": 20.50513938535005,
+  "cpu_seconds": 81.55,
+  "peak_rss_bytes": 2060529664,
+  "peak_family_rss_bytes": 2362470400,
+  "minimum_available_bytes": 35441197056,
+  "minimum_free_bytes": 17608753152
+}

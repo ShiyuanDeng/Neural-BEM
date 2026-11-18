@@ -1,6 +1,6 @@
 # Shared five-frequency frozen observations
 
-Updated 2026-11-18T03:59:55Z.
+Updated 2026-11-18T04:00:33Z.
 
 Column order: source index, receiver index, GHz, total real, total imaginary, incident real, incident imaginary.
 1764 source–receiver pairs; 36 sources and 49 receivers per source. Seven columns, %.16e format.
@@ -24,4 +24,12 @@ Evidence: [manifest](../../../../results/csi/tg002/2026-11-18_five_frequency_dat
 | 1.5 | 0.13467985 | 0.13462665 |
 | 2 | 0.12604902 | 0.12599062 |
 | 2.5 | 0.17672086 | 0.17656380 |
+
+## kite
+
+Path: `/home/drdeng/Neural_SDF_BEM_AD_organised/results/csi/tg002/2026-11-18_five_frequency_data/kite/forward/synthetic_input.txt`.
+SHA-256: `e827e20acc02391b185175ae2b7b2f10e10bf7ee4de493586c0fe60aa91769c7`.
+Parent SHA-256: `93128bd3b0b0b36c53338c6f83342d4e330461a4304758ec175a3a359759b509`.
+Checks: 8820 finite rows; exact pair order, mask and copied line bytes; maximum native residual 3.0493e-12; maximum reproduction relative L2 0.
+Evidence: [manifest](../../../../results/csi/tg002/2026-11-18_five_frequency_data/kite/manifest.json), [checks](../../../../results/csi/tg002/2026-11-18_five_frequency_data/kite/checks.json).
 
