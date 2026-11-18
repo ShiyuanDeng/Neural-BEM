@@ -395,8 +395,8 @@ data convention is in doubt.
 |---|---|---|---|
 | Table path on the GPU | `bem-gpu` | Done: commit `3612f5195` at 00:32 ([results](adapt_bem_to_baseline_data/01_run_table_path_on_gpu/results.md)). Lock free. Its series-limit proposal is closed: no go from the user. The user is closing its pane | None |
 | BRG paper cases | `bem-brg` | GPU pass, the reported one, done 01:23 ([results](adapt_bem_to_baseline_data/02_fit_brg_paper_cases/results.md)). Area error at the last k: `glider_033` 0.061% at k = 15 (71 s); `star_full` 0.58% at 15 (334 s); `star_limited` 0.60% at 15 (274 s); `glider_10` failed, 14% at k = 12, then refused at 15. Cavities skipped by the user. K = 192, 1e-6 | Cause of the CPU and GPU path differences; `glider_10` stage history |
-| CSI adapter | `bem-csi` | Measured cylinder: the GPU fit ran its whole schedule in 23 min, then the wrapper failed while writing the record (`KeyError`). Fixing that; no scored result yet. The 1 to 3 GHz selection and rule for simulated cases are in; the circle passes 1% there | Review stop 3: cylinder; then the simulated circle and the hand-over |
-| CSI fits | `bem-csi-run` | Not started | Launch after the adapter passes |
+| CSI adapter | `bem-csi` | Review stop 3 passed 01:32 ([results](adapt_bem_to_baseline_data/03_adapt_bem_to_csi_data/results.md)). Measured cylinder, GPU: completed the schedule in 23 min; centre 3.1 mm off, radius 19.0 mm against 15, permittivity 2.19 against 3, area error 67.8%. A wrapper bug in the record step was fixed without a refit. Simulated circle at 1 to 3 GHz running | Circle result; information-only circle fit to the measured data; hand-over to the runner |
+| CSI fits | `bem-csi-run` | Not started. Three of ten simulated tables exist; the other seven are requested from the baseline side | Launch after the hand-over |
 | Table B1 | none | Held | Wait for the user |
 
 ## Coordinator decisions
@@ -423,6 +423,8 @@ data convention is in doubt.
 | 18 Nov, 01:00 | The runs start only if they leave 14.5 GB available (was 16 GB) | Memory fell to 16 GB available; the user's guard is 14 GB and a BEM fit peaks at 1.4 to 1.9 GB |
 | 18 Nov, 01:25 | BRG GPU pass accepted as the reported pass for `glider_033`, `star_full` and `star_limited`. `glider_10` stays in the table as a failed fit, not as a series-limit skip | At k = 12 its residual is 0.73 and its area error 14%, so the fit had failed before the series refused k = 15 (the bad curve has wave radius 1.68 against 1.28 for the truth). The plan says failures stay in the table. The coordinator's reading of the user's skip decision; the user may overrule |
 | 18 Nov, 01:25 | `bem-brg` looks for the cause of the CPU and GPU path differences, checks only: forward and Jacobian on both devices at K = 192, and the first iteration where the saved paths part | The user's rule is to flag any case where the two differ. Same-iteration curve differences are 1e-5 on three cases and 6e-2 on `glider_033`, far above the 1e-13 between devices in the table checks |
+| 18 Nov, 01:32 | CSI review stop 3: the first fit on the measured cylinder is accepted as run. No retune, no rerun. `bem-csi` adds an information-only check: an exact-series circle fitted to the measured table | Limits kept (894 units, 1403 s), raw metrics saved, no truth in the fit, solver untouched. The fit landed 3.1 mm from the nominal centre but too large and too weak (radius 19.0 mm against 15, permittivity 2.19 against 3, area error 67.8%). Its residual (33 to 50%) is above the nominal truth's (23 to 40%), so the check asks whether the data support the nominal cylinder under our forward at all |
+| 18 Nov, 01:32 | Data request to the baseline coordinator (pane `w1:p1`): generate the other seven simulated tables now, not at each CSI batch start | Only circle, kite and peanut exist. The BEM fits would otherwise wait about 4 h |
 
 ## Waiting on the user
 
