@@ -36,3 +36,34 @@ Preparation receipts retain all input hashes, unit/layout proofs and default-sch
 
 Pending: complete missing checks, report to coordinator, then await the first-fit go.
 No solver, baseline, shared scoring or coordination file was changed.
+
+## Timing and resources
+
+Numerical check time: 27.759 s; summed worker process time: 52.849 s.
+Checks from 2026-11-18T01:55:21.632749+00:00 to 2026-11-18T01:57:22.478112+00:00.
+These shared-machine times include concurrent baseline and CSI work.
+
+Peak worker host memory: 1.3505 GiB.
+Peak GPU allocated/reserved: 0.2326 / 0.3574 GiB.
+Lowest available host memory: 18.3737 GiB; floor 14 GiB.
+
+Clean, unchanged solver sources in every completed check: True.
+One frequency/BLAS/OpenMP/Torch thread; default trace cutoffs 64 and 96 on these truths.
+
+## Preparation and pending work
+
+Input checks verify recorded BRG SHA-256, table layout, units and frozen coefficients.
+Multiplying lengths by 1.3 and dividing wavenumbers by 1.3 preserves the phase products
+to 2.85e-14; complex fields are unchanged. Default schedule and adaptive tail match exactly
+apart from ragged blocks; elapsed-time stopping is disabled as instructed.
+
+[Wrapper/capacity events](../../../../results/bem/baseline_data/brg_tg002/2026-11-18/preparation_events.json).
+The shared-branch push error was resolved by an ordinary push; no check was repeated.
+
+Coordinator note, 18 November: check each remaining case only after its BRG manifest
+exists and matches all 37 files. Cross at eta 4, cog and aphex_twin at both contrasts
+were pending at the first 15-case stop. The baseline completion run owns those files.
+The watch-checks command picks up newly finished manifests without repeating checks.
+
+All 40 inverse fits remain unrun. After all checks, stop for the coordinator go.
+First fit is known-contrast circle__c4; stop again to report its measured cost.

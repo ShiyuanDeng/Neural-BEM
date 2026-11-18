@@ -106,3 +106,16 @@ Report: this folder's `results.md`; figures, if needed, in `figures/`.
 
 Report includes actual settings, dates, failures, measurements and evidence.
 The all-case check report and first-fit report are explicit coordinator stops.
+
+## Coordinator continuation note, 18 November
+
+The baseline side has observations for 16 cases; cog and aphex_twin at both
+contrasts are being generated. A case is usable only once its bulk manifest
+exists and all 37 file hashes match. Check complete cases now and pick up
+remaining cases when their manifests appear. Read-only access remains strict.
+A new coordinator session takes over in pane w2:p1; the fixed brief and both
+review stops remain unchanged.
+
+`python experiments/bem_on_baseline_data/b1_run.py watch-checks` watches only
+for these manifests, checks newly available cases under the same guard, and
+stops once all case checks are recorded. It never starts an inverse fit.

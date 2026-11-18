@@ -223,6 +223,33 @@ def report_checks(record):
               'Preparation receipts retain all input hashes, unit/layout proofs and default-schedule equality.', '',
               'Pending: complete missing checks, report to coordinator, then await the first-fit go.',
               'No solver, baseline, shared scoring or coordination file was changed.', '']
+    qualifications = [json.loads(p.read_text()) for p in BASE.glob('*/checks/qualification.json')]
+    receipts = [json.loads(p.read_text()) for p in BASE.glob('*/checks/supervisor.json')]
+    if qualifications:
+        numeric = sum(r['seconds'] for r in qualifications)
+        process = sum(r['seconds'] for r in receipts)
+        lines += ['## Timing and resources', '',
+                  f'Numerical check time: {numeric:.3f} s; summed worker process time: {process:.3f} s.',
+                  f"Checks from {min(r['start']['utc'] for r in receipts)} to {max(r['end']['utc'] for r in receipts)}.",
+                  'These shared-machine times include concurrent baseline and CSI work.', '',
+                  f"Peak worker host memory: {max(r['host_peak_bytes'] for r in qualifications)/GIB:.4f} GiB.",
+                  f"Peak GPU allocated/reserved: {max(r['gpu_peak_allocated_bytes'] for r in qualifications)/GIB:.4f} / {max(r['gpu_peak_reserved_bytes'] for r in qualifications)/GIB:.4f} GiB.",
+                  f"Lowest available host memory: {min(r['minimum_available_bytes'] for r in receipts)/GIB:.4f} GiB; floor 14 GiB.", '',
+                  f"Clean, unchanged solver sources in every completed check: {all(r['solver_unchanged'] and not r['start']['solver_dirty'] and not r['end']['solver_dirty'] for r in qualifications)}.",
+                  'One frequency/BLAS/OpenMP/Torch thread; default trace cutoffs 64 and 96 on these truths.', '',
+                  '## Preparation and pending work', '',
+                  'Input checks verify recorded BRG SHA-256, table layout, units and frozen coefficients.',
+                  'Multiplying lengths by 1.3 and dividing wavenumbers by 1.3 preserves the phase products',
+                  'to 2.85e-14; complex fields are unchanged. Default schedule and adaptive tail match exactly',
+                  'apart from ragged blocks; elapsed-time stopping is disabled as instructed.', '',
+                  '[Wrapper/capacity events](../../../../results/bem/baseline_data/brg_tg002/2026-11-18/preparation_events.json).',
+                  'The shared-branch push error was resolved by an ordinary push; no check was repeated.', '',
+                  'Coordinator note, 18 November: check each remaining case only after its BRG manifest',
+                  'exists and matches all 37 files. Cross at eta 4, cog and aphex_twin at both contrasts',
+                  'were pending at the first 15-case stop. The baseline completion run owns those files.',
+                  'The watch-checks command picks up newly finished manifests without repeating checks.', '',
+                  'All 40 inverse fits remain unrun. After all checks, stop for the coordinator go.',
+                  'First fit is known-contrast circle__c4; stop again to report its measured cost.', '']
     (DOC/'results.md').write_text('\n'.join(lines))
 
 
@@ -339,6 +366,10 @@ def fit_case(case, row):
     assert len(summary['cases'])==20 and all(r.get('checked')==37 for r in summary['cases']), 'All 20 checks must be reported first.'
     qualification = json.loads((BASE/case/'checks/qualification.json').read_text())
     assert qualification['passes'], 'Failed case is blocked; report to coordinator.'
+    checked_inputs = json.loads((BASE/case/'checks/inputs.json').read_text())
+    current_inputs = D.verify_files(case)
+    assert current_inputs['passes'] and current_inputs['files']==checked_inputs['files'], 'Checked observations changed.'
+    assert provenance()['solver_hashes']==qualification['end']['solver_hashes'], 'Solver changed after checks.'
     assert not bem_jobs(), 'Another BEM command is running; preserve capacity.'
     if row=='recovered':
         assert all(list((BASE/c/'known').glob('attempt_*/metrics.json')) for c in D.CASES), 'Known-contrast row must finish first.'
@@ -366,9 +397,36 @@ def fit_case(case, row):
     commit_owned(f'B1: retain {row} fit {case} and resource records')
 
 
+def watch_checks():
+    # Read only baseline manifests; neither missing files nor elapsed time authorize a fit.
+    while True:
+        unfinished = [c for c in D.CASES if not (BASE/c/'checks/qualification.json').exists()]
+        if not unfinished:
+            print('All case checks recorded. STOP for coordinator review; no fit started.', flush=True)
+            return
+        ready = [c for c in unfinished if (D.SOURCE/c/'bulk_manifest.json').exists()]
+        if ready and available() > 18*GIB:
+            print(now(), 'New manifest(s):', ready, flush=True)
+            run_checks()
+            for c in ready:
+                out = BASE/c/'checks'
+                if out.exists() and not (out/'qualification.json').exists():
+                    print('Incomplete worker needs coordinator review:', c, flush=True)
+                    return
+            # A manifest/hash failure needs the baseline coordinator, not repeated polling.
+            summary = json.loads((BASE/'check_summary.json').read_text())
+            if any(r['case'] in ready and r.get('status')=='INPUTS_PENDING' for r in summary['cases']):
+                print('Manifest exists but data checks fail; STOP for coordinator review.', flush=True)
+                return
+        else:
+            print(now(), 'Pending manifests/capacity:', unfinished,
+                  'available GiB', round(available()/GIB, 3), flush=True)
+        time.sleep(20.)
+
+
 def main():
     parser = argparse.ArgumentParser(__doc__)
-    parser.add_argument('action', choices=('prepare', 'checks', '_check', 'fit', '_fit'))
+    parser.add_argument('action', choices=('prepare', 'checks', 'watch-checks', '_check', 'fit', '_fit'))
     parser.add_argument('--case', choices=D.CASES)
     parser.add_argument('--row', choices=('known', 'recovered'))
     parser.add_argument('--out', type=Path)
@@ -377,6 +435,8 @@ def main():
         prepare()
     elif args.action=='checks':
         run_checks()
+    elif args.action=='watch-checks':
+        watch_checks()
     elif args.action=='_check':
         check_worker(args.case, args.out)
     elif args.action=='_fit':
