@@ -329,9 +329,18 @@ Rules for every table:
     the test), so the limit excludes them at low k. The other five pass.
   - So this is BRG's behaviour under its example driver's limit, not a
     wrapper fault. The public code's default is no limit.
+- **Activity 04, completion run (18 November, from 01:35 UTC, no time
+  cap):** `c_shape__c0.5` continued from its saved state and finished at
+  5.3%. Cross: 0.09% and 24.6%. Cog at contrast 0.5: 0.23%. With hook (58%
+  and 52%) and c_shape at contrast 4 (44%), 6 of 17 finished cases are
+  under 5%: circle and star at both contrasts, cross and cog at contrast
+  0.5. Still to come: cog at contrast 4 (running) and both aphex_twin
+  cases, which failed at start on our wrapper's interior-point check and
+  are rerun after a wrapper fix.
 - **Activity 05 (coordinator, 18 November):** the same 20 cases with the
-  curvature limit removed and nothing else changed. It starts when the 04
-  queue ends. The table then shows both BRG rows.
+  curvature limit removed and nothing else changed. It may start in a free
+  BRG slot; BRG stays at two fits in total. The table then shows both BRG
+  rows.
 - **Our BEM on BRG data (activity 03, coordinator review 17 November):**
   - Our default forward builds its incident waves from a power series that
     it refuses to use beyond about k times object radius = 17. On BRG's
