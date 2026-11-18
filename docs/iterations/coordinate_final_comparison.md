@@ -7,9 +7,8 @@ settings, assumptions and unknowns, and it sets how subagents share the work.
 The coordinator (the main session) owns this file. Subagents never edit it.
 They report back, and the coordinator updates the status board and the cards.
 
-Last updated: 18 November 2026, 02:36 UTC (BRG shipped-limit row complete:
-7 of 20 under 5%; BRG run without the curvature limit going; CSI waits for
-the user's frequency choice).
+Last updated: 18 November 2026, 03:26 UTC (both BRG rows complete on the 20
+TG-002 cases; CSI waits for the user's frequency choice).
 
 ## Restart notes (18 November 2026)
 
@@ -27,11 +26,11 @@ The user gave both panes full access. A pane started from scratch begins in
 Codex's default sandbox, where MATLAB and git do not work. Only the user
 grants full access; the coordinator does not.
 
-**Running, detached. Do not launch a second copy.** (state at 02:36 UTC)
+**Running, detached.** (state at 03:26 UTC: nothing on the baseline side)
 
 | Campaign | Launcher | State file |
 |---|---|---|
-| BRG without the curvature limit (activity 05), 20 cases | `run_tg002_control.py --row control --campaign` (PID 894852) | `results/brg/tg002_no_curvature/2026-11-18/campaign.json` |
+| BRG | none running. Both 20-case rows are complete (shipped limit 02:33 UTC, no limit 03:24 UTC) | `results/brg/tg002_shapes/2026-11-17/`, `results/brg/tg002_no_curvature/2026-11-18/` |
 | CSI | none running. The old launcher (PID 708268) exited by itself at 02:00 UTC after batch 1. The next launch waits for the user's frequency choice | `results/csi/tg002/2026-11-17_campaign/status.json` (final) |
 
 Each BRG folder has a `STOP` file path for a user-requested stop. None of
@@ -352,20 +351,33 @@ Rules for every table:
   with no time cap continued that case from its saved state (attempt 02)
   and ran the six. Both aphex_twin cases first failed at start on our
   wrapper's interior-point check and were rerun after a wrapper fix.
-- **Activity 05 (coordinator, 18 November):** the same 20 cases with the
-  curvature limit removed and nothing else changed. Started 02:28 UTC, no
-  time cap, data reused from 04 by hash. The table then shows both rows.
-  - First result, `kite__c0.5`: 33.9% area error, against 47.5% with the
-    limit. Every frequency still ends on a rejected step; the rejections
-    are now for self-intersection (error code 1). So the kite failure is
-    not caused by the curvature limit alone.
-  - Eight of 20 scored by 02:47 UTC (with the limit, then without):
-    asymmetric at contrast 0.5: 11.1% to 0.54%; peanut at 0.5: 11.8% to
-    0.69%; peanut at 4: 50.4% to 17.6%; c_shape at 4: 44.5% to 16.7%;
-    hook at 4: 52.2% to 18.5%; kite: 47.5% to 33.9% and 46.5% to 54.4%;
-    cross at 4: 24.6% to 24.0%.
-  - So the limit does hold BRG back on some shapes: two more cases come
-    under 5% without it. The table must show both rows.
+- **Activity 05 result: BRG without the curvature limit, all 20 cases
+  (18 November 03:24 UTC, provisional data, no time cap, same data by
+  hash).** Area error with the shipped limit, then without it:
+
+  | Shape | Contrast 0.5 | Contrast 4 |
+  |---|---|---|
+  | circle | 0.00%, 0.00% | 0.00%, 0.00% |
+  | star | 0.25%, 0.24% | 0.04%, 17.5% |
+  | cog | 0.23%, 0.28% | 0.05%, 5.8% |
+  | cross | 0.09%, 0.09% | 24.6%, 24.0% |
+  | c_shape | 5.3%, 0.16% | 44.5%, 16.7% |
+  | asymmetric | 11.1%, 0.54% | 27.7%, 43.9% |
+  | peanut | 11.8%, 0.69% | 50.4%, 17.6% |
+  | kite | 47.5%, 33.9% | 46.5%, 54.4% |
+  | hook | 57.7%, 64.6% | 52.2%, 18.5% |
+  | aphex_twin | 80.2%, 64.1% | 89.9%, 106% |
+
+  - Under 5%: 7 of 20 with the limit, 8 without, 10 taking the better of
+    the two per case.
+  - Without the limit, asymmetric, peanut and c_shape at contrast 0.5 are
+    recovered. Star and cog at contrast 4 get worse. So neither setting is
+    better everywhere, and the table shows both rows.
+  - At contrast 4 BRG recovers only circle, star and cog, and the last two
+    only with the limit. Kite, hook and aphex_twin fail under both.
+  - Most failing cases still end nearly every frequency on a rejected
+    step; without the limit the rejections are for self-intersection.
+  - Timings are shared-machine timings: up to eight BRG fits ran at once.
 - **Our BEM on BRG data (activity 03, coordinator review 17 November):**
   - Our default forward builds its incident waves from a power series that
     it refuses to use beyond about k times object radius = 17. On BRG's
