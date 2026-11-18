@@ -27,7 +27,9 @@ These are **provisional BRG-forward data**, identical to activity 04 by
 SHA-256. This is the control row alongside its shipped-limit row.
 
 The [plan](plan.md) records the coordinator's decision. The only inverse
-change is omitting `eps_curv`, using the public default. Self-intersection
+change is removing the curvature constraint with the wrapper's existing
+switch: it omits `eps_curv` and the inactive `n_curv_min` parameter.
+The public default `eps_curv=Inf` never rejects on curvature. Self-intersection
 checks remain. Same 37 frequencies, one centred unit-disk start, known
 contrast, update bands, eight threads, public stops/filter and patches 03/04.
 No BEM run or edit. No new upstream patch. Every case starts afresh.
@@ -36,7 +38,8 @@ The original data files are read in place, with no data generation. Each
 `data_reuse.json` records their paths and SHA-256 plus the geometry-input
 hash; the runner verifies hashes before fitting. Original data-generation
 cost is retained in metrics as `reused_data_generation_seconds`; new data
-cost is zero. The two-worker queue overlaps other work, so times are indicative.
+cost is zero. Up to four BRG fits share the allocation across queues.
+The queue overlaps other work, so times are indicative.
 
 Scoring follows unchanged protocol 1, with all components, no fitted
 alignment, raw set-difference area divided by true area and known-contrast
@@ -62,7 +65,7 @@ compact metrics and figure. No new success cutoff is selected.
         text+=f"Kite eta 0.5 pilot: {state['pilot_wall_seconds']:.2f} s. It ran alone before the rest.\n\n"
     text+=f"Aggregate case wall time: {sum(a['case_wall_seconds'] for _,_,_,a in cases)/60:.2f} min. New data-generation time: zero.\n\n"
     samples=[json.loads(l) for l in (BASE/'resources.jsonl').read_text().splitlines()]
-    text+=f"Minimum sampled available memory: {min(s['available_gib'] for s in samples):.2f} GiB; maximum simultaneous control workers: {max(len(s['active']) for s in samples)}. Start-delay reserve: 14 GiB; it never kills running fits.\n\n"
+    text+=f"Minimum sampled available memory: {min(s['available_gib'] for s in samples):.2f} GiB; maximum simultaneous control workers: {max(len(s['active']) for s in samples)}. Each launch checks fresh shared memory, reserves at least 3 GiB for the new BRG fit and retains the 14 GiB floor plus 2 GiB margin, allowing for other queues and B1 reservations. The guard delays starts; it never kills running fits.\n\n"
     if state.get('case_target_exceeded') or state.get('queue_target_exceeded_at'):
         text+=f"Time targets exceeded: cases {state.get('case_target_exceeded',{})}; queue {state.get('queue_target_exceeded_at','no')}. Runs continued; time targets never stop work.\n\n"
     if state.get('stop_reason'):
@@ -81,6 +84,8 @@ compact metrics and figure. No new success cutoff is selected.
             r=json.loads(p.read_text());c=r['selected_terminal_filter_ier_counts']
             text+=f"| {case} | {c.get('2',0)} | {c.get('1',0)} | {r['final_iteration_ier_counts'].get('-5',0)} |\n"
     text+='\n## Interpretation and next step\n\n'
+    if (BASE/'PILOT_REVIEW.json').exists():
+        text+='The first case, kite at contrast 0.5, reduced area error from 47.53% to 33.87% and maximum final residual from 0.3901 to 0.2051 in 374.85 s. It still failed to recover the shape. Its saved curve has loops and ripples; unchanged scoring reports a repaired ring and two components. There were no terminal curvature rejections, but 24 terminal self-intersection rejections and 37 final iteration ier -5 codes. The saved checks and settings review passed; the remaining cases were released without a supervisor restart. See `PILOT_REVIEW.json`.\n\n'
     if state['status']=='complete' and len(cases)==20:
         improved=sum(m['area_error']<old['area_error'] for _,m,old,_ in cases)
         text+=f"Removing the curvature limit lowers raw area error in {improved}/20 cases. Full per-case values above retain improvements and regressions. This identifies the effect of the shipped limit on this dataset; it does not qualify the observations against the BEM solver or establish a final comparison.\n\n"
