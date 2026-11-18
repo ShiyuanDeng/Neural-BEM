@@ -1,6 +1,6 @@
 # MF-CC-CSI fits at ten frequencies: live table
 
-Updated 2026-11-18T16:59:07+00:00; state: running.
+Updated 2026-11-18T17:29:43+00:00; state: running.
 
 Frequencies: 0.25 to 2.5 GHz in 0.25 GHz steps. Ten shapes at permittivity 4.
 2048 iterations; 166 by 166 cells at 1.25 mm; native back-propagation; eight threads.
@@ -36,6 +36,13 @@ circle: completed, 2026-11-18T14:49:36+00:00. [Evidence](../../../../results/csi
 | kite | 2048 | 13.760 | 12.764 / 39.558 | 3.8104 | 0.5785 | 9793.27 |
 
 kite: completed, 2026-11-18T16:59:07+00:00. [Evidence](../../../../results/csi/tg002/2026-11-18_ten_frequency/kite/outcome.json).
+
+| asymmetric | 256 | 6.855 | 28.158 / 31.468 | 3.4829 | 0.1406 | 1231.55 |
+| asymmetric | 512 | 7.860 | 19.054 / 33.927 | 3.6591 | 0.1937 | 2458.99 |
+| asymmetric | 1024 | 8.303 | 14.003 / 31.821 | 3.7606 | 0.2021 | 4919.93 |
+| asymmetric | 2048 | 7.240 | 11.423 / 26.734 | 3.8080 | 0.2011 | 9882.28 |
+
+asymmetric: completed, 2026-11-18T17:29:42+00:00. [Evidence](../../../../results/csi/tg002/2026-11-18_ten_frequency/asymmetric/outcome.json).
 
 
 Each data.json records the exact shared input path, SHA-256 and coordinator release.
