@@ -1,4 +1,4 @@
-"""Review stop 2: forward checks of the CSI adapter on the true cylinder and true circle.
+"""Adapter checks for CSI tables, one resumable command (first used at review stop 2).
 
 Truth is read here only. The mismatch is saved per frequency and never passed to a fit.
 Checks (plan.md): calibration against CC-CSI's saved factors, conjugation and unit field on
@@ -182,40 +182,61 @@ def layout_check(context):
                 passes=bool(r_diff < 1e-12 and J_diff < 1e-12))
 
 
+def case_spec(case):
+    if case in CASES:
+        return CASES[case]
+    shape, contrast = case.split('__c')
+    return dict(path=ROOT/D.SIMULATED.format(shape=shape), truth=lambda: S.truth_fixture(shape),
+                contrast=float(contrast), truth_note=f'frozen TG-002 truth_fixture("{shape}"), permittivity {contrast}')
+
+
+def check_case(case, context, out, layout):
+    """All adapter checks for one table; resumable: an existing <case>.json is kept and skipped."""
+    target = out/f'{case}.json'
+    if target.exists():
+        print(f'{case}: checked already, {target}', flush=True)
+        return json.loads(target.read_text())
+    started = time.perf_counter()
+    spec = case_spec(case)
+    _, frequencies, _ = D.read_table(spec['path'])
+    record = dict(case=case, provenance=provenance(), permutation=permutation_check(frequencies))
+    if case == 'dielTM_dec8f':
+        record['calibration_vs_csi'] = calibration_check(frequencies)
+    else:
+        record['simulated_unit_field'] = simulated_unit_field_check(frequencies)
+    arrays = {}
+    record['mismatch'] = forward_mismatch(case, spec, context, arrays)
+    if layout:
+        record['layout'] = layout_check(context)
+    worst = max(r['relative_mismatch'] for r in record['mismatch']['per_frequency'])
+    adapter = [record['permutation']['passes'],
+               record.get('calibration_vs_csi', record.get('simulated_unit_field'))['passes'],
+               *([record['layout']['passes']] if layout else []),
+               record['mismatch']['series_8ghz']['truth']['passes_1e9'],
+               record['mismatch']['series_8ghz']['start']['passes_1e9']]
+    record['summary'] = dict(adapter_checks_pass=bool(all(adapter)), worst_truth_mismatch=worst,
+                             one_percent_rule=None if case == 'dielTM_dec8f' else bool(worst <= .01),
+                             wall_seconds=time.perf_counter()-started, peak_memory_gib=peak_memory_gib())
+    target.write_text(json.dumps(record, indent=2, default=float)+'\n')
+    np.savez_compressed(out/f'{case}_truth_predictions.npz', **arrays)
+    print(case, json.dumps(record['summary'], default=float), flush=True)
+    return record
+
+
 def main():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description='Adapter checks per CSI table, resumable per case.')
     parser.add_argument('--out', required=True)
+    parser.add_argument('--cases', nargs='+', default=['dielTM_dec8f', 'circle__c4'],
+                        help='dielTM_dec8f and/or simulated <shape>__c4')
+    parser.add_argument('--layout', action='store_true', help='also the ragged-vs-rectangular B5/B8 check')
     args = parser.parse_args()
     out = Path(args.out)
-    if (out/'forward_checks.json').exists():
-        raise SystemExit('Evidence exists; not overwriting.')
     out.mkdir(parents=True, exist_ok=True)
-    started = time.perf_counter()
-    record = dict(provenance=provenance())
     context = ModalMuller(Execution(device='cpu', frequency_threads=1), ModalSettings(table_mode=True))
-    _, measured, _ = D.read_table(D.MEASURED)
-    _, simulated, _ = D.read_table(CASES['circle__c4']['path'])
-    record['calibration_vs_csi'] = calibration_check(measured)
-    record['simulated_unit_field'] = simulated_unit_field_check(simulated)
-    record['permutation'] = dict(measured=permutation_check(measured), simulated=permutation_check(simulated))
-    arrays = {}
-    record['mismatch'] = {name: forward_mismatch(name, spec, context, arrays) for name, spec in CASES.items()}
-    try:
-        record['layout'] = layout_check(context)
-    except Exception as exc:  # report, do not work round it
-        import traceback
-        record['layout'] = dict(passes=False, failure=traceback.format_exc(), error=repr(exc))
-    circle = [r['relative_mismatch'] for r in record['mismatch']['circle__c4']['per_frequency']]
-    record['one_percent_rule'] = dict(worst=max(circle), passes=bool(max(circle) <= .01))
-    record['wall_seconds'] = time.perf_counter()-started
-    record['peak_memory_gib'] = peak_memory_gib()
-    (out/'forward_checks.json').write_text(json.dumps(record, indent=2, default=float)+'\n')
-    np.savez_compressed(out/'truth_predictions.npz', **arrays)
-    for name, block in record['mismatch'].items():
-        print(name, [(r['resolution'][:5], r['frequency_ghz'], round(100*r['relative_mismatch'], 4))
-                     for r in block['per_frequency']], flush=True)
-    print(json.dumps({k: record[k] for k in ('calibration_vs_csi', 'simulated_unit_field', 'permutation',
-                                              'layout', 'one_percent_rule')}, indent=1, default=float)[:6000])
+    summaries = {case: check_case(case, context, out, args.layout)['summary'] for case in args.cases}
+    print(json.dumps(summaries, indent=1, default=float))
+    if not all(s['adapter_checks_pass'] for s in summaries.values()):
+        raise SystemExit('An adapter check failed; see the case files.')
 
 
 if __name__ == '__main__':
