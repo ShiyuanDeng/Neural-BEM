@@ -1,6 +1,6 @@
 # B1 campaign report
 
-Generated 2026-11-18T03:36:47.025159+00:00. 38/40 fits have saved metrics.
+Generated 2026-11-18T04:10:02.923406+00:00. 40/40 fits have saved metrics.
 
 All 20 case checks pass: 740 frequency comparisons.
 Maximum BRG difference 8.75351062e-06; refinement 7.93843874e-07.
@@ -26,7 +26,7 @@ Maximum BRG difference 8.75351062e-06; refinement 7.93843874e-07.
 | cog__c0.5 | 0.00290269017 | 0.00214085857 | 0.499999813 | 40.9264542 / 37.3706162 |
 | cog__c4 | 0.000376742995 | 0.00037678816 | 4.00000014 | 39.9367895 / 55.6419127 |
 | aphex_twin__c0.5 | 0.151127379 | 0.0113665214 | 0.499893329 | 1431.13397 / 147.335002 |
-| aphex_twin__c4 | pending | pending | pending | pending / pending |
+| aphex_twin__c4 | 0.33207713 | 0.00451175331 | 4.00001244 | 5627.6579 / 132.744637 |
 
 Area errors are raw fractions, not percent. No alignment, tuning, or numerical rerun.
 [Every fit: outcome, stage, work, time, contrast and memory](results.md).
@@ -34,8 +34,8 @@ Area errors are raw fractions, not percent. No alignment, tuning, or numerical r
 
 ## Work, time and resources
 
-Fit time sum 2997.870 s; worker process time sum 3068.008 s; work 60272 units.
-First worker 2026-11-18T02:06:07.580121+00:00; last worker 2026-11-18T02:53:22.580831+00:00.
+Fit time sum 8758.273 s; worker process time sum 8832.425 s; work 65410 units.
+First worker 2026-11-18T02:06:07.580121+00:00; last worker 2026-11-18T04:09:13.442886+00:00.
 That interval includes coordinator review waits, data arrival waits and the safe resource-allocation change.
 
 Largest host peak 2.2679 GiB; sampled process GPU peak 1.9844 GiB.
@@ -44,12 +44,15 @@ Maximum numerical-worker overlap 4. The authorized ceiling changed from one to t
 
 ## Retained failures and checks
 
-Outcomes: {'COMPLETED_SCHEDULE': 38}.
+Outcomes: {'COMPLETED_SCHEDULE': 40}.
 A completed schedule is a solver outcome, not a recovery-quality verdict.
 The coordinator classified aphex_twin__c0.5 known contrast as a failed recovery
 on 18 November at 02:54 UTC: area error 15.1%. Its endpoint is retained without a rerun.
+The known-contrast aphex_twin__c4 fit also recovers poorly: area error 33.21%,
+1546 work units and 5627.658 s, ending at M61. Its last accepted residual is 0.68494.
+Both poor endpoints remain in the table; the cause has not been established.
 Series refusals: []; memory requeues: [].
-Runs above 120 s: ['aphex_twin__c0.5 known', 'aphex_twin__c0.5 recovered']; above 1 h: [].
+Runs above 120 s: ['aphex_twin__c0.5 known', 'aphex_twin__c0.5 recovered', 'aphex_twin__c4 known', 'aphex_twin__c4 recovered']; above 1 h: ['aphex_twin__c4 known'].
 Elapsed time never stopped a fit. The original first-fit scoring import failure remains saved;
 the owned wrapper path was fixed and the saved endpoint scored, without a numerical rerun.
 
@@ -58,3 +61,20 @@ All checked solver source maps remained clean and unchanged. BLAS/OpenMP and bot
 The unedited comparison scoring supplies raw region, boundary, signed-material and contrast scores.
 
 No solver, baseline, scoring or coordination file was edited. Bulk stays local with SHA-256.
+
+## Coordinator handoff
+
+Activity: adapt_bem_to_baseline_data/06_fit_brg_tg002_cases, 18 November 2026.
+Runs: 40/40; first-to-last worker wall interval 2:03, including review and data waits.
+Result: all 20 cases and 740 frequency checks pass; the table above gives both rows.
+Failures: the known aphex_twin fits have 15.11% and 33.21% area error. Endpoints and logs are retained.
+The first-fit scoring import failure is retained and was repaired without another numerical fit.
+Upstream patches: none.
+Changes to our code: owned b1_data.py, b1_runtime.py, b1_run.py, b1_queue.py and b1_report.py only.
+New unknowns: why the fixed known-contrast fits recover aphex_twin poorly while the recovered fits improve.
+Proposed next activity: coordinator review of this completed block; needs user decision: none to close B1.
+No further numerical work is queued. Any investigation or method change is a separate decision.
+
+Queue completion, checks and the local log hashes are in completion.json and campaign_bulk_manifest.json
+beside campaign_summary.json. Each finished fit has its own commit request, resource receipts,
+input hashes, raw scores and bulk manifest; bulk logs and numerical arrays remain local.
