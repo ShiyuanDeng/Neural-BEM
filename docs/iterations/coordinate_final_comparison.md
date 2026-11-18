@@ -46,21 +46,12 @@ the 14 GiB floor. The coordinator adds no resource loop of its own.
 
 **No result-generating run is stopped because of a time limit, unless the
 user says so** (user, 18 November 01:24 UTC, see "Who decides"). A stuck or
-faulty run may still be stopped. Both launchers were written before that
-rule and carry their own caps, which cannot be removed without touching
-the runs:
-- CSI: it exits by itself after batch 1 (its 9 h forecast check). No fit is
-  cut.
-- BRG: 1 h per case and a queue stop at 03:41 UTC. `c_shape__c0.5` reaches
-  its cap near 01:25 UTC at frequency 35 of 37. The queue's own code then
-  drops the six waiting cases (cross, cog, aphex_twin) and ends after
-  `hook__c4`.
+faulty run may still be stopped. History: the two launchers written before
+that rule carried their own caps. The CSI one exited after batch 1 without
+cutting a fit. The BRG one cut `c_shape__c0.5` at 1 h and dropped six
+cases; the completion run above restored them from saved state.
 
-After the BRG queue ends by itself, `brg` continues `c_shape__c0.5` from
-its saved state and runs the six dropped cases, with a runner that has no
-time cap. New launchers (BRG 05, CSI 05) have no stop on time either.
-
-Both launchers belong to no chat, so closing a pane does not stop them.
+The launchers belong to no chat, so closing a pane does not stop them.
 Both agent chats were restarted at 00:25 UTC and picked up from their
 handoff notes; each confirmed what is running before carrying on.
 The CSI campaign started 17 November 23:17 UTC: four batches. A batch was
