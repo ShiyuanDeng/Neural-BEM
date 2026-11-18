@@ -2,7 +2,7 @@
 
 18 November 2026. Owner: `bem-gpu`. In progress; solver lock retained.
 The coordinator approved the narrow guard removal and stale wording fixes.
-No solver edit has been made. All three references must finish first.
+All three clean pre-edit references are complete. The approved edit is next.
 
 ## Clean CPU reference
 
@@ -27,7 +27,7 @@ the measured peak and leaves at least 16 GiB before subsequent launches.
 
 ## Pending
 
-Second clean GPU reference, approved edit, CPU/GPU table checks, CPU/GPU default
+Approved edit, CPU/GPU table checks, CPU/GPU default
 comparisons, CUDA-visible suite, and coordinator diff review before solver commit.
 
 ## First clean GPU reference
@@ -43,3 +43,18 @@ host memory **19.451 GiB**. CUDA peak allocated **0.896 GiB**, reserved
 **1.223 GiB**. No failures. This is the first GPU repeatability reference;
 its small numerical difference from CPU is not a before/after code change.
 [Evidence](../../../../results/bem/baseline_data/gpu_table_path/2026-11-18/gpu_before_1/).
+
+## Second clean GPU reference and frozen envelope
+
+Started 2026-11-18T00:26:16.413659+00:00, source commit `6a5258daa`; solver clean at both ends.
+Same settings as the first GPU reference. **COMPLETED_SCHEDULE**,
+5.363 s fit time, 8.740 s guarded wall time.
+Peak child RSS 1.820 GiB, minimum available host
+memory 19.616 GiB. No failure or limit stop.
+
+All three saved arrays (curve coefficients, image and predictions) are
+**byte-identical** between the two pre-edit GPU runs. All 15 stable record
+sections are also identical. The frozen repeatability envelope is **zero**:
+the post-edit GPU reference must therefore be exact, including stable records.
+No thresholds have moved. [Second reference](../../../../results/bem/baseline_data/gpu_table_path/2026-11-18/gpu_before_2/)
+and [frozen envelope](../../../../results/bem/baseline_data/gpu_table_path/2026-11-18/gpu_repeatability.json).
