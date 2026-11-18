@@ -1,6 +1,6 @@
 {
-  "authority": "Resource monitor w3:p1 acting on user instruction at 02:40 UTC, passed on by baseline coordinator 18 November 2026",
-  "maximum_brg_workers": 6,
+  "authority": "Resource monitor w3:p1 acting on user instruction at 02:51 UTC, passed on by baseline coordinator 18 November 2026",
+  "maximum_brg_workers": 8,
   "brg_worker_gib": 3,
   "floor_gib": 14,
   "margin_gib": 2,
@@ -16,8 +16,20 @@
       "b1_worker_reservation_gib": 4,
       "policy": "Fresh machine memory and B1/BRG outstanding growth reservations at each new control launch; no active fit interrupted or restarted. Existing shipped supervisors keep their limits.",
       "superseded_at": "2026-11-18T02:41:57.386828+00:00"
+    },
+    {
+      "authority": "Resource monitor w3:p1 acting on user instruction at 02:40 UTC, passed on by baseline coordinator 18 November 2026",
+      "maximum_brg_workers": 6,
+      "brg_worker_gib": 3,
+      "floor_gib": 14,
+      "margin_gib": 2,
+      "b1_worker_reservation_gib": 4,
+      "policy": "Fresh machine memory and B1/BRG outstanding growth reservations at each new control launch; no active fit interrupted or restarted. Existing shipped supervisors keep their limits.",
+      "condition": "Six control fits only while CSI stays held. Coordinator will set the new-launch ceiling when CSI is released; never stop active fits to meet a lower ceiling.",
+      "updated": "2026-11-18T02:41:57.386834+00:00"
     }
   ],
-  "condition": "Six control fits only while CSI stays held. Coordinator will set the new-launch ceiling when CSI is released; never stop active fits to meet a lower ceiling.",
-  "updated": "2026-11-18T02:41:57.386834+00:00"
+  "condition": "Eight control fits only while CSI stays held; new launches only and leave slots empty whenever shared-memory check fails. Coordinator sets ceiling on CSI release; never stop active fits to meet it.",
+  "updated": "2026-11-18T02:52:13.831137+00:00",
+  "receipt_policy": "Record overlapping fit counts in completed case receipts from saved fit intervals; retain original start/end MATLAB process snapshots."
 }
