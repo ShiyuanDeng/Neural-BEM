@@ -1,6 +1,6 @@
 # MF-CC-CSI simulated TG-002 campaign
 
-Updated 2026-11-18T02:00:15.045739+00:00. State: **batch 1 awaiting coordinator: first-batch forecast exceeds nine hours**.
+Updated 2026-11-18T02:00:18.093343+00:00. State: **awaiting coordinator: first-batch forecast exceeds nine hours**.
 
 Nine-hour budget. Ten shapes, contrast 4, 2048 iterations, native back-propagation start.
 Grid 166-by-166 at 1.25 mm; native forward 332-by-332 at 0.625 mm. No settings shortened.
