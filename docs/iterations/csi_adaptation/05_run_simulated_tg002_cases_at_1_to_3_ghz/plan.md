@@ -1,5 +1,24 @@
 # Run the simulated TG-002 cases at 1–3 GHz
 
+**HOLD, user decision relayed 18 November 01:36 UTC. No fit may launch.**
+"Let the current eight-frequency batch finish. Hold the automatic 1-3 GHz
+launch. Review those results with me before choosing four or five
+frequencies for the remaining cases." The earlier automatic go is
+withdrawn. Wait for a new coordinator go and explicit frequency list.
+The folder name records the earlier plan; no band is currently selected.
+Keep generating all seven full eight-frequency parent tables for BEM.
+
+The launcher now has one required frequency setting, `--frequencies`,
+for example `--frequencies 1 2 3 4` or `--frequencies 1 2 3 4 5`.
+There is no default band. Native frequency count, initial-field blocks,
+objective averages and update sums follow that list. Conductivity scaling
+uses its first entry; saved/native history image uses its last entry.
+Resume keeps the recorded list and refuses a changed one. Every shape's
+input comes from the fixed cache below, verified by SHA-256; the inverse
+launcher has no data-generation path and will never regenerate a table.
+All band-specific settings below are historical until a new go replaces
+them. Time remains a target only, never a stop reason.
+
 **Current process rule, relayed 18 November 01:24 UTC:** the user's words:
 "do not stop result-gerating terminal processes due to time limit unless
 i say otherwise. if it stucks or goes wrong you should still stop it.
@@ -29,9 +48,10 @@ No solver, comparison-code or external-upstream changes.
 
 Four batches in the same order: circle/kite/peanut; star/asymmetric/c_shape;
 hook/cross/cog; aphex_twin. One centred native start, no grid search.
-Start only after original launcher PID 708268 exits by itself and its
-first-batch outcomes and push are confirmed. No further go is required.
-The cancelled eight-frequency resume never starts.
+After original launcher PID 708268 exits by itself and its first-batch
+outcomes and push are confirmed, send the requested review pack. Do not
+start a fit until the coordinator gives a new go and frequency list.
+The eight-frequency resume remains ready and unlaunched as well.
 
 Data: unchanged eight-frequency 0.625 mm native-generator tables. Reuse
 the exact hashed circle, kite and peanut tables. Generate the other seven
