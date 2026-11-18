@@ -23,7 +23,7 @@ Both fitting rows will read only the saved, hash-verified BRG observations.
 | cross__c0.5 | 37 | 2.0557080104187058e-11 | 1.6279779075760412e-14 | PASS |
 | cross__c4 | 37 | 1.3194908220155407e-11 | 5.094598303199394e-14 | PASS |
 | cog__c0.5 | 37 | 1.4235514624814591e-09 | 1.42246317739985e-09 | PASS |
-| cog__c4 | 0 | None | None | INPUTS_PENDING |
+| cog__c4 | 37 | 7.938568564114031e-07 | 7.938438740631267e-07 | PASS |
 | aphex_twin__c0.5 | 37 | 8.75351062414974e-06 | 3.0892966448944135e-13 | PASS |
 | aphex_twin__c4 | 37 | 2.8206885667401405e-06 | 9.847737333999704e-11 | PASS |
 
@@ -39,8 +39,8 @@ No solver, baseline, shared scoring or coordination file was changed.
 
 ## Timing and resources
 
-Numerical check time: 34.697 s; summed worker process time: 64.715 s.
-Checks from 2026-11-18T01:55:21.632749+00:00 to 2026-11-18T02:33:05.358488+00:00.
+Numerical check time: 37.014 s; summed worker process time: 68.297 s.
+Checks from 2026-11-18T01:55:21.632749+00:00 to 2026-11-18T02:33:55.854704+00:00.
 These shared-machine times include concurrent baseline and CSI work.
 
 Peak worker host memory: 1.3505 GiB.
