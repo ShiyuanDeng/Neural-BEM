@@ -30,6 +30,20 @@ The common fit gives radius 49.981525 mm, contrast 4.009216, centre shift
 Weighting is equal relative-L2 per frequency; one centred truth start,
 no grid search. Independent-frequency fits change contrast only.
 
+Retained 0.625 mm diagnostic; errors are relative L2 percent over the
+table norm. Radius/centre stay at truth in the independent contrast fit.
+
+| GHz | Original error % | Best contrast | Error after contrast fit % |
+|---|---:|---:|---:|
+| 1 | 0.1723 | 4.001355 | 0.1620 |
+| 2 | 0.1260 | 4.000125 | 0.1259 |
+| 3 | 0.3034 | 4.001252 | 0.2524 |
+| 4 | 1.1396 | 4.001846 | 0.6332 |
+| 5 | 0.8228 | 4.004450 | 0.3462 |
+| 6 | 1.6782 | 4.006989 | 0.5689 |
+| 7 | 2.2946 | 4.008002 | 0.7569 |
+| 8 | 5.9136 | 4.010206 | 1.3157 |
+
 Full independent fit errors, the common fit and table hash are in
 [exact_circle_fits.json](../../../../../results/csi/grid_check/2026-11-18_circle/exact_circle_fits.json).
 Command: `PYTHONPATH=solvers:. OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1
