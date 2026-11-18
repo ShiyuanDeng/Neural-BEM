@@ -9,7 +9,7 @@ It is a temporary second file. The user: "i would prefer to use one
 coordination file, but temporarily to avoid the current coordination file
 being too long you can have a new one". Merge it back when the work is done.
 
-**State, 18 November 2026, 02:05 GMT:** handed over. The user had the
+**State, 18 November 2026, 02:02 GMT:** handed over. The user had the
 coordinator's chat restarted because its context was long ("you have a lot
 of context so i plan to start you fresh"). Everything below is committed
 and pushed. A fresh coordinator starts at [Start here](#start-here).
@@ -20,7 +20,7 @@ For the coordinator who picks this up, in pane `w2:p1`.
 
 **Who is alive** (Herdr workspace `w2`, same checkout, branch `organised`):
 
-| Agent | Pane | Model | State at 02:05 | Reads first |
+| Agent | Pane | Model | State at 02:02 | Reads first |
 |---|---|---|---|---|
 | `bem-b1` | `w2:p9`, top right | Codex `gpt-6-astra`, high, full access | Working since 01:48: plan, wrapper and data checks for table B1. No fit yet. Do not clear it | Its brief is in its pane; its files are in [06](adapt_bem_to_baseline_data/06_fit_brg_tg002_cases/) |
 | `bem-csi-run` | `w2:p8`, bottom right; cleared 01:59 | Claude Sonnet, high, permissions bypassed | Cleared at 01:59 and idle, a fresh session with no memory. It waits for the user's frequency list | `AGENTS.md`, this file, "State at handoff" in [04 results](adapt_bem_to_baseline_data/04_fit_csi_cases/results.md), the hand-over in [03 results](adapt_bem_to_baseline_data/03_adapt_bem_to_csi_data/results.md) |
@@ -371,6 +371,8 @@ Investigation: `docs/iterations/adapt_bem_to_baseline_data/`.
 | `02_fit_brg_paper_cases` | `bem-brg` | `experiments/bem_on_baseline_data/brg_*` | `results/bem/baseline_data/brg_paper/` |
 | `03_adapt_bem_to_csi_data` | `bem-csi` | `experiments/bem_on_baseline_data/csi_*` | `results/bem/baseline_data/csi_adapter/` |
 | `04_fit_csi_cases` | `bem-csi-run` | none; it runs the code from 03 | `results/bem/baseline_data/csi_cases/` |
+| `05_lift_series_limit` | `bem-gpu` | a probe only; proposal closed, no go from the user | `results/bem/baseline_data/series_limit_proposal/` |
+| `06_fit_brg_tg002_cases` | `bem-b1` | `experiments/bem_on_baseline_data/b1_*` | `results/bem/baseline_data/brg_tg002/` |
 
 - BEM-side agents read the `brg` and `csi` paths and never edit them.
 - Nobody on this side edits `experiments/comparison/`. Import its scoring.
@@ -466,7 +468,7 @@ data convention is in doubt.
 | BRG paper cases | `bem-brg` | Reported GPU pass done 01:23; follow-up checks done 01:36 ([results](adapt_bem_to_baseline_data/02_fit_brg_paper_cases/results.md)). Area error: `glider_033` 0.061% at k = 15 (71 s); `star_full` 0.58% (334 s); `star_limited` 0.60% (274 s); `glider_10` failed (14% at k = 12; lost from k = 1.75). Cavities skipped by the user. CPU and GPU paths differ through the slider preparation (B6), an existing default behaviour. Agent closed 01:59 | Clean timed pass on a quiet machine; uncut CPU cross-checks if the user allows |
 | CSI adapter | `bem-csi` | Done and closed 02:00 ([results](adapt_bem_to_baseline_data/03_adapt_bem_to_csi_data/results.md)). Measured cylinder fitted (default fit stalled; adapter cleared). Wrapper reads the ten frozen tables; the frequency list is one setting, now (1, 2, 3) GHz; dry check shows the stage lists unchanged for what ran | None |
 | CSI fits | `bem-csi-run` | Early look at 1 to 3 GHz done 01:56 ([results](adapt_bem_to_baseline_data/04_fit_csi_cases/results.md)): circle 1.17%, kite 3.08% (numerical failure in its last stage, kept), peanut 1.50%. Session cleared 01:59; idle | The user's frequency list; then all ten shapes as the reported pass |
-| Table B1 | `bem-b1` | Launched 01:48, pane `w2:p9`. Plan, wrapper and data checks in progress at 02:05; no fit yet. BRG's observations exist for 16 of 20 cases | Review the data checks; go for the first fit; then its timing and the capacity recheck |
+| Table B1 | `bem-b1` | Launched 01:48, pane `w2:p9`. Plan, wrapper and data checks in progress at 02:02; no fit yet. BRG's observations exist for 16 of 20 cases | Review the data checks; go for the first fit; then its timing and the capacity recheck |
 
 ## Coordinator decisions
 
