@@ -3,7 +3,7 @@
 ## Status and settings
 
 Started 2026-11-18T02:28:20.793603+00:00; queue state `running`;
-12/20 cases have scores. Last update: 2026-11-18T02:53:42.687619+00:00.
+13/20 cases have scores. Last update: 2026-11-18T02:54:47.771410+00:00.
 These are **provisional BRG-forward data**, identical to activity 04 by
 SHA-256. This is the control row alongside its shipped-limit row.
 
@@ -48,12 +48,13 @@ compact metrics and figure. No new success cutoff is selected.
 | aphex_twin__c0.5 | complete | 37/37 | 0.80147523 | 0.64108951 | 0.559174 | 0.503557 | 385.48 | 8.19 | 2.33 | 402.74 |
 | aphex_twin__c4 | complete | 37/37 | 0.89878857 | 1.0626189 | 0.979737 | 1.05886 | 194.53 | 8.23 | 2.68 | 211.91 |
 | star__c0.5 | complete | 37/37 | 0.0025279893 | 0.0024260803 | 2.80675e-05 | 2.90794e-05 | 292.63 | 30.15 | 2.17 | 331.92 |
+| star__c4 | complete | 37/37 | 0.00039247399 | 0.17542513 | 3.11609e-06 | 0.739178 | 395.46 | 8.61 | 2.53 | 414.96 |
 
 ## Time, limits and saved-output checks
 
 Kite eta 0.5 pilot: 374.85 s. It ran alone before the rest.
 
-Aggregate case wall time: 65.03 min. New data-generation time: zero.
+Aggregate case wall time: 71.95 min. New data-generation time: zero.
 
 Minimum sampled available memory: 29.86 GiB; maximum simultaneous control workers: 6. Each launch checks fresh shared memory, reserves at least 3 GiB for the new BRG fit and retains the 14 GiB floor plus 2 GiB margin, allowing for other queues and B1 reservations. The guard delays starts; it never kills running fits.
 
@@ -69,6 +70,7 @@ Minimum sampled available memory: 29.86 GiB; maximum simultaneous control worker
 - aphex_twin__c0.5: saved-output check passed; [metrics](../../../../results/brg/tg002_no_curvature/2026-11-18/aphex_twin__c0.5/metrics.json), [figure](figures/aphex_twin__c0.5.png).
 - aphex_twin__c4: saved-output check passed; [metrics](../../../../results/brg/tg002_no_curvature/2026-11-18/aphex_twin__c4/metrics.json), [figure](figures/aphex_twin__c4.png).
 - star__c0.5: saved-output check passed; [metrics](../../../../results/brg/tg002_no_curvature/2026-11-18/star__c0.5/metrics.json), [figure](figures/star__c0.5.png).
+- star__c4: saved-output check passed; [metrics](../../../../results/brg/tg002_no_curvature/2026-11-18/star__c4/metrics.json), [figure](figures/star__c4.png).
 
 Completed attempt receipts also record peak other simultaneous BRG/B1 fits, distinct overlapping fit receipts, and original MATLAB snapshots. Counts use saved process intervals; BRG intervals include residual evaluation. No B1 files are changed.
 
@@ -90,6 +92,7 @@ The first two columns count the selected final geometry/filter code on rejected 
 | aphex_twin__c0.5 | 0 | 28 | 37 |
 | aphex_twin__c4 | 0 | 37 | 37 |
 | star__c0.5 | 0 | 0 | 5 |
+| star__c4 | 0 | 32 | 36 |
 
 ## Interpretation and next step
 
