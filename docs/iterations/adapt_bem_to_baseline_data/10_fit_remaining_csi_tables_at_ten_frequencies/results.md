@@ -1,7 +1,7 @@
 # Fit the remaining ten-frequency CSI cases: results
 
 18 November 2026. Runner: bem-ten. [Plan](plan.md).
-State: 2/6 new GPU fits recorded; 6/10 ten-frequency results available.
+State: 3/6 new GPU fits recorded; 7/10 ten-frequency results available.
 
 ## Settings and evidence
 
@@ -39,7 +39,7 @@ A clear gain halves the five-frequency area error. A score above 5% is a miss.
 | asymmetric | five | COMPLETED_SCHEDULE | full_6_M37 | 2241 | 65.087 | 4.001952240 | 1.291805 |
 | asymmetric | ten | COMPLETED_SCHEDULE | full_6_M37 | 4212 | 54.588 | 4.001927242 | 0.931083 |
 | c_shape | five | COMPLETED_SCHEDULE | full_6_M37 | 2243 | 105.033 | 4.002706452 | 2.601924 |
-| c_shape | ten | pending | — | — | — | — | — |
+| c_shape | ten | COMPLETED_SCHEDULE | full_6_M37 | 4749 | 75.087 | 4.002807168 | 1.597686 |
 | cross | five | COMPLETED_SCHEDULE | full_6_M37 | 1839 | 50.599 | 4.001249691 | 2.099419 |
 | cross | ten | pending | — | — | — | — | — |
 | cog | five | COMPLETED_SCHEDULE | full_8_M49 | 3619 | 247.363 | 4.000492089 | 2.860390 |
@@ -87,6 +87,22 @@ Saved scores are reused when this report is updated.
 | asymmetric | full_4_M25 | 25 | STAGE_QUOTA_REACHED | 0.912219 |
 | asymmetric | full_5_M31 | 31 | STAGE_QUOTA_REACHED | 0.930613 |
 | asymmetric | full_6_M37 | 37 | STAGE_QUOTA_REACHED | 0.931083 |
+| c_shape | ladder_1_real | 0 | NORMAL_OPTIMIZER_RETURN | 177.794379 |
+| c_shape | ladder_2_real | 1 | NORMAL_OPTIMIZER_RETURN | 69.660558 |
+| c_shape | ladder_3_real | 2 | NORMAL_OPTIMIZER_RETURN | 63.400403 |
+| c_shape | ladder_4_real | 3 | NORMAL_OPTIMIZER_RETURN | 49.695251 |
+| c_shape | ladder_5_real | 3 | NORMAL_OPTIMIZER_RETURN | 48.494222 |
+| c_shape | ladder_6_real | 4 | NORMAL_OPTIMIZER_RETURN | 14.727092 |
+| c_shape | ladder_7_real | 5 | NORMAL_OPTIMIZER_RETURN | 7.538708 |
+| c_shape | ladder_8_real | 6 | NORMAL_OPTIMIZER_RETURN | 5.179664 |
+| c_shape | ladder_9_real | 7 | NORMAL_OPTIMIZER_RETURN | 2.916081 |
+| c_shape | ladder_10_real | 7 | NORMAL_OPTIMIZER_RETURN | 2.985673 |
+| c_shape | full_1_M11 | 11 | NORMAL_OPTIMIZER_RETURN | 0.673645 |
+| c_shape | full_2_M15 | 15 | NORMAL_OPTIMIZER_RETURN | 1.533839 |
+| c_shape | full_3_M19 | 19 | STAGE_QUOTA_REACHED | 1.605810 |
+| c_shape | full_4_M25 | 25 | STAGE_QUOTA_REACHED | 1.592128 |
+| c_shape | full_5_M31 | 31 | STAGE_QUOTA_REACHED | 1.583794 |
+| c_shape | full_6_M37 | 37 | STAGE_QUOTA_REACHED | 1.597686 |
 
 ## Run records for the six new fits
 
@@ -94,6 +110,7 @@ Saved scores are reused when this report is updated.
 |---|---|---|---|---:|---:|
 | peanut | 2026-11-18T11:51:41+00:00 | `fd6d557f1` | False | 36.758 | 1.954 / 0.827 |
 | asymmetric | 2026-11-18T11:53:40+00:00 | `e33fc7870` | False | 38.208 | 1.948 / 0.828 |
+| c_shape | 2026-11-18T11:55:15+00:00 | `feff0daa4` | False | 38.170 | 1.947 / 0.827 |
 
 Evidence: [ten-frequency fits](../../../../results/bem/baseline_data/csi_ten_frequency/2026-11-18/).
 Each attempt has manifest.json, fit.json, metrics.json and bulk_manifest.json; logs are in logs/.
@@ -102,7 +119,7 @@ include fit-file SHA-256 and run provenance. Fit-local histories stay ignored wi
 
 ## Progress
 
-Clear gains among the 6 recorded ten-frequency results: 2.
+Clear gains among the 7 recorded ten-frequency results: 2.
 Final all-ten count and figure wait for the remaining fits.
 
 ## Failures
@@ -112,8 +129,8 @@ No fit or data check was rerun. Activity 08 retains its earlier pending-input la
 
 ```text
 Activity: adapt_bem_to_baseline_data/10_fit_remaining_csi_tables_at_ten_frequencies
-Runs: 2/6 new GPU fits; four activity 08 fits copied; no new forward checks
-Result: 6/10 results available; 2 clear gains; 0 misses above 5%
+Runs: 3/6 new GPU fits; four activity 08 fits copied; no new forward checks
+Result: 7/10 results available; 2 clear gains; 0 misses above 5%
 Failures: none
 Upstream patches: none
 Changes to our code: none; unchanged activity 08 runner and settings
