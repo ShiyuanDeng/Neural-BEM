@@ -109,7 +109,7 @@ Runs: 10 data runs; 10 BEM true-shape checks; 1 dry plan; 0/4 fits
 Result: all tables frozen; all old-frequency bytes equal; all checks pass; dry policy accepts band 0
 Failures: one early batch launch stopped on pending star input; kept; no check repeated
 Upstream patches: none
-Changes to our code: two new ten-frequency data drivers and one thin BEM runner; existing code unchanged
+Changes to our code: two new data drivers, a thin BEM runner and a saved-check report script; existing code unchanged
 New unknowns: ten-frequency outline quality and whether the optimizer completes the band-0 stage
 Proposed next activity: coordinator go for the four planned GPU fits in this activity
 ```
