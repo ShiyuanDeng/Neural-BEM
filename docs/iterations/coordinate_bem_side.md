@@ -72,9 +72,10 @@ Ask the user before any of these:
 | 1 | BRG paper cases, known contrast, to k = 15: two gliders and two stars. The two cavity cases are skipped (user, 18 Nov) | B2 | Saved by BRG, ready | GPU pass done; follow-up checks running |
 | 1 | Measured Fresnel cylinder `dielTM_dec8f` | C | Ready | Not started |
 | 2 | Ten TG-002 shapes at contrast 4, simulated in the Fresnel layout. Frequency list open: four or five frequencies, the user chooses | C | All ten frozen by the baseline side in `results/csi/tg002/2026-11-18_low_band_data/` (18 Nov, checked) | Early look at 1 to 3 GHz on three shapes; the rest waits |
-| Held | TG-002 shapes with plane-wave data | B1 | See below | Waits for the user |
+| 3 | TG-002 shapes with BRG's plane-wave data: 10 shapes at contrasts 0.5 and 4, known contrast then recovered contrast | B1 | BRG's saved observations, `results/brg/tg002_shapes/2026-11-17/<case>/local/` | Opened by the user 18 Nov; `bem-b1` preparing |
 
-Table B1 is held until the user opens it. What is agreed for then:
+Table B1 was held until the user opened it on 18 November. What was
+agreed for it:
 
 - Two copies of the data are made, one by BRG's forward and one by ours,
   and compared on every true shape before any fit. The user: "i thought we
@@ -99,6 +100,7 @@ donw".
 | `bem-brg` | `w2:p6`, middle right | Codex `gpt-6.1-sol`, high | At launch | Fit the six BRG paper cases | No |
 | `bem-csi` | `w2:p7`, bottom right | Claude Opus, high | At launch | Write the CSI adapter, run its first checks and first fit | Only if given the lock after `bem-gpu` |
 | `bem-csi-run` | `w2:p8`, bottom right | Claude Sonnet, high | When the adapter passes review | Run and watch every BEM fit on CSI data | No |
+| `bem-b1` | `w2:p9`, right | Codex `gpt-6-astra`, high | 18 Nov, when the user opened B1 | Fit our BEM to the 20 BRG-generated TG-002 cases: data checks, known-contrast row, recovered-contrast row | No |
 
 `bem-csi-run` watches our fits only. The baseline's MATLAB campaign belongs
 to the `csi` agent.
@@ -176,6 +178,8 @@ answered "yes" to the coordinator's recommendation as written here.
 | Series limit, 18 Nov about 01:03 UTC | No solver change. Cases that the series limit stops are skipped: `cavity_09` and `cavity_2` (refused above k = 8 on the true shape). The coordinator's reading for the rest: a case refused by the series limit inside its fit is not rerun, and goes to the user with its last endpoint | "skip the case and similiar ones that have this problem" |
 | Simulated CSI data, 18 Nov 01:36 UTC | The frequency set for the simulated cases is open again: the user reviews CSI's eight-frequency batch (circle, kite, peanut) and then chooses four or five frequencies. The 1 to 3 GHz list of 00:55 is no longer final. Given in the baseline coordinator's pane; the BEM coordinator read the words there | "Let the current eight-frequency batch finish. Hold the automatic 1–3 GHz launch. Review those results with me before choosing four or five frequencies for the remaining cases." |
 | Time limits, 18 Nov about 01:10 UTC | Said to the baseline coordinator about its runs. Whether it also covers the BEM side's 120 s CPU cut and 1 h ceiling is asked, not assumed | "do not stop result-gerating terminal processes due to time limit unless i say otherwise. if it stucks or goes wrong you should still stop it. this is only about time limit" |
+| Table B1 opened, 18 Nov about 01:45 UTC | Our BEM on the 20 BRG-generated TG-002 cases, by one dedicated agent that owns both rows: known contrast first, recovered contrast after. Both rows use BRG's saved observations. One GPU fit at a time at first; more only when the machine allows | "Open B1: BEM on the 20 BRG-generated TG-002 cases. Run the agreed data checks, then known-contrast fits first and recovered-contrast fits afterwards. Both rows must use the saved BRG observations." "Start a dedicated B1 subagent with that brief. One agent owns both comparison rows, running one numerical fit at a time initially. Increase concurrency only when machine capacity allows." |
+| Capacity and time, same message | Start one GPU fit when current BEM work frees capacity; reserve its peak plus margin above the 14 GiB floor; measure the first fit before raising concurrency; recheck when the CSI batch ends. Existing jobs keep running; the simulated-CSI frequency hold stays. Elapsed-time targets are reports, not stops | "Prepare now, and start one GPU fit when the current BEM work frees capacity. Reserve its expected peak memory plus margin above the 14 GiB floor. Measure the first fit before increasing concurrency." "Recheck capacity when the current CSI batch finishes. Leave existing jobs running, keep the simulated-CSI frequency hold, and treat elapsed-time targets as reports rather than reasons to stop." |
 | Baseline coordinator | Another Claude session in Herdr. Requests go through the main file; direct messages only for data requests, each recorded here | "in herdr that coordinator is just in another claude session" |
 
 Why both kinds of CSI data: the CSI repository ships 18 measured Fresnel
@@ -433,6 +437,9 @@ data convention is in doubt.
 | 18 Nov, 01:39 | Frequency rule for the simulated cases, fixed now for whatever list the user picks: the ladder adds one frequency at a time up to the larger of 3 GHz (the top of the default ladder in wavenumber, 3.21 per length unit) and half the top frequency; then the default all-frequency stages on the whole list. Ladder quotas 1000, 3000, 4000 for three ladder stages, the default four for four | It reproduces both rules already fixed (1; 1–2; 1–3 on a 1 to 3 GHz list; 1 to 4 then all on the eight-frequency cylinder), and gives 1; 1–2; 1–3 then all for a four- or five-frequency list. Fixed before any result on such a list exists |
 | 18 Nov, 01:39 | BRG: the CPU and GPU path difference is explained and accepted; no rerun. `glider_10` stays a failed fit | Forward and Jacobian agree between devices to 1e-13 at K = 192. The difference enters in B6: the slider preparation uses NumPy least squares on the CPU and a Torch eigen-solve on the GPU, which is existing default behaviour, not the table path. Directions differ by 1e-13 to 1e-10 and the early stages amplify that (3e-8 at k = 1, iteration 3; 6e-2 at k = 2.5). Why the path amplifies so strongly is not proven. `glider_10` never gets near the truth: 16% area error after k = 1, and its residual jumps from 0.08 to 0.57 at k = 1.75 |
 | 18 Nov, 01:42 | The ten simulated tables are received and checked: `results/csi/tg002/2026-11-18_low_band_data/<shape>/forward/synthetic_input.txt`, baseline commit `8d4c6123d`. The wrapper is pointed at them once `bem-csi-run`'s three early-look fits are done, not before | All ten exist with 14,112 rows (eight frequencies) and match their `.sha256` files; circle, kite and peanut are byte-identical to the campaign tables already in use. Changing the wrapper in the middle of a batch would mix source hashes |
+| 18 Nov, 01:49 | B1 settings, fixed before any fit and the same for all 20 cases: the default TG-002 method unchanged (default schedule on the default's 19 frequencies, start fixture, default resolution, 1e-9), run in the TG-002 package units. Only the data force a difference: plane-wave tables, frequency blocks, and the known contrast in row one | BRG saved 37 frequencies that include the default's 19, and its unit disk is the TG-002 start. BRG's data use a 0.065 m length unit; the default's band rule depends on the unit, so our fits convert to 0.05 m |
+| 18 Nov, 01:49 | B1 data checks: our forward makes its own copy on each true shape at all 37 frequencies and compares it with BRG's. Limits set now: 1e-6 between our resolutions; 1% between the two copies at every frequency, else stop and ask the user | The check agreed with the user ("i thought we make two copies then compare"). The 1% limit is the user's rule for the simulated CSI data, applied here by the coordinator |
+| 18 Nov, 01:49 | B1 runs on the GPU only, one fit at a time, with no time-based stop. The agent is Codex `gpt-6-astra` high | The user's brief. The task has unit conversion and data checks that decide the main BRG table, so it is the heavier kind |
 
 ## Waiting on the user
 
@@ -440,11 +447,10 @@ data convention is in doubt.
   or five frequencies after reviewing CSI's eight-frequency batch (ends
   near 01:57 UTC). Until then only circle, kite and peanut are fitted, at
   1 to 3 GHz, as an early look.
-- **Time limits on the BEM side.** The user told the baseline coordinator
-  not to stop result-generating runs on a time limit. Asked 18 Nov whether
-  that covers our 120 s CPU cross-check cut and the 1 h ceiling. No GPU fit
-  has come near 1 h (longest 23 min). The CPU cross-checks are all cut at
-  120 s, so CPU and GPU outcomes cannot be compared at the end of a fit.
+- **Time limits on the older BEM passes.** For B1 the user settled it:
+  elapsed-time targets are reports, not stops. Still unsaid: whether the
+  120 s cut on the CPU cross-checks of tables B2 and C should be lifted,
+  so that CPU and GPU outcomes can be compared at the end of a fit.
 
 Answered, both recorded under "Decisions made with the user":
 
