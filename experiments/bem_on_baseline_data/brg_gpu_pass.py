@@ -1,4 +1,5 @@
 """Reported BRG GPU queue, with one allowed retry after a host-memory kill."""
+import datetime
 import json
 import os
 from pathlib import Path
@@ -6,11 +7,13 @@ import subprocess
 import time
 
 from brg_paper import (BASE, CASES, GIB, LADDER, ROOT, available_memory, bulk_manifest,
-                       fit_case, fixed_resolution, now, solver_state, write)
+                       fit_case, fixed_resolution, now, solver_state, write, score_endpoint)
 
 DOCS = ROOT/'docs/iterations/adapt_bem_to_baseline_data/02_fit_brg_paper_cases'
 CODE = [ROOT/'experiments/bem_on_baseline_data/brg_paper.py', Path(__file__).resolve()]
 MEMORY_STOP = 'memory reserve below 14 GiB'
+REPORTED_CASES = ('glider_033', 'glider_10', 'star_full', 'star_limited')
+SKIP_REASON = "skipped by the user's decision: the series limit refuses the true shape above k = 8"
 
 
 def short_reason(metrics, supervisor):
@@ -52,7 +55,7 @@ def compare_cpu(case, out):
     relative = region_scores(gp, cp)
     record = dict(available=True, common_k=LADDER[count-1],
           cpu_iteration=c['iteration'], gpu_stage_endpoint_iteration=g['iteration'],
-          cpu_stage_was_cut_by_time=True,
+          cpu_stage_was_cut_by_time=count == cpu[-1]['active_frequency_count'],
           cpu_area_error=cs['area_error'], gpu_area_error=gs['area_error'],
           delta_area_error=gs['area_error']-cs['area_error'],
           cpu_residual=c['maximum_stage_residual'], gpu_residual=g['maximum_stage_residual'],
@@ -73,7 +76,7 @@ def compare_cpu(case, out):
 
 def commit_attempt(case, out, record):
     progress = DOCS/'gpu_pass_progress.md'
-    paths = [*CODE, DOCS/'plan.md', DOCS/'results.md', progress, BASE/'gpu_pass.json', out]
+    paths = [*CODE, DOCS/'plan.md', DOCS/'results.md', progress, BASE/'gpu_pass.json', BASE/'gpu_skips.json', BASE/case/'cuda_fit']
     relative = [str(p.relative_to(ROOT)) for p in paths]
     subprocess.run(['git', 'add', '--', *relative], cwd=ROOT, check=True)
     subprocess.run(['git', 'diff', '--cached', '--check', '--', *relative], cwd=ROOT, check=True)
@@ -84,23 +87,95 @@ def commit_attempt(case, out, record):
     write(BASE/'gpu_pass.json', record)
 
 
+def finish_attempt(record, case, out, elapsed):
+    supervisor = json.loads((out/'supervisor.json').read_text())
+    if not (out/'metrics.json').exists():
+        score_endpoint(case, out)
+    metrics = json.loads((out/'metrics.json').read_text()) if (out/'metrics.json').exists() else dict(outcome='SCORING_FAILURE')
+    number = int(out.name.split('_')[-1])
+    memory_killed = supervisor.get('stop_reason') == MEMORY_STOP
+    started_fit = supervisor.get('returncode') is not None
+    if started_fit:
+        record['launched_fits'][case] += 1
+    reportable = supervisor.get('reportable', False) and not memory_killed
+    try:
+        compare_cpu(case, out)
+    except Exception as error:
+        write(out/'comparison_failure.json', dict(exception=repr(error)))
+    metrics.update(reported_result=reportable, memory_killed_not_a_result=memory_killed,
+                   stop_reason=short_reason(metrics, supervisor), attempt=number)
+    if case.startswith('star') and 'cancellation' in str(metrics.get('detail') or ''):
+        metrics['series_refusal_pending_user_decision'] = True
+    write(out/'metrics.json', metrics)
+    write(out/'bulk_manifest.json', dict(files=bulk_manifest(out)))
+    item = dict(case=case, attempt=number, path=str(out.relative_to(ROOT)), metrics=metrics,
+                supervisor=supervisor, memory_killed_not_a_result=memory_killed)
+    record['attempts'].append(item)
+    if not started_fit:
+        record['queue'].insert(0, case)
+    elif memory_killed and record['memory_retries'][case] == 0:
+        record['memory_retries'][case] += 1
+        record['queue'].append(case)
+    else:
+        record['completed'][case] = item
+        write(BASE/case/'cuda_fit/reported_attempt.json', dict(attempt=number, reported_result=reportable,
+              path=str(out.relative_to(ROOT)), stop_reason=metrics['stop_reason']))
+    record['active'] = None
+    record['wall_seconds'] = elapsed
+    write(BASE/'gpu_pass.json', record)
+    area = metrics.get('area_error')
+    area_text = f'{100*area:.6g}%' if area is not None else 'none'
+    summary = (f'{case}: last k={metrics.get("final_active_k")}; stop={metrics["stop_reason"]}; '
+               f'area error={area_text}; time={supervisor["wall_seconds"]:.3f}s')
+    print(summary, flush=True)
+    with (DOCS/'gpu_pass_progress.md').open('a') as stream:
+        stream.write(f'\n## {case}, {out.name}, {now()}\n\n{summary}\n\n')
+        stream.write(f'Reported result: {reportable}; memory-killed attempts are not results.\n')
+    commit_attempt(case, out, record)
+
+
 def main():
     selection = fixed_resolution()
     assert selection['fixed_K'] == 192
     subprocess.run(['git', 'merge-base', '--is-ancestor', '3612f5195', 'HEAD'], cwd=ROOT, check=True)
     path = BASE/'gpu_pass.json'
-    assert not path.exists(), 'Keep the first queue; inspect its state instead of launching a second queue.'
     progress = DOCS/'gpu_pass_progress.md'
-    assert not progress.exists()
-    progress.write_text('# BRG paper cases: reported GPU pass\n\nFixed K=192; sequential queue; timings are indicative with GPU sharing.\n')
-    record = dict(started=now(), pid=os.getpid(), solver_start=solver_state(), fixed_K=192,
-          scientific_settings='Identical to CPU pass; cuda execution and 3600 s ceiling.',
-          queue=list(CASES), completed={}, attempts=[], memory_retries={case: 0 for case in CASES},
-          launched_fits={case: 0 for case in CASES}, commits=[], active=None,
-          launch_rule=dict(expected_fit_bytes=1.5*GIB, minimum_remaining_bytes=14.5*GIB,
-                           kill_below_available_bytes=14*GIB), status='running')
+    if path.exists():
+        record = json.loads(path.read_text())
+        if record.get('status') == 'complete':
+            raise RuntimeError('Reported queue is already complete; do not rerun it.')
+        old_pid = record['pid']
+        try:
+            os.kill(old_pid, 0)
+        except ProcessLookupError:
+            pass
+        else:
+            raise RuntimeError(f'Old queue supervisor {old_pid} is still alive; do not duplicate it.')
+        record.setdefault('queue_handoffs', []).append(dict(previous_pid=old_pid, resumed=now(),
+              reason='Apply user cavity skips between numerical fits; no fit rerun.'))
+        record['pid'] = os.getpid()
+    else:
+        assert not progress.exists()
+        progress.write_text('# BRG paper cases: reported GPU pass\n\nFixed K=192; sequential queue; timings are indicative with GPU sharing.\n')
+        record = dict(started=now(), pid=os.getpid(), solver_start=solver_state(), fixed_K=192,
+              scientific_settings='Identical to CPU pass; cuda execution and 3600 s ceiling.',
+              queue=list(REPORTED_CASES), completed={}, attempts=[], memory_retries={case: 0 for case in REPORTED_CASES},
+              launched_fits={case: 0 for case in REPORTED_CASES}, commits=[], active=None,
+              launch_rule=dict(expected_fit_bytes=1.5*GIB, minimum_remaining_bytes=14.5*GIB,
+                               kill_below_available_bytes=14*GIB), status='running')
+    record['queue'] = [case for case in record['queue'] if case in REPORTED_CASES]
+    record['skipped'] = {case: dict(status='SKIPPED_BY_USER', reason=SKIP_REASON,
+                                  reported_score=None, decision='18 November 2026, about 01:05 UTC')
+                         for case in ('cavity_09', 'cavity_2')}
+    write(BASE/'gpu_skips.json', record['skipped'])
     write(path, record)
-    started = time.monotonic()
+    def elapsed():
+        return (datetime.datetime.now(datetime.timezone.utc)-datetime.datetime.fromisoformat(record['started'])).total_seconds()
+    if record['active']:
+        case = record['active']['case']
+        out = ROOT/record['active']['directory']
+        assert (out/'supervisor.json').exists(), 'Active native fit has not returned; never restart it.'
+        finish_attempt(record, case, out, elapsed())
     last_wait_notice = -60.
     while record['queue']:
         case = record['queue'][0]
@@ -124,46 +199,8 @@ def main():
         write(path, record)
         print(f'LAUNCH {case} {out.name}: available={available/GIB:.3f} GiB', flush=True)
         out = fit_case(case, 'cuda', attempt=number)
-        supervisor = json.loads((out/'supervisor.json').read_text())
-        metrics = json.loads((out/'metrics.json').read_text()) if (out/'metrics.json').exists() else dict(outcome='SCORING_FAILURE')
-        memory_killed = supervisor.get('stop_reason') == MEMORY_STOP
-        started_fit = supervisor.get('returncode') is not None
-        if started_fit:
-            record['launched_fits'][case] += 1
-        reportable = supervisor.get('reportable', False) and not memory_killed
-        try:
-            compare_cpu(case, out)
-        except Exception as error:
-            write(out/'comparison_failure.json', dict(exception=repr(error)))
-        metrics.update(reported_result=reportable, memory_killed_not_a_result=memory_killed,
-                       stop_reason=short_reason(metrics, supervisor), attempt=number)
-        write(out/'metrics.json', metrics)
-        write(out/'bulk_manifest.json', dict(files=bulk_manifest(out)))
-        item = dict(case=case, attempt=number, path=str(out.relative_to(ROOT)), metrics=metrics,
-                    supervisor=supervisor, memory_killed_not_a_result=memory_killed)
-        record['attempts'].append(item)
-        if not started_fit:
-            record['queue'].insert(0, case)
-        elif memory_killed and record['memory_retries'][case] == 0:
-            record['memory_retries'][case] += 1
-            record['queue'].append(case)
-        else:
-            record['completed'][case] = item
-            write(BASE/case/'cuda_fit/reported_attempt.json', dict(attempt=number, reported_result=reportable,
-                  path=str(out.relative_to(ROOT)), stop_reason=metrics['stop_reason']))
-        record['active'] = None
-        record['wall_seconds'] = time.monotonic()-started
-        write(path, record)
-        area = metrics.get('area_error')
-        area_text = f'{100*area:.6g}%' if area is not None else 'none'
-        summary = (f'{case}: last k={metrics.get("final_active_k")}; stop={metrics["stop_reason"]}; '
-                   f'area error={area_text}; time={supervisor["wall_seconds"]:.3f}s')
-        print(summary, flush=True)
-        with progress.open('a') as stream:
-            stream.write(f'\n## {case}, {out.name}, {now()}\n\n{summary}\n\n')
-            stream.write(f'Reported result: {reportable}; memory-killed attempts are not results.\n')
-        commit_attempt(case, out, record)
-    record.update(status='complete', ended=now(), wall_seconds=time.monotonic()-started, solver_end=solver_state())
+        finish_attempt(record, case, out, elapsed())
+    record.update(status='complete', ended=now(), wall_seconds=elapsed(), solver_end=solver_state())
     write(path, record)
     print(f'GPU QUEUE COMPLETE: {len(record["completed"])} cases, {len(record["attempts"])} attempts, {record["wall_seconds"]:.3f}s', flush=True)
 

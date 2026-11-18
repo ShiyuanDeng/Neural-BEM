@@ -202,3 +202,23 @@ existing `brg_paper.py fit --case CASE --device cuda` commands after the
 coordinator gives the GPU go. No CPU tuning rerun is planned. Cavity data
 above the admitted k=8 prefix still need the separate user decision on
 a solver redesign; series_loss remains 1e-6.
+
+## User skips, 18 November 2026, about 01:05 UTC
+
+The coordinator relayed the user decision: "skip the case and similiar ones
+that have this problem". The reported GPU pass now contains glider_033,
+glider_10, star_full and star_limited only. No solver change is made.
+
+Both cavity_09 and cavity_2 are **skipped by the user's decision: the series
+limit refuses the true shape above k=8**. No cavity GPU fit had started.
+They receive no score in this pass and are not fit failures. Their forward
+checks and CPU early-look evidence remain history.
+
+A star series refusal below k=15 is retained and reported immediately,
+without a rerun, for the coordinator to apply the same user decision.
+
+During the queue change, the queue supervisor was paused, also pausing
+its guard during part of glider_10. This was corrected before the fit
+finished. The receipt records observed memory minima; guard coverage has
+a known gap. The numerical fit was not restarted, and its ledger ceiling
+remained active. This limit-check limitation is retained in its metrics.

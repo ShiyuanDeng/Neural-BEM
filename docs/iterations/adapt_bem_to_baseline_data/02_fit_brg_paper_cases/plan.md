@@ -168,3 +168,19 @@ Large optimizer files and logs remain local with hashes. The one command:
 ```bash
 /home/drdeng/miniconda3/envs/EMNerf/bin/python experiments/bem_on_baseline_data/brg_gpu_pass.py
 ```
+
+## User decision, 18 November 2026, about 01:05 UTC: skip series-limited cases
+
+The coordinator relayed the user's words: "skip the case and similiar ones
+that have this problem". No solver change will be made. Remove cavity_09
+and cavity_2 from the reported GPU pass. Record each as **skipped by the
+user's decision: the series limit refuses the true shape above k=8**.
+They receive no reported GPU fit score and are not fit failures. Retain
+all forward checks and CPU early-look results as history.
+
+The reported queue is now glider_033, glider_10, star_full, star_limited,
+in that order. Other settings and limits remain fixed. If a star fit is
+refused by the series limit before k=15, retain its last accepted endpoint
+and refusal, do not rerun, and report immediately to the coordinator for
+the same user decision. Queue changes apply between numerical fits;
+completed native fits are finalized without restarting them.
