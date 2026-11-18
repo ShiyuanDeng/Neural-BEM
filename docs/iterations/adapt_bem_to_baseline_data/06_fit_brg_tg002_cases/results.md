@@ -21,11 +21,7 @@ Both fitting rows will read only the saved, hash-verified BRG observations.
 | hook__c0.5 | 37 | 2.694799908250825e-10 | 2.5983151346773448e-14 | PASS |
 | hook__c4 | 37 | 1.470589075456192e-11 | 1.688450230318075e-13 | PASS |
 | cross__c0.5 | 37 | 2.0557080104187058e-11 | 1.6279779075760412e-14 | PASS |
-| cross__c4 | 0 | None | None | INPUTS_PENDING |
-| cog__c0.5 | 0 | None | None | INPUTS_PENDING |
-| cog__c4 | 0 | None | None | INPUTS_PENDING |
-| aphex_twin__c0.5 | 0 | None | None | INPUTS_PENDING |
-| aphex_twin__c4 | 0 | None | None | INPUTS_PENDING |
+| cross__c4 | 37 | 1.3194908220155407e-11 | 5.094598303199394e-14 | PASS |
 
 Limits: BRG relative difference 0.01 at every frequency; refinement 1e-6.
 A failed or missing check blocks the case. No resolution or tolerance changed.
@@ -39,12 +35,12 @@ No solver, baseline, shared scoring or coordination file was changed.
 
 ## Timing and resources
 
-Numerical check time: 27.759 s; summed worker process time: 52.849 s.
-Checks from 2026-11-18T01:55:21.632749+00:00 to 2026-11-18T01:57:22.478112+00:00.
+Numerical check time: 29.307 s; summed worker process time: 55.595 s.
+Checks from 2026-11-18T01:55:21.632749+00:00 to 2026-11-18T02:00:28.201957+00:00.
 These shared-machine times include concurrent baseline and CSI work.
 
 Peak worker host memory: 1.3505 GiB.
-Peak GPU allocated/reserved: 0.2326 / 0.3574 GiB.
+Peak GPU allocated/reserved: 0.2356 / 0.3574 GiB.
 Lowest available host memory: 18.3737 GiB; floor 14 GiB.
 
 Clean, unchanged solver sources in every completed check: True.
