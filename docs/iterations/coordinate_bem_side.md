@@ -403,7 +403,7 @@ data convention is in doubt.
 | BRG paper cases | `bem-brg` | Reported GPU pass done 01:23; follow-up checks done 01:36 ([results](adapt_bem_to_baseline_data/02_fit_brg_paper_cases/results.md)). Area error: `glider_033` 0.061% at k = 15 (71 s); `star_full` 0.58% (334 s); `star_limited` 0.60% (274 s); `glider_10` failed (14% at k = 12; lost from k = 1.75). Cavities skipped by the user. CPU and GPU paths differ through the slider preparation (B6), an existing default behaviour. Agent idle | Clean timed pass on a quiet machine; uncut CPU cross-checks if the user allows |
 | CSI adapter | `bem-csi` | Done ([results](adapt_bem_to_baseline_data/03_adapt_bem_to_csi_data/results.md)). Measured cylinder: default fit stalled (radius 19.0 mm against 15, permittivity 2.19 against 3, area error 67.8%); adapter cleared by a plain circle fit (15.3 mm, 3.05). Simulated circle at 1 to 3 GHz, GPU: 1.18% area error, permittivity 4.0006, 465 s. Hand-over written. Agent idle | Set the final frequency list and the paths of the seven new tables in the wrapper; then close |
 | CSI fits | `bem-csi-run` | Launched 01:33, pane `w2:p8`. Circle, kite and peanut pass the 1% check at 1 to 3 GHz; fitting them as an early look. Nothing else starts until the user fixes the frequency list | Report on the three; then the final list and the seven new tables |
-| Table B1 | none | Held | Wait for the user |
+| Table B1 | `bem-b1` | Launched 18 Nov 01:48, pane `w2:p9`, Codex `gpt-6-astra` high. Writing its plan, wrapper and the data checks | Review the data checks; then the first fit and its timing |
 
 ## Coordinator decisions
 
