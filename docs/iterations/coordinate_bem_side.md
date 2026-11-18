@@ -9,11 +9,12 @@ It is a temporary second file. The user: "i would prefer to use one
 coordination file, but temporarily to avoid the current coordination file
 being too long you can have a new one". Merge it back when the work is done.
 
-**State, 18 November 2026, 02:21 GMT:** a fresh coordinator took over at
+**State, 18 November 2026, 02:27 GMT:** a fresh coordinator took over at
 02:03, after the user restarted the chat ("you have a lot of context so i
-plan to start you fresh"). `bem-b1`'s queue runs two fits at a time: the
-known-contrast row is done on the 17 cases with data, and the recovered row
-has started. A later restart begins at [Start here](#start-here) too.
+plan to start you fresh"). Table B1: both rows are done on the 17 cases
+that had BRG data (34 fits, all completed). `bem-b1` now takes the three
+late cases as BRG's data arrive, up to four fits at a time. A later restart
+begins at [Start here](#start-here) too.
 
 ## Start here
 
@@ -23,7 +24,7 @@ For the coordinator who picks this up, in pane `w2:p1`.
 
 | Agent | Pane | Model | State at 02:02 | Reads first |
 |---|---|---|---|---|
-| `bem-b1` | `w2:p9`, top right | Codex `gpt-6-astra`, high, full access | Queue released 02:11, two fits at a time: known row on every checked case, then the recovered row; late cases join when their checks pass. 17 of 20 checks pass. Known row done on those 17 at 02:20; recovered row started 02:21. Its `watch-checks` loop waits for the last three BRG manifests. It stops only for a failed check, a crash, a repeating memory requeue or a decision. Do not clear it | Its brief is in its pane; its files are in [06](adapt_bem_to_baseline_data/06_fit_brg_tg002_cases/) |
+| `bem-b1` | `w2:p9`, top right | Codex `gpt-6-astra`, high, full access | Queue released 02:11, two fits at a time: known row on every checked case, then the recovered row; late cases join when their checks pass. Both rows done on the first 17 cases at 02:26 (34 fits). `aphex_twin__c0.5` passed its check and its known fit started 02:27; `aphex_twin__c4` and `cog__c4` wait for BRG's manifests. Ceiling four fits since 02:22. Its `watch-checks` loop waits for the last three BRG manifests. It stops only for a failed check, a crash, a repeating memory requeue or a decision. Do not clear it | Its brief is in its pane; its files are in [06](adapt_bem_to_baseline_data/06_fit_brg_tg002_cases/) |
 | `bem-csi-run` | `w2:p8`, bottom right; cleared 01:59 | Claude Sonnet, high, permissions bypassed | Cleared at 01:59 and idle, a fresh session with no memory. It waits for the user's frequency list | `AGENTS.md`, this file, "State at handoff" in [04 results](adapt_bem_to_baseline_data/04_fit_csi_cases/results.md), the hand-over in [03 results](adapt_bem_to_baseline_data/03_adapt_bem_to_csi_data/results.md) |
 
 Closed, work finished and committed: `bem-gpu` (closed by the user),
@@ -53,8 +54,9 @@ activity results):
 | C | Measured cylinder | Default fit stalled: radius 19.0 mm against 15, permittivity 2.19 against 3, area error 67.8%. The adapter is cleared | MF-CC-CSI +4.2% support area, 2.73 |
 | C | Simulated circle, kite, peanut, 1 to 3 GHz (early look, not the reported pass) | 1.17%, 3.08%, 1.50% area error; contrast within 0.04% of 4 | CSI's rerun is on hold |
 | B1, known contrast | 17 of 20 cases (02:20) | Every fit completed its schedule. Area error at most 0.29% (`cog__c0.5`), under 0.1% on the other 16, median 0.04%. 7 to 115 s and 274 to 4585 work units per fit | BRG, same 17 cases: 6 under 5% (main file, BRG activity 04) |
-| B1, recovered contrast | 17 of 20 cases | Running since 02:21 | None; BRG is given the contrast |
-| B1 | `cog__c4`, `aphex_twin` at both contrasts | Wait for BRG's data | |
+| B1, recovered contrast | 17 of 20 cases (02:26) | Every fit completed its schedule. Area error at most 0.21% (`cog__c0.5`), under 0.1% on the other 16, median 0.03%. Contrast within 2e-6 of the truth, relative. 9 to 96 s per fit | None; BRG is given the contrast |
+| B1 | `aphex_twin__c0.5` | Data check passes (8.8e-6 against 1%); known fit started 02:27 | |
+| B1 | `aphex_twin__c4`, `cog__c4` | Wait for BRG's manifests. `cog__c4`'s data files exist since 02:07, but BRG's own fit must end first (frequency 9 of 37 at 02:27) | |
 
 **What to do next, in order:**
 
@@ -482,7 +484,7 @@ data convention is in doubt.
 | BRG paper cases | `bem-brg` | Reported GPU pass done 01:23; follow-up checks done 01:36 ([results](adapt_bem_to_baseline_data/02_fit_brg_paper_cases/results.md)). Area error: `glider_033` 0.061% at k = 15 (71 s); `star_full` 0.58% (334 s); `star_limited` 0.60% (274 s); `glider_10` failed (14% at k = 12; lost from k = 1.75). Cavities skipped by the user. CPU and GPU paths differ through the slider preparation (B6), an existing default behaviour. Agent closed 01:59 | Clean timed pass on a quiet machine; uncut CPU cross-checks if the user allows |
 | CSI adapter | `bem-csi` | Done and closed 02:00 ([results](adapt_bem_to_baseline_data/03_adapt_bem_to_csi_data/results.md)). Measured cylinder fitted (default fit stalled; adapter cleared). Wrapper reads the ten frozen tables; the frequency list is one setting, now (1, 2, 3) GHz; dry check shows the stage lists unchanged for what ran | None |
 | CSI fits | `bem-csi-run` | Early look at 1 to 3 GHz done 01:56 ([results](adapt_bem_to_baseline_data/04_fit_csi_cases/results.md)): circle 1.17%, kite 3.08% (numerical failure in its last stage, kept), peanut 1.50%. Session cleared 01:59; idle | The user's frequency list; then all ten shapes as the reported pass |
-| Table B1 | `bem-b1` | Known row done 02:20 on the 17 cases with data: all completed, area error 1.8e-7 to 2.9e-3, host peak at most 2.24 GiB, all reportable. Recovered row started 02:21. Earlier: data checks pass on 17 of 20 cases ([results](adapt_bem_to_baseline_data/06_fit_brg_tg002_cases/results.md)): the two forward copies differ by at most 1.6e-7 (limit 1%), our resolutions by at most 1.7e-13 (limit 1e-6). First fit, `circle__c4` known contrast, 02:06: completed schedule, 274 of 13,412 work units, 6.7 s, area error 7.3e-7 ([report](adapt_bem_to_baseline_data/06_fit_brg_tg002_cases/first_fit_report.md)). Queue released 02:11 at two fits at a time. `cog__c4` and `aphex_twin` wait for BRG's completion run | The known-row table, then the recovered row; review each as it lands. Failed checks and series refusals come back to the coordinator |
+| Table B1 | `bem-b1` | Both rows done on the first 17 cases, 34 fits, all completed and reportable. Known row (02:20): area error 1.8e-7 to 2.9e-3, 599 s of fitting in total. Recovered row (02:26): area error 9.5e-8 to 2.1e-3, contrast within 2e-6, 725 s in total. Host peak at most 2.27 GiB. Three late cases follow as BRG's data arrive. Earlier: data checks pass on 17 of 20 cases ([results](adapt_bem_to_baseline_data/06_fit_brg_tg002_cases/results.md)): the two forward copies differ by at most 1.6e-7 (limit 1%), our resolutions by at most 1.7e-13 (limit 1e-6). First fit, `circle__c4` known contrast, 02:06: completed schedule, 274 of 13,412 work units, 6.7 s, area error 7.3e-7 ([report](adapt_bem_to_baseline_data/06_fit_brg_tg002_cases/first_fit_report.md)). Queue released 02:11 at two fits at a time. `cog__c4` and `aphex_twin` wait for BRG's completion run | The three late cases, then `bem-b1`'s final report. Review it, then close or clear the agent. Failed checks and series refusals come back to the coordinator |
 
 ## Coordinator decisions
 
