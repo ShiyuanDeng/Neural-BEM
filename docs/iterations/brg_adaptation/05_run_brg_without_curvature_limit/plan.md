@@ -44,30 +44,41 @@ per-frequency curves/histories, stopping codes and timings. Count terminal
 geometry/filter and iteration ier codes from the saved MATLAB logs only.
 Compare each result directly with 04; do not choose a new success cutoff.
 
-## Order, budget and success criteria
+## Order, time targets and success criteria
 
-Run `kite__c0.5` alone first as the timed pilot. No additional pilot cutoff
-was specified: its existing one-hour case cap applies. Report its cost
+Run `kite__c0.5` alone first as the timed pilot. It has no time cutoff.
+Report its cost
 before launching the rest. Next run cases whose last frequency ended with a rejected update
 (exit -1) in 04, preserving 04 order within that group; then the
 remaining cases. Both circle cases run last. Save the exact order and the
 log-derived grouping before launch.
 
-The coordinator set two workers, at least 14 GiB available memory, one hour
-per case and five hours elapsed for the queue. Both limits include checks,
-scoring and receipts. Reserve estimated worker growth before each launch.
+The user's 18 November 01:18 UTC correction supersedes the original hard
+caps: "the time limit isnt for you to cutoff agent, but something as a
+design requirement. do not stop running terminal ifi didnt say so. keep it
+as it is now". Activity 04's existing processes and loaded files stay
+untouched; report any cuts made by their existing code, without continuing
+or rerunning a cut case.
+
+For this unstarted activity, two workers and the 14 GiB start guard remain.
+One hour per case and five hours for the queue are reporting targets only.
+Record and tell the coordinator when either is passed, then keep running.
+There is no per-case timeout, queue deadline, time stop or kill path.
+Memory pressure delays a new start; it never stops an active fit.
+
 Use a separate detached supervisor with `campaign.json`, `resources.jsonl`,
-`STOP` and `STOPPED.json` in the new result directory. `STOP` prevents new
-launches and asks active workers to save and end at the next checkpoint;
-hard deadlines still apply. A memory breach also terminates the newest
-control MATLAB process group to release memory promptly; saved frequency
-checkpoints remain. Keep failed and partial outputs and report them.
-Do not restart or retry without another coordinator decision.
+`STOP` and `STOPPED.json` in the new result directory. Only a STOP requested
+by the user ends the queue early. The agent never creates STOP on elapsed
+time, memory pressure or failure. STOP prevents new launches and active
+MATLAB workers save and end at their next frequency checkpoint. Normal
+completion also ends the queue. Keep failed outputs and proceed to the
+other cases without retries. Missing or mismatched source data block
+preparation and go to the coordinator; they do not authorize regeneration.
 
 Success for the activity means answering the curvature-control question
-with matched data and raw metrics under those limits. An improvement is a
+with matched data and raw metrics against those targets. An improvement is a
 measurement, not a requirement for keeping a case. Check finite saved curves
-and histories, output counts, return codes, budgets, data hashes and reserve.
+and histories, output counts, return codes, elapsed targets, data hashes and reserve.
 Inspect the figures. Commit roughly 5 MB per case at most, by owned paths.
 
 ## Commands and evidence
@@ -88,7 +99,7 @@ stay in its ignored `local/` directories with SHA-256 manifests. Figures:
 Record dates, actual settings, elapsed times, failures, comparison with 04
 and any remaining uncertainty in `results.md`. Commit and push each batch.
 
-## Preparation checks, 18 November
+## Preparation checks, 18 November (before the time-policy correction)
 
 Python syntax passed. A read-only launch check refused to proceed while
 activity 04 was active. Two simulated queues (no subprocesses) checked that
@@ -98,3 +109,17 @@ the unrun cases. The scorer's reconstruction and frozen score call match
 separates reused data from new work. Existing kite logs confirm 37 terminal
 curvature rejections, with iteration 7 retaining iteration 6 at the first
 frequency. These checks launched no MATLAB process or numerical experiment.
+
+The time-policy correction above supersedes the old cap-related checks.
+Recheck the new launcher with simulated elapsed time beyond both targets,
+low memory and a user STOP; it must continue past time targets, delay only
+new starts under memory pressure, and contain no termination call. No
+additional numerical experiment is needed for this check.
+
+Updated checks passed on 18 November: a simulated queue ran for 55,000 s,
+recorded both time-target overruns, waited through 12 GiB available memory,
+and finished all three mock cases with at most two workers. A second mock
+queue stopped only on the simulated user STOP and retained its unrun list.
+Static checks found no timeout keyword, deadline, signal or kill path in
+the new launcher and no elapsed-time stop in its MATLAB wrapper. No real
+process was launched or stopped by these checks.

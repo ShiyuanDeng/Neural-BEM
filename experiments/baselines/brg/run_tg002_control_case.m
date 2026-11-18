@@ -12,8 +12,7 @@ input=fullfile(source_base,'local',[shape '.mat']);
 stop_file=fullfile(base,'STOP');
 cd(upstream); startup; cd(out); warning('off'); pause('off');
 set(groot,'defaultFigureVisible','off'); maxNumCompThreads(8);
-timer=tic; limit=str2double(getenv('BRG_REMAINING_SECONDS'));
-assert(isfinite(limit)&&limit>0,'Launch through run_tg002_control.py');
+% Time is a reporting target, not a stop condition. Only user STOP ends early.
 input_data=load(input,'ks'); ks=input_data.ks(:).'; nk=numel(ks);
 bc=struct('type','Transmission','invtype','o','q',sqrt(eta),'transa',[1;1],'transb',[1;1]);
 optim=struct('optim_type','min(gn,sd)','filter_type','gauss-conv','maxit',50,'eps_res',1e-5,'eps_upd',1e-5);
@@ -67,7 +66,6 @@ for i=1:nk
         loaded=load(file,'record'); inverse_records{i}=loaded.record; continue;
     end
     if isfile(stop_file), finish('coordinator_stop'); return; end
-    if toc(timer)>=limit, finish('budget_exhausted'); return; end
     loaded=load(fullfile(data_dir,sprintf('data_%03d.mat',i)),'measurement');
     opts.ncoeff_boundary=floor(3*max(ks(i),sqrt(eta)*ks(i))); t=tic;
     [inv,src_info_out]=rla.rla_inverse_solver({loaded.measurement},bc,optim,opts,src_init,[],[]);
@@ -88,7 +86,6 @@ if ~isfile(residual_file)
     final_residuals=cell(1,nk); eval_opts=struct('verbose',false);
     for i=1:nk
         if isfile(stop_file), finish('coordinator_stop'); return; end
-    if toc(timer)>=limit, finish('budget_exhausted'); return; end
         loaded=load(fullfile(data_dir,sprintf('data_%03d.mat',i)),'measurement');
         k=ks(i); bc.transk=[sqrt(eta)*k k]; t=tic;
         mats=rla.get_fw_mats(k,src_init,bc,loaded.measurement,eval_opts);

@@ -57,12 +57,14 @@ compact metrics and figure. No new success cutoff is selected.
     text+='\n## Time, limits and saved-output checks\n\n'
     if state.get('ended'):
         elapsed=(datetime.datetime.fromisoformat(state['ended'])-datetime.datetime.fromisoformat(state['started'])).total_seconds()
-        text+=f"Queue ended {state['ended']}; elapsed {elapsed/60:.2f} min against a 300 min cap.\n\n"
+        text+=f"Queue ended {state['ended']}; elapsed {elapsed/60:.2f} min against a 300 min reporting target.\n\n"
     if state.get('pilot_wall_seconds'):
         text+=f"Kite eta 0.5 pilot: {state['pilot_wall_seconds']:.2f} s. It ran alone before the rest.\n\n"
     text+=f"Aggregate case wall time: {sum(a['case_wall_seconds'] for _,_,_,a in cases)/60:.2f} min. New data-generation time: zero.\n\n"
     samples=[json.loads(l) for l in (BASE/'resources.jsonl').read_text().splitlines()]
-    text+=f"Minimum sampled available memory: {min(s['available_gib'] for s in samples):.2f} GiB; maximum simultaneous control workers: {max(len(s['active']) for s in samples)}. Required reserve: 14 GiB.\n\n"
+    text+=f"Minimum sampled available memory: {min(s['available_gib'] for s in samples):.2f} GiB; maximum simultaneous control workers: {max(len(s['active']) for s in samples)}. Start-delay reserve: 14 GiB; it never kills running fits.\n\n"
+    if state.get('case_target_exceeded') or state.get('queue_target_exceeded_at'):
+        text+=f"Time targets exceeded: cases {state.get('case_target_exceeded',{})}; queue {state.get('queue_target_exceeded_at','no')}. Runs continued; time targets never stop work.\n\n"
     if state.get('stop_reason'):
         text+=f"Queue stop reason: {state['stop_reason']}. Unrun cases: {state.get('unrun_cases',[])}.\n\n"
     for case,m,old,a in cases:
@@ -83,7 +85,7 @@ compact metrics and figure. No new success cutoff is selected.
         improved=sum(m['area_error']<old['area_error'] for _,m,old,_ in cases)
         text+=f"Removing the curvature limit lowers raw area error in {improved}/20 cases. Full per-case values above retain improvements and regressions. This identifies the effect of the shipped limit on this dataset; it does not qualify the observations against the BEM solver or establish a final comparison.\n\n"
     else:
-        text+='Interpretation remains partial until the queue ends. All failed or capped cases remain in the record.\n\n'
+        text+='Interpretation remains partial until the queue ends. All failed or user-stopped cases remain in the record.\n\n'
     text+='Bulk observations remain in activity 04. Fresh exact states and logs stay local with SHA-256 manifests. Source snapshots, order, overlap and receipts are retained. Shared-data qualification and BEM rows belong to the BEM side. Any further tuning or experiment needs a new coordinator decision.\n'
     (DOC/'results.md').write_text(text)
 

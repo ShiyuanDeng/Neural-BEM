@@ -32,7 +32,7 @@ def check_case(folder, data_folder=None):
                   final_curve_residuals=len(residuals), summary_frequencies=len(summary['frequencies']))
     if metrics['status']=='complete' and any(n!=37 for n in counts.values()):
         issues.append('complete status with missing outputs')
-    if receipt['case_wall_seconds']>3600:
+    if receipt['case_wall_seconds']>3600 and 'target_seconds' not in receipt:
         issues.append('case over one-hour cap')
     if receipt.get('returncode') or receipt.get('scoring_failure'):
         issues.append('failed receipt')
