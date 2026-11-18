@@ -19,7 +19,7 @@ grown long. A fresh coordinator or agent starts here.
 | Name | Pane | Model | Reads first |
 |---|---|---|---|
 | `brg` | `w1:p7`, top right | Codex `gpt-6-astra`, high effort | `AGENTS.md`, this file, then "State at handoff" in [BRG 04 results](brg_adaptation/04_run_brg_on_tg002_shapes/results.md) |
-| `csi` | `w1:p8`, bottom right | Codex `gpt-6.1-sol`, high effort | `AGENTS.md`, this file, then "State at handoff" in [CSI 04 results](csi_adaptation/04_run_simulated_tg002_cases/results.md) |
+| `csi` | `w1:p8`, bottom right | Codex `gpt-6.1-sol`, high effort | `AGENTS.md`, this file, then the [CSI 04 handoff note](csi_adaptation/04_run_simulated_tg002_cases/handoff.md) |
 
 The user gave both panes full access. A pane started from scratch begins in
 Codex's default sandbox, where MATLAB and git do not work. Only the user
