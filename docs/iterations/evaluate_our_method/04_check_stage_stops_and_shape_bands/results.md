@@ -23,6 +23,16 @@ Kite's first stage took 197 steps. Between steps 22 and 197, data loss fell anot
 
 Aphex Twin was the one clear exception to the near-flat loss at the original cap. From step 17 to 22 in stage four its loss fell 2.97% and its area error fell from 198.50% to 196.85%. Extending all four stages changed the boundary entering stage four. That stage then stalled after nine steps at 196.91%. The comparison leaves open what extending only the original fourth stage would do.
 
+## What happened with wider early shape updates?
+
+At the original 22-step cap, widening the four update bands from 3/5/7/9 to 5/7/9/11 recovered C-shape. Final area error fell from 43.78% to 0.07%. It reached 4.44% by stage three while the default still had 56.66% error. The wider first stage already traced much of the opening that the default fit filled in. [Wider-band fits](../../../../results/bem/stage_stops/2026-11-18/wider/)
+
+![The default C-shape fit fills the opening, while the wider update fits it by stage three.](figures/c_shape_update_bands.png)
+
+Cog improved from 2.00% to 0.04% final area error. Kite improved from 467.38% to 278.87% and still missed. Aphex Twin went from 196.85% to 202.50%. Both misses ran out of time in the first 19-frequency stage before accepting a step there. Of the 16 wider early stages only kite's first hit the iteration cap.
+
+The earlier fixed-band-37 test recovered 0/10 at contrast 4. That test also changed the stored curve bands and later releases. The damped warm-up and damped ladder recovered 10/10 with the original update bands while estimating contrast. These are separate controls. [Ablations](../02_run_ablations/results.md)
+
 ## Can the stored curve describe the target?
 
 Truncating the *true* curve to the first storage band (8) gives area errors of 0% for kite, 1.52% for C-shape, 7.68% for Aphex Twin and 9.80% for cog. At the second band (12) the corresponding errors are 0%, 0%, 2.79% and 1.11%. This checks each truth in its stored parameterisation. It does not determine which boundary the data will lead the fit to. Per-case records include all four storage bands.

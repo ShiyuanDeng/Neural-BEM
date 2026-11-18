@@ -30,7 +30,13 @@ Area error is the missing area plus the extra area, as a percentage of true area
 
 *The kite started 30 mm off centre. The damped 0.25 GHz warm-up reduced that to 0.4 mm. Without a warm-up, the first 0.5 GHz fit moved the centre to 73.8 mm from the target when estimating contrast. Fixing contrast at 4 brought it within 2.1 mm, but the fitted area remained too large.*
 
-**The early frequency schedule is the stronger explanation at contrast 4.** On real data, supplying the true contrast recovered 2/10 shapes, compared with 7/10 when estimating it. Restoring the damped warm-up and damped early stages recovered 10/10 while still estimating contrast. The starting contrast also came from damped data in that run. These comparisons leave the warm-up’s individual contribution open. [Run settings and scores](evaluate_our_method/02_run_ablations/results.md)
+On real data at contrast 4, supplying the true contrast recovered 2/10 shapes, compared with 7/10 when estimating it. Restoring the damped warm-up and damped early stages recovered 10/10 while still estimating contrast. The starting contrast also came from damped data in that run, so the warm-up’s individual contribution remains open. [Run settings and scores](evaluate_our_method/02_run_ablations/results.md)
+
+**Early stage limits.** Eight of the 16 early stages on the four shapes in the video hit the 22-step limit. Raising it to 220 let all 16 run until they found no decreasing step. The same three shapes missed. Kite even lowered its first-stage data loss by another 2% while its outline got worse. [Stage-by-stage results](evaluate_our_method/04_check_stage_stops_and_shape_bands/results.md)
+
+![C-shape with the original and wider shape updates. The original fit fills in the opening. The wider fit traces the opening by the third stage.](evaluate_our_method/04_check_stage_stops_and_shape_bands/figures/c_shape_update_bands.png)
+
+*At the same 22-step limit, adding two shape-update modes per early stage let BEM trace the opening of the C-shape. Both runs stored the same number of curve coefficients.*
 
 <details>
 <summary>Area error and estimated contrast for each fit</summary>
