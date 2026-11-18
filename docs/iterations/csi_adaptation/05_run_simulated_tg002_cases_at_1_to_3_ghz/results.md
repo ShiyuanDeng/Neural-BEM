@@ -47,7 +47,9 @@ counts 7056 and 8820, native driver lists, 2048 iterations and metadata.
 No MATLAB was started by these checks. Time remains an informational
 target; passing it never stops a fit. The memory guard remains available.
 
-Pending: finish and push the old batch; send its review pack; wait for
-the new go and frequency list. BEM still checks each true shape against
+The old batch finished naturally at 02:00 UTC and its final push is
+`bff0fd4a8`. Its [review pack](../04_run_simulated_tg002_cases/review_pack.md)
+contains all snapshot/sensitivity scores, costs, timings and the figure.
+Pending: wait for the new go and frequency list. BEM still checks each true shape against
 these exact tables. No upstream numerical patch, solver edit or scoring
 change was made for this preparation.

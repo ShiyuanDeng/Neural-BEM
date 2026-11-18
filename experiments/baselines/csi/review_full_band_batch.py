@@ -111,7 +111,7 @@ def main():
     lines.extend(['','The known circle-table errors at 1–8 GHz are 0.1723, 0.1260, 0.3034, 1.1396, 0.8228, 1.6782, 2.2946, 5.9136 percent.',
         'Its independent best-contrast shifts and common equivalent-circle fit are in [grid_check/results.md](grid_check/results.md).',
         'Those diagnostic fits do not change any table or CSI result. Other shapes still need their BEM-side forward check.','',
-        '## Original first-batch forecast','',json.dumps(pack['first_batch_forecast'],indent=2),'',
+        '## Original first-batch forecast','','```json',json.dumps(pack['first_batch_forecast'],indent=2),'```','',
         'The old nine-hour forecast check is historical. All three fits finished before the launcher exited; no agent stopped it.',
         'Current policy treats time as a target. All future fits are held for user review and a new coordinator go.',''])
     (ACT/'review_pack.md').write_text('\n'.join(lines))
