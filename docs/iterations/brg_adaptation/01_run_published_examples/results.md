@@ -1,5 +1,20 @@
 # BRG shipped examples: activity 01
 
+## Handoff update, 18 November 2026
+
+Activity 01 was accepted by the coordinator; no rerun or further work is
+pending here. The shipped example is not a paper-table case. Patches 03/04
+are approved; retain the pinned source and seven-argument wrapper call.
+The paper shape definitions, six-case count and public-setting choices that
+were open in this historical report were resolved in activity 02.
+
+Still-unfixed upstream issues are the multi-component missing-L test and the
+exact-fit steepest-descent zero-over-zero/MEX failure. Neither is fixed by a
+new guard in the approved baseline; preserve and report a recurrence. The
+shipped manufactured-source check was unsuitable for its cavity; the paper
+and TG-002 wrappers use a verified interior point for this diagnostic.
+The complete input conventions are in [data_handoff.md](data_handoff.md).
+
 Activity 01 finished on 17 November 2026. The full **shipped example**
 completed all 117 data and inverse frequencies after the coordinator approved
 patches 03/04. This is not a table B result. The cavity was not recovered

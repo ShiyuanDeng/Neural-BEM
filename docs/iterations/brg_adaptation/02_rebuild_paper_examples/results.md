@@ -1,5 +1,26 @@
 # Rebuild the paper's single-component examples: results
 
+## Handoff update, 18 November 2026
+
+The coordinator accepted all six k=15 outcomes and their evidence. Do not
+resume to k=30 while CSI runs its overnight campaign. Glider eta 0.33 already
+has all 117 states; the other five need only missing data/states on a later
+authorized resume. Retained data counts are 117, 117, 108, 57, 57, 57 for
+glider 0.33, glider 10, star full, star limited, cavity 0.9 and cavity 2.
+The no-limit glider alternative stopped at k=12.75 and must never resume.
+
+The Figure 1 gap remains unexplained; both curvature choices were identical
+and the coordinator accepted the lower rebuilt errors. Spend no more runs
+on it. Cavity eta 2's k=30 finer-grid check remains deferred; glider eta 10's
+check passed. Every case's original four-hour budget includes prior attempts.
+`completion_k15.json` records all retained data times; the older metric named
+`all_saved_data_generation_seconds` only sums the current data-summary range.
+
+Activity 03's one-fit handover is accepted and BEM work is transferred to the
+BEM side. The activity 04 hold mentioned in this historical report was later
+lifted for the baseline half only; its provisional TG-002 campaign is now
+running. See activity 04's State at handoff; do not launch another campaign.
+
 ## Status
 
 Campaign started 17 November 2026. 6/6 cases complete through k=15.

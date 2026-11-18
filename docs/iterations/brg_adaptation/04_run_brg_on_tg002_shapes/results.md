@@ -1,8 +1,180 @@
 # Run BRG on TG-002 shapes: provisional baseline results
 
+## State at handoff
+
+Snapshot: **2026-11-18T00:18:36.687219+00:00**. The user requested a fresh-chat handoff while the
+existing detached campaign continues. **Do not launch a second campaign,
+rerun the pilot, stop these workers, or start any other experiment.** The
+live state and receipts supersede the dated case snapshot below.
+
+### Running process and controls
+
+Repository: `/home/drdeng/Neural_SDF_BEM_AD_organised`, branch `organised`.
+Current detached campaign supervisor: **PID 727204**. Its actual command is:
+
+```bash
+/home/drdeng/miniconda3/envs/EMNerf/bin/python /home/drdeng/Neural_SDF_BEM_AD_organised/experiments/baselines/brg/run_tg002.py --campaign
+```
+
+It was launched with `OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1
+MKL_NUM_THREADS=1` and the wrapper's `--campaign --detach` option. That
+launch command is historical, **not a command to run again**. Each MATLAB
+sets eight compute threads. The supervisor automatically starts the remaining
+queue; it does not update this report or commit anything.
+
+Live state: `results/brg/tg002_shapes/2026-11-17/campaign.json`.
+Memory samples: `resources.jsonl` beside it. Supervisor output:
+`local/launcher.log`; per-case supervisor output: `local/<case>_supervisor.log`.
+Each case has `attempt_NN.json`, `summary.json`, `data_summary.json`,
+`frequency_NNN.mat`, `final_residuals.json`, `metrics.json` and `fit.json`.
+Its full MATLAB log and exact states/data are in that case's ignored `local/`.
+
+The state field `status=ready_after_receipt_repair` is a stale label retained
+when this supervisor resumed; **it does not mean the queue is idle**. Read
+`active`, `pending`, `updated` and the process list. Normal queue exit writes
+`complete` or `stopped`. `campaign.json` updates about every five seconds.
+The current implementation allows at most three BRG workers and reserves
+4 GiB estimated peak per worker, above a 14 GiB free-memory floor. This has
+kept two BRG workers active alongside three CSI MATLAB fits.
+
+Check progress without launching work:
+
+```bash
+ps -p 727204 -o pid,ppid,etime,args
+cat results/brg/tg002_shapes/2026-11-17/campaign.json
+tail -n 1 results/brg/tg002_shapes/2026-11-17/resources.jsonl
+# For each active case from campaign.json:
+tail -n 8 results/brg/tg002_shapes/2026-11-17/<case>/local/matlab_01.log
+```
+
+The original campaign clock started 17 November at 23:41:28 UTC. Its hard
+four-hour deadline remains **18 November 03:41:28 UTC**, epoch
+`1794973288.138983`; the receipt repair did not reset it. Each case has a
+one-hour budget including data and scoring. No tuning rerun is authorized.
+The 771.81-second asymmetric eta 4 pilot passed the 900-second rule, so the
+remaining cases are already authorized to finish without another question.
+
+**Stopping, only if explicitly requested or needed for the existing limits:**
+first verify PID 727204 still names this supervisor, then `kill -TERM 727204`
+to prevent further launches. Capture its live `active` list before doing so.
+For each active case read `matlab_pid` from its latest attempt receipt and
+verify its command contains `run_tg002_case`. Send `kill -TERM -- -<matlab_pid>`
+to that MATLAB process group. Do not signal CSI or use a blanket MATLAB kill.
+Leave the per-case Python supervisors alive so they save the partial score,
+return code and manifest. Stopping only PID 727204 does **not** stop MATLAB.
+Do not execute these stop instructions merely to perform this handoff.
+
+### Case-by-case snapshot
+
+| Case | State at the dated snapshot |
+|---|---|
+| asymmetric__c4 | Done, 37/37; raw area 0.27669129; max residual 0.89327664 |
+| asymmetric__c0.5 | Done, 37/37; raw area 0.11053017; max residual 0.13360256 |
+| circle__c0.5 | Done, 37/37; raw area 2.3469481e-08; max residual 1.0326396e-10 |
+| circle__c4 | Done, 37/37; raw area 2.0352808e-06; max residual 4.8760568e-10 |
+| kite__c0.5 | Done, 37/37; raw area 0.47527995; max residual 0.39012093 |
+| kite__c4 | Done, 37/37; raw area 0.46463161; max residual 0.86158502 |
+| peanut__c0.5 | Done, 37/37; raw area 0.11768157; max residual 0.11628799 |
+| peanut__c4 | Running, 29/37 inverse states saved; MATLAB PID 738983 |
+| star__c0.5 | Running, 8/37 inverse states saved; MATLAB PID 742423 |
+| star__c4 | Waiting in the existing queue; no run started |
+| c_shape__c0.5 | Waiting in the existing queue; no run started |
+| c_shape__c4 | Waiting in the existing queue; no run started |
+| hook__c0.5 | Waiting in the existing queue; no run started |
+| hook__c4 | Waiting in the existing queue; no run started |
+| cross__c0.5 | Waiting in the existing queue; no run started |
+| cross__c4 | Waiting in the existing queue; no run started |
+| cog__c0.5 | Waiting in the existing queue; no run started |
+| cog__c4 | Waiting in the existing queue; no run started |
+| aphex_twin__c0.5 | Waiting in the existing queue; no run started |
+| aphex_twin__c4 | Waiting in the existing queue; no run started |
+
+### Exact steps for the successor
+
+1. Read this section, the approved plan and `campaign.json`; verify the live
+   PID. Observe the existing launcher. Do not launch another copy or reset
+   its deadline. If it has exited, first distinguish normal completion from
+   an error using the state, `local/launcher.log`, case supervisor logs and
+   latest attempt receipts. Keep failures and partial states.
+2. The case runner already performs BRG data generation, all inverse
+   frequencies, a BRG-only final-curve residual sweep, frozen-protocol scoring,
+   figures and SHA-256 manifests. Reuse those outputs. After a batch finishes,
+   confirm its receipt has `case_wall_seconds`, its status/return code, and
+   the metrics. The launcher does not commit these automatically.
+3. If a finished case lacks a score because only post-processing failed,
+   preserve the failure log and run the command below once. It reads saved
+   output and does no inversion or forward solve. Do not rerun existing
+   scores merely for reassurance; their original timings should stay intact.
+
+   ```bash
+   OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 /home/drdeng/miniconda3/envs/EMNerf/bin/python experiments/baselines/brg/score_tg002.py --case <case>
+   ```
+
+4. When the queue ends, check all 20 case receipts and scores. A completed
+   case has 37 compact frequency records, 37 data files and exact state files
+   in local/, and 37 final-curve residuals. Check finite saved curves/histories,
+   log failures, elapsed caps and the memory reserve. Report any incomplete
+   case as incomplete; do not silently reset budgets or launch tuning runs.
+   A process crash, exhausted cap or unresolved wrapper failure needs a
+   coordinator report, not a new unapproved solver change.
+5. Run `python experiments/baselines/brg/report_tg002.py`. It reads receipts
+   only and preserves this State at handoff section. Complete the results
+   with actual completion dates, counts, raw area errors, max final-curve
+   residuals, data/inverse/residual-check/scoring times, failures and observed
+   overlap. Inspect the case figures. Keep every result labelled provisional.
+   Do not perform a BEM check, BEM fit, solver edit or paper k=30 resume.
+6. Commit and push each finished batch by explicit paths. Stage only its case
+   folders and figures, this report, and `campaign.json`/`resources.jsonl`.
+   Include any owned wrapper fix and provenance update. Use
+   `git add <owned paths>` then `git commit -m "..." -- <same paths>` and
+   `git push`; never a bare commit. At final completion commit remaining
+   owned changes and confirm status. Keep roughly 5 MB per case and each
+   committed file below 50 MB; local bulk remains ignored with commands and
+   SHA-256, and report figures stay in this activity's figures/. Running journals may change immediately
+   after a snapshot commit. Other agents' files must remain untouched.
+7. End with the report block in `docs/iterations/coordinate_final_comparison.md`:
+   activity/date, done/planned and wall time, one result line per case,
+   failures/logs, upstream patches, own-code changes, unknowns and next step.
+   No new branch/worktree, high-k redesign or BEM-side execution is authorized.
+
+### Known wrapper issue and preserved evidence
+
+The pilot's MATLAB run and scoring completed normally, then Python 3.10
+rejected `hashlib.file_digest`. The campaign then hit a missing-timing key.
+The small owned fix uses streaming SHA-256, writes timing before hashing and
+handles a missing timing receipt. The pilot was **not numerically rerun**.
+Its failed supervisor log is committed in
+`asymmetric__c4/supervisor_failure.log`; its repaired elapsed time comes from
+that failure log's final timestamp. The original deadline was preserved.
+Source hashes before/after the fix are in `provenance.json`. Other runs now
+write normal receipts. No upstream BRG patch was added in activity 04.
+
+Initial commits: `ba82e75a9` (pilot/request/fix), `10958f916` (circle 0.5),
+`3d76fccfb` (circle 4, asymmetric 0.5, kite 0.5). Later snapshot commits include
+partial active-case evidence and are intentionally not claims of completion.
+The shared checkout can contain CSI/coordinator changes: do not stage them.
+
+### Open items across activities 01–04
+
+- 01: the multi-component missing-L test remains unfixed; it is outside these single-component cases.
+- 01: exact-fit zero-gradient SD division can produce NaN/MEX failure; retain public behavior and report recurrence, without a guard.
+- 01: the shipped cavity's manufactured-source diagnostic was unsuitable; later wrappers use verified interior points, and the shipped run stays labelled as shipped.
+- 02: the Figure 1 gap remains unexplained; curvature candidates agreed exactly, the coordinator accepted the lower rebuilt errors, and no more gap runs are authorized.
+- 02: k=30 resumes remain deferred while CSI runs overnight; glider eta 0.33 already completed all 117 frequencies and all other cached data/states are retained.
+- 02: cavity eta 2's k=30 finer-grid check is still deferred; glider eta 10's finer-grid check passed.
+- 02: star/cavity are vector-recovered shapes with approximately 6e-4 / 2e-4 coordinate accuracy; absent private drivers prevent an exact paper reproduction claim.
+- 02: the stopped no-limit glider alternative must not resume; its retained endpoint is k=12.75.
+- 03: the accepted one-glider BEM fit ended at k=10 after refusing k=12; the five other paper BEM fits and all further solver work belong to the BEM side.
+- 03: the default-path proof and full 17-file/options/test handover are accepted; no baseline-side repeat tests or solver edits are needed.
+- 04: the detached provisional campaign is unfinished at this snapshot; finish reporting the existing queue within its original caps.
+- 04: BEM-side frozen plane-wave TG-002 data do not yet exist here; the committed `data_request.json` is the generation contract.
+- 04: when frozen data arrive, compare every field table and rerun only cases beyond max(1e-5, ten times measured BRG refinement error); preserve provisional records.
+- 04: cross-solver forward qualification, BRG refinement checks in that qualification, and both BEM rows belong to the BEM side and were not executed here.
+- All: timings overlap CSI/other MATLAB processes and are indicative; clean-machine timing remains for later ownership, with no new timing run authorized now.
+
 ## Status and ownership
 
-Campaign started 2026-11-17T23:41:28.138975+00:00; 6/20 cases have saved scores.
+Campaign started 2026-11-17T23:41:28.138975+00:00; 7/20 cases have saved scores.
 All data and results here are **provisional BRG-forward data**. The BEM side
 owns generating and freezing the shared plane-wave data. These are TG-002
 shapes with BRG-style observations, not the sealed TG-002 measurements.
@@ -56,6 +228,7 @@ This final-curve evaluation has its own time column. No BEM solve is involved.
 | circle__c0.5 | complete | 37/37 | 2.3469481e-08 | 1.03264e-10 | 18.88 | 91.08 | 16.53 | 2.28 | 134.82 |
 | circle__c4 | complete | 37/37 | 2.0352808e-06 | 4.87606e-10 | 18.19 | 58.54 | 18.51 | 2.15 | 103.57 |
 | kite__c0.5 | complete | 37/37 | 0.47527995 | 0.390121 | 13.07 | 205.36 | 8.88 | 2.35 | 235.83 |
+| kite__c4 | complete | 37/37 | 0.46463161 | 0.861585 | 13.12 | 739.62 | 10.54 | 2.32 | 771.82 |
 | peanut__c0.5 | complete | 37/37 | 0.11768157 | 0.116288 | 15.86 | 491.09 | 15.21 | 2.17 | 530.36 |
 
 ## Timed pilot and forecast
@@ -70,9 +243,9 @@ inverse 239.14 min and residual checks
 257.27 min before parallelism. This is a one-shape estimate, not a
 promise for thin strokes or deep concavities. No case is rerun to tune it.
 
-Completed-case aggregate wall time: 36.88 min across 6 cases. A running-mean projection for all 20 is 122.94 min before parallelism; the still-unrun difficult shapes make this uncertain.
+Completed-case aggregate wall time: 49.75 min across 7 cases. A running-mean projection for all 20 is 142.13 min before parallelism; the still-unrun difficult shapes make this uncertain.
 
-Memory: minimum observed available 21.57 GiB; maximum active BRG workers 2. The required reserve is 14 GB. Start/end CSI/MATLAB overlap is retained in each attempt.
+Memory: minimum observed available 21.18 GiB; maximum active BRG workers 2. The required reserve is 14 GB. Start/end CSI/MATLAB overlap is retained in each attempt.
 
 ## Checks, failures and evidence
 
@@ -82,6 +255,7 @@ Memory: minimum observed available 21.57 GiB; maximum active BRG workers 2. The 
 - circle__c0.5: maximum data-geometry resampling point error 1.81942e-15 BRG units; [metrics](../../../../results/brg/tg002_shapes/2026-11-17/circle__c0.5/metrics.json), [curve](figures/circle__c0.5.png).
 - circle__c4: maximum data-geometry resampling point error 1.81942e-15 BRG units; [metrics](../../../../results/brg/tg002_shapes/2026-11-17/circle__c4/metrics.json), [curve](figures/circle__c4.png).
 - kite__c0.5: maximum data-geometry resampling point error 1.80062e-15 BRG units; [metrics](../../../../results/brg/tg002_shapes/2026-11-17/kite__c0.5/metrics.json), [curve](figures/kite__c0.5.png).
+- kite__c4: maximum data-geometry resampling point error 1.80062e-15 BRG units; [metrics](../../../../results/brg/tg002_shapes/2026-11-17/kite__c4/metrics.json), [curve](figures/kite__c4.png).
 - peanut__c0.5: maximum data-geometry resampling point error 1.73888e-15 BRG units; [metrics](../../../../results/brg/tg002_shapes/2026-11-17/peanut__c0.5/metrics.json), [curve](figures/peanut__c0.5.png).
 
 The frozen-input geometry checks verify source hashes, agreement with the

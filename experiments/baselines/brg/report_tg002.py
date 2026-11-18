@@ -116,6 +116,11 @@ whose fields differ beyond that threshold. Preserve these provisional results.
 Both BEM rows and cross-solver checks belong to the separate BEM coordinator.
 Paper k=30 resumes remain deferred while CSI runs overnight.
 '''
-    (DOC/'results.md').write_text(text)
+    report=DOC/'results.md'
+    existing=report.read_text() if report.exists() else ''
+    if '## State at handoff' in existing:
+        handoff=existing[existing.index('## State at handoff'):existing.index('## Status and ownership')]
+        text=text.replace('## Status and ownership',handoff+'## Status and ownership',1)
+    report.write_text(text)
 
 if __name__=='__main__':main()

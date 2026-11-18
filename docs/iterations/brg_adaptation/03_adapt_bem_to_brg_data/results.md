@@ -1,5 +1,20 @@
 # Adapt the BEM inverse to BRG data: staged results
 
+## Handoff update, 18 November 2026
+
+The coordinator accepted the solver handover. The BRG baseline agent must
+make no further solver edit, forward qualification or BEM fit. Separate
+BEM-side ownership supersedes the original solver-lock permission in this
+activity's plan. The complete file/options/tests/default-path proof below is
+the handover; it needs no repeat test run from the baseline side.
+
+Only the glider eta 0.33 fit ran. Its true-shape prefix passed through k=12,
+but its evolving fitted curve refused k=12 and its accepted endpoint is k=10.
+The other five paper BEM fits were never started here. Any further BEM work
+belongs to the BEM side; no high-k redesign or tolerance loosening is planned.
+The earlier activity 04 hold is lifted for baseline-only provisional runs,
+not for either BEM row or cross-solver checks.
+
 ## Status
 
 Authorized by the coordinator on 17 November 2026; BRG holds the solver lock.
