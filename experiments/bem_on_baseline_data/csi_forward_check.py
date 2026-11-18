@@ -198,8 +198,10 @@ def check_case(case, context, out, layout):
         return json.loads(target.read_text())
     started = time.perf_counter()
     spec = case_spec(case)
+    frozen = None if case == 'dielTM_dec8f' else D.verify_sha256(spec['path'])
     _, frequencies, _ = D.read_table(spec['path'])
-    record = dict(case=case, provenance=provenance(), permutation=permutation_check(frequencies))
+    record = dict(case=case, provenance=provenance(), input=str(spec['path']), frozen_sha256_verified=frozen,
+                  permutation=permutation_check(frequencies))
     if case == 'dielTM_dec8f':
         record['calibration_vs_csi'] = calibration_check(frequencies)
     else:

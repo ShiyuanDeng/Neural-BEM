@@ -46,15 +46,19 @@ WALL = dict(cpu=120., cuda=3600.)           # CPU pass stops at 120 s and waits 
 THREADS = dict(cpu=1, cuda=4)               # CPU: one thread per fit; GPU: the default's 4
 START_MEMORY_GIB, GUARD_MEMORY_GIB = 16.5, 14.   # start leaves >= 14.5 GiB after a ~2 GiB peak
 MEASURED_CASE = 'dielTM_dec8f'
-# Dataset-level settings, fixed before any fit (coordinator, 18 Nov 2026). Never per case.
-# Simulated TG-002 tables: 1-3 GHz only, the user's answer to the 1% rule ("supply less
-# frequency range ... below 4GHz such that simulated data are accurate there"); ladder over
-# all three, the default's four ladder quotas with the middle two merged.
-DATASETS = dict(
-    measured=dict(frequencies_ghz=None, ladder='prefixes up to half the top frequency',
-                  prefix_quotas=None),
-    simulated=dict(frequencies_ghz=(1., 2., 3.), ladder='every catalog frequency, one at a time',
-                   prefix_quotas=(1000, 3000, 4000)))
+# Dataset-level settings (coordinator, 18 Nov 2026). Never per case. The simulated list is the
+# one setting the user chooses; it stays 1-3 GHz (the user's answer to the 1% rule, "below 4GHz
+# such that simulated data are accurate there") until the coordinator passes on a new list.
+DATASETS = dict(measured=dict(frequencies_ghz=None),          # all eight
+                simulated=dict(frequencies_ghz=(1., 2., 3.)))
+# Ladder rule, fixed by the coordinator before any result on such a list: one frequency at a
+# time, lowest first, up to the larger of 3 GHz (about the top of the default TG-002 ladder in
+# wavenumber) and half the top frequency; then the default all-frequency stages on the list.
+LADDER_FLOOR_HZ = 3e9
+LADDER_QUOTAS = {3: (1000, 3000, 4000),                   # default four with the middle two merged
+                 4: RealOnlyPolicy().prefix_quotas}       # the default (1000, 1250, 1750, 4000)
+FREQUENCY_RULE = ('ladder: one frequency at a time, lowest first, up to max(3 GHz, top/2); '
+                  'then the default all-frequency stages on the whole list')
 
 
 def dataset(case):
@@ -62,9 +66,9 @@ def dataset(case):
 
 
 def ladder(frequencies_hz):
-    """The fixed CSI frequency rule, from the catalog's frequencies only."""
-    top = max(frequencies_hz)
-    return tuple(f for f in sorted(frequencies_hz) if f <= top/2)
+    """The fixed CSI frequency rule, from the list's frequencies only."""
+    limit = max(LADDER_FLOOR_HZ, max(frequencies_hz)/2)
+    return tuple(f for f in sorted(frequencies_hz) if f <= limit)
 
 
 @dataclass(frozen=True)
@@ -77,18 +81,14 @@ class CsiPolicy(RealOnlyPolicy):
         return replace(operation, stage=replace(operation.stage, ragged_data=True))
 
 
-def policy_for(real, device, name):
-    settings = DATASETS[name]
+def policy_for(real, device):
     frequencies = [o.frequency_hz for o in real]
-    if name == 'measured':
-        rungs, quotas = ladder(frequencies), RealOnlyPolicy().prefix_quotas
-    else:
-        rungs, quotas = tuple(sorted(frequencies)), settings['prefix_quotas']
-    if len(rungs) != len(quotas):
-        raise ValueError(f'The frequency rule gives {len(rungs)} ladder stages for {len(quotas)} quotas.')
+    rungs = ladder(frequencies)
+    if len(rungs) not in LADDER_QUOTAS:
+        raise ValueError(f'The frequency rule gives {len(rungs)} ladder stages; quotas exist for 3 or 4.')
     if tuple(frequencies[:len(rungs)]) != rungs:
         raise ValueError('The ladder must be a prefix of the catalog.')
-    return CsiPolicy(prefix_frequencies_hz=rungs, prefix_quotas=tuple(quotas), fit_seconds=WALL[device])
+    return CsiPolicy(prefix_frequencies_hz=rungs, prefix_quotas=LADDER_QUOTAS[len(rungs)], fit_seconds=WALL[device])
 
 
 def case_input(case):
@@ -190,6 +190,11 @@ def complete(attempt, case, device):
     record.update({k: first.get(k) for k in ('case_seconds', 'peak_memory_gib', 'gpu_peak_allocated_gib')},
                   completed_from='fit.json by a later record step', completion_provenance=provenance())
     write(attempt/'metrics.json', record)
+    if not (attempt/'bulk_manifest.json').exists():
+        files = [dict(path=str(p.relative_to(ROOT) if p.is_relative_to(ROOT) else p), bytes=p.stat().st_size,
+                      sha256=hashlib.sha256(p.read_bytes()).hexdigest())
+                 for p in sorted((attempt/'local').rglob('*')) if p.is_file()]
+        write(attempt/'bulk_manifest.json', dict(files=files))
     return record
 
 
@@ -199,7 +204,7 @@ def attempt_dir(base, case, device):
         metrics = attempt/'metrics.json'
         if metrics.exists() and json.loads(metrics.read_text()).get('bookkeeping') == 'complete':
             return None, metrics
-        if (attempt/'fit.json').exists() and metrics.exists():
+        if (attempt/'fit.json').exists():   # the fit returned; only its record is missing or failed
             complete(attempt, case, device)
             return None, metrics
     number = len(list(base.glob('attempt_*')))+1
@@ -207,7 +212,7 @@ def attempt_dir(base, case, device):
 
 
 def run(case, device, out_root):
-    base = Path(out_root)/case/device
+    base = Path(out_root).resolve()/case/device
     out, finished = attempt_dir(base, case, device)
     if finished is not None:
         print(f'{case} {device}: finished, {finished}', flush=True)
@@ -222,9 +227,10 @@ def run(case, device, out_root):
     path = case_input(case)
     name = dataset(case)
     real, _, source = D.observations(path, DATASETS[name]['frequencies_ghz'])
+    source['sha256_checked_against_frozen_file'] = name == 'simulated'   # checked in main() before any attempt
     execution = Execution(device=device, frequency_threads=THREADS[device])
     context = ModalMuller(execution, ModalSettings(table_mode=True))
-    policy = policy_for(real, device, name)
+    policy = policy_for(real, device)
     initial = FourierCurve.circle(START_RADIUS_M/D.LENGTH_M, 0j)
     contrast, start = weak_start(context, initial, real[0])
     problem = Problem(initial, real, None, contrast, length_unit_m=D.LENGTH_M, origin_m=0j, bounds_m=BOUNDS_M)
@@ -235,8 +241,7 @@ def run(case, device, out_root):
                                   material=material.settings(), contrast_start=start, start_contrast=contrast,
                                   execution=asdict(execution), modal_settings=asdict(context.settings),
                                   length_unit_m=D.LENGTH_M, origin_m=0., bounds_m=BOUNDS_M,
-                                  dataset=name, dataset_settings=DATASETS[name],
-                                  frequency_rule=DATASETS[name]['ladder']+', then the whole catalog',
+                                  dataset=name, dataset_settings=DATASETS[name], frequency_rule=FREQUENCY_RULE,
                                   ladder_hz=policy.prefix_frequencies_hz, policy=policy.plan(problem, context)))
     write(out/'manifest.json', manifest)
     record = dict(case=case, device=device)
@@ -252,7 +257,7 @@ def run(case, device, out_root):
     record.update(case_seconds=time.perf_counter()-started, peak_memory_gib=peak_memory_gib(),
                   gpu_peak_allocated_gib=gpu_peak_gib(), memory_available_end_gib=memory_available_gib())
     stop.set()
-    files = [dict(path=str(p.relative_to(ROOT)), bytes=p.stat().st_size,
+    files = [dict(path=str(p.relative_to(ROOT) if p.is_relative_to(ROOT) else p), bytes=p.stat().st_size,
                   sha256=hashlib.sha256(p.read_bytes()).hexdigest())
              for p in sorted((out/'local').rglob('*')) if p.is_file()]
     write(out/'bulk_manifest.json', dict(files=files))
@@ -268,7 +273,9 @@ def main():
     parser.add_argument('--checks', default=str(ROOT/'results/bem/baseline_data/csi_cases/adapter_checks'),
                         help='folder of csi_forward_check.py case files; a simulated fit needs its passing check')
     args = parser.parse_args()
+    args.out, args.checks = str(Path(args.out).resolve()), str(Path(args.checks).resolve())
     if dataset(args.case) == 'simulated':
+        D.verify_sha256(case_input(args.case))      # frozen table, before any attempt
         check = Path(args.checks)/f'{args.case}.json'
         summary = json.loads(check.read_text())['summary'] if check.exists() else None
         if not summary or not summary['adapter_checks_pass'] or not summary['one_percent_rule']:

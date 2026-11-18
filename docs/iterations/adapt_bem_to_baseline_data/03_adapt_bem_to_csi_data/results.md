@@ -250,19 +250,20 @@ finished work. Nothing here changes the solver or the wrapper's logic.
 ```bash
 P=/home/drdeng/miniconda3/envs/EMNerf/bin/python
 R=results/bem/baseline_data/csi_cases
-S=<shape>__c4          # circle, kite, peanut now; the other seven when their tables exist
+S=<shape>__c4          # any of the ten: circle kite peanut star asymmetric c_shape hook cross cog aphex_twin
 ```
 
-1. Adapter check and forward check on the true shape, with the 1% rule at
-   1–3 GHz (about 10 s, CPU, one thread). Exits non-zero if an adapter check
+1. Adapter check and forward check on the true shape, with the 1% rule on
+   the simulated frequency list (about 10 s, CPU, one thread). It first
+   checks the frozen table against its `.sha256`. Exits non-zero if an adapter check
    fails. The file `$R/adapter_checks/$S.json` holds `summary.one_percent_rule`.
 
    ```bash
    $P experiments/bem_on_baseline_data/csi_forward_check.py --out $R/adapter_checks --cases $S
    ```
 
-2. The fit on the GPU (reported pass, 1 h ceiling). It refuses to start
-   unless step 1 passed for that shape.
+2. The fit on the GPU (reported pass, 1 h ceiling). It checks the table's
+   `.sha256` and refuses to start unless step 1 passed for that shape.
 
    ```bash
    mkdir -p $R/logs
@@ -280,9 +281,18 @@ and `local/` (the runner's accepted states).
 
 Run notes:
 
-- **Data:** simulated tables use 1, 2 and 3 GHz of the retained file
-  (user decision); the measured cylinder uses all eight. This is set per
-  dataset in `DATASETS`, never per case. Do not regenerate tables.
+- **Data:** all ten simulated tables are the frozen copies in
+  `results/csi/tg002/2026-11-18_low_band_data/<shape>/forward/synthetic_input.txt`
+  (baseline commit `8d4c6123d`); circle, kite and peanut are byte-identical to
+  the campaign tables used first. Never regenerate them. The measured
+  cylinder uses all eight frequencies.
+- **Frequency list:** one dataset-level setting, `DATASETS['simulated']['frequencies_ghz']`
+  in `csi_fit.py`, now (1, 2, 3) GHz. The user will choose the final list; only
+  the coordinator changes it, never per case. The ladder follows from it:
+  one frequency at a time up to max(3 GHz, top/2), quotas (1000, 3000, 4000)
+  for three ladder stages or the default four for four; then the default
+  all-frequency stages. `csi_policy_dry_check.py` prints the stage lists.
+  After a list change, rerun step 1 per shape into a fresh checks folder.
 - **Threads:** the scripts now pin BLAS, OpenMP and torch to one thread
   (fixed 18 Nov). Earlier runs (cylinder, first circle) used many threads by
   mistake; only their timings are affected. The GPU pass also runs four
@@ -291,8 +301,9 @@ Run notes:
   14.5 GB after its peak of about 2 GB host (0.8 GB GPU). A guard stops the fit
   below 14 GB and writes `guard_stop.json`. Run fits side by side only while
   each start still meets the 16.5 GB rule.
-- **Restarts:** a finished case is skipped. A fit that returned but whose
-  record failed is completed from `fit.json` without refitting. Any other
+- **Restarts:** a finished case is skipped. An attempt with `fit.json` (the
+  fit returned) is completed from it without refitting, with or without a
+  `metrics.json`. `--out` and `--checks` may be relative; they are resolved. Any other
   unfinished attempt is kept and a fresh attempt starts from the start. No
   tuning reruns.
 - **Commit** each run by path: `$R/$S`, `$R/adapter_checks/$S.json`, the log.
@@ -302,3 +313,31 @@ Run notes:
   frequencies, loaded machine). The CPU circle ran ladder 1–3 GHz in 21 s.
 - The measured cylinder is done (`csi_adapter/2026-11-18/first_fit/`); it is
   not in the runner's list.
+
+## Wrapper changes after the runner's early look, 18 November 2026
+
+No fit; code and a dry check only. Asked by the coordinator.
+
+- Simulated tables point at the frozen folder for all ten shapes; the fit and
+  the check both verify the `.sha256` first. All ten verify.
+- The frequency list is one setting; the ladder rule above is in
+  `ladder()` and `LADDER_QUOTAS`, the same rule for the measured cylinder.
+- Runner gaps fixed (from [activity 04](../04_fit_csi_cases/results.md)): `--out`
+  and `--checks` are resolved to absolute paths, and an attempt with
+  `fit.json` but no `metrics.json` is completed, not refitted. Tested on a
+  scratch copy of the CPU circle attempt with its `metrics.json` removed and a
+  relative `--out`: completed in place, no new attempt, scores identical,
+  residuals equal to 1.5e-13 (thread count differs).
+
+Dry check ([stage_lists.json](../../../../results/bem/baseline_data/csi_adapter/2026-11-18/policy_dry_check/stage_lists.json)):
+the policy plans for the measured cylinder and for 1–3 GHz are identical to
+those saved in the manifests of the runs that happened. Stage lists, all
+followed by `full_1_M11` … `full_6_M37` and the frontier on the whole list:
+
+| List | Ladder (band, quota) |
+|---|---|
+| Cylinder, 1–8 GHz | 1 (3, 1000); 1–2 (6, 1250); 1–3 (9, 1750); 1–4 (12, 4000) |
+| 1, 2, 3 GHz | 1 (3, 1000); 1–2 (6, 3000); 1–3 (9, 4000) |
+| 1–4 GHz | same three-stage ladder as 1, 2, 3 GHz |
+| 1–5 GHz | same three-stage ladder |
+| 1, 2, 3, 5 GHz | same three-stage ladder |

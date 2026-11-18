@@ -31,7 +31,9 @@ LENGTH_M = .05                   # package length unit of the default method
 TX_RADIUS_M, RX_RADIUS_M = .72, .76
 NTX, RING = 36, 72
 MEASURED = Path.home()/'neural_bem_external/CC-CSI/FresnelData/The_first_opus/dielTM_dec8f.txt'
-SIMULATED = 'results/csi/tg002/2026-11-17_campaign/{shape}/forward/synthetic_input.txt'
+# All ten simulated tables, frozen by the baseline side (commit 8d4c6123d), each with a .sha256.
+# circle, kite and peanut are byte-identical to the 2026-11-17 campaign tables used first.
+SIMULATED = 'results/csi/tg002/2026-11-18_low_band_data/{shape}/forward/synthetic_input.txt'
 
 
 def source_positions_m():
@@ -62,6 +64,16 @@ class CsiFrequency:
     total: np.ndarray            # conjugated, file order
     incident: np.ndarray         # conjugated, file order
     data: np.ndarray             # conj(scattered)/c, C order
+
+
+def verify_sha256(path):
+    """Check a frozen table against the .sha256 beside it; returns the digest."""
+    path = Path(path)
+    expected = Path(str(path)+'.sha256').read_text().split()[0]
+    actual = hashlib.sha256(path.read_bytes()).hexdigest()
+    if actual != expected:
+        raise ValueError(f'{path}: SHA-256 {actual} does not match {expected}.')
+    return actual
 
 
 def read_table(path):
