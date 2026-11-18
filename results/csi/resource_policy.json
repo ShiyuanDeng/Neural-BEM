@@ -1,20 +1,21 @@
 {
   "max_data_jobs": 1,
-  "max_csi_fits": 2,
-  "max_bem_fits": 1,
-  "updated": "2026-11-18T03:51:27Z",
-  "authority": "Resource allocation assistant, responding to baseline coordinator w1:p1's request in this session. The coordinator relayed the user's 18 November 2026 03:43 UTC instruction to queue preparation, checks and fits by available capacity without interrupting existing fits; recorded in docs/iterations/coordinate_final_comparison.md.",
-  "scope": "Initial ceilings for NEW launches only. Existing jobs continue unchanged. No elapsed-time stop or automatic interruption.",
+  "max_csi_fits": 1,
+  "max_bem_fits": 2,
+  "updated": "2026-11-18T04:04:08.628674+00:00",
+  "authority": "User delegated overnight resource management in this session; BEM coordinator confirmed shared-file launch control and CPU-only forward checks.",
+  "scope": "New launches only. Never interrupt, restart or time-stop a fit.",
   "floor_gib": 14,
   "margin_gib": 2,
   "worker_reservation_gib": {
     "matlab_data": 3,
-    "mf_cc_csi_fit": 6,
-    "bem_fit": 4
+    "mf_cc_csi_fit": 6.6,
+    "bem_fit": 4,
+    "cpu_forward_check": 2
   },
   "memory_rule": "Before every launch, subtract the new worker reservation and outstanding growth reservations for active workers across both coordinators from current MemAvailable. Launch only if at least floor_gib + margin_gib remains. Count existing worker memory only through its outstanding growth, since current MemAvailable already excludes resident memory. Ceilings do not override this check.",
-  "bem_scope": "One BEM fit across B1 and simulated C combined; the active B1 fit occupies this slot. GPU forward checks share the same single GPU-job slot. This is a ceiling, not a stop instruction.",
-  "bem_application": "Recorded for the BEM coordinator to apply. No BEM launcher was changed to consume this file; delivery to w2:p1 remains pending.",
+  "bem_scope": "B1 and simulated-C GPU fits share max_bem_fits; allow one C fit alongside B1 when resources permit. CPU checks use max_cpu_checks, not a GPU slot.",
+  "bem_application": "BEM coordinator confirmed its runner re-reads this file before every launch.",
   "cpu_basis": {
     "logical_cpus": 24,
     "data_threads_per_job": 8,
@@ -25,7 +26,11 @@
   "sample": {
     "observed_at_utc": "2026-11-18T03:50:48Z",
     "available_host_gib": 37.01,
-    "host_load_1_5_15_min": [1.40, 1.52, 2.08],
+    "host_load_1_5_15_min": [
+      1.4,
+      1.52,
+      2.08
+    ],
     "gpu_memory_used_mib": 2897,
     "gpu_memory_total_mib": 32607,
     "gpu_utilization_percent": 94,
@@ -34,7 +39,63 @@
     "active_bem_worker_pid": 898809,
     "active_matlab_jobs": 0
   },
-  "rationale": "One eight-thread data job, two CSI fits at about five cores each, and one four-thread BEM worker leave two of 24 logical CPUs as headroom if work overlaps. The GPU is already busy, so spare GPU memory alone does not justify another concurrent GPU job.",
-  "recheck": "Take a fresh sample after data preparation finishes or the active B1 fit exits. Consider raising max_csi_fits to three once no data jobs remain. This note does not automatically change any ceiling.",
-  "notification_status": "Pane notices to w1:p1 and w2:p1 are pending: this session has no HERDR_ENV=1, and the Herdr skill prohibits controlling its session from outside Herdr. No agents were prompted directly."
+  "rationale": "Reserve outstanding worker growth and future launches above 16 GiB; use at most 24 estimated CPU cores. Up to three CSI fits once preparation and short BEM work free capacity.",
+  "recheck": "Every ten minutes, on prerequisite completion, or immediately when a lower ceiling is needed.",
+  "notification_status": "Coordinators read this shared file. Pane notices remain unavailable outside Herdr.",
+  "max_cpu_checks": 1,
+  "cpu_check_scope": "One CPU-only forward check at a time as tables freeze; reserve 2 GiB and one thread. No GPU wait.",
+  "monitor_enabled": true,
+  "monitor": {
+    "pid": 983625,
+    "status_file": "/home/drdeng/Neural_SDF_BEM_AD_organised/results/resource_management/2026-11-18/status.json",
+    "heartbeat_seconds": 60,
+    "resource_recheck_seconds": 600
+  },
+  "latest_allocation": {
+    "max_data_jobs": 1,
+    "max_csi_fits": 1,
+    "max_bem_fits": 2,
+    "max_cpu_checks": 1,
+    "reserved_growth_and_new_gib": 11.577,
+    "projected_available_gib": 18.188,
+    "estimated_cores": 19,
+    "target_slots": {
+      "data": 1,
+      "csi": 1,
+      "b1": 1,
+      "bem": 1,
+      "check": 1
+    }
+  },
+  "latest_sample": {
+    "utc": "2026-11-18T04:04:08.628674+00:00",
+    "available_gib": 29.76504898071289,
+    "load": [
+      13.50390625,
+      6.8388671875,
+      3.93994140625
+    ],
+    "jobs": [
+      {
+        "pid": 898669,
+        "kind": "b1",
+        "rss_gib": 2.5292
+      },
+      {
+        "pid": 982793,
+        "kind": "csi",
+        "rss_gib": 3.6135
+      },
+      {
+        "pid": 984642,
+        "kind": "bem",
+        "rss_gib": 1.7736
+      },
+      {
+        "pid": 986834,
+        "kind": "data",
+        "rss_gib": 0.1065
+      }
+    ]
+  }
 }

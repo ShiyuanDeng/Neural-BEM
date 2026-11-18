@@ -1,0 +1,188 @@
+{
+  "state": "watching",
+  "pid": 983625,
+  "utc": "2026-11-18T04:04:08.628674+00:00",
+  "available_gib": 29.76504898071289,
+  "logical_cpus": 24,
+  "load": [
+    13.50390625,
+    6.8388671875,
+    3.93994140625
+  ],
+  "jobs": [
+    {
+      "pid": 898669,
+      "kind": "b1",
+      "rss_gib": 2.5292
+    },
+    {
+      "pid": 982793,
+      "kind": "csi",
+      "rss_gib": 3.6135
+    },
+    {
+      "pid": 984642,
+      "kind": "bem",
+      "rss_gib": 1.7736
+    },
+    {
+      "pid": 986834,
+      "kind": "data",
+      "rss_gib": 0.1065
+    }
+  ],
+  "launchers": [
+    "/home/drdeng/miniconda3/envs/EMNerf/bin/python -B -m experiments.baselines.csi.campaign_five_frequency",
+    "/home/drdeng/miniconda3/envs/EMNerf/bin/python -B -m experiments.baselines.csi.prepare_five_frequency_data --shapes kite peanut star asymmetric c_shape hook cross cog aphex_twin",
+    "bem_on_baseline_data/b1_queue.py"
+  ],
+  "progress": {
+    "tables_ready": [
+      "circle",
+      "kite",
+      "peanut",
+      "star",
+      "asymmetric",
+      "c_shape",
+      "hook",
+      "cross",
+      "cog"
+    ],
+    "checks_passed": [
+      "c_shape__c4",
+      "circle__c4",
+      "asymmetric__c4",
+      "kite__c4",
+      "hook__c4",
+      "star__c4",
+      "peanut__c4"
+    ],
+    "checks_failed": [],
+    "bem_outcomes": [],
+    "b1_outcomes": 38,
+    "csi_outcomes": {},
+    "csi_releases": [
+      {
+        "scene": "star",
+        "sha256": "243dc047b84693446216afa9435fa03e2da3cf1611b1e1cddcebbd5f8e64c637",
+        "frequencies_GHz": [
+          0.5,
+          1,
+          1.5,
+          2,
+          2.5
+        ],
+        "released_utc": "2026-11-18T04:03:04+00:00",
+        "data_checks_passed": true,
+        "authority": "coordinator explicit --release after frozen-data checks 1 to 3"
+      },
+      {
+        "scene": "asymmetric",
+        "sha256": "52c0716dcb16fc7771177074fcde3d468d6b7505e7be920f0dd2edd2c0d6db70",
+        "frequencies_GHz": [
+          0.5,
+          1,
+          1.5,
+          2,
+          2.5
+        ],
+        "released_utc": "2026-11-18T04:03:51+00:00",
+        "data_checks_passed": true,
+        "authority": "coordinator explicit --release after frozen-data checks 1 to 3"
+      },
+      {
+        "scene": "c_shape",
+        "sha256": "b7916978d3f619b1e6553e9e663e2636b721b9d48cac2ec1c846cd0cb1b8594c",
+        "frequencies_GHz": [
+          0.5,
+          1,
+          1.5,
+          2,
+          2.5
+        ],
+        "released_utc": "2026-11-18T04:03:51+00:00",
+        "data_checks_passed": true,
+        "authority": "coordinator explicit --release after frozen-data checks 1 to 3"
+      },
+      {
+        "scene": "hook",
+        "sha256": "57f644bc7393a36df1a94a3e03077d15f65730f803398246579a753981168932",
+        "frequencies_GHz": [
+          0.5,
+          1,
+          1.5,
+          2,
+          2.5
+        ],
+        "released_utc": "2026-11-18T04:03:52+00:00",
+        "data_checks_passed": true,
+        "authority": "coordinator explicit --release after frozen-data checks 1 to 3"
+      }
+    ],
+    "csi_status": {
+      "state": "running",
+      "utc": "2026-11-18T04:03:53+00:00",
+      "launcher_pid": 977035,
+      "elapsed_seconds": 181.1192058864981,
+      "active": [
+        "star"
+      ],
+      "released": [
+        "star",
+        "asymmetric",
+        "c_shape",
+        "hook"
+      ],
+      "unreleased": [
+        "cross",
+        "cog",
+        "aphex_twin"
+      ],
+      "max_csi_fits": 1,
+      "memory": {
+        "MemFree": 12836978688,
+        "MemAvailable": 30704439296
+      },
+      "matlab": [
+        {
+          "pid": 982793,
+          "command": [
+            "/usr/local/MATLAB/R2026a/bin/glnxa64/MATLAB",
+            "-batch",
+            "run('/home/drdeng/Neural_SDF_BEM_AD_organised/experiments/baselines/csi/campaign_case.m')",
+            "-prefersoftwareopengl"
+          ]
+        },
+        {
+          "pid": 985125,
+          "command": [
+            "/usr/local/MATLAB/R2026a/bin/glnxa64/MATLAB",
+            "-batch",
+            "run('/home/drdeng/Neural_SDF_BEM_AD_organised/experiments/baselines/csi/generate_five_frequency_data.m')",
+            "-prefersoftwareopengl"
+          ]
+        }
+      ],
+      "target_hours": 5,
+      "time_target_is_informational": true,
+      "time_target_exceeded": false
+    }
+  },
+  "proposed_allocation": {
+    "max_data_jobs": 1,
+    "max_csi_fits": 1,
+    "max_bem_fits": 2,
+    "max_cpu_checks": 1,
+    "reserved_growth_and_new_gib": 11.577,
+    "projected_available_gib": 18.188,
+    "estimated_cores": 19,
+    "target_slots": {
+      "data": 1,
+      "csi": 1,
+      "b1": 1,
+      "bem": 1,
+      "check": 1
+    }
+  },
+  "alerts": []
+}

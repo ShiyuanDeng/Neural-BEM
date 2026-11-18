@@ -1,0 +1,11 @@
+{
+  "authority": "The user asked this session to manage resources while they sleep. Both coordinators consume results/csi/resource_policy.json. The BEM coordinator confirmed CPU-only checks and requested one short simulated-C fit beside B1.",
+  "objective": "Keep the authorized preparation, checks, ten simulated BEM fits, seven MF-CC-CSI fits and remaining B1 fits moving within available resources. Record failures and missing launchers without inventing completion.",
+  "limits": "No numerical fit is started, stopped, restarted or retuned by this monitor. No change to frequencies, scientific checks, case releases, solver settings or ownership. Reserve 14 GiB plus 2 GiB margin and outstanding worker growth. No time stop.",
+  "command": "python experiments/resource_management/watch_comparison.py --start",
+  "heartbeat_seconds": 60,
+  "resource_recheck_seconds": 600,
+  "outputs": ["results/csi/resource_policy.json", "results/resource_management/2026-11-18/status.json", "results/resource_management/2026-11-18/events.jsonl"],
+  "completion": "Stop this monitor only after ten simulated-C BEM outcomes, seven CSI outcomes and all 40 B1 outcomes are saved, or when its own STOP file or monitor_enabled=false is supplied. Stopping the monitor never signals a numerical worker.",
+  "communication": "Shared files only. This session has no HERDR_ENV=1; the coordinators have confirmed they read the policy. No agent panes are controlled."
+}
