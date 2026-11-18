@@ -9,11 +9,17 @@ It is a temporary second file. The user: "i would prefer to use one
 coordination file, but temporarily to avoid the current coordination file
 being too long you can have a new one". Merge it back when the work is done.
 
-**State, 18 November 2026, 02:54 GMT:** a fresh coordinator took over at
+**State, 18 November 2026, 03:58 GMT:** a fresh coordinator took over at
 02:03, after the user restarted the chat ("you have a lot of context so i
 plan to start you fresh"). Table B1: 38 of 40 fits are done and all 20 data
-checks pass. `aphex_twin__c4` is running (known contrast, then recovered).
-One fit failed in quality: `aphex_twin__c0.5` with known contrast, 15.1%.
+checks pass. `aphex_twin__c4` is running (known contrast since 02:33, slow
+but moving; then recovered). One fit failed in quality: `aphex_twin__c0.5`
+with known contrast, 15.1%. Table C, simulated: the user chose 0.5, 1, 1.5,
+2 and 2.5 GHz for all ten shapes at 03:39. The wrapper and the
+[plan](adapt_bem_to_baseline_data/07_fit_csi_cases_at_five_frequencies/plan.md)
+are ready; the fits wait for the baseline side's frozen five-frequency tables
+and for a free BEM slot (the resource monitor allows one BEM fit at a time
+across B1 and these cases; a second slot was asked for at 03:58).
 A later restart begins at [Start here](#start-here) too.
 
 ## Start here
@@ -24,8 +30,8 @@ For the coordinator who picks this up, in pane `w2:p1`.
 
 | Agent | Pane | Model | State at 02:02 | Reads first |
 |---|---|---|---|---|
-| `bem-b1` | `w2:p9`, top right | Codex `gpt-6-astra`, high, full access | Queue released 02:11, two fits at a time: known row on every checked case, then the recovered row; late cases join when their checks pass. 38 of 40 fits done at 02:54. `aphex_twin__c4` known contrast runs since 02:33; its recovered fit follows. Ceiling four fits since 02:22. Then it reports and stops. Its `watch-checks` loop waits for the last three BRG manifests. It stops only for a failed check, a crash, a repeating memory requeue or a decision. Do not clear it | Its brief is in its pane; its files are in [06](adapt_bem_to_baseline_data/06_fit_brg_tg002_cases/) |
-| `bem-csi-run` | `w2:p8`, bottom right; cleared 01:59 | Claude Sonnet, high, permissions bypassed | Cleared at 01:59 and idle, a fresh session with no memory. It waits for the user's frequency list | `AGENTS.md`, this file, "State at handoff" in [04 results](adapt_bem_to_baseline_data/04_fit_csi_cases/results.md), the hand-over in [03 results](adapt_bem_to_baseline_data/03_adapt_bem_to_csi_data/results.md) |
+| `bem-b1` | `w2:p9`, top right | Codex `gpt-6-astra`, high, full access | Queue released 02:11, two fits at a time: known row on every checked case, then the recovered row; late cases join when their checks pass. 38 of 40 fits done at 02:54. `aphex_twin__c4` known contrast runs since 02:33 (in its seventh all-frequency stage at 03:52; slow but moving, not stopped for time); its recovered fit follows. Ceiling four fits since 02:22. Then it reports and stops. Its `watch-checks` loop waits for the last three BRG manifests. It stops only for a failed check, a crash, a repeating memory requeue or a decision. Do not clear it | Its brief is in its pane; its files are in [06](adapt_bem_to_baseline_data/06_fit_brg_tg002_cases/) |
+| `bem-csi-run` | `w2:p8`, bottom right; cleared 01:59 | Claude Sonnet, high, permissions bypassed | Cleared at 01:59 and idle, a fresh session with no memory. Not briefed yet for the five-frequency pass: brief it when the baseline coordinator says the tables are frozen | `AGENTS.md`, this file (Limits, Working with the coordinator), the [07 plan](adapt_bem_to_baseline_data/07_fit_csi_cases_at_five_frequencies/plan.md), "State at handoff" in [04 results](adapt_bem_to_baseline_data/04_fit_csi_cases/results.md), the hand-over in [03 results](adapt_bem_to_baseline_data/03_adapt_bem_to_csi_data/results.md) |
 
 Closed, work finished and committed: `bem-gpu` (closed by the user),
 `bem-brg` (Codex session `01a1ec04-8da6-75b3-a234-97134f6d1105`, for
@@ -52,7 +58,8 @@ activity results):
 | B2 | `star_limited` | 0.60% at k = 15, 274 s | BRG 0.81% |
 | B2 | `cavity_09`, `cavity_2` | Skipped by the user (series limit) | BRG 134% |
 | C | Measured cylinder | Default fit stalled: radius 19.0 mm against 15, permittivity 2.19 against 3, area error 67.8%. The adapter is cleared | MF-CC-CSI +4.2% support area, 2.73 |
-| C | Simulated circle, kite, peanut, 1 to 3 GHz (early look, not the reported pass) | 1.17%, 3.08%, 1.50% area error; contrast within 0.04% of 4 | CSI's rerun is on hold |
+| C | Simulated circle, kite, peanut, 1 to 3 GHz (early look, not the reported pass) | 1.17%, 3.08%, 1.50% area error; contrast within 0.04% of 4 | CSI's three eight-frequency fits stay as separate results |
+| C | Simulated, all ten shapes, 0.5 to 2.5 GHz in five frequencies (the reported pass) | Prepared 03:58; waits for the frozen tables | CSI's seven remaining fits wait for our ten 1% checks |
 | B1, known contrast | 17 of 20 cases (02:20) | Every fit completed its schedule. Area error at most 0.29% (`cog__c0.5`), under 0.1% on the other 16, median 0.04%. 7 to 115 s and 274 to 4585 work units per fit | BRG, same 17 cases: 6 under 5% (main file, BRG activity 04) |
 | B1, recovered contrast | 17 of 20 cases (02:26) | Every fit completed its schedule. Area error at most 0.21% (`cog__c0.5`), under 0.1% on the other 16, median 0.03%. Contrast within 2e-6 of the truth, relative. 9 to 96 s per fit | None; BRG is given the contrast |
 | B1 | `cog__c4` | 0.038% area error in both rows (40 s and 56 s); contrast found 4.0000001 | |
@@ -82,14 +89,29 @@ activity results):
    BRG activity 04). A case counts as ready when its `bulk_manifest.json`
    lists all 37 data files and the hashes match; a manifest without them
    means "inputs pending".
-4. When the user gives the frequency list for the simulated CSI cases: set
-   `DATASETS['simulated']['frequencies_ghz']` in
-   `experiments/bem_on_baseline_data/csi_fit.py` (one line, now `(1, 2, 3)`),
-   run `csi_policy_dry_check.py` to see the stage list, commit by path.
-   Then give `bem-csi-run` its files to read (table above) and the list.
-   It runs all ten shapes: the 1% check on each true shape at the listed
-   frequencies, the GPU fit, the CPU cross-check. A shape above 1% is not
-   fitted; ask the user.
+4. Simulated CSI cases, the reported pass. The user's list (03:39): 0.5, 1,
+   1.5, 2 and 2.5 GHz, all ten shapes. Done 03:58: the list, the new table
+   path, the five-stage ladder and the result folder are set in
+   `experiments/bem_on_baseline_data/csi_fit.py` and `csi_data.py`; the dry
+   check passes; the
+   [plan](adapt_bem_to_baseline_data/07_fit_csi_cases_at_five_frequencies/plan.md)
+   is written. Still to do, in order:
+   - Wait for the baseline coordinator's word that the tables are frozen
+     (`results/csi/tg002/2026-11-18_five_frequency_data/<shape>/forward/synthetic_input.txt`,
+     hashes in `csi_adaptation/06_prepare_five_frequency_data/data_note.md`).
+     Rerun `csi_policy_dry_check.py` once on the real circle table.
+   - Brief `bem-csi-run` with the plan. It runs the ten 1% checks first.
+   - Send the ten check results (shape, table SHA-256, mismatch at each of
+     the five frequencies) to the baseline coordinator at once: its seven
+     CSI fits wait for them. A shape above 1% is fitted by neither method;
+     tell the baseline coordinator, who asks the user.
+   - Then the ten GPU fits, as the resource monitor allows; then the CPU
+     cross-checks. Results:
+     `results/bem/baseline_data/csi_five_frequency/2026-11-18/`.
+   - The monitor's ceilings are in `results/csi/resource_policy.json`;
+     the runner re-reads it before each launch. At 03:51 `max_bem_fits`
+     was 1, counting B1 and these fits together, so the fits wait while a
+     B1 fit runs. The 1% checks run on the CPU and take no GPU slot.
 5. The main file's tables B1, B2 and C still say the BEM side has "not
    started". Update only those BEM states there, after re-reading it.
 6. Later, on a quiet machine: one clean timed GPU pass for the reported
@@ -113,6 +135,18 @@ activity results):
 - The baseline coordinator (pane `w1:p1`) relays user decisions into this
   pane, marked "not from the user". Read the user's own words in its pane
   before acting on one, and record where they were given.
+- A pane's screen shows only its last page. To read the user's own words
+  in another pane, search the session records:
+  `~/.claude/projects/-home-drdeng-Neural-SDF-BEM-AD-organised/*.jsonl`
+  (Claude panes) and `~/.codex/sessions/2026/11/18/*.jsonl` (Codex panes).
+- The resource monitor's pane has no Herdr access: it cannot send notices.
+  Its ceilings for new launches are in `results/csi/resource_policy.json`
+  (`max_bem_fits`, memory rule: available minus 4 GiB per BEM fit stays at
+  or above 16 GiB). It can be prompted: `agent prompt w3:p1 "..."`. It
+  answers in that file.
+- The baseline coordinator runs a read-only agent, `bem-watch` (workspace
+  `w1`), that reads our five-frequency result files. It never edits our
+  files and never prompts our agents.
 - Do not `cd` into a subfolder in the coordinator's shell; the working
   directory sticks. Use paths from the repository root.
 - Agents commit by path in a shared checkout. Check `git status` for an
@@ -151,7 +185,7 @@ Ask the user before any of these:
 | 1 | Table path on the GPU | all | none | Done 18 Nov; default fit unchanged on CPU and GPU |
 | 1 | BRG paper cases, known contrast, to k = 15: two gliders and two stars. The two cavity cases are skipped (user, 18 Nov) | B2 | Saved by BRG, ready | GPU pass done; follow-up checks running |
 | 1 | Measured Fresnel cylinder `dielTM_dec8f` | C | Ready | Not started |
-| 2 | Ten TG-002 shapes at contrast 4, simulated in the Fresnel layout. Frequency list open: four or five frequencies, the user chooses | C | All ten frozen by the baseline side in `results/csi/tg002/2026-11-18_low_band_data/` (18 Nov, checked) | Early look at 1 to 3 GHz on three shapes; the rest waits |
+| 2 | Ten TG-002 shapes at contrast 4, simulated in the Fresnel layout, at 0.5, 1, 1.5, 2 and 2.5 GHz (the user, 18 Nov 03:39 UTC) | C | Being made by the baseline side: `results/csi/tg002/2026-11-18_five_frequency_data/` (8820 rows per shape). The eight-frequency tables stay in `2026-11-18_low_band_data/` | Early look at 1 to 3 GHz on three shapes (kept apart). Reported pass prepared; waits for the tables |
 | 3 | TG-002 shapes with BRG's plane-wave data: 10 shapes at contrasts 0.5 and 4, known contrast then recovered contrast | B1 | BRG's saved observations, `results/brg/tg002_shapes/2026-11-17/<case>/local/` | Opened by the user 18 Nov; `bem-b1` preparing |
 
 Table B1 was held until the user opened it on 18 November. What was
@@ -257,6 +291,7 @@ answered "yes" to the coordinator's recommendation as written here.
 | Simulated CSI data, 18 Nov 00:55 UTC | The ten simulated shapes use the 1, 2 and 3 GHz rows only, for CSI and for our BEM. The retained eight-frequency files stay as they are. The measured cylinder keeps all eight frequencies. Given in the baseline coordinator's pane after the circle failed the 1% rule; the BEM coordinator read the words there | "id say we just supply less frequency range to it, you know below 4GHz such that simulated data are accurate there" |
 | Series limit, 18 Nov about 01:03 UTC | No solver change. Cases that the series limit stops are skipped: `cavity_09` and `cavity_2` (refused above k = 8 on the true shape). The coordinator's reading for the rest: a case refused by the series limit inside its fit is not rerun, and goes to the user with its last endpoint | "skip the case and similiar ones that have this problem" |
 | Simulated CSI data, 18 Nov 01:36 UTC | The frequency set for the simulated cases is open again: the user reviews CSI's eight-frequency batch (circle, kite, peanut) and then chooses four or five frequencies. The 1 to 3 GHz list of 00:55 is no longer final. Given in the baseline coordinator's pane; the BEM coordinator read the words there | "Let the current eight-frequency batch finish. Hold the automatic 1–3 GHz launch. Review those results with me before choosing four or five frequencies for the remaining cases." |
+| Simulated CSI data, 18 Nov 03:39 UTC | Final list: 0.5, 1, 1.5, 2 and 2.5 GHz for all ten simulated BEM cases and for CSI's remaining seven. The baseline side prepares and freezes the missing frequencies; both methods read the same files. The three eight-frequency CSI fits stay as separate results. Runs are queued with the resource monitor and never interrupt a running fit. Given in the baseline coordinator's pane (`w1:p1`) and, at 03:17 UTC, in the resource monitor's pane (`w3:p1`); the BEM coordinator read both in the session records | "Use [0.5, 1, 1.5, 2, 2.5] GHz for all ten C-simulated BEM cases and the remaining seven MF-CC-CSI cases. Prepare and freeze the missing-frequency data, and give the same observations to both methods." "Relay this to the BEM coordinator. Queue preparation, checks and fits with the resource monitor; launch as capacity allows without interrupting existing fits. Keep the previous three CSI fits as separate eight-frequency results." Earlier, to the monitor: "i need: c simulated bem, and the remaining seven mf-cc-csi to use [0.5, 1, 1.5, 2, 2.5] frequencies" |
 | Time limits, 18 Nov about 01:10 UTC | Said to the baseline coordinator about its runs. Whether it also covers the BEM side's 120 s CPU cut and 1 h ceiling is asked, not assumed | "do not stop result-gerating terminal processes due to time limit unless i say otherwise. if it stucks or goes wrong you should still stop it. this is only about time limit" |
 | Table B1 opened, 18 Nov about 01:45 UTC | Our BEM on the 20 BRG-generated TG-002 cases, by one dedicated agent that owns both rows: known contrast first, recovered contrast after. Both rows use BRG's saved observations. One GPU fit at a time at first; more only when the machine allows | "Open B1: BEM on the 20 BRG-generated TG-002 cases. Run the agreed data checks, then known-contrast fits first and recovered-contrast fits afterwards. Both rows must use the saved BRG observations." "Start a dedicated B1 subagent with that brief. One agent owns both comparison rows, running one numerical fit at a time initially. Increase concurrency only when machine capacity allows." |
 | Capacity and time, same message | Start one GPU fit when current BEM work frees capacity; reserve its peak plus margin above the 14 GiB floor; measure the first fit before raising concurrency; recheck when the CSI batch ends. Existing jobs keep running; the simulated-CSI frequency hold stays. Elapsed-time targets are reports, not stops | "Prepare now, and start one GPU fit when the current BEM work frees capacity. Reserve its expected peak memory plus margin above the 14 GiB floor. Measure the first fit before increasing concurrency." "Recheck capacity when the current CSI batch finishes. Leave existing jobs running, keep the simulated-CSI frequency hold, and treat elapsed-time targets as reports rather than reasons to stop." |
@@ -269,7 +304,9 @@ so it cannot compare shape recovery.
 
 ## Limits
 
-- Per fit: 13,412 work units and a 1 h wall ceiling.
+- Per fit: 13,412 work units. The 1 h wall ceiling held for the older
+  passes only: table B1 and the five-frequency CSI pass have no stop on
+  elapsed time (the user: time targets are reports, not stops).
 - A CPU fit that passes 120 s stops and waits for the GPU path. 120 s is
   the default method's nominal fit time.
 - Memory: keep 14 GB available. Wrap long runs in a guard that stops its
@@ -484,7 +521,7 @@ data convention is in doubt.
 | Table path on the GPU | `bem-gpu` | Done: commit `3612f5195` at 00:32 ([results](adapt_bem_to_baseline_data/01_run_table_path_on_gpu/results.md)). Lock free. Its series-limit proposal is closed: no go from the user. The user is closing its pane | None |
 | BRG paper cases | `bem-brg` | Reported GPU pass done 01:23; follow-up checks done 01:36 ([results](adapt_bem_to_baseline_data/02_fit_brg_paper_cases/results.md)). Area error: `glider_033` 0.061% at k = 15 (71 s); `star_full` 0.58% (334 s); `star_limited` 0.60% (274 s); `glider_10` failed (14% at k = 12; lost from k = 1.75). Cavities skipped by the user. CPU and GPU paths differ through the slider preparation (B6), an existing default behaviour. Agent closed 01:59 | Clean timed pass on a quiet machine; uncut CPU cross-checks if the user allows |
 | CSI adapter | `bem-csi` | Done and closed 02:00 ([results](adapt_bem_to_baseline_data/03_adapt_bem_to_csi_data/results.md)). Measured cylinder fitted (default fit stalled; adapter cleared). Wrapper reads the ten frozen tables; the frequency list is one setting, now (1, 2, 3) GHz; dry check shows the stage lists unchanged for what ran | None |
-| CSI fits | `bem-csi-run` | Early look at 1 to 3 GHz done 01:56 ([results](adapt_bem_to_baseline_data/04_fit_csi_cases/results.md)): circle 1.17%, kite 3.08% (numerical failure in its last stage, kept), peanut 1.50%. Session cleared 01:59; idle | The user's frequency list; then all ten shapes as the reported pass |
+| CSI fits | `bem-csi-run` | Early look at 1 to 3 GHz done 01:56 ([results](adapt_bem_to_baseline_data/04_fit_csi_cases/results.md)): circle 1.17%, kite 3.08% (numerical failure in its last stage, kept), peanut 1.50%. Session cleared 01:59; idle. Reported pass at 0.5 to 2.5 GHz prepared 03:58 ([plan](adapt_bem_to_baseline_data/07_fit_csi_cases_at_five_frequencies/plan.md)) | The baseline side's frozen tables; then brief the agent: ten 1% checks (send them to the baseline coordinator), ten GPU fits, CPU cross-checks |
 | Table B1 | `bem-b1` | Both rows done on the first 17 cases, 34 fits, all completed and reportable. Known row (02:20): area error 1.8e-7 to 2.9e-3, 599 s of fitting in total. Recovered row (02:26): area error 9.5e-8 to 2.1e-3, contrast within 2e-6, 725 s in total. Host peak at most 2.27 GiB. Late cases: `cog__c4` 0.038% in both rows; `aphex_twin__c0.5` 15.1% known (failed in quality) and 1.14% recovered; `aphex_twin__c4` running since 02:33. All 20 data checks pass: worst difference from BRG 8.8e-6 (`aphex_twin__c0.5`), worst between our resolutions 7.9e-7 (`cog__c4`, limit 1e-6). Earlier: data checks pass on 17 of 20 cases ([results](adapt_bem_to_baseline_data/06_fit_brg_tg002_cases/results.md)): the two forward copies differ by at most 1.6e-7 (limit 1%), our resolutions by at most 1.7e-13 (limit 1e-6). First fit, `circle__c4` known contrast, 02:06: completed schedule, 274 of 13,412 work units, 6.7 s, area error 7.3e-7 ([report](adapt_bem_to_baseline_data/06_fit_brg_tg002_cases/first_fit_report.md)). Queue released 02:11 at two fits at a time. `cog__c4` and `aphex_twin` wait for BRG's completion run | `aphex_twin__c4`, then `bem-b1`'s final report. Review it. Ask it, from saved records only, where the 500 s went in each of two stages of the stalled `aphex_twin__c0.5` fit. Then close or clear the agent |
 
 ## Coordinator decisions
@@ -537,19 +574,23 @@ data convention is in doubt.
 | 18 Nov, 02:23 | B1 concurrency ceiling of four fits accepted. `bem-b1` paused only its scheduler at 02:22, let the two running fits end, and restarts the queue at four | The resource monitor sent the new ceiling straight to `bem-b1` at about 02:22, with the same memory rule and no change to settings, checks or row order. 36 GB was available and a fit peaks at 2.24 GiB, so four fits take about 9 GiB. No running fit was interrupted |
 
 | 18 Nov, 02:54 | `aphex_twin__c0.5` with known contrast stays in the table as a failed fit: 15.1% area error. No rerun, no retune | The plan says failures stay in the table, and GPU fits repeat bit for bit. From its saved stages: the loss stops at 8.4e-5; the first two all-frequency stages accept no step; two later stages take about 500 s each for 266 and 152 work units. The recovered-contrast fit on the same data reaches loss 2.8e-11 and 1.14% area error, so the data and the adapter are sound. The cause of the stall is not known |
+| 18 Nov, 03:55 | Simulated CSI cases at 0.5 to 2.5 GHz: the frequency rule of 01:39 is applied as fixed. All five frequencies lie below 3 GHz, so the ladder has five stages (0.5; 0.5–1; 0.5–1.5; 0.5–2; 0.5–2.5 GHz), then the default all-frequency stages on the list. Ladder quotas 1000, 1000, 1000, 1000, 4000 | The rule was fixed "for whatever list the user picks"; only the quotas for five stages were missing. First and last are the default's; the default's middle 3000 units are shared equally, so the ladder total stays 8000 and the fit total 13,412. Shape bands by the default's own rule: 1, 3, 4, 6, 7 (default TG-002: 3, 5, 7, 9). Set before any result on this list. A scratch run on our own synthetic kite data showed only that the five stages run |
+| 18 Nov, 03:55 | The five-frequency GPU fits have no stop on elapsed time (the wrapper's 1 h ceiling is removed). The CPU cross-check keeps its 120 s cut | The user: "treat elapsed-time targets as reports rather than reasons to stop", and the relayed order says no stop on time. `aphex_twin__c4` in B1 shows a fit can pass 1 h and still move. The CPU run is a cross-check, not a result; whether to lift its cut is still asked |
+| 18 Nov, 03:55 | The five-frequency pass writes to `results/bem/baseline_data/csi_five_frequency/2026-11-18/`, apart from the early look. A fit now refuses a check made on another table (SHA-256) or another frequency list | The early-look folder holds finished attempts and passing 1 to 3 GHz checks for circle, kite and peanut; reusing it would skip those fits and accept the old checks. Both methods must provably read the same file |
+| 18 Nov, 03:58 | Resource ceilings: the BEM side follows `results/csi/resource_policy.json` (one BEM fit at a time across B1 and the simulated cases, set 03:51). The ten 1% checks run on the CPU as each table is frozen. The monitor was asked for a second BEM slot, for one simulated fit beside the B1 fit | The monitor is set up by the user and sets how many jobs run. The checks use one CPU thread for about 10 s each and no GPU, and CSI's seven fits wait for them. The B1 fit `aphex_twin__c4` has run 86 min with no time stop; ten short simulated fits (1 to 3 min each in the early look) would otherwise wait behind it |
+| 18 Nov, 03:55 | The coordinator made these wrapper edits itself (`csi_fit.py`, `csi_data.py`, `csi_policy_dry_check.py`); `bem-csi-run` only runs | `bem-csi` is closed; the edits are settings and one start check, no solver file. The dry check reproduces the saved plans of the cylinder and of the early look, apart from the removed ceiling |
 
 ## Waiting on the user
 
-- **The frequency list for the simulated CSI cases.** The user chooses four
-  or five frequencies after reviewing CSI's eight-frequency batch (ends
-  near 01:57 UTC). Until then only circle, kite and peanut are fitted, at
-  1 to 3 GHz, as an early look.
 - **Time limits on the older BEM passes.** For B1 the user settled it:
   elapsed-time targets are reports, not stops. Still unsaid: whether the
   120 s cut on the CPU cross-checks of tables B2 and C should be lifted,
   so that CPU and GPU outcomes can be compared at the end of a fit.
 
-Answered, both recorded under "Decisions made with the user":
+Answered, all recorded under "Decisions made with the user":
+
+- **The frequency list for the simulated CSI cases** (18 Nov 03:39 UTC):
+  0.5, 1, 1.5, 2 and 2.5 GHz, all ten shapes.
 
 - **The series limit** (18 Nov about 01:03 UTC). At 1e-6 the series admits
   k times wave radius up to about 24.7. The true cavity has wave radius
@@ -587,9 +628,9 @@ Unknowns the work will settle:
 
 Calls left to the coordinator:
 
-- The exact frequency rule on CSI data. A suggestion, not a user decision:
-  map the TG-002 default by k times the start radius. That gives a start at
-  1 GHz, then 2 and 3 GHz added one at a time, then all frequencies.
+- The exact frequency rule on CSI data. Settled in "Coordinator decisions"
+  (00:27, 01:00, 01:39 and 03:55): one frequency at a time up to the larger
+  of 3 GHz and half the top frequency, then all frequencies.
 - Which session is the baseline coordinator. Settled at launch: the Claude
   session in Herdr pane `w1:p1`, as the main file's restart notes say.
 

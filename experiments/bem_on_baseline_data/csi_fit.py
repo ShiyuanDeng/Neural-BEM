@@ -7,7 +7,9 @@ level declared, series limit 1e-9, 13,412 work units. The only CSI-specific part
 - the frequency rule of the measured cylinder (coordinator, review stop 1): ladder stages are
   catalog prefixes, one frequency at a time, up to the highest frequency at or below half the
   catalog top; then the whole catalog. On 1-8 GHz: 1; 1-2; 1-3; 1-4; then 1-8 GHz.
-  Simulated TG-002 tables use 1-3 GHz only, ladder 1; 1-2; 1-3 GHz, quotas (1000, 3000, 4000);
+  Simulated TG-002 tables (reported pass) use 0.5, 1, 1.5, 2 and 2.5 GHz: five ladder stages,
+  one frequency at a time, quotas (1000, 1000, 1000, 1000, 4000), then the whole list. The
+  early look used 1-3 GHz, ladder 1; 1-2; 1-3 GHz, quotas (1000, 3000, 4000);
 - frequency-block (ragged) stages, shown equal to the rectangular default to round-off at
   review stop 2;
 - length unit 0.05 m, origin at the acquisition centre, bounds +-0.3 m (the default's sizes).
@@ -42,21 +44,29 @@ import csi_data as D
 START_RADIUS_M = .065
 BOUNDS_M = ((-.3, -.3), (.3, .3))
 EPSILON, MINIMUM_START = 1e-3, .05          # the comparison's weak-scatterer start (MR-001)
-WALL = dict(cpu=120., cuda=3600.)           # CPU pass stops at 120 s and waits for the GPU pass
+# CPU cross-check stops at 120 s and waits for the GPU pass. The GPU pass has no elapsed-time
+# stop (the user, 18 Nov 2026: time targets are reports, not stops); it ended at 3600 s before.
+WALL = dict(cpu=120., cuda=float('inf'))
 THREADS = dict(cpu=1, cuda=4)               # CPU: one thread per fit; GPU: the default's 4
 START_MEMORY_GIB, GUARD_MEMORY_GIB = 16.5, 14.   # start leaves >= 14.5 GiB after a ~2 GiB peak
 MEASURED_CASE = 'dielTM_dec8f'
+# Reported five-frequency pass. The early look at 1-3 GHz stays in results/bem/baseline_data/csi_cases.
+RESULTS = Path('results/bem/baseline_data/csi_five_frequency/2026-11-18')
 # Dataset-level settings (coordinator, 18 Nov 2026). Never per case. The simulated list is the
-# one setting the user chooses; it stays 1-3 GHz (the user's answer to the 1% rule, "below 4GHz
-# such that simulated data are accurate there") until the coordinator passes on a new list.
+# one setting the user chooses. Reported pass, the user at 03:39 UTC: "Use [0.5, 1, 1.5, 2, 2.5]
+# GHz for all ten C-simulated BEM cases". The early look used (1, 2, 3) on the eight-frequency
+# tables.
 DATASETS = dict(measured=dict(frequencies_ghz=None),          # all eight
-                simulated=dict(frequencies_ghz=(1., 2., 3.)))
+                simulated=dict(frequencies_ghz=(.5, 1., 1.5, 2., 2.5)))
 # Ladder rule, fixed by the coordinator before any result on such a list: one frequency at a
 # time, lowest first, up to the larger of 3 GHz (about the top of the default TG-002 ladder in
 # wavenumber) and half the top frequency; then the default all-frequency stages on the list.
 LADDER_FLOOR_HZ = 3e9
+# Quotas: first and last stage as the default (1000 and 4000); the default's middle 3000 units
+# are shared equally by the middle stages. The ladder total stays 8000 for any stage count.
 LADDER_QUOTAS = {3: (1000, 3000, 4000),                   # default four with the middle two merged
-                 4: RealOnlyPolicy().prefix_quotas}       # the default (1000, 1250, 1750, 4000)
+                 4: RealOnlyPolicy().prefix_quotas,       # the default (1000, 1250, 1750, 4000)
+                 5: (1000, 1000, 1000, 1000, 4000)}       # five-frequency list, fixed before any result
 FREQUENCY_RULE = ('ladder: one frequency at a time, lowest first, up to max(3 GHz, top/2); '
                   'then the default all-frequency stages on the whole list')
 
@@ -85,7 +95,7 @@ def policy_for(real, device):
     frequencies = [o.frequency_hz for o in real]
     rungs = ladder(frequencies)
     if len(rungs) not in LADDER_QUOTAS:
-        raise ValueError(f'The frequency rule gives {len(rungs)} ladder stages; quotas exist for 3 or 4.')
+        raise ValueError(f'The frequency rule gives {len(rungs)} ladder stages; quotas exist for {sorted(LADDER_QUOTAS)}.')
     if tuple(frequencies[:len(rungs)]) != rungs:
         raise ValueError('The ladder must be a prefix of the catalog.')
     return CsiPolicy(prefix_frequencies_hz=rungs, prefix_quotas=LADDER_QUOTAS[len(rungs)], fit_seconds=WALL[device])
@@ -269,17 +279,22 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--case', required=True, help=f'{MEASURED_CASE} or <shape>__c4 (simulated)')
     parser.add_argument('--device', choices=('cpu', 'cuda'), required=True)
-    parser.add_argument('--out', default=str(ROOT/'results/bem/baseline_data/csi_cases'))
-    parser.add_argument('--checks', default=str(ROOT/'results/bem/baseline_data/csi_cases/adapter_checks'),
+    parser.add_argument('--out', default=str(ROOT/RESULTS))
+    parser.add_argument('--checks', default=str(ROOT/RESULTS/'adapter_checks'),
                         help='folder of csi_forward_check.py case files; a simulated fit needs its passing check')
     args = parser.parse_args()
     args.out, args.checks = str(Path(args.out).resolve()), str(Path(args.checks).resolve())
     if dataset(args.case) == 'simulated':
-        D.verify_sha256(case_input(args.case))      # frozen table, before any attempt
+        digest = D.verify_sha256(case_input(args.case))      # frozen table, before any attempt
         check = Path(args.checks)/f'{args.case}.json'
-        summary = json.loads(check.read_text())['summary'] if check.exists() else None
+        checked = json.loads(check.read_text()) if check.exists() else None
+        summary = checked['summary'] if checked else None
+        selected = list(DATASETS['simulated']['frequencies_ghz'])
         if not summary or not summary['adapter_checks_pass'] or not summary['one_percent_rule']:
-            raise SystemExit(f'No passing adapter check and 1% rule (1-3 GHz) at {check}; run csi_forward_check.py first.')
+            raise SystemExit(f'No passing adapter check and 1% rule on {selected} GHz at {check}; run csi_forward_check.py first.')
+        # The check must be of this very table and of this frequency list (not an early-look check).
+        if checked['frozen_sha256_verified'] != digest or list(summary['rule_frequencies_ghz']) != selected:
+            raise SystemExit(f'The check at {check} is of another table or frequency list; rerun csi_forward_check.py.')
     run(args.case, args.device, args.out)
 
 

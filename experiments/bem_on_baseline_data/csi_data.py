@@ -31,9 +31,12 @@ LENGTH_M = .05                   # package length unit of the default method
 TX_RADIUS_M, RX_RADIUS_M = .72, .76
 NTX, RING = 36, 72
 MEASURED = Path.home()/'neural_bem_external/CC-CSI/FresnelData/The_first_opus/dielTM_dec8f.txt'
-# All ten simulated tables, frozen by the baseline side (commit 8d4c6123d), each with a .sha256.
-# circle, kite and peanut are byte-identical to the 2026-11-17 campaign tables used first.
-SIMULATED = 'results/csi/tg002/2026-11-18_low_band_data/{shape}/forward/synthetic_input.txt'
+# All ten simulated tables, frozen by the baseline side, each with a .sha256 beside it.
+# Reported pass (the user, 18 Nov 2026): five frequencies, 0.5, 1, 1.5, 2 and 2.5 GHz, 8820 rows;
+# both methods read these same files. The eight-frequency tables (commit 8d4c6123d, early look
+# at 1-3 GHz) stay where they are; only the dry check reads them.
+SIMULATED = 'results/csi/tg002/2026-11-18_five_frequency_data/{shape}/forward/synthetic_input.txt'
+SIMULATED_EIGHT = 'results/csi/tg002/2026-11-18_low_band_data/{shape}/forward/synthetic_input.txt'
 
 
 def source_positions_m():
