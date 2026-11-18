@@ -31,7 +31,7 @@ For the coordinator who picks this up, in pane `w2:p1`.
 | Agent | Pane | Model | State at 02:02 | Reads first |
 |---|---|---|---|---|
 | `bem-b1` | `w2:p9`, top right | Codex `gpt-6-astra`, high, full access | Queue released 02:11, two fits at a time: known row on every checked case, then the recovered row; late cases join when their checks pass. 38 of 40 fits done at 02:54. `aphex_twin__c4` known contrast runs since 02:33 (in its seventh all-frequency stage at 03:52; slow but moving, not stopped for time); its recovered fit follows. Ceiling four fits since 02:22. Then it reports and stops. Its `watch-checks` loop waits for the last three BRG manifests. It stops only for a failed check, a crash, a repeating memory requeue or a decision. Do not clear it | Its brief is in its pane; its files are in [06](adapt_bem_to_baseline_data/06_fit_brg_tg002_cases/) |
-| `bem-csi-run` | `w2:p8`, bottom right; cleared 01:59 | Claude Sonnet, high, permissions bypassed | Cleared at 01:59 and idle, a fresh session with no memory. Not briefed yet for the five-frequency pass: brief it when the baseline coordinator says the tables are frozen | `AGENTS.md`, this file (Limits, Working with the coordinator), the [07 plan](adapt_bem_to_baseline_data/07_fit_csi_cases_at_five_frequencies/plan.md), "State at handoff" in [04 results](adapt_bem_to_baseline_data/04_fit_csi_cases/results.md), the hand-over in [03 results](adapt_bem_to_baseline_data/03_adapt_bem_to_csi_data/results.md) |
+| `bem-csi-run` | `w2:p8`, bottom right; cleared 01:59 | Claude Sonnet, high, permissions bypassed | Briefed 03:59 for the five-frequency pass; go for the checks 04:01. It checks each shape when its table is frozen (`<shape>/manifest.json` says `frozen` and the `.sha256` is there), commits each check at once, then fits by a detached waiter that re-reads `results/csi/resource_policy.json` before each launch. It reports the circle check, the check table, the first fit and the end | `AGENTS.md`, this file (Limits, Working with the coordinator), the [07 plan](adapt_bem_to_baseline_data/07_fit_csi_cases_at_five_frequencies/plan.md), "State at handoff" in [04 results](adapt_bem_to_baseline_data/04_fit_csi_cases/results.md), the hand-over in [03 results](adapt_bem_to_baseline_data/03_adapt_bem_to_csi_data/results.md) |
 
 Closed, work finished and committed: `bem-gpu` (closed by the user),
 `bem-brg` (Codex session `01a1ec04-8da6-75b3-a234-97134f6d1105`, for
@@ -95,16 +95,15 @@ activity results):
    `experiments/bem_on_baseline_data/csi_fit.py` and `csi_data.py`; the dry
    check passes; the
    [plan](adapt_bem_to_baseline_data/07_fit_csi_cases_at_five_frequencies/plan.md)
-   is written. Still to do, in order:
-   - Wait for the baseline coordinator's word that the tables are frozen
-     (`results/csi/tg002/2026-11-18_five_frequency_data/<shape>/forward/synthetic_input.txt`,
-     hashes in `csi_adaptation/06_prepare_five_frequency_data/data_note.md`).
-     Rerun `csi_policy_dry_check.py` once on the real circle table.
-   - Brief `bem-csi-run` with the plan. It runs the ten 1% checks first.
-   - Send the ten check results (shape, table SHA-256, mismatch at each of
-     the five frequencies) to the baseline coordinator at once: its seven
-     CSI fits wait for them. A shape above 1% is fitted by neither method;
-     tell the baseline coordinator, who asks the user.
+   is written. Circle frozen 03:59 (verified: 8820 rows, hash matches);
+   the other nine follow one by one. The dry check passes on the real
+   circle table. `bem-csi-run` has the go for the checks (04:01). Still to
+   do, in order:
+   - Read its ten check results as they land
+     (`adapter_checks/<shape>__c4.json`). The baseline `csi` agent reads
+     the same files to release its seven fits; no message is needed per
+     check. A shape above 1% or a failed check: tell the baseline
+     coordinator at once; neither method fits it, and it asks the user.
    - Then the ten GPU fits, as the resource monitor allows; then the CPU
      cross-checks. Results:
      `results/bem/baseline_data/csi_five_frequency/2026-11-18/`.
@@ -578,6 +577,7 @@ data convention is in doubt.
 | 18 Nov, 03:55 | The five-frequency GPU fits have no stop on elapsed time (the wrapper's 1 h ceiling is removed). The CPU cross-check keeps its 120 s cut | The user: "treat elapsed-time targets as reports rather than reasons to stop", and the relayed order says no stop on time. `aphex_twin__c4` in B1 shows a fit can pass 1 h and still move. The CPU run is a cross-check, not a result; whether to lift its cut is still asked |
 | 18 Nov, 03:55 | The five-frequency pass writes to `results/bem/baseline_data/csi_five_frequency/2026-11-18/`, apart from the early look. A fit now refuses a check made on another table (SHA-256) or another frequency list | The early-look folder holds finished attempts and passing 1 to 3 GHz checks for circle, kite and peanut; reusing it would skip those fits and accept the old checks. Both methods must provably read the same file |
 | 18 Nov, 03:58 | Resource ceilings: the BEM side follows `results/csi/resource_policy.json` (one BEM fit at a time across B1 and the simulated cases, set 03:51). The ten 1% checks run on the CPU as each table is frozen. The monitor was asked for a second BEM slot, for one simulated fit beside the B1 fit | The monitor is set up by the user and sets how many jobs run. The checks use one CPU thread for about 10 s each and no GPU, and CSI's seven fits wait for them. The B1 fit `aphex_twin__c4` has run 86 min with no time stop; ten short simulated fits (1 to 3 min each in the early look) would otherwise wait behind it |
+| 18 Nov, 04:01 | Go to `bem-csi-run` for the 1% checks, shape by shape as each table is frozen. A table is frozen when its `<shape>/manifest.json` says `frozen` and the `.sha256` is beside it | The baseline coordinator's rule, sent 04:00. The circle table is verified: 8820 rows, five frequencies, SHA-256 `43b641d7…` equal to its `.sha256`. Its own check against the exact series gives 0.44, 0.17, 0.13, 0.13, 0.18% |
 | 18 Nov, 03:55 | The coordinator made these wrapper edits itself (`csi_fit.py`, `csi_data.py`, `csi_policy_dry_check.py`); `bem-csi-run` only runs | `bem-csi` is closed; the edits are settings and one start check, no solver file. The dry check reproduces the saved plans of the cylinder and of the early look, apart from the removed ceiling |
 
 ## Waiting on the user
