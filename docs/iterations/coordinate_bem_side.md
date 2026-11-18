@@ -116,15 +116,66 @@ background shells of the coordinator; a restart must re-arm them.
   exact series at the ten frequencies: 0.13 to 0.44%, with 0.25% at
   0.25 GHz, so the 1% rule holds on the circle.
 
+- 11:36, `bem-ten`: all ten tables frozen; the 1% rule holds on every
+  shape at every frequency (worst 0.71%, `aphex_twin` at 2.5 GHz). The
+  ladder has ten stages; the first, at 0.25 GHz, has band 0 (size only),
+  and the policy accepts it. Go for the four GPU fits given 11:37.
+- 11:39, `bem-own` done; 11:49, `bem-ten` done. Every fit completed its
+  schedule at band 37; no failure, no rerun.
+
+**Result (11:50 UTC).** Area error, default BEM, contrast 4:
+
+| Shape | CSI tables, five frequencies (activity 07) | CSI tables, ten frequencies ([08](adapt_bem_to_baseline_data/08_fit_csi_tables_at_ten_frequencies/results.md)) | Our forward, five frequencies ([09](adapt_bem_to_baseline_data/09_fit_tables_from_our_forward/results.md)) |
+|---|---:|---:|---:|
+| circle | 0.97% | 0.17% | 0.0000002% |
+| star | 2.34% | 1.02% | 0.08% |
+| kite | 3.80% | 3.21% | 0.07% |
+| hook | 3.59% | 2.44% | 0.06% |
+
+- **Five frequencies are enough on accurate data.** With tables from our
+  nodal reference solver in the same layout, all four outlines are smooth
+  and within 0.08%. The fit and its settings were those of activity 07.
+- **The wiggles come from the error in the CSI tables** (0.1 to 0.7%
+  against our forward; 332 × 332 grid, 0.625 mm cells). The fit follows
+  that error.
+- **Ten frequencies help in part.** Every shape improves; circle and star
+  more than halve. Kite and hook stay above 2% and still look wavy. By the
+  criterion fixed in the plan (a clear gain on three of four) the
+  frequency count is not the main cause.
+- Figures: [five against ten frequencies](adapt_bem_to_baseline_data/08_fit_csi_tables_at_ten_frequencies/figures/outlines.png),
+  [CSI data against our forward](adapt_bem_to_baseline_data/09_fit_tables_from_our_forward/figures/outlines.png).
+
+**Follow-up opened by the coordinator (11:50 UTC):**
+[activity 10](adapt_bem_to_baseline_data/10_fit_remaining_csi_tables_at_ten_frequencies/plan.md),
+the other six shapes at ten frequencies on the frozen tables, by
+`bem-ten`. Reason: the user wants MF-CC-CSI fitted at ten frequencies
+next, and a paired table needs a BEM number on every shape. Six GPU fits,
+no code change. No ten-frequency run on our own data is needed: activity
+09 left no shape above 0.5%.
+
+**Note to the baseline coordinator (11:51 UTC, `agent prompt w1:p1`).**
+Sent as the user allowed ("after you are done you can talk to baseline
+side coordinator and brief him to do csi fit"). It gives the three rows
+of numbers above, the frozen ten-frequency tables and their checks, and
+asks for an MF-CC-CSI fit on those tables. Suggested order, for the
+baseline side and the user to settle: star and hook first (both already
+have a five-frequency CSI fit and a ten-frequency BEM fit), then the other
+five of its seven shapes. The five-frequency row of table C stays; a
+ten-frequency result is a new row. The baseline side takes over the
+ten-frequency data folder and its drivers; the tables stay frozen. Its
+input box showed only a greyed suggestion, no typed text, so the prompt
+was safe to send.
+
 **Review stops.** `bem-ten`: after the circle table (reports, does not
 wait); before any fit (waits for a go). `bem-own`: before the first fit
 (waits for a go).
 
-**Next, in order:** review the checks; give the go; read both `results.md`;
-decide whether a ten-frequency run on our own data is needed (only if
-activity 09 leaves a shape above 0.5%); write the answer for the user;
-then brief the baseline coordinator (`w1:p1`) for the CSI fit at ten
-frequencies; close both panes once their paths are clean.
+**Next, in order:** read the activity 10 results when `bem-ten` reports
+(watcher: `agent wait bem-ten`); close `bem-own` (done, paths clean) and
+then `bem-ten`; add the ten-frequency BEM numbers to the BEM text of the
+main file once the baseline side has a ten-frequency row. The baseline
+coordinator (`w1:p1`) was briefed for the CSI fit at ten frequencies (see
+the note below).
 
 ## Start here
 
