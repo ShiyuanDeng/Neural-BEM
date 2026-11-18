@@ -302,6 +302,9 @@ its table is frozen and checks 1 to 3 passed for it.
   8232 s; 13.29% at five frequencies. `aphex_twin`, the last shape,
   started. `c_shape` is at iteration 1333, `peanut` at 1257 (19:17 UTC);
   both are due near 20:20 UTC, `aphex_twin` near 22:00.
+- 20:15 UTC: `c_shape` done (`3777b02d5`): 15.94%, all 2048 iterations,
+  9933 s; 16.03% at five frequencies. Eight of ten are in. `peanut` is
+  at iteration 1982 and `aphex_twin` at 901 (20:17 UTC).
 - Next: each fit as it ends (the launcher pushes it). Then `results.md`,
   the figure and the ten-frequency table. Ask the user only on a failed
   or stuck fit that needs a decision.
@@ -540,7 +543,7 @@ reported. BEM numbers are read from
 | asymmetric | 0.93% | 4.0019 | 55 s | 7.24% | 11.4% / 26.7% | 3.81 | 9882 s |
 | cross | 1.07% | 4.0009 | 47 s | 11.73% | 12.2% / 39.0% | 3.83 | 9860 s |
 | cog | 1.45% | 4.0013 | 36 s | 14.86% | 18.1% / 18.2% | 3.70 | 8232 s |
-| c_shape | 1.60% | 4.0028 | 75 s | running | | | |
+| c_shape | 1.60% | 4.0028 | 75 s | 15.94% | 10.3% / 44.8% | 3.86 | 9933 s |
 | peanut | 1.19% | 4.0018 | 86 s | running | | | |
 | aphex_twin | 5.77% | 3.9981 | 268 s | running | | | |
 
@@ -548,11 +551,11 @@ reported. BEM numbers are read from
   from its files): every fit completed its schedule, on the same table
   hashes. Mean 1.88%, median 1.32%. At five frequencies the same ten gave
   mean 2.71%, median 2.47%.
-- MF-CC-CSI, seven of ten in (19:16 UTC): `hook` 16.22% against 16.52%
+- MF-CC-CSI, eight of ten in (20:15 UTC): `hook` 16.22% against 16.52%
   at five frequencies; `star` 6.60% against 3.72%; `asymmetric` 7.24%
   against 6.67%; `cross` 11.73% against 11.97%; `cog` 14.86% against
-  13.29%; `circle` 3.46% and `kite` 13.76% (neither run at five
-  frequencies). Evidence:
+  13.29%; `c_shape` 15.94% against 16.03%; `circle` 3.46% and `kite`
+  13.76% (neither run at five frequencies). Evidence:
   `results/csi/tg002/2026-11-18_ten_frequency/<shape>/scores.json`.
 - BEM side's table beside five frequencies:
   [its activity 10](adapt_bem_to_baseline_data/10_fit_remaining_csi_tables_at_ten_frequencies/results.md).
