@@ -98,6 +98,15 @@ promise for thin strokes or deep concavities. No case is rerun to tune it.
     if resources.exists():
         samples=[json.loads(l) for l in resources.read_text().splitlines()]
         text+=f"Memory: minimum observed available {min(s['available_gib'] for s in samples):.2f} GiB; maximum active BRG workers {max(len(s['active']) for s in samples)}. The required reserve is 14 GB. Start/end CSI/MATLAB overlap is retained in each attempt.\n\n"
+    text+='## Frequency-ending rejection codes\n\n'
+    text+='Counts below read the existing MATLAB logs only. Geometry/filter ier 2 means curvature rejection; ier 1 means self-intersection. The public routine resets a rejected update to the old curve and replaces its code by iteration ier -5 when the residual does not decrease. The filter columns count the selected method at the last iteration of a frequency ending with exit -1. The ier -5 column counts final iteration codes. These overlap; they are not separate groups. Full GN/SD codes and log hashes are in each case\'s `rejection_counts.json`.\n\n'
+    text+='| Case | Logged frequencies | Final filter ier 2 | Final filter ier 1 | Final iteration ier -5 |\n|---|---:|---:|---:|---:|\n'
+    for case,m,attempts,w in details:
+        p=BASE/case/'rejection_counts.json'
+        if p.exists():
+            r=json.loads(p.read_text());c=r['selected_terminal_filter_ier_counts']
+            text+=f"| {case} | {r['completed_frequencies']} | {c.get('2',0)} | {c.get('1',0)} | {r['final_iteration_ier_counts'].get('-5',0)} |\n"
+    text+='\nThe coordinator identified curvature rejection as the reason stalled curves could no longer move. Kite at eta 0.5 stops moving after the first frequency\'s sixth iteration. Activity [05](../05_run_brg_without_curvature_limit/plan.md) is authorized to remove only the curvature limit, reuse these hashed data, and retain this shipped-limit row. Its queue starts only after this queue ends.\n\n'
     text+='## Checks, failures and evidence\n\n'
     checks=[]
     for case,m,attempts,w in details:

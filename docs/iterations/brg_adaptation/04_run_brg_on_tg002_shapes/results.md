@@ -175,7 +175,7 @@ The shared checkout can contain CSI/coordinator changes: do not stage them.
 ## Status and ownership
 
 Campaign started 2026-11-17T23:41:28.138975+00:00; 10/20 cases have saved scores.
-Queue state: `ready_after_receipt_repair`; last update 2026-11-18T00:36:36.502792+00:00.
+Queue state: `ready_after_receipt_repair`; last update 2026-11-18T00:39:11.686776+00:00.
 All data and results here are **provisional BRG-forward data**. The BEM side
 owns generating and freezing the shared plane-wave data. These are TG-002
 shapes with BRG-style observations, not the sealed TG-002 measurements.
@@ -250,7 +250,26 @@ promise for thin strokes or deep concavities. No case is rerun to tune it.
 Completed-case aggregate wall time: 81.12 min across 10 cases.
 A running-mean projection for all 20 is 162.25 min before parallelism; the still-unrun difficult shapes make this uncertain.
 
-Memory: minimum observed available 18.99 GiB; maximum active BRG workers 2. The required reserve is 14 GB. Start/end CSI/MATLAB overlap is retained in each attempt.
+Memory: minimum observed available 18.29 GiB; maximum active BRG workers 2. The required reserve is 14 GB. Start/end CSI/MATLAB overlap is retained in each attempt.
+
+## Frequency-ending rejection codes
+
+Counts below read the existing MATLAB logs only. Geometry/filter ier 2 means curvature rejection; ier 1 means self-intersection. The public routine resets a rejected update to the old curve and replaces its code by iteration ier -5 when the residual does not decrease. The filter columns count the selected method at the last iteration of a frequency ending with exit -1. The ier -5 column counts final iteration codes. These overlap; they are not separate groups. Full GN/SD codes and log hashes are in each case's `rejection_counts.json`.
+
+| Case | Logged frequencies | Final filter ier 2 | Final filter ier 1 | Final iteration ier -5 |
+|---|---:|---:|---:|---:|
+| asymmetric__c4 | 37 | 35 | 0 | 37 |
+| asymmetric__c0.5 | 37 | 28 | 0 | 34 |
+| circle__c0.5 | 37 | 0 | 0 | 6 |
+| circle__c4 | 37 | 0 | 0 | 0 |
+| kite__c0.5 | 37 | 37 | 0 | 37 |
+| kite__c4 | 37 | 23 | 0 | 32 |
+| peanut__c0.5 | 37 | 33 | 0 | 33 |
+| peanut__c4 | 37 | 34 | 1 | 36 |
+| star__c0.5 | 37 | 0 | 0 | 1 |
+| star__c4 | 37 | 5 | 0 | 7 |
+
+The coordinator identified curvature rejection as the reason stalled curves could no longer move. Kite at eta 0.5 stops moving after the first frequency's sixth iteration. Activity [05](../05_run_brg_without_curvature_limit/plan.md) is authorized to remove only the curvature limit, reuse these hashed data, and retain this shipped-limit row. Its queue starts only after this queue ends.
 
 ## Checks, failures and evidence
 
