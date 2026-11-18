@@ -166,6 +166,22 @@ ten-frequency data folder and its drivers; the tables stay frozen. Its
 input box showed only a greyed suggestion, no typed text, so the prompt
 was safe to send.
 
+**Reply from the baseline coordinator (about 11:58 UTC, pasted into this
+pane, not from the user).** It read the user's words in this pane's
+record, re-checked the ten tables (hashes, byte-equal old rows, our 1%
+checks) and took over `results/csi/tg002/2026-11-18_ten_frequency_data/`,
+kept frozen. MF-CC-CSI at ten frequencies runs since 11:57 UTC: all ten
+shapes, in the order star, hook, circle, kite, asymmetric, cross, cog,
+c_shape, peanut, aphex_twin; 2048 iterations, half-peak score; two fits at
+a time, about 2.5 h each. Its forecast: star and hook near 14:30 UTC, all
+ten near midnight. Detached launcher PID 1227833. Results:
+`results/csi/tg002/2026-11-18_ten_frequency/<shape>/scores.json`; plan:
+[CSI activity 08](csi_adaptation/08_run_cases_at_ten_frequencies/plan.md).
+The numbers go into a new block of the main file, "Table C, simulated
+shapes: ten frequencies"; the five-frequency row stays. The scope of all
+ten shapes is the baseline coordinator's choice; the user has not chosen
+shapes. The BEM coordinator told the user so at 12:02.
+
 **Review stops.** `bem-ten`: after the circle table (reports, does not
 wait); before any fit (waits for a go). `bem-own`: before the first fit
 (waits for a go).
