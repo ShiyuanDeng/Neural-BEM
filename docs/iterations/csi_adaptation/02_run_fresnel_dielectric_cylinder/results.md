@@ -206,3 +206,34 @@ This activity stops here. Coordinator review is needed for the signed
 Fresnel truth-frame mapping, the negative-contrast cases and the future
 domain/generation choices. The old Figure 5 MR-CSI difference remains open.
 Our maintained solver and the frozen scoring module were not edited.
+
+## Successor status, 18 November 2026
+
+Activity 02 was accepted. Its old drawing-frame scores and cost scenarios
+are preserved as history, not current campaign choices. Activity 03
+[frame.md](../03_prepare_simulated_tg002_cases/frame.md) and
+[results.md](../03_prepare_simulated_tg002_cases/results.md) document the
+nominal registered centre (0,+30) mm using primary reading. The radius
+remains 15 mm and epsilon_r 3 +/-0.3. Exact surveyed centre coordinates
+are unavailable; the database gives only an approximately 30 mm offset.
+
+Report the measured CC image's registered symmetric-difference area error
+35.123%, support area 736.537 mm2 (+4.20% size bias), centroid
+(1.887,26.351) mm, vertical offset -3.649 mm and full centroid distance
+4.108 mm separately. Do not fit a shift or call this an exact 35% physical
+shape failure against uncertain metrology. The corresponding registered
+MR/CSI scores are saved in activity 03; no old arrays or JSON were changed.
+
+The coordinator excluded contrast 0.5 because the unchanged projection
+forbids negative susceptibility. The common simulated grid is now chosen:
+166-by-166 at 1.25 mm, half-width 103.75 mm. Native finer-grid data
+generation was built and timed in activity 03. Activity 04 runs only
+MF-CC-CSI on ten contrast-4 shapes, by the user's later decision. The
+60-fit estimates above are historical counterfactuals, not authorized jobs.
+Protocol-1 half-signed-peak support and 0.3/0.7 sensitivities are fixed.
+
+The maintained inverse and comparison module are unchanged. Full `score()`
+expects the original benchmark output schema, so the adapters import its
+unchanged image-region helpers and report mean epsilon_r separately.
+The MR/Figure-5 discrepancy and independent BEM forward comparison remain
+open; no rerun of activity 02 is required for the handoff.

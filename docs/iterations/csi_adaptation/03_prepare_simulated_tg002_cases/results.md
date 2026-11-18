@@ -203,3 +203,33 @@ MR-CSI/Figure-5 discrepancy, independent BEM/FDFD agreement, unmeasured
 three-fit scaling, and the six-hour campaign budget. The next action
 requires a coordinator decision on that budget; the baseline settings
 remain fixed.
+
+## Successor status, 18 November 2026
+
+Activity 03 was accepted; no preparation run remains to be done. Its
+six-hour hold above records the decision at its completion. The coordinator
+later extended activity 04 to nine hours and authorized its launch. The
+existing activity-04 launcher is running; do not launch a second one.
+Read [the permanent handoff](../04_run_simulated_tg002_cases/handoff.md).
+The first-batch completed concurrent timing check is still pending.
+
+Use `PYTHONPATH=solvers:. /home/drdeng/miniconda3/envs/EMNerf/bin/python`
+for benchmark/comparison imports and scoring. System Python lacks Shapely.
+The standalone subprocess launchers can use system Python, but do not
+replace the campaign's EMNerf interpreter. Data/material/full-history
+files are intentionally local and ignored; preserve them for the BEM side.
+The circle's frozen table, its exact SHA-256 and native forward/calibration
+checks are recorded above. Other shapes must keep the same numerical frame
+and original frozen placement after mapping the acquisition centre to zero.
+
+The native 64-step history is returned only at function exit, and recflag
+is only a diary switch. Activity 04 therefore uses output-only patch 0003
+in an owned renamed function copy to save four early raw snapshots. The
+external upstream file is unchanged; deleting the rename and callback
+restores its complete text. A MATLAB fixture check preserved exact complex
+values in two atomic writes, without running inverse iterations.
+
+Do not reinterpret the measured 2048 stability count as a simulation
+stopping rule. The user requires all 2048 iterations for every campaign
+fit. BEM/FDFD agreement, precise measured metrology, isolated timings and
+the MR/Figure-5 difference remain open, as already documented above.

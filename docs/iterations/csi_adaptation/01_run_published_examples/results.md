@@ -321,3 +321,30 @@ later work. No support threshold, area score, contrast score or final-table
 claim is made here. The reason for the MR-CSI Figure 5 difference, the
 antenna radius and the displayed-domain interpretation remain open for
 the coordinator; this activity stops after reporting them.
+
+## Successor status, 18 November 2026
+
+Activity 01 was accepted by the coordinator. The final paragraphs above
+record its historical open points; later decisions are in activities 02/03.
+Keep shipped second-opus antenna radius 1.8140695 m despite the paper's
+1.67 m: the coordinator decided it stays and it is irrelevant to table C's
+first-opus cases. Preserve numerical coordinates rather than native display
+axes. The measured first-opus signed/nominal registration is documented in
+[activity 03 frame.md](../03_prepare_simulated_tg002_cases/frame.md).
+MR-CSI's Figure 5 difference remains unexplained after the activity-02
+reading check. Do not tune settings to produce the paper's failure.
+
+Environment needed for reproduction: CC-CSI external checkout
+`/home/drdeng/neural_bem_external/CC-CSI` at `73a64e163da34e63fa33f8abe196b9004f45d342`,
+MaxwellFDFD at `690ca8d`. The existing
+`/usr/local/MATLAB/R2026a/toolbox/maxwellfdfd-master` link works; no path
+patch was needed. MATLAB R2026a online licensing needs network access.
+The shipped `DGradient.mexa64` loads. A fresh MATLAB reports one compute
+thread; wrappers set eight. Later long runs use detached launchers so a
+tool timeout cannot repeat the historical Python-launcher interruption.
+
+Both compatibility patches are fully recorded in `external/patches/cc-csi/`.
+Patch 0002 was checked explicitly on eight real/complex refined arrays in
+activity 02, with zero interpolation-versus-sampling difference. Published
+code and settings remain fixed. No activity-01 run needs restarting.
+The unknown SIGTERM cause and non-isolated timings remain limitations.

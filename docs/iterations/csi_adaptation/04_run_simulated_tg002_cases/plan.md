@@ -1,5 +1,7 @@
 # Run simulated TG-002 cases with MF-CC-CSI
 
+**Fresh agent: read [State at handoff](handoff.md) before any command. The campaign is already running.**
+
 ## Status and user decisions
 
 17 November 2026. The coordinator conveyed the user's words:
