@@ -13,3 +13,7 @@ Outcome: SUPERVISOR_STOP; last active k: 2.0; area error: 0.1967796803076316; su
 ## star_full, 2026-11-18T00:51:25.245176+00:00
 
 Outcome: SUPERVISOR_STOP; last active k: 2.0; area error: 0.1984529128768209; supervisor stop: wall limit 120 seconds.
+
+## star_limited, 2026-11-18T00:51:59.664168+00:00
+
+Outcome: SUPERVISOR_STOP; last active k: 2.0; area error: 0.1983923316073712; supervisor stop: wall limit 120 seconds.
