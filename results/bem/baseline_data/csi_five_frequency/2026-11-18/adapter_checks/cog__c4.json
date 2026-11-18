@@ -1,0 +1,573 @@
+{
+  "case": "cog__c4",
+  "provenance": {
+    "utc": "2026-11-18T04:04:27+00:00",
+    "commit": "fec963908af2ae7bc5c15d9309582c7b40fccaaf",
+    "solver_source": "checkout solvers/",
+    "solver_snapshot_commit": null,
+    "checkout_solver_dirty": false,
+    "solver_used_dirty": false,
+    "command": "/home/drdeng/miniconda3/envs/EMNerf/bin/python experiments/bem_on_baseline_data/csi_forward_check.py --out results/bem/baseline_data/csi_five_frequency/2026-11-18/adapter_checks --cases cog__c4",
+    "memory_available_gib": 27.954631805419922,
+    "load_average": [
+      15.5537109375,
+      7.7275390625,
+      4.2939453125
+    ],
+    "matlab_processes": 18
+  },
+  "input": "/home/drdeng/Neural_SDF_BEM_AD_organised/results/csi/tg002/2026-11-18_five_frequency_data/cog/forward/synthetic_input.txt",
+  "frozen_sha256_verified": "31118fa0e4e9177b63c42108fb911ce55e09a4997abc9140e1a3913adda1475a",
+  "permutation": {
+    "max_abs_difference": 3.878959614448864e-18,
+    "passes": true
+  },
+  "simulated_unit_field": {
+    "per_frequency": [
+      {
+        "frequency_ghz": 0.5,
+        "conj_incident_vs_unit_field": 8.140646646094934e-16,
+        "factor_minus_one_max": 1.7960416412680048e-15
+      },
+      {
+        "frequency_ghz": 1.0,
+        "conj_incident_vs_unit_field": 1.595668815055228e-15,
+        "factor_minus_one_max": 3.5649929263216535e-15
+      },
+      {
+        "frequency_ghz": 1.5,
+        "conj_incident_vs_unit_field": 2.2414087835403495e-15,
+        "factor_minus_one_max": 7.245506446941031e-15
+      },
+      {
+        "frequency_ghz": 2.0,
+        "conj_incident_vs_unit_field": 3.1638779144831313e-15,
+        "factor_minus_one_max": 7.145423812801734e-15
+      },
+      {
+        "frequency_ghz": 2.5,
+        "conj_incident_vs_unit_field": 4.057516650997413e-15,
+        "factor_minus_one_max": 1.4171932542209185e-14
+      }
+    ],
+    "worst": 1.4171932542209185e-14,
+    "passes": true
+  },
+  "mismatch": {
+    "source": {
+      "path": "/home/drdeng/Neural_SDF_BEM_AD_organised/results/csi/tg002/2026-11-18_five_frequency_data/cog/forward/synthetic_input.txt",
+      "sha256": "31118fa0e4e9177b63c42108fb911ce55e09a4997abc9140e1a3913adda1475a",
+      "rows_used": {
+        "frequencies_ghz": [
+          0.5,
+          1.0,
+          1.5,
+          2.0,
+          2.5
+        ],
+        "row_count": 8820,
+        "rows_0based": [
+          {
+            "start": 0,
+            "stop": 8815,
+            "step": 5,
+            "count": 1764
+          },
+          {
+            "start": 1,
+            "stop": 8816,
+            "step": 5,
+            "count": 1764
+          },
+          {
+            "start": 2,
+            "stop": 8817,
+            "step": 5,
+            "count": 1764
+          },
+          {
+            "start": 3,
+            "stop": 8818,
+            "step": 5,
+            "count": 1764
+          },
+          {
+            "start": 4,
+            "stop": 8819,
+            "step": 5,
+            "count": 1764
+          }
+        ],
+        "rows_sha256": "10c07894dbcf9445be4b7f0262c316ca7367e73144b6c27c35ddcf0c29898eaa"
+      }
+    },
+    "truth": "frozen TG-002 truth_fixture(\"cog\"), permittivity 4",
+    "contrast": 4.0,
+    "per_frequency": [
+      {
+        "resolution": "truth_band",
+        "nodes": 512,
+        "frequency_ghz": 0.5,
+        "k_units": 0.5239612554879204,
+        "relative_mismatch": 0.004003648792028721,
+        "info_best_scalar": {
+          "abs": 1.0040118175914032,
+          "phase_deg": 0.009251636263639607,
+          "mismatch_after": 0.0001921453875385798
+        },
+        "data_norm": 0.5561444950496451,
+        "seconds": 0.18712216429412365,
+        "diagnostics": {
+          "solver": "modal_muller",
+          "device": "cpu-modal",
+          "resolution": 512,
+          "K_trace": 64,
+          "window": 128,
+          "system_residual": 3.777153958687222e-16,
+          "log_degree": 45,
+          "log_lower": 0.3312392233943997,
+          "log_upper": 2.5675440495322865,
+          "radial_upper": 4.486870575035409,
+          "log_interval_source": "coefficient_residual",
+          "radial_degree": 11,
+          "radial_points": 0,
+          "radial_terms": 64,
+          "radial_coefficient_method": "analytic_bessel",
+          "alpha": 1.1098670171411527,
+          "radial_work_precision_bits": 64,
+          "coefficient_sum": 0.26563395601268774,
+          "neumann_tail_bound": 1.0880733067659475e-109,
+          "amplification": 1.4978319202401693,
+          "amplification_scope": "coefficient l1 / Chebyshev weighted RMS; no radial samples",
+          "graf_order": 14,
+          "series_terms": 8,
+          "series_loss": 2.3948694581432354e-16,
+          "table_mode": true,
+          "measured_pairs": 1764
+        }
+      },
+      {
+        "resolution": "truth_band",
+        "nodes": 512,
+        "frequency_ghz": 1.0,
+        "k_units": 1.0479225109758408,
+        "relative_mismatch": 0.0018235449064287828,
+        "info_best_scalar": {
+          "abs": 0.9994160834882377,
+          "phase_deg": -0.030748726310510278,
+          "mismatch_after": 0.0016418835173700528
+        },
+        "data_norm": 0.5709874936581097,
+        "seconds": 0.05881926044821739,
+        "diagnostics": {
+          "solver": "modal_muller",
+          "device": "cpu-modal",
+          "resolution": 512,
+          "K_trace": 64,
+          "window": 128,
+          "system_residual": 4.1553707198739205e-16,
+          "log_degree": 45,
+          "log_lower": 0.3312392233943997,
+          "log_upper": 2.5675440495322865,
+          "radial_upper": 4.486870575035409,
+          "log_interval_source": "coefficient_residual",
+          "radial_degree": 14,
+          "radial_points": 0,
+          "radial_terms": 80,
+          "radial_coefficient_method": "analytic_bessel",
+          "alpha": 2.2197340342823053,
+          "radial_work_precision_bits": 64,
+          "coefficient_sum": 1.3731707050653312,
+          "neumann_tail_bound": 1.7013931575545483e-118,
+          "amplification": 2.289212957229374,
+          "amplification_scope": "coefficient l1 / Chebyshev weighted RMS; no radial samples",
+          "graf_order": 15,
+          "series_terms": 10,
+          "series_loss": 2.959420257201139e-16,
+          "table_mode": true,
+          "measured_pairs": 1764
+        }
+      },
+      {
+        "resolution": "truth_band",
+        "nodes": 512,
+        "frequency_ghz": 1.5,
+        "k_units": 1.5718837664637613,
+        "relative_mismatch": 0.0014152824070306827,
+        "info_best_scalar": {
+          "abs": 0.9993778524510757,
+          "phase_deg": -0.039024637007197445,
+          "mismatch_after": 0.0010729763196525265
+        },
+        "data_norm": 0.5658101170813781,
+        "seconds": 0.05106738023459911,
+        "diagnostics": {
+          "solver": "modal_muller",
+          "device": "cpu-modal",
+          "resolution": 512,
+          "K_trace": 64,
+          "window": 128,
+          "system_residual": 5.8916070790212e-16,
+          "log_degree": 45,
+          "log_lower": 0.3312392233943997,
+          "log_upper": 2.5675440495322865,
+          "radial_upper": 4.486870575035409,
+          "log_interval_source": "coefficient_residual",
+          "radial_degree": 16,
+          "radial_points": 0,
+          "radial_terms": 80,
+          "radial_coefficient_method": "analytic_bessel",
+          "alpha": 3.329601051423458,
+          "radial_work_precision_bits": 64,
+          "coefficient_sum": 3.6251336475871327,
+          "neumann_tail_bound": 1.2313270411447873e-103,
+          "amplification": 2.642661489675244,
+          "amplification_scope": "coefficient l1 / Chebyshev weighted RMS; no radial samples",
+          "graf_order": 17,
+          "series_terms": 11,
+          "series_loss": 4.048807028604992e-16,
+          "table_mode": true,
+          "measured_pairs": 1764
+        }
+      },
+      {
+        "resolution": "truth_band",
+        "nodes": 512,
+        "frequency_ghz": 2.0,
+        "k_units": 2.0958450219516815,
+        "relative_mismatch": 0.0013712947236345211,
+        "info_best_scalar": {
+          "abs": 0.9994622013084511,
+          "phase_deg": -0.004024364676641316,
+          "mismatch_after": 0.0012593549224303084
+        },
+        "data_norm": 0.5503113725590454,
+        "seconds": 0.050917724147439,
+        "diagnostics": {
+          "solver": "modal_muller",
+          "device": "cpu-modal",
+          "resolution": 512,
+          "K_trace": 64,
+          "window": 128,
+          "system_residual": 7.428579793728738e-16,
+          "log_degree": 45,
+          "log_lower": 0.3312392233943997,
+          "log_upper": 2.5675440495322865,
+          "radial_upper": 4.486870575035409,
+          "log_interval_source": "coefficient_residual",
+          "radial_degree": 18,
+          "radial_points": 0,
+          "radial_terms": 80,
+          "radial_coefficient_method": "analytic_bessel",
+          "alpha": 4.439468068564611,
+          "radial_work_precision_bits": 64,
+          "coefficient_sum": 6.21914351589266,
+          "neumann_tail_bound": 5.061782882072073e-93,
+          "amplification": 2.8973180418418094,
+          "amplification_scope": "coefficient l1 / Chebyshev weighted RMS; no radial samples",
+          "graf_order": 19,
+          "series_terms": 12,
+          "series_loss": 5.926771893840637e-16,
+          "table_mode": true,
+          "measured_pairs": 1764
+        }
+      },
+      {
+        "resolution": "truth_band",
+        "nodes": 512,
+        "frequency_ghz": 2.5,
+        "k_units": 2.6198062774396025,
+        "relative_mismatch": 0.0031109083278775605,
+        "info_best_scalar": {
+          "abs": 0.9992354913040419,
+          "phase_deg": 0.03507484274079763,
+          "mismatch_after": 0.0029525158950540406
+        },
+        "data_norm": 0.445306815476427,
+        "seconds": 0.060742784291505814,
+        "diagnostics": {
+          "solver": "modal_muller",
+          "device": "cpu-modal",
+          "resolution": 512,
+          "K_trace": 64,
+          "window": 128,
+          "system_residual": 1.3129170838582064e-15,
+          "log_degree": 45,
+          "log_lower": 0.3312392233943997,
+          "log_upper": 2.5675440495322865,
+          "radial_upper": 4.486870575035409,
+          "log_interval_source": "coefficient_residual",
+          "radial_degree": 20,
+          "radial_points": 0,
+          "radial_terms": 96,
+          "radial_coefficient_method": "analytic_bessel",
+          "alpha": 5.549335085705764,
+          "radial_work_precision_bits": 64,
+          "coefficient_sum": 10.273550636391796,
+          "neumann_tail_bound": 6.0611253191807985e-109,
+          "amplification": 3.3143991235082346,
+          "amplification_scope": "coefficient l1 / Chebyshev weighted RMS; no radial samples",
+          "graf_order": 20,
+          "series_terms": 14,
+          "series_loss": 9.056304363193267e-16,
+          "table_mode": true,
+          "measured_pairs": 1764
+        }
+      },
+      {
+        "resolution": "storage_192",
+        "nodes": 1024,
+        "frequency_ghz": 0.5,
+        "k_units": 0.5239612554879204,
+        "relative_mismatch": 0.004003648792032464,
+        "info_best_scalar": {
+          "abs": 1.0040118175914068,
+          "phase_deg": 0.00925163626406036,
+          "mismatch_after": 0.0001921453875388488
+        },
+        "data_norm": 0.5561444950496451,
+        "seconds": 2.231445428915322,
+        "diagnostics": {
+          "solver": "modal_muller",
+          "device": "cpu-modal",
+          "resolution": 1024,
+          "K_trace": 128,
+          "window": 192,
+          "system_residual": 3.62422319544632e-16,
+          "log_degree": 45,
+          "log_lower": 0.3312359948531897,
+          "log_upper": 2.5675440495324025,
+          "radial_upper": 4.486870575035668,
+          "log_interval_source": "coefficient_residual",
+          "radial_degree": 11,
+          "radial_points": 0,
+          "radial_terms": 64,
+          "radial_coefficient_method": "analytic_bessel",
+          "alpha": 1.1098670171411846,
+          "radial_work_precision_bits": 64,
+          "coefficient_sum": 0.26563395601269185,
+          "neumann_tail_bound": 1.0880733067679966e-109,
+          "amplification": 1.4978319202401698,
+          "amplification_scope": "coefficient l1 / Chebyshev weighted RMS; no radial samples",
+          "graf_order": 14,
+          "series_terms": 8,
+          "series_loss": 2.3948694581432354e-16,
+          "table_mode": true,
+          "measured_pairs": 1764
+        }
+      },
+      {
+        "resolution": "storage_192",
+        "nodes": 1024,
+        "frequency_ghz": 1.0,
+        "k_units": 1.0479225109758408,
+        "relative_mismatch": 0.0018235449063756307,
+        "info_best_scalar": {
+          "abs": 0.9994160834882625,
+          "phase_deg": -0.030748726296000846,
+          "mismatch_after": 0.0016418835174025644
+        },
+        "data_norm": 0.5709874936581097,
+        "seconds": 0.32874677516520023,
+        "diagnostics": {
+          "solver": "modal_muller",
+          "device": "cpu-modal",
+          "resolution": 1024,
+          "K_trace": 128,
+          "window": 192,
+          "system_residual": 4.3130330890419827e-16,
+          "log_degree": 45,
+          "log_lower": 0.3312359948531897,
+          "log_upper": 2.5675440495324025,
+          "radial_upper": 4.486870575035668,
+          "log_interval_source": "coefficient_residual",
+          "radial_degree": 14,
+          "radial_points": 0,
+          "radial_terms": 80,
+          "radial_coefficient_method": "analytic_bessel",
+          "alpha": 2.2197340342823693,
+          "radial_work_precision_bits": 64,
+          "coefficient_sum": 1.3731707050653328,
+          "neumann_tail_bound": 1.7013931575585615e-118,
+          "amplification": 2.2892129572294078,
+          "amplification_scope": "coefficient l1 / Chebyshev weighted RMS; no radial samples",
+          "graf_order": 15,
+          "series_terms": 10,
+          "series_loss": 2.959420257201139e-16,
+          "table_mode": true,
+          "measured_pairs": 1764
+        }
+      },
+      {
+        "resolution": "storage_192",
+        "nodes": 1024,
+        "frequency_ghz": 1.5,
+        "k_units": 1.5718837664637613,
+        "relative_mismatch": 0.0014152824063463237,
+        "info_best_scalar": {
+          "abs": 0.9993778524504318,
+          "phase_deg": -0.03902463689573271,
+          "mismatch_after": 0.0010729763196112299
+        },
+        "data_norm": 0.5658101170813781,
+        "seconds": 0.3188531082123518,
+        "diagnostics": {
+          "solver": "modal_muller",
+          "device": "cpu-modal",
+          "resolution": 1024,
+          "K_trace": 128,
+          "window": 192,
+          "system_residual": 6.069607673969892e-16,
+          "log_degree": 45,
+          "log_lower": 0.3312359948531897,
+          "log_upper": 2.5675440495324025,
+          "radial_upper": 4.486870575035668,
+          "log_interval_source": "coefficient_residual",
+          "radial_degree": 16,
+          "radial_points": 0,
+          "radial_terms": 80,
+          "radial_coefficient_method": "analytic_bessel",
+          "alpha": 3.3296010514235537,
+          "radial_work_precision_bits": 64,
+          "coefficient_sum": 3.6251336475872074,
+          "neumann_tail_bound": 1.2313270411477117e-103,
+          "amplification": 2.6426614896753047,
+          "amplification_scope": "coefficient l1 / Chebyshev weighted RMS; no radial samples",
+          "graf_order": 17,
+          "series_terms": 11,
+          "series_loss": 4.048807028604992e-16,
+          "table_mode": true,
+          "measured_pairs": 1764
+        }
+      },
+      {
+        "resolution": "storage_192",
+        "nodes": 1024,
+        "frequency_ghz": 2.0,
+        "k_units": 2.0958450219516815,
+        "relative_mismatch": 0.0013712947232215784,
+        "info_best_scalar": {
+          "abs": 0.9994622013175972,
+          "phase_deg": -0.0040243635875952845,
+          "mismatch_after": 0.0012593549269537454
+        },
+        "data_norm": 0.5503113725590454,
+        "seconds": 0.3172499667853117,
+        "diagnostics": {
+          "solver": "modal_muller",
+          "device": "cpu-modal",
+          "resolution": 1024,
+          "K_trace": 128,
+          "window": 192,
+          "system_residual": 7.71199807385685e-16,
+          "log_degree": 45,
+          "log_lower": 0.3312359948531897,
+          "log_upper": 2.5675440495324025,
+          "radial_upper": 4.486870575035668,
+          "log_interval_source": "coefficient_residual",
+          "radial_degree": 18,
+          "radial_points": 0,
+          "radial_terms": 80,
+          "radial_coefficient_method": "analytic_bessel",
+          "alpha": 4.4394680685647385,
+          "radial_work_precision_bits": 64,
+          "coefficient_sum": 6.219143515892536,
+          "neumann_tail_bound": 5.061782882084176e-93,
+          "amplification": 2.897318041841779,
+          "amplification_scope": "coefficient l1 / Chebyshev weighted RMS; no radial samples",
+          "graf_order": 19,
+          "series_terms": 12,
+          "series_loss": 5.926771893840637e-16,
+          "table_mode": true,
+          "measured_pairs": 1764
+        }
+      },
+      {
+        "resolution": "storage_192",
+        "nodes": 1024,
+        "frequency_ghz": 2.5,
+        "k_units": 2.6198062774396025,
+        "relative_mismatch": 0.0031109083905013863,
+        "info_best_scalar": {
+          "abs": 0.9992354913635499,
+          "phase_deg": 0.0350748588557055,
+          "mismatch_after": 0.00295251591812526
+        },
+        "data_norm": 0.445306815476427,
+        "seconds": 0.3270318089053035,
+        "diagnostics": {
+          "solver": "modal_muller",
+          "device": "cpu-modal",
+          "resolution": 1024,
+          "K_trace": 128,
+          "window": 192,
+          "system_residual": 1.4864185469077268e-15,
+          "log_degree": 45,
+          "log_lower": 0.3312359948531897,
+          "log_upper": 2.5675440495324025,
+          "radial_upper": 4.486870575035668,
+          "log_interval_source": "coefficient_residual",
+          "radial_degree": 20,
+          "radial_points": 0,
+          "radial_terms": 96,
+          "radial_coefficient_method": "analytic_bessel",
+          "alpha": 5.549335085705924,
+          "radial_work_precision_bits": 64,
+          "coefficient_sum": 10.273550636391633,
+          "neumann_tail_bound": 6.061125319198174e-109,
+          "amplification": 3.3143991235082524,
+          "amplification_scope": "coefficient l1 / Chebyshev weighted RMS; no radial samples",
+          "graf_order": 20,
+          "series_terms": 14,
+          "series_loss": 9.056304363193267e-16,
+          "table_mode": true,
+          "measured_pairs": 1764
+        }
+      }
+    ],
+    "series_8ghz": {
+      "truth": {
+        "wave_radius_mm": 52.97908374801468,
+        "k_times_radius": 2.7758987235209456,
+        "series_loss": 9.056304363193267e-16,
+        "passes_1e9": true
+      },
+      "start": {
+        "wave_radius_mm": 65.0,
+        "k_times_radius": 3.4057481606714832,
+        "series_loss": 1.5137869857562295e-15,
+        "passes_1e9": true
+      }
+    },
+    "series_top_selected": {
+      "frequency_ghz": 2.5,
+      "truth": {
+        "wave_radius_mm": 52.97908374801468,
+        "k_times_radius": 2.7758987235209456,
+        "series_loss": 9.056304363193267e-16,
+        "passes_1e9": true
+      },
+      "start": {
+        "wave_radius_mm": 65.0,
+        "k_times_radius": 3.4057481606714832,
+        "series_loss": 1.5137869857562295e-15,
+        "passes_1e9": true
+      }
+    }
+  },
+  "summary": {
+    "adapter_checks_pass": true,
+    "dataset": "simulated",
+    "rule_frequencies_ghz": [
+      0.5,
+      1.0,
+      1.5,
+      2.0,
+      2.5
+    ],
+    "worst_truth_mismatch_on_rule_frequencies": 0.004003648792032464,
+    "one_percent_rule": true,
+    "wall_seconds": 4.021744797937572,
+    "peak_memory_gib": 0.3790016174316406
+  }
+}
