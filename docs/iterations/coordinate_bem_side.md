@@ -231,7 +231,7 @@ schedule ([results](adapt_bem_to_baseline_data/10_fit_remaining_csi_tables_at_te
 | cog | 2.86% | 1.45% |
 | aphex_twin | 5.96% | 5.77% |
 
-Mean 2.71% at five frequencies and 1.89% at ten. Every shape improves;
+Mean 2.71% at five frequencies and 1.88% at ten (1.885; written as 1.89% until 21:16, from summed rounded values). Every shape improves;
 two more than halve (circle, star). `aphex_twin` stays above 5% at both.
 The numbers and their paths were sent to the baseline coordinator at
 12:08 for its ten-frequency block; the BEM column there is to be checked
@@ -246,12 +246,16 @@ tables limit BEM to 1 to 6% there. The report is another session's file.
 wait); before any fit (waits for a go). `bem-own`: before the first fit
 (waits for a go).
 
-**Next, in order:** when the baseline side's ten-frequency block exists
-in the main file (star and hook forecast 14:30 UTC, all ten near
-midnight), check its BEM column against our `metrics.json` files. No
-watcher is armed and no BEM run is open. The baseline
-coordinator (`w1:p1`) was briefed for the CSI fit at ten frequencies (see
-the note above).
+**Ten-frequency block checked (21:16 UTC).** The baseline coordinator
+reported its MF-CC-CSI pass done (all ten in at 21:12, commit `960a33365`;
+its message was pasted into this pane, not from the user) and asked for a
+check of the BEM column in "Table C, simulated shapes: ten frequencies" of
+the main file. All ten rows match
+`results/bem/baseline_data/csi_ten_frequency/2026-11-18/<shape>__c4/cuda/attempt_01/metrics.json`:
+area error, contrast and fit time. Its summaries match too: ten
+frequencies mean 1.88%, median 1.32%; five frequencies mean 2.71%, median
+2.47%; the seven shared shapes 2.96% to 2.04%. No number was wrong, so no
+reply was sent, as it asked. Nothing of either side runs.
 
 ## Start here
 
