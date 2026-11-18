@@ -209,8 +209,9 @@ def run_checks():
 
 
 def report_checks(record):
+    fitted = [json.loads(p.read_text()) for p in sorted(BASE.glob('*/*/attempt_*/metrics.json'))]
     lines = ['# B1 checks, 18 November 2026', '',
-             'No BEM fit has started. The coordinator review stop remains active.',
+             f'{len(fitted)} BEM fits have saved metrics. The coordinator review stops remain active.',
              'CUDA checks use default production/refined profiles and series_loss=1e-9.',
              'Both fitting rows will read only the saved, hash-verified BRG observations.', '',
              '| Case | Checked / 37 | BRG relative maximum | Refinement maximum | Status |',
@@ -249,8 +250,15 @@ def report_checks(record):
                   'exists and matches all 37 files. Cross at eta 4, cog and aphex_twin at both contrasts',
                   'were pending at the first 15-case stop. The baseline completion run owns those files.',
                   'The watch-checks command picks up newly finished manifests without repeating checks.', '',
-                  'All 40 inverse fits remain unrun. After all checks, stop for the coordinator go.',
-                  'First fit is known-contrast circle__c4; stop again to report its measured cost.', '']
+                  f'{len(fitted)} of 40 inverse fits have saved metrics; numerical fits require coordinator go.',
+                  'Checked cases may fit without waiting for late baseline manifests (coordinator, 18 November).',
+                  'The first known-contrast circle__c4 fit has its own immutable first_fit_report.md.', '']
+    if fitted:
+        lines += ['## Saved inverse fits', '', '| Case | Row | Outcome | Work | Fit seconds | Area error |',
+                  '|---|---|---|---:|---:|---:|']
+        for fit in fitted:
+            lines.append(f"| {fit['case']} | {fit['row']} | {fit['outcome']} | {fit['work_units']} | {fit['fit_seconds']:.6f} | {fit['area_error']:.9g} |")
+        lines += ['', '[First-fit report and review stop](first_fit_report.md).', '']
     (DOC/'results.md').write_text('\n'.join(lines))
 
 

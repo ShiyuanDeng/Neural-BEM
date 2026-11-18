@@ -1,6 +1,6 @@
 # B1 checks, 18 November 2026
 
-No BEM fit has started. The coordinator review stop remains active.
+1 BEM fits have saved metrics. The coordinator review stops remain active.
 CUDA checks use default production/refined profiles and series_loss=1e-9.
 Both fitting rows will read only the saved, hash-verified BRG observations.
 
@@ -65,5 +65,14 @@ exists and matches all 37 files. Cross at eta 4, cog and aphex_twin at both cont
 were pending at the first 15-case stop. The baseline completion run owns those files.
 The watch-checks command picks up newly finished manifests without repeating checks.
 
-All 40 inverse fits remain unrun. After all checks, stop for the coordinator go.
-First fit is known-contrast circle__c4; stop again to report its measured cost.
+1 of 40 inverse fits have saved metrics; numerical fits require coordinator go.
+Checked cases may fit without waiting for late baseline manifests (coordinator, 18 November).
+The first known-contrast circle__c4 fit has its own immutable first_fit_report.md.
+
+## Saved inverse fits
+
+| Case | Row | Outcome | Work | Fit seconds | Area error |
+|---|---|---|---:|---:|---:|
+| circle__c4 | known | COMPLETED_SCHEDULE | 274 | 6.694823 | 7.31658833e-07 |
+
+[First-fit report and review stop](first_fit_report.md).
