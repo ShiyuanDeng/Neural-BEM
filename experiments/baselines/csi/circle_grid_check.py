@@ -27,7 +27,14 @@ def folder(cell):
 
 
 def table_path(cell):
-    return OLD_TABLE if cell == .625 else folder(cell) / 'synthetic_input.txt'
+    if cell == .625:
+        return OLD_TABLE
+    candidates = [folder(cell), *sorted(ROOT.glob(f'cell_{cell:g}_mm_attempt_*'))]
+    complete = [p for p in candidates if (p/'outcome.json').exists()
+                and json.loads((p/'outcome.json').read_text())['returncode'] == 0
+                and (p/'synthetic_input.txt').exists()]
+    assert len(complete) <= 1, 'do not select between successful repetitions'
+    return (complete[0] if complete else folder(cell)) / 'synthetic_input.txt'
 
 
 def source_receivers():
@@ -81,11 +88,18 @@ def generate(cell):
         print(json.dumps(dict(state='waiting for memory; no MATLAB started', cell_mm=cell,
                              available_gib=available/base.GIB, required_gib=(base.RESERVE+expected+.25*base.GIB)/base.GIB)))
         return
-    out = folder(cell); out.mkdir(parents=True, exist_ok=False)
+    out = folder(cell)
+    if table_path(cell).exists():
+        raise RuntimeError('a completed table already exists; never rerun it')
+    attempt = 1
+    while out.exists():
+        attempt += 1
+        out = ROOT / f'cell_{cell:g}_mm_attempt_{attempt:02d}'
+    out.mkdir(parents=True, exist_ok=False)
     source = base.CODE / 'generate_synthetic.m'
     driver = source.read_text()
     substitutions = {
-        'para.m_unit=.000625;': f'para.m_unit={cell*1e-3:.10g};\nN=round(2*.10375/para.m_unit); halfN=N/2; geometry.x_m=(-halfN:halfN-1)*para.m_unit;',
+        'para.m_unit=.000625;': f'para.m_unit={cell*1e-3:.10g};\nN=round(2*.10375/para.m_unit); halfN=N/2; geometry.x_m=(-halfN:halfN-1)*para.m_unit; geometry.y_m=geometry.x_m;',
         'assert(isequal(pars.Ninv,[332 332 1]))': 'assert(isequal(pars.Ninv,[N N 1]))',
         '[-166 166;-166 166;0 1]': '[-halfN halfN;-halfN halfN;0 1]',
         "'forward_grid',[332 332]": "'forward_grid',[N N]",
