@@ -302,7 +302,12 @@ def fit_worker(case, row, out):
 
 
 def score_endpoint(case, row, out):
+    import os
     from types import SimpleNamespace
+    # The frozen comparison entry point supplies this same metric-package path.
+    metric_source = Path(os.environ.get('GAUGAL_SRC', Path.home()/'Gau-Gal/src'))
+    if str(metric_source) not in sys.path:
+        sys.path.insert(0, str(metric_source))
     from experiments.comparison.scoring import score, PROTOCOL
     from experiments.gaugal_comparison import tg002_data as Dgrid
     result = json.loads((out/'fit.json').read_text()) if (out/'fit.json').exists() else None

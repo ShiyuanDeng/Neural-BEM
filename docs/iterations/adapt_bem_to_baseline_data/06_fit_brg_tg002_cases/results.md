@@ -22,10 +22,7 @@ Both fitting rows will read only the saved, hash-verified BRG observations.
 | hook__c4 | 37 | 1.470589075456192e-11 | 1.688450230318075e-13 | PASS |
 | cross__c0.5 | 37 | 2.0557080104187058e-11 | 1.6279779075760412e-14 | PASS |
 | cross__c4 | 37 | 1.3194908220155407e-11 | 5.094598303199394e-14 | PASS |
-| cog__c0.5 | 0 | None | None | INPUTS_PENDING |
-| cog__c4 | 0 | None | None | INPUTS_PENDING |
-| aphex_twin__c0.5 | 0 | None | None | INPUTS_PENDING |
-| aphex_twin__c4 | 0 | None | None | INPUTS_PENDING |
+| cog__c0.5 | 37 | 1.4235514624814591e-09 | 1.42246317739985e-09 | PASS |
 
 Limits: BRG relative difference 0.01 at every frequency; refinement 1e-6.
 A failed or missing check blocks the case. No resolution or tolerance changed.
@@ -39,8 +36,8 @@ No solver, baseline, shared scoring or coordination file was changed.
 
 ## Timing and resources
 
-Numerical check time: 29.307 s; summed worker process time: 55.595 s.
-Checks from 2026-11-18T01:55:21.632749+00:00 to 2026-11-18T02:00:28.201957+00:00.
+Numerical check time: 30.867 s; summed worker process time: 58.368 s.
+Checks from 2026-11-18T01:55:21.632749+00:00 to 2026-11-18T02:07:37.497206+00:00.
 These shared-machine times include concurrent baseline and CSI work.
 
 Peak worker host memory: 1.3505 GiB.
@@ -67,10 +64,3 @@ The watch-checks command picks up newly finished manifests without repeating che
 
 All 40 inverse fits remain unrun. After all checks, stop for the coordinator go.
 First fit is known-contrast circle__c4; stop again to report its measured cost.
-
-## First-fit authorization, 18 November
-
-The incoming coordinator accepted the 16 checked cases and wrapper settings,
-and authorized circle__c4 known now. Four pending baseline manifests do not
-block checked cases. The plan records the three execution-only wrapper changes.
-The manifest watcher remains active. First-fit concurrency stays one.
