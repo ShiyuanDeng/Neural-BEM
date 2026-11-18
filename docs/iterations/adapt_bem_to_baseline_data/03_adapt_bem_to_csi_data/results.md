@@ -212,6 +212,36 @@ the weak start (1.09) leads to 22.9 mm at 1.73. Later stages shrink it to
 accepts almost nothing. Its stages end normally, so the result stands as the
 reported one (coordinator: no retune, no rerun).
 
+## End-to-end check: simulated circle `circle__c4`, 1–3 GHz, 18 November 2026
+
+Simulated dataset settings as above; truth used only by the check before
+the fit and by scoring after it. Both passes started with BLAS on many
+threads (before the thread fix), so their timings are indicative only.
+Commands: `csi_fit.py --case circle__c4 --device cuda|cpu --out results/bem/baseline_data/csi_adapter/2026-11-18/end_to_end --checks .../adapter_checks_1to3ghz`.
+
+| | GPU (reported) | CPU cross-check |
+|---|---|---|
+| Outcome | `COMPLETED_SCHEDULE` | `TRIAL_WALL_LIMIT` (120 s) |
+| Last stage | `full_6_M37`, frontier adds none | `full_1_M11`, 7 steps in |
+| Work units | 1993 | 158 |
+| Fit time | 465 s | 120 s |
+| Peak memory | 1.7 GB host, 0.8 GB GPU | 1.4 GB |
+| Permittivity (true 4) | 4.0006 | 4.0007 |
+| Equivalent radius (true 50 mm) | 50.007 mm | 50.005 mm |
+| Centre offset | 0.010 mm | 0.010 mm |
+| Area error | 1.18% (missing 0.58%, excess 0.61%) | 1.07% |
+| Residual 1 / 2 / 3 GHz | 0.146 / 0.115 / 0.116% | 0.149 / 0.116 / 0.135% |
+
+The fit's residual is at the level of the data's own error at 1–3 GHz
+(the true circle's mismatch: 0.17 / 0.13 / 0.30%). The two passes agree where
+both ran (ladder 1–3 losses equal to 1e-17; `full_1_M11` loss after 7 CPU
+steps vs 22 GPU steps differs by 4e-11). Stages `full_4` to `full_6` ended
+on their quotas (304 units each), as the default schedule allows. The path
+runs end to end.
+
+Evidence: [GPU metrics](../../../../results/bem/baseline_data/csi_adapter/2026-11-18/end_to_end/circle__c4/cuda/attempt_01/metrics.json),
+[CPU metrics](../../../../results/bem/baseline_data/csi_adapter/2026-11-18/end_to_end/circle__c4/cpu/attempt_01/metrics.json).
+
 ## Hand-over to `bem-csi-run`
 
 From the repository root. Each command is resumable: rerunning it skips
