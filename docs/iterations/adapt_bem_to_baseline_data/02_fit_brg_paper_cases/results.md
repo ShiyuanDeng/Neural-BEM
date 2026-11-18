@@ -84,3 +84,69 @@ Stop for the coordinator: decide how to handle the glider_10 resolution
 failure and the cavity series estimates before further checks or fits.
 The current settings cannot qualify all six cases through k=15. Solver
 changes, if chosen, belong to its lock holder. CPU and GPU passes wait.
+
+## Resolution amendment and final forward checks, 18 November 2026
+
+The coordinator authorized true-shape resolution selection, then allowed
+converged BRG differences to remain failed thresholds without blocking fits.
+The original checks and plan text above remain history.
+
+The smallest qualifying minimum is **160**. Candidate minima 32/64 and 96
+fail glider_10 at k=15; 128 has refinement difference 1.13619648e-6 and
+also fails. All admitted frequencies qualify at 160 under the revised rule.
+The fixed dataset minimum is **K=192**, adding the agreed 32 margin.
+All final profiles have production/refined trace cutoffs 192/224.
+
+At K=192 all 90 series-admitted frequency checks pass refinement. Both
+gliders and both stars admit k=15. Both cavities admit k=8 and actually
+refuse the next ladder frequency, k=10, with series estimate 7.8e-5 above
+1e-6. Fits consume each checked prefix; fitted curves may refuse sooner.
+
+BRG thresholds remain failed at 12 frequencies in each star (k=1 through
+7 on the ladder) and two in cavity_09 (k=1 and 1.25). They are recorded
+per frequency, with production/refined BRG differences. Gliders and
+cavity_2 pass every BRG threshold. No field, truth curve or threshold changed.
+
+| Case | Last admitted k | First refused k | Max BRG difference | Max refinement difference | Production solve median [min, max], s | Refined solve median [min, max], s |
+|---|---:|---:|---:|---:|---|---|
+| glider_033 | 15 | none | 1.30165e-06 | 1.11862e-09 | 0.293 [0.257, 1.294] | 0.408 [0.365, 1.825] |
+| glider_10 | 15 | none | 3.21481e-06 | 1.50984e-09 | 0.308 [0.271, 1.333] | 0.430 [0.376, 1.877] |
+| star_full | 15 | none | 0.00723226 | 2.6459e-09 | 0.296 [0.252, 2.666] | 0.376 [0.351, 3.109] |
+| star_limited | 15 | none | 0.00723226 | 2.69243e-09 | 0.302 [0.281, 2.679] | 0.407 [0.376, 3.303] |
+| cavity_09 | 8 | 10.0 | 2.93592e-05 | 3.19757e-12 | 0.362 [0.313, 23.093] | 0.457 [0.423, 26.355] |
+| cavity_2 | 8 | 10.0 | 3.19542e-06 | 4.55965e-12 | 0.353 [0.316, 25.438] | 0.472 [0.429, 28.302] |
+
+Timings include shared-machine contention. First solves include geometry
+preparation; later frequencies reuse geometry. The initial workers measured
+up to 1.234 GiB RSS; first-fit launch reserves that peak plus 20%.
+
+[Fixed resolution and per-case evidence](../../../../results/bem/baseline_data/brg_paper/2026-11-18/resolution_selection/fixed_resolution.json).
+The original search supervisor was stopped after its current numerical
+worker completed when the coordinator changed the BRG-mismatch rule.
+Saved checks were reused; no inverse fit or numerical row was discarded.
+The pre-change candidate summary and pause record are retained.
+
+### Bounded cavity cause check
+
+The full band-100 Python truth matches all 2,048 saved BRG truth points
+to maximum 2.48253e-15. Truncating to bands 25, 50 and 75 gives maximum
+point differences 0.016719, 0.00232104 and 0.000427872, respectively; the
+difference falls to round-off at band 100. This rules out a coefficient
+loading or band mismatch against that saved truth polygon.
+
+The source makes the saved truth without resampling, but resamples each
+forward-data boundary. The low-frequency cavity data use 300 boundary
+points. Those actual resampled points are absent from the retained data
+records, so discretization or resampling remains a possible cause, not a
+proved explanation. Inspection and the check stayed below the ten-minute
+budget; no data or coefficients were changed.
+
+[Raw geometry comparison and data records](../../../../results/bem/baseline_data/brg_paper/2026-11-18/resolution_selection/cavity_truth_check.json).
+
+### CPU pass
+
+Authorized immediately after these checks. The six fits use the same
+fixed K=192, saved BRG observations and known contrast, starting at the
+unit disk. Single BLAS and frequency threads; 120 s supervisor limit.
+Per-fit endpoints and failures are recorded in `cpu_pass_progress.md`.
+

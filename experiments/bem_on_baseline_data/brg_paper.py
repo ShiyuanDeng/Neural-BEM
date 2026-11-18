@@ -52,7 +52,7 @@ def available_memory():
 
 def bulk_manifest(out):
     return [dict(path=str(p.relative_to(ROOT)), bytes=p.stat().st_size, sha256=digest(p))
-            for p in sorted((out / 'local').rglob('*')) if p.is_file()]
+            for p in sorted([*(out / 'local').rglob('*'), *out.glob('*.npz')]) if p.is_file()]
 
 
 def guarded(command, out, seconds, expected_peak=GIB):
@@ -96,11 +96,13 @@ def guarded(command, out, seconds, expected_peak=GIB):
                 minimum_available_bytes=minimum_available)
 
 
-def context_for(device):
+def context_for(device, trace_minimum=None):
     from bem_inverse import Execution
     from bem_inverse.forward_solvers.modal_muller import ModalMuller, ModalSettings
-    return ModalMuller(Execution(device=device, frequency_threads=1),
-                       ModalSettings(table_mode=True, series_loss=SERIES_LOSS))
+    settings = dict(table_mode=True, series_loss=SERIES_LOSS)
+    if trace_minimum is not None:
+        settings['trace_minimum'] = trace_minimum
+    return ModalMuller(Execution(device=device, frequency_threads=1), ModalSettings(**settings))
 
 
 def shape_info(case):
@@ -120,28 +122,44 @@ def shape_info(case):
                 geometry_origin='analytic glider' if shape == 'glider' else 'recovered from the paper figure files')
 
 
-def forward_worker(case, k, out):
+def qualifies_resolution(row):
+    if row.get('relative_refinement_difference', float('inf')) > 1e-6:
+        return False
+    coarse = row['relative_brg_difference']
+    fine = row['relative_refined_brg_difference']
+    # The thresholds remain recorded independently. A discrepancy unchanged
+    # within the refinement tolerance is retained as a data/geometry mismatch.
+    return coarse <= 1e-5 or (fine > 1e-5 and abs(coarse-fine) <= 1e-6)
+
+
+def forward_worker(case, k, out, trace_minimum=None, _context=None):
     import numpy as np
     from bem_inverse.forward_solvers.modal_muller import forward_solve
     from experiments.baselines.brg.brg_data import observation, true_curve
     start = time.monotonic()
     state = solver_state()
-    row = dict(case=case, k=k, passes=False, started=now(), solver_start=state)
+    row = dict(case=case, k=k, trace_minimum=trace_minimum,
+               passes=False, started=now(), solver_start=state)
     try:
         info = shape_info(case)
         curve = true_curve(info['shape'])
         obs, path, data_record = observation(case, k)
-        context = context_for('cpu')
+        context = _context if _context is not None else context_for('cpu', trace_minimum)
         profile = context.resolution_profile(curve.band)
         row.update(source=str(path.relative_to(ROOT)), source_sha256=digest(path),
                    data_record=data_record, data_shape=obs.scattered.shape, profile=profile,
                    wave_radius=info['wave_radius'])
+        solve_start = time.monotonic()
         a = forward_solve(curve, obs, info['eta'], profile['production'], context=context)
+        row['production_seconds'] = time.monotonic()-solve_start
+        solve_start = time.monotonic()
         b = forward_solve(curve, obs, info['eta'], profile['refined'], context=context)
+        row['refined_seconds'] = time.monotonic()-solve_start
         difference = a.prediction - obs.scattered
         relative = float(np.linalg.norm(difference)/np.linalg.norm(obs.scattered))
         refined = float(np.linalg.norm(a.prediction-b.prediction)/np.linalg.norm(b.prediction))
         row.update(relative_brg_difference=relative, relative_refinement_difference=refined,
+                   relative_refined_brg_difference=float(np.linalg.norm(b.prediction-obs.scattered)/np.linalg.norm(obs.scattered)),
                    max_absolute_difference=float(abs(difference).max()), production=a.diagnostics,
                    refined=b.diagnostics,
                    illumination_relative_errors=np.linalg.norm(difference, axis=1)/np.linalg.norm(obs.scattered, axis=1),
@@ -157,6 +175,30 @@ def forward_worker(case, k, out):
     write(out/f'k_{k:g}.json', row)
     print(json.dumps(dict(case=case, k=k, passes=row['passes'], error=row.get('relative_brg_difference'),
                           exception=row.get('exception'))), flush=True)
+    # Reuse true-shape geometry across a case's remaining frequencies. Failed
+    # candidates still stop at their first witness; all numerical rows persist.
+    if trace_minimum is not None and _context is None and qualifies_resolution(row):
+        from scipy.special import i0e
+        remaining = LADDER if k == LADDER[0] else reversed(LADDER)
+        for other in remaining:
+            target = out/f'k_{other:g}.json'
+            if target.exists():
+                continue
+            x = other*info['wave_radius']
+            if float(np.finfo(float).eps*i0e(x)*np.exp(x)) > SERIES_LOSS:
+                continue
+            forward_worker(case, other, out, trace_minimum, _context=context)
+            if not qualifies_resolution(json.loads(target.read_text())):
+                break
+        # Final cavity checks retain the first actual series refusal while
+        # reusing the geometry just checked at every admitted frequency.
+        if 'final' in out.parts:
+            for other in LADDER:
+                x = other*info['wave_radius']
+                if float(np.finfo(float).eps*i0e(x)*np.exp(x)) > SERIES_LOSS:
+                    if not (out/f'k_{other:g}.json').exists():
+                        forward_worker(case, other, out, trace_minimum, _context=context)
+                    break
 
 
 def forward_cases(cases):
@@ -206,11 +248,18 @@ def forward_cases(cases):
     print(f'Forward batch wall seconds: {time.monotonic()-campaign_start:.3f}', flush=True)
 
 
+def fixed_resolution():
+    selection = json.loads((BASE/'resolution_selection/fixed_resolution.json').read_text())
+    assert selection['passes'], 'Dataset-wide resolution must be fixed before fits.'
+    return selection
+
+
 def make_problem(case):
     from bem_inverse import FourierCurve, Problem
     from experiments.baselines.brg.brg_data import observation, REFERENCE_LENGTH_M
     observations, sources = [], []
-    for k in LADDER:
+    selection = fixed_resolution()
+    for k in selection['cases'][case]['passing_prefix']:
         obs, path, _ = observation(case, k)
         observations.append(obs)
         sources.append(dict(k=k, path=str(path.relative_to(ROOT)), sha256=digest(path)))
@@ -261,6 +310,8 @@ def score_endpoint(case, out):
     from experiments.comparison.scoring import region, region_scores
     result_path = out/'fit.json'
     result = json.loads(result_path.read_text()) if result_path.exists() else None
+    if result is None and (out/'local/unscored.json').exists():
+        result = json.loads((out/'local/unscored.json').read_text())
     accepted_path = out/'local/accepted.json'
     accepted = json.loads(accepted_path.read_text())['states'] if accepted_path.exists() else []
     if result:
@@ -278,12 +329,20 @@ def score_endpoint(case, out):
     raw = region_scores(found, actual)
     write(out/'raw_region_scores.json', raw)
     last = accepted[-1] if accepted else {}
+    selection = fixed_resolution()
+    supervisor_path = out/'supervisor.json'
+    supervisor = json.loads(supervisor_path.read_text()) if supervisor_path.exists() else {}
     write(out/'metrics.json', dict(case=case, outcome=result['outcome'] if result else 'SUPERVISOR_STOP',
           detail=result.get('detail') if result else None, known_contrast=True, eta=shape_info(case)['eta'],
           area_error=raw['area_error'], missing_area=raw['missing_area'], excess_area=raw['excess_area'],
           final_active_k=LADDER[last['active_frequency_count']-1] if last else None,
           maximum_active_residual=last.get('maximum_stage_residual'),
           fit_seconds=result.get('fit_and_localization_seconds') if result else None,
+          work=result.get('fit_work') if result else None,
+          accepted_work_units=last.get('units'),
+          supervisor_stop=supervisor.get('stop_reason'), trace_minimum=selection['fixed_K'],
+          qualified_cap=selection['cases'][case]['cap'],
+          first_forward_refused_k=selection['cases'][case]['first_refused_k'],
           scoring_source_sha256=digest(ROOT/'experiments/comparison/scoring.py')))
     np.savez_compressed(out/'curves.npz', coefficients=curve.coefficients, true_coefficients=truth.coefficients)
 
@@ -292,11 +351,15 @@ def fit_worker(case, device, out):
     from bem_inverse.runner import fit
     from bem_inverse.forward_solvers.modal_muller import forward_solve
     problem, sources = make_problem(case)
-    context = context_for(device)
+    selection = fixed_resolution()
+    context = context_for(device, selection['fixed_K'])
     policy = make_policy(device)
     write(out/'manifest.json', dict(case=case, device=device, started=now(), solver_start=solver_state(),
           sources=sources, policy=policy.plan(problem, context), eta=problem.contrast, material='known',
-          series_loss=SERIES_LOSS, geometry_update='slider', localization='none', start='unit disk',
+          series_loss=SERIES_LOSS, trace_minimum=selection['fixed_K'],
+          qualified_cap=selection['cases'][case]['cap'],
+          first_forward_refused_k=selection['cases'][case]['first_refused_k'],
+          geometry_update='slider', localization='none', start='unit disk',
           command=sys.argv, other_processes=subprocess.run(['ps', '-eo', 'pid,pcpu,rss,comm'], capture_output=True, text=True).stdout))
     try:
         result = fit(problem, physics=context, forward_solve=lambda *a: forward_solve(*a, context=context),
@@ -310,15 +373,19 @@ def fit_worker(case, device, out):
 
 
 def fit_case(case, device):
-    qualification = json.loads((BASE/case/'forward/qualification.json').read_text())
-    assert qualification['passes'], 'All 16 frequencies must pass before a fit.'
+    selection = fixed_resolution()
+    assert selection['cases'][case]['passes'], 'All admitted frequencies must pass before a fit.'
     out = BASE/case/f'{device}_fit'
     assert not out.exists(), 'Keep first fit, including failures; no tuning reruns.'
     (out/'local').mkdir(parents=True)
     start = solver_state()
     command = [sys.executable, str(Path(__file__).resolve()), '_fit', '--case', case, '--device', device]
     # Internal ledger has the scientific cap; supervisor also stops a blocked native call.
-    receipt = guarded(command, out/'local/worker.log', 120. if device == 'cpu' else 3600.)
+    try:
+        receipt = guarded(command, out/'local/worker.log', 120. if device == 'cpu' else 3600.,
+                          expected_peak=selection['expected_fit_peak_bytes'])
+    except Exception as error:
+        receipt = dict(command=command, returncode=None, stop_reason=repr(error), wall_seconds=0.)
     end = solver_state()
     write(out/'supervisor.json', dict(**receipt, started_solver=start, ended_solver=end,
           reportable=device == 'cuda' and not start['solver_dirty'] and not end['solver_dirty']
@@ -337,19 +404,21 @@ def main():
     parser.add_argument('--case', choices=(*CASES, 'all'), required=True)
     parser.add_argument('--one', type=float)
     parser.add_argument('--device', choices=('cpu', 'cuda'), default='cpu')
+    parser.add_argument('--trace-minimum', type=int)
+    parser.add_argument('--out', type=Path)
     args = parser.parse_args()
     if args.action == 'forward':
         return forward_cases(CASES if args.case == 'all' else (args.case,))
     assert args.case != 'all', 'Fits are individually launched after counting idle cores and memory.'
     out = BASE/args.case
     if args.action == '_forward':
-        return forward_worker(args.case, args.one, out/'forward')
+        return forward_worker(args.case, args.one, args.out or out/'forward', args.trace_minimum)
     if args.action == '_fit':
         return fit_worker(args.case, args.device, out/f'{args.device}_fit')
     if args.action == 'fit':
         return fit_case(args.case, args.device)
     problem, _ = make_problem(args.case)
-    print(json.dumps(make_policy(args.device).plan(problem, context_for(args.device)), default=str, indent=2))
+    print(json.dumps(make_policy(args.device).plan(problem, context_for(args.device, fixed_resolution()['fixed_K'])), default=str, indent=2))
 
 
 if __name__ == '__main__':
