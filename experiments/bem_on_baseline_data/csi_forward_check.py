@@ -208,13 +208,22 @@ def check_case(case, context, out, layout):
     record['mismatch'] = forward_mismatch(case, spec, context, arrays)
     if layout:
         record['layout'] = layout_check(context)
-    worst = max(r['relative_mismatch'] for r in record['mismatch']['per_frequency'])
+    from csi_fit import DATASETS, dataset
+    selected = DATASETS[dataset(case)]['frequencies_ghz']
+    rule = [r for r in record['mismatch']['per_frequency']
+            if selected is None or r['frequency_ghz'] in selected]
+    worst = max(r['relative_mismatch'] for r in rule)
+    if selected is not None:
+        top = max(selected)*1e9*2*np.pi/D.C0*D.LENGTH_M
+        record['mismatch']['series_top_selected'] = dict(frequency_ghz=max(selected),
+            truth=series(spec['truth'](), top), start=series(START, top))
     adapter = [record['permutation']['passes'],
                record.get('calibration_vs_csi', record.get('simulated_unit_field'))['passes'],
                *([record['layout']['passes']] if layout else []),
                record['mismatch']['series_8ghz']['truth']['passes_1e9'],
                record['mismatch']['series_8ghz']['start']['passes_1e9']]
-    record['summary'] = dict(adapter_checks_pass=bool(all(adapter)), worst_truth_mismatch=worst,
+    record['summary'] = dict(adapter_checks_pass=bool(all(adapter)), dataset=dataset(case),
+                             rule_frequencies_ghz=selected, worst_truth_mismatch_on_rule_frequencies=worst,
                              one_percent_rule=None if case == 'dielTM_dec8f' else bool(worst <= .01),
                              wall_seconds=time.perf_counter()-started, peak_memory_gib=peak_memory_gib())
     target.write_text(json.dumps(record, indent=2, default=float)+'\n')

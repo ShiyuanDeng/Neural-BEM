@@ -1,12 +1,13 @@
-"""One BEM fit on a CC-CSI table, default method, resumable at case level.
+"""One BEM fit on a CC-CSI table (dataset settings in ``DATASETS``), default method, resumable at case level.
 
 Default method unchanged: centred 65 mm circle, ``modal_muller`` + ``slider``, localization
 none, no warm-up, real data only, recovered contrast (the comparison's weak start), no noise
 level declared, series limit 1e-9, 13,412 work units. The only CSI-specific parts:
 
-- the frequency rule, fixed for every CSI case (coordinator, review stop 1): ladder stages are
+- the frequency rule of the measured cylinder (coordinator, review stop 1): ladder stages are
   catalog prefixes, one frequency at a time, up to the highest frequency at or below half the
-  catalog top; then the whole catalog. On 1-8 GHz: 1; 1-2; 1-3; 1-4; then 1-8 GHz;
+  catalog top; then the whole catalog. On 1-8 GHz: 1; 1-2; 1-3; 1-4; then 1-8 GHz.
+  Simulated TG-002 tables use 1-3 GHz only, ladder 1; 1-2; 1-3 GHz, quotas (1000, 3000, 4000);
 - frequency-block (ragged) stages, shown equal to the rectangular default to round-off at
   review stop 2;
 - length unit 0.05 m, origin at the acquisition centre, bounds +-0.3 m (the default's sizes).
@@ -45,6 +46,19 @@ WALL = dict(cpu=120., cuda=3600.)           # CPU pass stops at 120 s and waits 
 THREADS = dict(cpu=1, cuda=4)               # CPU: one thread per fit; GPU: the default's 4
 START_MEMORY_GIB, GUARD_MEMORY_GIB = 16., 14.
 MEASURED_CASE = 'dielTM_dec8f'
+# Dataset-level settings, fixed before any fit (coordinator, 18 Nov 2026). Never per case.
+# Simulated TG-002 tables: 1-3 GHz only, the user's answer to the 1% rule ("supply less
+# frequency range ... below 4GHz such that simulated data are accurate there"); ladder over
+# all three, the default's four ladder quotas with the middle two merged.
+DATASETS = dict(
+    measured=dict(frequencies_ghz=None, ladder='prefixes up to half the top frequency',
+                  prefix_quotas=None),
+    simulated=dict(frequencies_ghz=(1., 2., 3.), ladder='every catalog frequency, one at a time',
+                   prefix_quotas=(1000, 3000, 4000)))
+
+
+def dataset(case):
+    return 'measured' if case == MEASURED_CASE else 'simulated'
 
 
 def ladder(frequencies_hz):
@@ -63,13 +77,18 @@ class CsiPolicy(RealOnlyPolicy):
         return replace(operation, stage=replace(operation.stage, ragged_data=True))
 
 
-def policy_for(real, device):
-    rungs = ladder([o.frequency_hz for o in real])
-    if len(rungs) != len(RealOnlyPolicy().prefix_quotas):
-        raise ValueError(f'The frequency rule gives {len(rungs)} ladder stages; the default has four quotas.')
-    if tuple(o.frequency_hz for o in real[:len(rungs)]) != rungs:
+def policy_for(real, device, name):
+    settings = DATASETS[name]
+    frequencies = [o.frequency_hz for o in real]
+    if name == 'measured':
+        rungs, quotas = ladder(frequencies), RealOnlyPolicy().prefix_quotas
+    else:
+        rungs, quotas = tuple(sorted(frequencies)), settings['prefix_quotas']
+    if len(rungs) != len(quotas):
+        raise ValueError(f'The frequency rule gives {len(rungs)} ladder stages for {len(quotas)} quotas.')
+    if tuple(frequencies[:len(rungs)]) != rungs:
         raise ValueError('The ladder must be a prefix of the catalog.')
-    return CsiPolicy(prefix_frequencies_hz=rungs, fit_seconds=WALL[device])
+    return CsiPolicy(prefix_frequencies_hz=rungs, prefix_quotas=tuple(quotas), fit_seconds=WALL[device])
 
 
 def case_input(case):
@@ -165,7 +184,7 @@ def complete(attempt, case, device):
     """Finish the record of an attempt whose fit returned but whose record step failed; no new fit."""
     first = json.loads((attempt/'metrics.json').read_text()) if (attempt/'metrics.json').exists() else {}
     (attempt/'metrics_first_write.json').write_text(json.dumps(first, indent=1)+'\n')
-    real, _, _ = D.observations(case_input(case))
+    real, _, _ = D.observations(case_input(case), DATASETS[dataset(case)]['frequencies_ghz'])
     context = ModalMuller(Execution(device=device, frequency_threads=THREADS[device]), ModalSettings(table_mode=True))
     record = dict(case=case, device=device, **summarize(case, context, real, json.loads((attempt/'fit.json').read_text())))
     record.update({k: first.get(k) for k in ('case_seconds', 'peak_memory_gib', 'gpu_peak_allocated_gib')},
@@ -201,10 +220,11 @@ def run(case, device, out_root):
     memory_guard(out, stop)
     started = time.perf_counter()
     path = case_input(case)
-    real, _, source = D.observations(path)
+    name = dataset(case)
+    real, _, source = D.observations(path, DATASETS[name]['frequencies_ghz'])
     execution = Execution(device=device, frequency_threads=THREADS[device])
     context = ModalMuller(execution, ModalSettings(table_mode=True))
-    policy = policy_for(real, device)
+    policy = policy_for(real, device, name)
     initial = FourierCurve.circle(START_RADIUS_M/D.LENGTH_M, 0j)
     contrast, start = weak_start(context, initial, real[0])
     problem = Problem(initial, real, None, contrast, length_unit_m=D.LENGTH_M, origin_m=0j, bounds_m=BOUNDS_M)
@@ -215,7 +235,8 @@ def run(case, device, out_root):
                                   material=material.settings(), contrast_start=start, start_contrast=contrast,
                                   execution=asdict(execution), modal_settings=asdict(context.settings),
                                   length_unit_m=D.LENGTH_M, origin_m=0., bounds_m=BOUNDS_M,
-                                  frequency_rule='prefixes up to half the top frequency, then the whole catalog',
+                                  dataset=name, dataset_settings=DATASETS[name],
+                                  frequency_rule=DATASETS[name]['ladder']+', then the whole catalog',
                                   ladder_hz=policy.prefix_frequencies_hz, policy=policy.plan(problem, context)))
     write(out/'manifest.json', manifest)
     record = dict(case=case, device=device)
@@ -244,11 +265,14 @@ def main():
     parser.add_argument('--case', required=True, help=f'{MEASURED_CASE} or <shape>__c4 (simulated)')
     parser.add_argument('--device', choices=('cpu', 'cuda'), required=True)
     parser.add_argument('--out', default=str(ROOT/'results/bem/baseline_data/csi_cases'))
-    parser.add_argument('--simulated-approved', action='store_true',
-                        help='Required for simulated tables: the 1%% rule decision is the user\'s.')
+    parser.add_argument('--checks', default=str(ROOT/'results/bem/baseline_data/csi_cases/adapter_checks'),
+                        help='folder of csi_forward_check.py case files; a simulated fit needs its passing check')
     args = parser.parse_args()
-    if args.case != MEASURED_CASE and not args.simulated_approved:
-        raise SystemExit('Simulated tables wait for the user\'s decision on the 1% rule.')
+    if dataset(args.case) == 'simulated':
+        check = Path(args.checks)/f'{args.case}.json'
+        summary = json.loads(check.read_text())['summary'] if check.exists() else None
+        if not summary or not summary['adapter_checks_pass'] or not summary['one_percent_rule']:
+            raise SystemExit(f'No passing adapter check and 1% rule (1-3 GHz) at {check}; run csi_forward_check.py first.')
     run(args.case, args.device, args.out)
 
 

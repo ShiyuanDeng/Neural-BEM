@@ -118,12 +118,32 @@ def acquisition(mask):
                                   paired=False, mask=mask)
 
 
-def observations(path):
-    """Real-only observations for the fit, ascending frequency, no noise declared."""
+def _row_pattern(rows):
+    step = np.unique(np.diff(rows))
+    if len(step) == 1:
+        return dict(start=int(rows[0]), stop=int(rows[-1]), step=int(step[0]), count=int(len(rows)))
+    return dict(rows=rows.tolist())
+
+
+def observations(path, frequencies_ghz=None):
+    """Real-only observations for the fit, ascending frequency, no noise declared.
+
+    ``frequencies_ghz`` selects rows of the retained file (dataset-level setting of the
+    wrapper); the file itself is never rewritten. The record lists the rows used.
+    """
     mask, frequencies, digest = read_table(path)
+    if frequencies_ghz is not None:
+        wanted = {float(f)*1e9 for f in frequencies_ghz}
+        frequencies = [f for f in frequencies if f.frequency_hz in wanted]
+        if {f.frequency_hz for f in frequencies} != wanted:
+            raise ValueError(f'Frequencies {sorted(frequencies_ghz)} GHz are not all in {path}.')
     shared = acquisition(mask)
     real = tuple(Observation(f.k_m*LENGTH_M, shared, f.data, f.frequency_hz) for f in frequencies)
-    return real, frequencies, dict(path=str(path), sha256=digest)
+    rows = np.concatenate([f.file_rows for f in frequencies])
+    used = dict(frequencies_ghz=[f.frequency_hz/1e9 for f in frequencies], row_count=int(len(rows)),
+                rows_0based=[_row_pattern(f.file_rows) for f in frequencies],
+                rows_sha256=hashlib.sha256(rows.astype(np.int64).tobytes()).hexdigest())
+    return real, frequencies, dict(path=str(path), sha256=digest, rows_used=used)
 
 
 def to_file_order(entry, values_c_order):
