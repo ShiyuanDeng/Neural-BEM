@@ -21,11 +21,12 @@ def data_note():
         'All full parent tables use the unchanged 0.625 mm generator, contrast 4, eight frequencies.',
         'Fixed parent pattern: results/csi/tg002/2026-11-18_low_band_data/{shape}/forward/synthetic_input.txt.',
         'A .sha256 sidecar is beside every parent table. The BEM side reads only.',
-        'The main comparison uses column 3 in {1,2,3}: one-based parent rows 8*j+f, j=0..1763, f=1,2,3.',
+        'The initial BEM subset uses column 3 in {1,2,3}: one-based parent rows 8*j+f, j=0..1763, f=1,2,3.',
+        'All inverse launches are held for the batch-1 review and a new coordinator go with a frequency list.',
         'These 5292 rows are interleaved, 1764 per frequency; they are not the first 5292 rows.',
         'Selected files retain exact parent line bytes. Their SHA-256 and parent SHA-256 are recorded below.',
         'Fields use exp(+j omega t); BEM conjugates once. Sources, pair order and 49-per-source mask are unchanged.',
-        'CSI will read these full parents with native fre=1:3. It will never regenerate a table.',
+        'A future CSI run will read these full parents with its explicitly chosen native frequency list and never regenerate a table.',
         'BEM independently checks every true shape on these exact data; the circle check covers the circle only.','']
     count=0
     for scene in [s for b in base.BATCHES for s in b]:
@@ -86,7 +87,7 @@ def main():
                 # This executes the exact original source verified above, one MATLAB at a time.
                 okay=base.generate(scene,folder)
             if not okay:raise RuntimeError('original generator failed or user stopped; preserve outputs')
-            band.select_data(folder)
+            band.select_data(folder,[1,2,3])
             data=json.loads((folder/'data.json').read_text())
             for key in ['path','selected_table_path']:
                 table=Path(data[key]);table.with_suffix(table.suffix+'.sha256').write_text(f'{base.sha(table)}  {table.name}\n')

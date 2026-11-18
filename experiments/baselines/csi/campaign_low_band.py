@@ -1,4 +1,4 @@
-"""Detached 1--3 GHz CSI campaign; time is a target, with user/resource stops."""
+"""Detached selected-frequency CSI campaign; explicit frequency choice required."""
 import argparse
 import datetime as dt
 import fcntl
@@ -22,9 +22,10 @@ from experiments.baselines.csi import campaign as base
 ROOT = base.REPO / 'results/csi/tg002/2026-11-18_low_band'
 ACT = base.REPO / 'docs/iterations/csi_adaptation/05_run_simulated_tg002_cases_at_1_to_3_ghz'
 PARENT = base.REPO / 'results/csi/tg002/2026-11-17_campaign'
+DATA_ROOT = base.REPO / 'results/csi/tg002/2026-11-18_low_band_data'
 ORIGINAL_REPORT = base.report
 ORIGINAL_TERMINATE = base.terminate
-FREQUENCIES = [1, 2, 3]
+FREQUENCIES = None
 CURRENT_SOURCE = None
 RECORD = None
 LAST_BUDGET = None
@@ -60,6 +61,8 @@ def active_workers():
 
 def inspect(resume=False):
     reasons = []
+    if not FREQUENCIES:
+        reasons.append('frequency choice and new coordinator go are pending; no default band')
     parent = read(PARENT / 'campaign.json')
     pid = parent['launcher_pid']
     try:
@@ -86,6 +89,10 @@ def inspect(resume=False):
     for batch, scenes in enumerate(base.BATCHES, 1):
         for scene in scenes:
             p = ROOT / scene
+            try:
+                frozen_input(scene)
+            except (OSError,ValueError,KeyError,AssertionError) as error:
+                reasons.append(f'frozen data not ready or hash check failed: {scene}: {error!r}')
             state = 'recorded; preserve' if (p/'outcome.json').exists() else ('interrupted; preserve' if (p/'launch.json').exists() else 'not started')
             selected.append(dict(batch=batch, scene=scene, state=state))
     limit = hours(initial=True)
@@ -151,14 +158,16 @@ def stopped():
     return base.STOP or (ROOT/'STOP').exists()
 
 
-def select_data(folder):
+def select_data(folder, frequencies=None):
+    frequencies=FREQUENCIES if frequencies is None else frequencies
+    assert frequencies, 'an explicit frequency list is required'
     record = read(folder/'data.json')
     parent = Path(record['path'])
     assert base.sha(parent) == record['sha256']
     table = np.loadtxt(parent)
     assert table.shape == (14112, 7) and np.isfinite(table).all()
     assert np.array_equal(table[:,2], np.tile(np.arange(1,9),1764))
-    selected = np.isin(table[:,2], FREQUENCIES)
+    selected = np.isin(table[:,2], frequencies)
     subset = folder/'selected'; subset.mkdir(exist_ok=True)
     path = subset/'synthetic_input.txt'
     # Preserve parent line bytes exactly, without float reserialization.
@@ -167,42 +176,47 @@ def select_data(folder):
         assert path.read_bytes() == content
     else:
         path.write_bytes(content)
-    record.update(selected_frequencies_GHz=FREQUENCIES, selected_rows=5292,
-        selection='column 3 in {1,2,3}; one-based rows 8*j+f, j=0..1763, f=1,2,3',
+    record.update(selected_frequencies_GHz=frequencies, selected_rows=int(selected.sum()),
+        selection=f'column 3 in {frequencies}; one-based rows 8*j+f, j=0..1763, f in that list',
         selected_table_path=str(path), selected_table_sha256=base.sha(path),
-        selection_method_for_CSI='native fre=1:3 on the full unchanged parent table',
-        sign_convention='exp(+j omega t); BEM conjugates once', reference_frequency_GHz=3)
+        selection_method_for_CSI=f'native fre={frequencies} on the full unchanged parent table',
+        sign_convention='exp(+j omega t); BEM conjugates once', reference_frequency_GHz=frequencies[-1])
     base.write(folder/'data.json', record)
+
+
+def frozen_input(scene):
+    cache=DATA_ROOT/scene
+    data=read(cache/'data.json')
+    assert read(cache/'outcome.json')['state'] in ('generated','reused frozen input')
+    table=cache/'forward/synthetic_input.txt'
+    assert Path(data['path'])==table
+    assert base.sha(table)==data['sha256']
+    assert table.with_suffix('.txt.sha256').read_text().split()[0]==data['sha256']
+    return data
 
 
 def prepare_case(scene, folder):
     folder.mkdir(exist_ok=True)
     if (folder/'data.json').exists():
+        assert read(folder/'data.json')['sha256']==frozen_input(scene)['sha256']
         select_data(folder)
         return True
-    if scene in base.BATCHES[0]:
-        original = PARENT/scene
-        data = read(original/'data.json')
-        assert base.sha(Path(data['path'])) == data['sha256']
-        truth = folder/'truth'; truth.mkdir(exist_ok=False)
-        for name in ['geometry.mat','geometry.json']:
-            shutil.copyfile(original/'truth'/name, truth/name)
-        data.update(reused_from=str(original), reused_utc=base.now())
-        base.write(folder/'data.json', data)
-        okay = True
-    else:
-        # Unchanged original eight-frequency forward generator and 0.625-mm grid.
-        okay = base.generate(scene, folder)
-    if okay:
-        select_data(folder)
-    return okay
+    data=frozen_input(scene)
+    truth=folder/'truth';truth.mkdir(exist_ok=False)
+    for name in ['geometry.mat','geometry.json']:
+        shutil.copyfile(DATA_ROOT/scene/'truth'/name,truth/name)
+    data.update(reused_from=str(DATA_ROOT/scene),reused_utc=base.now())
+    base.write(folder/'data.json',data)
+    select_data(folder)
+    return True  # Every input is reused by hash; this launcher never generates.
 
 
 def inversion(scene, folder):
     driver = (base.UP/'Inv_Fresnel_I.m').read_text()
     old = "str = 'uTM_shaped'; para.pt = PT.TM; centre = [0, 0, 0]; xs = 70; ys = 70; para.m_unit = 1.5e-3; fre = 2 : 2 : 16;"
     assert driver.count(old) == 1
-    driver = driver.replace(old, f"str = 'tg002_{scene}_c4_low_band_TM'; para.pt = PT.TM; centre = [0, 0, 0]; xs = 103.75; ys = 103.75; para.m_unit = 1.25e-3; fre = 1 : 3;")
+    native_list=' '.join(str(f) for f in FREQUENCIES)
+    driver = driver.replace(old, f"str = 'tg002_{scene}_c4_low_band_TM'; para.pt = PT.TM; centre = [0, 0, 0]; xs = 103.75; ys = 103.75; para.m_unit = 1.25e-3; fre = [{native_list}];")
     assert driver.count('= 16;                   % set iteration number') == 1
     driver = driver.replace('= 16;                   % set iteration number','= 2048;                 % set iteration number')
     driver = driver[:driver.index("pars.recstr\t= ['RecMF' str '_MRCSI'];")]
@@ -217,7 +231,7 @@ def inversion(scene, folder):
     job = base.launch(folder, base.CODE/'campaign_case.m', dict(CSI_SCRIPT=str(executed)))
     job['scene'] = scene
     job['record'].update(driver_sha256=base.sha(executed), source_manifest=str(CURRENT_SOURCE),
-                         frequencies_GHz=FREQUENCIES, reference_frequency_GHz=3)
+                         frequencies_GHz=FREQUENCIES, reference_frequency_GHz=FREQUENCIES[-1])
     base.write(folder/'launch.json',job['record'])
     return job
 
@@ -227,8 +241,8 @@ def score(folder):
     path = folder/'scores.json'
     if path.exists():
         record = read(path)
-        if record['reference_frequency_GHz'] != 3:
-            record.update(reference_frequency_GHz=3, frequencies_GHz=FREQUENCIES)
+        if record['reference_frequency_GHz'] != FREQUENCIES[-1] or record.get('frequencies_GHz')!=FREQUENCIES:
+            record.update(reference_frequency_GHz=FREQUENCIES[-1], frequencies_GHz=FREQUENCIES)
             base.write(path, record)
 
 
@@ -263,28 +277,29 @@ def report(state):
     path = ACT/'results.md'
     text = path.read_text().replace('Nine-hour budget.',f"{RECORD['target_hours']:g}-hour informational target; no automatic time stop.")
     text += ('\n## Frequency selection and clock\n\n'
-             'Only 1, 2 and 3 GHz enter native configuration, back-propagation and inversion.\n'
-             'The native last-frequency raw image is at 3 GHz; conductivity normalization remains at 1 GHz.\n'
+             f'Only {FREQUENCIES} GHz enter native configuration, back-propagation and inversion.\n'
+             f'The native raw image is at {FREQUENCIES[-1]} GHz; conductivity normalization is at {FREQUENCIES[0]} GHz.\n'
              f"Start: {RECORD['started_utc']}. Current target time: {RECORD['target_utc']}.\n"
              'budget_hours.txt is an informational target read at every check; values used are in budget_history.jsonl.\n'
              'Passing the time target is reported and every fit continues. STOP/signals and the memory guard remain active.\n'
              'The first-batch forecast is information only and never causes an exit.\n'
              'See [data_note.md](data_note.md) for parent and selected-row hashes for BEM.\n')
     path.write_text(text)
-    lines = ['# Frozen 1–3 GHz data for the BEM side','',
-             'Parent tables keep all eight frequencies. CSI uses native fre=1:3.',
-             'Select column 3 in {1,2,3}; one-based parent rows 8*j+f for j=0..1763 and f=1,2,3.',
-             'There are 5292 selected rows, 1764 per frequency. Columns and pair order are unchanged.',
+    lines = ['# Frozen simulated data for the BEM side','',
+             f'Parent tables keep all eight frequencies. Configured CSI list: {FREQUENCIES} GHz.',
+             'For any frequency f, one-based parent rows are 8*j+f for j=0..1763.',
+             'There are 1764 rows per frequency. Columns and pair order are unchanged.',
              'Fields use exp(+j omega t); BEM must conjugate once. Receiver mask is the same 49 per each of 36 sources.',
              'Selected tables preserve parent line bytes exactly. They stay local and ignored, with SHA-256 below.',
              'BEM checks every true shape independently; the circle check does not check other shapes.','']
     for scenes in base.BATCHES:
         for scene in scenes:
-            p=ROOT/scene/'data.json'
+            p=DATA_ROOT/scene/'data.json'
             if not p.exists():continue
             data=read(p)
             if 'selected_table_sha256' not in data:continue
             lines.extend([f'## {scene}','',f"Parent: `{data['path']}`.",f"Parent SHA-256: `{data['sha256']}`.",
+                          f"Cached selected frequencies: {data['selected_frequencies_GHz']} GHz.",
                           f"Selected: `{data['selected_table_path']}`.",f"Selected SHA-256: `{data['selected_table_sha256']}`.",''])
     (ACT/'data_note.md').write_text('\n'.join(lines)+'\n')
 
@@ -324,7 +339,7 @@ def publish(label):
     paths=[str(ACT.relative_to(base.REPO)),'experiments/baselines/csi','external/patches/cc-csi',
            'results/csi/.gitignore',str(ROOT.relative_to(base.REPO))]
     subprocess.run(['git','add',*paths],cwd=base.REPO,check=True)
-    subprocess.run(['git','commit','-m',f'CSI 1-3 GHz: {label}','--',*paths],cwd=base.REPO,check=True)
+    subprocess.run(['git','commit','-m',f'CSI selected frequencies {FREQUENCIES}: {label}','--',*paths],cwd=base.REPO,check=True)
     subprocess.run(['git','push'],cwd=base.REPO,check=True)
     subprocess.run(['git','status','--short','--',*paths],cwd=base.REPO,check=True)
 
@@ -372,10 +387,10 @@ def run(resume=False,parent_commit=None):
         RECORD=read(ROOT/'campaign.json')
     else:
         RECORD=dict(started_utc=base.now(),parent_batch_commit=parent_commit,batches=base.BATCHES,
-                    frequencies_GHz=FREQUENCIES,reference_frequency_GHz=3,initial_target_hours=6,
+                    frequencies_GHz=FREQUENCIES,reference_frequency_GHz=FREQUENCIES[-1],initial_target_hours=6,
                     memory_reserve_bytes=base.RESERVE,stop_file=str(ROOT/'STOP'),invocations=[])
     command=['env','PYTHONPATH=solvers:.',os.sys.executable,'-B','-m','experiments.baselines.csi.campaign_low_band']
-    command+=['--resume'] if resume else ['--parent-commit',parent_commit]
+    command+=['--resume'] if resume else ['--parent-commit',parent_commit,'--frequencies',*map(str,FREQUENCIES)]
     RECORD.update(state='running',launcher_pid=os.getpid(),latest_command=command,remote_commit_at_launch=remote,
                   resumed_utc=base.now() if resume else None)
     RECORD['invocations'].append(dict(utc=base.now(),pid=os.getpid(),command=command))
@@ -442,7 +457,7 @@ def run(resume=False,parent_commit=None):
                             assert np.atleast_1d(raw['counts']).tolist()==[256,512,1024,2048]
                             assert all(np.isfinite(a).all() for a in raw['snapshots'])
                             assert np.atleast_1d(raw['frequencies_GHz']).tolist()==FREQUENCIES
-                            assert int(raw['reference_frequency_GHz'])==3
+                            assert int(raw['reference_frequency_GHz'])==FREQUENCIES[-1]
                         base.write(job['folder']/'outcome.json',dict(state='completed' if rc==0 else 'fit failed',returncode=rc,utc=base.now()))
                         manifest(job['folder']);active.remove(job)
                 elapsed=time.monotonic()-base.START
@@ -459,11 +474,11 @@ def run(resume=False,parent_commit=None):
                         launch=read(folder/'launch.json')
                         if 'wall_seconds' in launch:walls.append(launch['wall_seconds'])
                 elapsed=time.monotonic()-base.START
-                total=None if not walls else (elapsed+3*max(walls)+7*43)/3600
+                total=None if not walls else (elapsed+3*max(walls))/3600
                 base.write(ROOT/'first_batch_forecast.json',dict(utc=base.now(),observed_seconds_per_iteration=rates,
                     elapsed_seconds=elapsed,total_forecast_hours=total,target_hours=RECORD['target_hours'],
                     exceeds_current_target=None if total is None else total>RECORD['target_hours'],
-                    forecast_is_informational=True,method='elapsed + three remaining batches at slowest completed first-batch wall + seven forward generations at 43 s'))
+                    forecast_is_informational=True,method='elapsed + three remaining batches at slowest completed first-batch wall; all input tables are already frozen'))
             RECORD.update(state=overall,max_workers=max_workers);base.write(ROOT/'campaign.json',RECORD)
             status(overall,batch);publish(f'batch {batch} {overall}')
             if overall!='running':break
@@ -494,11 +509,23 @@ def run(resume=False,parent_commit=None):
 
 
 def main():
+    global FREQUENCIES
     parser=argparse.ArgumentParser(__doc__)
     parser.add_argument('--dry-run',action='store_true')
     parser.add_argument('--resume',action='store_true')
     parser.add_argument('--parent-commit')
+    parser.add_argument('--frequencies',type=int,nargs='+',choices=range(1,9))
     args=parser.parse_args()
+    if args.resume and (ROOT/'campaign.json').exists():
+        saved=read(ROOT/'campaign.json')['frequencies_GHz']
+        if args.frequencies is not None and args.frequencies!=saved:
+            parser.error('resume must retain the original frequency list')
+        FREQUENCIES=saved
+    else:FREQUENCIES=args.frequencies
+    if FREQUENCIES and FREQUENCIES!=sorted(set(FREQUENCIES)):
+        parser.error('frequencies must be distinct and ascending')
+    if not FREQUENCIES and not args.dry_run:
+        parser.error('no band is chosen; --frequencies and a new coordinator go are required')
     if args.dry_run:print(json.dumps(inspect(args.resume),indent=2))
     else:run(args.resume,args.parent_commit)
 

@@ -1,14 +1,15 @@
 # Frozen 1–3 GHz data for the BEM side
 
-Available: 10/10 complete parent tables. Updated 2026-11-18T01:41:00.555604+00:00.
+Available: 10/10 complete parent tables. Updated 2026-11-18T01:42:47.467824+00:00.
 All full parent tables use the unchanged 0.625 mm generator, contrast 4, eight frequencies.
 Fixed parent pattern: results/csi/tg002/2026-11-18_low_band_data/{shape}/forward/synthetic_input.txt.
 A .sha256 sidecar is beside every parent table. The BEM side reads only.
-The main comparison uses column 3 in {1,2,3}: one-based parent rows 8*j+f, j=0..1763, f=1,2,3.
+The initial BEM subset uses column 3 in {1,2,3}: one-based parent rows 8*j+f, j=0..1763, f=1,2,3.
+All inverse launches are held for the batch-1 review and a new coordinator go with a frequency list.
 These 5292 rows are interleaved, 1764 per frequency; they are not the first 5292 rows.
 Selected files retain exact parent line bytes. Their SHA-256 and parent SHA-256 are recorded below.
 Fields use exp(+j omega t); BEM conjugates once. Sources, pair order and 49-per-source mask are unchanged.
-CSI will read these full parents with native fre=1:3. It will never regenerate a table.
+A future CSI run will read these full parents with its explicitly chosen native frequency list and never regenerate a table.
 BEM independently checks every true shape on these exact data; the circle check covers the circle only.
 
 ## circle

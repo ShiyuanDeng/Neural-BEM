@@ -1,5 +1,20 @@
 # Launcher checks before the first run
 
+## Explicit frequency setting and frozen input checks, 18 November 01:41–01:43 UTC
+
+The automatic go was withdrawn. No fit launches while review is pending.
+All ten frozen parents and selected-file hashes/sidecars passed. All 29
+original campaign source hashes still match; seven forward returns were
+zero and their native residual checks passed.
+
+In temporary folders, actual frozen-circle metadata/inputs were reused
+with frequency settings 1/2/3/4 and 1/2/3/4/5. Exact subsets had 7056 and
+8820 rows; native driver lists, 2048 iterations and image/scoring reference
+frequencies followed the chosen last entry. A mocked generator raised if
+called, proving the new prepare path never regenerates. No MATLAB ran.
+CLI checks reject a missing frequency list and a changed list on resume.
+Earlier time-target, STOP/memory and controller tests are reused.
+
 ## Current time-target rule checked, 18 November 01:28 UTC
 
 The user's rephrased 01:24 rule supersedes the earlier time-stop logic.
