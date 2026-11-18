@@ -9,34 +9,97 @@ It is a temporary second file. The user: "i would prefer to use one
 coordination file, but temporarily to avoid the current coordination file
 being too long you can have a new one". Merge it back when the work is done.
 
-**State, 18 November 2026, 00:30 GMT:** launched. The user: "you are the
-coordinator, start the work." `bem-gpu`, `bem-brg` and `bem-csi` run in
-Herdr panes beside the coordinator (pane `w2:p1`). The solver lock is with
-`bem-gpu`; the main file records it (commit `7069d2422`). No solver code
-is edited yet. See [Launch log](#launch-log).
+**State, 18 November 2026, 02:05 GMT:** handed over. The user had the
+coordinator's chat restarted because its context was long ("you have a lot
+of context so i plan to start you fresh"). Everything below is committed
+and pushed. A fresh coordinator starts at [Start here](#start-here).
 
 ## Start here
 
-For the coordinator who picks this up:
+For the coordinator who picks this up, in pane `w2:p1`.
 
-1. Read this file, then the main file and [AGENTS.md](../../AGENTS.md).
-2. Read the three handover notes: the
-   [solver handover](brg_adaptation/03_adapt_bem_to_brg_data/results.md)
-   (last section), the
-   [BRG data note](brg_adaptation/01_run_published_examples/data_handoff.md)
-   and the [CSI table note](csi_adaptation/03_prepare_simulated_tg002_cases/pipeline.md).
-3. Run `git status`. Check what the baseline side is running (see
-   [Machine](#machine)).
-4. In the main file, record that the solver lock moves to the BEM side,
-   holder `bem-gpu`. Tell the baseline coordinator's session.
-5. Create the investigation folder (see [Paths](#paths)) and launch
-   `bem-gpu`, `bem-brg` and `bem-csi` together, each with its brief below.
-6. Hold the review stops. Launch `bem-csi-run` once the CSI adapter passes.
-7. Keep the status board here current, and the BEM rows of the main file.
+**Who is alive** (Herdr workspace `w2`, same checkout, branch `organised`):
 
-The user agreed that launch needs no second check with them. The
-coordinator has not used Herdr in the planning session, so the launch
-commands are not written here; load the `herdr` skill.
+| Agent | Pane | Model | State at 02:05 | Reads first |
+|---|---|---|---|---|
+| `bem-b1` | `w2:p9`, top right | Codex `gpt-6-astra`, high, full access | Working since 01:48: plan, wrapper and data checks for table B1. No fit yet. Do not clear it | Its brief is in its pane; its files are in [06](adapt_bem_to_baseline_data/06_fit_brg_tg002_cases/) |
+| `bem-csi-run` | `w2:p8`, bottom right; cleared 01:59 | Claude Sonnet, high, permissions bypassed | Cleared at 01:59 and idle, a fresh session with no memory. It waits for the user's frequency list | `AGENTS.md`, this file, "State at handoff" in [04 results](adapt_bem_to_baseline_data/04_fit_csi_cases/results.md), the hand-over in [03 results](adapt_bem_to_baseline_data/03_adapt_bem_to_csi_data/results.md) |
+
+Closed, work finished and committed: `bem-gpu` (closed by the user),
+`bem-brg` (Codex session `01a1ec04-8da6-75b3-a234-97134f6d1105`, for
+`codex resume`), `bem-csi` (Claude session
+`cdb198b2-5f13-44a1-9f6d-6b0080654e9e`, for `claude --resume`). Reopen one
+only if its own code needs a fix.
+
+**Nothing of the BEM side runs detached**, except what `bem-b1` starts. The
+MATLAB jobs on the machine belong to the baseline side; leave them.
+
+**No watcher survives the restart.** Re-arm one first:
+`"$HERDR_BIN_PATH" agent wait bem-b1` in a background shell. Load the
+`herdr` skill; `herdr` is not on the shell's path, so use
+`"$HERDR_BIN_PATH"`.
+
+**Results so far** (GPU passes; details in the status board and the
+activity results):
+
+| Table | Case | Our BEM | Baseline, for reference |
+|---|---|---|---|
+| B2 | `glider_033` | 0.061% area error at k = 15, 71 s | BRG 0.052% |
+| B2 | `glider_10` | Failed: 14% at k = 12, lost from k = 1.75 | BRG 0.004% |
+| B2 | `star_full` | 0.58% at k = 15, 334 s | BRG 0.52% |
+| B2 | `star_limited` | 0.60% at k = 15, 274 s | BRG 0.81% |
+| B2 | `cavity_09`, `cavity_2` | Skipped by the user (series limit) | BRG 134% |
+| C | Measured cylinder | Default fit stalled: radius 19.0 mm against 15, permittivity 2.19 against 3, area error 67.8%. The adapter is cleared | MF-CC-CSI +4.2% support area, 2.73 |
+| C | Simulated circle, kite, peanut, 1 to 3 GHz (early look, not the reported pass) | 1.17%, 3.08%, 1.50% area error; contrast within 0.04% of 4 | CSI's rerun is on hold |
+| B1 | 20 cases | Not started; data checks in progress | BRG's own runs are on the baseline side |
+
+**What to do next, in order:**
+
+1. `bem-b1` stops in its pane after its data checks. Review them from its
+   `plan.md` and `results.md`: the unit conversion is proven; our forward
+   repeats to 1e-6 between resolutions; our copy and BRG's differ by at
+   most 1% at every frequency. Above 1%, a refinement failure or a series
+   refusal on a true shape: ask the user before fitting that case. Then
+   give the go for the first known-contrast fit (`circle__c4`).
+2. After its first fit it reports seconds per work unit, peak memory and a
+   forecast for the 40 fits. Recheck capacity then (`free -g`): the CSI
+   batch ended near 01:57 and 35 GB was available at 02:00, against the
+   14 GiB floor. Raise its concurrency only on your word, by what memory
+   allows. No stop on elapsed time; a fit stops only if stuck, faulty or
+   short of memory.
+3. BRG's observations exist for 16 of the 20 B1 cases. `cog` and
+   `aphex_twin` at both contrasts are being made by a BRG completion run
+   into the same folders. A case counts as ready when its
+   `bulk_manifest.json` exists and the hashes match.
+4. When the user gives the frequency list for the simulated CSI cases: set
+   `DATASETS['simulated']['frequencies_ghz']` in
+   `experiments/bem_on_baseline_data/csi_fit.py` (one line, now `(1, 2, 3)`),
+   run `csi_policy_dry_check.py` to see the stage list, commit by path.
+   Then give `bem-csi-run` its files to read (table above) and the list.
+   It runs all ten shapes: the 1% check on each true shape at the listed
+   frequencies, the GPU fit, the CPU cross-check. A shape above 1% is not
+   fitted; ask the user.
+5. The main file's tables B1, B2 and C still say the BEM side has "not
+   started". Update only those BEM states there, after re-reading it.
+6. Later, on a quiet machine: one clean timed GPU pass for the reported
+   fits (commands are in the 02 and 03 results). Then merge this file back
+   into the main file.
+
+**Working notes from the first session:**
+
+- Take every recorded time from `date`. Agents' own clock guesses were up
+  to ten minutes off.
+- Idle is not finished. An agent's turn ends while its detached fit still
+  runs, and one agent sat idle for 24 minutes after its fit had ended.
+  After a wake-up, check the process list and the log. To wait across the
+  gap: `agent wait <name> --until working`, then `agent wait <name>`.
+- The baseline coordinator (pane `w1:p1`) relays user decisions into this
+  pane, marked "not from the user". Read the user's own words in its pane
+  before acting on one, and record where they were given.
+- Do not `cd` into a subfolder in the coordinator's shell; the working
+  directory sticks. Use paths from the repository root.
+- Agents commit by path in a shared checkout. Check `git status` for an
+  agent's paths before closing its pane.
 
 ## Your role
 
@@ -97,10 +160,10 @@ donw".
 | Agent | Pane | Model | Starts | Job | May edit the solver |
 |---|---|---|---|---|---|
 | `bem-gpu` | closed by the user, 18 Nov about 01:10 | Codex `gpt-6-astra`, high | At launch | Make the table path run on the GPU | Yes, it holds the lock |
-| `bem-brg` | `w2:p6`, middle right | Codex `gpt-6.1-sol`, high | At launch | Fit the six BRG paper cases | No |
-| `bem-csi` | `w2:p7`, bottom right | Claude Opus, high | At launch | Write the CSI adapter, run its first checks and first fit | Only if given the lock after `bem-gpu` |
-| `bem-csi-run` | `w2:p8`, bottom right | Claude Sonnet, high | When the adapter passes review | Run and watch every BEM fit on CSI data | No |
-| `bem-b1` | `w2:p9`, right | Codex `gpt-6-astra`, high | 18 Nov, when the user opened B1 | Fit our BEM to the 20 BRG-generated TG-002 cases: data checks, known-contrast row, recovered-contrast row | No |
+| `bem-brg` | closed by the coordinator, 18 Nov 01:59, work committed | Codex `gpt-6.1-sol`, high | At launch | Fit the six BRG paper cases | No |
+| `bem-csi` | closed by the coordinator, 18 Nov 02:00, work committed | Claude Opus, high | At launch | Write the CSI adapter, run its first checks and first fit | Only if given the lock after `bem-gpu` |
+| `bem-csi-run` | `w2:p8`, bottom right; cleared 01:59 | Claude Sonnet, high | When the adapter passes review | Run and watch every BEM fit on CSI data | No |
+| `bem-b1` | `w2:p9`, top right | Codex `gpt-6-astra`, high | 18 Nov, when the user opened B1 | Fit our BEM to the 20 BRG-generated TG-002 cases: data checks, known-contrast row, recovered-contrast row | No |
 
 `bem-csi-run` watches our fits only. The baseline's MATLAB campaign belongs
 to the `csi` agent.
@@ -400,10 +463,10 @@ data convention is in doubt.
 | Work | Agent | State | Next step |
 |---|---|---|---|
 | Table path on the GPU | `bem-gpu` | Done: commit `3612f5195` at 00:32 ([results](adapt_bem_to_baseline_data/01_run_table_path_on_gpu/results.md)). Lock free. Its series-limit proposal is closed: no go from the user. The user is closing its pane | None |
-| BRG paper cases | `bem-brg` | Reported GPU pass done 01:23; follow-up checks done 01:36 ([results](adapt_bem_to_baseline_data/02_fit_brg_paper_cases/results.md)). Area error: `glider_033` 0.061% at k = 15 (71 s); `star_full` 0.58% (334 s); `star_limited` 0.60% (274 s); `glider_10` failed (14% at k = 12; lost from k = 1.75). Cavities skipped by the user. CPU and GPU paths differ through the slider preparation (B6), an existing default behaviour. Agent idle | Clean timed pass on a quiet machine; uncut CPU cross-checks if the user allows |
-| CSI adapter | `bem-csi` | Adapter done and handed over ([results](adapt_bem_to_baseline_data/03_adapt_bem_to_csi_data/results.md)). Now: wrapper pointed at the ten frozen tables, frequency list as one setting, two record-step gaps fixed. No fit | Dry check of the stage lists; then close |
-| CSI fits | `bem-csi-run` | Early look at 1 to 3 GHz done 01:56 ([results](adapt_bem_to_baseline_data/04_fit_csi_cases/results.md)). GPU, area error: circle 1.17% (71 s), kite 3.08% (178 s; numerical failure in its last stage, kept), peanut 1.50% (123 s). All pass the 1% data check. Agent idle | The user's frequency list; then all ten shapes as the reported pass |
-| Table B1 | `bem-b1` | Launched 18 Nov 01:48, pane `w2:p9`, Codex `gpt-6-astra` high. Writing its plan, wrapper and the data checks | Review the data checks; then the first fit and its timing |
+| BRG paper cases | `bem-brg` | Reported GPU pass done 01:23; follow-up checks done 01:36 ([results](adapt_bem_to_baseline_data/02_fit_brg_paper_cases/results.md)). Area error: `glider_033` 0.061% at k = 15 (71 s); `star_full` 0.58% (334 s); `star_limited` 0.60% (274 s); `glider_10` failed (14% at k = 12; lost from k = 1.75). Cavities skipped by the user. CPU and GPU paths differ through the slider preparation (B6), an existing default behaviour. Agent closed 01:59 | Clean timed pass on a quiet machine; uncut CPU cross-checks if the user allows |
+| CSI adapter | `bem-csi` | Done and closed 02:00 ([results](adapt_bem_to_baseline_data/03_adapt_bem_to_csi_data/results.md)). Measured cylinder fitted (default fit stalled; adapter cleared). Wrapper reads the ten frozen tables; the frequency list is one setting, now (1, 2, 3) GHz; dry check shows the stage lists unchanged for what ran | None |
+| CSI fits | `bem-csi-run` | Early look at 1 to 3 GHz done 01:56 ([results](adapt_bem_to_baseline_data/04_fit_csi_cases/results.md)): circle 1.17%, kite 3.08% (numerical failure in its last stage, kept), peanut 1.50%. Session cleared 01:59; idle | The user's frequency list; then all ten shapes as the reported pass |
+| Table B1 | `bem-b1` | Launched 01:48, pane `w2:p9`. Plan, wrapper and data checks in progress at 02:05; no fit yet. BRG's observations exist for 16 of 20 cases | Review the data checks; go for the first fit; then its timing and the capacity recheck |
 
 ## Coordinator decisions
 
@@ -441,6 +504,8 @@ data convention is in doubt.
 | 18 Nov, 01:49 | B1 data checks: our forward makes its own copy on each true shape at all 37 frequencies and compares it with BRG's. Limits set now: 1e-6 between our resolutions; 1% between the two copies at every frequency, else stop and ask the user | The check agreed with the user ("i thought we make two copies then compare"). The 1% limit is the user's rule for the simulated CSI data, applied here by the coordinator |
 | 18 Nov, 01:49 | B1 runs on the GPU only, one fit at a time, with no time-based stop. The agent is Codex `gpt-6-astra` high | The user's brief. The task has unit conversion and data checks that decide the main BRG table, so it is the heavier kind |
 | 18 Nov, 01:57 | Early look at 1 to 3 GHz accepted as run; nothing is retried. `bem-csi` now points the wrapper at the ten frozen tables, makes the frequency list one setting with the fixed ladder rule, and closes two record-step gaps. The early-look numbers went to the baseline coordinator for the user's review | Circle 1.17%, kite 3.08% (its last stage ended on a numerical failure; kept), peanut 1.50% area error; contrast within 0.04% of 4. CPU and GPU agree on every stage both completed, and two GPU repeats were identical. The runner's batch is finished, so the wrapper can change without mixing source versions |
+| 18 Nov, 02:00 | Handoff, at the user's request: `bem-brg` and `bem-csi` closed with their work committed; `bem-csi-run` wrote a "State at handoff" section and was cleared; `bem-b1` left running | The user: "close panes that are no longer needed, for panes that are monitoring and could also use a clear then let them also be ready to handoff, then you clear them." `bem-b1` is ten minutes into its task and has little context to shed |
+| 18 Nov, 02:00 | `bem-csi`'s wrapper update accepted: ten frozen tables with hash check, frequency list as one setting, the two record-step gaps closed | Its dry check shows the stage plans for the cylinder and for 1 to 3 GHz identical to the runs that happened, and gives ladder 1; 1–2; 1–3 then all for 1–4, 1–5 and 1, 2, 3, 5 GHz |
 
 ## Waiting on the user
 
