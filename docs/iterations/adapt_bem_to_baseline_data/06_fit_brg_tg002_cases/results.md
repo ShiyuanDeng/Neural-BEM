@@ -1,6 +1,6 @@
 # B1 checks, 18 November 2026
 
-34 BEM fits have saved metrics. The coordinator released the queue; current resource allocation is recorded separately.
+34 BEM fits have saved metrics. The coordinator released the queue with two B1 fits.
 CUDA checks use default production/refined profiles and series_loss=1e-9.
 Both fitting rows will read only the saved, hash-verified BRG observations.
 
@@ -24,7 +24,7 @@ Both fitting rows will read only the saved, hash-verified BRG observations.
 | cross__c4 | 37 | 1.3194908220155407e-11 | 5.094598303199394e-14 | PASS |
 | cog__c0.5 | 37 | 1.4235514624814591e-09 | 1.42246317739985e-09 | PASS |
 | cog__c4 | 0 | None | None | INPUTS_PENDING |
-| aphex_twin__c0.5 | 0 | None | None | INPUTS_PENDING |
+| aphex_twin__c0.5 | 37 | 8.75351062414974e-06 | 3.0892966448944135e-13 | PASS |
 | aphex_twin__c4 | 0 | None | None | INPUTS_PENDING |
 
 Limits: BRG relative difference 0.01 at every frequency; refinement 1e-6.
@@ -39,8 +39,8 @@ No solver, baseline, shared scoring or coordination file was changed.
 
 ## Timing and resources
 
-Numerical check time: 30.867 s; summed worker process time: 58.368 s.
-Checks from 2026-11-18T01:55:21.632749+00:00 to 2026-11-18T02:07:37.497206+00:00.
+Numerical check time: 32.553 s; summed worker process time: 61.334 s.
+Checks from 2026-11-18T01:55:21.632749+00:00 to 2026-11-18T02:26:54.797575+00:00.
 These shared-machine times include concurrent baseline and CSI work.
 
 Peak worker host memory: 1.3505 GiB.
@@ -65,7 +65,7 @@ exists and matches all 37 files. Cross at eta 4, cog and aphex_twin at both cont
 were pending at the first 15-case stop. The baseline completion run owns those files.
 The watch-checks command picks up newly finished manifests without repeating checks.
 
-34 of 40 inverse fits have saved metrics; the resource-limited queue is authorized.
+34 of 40 inverse fits have saved metrics; the two-worker queue is authorized.
 Checked cases may fit without waiting for late baseline manifests (coordinator, 18 November).
 The first known-contrast circle__c4 fit has its own immutable first_fit_report.md.
 
