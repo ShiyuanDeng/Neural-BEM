@@ -7,9 +7,9 @@ settings, assumptions and unknowns, and it sets how subagents share the work.
 The coordinator (the main session) owns this file. Subagents never edit it.
 They report back, and the coordinator updates the status board and the cards.
 
-Last updated: 18 November 2026, 01:40 UTC (user: hold the 1 to 3 GHz CSI
-launch and review batch 1 first; no stop for a time limit; BRG completion
-run started).
+Last updated: 18 November 2026, 02:05 UTC (CSI batch 1 done at eight
+frequencies; nothing launched; review with the user pending; BRG completion
+run going).
 
 ## Restart notes (18 November 2026)
 
@@ -468,9 +468,29 @@ Rules for every table:
     Review those results with me before choosing four or five frequencies
     for the remaining cases." So nothing launches after batch 1. The
     frequency list is open again and the BEM side has been told.
-  - Tables for the BEM side (its request, 01:30 UTC): `csi` generates the
-    other seven simulated tables now, with the unchanged generator, under
-    `results/csi/tg002/2026-11-18_low_band_data/<shape>/forward/`.
+  - Tables for the BEM side (its request, 01:30 UTC): all ten simulated
+    tables are frozen under
+    `results/csi/tg002/2026-11-18_low_band_data/<shape>/forward/` (commit
+    `8d4c6123d`), each with all eight frequencies and a hash file. The
+    three old ones are byte-identical copies. Hashes:
+    [data note](csi_adaptation/05_run_simulated_tg002_cases_at_1_to_3_ghz/data_note.md).
+  - **Batch 1 result (18 November 02:00 UTC; eight frequencies, 2048
+    iterations, 4.74 s per iteration, 2 h 42 min per fit):**
+
+    | Shape | Area error at half the peak | At 0.3 and 0.7 of the peak | Mean permittivity (truth 4) |
+    |---|---|---|---|
+    | circle | 13.7% | 22.3% and 4.7% | 3.43 |
+    | kite | 16.1% | 41.0% and 44.4% | 3.25 |
+    | peanut | 21.1% | 36.1% and 25.7% | 3.21 |
+
+    The images follow the true outlines. At half the peak nearly all the
+    error is excess area: the contour lies outside the true boundary. The
+    scores still fall between 1024 and 2048 iterations (kite 21% to 16%).
+    The launcher then exited by its own rule and nothing was launched.
+    Figure: [batch 1](csi_adaptation/04_run_simulated_tg002_cases/figures/batch_1.png).
+  - For the review (BEM side's early look, 1 to 3 GHz, not its reported
+    pass): circle 1.17%, kite 3.08%, peanut 1.50% area error in 71 to
+    178 s; the kite's last stage ended on a numerical failure.
 
 ## Who decides
 
