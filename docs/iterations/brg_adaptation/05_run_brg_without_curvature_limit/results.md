@@ -2,8 +2,8 @@
 
 ## Status and settings
 
-Started 2026-11-18T02:28:20.793603+00:00; queue state `running`;
-19/20 cases have scores. Last update: 2026-11-18T03:00:23.182443+00:00.
+Started 2026-11-18T02:28:20.793603+00:00; queue state `complete`;
+20/20 cases have scores. Last update: 2026-11-18T03:23:59.673633+00:00.
 These are **provisional BRG-forward data**, identical to activity 04 by
 SHA-256. This is the control row alongside its shipped-limit row.
 
@@ -53,14 +53,17 @@ compact metrics and figure. No new success cutoff is selected.
 | hook__c0.5 | complete | 37/37 | 0.57706138 | 0.64609499 | 0.480827 | 0.531757 | 336.81 | 8.47 | 2.44 | 354.34 |
 | cross__c0.5 | complete | 37/37 | 0.0009136554 | 0.0009236177 | 2.39723e-06 | 2.13474e-06 | 237.30 | 18.58 | 2.01 | 264.84 |
 | cog__c0.5 | complete | 37/37 | 0.0023331311 | 0.0027778689 | 2.53093e-05 | 4.43155e-05 | 357.76 | 22.59 | 1.97 | 389.35 |
+| cog__c4 | complete | 37/37 | 0.00047943854 | 0.058299598 | 7.93098e-06 | 0.404464 | 1806.75 | 15.60 | 2.07 | 1831.34 |
 | circle__c0.5 | complete | 37/37 | 2.3469481e-08 | 2.3469481e-08 | 1.03264e-10 | 1.03264e-10 | 83.83 | 15.38 | 2.12 | 108.32 |
 | circle__c4 | complete | 37/37 | 2.0352808e-06 | 2.0352808e-06 | 4.87606e-10 | 4.87606e-10 | 52.10 | 18.07 | 2.00 | 79.22 |
 
 ## Time, limits and saved-output checks
 
+Queue ended 2026-11-18T03:23:59.673633+00:00; elapsed 55.65 min against a 300 min reporting target.
+
 Kite eta 0.5 pilot: 374.85 s. It ran alone before the rest.
 
-Aggregate case wall time: 98.81 min. New data-generation time: zero.
+Aggregate case wall time: 129.33 min. New data-generation time: zero.
 
 Minimum sampled available memory: 29.86 GiB; maximum simultaneous control workers: 6. Each launch checks fresh shared memory, reserves at least 3 GiB for the new BRG fit and retains the 14 GiB floor plus 2 GiB margin, allowing for other queues and B1 reservations. The guard delays starts; it never kills running fits.
 
@@ -81,6 +84,7 @@ Minimum sampled available memory: 29.86 GiB; maximum simultaneous control worker
 - hook__c0.5: saved-output check passed; [metrics](../../../../results/brg/tg002_no_curvature/2026-11-18/hook__c0.5/metrics.json), [figure](figures/hook__c0.5.png).
 - cross__c0.5: saved-output check passed; [metrics](../../../../results/brg/tg002_no_curvature/2026-11-18/cross__c0.5/metrics.json), [figure](figures/cross__c0.5.png).
 - cog__c0.5: saved-output check passed; [metrics](../../../../results/brg/tg002_no_curvature/2026-11-18/cog__c0.5/metrics.json), [figure](figures/cog__c0.5.png).
+- cog__c4: saved-output check passed; [metrics](../../../../results/brg/tg002_no_curvature/2026-11-18/cog__c4/metrics.json), [figure](figures/cog__c4.png).
 - circle__c0.5: saved-output check passed; [metrics](../../../../results/brg/tg002_no_curvature/2026-11-18/circle__c0.5/metrics.json), [figure](figures/circle__c0.5.png).
 - circle__c4: saved-output check passed; [metrics](../../../../results/brg/tg002_no_curvature/2026-11-18/circle__c4/metrics.json), [figure](figures/circle__c4.png).
 
@@ -109,6 +113,7 @@ The first two columns count the selected final geometry/filter code on rejected 
 | hook__c0.5 | 0 | 34 | 36 |
 | cross__c0.5 | 0 | 0 | 0 |
 | cog__c0.5 | 0 | 0 | 4 |
+| cog__c4 | 0 | 21 | 24 |
 | circle__c0.5 | 0 | 0 | 6 |
 | circle__c4 | 0 | 0 | 0 |
 
@@ -116,6 +121,12 @@ The first two columns count the selected final geometry/filter code on rejected 
 
 The first case, kite at contrast 0.5, reduced area error from 47.53% to 33.87% and maximum final residual from 0.3901 to 0.2051 in 374.85 s. It still failed to recover the shape. Its saved curve has loops and ripples; unchanged scoring reports a repaired ring and two components. There were no terminal curvature rejections, but 24 terminal self-intersection rejections and 37 final iteration ier -5 codes. The saved checks and settings review passed; the remaining cases were released without a supervisor restart. See `PILOT_REVIEW.json`.
 
-Interpretation remains partial until the queue ends. All failed or user-stopped cases remain in the record.
+Removing the curvature limit lowers raw area error in 10/20 cases, raises it in 8/20 and leaves 2/20 exactly unchanged. 8/20 cases have area error at most 5%, versus 7/20 with the shipped limit; 8/20 meet the clean final-residual limit. These are descriptive counts, not a decision on the open final-table cutoff. Contrast error remains zero by construction because BRG receives the true contrast.
+
+The curvature limit is a real cause of stalled updates in the shipped row, but removing it does not uniformly improve recovery. The raw curves, self-intersection rejections and high residuals retain the remaining failures. No setting was tuned to a shape, and no failed recovery was retried. Both rows remain provisional; this activity does not establish a final cross-solver comparison.
+
+Measured phase totals: inverse 120.68 min; final residual checks 5.39 min; scoring 0.75 min. These overlap across cases and with B1. Source data generation is reused, not charged as fresh work.
+
+Each case overlapped a peak of 3 to 6 other BRG/B1 fit processes. Each attempt receipt names the contributing saved timing records. These timings must be read as shared-machine timings.
 
 Bulk observations remain in activity 04. Fresh exact states and logs stay local with SHA-256 manifests. Source snapshots, order, overlap and receipts are retained. Shared-data qualification and BEM rows belong to the BEM side. Any further tuning or experiment needs a new coordinator decision.
