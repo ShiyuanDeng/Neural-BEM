@@ -7,8 +7,8 @@ settings, assumptions and unknowns, and it sets how subagents share the work.
 The coordinator (the main session) owns this file. Subagents never edit it.
 They report back, and the coordinator updates the status board and the cards.
 
-Last updated: 18 November 2026, 07:35 UTC (five-frequency pass: all ten
-BEM fits and six of seven MF-CC-CSI fits are in; `aphex_twin` still runs).
+Last updated: 18 November 2026, 07:50 UTC (five-frequency pass complete:
+all ten BEM fits and all seven MF-CC-CSI fits are in; table C has numbers).
 
 ## Restart notes (18 November 2026, 03:55 UTC)
 
@@ -19,9 +19,10 @@ again at about 03:40 UTC.
 **State in one look.**
 - The user set the band for the simulated CSI cases (table C): 0.5, 1,
   1.5, 2 and 2.5 GHz. The hold on CSI fits is lifted.
-- Data frozen and checked for all ten shapes. All ten BEM fits are done.
-  Six of the seven MF-CC-CSI fits are done; `aphex_twin` runs (07:35 UTC).
-  See "Progress" below.
+- The five-frequency pass is complete (07:47 UTC): data frozen and
+  checked for all ten shapes, ten BEM fits, seven MF-CC-CSI fits, no
+  failure. Numbers: "Table C, simulated shapes: the numbers" below.
+- Nothing is running on the baseline side. No launcher to re-arm.
 - BRG: both 20-case rows on the TG-002 shapes are complete. The `brg` pane
   is closed.
 - BEM side: one table B1 fit was still running at 03:45 UTC
@@ -82,7 +83,7 @@ its table is frozen and checks 1 to 3 passed for it.
 
 | Name | Pane | Model | Job | Activity |
 |---|---|---|---|---|
-| `csi-data` | `w1:p9`, middle right | Codex `gpt-6-astra`, high, full access | Prepare, check and freeze the ten five-frequency tables. No fit | `csi_adaptation/06_prepare_five_frequency_data` |
+| `csi-data` | closed 07:48 UTC (was `w1:p9`) | Codex `gpt-6-astra`, high, full access | Done. It prepared, checked and froze the ten five-frequency tables. No fit | `csi_adaptation/06_prepare_five_frequency_data` |
 | `csi` | `w1:p8`, top right | Codex `gpt-6.1-sol`, high, full access | Launch and watch the seven MF-CC-CSI fits; score and report | `csi_adaptation/07_run_seven_cases_at_five_frequencies` |
 | `bem-watch` | closed 05:13 UTC (was `w1:pA`) | Codex `gpt-6.1-sol`, high | Done. It watched the BEM side's ten checks and ten fits, read only, and edited nothing | None |
 
@@ -182,13 +183,19 @@ its table is frozen and checks 1 to 3 passed for it.
   c_shape 16.03% (2.60%), hook 16.52% (3.59%). Mean permittivity found
   3.71 to 3.87 against 4. At 0.3 and 0.7 of the peak the area error is
   9.6 to 16.5% and 16.3 to 45.1%. 4750 to 5050 s per fit, three at once.
-- 07:35 UTC: `aphex_twin` started 06:46 and runs alone (ceiling one); its
-  1024-iteration checkpoint is saved. Launcher PID 977035 is still alive:
-  **do not relaunch**.
+- 07:47 UTC, CSI: `aphex_twin` completed all 2048 iterations (started
+  06:46, alone, 3655 s): area error 23.36% at half the peak (our BEM
+  5.96%), 28.2% and 58.1% at 0.3 and 0.7, mean permittivity 3.51. All
+  seven fits are in and pushed (`183559c9f`). The launcher (PID 977035)
+  exited by itself after the seventh outcome. **Nothing to relaunch.**
+- 07:48 UTC: same observations checked by the coordinator for the seven
+  shapes: the table on disk, its `.sha256` file, CSI's `data.json` and
+  the BEM `manifest.json` carry one SHA-256 per shape.
+- 07:48 UTC: `csi-data` pane closed (idle since 04:06, all pushed).
 - Agents send reports into this pane as text starting "From <name>".
-- Next: the `aphex_twin` fit, then the report block from `csi`; then fill
-  table C's CSI text and close `csi` and `csi-data`. Ask the user only on
-  a failed or stuck fit that needs a decision.
+- Next: the report block from `csi`, then close its pane. After that the
+  baseline side has no open run. Open points are under "Waiting on the
+  user" and "Open for the coordinator".
 - Watchers to re-arm after a restart: none is needed for correctness. A
   fallback loop on the launcher PID and on
   `results/bem/baseline_data/csi_five_frequency/2026-11-18/*/cuda/attempt_*/metrics.json`
@@ -200,8 +207,8 @@ its table is frozen and checks 1 to 3 passed for it.
 - CSI: about 2.4 s per iteration with three fits at once, so about
   1 h 25 min per fit. Measured ends: 05:22, 05:29 and 05:35 UTC for the
   first three; 06:46, 06:51 and 06:57 for the next three. `aphex_twin`
-  runs alone at about 1.7 s per iteration and should end near 07:50 UTC
-  (a forecast, not a limit).
+  ran alone at about 1.8 s per iteration and ended 07:47 UTC. The seven
+  fits took 3 h 44 min in all, from 04:03 to 07:47 UTC.
 
 **Waiting on the user. Do not decide these.**
 1. The BRG paper cases from k = 15 to 30: deferred on 17 November for lack
@@ -262,8 +269,10 @@ this file before each edit and commit it by path.
 - The machine is shared with it. Keep the 14 GB memory guard.
 
 **Open for the coordinator.**
-- Table C's layout: how the three eight-frequency CSI results stand beside
-  the five-frequency rows.
+- Table C's layout is decided (07:50 UTC): one row per shape with both
+  methods at the five frequencies; the three eight-frequency CSI results
+  sit in a separate small table below it. See "Table C, simulated shapes:
+  the numbers".
 - How the main BRG table shows the two BRG rows, and the 5% cut-off (U5).
 - GauGal's role in tables B and C (U1).
 - CSI: threshold sensitivity (the batch-1 scores move a lot between 0.3,
@@ -279,7 +288,7 @@ this file before each edit and commit it by path.
 | Our BEM (default) | [evaluate_our_method](evaluate_our_method/) | [01](evaluate_our_method/01_measure_clean_and_noisy_recovery/results.md), [02](evaluate_our_method/02_run_ablations/results.md), run 17 Nov | TG-002 done. BEM side started 18 Nov: GPU table path, six BRG paper cases, CSI adapter | Status in [coordinate_bem_side.md](coordinate_bem_side.md) |
 | GauGal | [evaluate_our_method](evaluate_our_method/) | [03](evaluate_our_method/03_record_untuned_gaugal_reference/results.md), run 17 Nov | TG-002 untuned reference done | Stage 2 role open (U1) |
 | BRG | [brg_adaptation](brg_adaptation/) | [01 results](brg_adaptation/01_run_published_examples/results.md), [02 plan](brg_adaptation/02_rebuild_paper_examples/plan.md) | 01 done 17 Nov. [02](brg_adaptation/02_rebuild_paper_examples/results.md) done to k = 15 (six cases). [03](brg_adaptation/03_adapt_bem_to_brg_data/results.md): adapter done, 1 of 6 fits run, stopped for handover. [04](brg_adaptation/04_run_brg_on_tg002_shapes/plan.md) (BRG on TG-002 shapes): baseline half started 18 Nov 00:40 | `brg` agent idle since 03:26 UTC. Activities 04 and 05 are reported: both 20-case rows complete, [05 results](brg_adaptation/05_run_brg_without_curvature_limit/results.md) pushed in `4198a0bba`. No next BRG activity is open. Deferred, only if the user still wants it: the paper cases from k = 15 to 30 |
-| CSI family | [csi_adaptation](csi_adaptation/) | [01 results](csi_adaptation/01_run_published_examples/results.md) | 01, [02](csi_adaptation/02_run_fresnel_dielectric_cylinder/results.md) and [03](csi_adaptation/03_prepare_simulated_tg002_cases/results.md) done 17 Nov. [04](csi_adaptation/04_run_simulated_tg002_cases/results.md): batch 1 (circle, kite, peanut at eight frequencies) done 18 Nov 02:00 UTC, kept as a separate result, with a [review pack](csi_adaptation/04_run_simulated_tg002_cases/review_pack.md). [05](csi_adaptation/05_run_simulated_tg002_cases_at_1_to_3_ghz/results.md): ten eight-frequency tables frozen; no fit ran | The user set five frequencies on 18 Nov 03:43 UTC (restart notes). Next: 06 prepares and freezes the five-frequency tables (`csi-data`); 07 runs the seven remaining MF-CC-CSI fits on them (`csi`), after the checks pass |
+| CSI family | [csi_adaptation](csi_adaptation/) | [01 results](csi_adaptation/01_run_published_examples/results.md) | 01, [02](csi_adaptation/02_run_fresnel_dielectric_cylinder/results.md) and [03](csi_adaptation/03_prepare_simulated_tg002_cases/results.md) done 17 Nov. [04](csi_adaptation/04_run_simulated_tg002_cases/results.md): batch 1 (circle, kite, peanut at eight frequencies) done 18 Nov 02:00 UTC, kept as a separate result, with a [review pack](csi_adaptation/04_run_simulated_tg002_cases/review_pack.md). [05](csi_adaptation/05_run_simulated_tg002_cases_at_1_to_3_ghz/results.md): ten eight-frequency tables frozen; no fit ran. [06](csi_adaptation/06_prepare_five_frequency_data/results.md): ten five-frequency tables frozen and checked, 18 Nov 04:05 UTC. [07](csi_adaptation/07_run_seven_cases_at_five_frequencies/results.md): seven MF-CC-CSI fits at the five frequencies done 07:47 UTC, no failure; area error 3.7 to 23.4% | No CSI run is open. Still open for the coordinator: threshold sensitivity, and MR-CSI against the paper's Figure 5 |
 
 **Setup checked on 17 November 2026:** the user made the MaxwellFDFD link and
 signed in to MATLAB (online licensing). `matlab -batch` runs, the C compiler
@@ -324,7 +333,7 @@ one of six fits run). It stops there.
 | A. TG-002 (Stage 1) | 10 shapes at contrasts 0.5 and 4 (20 cases); contrast 13.3 for BEM only | BEM default, GauGal untuned | Done. No claims (user: claims "should wait until we see how baselines perform in stage 2") |
 | B1. BRG on TG-002 shapes (main BRG table) | 10 shapes at contrasts 0.5 and 4, with BRG-style plane-wave data | BRG, BEM with known contrast; BEM with recovered contrast as an extra row | BRG: both rows done on its own data (18 Nov 03:24 UTC): 7 of 20 under 5% with the shipped curvature limit, 8 without it, 10 with the better of the two. BEM (18 Nov 02:21 UTC): data checks pass on the 17 cases BRG has saved (the two forward copies differ by at most 1.6e-7, limit 1%). Known-contrast row done on those 17: every fit completed its schedule; area error at most 0.29% (`cog__c0.5`), under 0.1% on the other 16; 7 to 115 s per fit. Recovered-contrast row done on the same 17 (02:26 UTC): every fit completed; area error at most 0.21% (`cog__c0.5`), under 0.1% on the other 16; contrast within 2e-6 of the truth, relative; 9 to 96 s per fit. Late cases (02:54 UTC): `cog__c4` 0.038% in both rows. `aphex_twin__c0.5`: known contrast 15.1% (the fit stalled; kept as a failure, 1431 s), recovered contrast 1.14% with contrast 0.49989. `aphex_twin__c4` (04:07 UTC): known contrast 33.2% (the fit stalled; kept as a failure, 5628 s); recovered contrast 0.45% with contrast 4.000012 (133 s). All 40 BEM fits are done (04:09 UTC): 38 good; the two failures are `aphex_twin` with known contrast. All 20 data checks pass (worst 8.8e-6). [Results](adapt_bem_to_baseline_data/06_fit_brg_tg002_cases/results.md) |
 | B2. BRG paper cases | Paper examples 1–3, six runs | BRG; BEM with known contrast up to about k = 10 | BRG: done to k = 15. BEM (GPU pass, 18 Nov): area error at k = 15 is 0.061% on `glider_033`, 0.58% on `star_full`, 0.60% on `star_limited`; `glider_10` failed (14% at k = 12); both cavity cases skipped by the user (series limit). [Results](adapt_bem_to_baseline_data/02_fit_brg_paper_cases/results.md) |
-| C. CSI cases | Fresnel `dielTM_dec8f` (1 scene), plus the 10 TG-002 shapes at contrast 4 simulated in the Fresnel layout at 0.5, 1, 1.5, 2 and 2.5 GHz | Measured scene: MF-CC-CSI, MR-CSI, CSI. Simulated scenes: MF-CC-CSI on seven shapes at the five frequencies; circle, kite and peanut only as a separate eight-frequency result (1 to 8 GHz). BEM with recovered contrast on the measured scene and on all ten shapes at the five frequencies | CSI: measured scene done. Simulated scenes: the user set the five frequencies on 18 Nov 03:43 UTC, for both methods on the same frozen tables; the data above 3 GHz is up to 5.9% from the exact solution. Data at 0.5, 1.5 and 2.5 GHz is being prepared; then seven MF-CC-CSI fits. Batch 1 (circle 13.7%, kite 16.1%, peanut 21.1% at eight frequencies) stays as a separate result. BEM (18 Nov): measured scene fitted, and the default fit stalled (radius 19.0 mm against 15, permittivity 2.19 against 3, area error 67.8%); the adapter itself is cleared. Simulated scenes: an early look at 1 to 3 GHz gave 1.17%, 3.08% and 1.50% area error on circle, kite and peanut; the reported pass on all ten uses the five frequencies. Its 1% checks pass on all ten frozen tables (04:04 UTC): our forward on the true shape differs from the data by at most 0.71% (`aphex_twin` at 2.5 GHz), 0.11 to 0.48% elsewhere. All ten GPU fits done 05:10 UTC, every one completed its schedule, recovered contrast, same file hashes as the checks. Area error: circle 0.97%, kite 3.80%, peanut 1.54%, star 2.34%, asymmetric 1.29%, c_shape 2.60%, hook 3.59%, cross 2.10%, cog 2.86%, aphex_twin 5.96%. Contrast found 3.997 to 4.005 (within 0.14% of 4). 47 to 247 s per fit. CPU cross-checks (cut at 120 s) match the GPU on every stage both finished ([results](adapt_bem_to_baseline_data/07_fit_csi_cases_at_five_frequencies/results.md); [plan](adapt_bem_to_baseline_data/07_fit_csi_cases_at_five_frequencies/plan.md); early look: [results](adapt_bem_to_baseline_data/04_fit_csi_cases/results.md)) |
+| C. CSI cases | Fresnel `dielTM_dec8f` (1 scene), plus the 10 TG-002 shapes at contrast 4 simulated in the Fresnel layout at 0.5, 1, 1.5, 2 and 2.5 GHz | Measured scene: MF-CC-CSI, MR-CSI, CSI. Simulated scenes: MF-CC-CSI on seven shapes at the five frequencies; circle, kite and peanut only as a separate eight-frequency result (1 to 8 GHz). BEM with recovered contrast on the measured scene and on all ten shapes at the five frequencies | CSI: measured scene done. Simulated scenes: the user set the five frequencies on 18 Nov 03:43 UTC, for both methods on the same frozen tables; the data above 3 GHz is up to 5.9% from the exact solution. The five-frequency tables were frozen 04:05 UTC (circle within 0.44% of the exact series at every frequency). Seven MF-CC-CSI fits done 07:47 UTC, all 2048 iterations, no failure. Area error at half the peak: star 3.72%, asymmetric 6.67%, cross 11.97%, cog 13.29%, c_shape 16.03%, hook 16.52%, aphex_twin 23.36%; mean permittivity 3.51 to 3.87 against 4; 3655 to 5051 s per fit ([07 results](csi_adaptation/07_run_seven_cases_at_five_frequencies/results.md)). Batch 1 (circle 13.7%, kite 16.1%, peanut 21.1% at eight frequencies) stays as a separate result. BEM (18 Nov): measured scene fitted, and the default fit stalled (radius 19.0 mm against 15, permittivity 2.19 against 3, area error 67.8%); the adapter itself is cleared. Simulated scenes: an early look at 1 to 3 GHz gave 1.17%, 3.08% and 1.50% area error on circle, kite and peanut; the reported pass on all ten uses the five frequencies. Its 1% checks pass on all ten frozen tables (04:04 UTC): our forward on the true shape differs from the data by at most 0.71% (`aphex_twin` at 2.5 GHz), 0.11 to 0.48% elsewhere. All ten GPU fits done 05:10 UTC, every one completed its schedule, recovered contrast, same file hashes as the checks. Area error: circle 0.97%, kite 3.80%, peanut 1.54%, star 2.34%, asymmetric 1.29%, c_shape 2.60%, hook 3.59%, cross 2.10%, cog 2.86%, aphex_twin 5.96%. Contrast found 3.997 to 4.005 (within 0.14% of 4). 47 to 247 s per fit. CPU cross-checks (cut at 120 s) match the GPU on every stage both finished ([results](adapt_bem_to_baseline_data/07_fit_csi_cases_at_five_frequencies/results.md); [plan](adapt_bem_to_baseline_data/07_fit_csi_cases_at_five_frequencies/plan.md); early look: [results](adapt_bem_to_baseline_data/04_fit_csi_cases/results.md)) |
 
 Rules for every table:
 - Their code and published settings are not changed. Our method is adapted to
@@ -346,6 +355,61 @@ Rules for every table:
   changed cut-off means a recount, not a rerun.
 - Report each method's native timings separately from its timings on adapted
   cases (user decision D13).
+
+### Table C, simulated shapes: the numbers (18 November, 07:50 UTC)
+
+Ten TG-002 shapes with permittivity 4, simulated in the Fresnel layout at
+0.5, 1, 1.5, 2 and 2.5 GHz. Both methods read the same frozen table per
+shape: one SHA-256 in the file, in CSI's `data.json` and in the BEM
+`manifest.json`. One centred start each. Area error is set-difference
+area over true area. CSI is scored at half its image peak, as fixed
+before the runs; 0.3 and 0.7 of the peak show the sensitivity.
+
+| Shape | BEM area error | BEM contrast found | BEM time | MF-CC-CSI area error | CSI at 0.3 / 0.7 of the peak | CSI mean permittivity | CSI time |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| star | 2.34% | 4.0017 | 47 s | 3.72% | 16.0% / 19.3% | 3.71 | 4746 s |
+| asymmetric | 1.29% | 4.0020 | 65 s | 6.67% | 13.2% / 26.2% | 3.78 | 5024 s |
+| cross | 2.10% | 4.0012 | 51 s | 11.97% | 12.6% / 39.3% | 3.83 | 4924 s |
+| cog | 2.86% | 4.0005 | 247 s | 13.29% | 16.5% / 16.3% | 3.71 | 4872 s |
+| c_shape | 2.60% | 4.0027 | 105 s | 16.03% | 10.9% / 45.1% | 3.85 | 5051 s |
+| hook | 3.59% | 4.0054 | 162 s | 16.52% | 9.6% / 44.7% | 3.87 | 4958 s |
+| aphex_twin | 5.96% | 3.9970 | 195 s | 23.36% | 28.2% / 58.1% | 3.51 | 3655 s |
+| circle | 0.97% | 4.0002 | 200 s | not run at five frequencies | | | |
+| kite | 3.80% | 4.0024 | 194 s | not run at five frequencies | | | |
+| peanut | 1.54% | 4.0018 | 144 s | not run at five frequencies | | | |
+
+- On the seven shapes both methods ran: BEM 1.29 to 5.96%, mean 2.96%,
+  median 2.60%. MF-CC-CSI 3.72 to 23.36%, mean 13.08%, median 13.29%.
+  BEM is lower on every shape, by a factor of 1.6 (star) to 6.2 (c_shape).
+- BEM on all ten: mean 2.71%, median 2.47%.
+- The cut-off does not change the order. Taking CSI's best of the three
+  cut-offs per shape gives 3.72 to 23.36% (mean 11.36%), still above BEM
+  on every shape.
+- Where CSI's error sits at half the peak: on c_shape, hook and cross it
+  is all missing area (the contour lies inside the true boundary). On
+  those three the half-peak error does not fall with iterations (hook:
+  8.0% at 256, 16.5% at 2048) while the 0.3 score does.
+- Every fit of both methods completed its schedule. No failed fit.
+- Times are from a shared machine: BEM on the GPU, one fit at a time;
+  CSI on eight CPU threads with three fits at once (`aphex_twin` alone).
+  These are timings on adapted cases, reported apart from native ones
+  (D13).
+
+**Separate result, other data.** MF-CC-CSI ran circle, kite and peanut
+only at eight frequencies, 1 to 8 GHz (batch 1, 18 November 02:00 UTC).
+The user kept these as they are. They are not a same-data comparison with
+the BEM column: the BEM numbers are from the five-frequency tables.
+
+| Shape | MF-CC-CSI at 1 to 8 GHz | At 0.3 / 0.7 of the peak | Mean permittivity | CSI time | BEM at the five frequencies |
+|---|---:|---:|---:|---:|---:|
+| circle | 13.67% | 22.3% / 4.7% | 3.43 | 9711 s | 0.97% |
+| kite | 16.11% | 41.0% / 44.4% | 3.25 | 9682 s | 3.80% |
+| peanut | 21.13% | 36.1% / 25.7% | 3.21 | 9701 s | 1.54% |
+
+Evidence: BEM `results/bem/baseline_data/csi_five_frequency/2026-11-18/<shape>__c4/cuda/attempt_01/metrics.json`;
+CSI `results/csi/tg002/2026-11-18_five_frequency/<shape>/scores.json`;
+batch 1 `results/csi/tg002/2026-11-17_campaign/<shape>/scores.json`.
+No claims are drawn here; the user decides the wording.
 
 ## Method cards
 
@@ -678,8 +742,16 @@ Rules for every table:
     five-frequency tables. Circle, kite and peanut keep their
     eight-frequency CSI fits as a separate result. The user's words, the
     settings and the checks are in the restart notes.
-  - The circle error at 1 and 2 GHz is 0.17% and 0.13%. At 0.5, 1.5 and
-    2.5 GHz it is measured when the data is made.
+  - The circle error against the exact series is 0.44, 0.17, 0.13, 0.13
+    and 0.18% at 0.5, 1, 1.5, 2 and 2.5 GHz (measured 04:00 UTC). The
+    thin absorbing border does not hurt at 0.5 GHz.
+  - **Five-frequency result (18 November 07:47 UTC; activity 07, 2048
+    iterations, 1.8 to 2.5 s per iteration):** seven fits, no failure.
+    Area error at half the peak: star 3.72%, asymmetric 6.67%, cross
+    11.97%, cog 13.29%, c_shape 16.03%, hook 16.52%, aphex_twin 23.36%.
+    Mean permittivity 3.51 to 3.87. The per-shape table with our BEM
+    beside it is under "Table C, simulated shapes: the numbers".
+    [Results](csi_adaptation/07_run_seven_cases_at_five_frequencies/results.md).
   - What the band costs: 2.5 GHz in vacuum is a 120 mm wavelength outside
     and 60 mm inside. TG-002's top frequency gives 49 mm and 24 mm. Both
     methods get the same, coarser data.
@@ -799,6 +871,7 @@ needs it, and recorded here.
 | 18 Nov | Three agents: `csi-data` (astra) makes the data, `csi` (sol) runs the seven fits, `bem-watch` (sol) watches the BEM side read only | The user asked for a monitor per run and offered astra for the data. The data and its check at 0.5 GHz are the hard part; running and watching are easy |
 | 18 Nov | `csi` applies the release rule itself, shape by shape, from the saved check files; the BEM runner picks up frozen tables itself | The rule is mechanical, and a chat that pauses must not hold up the fits. A failed check still comes to the coordinator |
 | 18 Nov | CSI activities 06 (prepare the five-frequency data) and 07 (run the seven fits) | Activity 05 has results, so the change of band starts new numbers |
+| 18 Nov | Table C's simulated block: ten rows, both methods at the five frequencies; circle, kite and peanut show "not run" for CSI there, and their eight-frequency CSI results go in a separate small table. Averages for the two methods use the seven shared shapes | The user asked to keep the three fits as separate eight-frequency results. Mixing them into the same column would compare different data |
 
 **Pushed result files:** about 654 MB (561 MB CSI, 93 MB BRG) were pushed
 in the first hour. The user freed disk space and said "alr should be enough
