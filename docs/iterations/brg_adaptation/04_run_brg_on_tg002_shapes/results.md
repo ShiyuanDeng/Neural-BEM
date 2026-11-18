@@ -174,12 +174,18 @@ The shared checkout can contain CSI/coordinator changes: do not stage them.
 
 ## Status and ownership
 
-Campaign started 2026-11-17T23:41:28.138975+00:00; 12/20 cases have saved scores.
-Queue state: `ready_after_receipt_repair`; last update 2026-11-18T01:16:25.454416+00:00.
+Campaign started 2026-11-17T23:41:28.138975+00:00; 13/20 cases have saved scores.
+Queue state: `ready_after_receipt_repair`; last update 2026-11-18T01:30:16.528590+00:00.
 All data and results here are **provisional BRG-forward data**. The BEM side
 owns generating and freezing the shared plane-wave data. These are TG-002
 shapes with BRG-style observations, not the sealed TG-002 measurements.
 No BEM forward, BEM fit or solver edit was performed in this activity.
+
+The old one-hour cap cut C-shape at contrast 0.5 during frequency 35;
+34 frequency states were saved. The coordinator authorized a continuation
+from that state as attempt 02 and completion of the six unstarted cases,
+using new entry points with no time cutoff. The original queue and its
+loaded files remain untouched. See the [continuation plan](continuation_plan.md).
 
 The [approved plan](plan.md) records the pilot rule and all choices. The
 [single data request](../../../../results/brg/tg002_shapes/2026-11-17/data_request.json)
@@ -234,6 +240,7 @@ This final-curve evaluation has its own time column. No BEM solve is involved.
 | peanut__c4 | complete | 37/37 | 0.50390252 | 1.30272 | 15.69 | 682.95 | 20.67 | 2.38 | 728.08 |
 | star__c0.5 | complete | 37/37 | 0.0025279893 | 2.80675e-05 | 30.05 | 265.72 | 32.25 | 2.27 | 336.76 |
 | star__c4 | complete | 37/37 | 0.00039247399 | 3.11609e-06 | 30.22 | 744.63 | 33.56 | 2.38 | 817.77 |
+| c_shape__c0.5 | incomplete (running) | 34/37 | 0.076235131 | not saved | 31.10 | 3107.75 | 0.00 | 2.44 | 3599.18 |
 | c_shape__c4 | complete | 37/37 | 0.44474779 | 0.891051 | 31.15 | 770.22 | 27.88 | 2.69 | 838.86 |
 | hook__c0.5 | complete | 37/37 | 0.57706138 | 0.480827 | 29.53 | 1025.90 | 25.03 | 2.58 | 1089.86 |
 
@@ -249,8 +256,8 @@ inverse 239.14 min and residual checks
 257.27 min before parallelism. This is a one-shape estimate, not a
 promise for thin strokes or deep concavities. No case is rerun to tune it.
 
-Completed-case aggregate wall time: 113.27 min across 12 cases.
-A running-mean projection for all 20 is 188.78 min before parallelism; the still-unrun difficult shapes make this uncertain.
+Completed-case aggregate wall time: 173.25 min across 13 cases.
+A running-mean projection for all 20 is 266.55 min before parallelism; the still-unrun difficult shapes make this uncertain.
 
 Memory: minimum observed available 15.10 GiB; maximum active BRG workers 2. The required reserve is 14 GB. Start/end CSI/MATLAB overlap is retained in each attempt.
 
@@ -270,6 +277,7 @@ Counts below read the existing MATLAB logs only. Geometry/filter ier 2 means cur
 | peanut__c4 | 37 | 34 | 1 | 36 |
 | star__c0.5 | 37 | 0 | 0 | 1 |
 | star__c4 | 37 | 5 | 0 | 7 |
+| c_shape__c0.5 | 34 | 20 | 0 | 25 |
 | c_shape__c4 | 37 | 31 | 0 | 35 |
 | hook__c0.5 | 37 | 25 | 0 | 30 |
 
@@ -277,9 +285,9 @@ The coordinator identified curvature rejection as the reason stalled curves coul
 
 ## Checks, failures and evidence
 
-Saved-output checks cover 12/12 scored cases. They read existing curves and histories, file counts, receipts, logs and manifest sizes; no inversion or scoring was repeated. Each receipt is saved as `saved_output_check.json` beside its metrics.
+Saved-output checks cover 13/13 scored cases. They read existing curves and histories, file counts, receipts, logs and manifest sizes; no inversion or scoring was repeated. Each receipt is saved as `saved_output_check.json` beside its metrics.
 
-No saved-output check failed.
+Issues: c_shape__c0.5: failed receipt
 
 - asymmetric__c4: maximum data-geometry resampling point error 1.66371e-15 BRG units; [metrics](../../../../results/brg/tg002_shapes/2026-11-17/asymmetric__c4/metrics.json), [curve](figures/asymmetric__c4.png).
   Wrapper failure: Python 3.10 lacks hashlib.file_digest; MATLAB and scoring completed. Receipt repaired with streaming SHA-256; no numerical rerun. See `supervisor_failure.log` in this case folder.
@@ -292,6 +300,8 @@ No saved-output check failed.
 - peanut__c4: maximum data-geometry resampling point error 1.73888e-15 BRG units; [metrics](../../../../results/brg/tg002_shapes/2026-11-17/peanut__c4/metrics.json), [curve](figures/peanut__c4.png).
 - star__c0.5: maximum data-geometry resampling point error 2.33477e-15 BRG units; [metrics](../../../../results/brg/tg002_shapes/2026-11-17/star__c0.5/metrics.json), [curve](figures/star__c0.5.png).
 - star__c4: maximum data-geometry resampling point error 2.33477e-15 BRG units; [metrics](../../../../results/brg/tg002_shapes/2026-11-17/star__c4/metrics.json), [curve](figures/star__c4.png).
+- c_shape__c0.5: maximum data-geometry resampling point error 2.13556e-15 BRG units; [metrics](../../../../results/brg/tg002_shapes/2026-11-17/c_shape__c0.5/metrics.json), [curve](figures/c_shape__c0.5.png).
+  Attempt 2026-11-18T00:25:34.696176+00:00: return code 124; TimeoutExpired(['/home/drdeng/miniconda3/envs/EMNerf/bin/python', '/home/drdeng/Neural_SDF_BEM_AD_organised/experiments/baselines/brg/score_tg002.py', '--case', 'c_shape__c0.5'], 1.9999738428741693); log `results/brg/tg002_shapes/2026-11-17/c_shape__c0.5/local/matlab_01.log`.
 - c_shape__c4: maximum data-geometry resampling point error 2.13556e-15 BRG units; [metrics](../../../../results/brg/tg002_shapes/2026-11-17/c_shape__c4/metrics.json), [curve](figures/c_shape__c4.png).
 - hook__c0.5: maximum data-geometry resampling point error 2.14006e-15 BRG units; [metrics](../../../../results/brg/tg002_shapes/2026-11-17/hook__c0.5/metrics.json), [curve](figures/hook__c0.5.png).
 

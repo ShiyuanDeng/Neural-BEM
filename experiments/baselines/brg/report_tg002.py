@@ -12,7 +12,8 @@ def main():
         m=json.loads(p.read_text());attempts=[json.loads(p.read_text()) for p in sorted((BASE/case).glob('attempt_*.json'))]
         wall=sum(a.get('case_wall_seconds',a.get('wall_seconds',0)) for a in attempts)
         residual=m['max_final_curve_residual'];res='not saved' if residual is None else f'{residual:.6g}'
-        rows.append(f"| {case} | {m['status']} | {m['completed_frequencies']}/37 | {m['area_error']:.8g} | {res} | {m['data_seconds']:.2f} | {m['inverse_seconds']:.2f} | {m['residual_check_seconds']:.2f} | {m['scoring_seconds']:.2f} | {wall:.2f} |")
+        status=m['status'] if m['status']=='complete' else 'incomplete ('+m['status']+')'
+        rows.append(f"| {case} | {status} | {m['completed_frequencies']}/37 | {m['area_error']:.8g} | {res} | {m['data_seconds']:.2f} | {m['inverse_seconds']:.2f} | {m['residual_check_seconds']:.2f} | {m['scoring_seconds']:.2f} | {wall:.2f} |")
         details.append((case,m,attempts,wall))
     text=f'''# Run BRG on TG-002 shapes: provisional baseline results
 
@@ -24,6 +25,12 @@ All data and results here are **provisional BRG-forward data**. The BEM side
 owns generating and freezing the shared plane-wave data. These are TG-002
 shapes with BRG-style observations, not the sealed TG-002 measurements.
 No BEM forward, BEM fit or solver edit was performed in this activity.
+
+The old one-hour cap cut C-shape at contrast 0.5 during frequency 35;
+34 frequency states were saved. The coordinator authorized a continuation
+from that state as attempt 02 and completion of the six unstarted cases,
+using new entry points with no time cutoff. The original queue and its
+loaded files remain untouched. See the [continuation plan](continuation_plan.md).
 
 The [approved plan](plan.md) records the pilot rule and all choices. The
 [single data request](../../../../results/brg/tg002_shapes/2026-11-17/data_request.json)
