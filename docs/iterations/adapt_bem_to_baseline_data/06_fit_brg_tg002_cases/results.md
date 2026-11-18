@@ -22,6 +22,10 @@ Both fitting rows will read only the saved, hash-verified BRG observations.
 | hook__c4 | 37 | 1.470589075456192e-11 | 1.688450230318075e-13 | PASS |
 | cross__c0.5 | 37 | 2.0557080104187058e-11 | 1.6279779075760412e-14 | PASS |
 | cross__c4 | 37 | 1.3194908220155407e-11 | 5.094598303199394e-14 | PASS |
+| cog__c0.5 | 0 | None | None | INPUTS_PENDING |
+| cog__c4 | 0 | None | None | INPUTS_PENDING |
+| aphex_twin__c0.5 | 0 | None | None | INPUTS_PENDING |
+| aphex_twin__c4 | 0 | None | None | INPUTS_PENDING |
 
 Limits: BRG relative difference 0.01 at every frequency; refinement 1e-6.
 A failed or missing check blocks the case. No resolution or tolerance changed.
