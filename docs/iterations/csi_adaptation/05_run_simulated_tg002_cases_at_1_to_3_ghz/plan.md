@@ -1,5 +1,14 @@
 # Run the simulated TG-002 cases at 1–3 GHz
 
+**Current process rule, relayed 18 November 01:24 UTC:** the user's words:
+"do not stop result-gerating terminal processes due to time limit unless
+i say otherwise. if it stucks or goes wrong you should still stop it.
+this is only about time limit". Time is a design target, never an
+automatic stop. A stuck/faulty fit may be stopped after reporting what
+was seen, unless urgent. The memory guard may act as originally designed.
+This supersedes the more restrictive 01:18 wording. The old launcher and
+the stopped grid check remain untouched.
+
 18 November 2026. User decision, relayed by the coordinator at 00:55 UTC:
 **"id say we just supply less frequency range to it, you know below 4GHz
 such that simulated data are accurate there."** This replaces the planned
@@ -43,15 +52,18 @@ The real contrast is common to all frequencies. Metadata/scoring must
 state 3 GHz; no invented replacement reference or retuning is applied.
 Each of 1/2/3 GHz retains its own unchanged per-source calibration.
 
-Budget: initially six hours on this new campaign's own original clock,
+Time target: initially six hours on this new campaign's own original clock,
 including data preparation. Read `budget_hours.txt` at every stop check
-and record its initial value and each changed value used. STOP is an
+and record its initial value and each changed value used. Passing that
+target is recorded and reported while every fit continues. STOP is an
 independent file and is never removed automatically. Write the completed
-first-batch forecast, then carry on without a forecast exit. Stop only
-for STOP/signal, budget, an owned-worker failure or memory guard as
-specified; retain all outcomes, partial snapshots and raw evidence.
-After a memory reserve failure preserve that failure and reduce the
-ceiling to two workers, matching the earlier controller.
+first-batch forecast, then carry on without a forecast exit. Time checks
+never terminate a running process. STOP and explicit signals remain
+controlled-stop paths. The urgent 14 GiB guard may stop the newest owned
+fit, preserve that failure and reduce later concurrency to two. It never
+touches BRG workers. A controller error is reported and healthy running
+workers are monitored to native completion instead of being killed for
+an unrelated reporting error. Keep all outcomes and partial evidence.
 A failed fit is recorded and the controller continues with remaining
 eligible cases; it never changes settings or restarts from an image.
 

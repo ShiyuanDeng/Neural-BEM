@@ -49,8 +49,6 @@ def inspect():
         reasons.append('original launcher has not finished in awaiting-coordinator state')
     if (base.ROOT / 'STOP').exists():
         reasons.append('existing STOP file is set; it will never be removed')
-    if dt.datetime.now(dt.timezone.utc) >= deadline:
-        reasons.append('original-clock deadline has passed')
     if (base.ROOT / 'resume.lock').exists() or RESUME_STATE.exists():
         reasons.append('a resume has already claimed this campaign')
     for entry in read(base.ROOT / 'sources.json')['files']:
@@ -89,8 +87,8 @@ def inspect():
                 reasons.append(f'CSI worker PID {process.pid} is still alive')
         except (psutil.NoSuchProcess, psutil.AccessDenied, IndexError):
             continue
-    return dict(original_started_utc=started.isoformat(), hard_stop_utc=deadline.isoformat(),
-                budget_hours=hours, budget_seconds=hours * 3600, planned=planned, preserved_outcomes=skipped,
+    return dict(original_started_utc=started.isoformat(), target_utc=deadline.isoformat(),
+                budget_hours=hours, budget_seconds=hours * 3600, time_target_is_informational=True,planned=planned, preserved_outcomes=skipped,
                 ready=not reasons, blocked_reasons=reasons)
 
 
@@ -98,9 +96,9 @@ def report(state):
     ORIGINAL_REPORT(state)
     path = base.ACT / 'results.md'
     record = read(RESUME_STATE)
-    text = path.read_text().replace('Nine-hour budget.', f"{record['budget_hours']:g}-hour budget on the original campaign clock.")
+    text = path.read_text().replace('Nine-hour budget.', f"{record['budget_hours']:g}-hour informational target on the original campaign clock.")
     text += ('\n## Resume after batch 1\n\n'
-             f"Original start: {record['original_started_utc']}. Hard stop: {record['hard_stop_utc']}.\n"
+             f"Original start: {record['original_started_utc']}. Target time: {record['target_utc']}.\n"
              'The first-batch forecast above retains its original nine-hour check.\n'
              'The coordinator extended the total budget to twelve hours on 18 November; '
              'resume_budget_hours.txt is read at every stop check.\n'
@@ -109,6 +107,7 @@ def report(state):
              'Resume state, resource overlap and source hashes are in resume_campaign.json, '
              'resume_status.json, resume_overlap.jsonl and resume_sources.json.\n'
              'Each changed budget value used is recorded in resume_budget_history.jsonl.\n')
+    text += 'The current user rule forbids time-based stops. Target overruns are recorded and workers continue.\n'
     path.write_text(text)
 
 
@@ -127,7 +126,7 @@ def status(state, batch, active=(), pending=()):
                   active=[job['scene'] for job in active], pending=[s for s, _ in pending],
                   memory=base.memory(), matlab=base.live_jobs())
     campaign = read(RESUME_STATE)
-    record.update(budget_hours=campaign['budget_hours'], hard_stop_utc=campaign['hard_stop_utc'])
+    record.update(budget_hours=campaign['budget_hours'], target_utc=campaign['target_utc'])
     base.write(RESUME_STATUS, record)
     with (base.ROOT / 'resume_overlap.jsonl').open('a') as stream:
         stream.write(json.dumps(record) + '\n')
@@ -160,29 +159,32 @@ def run(batch_one_commit):
                   memory_reserve_bytes=base.RESERVE, threads=8, max_workers=3)
     base.write(RESUME_STATE, record)
     last_budget = None
+    target_notified = False
 
     def stopped():
-        nonlocal last_budget
+        nonlocal last_budget,target_notified
         # Read the coordinator's small text file at EVERY stop check.
-        # Missing/invalid text fails closed and never removes STOP or state.
+        # Invalid target text keeps the last valid target; it cannot end fits.
         try:
             hours = budget_hours()
         except (OSError, ValueError) as error:
             with (base.ROOT / 'resume_budget_history.jsonl').open('a') as stream:
-                stream.write(json.dumps(dict(utc=base.now(), error=repr(error), action='stop')) + '\n')
-            base.STOP = True
-            return True
+                stream.write(json.dumps(dict(utc=base.now(), error=repr(error), action='keep running')) + '\n')
+            hours = last_budget if last_budget is not None else check['budget_hours']
         if hours != last_budget:
             deadline = dt.datetime.fromtimestamp(started + hours * 3600, dt.timezone.utc).isoformat()
             with (base.ROOT / 'resume_budget_history.jsonl').open('a') as stream:
-                stream.write(json.dumps(dict(utc=base.now(), budget_hours=hours, hard_stop_utc=deadline,
-                    elapsed_seconds=time.monotonic() - base.START)) + '\n')
-            record.update(budget_hours=hours, budget_seconds=hours * 3600, hard_stop_utc=deadline)
+                stream.write(json.dumps(dict(utc=base.now(), budget_hours=hours, target_utc=deadline,
+                    time_target_is_informational=True,elapsed_seconds=time.monotonic() - base.START)) + '\n')
+            record.update(budget_hours=hours, budget_seconds=hours * 3600, target_utc=deadline)
             base.write(RESUME_STATE, record)
             last_budget = hours
-        return (base.STOP or (base.ROOT / 'STOP').exists()
-                or time.monotonic() - base.START >= hours * 3600
-                or time.time() >= started + hours * 3600)
+            target_notified=False
+        if (time.monotonic()-base.START>=hours*3600 or time.time()>=started+hours*3600) and not target_notified:
+            event=dict(utc=base.now(),state='time target exceeded; workers continue',budget_hours=hours)
+            with (base.ROOT/'resume_budget_history.jsonl').open('a') as stream:stream.write(json.dumps(event)+'\n')
+            print(json.dumps(event),flush=True);target_notified=True
+        return base.STOP or (base.ROOT / 'STOP').exists()
 
     base.stopped = stopped
     stopped()  # Record the first value used before any worker starts.
@@ -220,7 +222,7 @@ def run(batch_one_commit):
             while pending or active:
                 if base.stopped():
                     for job in active:
-                        base.terminate(job, 'user stop or original-clock budget')
+                        base.terminate(job, 'user-requested stop or signal')
                     for scene, folder in pending:
                         base.write(folder / 'outcome.json', dict(state='not started before stop', utc=base.now()))
                     pending.clear(); overall = 'stopped; available snapshots preserved'

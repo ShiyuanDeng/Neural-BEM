@@ -1,5 +1,28 @@
 # Launcher checks before the first run
 
+## Current time-target rule checked, 18 November 01:28 UTC
+
+The user's rephrased 01:24 rule supersedes the earlier time-stop logic.
+The real-folder dry run again passed with writes and process creation
+forbidden. It reports a six-hour informational target and still refuses
+the active old launcher. No MATLAB process was started or signalled.
+
+An updated temporary fake-worker run changed the target to a tiny value
+after launch. All ten cases completed in order despite passing it; the
+target-exceeded event was logged and the forecast did not stop the run.
+An explicit resume after passing the target kept the original start and
+never reran or overwrote finished launches. A mock termination function
+was never called because of time. Separate mock-only checks confirmed
+that urgent memory protection and explicit STOP still reach the intended
+stop control. The real old campaign and its workers were untouched.
+
+The held eight-frequency resume was also checked in a temporary folder
+with its original start thirteen hours earlier and a twelve-hour target.
+It ran all seven fake remaining cases, recorded the overrun, never called
+time termination and kept the original state file. It remains unlaunched.
+
+## Earlier preparation checks
+
 18 November 2026, 01:04–01:06 UTC. No MATLAB was launched by these checks.
 
 Real-folder --dry-run passed with write-mode file opens and subprocess

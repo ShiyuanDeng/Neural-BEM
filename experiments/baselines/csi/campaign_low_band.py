@@ -1,4 +1,4 @@
-"""Detached 1--3 GHz CSI campaign, with original-clock resume and live budget."""
+"""Detached 1--3 GHz CSI campaign; time is a target, with user/resource stops."""
 import argparse
 import datetime as dt
 import fcntl
@@ -23,10 +23,13 @@ ROOT = base.REPO / 'results/csi/tg002/2026-11-18_low_band'
 ACT = base.REPO / 'docs/iterations/csi_adaptation/05_run_simulated_tg002_cases_at_1_to_3_ghz'
 PARENT = base.REPO / 'results/csi/tg002/2026-11-17_campaign'
 ORIGINAL_REPORT = base.report
+ORIGINAL_TERMINATE = base.terminate
 FREQUENCIES = [1, 2, 3]
 CURRENT_SOURCE = None
 RECORD = None
 LAST_BUDGET = None
+TARGET_NOTIFIED = False
+ALERT_TIMES = {}
 
 
 def read(path):
@@ -89,35 +92,63 @@ def inspect(resume=False):
     if own.exists():
         start = dt.datetime.fromisoformat(read(own)['started_utc'])
         deadline = start + dt.timedelta(hours=limit)
-        if dt.datetime.now(dt.timezone.utc) >= deadline:
-            reasons.append('original campaign clock has reached its budget')
     else:
         deadline = None
     return dict(ready=not reasons, blocked_reasons=reasons, frequencies_GHz=FREQUENCIES,
-                budget_hours=limit, hard_stop_utc=None if deadline is None else deadline.isoformat(), cases=selected)
+                target_hours=limit, target_utc=None if deadline is None else deadline.isoformat(),
+                time_target_is_informational=True,cases=selected)
+
+
+def alert(kind, message, **details):
+    key=(kind,message);stamp=time.monotonic()
+    if stamp-ALERT_TIMES.get(key,-1000)<30:return
+    ALERT_TIMES[key]=stamp
+    record=dict(utc=base.now(),kind=kind,message=message,kept_running=details.pop('kept_running',True),**details)
+    with (ROOT/'alerts.jsonl').open('a') as f:f.write(json.dumps(record)+'\n')
+    print(json.dumps(record),flush=True)
+
+
+def terminate(job, reason):
+    assert Path(job['folder']).is_relative_to(ROOT), 'never signal another campaign worker'
+    # Time is never a stop reason. The original forward helper reaches this
+    # on an urgent reserve breach or on an explicit STOP/signal only.
+    if 'memory reserve' in reason:
+        alert('memory_guard',reason,pid=job['process'].pid,available_bytes=base.memory()['MemAvailable'],kept_running=False)
+        ORIGINAL_TERMINATE(job,reason)
+    elif base.STOP or (ROOT/'STOP').exists():
+        ORIGINAL_TERMINATE(job,'user-requested STOP or signal')
+    else:
+        alert('worker_kept_running',reason,pid=job['process'].pid,
+              available_bytes=base.memory()['MemAvailable'])
+
+
+def received_signal(signum, frame):
+    alert('controller_signal',f'received signal {signum}; explicit stop requested',kept_running=False)
+    base.STOP=True
 
 
 def stopped():
-    global LAST_BUDGET
+    global LAST_BUDGET,TARGET_NOTIFIED
     try:
         limit = hours()
     except (OSError, ValueError) as error:
-        with (ROOT/'budget_history.jsonl').open('a') as f:
-            f.write(json.dumps(dict(utc=base.now(), error=repr(error), action='stop'))+'\n')
-        base.STOP = True
-        return True
+        alert('invalid_target',repr(error))
+        limit=LAST_BUDGET if LAST_BUDGET is not None else 6.
     start = dt.datetime.fromisoformat(RECORD['started_utc']).timestamp()
     if limit != LAST_BUDGET:
         deadline = dt.datetime.fromtimestamp(start+3600*limit, dt.timezone.utc).isoformat()
-        entry = dict(utc=base.now(), budget_hours=limit, hard_stop_utc=deadline,
-                     elapsed_seconds=time.monotonic()-base.START)
+        entry = dict(utc=base.now(), target_hours=limit, target_utc=deadline,
+                     elapsed_seconds=time.monotonic()-base.START,time_target_is_informational=True)
         with (ROOT/'budget_history.jsonl').open('a') as f:
             f.write(json.dumps(entry)+'\n')
-        RECORD.update(budget_hours=limit, hard_stop_utc=deadline)
+        RECORD.update(target_hours=limit, target_utc=deadline,time_target_is_informational=True)
         base.write(ROOT/'campaign.json', RECORD)
         LAST_BUDGET = limit
-    return (base.STOP or (ROOT/'STOP').exists() or time.monotonic()-base.START >= limit*3600
-            or time.time() >= start+limit*3600)
+        TARGET_NOTIFIED=False
+    if (time.monotonic()-base.START>=limit*3600 or time.time()>=start+limit*3600) and not TARGET_NOTIFIED:
+        alert('time_target_exceeded','time target passed; every running fit continues',target_hours=limit)
+        TARGET_NOTIFIED=True
+    return base.STOP or (ROOT/'STOP').exists()
 
 
 def select_data(folder):
@@ -230,12 +261,13 @@ def iteration_timing(job):
 def report(state):
     ORIGINAL_REPORT(state)
     path = ACT/'results.md'
-    text = path.read_text().replace('Nine-hour budget.',f"{RECORD['budget_hours']:g}-hour live budget on this campaign's original clock.")
+    text = path.read_text().replace('Nine-hour budget.',f"{RECORD['target_hours']:g}-hour informational target; no automatic time stop.")
     text += ('\n## Frequency selection and clock\n\n'
              'Only 1, 2 and 3 GHz enter native configuration, back-propagation and inversion.\n'
              'The native last-frequency raw image is at 3 GHz; conductivity normalization remains at 1 GHz.\n'
-             f"Start: {RECORD['started_utc']}. Current hard stop: {RECORD['hard_stop_utc']}.\n"
-             'budget_hours.txt is read at every stop check; changed values are in budget_history.jsonl.\n'
+             f"Start: {RECORD['started_utc']}. Current target time: {RECORD['target_utc']}.\n"
+             'budget_hours.txt is an informational target read at every check; values used are in budget_history.jsonl.\n'
+             'Passing the time target is reported and every fit continues. STOP/signals and the memory guard remain active.\n'
              'The first-batch forecast is information only and never causes an exit.\n'
              'See [data_note.md](data_note.md) for parent and selected-row hashes for BEM.\n')
     path.write_text(text)
@@ -260,7 +292,8 @@ def report(state):
 def status(state,batch,active=(),pending=()):
     record=dict(state=state,batch=batch,utc=base.now(),elapsed_seconds=time.monotonic()-base.START,
                 active=[j['scene'] for j in active],pending=[s for s,_ in pending],memory=base.memory(),
-                matlab=base.live_jobs(),budget_hours=RECORD['budget_hours'],hard_stop_utc=RECORD['hard_stop_utc'])
+                matlab=base.live_jobs(),target_hours=RECORD['target_hours'],target_utc=RECORD['target_utc'],
+                time_target_exceeded=TARGET_NOTIFIED)
     base.write(ROOT/'status.json',record)
     with (ROOT/'overlap.jsonl').open('a') as f:f.write(json.dumps(record)+'\n')
     report(state);print(json.dumps(record),flush=True)
@@ -339,7 +372,7 @@ def run(resume=False,parent_commit=None):
         RECORD=read(ROOT/'campaign.json')
     else:
         RECORD=dict(started_utc=base.now(),parent_batch_commit=parent_commit,batches=base.BATCHES,
-                    frequencies_GHz=FREQUENCIES,reference_frequency_GHz=3,initial_budget_hours=6,
+                    frequencies_GHz=FREQUENCIES,reference_frequency_GHz=3,initial_target_hours=6,
                     memory_reserve_bytes=base.RESERVE,stop_file=str(ROOT/'STOP'),invocations=[])
     command=['env','PYTHONPATH=solvers:.',os.sys.executable,'-B','-m','experiments.baselines.csi.campaign_low_band']
     command+=['--resume'] if resume else ['--parent-commit',parent_commit]
@@ -353,12 +386,12 @@ def run(resume=False,parent_commit=None):
                  upstream_commit=subprocess.check_output(['git','-C',str(base.UP),'rev-parse','HEAD'],text=True).strip())
     base.write(CURRENT_SOURCE,sources)
     if not (ROOT/'sources.json').exists():base.write(ROOT/'sources.json',sources)
-    base.ROOT=ROOT;base.ACT=ACT;base.report=report;base.stopped=stopped;base.STOP=False
+    base.ROOT=ROOT;base.ACT=ACT;base.report=report;base.stopped=stopped;base.terminate=terminate;base.STOP=False
     started=dt.datetime.fromisoformat(RECORD['started_utc']).timestamp()
     base.START=time.monotonic()-(time.time()-started)
     LAST_BUDGET=None
     base.write(ROOT/'campaign.json',RECORD)
-    signal.signal(signal.SIGTERM,base.handle_stop);signal.signal(signal.SIGINT,base.handle_stop)
+    signal.signal(signal.SIGTERM,received_signal);signal.signal(signal.SIGINT,received_signal)
     stopped()
     overall='running';max_workers=RECORD.get('max_workers',3);batch=1
     try:
@@ -388,11 +421,11 @@ def run(resume=False,parent_commit=None):
             last_progress=-100
             while pending or active:
                 if stopped():
-                    for job in active:base.terminate(job,'STOP, signal or original-clock budget')
+                    for job in active:terminate(job,'stop requested')
                     pending.clear();overall='stopped; available snapshots preserved'
                 if active and base.memory()['MemAvailable']<base.RESERVE:
                     max_workers=min(max_workers,2);RECORD['max_workers']=max_workers
-                    base.terminate(active[-1],'memory reserve; worker limit reduced to two')
+                    terminate(active[-1],'memory reserve; worker limit reduced to two')
                 while pending and len(active)<max_workers and not stopped():
                     current=sum(j.get('family',0) for j in active)
                     if base.memory()['MemAvailable']+current<base.RESERVE+(len(active)+1)*base.FIT_RSS:break
@@ -428,24 +461,30 @@ def run(resume=False,parent_commit=None):
                 elapsed=time.monotonic()-base.START
                 total=None if not walls else (elapsed+3*max(walls)+7*43)/3600
                 base.write(ROOT/'first_batch_forecast.json',dict(utc=base.now(),observed_seconds_per_iteration=rates,
-                    elapsed_seconds=elapsed,total_forecast_hours=total,budget_hours=RECORD['budget_hours'],
-                    exceeds_current_budget=None if total is None else total>RECORD['budget_hours'],
+                    elapsed_seconds=elapsed,total_forecast_hours=total,target_hours=RECORD['target_hours'],
+                    exceeds_current_target=None if total is None else total>RECORD['target_hours'],
                     forecast_is_informational=True,method='elapsed + three remaining batches at slowest completed first-batch wall + seven forward generations at 43 s'))
             RECORD.update(state=overall,max_workers=max_workers);base.write(ROOT/'campaign.json',RECORD)
             status(overall,batch);publish(f'batch {batch} {overall}')
             if overall!='running':break
         if overall=='running':overall='completed all ten recorded outcomes'
     except BaseException:
-        overall='launcher failed; evidence preserved'
+        overall='launcher error; running workers continue until native completion or user STOP'
         (ROOT/'launcher_failure.txt').write_text(traceback.format_exc())
-        for job in list(base.JOBS):
-            try:
-                base.terminate(job,'low-band launcher exception');rc=base.finish(job)
-                score(job['folder']);base.cost_history(job['folder'])
-                base.write(job['folder']/'outcome.json',dict(state='fit failed',returncode=rc,utc=base.now()))
-                manifest(job['folder'])
-            except Exception:
-                with (ROOT/'launcher_failure.txt').open('a') as f:f.write(traceback.format_exc())
+        alert('launcher_error','error recorded; no worker killed or restarted')
+        while base.JOBS:
+            for job in list(base.JOBS):
+                try:
+                    base.sample(job)
+                    if stopped():terminate(job,'stop requested while monitoring controller error')
+                    if job['process'].poll() is None:continue
+                    rc=base.finish(job)
+                    score(job['folder']);base.cost_history(job['folder'])
+                    base.write(job['folder']/'outcome.json',dict(state='worker completed after controller error' if rc==0 else 'worker failed',returncode=rc,utc=base.now()))
+                    manifest(job['folder'])
+                except Exception:
+                    with (ROOT/'launcher_failure.txt').open('a') as f:f.write(traceback.format_exc())
+            if base.JOBS:time.sleep(1)
         raise
     finally:
         RECORD.update(state=overall,finished_utc=base.now(),wall_seconds=time.monotonic()-base.START,max_workers=max_workers)

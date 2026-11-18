@@ -1,6 +1,22 @@
 # Continue batches 2–4 on the original clock
 
-**Cancelled by the coordinator, 18 November 00:55 UTC. Do not launch.**
+**Held unlaunched, reconfirmed by the coordinator 18 November 01:18 UTC.**
+Keep this eight-frequency continuation ready; the user may want it later.
+No instruction to launch it exists. Activity 05 is the authorized next run.
+The held code now applies the rephrased 01:24 user rule: time is an
+informational target and never stops a running fit. The original memory
+guard remains active. This code is not authorized to launch now.
+
+## Historical preparation and checks
+
+The time-stop rules below are history, superseded by the informational
+target rule above. The target text file is still read at every check.
+Passing it is logged and reported; it never stops an active fit. A new
+temporary check passed with a thirteen-hour elapsed clock and twelve-hour
+target: all seven fake cases ran, overrun was recorded, and no time stop
+was called. No actual eight-frequency resume has been launched.
+
+Earlier decision, 18 November 00:55 UTC: cancelled; do not launch.
 The user chose 1–3 GHz for the main simulated comparison. The original
 eight-frequency batch 1 finishes untouched as a side result; its other
 seven cases and this resume are cancelled. Code and checks are retained.
