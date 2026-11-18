@@ -19,7 +19,7 @@ SKIP_REASON = "skipped by the user's decision: the series limit refuses the true
 def short_reason(metrics, supervisor):
     if supervisor.get('stop_reason'):
         return supervisor['stop_reason']
-    detail = str(metrics.get('detail') or '')
+    detail = str(metrics.get('detail') or '')+' '+str(metrics.get('physics_failure_messages') or '')
     if 'cancellation' in detail:
         return metrics.get('outcome', 'failure')+' (series cancellation)'
     return metrics.get('outcome', 'missing endpoint')
@@ -92,6 +92,7 @@ def finish_attempt(record, case, out, elapsed):
     if not (out/'metrics.json').exists():
         score_endpoint(case, out)
     metrics = json.loads((out/'metrics.json').read_text()) if (out/'metrics.json').exists() else dict(outcome='SCORING_FAILURE')
+    annotate_failures(out, metrics)
     number = int(out.name.split('_')[-1])
     memory_killed = supervisor.get('stop_reason') == MEMORY_STOP
     started_fit = supervisor.get('returncode') is not None
@@ -104,7 +105,7 @@ def finish_attempt(record, case, out, elapsed):
         write(out/'comparison_failure.json', dict(exception=repr(error)))
     metrics.update(reported_result=reportable, memory_killed_not_a_result=memory_killed,
                    stop_reason=short_reason(metrics, supervisor), attempt=number)
-    if case.startswith('star') and 'cancellation' in str(metrics.get('detail') or ''):
+    if 'cancellation' in str(metrics.get('physics_failure_messages') or ''):
         metrics['series_refusal_pending_user_decision'] = True
     write(out/'metrics.json', metrics)
     write(out/'bulk_manifest.json', dict(files=bulk_manifest(out)))
@@ -132,6 +133,17 @@ def finish_attempt(record, case, out, elapsed):
         stream.write(f'\n## {case}, {out.name}, {now()}\n\n{summary}\n\n')
         stream.write(f'Reported result: {reportable}; memory-killed attempts are not results.\n')
     commit_attempt(case, out, record)
+
+
+def annotate_failures(out, metrics):
+    path = out/'fit.json'
+    if path.exists() and metrics.get('outcome') == 'NUMERICAL_FAILURE':
+        stages = json.loads(path.read_text()).get('stages', [])
+        if stages:
+            metrics['refused_stage'] = stages[-1].get('stage')
+            metrics['physics_failure_messages'] = [r.get('message') for r in stages[-1].get('physics_failures', [])]
+            if any('cancellation' in str(r) for r in metrics['physics_failure_messages']):
+                metrics['series_refusal_pending_user_decision'] = True
 
 
 def main():

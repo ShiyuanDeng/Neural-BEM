@@ -13,3 +13,9 @@ Reported result: True; memory-killed attempts are not results.
 glider_10: last k=12.0; stop=NUMERICAL_FAILURE; area error=14.0568%; time=217.481s
 
 Reported result: True; memory-killed attempts are not results.
+
+## star_full, attempt_01, 2026-11-18T01:13:45.914347+00:00
+
+star_full: last k=15.0; stop=COMPLETED_SCHEDULE; area error=0.582861%; time=334.318s
+
+Reported result: True; memory-killed attempts are not results.
