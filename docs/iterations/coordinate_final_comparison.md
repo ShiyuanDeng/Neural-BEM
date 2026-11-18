@@ -135,12 +135,32 @@ its table is frozen and checks 1 to 3 passed for it.
   seven shapes itself once the table is frozen, its hash matches, and the
   BEM side's check file passes 1% at all five frequencies on the same
   hash. The BEM runner picks up each frozen table by itself as well.
+- 04:05 UTC: all ten five-frequency tables frozen (`88007cc67`;
+  [06 results](csi_adaptation/06_prepare_five_frequency_data/results.md),
+  [data note](csi_adaptation/06_prepare_five_frequency_data/data_note.md)
+  with paths and hashes). 303 s in all, no failure. Each table: 8820 rows,
+  old pair order, 1 and 2 GHz rows byte-identical to the old table.
+  `csi-data` is idle; its pane stays open until the fits are in, in case
+  a data question comes up.
+- 04:06 UTC: the BEM side's 1% check passes on all ten true shapes, on
+  the same hashes. Worst mismatch at the five frequencies: `aphex_twin`
+  0.71%; the other nine 0.21 to 0.44%. Files:
+  `results/bem/baseline_data/csi_five_frequency/2026-11-18/adapter_checks/`.
+- 04:03 to 04:05 UTC: `csi` released all seven shapes. Detached launcher
+  PID 977035, **already running, do not relaunch**; state in
+  `results/csi/tg002/2026-11-18_five_frequency/status.json`, stop file
+  `STOP` there, `--resume` exists. `star` started 04:03 and `asymmetric`
+  04:05; five wait for a slot.
+- 04:05 UTC: the monitor's ceilings: no data job, two CSI fits, two BEM
+  GPU jobs. The last B1 fit has ended.
 - Agents send reports into this pane as text starting "From <name>".
-- Next: the ten frozen tables and their hashes in the
-  [data note](csi_adaptation/06_prepare_five_frequency_data/data_note.md);
-  `csi`'s measured seconds per iteration; the BEM checks and fits from
-  `bem-watch`. Act only on a failed check or a shape above 1%: ask the
-  user.
+- Next: `csi`'s measured seconds per iteration; the ten BEM fits (from
+  `bem-watch` and the BEM coordinator); then each CSI fit as it ends.
+  Ask the user only on a failed or stuck fit that needs a decision.
+- Watchers to re-arm after a restart: none is needed for correctness. A
+  fallback loop on the launcher PID and on
+  `results/bem/baseline_data/csi_five_frequency/2026-11-18/*/cuda/attempt_*/metrics.json`
+  catches a silent stop.
 
 **Estimates, scaled and not measured.** Re-time after the first 100
 iterations.
