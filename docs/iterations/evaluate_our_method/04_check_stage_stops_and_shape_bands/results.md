@@ -27,7 +27,7 @@ All 16 early reference replays matched the saved curves, losses and stops exactl
 
 With the original bands and 220 steps allowed, all 16 early stages stopped because they found no decreasing step. Kite took 197 steps in stage one. After step 22 its loss fell another 2.00% while area error rose from 332.4% to 336.5%. C-shape took 33 steps in stage four for just 0.00010% more loss reduction.
 
-Aphex Twin's original fourth stage was still improving. From steps 17 to 22 its area error fell from 198.50% to 196.85%. Extending all four stages changed the boundary entering stage four. It then stalled in nine steps at 196.91%. A separate stage replay tests what happens from the original entry.
+Aphex Twin's original fourth stage was still improving. From steps 17 to 22 its area error fell from 198.50% to 196.85%. Replaying that stage from its original entry matched the first 22 steps exactly. It then ran to step 47 before stalling at 196.63% error. [Isolated stage replay](../05_extend_aphex_fourth_stage/results.md)
 
 ## How did the shape limits change the fit?
 

@@ -32,7 +32,7 @@ Area error is the missing area plus the extra area, as a percentage of true area
 
 On real data at contrast 4, supplying the true contrast recovered 2/10 shapes, compared with 7/10 when estimating it. Restoring the damped warm-up and damped early stages recovered 10/10 while still estimating contrast. The starting contrast also came from damped data in that run, so the warm-up’s individual contribution remains open. [Run settings and scores](evaluate_our_method/02_run_ablations/results.md)
 
-**Early stage limits.** Eight of the 16 early stages on the four shapes in the video hit the 22-step limit. Raising it to 220 let all 16 run until they found no decreasing step. The same three shapes missed. Kite even lowered its first-stage data loss by another 2% while its outline got worse. [Stage-by-stage results](evaluate_our_method/04_check_stage_stops_and_shape_bands/results.md)
+**Early stage limits.** Eight of the 16 early stages on the four shapes in the video hit the 22-step limit. Raising it to 220 let all 16 run until they found no decreasing step. The same three shapes missed. Aphex Twin's fourth stage was still improving at step 22. Replaying it from the same outline to step 47 moved area error only from 196.85% to 196.63%. [Stage-by-stage results](evaluate_our_method/04_check_stage_stops_and_shape_bands/results.md) · [Aphex Twin replay](evaluate_our_method/05_extend_aphex_fourth_stage/results.md)
 
 ![C-shape with the original and wider shape updates. The original fit fills in the opening. The wider fit traces the opening by the third stage.](evaluate_our_method/04_check_stage_stops_and_shape_bands/figures/c_shape_update_bands.png)
 
