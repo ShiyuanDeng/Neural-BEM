@@ -15,10 +15,12 @@ def check_case(folder, data_folder=None):
     attempts = [json.loads(p.read_text()) for p in sorted(folder.glob('attempt_*.json'))]
     receipt = attempts[-1]
     metrics = json.loads((folder/'metrics.json').read_text())
-    summary = json.loads((folder/'summary.json').read_text())
+    summary_path=folder/'summary.json'
+    summary = json.loads(summary_path.read_text()) if summary_path.exists() else {'frequencies':[]}
     records = sorted(folder.glob('frequency_*.mat'))
     residuals = json.loads((folder/'final_residuals.json').read_text()) if (folder/'final_residuals.json').exists() else []
     issues, flags = [], collections.Counter()
+    if not summary_path.exists():issues.append('no inverse summary; failed before any saved frequency')
     for path in records:
         r = loadmat(path, simplify_cells=True)['record']
         for key in ['xs','ys','residual_history','residual','wall_seconds','k']:

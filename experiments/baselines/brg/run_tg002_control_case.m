@@ -21,33 +21,16 @@ opts=struct('verbose',true,'nppw',70,'use_lscaled_modes',false);
 truth=tg002_geometry(input,2048,false); L=truth.L;
 truth_curve=struct('xs',truth.xs,'ys',truth.ys,'L',L); clear truth;
 polytrue=polyshape(truth_curve.xs,truth_curve.ys); true_area=area(polytrue);
-% This source is diagnostic only; choose it from the actual true polygon.
-[cx,cy]=centroid(polytrue); candidates=[cx cy; 0 0]; used_interior_grid=false;
-if ~any(isinterior(polytrue,candidates(:,1),candidates(:,2)))
-    [xx,yy]=meshgrid(linspace(min(truth_curve.xs),max(truth_curve.xs),41),linspace(min(truth_curve.ys),max(truth_curve.ys),41));
-    candidates=[xx(:) yy(:)]; used_interior_grid=true;
-end
-inside=isinterior(polytrue,candidates(:,1),candidates(:,2));
-% Exclude boundary points: polygon membership alone can include an edge.
-vertices=[truth_curve.xs(:) truth_curve.ys(:)]; edges=circshift(vertices,-1)-vertices;
-clearance=zeros(size(inside));
-for j=find(inside).'
-    delta=candidates(j,:)-vertices;
-    fraction=max(0,min(1,sum(delta.*edges,2)./sum(edges.^2,2)));
-    clearance(j)=min(sqrt(sum((delta-fraction.*edges).^2,2)));
-end
-inside=inside & clearance>0.01;
-assert(any(inside),'No strictly interior diagnostic point with 0.01 clearance.');
-source_index=find(inside,1);
-if used_interior_grid, [~,source_index]=max(clearance); end
-src_in=candidates(source_index,:).';
+% This source is used only by BRG's analytic forward check.
+[src_in,source_clearance,diagnostic_grid_size]=tg002_diagnostic_point(polytrue,truth_curve);
+fprintf('BRG DIAGNOSTIC %s x=%.17g y=%.17g clearance=%.17g grid=%d\n',case_name,src_in(1),src_in(2),source_clearance,diagnostic_grid_size);
 data_opts=struct('verbose',false,'test_analytic',true,'src_in',src_in);
 settings=struct('case',case_name,'shape',shape,'eta',eta,'curvature',curvature, ...
     'data_status','provisional BRG forward; frozen BEM-side data pending', ...
     'data_nppw_exterior',100,'inverse_nppw_exterior',70,'data_nppw_interior',100/sqrt(eta), ...
     'inverse_nppw_interior',70/sqrt(eta),'ks',ks,'optim',optim,'opts',opts, ...
     'limited',limited,'src_in',src_in,'source_verified_inside',true, ...
-    'source_boundary_clearance',clearance(source_index),'compute_threads',maxNumCompThreads,'matlab',version);
+    'source_boundary_clearance',source_clearance,'diagnostic_grid_size',diagnostic_grid_size,'compute_threads',maxNumCompThreads,'matlab',version);
 write_json(fullfile(out,'settings.json'),settings); save(fullfile(out,'truth_curve.mat'),'truth_curve');
 data_records=cell(1,nk); inverse_records=cell(1,nk);
 for i=1:nk

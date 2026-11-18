@@ -19,13 +19,16 @@ BASE = ROOT/'results/brg/tg002_no_curvature/2026-11-18'
 UPSTREAM = Path.home()/'neural_bem_external/inverse-obstacle-scattering2d'
 PILOT = 'kite__c0.5'
 ROW = 'control'
+QUEUE_ROW = 'control'
 CASE_BASE = BASE
 
 def configure(row):
-    global ROW, BASE, CASE_BASE
-    ROW = row
+    global ROW, QUEUE_ROW, BASE, CASE_BASE
+    QUEUE_ROW = row
+    ROW = 'shipped' if row=='retry' else row
     BASE = ROOT/('results/brg/tg002_completion/2026-11-18' if row=='shipped' else 'results/brg/tg002_no_curvature/2026-11-18')
-    CASE_BASE = SOURCE if row=='shipped' else BASE
+    if row=='retry':BASE=ROOT/'results/brg/tg002_aphex_retry/2026-11-18'
+    CASE_BASE = SOURCE if ROW=='shipped' else BASE
 
 
 
@@ -51,7 +54,33 @@ def preserve_cut_attempt(out):
     if image.exists() and not saved.exists():saved.write_bytes(image.read_bytes())
 
 
+def prepare_aphex_retry(state):
+    assert not (BASE/'campaign.json').exists(), 'Do not reset the retry queue.'
+    order=['aphex_twin__c0.5','aphex_twin__c4']
+    BASE.mkdir(parents=True,exist_ok=True);(BASE/'local').mkdir(exist_ok=True)
+    for case in order:
+        out=SOURCE/case
+        attempts=sorted(out.glob('attempt_*.json'))
+        assert len(attempts)==1 and json.loads(attempts[0].read_text())['returncode']==1
+        assert 'No strictly interior diagnostic point with 0.01 clearance.' in (out/'local/matlab_01.log').read_text(errors='replace')
+        assert not list((out/'local').glob('data_*.mat')) and not list(out.glob('frequency_*.mat'))
+        preserve_cut_attempt(out)
+        (out/'failure_01.log').write_bytes((out/'local/matlab_01.log').read_bytes())
+    write_json(BASE/'order.json',dict(cases=order,pilot=None,rule='fresh attempts after the approved diagnostic-point wrapper fix',
+        authority='Coordinator 18 November: dense maximum-clearance point; retain 0.01; retry both aphex cases; two total BRG fits'))
+    names=['run_tg002_control.py','run_tg002_control_case.m','score_tg002_control.py','check_tg002_outputs.py','log_tg002_rejections.py','tg002_geometry.m','tg002_diagnostic_point.m']
+    snapshots=BASE/'local/source_snapshot';snapshots.mkdir(exist_ok=True);hashes={}
+    for name in names:
+        path=ROOT/'experiments/baselines/brg'/name
+        (snapshots/name).write_bytes(path.read_bytes());hashes[str(path.relative_to(ROOT))]=file_sha256(path)
+    write_json(BASE/'provenance.json',dict(prepared_at=now(),source_sha256=hashes,
+        fix='Dense 201-by-201 interior sample; maximum boundary clearance; retain clearance > 0.01; diagnostic source only',
+        original_failed_attempts_preserved=True,data_and_inverse_settings_unchanged=True,no_bem_run=True))
+    print('Prepared fresh aphex attempts; no MATLAB launched.',flush=True)
+
+
 def prepare_shipped(state):
+    if QUEUE_ROW=='retry':return prepare_aphex_retry(state)
     assert not (BASE/'campaign.json').exists(), 'Do not reset the continuation queue.'
     cut='c_shape__c0.5'
     order=[cut]+[c for c in state['cases'] if not (SOURCE/c/'metrics.json').exists()]
@@ -69,7 +98,7 @@ def prepare_shipped(state):
     preserve_cut_attempt(SOURCE/cut)
     write_json(BASE/'order.json',dict(cases=order,pilot=None,rule='resume the capped C-shape; then the six unstarted cases',
         authority='Coordinator 18 November 01:24 UTC: continue saved state as attempt 02; shipped settings; no time cap'))
-    names=['run_tg002_control.py','run_tg002_control_case.m','score_tg002_control.py','check_tg002_outputs.py','log_tg002_rejections.py','tg002_geometry.m']
+    names=['run_tg002_control.py','run_tg002_control_case.m','score_tg002_control.py','check_tg002_outputs.py','log_tg002_rejections.py','tg002_geometry.m','tg002_diagnostic_point.m']
     snapshots=BASE/'local/source_snapshot';snapshots.mkdir(exist_ok=True)
     hashes={}
     for name in names:
@@ -127,7 +156,7 @@ def prepare():
     write_json(BASE/'order.json', dict(cases=order, pilot=PILOT, grouping=prior,
                                      rule='pilot alone; cases ending 04 with final-frequency exit -1 in 04 order; rest; circle last'))
     files = ['run_tg002_control.py', 'run_tg002_control_case.m', 'score_tg002_control.py',
-             'report_tg002_control.py', 'check_tg002_outputs.py', 'log_tg002_rejections.py', 'tg002_geometry.m']
+             'report_tg002_control.py', 'check_tg002_outputs.py', 'log_tg002_rejections.py', 'tg002_geometry.m', 'tg002_diagnostic_point.m']
     snapshots = BASE/'local/source_snapshot'
     snapshots.mkdir(exist_ok=True)
     hashes = {}
@@ -156,7 +185,10 @@ def run_case(case):
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         attempts=sorted(out.glob('attempt_*.json'))
         if attempts:
-            assert ROW=='shipped' and case=='c_shape__c0.5' and len(attempts)==1 and json.loads(attempts[0].read_text())['returncode']==124, 'Only the authorized cut-case continuation is allowed.'
+            prior_code=json.loads(attempts[0].read_text())['returncode']
+            resume=ROW=='shipped' and case=='c_shape__c0.5' and prior_code==124
+            retry=QUEUE_ROW=='retry' and case.startswith('aphex_twin__') and prior_code==1
+            assert len(attempts)==1 and (resume or retry), 'Only coordinator-authorized second attempts are allowed.'
             preserve_cut_attempt(out)
         number=len(attempts)+1
         prior=sum(json.loads(p.read_text()).get('case_wall_seconds',0) for p in attempts)
@@ -174,7 +206,7 @@ def run_case(case):
             if (out/'data_reuse.json').exists():
                 verify_reuse(out)
             else:
-                assert ROW=='shipped' and number==1, 'Control data must be reused by hash.'
+                assert ROW=='shipped' and (number==1 or QUEUE_ROW=='retry'), 'Control data must be reused by hash.'
             record['data_hash_check_seconds'] = time.monotonic()-start
             assert not (BASE/'STOP').exists(), 'STOP requested before MATLAB launch.'
             shape, eta = case.split('__c')
@@ -212,7 +244,7 @@ def run_case(case):
         for path in sorted(local.iterdir()):
             if path.is_file() and path.name != 'runner.lock':
                 manifest.append(dict(path=str(path.relative_to(ROOT)), bytes=path.stat().st_size, sha256=file_sha256(path)))
-        write_json(out/'bulk_manifest.json', dict(command='python experiments/baselines/brg/run_tg002_control.py --row '+ROW+' --campaign --detach', files=manifest))
+        write_json(out/'bulk_manifest.json', dict(command='python experiments/baselines/brg/run_tg002_control.py --row '+QUEUE_ROW+' --campaign --detach', files=manifest))
         record.update(case_wall_seconds=time.monotonic()-start, case_ended=now(),
                       case_target_exceeded=(prior+time.monotonic()-start)>3600,
                       total_case_wall_seconds=prior+time.monotonic()-start)
@@ -245,7 +277,7 @@ def campaign():
                      case_target_seconds=3600, queue_target_seconds=18000,
                      time_policy='targets only; never stop on elapsed time',
                      supervisor_pid=os.getpid(), active=[], pending=order.copy(), maximum_workers=2,
-                     row=ROW, pilot=PILOT if ROW=='control' else None, pilot_complete=(ROW=='shipped'), reserve_gib=14,
+                     row=ROW, queue_row=QUEUE_ROW, pilot=PILOT if ROW=='control' else None, pilot_complete=(ROW=='shipped'), reserve_gib=14,
                      case_target_exceeded={}, failed_cases=[],
                      stop_file=str((BASE/'STOP').relative_to(ROOT)))
         write_json(BASE/'campaign.json', state)
@@ -282,10 +314,15 @@ def campaign():
                 stream.write(json.dumps(dict(utc=now(), available_gib=memory/1024**3,
                     active=list(active), reserve_ok=memory>=14*1024**3))+'\n')
             reserve = sum(worker_reserve(c) for c in active)
-            if pending and not stop_reason and len(active)<2 and (state['pilot_complete'] or not active) and memory-reserve-4*1024**3>=14*1024**3:
+            worker_limit=2
+            previous=ROOT/'results/brg/tg002_completion/2026-11-18/campaign.json'
+            if QUEUE_ROW=='retry' and previous.exists() and json.loads(previous.read_text())['active']:
+                worker_limit=1
+            state['current_worker_limit']=worker_limit
+            if pending and not stop_reason and len(active)<worker_limit and (state['pilot_complete'] or not active) and memory-reserve-4*1024**3>=14*1024**3:
                 case = pending.pop(0)
                 with (BASE/'local'/f'{case}_supervisor.log').open('w') as stream:
-                    active[case] = subprocess.Popen([sys.executable, str(Path(__file__).resolve()), '--row', ROW, '--case', case],
+                    active[case] = subprocess.Popen([sys.executable, str(Path(__file__).resolve()), '--row', QUEUE_ROW, '--case', case],
                         cwd=ROOT, stdout=stream, stderr=subprocess.STDOUT)
                 launched[case] = time.time()
             state.update(active=list(active), pending=pending.copy(), updated=now(),
@@ -302,7 +339,7 @@ def campaign():
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--row',choices=['shipped','control'],default='control')
+    parser.add_argument('--row',choices=['shipped','control','retry'],default='control')
     parser.add_argument('--prepare', action='store_true')
     parser.add_argument('--campaign', action='store_true')
     parser.add_argument('--detach', action='store_true')
@@ -316,7 +353,7 @@ def main():
         require_source_ended()
         assert (BASE/'order.json').exists() and not (BASE/'campaign.json').exists()
         with (BASE/'local/launcher.log').open('a') as stream:
-            child = subprocess.Popen([sys.executable, str(Path(__file__).resolve()), '--row', ROW, '--campaign'], cwd=ROOT,
+            child = subprocess.Popen([sys.executable, str(Path(__file__).resolve()), '--row', QUEUE_ROW, '--campaign'], cwd=ROOT,
                 stdin=subprocess.DEVNULL, stdout=stream, stderr=subprocess.STDOUT, start_new_session=True)
         write_json(BASE/'launcher.json', dict(pid=child.pid, launched=now(), command='--campaign'))
         print('Detached control supervisor', child.pid, flush=True)

@@ -9,11 +9,23 @@ def main():
     original_state=state.copy()
     completion_base=ROOT/'results/brg/tg002_completion/2026-11-18'
     completion_path=completion_base/'campaign.json'
+    retry_base=ROOT/'results/brg/tg002_aphex_retry/2026-11-18'
+    retry_path=retry_base/'campaign.json'
+    if retry_path.exists():completion_path=retry_path
     if completion_path.exists():
         completion=json.loads(completion_path.read_text())
         state.update({k:v for k,v in completion.items() if k not in ['cases','started']})
         if not completion.get('ended'):state.pop('ended',None)
         if not completion.get('stop_reason'):state.pop('stop_reason',None)
+    if retry_path.exists():
+        phases=[json.loads(p.read_text()) for p in [completion_base/'campaign.json',retry_path]]
+        state['active']=[c for phase in phases for c in phase['active']]
+        state['pending']=[c for phase in phases for c in phase['pending']]
+        state['updated']=max(phase['updated'] for phase in phases)
+        if any(phase['status']=='running' for phase in phases):
+            state['status']='running';state.pop('ended',None)
+        else:
+            state['ended']=max(phase['ended'] for phase in phases)
     for case in state['cases']:
         p=BASE/case/'metrics.json'
         if not p.exists():continue
@@ -40,6 +52,12 @@ The old one-hour cap cut C-shape at contrast 0.5 during frequency 35;
 from that state as attempt 02 and completion of the six unstarted cases,
 using new entry points with no time cutoff. The original queue and its
 loaded files remain untouched. See the [continuation plan](continuation_plan.md).
+
+Both first aphex_twin attempts failed before data generation because the
+wrapper skipped its diagnostic-point fallback when an interior centroid
+failed the clearance test. The coordinator approved a dense interior
+search retaining clearance >0.01 and fresh attempts, with no BRG or data
+rule change. See the [diagnostic-point fix plan](diagnostic_point_fix_plan.md).
 
 The [approved plan](plan.md) records the pilot rule and all choices. The
 [single data request](../../../../results/brg/tg002_shapes/2026-11-17/data_request.json)
@@ -119,6 +137,8 @@ promise for thin strokes or deep concavities. No case is rerun to tune it.
         samples=[json.loads(l) for l in resources.read_text().splitlines()]
         continuation_resources=completion_base/'resources.jsonl'
         if continuation_resources.exists():samples += [json.loads(l) for l in continuation_resources.read_text().splitlines()]
+        retry_resources=retry_base/'resources.jsonl'
+        if retry_resources.exists():samples += [json.loads(l) for l in retry_resources.read_text().splitlines()]
         text+=f"Memory: minimum observed available {min(s['available_gib'] for s in samples):.2f} GiB; maximum active BRG workers {max(len(s['active']) for s in samples)}. The required reserve is 14 GB. Start/end CSI/MATLAB overlap is retained in each attempt.\n\n"
     text+='## Frequency-ending rejection codes\n\n'
     text+='Counts below read the existing MATLAB logs only. Geometry/filter ier 2 means curvature rejection; ier 1 means self-intersection. The public routine resets a rejected update to the old curve and replaces its code by iteration ier -5 when the residual does not decrease. The filter columns count the selected method at the last iteration of a frequency ending with exit -1. The ier -5 column counts final iteration codes. These overlap; they are not separate groups. Full GN/SD codes and log hashes are in each case\'s `rejection_counts.json`.\n\n'
