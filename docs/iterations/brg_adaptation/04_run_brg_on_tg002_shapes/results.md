@@ -174,8 +174,8 @@ The shared checkout can contain CSI/coordinator changes: do not stage them.
 
 ## Status and ownership
 
-Campaign started 2026-11-17T23:41:28.138975+00:00; 11/20 cases have saved scores.
-Queue state: `ready_after_receipt_repair`; last update 2026-11-18T00:50:52.542144+00:00.
+Campaign started 2026-11-17T23:41:28.138975+00:00; 12/20 cases have saved scores.
+Queue state: `ready_after_receipt_repair`; last update 2026-11-18T01:16:25.454416+00:00.
 All data and results here are **provisional BRG-forward data**. The BEM side
 owns generating and freezing the shared plane-wave data. These are TG-002
 shapes with BRG-style observations, not the sealed TG-002 measurements.
@@ -235,6 +235,7 @@ This final-curve evaluation has its own time column. No BEM solve is involved.
 | star__c0.5 | complete | 37/37 | 0.0025279893 | 2.80675e-05 | 30.05 | 265.72 | 32.25 | 2.27 | 336.76 |
 | star__c4 | complete | 37/37 | 0.00039247399 | 3.11609e-06 | 30.22 | 744.63 | 33.56 | 2.38 | 817.77 |
 | c_shape__c4 | complete | 37/37 | 0.44474779 | 0.891051 | 31.15 | 770.22 | 27.88 | 2.69 | 838.86 |
+| hook__c0.5 | complete | 37/37 | 0.57706138 | 0.480827 | 29.53 | 1025.90 | 25.03 | 2.58 | 1089.86 |
 
 ## Timed pilot and forecast
 
@@ -248,10 +249,10 @@ inverse 239.14 min and residual checks
 257.27 min before parallelism. This is a one-shape estimate, not a
 promise for thin strokes or deep concavities. No case is rerun to tune it.
 
-Completed-case aggregate wall time: 95.10 min across 11 cases.
-A running-mean projection for all 20 is 172.92 min before parallelism; the still-unrun difficult shapes make this uncertain.
+Completed-case aggregate wall time: 113.27 min across 12 cases.
+A running-mean projection for all 20 is 188.78 min before parallelism; the still-unrun difficult shapes make this uncertain.
 
-Memory: minimum observed available 16.79 GiB; maximum active BRG workers 2. The required reserve is 14 GB. Start/end CSI/MATLAB overlap is retained in each attempt.
+Memory: minimum observed available 15.10 GiB; maximum active BRG workers 2. The required reserve is 14 GB. Start/end CSI/MATLAB overlap is retained in each attempt.
 
 ## Frequency-ending rejection codes
 
@@ -270,12 +271,13 @@ Counts below read the existing MATLAB logs only. Geometry/filter ier 2 means cur
 | star__c0.5 | 37 | 0 | 0 | 1 |
 | star__c4 | 37 | 5 | 0 | 7 |
 | c_shape__c4 | 37 | 31 | 0 | 35 |
+| hook__c0.5 | 37 | 25 | 0 | 30 |
 
 The coordinator identified curvature rejection as the reason stalled curves could no longer move. Kite at eta 0.5 stops moving after the first frequency's sixth iteration. Activity [05](../05_run_brg_without_curvature_limit/plan.md) is authorized to remove only the curvature limit, reuse these hashed data, and retain this shipped-limit row. Its queue starts only after this queue ends.
 
 ## Checks, failures and evidence
 
-Saved-output checks cover 11/11 scored cases. They read existing curves and histories, file counts, receipts, logs and manifest sizes; no inversion or scoring was repeated. Each receipt is saved as `saved_output_check.json` beside its metrics.
+Saved-output checks cover 12/12 scored cases. They read existing curves and histories, file counts, receipts, logs and manifest sizes; no inversion or scoring was repeated. Each receipt is saved as `saved_output_check.json` beside its metrics.
 
 No saved-output check failed.
 
@@ -291,6 +293,7 @@ No saved-output check failed.
 - star__c0.5: maximum data-geometry resampling point error 2.33477e-15 BRG units; [metrics](../../../../results/brg/tg002_shapes/2026-11-17/star__c0.5/metrics.json), [curve](figures/star__c0.5.png).
 - star__c4: maximum data-geometry resampling point error 2.33477e-15 BRG units; [metrics](../../../../results/brg/tg002_shapes/2026-11-17/star__c4/metrics.json), [curve](figures/star__c4.png).
 - c_shape__c4: maximum data-geometry resampling point error 2.13556e-15 BRG units; [metrics](../../../../results/brg/tg002_shapes/2026-11-17/c_shape__c4/metrics.json), [curve](figures/c_shape__c4.png).
+- hook__c0.5: maximum data-geometry resampling point error 2.14006e-15 BRG units; [metrics](../../../../results/brg/tg002_shapes/2026-11-17/hook__c0.5/metrics.json), [curve](figures/hook__c0.5.png).
 
 The frozen-input geometry checks verify source hashes, agreement with the
 benchmark's scene definitions, positive orientation, closure, simple curves,
