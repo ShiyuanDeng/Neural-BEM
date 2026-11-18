@@ -1,8 +1,8 @@
 {
-  "max_data_jobs": 1,
-  "max_csi_fits": 1,
-  "max_bem_fits": 2,
-  "updated": "2026-11-18T04:04:08.628674+00:00",
+  "max_data_jobs": 0,
+  "max_csi_fits": 2,
+  "max_bem_fits": 1,
+  "updated": "2026-11-18T04:10:09.133554+00:00",
   "authority": "User delegated overnight resource management in this session; BEM coordinator confirmed shared-file launch control and CPU-only forward checks.",
   "scope": "New launches only. Never interrupt, restart or time-stop a fit.",
   "floor_gib": 14,
@@ -42,7 +42,7 @@
   "rationale": "Reserve outstanding worker growth and future launches above 16 GiB; use at most 24 estimated CPU cores. Up to three CSI fits once preparation and short BEM work free capacity.",
   "recheck": "Every ten minutes, on prerequisite completion, or immediately when a lower ceiling is needed.",
   "notification_status": "Coordinators read this shared file. Pane notices remain unavailable outside Herdr.",
-  "max_cpu_checks": 1,
+  "max_cpu_checks": 0,
   "cpu_check_scope": "One CPU-only forward check at a time as tables freeze; reserve 2 GiB and one thread. No GPU wait.",
   "monitor_enabled": true,
   "monitor": {
@@ -52,50 +52,57 @@
     "resource_recheck_seconds": 600
   },
   "latest_allocation": {
-    "max_data_jobs": 1,
-    "max_csi_fits": 1,
-    "max_bem_fits": 2,
-    "max_cpu_checks": 1,
-    "reserved_growth_and_new_gib": 11.577,
-    "projected_available_gib": 18.188,
-    "estimated_cores": 19,
+    "max_data_jobs": 0,
+    "max_csi_fits": 2,
+    "max_bem_fits": 1,
+    "max_cpu_checks": 0,
+    "reserved_growth_and_new_gib": 7.309,
+    "projected_available_gib": 20.305,
+    "estimated_cores": 18,
     "target_slots": {
-      "data": 1,
-      "csi": 1,
-      "b1": 1,
+      "data": 0,
+      "csi": 2,
+      "b1": 0,
       "bem": 1,
-      "check": 1
+      "check": 0
     }
   },
   "latest_sample": {
-    "utc": "2026-11-18T04:04:08.628674+00:00",
-    "available_gib": 29.76504898071289,
+    "utc": "2026-11-18T04:10:09.133554+00:00",
+    "available_gib": 27.613590240478516,
     "load": [
-      13.50390625,
-      6.8388671875,
-      3.93994140625
+      14.81396484375,
+      11.9169921875,
+      7.189453125
     ],
     "jobs": [
       {
-        "pid": 898669,
-        "kind": "b1",
-        "rss_gib": 2.5292
-      },
-      {
         "pid": 982793,
         "kind": "csi",
-        "rss_gib": 3.6135
+        "rss_gib": 5.1589
       },
       {
-        "pid": 984642,
+        "pid": 990291,
+        "kind": "csi",
+        "rss_gib": 5.1741
+      },
+      {
+        "pid": 995519,
         "kind": "bem",
-        "rss_gib": 1.7736
+        "rss_gib": 1.7913
       },
       {
-        "pid": 986834,
-        "kind": "data",
-        "rss_gib": 0.1065
+        "pid": 1000383,
+        "kind": "bem",
+        "rss_gib": 1.7668
       }
     ]
+  },
+  "recovery_instruction": {
+    "updated": "2026-11-18T04:10:33.794029+00:00",
+    "authority": "Direct user instruction: diagnose faults, fix verified bugs, coordinate and rerun affected work.",
+    "record": "results/resource_management/2026-11-18/recovery_policy.json",
+    "coordinator_action": "Read the recovery record. Coordinate verified fixes and new attempts; blanket no-retry rules do not block a rerun after a verified fix. Preserve failures and fixed settings.",
+    "acknowledgement": "Not yet confirmed; do not interpret resource-monitor operation as automatic code repair."
   }
 }
