@@ -33,9 +33,12 @@ monitor's ceilings are all 0 (07:48). The clean timed GPU pass waits only
 for the user's go.
 A later restart begins at [Start here](#start-here) too.
 
-**State, 18 November 2026, 11:33 UTC:** a new piece of work is open, the
-[wiggle check](#wiggle-check-opened-18-november-1120-utc). Read that section
-first; the rest of this file is the finished overnight work.
+**State, 18 November 2026, 12:08 UTC:** the
+[wiggle check](#wiggle-check-opened-18-november-1120-utc) is answered and
+its BEM work is done; both agent panes are closed and nothing of the BEM
+side runs. The baseline side fits MF-CC-CSI at ten frequencies until about
+midnight. Read that section first; the rest of this file is the finished
+overnight work.
 
 ## Wiggle check (opened 18 November, 11:20 UTC)
 
@@ -63,7 +66,7 @@ tables carry a grid error that the fit follows?
 
 | Activity | Change from activity 07 | Agent | Pane | Model |
 |---|---|---|---|---|
-| [08: CSI tables at ten frequencies](adapt_bem_to_baseline_data/08_fit_csi_tables_at_ten_frequencies/plan.md) | The frequency list: 0.25 to 2.5 GHz in 0.25 GHz steps. Same CSI forward | `bem-ten` | `w2:pB`, bottom right | Codex `gpt-6.1-sol`, medium, full access |
+| [08: CSI tables at ten frequencies](adapt_bem_to_baseline_data/08_fit_csi_tables_at_ten_frequencies/plan.md) | The frequency list: 0.25 to 2.5 GHz in 0.25 GHz steps. Same CSI forward | `bem-ten` | closed 12:08 UTC (was `w2:pB`), work committed, paths clean | Codex `gpt-6.1-sol`, medium, full access |
 | [09: tables from our own forward](adapt_bem_to_baseline_data/09_fit_tables_from_our_forward/plan.md) | The data source: our forward in the same Fresnel layout, same five frequencies | `bem-own` | closed 11:52 UTC (was `w2:pA`), work committed, paths clean | Codex `gpt-6-astra`, high, full access |
 
 The starting evidence (read from the saved fits, no new run) is in the
@@ -182,16 +185,45 @@ shapes: ten frequencies"; the five-frequency row stays. The scope of all
 ten shapes is the baseline coordinator's choice; the user has not chosen
 shapes. The BEM coordinator told the user so at 12:02.
 
+**Activity 10 done (12:06 UTC).** All ten shapes now have a
+ten-frequency BEM fit on the frozen CSI tables; every fit completed its
+schedule ([results](adapt_bem_to_baseline_data/10_fit_remaining_csi_tables_at_ten_frequencies/results.md),
+[figure](adapt_bem_to_baseline_data/10_fit_remaining_csi_tables_at_ten_frequencies/figures/outlines.png)).
+
+| Shape | Five frequencies | Ten frequencies |
+|---|---:|---:|
+| circle | 0.97% | 0.17% |
+| kite | 3.80% | 3.21% |
+| peanut | 1.54% | 1.19% |
+| star | 2.34% | 1.02% |
+| asymmetric | 1.29% | 0.93% |
+| c_shape | 2.60% | 1.60% |
+| hook | 3.59% | 2.44% |
+| cross | 2.10% | 1.07% |
+| cog | 2.86% | 1.45% |
+| aphex_twin | 5.96% | 5.77% |
+
+Mean 2.71% at five frequencies and 1.89% at ten. Every shape improves;
+two more than halve (circle, star). `aphex_twin` stays above 5% at both.
+The numbers and their paths were sent to the baseline coordinator at
+12:08 for its ten-frequency block; the BEM column there is to be checked
+against the `metrics.json` files once it exists.
+
+**Open for the user (asked 11:53 and 12:02):** whether the baseline side
+should fit all ten shapes at ten frequencies (its own choice, forecast
+midnight), and whether the final report should say that the simulated CSI
+tables limit BEM to 1 to 6% there. The report is another session's file.
+
 **Review stops.** `bem-ten`: after the circle table (reports, does not
 wait); before any fit (waits for a go). `bem-own`: before the first fit
 (waits for a go).
 
-**Next, in order:** read the activity 10 results when `bem-ten` reports
-(watcher: `agent wait bem-ten`); close `bem-ten` when its paths are clean
-(`bem-own` was closed 11:52); add the ten-frequency BEM numbers to the BEM text of the
-main file once the baseline side has a ten-frequency row. The baseline
+**Next, in order:** when the baseline side's ten-frequency block exists
+in the main file (star and hook forecast 14:30 UTC, all ten near
+midnight), check its BEM column against our `metrics.json` files. No
+watcher is armed and no BEM run is open. The baseline
 coordinator (`w1:p1`) was briefed for the CSI fit at ten frequencies (see
-the note below).
+the note above).
 
 ## Start here
 
