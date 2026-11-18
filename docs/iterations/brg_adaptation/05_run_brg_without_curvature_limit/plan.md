@@ -134,3 +134,30 @@ designed. The new runner conservatively delays starts under memory pressure
 and leaves active fits running; intervention on a fault is a separate call.
 The same new runner completes the shipped-limit row first with `--row shipped`,
 then executes this row with `--row control`; they never overlap.
+
+## Resource allocation update, 18 November about 02:20 UTC
+
+The user-authorized monitor in w3:p1 raised the limit to **four BRG fits
+in total**, across the shipped completion, aphex retries and this control.
+Prioritize aphex data. Do not interrupt or restart active numerical fits.
+The running shipped supervisors retain their own limits. The new control
+supervisor reserves their possible next launches before claiming a slot.
+
+This supersedes the earlier start-after-all-04-data rule for the **kite 0.5
+pilot only**. Prepare available hashed datasets with `--prepare --pilot-only`,
+and start the control queue in the free slot. No missing data are generated.
+After the pilot, the queue waits for a recorded first-case review and for
+full preparation. Once all 20 shipped cases are complete, run
+`--finish-preparation` to verify the remaining hashes and finalize stalled-
+case-first ordering. Record the pilot check and report its result before
+writing `PILOT_REVIEW.json`; continuation is already authorized.
+
+The fresh launch check reads machine MemAvailable, outstanding BRG worker
+growth and B1's active worker reservations. It reserves 3 GiB per new BRG
+worker, 4 GiB per active B1 worker less its observed fit-process memory,
+and keeps a 14 GiB floor plus a 2 GiB margin. It rereads
+`results/brg/resource_policy.json` at every control launch boundary.
+It never changes scientific settings, starts CSI or stops on elapsed time.
+Current effective counts and any held slots are recorded in campaign state.
+The pilot remains the sole active control fit until it finishes and is
+reviewed. The baseline result rows and all failed attempts remain intact.

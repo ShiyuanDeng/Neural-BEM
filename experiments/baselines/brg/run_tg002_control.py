@@ -112,18 +112,22 @@ def prepare_shipped(state):
     print('Prepared shipped-limit continuation:',order,'; no MATLAB launched.',flush=True)
 
 
-def prepare():
+def prepare(pilot_only=False, finish=False):
     state = require_source_ended()
     if ROW == 'shipped':
         return prepare_shipped(state)
-    assert not (BASE/'campaign.json').exists(), 'Do not reset an existing campaign.'
+    assert finish or not (BASE/'campaign.json').exists(), 'Do not reset an existing campaign.'
     BASE.mkdir(parents=True, exist_ok=True)
     (BASE/'local').mkdir(exist_ok=True)
     prior = []
     stalled = []
+    deferred = []
     for case in state['cases']:
-        metrics = json.loads((SOURCE/case/'metrics.json').read_text())
-        assert metrics['status']=='complete' and metrics['completed_frequencies']==37, 'Finish all 20 shipped-limit cases first.'
+        mp=SOURCE/case/'metrics.json'
+        metrics=json.loads(mp.read_text()) if mp.exists() else {}
+        if metrics.get('status')!='complete' or metrics.get('completed_frequencies')!=37:
+            assert pilot_only and case!=PILOT, 'Full preparation waits for all shipped-limit cases.'
+            deferred.append(case);continue
         assert len(json.loads((SOURCE/case/'data_summary.json').read_text())) == 37, 'All 37 original data files are required.'
         path = SOURCE/case/'rejection_counts.json'
         r = json.loads(path.read_text())
@@ -140,6 +144,7 @@ def prepare():
     for case in order:
         out = CASE_BASE/case
         (out/'local').mkdir(parents=True, exist_ok=True)
+        if case in deferred:continue
         manifest = json.loads((SOURCE/case/'bulk_manifest.json').read_text())
         files = [f for f in manifest['files'] if Path(f['path']).name.startswith('data_') and f['path'].endswith('.mat')]
         assert len(files) == 37
@@ -153,22 +158,23 @@ def prepare():
                        geometry=dict(path=str(geometry.relative_to(ROOT)), sha256=file_sha256(geometry)),
                        source_manifest_sha256=file_sha256(SOURCE/case/'bulk_manifest.json'))
         write_json(out/'data_reuse.json', receipt)
-    write_json(BASE/'order.json', dict(cases=order, pilot=PILOT, grouping=prior,
+    write_json(BASE/'order.json', dict(cases=order, pilot=PILOT, grouping=prior, deferred_cases=deferred,full_order_pending=bool(deferred),
                                      rule='pilot alone; cases ending 04 with final-frequency exit -1 in 04 order; rest; circle last'))
     files = ['run_tg002_control.py', 'run_tg002_control_case.m', 'score_tg002_control.py',
              'report_tg002_control.py', 'check_tg002_outputs.py', 'log_tg002_rejections.py', 'tg002_geometry.m', 'tg002_diagnostic_point.m']
-    snapshots = BASE/'local/source_snapshot'
+    snapshots = BASE/'local'/('source_snapshot_full' if finish else 'source_snapshot')
     snapshots.mkdir(exist_ok=True)
     hashes = {}
     for name in files:
         path = ROOT/'experiments/baselines/brg'/name
         (snapshots/name).write_bytes(path.read_bytes())
         hashes[str(path.relative_to(ROOT))] = file_sha256(path)
-    write_json(BASE/'provenance.json', dict(prepared_at=now(), source_sha256=hashes,
+    provenance_path=BASE/('provenance_full.json' if finish else 'provenance.json')
+    write_json(provenance_path, dict(prepared_at=now(), source_sha256=hashes,
         prior_provenance=json.loads((SOURCE/'provenance.json').read_text()),
         data_request_sha256=file_sha256(SOURCE/'data_request.json'), only_inverse_change='eps_curv unset (public default)',
         upstream_patches='same approved patches 03/04; no new upstream patch', no_bem_run=True))
-    print('Prepared', len(order), 'cases; no MATLAB launched. Order:', ', '.join(order), flush=True)
+    print('Prepared', len(order), 'cases; deferred source cases:',deferred,'; no MATLAB launched. Order:', ', '.join(order), flush=True)
 
 
 def verify_reuse(out):
@@ -266,6 +272,53 @@ def worker_reserve(case):
     return max(0, 4*1024**3-rss)
 
 
+def rss_bytes(pid):
+    try:return int(next(l.split()[1] for l in Path(f'/proc/{pid}/status').read_text().splitlines() if l.startswith('VmRSS:')))*1024
+    except (FileNotFoundError,StopIteration):return 0
+
+
+def shared_launch_budget(active):
+    # Read the machine and other queues afresh at every launch boundary.
+    policy_path=ROOT/'results/brg/resource_policy.json'
+    policy=json.loads(policy_path.read_text()) if policy_path.exists() else {'maximum_brg_workers':2,'brg_worker_gib':4,'margin_gib':2}
+    maximum=policy['maximum_brg_workers'];expected=policy['brg_worker_gib']*1024**3
+    floor=(14+policy['margin_gib'])*1024**3
+    completion=ROOT/'results/brg/tg002_completion/2026-11-18/campaign.json'
+    retry=ROOT/'results/brg/tg002_aphex_retry/2026-11-18/campaign.json'
+    old=json.loads(completion.read_text()) if completion.exists() else {'active':[],'pending':[]}
+    other_slots=0;reserve=0
+    for path,capacity in [(completion,2),(retry,1 if old['active'] else 2)]:
+        if not path.exists():continue
+        state=json.loads(path.read_text());count=min(capacity,len(state['active'])+len(state['pending']))
+        other_slots+=count
+        for case in state['active'][:count]:
+            receipts=sorted((SOURCE/case).glob('attempt_*.json'))
+            a=json.loads(receipts[-1].read_text()) if receipts else {}
+            reserve+=max(0,expected-rss_bytes(a.get('matlab_pid')))
+        reserve+=max(0,count-len(state['active']))*expected
+    for case in active:
+        receipts=sorted((CASE_BASE/case).glob('attempt_*.json'));a=json.loads(receipts[-1].read_text()) if receipts else {}
+        reserve+=max(0,expected-rss_bytes(a.get('matlab_pid')))
+    b1=ROOT/'results/bem/baseline_data/brg_tg002/2026-11-18/queue.json'
+    b1_reserve=0;b1_count=0
+    if b1.exists():
+        for task in json.loads(b1.read_text()).get('active',[]):
+            pid=task['pid']
+            try:children=Path(f'/proc/{pid}/task/{pid}/children').read_text().split()
+            except FileNotFoundError:continue
+            b1_count+=1;used=0
+            for child in children:
+                try:command=Path(f'/proc/{child}/cmdline').read_bytes().split(b'\0')
+                except FileNotFoundError:continue
+                if b'_fit' in command:used+=rss_bytes(child)
+            b1_reserve+=max(0,4*1024**3-used)
+    memory=available()
+    return dict(worker_limit=max(0,maximum-other_slots),available_bytes=memory,
+        unconsumed_reserve_bytes=reserve+b1_reserve,new_worker_bytes=expected,floor_plus_margin_bytes=floor,
+        foreign_brg_slots=other_slots,b1_active=b1_count,b1_unconsumed_reserve_bytes=b1_reserve,
+        launch_ok=memory-reserve-b1_reserve-expected>=floor,maximum_brg_workers=maximum)
+
+
 def campaign():
     require_source_ended()
     with (BASE/'local/campaign.lock').open('w') as lock:
@@ -315,11 +368,27 @@ def campaign():
                     active=list(active), reserve_ok=memory>=14*1024**3))+'\n')
             reserve = sum(worker_reserve(c) for c in active)
             worker_limit=2
+            control_ready=True
+            if ROW=='control':
+                order_record=json.loads((BASE/'order.json').read_text())
+                if state['pilot_complete']:
+                    control_ready=not order_record.get('full_order_pending',False) and (BASE/'PILOT_REVIEW.json').exists()
+                    state['waiting_for_pilot_review']=not (BASE/'PILOT_REVIEW.json').exists()
+                    state['waiting_for_source_data']=order_record.get('full_order_pending',False)
+                    if control_ready and not state.get('order_finalized'):
+                        pending=[c for c in order_record['cases'] if c!=PILOT]
+                        state['cases']=order_record['cases'];state['order_finalized']=True
+                budget=shared_launch_budget(active)
+                worker_limit=budget['worker_limit']
+                state['shared_launch_check']=budget
+                state['maximum_workers']=budget['maximum_brg_workers']
+                memory=budget['available_bytes'];reserve=budget['unconsumed_reserve_bytes']
             previous=ROOT/'results/brg/tg002_completion/2026-11-18/campaign.json'
             if QUEUE_ROW=='retry' and previous.exists() and json.loads(previous.read_text())['active']:
                 worker_limit=1
             state['current_worker_limit']=worker_limit
-            if pending and not stop_reason and len(active)<worker_limit and (state['pilot_complete'] or not active) and memory-reserve-4*1024**3>=14*1024**3:
+            memory_ok=budget['launch_ok'] if ROW=='control' else memory-reserve-4*1024**3>=14*1024**3
+            if pending and not stop_reason and control_ready and len(active)<worker_limit and (state['pilot_complete'] or not active) and memory_ok:
                 case = pending.pop(0)
                 with (BASE/'local'/f'{case}_supervisor.log').open('w') as stream:
                     active[case] = subprocess.Popen([sys.executable, str(Path(__file__).resolve()), '--row', QUEUE_ROW, '--case', case],
@@ -342,12 +411,14 @@ def main():
     parser.add_argument('--row',choices=['shipped','control','retry'],default='control')
     parser.add_argument('--prepare', action='store_true')
     parser.add_argument('--campaign', action='store_true')
+    parser.add_argument('--pilot-only',action='store_true')
+    parser.add_argument('--finish-preparation',action='store_true')
     parser.add_argument('--detach', action='store_true')
     parser.add_argument('--case')
     args = parser.parse_args()
     configure(args.row)
-    if args.prepare:
-        prepare()
+    if args.prepare or args.finish_preparation:
+        prepare(pilot_only=args.pilot_only,finish=args.finish_preparation)
     elif args.detach:
         assert args.campaign and not args.case
         require_source_ended()
