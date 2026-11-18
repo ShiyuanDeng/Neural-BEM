@@ -1,50 +1,48 @@
-# Check early stage stops and shape bands
+# Do early stage limits explain the contrast-4 misses?
 
-18 November 2026. Clean TG-002 real data at contrast 4, one centred start, recovered contrast. The [plan](plan.md) defines the changes and limits.
+**The early shape-update limit explains the C-shape miss.** At the same 22-step cap, two more update modes let the fit trace the opening by stage three. Raising the iteration cap alone recovered none of the three missed shapes. Cog was already a recovery.
 
-## What the four original fits did
+Final area error on clean TG-002 data, 18 November 2026. Recovery requires 5% or less. Only the first four stages changed. All fits used the same centred start, estimated contrast and real data. [Plan and settings](plan.md)
 
-All 16 early stage replays reproduced the saved boundary coefficients, loss and stop reason exactly. The table counts the change in data loss over the last five accepted iterations of each capped stage (iteration 17 to 22). A stage with no decreasing step had exhausted its allowed trial steps.
+| Shape | Original | More steps | Wider updates | Both changes |
+|---|---:|---:|---:|---:|
+| Kite | 467.38% | 486.69% | 278.87% | 493.76% |
+| C-shape | 43.78% | 43.78% | **0.07%** | **0.07%** |
+| Aphex Twin | 196.85% | 196.91% | 202.50% | 202.50% |
+| Cog | **2.00%** | **2.01%** | **0.04%** | **0.04%** |
+| Recovered | 1/4 | 1/4 | 2/4 | 2/4 |
 
-| Shape | End of stages 1 / 2 / 3 / 4 | Loss decrease at capped stages |
+“More steps” raised the cap from 22 to 220. “Wider updates” changed the four normal-update bands from 3/5/7/9 to 5/7/9/11. The stored curve bands, physics resolution, frequencies and later settings stayed the same. [Original fits](../../../../results/bem/default_clean_uc_fc/) · [More steps](../../../../results/bem/stage_stops/2026-11-18/longer/) · [Wider updates](../../../../results/bem/stage_stops/2026-11-18/wider/) · [Both changes](../../../../results/bem/stage_stops/2026-11-18/both/)
+
+## Which stages were still moving?
+
+All 16 early reference replays matched the saved curves, losses and stops exactly. Eight hit the 22-step cap. The other eight exhausted their trial steps without finding a decrease. Across all ten contrast-4 scenes, 7/12 early stages hit the cap on the three missed shapes, versus 2/28 on the seven recovered shapes. [Reference replays](../../../../results/bem/stage_stops/2026-11-18/reference/)
+
+| Shape | Original early stages that hit the cap | Data loss decrease over steps 17–22 in those stages |
 |---|---|---|
-| Kite | Cap / cap / no decreasing step / no decreasing step | 0.102%, 0.060% |
-| C-shape | No decreasing step / cap / cap / cap | Below 0.00001%, below 0.00001%, 0.0068% |
-| Aphex Twin | Cap / no decreasing step / no decreasing step / cap | 0.026%, 2.97% |
-| Cog | No decreasing step / no decreasing step / no decreasing step / cap | 0.0071% |
+| Kite | 1, 2 | 0.102%, 0.060% |
+| C-shape | 2, 3, 4 | Below 0.00001%, below 0.00001%, 0.0068% |
+| Aphex Twin | 1, 4 | 0.026%, 2.97% |
+| Cog | 4 | 0.0071% |
 
-Across the original ten contrast-4 cases, seven of the twelve early stages on the three missed shapes hit the cap, compared with two of the twenty-eight stages on the seven recovered shapes. A cap records when a stage ended. The changed runs below test its effect. [Reference replays](../../../../results/bem/stage_stops/2026-11-18/reference/) · [Original fits](../../../../results/bem/default_clean_uc_fc/)
+With the original bands and 220 steps allowed, all 16 early stages stopped because they found no decreasing step. Kite took 197 steps in stage one. After step 22 its loss fell another 2.00% while area error rose from 332.4% to 336.5%. C-shape took 33 steps in stage four for just 0.00010% more loss reduction.
 
-## What happened with more early iterations?
+Aphex Twin's original fourth stage was still improving. From steps 17 to 22 its area error fell from 198.50% to 196.85%. Extending all four stages changed the boundary entering stage four. It then stalled in nine steps at 196.91%. A separate stage replay tests what happens from the original entry.
 
-Raising the cap from 22 to 220 let all 16 early stages run until they found no decreasing step. Final area error was 486.69% for kite, 43.78% for C-shape, 196.91% for Aphex Twin and 2.01% for cog. The same three shapes missed. [Longer-stage fits](../../../../results/bem/stage_stops/2026-11-18/longer/)
+## How did the shape limits change the fit?
 
-Kite's first stage took 197 steps. Between steps 22 and 197, data loss fell another 2.00% while area error rose from 332.4% to 336.5%. For C-shape, running stage four from step 22 to 33 lowered loss by just 0.00010%. Cog's four extra steps changed its stage-four loss by about 0.000001%.
+![C-shape with the original and wider updates. The default fills the opening. The wider fit traces it by stage three.](figures/c_shape_update_bands.png)
 
-Aphex Twin was the one clear exception to the near-flat loss at the original cap. From step 17 to 22 in stage four its loss fell 2.97% and its area error fell from 198.50% to 196.85%. Extending all four stages changed the boundary entering stage four. That stage then stalled after nine steps at 196.91%. The comparison leaves open what extending only the original fourth stage would do.
+C-shape reached 4.44% area error in stage three with wider updates, versus 56.66% with the default. Cog also improved. At the wider bands, C-shape, cog and Aphex Twin all stopped naturally before step 22 in every early stage. Their curves were identical with either cap.
 
-## What happened with wider early shape updates?
+**The two settings interacted on kite.** With wider updates, extending stage one from 22 to 41 steps cut its area error from 263.7% to 205.3%. By the end of stage three the same fit had grown to 493.8% error, versus 278.9% with wider updates alone. The combined run exhausted its whole-fit time in stage four before accepting a step there.
 
-At the original 22-step cap, widening the four update bands from 3/5/7/9 to 5/7/9/11 recovered C-shape. Final area error fell from 43.78% to 0.07%. It reached 4.44% by stage three while the default still had 56.66% error. The wider first stage already traced much of the opening that the default fit filled in. [Wider-band fits](../../../../results/bem/stage_stops/2026-11-18/wider/)
+On the default path, B6 sets the normal directions the slider can try. A1 stores the curve itself. Its early bands grow from 8 to 12, 16 and 20 by adding zeros, so there is no repeated trimming at these handoffs. Cropping the *true* curves to band 8 gives 0%, 1.52%, 7.68% and 9.80% area error for kite, C-shape, Aphex Twin and cog. By band 12 all four are below 3%. This measures storage in the truth's parameterisation. It cannot tell which shape the data will favour. [B6 slider](../../../../solvers/bem_inverse/geometry_update_methods/slider.py#L92) · [A1 storage resize](../../../../solvers/bem_inverse/continuation/geometry.py#L44)
 
-![The default C-shape fit fills the opening, while the wider update fits it by stage three.](figures/c_shape_update_bands.png)
+## Later stops and limits
 
-Cog improved from 2.00% to 0.04% final area error. Kite improved from 467.38% to 278.87% and still missed. Aphex Twin went from 196.85% to 202.50%. Both misses ran out of time in the first 19-frequency stage before accepting a step there. Of the 16 wider early stages only kite's first hit the iteration cap.
+On the default path, C12 can advance a stage when its work quota runs out. That happened to cog at bands 25, 31 and 37 after just four accepted steps each. Loss had fallen by 63%, 48% and 52% within those stages, but cog had already passed 5% area error at band 15. Its measured frontier was 94 and its time ran out at band 49. [C12 stage return](../../../../solvers/bem_inverse/runner.py#L228) · [Cog stages](../../../../results/bem/default_clean_uc_fc/cog__c4/fit.json)
 
-The earlier fixed-band-37 test recovered 0/10 at contrast 4. That test also changed the stored curve bands and later releases. The damped warm-up and damped ladder recovered 10/10 with the original update bands while estimating contrast. These are separate controls. [Ablations](../02_run_ablations/results.md)
+C-shape also ran out of stage work at bands 25 and 31, then hit the forward solver's numerical limit at 37. Its error was already 45.33% before the scheduled removal of harmonics above 64. That cleanup changed the error by less than 0.00004 percentage points. Original kite hit the forward solver's numerical limit and Aphex Twin hit the time limit as they entered the first 19-frequency stage. Neither accepted a step there. [C-shape stages](../../../../results/bem/default_clean_uc_fc/c_shape__c4/fit.json)
 
-## Can the stored curve describe the target?
-
-Truncating the *true* curve to the first storage band (8) gives area errors of 0% for kite, 1.52% for C-shape, 7.68% for Aphex Twin and 9.80% for cog. At the second band (12) the corresponding errors are 0%, 0%, 2.79% and 1.11%. This checks each truth in its stored parameterisation. It does not determine which boundary the data will lead the fit to. Per-case records include all four storage bands.
-
-On the default path, A1 stores the curve. The early storage bands increase from 8 to 12, 16 and 20. Each increase adds zero coefficients and preserves every old one, so those handoffs cannot repeatedly cut away detail. The first stage still restricts which shapes can be reached there. [Storage resize](../../../../solvers/bem_inverse/continuation/geometry.py#L44) · [Stage entry](../../../../solvers/bem_inverse/runner.py#L173)
-
-## Later stages in the original fits
-
-Kite entered the first 19-frequency stage and accepted zero steps. The forward solver rejected the curve because its wave-series roundoff estimate exceeded its numerical limit. Aphex Twin reached the same stage and accepted zero steps before its wall limit. Neither reached the later adaptive shape bands.
-
-C-shape exhausted the 304-unit stage work allowance at update bands 25 and 31 after four and three accepted steps. It then hit the forward solver's numerical limit at band 37. Its area error was already 45.33% before the scheduled cleanup. Removing the stored harmonics above 64 changed that score by less than 0.00004 percentage points.
-
-Cog crossed the 5% area threshold at band 15. Its measured frontier later supported a band of 94, but its whole-fit time ran out at band 49. The stage work quotas at bands 25, 31 and 37 advanced after four accepted steps each. Those stages reduced data loss by 63%, 48% and 52% from stage entry. The saved endpoints show that the refinement budgets mattered on a fit that had already recovered the shape. [Original C-shape stages](../../../../results/bem/default_clean_uc_fc/c_shape__c4/fit.json) · [Original cog stages](../../../../results/bem/default_clean_uc_fc/cog__c4/fit.json)
-
-On this default path, B6 selects the shape changes available to the slider. C12 applies the stopping rules and advances the schedule on normal return or stage-quota exhaustion. The early update bands and the stored Cartesian bands are separate controls. [B6 slider](../../../../solvers/bem_inverse/geometry_update_methods/slider.py#L92) · [C12 stage return](../../../../solvers/bem_inverse/runner.py#L228) · [Real-only schedule](../../../../solvers/bem_inverse/real_only_policy.py#L91)
+These tests cover four contrast-4 scenes and one modest widening. The nominal 120-second cap checks elapsed time between operations, so an expensive solve can finish later. Later quotas were held fixed. The earlier fixed-band-37 test changed storage and later releases too, and recovered 0/10 at contrast 4. The damped warm-up and damped early stages together recovered 10/10 with the original bands and estimated contrast. The warm-up's individual effect is unresolved. [Ablations](../02_run_ablations/results.md)

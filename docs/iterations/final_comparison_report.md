@@ -36,7 +36,9 @@ On real data at contrast 4, supplying the true contrast recovered 2/10 shapes, c
 
 ![C-shape with the original and wider shape updates. The original fit fills in the opening. The wider fit traces the opening by the third stage.](evaluate_our_method/04_check_stage_stops_and_shape_bands/figures/c_shape_update_bands.png)
 
-*At the same 22-step limit, adding two shape-update modes per early stage let BEM trace the opening of the C-shape. Both runs stored the same number of curve coefficients.*
+*Adding two shape-update modes per early stage let BEM trace the opening of the C-shape. Its final area error fell from 43.78% to 0.07% at the same 22-step cap. Both runs stored the same number of curve coefficients.*
+
+Wider updates also improved cog from 2.00% to 0.04%. Kite and Aphex Twin still missed. By stage three, kite had 494% area error with both changes and 279% with wider updates alone. [Four-case comparison](evaluate_our_method/04_check_stage_stops_and_shape_bands/results.md)
 
 <details>
 <summary>Area error and estimated contrast for each fit</summary>
