@@ -69,7 +69,7 @@ Ask the user before any of these:
 | Order | Work | Table | Data | State |
 |---|---|---|---|---|
 | 1 | Table path on the GPU | all | none | Done 18 Nov; default fit unchanged on CPU and GPU |
-| 1 | BRG paper cases, known contrast, to k = 15: two gliders and two stars. The two cavity cases are skipped (user, 18 Nov) | B2 | Saved by BRG, ready | GPU pass running |
+| 1 | BRG paper cases, known contrast, to k = 15: two gliders and two stars. The two cavity cases are skipped (user, 18 Nov) | B2 | Saved by BRG, ready | GPU pass done; follow-up checks running |
 | 1 | Measured Fresnel cylinder `dielTM_dec8f` | C | Ready | Not started |
 | 2 | Ten TG-002 shapes at contrast 4, simulated in the Fresnel layout, 1 to 3 GHz rows only | C | Tables made by the CSI campaign; all ten exist or follow as CSI activity 05 needs them | Rule fixed; circle fit next |
 | Held | TG-002 shapes with plane-wave data | B1 | See below | Waits for the user |
@@ -394,8 +394,8 @@ data convention is in doubt.
 | Work | Agent | State | Next step |
 |---|---|---|---|
 | Table path on the GPU | `bem-gpu` | Done: commit `3612f5195` at 00:32 ([results](adapt_bem_to_baseline_data/01_run_table_path_on_gpu/results.md)). Lock free. Its series-limit proposal is closed: no go from the user. The user is closing its pane | None |
-| BRG paper cases | `bem-brg` | K = 192 fixed. CPU pass done 00:55 (early look; all stopped at 120 s). GPU pass, the reported one, running since about 01:02 on four cases: `glider_033`, `glider_10`, `star_full`, `star_limited`. Cavities skipped by the user. [Results](adapt_bem_to_baseline_data/02_fit_brg_paper_cases/results.md) | Report after the four GPU fits; a star refused by the series limit goes to the user |
-| CSI adapter | `bem-csi` | Review stop 2 passed 00:36 ([results](adapt_bem_to_baseline_data/03_adapt_bem_to_csi_data/results.md)). Measured cylinder: GPU fit running since 00:37; CPU cross-check ended in ladder stage 2. Adding the 1 to 3 GHz selection for simulated cases | Review stop 3: cylinder fit; then the simulated circle |
+| BRG paper cases | `bem-brg` | GPU pass, the reported one, done 01:23 ([results](adapt_bem_to_baseline_data/02_fit_brg_paper_cases/results.md)). Area error at the last k: `glider_033` 0.061% at k = 15 (71 s); `star_full` 0.58% at 15 (334 s); `star_limited` 0.60% at 15 (274 s); `glider_10` failed, 14% at k = 12, then refused at 15. Cavities skipped by the user. K = 192, 1e-6 | Cause of the CPU and GPU path differences; `glider_10` stage history |
+| CSI adapter | `bem-csi` | Measured cylinder: the GPU fit ran its whole schedule in 23 min, then the wrapper failed while writing the record (`KeyError`). Fixing that; no scored result yet. The 1 to 3 GHz selection and rule for simulated cases are in; the circle passes 1% there | Review stop 3: cylinder; then the simulated circle and the hand-over |
 | CSI fits | `bem-csi-run` | Not started | Launch after the adapter passes |
 | Table B1 | none | Held | Wait for the user |
 
@@ -421,6 +421,8 @@ data convention is in doubt.
 | 18 Nov, 00:57 | BRG GPU pass: go, the reported pass. Same settings as the CPU pass: K = 192 for all six cases, 1e-6, the fixed prefix rule. Fits run from a queue as memory allows | The CPU pass was stopped by its 120 s limit on every case (last k 1.5 to 2.5), so it is an early look only. 16 GB was available against the 14 GB guard |
 | 18 Nov, 01:00 | Frequency rule for the simulated CSI cases (1 to 3 GHz), fixed before any fit: ladder 1; 1–2; 1–3 GHz, then the default whole-catalog stages on 1–3 GHz. Ladder quotas 1000, 3000, 4000. The measured cylinder keeps its rule (1; 1–2; 1–3; 1–4; all) | All three wavenumbers (1.05, 2.10, 3.14) lie inside the default TG-002 ladder's range (1.28 to 3.21), so the ladder covers the catalog with bands 3, 6, 9 against the default's 3, 5, 7, 9. The half-the-top rule would leave one ladder stage and a factor-3 jump. The quotas are the default four with the two middle ones merged, so the total stays 13,412 |
 | 18 Nov, 01:00 | The runs start only if they leave 14.5 GB available (was 16 GB) | Memory fell to 16 GB available; the user's guard is 14 GB and a BEM fit peaks at 1.4 to 1.9 GB |
+| 18 Nov, 01:25 | BRG GPU pass accepted as the reported pass for `glider_033`, `star_full` and `star_limited`. `glider_10` stays in the table as a failed fit, not as a series-limit skip | At k = 12 its residual is 0.73 and its area error 14%, so the fit had failed before the series refused k = 15 (the bad curve has wave radius 1.68 against 1.28 for the truth). The plan says failures stay in the table. The coordinator's reading of the user's skip decision; the user may overrule |
+| 18 Nov, 01:25 | `bem-brg` looks for the cause of the CPU and GPU path differences, checks only: forward and Jacobian on both devices at K = 192, and the first iteration where the saved paths part | The user's rule is to flag any case where the two differ. Same-iteration curve differences are 1e-5 on three cases and 6e-2 on `glider_033`, far above the 1e-13 between devices in the table checks |
 
 ## Waiting on the user
 
