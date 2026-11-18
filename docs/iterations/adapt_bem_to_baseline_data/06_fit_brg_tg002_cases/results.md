@@ -1,6 +1,6 @@
 # B1 checks, 18 November 2026
 
-4 BEM fits have saved metrics. The coordinator released the queue with two B1 fits.
+5 BEM fits have saved metrics. The coordinator released the queue with two B1 fits.
 CUDA checks use default production/refined profiles and series_loss=1e-9.
 Both fitting rows will read only the saved, hash-verified BRG observations.
 
@@ -65,7 +65,7 @@ exists and matches all 37 files. Cross at eta 4, cog and aphex_twin at both cont
 were pending at the first 15-case stop. The baseline completion run owns those files.
 The watch-checks command picks up newly finished manifests without repeating checks.
 
-4 of 40 inverse fits have saved metrics; the two-worker queue is authorized.
+5 of 40 inverse fits have saved metrics; the two-worker queue is authorized.
 Checked cases may fit without waiting for late baseline manifests (coordinator, 18 November).
 The first known-contrast circle__c4 fit has its own immutable first_fit_report.md.
 
@@ -75,6 +75,7 @@ The first known-contrast circle__c4 fit has its own immutable first_fit_report.m
 |---|---|---|---|---:|---:|---:|---:|---:|
 | circle__c0.5 | known | COMPLETED_SCHEDULE | full_6_M37 | 356 | 8.55038 | 1.83938e-07 | 0.5 | 1.926 / 1.660 |
 | circle__c4 | known | COMPLETED_SCHEDULE | full_6_M37 | 274 | 6.69482 | 7.31659e-07 | 4 | 1.936 / 1.369 |
+| kite__c0.5 | known | COMPLETED_SCHEDULE | full_6_M37 | 4585 | 114.578 | 0.000525714 | 0.5 | 2.099 / 1.865 |
 | kite__c4 | known | COMPLETED_SCHEDULE | full_6_M37 | 2292 | 57.3084 | 0.000867416 | 4 | 2.092 / 1.676 |
 | peanut__c0.5 | known | COMPLETED_SCHEDULE | full_6_M37 | 632 | 14.606 | 0.000480905 | 0.5 | 1.941 / 1.846 |
 
