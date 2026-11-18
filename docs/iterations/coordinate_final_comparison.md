@@ -33,17 +33,21 @@ grants full access; the coordinator does not.
 | CSI, 10 simulated TG-002 cases | `python -m experiments.baselines.csi.campaign` (PID 708268 at 00:10 UTC) | `results/csi/tg002/2026-11-17_campaign/status.json` | Create `STOP` in that folder |
 | BRG on 20 TG-002 cases, provisional data | `experiments/baselines/brg/run_tg002.py --campaign` (PID 727204 at 00:10 UTC) | `results/brg/tg002_shapes/2026-11-17/campaign.json` | See "State at handoff" in BRG 04 results |
 
-**Nothing running is stopped unless the user says so** (user, 18 November
-01:18 UTC, see "Who decides"). The stop columns above are for the user's
-say-so only. Both launchers were written before that rule and carry their
-own caps, which cannot be removed without touching the runs:
+**No result-generating run is stopped because of a time limit, unless the
+user says so** (user, 18 November 01:24 UTC, see "Who decides"). A stuck or
+faulty run may still be stopped. Both launchers were written before that
+rule and carry their own caps, which cannot be removed without touching
+the runs:
 - CSI: it exits by itself after batch 1 (its 9 h forecast check). No fit is
   cut.
 - BRG: 1 h per case and a queue stop at 03:41 UTC. `c_shape__c0.5` reaches
-  its cap near 01:25 UTC at frequency 35 of 37. Cases cut this way are
-  listed, not rerun, until the user decides.
+  its cap near 01:25 UTC at frequency 35 of 37. The queue's own code then
+  drops the six waiting cases (cross, cog, aphex_twin) and ends after
+  `hook__c4`.
 
-New launchers (BRG 05, CSI 05) have no stop on time.
+After the BRG queue ends by itself, `brg` continues `c_shape__c0.5` from
+its saved state and runs the six dropped cases, with a runner that has no
+time cap. New launchers (BRG 05, CSI 05) have no stop on time either.
 
 Both launchers belong to no chat, so closing a pane does not stop them.
 Both agent chats were restarted at 00:25 UTC and picked up from their
@@ -470,9 +474,12 @@ feedbacks. remember the big picture: to generate comparison with my bem."
   leaving an investigation's topic, and before passing a limit the user set.
 - Time limits (user, 18 November 01:18 UTC): "the time limit isnt for you
   to cutoff agent, but something as a design requirement. do not stop
-  running terminal ifi didnt say so. keep it as it is now". So a time
-  figure shapes how a run is designed. It never stops a run. Only the user
-  stops a running process, terminal or agent.
+  running terminal ifi didnt say so. keep it as it is now". Rephrased at
+  01:24 UTC: "do not stop result-gerating terminal processes due to time
+  limit unless i say otherwise. if it stucks or goes wrong you should
+  still stop it. this is only about time limit". So a time figure shapes
+  how a run is designed and never stops a run. A stuck or faulty run may
+  still be stopped.
 - Permissions: the agents started in Codex's default sandbox. The user
   switched both to full access on 17 November ("i just gave them full
   access").
@@ -580,10 +587,10 @@ agent runs the commands and does the wider checks.
 - Commit and push after each run, failed runs included.
 - One MATLAB process per agent. The GPU is used only by BEM and GauGal. At
   most 3 heavy workers in total (a fit peaks near 8 GB).
-- Never stop, kill or restart a running process unless the user says so.
-  Launchers do not stop on time: they record an overrun, report it and
-  carry on. A `STOP` file is for the user's say-so only. The memory guard
-  may delay a start; it does not kill a running fit.
+- Never stop a result-generating run because of a time limit, unless the
+  user says so. Launchers do not stop on time: they record an overrun,
+  report it and carry on. A stuck or faulty run may be stopped; tell the
+  coordinator what you saw. The memory guard works as designed.
 - After each activity, report and wait for the coordinator.
 
 **Report format.** Each agent ends an activity with this block:
