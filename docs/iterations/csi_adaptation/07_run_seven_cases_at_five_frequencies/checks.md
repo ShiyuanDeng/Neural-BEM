@@ -51,3 +51,15 @@ The real `--dry-run` is read-only and reports seven shapes, zero releases,
 the five-frequency list, and the live resource ceiling of two. It starts
 no worker. The controller remains unlaunched pending the coordinator's go.
 All old launchers remain unlaunched. `git diff --check` passed.
+
+## Publication check, 18 November 05:23 UTC
+
+Star completed all 2048 iterations and all scoring checks passed. The
+publication-only `git diff --check` then reported the native driver's
+blank line at EOF and delayed its commit. Each case now has a bounded
+`.gitattributes` rule, `executed_driver.m whitespace=-blank-at-eof`.
+Only that copied driver's EOF whitespace is exempt. The executed driver,
+its numerical text and its recorded SHA-256 are unchanged. The check then
+passed and star's push was confirmed (`a308d5217`). No fit was stopped;
+hook started after the successful push. Star's manifest was refreshed to
+include this metadata file. This is not an upstream numerical patch.
