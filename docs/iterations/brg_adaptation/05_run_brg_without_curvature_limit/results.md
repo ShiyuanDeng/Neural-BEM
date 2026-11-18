@@ -61,11 +61,15 @@ compact metrics and figure. No new success cutoff is selected.
 
 Queue ended 2026-11-18T03:23:59.673633+00:00; elapsed 55.65 min against a 300 min reporting target.
 
-Kite eta 0.5 pilot: 374.85 s. It ran alone before the rest.
+Kite eta 0.5 pilot: 374.85 s. It was the sole control fit before review, while shipped-limit/B1 work overlapped it.
 
 Aggregate case wall time: 129.33 min. New data-generation time: zero.
 
 Minimum sampled available memory: 29.86 GiB; maximum simultaneous control workers: 6. Each launch checks fresh shared memory, reserves at least 3 GiB for the new BRG fit and retains the 14 GiB floor plus 2 GiB margin, allowing for other queues and B1 reservations. The guard delays starts; it never kills running fits.
+
+No case crossed the one-hour reporting target and the queue stayed below its five-hour target. There was no time cutoff and no process was stopped or restarted.
+
+[Completion checks](../../../../results/brg/tg002_no_curvature/2026-11-18/completion_checks.json) confirm 20 complete cases, 740 reused observation files, zero new data generation, all saved-output checks passing, and unchanged runtime source hashes. [Saved settings comparisons](../../../../results/brg/tg002_no_curvature/2026-11-18/settings_verification.json) cover all 20 cases. All final figures were inspected.
 
 - kite__c0.5: saved-output check passed; [metrics](../../../../results/brg/tg002_no_curvature/2026-11-18/kite__c0.5/metrics.json), [figure](figures/kite__c0.5.png).
 - asymmetric__c4: saved-output check passed; [metrics](../../../../results/brg/tg002_no_curvature/2026-11-18/asymmetric__c4/metrics.json), [figure](figures/asymmetric__c4.png).
@@ -130,3 +134,39 @@ Measured phase totals: inverse 120.68 min; final residual checks 5.39 min; scori
 Each case overlapped a peak of 3 to 6 other BRG/B1 fit processes. Each attempt receipt names the contributing saved timing records. These timings must be read as shared-machine timings.
 
 Bulk observations remain in activity 04. Fresh exact states and logs stay local with SHA-256 manifests. Source snapshots, order, overlap and receipts are retained. Shared-data qualification and BEM rows belong to the BEM side. Any further tuning or experiment needs a new coordinator decision.
+
+## Coordinator report
+
+```text
+Activity: brg_adaptation/05_run_brg_without_curvature_limit, 18 November 2026
+Runs: 20/20; wall time 0:56 (rounded); summed case time 2:09
+Result: area error percentages, shipped limit -> no curvature limit
+  kite__c0.5: 47.528% -> 33.8666%
+  asymmetric__c4: 27.6691% -> 43.9161%
+  asymmetric__c0.5: 11.053% -> 0.535911%
+  kite__c4: 46.4632% -> 54.3918%
+  peanut__c0.5: 11.7682% -> 0.688892%
+  peanut__c4: 50.3903% -> 17.5785%
+  c_shape__c4: 44.4748% -> 16.6543%
+  hook__c4: 52.228% -> 18.484%
+  cross__c4: 24.6424% -> 24.0419%
+  aphex_twin__c0.5: 80.1475% -> 64.109%
+  aphex_twin__c4: 89.8789% -> 106.262%
+  star__c0.5: 0.252799% -> 0.242608%
+  star__c4: 0.0392474% -> 17.5425%
+  c_shape__c0.5: 5.25577% -> 0.15837%
+  hook__c0.5: 57.7061% -> 64.6095%
+  cross__c0.5: 0.0913655% -> 0.0923618%
+  cog__c0.5: 0.233313% -> 0.277787%
+  cog__c4: 0.0479439% -> 5.82996%
+  circle__c0.5: 2.34695e-06% -> 2.34695e-06%
+  circle__c4: 0.000203528% -> 0.000203528%
+Failures: no process failures; 12/20 above 5% area error.
+  Logs remain in each case local/matlab_01.log with SHA-256 manifests.
+Upstream patches: none new; approved 03/04 unchanged.
+Changes to our code: BRG-only control runner, saved-output/settings checks,
+  overlap receipts and reports; no solver or comparison-code edits.
+New unknowns: U5 final cutoff; remaining poor recovery without curvature limit.
+Proposed next activity: none; coordinator reviews both provisional rows.
+  Needs user decision: none to close this activity.
+```

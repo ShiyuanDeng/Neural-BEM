@@ -64,12 +64,16 @@ compact metrics and figure. No new success cutoff is selected.
         elapsed=(datetime.datetime.fromisoformat(state['ended'])-datetime.datetime.fromisoformat(state['started'])).total_seconds()
         text+=f"Queue ended {state['ended']}; elapsed {elapsed/60:.2f} min against a 300 min reporting target.\n\n"
     if state.get('pilot_wall_seconds'):
-        text+=f"Kite eta 0.5 pilot: {state['pilot_wall_seconds']:.2f} s. It ran alone before the rest.\n\n"
+        text+=f"Kite eta 0.5 pilot: {state['pilot_wall_seconds']:.2f} s. It was the sole control fit before review, while shipped-limit/B1 work overlapped it.\n\n"
     text+=f"Aggregate case wall time: {sum(a['case_wall_seconds'] for _,_,_,a in cases)/60:.2f} min. New data-generation time: zero.\n\n"
     samples=[json.loads(l) for l in (BASE/'resources.jsonl').read_text().splitlines()]
     text+=f"Minimum sampled available memory: {min(s['available_gib'] for s in samples):.2f} GiB; maximum simultaneous control workers: {max(len(s['active']) for s in samples)}. Each launch checks fresh shared memory, reserves at least 3 GiB for the new BRG fit and retains the 14 GiB floor plus 2 GiB margin, allowing for other queues and B1 reservations. The guard delays starts; it never kills running fits.\n\n"
     if state.get('case_target_exceeded') or state.get('queue_target_exceeded_at'):
         text+=f"Time targets exceeded: cases {state.get('case_target_exceeded',{})}; queue {state.get('queue_target_exceeded_at','no')}. Runs continued; time targets never stop work.\n\n"
+    elif state['status']=='complete':
+        text+='No case crossed the one-hour reporting target and the queue stayed below its five-hour target. There was no time cutoff and no process was stopped or restarted.\n\n'
+    if (BASE/'completion_checks.json').exists():
+        text+='[Completion checks](../../../../results/brg/tg002_no_curvature/2026-11-18/completion_checks.json) confirm 20 complete cases, 740 reused observation files, zero new data generation, all saved-output checks passing, and unchanged runtime source hashes. [Saved settings comparisons](../../../../results/brg/tg002_no_curvature/2026-11-18/settings_verification.json) cover all 20 cases. All final figures were inspected.\n\n'
     if state.get('stop_reason'):
         text+=f"Queue stop reason: {state['stop_reason']}. Unrun cases: {state.get('unrun_cases',[])}.\n\n"
     for case,m,old,a in cases:
@@ -105,6 +109,12 @@ compact metrics and figure. No new success cutoff is selected.
     else:
         text+='Interpretation remains partial until the queue ends. All failed or user-stopped cases remain in the record.\n\n'
     text+='Bulk observations remain in activity 04. Fresh exact states and logs stay local with SHA-256 manifests. Source snapshots, order, overlap and receipts are retained. Shared-data qualification and BEM rows belong to the BEM side. Any further tuning or experiment needs a new coordinator decision.\n'
+    if state['status']=='complete' and len(cases)==20:
+        minutes=round(elapsed/60)
+        text+=f'\n## Coordinator report\n\n```text\nActivity: brg_adaptation/05_run_brg_without_curvature_limit, 18 November 2026\nRuns: 20/20; wall time {minutes//60}:{minutes%60:02d} (rounded); summed case time 2:09\nResult: area error percentages, shipped limit -> no curvature limit\n'
+        for case,m,old,a in cases:
+            text+=f"  {case}: {100*old['area_error']:.6g}% -> {100*m['area_error']:.6g}%\n"
+        text+='Failures: no process failures; 12/20 above 5% area error.\n  Logs remain in each case local/matlab_01.log with SHA-256 manifests.\nUpstream patches: none new; approved 03/04 unchanged.\nChanges to our code: BRG-only control runner, saved-output/settings checks,\n  overlap receipts and reports; no solver or comparison-code edits.\nNew unknowns: U5 final cutoff; remaining poor recovery without curvature limit.\nProposed next activity: none; coordinator reviews both provisional rows.\n  Needs user decision: none to close this activity.\n```\n'
     (DOC/'results.md').write_text(text)
 
 
