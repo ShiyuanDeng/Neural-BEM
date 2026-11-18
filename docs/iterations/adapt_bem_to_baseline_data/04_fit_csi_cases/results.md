@@ -1,6 +1,62 @@
 # Fit the CSI simulated cases: results
 
 **Early look at 1 to 3 GHz; the reported pass waits for the user's frequency list.**
+
+## State at handoff (18 November 2026, about 02:10 UTC)
+
+**Done.** Early look at 1 to 3 GHz on circle, kite and peanut (contrast 4):
+true-shape checks, three GPU fits and three 120 s CPU cross-checks, all
+committed and pushed. Results are in the sections below. Nothing is running.
+
+**Next.** All ten shapes as the reported pass, once the coordinator gives the
+user's final frequency list and the table paths. The three early-look results
+stay as they are; new runs go beside them. Do not start before that list.
+
+**Before running anything:** `bem-csi` is changing the wrapper now. The tables
+move to `results/csi/tg002/2026-11-18_low_band_data/` and the frequency list
+becomes one dataset setting. Re-read the hand-over section of
+[activity 03 results](../03_adapt_bem_to_csi_data/results.md) first; its
+commands may differ from the ones below. Also re-read
+[coordinate_bem_side.md](../../coordinate_bem_side.md) (Limits, Working with
+the coordinator) and [plan.md](plan.md).
+
+**Commands used (hand-over, at the time of the early look).** From the
+repository root, `P=/home/drdeng/miniconda3/envs/EMNerf/bin/python`,
+`R=results/bem/baseline_data/csi_cases`, `S=<shape>__c4`:
+
+```bash
+$P experiments/bem_on_baseline_data/csi_forward_check.py --out $R/adapter_checks --cases $S   # stop if the 1% rule fails
+mkdir -p $R/logs
+setsid nohup $P experiments/bem_on_baseline_data/csi_fit.py --case $S --device cuda > $R/logs/${S}_cuda.log 2>&1 < /dev/null &
+CUDA_VISIBLE_DEVICES= setsid nohup $P experiments/bem_on_baseline_data/csi_fit.py --case $S --device cpu > $R/logs/${S}_cpu.log 2>&1 < /dev/null &
+```
+
+Start a fit only with 16.5 GB available (guard 14 GB); one or two at a time.
+Each fit peaks near 1.8 GB host and 0.8 GB GPU. GPU fits took 1 to 3 min,
+CPU fits stop at 120 s.
+
+**Pitfalls met.**
+
+- Give no `--out` or `--checks`: the defaults are right. A relative `--out`
+  crashes the record step (`relative_to`). If you must pass one, make it
+  absolute.
+- An attempt with `fit.json` but no `metrics.json` is not completed by the
+  wrapper. A rerun starts a fresh `attempt_NN` and refits. The fit itself
+  repeats exactly on the GPU, so nothing is lost, but both attempts stay. Use
+  the attempt with `metrics.json` as the row. Report it; do not edit the
+  wrapper.
+- `pgrep -f` in a wait loop matches its own shell, so the loop never ends.
+  Wait on the result files instead.
+- The kite GPU fit ended `NUMERICAL_FAILURE` in its last stage. Keep such
+  outcomes in the table; no tuning reruns.
+
+**Rules that bind you** (from the coordinator's brief): never edit the
+wrapper (`experiments/bem_on_baseline_data/csi_*`), the solver,
+`experiments/comparison/` or the `csi` agent's paths; never regenerate a
+table; commit and push by path after each fit, failures included; stop and
+report in your pane after each batch, with the report block; ask the
+coordinator, not the user.
+
 Circle, kite and peanut at contrast 4, 18 November 2026, 01:35 to 02:05 UTC.
 Plan: [plan.md](plan.md). Evidence: `results/bem/baseline_data/csi_cases/`
 (`<shape>__c4/<device>/attempt_NN/metrics.json`, `fit.json`, `manifest.json`;
