@@ -156,4 +156,26 @@ at ten). No CPU cross-check. Any further run needs the coordinator's word.
 
 ## Commands
 
-The runner writes the exact commands here before its first run.
+Commands from the repository root. No branch or worktree. The runner changes
+only imported wrapper settings in its own process. No original file is edited.
+The circle command must pass before the remaining data command starts.
+The fit commands wait for the coordinator's go and passing checks and dry plan.
+
+```bash
+PYTHONPATH=solvers:. OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 /home/drdeng/miniconda3/envs/EMNerf/bin/python -B -m experiments.baselines.csi.prepare_ten_frequency_data --shapes circle
+PYTHONPATH=solvers:. OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 /home/drdeng/miniconda3/envs/EMNerf/bin/python -B -m experiments.baselines.csi.prepare_ten_frequency_data --shapes star kite hook peanut asymmetric c_shape cross cog aphex_twin
+/home/drdeng/miniconda3/envs/EMNerf/bin/python -B experiments/bem_on_baseline_data/csi_ten_frequency.py check --cases circle__c4 star__c4 kite__c4 hook__c4 peanut__c4 asymmetric__c4 c_shape__c4 cross__c4 cog__c4 aphex_twin__c4
+/home/drdeng/miniconda3/envs/EMNerf/bin/python -B experiments/bem_on_baseline_data/csi_ten_frequency.py plan
+mkdir -p results/bem/baseline_data/csi_ten_frequency/2026-11-18/logs
+for shape in circle star kite hook; do
+  setsid nohup /home/drdeng/miniconda3/envs/EMNerf/bin/python -B experiments/bem_on_baseline_data/csi_ten_frequency.py fit --case ${shape}__c4 --device cuda > results/bem/baseline_data/csi_ten_frequency/2026-11-18/logs/${shape}__c4_cuda.log 2>&1 < /dev/null &
+  wait
+  # Check the result file, commit and push this fit before the next launch.
+done
+```
+
+Fits run sequentially, leaving room for activity 09. No fit starts before
+the dry plan is accepted. Each run records HEAD and solver dirty state.
+Bulk tables and material maps stay ignored; compact records contain SHA-256.
+The old five-frequency blocks must match in the raw generated table as well
+as the final frozen table. No numerical tolerance replaces the byte check.
