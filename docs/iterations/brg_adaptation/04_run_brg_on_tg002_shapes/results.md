@@ -309,7 +309,7 @@ The coordinator identified curvature rejection as the reason stalled curves coul
 
 ## Checks, failures and evidence
 
-Saved-output checks cover 19/20 scored cases. They read existing curves and histories, file counts, receipts, logs and manifest sizes; no inversion or scoring was repeated. Each receipt is saved as `saved_output_check.json` beside its metrics.
+Saved-output checks cover 20/20 scored cases. They read existing curves and histories, file counts, receipts, logs and manifest sizes; no inversion or scoring was repeated. Each receipt is saved as `saved_output_check.json` beside its metrics.
 
 No saved-output check failed.
 
