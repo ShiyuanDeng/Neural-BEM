@@ -1,6 +1,6 @@
 # Frozen 1–3 GHz data for the BEM side
 
-Available: 10/10 complete parent tables. Updated 2026-11-18T01:40:58.247668+00:00.
+Available: 10/10 complete parent tables. Updated 2026-11-18T01:41:00.555604+00:00.
 All full parent tables use the unchanged 0.625 mm generator, contrast 4, eight frequencies.
 Fixed parent pattern: results/csi/tg002/2026-11-18_low_band_data/{shape}/forward/synthetic_input.txt.
 A .sha256 sidecar is beside every parent table. The BEM side reads only.
