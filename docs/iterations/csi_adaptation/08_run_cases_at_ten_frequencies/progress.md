@@ -1,6 +1,6 @@
 # MF-CC-CSI fits at ten frequencies: live table
 
-Updated 2026-11-18T21:12:02+00:00; state: running.
+Updated 2026-11-18T21:12:05+00:00; state: completed all outcomes.
 
 Frequencies: 0.25 to 2.5 GHz in 0.25 GHz steps. Ten shapes at permittivity 4.
 2048 iterations; 166 by 166 cells at 1.25 mm; native back-propagation; eight threads.
