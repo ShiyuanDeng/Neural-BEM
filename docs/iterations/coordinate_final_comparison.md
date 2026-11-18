@@ -83,7 +83,7 @@ its table is frozen and checks 1 to 3 passed for it.
 |---|---|---|---|---|
 | `csi-data` | `w1:p9`, middle right | Codex `gpt-6-astra`, high, full access | Prepare, check and freeze the ten five-frequency tables. No fit | `csi_adaptation/06_prepare_five_frequency_data` |
 | `csi` | `w1:p8`, top right | Codex `gpt-6.1-sol`, high, full access | Launch and watch the seven MF-CC-CSI fits; score and report | `csi_adaptation/07_run_seven_cases_at_five_frequencies` |
-| `bem-watch` | `w1:pA`, bottom right | Codex `gpt-6.1-sol`, high, full access | Watch the BEM side's checks and ten fits, read only. Confirm by hash that both methods read the same tables | None; it reports to the coordinator |
+| `bem-watch` | closed 05:13 UTC (was `w1:pA`) | Codex `gpt-6.1-sol`, high | Done. It watched the BEM side's ten checks and ten fits, read only, and edited nothing | None |
 
 - `csi` reads first: `AGENTS.md`, this file, then the
   [CSI handoff note](csi_adaptation/05_run_simulated_tg002_cases_at_1_to_3_ghz/handoff.md).
@@ -163,6 +163,12 @@ its table is frozen and checks 1 to 3 passed for it.
   Area error: circle 0.97%, asymmetric 1.29%, peanut 1.54%, cross 2.10%,
   star 2.34%, c_shape 2.60%, cog 2.86%, hook 3.59%, kite 3.80%,
   aphex_twin 5.96%. Contrast found 3.9970 to 4.0054. 47 to 247 s per fit.
+- 05:12 UTC, same observations confirmed by `bem-watch`: every BEM check
+  and fit read the frozen five-frequency file of its shape (path, SHA-256
+  and frequency list in each `manifest.json` match the data note). Its
+  pane is closed; the job is done.
+- 05:12 UTC, from the BEM coordinator: table C's BEM text is updated
+  (`4782d87dc`); ten CPU cross-checks still run on its side.
 - Agents send reports into this pane as text starting "From <name>".
 - Next: each CSI fit as it ends (`csi` scores and pushes it); then both
   final reports, and the BEM state of table C from the BEM coordinator. Ask the user only on a failed or
