@@ -391,7 +391,7 @@ data convention is in doubt.
 
 | Work | Agent | State | Next step |
 |---|---|---|---|
-| Table path on the GPU | `bem-gpu` | Done: commit `3612f5195` at 00:32 ([results](adapt_bem_to_baseline_data/01_run_table_path_on_gpu/results.md)). Lock free. Now drafting the series-limit proposal, no code | Read the proposal; take it to the user |
+| Table path on the GPU | `bem-gpu` | Done: commit `3612f5195` at 00:32 ([results](adapt_bem_to_baseline_data/01_run_table_path_on_gpu/results.md)). Lock free. Series-limit [proposal](adapt_bem_to_baseline_data/05_lift_series_limit/plan.md) written 00:38, no code. Agent idle in its pane | Wait for the user on the proposal |
 | BRG paper cases | `bem-brg` | Wrapper written. [Forward checks](adapt_bem_to_baseline_data/02_fit_brg_paper_cases/results.md): `glider_033` passes to k = 15; `glider_10` needs more resolution; cavity refused above k = 8. No fit yet | Fix the resolution, finish the forward checks, CPU pass |
 | CSI adapter | `bem-csi` | Review stop 2 passed 00:36 ([results](adapt_bem_to_baseline_data/03_adapt_bem_to_csi_data/results.md)): adapter correct; simulated circle data above 1% at 4, 6, 7, 8 GHz. Running the first fit on the measured cylinder | Review stop 3: first fit. Simulated fits wait for the user |
 | CSI fits | `bem-csi-run` | Not started | Launch after the adapter passes |
@@ -418,6 +418,32 @@ data convention is in doubt.
 
 ## Waiting on the user
 
+- **Simulated CSI data above 1%.** On the true circle our forward differs
+  from CSI's simulated table by 0.17, 0.13, 0.30, 1.14, 0.82, 1.68, 2.29
+  and 5.91% at 1 to 8 GHz. Our forward matches the exact series to 1e-13,
+  so the error is in the simulated data. It grows with frequency as a grid
+  error would (0.625 mm cells). No simulated case is fitted until the user
+  answers. Asked 18 November, 00:36. Evidence:
+  [CSI adapter results](adapt_bem_to_baseline_data/03_adapt_bem_to_csi_data/results.md).
+
+- **Cavity below k = 15: go or no-go on a solver change.** At 1e-6 the
+  series admits k times wave radius up to about 24.7. The true cavity has
+  wave radius 2.919, so both cavity cases stop at k = 8. The star (1.557)
+  passes on the truth with 6% room, so its fit may stop at k = 12.
+  `bem-gpu` wrote the [proposal](adapt_bem_to_baseline_data/05_lift_series_limit/plan.md)
+  the user asked for in that case ("propose a solver redesign only if a
+  case still stops below 15"), with a [3 s probe](adapt_bem_to_baseline_data/05_lift_series_limit/results.md):
+  - What: an opt-in route in A3 that samples the regular waves on the
+    boundary and transforms them, used only above the series limit. Off
+    by default, so the default path is untouched.
+  - Cost: its estimate is 6 to 10 work hours, up to 1 to 2 days if the
+    trace resolution does not converge. It adds boundary sampling to A3,
+    which the method does not use today.
+  - Not proven: that a k = 15 cavity fit then finishes. The next limit is
+    trace resolution (incident modes above 96 carry 1.3e-3 at k = 15).
+  - Coordinator's recommendation: no go for now. Decide after the first
+    BRG pass shows how our BEM does on the cavity at k = 8.
+  Asked 18 November, 00:30; proposal ready 00:38.
 - **Simulated CSI data above 1%.** On the true circle our forward differs
   from CSI's simulated table by 0.17, 0.13, 0.30, 1.14, 0.82, 1.68, 2.29
   and 5.91% at 1 to 8 GHz. Our forward matches the exact series to 1e-13,
