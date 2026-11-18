@@ -1,8 +1,10 @@
-# BRG paper-case BEM: forward checks and CPU pass
+# BRG paper-case BEM: reported GPU pass
 
-CPU pass complete, 18 November 2026. One dataset setting, **K=192**, is fixed
-for both passes. All six CPU fits reached the 120 s limit; each accepted
-endpoint is scored and retained. The GPU pass waits for the coordinator.
+The four-case GPU pass is complete, 18 November 2026. Glider_033 and both
+stars reached k=15; glider_10 retained k=12 after a series refusal entering
+15. Both cavities are skipped by the user, with no reported GPU score.
+K=192 and all scientific settings remain fixed. The CPU early look and
+original forward checks below are retained as history.
 
 ## Original forward-check stop, 18 November 2026
 
@@ -222,3 +224,95 @@ its guard during part of glider_10. This was corrected before the fit
 finished. The receipt records observed memory minima; guard coverage has
 a known gap. The numerical fit was not restarted, and its ledger ceiling
 remained active. This limit-check limitation is retained in its metrics.
+
+## Reported GPU pass, 18 November 2026
+
+Four numerical fits ran, each once, in the authorized order. There were
+no memory-killed attempts, memory retries or one-hour stops. Glider_033
+was reported immediately on completion. Both stars reached k=15 without
+a series refusal. No cavity GPU fit was launched.
+
+All four CPU/GPU manifests have identical observation hashes, eta, K=192,
+series_loss=1e-6 and serialized scientific operations. Solver source hashes
+are identical between CPU and GPU, and clean at every fit start/end.
+Only execution and the authorized wall ceiling differ. No solver, baseline
+or shared scoring file was edited.
+
+| Case | Last active k | Stop reason | Area error, % | Maximum active residual | Work units | Fit / process wall, s | Host peak / sampled GPU peak, GiB |
+|---|---:|---|---:|---:|---:|---:|---:|
+| glider_033 | 15 | Completed schedule | 0.061412 | 2.20683e-05 | 2161 | 69.548 / 71.472 | 2.514 / 2.574 |
+| glider_10 | 12 | Series refusal entering k=15 | 14.0568 | 0.730212 | 6156 | 215.742 / 217.481 | 2.328 / 5.180 |
+| star_full | 15 | Completed schedule | 0.582861 | 0.00723138 | 8248 | 332.512 / 334.318 | 2.662 / 2.400 |
+| star_limited | 15 | Completed schedule | 0.602698 | 0.00723138 | 6453 | 271.782 / 273.675 | 2.507 / 2.641 |
+
+The complete queue took **1,032.004 s** (17 min 12 s), including its queue
+reconfiguration and postprocessing. Timings are indicative on the shared
+machine. Process wall time includes startup; fit time and exact work
+counts come from the returned ledger. Maximum host peak was 2.662 GiB
+and largest sampled GPU memory was 5.180 GiB. The lowest observed
+available host memory was 17.662 GiB. GPU memory is sampled every two
+seconds, not an allocator high-water bound.
+
+### Glider eta 10 refusal and monitoring limitation
+
+Entering k=15 returned `NUMERICAL_FAILURE`: "initial state is not
+solver-ready". The underlying saved physics failure is "Regular-wave
+series cancellation 1.6e-06 exceeds 1e-06 (|k| rho=25.2)." Its accepted
+k=12 curve and raw score are retained, with no rerun. The coordinator
+was told this is another series-limited case. Its user decision is pending.
+
+The glider_10 queue supervisor was paused during the cavity queue change,
+which also paused its guard. The guard was restored before the numerical
+fit ended. The resource log has a **121.298 s sampling gap**, from elapsed
+93.742 to 215.040 s. Its minimum-memory receipt therefore covers observed
+samples, not continuous guard coverage over the whole fit. This limitation
+is explicit in its metrics and supervisor receipt. Its native work/time
+ledger remained active; the numerical fit was never restarted.
+
+[Glider_10 endpoint, refusal and monitoring record](../../../../results/bem/baseline_data/brg_paper/2026-11-18/glider_10/cuda_fit/attempt_01/metrics.json).
+
+### CPU/GPU comparisons at shared frequencies
+
+The GPU columns below use the last accepted state at the highest shared
+k. Each CPU state was cut short within that stage by its 120 s limit,
+while the GPU completed more iterations. These are common-frequency
+endpoint comparisons, not equal-budget fits or numerical-agreement claims.
+
+| Case | Common k | CPU area error, % | GPU common-stage area error, % | CPU / GPU common-stage last iteration | Same-iteration relative curve difference |
+|---|---:|---:|---:|---:|---:|
+| glider_033 | 2.5 | 13.9387 | 13.5827 | 7 / 22 | 0.0603138 |
+| glider_10 | 2 | 19.678 | 19.6779 | 17 / 21 | 1.32902e-05 |
+| star_full | 2 | 19.8453 | 22.6102 | 3 / 22 | 3.9761e-05 |
+| star_limited | 2 | 19.8392 | 22.6194 | 3 / 22 | 1.6315e-05 |
+
+The accepted paths are not identical. Glider_033 differs materially even
+at the matching k=2.5, iteration 7: CPU/GPU truth-area errors are
+13.9387% and 13.3874%; their regions differ by 6.65461% of the CPU region
+area. Its accepted work counts also differ (606 and 618). This path
+difference is flagged, without assigning a cause or making a tuning rerun.
+
+For the other three cases, same-iteration relative curve differences are
+1.33e-5 to 3.98e-5. Their CPU/GPU truth-area scores and residuals at those
+matching iterations are saved separately from the later GPU stage endpoint.
+All comparisons use saved accepted states; no extra fit or forward solve
+was run. Raw region scores use the unedited comparison functions.
+
+Per-fit evidence and comparisons:
+
+- [glider_033](../../../../results/bem/baseline_data/brg_paper/2026-11-18/glider_033/cuda_fit/attempt_01/metrics.json) and [CPU comparison](../../../../results/bem/baseline_data/brg_paper/2026-11-18/glider_033/cuda_fit/attempt_01/cpu_comparison.json).
+- [glider_10](../../../../results/bem/baseline_data/brg_paper/2026-11-18/glider_10/cuda_fit/attempt_01/metrics.json) and [CPU comparison](../../../../results/bem/baseline_data/brg_paper/2026-11-18/glider_10/cuda_fit/attempt_01/cpu_comparison.json).
+- [star_full](../../../../results/bem/baseline_data/brg_paper/2026-11-18/star_full/cuda_fit/attempt_01/metrics.json) and [CPU comparison](../../../../results/bem/baseline_data/brg_paper/2026-11-18/star_full/cuda_fit/attempt_01/cpu_comparison.json).
+- [star_limited](../../../../results/bem/baseline_data/brg_paper/2026-11-18/star_limited/cuda_fit/attempt_01/metrics.json) and [CPU comparison](../../../../results/bem/baseline_data/brg_paper/2026-11-18/star_limited/cuda_fit/attempt_01/cpu_comparison.json).
+
+### Final stop
+
+The four requested GPU cases are complete. Both cavities remain **skipped
+by the user's decision: the series limit refuses the true shape above
+k=8**. They have no reported GPU score and are not fit failures. Their
+forward and CPU evidence remain history. No solver redesign or further
+fit is started. The glider_10 series refusal and glider_033 CPU/GPU path
+difference are handed to the coordinator.
+
+[Queue record](../../../../results/bem/baseline_data/brg_paper/2026-11-18/gpu_pass.json),
+[skip record](../../../../results/bem/baseline_data/brg_paper/2026-11-18/gpu_skips.json)
+and [GPU progress](gpu_pass_progress.md).

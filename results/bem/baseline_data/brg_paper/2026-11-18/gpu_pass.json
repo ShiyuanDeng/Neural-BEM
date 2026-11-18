@@ -307,7 +307,64 @@
         },
         "reportable": true
       },
-      "memory_killed_not_a_result": false
+      "memory_killed_not_a_result": false,
+      "cpu_comparison": {
+        "available": true,
+        "common_k": 2.5,
+        "cpu_iteration": 7,
+        "gpu_stage_endpoint_iteration": 22,
+        "cpu_stage_was_cut_by_time": true,
+        "cpu_area_error": 0.1393869902013621,
+        "gpu_area_error": 0.1358271198276498,
+        "delta_area_error": -0.003559870373712304,
+        "cpu_residual": 0.01311994654737172,
+        "gpu_residual": 0.007674574801570904,
+        "gpu_vs_cpu_area_error_normalized_by_cpu_area": 0.08612454642278083,
+        "cpu_accepted_work_units": 606,
+        "gpu_accepted_work_units": 798,
+        "raw_cpu_scores": {
+          "area_error": 0.1393869902013621,
+          "missing_area": 0.06973743128681417,
+          "excess_area": 0.06964955891454794,
+          "true_area_mm2": 2621539.496800502,
+          "area_mm2": 2621309.135905947,
+          "components": 1,
+          "holes": 0,
+          "centroid_mm": 0.7301619419364586
+        },
+        "raw_gpu_scores": {
+          "area_error": 0.1358271198276498,
+          "missing_area": 0.06783542388177531,
+          "excess_area": 0.0679916959458745,
+          "true_area_mm2": 2621539.496800502,
+          "area_mm2": 2621949.170188795,
+          "components": 1,
+          "holes": 0,
+          "centroid_mm": 1.1540859056203077
+        },
+        "raw_gpu_vs_cpu_scores": {
+          "area_error": 0.08612454642278083,
+          "missing_area": 0.042940190265489696,
+          "excess_area": 0.043184356157291146,
+          "true_area_mm2": 2621309.135905947,
+          "area_mm2": 2621949.170188795,
+          "components": 1,
+          "holes": 0,
+          "centroid_mm": 1.8144962942814478
+        },
+        "same_iteration": {
+          "iteration": 7,
+          "relative_curve_difference": 0.060313809780964796,
+          "maximum_point_difference": 0.07806415831579029,
+          "cpu_residual": 0.01311994654737172,
+          "gpu_residual": 0.016113626781746507,
+          "cpu_accepted_work_units": 606,
+          "gpu_accepted_work_units": 618,
+          "cpu_area_error": 0.1393869902013621,
+          "gpu_area_error": 0.13387400642412084,
+          "gpu_vs_cpu_area_error_normalized_by_cpu_area": 0.06654609012723459
+        }
+      }
     },
     "glider_10": {
       "case": "glider_10",
@@ -395,8 +452,18 @@
         "guard_monitoring_gap": "Queue supervisor was paused while changing the queue, also pausing its guard. Guard restored before numerical completion; no rerun.",
         "reported_result": true,
         "memory_killed_not_a_result": false,
-        "stop_reason": "NUMERICAL_FAILURE",
-        "attempt": 1
+        "stop_reason": "NUMERICAL_FAILURE (series cancellation)",
+        "attempt": 1,
+        "refused_stage": "k_15",
+        "physics_failure_messages": [
+          "Regular-wave series cancellation 1.6e-06 exceeds 1e-06 (|k| rho=25.2)."
+        ],
+        "series_refusal_pending_user_decision": true,
+        "resource_sample_gap_seconds": 121.298127,
+        "resource_sample_gap_elapsed_interval": [
+          93.74185,
+          215.039977
+        ]
       },
       "supervisor": {
         "command": [
@@ -546,9 +613,71 @@
           }
         },
         "reportable": true,
-        "guard_monitoring_gap": "Queue supervisor was paused while changing the queue, also pausing its guard. Guard restored before numerical completion; no rerun."
+        "guard_monitoring_gap": "Queue supervisor was paused while changing the queue, also pausing its guard. Guard restored before numerical completion; no rerun.",
+        "resource_sample_gap_seconds": 121.298127,
+        "resource_sample_gap_elapsed_interval": [
+          93.74185,
+          215.039977
+        ]
       },
-      "memory_killed_not_a_result": false
+      "memory_killed_not_a_result": false,
+      "cpu_comparison": {
+        "available": true,
+        "common_k": 2.0,
+        "cpu_iteration": 17,
+        "gpu_stage_endpoint_iteration": 21,
+        "cpu_stage_was_cut_by_time": true,
+        "cpu_area_error": 0.1967796803076316,
+        "gpu_area_error": 0.196779106715478,
+        "delta_area_error": -5.735921536076383e-07,
+        "cpu_residual": 0.569761387170282,
+        "gpu_residual": 0.5697627700033586,
+        "gpu_vs_cpu_area_error_normalized_by_cpu_area": 1.1353062576786175e-06,
+        "cpu_accepted_work_units": 529,
+        "gpu_accepted_work_units": 579,
+        "raw_cpu_scores": {
+          "area_error": 0.1967796803076316,
+          "missing_area": 0.08832984088274487,
+          "excess_area": 0.10844983942488672,
+          "true_area_mm2": 2621539.496800502,
+          "area_mm2": 2674284.867654306,
+          "components": 1,
+          "holes": 0,
+          "centroid_mm": 17.95764029551979
+        },
+        "raw_gpu_scores": {
+          "area_error": 0.196779106715478,
+          "missing_area": 0.08832965256982242,
+          "excess_area": 0.10844945414565556,
+          "true_area_mm2": 2621539.496800502,
+          "area_mm2": 2674284.3512993427,
+          "components": 1,
+          "holes": 0,
+          "centroid_mm": 17.957676489774837
+        },
+        "raw_gpu_vs_cpu_scores": {
+          "area_error": 1.1353062576786175e-06,
+          "missing_area": 6.641938832632182e-07,
+          "excess_area": 4.711123744153994e-07,
+          "true_area_mm2": 2674284.867654306,
+          "area_mm2": 2674284.3512993427,
+          "components": 1,
+          "holes": 0,
+          "centroid_mm": 3.6271248481727875e-05
+        },
+        "same_iteration": {
+          "iteration": 17,
+          "relative_curve_difference": 1.3290249342958818e-05,
+          "maximum_point_difference": 1.2656692586175307e-05,
+          "cpu_residual": 0.569761387170282,
+          "gpu_residual": 0.5697613873405937,
+          "cpu_accepted_work_units": 529,
+          "gpu_accepted_work_units": 529,
+          "cpu_area_error": 0.1967796803076316,
+          "gpu_area_error": 0.1967796804221541,
+          "gpu_vs_cpu_area_error_normalized_by_cpu_area": 1.4053465984007578e-07
+        }
+      }
     },
     "star_full": {
       "case": "star_full",
@@ -789,7 +918,64 @@
         },
         "reportable": true
       },
-      "memory_killed_not_a_result": false
+      "memory_killed_not_a_result": false,
+      "cpu_comparison": {
+        "available": true,
+        "common_k": 2.0,
+        "cpu_iteration": 3,
+        "gpu_stage_endpoint_iteration": 22,
+        "cpu_stage_was_cut_by_time": true,
+        "cpu_area_error": 0.1984529128768209,
+        "gpu_area_error": 0.2261023349094581,
+        "delta_area_error": 0.027649422032637205,
+        "cpu_residual": 0.011419986414436648,
+        "gpu_residual": 0.007870477436484188,
+        "gpu_vs_cpu_area_error_normalized_by_cpu_area": 0.19615493845694326,
+        "cpu_accepted_work_units": 379,
+        "gpu_accepted_work_units": 1049,
+        "raw_cpu_scores": {
+          "area_error": 0.1984529128768209,
+          "missing_area": 0.10060368129594496,
+          "excess_area": 0.09784923158087594,
+          "true_area_mm2": 1751723.8809061027,
+          "area_mm2": 1746898.8455614452,
+          "components": 1,
+          "holes": 0,
+          "centroid_mm": 1.0360818106280398
+        },
+        "raw_gpu_scores": {
+          "area_error": 0.2261023349094581,
+          "missing_area": 0.11299942328549895,
+          "excess_area": 0.11310291162395916,
+          "true_area_mm2": 1751723.8809061027,
+          "area_mm2": 1751905.1638999705,
+          "components": 1,
+          "holes": 0,
+          "centroid_mm": 0.45106871938341486
+        },
+        "raw_gpu_vs_cpu_scores": {
+          "area_error": 0.19615493845694326,
+          "missing_area": 0.09664455330685484,
+          "excess_area": 0.09951038515008842,
+          "true_area_mm2": 1746898.8455614452,
+          "area_mm2": 1751905.1638999705,
+          "components": 1,
+          "holes": 0,
+          "centroid_mm": 0.7208104101637188
+        },
+        "same_iteration": {
+          "iteration": 3,
+          "relative_curve_difference": 3.976103654944989e-05,
+          "maximum_point_difference": 3.458101118835912e-05,
+          "cpu_residual": 0.011419986414436648,
+          "gpu_residual": 0.011419995217256689,
+          "cpu_accepted_work_units": 379,
+          "gpu_accepted_work_units": 379,
+          "cpu_area_error": 0.1984529128768209,
+          "gpu_area_error": 0.19845404528577132,
+          "gpu_vs_cpu_area_error_normalized_by_cpu_area": 8.381693476363532e-06
+        }
+      }
     },
     "star_limited": {
       "case": "star_limited",
@@ -1030,7 +1216,64 @@
         },
         "reportable": true
       },
-      "memory_killed_not_a_result": false
+      "memory_killed_not_a_result": false,
+      "cpu_comparison": {
+        "available": true,
+        "common_k": 2.0,
+        "cpu_iteration": 3,
+        "gpu_stage_endpoint_iteration": 22,
+        "cpu_stage_was_cut_by_time": true,
+        "cpu_area_error": 0.1983923316073712,
+        "gpu_area_error": 0.2261943471351048,
+        "delta_area_error": 0.02780201552773362,
+        "cpu_residual": 0.011419328355508476,
+        "gpu_residual": 0.007868788618235536,
+        "gpu_vs_cpu_area_error_normalized_by_cpu_area": 0.1963516946093897,
+        "cpu_accepted_work_units": 379,
+        "gpu_accepted_work_units": 1044,
+        "raw_cpu_scores": {
+          "area_error": 0.1983923316073712,
+          "missing_area": 0.10057616161169654,
+          "excess_area": 0.09781616999567465,
+          "true_area_mm2": 1751723.8809061027,
+          "area_mm2": 1746889.1376812067,
+          "components": 1,
+          "holes": 0,
+          "centroid_mm": 1.0309374476828355
+        },
+        "raw_gpu_scores": {
+          "area_error": 0.2261943471351048,
+          "missing_area": 0.11304718495989706,
+          "excess_area": 0.11314716217520775,
+          "true_area_mm2": 1751723.8809061027,
+          "area_mm2": 1751899.0133816923,
+          "components": 1,
+          "holes": 0,
+          "centroid_mm": 0.447618105317014
+        },
+        "raw_gpu_vs_cpu_scores": {
+          "area_error": 0.1963516946093897,
+          "missing_area": 0.09674190522089936,
+          "excess_area": 0.09960978938849034,
+          "true_area_mm2": 1746889.1376812067,
+          "area_mm2": 1751899.0133816923,
+          "components": 1,
+          "holes": 0,
+          "centroid_mm": 0.7157547223575905
+        },
+        "same_iteration": {
+          "iteration": 3,
+          "relative_curve_difference": 1.631500025499847e-05,
+          "maximum_point_difference": 1.4162834078690712e-05,
+          "cpu_residual": 0.011419328355508476,
+          "gpu_residual": 0.011419331570008176,
+          "cpu_accepted_work_units": 379,
+          "gpu_accepted_work_units": 379,
+          "cpu_area_error": 0.1983923316073712,
+          "gpu_area_error": 0.19839278118883047,
+          "gpu_vs_cpu_area_error_normalized_by_cpu_area": 3.3348929612304017e-06
+        }
+      }
     }
   },
   "attempts": [
@@ -1273,7 +1516,64 @@
         },
         "reportable": true
       },
-      "memory_killed_not_a_result": false
+      "memory_killed_not_a_result": false,
+      "cpu_comparison": {
+        "available": true,
+        "common_k": 2.5,
+        "cpu_iteration": 7,
+        "gpu_stage_endpoint_iteration": 22,
+        "cpu_stage_was_cut_by_time": true,
+        "cpu_area_error": 0.1393869902013621,
+        "gpu_area_error": 0.1358271198276498,
+        "delta_area_error": -0.003559870373712304,
+        "cpu_residual": 0.01311994654737172,
+        "gpu_residual": 0.007674574801570904,
+        "gpu_vs_cpu_area_error_normalized_by_cpu_area": 0.08612454642278083,
+        "cpu_accepted_work_units": 606,
+        "gpu_accepted_work_units": 798,
+        "raw_cpu_scores": {
+          "area_error": 0.1393869902013621,
+          "missing_area": 0.06973743128681417,
+          "excess_area": 0.06964955891454794,
+          "true_area_mm2": 2621539.496800502,
+          "area_mm2": 2621309.135905947,
+          "components": 1,
+          "holes": 0,
+          "centroid_mm": 0.7301619419364586
+        },
+        "raw_gpu_scores": {
+          "area_error": 0.1358271198276498,
+          "missing_area": 0.06783542388177531,
+          "excess_area": 0.0679916959458745,
+          "true_area_mm2": 2621539.496800502,
+          "area_mm2": 2621949.170188795,
+          "components": 1,
+          "holes": 0,
+          "centroid_mm": 1.1540859056203077
+        },
+        "raw_gpu_vs_cpu_scores": {
+          "area_error": 0.08612454642278083,
+          "missing_area": 0.042940190265489696,
+          "excess_area": 0.043184356157291146,
+          "true_area_mm2": 2621309.135905947,
+          "area_mm2": 2621949.170188795,
+          "components": 1,
+          "holes": 0,
+          "centroid_mm": 1.8144962942814478
+        },
+        "same_iteration": {
+          "iteration": 7,
+          "relative_curve_difference": 0.060313809780964796,
+          "maximum_point_difference": 0.07806415831579029,
+          "cpu_residual": 0.01311994654737172,
+          "gpu_residual": 0.016113626781746507,
+          "cpu_accepted_work_units": 606,
+          "gpu_accepted_work_units": 618,
+          "cpu_area_error": 0.1393869902013621,
+          "gpu_area_error": 0.13387400642412084,
+          "gpu_vs_cpu_area_error_normalized_by_cpu_area": 0.06654609012723459
+        }
+      }
     },
     {
       "case": "glider_10",
@@ -1361,8 +1661,18 @@
         "guard_monitoring_gap": "Queue supervisor was paused while changing the queue, also pausing its guard. Guard restored before numerical completion; no rerun.",
         "reported_result": true,
         "memory_killed_not_a_result": false,
-        "stop_reason": "NUMERICAL_FAILURE",
-        "attempt": 1
+        "stop_reason": "NUMERICAL_FAILURE (series cancellation)",
+        "attempt": 1,
+        "refused_stage": "k_15",
+        "physics_failure_messages": [
+          "Regular-wave series cancellation 1.6e-06 exceeds 1e-06 (|k| rho=25.2)."
+        ],
+        "series_refusal_pending_user_decision": true,
+        "resource_sample_gap_seconds": 121.298127,
+        "resource_sample_gap_elapsed_interval": [
+          93.74185,
+          215.039977
+        ]
       },
       "supervisor": {
         "command": [
@@ -1512,9 +1822,71 @@
           }
         },
         "reportable": true,
-        "guard_monitoring_gap": "Queue supervisor was paused while changing the queue, also pausing its guard. Guard restored before numerical completion; no rerun."
+        "guard_monitoring_gap": "Queue supervisor was paused while changing the queue, also pausing its guard. Guard restored before numerical completion; no rerun.",
+        "resource_sample_gap_seconds": 121.298127,
+        "resource_sample_gap_elapsed_interval": [
+          93.74185,
+          215.039977
+        ]
       },
-      "memory_killed_not_a_result": false
+      "memory_killed_not_a_result": false,
+      "cpu_comparison": {
+        "available": true,
+        "common_k": 2.0,
+        "cpu_iteration": 17,
+        "gpu_stage_endpoint_iteration": 21,
+        "cpu_stage_was_cut_by_time": true,
+        "cpu_area_error": 0.1967796803076316,
+        "gpu_area_error": 0.196779106715478,
+        "delta_area_error": -5.735921536076383e-07,
+        "cpu_residual": 0.569761387170282,
+        "gpu_residual": 0.5697627700033586,
+        "gpu_vs_cpu_area_error_normalized_by_cpu_area": 1.1353062576786175e-06,
+        "cpu_accepted_work_units": 529,
+        "gpu_accepted_work_units": 579,
+        "raw_cpu_scores": {
+          "area_error": 0.1967796803076316,
+          "missing_area": 0.08832984088274487,
+          "excess_area": 0.10844983942488672,
+          "true_area_mm2": 2621539.496800502,
+          "area_mm2": 2674284.867654306,
+          "components": 1,
+          "holes": 0,
+          "centroid_mm": 17.95764029551979
+        },
+        "raw_gpu_scores": {
+          "area_error": 0.196779106715478,
+          "missing_area": 0.08832965256982242,
+          "excess_area": 0.10844945414565556,
+          "true_area_mm2": 2621539.496800502,
+          "area_mm2": 2674284.3512993427,
+          "components": 1,
+          "holes": 0,
+          "centroid_mm": 17.957676489774837
+        },
+        "raw_gpu_vs_cpu_scores": {
+          "area_error": 1.1353062576786175e-06,
+          "missing_area": 6.641938832632182e-07,
+          "excess_area": 4.711123744153994e-07,
+          "true_area_mm2": 2674284.867654306,
+          "area_mm2": 2674284.3512993427,
+          "components": 1,
+          "holes": 0,
+          "centroid_mm": 3.6271248481727875e-05
+        },
+        "same_iteration": {
+          "iteration": 17,
+          "relative_curve_difference": 1.3290249342958818e-05,
+          "maximum_point_difference": 1.2656692586175307e-05,
+          "cpu_residual": 0.569761387170282,
+          "gpu_residual": 0.5697613873405937,
+          "cpu_accepted_work_units": 529,
+          "gpu_accepted_work_units": 529,
+          "cpu_area_error": 0.1967796803076316,
+          "gpu_area_error": 0.1967796804221541,
+          "gpu_vs_cpu_area_error_normalized_by_cpu_area": 1.4053465984007578e-07
+        }
+      }
     },
     {
       "case": "star_full",
@@ -1755,7 +2127,64 @@
         },
         "reportable": true
       },
-      "memory_killed_not_a_result": false
+      "memory_killed_not_a_result": false,
+      "cpu_comparison": {
+        "available": true,
+        "common_k": 2.0,
+        "cpu_iteration": 3,
+        "gpu_stage_endpoint_iteration": 22,
+        "cpu_stage_was_cut_by_time": true,
+        "cpu_area_error": 0.1984529128768209,
+        "gpu_area_error": 0.2261023349094581,
+        "delta_area_error": 0.027649422032637205,
+        "cpu_residual": 0.011419986414436648,
+        "gpu_residual": 0.007870477436484188,
+        "gpu_vs_cpu_area_error_normalized_by_cpu_area": 0.19615493845694326,
+        "cpu_accepted_work_units": 379,
+        "gpu_accepted_work_units": 1049,
+        "raw_cpu_scores": {
+          "area_error": 0.1984529128768209,
+          "missing_area": 0.10060368129594496,
+          "excess_area": 0.09784923158087594,
+          "true_area_mm2": 1751723.8809061027,
+          "area_mm2": 1746898.8455614452,
+          "components": 1,
+          "holes": 0,
+          "centroid_mm": 1.0360818106280398
+        },
+        "raw_gpu_scores": {
+          "area_error": 0.2261023349094581,
+          "missing_area": 0.11299942328549895,
+          "excess_area": 0.11310291162395916,
+          "true_area_mm2": 1751723.8809061027,
+          "area_mm2": 1751905.1638999705,
+          "components": 1,
+          "holes": 0,
+          "centroid_mm": 0.45106871938341486
+        },
+        "raw_gpu_vs_cpu_scores": {
+          "area_error": 0.19615493845694326,
+          "missing_area": 0.09664455330685484,
+          "excess_area": 0.09951038515008842,
+          "true_area_mm2": 1746898.8455614452,
+          "area_mm2": 1751905.1638999705,
+          "components": 1,
+          "holes": 0,
+          "centroid_mm": 0.7208104101637188
+        },
+        "same_iteration": {
+          "iteration": 3,
+          "relative_curve_difference": 3.976103654944989e-05,
+          "maximum_point_difference": 3.458101118835912e-05,
+          "cpu_residual": 0.011419986414436648,
+          "gpu_residual": 0.011419995217256689,
+          "cpu_accepted_work_units": 379,
+          "gpu_accepted_work_units": 379,
+          "cpu_area_error": 0.1984529128768209,
+          "gpu_area_error": 0.19845404528577132,
+          "gpu_vs_cpu_area_error_normalized_by_cpu_area": 8.381693476363532e-06
+        }
+      }
     },
     {
       "case": "star_limited",
@@ -1996,7 +2425,64 @@
         },
         "reportable": true
       },
-      "memory_killed_not_a_result": false
+      "memory_killed_not_a_result": false,
+      "cpu_comparison": {
+        "available": true,
+        "common_k": 2.0,
+        "cpu_iteration": 3,
+        "gpu_stage_endpoint_iteration": 22,
+        "cpu_stage_was_cut_by_time": true,
+        "cpu_area_error": 0.1983923316073712,
+        "gpu_area_error": 0.2261943471351048,
+        "delta_area_error": 0.02780201552773362,
+        "cpu_residual": 0.011419328355508476,
+        "gpu_residual": 0.007868788618235536,
+        "gpu_vs_cpu_area_error_normalized_by_cpu_area": 0.1963516946093897,
+        "cpu_accepted_work_units": 379,
+        "gpu_accepted_work_units": 1044,
+        "raw_cpu_scores": {
+          "area_error": 0.1983923316073712,
+          "missing_area": 0.10057616161169654,
+          "excess_area": 0.09781616999567465,
+          "true_area_mm2": 1751723.8809061027,
+          "area_mm2": 1746889.1376812067,
+          "components": 1,
+          "holes": 0,
+          "centroid_mm": 1.0309374476828355
+        },
+        "raw_gpu_scores": {
+          "area_error": 0.2261943471351048,
+          "missing_area": 0.11304718495989706,
+          "excess_area": 0.11314716217520775,
+          "true_area_mm2": 1751723.8809061027,
+          "area_mm2": 1751899.0133816923,
+          "components": 1,
+          "holes": 0,
+          "centroid_mm": 0.447618105317014
+        },
+        "raw_gpu_vs_cpu_scores": {
+          "area_error": 0.1963516946093897,
+          "missing_area": 0.09674190522089936,
+          "excess_area": 0.09960978938849034,
+          "true_area_mm2": 1746889.1376812067,
+          "area_mm2": 1751899.0133816923,
+          "components": 1,
+          "holes": 0,
+          "centroid_mm": 0.7157547223575905
+        },
+        "same_iteration": {
+          "iteration": 3,
+          "relative_curve_difference": 1.631500025499847e-05,
+          "maximum_point_difference": 1.4162834078690712e-05,
+          "cpu_residual": 0.011419328355508476,
+          "gpu_residual": 0.011419331570008176,
+          "cpu_accepted_work_units": 379,
+          "gpu_accepted_work_units": 379,
+          "cpu_area_error": 0.1983923316073712,
+          "gpu_area_error": 0.19839278118883047,
+          "gpu_vs_cpu_area_error_normalized_by_cpu_area": 3.3348929612304017e-06
+        }
+      }
     }
   ],
   "memory_retries": {
@@ -2030,6 +2516,11 @@
       "case": "star_full",
       "attempt": "attempt_01",
       "commit": "b940fd479461c9d9fc954cc3a00a03eedbb24ad0"
+    },
+    {
+      "case": "star_limited",
+      "attempt": "attempt_01",
+      "commit": "cc54a857a1d2ce70bac9333f8c686e5bc870b7f9"
     }
   ],
   "active": null,
@@ -2038,8 +2529,8 @@
     "minimum_remaining_bytes": 15569256448.0,
     "kill_below_available_bytes": 15032385536
   },
-  "status": "running",
-  "wall_seconds": 1029.575264,
+  "status": "complete",
+  "wall_seconds": 1032.004489,
   "queue_handoffs": [
     {
       "previous_pid": 792866,
@@ -2060,5 +2551,70 @@
       "reported_score": null,
       "decision": "18 November 2026, about 01:05 UTC"
     }
-  }
+  },
+  "ended": "2026-11-18T01:18:24.897001+00:00",
+  "solver_end": {
+    "commit": "cc54a857a1d2ce70bac9333f8c686e5bc870b7f9",
+    "solver_dirty": false,
+    "solver_status": "",
+    "source_hashes": {
+      "solvers/bem_inverse/__init__.py": "cfa565055bb248891a293146088ebdbd7f99faa7bfa2a423f9a2d907024622a4",
+      "solvers/bem_inverse/a1_geometry.py": "b402a2448d0d557feb2f7d62bfdd5c9c9c7dd7c11e73b9b222fc7be769239efb",
+      "solvers/bem_inverse/a2_muller.py": "e5caa5bc198db8bebac39a872df104dfe095e16a488a2bfe20bff5031886428d",
+      "solvers/bem_inverse/a3_waves.py": "9fee421adc06eb1248c3c4945dd317d0c28c4411f84a2f8ecbd5e904832f79f6",
+      "solvers/bem_inverse/a4_fields.py": "732f679ced6692fda132533a3c7940b05afe87b6118c3a6b52e6354468780795",
+      "solvers/bem_inverse/b5_residual.py": "11dbda7c7fe558a47a01dec318aa8c69fbe41c43aecea292f3e44499b69dc473",
+      "solvers/bem_inverse/b7_data_jacobian.py": "6e56264e52c886514d280df25bfc1b5072138c74ff9b6ff566c300808389ba07",
+      "solvers/bem_inverse/b8_gauss_newton.py": "de413b19b02e682fd90003bd352d231ad3f5420fe2e9124ca16eaca53f149fc9",
+      "solvers/bem_inverse/c12_iteration.py": "57ef44ba54890fccce458858e5db3485a10e4ab439812b94c8f062e75da332d2",
+      "solvers/bem_inverse/c9_lm.py": "6b11627daf8501a29a5275406874759a5add014a7cfdc74df439e86aa9b60044",
+      "solvers/bem_inverse/checks.py": "fe1eb247fa28cf62661696fad6ced92d00f947baf5a0159cadd7d59debad5635",
+      "solvers/bem_inverse/continuation/__init__.py": "86ba4f139e92f8cc8e6c4017bcf818d39fa6fc8ecc93546ac6de9682bc979a05",
+      "solvers/bem_inverse/continuation/forward.py": "e8485639fed63f972fc589461bfa82634fa83e6b7b33be5d77676ed52076f3e1",
+      "solvers/bem_inverse/continuation/geometry.py": "62eb4900febfd584dde729d28deb9658be7549a37543dda9ec023b360ecdb427",
+      "solvers/bem_inverse/continuation/geometry_runtime.py": "cb7c7f3aeea9e0ed238f70b25527078b1101f462393920159fa7ee196ab0e1d4",
+      "solvers/bem_inverse/continuation_policy.py": "986fb93f4f4f4bfdce4f110064511bdf0b18f6439412c923362e042519f0543c",
+      "solvers/bem_inverse/damped_cuda.py": "407013d896ddfd68ee484a8d7c9907fe90a0cc3d5c9e7c5d5c3077b9c75be09e",
+      "solvers/bem_inverse/data_blocks.py": "58547d8762d5119b947d40f5cfb7dca74317de9e674dcc08ea09de1a29c6dbdb",
+      "solvers/bem_inverse/errors.py": "a0ebbeeb129440002f420e0b458c47bd293baecb6e7905501cb143037f350151",
+      "solvers/bem_inverse/fit_stage.py": "08ba45ce438c1cfbe7a85473d38ca16946cc3e0ae1507624175e29028331cd55",
+      "solvers/bem_inverse/forward_batch.py": "62c9f4f1cffe22b9c4b7eef8329b22b23c55a8707a8c0f0e7ed37b3cb9747971",
+      "solvers/bem_inverse/forward_solvers/__init__.py": "6b0608efa2f6127c2bb7376f8d6f0f88fd6cf67a41399f23b37a3f716393140f",
+      "solvers/bem_inverse/forward_solvers/modal_muller.py": "bd8bd8566eb895a1906539beb928bc3acee03bf71aa18dbc9e55cb6a04845130",
+      "solvers/bem_inverse/forward_solvers/nodal_kress.py": "8e77975ff4a0555c6d4f76de2e54e592b5d5d86c4559616f63755762d3f7e2ea",
+      "solvers/bem_inverse/geometry_selection.py": "e82d99a508f3fdb4a4ca0181012945985399330a202f100c3a91d13a4d9b5fdb",
+      "solvers/bem_inverse/geometry_update_methods/__init__.py": "641d8487179ea3e6a920c7bb0f4250478bba03eb3116a3ad102775dccbf7682e",
+      "solvers/bem_inverse/geometry_update_methods/analytic_spectral.py": "3ec4aeca1643e839eec1bf6f599dc86e6e6d2648b9ac16b4d69ebd751859ae37",
+      "solvers/bem_inverse/geometry_update_methods/certificates.py": "f070f514c7aa965431d1bd8f0c01babc2e89d461feeb14c7b4b0f17e59d0c505",
+      "solvers/bem_inverse/geometry_update_methods/certified_spectral.py": "f208d288a94e0e3717e03ffa0dae195eb98459e24d5a7f70b8ccece46ca9b7d6",
+      "solvers/bem_inverse/geometry_update_methods/gaussian_lipschitz.py": "fe021f512ef67982359c8cb7a77e021da7088bb2969095506d598cdea3e66538",
+      "solvers/bem_inverse/geometry_update_methods/n_update.py": "1a5bd26ac7647aedff0218d4b99e2ee5e9e8869a2d05315db55b4d742b403fbb",
+      "solvers/bem_inverse/geometry_update_methods/similarity.py": "9463a73f98606cfe06b261c52cb86157a5a7618bbbeaafb5088d3234879148be",
+      "solvers/bem_inverse/geometry_update_methods/slider.py": "04fb02f1720ef759c16b9d46826c3cc35b7d54b2ba437ce23d5c0eb7ee39017f",
+      "solvers/bem_inverse/geometry_update_methods/spectral.py": "0714e8a0162a17b044adde4a2aae1233fdd4582be2f3f27963db83b1f18334d5",
+      "solvers/bem_inverse/geometry_update_methods/spline.py": "485574b991e307b40327b349369211a744def103c380f2d632bed7cae3fd7c8b",
+      "solvers/bem_inverse/geometry_update_methods/uncentred_spectral.py": "448d061c4be848bf469ee0c1a4722935c3ba92aa1587ed943ea4ea914e6ebbfa",
+      "solvers/bem_inverse/io.py": "b9f9fd20ead7f5a40d5636e96517e1087391d73910ee1632cb94636cbcc6d9ad",
+      "solvers/bem_inverse/level_penalty.py": "e56bfc56fb9fea1aaf1a84dd3b0f2253be10f2b7933cf87cba234ffae2286036",
+      "solvers/bem_inverse/localization.py": "506b2718aa7f13d98d22584ddd95e242064f41f2de3bfb3419ed8ea3a806e78a",
+      "solvers/bem_inverse/material.py": "982d606d2d7cac5bf87026c6099feaf8e91ce8de5f12c973ffa08479a9643c67",
+      "solvers/bem_inverse/mie_grid.py": "88b1d08bea24cd80b7cbd169ab39c6fbe25c7d5a8c5b92b6b3b4b6f9613e6b9b",
+      "solvers/bem_inverse/mie_localize.py": "c32a2c2a533070a4016c7d092f212c1e5bbf3709957572c9d3193702de9b1229",
+      "solvers/bem_inverse/modal_cuda.py": "73e96af9e27719ab671cd87790de6867fda2d5c01fbcb60fca19a032b4f887b5",
+      "solvers/bem_inverse/nodal_geometry.py": "1154eb1e2b42f53d240e3ea748587ca166cda115526952528838179141d8189a",
+      "solvers/bem_inverse/normal_basis.py": "b2388c9bd74e10301910145eacf92bd8df89789ee2857f237bae60091c1a5ced",
+      "solvers/bem_inverse/physics.py": "b83adcf77ea779855f4e075c40a14a890a2b016f146f7d3cdf0d31b2a1e09034",
+      "solvers/bem_inverse/pipelines.py": "4992b38accae1a52e0a835cdb5bab5033ee048883ce43ef930a724ef74c15318",
+      "solvers/bem_inverse/policies.py": "d3f060e128683320db54b705c7d93b8654fe75f63bd370ff1c934a57edaae06c",
+      "solvers/bem_inverse/policy.py": "ff31233d68156118cc4079e17b445575a00aaaa87562942f49ed76cc897d6885",
+      "solvers/bem_inverse/problem.py": "9283eceeb1a06deff239ab0e3473ac67e134be75421f74f5623c04f79a13fb26",
+      "solvers/bem_inverse/reach.py": "ed9fcfa9746d27dd60298c57457d247709289932429ddb0c8c3c89ff63151b92",
+      "solvers/bem_inverse/real_only_policy.py": "b5e8a45a671623e65ca22e4ae462b97638afcf75cd1344518a45b7f37d0980fa",
+      "solvers/bem_inverse/recording.py": "f55ebba403120ac51c2f579d404effcadfe4cb5e6253682d8ff9bbd30cf3daef",
+      "solvers/bem_inverse/runner.py": "bb75e97482e80874aa7563d8c653c11523084387f30b8430ef981de3c54fb537",
+      "solvers/bem_inverse/stage_types.py": "af094f0d3bdcd75ebc956b1ac45b49c19ef3c0302f34724f9f60e09c778e50fb",
+      "solvers/bem_inverse/work.py": "c8409710bf5dc5e724d8cfd08689ee494430b50e140c7562374db385b907c628"
+    }
+  },
+  "final_postprocessing": "Raw endpoint scores retained; physics-failure cause and CPU comparisons synchronized after queue completion."
 }

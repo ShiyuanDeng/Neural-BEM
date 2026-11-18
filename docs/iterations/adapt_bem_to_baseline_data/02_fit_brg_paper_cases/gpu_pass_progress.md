@@ -25,3 +25,10 @@ Reported result: True; memory-killed attempts are not results.
 star_limited: last k=15.0; stop=COMPLETED_SCHEDULE; area error=0.602698%; time=273.675s
 
 Reported result: True; memory-killed attempts are not results.
+
+## Final classifications
+
+Three cases completed k=15. Glider_10 retained k=12 after a series
+refusal entering k=15; its detailed cause and monitoring gap are saved.
+Both cavities are skipped by the user and have no reported GPU score.
+There were no retries. See results.md for common-frequency CPU comparisons.
