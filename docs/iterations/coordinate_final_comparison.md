@@ -158,14 +158,14 @@ its table is frozen and checks 1 to 3 passed for it.
   first 100 iterations: 2.19, 2.24 and 2.49 s per iteration. At 05:00
   `asymmetric` was at iteration 1380 of 2048. `hook`, `cross`, `cog` and
   `aphex_twin` wait for a slot. No failed or stopped fit.
-- 05:05 UTC, BEM (read from its `metrics.json` files; the BEM coordinator
-  reports them): eight of ten fits done, all completed their schedule.
+- 05:10 UTC, BEM (read from its `metrics.json` files; the BEM coordinator
+  reports them): all ten fits done, and all completed their schedule.
   Area error: circle 0.97%, asymmetric 1.29%, peanut 1.54%, cross 2.10%,
-  star 2.34%, c_shape 2.60%, hook 3.59%, kite 3.80%. Contrast found 4.0002
-  to 4.0054. 47 to 200 s per fit. `cog` runs; `aphex_twin` follows.
+  star 2.34%, c_shape 2.60%, cog 2.86%, hook 3.59%, kite 3.80%,
+  aphex_twin 5.96%. Contrast found 3.9970 to 4.0054. 47 to 247 s per fit.
 - Agents send reports into this pane as text starting "From <name>".
-- Next: the last two BEM fits; each CSI fit as it ends (`csi` scores and
-  pushes it); then both final reports. Ask the user only on a failed or
+- Next: each CSI fit as it ends (`csi` scores and pushes it); then both
+  final reports, and the BEM state of table C from the BEM coordinator. Ask the user only on a failed or
   stuck fit that needs a decision.
 - Watchers to re-arm after a restart: none is needed for correctness. A
   fallback loop on the launcher PID and on
