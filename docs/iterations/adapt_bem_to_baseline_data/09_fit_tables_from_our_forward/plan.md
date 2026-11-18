@@ -153,3 +153,10 @@ The thin fit runner sets only `csi_data.SIMULATED` and `csi_fit.RESULTS`, then
 calls `csi_fit.main()`. The dataset, policy and all other settings are unchanged.
 Raw tables, prediction arrays and fit-local files stay ignored with SHA-256
 receipts. Keep all check failures and unfinished attempts.
+
+### Coordinator go, 18 November 2026
+
+The coordinator accepted all checks and said: "Go for the four GPU fits,
+at most two at a time, detached, unchanged five-frequency settings."
+Another session may also run fits, so times are indicative. Keep one fit
+at a time in this activity as planned. No settings change and no rerun.
