@@ -112,3 +112,44 @@ cross-check. Any further run needs the coordinator's word.
 ## Commands
 
 The runner writes the exact commands here before its first run.
+
+### Exact commands, set before running
+
+All commands run from the repository root. Each preparation command makes one
+new table and runs its required checks. Commit and push that shape's evidence
+before the next command. A failed check stops the activity; there is no rerun.
+
+```bash
+/home/drdeng/miniconda3/envs/EMNerf/bin/python experiments/bem_on_baseline_data/own_forward_tables.py --shape circle > results/bem/baseline_data/fresnel_own_forward/2026-11-18/logs/prepare_circle.log 2>&1
+/home/drdeng/miniconda3/envs/EMNerf/bin/python experiments/bem_on_baseline_data/own_forward_tables.py --shape star > results/bem/baseline_data/fresnel_own_forward/2026-11-18/logs/prepare_star.log 2>&1
+/home/drdeng/miniconda3/envs/EMNerf/bin/python experiments/bem_on_baseline_data/own_forward_tables.py --shape kite > results/bem/baseline_data/fresnel_own_forward/2026-11-18/logs/prepare_kite.log 2>&1
+/home/drdeng/miniconda3/envs/EMNerf/bin/python experiments/bem_on_baseline_data/own_forward_tables.py --shape hook > results/bem/baseline_data/fresnel_own_forward/2026-11-18/logs/prepare_hook.log 2>&1
+```
+
+The nodal solver accepts the full 36-source by 72-receiver acquisition. The
+runner selects the frozen mask after each forward call. Thus no masked-nodal
+solver change is needed. Use CPU reference `nodal_kress`, 1024 and 2048 nodes,
+as in TG-002; write the 2048-node fields. Compare each frequency to 1e-6.
+Circle is also checked against the unchanged exact-series function. The reader
+must agree within 1e-13 relative. The source, receiver, frequency and incident
+columns remain numerically identical to the frozen CSI table. The unchanged
+`csi_forward_check.check_case` checks the permutation, calibration, series limit
+and true-shape modal predictions. Its two resolutions must both agree to 1e-6.
+No extra measured-cylinder Jacobian check is needed for this unchanged layout.
+
+After reporting all four checks and receiving the coordinator's go, launch
+one GPU fit at a time here (leaving the other slot to activity 08). Start only
+with at least 16.5 GiB available. Wait for `metrics.json`, then commit and push
+before starting the next shape. These commands have no elapsed-time cut:
+
+```bash
+setsid nohup /home/drdeng/miniconda3/envs/EMNerf/bin/python experiments/bem_on_baseline_data/own_forward_fit.py --case circle__c4 --device cuda > results/bem/baseline_data/fresnel_own_forward/2026-11-18/logs/fit_circle.log 2>&1 < /dev/null &
+setsid nohup /home/drdeng/miniconda3/envs/EMNerf/bin/python experiments/bem_on_baseline_data/own_forward_fit.py --case star__c4 --device cuda > results/bem/baseline_data/fresnel_own_forward/2026-11-18/logs/fit_star.log 2>&1 < /dev/null &
+setsid nohup /home/drdeng/miniconda3/envs/EMNerf/bin/python experiments/bem_on_baseline_data/own_forward_fit.py --case kite__c4 --device cuda > results/bem/baseline_data/fresnel_own_forward/2026-11-18/logs/fit_kite.log 2>&1 < /dev/null &
+setsid nohup /home/drdeng/miniconda3/envs/EMNerf/bin/python experiments/bem_on_baseline_data/own_forward_fit.py --case hook__c4 --device cuda > results/bem/baseline_data/fresnel_own_forward/2026-11-18/logs/fit_hook.log 2>&1 < /dev/null &
+```
+
+The thin fit runner sets only `csi_data.SIMULATED` and `csi_fit.RESULTS`, then
+calls `csi_fit.main()`. The dataset, policy and all other settings are unchanged.
+Raw tables, prediction arrays and fit-local files stay ignored with SHA-256
+receipts. Keep all check failures and unfinished attempts.
