@@ -33,11 +33,11 @@ monitor's ceilings are all 0 (07:48). The clean timed GPU pass waits only
 for the user's go.
 A later restart begins at [Start here](#start-here) too.
 
-**State, 18 November 2026, 11:35 UTC:** a new piece of work is open, the
-[wiggle check](#wiggle-check-opened-18-november-1125-utc). Read that section
+**State, 18 November 2026, 11:33 UTC:** a new piece of work is open, the
+[wiggle check](#wiggle-check-opened-18-november-1120-utc). Read that section
 first; the rest of this file is the finished overnight work.
 
-## Wiggle check (opened 18 November, 11:25 UTC)
+## Wiggle check (opened 18 November, 11:20 UTC)
 
 **Question.** The BEM outlines of the five-frequency pass (table C,
 simulated; Figure 3 of the
@@ -70,14 +70,15 @@ The starting evidence (read from the saved fits, no new run) is in the
 activity 08 plan. The criteria for reading the result are fixed in both
 plans.
 
-**Launch log.** 11:31 UTC, from pane `w2:p1`: split right, then down;
+**Launch log.** 11:21 UTC, from pane `w2:p1`: split right, then down;
 `codex -m gpt-6-astra -c model_reasoning_effort="high" --dangerously-bypass-approvals-and-sandbox`
 and
 `codex -m gpt-6.1-sol -c model_reasoning_effort="medium" --dangerously-bypass-approvals-and-sandbox`.
-Briefed 11:33. Watchers: `agent wait bem-own` and `agent wait bem-ten` in
+Briefed 11:22; plans committed 11:23 (`cd909d514`). The plan headers say
+11:25, written from a guess; the commit time is the true one. Watchers: `agent wait bem-own` and `agent wait bem-ten` in
 background shells of the coordinator; a restart must re-arm them.
 
-**Coordinator's decisions (11:25 UTC, before any result):**
+**Coordinator's decisions (11:20 UTC, before any result):**
 
 - Four shapes per test: circle (control), star, kite, hook. Their
   activity 07 errors span 0.97 to 3.80%.
@@ -101,6 +102,19 @@ background shells of the coordinator; a restart must re-arm them.
   rule only: 16.5 GiB available to start, at most two fits per agent. At
   11:19 the machine was idle with 39 GiB available.
 - No fit runs before the coordinator has seen each agent's checks.
+
+**Progress.**
+
+- 11:31, `bem-own`: four tables from the nodal reference solver
+  (`nodal_kress`, 2048 nodes against 1024). Doubling, the exact circle
+  series and our modal forward all agree to 2e-14 or better. The
+  difference to the CSI tables repeats activity 07 (0.12 to 0.44%).
+  [Checks](adapt_bem_to_baseline_data/09_fit_tables_from_our_forward/prefit_checks.md).
+  Go for the four GPU fits given 11:32.
+- 11:32, `bem-ten`: eight of ten tables frozen. The rows of the five old
+  frequencies are byte-equal to the frozen tables. Circle against the
+  exact series at the ten frequencies: 0.13 to 0.44%, with 0.25% at
+  0.25 GHz, so the 1% rule holds on the circle.
 
 **Review stops.** `bem-ten`: after the circle table (reports, does not
 wait); before any fit (waits for a go). `bem-own`: before the first fit
