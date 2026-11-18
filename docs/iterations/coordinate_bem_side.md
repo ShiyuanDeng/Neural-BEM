@@ -40,7 +40,26 @@ side runs. The baseline side fits MF-CC-CSI at ten frequencies until about
 midnight. Read that section first; the rest of this file is the finished
 overnight work.
 
-**Next investigation requested by the user.** The [stage scheduling and shape-band brief](investigate_bem_stage_scheduling/01_trace_stage_stops_and_shape_bands/plan.md) is ready for the BEM coordinator and two Herdr subagents. Live dispatch is pending.
+**State, 18 November 2026, 15:52 UTC: stage scheduling investigation
+dispatched.** The user in pane `w2:p1`: "as investigator, you coordinate
+subagent work. go ahead." The
+[plan](investigate_bem_stage_scheduling/01_trace_stage_stops_and_shape_bands/plan.md)
+holds the briefs, the rules, each agent's files and the coordinator's
+choices. A restart resumes from this block.
+
+| Agent | Pane | Launch | Task | State |
+|---|---|---|---|---|
+| `stage-stops` | `w2:pC` | `codex -c model_reasoning_effort="high" -s workspace-write -a never` (GPT-6.2-Astra) | Stage stops; writes `stage_stops.md` | working since 15:50 |
+| `shape-bands` | `w2:pD` | same | Shape bands; writes `shape_bands.md` | working since 15:50 |
+
+- Zero new fits. Both agents are sandboxed with prompts off and do not use
+  git; the coordinator commits their paths (listed in the plan's Dispatch
+  table).
+- Watchers: `agent wait stage-stops` and `agent wait shape-bands` in
+  background shells of the coordinator. A restart must re-arm them.
+- Next: read both notes, check their numbers against the records, write
+  `results.md` beside the plan (handoff item 3), commit and push, close
+  both panes. A proposed run becomes activity 02 with its own plan.
 
 ## Wiggle check (opened 18 November, 11:20 UTC)
 
