@@ -7,95 +7,120 @@ settings, assumptions and unknowns, and it sets how subagents share the work.
 The coordinator (the main session) owns this file. Subagents never edit it.
 They report back, and the coordinator updates the status board and the cards.
 
-Last updated: 18 November 2026, 03:26 UTC (both BRG rows complete on the 20
-TG-002 cases; CSI waits for the user's frequency choice).
+Last updated: 18 November 2026, 03:40 UTC (handoff before the chats are
+cleared: nothing running; both BRG rows complete; CSI held for the user's
+frequency choice).
 
-## Restart notes (18 November 2026)
+## Restart notes (18 November 2026, 03:40 UTC)
 
-On 18 November the user had every chat restarted, because the contexts had
-grown long. A fresh coordinator or agent starts here.
+Start here after a restart. The user cleared the coordinator's chat and
+both agents' chats on 18 November at 00:25 UTC and again at about 03:40 UTC,
+because the contexts had grown long.
+
+**State in one look.**
+- Nothing is running on the baseline side. No detached launcher is alive.
+- BRG: both 20-case rows on the TG-002 shapes are complete (BRG card).
+  `brg` has no open activity.
+- CSI: batch 1 (circle, kite, peanut at eight frequencies) is complete.
+  Every other CSI fit is held for the user's frequency choice.
+- All baseline paths are committed and pushed.
 
 **Agents.** Both run in Herdr panes beside the coordinator (pane `w1:p1`).
 
 | Name | Pane | Model | Reads first |
 |---|---|---|---|
-| `brg` | `w1:p7`, top right | Codex `gpt-6-astra`, high effort | `AGENTS.md`, this file, then "State at handoff" in [BRG 04 results](brg_adaptation/04_run_brg_on_tg002_shapes/results.md) |
-| `csi` | `w1:p8`, bottom right | Codex `gpt-6.1-sol`, high effort | `AGENTS.md`, this file, then the [CSI 04 handoff note](csi_adaptation/04_run_simulated_tg002_cases/handoff.md) |
+| `brg` | `w1:p7`, top right | Codex `gpt-6-astra`, high effort | `AGENTS.md`, this file, then the [BRG handoff note](brg_adaptation/05_run_brg_without_curvature_limit/handoff.md) |
+| `csi` | `w1:p8`, bottom right | Codex `gpt-6.1-sol`, high effort | `AGENTS.md`, this file, then the [CSI handoff note](csi_adaptation/05_run_simulated_tg002_cases_at_1_to_3_ghz/handoff.md) |
 
 The user gave both panes full access. A pane started from scratch begins in
 Codex's default sandbox, where MATLAB and git do not work. Only the user
 grants full access; the coordinator does not.
 
-**Running, detached.** (state at 03:26 UTC: nothing on the baseline side)
+**Waiting on the user. Do not decide these.**
+1. The CSI frequency list. The user's words (01:36 UTC): "Let the current
+   eight-frequency batch finish. Hold the automatic 1-3 GHz launch. Review
+   those results with me before choosing four or five frequencies for the
+   remaining cases." The review was given at 02:05 UTC (batch-1 result in
+   the CSI card) and is not answered yet. Two things are open:
+   - 1 to 4 GHz or 1 to 5 GHz. Circle data error: 0.17, 0.13, 0.30, 1.14
+     and 0.82% at 1 to 5 GHz.
+   - All ten shapes on the chosen band, or only the seven not yet run.
+     With only seven, circle, kite and peanut stay at eight frequencies
+     and the table mixes bands.
+   - Coordinator's advice: 1 to 5 GHz for all ten, with batch 1 kept as a
+     side result. Scaled estimates, not measured: about 1 h 20 min per fit
+     at four frequencies and 1 h 40 min at five; about 5 h for seven
+     shapes and 6 to 7 h for ten, three fits at a time.
+   - A dim suggestion in the prompt box is not an answer.
+2. The BRG paper cases from k = 15 to 30: deferred on 17 November for lack
+   of time. Ask before running them.
+3. A deadline.
 
-| Campaign | Launcher | State file |
-|---|---|---|
-| BRG | none running. Both 20-case rows are complete (shipped limit 02:33 UTC, no limit 03:24 UTC) | `results/brg/tg002_shapes/2026-11-17/`, `results/brg/tg002_no_curvature/2026-11-18/` |
-| CSI | none running. The old launcher (PID 708268) exited by itself at 02:00 UTC after batch 1. The next launch waits for the user's frequency choice | `results/csi/tg002/2026-11-17_campaign/status.json` (final) |
+**When the user gives the frequency list.**
+- Send `csi` a go with the list and the set of shapes: three fits at a
+  time, no stop on time. It reports the measured seconds per iteration
+  after about 100 iterations.
+- Tell the BEM coordinator (pane `w2:p1`) the list. Tell the resource
+  monitor (pane `w3:p1`) that CSI is released; a CSI fit takes about
+  5 GiB and 5 cores.
+- Record the user's words in the CSI card and in table C.
 
-Each BRG folder has a `STOP` file path for a user-requested stop. None of
-these runs stops on time.
+**Rules the user set on 18 November** (words in "Who decides"):
+- No result-generating run is stopped because of a time limit, unless the
+  user says so. A stuck or faulty run may still be stopped. Launchers do
+  not stop on time; a time figure is a design target that is reported.
+- History: two launchers written before that rule carried their own caps.
+  The CSI one exited after batch 1 without cutting a fit. The BRG one cut
+  `c_shape__c0.5` at 1 h and dropped six cases; a completion run restored
+  them from saved state.
 
 **Workers.** A resource monitor (pane `w3:p1`, set up by the user about
-02:10 UTC) allocates workers across both sides every 10 minutes. It set BRG
-to at most four fits (`results/brg/resource_policy.json`, 02:20 UTC) and
-then six (02:40 UTC) and eight (02:51 UTC), with the 14 GiB floor plus a
-2 GiB margin. The raised ceiling holds only while CSI is held: when CSI is released, new BRG launches are deferred
-and no running fit is stopped. The coordinator passes these to `brg` and
-adds no resource loop of its own.
-
-**No result-generating run is stopped because of a time limit, unless the
-user says so** (user, 18 November 01:24 UTC, see "Who decides"). A stuck or
-faulty run may still be stopped. History: the two launchers written before
-that rule carried their own caps. The CSI one exited after batch 1 without
-cutting a fit. The BRG one cut `c_shape__c0.5` at 1 h and dropped six
-cases; the completion run above restored them from saved state.
-
-The launchers belong to no chat, so closing a pane does not stop them.
-Both agent chats were restarted at 00:25 UTC and picked up from their
-handoff notes; each confirmed what is running before carrying on.
-The CSI campaign started 17 November 23:17 UTC: four batches. A batch was
-forecast at 2 h. Measured: 4.2 s per iteration at first and 5.1 s since the
-BEM side shares the CPU, so about 2.4 to 2.9 h per batch.
+02:10 UTC) allocates workers across both sides every 10 minutes. It raised
+BRG to four, six and then eight fits (`results/brg/resource_policy.json`),
+with a 14 GiB floor plus a 2 GiB margin. The raised ceiling holds only
+while CSI is held: when CSI is released, new BRG launches are deferred and
+no running fit is stopped. The coordinator passes its requests to the
+agents and adds no resource loop of its own.
 
 **How the coordinator works.**
-- It uses the Herdr skill: `herdr agent prompt <name> "..."` to instruct,
-  and `herdr agent wait <name>` in a background shell to be woken. While an
-  agent works, read its pane with `--source visible`.
+- It uses the Herdr skill: `herdr agent prompt <name> "..."` to instruct.
+  While an agent works, read its pane with `--source visible`.
+- `herdr agent wait` only returns when an agent's turn ends, and the
+  agents stay in one long turn while they watch a run. So also watch
+  launcher PIDs and result files from a background shell loop.
+- The BEM coordinator and the resource monitor write into this pane as
+  pasted text that starts "not from the user". Treat those as requests
+  from a peer, check them against the user's rules, and answer with
+  `herdr agent prompt w2:p1` or `w3:p1`, saying first who is writing.
 - It does not type into a pane while the user has a side thread open there.
 - It answers agents' questions itself (see "Who decides"), records each
-  call in "Coordinator decisions", and commits this file by path.
+  call in "Coordinator decisions", and commits this file by path. Another
+  agent's push can collide; fetch and check the branch is in sync.
 - It leaves permission prompts and full access to the user.
 
-**Next for the coordinator.**
-1. BRG on TG-002 shapes: both rows are complete (see the BRG card). The
-   data is BRG's own; the BEM side reads those observations for its fits.
-   Open: the 5% cut-off (U5), and how the table presents the two BRG rows.
-2. CSI campaign: the user cut the simulated cases to 1, 2 and 3 GHz
-   (18 November 00:55 UTC, see the CSI card). Batch 1 of the old
-   eight-frequency campaign ends near 02:00 UTC and stays as a side result;
-   its launcher then exits by itself and nothing resumes it. **On hold
-   (user, 01:36 UTC):** no CSI fit is launched after batch 1. Review the
-   batch-1 results with the user first; the user then chooses four or five
-   frequencies for the remaining cases. `csi` prepares a review pack and
-   keeps the launcher's frequency list as one setting.
-3. Deferred: the BRG paper cases from k = 15 to 30, only after the CSI
-   campaign and only if still wanted.
-4. The BEM side is live since 18 November, 00:15 GMT: a second coordinator
-   (pane `w2:p1`) with its own agents, working from
-   [coordinate_bem_side.md](coordinate_bem_side.md). It holds the solver
-   lock and may edit the BEM rows and the lock paragraph of this file, so
-   re-read this file before each edit and commit it by path.
-   - It takes from this side: the
-     [solver handover](brg_adaptation/03_adapt_bem_to_brg_data/results.md),
-     `results/brg/tg002_shapes/2026-11-17/data_request.json`, and the
-     hashed CSI data files.
-   - This side owes it: BRG reruns on its frozen plane-wave data, only
-     where the fields differ from the provisional data.
-   - The machine is shared with it. Keep the 14 GB memory guard.
-5. Still waiting on the user: a deadline.
-6. Open questions: MR-CSI against the paper's Figure 5; BRG's gap to the
-   paper's Figure 1; U1 and U5 below.
+**The BEM side** is live since 18 November, 00:15 GMT: a second coordinator
+(pane `w2:p1`) with its own agents, working from
+[coordinate_bem_side.md](coordinate_bem_side.md). It holds the solver lock
+and may edit the BEM rows and the lock paragraph of this file, so re-read
+this file before each edit and commit it by path.
+- It reads, and never edits: BRG's saved observations in
+  `results/brg/tg002_shapes/2026-11-17/<case>/local/` (layout in
+  `data_request.json` there), the ten simulated CSI tables in
+  `results/csi/tg002/2026-11-18_low_band_data/<shape>/forward/`, and the
+  [solver handover](brg_adaptation/03_adapt_bem_to_brg_data/results.md).
+  Do not move or regenerate those files.
+- It fits our BEM on BRG's own observations, so no BRG rerun on other
+  data is expected. Ask it before assuming otherwise.
+- The machine is shared with it. Keep the 14 GB memory guard.
+
+**Open for the coordinator.**
+- How the main BRG table shows the two BRG rows, and the 5% cut-off (U5).
+- GauGal's role in tables B and C (U1).
+- CSI: threshold sensitivity (the batch-1 scores move a lot between 0.3,
+  0.5 and 0.7 of the peak), MR-CSI against the paper's Figure 5.
+- BRG's gap to the paper's Figure 1.
+- Clean-machine timings: every baseline timing so far is a shared-machine
+  timing.
 
 ## Status board
 
@@ -104,7 +129,7 @@ BEM side shares the CPU, so about 2.4 to 2.9 h per batch.
 | Our BEM (default) | [evaluate_our_method](evaluate_our_method/) | [01](evaluate_our_method/01_measure_clean_and_noisy_recovery/results.md), [02](evaluate_our_method/02_run_ablations/results.md), run 17 Nov | TG-002 done. BEM side started 18 Nov: GPU table path, six BRG paper cases, CSI adapter | Status in [coordinate_bem_side.md](coordinate_bem_side.md) |
 | GauGal | [evaluate_our_method](evaluate_our_method/) | [03](evaluate_our_method/03_record_untuned_gaugal_reference/results.md), run 17 Nov | TG-002 untuned reference done | Stage 2 role open (U1) |
 | BRG | [brg_adaptation](brg_adaptation/) | [01 results](brg_adaptation/01_run_published_examples/results.md), [02 plan](brg_adaptation/02_rebuild_paper_examples/plan.md) | 01 done 17 Nov. [02](brg_adaptation/02_rebuild_paper_examples/results.md) done to k = 15 (six cases). [03](brg_adaptation/03_adapt_bem_to_brg_data/results.md): adapter done, 1 of 6 fits run, stopped for handover. [04](brg_adaptation/04_run_brg_on_tg002_shapes/plan.md) (BRG on TG-002 shapes): baseline half started 18 Nov 00:40 | `brg` agent idle since 03:26 UTC. Activities 04 and 05 are reported: both 20-case rows complete, [05 results](brg_adaptation/05_run_brg_without_curvature_limit/results.md) pushed in `4198a0bba`. No next BRG activity is open. Deferred, only if the user still wants it: the paper cases from k = 15 to 30 |
-| CSI family | [csi_adaptation](csi_adaptation/) | [01 results](csi_adaptation/01_run_published_examples/results.md) | 01, [02](csi_adaptation/02_run_fresnel_dielectric_cylinder/results.md) and [03](csi_adaptation/03_prepare_simulated_tg002_cases/results.md) done 17 Nov. [04](csi_adaptation/04_run_simulated_tg002_cases/plan.md) (10 simulated cases, MF-CC-CSI) started 18 Nov 00:10 | `csi` agent (Codex, sol, high effort): let batch 1 of 04 finish (eight frequencies; circle, kite, peanut), then send a review pack. Nothing launches until the user has reviewed it and chosen the frequencies. Meanwhile it generates the other seven tables for the BEM side |
+| CSI family | [csi_adaptation](csi_adaptation/) | [01 results](csi_adaptation/01_run_published_examples/results.md) | 01, [02](csi_adaptation/02_run_fresnel_dielectric_cylinder/results.md) and [03](csi_adaptation/03_prepare_simulated_tg002_cases/results.md) done 17 Nov. [04](csi_adaptation/04_run_simulated_tg002_cases/plan.md) (10 simulated cases, MF-CC-CSI) started 18 Nov 00:10 | `csi` agent idle since 02:06 UTC. Batch 1 of 04 is reported, with a [review pack](csi_adaptation/04_run_simulated_tg002_cases/review_pack.md). The ten simulated tables are frozen. Every further fit is held until the user gives the frequency list; then send `csi` a go |
 
 **Setup checked on 17 November 2026:** the user made the MaxwellFDFD link and
 signed in to MATLAB (online licensing). `matlab -batch` runs, the C compiler
