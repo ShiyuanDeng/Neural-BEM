@@ -2,6 +2,8 @@
 
 ## State at handoff
 
+**Superseded:** both rows are complete and no BRG run is active; read the [current handoff](../05_run_brg_without_curvature_limit/handoff.md).
+
 Snapshot: **2026-11-18T00:18:36.687219+00:00**. The user requested a fresh-chat handoff while the
 existing detached campaign continues. **Do not launch a second campaign,
 rerun the pilot, stop these workers, or start any other experiment.** The
