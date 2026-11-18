@@ -1,0 +1,348 @@
+{
+ "note": "Information only: data and exact series; never fed to a fit.",
+ "input": {
+  "path": "/home/drdeng/neural_bem_external/CC-CSI/FresnelData/The_first_opus/dielTM_dec8f.txt",
+  "sha256": "e5c56f595f28e674fe93793587dc4c53af0b5c4ee2571043d61f88e6218f0acd",
+  "rows_used": {
+   "frequencies_ghz": [
+    1.0,
+    2.0,
+    3.0,
+    4.0,
+    5.0,
+    6.0,
+    7.0,
+    8.0
+   ],
+   "row_count": 14112,
+   "rows_0based": [
+    {
+     "start": 0,
+     "stop": 14104,
+     "step": 8,
+     "count": 1764
+    },
+    {
+     "start": 1,
+     "stop": 14105,
+     "step": 8,
+     "count": 1764
+    },
+    {
+     "start": 2,
+     "stop": 14106,
+     "step": 8,
+     "count": 1764
+    },
+    {
+     "start": 3,
+     "stop": 14107,
+     "step": 8,
+     "count": 1764
+    },
+    {
+     "start": 4,
+     "stop": 14108,
+     "step": 8,
+     "count": 1764
+    },
+    {
+     "start": 5,
+     "stop": 14109,
+     "step": 8,
+     "count": 1764
+    },
+    {
+     "start": 6,
+     "stop": 14110,
+     "step": 8,
+     "count": 1764
+    },
+    {
+     "start": 7,
+     "stop": 14111,
+     "step": 8,
+     "count": 1764
+    }
+   ],
+   "rows_sha256": "bdb738f41b77284f4e11117f36d23dac9afcf77113496685e80c311b8bad0140"
+  }
+ },
+ "provenance": {
+  "utc": "2026-11-18T01:30:54+00:00",
+  "commit": "1d96e64d311e41303ad16744eaecef9f309ec597",
+  "solver_source": "checkout solvers/",
+  "solver_snapshot_commit": null,
+  "checkout_solver_dirty": false,
+  "solver_used_dirty": false,
+  "command": "/home/drdeng/miniconda3/envs/EMNerf/bin/python csi_cylinder_info.py --fit /home/drdeng/Neural_SDF_BEM_AD_organised/results/bem/baseline_data/csi_adapter/2026-11-18/first_fit/dielTM_dec8f/cuda/attempt_01/fit.json --fit-metrics /home/drdeng/Neural_SDF_BEM_AD_organised/results/bem/baseline_data/csi_adapter/2026-11-18/first_fit/dielTM_dec8f/cuda/attempt_01/metrics.json --out /home/drdeng/Neural_SDF_BEM_AD_organised/results/bem/baseline_data/csi_adapter/2026-11-18/cylinder_info/cylinder_info.json",
+  "memory_available_gib": 20.774993896484375,
+  "load_average": [
+   42.02490234375,
+   36.904296875,
+   29.8095703125
+  ],
+  "matlab_processes": 43
+ },
+ "scaling": "each frequency divided by its data norm, equal weights 1/8; loss = half the mean squared relative residual",
+ "bem_fit": {
+  "params": {
+   "x_mm": 2.9826876958273028,
+   "y_mm": 29.24125783994178,
+   "radius_mm": 19.045333861204572,
+   "permittivity": 2.193731177092113
+  },
+  "relative_residual": [
+   0.44522688860830045,
+   0.3326093446225492,
+   0.34720230150425463,
+   0.33203189862130333,
+   0.42344299503677585,
+   0.4004702228286118,
+   0.4592263695460383,
+   0.5044505170491238
+  ],
+  "loss": 0.08404313314985402
+ },
+ "nominal": {
+  "params": {
+   "x_mm": 0.0,
+   "y_mm": 30.0,
+   "radius_mm": 15.0,
+   "permittivity": 3.0
+  },
+  "relative_residual": [
+   0.47826269053909476,
+   0.23059694596231955,
+   0.24514120514370538,
+   0.27684011299818867,
+   0.30451899697927187,
+   0.3388309258869983,
+   0.3711498747573295,
+   0.40396674864914567
+  ],
+  "loss": 0.05794527441739042
+ },
+ "nominal_size_at_fitted_centre": {
+  "params": {
+   "x_mm": 2.9826876958273028,
+   "y_mm": 29.24125783994178,
+   "radius_mm": 15.0,
+   "permittivity": 3.0
+  },
+  "relative_residual": [
+   0.4780851941230152,
+   0.21391181104442425,
+   0.21673352593214631,
+   0.25177916239582954,
+   0.2744407389578614,
+   0.31182978854545557,
+   0.33112155119705877,
+   0.3683172980383967
+  ],
+  "loss": 0.050159033346822784
+ },
+ "least_squares": {
+  "from_nominal": {
+   "start": {
+    "x_mm": 0.0,
+    "y_mm": 30.0,
+    "radius_mm": 15.0,
+    "permittivity": 3.0
+   },
+   "end": {
+    "x_mm": 1.9392917874004036,
+    "y_mm": 26.19117257260057,
+    "radius_mm": 15.266217945462282,
+    "permittivity": 3.0525481175316154
+   },
+   "loss": 0.03754903743449769,
+   "relative_residual": [
+    0.5281619032027592,
+    0.17078384791710113,
+    0.1798518266048891,
+    0.18083320296295297,
+    0.20109575037044466,
+    0.24146659054993702,
+    0.25495210887119224,
+    0.25272309042535795
+   ],
+   "status": 2,
+   "message": "`ftol` termination condition is satisfied.",
+   "evaluations": 10,
+   "seconds": 1.6039625210687518
+  },
+  "from_bem_fit": {
+   "start": {
+    "x_mm": 2.9826876958273028,
+    "y_mm": 29.24125783994178,
+    "radius_mm": 19.045333861204572,
+    "permittivity": 2.193731177092113
+   },
+   "end": {
+    "x_mm": 1.9392920311478852,
+    "y_mm": 26.191171918322336,
+    "radius_mm": 15.266221809563698,
+    "permittivity": 3.052547308977395
+   },
+   "loss": 0.03754903743275168,
+   "relative_residual": [
+    0.5281619708556732,
+    0.1707838744900947,
+    0.1798519324301741,
+    0.18083320259649027,
+    0.20109574863287544,
+    0.24146659627787795,
+    0.254952080163678,
+    0.2527228808474444
+   ],
+   "status": 2,
+   "message": "`ftol` termination condition is satisfied.",
+   "evaluations": 11,
+   "seconds": 1.7654191199690104
+  }
+ },
+ "gpu_stages": [
+  {
+   "stage": "ladder_1_real",
+   "M": 3,
+   "accepted_steps": 22,
+   "equivalent_radius_mm": 22.894800150194218,
+   "permittivity": 1.731284761282956,
+   "centre_mm": [
+    2.629960396946298,
+    34.08126960255257
+   ],
+   "loss_at_end": 0.0909415672211999,
+   "loss_at_entry": 0.22780353365364142,
+   "frequencies": null
+  },
+  {
+   "stage": "ladder_2_real",
+   "M": 6,
+   "accepted_steps": 19,
+   "equivalent_radius_mm": 18.843931041806275,
+   "permittivity": 2.1367257378475855,
+   "centre_mm": [
+    3.0811959198019716,
+    29.76636465659913
+   ],
+   "loss_at_end": 0.08479140543361949,
+   "loss_at_entry": 0.10831853712531914,
+   "frequencies": null
+  },
+  {
+   "stage": "ladder_3_real",
+   "M": 9,
+   "accepted_steps": 7,
+   "equivalent_radius_mm": 18.97355109487879,
+   "permittivity": 2.147363555014084,
+   "centre_mm": [
+    3.232802274359227,
+    30.14369752747919
+   ],
+   "loss_at_end": 0.0772697490846205,
+   "loss_at_entry": 0.08198025619689887,
+   "frequencies": null
+  },
+  {
+   "stage": "ladder_4_real",
+   "M": 12,
+   "accepted_steps": 0,
+   "equivalent_radius_mm": 18.97355109487879,
+   "permittivity": 2.147363555014084,
+   "centre_mm": [
+    3.232802274359227,
+    30.14369752747919
+   ],
+   "loss_at_end": 0.07542870080566139,
+   "loss_at_entry": 0.07542870080566139,
+   "frequencies": null
+  },
+  {
+   "stage": "full_1_M11",
+   "M": 11,
+   "accepted_steps": 13,
+   "equivalent_radius_mm": 19.045040126466617,
+   "permittivity": 2.193731177092113,
+   "centre_mm": [
+    2.9830584689558197,
+    29.24149357147996
+   ],
+   "loss_at_end": 0.08405702483299311,
+   "loss_at_entry": 0.09962691588554269,
+   "frequencies": null
+  },
+  {
+   "stage": "full_2_M15",
+   "M": 15,
+   "accepted_steps": 0,
+   "equivalent_radius_mm": 19.045040126466617,
+   "permittivity": 2.193731177092113,
+   "centre_mm": [
+    2.9830584689558197,
+    29.24149357147996
+   ],
+   "loss_at_end": 0.08405702483299311,
+   "loss_at_entry": 0.08405702483299311,
+   "frequencies": null
+  },
+  {
+   "stage": "full_3_M19",
+   "M": 19,
+   "accepted_steps": 0,
+   "equivalent_radius_mm": 19.045040126466617,
+   "permittivity": 2.193731177092113,
+   "centre_mm": [
+    2.9830584689558197,
+    29.24149357147996
+   ],
+   "loss_at_end": 0.08405702483299311,
+   "loss_at_entry": 0.08405702483299311,
+   "frequencies": null
+  },
+  {
+   "stage": "full_4_M25",
+   "M": 25,
+   "accepted_steps": 0,
+   "equivalent_radius_mm": 19.045333861204572,
+   "permittivity": 2.193731177092113,
+   "centre_mm": [
+    2.9826876958273028,
+    29.24125783994178
+   ],
+   "loss_at_end": 0.08404313314985404,
+   "loss_at_entry": 0.08404313314985404,
+   "frequencies": null
+  },
+  {
+   "stage": "full_5_M31",
+   "M": 31,
+   "accepted_steps": 0,
+   "equivalent_radius_mm": 19.045333861204572,
+   "permittivity": 2.193731177092113,
+   "centre_mm": [
+    2.9826876958273028,
+    29.24125783994178
+   ],
+   "loss_at_end": 0.08404313314985404,
+   "loss_at_entry": 0.08404313314985404,
+   "frequencies": null
+  },
+  {
+   "stage": "full_6_M37",
+   "M": 37,
+   "accepted_steps": 0,
+   "equivalent_radius_mm": 19.045333861204572,
+   "permittivity": 2.193731177092113,
+   "centre_mm": [
+    2.9826876958273028,
+    29.24125783994178
+   ],
+   "loss_at_end": 0.08404313314985404,
+   "loss_at_entry": 0.08404313314985404,
+   "frequencies": null
+  }
+ ],
+ "seconds": 3.6549869813024998
+}

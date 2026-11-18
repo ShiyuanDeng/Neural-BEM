@@ -6,6 +6,7 @@ the simulated table, the row permutation, mismatch per frequency at two resoluti
 solver's own wave radius and series loss at 8 GHz, and one ragged-vs-rectangular B5/B8
 evaluation at the start circle.
 """
+from csi_runtime import ROOT, provenance, peak_memory_gib  # noqa: E402  first: pins BLAS/OpenMP threads before numpy loads
 import argparse
 import csv
 import json
@@ -14,7 +15,6 @@ from pathlib import Path
 
 import numpy as np
 
-from csi_runtime import ROOT, provenance, peak_memory_gib  # noqa: E402  (sets paths and pins)
 from bem_inverse import Execution, FourierCurve
 from bem_inverse.a1_geometry import EPS, WaveArrays
 from bem_inverse.b5_residual import evaluate, evaluate_blocks

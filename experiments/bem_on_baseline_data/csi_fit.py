@@ -16,6 +16,7 @@ The fit never reads truth. Scoring against truth runs after ``fit`` returns, wit
 ``experiments/comparison/scoring.py``. Rerunning the same command skips a finished case; an
 unfinished attempt is kept and a new attempt starts from the start (no tuning reruns).
 """
+from csi_runtime import ROOT, memory_available_gib, peak_memory_gib, provenance  # noqa: E402  first: pins BLAS/OpenMP threads before numpy loads
 import argparse
 from dataclasses import asdict, dataclass, replace
 import hashlib
@@ -29,7 +30,6 @@ from pathlib import Path
 
 import numpy as np
 
-from csi_runtime import ROOT, memory_available_gib, peak_memory_gib, provenance  # noqa: E402
 from bem_inverse import Execution, FourierCurve, Problem
 from bem_inverse.forward_solvers.modal_muller import ModalMuller, ModalSettings, forward_solve
 from bem_inverse.io import curve_from, write
@@ -44,7 +44,7 @@ BOUNDS_M = ((-.3, -.3), (.3, .3))
 EPSILON, MINIMUM_START = 1e-3, .05          # the comparison's weak-scatterer start (MR-001)
 WALL = dict(cpu=120., cuda=3600.)           # CPU pass stops at 120 s and waits for the GPU pass
 THREADS = dict(cpu=1, cuda=4)               # CPU: one thread per fit; GPU: the default's 4
-START_MEMORY_GIB, GUARD_MEMORY_GIB = 16., 14.
+START_MEMORY_GIB, GUARD_MEMORY_GIB = 16.5, 14.   # start leaves >= 14.5 GiB after a ~2 GiB peak
 MEASURED_CASE = 'dielTM_dec8f'
 # Dataset-level settings, fixed before any fit (coordinator, 18 Nov 2026). Never per case.
 # Simulated TG-002 tables: 1-3 GHz only, the user's answer to the 1% rule ("supply less
