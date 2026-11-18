@@ -1,5 +1,7 @@
 # Coordinate the final comparison
 
+Read the [short report on the results and their limits](final_comparison_report.md).
+
 This document tracks four methods toward one final comparison: our BEM
 inverse, GauGal, BRG and the CSI family. For each method it states the
 settings, assumptions and unknowns, and it sets how subagents share the work.
