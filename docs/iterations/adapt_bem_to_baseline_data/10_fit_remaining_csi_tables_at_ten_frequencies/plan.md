@@ -59,4 +59,28 @@ fit; at most about 5 MB committed.
 
 ## Commands
 
-The runner writes the exact commands here before its first run.
+From the repository root. Each command starts one detached GPU fit.
+Launch the next only after a result file exists, the result is recorded and
+pushed, a slot is free, and at least 16.5 GiB is available. One fit at a time
+in this activity leaves room for the other session's Aphex Twin fit.
+No old fit, data check or dry plan is rerun. No repository code changes.
+
+```bash
+setsid nohup /home/drdeng/miniconda3/envs/EMNerf/bin/python -B experiments/bem_on_baseline_data/csi_ten_frequency.py fit --case peanut__c4 --device cuda > results/bem/baseline_data/csi_ten_frequency/2026-11-18/logs/peanut__c4_cuda.log 2>&1 < /dev/null &
+setsid nohup /home/drdeng/miniconda3/envs/EMNerf/bin/python -B experiments/bem_on_baseline_data/csi_ten_frequency.py fit --case asymmetric__c4 --device cuda > results/bem/baseline_data/csi_ten_frequency/2026-11-18/logs/asymmetric__c4_cuda.log 2>&1 < /dev/null &
+setsid nohup /home/drdeng/miniconda3/envs/EMNerf/bin/python -B experiments/bem_on_baseline_data/csi_ten_frequency.py fit --case c_shape__c4 --device cuda > results/bem/baseline_data/csi_ten_frequency/2026-11-18/logs/c_shape__c4_cuda.log 2>&1 < /dev/null &
+setsid nohup /home/drdeng/miniconda3/envs/EMNerf/bin/python -B experiments/bem_on_baseline_data/csi_ten_frequency.py fit --case cross__c4 --device cuda > results/bem/baseline_data/csi_ten_frequency/2026-11-18/logs/cross__c4_cuda.log 2>&1 < /dev/null &
+setsid nohup /home/drdeng/miniconda3/envs/EMNerf/bin/python -B experiments/bem_on_baseline_data/csi_ten_frequency.py fit --case cog__c4 --device cuda > results/bem/baseline_data/csi_ten_frequency/2026-11-18/logs/cog__c4_cuda.log 2>&1 < /dev/null &
+setsid nohup /home/drdeng/miniconda3/envs/EMNerf/bin/python -B experiments/bem_on_baseline_data/csi_ten_frequency.py fit --case aphex_twin__c4 --device cuda > results/bem/baseline_data/csi_ten_frequency/2026-11-18/logs/aphex_twin__c4_cuda.log 2>&1 < /dev/null &
+```
+
+After each returned fit, score its saved stage curves and update the report
+with this temporary reporting command. It reads saved results and runs no solve.
+
+```bash
+PYTHONPATH=experiments/bem_on_baseline_data:solvers:. /home/drdeng/miniconda3/envs/EMNerf/bin/python -B /tmp/ten_frequency_remaining_report.py
+```
+
+The report reads activity 08's four results and all ten five-frequency
+references. Only the six new stage curves need scoring. Plot once all six
+new fits are recorded. The figure is checked before the final push.
