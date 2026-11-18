@@ -105,6 +105,8 @@ activity results):
   says the user asked it "to monitor machine use and adjust running/queued
   tasks every 10 minutes". It sends allocations into this pane; they arrive
   as pasted text. It sets how many fits may run, not what they compute.
+  At 02:22 it sent a ceiling of four fits straight to `bem-b1`, because
+  this pane held typed input; `bem-b1` reports such changes in its pane.
 - The baseline coordinator (pane `w1:p1`) relays user decisions into this
   pane, marked "not from the user". Read the user's own words in its pane
   before acting on one, and record where they were given.
@@ -528,6 +530,8 @@ data convention is in doubt.
 | 18 Nov, 02:11 | `bem-b1` restarts its manifest watcher and puts a file lock with retry around its commits | The running watcher held an older report writer that would overwrite the fit rows in `results.md`. Two fits and the watcher commit in one checkout and would collide on the git index |
 
 | 18 Nov, 02:12 | A BRG manifest that does not list all 37 data files means "inputs pending", not a failed check. `bem-b1`'s watcher keeps watching and the queue does not wait | Both `aphex_twin` folders hold a manifest with two log files and no data: BRG's wrapper stopped at 02:09 on "No strictly interior diagnostic point with 0.01 clearance". The baseline coordinator already records it and plans a rerun, so no message was sent |
+
+| 18 Nov, 02:23 | B1 concurrency ceiling of four fits accepted. `bem-b1` paused only its scheduler at 02:22, let the two running fits end, and restarts the queue at four | The resource monitor sent the new ceiling straight to `bem-b1` at about 02:22, with the same memory rule and no change to settings, checks or row order. 36 GB was available and a fit peaks at 2.24 GiB, so four fits take about 9 GiB. No running fit was interrupted |
 
 ## Waiting on the user
 
