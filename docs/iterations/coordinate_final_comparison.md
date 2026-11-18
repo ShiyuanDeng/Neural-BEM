@@ -120,9 +120,27 @@ its table is frozen and checks 1 to 3 passed for it.
   `csi` briefed: prepare the launcher for the seven fits, then wait.
 - 03:57 UTC: `csi-data` and `bem-watch` opened and briefed. `csi-data`
   starts with the circle.
-- Next: `csi-data` reports the circle's checks; then the ten frozen
-  tables. Tell the BEM coordinator the hashes. When a shape's checks pass,
-  release it to `csi`.
+- 03:58 UTC: `csi` ready (`3ebdc8344`): launcher
+  `experiments.baselines.csi.campaign_five_frequency`, half-integer
+  frequencies checked, no upstream change. The BEM side is ready too
+  (`8975b1edb`): results in
+  `results/bem/baseline_data/csi_five_frequency/2026-11-18/`, plan in
+  [its activity 07](adapt_bem_to_baseline_data/07_fit_csi_cases_at_five_frequencies/plan.md).
+  Its 1% checks run on the CPU, about 10 s each.
+- 04:00 UTC: circle table frozen (`81f232f15`). Against the exact series:
+  0.44, 0.17, 0.13, 0.13 and 0.18% at 0.5, 1, 1.5, 2 and 2.5 GHz, all
+  under 1%. The 1 and 2 GHz rows reproduce the old table exactly. The
+  other nine follow one by one.
+- 04:00 UTC: go to `csi`, with a standing rule: it releases each of its
+  seven shapes itself once the table is frozen, its hash matches, and the
+  BEM side's check file passes 1% at all five frequencies on the same
+  hash. The BEM runner picks up each frozen table by itself as well.
+- Agents send reports into this pane as text starting "From <name>".
+- Next: the ten frozen tables and their hashes in the
+  [data note](csi_adaptation/06_prepare_five_frequency_data/data_note.md);
+  `csi`'s measured seconds per iteration; the BEM checks and fits from
+  `bem-watch`. Act only on a failed check or a shape above 1%: ask the
+  user.
 
 **Estimates, scaled and not measured.** Re-time after the first 100
 iterations.
@@ -717,6 +735,7 @@ needs it, and recorded here.
 | 18 Nov | Three checks before any fit: the new driver reproduces 1 and 2 GHz to 1e-9; the circle is within 1% of the exact series at all five frequencies; our forward is within 1% on each true shape. Above 1%, the shape is not fitted and the user is asked | The 1% rule is the one the user agreed for the simulated data. 0.5 GHz is new: a 600 mm wavelength against a five-cell absorbing border |
 | 18 Nov | CSI launches a shape only after its table is frozen and its checks passed | A CSI fit costs about 1 h 40 min; the checks cost minutes |
 | 18 Nov | Three agents: `csi-data` (astra) makes the data, `csi` (sol) runs the seven fits, `bem-watch` (sol) watches the BEM side read only | The user asked for a monitor per run and offered astra for the data. The data and its check at 0.5 GHz are the hard part; running and watching are easy |
+| 18 Nov | `csi` applies the release rule itself, shape by shape, from the saved check files; the BEM runner picks up frozen tables itself | The rule is mechanical, and a chat that pauses must not hold up the fits. A failed check still comes to the coordinator |
 | 18 Nov | CSI activities 06 (prepare the five-frequency data) and 07 (run the seven fits) | Activity 05 has results, so the change of band starts new numbers |
 
 **Pushed result files:** about 654 MB (561 MB CSI, 93 MB BRG) were pushed
