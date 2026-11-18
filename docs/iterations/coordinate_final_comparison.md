@@ -72,14 +72,16 @@ again at about 03:40 UTC.
 - How many run at once: the resource monitor's process has exited and
   left `results/csi/resource_policy.json` at zero. So the launcher reads
   its own `ceiling.json` (three) and starts a fit only if 14 + 2 GiB
-  stays free after 8 GiB is reserved per fit. Today that allows two.
+  stays free after 8 GiB is reserved per fit. That allowed two fits at
+  first and three from 12:04 UTC, when the BEM side's fits had ended.
 - To cut the queue without stopping a fit: set `max_csi_fits` to 0 in
   that `ceiling.json`. The `STOP` file stops running fits too; do not
   use it unless the user says so.
 - If the launcher dies: fits already running continue. Restart it with
   `--resume` (command in the plan); it never restarts a launched fit.
-- Forecast, not a limit: about 2.5 h per fit; star and hook near
-  14:30 UTC, the first four near 17:00, all ten near midnight.
+- Forecast, not a limit: about 2.5 to 3 h per fit; star and hook near
+  14:45 UTC, the first four near 17:30, all ten near 22:30 with three at
+  a time.
 - After the run: write `results.md` and a figure for activity 08, fill
   "Table C, simulated shapes: ten frequencies" below, tell the BEM
   coordinator (`w2:p1`).
@@ -271,6 +273,9 @@ its table is frozen and checks 1 to 3 passed for it.
   ten quarter-GHz values. The other nine shapes were released at 12:00;
   `hook` started. Two fits run at once under the memory rule.
 - 12:02 UTC: the BEM coordinator is told where the results go.
+- 12:04 UTC: `circle` started; three fits run. Each uses about 7.6 GiB.
+- 12:07 UTC, from the BEM coordinator: BEM at ten frequencies is done on
+  all ten shapes (0.17 to 5.77%); nothing runs on the BEM side.
 - Next: each fit as it ends (the launcher pushes it). Then `results.md`,
   the figure and the ten-frequency table. Ask the user only on a failed
   or stuck fit that needs a decision.
@@ -498,20 +503,27 @@ Same ten shapes and layout, 0.25 to 2.5 GHz in 0.25 GHz steps, one frozen
 table per shape for both methods. The five-frequency block above stays as
 reported. BEM numbers are read from
 `results/bem/baseline_data/csi_ten_frequency/2026-11-18/<shape>__c4/cuda/attempt_01/metrics.json`
-(12:03 UTC); the BEM coordinator owns them.
+(12:07 UTC); the BEM coordinator owns them.
 
 | Shape | BEM area error | BEM contrast found | BEM time | MF-CC-CSI area error | CSI at 0.3 / 0.7 of the peak | CSI mean permittivity | CSI time |
 |---|---:|---:|---:|---:|---:|---:|---:|
 | star | 1.02% | 4.0013 | 62 s | running | | | |
 | hook | 2.44% | 4.0032 | 164 s | running | | | |
-| circle | 0.17% | 4.0011 | 130 s | queued | | | |
+| circle | 0.17% | 4.0011 | 130 s | running | | | |
 | kite | 3.21% | 4.0015 | 160 s | queued | | | |
 | asymmetric | 0.93% | 4.0019 | 55 s | queued | | | |
 | cross | 1.07% | 4.0009 | 47 s | queued | | | |
 | cog | 1.45% | 4.0013 | 36 s | queued | | | |
 | c_shape | 1.60% | 4.0028 | 75 s | queued | | | |
 | peanut | 1.19% | 4.0018 | 86 s | queued | | | |
-| aphex_twin | not in yet | | | queued | | | |
+| aphex_twin | 5.77% | 3.9981 | 268 s | queued | | | |
+
+- BEM, all ten in (12:07 UTC, reported by the BEM coordinator and read
+  from its files): every fit completed its schedule, on the same table
+  hashes. Mean 1.88%, median 1.32%. At five frequencies the same ten gave
+  mean 2.71%, median 2.47%.
+- BEM side's table beside five frequencies:
+  [its activity 10](adapt_bem_to_baseline_data/10_fit_remaining_csi_tables_at_ten_frequencies/results.md).
 
 ## Method cards
 
