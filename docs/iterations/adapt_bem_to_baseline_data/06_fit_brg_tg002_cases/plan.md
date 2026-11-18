@@ -119,3 +119,11 @@ review stops remain unchanged.
 `python experiments/bem_on_baseline_data/b1_run.py watch-checks` watches only
 for these manifests, checks newly available cases under the same guard, and
 stops once all case checks are recorded. It never starts an inverse fit.
+
+Live watcher handoff: see
+[`watcher_handoff.json`](../../../../results/bem/baseline_data/brg_tg002/2026-11-18/watcher_handoff.json)
+for the recorded PID and command. Check that PID before starting another
+watcher. The process writes its log under the owned `local/` folder and
+commits/pushes each newly completed check. It cannot launch inverse fits.
+Capacity after the CSI batch is recorded separately in
+[`capacity_after_csi_batch.json`](../../../../results/bem/baseline_data/brg_tg002/2026-11-18/capacity_after_csi_batch.json).
