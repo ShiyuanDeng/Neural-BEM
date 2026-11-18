@@ -65,7 +65,7 @@ def process_sample():
             if 'b1_run.py fit --case' in cmd:
                 roots[pid] = 'b1'
             elif 'csi_fit.py' in cmd and '--case' in cmd:
-                roots[pid] = 'bem' if '--device cuda' in cmd else 'check'
+                roots[pid] = 'bem'
             elif 'csi_forward_check.py' in cmd:
                 roots[pid] = 'check'
         elif p['comm'] == 'MATLAB':
@@ -101,10 +101,13 @@ def progress():
             failed_checks.append(path.stem)
     bem_done = sorted({p.relative_to(BEM).parts[0]
                        for p in BEM.glob('*/cuda/attempt_*/metrics.json')})
+    bem_cpu_done = sorted({p.relative_to(BEM).parts[0]
+                           for p in BEM.glob('*/cpu/attempt_*/metrics.json')})
     b1_done = {tuple(p.relative_to(B1).parts[:2]) for p in B1.glob('*/*/attempt_*/metrics.json')}
     csi_done = {s: read(CSI/s/'outcome.json') for s in SHAPES[3:] if (CSI/s/'outcome.json').exists()}
     return dict(tables_ready=ready, checks_passed=checked, checks_failed=failed_checks,
-                bem_outcomes=bem_done, b1_outcomes=len(b1_done), csi_outcomes=csi_done,
+                bem_outcomes=bem_done, bem_cpu_outcomes=bem_cpu_done,
+                b1_outcomes=len(b1_done), csi_outcomes=csi_done,
                 csi_releases=read(CSI/'releases.json', {}).get('releases', []),
                 csi_status=read(CSI/'status.json', {}))
 
@@ -118,11 +121,15 @@ def sample():
                 jobs=jobs, launchers=launchers, progress=progress())
 
 
+def bem_finished(p):
+    return len(p['bem_outcomes']) == 10 and set(p['bem_cpu_outcomes']) == set(p['bem_outcomes'])
+
+
 def allocate(s):
     """Reserve growth of existing workers plus every permitted new worker."""
     p = s['progress']
     targets = dict(data=int(len(p['tables_ready']) < 10), csi=0,
-                   b1=int(p['b1_outcomes'] < 40), bem=int(len(p['bem_outcomes']) < 10),
+                   b1=int(p['b1_outcomes'] < 40), bem=int(not bem_finished(p)),
                    check=int(len(p['checks_passed']) + len(p['checks_failed']) < 10))
     jobs = {kind: [j for j in s['jobs'] if j['kind'] == kind] for kind in RESERVE}
 
@@ -162,7 +169,7 @@ def update_policy(s, allocation):
                   authority='User delegated overnight resource management in this session; BEM coordinator confirmed shared-file launch control and CPU-only forward checks.',
                   scope='New launches only. Never interrupt, restart or time-stop a fit.',
                   floor_gib=14, margin_gib=2,
-                  bem_scope='B1 and simulated-C GPU fits share max_bem_fits; allow one C fit alongside B1 when resources permit. CPU checks use max_cpu_checks, not a GPU slot.',
+                  bem_scope='B1 fits, simulated-C GPU fits and their CPU cross-check fits share max_bem_fits. Forward data checks use max_cpu_checks.',
                   bem_application='BEM coordinator confirmed its runner re-reads this file before every launch.',
                   cpu_check_scope='One CPU-only forward check at a time as tables freeze; reserve 2 GiB and one thread. No GPU wait.',
                   worker_reservation_gib=dict(matlab_data=3, mf_cc_csi_fit=6.6, bem_fit=4, cpu_forward_check=2),
@@ -190,7 +197,8 @@ def watch():
                 s = sample()
                 a = allocate(s)
                 p = s['progress']
-                phase = (len(p['tables_ready']), len(p['checks_passed']), len(p['bem_outcomes']), p['b1_outcomes'])
+                phase = (len(p['tables_ready']), len(p['checks_passed']), len(p['bem_outcomes']),
+                         len(p['bem_cpu_outcomes']), p['b1_outcomes'])
                 policy = read(POLICY, {})
                 lower = any(a[k] < policy.get(k, 0) for k in
                             ('max_data_jobs', 'max_csi_fits', 'max_bem_fits', 'max_cpu_checks'))
@@ -198,7 +206,7 @@ def watch():
                     if not update_policy(s, a):
                         break
                     last_change, last_phase = time.monotonic(), phase
-                complete = len(p['bem_outcomes']) == 10 and p['b1_outcomes'] == 40 and len(p['csi_outcomes']) == 7
+                complete = bem_finished(p) and p['b1_outcomes'] == 40 and len(p['csi_outcomes']) == 7
                 state = 'all_requested_outcomes_saved' if complete else 'watching'
                 alerts = []
                 if p['checks_failed']:

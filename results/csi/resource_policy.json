@@ -1,8 +1,8 @@
 {
   "max_data_jobs": 0,
-  "max_csi_fits": 2,
+  "max_csi_fits": 3,
   "max_bem_fits": 1,
-  "updated": "2026-11-18T04:10:09.133554+00:00",
+  "updated": "2026-11-18T04:51:06.583427+00:00",
   "authority": "User delegated overnight resource management in this session; BEM coordinator confirmed shared-file launch control and CPU-only forward checks.",
   "scope": "New launches only. Never interrupt, restart or time-stop a fit.",
   "floor_gib": 14,
@@ -14,7 +14,7 @@
     "cpu_forward_check": 2
   },
   "memory_rule": "Before every launch, subtract the new worker reservation and outstanding growth reservations for active workers across both coordinators from current MemAvailable. Launch only if at least floor_gib + margin_gib remains. Count existing worker memory only through its outstanding growth, since current MemAvailable already excludes resident memory. Ceilings do not override this check.",
-  "bem_scope": "B1 and simulated-C GPU fits share max_bem_fits; allow one C fit alongside B1 when resources permit. CPU checks use max_cpu_checks, not a GPU slot.",
+  "bem_scope": "B1 fits, simulated-C GPU fits and their CPU cross-check fits share max_bem_fits. Forward data checks use max_cpu_checks.",
   "bem_application": "BEM coordinator confirmed its runner re-reads this file before every launch.",
   "cpu_basis": {
     "logical_cpus": 24,
@@ -46,55 +46,50 @@
   "cpu_check_scope": "One CPU-only forward check at a time as tables freeze; reserve 2 GiB and one thread. No GPU wait.",
   "monitor_enabled": true,
   "monitor": {
-    "pid": 983625,
+    "pid": 1022391,
     "status_file": "/home/drdeng/Neural_SDF_BEM_AD_organised/results/resource_management/2026-11-18/status.json",
     "heartbeat_seconds": 60,
     "resource_recheck_seconds": 600
   },
   "latest_allocation": {
     "max_data_jobs": 0,
-    "max_csi_fits": 2,
+    "max_csi_fits": 3,
     "max_bem_fits": 1,
     "max_cpu_checks": 0,
-    "reserved_growth_and_new_gib": 7.309,
-    "projected_available_gib": 20.305,
-    "estimated_cores": 18,
+    "reserved_growth_and_new_gib": 8.033,
+    "projected_available_gib": 18.717,
+    "estimated_cores": 19,
     "target_slots": {
       "data": 0,
-      "csi": 2,
+      "csi": 3,
       "b1": 0,
       "bem": 1,
       "check": 0
     }
   },
   "latest_sample": {
-    "utc": "2026-11-18T04:10:09.133554+00:00",
-    "available_gib": 27.613590240478516,
+    "utc": "2026-11-18T04:51:06.583427+00:00",
+    "available_gib": 26.750579833984375,
     "load": [
-      14.81396484375,
-      11.9169921875,
-      7.189453125
+      17.4931640625,
+      17.9970703125,
+      17.39501953125
     ],
     "jobs": [
       {
         "pid": 982793,
         "kind": "csi",
-        "rss_gib": 5.1589
+        "rss_gib": 5.2589
       },
       {
         "pid": 990291,
         "kind": "csi",
-        "rss_gib": 5.1741
+        "rss_gib": 5.2533
       },
       {
-        "pid": 995519,
-        "kind": "bem",
-        "rss_gib": 1.7913
-      },
-      {
-        "pid": 1000383,
-        "kind": "bem",
-        "rss_gib": 1.7668
+        "pid": 1005370,
+        "kind": "csi",
+        "rss_gib": 5.2547
       }
     ]
   },
