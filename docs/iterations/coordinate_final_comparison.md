@@ -7,9 +7,9 @@ settings, assumptions and unknowns, and it sets how subagents share the work.
 The coordinator (the main session) owns this file. Subagents never edit it.
 They report back, and the coordinator updates the status board and the cards.
 
-Last updated: 18 November 2026, 02:05 UTC (CSI batch 1 done at eight
-frequencies; nothing launched; review with the user pending; BRG completion
-run going).
+Last updated: 18 November 2026, 02:30 UTC (CSI batch 1 done at eight
+frequencies; CSI waits for the user's frequency choice; BRG run without the
+curvature limit started).
 
 ## Restart notes (18 November 2026)
 
@@ -27,12 +27,22 @@ The user gave both panes full access. A pane started from scratch begins in
 Codex's default sandbox, where MATLAB and git do not work. Only the user
 grants full access; the coordinator does not.
 
-**Running, detached. Do not launch a second copy.**
+**Running, detached. Do not launch a second copy.** (state at 02:30 UTC)
 
-| Campaign | Launcher | State file | Stop |
-|---|---|---|---|
-| CSI, 10 simulated TG-002 cases | `python -m experiments.baselines.csi.campaign` (PID 708268 at 00:10 UTC) | `results/csi/tg002/2026-11-17_campaign/status.json` | Create `STOP` in that folder |
-| BRG on 20 TG-002 cases, provisional data | `experiments/baselines/brg/run_tg002.py --campaign` (PID 727204 at 00:10 UTC) | `results/brg/tg002_shapes/2026-11-17/campaign.json` | See "State at handoff" in BRG 04 results |
+| Campaign | Launcher | State file |
+|---|---|---|
+| BRG shipped limit, completion of the 20 cases | `run_tg002_control.py --row shipped --campaign` (PID 821706) | `results/brg/tg002_completion/2026-11-18/campaign.json` |
+| BRG shipped limit, aphex_twin reruns after the wrapper fix | `run_tg002_control.py --row retry --campaign` (PID 878996) | `results/brg/tg002_aphex_retry/2026-11-18/campaign.json` |
+| BRG without the curvature limit (activity 05), 20 cases | `run_tg002_control.py --row control --campaign` (PID 894852) | `results/brg/tg002_no_curvature/2026-11-18/campaign.json` |
+| CSI | none running. The old launcher (PID 708268) exited by itself at 02:00 UTC after batch 1. The next launch waits for the user's frequency choice | `results/csi/tg002/2026-11-17_campaign/status.json` (final) |
+
+Each BRG folder has a `STOP` file path for a user-requested stop. None of
+these runs stops on time.
+
+**Workers.** A resource monitor (pane `w3:p1`, set up by the user about
+02:10 UTC) allocates workers across both sides every 10 minutes. It set BRG
+to at most four fits (`results/brg/resource_policy.json`, 02:20 UTC), with
+the 14 GiB floor. The coordinator adds no resource loop of its own.
 
 **No result-generating run is stopped because of a time limit, unless the
 user says so** (user, 18 November 01:24 UTC, see "Who decides"). A stuck or
@@ -334,13 +344,14 @@ Rules for every table:
   5.3%. Cross: 0.09% and 24.6%. Cog at contrast 0.5: 0.23%. With hook (58%
   and 52%) and c_shape at contrast 4 (44%), 6 of 17 finished cases are
   under 5%: circle and star at both contrasts, cross and cog at contrast
-  0.5. Still to come: cog at contrast 4 (running) and both aphex_twin
-  cases, which failed at start on our wrapper's interior-point check and
-  are rerun after a wrapper fix.
+  0.5. Still to come: cog at contrast 4 (running) and aphex_twin at
+  contrast 4 (running). Both aphex_twin cases first failed at start on our
+  wrapper's interior-point check and were rerun after a wrapper fix; at
+  contrast 0.5 the rerun finished at 80%.
 - **Activity 05 (coordinator, 18 November):** the same 20 cases with the
-  curvature limit removed and nothing else changed. It may start in a free
-  BRG slot; BRG stays at two fits in total. The table then shows both BRG
-  rows.
+  curvature limit removed and nothing else changed. Started 02:28 UTC
+  with `kite__c0.5`, no time cap, data reused from 04 by hash. The table
+  then shows both BRG rows.
 - **Our BEM on BRG data (activity 03, coordinator review 17 November):**
   - Our default forward builds its incident waves from a power series that
     it refuses to use beyond about k times object radius = 17. On BRG's
