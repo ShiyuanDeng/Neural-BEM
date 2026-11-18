@@ -1,6 +1,6 @@
 # Five-frequency data results
 
-Updated 2026-11-18T04:03:33Z. Forward solves only; no inverse fit.
+Updated 2026-11-18T04:04:06Z. Forward solves only; no inverse fit.
 
 | Shape | State | Max native residual | Max reproduction relative L2 | Wall seconds |
 |---|---|---:|---:|---:|
@@ -23,3 +23,4 @@ Circle exact-series errors (all below 1%):
 | c_shape | frozen | 3.90935e-12 | 0 | 29.243 |
 | hook | frozen | 3.36317e-12 | 0 | 26.149 |
 | cross | frozen | 4.09862e-12 | 0 | 27.253 |
+| cog | frozen | 4.29418e-12 | 0 | 29.829 |

@@ -1,0 +1,139 @@
+{
+  "started_utc": "2026-11-18T04:03:36Z",
+  "command": [
+    "matlab",
+    "-batch",
+    "run('/home/drdeng/Neural_SDF_BEM_AD_organised/experiments/baselines/csi/generate_five_frequency_data.m')"
+  ],
+  "environment": {
+    "CSI_REPO": "/home/drdeng/Neural_SDF_BEM_AD_organised",
+    "CSI_UPSTREAM": "/home/drdeng/neural_bem_external/CC-CSI",
+    "CSI_OUT": "/home/drdeng/Neural_SDF_BEM_AD_organised/results/csi/tg002/2026-11-18_five_frequency_data/cog/generated",
+    "CSI_PARENT": "/home/drdeng/Neural_SDF_BEM_AD_organised/results/csi/tg002/2026-11-18_low_band_data/cog/forward/synthetic_input.txt",
+    "CSI_GEOMETRY": "/home/drdeng/Neural_SDF_BEM_AD_organised/results/csi/tg002/2026-11-18_low_band_data/cog/truth/geometry.mat",
+    "CSI_CASE": "tg002_cog_c4_TM"
+  },
+  "matlab_pid": 985125,
+  "threads": 8,
+  "upstream_commit": "73a64e163da34e63fa33f8abe196b9004f45d342",
+  "capacity_before_launch": {
+    "utc": "2026-11-18T04:03:36Z",
+    "policy": {
+      "max_data_jobs": 1,
+      "max_csi_fits": 1,
+      "max_bem_fits": 2,
+      "updated": "2026-11-18T04:03:08.548318+00:00",
+      "authority": "User delegated overnight resource management in this session; BEM coordinator confirmed shared-file launch control and CPU-only forward checks.",
+      "scope": "New launches only. Never interrupt, restart or time-stop a fit.",
+      "floor_gib": 14,
+      "margin_gib": 2,
+      "worker_reservation_gib": {
+        "matlab_data": 3,
+        "mf_cc_csi_fit": 6.6,
+        "bem_fit": 4,
+        "cpu_forward_check": 2
+      },
+      "memory_rule": "Before every launch, subtract the new worker reservation and outstanding growth reservations for active workers across both coordinators from current MemAvailable. Launch only if at least floor_gib + margin_gib remains. Count existing worker memory only through its outstanding growth, since current MemAvailable already excludes resident memory. Ceilings do not override this check.",
+      "bem_scope": "B1 and simulated-C GPU fits share max_bem_fits; allow one C fit alongside B1 when resources permit. CPU checks use max_cpu_checks, not a GPU slot.",
+      "bem_application": "BEM coordinator confirmed its runner re-reads this file before every launch.",
+      "cpu_basis": {
+        "logical_cpus": 24,
+        "data_threads_per_job": 8,
+        "estimated_cores_per_csi_fit": 5,
+        "bem_frequency_threads": 4,
+        "initial_combined_core_allowance": 22
+      },
+      "sample": {
+        "observed_at_utc": "2026-11-18T03:50:48Z",
+        "available_host_gib": 37.01,
+        "host_load_1_5_15_min": [
+          1.4,
+          1.52,
+          2.08
+        ],
+        "gpu_memory_used_mib": 2897,
+        "gpu_memory_total_mib": 32607,
+        "gpu_utilization_percent": 94,
+        "active_bem_case": "aphex_twin__c4",
+        "active_bem_row": "known",
+        "active_bem_worker_pid": 898809,
+        "active_matlab_jobs": 0
+      },
+      "rationale": "Reserve outstanding worker growth and future launches above 16 GiB; use at most 24 estimated CPU cores. Up to three CSI fits once preparation and short BEM work free capacity.",
+      "recheck": "Every ten minutes, on prerequisite completion, or immediately when a lower ceiling is needed.",
+      "notification_status": "Coordinators read this shared file. Pane notices remain unavailable outside Herdr.",
+      "max_cpu_checks": 1,
+      "cpu_check_scope": "One CPU-only forward check at a time as tables freeze; reserve 2 GiB and one thread. No GPU wait.",
+      "monitor_enabled": true,
+      "monitor": {
+        "pid": 983625,
+        "status_file": "/home/drdeng/Neural_SDF_BEM_AD_organised/results/resource_management/2026-11-18/status.json",
+        "heartbeat_seconds": 60,
+        "resource_recheck_seconds": 600
+      },
+      "latest_allocation": {
+        "max_data_jobs": 1,
+        "max_csi_fits": 1,
+        "max_bem_fits": 2,
+        "max_cpu_checks": 1,
+        "reserved_growth_and_new_gib": 14.746,
+        "projected_available_gib": 18.648,
+        "estimated_cores": 19,
+        "target_slots": {
+          "data": 1,
+          "csi": 1,
+          "b1": 1,
+          "bem": 1,
+          "check": 1
+        }
+      },
+      "latest_sample": {
+        "utc": "2026-11-18T04:03:08.548318+00:00",
+        "available_gib": 33.394412994384766,
+        "load": [
+          7.4375,
+          4.63330078125,
+          3.08544921875
+        ],
+        "jobs": [
+          {
+            "pid": 898669,
+            "kind": "b1",
+            "rss_gib": 2.5292
+          },
+          {
+            "pid": 982793,
+            "kind": "csi",
+            "rss_gib": 1.2295
+          },
+          {
+            "pid": 982997,
+            "kind": "data",
+            "rss_gib": 1.095
+          }
+        ]
+      }
+    },
+    "available_bytes": 31859589120,
+    "required_bytes": 22976200704.0,
+    "outstanding_growth_bytes": 2575106048.0,
+    "workers": [
+      {
+        "pid": 982793,
+        "reservation_bytes": 6442450944,
+        "rss_bytes": 3867344896
+      }
+    ],
+    "existing_data_jobs": 0
+  },
+  "nice": 10,
+  "time_stop": false,
+  "returncode": 0,
+  "finished_utc": "2026-11-18T04:04:05Z",
+  "wall_seconds": 29.829040300101042,
+  "cpu_seconds": 117.77,
+  "peak_rss_bytes": 2048630784,
+  "peak_family_rss_bytes": 2349211648,
+  "minimum_available_bytes": 30170091520,
+  "minimum_free_bytes": 12302540800
+}
