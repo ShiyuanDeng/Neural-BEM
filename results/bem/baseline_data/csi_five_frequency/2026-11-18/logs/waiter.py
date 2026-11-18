@@ -77,42 +77,51 @@ def git(paths, message):
     alert('push failed 20 times')
 
 
-def processes():
-    out = []
-    for d in Path('/proc').iterdir():
-        if not d.name.isdigit():
-            continue
-        try:
-            argv = (d / 'cmdline').read_bytes().split(b'\0')
-            argv = [a.decode(errors='replace') for a in argv if a]
-            ppid = int((d / 'stat').read_text().rsplit(')', 1)[1].split()[1])
-            rss = 0
-            for line in (d / 'status').read_text().splitlines():
-                if line.startswith('VmRSS:'):
-                    rss = int(line.split()[1]) / 1048576
-            out.append((int(d.name), ppid, argv, rss))
-        except Exception:
-            continue
-    return out
+CSI_DIR = str(ROOT / 'results/csi/tg002/2026-11-18_five_frequency')
+KIND_KEY = dict(data='matlab_data', csi='mf_cc_csi_fit', b1='bem_fit', bem='bem_fit', check='cpu_forward_check')
 
 
-def workers():
-    """Active BEM fit workers (B1 `_fit` and csi_fit) and MATLAB jobs, with reservations."""
-    procs = processes()
-    cmd = {p[0]: ' '.join(p[2]) for p in procs}
-    bem, other = [], []
-    for pid, ppid, argv, rss in procs:
-        line = ' '.join(argv)
-        if len(argv) >= 3 and argv[1].endswith('b1_run.py') and argv[2] == '_fit':
-            if 'b1_run.py _fit' not in cmd.get(ppid, ''):
-                bem.append((pid, rss, BEM_RESERVE, 'b1'))
-        elif len(argv) >= 3 and argv[1].endswith('csi_fit.py') and '--case' in argv:
-            if 'csi_fit.py' not in cmd.get(ppid, ''):
-                bem.append((pid, rss, BEM_RESERVE, 'csi:' + argv[argv.index('--case') + 1]))
-        elif argv and argv[0].endswith('/MATLAB') and '-batch' in argv:
-            res = 3.0 if 'generate_five_frequency' in line else 6.0
-            other.append((pid, rss, res, 'matlab'))
-    return bem, other
+def jobs():
+    """Same count as experiments/resource_management/watch_comparison.py (process_sample):
+    a job is a root process plus ALL its descendants; RSS is summed over the whole job."""
+    out = subprocess.check_output(['ps', '-u', str(os.getuid()), '-o', 'pid=,ppid=,rss=,comm=,args='], text=True)
+    procs = {}
+    for line in out.splitlines():
+        parts = line.split(None, 4)
+        if len(parts) == 5:
+            pid, parent, rss, comm, command = parts
+            procs[int(pid)] = dict(parent=int(parent), rss_gib=int(rss) / 1024 ** 2, comm=comm, command=command)
+
+    def ancestors(pid):
+        seen = set()
+        while pid in procs and pid not in seen:
+            seen.add(pid)
+            yield pid
+            pid = procs[pid]['parent']
+
+    roots = {}
+    for pid, p in procs.items():
+        cmd = p['command']
+        if 'python' in p['comm']:
+            if 'b1_run.py fit --case' in cmd:
+                roots[pid] = 'b1'
+            elif 'csi_fit.py' in cmd and '--case' in cmd:
+                roots[pid] = 'bem'
+            elif 'csi_forward_check.py' in cmd:
+                roots[pid] = 'check'
+        elif p['comm'] == 'MATLAB':
+            context = ' '.join(procs[a]['command'] for a in ancestors(pid))
+            if 'five_frequency_data' in context or 'generate_five_frequency' in context:
+                roots[pid] = 'data'
+            elif 'campaign_five_frequency' in context or CSI_DIR in context:
+                roots[pid] = 'csi'
+    res = []
+    for pid, kind in roots.items():
+        if any(a in roots for a in list(ancestors(pid))[1:]):
+            continue
+        rss = sum(p['rss_gib'] for child, p in procs.items() if pid in ancestors(child))
+        res.append(dict(pid=pid, kind=kind, rss_gib=rss))
+    return res
 
 
 def available_gib():
@@ -122,17 +131,24 @@ def available_gib():
 
 
 def slot_free():
+    """Launch only if fewer than max_bem_fits BEM fits (B1 and csi_fit) run and
+    MemAvailable - new bem_fit reservation - outstanding growth >= floor_gib + margin_gib.
+    Reservations are read from worker_reservation_gib in the policy file at each pass."""
     try:
         pol = json.loads(POLICY.read_text())
+        reserve = pol['worker_reservation_gib']
     except Exception as e:
         log(f'policy unreadable: {e}'); return False, 'policy unreadable'
-    bem, other = workers()
-    growth = sum(max(0.0, res - rss) for _, rss, res, _ in bem + other)
+    js = jobs()
+    n_bem = sum(j['kind'] in ('b1', 'bem') for j in js)
+    growth = sum(max(0.0, reserve[KIND_KEY[j['kind']]] - j['rss_gib']) for j in js)
+    new = reserve['bem_fit']
     avail = available_gib()
-    left = avail - BEM_RESERVE - growth
-    ok = len(bem) < pol['max_bem_fits'] and left >= pol.get('floor_gib', 14) + pol.get('margin_gib', 2) \
+    left = avail - new - growth
+    ok = n_bem < pol['max_bem_fits'] and left >= pol.get('floor_gib', 14) + pol.get('margin_gib', 2) \
         and avail >= WRAPPER_START
-    why = f'bem={len(bem)}/{pol["max_bem_fits"]} avail={avail:.1f} growth={growth:.1f} left={left:.1f}'
+    kinds = ','.join(f"{j['kind']}:{j['rss_gib']:.1f}" for j in js)
+    why = f'bem={n_bem}/{pol["max_bem_fits"]} avail={avail:.1f} growth={growth:.1f} new={new} left={left:.1f} jobs=[{kinds}]'
     return ok, why
 
 
