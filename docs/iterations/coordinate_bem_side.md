@@ -415,6 +415,7 @@ data convention is in doubt.
 | 18 Nov, 00:32 | `bem-gpu` drafts a proposal, with no solver code, for lifting the series limit: activity `05_lift_series_limit` | The user agreed to "propose a solver redesign only if a case still stops below 15". The cavity does |
 
 | 18 Nov, 00:36 | CSI review stop 2: the adapter passes. Go for the first fit on the measured cylinder, on the GPU and on the CPU. No fit on a simulated table until the user answers on the 1% rule | Factors match CSI's saved ones to 8.5e-14; the simulated incident field matches ours to 1.3e-14; the frequency-block loss equals the default loss to round-off; the series limit holds at 1e-9. The circle data fail the 1% rule |
+| 18 Nov, 00:40 | BRG forward checks: where our forward is converged (refinement under 1e-6) but still differs from BRG by more than 1e-5 at every resolution, record the failed threshold and go on to the fit. Thresholds are not changed | `cavity_09` at k = 1.25: refinement 2.6e-13, BRG difference 2.7e-5. No resolution can move it; the cause is on the reference side or in how the true curve is represented. The fit reads BRG's data; the true curve is used only in this check and in scoring |
 
 ## Waiting on the user
 
