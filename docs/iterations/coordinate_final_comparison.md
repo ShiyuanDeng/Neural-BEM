@@ -68,10 +68,9 @@ BEM side shares the CPU, so about 2.4 to 2.9 h per batch.
 - It leaves permission prompts and full access to the user.
 
 **Next for the coordinator.**
-1. BRG on TG-002 shapes: when the 20 cases finish, review the results and
-   update the board. The data is provisional until the BEM side freezes it.
-   BRG activity 05 then runs the same cases without the curvature limit
-   (see the BRG card). Review both rows together.
+1. BRG on TG-002 shapes: both rows are complete (see the BRG card). The
+   data is BRG's own; the BEM side reads those observations for its fits.
+   Open: the 5% cut-off (U5), and how the table presents the two BRG rows.
 2. CSI campaign: the user cut the simulated cases to 1, 2 and 3 GHz
    (18 November 00:55 UTC, see the CSI card). Batch 1 of the old
    eight-frequency campaign ends near 02:00 UTC and stays as a side result;
@@ -104,7 +103,7 @@ BEM side shares the CPU, so about 2.4 to 2.9 h per batch.
 |---|---|---|---|---|
 | Our BEM (default) | [evaluate_our_method](evaluate_our_method/) | [01](evaluate_our_method/01_measure_clean_and_noisy_recovery/results.md), [02](evaluate_our_method/02_run_ablations/results.md), run 17 Nov | TG-002 done. BEM side started 18 Nov: GPU table path, six BRG paper cases, CSI adapter | Status in [coordinate_bem_side.md](coordinate_bem_side.md) |
 | GauGal | [evaluate_our_method](evaluate_our_method/) | [03](evaluate_our_method/03_record_untuned_gaugal_reference/results.md), run 17 Nov | TG-002 untuned reference done | Stage 2 role open (U1) |
-| BRG | [brg_adaptation](brg_adaptation/) | [01 results](brg_adaptation/01_run_published_examples/results.md), [02 plan](brg_adaptation/02_rebuild_paper_examples/plan.md) | 01 done 17 Nov. [02](brg_adaptation/02_rebuild_paper_examples/results.md) done to k = 15 (six cases). [03](brg_adaptation/03_adapt_bem_to_brg_data/results.md): adapter done, 1 of 6 fits run, stopped for handover. [04](brg_adaptation/04_run_brg_on_tg002_shapes/plan.md) (BRG on TG-002 shapes): baseline half started 18 Nov 00:40 | `brg` agent (Codex, astra, high effort): 13 of 20 cases complete by 01:34 UTC (circle and star recovered; asymmetric, kite, peanut, hook and c_shape at contrast 4 not). The old queue cut `c_shape__c0.5` at its 1 h cap and dropped six cases. A completion run with no time cap started 01:35 UTC (supervisor PID 821706): that case from its saved state, then the six. Then activity 05: the same 20 without the curvature limit. Provisional data; no BEM work |
+| BRG | [brg_adaptation](brg_adaptation/) | [01 results](brg_adaptation/01_run_published_examples/results.md), [02 plan](brg_adaptation/02_rebuild_paper_examples/plan.md) | 01 done 17 Nov. [02](brg_adaptation/02_rebuild_paper_examples/results.md) done to k = 15 (six cases). [03](brg_adaptation/03_adapt_bem_to_brg_data/results.md): adapter done, 1 of 6 fits run, stopped for handover. [04](brg_adaptation/04_run_brg_on_tg002_shapes/plan.md) (BRG on TG-002 shapes): baseline half started 18 Nov 00:40 | `brg` agent idle since 03:26 UTC. Activities 04 and 05 are reported: both 20-case rows complete, [05 results](brg_adaptation/05_run_brg_without_curvature_limit/results.md) pushed in `4198a0bba`. No next BRG activity is open. Deferred, only if the user still wants it: the paper cases from k = 15 to 30 |
 | CSI family | [csi_adaptation](csi_adaptation/) | [01 results](csi_adaptation/01_run_published_examples/results.md) | 01, [02](csi_adaptation/02_run_fresnel_dielectric_cylinder/results.md) and [03](csi_adaptation/03_prepare_simulated_tg002_cases/results.md) done 17 Nov. [04](csi_adaptation/04_run_simulated_tg002_cases/plan.md) (10 simulated cases, MF-CC-CSI) started 18 Nov 00:10 | `csi` agent (Codex, sol, high effort): let batch 1 of 04 finish (eight frequencies; circle, kite, peanut), then send a review pack. Nothing launches until the user has reviewed it and chosen the frequencies. Meanwhile it generates the other seven tables for the BEM side |
 
 **Setup checked on 17 November 2026:** the user made the MaxwellFDFD link and
