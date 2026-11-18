@@ -29,10 +29,13 @@ def check(scene):
     manifest_path, checks_path = folder / 'manifest.json', folder / 'checks.json'
     bem_path = BEM / f'{scene}__c4.json'
     # Missing files mean preparation/checking has not finished, not failure.
-    for path in (manifest_path, checks_path, bem_path):
-        if not path.exists():
-            return None
-    manifest, checks, bem = [c.read(p) for p in (manifest_path, checks_path, bem_path)]
+    manifest = c.read(manifest_path) if manifest_path.exists() else None
+    checks = c.read(checks_path) if checks_path.exists() else None
+    if ((manifest and manifest['state'] != 'frozen') or
+            (checks and checks['state'] != 'passed')):
+        raise ValueError(f'data states: manifest={manifest}, checks={checks}')
+    if manifest is None or checks is None:
+        return None
     if manifest['state'] != 'frozen' or checks['state'] != 'passed':
         raise ValueError(f"data states: manifest={manifest['state']}, checks={checks['state']}")
     data = c.frozen_input(scene)
@@ -41,6 +44,9 @@ def check(scene):
         raise ValueError('manifest hash differs from table and sidecar')
     if c.base.sha(checks_path) != manifest['checks']['sha256']:
         raise ValueError('checks.json hash differs from frozen manifest')
+    if not bem_path.exists():
+        return None
+    bem = c.read(bem_path)
     if bem['frozen_sha256_verified'] != digest:
         raise ValueError('BEM checked a different SHA-256')
     summary = bem['summary']
@@ -114,6 +120,9 @@ def poll(state):
                 record_release(evidence, entry)
                 emit('released', scene=scene, sha256=entry['sha256'],
                      mismatch_percent_by_frequency=evidence['check_3']['mismatch_percent_by_frequency'])
+            except json.JSONDecodeError:
+                # BEM writes its check file in place; a partial read waits.
+                continue
             except Exception as error:
                 state['blocked'][scene] = dict(utc=c.now(), error=repr(error))
                 emit('release_failed', scene=scene, error=repr(error))
