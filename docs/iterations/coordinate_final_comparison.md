@@ -7,8 +7,8 @@ settings, assumptions and unknowns, and it sets how subagents share the work.
 The coordinator (the main session) owns this file. Subagents never edit it.
 They report back, and the coordinator updates the status board and the cards.
 
-Last updated: 18 November 2026, 03:55 UTC (the user set five frequencies
-for the simulated CSI cases; data preparation, checks and fits are queued).
+Last updated: 18 November 2026, 07:35 UTC (five-frequency pass: all ten
+BEM fits and six of seven MF-CC-CSI fits are in; `aphex_twin` still runs).
 
 ## Restart notes (18 November 2026, 03:55 UTC)
 
@@ -19,8 +19,9 @@ again at about 03:40 UTC.
 **State in one look.**
 - The user set the band for the simulated CSI cases (table C): 0.5, 1,
   1.5, 2 and 2.5 GHz. The hold on CSI fits is lifted.
-- Queued, in this order: prepare and freeze the data at 0.5, 1.5 and
-  2.5 GHz, check it, then fit. See "Progress" below for what has started.
+- Data frozen and checked for all ten shapes. All ten BEM fits are done.
+  Six of the seven MF-CC-CSI fits are done; `aphex_twin` runs (07:35 UTC).
+  See "Progress" below.
 - BRG: both 20-case rows on the TG-002 shapes are complete. The `brg` pane
   is closed.
 - BEM side: one table B1 fit was still running at 03:45 UTC
@@ -169,10 +170,25 @@ its table is frozen and checks 1 to 3 passed for it.
   pane is closed; the job is done.
 - 05:12 UTC, from the BEM coordinator: table C's BEM text is updated
   (`4782d87dc`); ten CPU cross-checks still run on its side.
+- 05:35 UTC, from the BEM coordinator (`983379bec`): its five-frequency
+  pass is closed and every BEM table is filled. The CPU cross-checks match
+  the GPU on every stage both finished.
+- 07:35 UTC, CSI (read from
+  [07 results](csi_adaptation/07_run_seven_cases_at_five_frequencies/results.md)
+  and each `scores.json`): six fits completed all 2048 iterations, no
+  failure, each scored and pushed by `csi`. Area error at half the peak,
+  with our BEM on the same table in brackets: star 3.72% (2.34%),
+  asymmetric 6.67% (1.29%), cog 13.29% (2.86%), cross 11.97% (2.10%),
+  c_shape 16.03% (2.60%), hook 16.52% (3.59%). Mean permittivity found
+  3.71 to 3.87 against 4. At 0.3 and 0.7 of the peak the area error is
+  9.6 to 16.5% and 16.3 to 45.1%. 4750 to 5050 s per fit, three at once.
+- 07:35 UTC: `aphex_twin` started 06:46 and runs alone (ceiling one); its
+  1024-iteration checkpoint is saved. Launcher PID 977035 is still alive:
+  **do not relaunch**.
 - Agents send reports into this pane as text starting "From <name>".
-- Next: each CSI fit as it ends (`csi` scores and pushes it); then both
-  final reports, and the BEM state of table C from the BEM coordinator. Ask the user only on a failed or
-  stuck fit that needs a decision.
+- Next: the `aphex_twin` fit, then the report block from `csi`; then fill
+  table C's CSI text and close `csi` and `csi-data`. Ask the user only on
+  a failed or stuck fit that needs a decision.
 - Watchers to re-arm after a restart: none is needed for correctness. A
   fallback loop on the launcher PID and on
   `results/bem/baseline_data/csi_five_frequency/2026-11-18/*/cuda/attempt_*/metrics.json`
@@ -182,8 +198,10 @@ its table is frozen and checks 1 to 3 passed for it.
 - Data: 303 s for all ten tables.
 - BEM: 47 to 200 s per fit on the GPU.
 - CSI: about 2.4 s per iteration with three fits at once, so about
-  1 h 25 min per fit. Forecast, not a limit: the first three end near
-  05:30 UTC and all seven near 07:10 UTC.
+  1 h 25 min per fit. Measured ends: 05:22, 05:29 and 05:35 UTC for the
+  first three; 06:46, 06:51 and 06:57 for the next three. `aphex_twin`
+  runs alone at about 1.7 s per iteration and should end near 07:50 UTC
+  (a forecast, not a limit).
 
 **Waiting on the user. Do not decide these.**
 1. The BRG paper cases from k = 15 to 30: deferred on 17 November for lack
@@ -194,6 +212,14 @@ its table is frozen and checks 1 to 3 passed for it.
 - No result-generating run is stopped because of a time limit, unless the
   user says so. A stuck or faulty run may still be stopped. Launchers do
   not stop on time; a time figure is a design target that is reported.
+- A verified fault may be fixed and rerun. Source: the resource monitor's
+  record `results/resource_management/2026-11-18/recovery_policy.json`
+  (04:10 UTC), which quotes the user in its own conversation: "something
+  went wrnog obviously and should be fixed then rerun then discuss with
+  coordinator and run it yeah?". The coordinator did not see those words
+  itself. As recorded: keep the failed attempt, make the smallest fix,
+  rerun only the affected case as a new attempt. Poor recovery alone does
+  not allow changing data, frequencies, starts or settings.
 - History: two launchers written before that rule carried their own caps.
   The CSI one exited after batch 1 without cutting a fit. The BRG one cut
   `c_shape__c0.5` at 1 h and dropped six cases; a completion run restored
