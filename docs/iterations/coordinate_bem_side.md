@@ -71,7 +71,7 @@ Ask the user before any of these:
 | 1 | Table path on the GPU | all | none | Done 18 Nov; default fit unchanged on CPU and GPU |
 | 1 | BRG paper cases, known contrast, to k = 15: two gliders and two stars. The two cavity cases are skipped (user, 18 Nov) | B2 | Saved by BRG, ready | GPU pass done; follow-up checks running |
 | 1 | Measured Fresnel cylinder `dielTM_dec8f` | C | Ready | Not started |
-| 2 | Ten TG-002 shapes at contrast 4, simulated in the Fresnel layout, 1 to 3 GHz rows only | C | Tables made by the CSI campaign; all ten exist or follow as CSI activity 05 needs them | Rule fixed; circle fit next |
+| 2 | Ten TG-002 shapes at contrast 4, simulated in the Fresnel layout. Frequency list open: four or five frequencies, the user chooses | C | Circle, kite, peanut exist; the other seven are being made by the baseline side in `results/csi/tg002/2026-11-18_low_band_data/` | Early look at 1 to 3 GHz on three shapes; the rest waits |
 | Held | TG-002 shapes with plane-wave data | B1 | See below | Waits for the user |
 
 Table B1 is held until the user opens it. What is agreed for then:
@@ -174,6 +174,8 @@ answered "yes" to the coordinator's recommendation as written here.
 | Done | Per-fit raw metrics from the unedited scoring, a `results.md` per activity, this status board. Final tables stay in the main file. No claims | yes |
 | Simulated CSI data, 18 Nov 00:55 UTC | The ten simulated shapes use the 1, 2 and 3 GHz rows only, for CSI and for our BEM. The retained eight-frequency files stay as they are. The measured cylinder keeps all eight frequencies. Given in the baseline coordinator's pane after the circle failed the 1% rule; the BEM coordinator read the words there | "id say we just supply less frequency range to it, you know below 4GHz such that simulated data are accurate there" |
 | Series limit, 18 Nov about 01:03 UTC | No solver change. Cases that the series limit stops are skipped: `cavity_09` and `cavity_2` (refused above k = 8 on the true shape). The coordinator's reading for the rest: a case refused by the series limit inside its fit is not rerun, and goes to the user with its last endpoint | "skip the case and similiar ones that have this problem" |
+| Simulated CSI data, 18 Nov 01:36 UTC | The frequency set for the simulated cases is open again: the user reviews CSI's eight-frequency batch (circle, kite, peanut) and then chooses four or five frequencies. The 1 to 3 GHz list of 00:55 is no longer final. Given in the baseline coordinator's pane; the BEM coordinator read the words there | "Let the current eight-frequency batch finish. Hold the automatic 1–3 GHz launch. Review those results with me before choosing four or five frequencies for the remaining cases." |
+| Time limits, 18 Nov about 01:10 UTC | Said to the baseline coordinator about its runs. Whether it also covers the BEM side's 120 s CPU cut and 1 h ceiling is asked, not assumed | "do not stop result-gerating terminal processes due to time limit unless i say otherwise. if it stucks or goes wrong you should still stop it. this is only about time limit" |
 | Baseline coordinator | Another Claude session in Herdr. Requests go through the main file; direct messages only for data requests, each recorded here | "in herdr that coordinator is just in another claude session" |
 
 Why both kinds of CSI data: the CSI repository ships 18 measured Fresnel
@@ -394,9 +396,9 @@ data convention is in doubt.
 | Work | Agent | State | Next step |
 |---|---|---|---|
 | Table path on the GPU | `bem-gpu` | Done: commit `3612f5195` at 00:32 ([results](adapt_bem_to_baseline_data/01_run_table_path_on_gpu/results.md)). Lock free. Its series-limit proposal is closed: no go from the user. The user is closing its pane | None |
-| BRG paper cases | `bem-brg` | GPU pass, the reported one, done 01:23 ([results](adapt_bem_to_baseline_data/02_fit_brg_paper_cases/results.md)). Area error at the last k: `glider_033` 0.061% at k = 15 (71 s); `star_full` 0.58% at 15 (334 s); `star_limited` 0.60% at 15 (274 s); `glider_10` failed, 14% at k = 12, then refused at 15. Cavities skipped by the user. K = 192, 1e-6 | Cause of the CPU and GPU path differences; `glider_10` stage history |
-| CSI adapter | `bem-csi` | Done but for its GPU circle check ([results](adapt_bem_to_baseline_data/03_adapt_bem_to_csi_data/results.md)). Measured cylinder, GPU: radius 19.0 mm against 15, permittivity 2.19 against 3, area error 67.8%; a plain circle fit to the same data gives 15.3 mm and 3.05, so the adapter is right and the default fit stalled. Simulated circle at 1 to 3 GHz: CPU pass 1.07% area error at its 120 s cut; GPU pass running. Hand-over written | GPU circle result; path update when the seven tables arrive; then close |
-| CSI fits | `bem-csi-run` | Launched 18 Nov 01:33, pane `w2:p8`, Claude Sonnet high. Running circle, kite and peanut | Report after the first three; pass on the paths of the other seven tables |
+| BRG paper cases | `bem-brg` | Reported GPU pass done 01:23; follow-up checks done 01:36 ([results](adapt_bem_to_baseline_data/02_fit_brg_paper_cases/results.md)). Area error: `glider_033` 0.061% at k = 15 (71 s); `star_full` 0.58% (334 s); `star_limited` 0.60% (274 s); `glider_10` failed (14% at k = 12; lost from k = 1.75). Cavities skipped by the user. CPU and GPU paths differ through the slider preparation (B6), an existing default behaviour. Agent idle | Clean timed pass on a quiet machine; uncut CPU cross-checks if the user allows |
+| CSI adapter | `bem-csi` | Done ([results](adapt_bem_to_baseline_data/03_adapt_bem_to_csi_data/results.md)). Measured cylinder: default fit stalled (radius 19.0 mm against 15, permittivity 2.19 against 3, area error 67.8%); adapter cleared by a plain circle fit (15.3 mm, 3.05). Simulated circle at 1 to 3 GHz, GPU: 1.18% area error, permittivity 4.0006, 465 s. Hand-over written. Agent idle | Set the final frequency list and the paths of the seven new tables in the wrapper; then close |
+| CSI fits | `bem-csi-run` | Launched 01:33, pane `w2:p8`. Circle, kite and peanut pass the 1% check at 1 to 3 GHz; fitting them as an early look. Nothing else starts until the user fixes the frequency list | Report on the three; then the final list and the seven new tables |
 | Table B1 | none | Held | Wait for the user |
 
 ## Coordinator decisions
@@ -427,10 +429,21 @@ data convention is in doubt.
 | 18 Nov, 01:32 | Data request to the baseline coordinator (pane `w1:p1`): generate the other seven simulated tables now, not at each CSI batch start | Only circle, kite and peanut exist. The BEM fits would otherwise wait about 4 h |
 | 18 Nov, 01:33 | Measured cylinder: the result stands as a failure of the default fit, and the adapter is cleared. No retune | Information-only check, data only: a least-squares circle from the exact series ends at centre (1.9, 26.2) mm, radius 15.3 mm, permittivity 3.05, loss 0.0375, from the nominal start and from the fit's end point alike. Our fit ended at loss 0.0840 (radius 19.0 mm, permittivity 2.19). The large, weak cylinder comes from the 1 GHz stage, where the data fix mainly size times contrast; later stages accept almost nothing |
 | 18 Nov, 01:33 | `bem-csi-run` launched on the hand-over: circle, kite and peanut now; the other seven when the baseline side sends their paths. The measured cylinder is not rerun | The adapter passed its three review stops; the hand-over is one resumable command per step. GPU fits repeat bit for bit, so a second cylinder fit adds nothing |
+| 18 Nov, 01:39 | Simulated CSI fits: `bem-csi-run` finishes circle, kite and peanut at 1 to 3 GHz as an early look and starts nothing else. The reported pass waits for the user's frequency list | The user reopened the list at 01:36 UTC. Three fits of about 8 minutes cost little and can inform the review; seven more would be wasted if the list changes |
+| 18 Nov, 01:39 | Frequency rule for the simulated cases, fixed now for whatever list the user picks: the ladder adds one frequency at a time up to the larger of 3 GHz (the top of the default ladder in wavenumber, 3.21 per length unit) and half the top frequency; then the default all-frequency stages on the whole list. Ladder quotas 1000, 3000, 4000 for three ladder stages, the default four for four | It reproduces both rules already fixed (1; 1–2; 1–3 on a 1 to 3 GHz list; 1 to 4 then all on the eight-frequency cylinder), and gives 1; 1–2; 1–3 then all for a four- or five-frequency list. Fixed before any result on such a list exists |
+| 18 Nov, 01:39 | BRG: the CPU and GPU path difference is explained and accepted; no rerun. `glider_10` stays a failed fit | Forward and Jacobian agree between devices to 1e-13 at K = 192. The difference enters in B6: the slider preparation uses NumPy least squares on the CPU and a Torch eigen-solve on the GPU, which is existing default behaviour, not the table path. Directions differ by 1e-13 to 1e-10 and the early stages amplify that (3e-8 at k = 1, iteration 3; 6e-2 at k = 2.5). Why the path amplifies so strongly is not proven. `glider_10` never gets near the truth: 16% area error after k = 1, and its residual jumps from 0.08 to 0.57 at k = 1.75 |
 
 ## Waiting on the user
 
-Nothing is waiting on the user.
+- **The frequency list for the simulated CSI cases.** The user chooses four
+  or five frequencies after reviewing CSI's eight-frequency batch (ends
+  near 01:57 UTC). Until then only circle, kite and peanut are fitted, at
+  1 to 3 GHz, as an early look.
+- **Time limits on the BEM side.** The user told the baseline coordinator
+  not to stop result-generating runs on a time limit. Asked 18 Nov whether
+  that covers our 120 s CPU cross-check cut and the 1 h ceiling. No GPU fit
+  has come near 1 h (longest 23 min). The CPU cross-checks are all cut at
+  120 s, so CPU and GPU outcomes cannot be compared at the end of a fit.
 
 Answered, both recorded under "Decisions made with the user":
 
@@ -443,7 +456,8 @@ Answered, both recorded under "Decisions made with the user":
   a record: an opt-in sampled route in A3, estimated at 6 to 10 work hours.
   The star (1.557) passes on the truth with 6% room; if its fit is refused
   at k = 15 it goes to the user with its last endpoint.
-- **The simulated CSI data above 1%** (18 Nov 00:55 UTC). The circle
+- **The simulated CSI data above 1%** (18 Nov 00:55 UTC; the list was
+  reopened at 01:36, see above). The circle
   differed by 0.17, 0.13, 0.30, 1.14, 0.82, 1.68, 2.29 and 5.91% at 1 to
   8 GHz; the data error grows with frequency. The user cut the simulated
   cases to 1 to 3 GHz. Evidence:
