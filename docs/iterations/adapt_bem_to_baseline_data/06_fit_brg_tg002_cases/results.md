@@ -1,6 +1,6 @@
 # B1 checks, 18 November 2026
 
-No BEM fit has started. The coordinator review stop remains active.
+1 BEM fits have saved metrics. The coordinator released the queue with two B1 fits.
 CUDA checks use default production/refined profiles and series_loss=1e-9.
 Both fitting rows will read only the saved, hash-verified BRG observations.
 
@@ -34,7 +34,7 @@ A failed or missing check blocks the case. No resolution or tolerance changed.
 Each case keeps per-frequency diagnostics and SHA-256 for the local field copies.
 Preparation receipts retain all input hashes, unit/layout proofs and default-schedule equality.
 
-Pending: complete missing checks, report to coordinator, then await the first-fit go.
+Passing checks release cases automatically. Incomplete manifests remain inputs pending.
 No solver, baseline, shared scoring or coordination file was changed.
 
 ## Timing and resources
@@ -65,5 +65,14 @@ exists and matches all 37 files. Cross at eta 4, cog and aphex_twin at both cont
 were pending at the first 15-case stop. The baseline completion run owns those files.
 The watch-checks command picks up newly finished manifests without repeating checks.
 
-All 40 inverse fits remain unrun. After all checks, stop for the coordinator go.
-First fit is known-contrast circle__c4; stop again to report its measured cost.
+1 of 40 inverse fits have saved metrics; the two-worker queue is authorized.
+Checked cases may fit without waiting for late baseline manifests (coordinator, 18 November).
+The first known-contrast circle__c4 fit has its own immutable first_fit_report.md.
+
+## Saved inverse fits
+
+| Case | Row | Outcome | Last stage | Units | Seconds | Area error | Contrast | Host / GPU peak GiB |
+|---|---|---|---|---:|---:|---:|---:|---:|
+| circle__c4 | known | COMPLETED_SCHEDULE | full_6_M37 | 274 | 6.69482 | 7.31659e-07 | 4 | 1.936 / 1.369 |
+
+[First-fit report](first_fit_report.md).

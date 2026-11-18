@@ -1,6 +1,6 @@
 """B1 preparation, guarded checks, and single GPU fits. Fits require coordinator go."""
 from b1_runtime import (ROOT, BASE, GIB, pin_torch, provenance, write, digest, now,
-                        available, bem_jobs, bulk, guarded)
+                        available, bem_jobs, bulk, guarded, file_lock)
 import argparse
 from dataclasses import asdict, dataclass, replace
 import json
@@ -21,7 +21,7 @@ from bem_inverse.io import curve_from, curve_record
 import b1_data as D
 
 DOC = ROOT/'docs/iterations/adapt_bem_to_baseline_data/06_fit_brg_tg002_cases'
-B1_FIT_CONCURRENCY = 1  # Only the BEM coordinator may raise this setting.
+B1_FIT_CONCURRENCY = 2  # Only the BEM coordinator may raise this setting.
 
 
 @dataclass(frozen=True)
@@ -197,21 +197,33 @@ def run_checks():
         report.append(result)
         print('CASE', case, 'PASS' if result['passes'] else 'BLOCKED', result.get('failed_frequencies'), flush=True)
         report_checks(dict(cases=report))
-        commit_owned(f'B1: retain forward checks for {case}')
+        commit_owned(f'B1: retain forward checks for {case}', [out])
     recorded = {r['case'] for r in report}
     report.extend(dict(case=r['case'], passes=False, status='CAPACITY_PENDING' if r['passes'] else 'INPUTS_PENDING', checked=0)
                   for r in pre['cases'] if r['case'] not in recorded)
     record = dict(utc=now(), cases=report, planned_cases=20, passes=len(report)==20 and all(r['passes'] for r in report),
-                  fits_started=0, review_stop='Report to coordinator; no automatic fit')
+                  fits_started=len(list(BASE.glob('*/*/attempt_*/metrics.json'))), review_stop='Passing checks release their cases; failed checks block and report')
     write(BASE/'check_summary.json', record)
     report_checks(record)
-    commit_owned('B1: report available data checks and coordinator stop')
+    commit_owned('B1: report available data checks', [BASE/'check_summary.json', *BASE.glob('prepare_*.json')])
+
+
+def fit_table(fits):
+    def fmt(value, spec='.6g'):
+        return '—' if value is None else format(value, spec)
+    lines = ['| Case | Row | Outcome | Last stage | Units | Seconds | Area error | Contrast | Host / GPU peak GiB |',
+             '|---|---|---|---|---:|---:|---:|---:|---:|']
+    for f in fits:
+        stage = (f.get('last_stage') or {}).get('label', '—')
+        host = f.get('host_peak_bytes'); gpu = f.get('gpu_sampled_peak_bytes')
+        lines.append(f"| {f['case']} | {f['row']} | {f['outcome']} | {stage} | {f['work_units']} | {fmt(f['fit_seconds'])} | {fmt(f['area_error'])} | {fmt(f.get('contrast'))} | {fmt(host/GIB if host else None, '.3f')} / {fmt(gpu/GIB if gpu else None, '.3f')} |")
+    return '\n'.join(lines)
 
 
 def report_checks(record):
     fitted = [json.loads(p.read_text()) for p in sorted(BASE.glob('*/*/attempt_*/metrics.json'))]
     lines = ['# B1 checks, 18 November 2026', '',
-             f'{len(fitted)} BEM fits have saved metrics. The coordinator review stops remain active.',
+             f'{len(fitted)} BEM fits have saved metrics. The coordinator released the queue with two B1 fits.',
              'CUDA checks use default production/refined profiles and series_loss=1e-9.',
              'Both fitting rows will read only the saved, hash-verified BRG observations.', '',
              '| Case | Checked / 37 | BRG relative maximum | Refinement maximum | Status |',
@@ -223,7 +235,7 @@ def report_checks(record):
               '[Compact checks and resource receipts](../../../../results/bem/baseline_data/brg_tg002/2026-11-18/check_summary.json).',
               'Each case keeps per-frequency diagnostics and SHA-256 for the local field copies.',
               'Preparation receipts retain all input hashes, unit/layout proofs and default-schedule equality.', '',
-              'Pending: complete missing checks, report to coordinator, then await the first-fit go.',
+              'Passing checks release cases automatically. Incomplete manifests remain inputs pending.',
               'No solver, baseline, shared scoring or coordination file was changed.', '']
     qualifications = [json.loads(p.read_text()) for p in BASE.glob('*/checks/qualification.json')]
     receipts = [json.loads(p.read_text()) for p in BASE.glob('*/checks/supervisor.json')]
@@ -250,15 +262,15 @@ def report_checks(record):
                   'exists and matches all 37 files. Cross at eta 4, cog and aphex_twin at both contrasts',
                   'were pending at the first 15-case stop. The baseline completion run owns those files.',
                   'The watch-checks command picks up newly finished manifests without repeating checks.', '',
-                  f'{len(fitted)} of 40 inverse fits have saved metrics; numerical fits require coordinator go.',
+                  f'{len(fitted)} of 40 inverse fits have saved metrics; the two-worker queue is authorized.',
                   'Checked cases may fit without waiting for late baseline manifests (coordinator, 18 November).',
                   'The first known-contrast circle__c4 fit has its own immutable first_fit_report.md.', '']
     if fitted:
-        lines += ['## Saved inverse fits', '', '| Case | Row | Outcome | Work | Fit seconds | Area error |',
-                  '|---|---|---|---:|---:|---:|']
-        for fit in fitted:
-            lines.append(f"| {fit['case']} | {fit['row']} | {fit['outcome']} | {fit['work_units']} | {fit['fit_seconds']:.6f} | {fit['area_error']:.9g} |")
-        lines += ['', '[First-fit report and review stop](first_fit_report.md).', '']
+        lines += ['## Saved inverse fits', '', fit_table(fitted), '',
+                  '[First-fit report](first_fit_report.md).', '']
+        refused = [f for f in fitted if f.get('series_refusal')]
+        if refused:
+            lines += ['Series refusals retained without rerun: '+', '.join(f['case']+' '+f['row'] for f in refused)+'.', '']
     (DOC/'results.md').write_text('\n'.join(lines))
 
 
@@ -348,31 +360,54 @@ def score_endpoint(case, row, out):
         peaks = json.loads((out/'worker_end.json').read_text())
         metric['host_peak_bytes'] = max(metric['host_peak_bytes'], peaks['host_peak_bytes'])
         metric.update({k: peaks[k] for k in ('gpu_peak_allocated_bytes', 'gpu_peak_reserved_bytes')})
+    metric['series_refusal'] = 'Regular-wave series cancellation' in json.dumps(result or {})
+    if result:
+        accepted_path = out/'local/accepted.json'
+        if accepted_path.exists():
+            states = json.loads(accepted_path.read_text()).get('states', [])
+            metric['last_accepted_state'] = {k:v for k,v in states[-1].items() if k != 'curve'} if states else None
     write(out/'metrics.json', metric)
     return metric
 
 
-def commit_owned(message):
-    paths = [str(p.relative_to(ROOT)) for p in sorted((ROOT/'experiments/bem_on_baseline_data').glob('b1_*.py'))]
-    paths += [str(DOC.relative_to(ROOT)), str(BASE.relative_to(ROOT))]
-    subprocess.run(['git', 'add', '--', *paths], cwd=ROOT, check=True)
-    size = sum((ROOT/p).stat().st_size for p in subprocess.check_output(
-        ['git', 'diff', '--cached', '--name-only', '--', *paths], cwd=ROOT, text=True).splitlines() if (ROOT/p).is_file())
-    if size > 5*1024**2:
-        raise RuntimeError(f'Owned compact commit exceeds 5 MiB: {size} bytes')
-    subprocess.run(['git', 'commit', '-m', message, '--', *paths], cwd=ROOT, check=True)
-    # Other agents push this same branch. Retry only an ordinary push; never reset/rebase.
-    for attempt in range(3):
-        pushed = subprocess.run(['git', 'push'], cwd=ROOT, capture_output=True, text=True)
-        (BASE/'local').mkdir(exist_ok=True)
-        with (BASE/'local/push_journal.jsonl').open('a') as journal:
-            journal.write(json.dumps(dict(utc=now(), returncode=pushed.returncode, stdout=pushed.stdout, stderr=pushed.stderr))+'\n')
-        print(pushed.stdout+pushed.stderr, flush=True)
-        if pushed.returncode == 0:
-            break
-        time.sleep(1.)
-    pushed.check_returncode()
-    subprocess.run(['git', 'status', '--short', '--', *paths], cwd=ROOT, check=True)
+def commit_owned(message, result_paths=None):
+    # Serialize both report replacement and index/push work across B1 processes.
+    with file_lock('commit.lock'):
+        summaries = []
+        for case in D.CASES:
+            q = BASE/case/'checks/qualification.json'
+            summaries.append(json.loads(q.read_text()) if q.exists() else
+                             dict(case=case, passes=False, status='INPUTS_PENDING', checked=0))
+        report_checks(dict(cases=summaries))
+        paths = [str(p.relative_to(ROOT)) for p in sorted((ROOT/'experiments/bem_on_baseline_data').glob('b1_*.py'))]
+        paths += [str(DOC.relative_to(ROOT))]
+        chosen = result_paths if result_paths is not None else [p for p in BASE.iterdir() if p.is_file()]
+        paths += [str(Path(p).relative_to(ROOT)) for p in chosen]
+        journal_path = BASE/'local/git_journal.jsonl'
+        def git(*args):
+            for attempt in range(20):
+                done = subprocess.run(['git', *args], cwd=ROOT, capture_output=True, text=True)
+                with journal_path.open('a') as journal:
+                    journal.write(json.dumps(dict(utc=now(), command=args, returncode=done.returncode,
+                                                  stdout=done.stdout, stderr=done.stderr))+'\n')
+                if done.returncode == 0:
+                    return done
+                if 'index.lock' not in done.stderr and 'cannot lock ref' not in done.stderr and args[0]!='push':
+                    print(done.stdout+done.stderr, flush=True)
+                    done.check_returncode()
+                time.sleep(.5)
+            print(done.stdout+done.stderr, flush=True)
+            done.check_returncode()
+        git('add', '--', *paths)
+        names = git('diff', '--cached', '--name-only', '--', *paths).stdout.splitlines()
+        size = sum((ROOT/p).stat().st_size for p in names if (ROOT/p).is_file())
+        if size > 5*1024**2:
+            raise RuntimeError(f'Owned compact commit exceeds 5 MiB: {size} bytes')
+        if names:
+            git('commit', '-m', message, '--', *paths)
+        pushed = git('push')
+        print(message, pushed.stdout+pushed.stderr, flush=True)
+        print(git('status', '--short', '--', *paths).stdout, flush=True)
 
 
 def other_b1_fits():
@@ -394,6 +429,12 @@ def other_b1_fits():
     return [r for r in found.values() if r['ppid'] not in found]
 
 
+def expected_fit_peak():
+    return max([3*GIB]+[json.loads(p.read_text())['host_peak_bytes']
+               for pattern in ('*/*/attempt_*/supervisor.json', '*/*/attempt_*/worker_end.json')
+               for p in BASE.glob(pattern)])
+
+
 def fit_case(case, row):
     qualification = json.loads((BASE/case/'checks/qualification.json').read_text())
     assert qualification['passes'], 'Failed case is blocked; report to coordinator.'
@@ -411,7 +452,7 @@ def fit_case(case, row):
         receipt = json.loads((old/'supervisor.json').read_text())
         assert receipt['stop_reason']=='MEMORY_REQUEUE', 'No tuning rerun; prior fit stays final.'
     out = base/f'attempt_{len(earlier)+1:02d}'
-    expected = max([3*GIB]+[json.loads(p.read_text())['host_peak_bytes'] for p in BASE.glob('*/*/attempt_*/supervisor.json')])
+    expected = expected_fit_peak()
     receipt = guarded([sys.executable, __file__, '_fit', '--case', case, '--row', row, '--out', str(out)], out, expected)
     if receipt['stop_reason']=='MEMORY_REQUEUE':
         write(out/'requeue.json', dict(case=case, row=row, reason='Memory stop is not a result; retry when capacity allows.'))
@@ -419,14 +460,11 @@ def fit_case(case, row):
         try:
             metrics = score_endpoint(case, row, out)
             print(json.dumps(metrics), flush=True)
-            with (DOC/'results.md').open('a') as report:
-                report.write(f'\n## {now()}: {row}, {case}\n\n')
-                report.write(f'Outcome {metrics["outcome"]}; work {metrics["work_units"]}; fit {metrics["fit_seconds"]} s; area error {metrics["area_error"]}.\n')
-                report.write(f'Raw metrics: `{out.relative_to(ROOT)}/metrics.json`.\n')
         except Exception:
             write(out/'scoring_failure.json', dict(traceback=traceback.format_exc()))
     write(out/'bulk_manifest.json', dict(files=bulk(out)))
-    commit_owned(f'B1: retain {row} fit {case} and resource records')
+    write(out/'commit_request.json', dict(utc=now(), case=case, row=row, reason='One completed attempt per commit'))
+    commit_owned(f'B1: retain {row} fit {case} and resource records', [out])
 
 
 def watch_checks():
@@ -434,9 +472,9 @@ def watch_checks():
     while True:
         unfinished = [c for c in D.CASES if not (BASE/c/'checks/qualification.json').exists()]
         if not unfinished:
-            print('All case checks recorded. STOP for coordinator review; no fit started.', flush=True)
+            print('All case checks recorded. Passing cases released to the authorized queue.', flush=True)
             return
-        ready = [c for c in unfinished if (D.SOURCE/c/'bulk_manifest.json').exists()]
+        ready = [c for c in unfinished if (D.SOURCE/c/'bulk_manifest.json').exists() and D.verify_files(c)['manifest_complete']]
         if ready and available() > 18*GIB:
             print(now(), 'New manifest(s):', ready, flush=True)
             run_checks()
@@ -475,7 +513,13 @@ def main():
         fit_worker(args.case, args.row, args.out)
     else:
         assert args.case and args.row
-        fit_case(args.case, args.row)
+        try:
+            fit_case(args.case, args.row)
+        except RuntimeError as error:
+            if str(error).startswith('Memory blocks launch:'):
+                print(error, flush=True)
+                raise SystemExit(75)
+            raise
 
 
 if __name__=='__main__':

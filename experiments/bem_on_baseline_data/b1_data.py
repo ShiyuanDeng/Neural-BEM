@@ -31,6 +31,7 @@ def verify_files(case):
         item['passes'] = bool(item['exists'] and item['recorded_sha256'] and item['sha256']==item['recorded_sha256'])
         rows.append(item)
     return dict(case=case, files=rows, passes=all(r['passes'] for r in rows),
+                manifest_complete=all(r['recorded_sha256'] for r in rows),
                 manifest=str(path.relative_to(ROOT)), manifest_sha256=digest(path) if path.exists() else None)
 
 

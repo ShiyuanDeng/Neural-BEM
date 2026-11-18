@@ -4,6 +4,8 @@ for _key in ('OMP_NUM_THREADS', 'OPENBLAS_NUM_THREADS', 'MKL_NUM_THREADS',
              'NUMEXPR_NUM_THREADS', 'VECLIB_MAXIMUM_THREADS', 'BLIS_NUM_THREADS'):
     os.environ[_key] = '1'
 import datetime
+import fcntl
+from contextlib import contextmanager
 import hashlib
 import json
 from pathlib import Path
@@ -143,3 +145,21 @@ def guarded(command, out, expected_peak=3*GIB):
     write(out/'supervisor.json', row)
     write(out/'bulk_manifest.json', dict(files=bulk(out)))
     return row
+
+
+@contextmanager
+def file_lock(name):
+    """B1-owned interprocess lock; wait without touching another agent's lock."""
+    folder = BASE/'local'
+    folder.mkdir(parents=True, exist_ok=True)
+    with (folder/name).open('a') as lock:
+        while True:
+            try:
+                fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                break
+            except BlockingIOError:
+                time.sleep(.25)
+        try:
+            yield
+        finally:
+            fcntl.flock(lock, fcntl.LOCK_UN)

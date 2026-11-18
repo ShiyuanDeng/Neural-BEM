@@ -146,3 +146,26 @@ After this first fit, stop and report outcome, last stage, work units, fit
 seconds, seconds per unit, peak host/GPU memory, area error and forecast.
 Use the system date for timestamps. Only the coordinator raises concurrency.
 This note supersedes the earlier all-20 check/known-row launch blocks.
+
+## Queue release, 18 November
+
+The coordinator accepted circle__c4 known and released the rest with TWO B1
+fits at a time. Keep the largest measured host peak or 3 GiB, plus 1 GiB,
+above the 14 GiB floor at every launch. The queue also reserves growth still
+expected in active workers. No stop between fits and no elapsed-time stop.
+
+Known row on every checked case in the saved order, then recovered on those
+cases. Print the known table and continue directly. Late qualified cases
+join known then recovered. Passing checks release their case automatically.
+Failed checks, unexplained crashes and repeated memory requeues stop new
+launches and go to the coordinator; already running jobs remain guarded.
+Series refusals inside fits stay as failed endpoints and are never rerun.
+
+Restart the idle watcher to load fit-preserving reports. Serialize B1 report
+writes, git staging, commits and pushes with a retrying file lock. Each fit
+commits only its own output directory plus owned code/docs; it does not stage
+another active fit. Keep one full table row per fit in results.md.
+
+A baseline manifest without all 37 data-file records means INPUTS_PENDING,
+not a failed BEM check. The coordinator owns the baseline aphex_twin repair.
+Command: `python experiments/bem_on_baseline_data/b1_queue.py`.
