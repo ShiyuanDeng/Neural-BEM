@@ -9,6 +9,7 @@ Both fitting rows will read only the saved, hash-verified BRG observations.
 | circle__c0.5 | 37 | 3.449730949448483e-11 | 2.5084136253513013e-14 | PASS |
 | circle__c4 | 37 | 2.3626958902908266e-11 | 1.0178611771241843e-13 | PASS |
 | kite__c0.5 | 37 | 1.571658211227961e-07 | 8.556081846362675e-15 | PASS |
+| kite__c4 | 37 | 6.302133854441157e-08 | 2.892130931925261e-14 | PASS |
 
 Limits: BRG relative difference 0.01 at every frequency; refinement 1e-6.
 A failed or missing check blocks the case. No resolution or tolerance changed.
