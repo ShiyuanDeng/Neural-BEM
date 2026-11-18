@@ -1,0 +1,134 @@
+{
+  "shape": "kite",
+  "contrast": 4.0,
+  "provenance": {
+    "utc": "2026-11-18T11:27:47+00:00",
+    "commit": "75a4b3e833fc984abd40b2054d9fdae9c3ef0723",
+    "solver_source": "checkout solvers/",
+    "solver_snapshot_commit": null,
+    "checkout_solver_dirty": false,
+    "solver_used_dirty": false,
+    "command": "/home/drdeng/miniconda3/envs/EMNerf/bin/python experiments/bem_on_baseline_data/own_forward_tables.py --shape kite",
+    "memory_available_gib": 35.201332092285156,
+    "load_average": [
+      5.3466796875,
+      3.080078125,
+      1.3330078125
+    ],
+    "matlab_processes": 5
+  },
+  "nodes": [
+    1024,
+    2048
+  ],
+  "tolerance": 1e-06,
+  "forward": "nodal_kress CPU reference",
+  "layout": "full 36 by 72 prediction, then frozen CSI mask in C order",
+  "written_resolution": 2048,
+  "per_frequency": [
+    {
+      "frequency_ghz": 0.5,
+      "doubling_relative": 7.157421809426197e-16,
+      "csi_difference_relative": 0.0012286179435536438,
+      "seconds": [
+        1.4556697634980083,
+        6.777611979283392
+      ],
+      "reader_relative": 4.311543452239593e-16
+    },
+    {
+      "frequency_ghz": 1.0,
+      "doubling_relative": 5.197821085812778e-16,
+      "csi_difference_relative": 0.0019050217920407702,
+      "seconds": [
+        2.0216858629137278,
+        9.28397025540471
+      ],
+      "reader_relative": 2.245965650359384e-16
+    },
+    {
+      "frequency_ghz": 1.5,
+      "doubling_relative": 5.317057620900612e-16,
+      "csi_difference_relative": 0.0016853209499339788,
+      "seconds": [
+        2.569143953733146,
+        11.479524048045278
+      ],
+      "reader_relative": 1.7656093886968635e-16
+    },
+    {
+      "frequency_ghz": 2.0,
+      "doubling_relative": 5.086312898739547e-16,
+      "csi_difference_relative": 0.002000735729020874,
+      "seconds": [
+        2.8850310957059264,
+        12.738704700022936
+      ],
+      "reader_relative": 1.579780821381977e-16
+    },
+    {
+      "frequency_ghz": 2.5,
+      "doubling_relative": 5.962030939216445e-16,
+      "csi_difference_relative": 0.0028551014997294853,
+      "seconds": [
+        3.090743185952306,
+        13.65061700809747
+      ],
+      "reader_relative": 1.5534133905407012e-16
+    }
+  ],
+  "status": "passed",
+  "frozen_csi": {
+    "path": "results/csi/tg002/2026-11-18_five_frequency_data/kite/forward/synthetic_input.txt",
+    "sha256": "e827e20acc02391b185175ae2b7b2f10e10bf7ee4de493586c0fe60aa91769c7"
+  },
+  "execution": {
+    "device": "cpu",
+    "frequency_threads": 1,
+    "acceleration": "reference",
+    "geometry": "both",
+    "resolution": 512,
+    "nodal_geometry_reuse": "off",
+    "nodal_resolution_profile": "fixed",
+    "audit_frequency_batch": 1,
+    "validity_order": "certificate_first",
+    "stage_entry_reuse": false,
+    "preparation_device": "follow"
+  },
+  "table_layout": {
+    "rows": 8820,
+    "columns": 7,
+    "sources": 36,
+    "receivers": 72,
+    "measured_per_source": 49,
+    "source_receiver_frequency_columns_equal": true,
+    "incident_columns_equal": true
+  },
+  "checks": {
+    "doubling_pass": true,
+    "circle_exact_pass": true,
+    "reader_pass": true,
+    "layout_pass": true,
+    "modal_truth_pass": true,
+    "modal_truth_worst": 6.6916067081564854e-15
+  },
+  "bulk_files": [
+    {
+      "path": "results/bem/baseline_data/fresnel_own_forward/2026-11-18/data/kite/synthetic_input.txt",
+      "bytes": 942273,
+      "sha256": "efb4d9993597b1ed5992c57aa8e10a67e5e262f4d94dd8cc79d25b9de8a66f22"
+    },
+    {
+      "path": "results/bem/baseline_data/fresnel_own_forward/2026-11-18/data/kite/fields.npz",
+      "bytes": 271525,
+      "sha256": "590a60f303dc0b3f68a6633df936d766cffd3ebcf7911bfae6ff1da33cee4134"
+    },
+    {
+      "path": "results/bem/baseline_data/fresnel_own_forward/2026-11-18/adapter_checks/kite__c4_truth_predictions.npz",
+      "bytes": 271843,
+      "sha256": "3fed1c6f82d0d38a1b1ebe39f5e3702cc7ee393e538965297799270fd8f6b976"
+    }
+  ],
+  "seconds": 70.35562837868929,
+  "peak_memory_gib": 0.6945686340332031
+}
