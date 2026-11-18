@@ -78,7 +78,7 @@ After each returned fit, score its saved stage curves and update the report
 with this temporary reporting command. It reads saved results and runs no solve.
 
 ```bash
-PYTHONPATH=experiments/bem_on_baseline_data:solvers:. /home/drdeng/miniconda3/envs/EMNerf/bin/python -B /tmp/ten_frequency_remaining_report.py
+PYTHONPATH=experiments/bem_on_baseline_data:solvers:. /home/drdeng/miniconda3/envs/EMNerf/bin/python -B experiments/bem_on_baseline_data/ten_frequency_remaining_report.py
 ```
 
 The report reads activity 08's four results and all ten five-frequency
