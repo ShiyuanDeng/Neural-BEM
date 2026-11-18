@@ -38,7 +38,9 @@ The original data files are read in place, with no data generation. Each
 `data_reuse.json` records their paths and SHA-256 plus the geometry-input
 hash; the runner verifies hashes before fitting. Original data-generation
 cost is retained in metrics as `reused_data_generation_seconds`; new data
-cost is zero. Up to four BRG fits share the allocation across queues.
+cost is zero. The resource monitor raised the BRG ceiling from four to six
+at 02:40 UTC, only while CSI stays held; the hot-read policy applies at
+new launch boundaries, without changing active fits.
 The queue overlaps other work, so times are indicative.
 
 Scoring follows unchanged protocol 1, with all components, no fitted

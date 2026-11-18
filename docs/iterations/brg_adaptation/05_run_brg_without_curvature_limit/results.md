@@ -3,7 +3,7 @@
 ## Status and settings
 
 Started 2026-11-18T02:28:20.793603+00:00; queue state `running`;
-1/20 cases have scores. Last update: 2026-11-18T02:38:16.486256+00:00.
+3/20 cases have scores. Last update: 2026-11-18T02:42:46.824245+00:00.
 These are **provisional BRG-forward data**, identical to activity 04 by
 SHA-256. This is the control row alongside its shipped-limit row.
 
@@ -19,7 +19,9 @@ The original data files are read in place, with no data generation. Each
 `data_reuse.json` records their paths and SHA-256 plus the geometry-input
 hash; the runner verifies hashes before fitting. Original data-generation
 cost is retained in metrics as `reused_data_generation_seconds`; new data
-cost is zero. Up to four BRG fits share the allocation across queues.
+cost is zero. The resource monitor raised the BRG ceiling from four to six
+at 02:40 UTC, only while CSI stays held; the hot-read policy applies at
+new launch boundaries, without changing active fits.
 The queue overlaps other work, so times are indicative.
 
 Scoring follows unchanged protocol 1, with all components, no fitted
@@ -35,16 +37,20 @@ compact metrics and figure. No new success cutoff is selected.
 | Case | State | Frequencies | 04 area | 05 area | 04 max residual | 05 max residual | Inverse s | Residual s | Score s | Case wall s |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | kite__c0.5 | complete | 37/37 | 0.47527995 | 0.33866574 | 0.390121 | 0.205149 | 338.74 | 27.39 | 2.20 | 374.85 |
+| kite__c4 | complete | 37/37 | 0.46463161 | 0.54391802 | 0.861585 | 1.03227 | 242.05 | 8.67 | 2.34 | 259.70 |
+| peanut__c0.5 | complete | 37/37 | 0.11768157 | 0.0068889169 | 0.116288 | 0.000871915 | 242.06 | 13.54 | 1.88 | 264.24 |
 
 ## Time, limits and saved-output checks
 
 Kite eta 0.5 pilot: 374.85 s. It ran alone before the rest.
 
-Aggregate case wall time: 6.25 min. New data-generation time: zero.
+Aggregate case wall time: 14.98 min. New data-generation time: zero.
 
-Minimum sampled available memory: 31.60 GiB; maximum simultaneous control workers: 4. Each launch checks fresh shared memory, reserves at least 3 GiB for the new BRG fit and retains the 14 GiB floor plus 2 GiB margin, allowing for other queues and B1 reservations. The guard delays starts; it never kills running fits.
+Minimum sampled available memory: 29.88 GiB; maximum simultaneous control workers: 5. Each launch checks fresh shared memory, reserves at least 3 GiB for the new BRG fit and retains the 14 GiB floor plus 2 GiB margin, allowing for other queues and B1 reservations. The guard delays starts; it never kills running fits.
 
 - kite__c0.5: saved-output check passed; [metrics](../../../../results/brg/tg002_no_curvature/2026-11-18/kite__c0.5/metrics.json), [figure](figures/kite__c0.5.png).
+- kite__c4: saved-output check passed; [metrics](../../../../results/brg/tg002_no_curvature/2026-11-18/kite__c4/metrics.json), [figure](figures/kite__c4.png).
+- peanut__c0.5: saved-output check passed; [metrics](../../../../results/brg/tg002_no_curvature/2026-11-18/peanut__c0.5/metrics.json), [figure](figures/peanut__c0.5.png).
 
 ## Frequency-ending rejection codes
 
@@ -53,6 +59,8 @@ The first two columns count the selected final geometry/filter code on rejected 
 | Case | Final filter ier 2 | Final filter ier 1 | Final iteration ier -5 |
 |---|---:|---:|---:|
 | kite__c0.5 | 0 | 24 | 37 |
+| kite__c4 | 0 | 35 | 37 |
+| peanut__c0.5 | 0 | 0 | 34 |
 
 ## Interpretation and next step
 

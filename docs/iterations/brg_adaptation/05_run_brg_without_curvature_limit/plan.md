@@ -161,3 +161,14 @@ It never changes scientific settings, starts CSI or stops on elapsed time.
 Current effective counts and any held slots are recorded in campaign state.
 The pilot remains the sole active control fit until it finishes and is
 reviewed. The baseline result rows and all failed attempts remain intact.
+
+## Resource allocation update, 18 November 02:40 UTC
+
+The baseline coordinator passed on the user-directed resource monitor
+(w3:p1) allocation: raise the control ceiling from four to six while CSI
+stays held. The change is in `results/brg/resource_policy.json`, read at
+each launch boundary. Each new worker still reserves at least 3 GiB and
+keeps the 14 GiB host floor plus 2 GiB margin after shared reservations.
+No supervisor restart, numerical setting change or time kill. When CSI is
+released the coordinator will set a lower ceiling for new launches; active
+fits continue. Policy history retains the prior four-worker allocation.
