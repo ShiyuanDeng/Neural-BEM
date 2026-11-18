@@ -85,7 +85,7 @@ def main():
     state = json.loads((args.base/'campaign.json').read_text())
     for case in state['cases']:
         folder = args.base/case
-        if case in state.get('active', []) or not (folder/'metrics.json').exists():
+        if case in state.get('active', []) or not (folder/'metrics.json').exists() or (folder/'rejection_counts.json').exists():
             continue
         result = summarize_case(folder)
         counts = result['selected_terminal_filter_ier_counts']

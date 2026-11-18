@@ -43,9 +43,11 @@ def prepare():
         assert metrics['completed_frequencies'] == 37 and metrics['status'] == 'complete'
         path = SOURCE/case/'rejection_counts.json'
         r = json.loads(path.read_text())
-        if r['final_iteration_ier_counts'].get('-5', 0):
+        final_exit = r['frequencies'][-1]['exit_flag']
+        if final_exit == -1:
             stalled.append(case)
         prior.append(dict(case=case, area_error=metrics['area_error'],
+                          final_frequency_exit_flag=final_exit,
                           terminal_ier_minus5=r['final_iteration_ier_counts'].get('-5', 0)))
     circles = [c for c in state['cases'] if c.startswith('circle__')]
     order = [PILOT]+[c for c in stalled if c != PILOT and c not in circles]
@@ -68,7 +70,7 @@ def prepare():
                        source_manifest_sha256=file_sha256(SOURCE/case/'bulk_manifest.json'))
         write_json(out/'data_reuse.json', receipt)
     write_json(BASE/'order.json', dict(cases=order, pilot=PILOT, grouping=prior,
-                                     rule='pilot alone; terminal rejected-update cases in 04 order; rest; circle last'))
+                                     rule='pilot alone; cases ending 04 with final-frequency exit -1 in 04 order; rest; circle last'))
     files = ['run_tg002_control.py', 'run_tg002_control_case.m', 'score_tg002_control.py',
              'report_tg002_control.py', 'check_tg002_outputs.py', 'log_tg002_rejections.py', 'tg002_geometry.m']
     snapshots = BASE/'local/source_snapshot'
@@ -203,6 +205,22 @@ def campaign():
             memory = available()
             if memory < 14*1024**3:
                 stop_reason = stop_reason or 'memory below 14 GiB reserve'
+                # Relieve pressure promptly; only this queue's newest worker.
+                if active:
+                    newest = list(active)[-1]
+                    receipt_path = BASE/newest/'attempt_01.json'
+                    if receipt_path.exists():
+                        pid = json.loads(receipt_path.read_text()).get('matlab_pid')
+                        try:
+                            command_line = Path(f'/proc/{pid}/cmdline').read_bytes()
+                        except FileNotFoundError:
+                            command_line = b''
+                        if pid and b'run_tg002_control_case' in command_line:
+                            try:
+                                os.killpg(pid, signal.SIGTERM)
+                            except ProcessLookupError:
+                                pass
+                            state['resource_stop'] = dict(case=newest, utc=now())
             if stop_reason:
                 if not (BASE/'STOP').exists():
                     (BASE/'STOP').write_text(stop_reason+'\n')

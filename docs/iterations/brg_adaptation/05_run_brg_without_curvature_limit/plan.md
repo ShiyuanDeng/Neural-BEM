@@ -48,8 +48,8 @@ Compare each result directly with 04; do not choose a new success cutoff.
 
 Run `kite__c0.5` alone first as the timed pilot. No additional pilot cutoff
 was specified: its existing one-hour case cap applies. Report its cost
-before launching the rest. Next run cases that ended frequencies with
-rejected updates in 04, preserving 04 order within that group; then the
+before launching the rest. Next run cases whose last frequency ended with a rejected update
+(exit -1) in 04, preserving 04 order within that group; then the
 remaining cases. Both circle cases run last. Save the exact order and the
 log-derived grouping before launch.
 
@@ -59,7 +59,9 @@ scoring and receipts. Reserve estimated worker growth before each launch.
 Use a separate detached supervisor with `campaign.json`, `resources.jsonl`,
 `STOP` and `STOPPED.json` in the new result directory. `STOP` prevents new
 launches and asks active workers to save and end at the next checkpoint;
-hard deadlines still apply. Keep failed and partial outputs and report them.
+hard deadlines still apply. A memory breach also terminates the newest
+control MATLAB process group to release memory promptly; saved frequency
+checkpoints remain. Keep failed and partial outputs and report them.
 Do not restart or retry without another coordinator decision.
 
 Success for the activity means answering the curvature-control question
@@ -85,3 +87,14 @@ stay in its ignored `local/` directories with SHA-256 manifests. Figures:
 `docs/iterations/brg_adaptation/05_run_brg_without_curvature_limit/figures/`.
 Record dates, actual settings, elapsed times, failures, comparison with 04
 and any remaining uncertainty in `results.md`. Commit and push each batch.
+
+## Preparation checks, 18 November
+
+Python syntax passed. A read-only launch check refused to proceed while
+activity 04 was active. Two simulated queues (no subprocesses) checked that
+the pilot runs alone, the worker count never exceeds two, and STOP retains
+the unrun cases. The scorer's reconstruction and frozen score call match
+04 exactly apart from output paths and the row label; only timing metadata
+separates reused data from new work. Existing kite logs confirm 37 terminal
+curvature rejections, with iteration 7 retaining iteration 6 at the first
+frequency. These checks launched no MATLAB process or numerical experiment.
