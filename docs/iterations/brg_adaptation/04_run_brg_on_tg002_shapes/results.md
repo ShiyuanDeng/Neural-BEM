@@ -192,7 +192,8 @@ Both first aphex_twin attempts failed before data generation because the
 wrapper skipped its diagnostic-point fallback when an interior centroid
 failed the clearance test. The coordinator approved a dense interior
 search retaining clearance >0.01 and fresh attempts, with no BRG or data
-rule change. See the [diagnostic-point fix plan](diagnostic_point_fix_plan.md).
+rule change. Both found clearance 0.193591687992 at the selected point.
+See the [diagnostic-point fix plan](diagnostic_point_fix_plan.md).
 
 The [approved plan](plan.md) records the pilot rule and all choices. The
 [single data request](../../../../results/brg/tg002_shapes/2026-11-17/data_request.json)
@@ -276,7 +277,7 @@ Elapsed from the original start through latest queue end: 172.25 min; ended 2026
 
 Original capped queue ended 2026-11-18T01:34:01.795957+00:00: case failed or capped; review required. The authorized continuation has no time cutoff; its times are reporting targets. Failed-attempt and interrupted-frequency work remain in case wall time.
 
-Memory: minimum observed available 15.10 GiB; maximum active BRG workers 2. The required reserve is 14 GB. Start/end CSI/MATLAB overlap is retained in each attempt.
+Memory: minimum observed available 15.10 GiB; maximum workers recorded within one shipped queue 2. Completion, retry and control queues overlapped near the end, under the shared BRG allocation. The required reserve is 14 GiB. Start/end CSI/MATLAB overlap is retained in each attempt.
 
 ## Frequency-ending rejection codes
 
@@ -305,7 +306,7 @@ Counts below read the existing MATLAB logs only. Geometry/filter ier 2 means cur
 | aphex_twin__c0.5 | 37 | 30 | 0 | 34 |
 | aphex_twin__c4 | 37 | 22 | 12 | 37 |
 
-The coordinator identified curvature rejection as the reason stalled curves could no longer move. Kite at eta 0.5 stops moving after the first frequency's sixth iteration. Activity [05](../05_run_brg_without_curvature_limit/plan.md) is authorized to remove only the curvature limit, reuse these hashed data, and retain this shipped-limit row. Its queue starts only after this queue ends.
+The coordinator identified curvature rejection as the reason stalled curves could no longer move. Kite at eta 0.5 stops moving after the first frequency's sixth iteration. Activity [05](../05_run_brg_without_curvature_limit/plan.md) removes only the curvature limit and reuses these hashed data. The coordinator later authorized its first case in a free slot while the shipped row finished; it started at 02:28 UTC. Both rows stay provisional.
 
 ## Checks, failures and evidence
 
@@ -350,10 +351,16 @@ and [geometry checks](../../../../results/brg/tg002_shapes/2026-11-17/geometry_c
 
 ## Frozen-data replacement and handoff
 
-Frozen BEM-side observations do not yet exist and were not compared here.
+Frozen BEM-side observations were not compared in this activity.
 The agreed relative complex-field tolerance is max(1e-5, ten times measured
 BRG refinement error); refinement error above 1e-4 returns to the coordinator.
 Compare every frequency after units/order/signs are matched. Rerun only cases
 whose fields differ beyond that threshold. Preserve these provisional results.
 Both BEM rows and cross-solver checks belong to the separate BEM coordinator.
-Paper k=30 resumes remain deferred while CSI runs overnight.
+Paper k=30 resumes remain deferred.
+
+## Completed-row conclusion
+
+All 20 cases completed all 37 frequencies, with 20 saved-output checks passing. Seven have area error at most 5%: both circles, both stars, cross at contrast 0.5 and both cogs. Those same seven meet the saved clean residual limit. This descriptive count does not choose the open final-table cutoff. C-shape at contrast 0.5 finishes just above it at 5.26%. Contrast error is zero by construction because BRG receives the true contrast.
+
+The saved-state restart check and unchanged-settings check are retained in `results/brg/tg002_completion/2026-11-18/`. C-shape attempt 01, both failed aphex attempts and their logs remain. The original capped queue was allowed to end by itself; the replacement queues did not stop on time. Activity 05 is already authorized and running; no further setting change or tuning is proposed.
