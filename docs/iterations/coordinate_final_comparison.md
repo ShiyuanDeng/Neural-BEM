@@ -421,6 +421,17 @@ Rules for every table:
   - The BEM side asked the user and fits no simulated case until the
     answer. The campaign continues meanwhile. `csi` measures the error at
     1.25, 0.625 and 0.3125 mm cells for that decision.
+  - What the error means (coordinator's check, 18 November 00:50 UTC, exact
+    series only, no solver): the table matches an exact circle with the
+    true radius and centre and a contrast of 4.001 at 1 GHz rising to
+    4.010 at 8 GHz. With that contrast the mismatch is 0.13 to 1.3%. One
+    circle fitted to all eight frequencies has radius 49.98 mm, contrast
+    4.009 and the centre within 0.01 mm; it leaves 0.3 to 2.7%.
+  - So the 5.9% field error equals a contrast shift of at most 0.26%. The
+    shape is right to 0.02 mm. `csi` reproduces this in its results.
+  - Coordinator's advice to the user: keep the simulated data. It comes
+    from CSI's own generator, and the error should not move a recovered
+    shape. The user decides.
 
 ## Who decides
 
