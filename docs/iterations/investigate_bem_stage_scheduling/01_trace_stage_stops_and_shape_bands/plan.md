@@ -1,6 +1,6 @@
 # Trace stage stops and shape bands
 
-18 November 2026. New investigation for the BEM coordinator. The user asked whether early stages advance while the fit is still improving, and whether shape-band limits compound the error. The requested team is the BEM coordinator with subagents in Herdr. The previous comparison is [finished and saved](../../coordinate_bem_side.md#wiggle-check-opened-18-november-1120-utc). Dispatched 18 November, 15:50 UTC; see [Dispatch](#dispatch).
+18 November 2026. New investigation for the BEM coordinator. The user asked whether early stages advance while the fit is still improving, and whether shape-band limits compound the error. The requested team is the BEM coordinator with subagents in Herdr. The previous comparison is [finished and saved](../../coordinate_bem_side.md#wiggle-check-opened-18-november-1120-utc). Dispatched 18 November, 15:45 UTC; see [Dispatch](#dispatch). Finished 15:58 UTC; see [results](results.md).
 
 ## Starting evidence
 

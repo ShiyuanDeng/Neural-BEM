@@ -40,26 +40,33 @@ side runs. The baseline side fits MF-CC-CSI at ten frequencies until about
 midnight. Read that section first; the rest of this file is the finished
 overnight work.
 
-**State, 18 November 2026, 15:52 UTC: stage scheduling investigation
-dispatched.** The user in pane `w2:p1`: "as investigator, you coordinate
-subagent work. go ahead." The
-[plan](investigate_bem_stage_scheduling/01_trace_stage_stops_and_shape_bands/plan.md)
-holds the briefs, the rules, each agent's files and the coordinator's
-choices. A restart resumes from this block.
+**State, 18 November 2026, 15:58 UTC: stage scheduling investigation
+answered.** The user in pane `w2:p1`: "as investigator, you coordinate
+subagent work. go ahead." Dispatched 15:45, both notes in at 15:54,
+[results](investigate_bem_stage_scheduling/01_trace_stage_stops_and_shape_bands/results.md)
+written 15:58. No fit ran. Nothing of the BEM side runs and no watcher
+is armed.
 
 | Agent | Pane | Launch | Task | State |
 |---|---|---|---|---|
-| `stage-stops` | `w2:pC` | `codex -c model_reasoning_effort="high" -s workspace-write -a never` (GPT-6.2-Astra) | Stage stops; writes `stage_stops.md` | working since 15:50 |
-| `shape-bands` | `w2:pD` | same | Shape bands; writes `shape_bands.md` | working since 15:50 |
+| `stage-stops` | closed (was `w2:pC`) | `codex -c model_reasoning_effort="high" -s workspace-write -a never` (GPT-6.2-Astra) | Stage stops; wrote `stage_stops.md` | done 15:54, committed by the coordinator |
+| `shape-bands` | closed (was `w2:pD`) | same | Shape bands; wrote `shape_bands.md` | done 15:54, committed by the coordinator |
 
-- Zero new fits. Both agents are sandboxed with prompts off and do not use
-  git; the coordinator commits their paths (listed in the plan's Dispatch
-  table).
-- Watchers: `agent wait stage-stops` and `agent wait shape-bands` in
-  background shells of the coordinator. A restart must re-arm them.
-- Next: read both notes, check their numbers against the records, write
-  `results.md` beside the plan (handoff item 3), commit and push, close
-  both panes. A proposed run becomes activity 02 with its own plan.
+- **Answer.** Early stages do advance while loss still falls (eight of 16
+  hit the cap), but a longer cap recovered no shape. The update band
+  caused the C-shape miss: stage one closed the opening. Kite and Aphex
+  Twin miss for a reason outside both limits; their contrast estimate
+  stays near 2.
+- **Coordinator's decisions.** Both agents sandboxed with prompts off,
+  since no fit was needed; the sandbox blocked nothing. No new run: the
+  three small comparisons the agents recorded would not change a verdict.
+  One brief paragraph with a link added to the short report, as the plan's
+  third handoff item asks; that file belongs to the report session.
+- **Open for the user.** Whether to test update bands 5, 7, 9, 11 on all
+  TG-002 cases as a possible default. Whether to look into the kite and
+  Aphex Twin start (contrast near 2, outline too large), which leaves
+  this investigation's topic. The slider accepted two kite curves that
+  cross themselves on a finer grid, seen in the diagnostic wider runs.
 
 ## Wiggle check (opened 18 November, 11:20 UTC)
 

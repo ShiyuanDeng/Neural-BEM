@@ -40,6 +40,8 @@ On real data at contrast 4, supplying the true contrast recovered 2/10 shapes, c
 
 Wider updates also improved cog from 2.00% to 0.04%. Kite and Aphex Twin still missed. By stage three, kite had 494% area error with both changes and 279% with wider updates alone. [Four-case comparison](evaluate_our_method/04_check_stage_stops_and_shape_bands/results.md)
 
+**Stage-by-stage trace.** C-shape's opening closed in the first stage. The original update band covered 99.5% of it there and the wider band 1.8%. Later stages moved towards the truth but each stopped after a small gain. Kite went wrong in its second stage under all four settings and Aphex Twin was far off from the start, both with a contrast estimate near 2. Neither limit explains those two misses. [Trace per shape](investigate_bem_stage_scheduling/01_trace_stage_stops_and_shape_bands/results.md)
+
 <details>
 <summary>Area error and estimated contrast for each fit</summary>
 
