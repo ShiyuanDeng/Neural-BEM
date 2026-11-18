@@ -22,6 +22,11 @@ keep at least 14 GB available and reduce concurrency when needed. CSI has
 three concurrent fits; record overlap. Commit and push each completed batch.
 No k=30 paper resume is authorized during CSI's overnight campaign.
 
+Pilot completed in 771.81 seconds on 17 November, so the other 19 cases
+started under the approved automatic continuation rule. A Python 3.10 hash
+writer error occurred after MATLAB and scoring; its log and receipt repair
+are retained. No numerical pilot rerun was needed.
+
 The user chose this as the main BRG table on 17 November: “for brg i think
 we should compare it on my tb 002 scenes, its more variety?”, then “yeah”.
 The six paper cases remain a check of BRG on its own examples. Activity 03's

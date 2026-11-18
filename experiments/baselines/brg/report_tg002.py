@@ -82,6 +82,9 @@ inverse {20*m['inverse_seconds']/60:.2f} min and residual checks
 promise for thin strokes or deep concavities. No case is rerun to tune it.
 
 '''
+    if len(details)>1:
+        aggregate=sum(d[3] for d in details)
+        text+=f"Completed-case aggregate wall time: {aggregate/60:.2f} min across {len(details)} cases. A running-mean projection for all 20 is {aggregate/len(details)*20/60:.2f} min before parallelism; the still-unrun difficult shapes make this uncertain.\n\n"
     resources=BASE/'resources.jsonl'
     if resources.exists():
         samples=[json.loads(l) for l in resources.read_text().splitlines()]

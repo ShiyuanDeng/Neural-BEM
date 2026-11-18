@@ -2,7 +2,7 @@
 
 ## Status and ownership
 
-Campaign started 2026-11-17T23:41:28.138975+00:00; 2/20 cases have saved scores.
+Campaign started 2026-11-17T23:41:28.138975+00:00; 5/20 cases have saved scores.
 All data and results here are **provisional BRG-forward data**. The BEM side
 owns generating and freezing the shared plane-wave data. These are TG-002
 shapes with BRG-style observations, not the sealed TG-002 measurements.
@@ -52,7 +52,10 @@ This final-curve evaluation has its own time column. No BEM solve is involved.
 | Case | State | Frequencies | Raw area error | Max final residual | Data s | Inverse s | Residual check s | Score s | Case wall s |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|
 | asymmetric__c4 | complete | 37/37 | 0.27669129 | 0.893277 | 19.79 | 717.43 | 25.92 | 2.47 | 771.81 |
+| asymmetric__c0.5 | complete | 37/37 | 0.11053017 | 0.133603 | 20.99 | 386.54 | 20.33 | 2.32 | 436.54 |
 | circle__c0.5 | complete | 37/37 | 2.3469481e-08 | 1.03264e-10 | 18.88 | 91.08 | 16.53 | 2.28 | 134.82 |
+| circle__c4 | complete | 37/37 | 2.0352808e-06 | 4.87606e-10 | 18.19 | 58.54 | 18.51 | 2.15 | 103.57 |
+| kite__c0.5 | complete | 37/37 | 0.47527995 | 0.390121 | 13.07 | 205.36 | 8.88 | 2.35 | 235.83 |
 
 ## Timed pilot and forecast
 
@@ -66,13 +69,18 @@ inverse 239.14 min and residual checks
 257.27 min before parallelism. This is a one-shape estimate, not a
 promise for thin strokes or deep concavities. No case is rerun to tune it.
 
-Memory: minimum observed available 21.74 GiB; maximum active BRG workers 2. The required reserve is 14 GB. Start/end CSI/MATLAB overlap is retained in each attempt.
+Completed-case aggregate wall time: 28.04 min across 5 cases. A running-mean projection for all 20 is 112.17 min before parallelism; the still-unrun difficult shapes make this uncertain.
+
+Memory: minimum observed available 21.57 GiB; maximum active BRG workers 2. The required reserve is 14 GB. Start/end CSI/MATLAB overlap is retained in each attempt.
 
 ## Checks, failures and evidence
 
 - asymmetric__c4: maximum data-geometry resampling point error 1.66371e-15 BRG units; [metrics](../../../../results/brg/tg002_shapes/2026-11-17/asymmetric__c4/metrics.json), [curve](figures/asymmetric__c4.png).
   Wrapper failure: Python 3.10 lacks hashlib.file_digest; MATLAB and scoring completed. Receipt repaired with streaming SHA-256; no numerical rerun. See `supervisor_failure.log` in this case folder.
+- asymmetric__c0.5: maximum data-geometry resampling point error 1.66371e-15 BRG units; [metrics](../../../../results/brg/tg002_shapes/2026-11-17/asymmetric__c0.5/metrics.json), [curve](figures/asymmetric__c0.5.png).
 - circle__c0.5: maximum data-geometry resampling point error 1.81942e-15 BRG units; [metrics](../../../../results/brg/tg002_shapes/2026-11-17/circle__c0.5/metrics.json), [curve](figures/circle__c0.5.png).
+- circle__c4: maximum data-geometry resampling point error 1.81942e-15 BRG units; [metrics](../../../../results/brg/tg002_shapes/2026-11-17/circle__c4/metrics.json), [curve](figures/circle__c4.png).
+- kite__c0.5: maximum data-geometry resampling point error 1.80062e-15 BRG units; [metrics](../../../../results/brg/tg002_shapes/2026-11-17/kite__c0.5/metrics.json), [curve](figures/kite__c0.5.png).
 
 The frozen-input geometry checks verify source hashes, agreement with the
 benchmark's scene definitions, positive orientation, closure, simple curves,
