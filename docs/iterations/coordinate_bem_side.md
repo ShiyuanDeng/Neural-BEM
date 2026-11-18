@@ -17,9 +17,9 @@ but moving; then recovered). One fit failed in quality: `aphex_twin__c0.5`
 with known contrast, 15.1%. Table C, simulated: the user chose 0.5, 1, 1.5,
 2 and 2.5 GHz for all ten shapes at 03:39. The wrapper and the
 [plan](adapt_bem_to_baseline_data/07_fit_csi_cases_at_five_frequencies/plan.md)
-are ready; the fits wait for the baseline side's frozen five-frequency tables
-and for a free BEM slot (the resource monitor allows one BEM fit at a time
-across B1 and these cases; a second slot was asked for at 03:58).
+are in use. All ten tables are frozen and all ten 1% checks pass (04:04,
+worst 0.71%). The GPU fits run since 04:04, one beside the B1 fit (the
+resource monitor raised the BEM ceiling to two at 04:04).
 A later restart begins at [Start here](#start-here) too.
 
 ## Start here
@@ -59,7 +59,7 @@ activity results):
 | B2 | `cavity_09`, `cavity_2` | Skipped by the user (series limit) | BRG 134% |
 | C | Measured cylinder | Default fit stalled: radius 19.0 mm against 15, permittivity 2.19 against 3, area error 67.8%. The adapter is cleared | MF-CC-CSI +4.2% support area, 2.73 |
 | C | Simulated circle, kite, peanut, 1 to 3 GHz (early look, not the reported pass) | 1.17%, 3.08%, 1.50% area error; contrast within 0.04% of 4 | CSI's three eight-frequency fits stay as separate results |
-| C | Simulated, all ten shapes, 0.5 to 2.5 GHz in five frequencies (the reported pass) | Prepared 03:58; waits for the frozen tables | CSI's seven remaining fits wait for our ten 1% checks |
+| C | Simulated, all ten shapes, 0.5 to 2.5 GHz in five frequencies (the reported pass) | 1% checks pass on all ten (04:04): worst 0.71% (`aphex_twin`, 2.5 GHz); the other nine at most 0.44%. GPU fits running since 04:04 | CSI's seven remaining fits are released by these checks |
 | B1, known contrast | 17 of 20 cases (02:20) | Every fit completed its schedule. Area error at most 0.29% (`cog__c0.5`), under 0.1% on the other 16, median 0.04%. 7 to 115 s and 274 to 4585 work units per fit | BRG, same 17 cases: 6 under 5% (main file, BRG activity 04) |
 | B1, recovered contrast | 17 of 20 cases (02:26) | Every fit completed its schedule. Area error at most 0.21% (`cog__c0.5`), under 0.1% on the other 16, median 0.03%. Contrast within 2e-6 of the truth, relative. 9 to 96 s per fit | None; BRG is given the contrast |
 | B1 | `cog__c4` | 0.038% area error in both rows (40 s and 56 s); contrast found 4.0000001 | |
@@ -99,11 +99,9 @@ activity results):
    the other nine follow one by one. The dry check passes on the real
    circle table. `bem-csi-run` has the go for the checks (04:01). Still to
    do, in order:
-   - Read its ten check results as they land
-     (`adapter_checks/<shape>__c4.json`). The baseline `csi` agent reads
-     the same files to release its seven fits; no message is needed per
-     check. A shape above 1% or a failed check: tell the baseline
-     coordinator at once; neither method fits it, and it asks the user.
+   - Done 04:04: all ten checks pass (`adapter_checks/<shape>__c4.json`).
+     The baseline `csi` agent reads the same files to release its seven
+     fits.
    - Then the ten GPU fits, as the resource monitor allows; then the CPU
      cross-checks. Results:
      `results/bem/baseline_data/csi_five_frequency/2026-11-18/`.
@@ -578,6 +576,7 @@ data convention is in doubt.
 | 18 Nov, 03:55 | The five-frequency pass writes to `results/bem/baseline_data/csi_five_frequency/2026-11-18/`, apart from the early look. A fit now refuses a check made on another table (SHA-256) or another frequency list | The early-look folder holds finished attempts and passing 1 to 3 GHz checks for circle, kite and peanut; reusing it would skip those fits and accept the old checks. Both methods must provably read the same file |
 | 18 Nov, 03:58 | Resource ceilings: the BEM side follows `results/csi/resource_policy.json` (one BEM fit at a time across B1 and the simulated cases, set 03:51). The ten 1% checks run on the CPU as each table is frozen. The monitor was asked for a second BEM slot, for one simulated fit beside the B1 fit | The monitor is set up by the user and sets how many jobs run. The checks use one CPU thread for about 10 s each and no GPU, and CSI's seven fits wait for them. The B1 fit `aphex_twin__c4` has run 86 min with no time stop; ten short simulated fits (1 to 3 min each in the early look) would otherwise wait behind it |
 | 18 Nov, 04:01 | Go to `bem-csi-run` for the 1% checks, shape by shape as each table is frozen. A table is frozen when its `<shape>/manifest.json` says `frozen` and the `.sha256` is beside it | The baseline coordinator's rule, sent 04:00. The circle table is verified: 8820 rows, five frequencies, SHA-256 `43b641d7…` equal to its `.sha256`. Its own check against the exact series gives 0.44, 0.17, 0.13, 0.13, 0.18% |
+| 18 Nov, 04:05 | The ten 1% checks are accepted; all ten shapes are fitted. Mismatch on the true shape at 0.5, 1, 1.5, 2, 2.5 GHz, in %: circle 0.44, 0.17, 0.13, 0.13, 0.18; kite 0.12, 0.19, 0.17, 0.20, 0.29; peanut 0.21, 0.17, 0.11, 0.17, 0.26; star 0.42, 0.17, 0.18, 0.14, 0.27; asymmetric 0.28, 0.18, 0.20, 0.20, 0.37; c_shape 0.30, 0.30, 0.22, 0.21, 0.28; hook 0.21, 0.17, 0.16, 0.14, 0.19; cross 0.27, 0.16, 0.15, 0.14, 0.24; cog 0.40, 0.18, 0.14, 0.14, 0.31; aphex_twin 0.35, 0.40, 0.46, 0.48, 0.71 | All under the 1% limit. Our two resolutions agree to 6e-9 or better, and on the circle our forward equals the exact series to 1e-15, so the mismatch is the data's grid error. Each check records its table's SHA-256. The monitor raised `max_bem_fits` to 2 at 04:04; the circle fit started beside the B1 fit |
 | 18 Nov, 03:55 | The coordinator made these wrapper edits itself (`csi_fit.py`, `csi_data.py`, `csi_policy_dry_check.py`); `bem-csi-run` only runs | `bem-csi` is closed; the edits are settings and one start check, no solver file. The dry check reproduces the saved plans of the cylinder and of the early look, apart from the removed ceiling |
 
 ## Waiting on the user
