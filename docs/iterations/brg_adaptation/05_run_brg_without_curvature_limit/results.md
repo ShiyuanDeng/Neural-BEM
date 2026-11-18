@@ -3,7 +3,7 @@
 ## Status and settings
 
 Started 2026-11-18T02:28:20.793603+00:00; queue state `running`;
-9/20 cases have scores. Last update: 2026-11-18T02:48:42.305249+00:00.
+10/20 cases have scores. Last update: 2026-11-18T02:51:27.521358+00:00.
 These are **provisional BRG-forward data**, identical to activity 04 by
 SHA-256. This is the control row alongside its shipped-limit row.
 
@@ -45,12 +45,13 @@ compact metrics and figure. No new success cutoff is selected.
 | c_shape__c4 | complete | 37/37 | 0.44474779 | 0.16654318 | 0.891051 | 0.753086 | 282.80 | 8.59 | 2.46 | 300.58 |
 | hook__c4 | complete | 37/37 | 0.52228048 | 0.1848404 | 0.940662 | 0.770997 | 258.31 | 8.47 | 2.40 | 275.78 |
 | cross__c4 | complete | 37/37 | 0.24642363 | 0.24041865 | 0.81336 | 0.88416 | 227.92 | 8.34 | 2.31 | 245.36 |
+| aphex_twin__c4 | complete | 37/37 | 0.89878857 | 1.0626189 | 0.979737 | 1.05886 | 194.53 | 8.23 | 2.68 | 211.91 |
 
 ## Time, limits and saved-output checks
 
 Kite eta 0.5 pilot: 374.85 s. It ran alone before the rest.
 
-Aggregate case wall time: 49.25 min. New data-generation time: zero.
+Aggregate case wall time: 52.79 min. New data-generation time: zero.
 
 Minimum sampled available memory: 29.88 GiB; maximum simultaneous control workers: 5. Each launch checks fresh shared memory, reserves at least 3 GiB for the new BRG fit and retains the 14 GiB floor plus 2 GiB margin, allowing for other queues and B1 reservations. The guard delays starts; it never kills running fits.
 
@@ -63,6 +64,7 @@ Minimum sampled available memory: 29.88 GiB; maximum simultaneous control worker
 - c_shape__c4: saved-output check passed; [metrics](../../../../results/brg/tg002_no_curvature/2026-11-18/c_shape__c4/metrics.json), [figure](figures/c_shape__c4.png).
 - hook__c4: saved-output check passed; [metrics](../../../../results/brg/tg002_no_curvature/2026-11-18/hook__c4/metrics.json), [figure](figures/hook__c4.png).
 - cross__c4: saved-output check passed; [metrics](../../../../results/brg/tg002_no_curvature/2026-11-18/cross__c4/metrics.json), [figure](figures/cross__c4.png).
+- aphex_twin__c4: saved-output check passed; [metrics](../../../../results/brg/tg002_no_curvature/2026-11-18/aphex_twin__c4/metrics.json), [figure](figures/aphex_twin__c4.png).
 
 ## Frequency-ending rejection codes
 
@@ -79,6 +81,7 @@ The first two columns count the selected final geometry/filter code on rejected 
 | c_shape__c4 | 0 | 33 | 37 |
 | hook__c4 | 0 | 36 | 37 |
 | cross__c4 | 0 | 33 | 37 |
+| aphex_twin__c4 | 0 | 37 | 37 |
 
 ## Interpretation and next step
 
