@@ -276,6 +276,9 @@ its table is frozen and checks 1 to 3 passed for it.
 - 12:04 UTC: `circle` started; three fits run. Each uses about 7.6 GiB.
 - 12:07 UTC, from the BEM coordinator: BEM at ten frequencies is done on
   all ten shapes (0.17 to 5.77%); nothing runs on the BEM side.
+- 14:15 UTC: `hook` done, the first of ten (`c2dc1e87b`): 16.22%, all
+  2048 iterations, 8134 s. At five frequencies it gave 16.52%. `kite`
+  started. `star` is at iteration 1691 and `circle` at 1628 (14:16 UTC).
 - Next: each fit as it ends (the launcher pushes it). Then `results.md`,
   the figure and the ten-frequency table. Ask the user only on a failed
   or stuck fit that needs a decision.
@@ -508,9 +511,9 @@ reported. BEM numbers are read from
 | Shape | BEM area error | BEM contrast found | BEM time | MF-CC-CSI area error | CSI at 0.3 / 0.7 of the peak | CSI mean permittivity | CSI time |
 |---|---:|---:|---:|---:|---:|---:|---:|
 | star | 1.02% | 4.0013 | 62 s | running | | | |
-| hook | 2.44% | 4.0032 | 164 s | running | | | |
+| hook | 2.44% | 4.0032 | 164 s | 16.22% | 9.0% / 43.6% | 3.88 | 8134 s |
 | circle | 0.17% | 4.0011 | 130 s | running | | | |
-| kite | 3.21% | 4.0015 | 160 s | queued | | | |
+| kite | 3.21% | 4.0015 | 160 s | running | | | |
 | asymmetric | 0.93% | 4.0019 | 55 s | queued | | | |
 | cross | 1.07% | 4.0009 | 47 s | queued | | | |
 | cog | 1.45% | 4.0013 | 36 s | queued | | | |
@@ -522,6 +525,9 @@ reported. BEM numbers are read from
   from its files): every fit completed its schedule, on the same table
   hashes. Mean 1.88%, median 1.32%. At five frequencies the same ten gave
   mean 2.71%, median 2.47%.
+- MF-CC-CSI, one of ten in (14:15 UTC): `hook` 16.22% against 16.52% at
+  five frequencies. Evidence:
+  `results/csi/tg002/2026-11-18_ten_frequency/<shape>/scores.json`.
 - BEM side's table beside five frequencies:
   [its activity 10](adapt_bem_to_baseline_data/10_fit_remaining_csi_tables_at_ten_frequencies/results.md).
 
