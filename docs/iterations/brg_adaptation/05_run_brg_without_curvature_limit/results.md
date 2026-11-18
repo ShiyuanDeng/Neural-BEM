@@ -3,7 +3,7 @@
 ## Status and settings
 
 Started 2026-11-18T02:28:20.793603+00:00; queue state `running`;
-14/20 cases have scores. Last update: 2026-11-18T02:55:47.859600+00:00.
+16/20 cases have scores. Last update: 2026-11-18T02:56:47.937199+00:00.
 These are **provisional BRG-forward data**, identical to activity 04 by
 SHA-256. This is the control row alongside its shipped-limit row.
 
@@ -50,12 +50,14 @@ compact metrics and figure. No new success cutoff is selected.
 | star__c0.5 | complete | 37/37 | 0.0025279893 | 0.0024260803 | 2.80675e-05 | 2.90794e-05 | 292.63 | 30.15 | 2.17 | 331.92 |
 | star__c4 | complete | 37/37 | 0.00039247399 | 0.17542513 | 3.11609e-06 | 0.739178 | 395.46 | 8.61 | 2.53 | 414.96 |
 | c_shape__c0.5 | complete | 37/37 | 0.052557715 | 0.0015837012 | 0.0537632 | 1.67175e-05 | 371.38 | 31.29 | 2.17 | 415.74 |
+| hook__c0.5 | complete | 37/37 | 0.57706138 | 0.64609499 | 0.480827 | 0.531757 | 336.81 | 8.47 | 2.44 | 354.34 |
+| circle__c0.5 | complete | 37/37 | 2.3469481e-08 | 2.3469481e-08 | 1.03264e-10 | 1.03264e-10 | 83.83 | 15.38 | 2.12 | 108.32 |
 
 ## Time, limits and saved-output checks
 
 Kite eta 0.5 pilot: 374.85 s. It ran alone before the rest.
 
-Aggregate case wall time: 78.88 min. New data-generation time: zero.
+Aggregate case wall time: 86.59 min. New data-generation time: zero.
 
 Minimum sampled available memory: 29.86 GiB; maximum simultaneous control workers: 6. Each launch checks fresh shared memory, reserves at least 3 GiB for the new BRG fit and retains the 14 GiB floor plus 2 GiB margin, allowing for other queues and B1 reservations. The guard delays starts; it never kills running fits.
 
@@ -73,6 +75,8 @@ Minimum sampled available memory: 29.86 GiB; maximum simultaneous control worker
 - star__c0.5: saved-output check passed; [metrics](../../../../results/brg/tg002_no_curvature/2026-11-18/star__c0.5/metrics.json), [figure](figures/star__c0.5.png).
 - star__c4: saved-output check passed; [metrics](../../../../results/brg/tg002_no_curvature/2026-11-18/star__c4/metrics.json), [figure](figures/star__c4.png).
 - c_shape__c0.5: saved-output check passed; [metrics](../../../../results/brg/tg002_no_curvature/2026-11-18/c_shape__c0.5/metrics.json), [figure](figures/c_shape__c0.5.png).
+- hook__c0.5: saved-output check passed; [metrics](../../../../results/brg/tg002_no_curvature/2026-11-18/hook__c0.5/metrics.json), [figure](figures/hook__c0.5.png).
+- circle__c0.5: saved-output check passed; [metrics](../../../../results/brg/tg002_no_curvature/2026-11-18/circle__c0.5/metrics.json), [figure](figures/circle__c0.5.png).
 
 Completed attempt receipts also record peak other simultaneous BRG/B1 fits, distinct overlapping fit receipts, and original MATLAB snapshots. Counts use saved process intervals; BRG intervals include residual evaluation. No B1 files are changed.
 
@@ -96,6 +100,8 @@ The first two columns count the selected final geometry/filter code on rejected 
 | star__c0.5 | 0 | 0 | 5 |
 | star__c4 | 0 | 32 | 36 |
 | c_shape__c0.5 | 0 | 0 | 13 |
+| hook__c0.5 | 0 | 34 | 36 |
+| circle__c0.5 | 0 | 0 | 6 |
 
 ## Interpretation and next step
 
