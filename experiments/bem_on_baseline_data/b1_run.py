@@ -320,8 +320,18 @@ def commit_owned(message):
     if size > 5*1024**2:
         raise RuntimeError(f'Owned compact commit exceeds 5 MiB: {size} bytes')
     subprocess.run(['git', 'commit', '-m', message, '--', *paths], cwd=ROOT, check=True)
-    subprocess.run(['git', 'push'], cwd=ROOT, check=True)
-    subprocess.run(['git', 'status', '--short'], cwd=ROOT, check=True)
+    # Other agents push this same branch. Retry only an ordinary push; never reset/rebase.
+    for attempt in range(3):
+        pushed = subprocess.run(['git', 'push'], cwd=ROOT, capture_output=True, text=True)
+        (BASE/'local').mkdir(exist_ok=True)
+        with (BASE/'local/push_journal.jsonl').open('a') as journal:
+            journal.write(json.dumps(dict(utc=now(), returncode=pushed.returncode, stdout=pushed.stdout, stderr=pushed.stderr))+'\n')
+        print(pushed.stdout+pushed.stderr, flush=True)
+        if pushed.returncode == 0:
+            break
+        time.sleep(1.)
+    pushed.check_returncode()
+    subprocess.run(['git', 'status', '--short', '--', *paths], cwd=ROOT, check=True)
 
 
 def fit_case(case, row):
