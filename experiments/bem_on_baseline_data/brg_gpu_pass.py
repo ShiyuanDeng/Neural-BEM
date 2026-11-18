@@ -65,12 +65,18 @@ def compare_cpu(case, out):
     matching = [r for r in gpu if r['active_frequency_count'] == count and r['iteration'] == c['iteration']]
     if matching:
         matched = matching[-1]
-        z, w = cc.values(1024), curve_from(matched['curve']).values(1024)
+        matched_curve = curve_from(matched['curve'])
+        z, w = cc.values(1024), matched_curve.values(1024)
+        matched_region, _ = region([matched_curve.values(16384)])
+        matched_scores = region_scores(matched_region, actual)
+        matched_cpu_scores = region_scores(matched_region, cp)
         record['same_iteration'] = dict(iteration=c['iteration'],
               relative_curve_difference=float(np.linalg.norm(w-z)/np.linalg.norm(z)),
               maximum_point_difference=float(abs(w-z).max()),
               cpu_residual=c['maximum_stage_residual'], gpu_residual=matched['maximum_stage_residual'],
-              cpu_accepted_work_units=c['units'], gpu_accepted_work_units=matched['units'])
+              cpu_accepted_work_units=c['units'], gpu_accepted_work_units=matched['units'],
+              cpu_area_error=cs['area_error'], gpu_area_error=matched_scores['area_error'],
+              gpu_vs_cpu_area_error_normalized_by_cpu_area=matched_cpu_scores['area_error'])
     write(out/'cpu_comparison.json', record)
 
 

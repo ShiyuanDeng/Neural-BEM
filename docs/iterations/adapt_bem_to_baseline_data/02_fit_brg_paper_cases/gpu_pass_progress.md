@@ -19,3 +19,9 @@ Reported result: True; memory-killed attempts are not results.
 star_full: last k=15.0; stop=COMPLETED_SCHEDULE; area error=0.582861%; time=334.318s
 
 Reported result: True; memory-killed attempts are not results.
+
+## star_limited, attempt_01, 2026-11-18T01:18:22.500122+00:00
+
+star_limited: last k=15.0; stop=COMPLETED_SCHEDULE; area error=0.602698%; time=273.675s
+
+Reported result: True; memory-killed attempts are not results.
