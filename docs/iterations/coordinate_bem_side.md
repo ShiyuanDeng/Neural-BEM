@@ -71,7 +71,7 @@ Ask the user before any of these:
 | 1 | Table path on the GPU | all | none | Done 18 Nov; default fit unchanged on CPU and GPU |
 | 1 | Six BRG paper cases, known contrast, to k = 15 | B2 | Saved by BRG, ready | 1 of 6 run to k = 10 by the `brg` agent |
 | 1 | Measured Fresnel cylinder `dielTM_dec8f` | C | Ready | Not started |
-| 2 | Ten TG-002 shapes at contrast 4, simulated in the Fresnel layout | C | Made by the CSI campaign, as each case finishes | Not started |
+| 2 | Ten TG-002 shapes at contrast 4, simulated in the Fresnel layout, 1 to 3 GHz rows only | C | Tables made by the CSI campaign; all ten exist or follow as CSI activity 05 needs them | Rule fixed; circle fit next |
 | Held | TG-002 shapes with plane-wave data | B1 | See below | Waits for the user |
 
 Table B1 is held until the user opens it. What is agreed for then:
@@ -172,6 +172,7 @@ answered "yes" to the coordinator's recommendation as written here.
 | Solver lock | One writer at a time. `bem-gpu` first | yes |
 | Review stops | Three for the CSI writer, listed below. Send the user a short summary at each; do not wait | yes |
 | Done | Per-fit raw metrics from the unedited scoring, a `results.md` per activity, this status board. Final tables stay in the main file. No claims | yes |
+| Simulated CSI data, 18 Nov 00:55 UTC | The ten simulated shapes use the 1, 2 and 3 GHz rows only, for CSI and for our BEM. The retained eight-frequency files stay as they are. The measured cylinder keeps all eight frequencies. Given in the baseline coordinator's pane after the circle failed the 1% rule; the BEM coordinator read the words there | "id say we just supply less frequency range to it, you know below 4GHz such that simulated data are accurate there" |
 | Baseline coordinator | Another Claude session in Herdr. Requests go through the main file; direct messages only for data requests, each recorded here | "in herdr that coordinator is just in another claude session" |
 
 Why both kinds of CSI data: the CSI repository ships 18 measured Fresnel
@@ -392,8 +393,8 @@ data convention is in doubt.
 | Work | Agent | State | Next step |
 |---|---|---|---|
 | Table path on the GPU | `bem-gpu` | Done: commit `3612f5195` at 00:32 ([results](adapt_bem_to_baseline_data/01_run_table_path_on_gpu/results.md)). Lock free. Series-limit [proposal](adapt_bem_to_baseline_data/05_lift_series_limit/plan.md) written 00:38, no code. Agent idle in its pane | Wait for the user on the proposal |
-| BRG paper cases | `bem-brg` | Wrapper written. [Forward checks](adapt_bem_to_baseline_data/02_fit_brg_paper_cases/results.md): `glider_033` passes to k = 15; `glider_10` needs more resolution; cavity refused above k = 8. No fit yet | Fix the resolution, finish the forward checks, CPU pass |
-| CSI adapter | `bem-csi` | Review stop 2 passed 00:36 ([results](adapt_bem_to_baseline_data/03_adapt_bem_to_csi_data/results.md)): adapter correct; simulated circle data above 1% at 4, 6, 7, 8 GHz. Running the first fit on the measured cylinder | Review stop 3: first fit. Simulated fits wait for the user |
+| BRG paper cases | `bem-brg` | Forward checks done: K = 192 fixed; gliders and stars admitted to k = 15, cavities to k = 8; 26 converged checks differ from BRG by more than 1e-5 and are recorded. CPU pass done 00:55 (all stopped at 120 s, last k 1.5 to 2.5). [Results](adapt_bem_to_baseline_data/02_fit_brg_paper_cases/results.md). GPU pass running from 00:57 | Report after six GPU fits |
+| CSI adapter | `bem-csi` | Review stop 2 passed 00:36 ([results](adapt_bem_to_baseline_data/03_adapt_bem_to_csi_data/results.md)). Measured cylinder: GPU fit running since 00:37; CPU cross-check ended in ladder stage 2. Adding the 1 to 3 GHz selection for simulated cases | Review stop 3: cylinder fit; then the simulated circle |
 | CSI fits | `bem-csi-run` | Not started | Launch after the adapter passes |
 | Table B1 | none | Held | Wait for the user |
 
@@ -416,50 +417,17 @@ data convention is in doubt.
 
 | 18 Nov, 00:36 | CSI review stop 2: the adapter passes. Go for the first fit on the measured cylinder, on the GPU and on the CPU. No fit on a simulated table until the user answers on the 1% rule | Factors match CSI's saved ones to 8.5e-14; the simulated incident field matches ours to 1.3e-14; the frequency-block loss equals the default loss to round-off; the series limit holds at 1e-9. The circle data fail the 1% rule |
 | 18 Nov, 00:40 | BRG forward checks: where our forward is converged (refinement under 1e-6) but still differs from BRG by more than 1e-5 at every resolution, record the failed threshold and go on to the fit. Thresholds are not changed | `cavity_09` at k = 1.25: refinement 2.6e-13, BRG difference 2.7e-5. No resolution can move it; the cause is on the reference side or in how the true curve is represented. The fit reads BRG's data; the true curve is used only in this check and in scoring |
+| 18 Nov, 00:57 | BRG GPU pass: go, the reported pass. Same settings as the CPU pass: K = 192 for all six cases, 1e-6, the fixed prefix rule. Fits run from a queue as memory allows | The CPU pass was stopped by its 120 s limit on every case (last k 1.5 to 2.5), so it is an early look only. 16 GB was available against the 14 GB guard |
+| 18 Nov, 01:00 | Frequency rule for the simulated CSI cases (1 to 3 GHz), fixed before any fit: ladder 1; 1–2; 1–3 GHz, then the default whole-catalog stages on 1–3 GHz. Ladder quotas 1000, 3000, 4000. The measured cylinder keeps its rule (1; 1–2; 1–3; 1–4; all) | All three wavenumbers (1.05, 2.10, 3.14) lie inside the default TG-002 ladder's range (1.28 to 3.21), so the ladder covers the catalog with bands 3, 6, 9 against the default's 3, 5, 7, 9. The half-the-top rule would leave one ladder stage and a factor-3 jump. The quotas are the default four with the two middle ones merged, so the total stays 13,412 |
+| 18 Nov, 01:00 | The runs start only if they leave 14.5 GB available (was 16 GB) | Memory fell to 16 GB available; the user's guard is 14 GB and a BEM fit peaks at 1.4 to 1.9 GB |
 
 ## Waiting on the user
 
-- **Simulated CSI data above 1%.** On the true circle our forward differs
-  from CSI's simulated table by 0.17, 0.13, 0.30, 1.14, 0.82, 1.68, 2.29
-  and 5.91% at 1 to 8 GHz. Our forward matches the exact series to 1e-13,
-  so the error is in the simulated data. It grows with frequency as a grid
-  error would (0.625 mm cells). No simulated case is fitted until the user
-  answers. Asked 18 November, 00:36. Evidence:
-  [CSI adapter results](adapt_bem_to_baseline_data/03_adapt_bem_to_csi_data/results.md).
-
-- **Cavity below k = 15: go or no-go on a solver change.** At 1e-6 the
-  series admits k times wave radius up to about 24.7. The true cavity has
-  wave radius 2.919, so both cavity cases stop at k = 8. The star (1.557)
-  passes on the truth with 6% room, so its fit may stop at k = 12.
-  `bem-gpu` wrote the [proposal](adapt_bem_to_baseline_data/05_lift_series_limit/plan.md)
-  the user asked for in that case ("propose a solver redesign only if a
-  case still stops below 15"), with a [3 s probe](adapt_bem_to_baseline_data/05_lift_series_limit/results.md):
-  - What: an opt-in route in A3 that samples the regular waves on the
-    boundary and transforms them, used only above the series limit. Off
-    by default, so the default path is untouched.
-  - Cost: its estimate is 6 to 10 work hours, up to 1 to 2 days if the
-    trace resolution does not converge. It adds boundary sampling to A3,
-    which the method does not use today.
-  - Not proven: that a k = 15 cavity fit then finishes. The next limit is
-    trace resolution (incident modes above 96 carry 1.3e-3 at k = 15).
-  - Coordinator's recommendation: no go for now. Decide after the first
-    BRG pass shows how our BEM does on the cavity at k = 8.
-  Asked 18 November, 00:30; proposal ready 00:38.
-- **Simulated CSI data above 1%.** On the true circle our forward differs
-  from CSI's simulated table by 0.17, 0.13, 0.30, 1.14, 0.82, 1.68, 2.29
-  and 5.91% at 1 to 8 GHz. Our forward matches the exact series to 1e-13,
-  so the error is in the simulated data. It grows with frequency as a grid
-  error would (0.625 mm cells). No simulated case is fitted until the user
-  answers. Asked 18 November, 00:36. Evidence:
-  [CSI adapter results](adapt_bem_to_baseline_data/03_adapt_bem_to_csi_data/results.md).
-
-- **Cavity below k = 15.** At 1e-6 the series admits k times wave radius
-  up to about 24.7. The true cavity has wave radius 2.919, so both cavity
-  cases stop at k = 8. The star (1.557) passes on the truth with 6% room,
-  so its fit may stop at k = 12. Options: report these rows at the k
-  reached, or redesign the incident-wave series in the solver. The user
-  agreed earlier to "propose a solver redesign only if a case still stops
-  below 15". Asked 18 November, 00:30.
+Answered: the simulated CSI data above 1% (18 Nov 00:55 UTC; see
+"Decisions made with the user"). The circle differed by 0.17, 0.13, 0.30,
+1.14, 0.82, 1.68, 2.29 and 5.91% at 1 to 8 GHz; the data error grows with
+frequency. Evidence:
+[CSI adapter results](adapt_bem_to_baseline_data/03_adapt_bem_to_csi_data/results.md).
 
 ## Open points
 
