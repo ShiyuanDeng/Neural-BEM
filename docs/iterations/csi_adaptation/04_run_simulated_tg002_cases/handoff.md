@@ -1,3 +1,5 @@
+**Superseded: read the [current CSI handoff](../05_run_simulated_tg002_cases_at_1_to_3_ghz/handoff.md); no CSI process is running and all further fits are held.**
+
 # CSI campaign handoff
 
 ## State at handoff
