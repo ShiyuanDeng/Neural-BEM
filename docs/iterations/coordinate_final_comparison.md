@@ -7,9 +7,9 @@ settings, assumptions and unknowns, and it sets how subagents share the work.
 The coordinator (the main session) owns this file. Subagents never edit it.
 They report back, and the coordinator updates the status board and the cards.
 
-Last updated: 18 November 2026, 02:30 UTC (CSI batch 1 done at eight
-frequencies; CSI waits for the user's frequency choice; BRG run without the
-curvature limit started).
+Last updated: 18 November 2026, 02:36 UTC (BRG shipped-limit row complete:
+7 of 20 under 5%; BRG run without the curvature limit going; CSI waits for
+the user's frequency choice).
 
 ## Restart notes (18 November 2026)
 
@@ -27,12 +27,10 @@ The user gave both panes full access. A pane started from scratch begins in
 Codex's default sandbox, where MATLAB and git do not work. Only the user
 grants full access; the coordinator does not.
 
-**Running, detached. Do not launch a second copy.** (state at 02:30 UTC)
+**Running, detached. Do not launch a second copy.** (state at 02:36 UTC)
 
 | Campaign | Launcher | State file |
 |---|---|---|
-| BRG shipped limit, completion of the 20 cases | `run_tg002_control.py --row shipped --campaign` (PID 821706) | `results/brg/tg002_completion/2026-11-18/campaign.json` |
-| BRG shipped limit, aphex_twin reruns after the wrapper fix | `run_tg002_control.py --row retry --campaign` (PID 878996) | `results/brg/tg002_aphex_retry/2026-11-18/campaign.json` |
 | BRG without the curvature limit (activity 05), 20 cases | `run_tg002_control.py --row control --campaign` (PID 894852) | `results/brg/tg002_no_curvature/2026-11-18/campaign.json` |
 | CSI | none running. The old launcher (PID 708268) exited by itself at 02:00 UTC after batch 1. The next launch waits for the user's frequency choice | `results/csi/tg002/2026-11-17_campaign/status.json` (final) |
 
@@ -330,19 +328,34 @@ Rules for every table:
     the test), so the limit excludes them at low k. The other five pass.
   - So this is BRG's behaviour under its example driver's limit, not a
     wrapper fault. The public code's default is no limit.
-- **Activity 04, completion run (18 November, from 01:35 UTC, no time
-  cap):** `c_shape__c0.5` continued from its saved state and finished at
-  5.3%. Cross: 0.09% and 24.6%. Cog at contrast 0.5: 0.23%. With hook (58%
-  and 52%) and c_shape at contrast 4 (44%), 6 of 17 finished cases are
-  under 5%: circle and star at both contrasts, cross and cog at contrast
-  0.5. Still to come: cog at contrast 4 (running) and aphex_twin at
-  contrast 4 (running). Both aphex_twin cases first failed at start on our
-  wrapper's interior-point check and were rerun after a wrapper fix; at
-  contrast 0.5 the rerun finished at 80%.
+- **Activity 04 result: BRG with its shipped curvature limit, all 20
+  cases (18 November 02:33 UTC, provisional data, area error):**
+
+  | Shape | Contrast 0.5 | Contrast 4 |
+  |---|---|---|
+  | circle | 0.00% | 0.00% |
+  | star | 0.25% | 0.04% |
+  | cog | 0.23% | 0.05% |
+  | cross | 0.09% | 24.6% |
+  | c_shape | 5.3% | 44.5% |
+  | asymmetric | 11.1% | 27.7% |
+  | peanut | 11.8% | 50.4% |
+  | kite | 47.5% | 46.5% |
+  | hook | 57.7% | 52.2% |
+  | aphex_twin | 80.2% | 89.9% |
+
+  Seven of 20 are under 5%. How it was run: the old queue cut
+  `c_shape__c0.5` at its 1 h cap and dropped six cases; a completion run
+  with no time cap continued that case from its saved state (attempt 02)
+  and ran the six. Both aphex_twin cases first failed at start on our
+  wrapper's interior-point check and were rerun after a wrapper fix.
 - **Activity 05 (coordinator, 18 November):** the same 20 cases with the
-  curvature limit removed and nothing else changed. Started 02:28 UTC
-  with `kite__c0.5`, no time cap, data reused from 04 by hash. The table
-  then shows both BRG rows.
+  curvature limit removed and nothing else changed. Started 02:28 UTC, no
+  time cap, data reused from 04 by hash. The table then shows both rows.
+  - First result, `kite__c0.5`: 33.9% area error, against 47.5% with the
+    limit. Every frequency still ends on a rejected step; the rejections
+    are now for self-intersection (error code 1). So the kite failure is
+    not caused by the curvature limit alone.
 - **Our BEM on BRG data (activity 03, coordinator review 17 November):**
   - Our default forward builds its incident waves from a power series that
     it refuses to use beyond about k times object radius = 17. On BRG's
