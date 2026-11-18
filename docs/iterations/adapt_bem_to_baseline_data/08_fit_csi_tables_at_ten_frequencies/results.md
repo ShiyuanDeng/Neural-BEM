@@ -1,7 +1,7 @@
 # Ten-frequency CSI tables and fits: results
 
 18 November 2026. Runner: `bem-ten`. Plan: [plan.md](plan.md).
-State: tables and checks complete; 1/4 GPU fits recorded.
+State: tables and checks complete; 2/4 GPU fits recorded.
 The dry policy accepts band 0 at 0.25 GHz. No policy change was made.
 
 ## Data
@@ -98,8 +98,10 @@ Series limit 1e-9; 13412 work units. The ten-stage ladder and quotas are unchang
 |---|---|---|---|---:|---:|---:|---:|
 | circle | five frequencies | COMPLETED_SCHEDULE | full_6_M37 | 4477 | 199.658 | 4.000202526 | 0.968039 |
 | circle | ten frequencies | COMPLETED_SCHEDULE | full_6_M37 | 5867 | 130.072 | 4.001086944 | 0.170636 |
+| star | five frequencies | COMPLETED_SCHEDULE | full_6_M37 | 1464 | 47.484 | 4.001657661 | 2.343903 |
+| star | ten frequencies | COMPLETED_SCHEDULE | full_6_M37 | 2522 | 61.864 | 4.001308345 | 1.016269 |
 
-Pending fits: star, kite, hook.
+Pending fits: kite, hook.
 
 ## Area error at every saved stage
 
@@ -136,6 +138,33 @@ Area error is symmetric difference area divided by true area, in percent.
 | circle | ten | full_4_M25 | 2.5 | 25 | 0.163642 |
 | circle | ten | full_5_M31 | 2.5 | 31 | 0.165737 |
 | circle | ten | full_6_M37 | 2.5 | 37 | 0.170636 |
+| star | five | ladder_1_real | 0.5 | 1 | 32.450985 |
+| star | five | ladder_2_real | 1 | 3 | 31.233888 |
+| star | five | ladder_3_real | 1.5 | 4 | 32.077703 |
+| star | five | ladder_4_real | 2 | 6 | 3.471104 |
+| star | five | ladder_5_real | 2.5 | 7 | 3.814836 |
+| star | five | full_1_M11 | 2.5 | 11 | 1.659524 |
+| star | five | full_2_M15 | 2.5 | 15 | 1.007168 |
+| star | five | full_3_M19 | 2.5 | 19 | 2.155939 |
+| star | five | full_4_M25 | 2.5 | 25 | 2.280248 |
+| star | five | full_5_M31 | 2.5 | 31 | 2.324645 |
+| star | five | full_6_M37 | 2.5 | 37 | 2.343903 |
+| star | ten | ladder_1_real | 0.25 | 0 | 90.757366 |
+| star | ten | ladder_2_real | 0.5 | 1 | 31.523068 |
+| star | ten | ladder_3_real | 0.75 | 2 | 31.517868 |
+| star | ten | ladder_4_real | 1 | 3 | 31.361323 |
+| star | ten | ladder_5_real | 1.25 | 3 | 31.490511 |
+| star | ten | ladder_6_real | 1.5 | 4 | 32.080384 |
+| star | ten | ladder_7_real | 1.75 | 5 | 3.414568 |
+| star | ten | ladder_8_real | 2 | 6 | 3.405894 |
+| star | ten | ladder_9_real | 2.25 | 7 | 3.540243 |
+| star | ten | ladder_10_real | 2.5 | 7 | 3.644577 |
+| star | ten | full_1_M11 | 2.5 | 11 | 1.578873 |
+| star | ten | full_2_M15 | 2.5 | 15 | 0.859021 |
+| star | ten | full_3_M19 | 2.5 | 19 | 1.019366 |
+| star | ten | full_4_M25 | 2.5 | 25 | 1.011200 |
+| star | ten | full_5_M31 | 2.5 | 31 | 1.034510 |
+| star | ten | full_6_M37 | 2.5 | 37 | 1.016269 |
 
 ## Per-frequency data mismatch
 
@@ -148,12 +177,16 @@ Only saved values are read here; no extra forward solve is run.
 | circle | true | 0.245503 | 0.442034 | 0.305160 | 0.172326 | 0.188260 | 0.134680 | 0.195902 | 0.126049 | 0.226631 | 0.176721 |
 | circle | ten-frequency final | 0.285771 | 0.410793 | 0.295896 | 0.154770 | 0.175323 | 0.142591 | 0.164124 | 0.120777 | 0.138404 | 0.101913 |
 | circle | five-frequency final | not used | 0.402493 | not used | 0.145990 | not used | 0.146974 | not used | 0.115867 | not used | 0.097416 |
+| star | true | 0.241413 | 0.416448 | 0.278684 | 0.172982 | 0.175524 | 0.184197 | 0.211119 | 0.143713 | 0.275842 | 0.268444 |
+| star | ten-frequency final | 0.287670 | 0.382196 | 0.267185 | 0.158926 | 0.159714 | 0.184905 | 0.191814 | 0.124742 | 0.107158 | 0.169214 |
+| star | five-frequency final | not used | 0.365854 | not used | 0.147694 | not used | 0.175679 | not used | 0.145305 | not used | 0.165309 |
 
 ## Run records
 
 | Shape | Start UTC | Commit | Solver dirty | Start GiB | Peak host / GPU GiB |
 |---|---|---|---|---:|---:|
 | circle | 2026-11-18T11:37:09+00:00 | `068501c18` | False | 35.149 | 1.966 / 0.827 |
+| star | 2026-11-18T11:40:19+00:00 | `33e0a6579` | False | 36.569 | 1.948 / 0.827 |
 
 Evidence: [fit comparison and saved stage scores](../../../../results/bem/baseline_data/csi_ten_frequency/2026-11-18/fit_comparison.json).
 Each fit has manifest.json, fit.json, metrics.json, a log and bulk_manifest.json.
@@ -172,8 +205,8 @@ No numerical data, 1% check or fit failure.
 
 ```text
 Activity: adapt_bem_to_baseline_data/08_fit_csi_tables_at_ten_frequencies
-Runs: 10 data runs; 10 BEM checks; 1 dry plan; 1/4 GPU fits
-Result: all data and checks pass; clear area-error gain on 1/4 shapes; fits pending
+Runs: 10 data runs; 10 BEM checks; 1 dry plan; 2/4 GPU fits
+Result: all data and checks pass; clear area-error gain on 2/4 shapes; fits pending
 Failures: early batch launch met pending star input; no numerical failure
 Upstream patches: none
 Changes to our code: new data drivers, thin runner and saved-result report scripts; existing code unchanged
