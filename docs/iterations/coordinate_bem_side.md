@@ -40,6 +40,8 @@ side runs. The baseline side fits MF-CC-CSI at ten frequencies until about
 midnight. Read that section first; the rest of this file is the finished
 overnight work.
 
+**Next investigation requested by the user.** The [stage scheduling and shape-band brief](investigate_bem_stage_scheduling/01_trace_stage_stops_and_shape_bands/plan.md) is ready for the BEM coordinator and two Herdr subagents. Live dispatch is pending.
+
 ## Wiggle check (opened 18 November, 11:20 UTC)
 
 **Question.** The BEM outlines of the five-frequency pass (table C,
