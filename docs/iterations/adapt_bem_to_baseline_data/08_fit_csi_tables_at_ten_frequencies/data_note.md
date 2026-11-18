@@ -1,6 +1,6 @@
 # Ten-frequency data record
 
-Updated 2026-11-18T11:32:37Z.
+Updated 2026-11-18T11:33:16Z.
 
 Same CSI forward, grid, material, source, calibration and receiver code as the frozen five-frequency run.
 Only pair-template size and the frequency list differ in the MATLAB driver.
@@ -174,4 +174,21 @@ State: frozen.
 
 Table SHA-256: `d5943c93669faf14e779bcd3033c197cef3b6d2818a8abf7a2a7fa21dba941a7`.
 [Manifest](../../../../results/csi/tg002/2026-11-18_ten_frequency_data/cog/manifest.json).
+
+## aphex_twin
+
+State: frozen.
+
+[Checks](../../../../results/csi/tg002/2026-11-18_ten_frequency_data/aphex_twin/checks.json).
+
+| Old GHz | Generated and final row bytes equal parent | Block SHA-256 |
+|---:|---|---|
+| 0.5 | True | e1fe90c1f2c14bed8c2cd34f889745ab4324ae679153e92035bb323509c0e734 |
+| 1 | True | d9ac49639e179cc4bf1f4a1aa62fff1b58a611b009768d7dade854dd008cd83c |
+| 1.5 | True | 04d8dfcd135089d55e1962a2b4d75476d1ce2de062f6554cf9c916a8d6db08c8 |
+| 2 | True | 7e3509ec8ad58ba879dcfc2a8e57a15e72cd63b79a83eb29b3e542cfc28cc3fd |
+| 2.5 | True | c4e2e180feccaf901bc365ce2e0b162afb96fb23b0c4127d70310a439f9ca5ee |
+
+Table SHA-256: `29783d3eed1220f62ecba1b7a106731ce277890d65490a180cd2074955aebf83`.
+[Manifest](../../../../results/csi/tg002/2026-11-18_ten_frequency_data/aphex_twin/manifest.json).
 
