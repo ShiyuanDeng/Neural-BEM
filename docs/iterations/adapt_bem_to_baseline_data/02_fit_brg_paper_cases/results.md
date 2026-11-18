@@ -1,4 +1,10 @@
-# BRG paper-case forward checks: stopped for coordinator review
+# BRG paper-case BEM: forward checks and CPU pass
+
+CPU pass complete, 18 November 2026. One dataset setting, **K=192**, is fixed
+for both passes. All six CPU fits reached the 120 s limit; each accepted
+endpoint is scored and retained. The GPU pass waits for the coordinator.
+
+## Original forward-check stop, 18 November 2026
 
 18 November 2026, 00:22 UTC. No inverse fit has run. The fixed wrapper and
 plan are in place; forward qualification stopped at glider_10 k=7. No solver,
@@ -150,3 +156,49 @@ fixed K=192, saved BRG observations and known contrast, starting at the
 unit disk. Single BLAS and frequency threads; 120 s supervisor limit.
 Per-fit endpoints and failures are recorded in `cpu_pass_progress.md`.
 
+## Completed CPU pass, 18 November 2026
+
+All six fits used K=192, known contrast, unit-disk starts, modal_muller
+with slider, real saved BRG data and no localization. Every numerical
+worker was stopped at 120 s by its own process-group supervisor. There
+were no scoring failures or memory stops, and no fit reruns. These are
+partial CPU endpoints; the later GPU pass is the reported comparison.
+
+| Case | Qualified forward cap | Last active fitted k | Area error, % | Maximum active residual | Last accepted work units | Wall, s | Peak RSS, GiB |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| glider_033 | 15 | 2.5 | 13.9387 | 0.0131199 | 606 | 120.102 | 1.2673 |
+| glider_10 | 15 | 2 | 19.678 | 0.569761 | 529 | 120.107 | 1.3888 |
+| star_full | 15 | 2 | 19.8453 | 0.01142 | 379 | 120.039 | 1.2836 |
+| star_limited | 15 | 2 | 19.8392 | 0.0114193 | 379 | 120.109 | 1.3209 |
+| cavity_09 | 8 | 1.5 | 162.882 | 0.765238 | 155 | 120.046 | 1.1718 |
+| cavity_2 | 8 | 1.5 | 158.832 | 0.649911 | 159 | 120.041 | 1.1517 |
+
+Last active k identifies an accepted state within that stage; it does not
+mean the stage converged. Work units are the last accepted ledger count,
+a lower bound on work at interruption. The killed workers did not return
+a final ledger snapshot; that missing value is retained as null.
+
+Raw scores use the unedited comparison region functions with 16,384
+points on both curves. Each case has `raw_region_scores.json`,
+`metrics.json`, the input/solver manifest, supervisor receipt and hashes
+for the local optimizer records, logs and curve arrays. All six outcomes
+are `SUPERVISOR_STOP` with `wall limit 120 seconds`.
+
+The CPU batch took **409.505 s** (6 min 49.5 s), with up to three fits
+overlapping. First-fit peak RSS was 1.2673 GiB; the largest worker peak
+was 1.3888 GiB. The lowest observed available memory was **16.1347 GiB**.
+Single BLAS/frequency threads and idle-core counts were recorded at launch.
+All fits started and ended with clean solver sources, with one identical
+solver source-hash map across all six. Every case was committed and pushed
+after scoring; source commit hashes are retained per run.
+
+[CPU campaign and launch records](../../../../results/bem/baseline_data/brg_paper/2026-11-18/cpu_pass.json)
+and [per-fit progress](cpu_pass_progress.md).
+
+### Handoff stop
+
+No GPU fit has been launched. Use the same fixed-resolution file and the
+existing `brg_paper.py fit --case CASE --device cuda` commands after the
+coordinator gives the GPU go. No CPU tuning rerun is planned. Cavity data
+above the admitted k=8 prefix still need the separate user decision on
+a solver redesign; series_loss remains 1e-6.
