@@ -13,6 +13,7 @@ Both fitting rows will read only the saved, hash-verified BRG observations.
 | peanut__c0.5 | 37 | 5.760770615747587e-11 | 1.9764547244817685e-14 | PASS |
 | peanut__c4 | 37 | 2.0111624564395245e-11 | 5.056256589365459e-14 | PASS |
 | star__c0.5 | 37 | 1.945585478693775e-08 | 6.022040282049014e-14 | PASS |
+| star__c4 | 37 | 3.601822487599074e-08 | 8.11750341525282e-14 | PASS |
 
 Limits: BRG relative difference 0.01 at every frequency; refinement 1e-6.
 A failed or missing check blocks the case. No resolution or tolerance changed.
