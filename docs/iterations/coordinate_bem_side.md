@@ -70,10 +70,13 @@ activity results):
    14 GiB floor). No stop on elapsed time; a fit stops only if stuck,
    faulty or short of memory. Read `bem-b1`'s results as they land:
    [06 results](adapt_bem_to_baseline_data/06_fit_brg_tg002_cases/results.md).
-3. BRG's observations exist for 16 of the 20 B1 cases. `cog` and
-   `aphex_twin` at both contrasts are being made by a BRG completion run
-   into the same folders. A case counts as ready when its
-   `bulk_manifest.json` exists and the hashes match.
+3. BRG's observations exist for 17 of the 20 B1 cases (02:12). `cog__c4`
+   is running in BRG's completion run. Both `aphex_twin` cases failed at
+   start there, in the baseline wrapper's own interior-point check, before
+   any data; the baseline side reruns them after a wrapper fix (main file,
+   BRG activity 04). A case counts as ready when its `bulk_manifest.json`
+   lists all 37 data files and the hashes match; a manifest without them
+   means "inputs pending".
 4. When the user gives the frequency list for the simulated CSI cases: set
    `DATASETS['simulated']['frequencies_ghz']` in
    `experiments/bem_on_baseline_data/csi_fit.py` (one line, now `(1, 2, 3)`),
@@ -521,6 +524,8 @@ data convention is in doubt.
 
 | 18 Nov, 02:11 | First B1 fit accepted as run, and the queue released: the known row on every checked case, then the recovered row; a late case joins when its check passes, and a failed check blocks it. Two fits at a time. No stop between fits; `bem-b1` stops only for a failed check, an unexplained crash, a repeating memory requeue or a decision | `circle__c4` completed its schedule in 274 work units and 6.7 s, with 1.94 GiB host peak and area error 7.3e-7; solver clean; the only fault was a missing import path in scoring, fixed without a rerun. 37 GB was available, load 3 of 24, GPU idle. The count of two is the resource monitor's allocation for now (pane `w3:p1`, 02:09 UTC, acting on the user's request to it; the coordinator saw the monitor's message, not the user's own words). Memory alone would allow more |
 | 18 Nov, 02:11 | `bem-b1` restarts its manifest watcher and puts a file lock with retry around its commits | The running watcher held an older report writer that would overwrite the fit rows in `results.md`. Two fits and the watcher commit in one checkout and would collide on the git index |
+
+| 18 Nov, 02:12 | A BRG manifest that does not list all 37 data files means "inputs pending", not a failed check. `bem-b1`'s watcher keeps watching and the queue does not wait | Both `aphex_twin` folders hold a manifest with two log files and no data: BRG's wrapper stopped at 02:09 on "No strictly interior diagnostic point with 0.01 clearance". The baseline coordinator already records it and plans a rerun, so no message was sent |
 
 ## Waiting on the user
 
