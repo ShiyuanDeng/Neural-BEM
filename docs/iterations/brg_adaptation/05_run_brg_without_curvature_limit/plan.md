@@ -172,3 +172,14 @@ keeps the 14 GiB host floor plus 2 GiB margin after shared reservations.
 No supervisor restart, numerical setting change or time kill. When CSI is
 released the coordinator will set a lower ceiling for new launches; active
 fits continue. Policy history retains the prior four-worker allocation.
+
+## Resource allocation update, 18 November 02:51 UTC
+
+The coordinator passed on the same monitor's increase to eight control
+fits while CSI stays held. The unchanged memory guard may leave slots
+empty. No active fit or numerical setting changes. Each completed case
+receipt now records peak concurrent other BRG/B1 fits and the distinct
+overlapping fit receipts, using saved process intervals only. The new
+`record_tg002_overlap.py` reads B1 timing records without editing them.
+BRG intervals include final residual evaluation; other host work is not
+counted as a fit. These remain shared-machine timings.

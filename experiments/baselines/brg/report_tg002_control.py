@@ -39,7 +39,7 @@ The original data files are read in place, with no data generation. Each
 hash; the runner verifies hashes before fitting. Original data-generation
 cost is retained in metrics as `reused_data_generation_seconds`; new data
 cost is zero. The resource monitor raised the BRG ceiling from four to six
-at 02:40 UTC, only while CSI stays held; the hot-read policy applies at
+at 02:40 UTC and to eight at 02:51 UTC, only while CSI stays held; the policy applies at
 new launch boundaries, without changing active fits.
 The queue overlaps other work, so times are indicative.
 
@@ -79,6 +79,7 @@ compact metrics and figure. No new success cutoff is selected.
         text+=f"- {case}: saved-output check {status}; [metrics](../../../../results/brg/tg002_no_curvature/2026-11-18/{case}/metrics.json), [figure](figures/{case}.png).\n"
         if a.get('returncode') or a.get('supervisor_failure') or a.get('scoring_failure'):
             text+=f"  Failure: return code {a.get('returncode')}; {a.get('supervisor_failure','')} {a.get('scoring_failure','')}; log `{a['log']}`.\n"
+    text+='\nCompleted attempt receipts also record peak other simultaneous BRG/B1 fits, distinct overlapping fit receipts, and original MATLAB snapshots. Counts use saved process intervals; BRG intervals include residual evaluation. No B1 files are changed.\n'
     text+='\n## Frequency-ending rejection codes\n\nThe first two columns count the selected final geometry/filter code on rejected frequency exits. The last counts final iteration ier -5. They overlap: the public routine replaces geometry rejection by -5 when the old residual is kept. Counts come only from existing logs; each case retains full codes and log hashes.\n\n| Case | Final filter ier 2 | Final filter ier 1 | Final iteration ier -5 |\n|---|---:|---:|---:|\n'
     for case,m,old,a in cases:
         p=BASE/case/'rejection_counts.json'
