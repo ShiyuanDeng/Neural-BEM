@@ -391,9 +391,9 @@ data convention is in doubt.
 
 | Work | Agent | State | Next step |
 |---|---|---|---|
-| Table path on the GPU | `bem-gpu` | Done and proven 00:31; diff approved 00:33 ([results](adapt_bem_to_baseline_data/01_run_table_path_on_gpu/results.md)). Committing. Then a proposal, no code, for the series limit | Confirm the commit; the lock is then free. Read the proposal |
+| Table path on the GPU | `bem-gpu` | Done: commit `3612f5195` at 00:32 ([results](adapt_bem_to_baseline_data/01_run_table_path_on_gpu/results.md)). Lock free. Now drafting the series-limit proposal, no code | Read the proposal; take it to the user |
 | BRG paper cases | `bem-brg` | Wrapper written. [Forward checks](adapt_bem_to_baseline_data/02_fit_brg_paper_cases/results.md): `glider_033` passes to k = 15; `glider_10` needs more resolution; cavity refused above k = 8. No fit yet | Fix the resolution, finish the forward checks, CPU pass |
-| CSI adapter | `bem-csi` | Review stop 1 passed 00:27. Writing the adapter and forward checks | Review stop 2: mismatch per frequency |
+| CSI adapter | `bem-csi` | Review stop 2 passed 00:36 ([results](adapt_bem_to_baseline_data/03_adapt_bem_to_csi_data/results.md)): adapter correct; simulated circle data above 1% at 4, 6, 7, 8 GHz. Running the first fit on the measured cylinder | Review stop 3: first fit. Simulated fits wait for the user |
 | CSI fits | `bem-csi-run` | Not started | Launch after the adapter passes |
 | Table B1 | none | Held | Wait for the user |
 
@@ -411,10 +411,20 @@ data convention is in doubt.
 | 18 Nov, 00:29 | BRG forward resolution: one trace-cutoff minimum for all six cases, set in the wrapper (`ModalSettings(trace_minimum=K)`). K is the smallest multiple of 32 at which every true shape passes the two forward thresholds, plus one step of 32. Fixed before any fit | `glider_10` failed the forward check at k = 7 (3.9e-5). The refined solve agrees with BRG, so it is resolution: the default profile ignores the interior wavenumber, which is 3.2 times the exterior one at eta 10. A setting, not a solver edit or a method change |
 | 18 Nov, 00:29 | BRG cavity: run the prefix rule as far as the series admits and record where it ends. No loosening beyond 1e-6. The redesign question goes to the user | True cavity wave radius 2.919, so the series refuses above k = 8 even at 1e-6 |
 
-| 18 Nov, 00:33 | `bem-gpu`'s diff approved for commit. It is the approved edit only: the two-line device check, one comment, three message wordings, README and chain, the refusal test, and a new eight-case GPU test | All proofs pass. CPU and GPU default fits are byte-identical before and after; the two pre-edit GPU runs were byte-identical too. Tables agree between CPU and GPU to 2.8e-13 against a 1e-10 limit. 121 tests pass |
-| 18 Nov, 00:33 | `bem-gpu` drafts a proposal, with no solver code, for lifting the series limit: activity `05_lift_series_limit` | The user agreed to "propose a solver redesign only if a case still stops below 15". The cavity does |
+| 18 Nov, 00:32 | `bem-gpu`'s diff approved for commit. It is the approved edit only: the two-line device check, one comment, three message wordings, README and chain, the refusal test, and a new eight-case GPU test | All proofs pass. CPU and GPU default fits are byte-identical before and after; the two pre-edit GPU runs were byte-identical too. Tables agree between CPU and GPU to 2.8e-13 against a 1e-10 limit. 121 tests pass |
+| 18 Nov, 00:32 | `bem-gpu` drafts a proposal, with no solver code, for lifting the series limit: activity `05_lift_series_limit` | The user agreed to "propose a solver redesign only if a case still stops below 15". The cavity does |
+
+| 18 Nov, 00:36 | CSI review stop 2: the adapter passes. Go for the first fit on the measured cylinder, on the GPU and on the CPU. No fit on a simulated table until the user answers on the 1% rule | Factors match CSI's saved ones to 8.5e-14; the simulated incident field matches ours to 1.3e-14; the frequency-block loss equals the default loss to round-off; the series limit holds at 1e-9. The circle data fail the 1% rule |
 
 ## Waiting on the user
+
+- **Simulated CSI data above 1%.** On the true circle our forward differs
+  from CSI's simulated table by 0.17, 0.13, 0.30, 1.14, 0.82, 1.68, 2.29
+  and 5.91% at 1 to 8 GHz. Our forward matches the exact series to 1e-13,
+  so the error is in the simulated data. It grows with frequency as a grid
+  error would (0.625 mm cells). No simulated case is fitted until the user
+  answers. Asked 18 November, 00:36. Evidence:
+  [CSI adapter results](adapt_bem_to_baseline_data/03_adapt_bem_to_csi_data/results.md).
 
 - **Cavity below k = 15.** At 1e-6 the series admits k times wave radius
   up to about 24.7. The true cavity has wave radius 2.919, so both cavity

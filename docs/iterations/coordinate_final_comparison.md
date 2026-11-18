@@ -84,10 +84,12 @@ is gcc 11, and the shipped `DGradient.mexa64` loads in R2026a. MATLAB starts
 with one compute thread on this CPU, so each wrapper sets and records its
 thread count.
 
-**Solver lock:** held by the BEM side since 18 November 2026, 00:15 GMT
-(system clock); holder `bem-gpu`, for the GPU table path
-([coordinate_bem_side.md](coordinate_bem_side.md)). The user started the
-BEM side then. The BRG investigation (`brg` agent) held the lock from
+**Solver lock:** with the BEM side since 18 November 2026, 00:15 GMT
+(system clock), when the user started it
+([coordinate_bem_side.md](coordinate_bem_side.md)). `bem-gpu` held it for
+the GPU table path and finished at 00:32: commit `3612f5195`, table mode
+now runs on the GPU, default TG-002 fit byte-identical on CPU and GPU.
+No agent holds it now; the BEM-side coordinator assigns it next. The BRG investigation (`brg` agent) held the lock from
 17 November, 21:45, for
 [activity 03](brg_adaptation/03_adapt_bem_to_brg_data/results.md); its
 solver edits are finished and frozen (commits `f81719a31`, `4dde44c96`).
