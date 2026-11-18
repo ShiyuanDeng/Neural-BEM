@@ -82,8 +82,10 @@ def truth():
 def generate(cell):
     assert cell in (1.25, .3125)
     available = base.memory()['MemAvailable']
-    # Full allowed 6 GiB for the finer job, plus a margin above the reserve.
-    expected = (2 if cell == 1.25 else 6)*base.GIB
+    # Coarse measured family 1.457 GiB and saved 0.625-mm generation 2.160
+    # GiB give about 4.97 GiB at 664^2 nodes with fixed startup + grid-linear
+    # allocation. The actual cap remains 6 GiB, with continuous reserve checks.
+    expected = (2 if cell == 1.25 else 5)*base.GIB
     if available < base.RESERVE + expected + .25*base.GIB:
         print(json.dumps(dict(state='waiting for memory; no MATLAB started', cell_mm=cell,
                              available_gib=available/base.GIB, required_gib=(base.RESERVE+expected+.25*base.GIB)/base.GIB)))
@@ -112,6 +114,7 @@ def generate(cell):
         for p in (Path(__file__), source, executed, GEOMETRY, REF/'truth_predictions.npz', REF/'forward_checks.json')]))
     job = base.launch(out, executed, dict(CSI_GEOMETRY=str(GEOMETRY), CSI_CASE=f'circle_grid_{cell:g}_mm_TM'))
     job['record'].update(cell_mm=cell, reserve_gib=14, stop_margin_gib=.25, family_limit_gib=6,
+        predicted_family_gib=expected/base.GIB,
         command_python=['env','PYTHONPATH=solvers:.',os.sys.executable,'-B','-m','experiments.baselines.csi.circle_grid_check','--generate',str(cell)])
     base.write(out / 'launch.json', job['record'])
     while job['process'].poll() is None:
@@ -210,11 +213,14 @@ def fit():
 
 
 def main():
+    global CELLS
     parser=argparse.ArgumentParser(__doc__)
     parser.add_argument('--generate',type=float,choices=[1.25,.3125])
     parser.add_argument('--analyze',action='store_true')
     parser.add_argument('--fit',action='store_true')
+    parser.add_argument('--cells',type=float,nargs='+',choices=[1.25,.625,.3125],default=CELLS)
     args=parser.parse_args()
+    CELLS=args.cells
     if args.generate is not None:generate(args.generate)
     if args.analyze:analyze()
     if args.fit:fit()

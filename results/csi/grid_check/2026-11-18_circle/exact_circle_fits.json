@@ -1,0 +1,81 @@
+{
+  "utc": "2026-11-18T00:57:25.925494+00:00",
+  "results": [
+    {
+      "cell_mm": 0.625,
+      "sha256": "34ed9276fb6680d01ff6e7a7c26c8d19fb70fe5df4dbe1a81de39e025924cefe",
+      "per_frequency_contrast": [
+        {
+          "frequency_GHz": 1,
+          "epsilon": 4.001354930361927,
+          "relative_L2": 0.0016202921845528474
+        },
+        {
+          "frequency_GHz": 2,
+          "epsilon": 4.000124857776821,
+          "relative_L2": 0.0012588054721849862
+        },
+        {
+          "frequency_GHz": 3,
+          "epsilon": 4.0012522352929825,
+          "relative_L2": 0.0025235720798888906
+        },
+        {
+          "frequency_GHz": 4,
+          "epsilon": 4.001846386852632,
+          "relative_L2": 0.006332251534381225
+        },
+        {
+          "frequency_GHz": 5,
+          "epsilon": 4.004450098356617,
+          "relative_L2": 0.0034619353102000637
+        },
+        {
+          "frequency_GHz": 6,
+          "epsilon": 4.006988919821881,
+          "relative_L2": 0.005688841004601079
+        },
+        {
+          "frequency_GHz": 7,
+          "epsilon": 4.008002350195417,
+          "relative_L2": 0.007568605099621218
+        },
+        {
+          "frequency_GHz": 8,
+          "epsilon": 4.010205703524075,
+          "relative_L2": 0.013156820186683028
+        }
+      ],
+      "common": {
+        "radius_mm": 49.9815247087634,
+        "epsilon": 4.009215944950261,
+        "centre_shift_mm": [
+          0.004765288117737734,
+          -0.007663936115025231
+        ],
+        "centre_shift_norm_mm": 0.00902462673024433,
+        "relative_L2_per_frequency": [
+          0.002937755748343853,
+          0.004166701138788941,
+          0.008432584315344896,
+          0.022561295580845808,
+          0.005710950640576478,
+          0.0059235270777279895,
+          0.0077390361341261775,
+          0.02731201644721878
+        ],
+        "nfev": 5,
+        "weighting": "equal relative-L2 weight per frequency"
+      }
+    }
+  ],
+  "command": [
+    "env",
+    "PYTHONPATH=solvers:.",
+    "/home/drdeng/miniconda3/envs/EMNerf/bin/python",
+    "-B",
+    "-m",
+    "experiments.baselines.csi.circle_grid_check",
+    "--fit"
+  ]
+}

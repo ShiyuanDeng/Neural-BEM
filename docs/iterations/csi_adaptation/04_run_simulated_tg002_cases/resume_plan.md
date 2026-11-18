@@ -1,5 +1,11 @@
 # Continue batches 2–4 on the original clock
 
+**Cancelled by the coordinator, 18 November 00:55 UTC. Do not launch.**
+The user chose 1–3 GHz for the main simulated comparison. The original
+eight-frequency batch 1 finishes untouched as a side result; its other
+seven cases and this resume are cancelled. Code and checks are retained.
+The new campaign is activity 05_run_simulated_tg002_cases_at_1_to_3_ghz.
+
 18 November 2026. The coordinator extended activity 04 from nine to twelve
 hours on the original clock: start 17 November 23:16:53.628911 UTC, hard
 stop 18 November 11:16:53.628911 UTC (11:17 rounded). This supersedes the
