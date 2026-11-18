@@ -55,16 +55,19 @@ def bulk_manifest(out):
             for p in sorted([*(out / 'local').rglob('*'), *out.glob('*.npz')]) if p.is_file()]
 
 
-def guarded(command, out, seconds, expected_peak=GIB):
+def guarded(command, out, seconds, expected_peak=GIB, launch_reserve=16*GIB, gpu_monitor=False):
     """Only the child group is stopped; keep shared desktop memory available."""
     available = available_memory()
-    if available - expected_peak < 16 * GIB:
-        raise RuntimeError(f'Memory blocks launch: available={available/GIB:.2f} GiB, expected peak={expected_peak/GIB:.2f} GiB; keep 16 GiB.')
+    if available - expected_peak < launch_reserve:
+        raise RuntimeError(f'Memory blocks launch: available={available/GIB:.2f} GiB, expected peak={expected_peak/GIB:.2f} GiB; keep {launch_reserve/GIB:g} GiB.')
     out.parent.mkdir(parents=True, exist_ok=True)
     started = time.monotonic()
     reason = None
     peak = 0
     minimum_available = available
+    gpu_peak = 0
+    gpu_observed = False
+    last_gpu_sample = -10.
     with out.open('w') as stream:
         child = subprocess.Popen(command, cwd=ROOT, stdout=stream, stderr=subprocess.STDOUT,
                                  start_new_session=True)
@@ -78,12 +81,29 @@ def guarded(command, out, seconds, expected_peak=GIB):
                         peak = max(peak, int(line.split()[1]) * 1024)
             except FileNotFoundError:
                 pass
+            if gpu_monitor and time.monotonic()-last_gpu_sample >= 2:
+                last_gpu_sample = time.monotonic()
+                try:
+                    sample = subprocess.run(['nvidia-smi', '--query-compute-apps=pid,used_gpu_memory',
+                              '--format=csv,noheader,nounits'], capture_output=True, text=True, timeout=2)
+                    for line in sample.stdout.splitlines():
+                        pid, used = [v.strip() for v in line.split(',')]
+                        if int(pid) == child.pid:
+                            gpu_peak = max(gpu_peak, int(used)*1024**2)
+                            gpu_observed = True
+                    with (out.parent/'gpu_resources.csv').open('a') as resources:
+                        resources.write(f'{time.monotonic()-started:.6f},{memory},{peak},{gpu_peak}\n')
+                except (ValueError, subprocess.TimeoutExpired):
+                    pass
             if memory < 14 * GIB:
                 reason = 'memory reserve below 14 GiB'
             elif time.monotonic() - started >= seconds:
                 reason = f'wall limit {seconds:g} seconds'
             if reason:
-                os.killpg(child.pid, signal.SIGTERM)
+                try:
+                    os.killpg(child.pid, signal.SIGTERM)
+                except ProcessLookupError:
+                    break
                 try:
                     child.wait(timeout=2)
                 except subprocess.TimeoutExpired:
@@ -91,8 +111,10 @@ def guarded(command, out, seconds, expected_peak=GIB):
                 break
             time.sleep(.1)
         returncode = child.wait()
-    return dict(command=command, returncode=returncode, stop_reason=reason,
+    return dict(command=command, pid=child.pid, returncode=returncode, stop_reason=reason,
                 wall_seconds=time.monotonic()-started, peak_rss_bytes=peak,
+                peak_gpu_bytes=gpu_peak if gpu_observed else None,
+                expected_peak_bytes=expected_peak, launch_reserve_bytes=launch_reserve,
                 minimum_available_bytes=minimum_available)
 
 
@@ -372,23 +394,31 @@ def fit_worker(case, device, out):
               peak_rss_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024))
 
 
-def fit_case(case, device):
+def fit_case(case, device, attempt=None):
     selection = fixed_resolution()
     assert selection['cases'][case]['passes'], 'All admitted frequencies must pass before a fit.'
     out = BASE/case/f'{device}_fit'
+    if attempt is not None:
+        out = out/f'attempt_{attempt:02d}'
     assert not out.exists(), 'Keep first fit, including failures; no tuning reruns.'
     (out/'local').mkdir(parents=True)
     start = solver_state()
     command = [sys.executable, str(Path(__file__).resolve()), '_fit', '--case', case, '--device', device]
+    if attempt is not None:
+        command.extend(['--out', str(out)])
     # Internal ledger has the scientific cap; supervisor also stops a blocked native call.
     try:
         receipt = guarded(command, out/'local/worker.log', 120. if device == 'cpu' else 3600.,
-                          expected_peak=selection['expected_fit_peak_bytes'])
+                          expected_peak=1.5*GIB if device == 'cuda' else selection['expected_fit_peak_bytes'],
+                          launch_reserve=14.5*GIB if device == 'cuda' else 16*GIB,
+                          gpu_monitor=device == 'cuda')
     except Exception as error:
         receipt = dict(command=command, returncode=None, stop_reason=repr(error), wall_seconds=0.)
     end = solver_state()
     write(out/'supervisor.json', dict(**receipt, started_solver=start, ended_solver=end,
           reportable=device == 'cuda' and not start['solver_dirty'] and not end['solver_dirty']
+                     and receipt.get('stop_reason') != 'memory reserve below 14 GiB'
+                     and receipt.get('returncode') is not None
                      and start['source_hashes'] == end['source_hashes']))
     try:
         score_endpoint(case, out)
@@ -396,6 +426,7 @@ def fit_case(case, device):
         write(out/'scoring_failure.json', dict(exception=repr(error), traceback=traceback.format_exc()))
     write(out/'bulk_manifest.json', dict(files=bulk_manifest(out)))
     print(json.dumps(dict(case=case, device=device, **receipt)), flush=True)
+    return out
 
 
 def main():
@@ -414,7 +445,7 @@ def main():
     if args.action == '_forward':
         return forward_worker(args.case, args.one, args.out or out/'forward', args.trace_minimum)
     if args.action == '_fit':
-        return fit_worker(args.case, args.device, out/f'{args.device}_fit')
+        return fit_worker(args.case, args.device, args.out or out/f'{args.device}_fit')
     if args.action == 'fit':
         return fit_case(args.case, args.device)
     problem, _ = make_problem(args.case)

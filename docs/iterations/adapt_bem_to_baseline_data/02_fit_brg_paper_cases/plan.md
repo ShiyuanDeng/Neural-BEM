@@ -129,3 +129,42 @@ points, including a band-convergence check. Read baseline files only;
 do not fix data or choose inverse settings from this investigation.
 Then fix the common K plus margin, finish final forward checks and run the
 CPU pass without another review stop. Fits still consume BRG's saved data.
+
+## GPU-pass go, 18 November 2026
+
+The coordinator accepted the CPU pass as the early look and authorized
+the GPU pass as the reported one. GPU table support is committed at
+`3612f5195`; verify clean solver sources before each launch. No solver,
+data, scoring or scientific-setting change is authorized here.
+
+Keep K=192, series_loss=1e-6, known contrast, unit-disk start, real data,
+modal_muller + slider, no localization and the fixed qualified prefixes.
+Execution is cuda with one frequency/BLAS thread. Per fit: 13,412 work
+units and 3,600 s; a time-limited fit is retained without a rerun.
+
+Use one sequential queue: glider_033, glider_10, star_full, star_limited,
+cavity_09, cavity_2. The coordinator supersedes the old launch memory
+rule for this pass: start only if available memory minus 1.5 GiB leaves
+at least 14.5 GiB; kill the fit's own process group below 14 GiB available.
+GPU sharing with bem-csi is allowed. Timings remain indicative.
+
+A memory-killed attempt is retained but is not a reported result. Requeue
+it once at the end of the queue, restarting from the same unit disk with
+unchanged settings. Save both attempts separately; a second memory kill
+remains a no-result failure. No other rerun is authorized.
+
+Commit and push each completed attempt, failures included. Report
+glider_033 immediately in one line (last k, stop reason, area error, time),
+then continue. When all six cases are done, stop with per-case last active
+k, stop reason, area error, residual, work, wall time and peak memory.
+Compare CPU/GPU saved accepted states at their highest common k; distinguish
+a CPU stage cut short by time from a completed GPU stage. Where available,
+also compare the same stage/iteration to expose numerical differences.
+
+Outputs are `<case>/cuda_fit/attempt_01/` (and `attempt_02/` for a memory
+retry), plus `gpu_pass.json` and an activity `gpu_pass_progress.md`.
+Large optimizer files and logs remain local with hashes. The one command:
+
+```bash
+/home/drdeng/miniconda3/envs/EMNerf/bin/python experiments/bem_on_baseline_data/brg_gpu_pass.py
+```
