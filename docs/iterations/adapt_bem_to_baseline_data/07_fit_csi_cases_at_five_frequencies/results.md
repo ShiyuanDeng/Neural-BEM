@@ -40,8 +40,26 @@ waited from 04:12 to 04:53 behind the memory count (see below).
 All ten stopped at the 120 s limit (`TRIAL_WALL_LIMIT`) inside stage 1 to 3 of the full stages,
 so none reaches an end result to compare with the GPU. Partial area error at the stop:
 circle 0.44%, kite 4.30%, peanut 1.99%, star 2.16%, asymmetric 1.14%, c_shape 1.92%, hook 1.88%,
-cross 1.86%, cog 12.65%, aphex_twin 10.92% (partial, not final). A comparison of the stages both
-devices finished was not made in this pass.
+cross 1.86%, cog 12.65%, aphex_twin 10.92% (partial, not final). Stages both devices finished, from
+the saved `metrics.json` files only (the CPU stage cut by the limit is excluded; no run):
+
+| Shape | Stages finished on both | Last such stage | Largest relative `final_loss` difference (stage) | Contrast difference at the last such stage | Accepted steps equal |
+|---|---|---|---|---|---|
+| circle | 5 | `ladder_5_real` | 4.8e-13 (`ladder_5_real`) | 2.0e-12 | yes |
+| kite | 5 | `ladder_5_real` | 4.9e-10 (`ladder_3_real`) | 1.1e-11 | yes |
+| peanut | 5 | `ladder_5_real` | 7.9e-10 (`ladder_5_real`) | 2.3e-12 | yes |
+| star | 7 | `full_2_M15` | 1.1e-11 (`ladder_4_real`) | 2.8e-12 | yes |
+| asymmetric | 6 | `full_1_M11` | 2.0e-11 (`ladder_5_real`) | 6.0e-12 | yes |
+| c_shape | 6 | `full_1_M11` | 8.1e-10 (`ladder_3_real`) | 3.8e-12 | yes |
+| hook | 6 | `full_1_M11` | 3.8e-9 (`ladder_5_real`) | 1.1e-12 | yes |
+| cross | 7 | `full_2_M15` | 7.3e-11 (`full_1_M11`) | 1.3e-12 | yes |
+| cog | 5 | `ladder_5_real` | 2.2e-10 (`ladder_4_real`) | 8.3e-12 | yes |
+| aphex_twin | 5 | `ladder_5_real` | 1.9e-9 (`ladder_5_real`) | 1.3e-10 | yes |
+
+Same stage names and outcomes (`NORMAL_OPTIMIZER_RETURN`) on both devices in every common stage.
+Largest loss difference overall 3.8e-9 (hook); largest contrast difference 1.3e-10 (aphex_twin).
+So CPU and GPU agree through the common stages. The CPU never reaches the end of the fit, so
+agreement of the final result is not shown.
 
 ## What went wrong, kept
 
@@ -62,6 +80,6 @@ Result: all ten checks pass (worst 0.713%); all ten GPU fits COMPLETED_SCHEDULE;
 Failures: none in the fits; 40 min start delay from a memory count that differed from the monitor's (fixed); two transient push rejections
 Upstream patches: none
 Changes to our code: none (only the runner's own waiter script, logs/waiter.py)
-New unknowns: whether CPU and GPU agree at the end of a fit (the CPU runs stop in stage 1 to 3)
+New unknowns: shown: CPU and GPU agree through the 5 to 7 stages both finished (loss within 3.8e-9 relative, contrast within 1.3e-10, same accepted steps); not shown: the end of the fit on the CPU, which stops at 120 s in stage 1 to 3 of the full stages
 Proposed next activity: score against the CSI results on the same tables; optionally uncut CPU cross-checks (needs the user's decision on the 120 s cut)
 ```
