@@ -9,7 +9,7 @@ It is a temporary second file. The user: "i would prefer to use one
 coordination file, but temporarily to avoid the current coordination file
 being too long you can have a new one". Merge it back when the work is done.
 
-**State, 18 November 2026, 00:25 GMT:** launched. The user: "you are the
+**State, 18 November 2026, 00:30 GMT:** launched. The user: "you are the
 coordinator, start the work." `bem-gpu`, `bem-brg` and `bem-csi` run in
 Herdr panes beside the coordinator (pane `w2:p1`). The solver lock is with
 `bem-gpu`; the main file records it (commit `7069d2422`). No solver code
@@ -131,7 +131,7 @@ Rules the coordinator added at launch. They apply to all four agents.
 
 ### Launch log
 
-18 November 2026, 00:25 GMT. Launched from pane `w2:p1` with Herdr:
+18 November 2026, 00:18 GMT. Launched from pane `w2:p1` with Herdr:
 
 | Agent | Command |
 |---|---|
@@ -391,9 +391,9 @@ data convention is in doubt.
 
 | Work | Agent | State | Next step |
 |---|---|---|---|
-| Table path on the GPU | `bem-gpu` | [Plan](adapt_bem_to_baseline_data/01_run_table_path_on_gpu/plan.md) written; planned change approved 00:25. Taking pre-edit references | Read its diff before the commit |
+| Table path on the GPU | `bem-gpu` | [Plan](adapt_bem_to_baseline_data/01_run_table_path_on_gpu/plan.md) written; planned change approved 00:21. Taking pre-edit references | Read its diff before the commit |
 | BRG paper cases | `bem-brg` | Wrapper written. [Forward checks](adapt_bem_to_baseline_data/02_fit_brg_paper_cases/results.md): `glider_033` passes to k = 15; `glider_10` needs more resolution; cavity refused above k = 8. No fit yet | Fix the resolution, finish the forward checks, CPU pass |
-| CSI adapter | `bem-csi` | Review stop 1 passed 00:35. Writing the adapter and forward checks | Review stop 2: mismatch per frequency |
+| CSI adapter | `bem-csi` | Review stop 1 passed 00:27. Writing the adapter and forward checks | Review stop 2: mismatch per frequency |
 | CSI fits | `bem-csi-run` | Not started | Launch after the adapter passes |
 | Table B1 | none | Held | Wait for the user |
 
@@ -401,15 +401,15 @@ data convention is in doubt.
 
 | Date | Decision | Reason |
 |---|---|---|
-| 18 Nov, 00:25 | Go for `bem-gpu`'s solver edit: remove the device check in `ModalMuller._table_acquisition`, and fix the wording that calls table mode CPU-only. Nothing else without a new proposal | The paired default returns before that check, so it cannot change. Both geometry classes give A3 the same host fields; A4 and B7 work on host arrays after either assembly. No dataset name or constant |
-| 18 Nov, 00:25 | `bem-gpu` takes its three pre-edit references (CPU once, GPU twice) before the edit. Its limits are fixed in its plan: 1e-10 between CPU and GPU tables; the GPU default inside the measured run-to-run spread | A reference taken after the edit proves nothing; limits set before the results |
+| 18 Nov, 00:21 | Go for `bem-gpu`'s solver edit: remove the device check in `ModalMuller._table_acquisition`, and fix the wording that calls table mode CPU-only. Nothing else without a new proposal | The paired default returns before that check, so it cannot change. Both geometry classes give A3 the same host fields; A4 and B7 work on host arrays after either assembly. No dataset name or constant |
+| 18 Nov, 00:21 | `bem-gpu` takes its three pre-edit references (CPU once, GPU twice) before the edit. Its limits are fixed in its plan: 1e-10 between CPU and GPU tables; the GPU default inside the measured run-to-run spread | A reference taken after the edit proves nothing; limits set before the results |
 
-| 18 Nov, 00:35 | CSI review stop 1: [plan](adapt_bem_to_baseline_data/03_adapt_bem_to_csi_data/plan.md) approved. Calibration, conjugation, mask, constants and start as written | Checked against `ReadFreData.m`: the factor is taken at row 25 in file order, and equals the conjugate of CSI's factor times its frequency scaling. No fitted amplitude |
-| 18 Nov, 00:35 | CSI frequency rule, fixed for every CSI case: add one frequency at a time up to half the top frequency, then the whole catalog. That is 1; 1–2; 1–3; 1–4; then 1–8 GHz | `bem-csi`'s proposal, chosen over the earlier suggestion (1; 1–2; 1–3; all). It keeps the four default stage quotas and the default's factor-2 last jump, and uses only the data's frequencies |
-| 18 Nov, 00:35 | CSI series limit: 1e-9. A refusal by the series limit, in a check or inside a fit, is reported to the coordinator and is not final. The switch to 1e-6 is made for the whole CSI dataset, never for one case | The user's rule ("only if 8 GHz is refused"), kept free of per-case settings. The coordinator's reading |
-| 18 Nov, 00:35 | `bem-csi` checks once that the frequency-block loss equals the default rectangular loss on a CSI table | The default method must keep its own loss |
-| 18 Nov, 00:40 | BRG forward resolution: one trace-cutoff minimum for all six cases, set in the wrapper (`ModalSettings(trace_minimum=K)`). K is the smallest multiple of 32 at which every true shape passes the two forward thresholds, plus one step of 32. Fixed before any fit | `glider_10` failed the forward check at k = 7 (3.9e-5). The refined solve agrees with BRG, so it is resolution: the default profile ignores the interior wavenumber, which is 3.2 times the exterior one at eta 10. A setting, not a solver edit or a method change |
-| 18 Nov, 00:40 | BRG cavity: run the prefix rule as far as the series admits and record where it ends. No loosening beyond 1e-6. The redesign question goes to the user | True cavity wave radius 2.919, so the series refuses above k = 8 even at 1e-6 |
+| 18 Nov, 00:27 | CSI review stop 1: [plan](adapt_bem_to_baseline_data/03_adapt_bem_to_csi_data/plan.md) approved. Calibration, conjugation, mask, constants and start as written | Checked against `ReadFreData.m`: the factor is taken at row 25 in file order, and equals the conjugate of CSI's factor times its frequency scaling. No fitted amplitude |
+| 18 Nov, 00:27 | CSI frequency rule, fixed for every CSI case: add one frequency at a time up to half the top frequency, then the whole catalog. That is 1; 1–2; 1–3; 1–4; then 1–8 GHz | `bem-csi`'s proposal, chosen over the earlier suggestion (1; 1–2; 1–3; all). It keeps the four default stage quotas and the default's factor-2 last jump, and uses only the data's frequencies |
+| 18 Nov, 00:27 | CSI series limit: 1e-9. A refusal by the series limit, in a check or inside a fit, is reported to the coordinator and is not final. The switch to 1e-6 is made for the whole CSI dataset, never for one case | The user's rule ("only if 8 GHz is refused"), kept free of per-case settings. The coordinator's reading |
+| 18 Nov, 00:27 | `bem-csi` checks once that the frequency-block loss equals the default rectangular loss on a CSI table | The default method must keep its own loss |
+| 18 Nov, 00:29 | BRG forward resolution: one trace-cutoff minimum for all six cases, set in the wrapper (`ModalSettings(trace_minimum=K)`). K is the smallest multiple of 32 at which every true shape passes the two forward thresholds, plus one step of 32. Fixed before any fit | `glider_10` failed the forward check at k = 7 (3.9e-5). The refined solve agrees with BRG, so it is resolution: the default profile ignores the interior wavenumber, which is 3.2 times the exterior one at eta 10. A setting, not a solver edit or a method change |
+| 18 Nov, 00:29 | BRG cavity: run the prefix rule as far as the series admits and record where it ends. No loosening beyond 1e-6. The redesign question goes to the user | True cavity wave radius 2.919, so the series refuses above k = 8 even at 1e-6 |
 
 ## Waiting on the user
 
@@ -419,7 +419,7 @@ data convention is in doubt.
   so its fit may stop at k = 12. Options: report these rows at the k
   reached, or redesign the incident-wave series in the solver. The user
   agreed earlier to "propose a solver redesign only if a case still stops
-  below 15". Asked 18 November, 00:40.
+  below 15". Asked 18 November, 00:30.
 
 ## Open points
 
