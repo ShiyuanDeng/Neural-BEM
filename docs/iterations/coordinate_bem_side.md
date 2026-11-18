@@ -95,10 +95,10 @@ donw".
 
 | Agent | Pane | Model | Starts | Job | May edit the solver |
 |---|---|---|---|---|---|
-| `bem-gpu` | `w2:p5`, top right | Codex `gpt-6-astra`, high | At launch | Make the table path run on the GPU | Yes, it holds the lock |
+| `bem-gpu` | closed by the user, 18 Nov about 01:10 | Codex `gpt-6-astra`, high | At launch | Make the table path run on the GPU | Yes, it holds the lock |
 | `bem-brg` | `w2:p6`, middle right | Codex `gpt-6.1-sol`, high | At launch | Fit the six BRG paper cases | No |
 | `bem-csi` | `w2:p7`, bottom right | Claude Opus, high | At launch | Write the CSI adapter, run its first checks and first fit | Only if given the lock after `bem-gpu` |
-| `bem-csi-run` | not started | Claude Sonnet, high | When the adapter passes review | Run and watch every BEM fit on CSI data | No |
+| `bem-csi-run` | `w2:p8`, bottom right | Claude Sonnet, high | When the adapter passes review | Run and watch every BEM fit on CSI data | No |
 
 `bem-csi-run` watches our fits only. The baseline's MATLAB campaign belongs
 to the `csi` agent.
@@ -395,8 +395,8 @@ data convention is in doubt.
 |---|---|---|---|
 | Table path on the GPU | `bem-gpu` | Done: commit `3612f5195` at 00:32 ([results](adapt_bem_to_baseline_data/01_run_table_path_on_gpu/results.md)). Lock free. Its series-limit proposal is closed: no go from the user. The user is closing its pane | None |
 | BRG paper cases | `bem-brg` | GPU pass, the reported one, done 01:23 ([results](adapt_bem_to_baseline_data/02_fit_brg_paper_cases/results.md)). Area error at the last k: `glider_033` 0.061% at k = 15 (71 s); `star_full` 0.58% at 15 (334 s); `star_limited` 0.60% at 15 (274 s); `glider_10` failed, 14% at k = 12, then refused at 15. Cavities skipped by the user. K = 192, 1e-6 | Cause of the CPU and GPU path differences; `glider_10` stage history |
-| CSI adapter | `bem-csi` | Review stop 3 passed 01:32 ([results](adapt_bem_to_baseline_data/03_adapt_bem_to_csi_data/results.md)). Measured cylinder, GPU: completed the schedule in 23 min; centre 3.1 mm off, radius 19.0 mm against 15, permittivity 2.19 against 3, area error 67.8%. A wrapper bug in the record step was fixed without a refit. Simulated circle at 1 to 3 GHz running | Circle result; information-only circle fit to the measured data; hand-over to the runner |
-| CSI fits | `bem-csi-run` | Not started. Three of ten simulated tables exist; the other seven are requested from the baseline side | Launch after the hand-over |
+| CSI adapter | `bem-csi` | Done but for its GPU circle check ([results](adapt_bem_to_baseline_data/03_adapt_bem_to_csi_data/results.md)). Measured cylinder, GPU: radius 19.0 mm against 15, permittivity 2.19 against 3, area error 67.8%; a plain circle fit to the same data gives 15.3 mm and 3.05, so the adapter is right and the default fit stalled. Simulated circle at 1 to 3 GHz: CPU pass 1.07% area error at its 120 s cut; GPU pass running. Hand-over written | GPU circle result; path update when the seven tables arrive; then close |
+| CSI fits | `bem-csi-run` | Launched 18 Nov 01:33, pane `w2:p8`, Claude Sonnet high. Running circle, kite and peanut | Report after the first three; pass on the paths of the other seven tables |
 | Table B1 | none | Held | Wait for the user |
 
 ## Coordinator decisions
@@ -425,6 +425,8 @@ data convention is in doubt.
 | 18 Nov, 01:25 | `bem-brg` looks for the cause of the CPU and GPU path differences, checks only: forward and Jacobian on both devices at K = 192, and the first iteration where the saved paths part | The user's rule is to flag any case where the two differ. Same-iteration curve differences are 1e-5 on three cases and 6e-2 on `glider_033`, far above the 1e-13 between devices in the table checks |
 | 18 Nov, 01:32 | CSI review stop 3: the first fit on the measured cylinder is accepted as run. No retune, no rerun. `bem-csi` adds an information-only check: an exact-series circle fitted to the measured table | Limits kept (894 units, 1403 s), raw metrics saved, no truth in the fit, solver untouched. The fit landed 3.1 mm from the nominal centre but too large and too weak (radius 19.0 mm against 15, permittivity 2.19 against 3, area error 67.8%). Its residual (33 to 50%) is above the nominal truth's (23 to 40%), so the check asks whether the data support the nominal cylinder under our forward at all |
 | 18 Nov, 01:32 | Data request to the baseline coordinator (pane `w1:p1`): generate the other seven simulated tables now, not at each CSI batch start | Only circle, kite and peanut exist. The BEM fits would otherwise wait about 4 h |
+| 18 Nov, 01:33 | Measured cylinder: the result stands as a failure of the default fit, and the adapter is cleared. No retune | Information-only check, data only: a least-squares circle from the exact series ends at centre (1.9, 26.2) mm, radius 15.3 mm, permittivity 3.05, loss 0.0375, from the nominal start and from the fit's end point alike. Our fit ended at loss 0.0840 (radius 19.0 mm, permittivity 2.19). The large, weak cylinder comes from the 1 GHz stage, where the data fix mainly size times contrast; later stages accept almost nothing |
+| 18 Nov, 01:33 | `bem-csi-run` launched on the hand-over: circle, kite and peanut now; the other seven when the baseline side sends their paths. The measured cylinder is not rerun | The adapter passed its three review stops; the hand-over is one resumable command per step. GPU fits repeat bit for bit, so a second cylinder fit adds nothing |
 
 ## Waiting on the user
 
