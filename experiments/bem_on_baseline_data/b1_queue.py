@@ -10,7 +10,7 @@ import b1_data as D
 
 DOC = ROOT/'docs/iterations/adapt_bem_to_baseline_data/06_fit_brg_tg002_cases'
 RUNNER = ROOT/'experiments/bem_on_baseline_data/b1_run.py'
-CONCURRENCY = 2  # Coordinator allocation; only the coordinator raises this.
+CONCURRENCY = 4  # Coordinator allocation; only the coordinator raises this.
 
 
 def metric(case, row):
@@ -64,6 +64,9 @@ def run():
     (BASE/'local').mkdir(exist_ok=True)
     with file_lock('queue.lock'):
         while True:
+            allocation = BASE/'resource_allocation.json'
+            limit = json.loads(allocation.read_text())['concurrency'] if allocation.exists() else CONCURRENCY
+            assert isinstance(limit, int) and 1 <= limit <= CONCURRENCY
             checks = {}
             for case in D.ORDER:
                 p = BASE/case/'checks/qualification.json'
@@ -111,7 +114,7 @@ def run():
                 candidates += [(c,'recovered') for c in ready if metric(c,'known') is not None and metric(c,'recovered') is None and (c,'recovered') not in active]
             if not blocked:
                 for case, row in candidates:
-                    if len(active) >= CONCURRENCY:
+                    if len(active) >= limit:
                         break
                     expected = peak()
                     reserve = pending_reserve(active)
@@ -131,7 +134,7 @@ def run():
                     print(now(), 'LAUNCH', case, row, 'pid', child.pid, 'available GiB', round(memory/GIB,3), flush=True)
                     time.sleep(.5)
             done = sum(metric(c,r) is not None for c in D.CASES for r in ('known','recovered'))
-            state = dict(started=started, updated=now(), pid=os.getpid(), phase=phase, concurrency=CONCURRENCY,
+            state = dict(started=started, updated=now(), pid=os.getpid(), phase=phase, concurrency=limit,
                          completed_count=done, planned=40, active=[dict(case=c,row=r,pid=t['process'].pid) for (c,r),t in active.items()],
                          completed_this_queue=completed, pending_inputs=[c for c in D.CASES if c not in ready],
                          blocked=blocked, status='blocked' if blocked else 'complete' if done==40 else 'running')

@@ -21,7 +21,14 @@ from bem_inverse.io import curve_from, curve_record
 import b1_data as D
 
 DOC = ROOT/'docs/iterations/adapt_bem_to_baseline_data/06_fit_brg_tg002_cases'
-B1_FIT_CONCURRENCY = 2  # Only the BEM coordinator may raise this setting.
+B1_FIT_CONCURRENCY = 4  # Only the BEM coordinator may raise this setting.
+
+
+def fit_limit():
+    path = BASE/'resource_allocation.json'
+    value = json.loads(path.read_text())['concurrency'] if path.exists() else B1_FIT_CONCURRENCY
+    assert isinstance(value, int) and 1 <= value <= B1_FIT_CONCURRENCY
+    return value
 
 
 @dataclass(frozen=True)
@@ -223,7 +230,7 @@ def fit_table(fits):
 def report_checks(record):
     fitted = [json.loads(p.read_text()) for p in sorted(BASE.glob('*/*/attempt_*/metrics.json'))]
     lines = ['# B1 checks, 18 November 2026', '',
-             f'{len(fitted)} BEM fits have saved metrics. The coordinator released the queue with two B1 fits.',
+             f'{len(fitted)} BEM fits have saved metrics. The coordinator released the queue; current resource allocation is recorded separately.',
              'CUDA checks use default production/refined profiles and series_loss=1e-9.',
              'Both fitting rows will read only the saved, hash-verified BRG observations.', '',
              '| Case | Checked / 37 | BRG relative maximum | Refinement maximum | Status |',
@@ -262,7 +269,7 @@ def report_checks(record):
                   'exists and matches all 37 files. Cross at eta 4, cog and aphex_twin at both contrasts',
                   'were pending at the first 15-case stop. The baseline completion run owns those files.',
                   'The watch-checks command picks up newly finished manifests without repeating checks.', '',
-                  f'{len(fitted)} of 40 inverse fits have saved metrics; the two-worker queue is authorized.',
+                  f'{len(fitted)} of 40 inverse fits have saved metrics; the resource-limited queue is authorized.',
                   'Checked cases may fit without waiting for late baseline manifests (coordinator, 18 November).',
                   'The first known-contrast circle__c4 fit has its own immutable first_fit_report.md.', '']
     if fitted:
@@ -298,7 +305,7 @@ def fit_worker(case, row, out):
                 length_unit_m=problem.length_unit_m, origin_m=problem.origin_m,
                 bounds_m=problem.bounds_m, start_curve=curve_record(problem.initial),
                 torch_threads=torch.get_num_threads(), torch_interop_threads=torch.get_num_interop_threads(),
-                time_limit='disabled', b1_fit_concurrency=B1_FIT_CONCURRENCY, geometry_update='slider', localization='none', noise_level=None))
+                time_limit='disabled', b1_fit_concurrency=fit_limit(), geometry_update='slider', localization='none', noise_level=None))
     try:
         if row=='recovered':
             contrast, initialization = weak_start(physics, problem.initial, problem.real[0])
@@ -443,7 +450,7 @@ def fit_case(case, row):
     assert current_inputs['passes'] and current_inputs['files']==checked_inputs['files'], 'Checked observations changed.'
     assert provenance()['solver_hashes']==qualification['end']['solver_hashes'], 'Solver changed after checks.'
     active = other_b1_fits()
-    assert len(active) < B1_FIT_CONCURRENCY, f'B1 fit concurrency limit {B1_FIT_CONCURRENCY}; active={active}'
+    assert len(active) < fit_limit(), f'B1 fit concurrency limit {fit_limit()}; active={active}'
     if row=='recovered':
         assert list((BASE/case/'known').glob('attempt_*/metrics.json')), 'This case needs its known-contrast fit first.'
     base = BASE/case/row

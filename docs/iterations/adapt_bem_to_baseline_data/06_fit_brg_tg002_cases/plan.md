@@ -169,3 +169,16 @@ another active fit. Keep one full table row per fit in results.md.
 A baseline manifest without all 37 data-file records means INPUTS_PENDING,
 not a failed BEM check. The coordinator owns the baseline aphex_twin repair.
 Command: `python experiments/bem_on_baseline_data/b1_queue.py`.
+
+## Resource allocation to four fits, 18 November, 02:22 UTC
+
+The user-authorized monitor in w3:p1 raised the ceiling to FOUR future B1
+fits, from its 02:20 resource sample. No scientific setting or review changes.
+Every launch still reserves max(measured peak, 3 GiB) plus 1 GiB above the
+shared 14 GiB floor. Recheck around 02:29; no intervening resource retuning.
+
+The old scheduler had a fixed two-worker limit. Paused only scheduler PID
+874348, leaving both kite recovered-fit supervisors and their memory guards
+running. At their completion boundary, replace the idle scheduler with one
+that reads resource_allocation.json at each loop. Existing fits are never
+interrupted or restarted. Preserve the old queue snapshot before replacement.
