@@ -25,8 +25,9 @@ again at about 03:40 UTC.
 - Nothing is running on the baseline side. No launcher to re-arm.
 - BRG: both 20-case rows on the TG-002 shapes are complete. The `brg` pane
   is closed.
-- BEM side: one table B1 fit was still running at 03:45 UTC
-  (`aphex_twin__c4`, known contrast).
+- BEM side: every BEM table is filled (B1 40 fits, B2, C measured, C
+  simulated). Nothing runs on the BEM side since 05:34 UTC. State:
+  [coordinate_bem_side.md](coordinate_bem_side.md).
 
 **The plan for the simulated cases of table C.** The user, 18 November
 03:43 UTC, in this pane:

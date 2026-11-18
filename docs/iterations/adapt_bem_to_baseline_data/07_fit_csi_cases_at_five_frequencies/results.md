@@ -31,7 +31,9 @@ All ten ended `COMPLETED_SCHEDULE`. Area error, centre offset and contrast are a
 | cog | `full_8_M49` | 3619 | 247 | 1.87 / 0.87 | 2.86% | 0.037 | 4.0005 |
 | aphex_twin | `full_6_M37` | 3039 | 195 | 1.85 / 0.83 | 5.96% | 0.107 | 3.9970 |
 
-Median area error 2.2%; worst aphex_twin 5.96%. All used far fewer than 13,412 units.
+Median area error 2.47%; worst aphex_twin 5.96%. All used far fewer than 13,412 units.
+(Corrected by the coordinator, 18 Nov 07:51 UTC: this line and the report block said 2.2%,
+the mean of the fourth and fifth value. From the ten `metrics.json` files: mean 2.71%, median 2.47%.)
 Times are indicative (shared machine). Circle, kite and peanut ran at 04:03 to 04:12; the rest
 waited from 04:12 to 04:53 behind the memory count (see below).
 
@@ -76,7 +78,7 @@ agreement of the final result is not shown.
 ```text
 Activity: adapt_bem_to_baseline_data/07_fit_csi_cases_at_five_frequencies, 18 Nov 2026
 Runs: 10 checks, 10 GPU fits, 10 CPU cross-checks (120 s cut); one waiter, restarted once; wall time 1:33
-Result: all ten checks pass (worst 0.713%); all ten GPU fits COMPLETED_SCHEDULE; area error 0.97% (circle) to 5.96% (aphex_twin), median 2.2%; contrast within 0.0054 of 4 (aphex_twin 3.9970); all CPU runs stopped at 120 s
+Result: all ten checks pass (worst 0.713%); all ten GPU fits COMPLETED_SCHEDULE; area error 0.97% (circle) to 5.96% (aphex_twin), median 2.47%; contrast within 0.0054 of 4 (aphex_twin 3.9970); all CPU runs stopped at 120 s
 Failures: none in the fits; 40 min start delay from a memory count that differed from the monitor's (fixed); two transient push rejections
 Upstream patches: none
 Changes to our code: none (only the runner's own waiter script, logs/waiter.py)

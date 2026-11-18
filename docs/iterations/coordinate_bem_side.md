@@ -9,7 +9,7 @@ It is a temporary second file. The user: "i would prefer to use one
 coordination file, but temporarily to avoid the current coordination file
 being too long you can have a new one". Merge it back when the work is done.
 
-**State, 18 November 2026, 05:36 GMT:** a fresh coordinator took over at
+**State, 18 November 2026, 07:51 GMT:** a fresh coordinator took over at
 02:03, after the user restarted the chat ("you have a lot of context so i
 plan to start you fresh"). Table B1: all 40 fits are done (04:09) and all 20 data
 checks pass. The last fit, `aphex_twin__c4` with recovered contrast, gave
@@ -25,6 +25,12 @@ All ten GPU fits are done (05:10): area error 0.97 to 5.96%, contrast within
 0.14% of 4. The ten CPU cross-checks are done (05:34): each stops at 120 s,
 and agrees with the GPU fit on every stage both finished. Every BEM table is
 now filled; nothing is running on the BEM side.
+The baseline side's seven five-frequency MF-CC-CSI fits ended 07:47, no
+failure; both methods' numbers are in the main file ("Table C, simulated
+shapes: the numbers"). On the seven shared shapes: BEM 1.29 to 5.96% area
+error, MF-CC-CSI 3.72 to 23.36%. The machine is quiet since 07:47 and the
+monitor's ceilings are all 0 (07:48). The clean timed GPU pass waits only
+for the user's go.
 A later restart begins at [Start here](#start-here) too.
 
 ## Start here
@@ -64,7 +70,7 @@ activity results):
 | B2 | `cavity_09`, `cavity_2` | Skipped by the user (series limit) | BRG 134% |
 | C | Measured cylinder | Default fit stalled: radius 19.0 mm against 15, permittivity 2.19 against 3, area error 67.8%. The adapter is cleared | MF-CC-CSI +4.2% support area, 2.73 |
 | C | Simulated circle, kite, peanut, 1 to 3 GHz (early look, not the reported pass) | 1.17%, 3.08%, 1.50% area error; contrast within 0.04% of 4 | CSI's three eight-frequency fits stay as separate results |
-| C | Simulated, all ten shapes, 0.5 to 2.5 GHz in five frequencies (the reported pass) | 1% checks pass on all ten (04:04): worst 0.71% (`aphex_twin`, 2.5 GHz); the other nine at most 0.44%. All ten GPU fits done 05:10, every schedule completed. Area error: circle 0.97%, kite 3.80%, peanut 1.54%, star 2.34%, asymmetric 1.29%, c_shape 2.60%, hook 3.59%, cross 2.10%, cog 2.86%, aphex_twin 5.96%. Contrast found 3.997 to 4.005. 47 to 247 s and 1464 to 4477 work units per fit; host peak 1.87 GiB. CPU cross-checks (120 s cut): same loss as the GPU to 4e-9 relative and the same step counts on every stage both finished (5 to 7 per shape) | CSI's seven remaining fits are released by these checks |
+| C | Simulated, all ten shapes, 0.5 to 2.5 GHz in five frequencies (the reported pass) | 1% checks pass on all ten (04:04): worst 0.71% (`aphex_twin`, 2.5 GHz); the other nine at most 0.44%. All ten GPU fits done 05:10, every schedule completed. Area error: circle 0.97%, kite 3.80%, peanut 1.54%, star 2.34%, asymmetric 1.29%, c_shape 2.60%, hook 3.59%, cross 2.10%, cog 2.86%, aphex_twin 5.96%. Contrast found 3.997 to 4.005. 47 to 247 s and 1464 to 4477 work units per fit; host peak 1.87 GiB. CPU cross-checks (120 s cut): same loss as the GPU to 4e-9 relative and the same step counts on every stage both finished (5 to 7 per shape) | MF-CC-CSI, seven shapes, same tables (07:47): 3.72% (star) to 23.36% (`aphex_twin`), median 13.29%; above BEM on every shape. Numbers for both methods: main file, "Table C, simulated shapes: the numbers" |
 | B1, known contrast | 17 of 20 cases (02:20) | Every fit completed its schedule. Area error at most 0.29% (`cog__c0.5`), under 0.1% on the other 16, median 0.04%. 7 to 115 s and 274 to 4585 work units per fit | BRG, same 17 cases: 6 under 5% (main file, BRG activity 04) |
 | B1, recovered contrast | 17 of 20 cases (02:26) | Every fit completed its schedule. Area error at most 0.21% (`cog__c0.5`), under 0.1% on the other 16, median 0.03%. Contrast within 2e-6 of the truth, relative. 9 to 96 s per fit | None; BRG is given the contrast |
 | B1 | `cog__c4` | 0.038% area error in both rows (40 s and 56 s); contrast found 4.0000001 | |
@@ -112,12 +118,16 @@ activity results):
    What is left:
    - Close the idle panes `bem-b1` and `bem-csi-run` (their paths are
      clean; check `git status` first).
-   - When the baseline side's seven CSI fits are in: nothing to run; the
-     comparison tables are written in the main file by the baseline
-     coordinator.
-   - Later, on a quiet machine (the CSI fits load it for hours): one clean
-     timed GPU pass for the reported fits (commands are in the 02, 03, 06
-     and 07 results). Ask the user before starting it.
+   - Done 07:47: the baseline side's seven CSI fits are in, and its
+     coordinator wrote both methods' numbers into the main file. The BEM
+     column there was checked against our `metrics.json` files at 07:51.
+   - The machine is quiet since 07:47 (no baseline job, no BEM job). One
+     clean timed GPU pass for the reported fits can now run (commands are
+     in the 02, 03, 06 and 07 results). Ask the user before starting it.
+     The monitor set every ceiling in `results/csi/resource_policy.json`
+     to 0 at 07:48; with a go, ask it (`agent prompt w3:p1`) for one BEM
+     slot first. A timed pass writes new attempts beside the reported
+     ones; it replaces times only, never a reported score.
    - Then merge this file back into the main file.
 
 **Working notes from the first session:**
@@ -582,6 +592,7 @@ data convention is in doubt.
 | 18 Nov, 04:53 | The simulated fits stood still from 04:12 to about 04:53 with a free BEM slot. `bem-csi-run` aligns its waiter's memory count with the monitor's and restarts it | The waiter took the memory of the top MATLAB process only (3.6 GiB) against a 6.0 GiB reservation, so it saw 7.5 GiB of growth still to come and 15.1 GiB left, under the 16 GiB line. The monitor sums each job with its child processes (5.2 GiB) against 6.6 GiB, sees 4.1 GiB of growth and 18.5 GiB left, and had granted the slot. No fit was stopped; 40 minutes of GPU time were lost. The coordinator was away in that time |
 | 18 Nov, 05:10 | The ten five-frequency GPU fits are accepted as the reported pass for the BEM row of table C (simulated). Nothing is rerun | Every fit completed its schedule on a clean solver and read the table with the same SHA-256 as its check. The final residuals (0.04 to 0.40% per frequency) are at or under the data's own error on the true shape (0.11 to 0.71%), so each fit reached the level of the data error. The largest area errors are `aphex_twin` 5.96%, kite 3.80% and hook 3.59%; the top frequency is 2.5 GHz, a 12 cm wavelength against shapes of about 13 cm |
 | 18 Nov, 05:36 | `bem-csi-run`'s [results](adapt_bem_to_baseline_data/07_fit_csi_cases_at_five_frequencies/results.md) are accepted; the five-frequency pass is closed. The CPU cross-checks stay as cut runs | All ten CPU runs stop at 120 s inside the first three all-frequency stages. On the 5 to 7 stages that both devices finished, the loss differs by at most 3.8e-9 relative (hook), the contrast by at most 1.3e-10, and the step counts are equal on every shape. So the GPU path equals the CPU path through the whole ladder here; the end of a CPU fit is not reached. The coordinator's own read of the saved metrics; the runner adds its numbers to its results |
+| 18 Nov, 07:51 | The main file's numbers for table C (simulated), written by the baseline coordinator at 07:50, are checked and accepted for the BEM column. The median in `bem-csi-run`'s results is corrected from 2.2% to 2.47% | Area error, contrast and time of all ten BEM fits there equal our `metrics.json` and `fit.json` values; BEM mean 2.71% and median 2.47% on ten shapes, 2.96% and 2.60% on the seven shared ones, recomputed. For each of the ten shapes the table's SHA-256 is in our check and our manifest; for the seven shared shapes it is also in CSI's `data.json`. The runner's 2.2% was the mean of the fourth and fifth value; the coordinator's 05:36 status to the user repeated it |
 | 18 Nov, 03:55 | Simulated CSI cases at 0.5 to 2.5 GHz: the frequency rule of 01:39 is applied as fixed. All five frequencies lie below 3 GHz, so the ladder has five stages (0.5; 0.5–1; 0.5–1.5; 0.5–2; 0.5–2.5 GHz), then the default all-frequency stages on the list. Ladder quotas 1000, 1000, 1000, 1000, 4000 | The rule was fixed "for whatever list the user picks"; only the quotas for five stages were missing. First and last are the default's; the default's middle 3000 units are shared equally, so the ladder total stays 8000 and the fit total 13,412. Shape bands by the default's own rule: 1, 3, 4, 6, 7 (default TG-002: 3, 5, 7, 9). Set before any result on this list. A scratch run on our own synthetic kite data showed only that the five stages run |
 | 18 Nov, 03:55 | The five-frequency GPU fits have no stop on elapsed time (the wrapper's 1 h ceiling is removed). The CPU cross-check keeps its 120 s cut | The user: "treat elapsed-time targets as reports rather than reasons to stop", and the relayed order says no stop on time. `aphex_twin__c4` in B1 shows a fit can pass 1 h and still move. The CPU run is a cross-check, not a result; whether to lift its cut is still asked |
 | 18 Nov, 03:55 | The five-frequency pass writes to `results/bem/baseline_data/csi_five_frequency/2026-11-18/`, apart from the early look. A fit now refuses a check made on another table (SHA-256) or another frequency list | The early-look folder holds finished attempts and passing 1 to 3 GHz checks for circle, kite and peanut; reusing it would skip those fits and accept the old checks. Both methods must provably read the same file |
@@ -599,7 +610,8 @@ data convention is in doubt.
   end of a fit. On the five-frequency cases the cut runs already agree with
   the GPU on every stage both finished, so little hangs on it there.
 - **The clean timed GPU pass.** Reported times so far are from a loaded
-  machine. A timed pass needs a quiet machine and a go.
+  machine. The machine is quiet since 07:47 (18 Nov); the pass now needs
+  only a go. Asked 07:52.
 - **The two failed `aphex_twin` fits with known contrast (table B1).** They
   stay as failures. A test of the cause (start contrast or fixed contrast)
   would be a new activity; not started.
