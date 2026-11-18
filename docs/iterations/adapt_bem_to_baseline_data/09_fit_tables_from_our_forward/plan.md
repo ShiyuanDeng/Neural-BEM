@@ -160,3 +160,10 @@ The coordinator accepted all checks and said: "Go for the four GPU fits,
 at most two at a time, detached, unchanged five-frequency settings."
 Another session may also run fits, so times are indicative. Keep one fit
 at a time in this activity as planned. No settings change and no rerun.
+
+After all four result files exist, score saved stage curves and draw the figure
+without any new forward solve:
+
+```bash
+/home/drdeng/miniconda3/envs/EMNerf/bin/python experiments/bem_on_baseline_data/own_forward_report.py
+```
