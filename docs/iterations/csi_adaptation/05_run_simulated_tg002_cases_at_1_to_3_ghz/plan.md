@@ -42,6 +42,22 @@ The driver loads the full parent table, but neither configuration nor
 inversion uses rows at 4–8 GHz. Save exact selected-row text separately
 with a hash and parent hash for the BEM side, without modifying parents.
 
+Coordinator priority update, 18 November approximately 01:31 UTC: generate
+the other seven tables now, ahead of fits, so BEM can read them early.
+Use one MATLAB at a time and the exact generator/source hashes recorded
+by the old campaign. Store all ten parents (copying the first three by
+hash) at results/csi/tg002/2026-11-18_low_band_data/{shape}/forward/synthetic_input.txt,
+with SHA-256 sidecars and selected-row files/hashes. The old live campaign
+folder is read only. Activity 05's inverse launcher must reuse all ten
+cache tables by hash and must never regenerate. The prefetch controller
+has nice 10 so the existing batch-1 fits retain CPU scheduling priority;
+native eight-thread settings stay unchanged. The 14 GiB guard may delay
+starts or stop only the newest owned forward on an urgent reserve breach.
+No automatic time stop. Commit/push each generated table's compact
+metadata/logs, keep full tables local/ignored, and update data_note.md.
+Command: EMNerf Python -B -m experiments.baselines.csi.prepare_low_band_data,
+with PYTHONPATH=solvers:. This is forward-only work, no inverse test run.
+
 Frequency-dependent native choices: three frequency blocks and matrices;
 three back-propagated fields contribute to the common initial contrast;
 the objective's native frequency averages divide by three, and its
