@@ -7,7 +7,7 @@ settings, assumptions and unknowns, and it sets how subagents share the work.
 The coordinator (the main session) owns this file. Subagents never edit it.
 They report back, and the coordinator updates the status board and the cards.
 
-Last updated: 18 November 2026, 00:15 UTC (restart notes added; both campaigns running).
+Last updated: 18 November 2026, 00:35 UTC (agent chats restarted; BEM side live).
 
 ## Restart notes (18 November 2026)
 
@@ -33,6 +33,8 @@ grants full access; the coordinator does not.
 | BRG on 20 TG-002 cases, provisional data | `experiments/baselines/brg/run_tg002.py --campaign` (PID 727204 at 00:10 UTC) | `results/brg/tg002_shapes/2026-11-17/campaign.json` | See "State at handoff" in BRG 04 results |
 
 Both launchers belong to no chat, so closing a pane does not stop them.
+Both agent chats were restarted at 00:25 UTC and picked up from their
+handoff notes; each confirmed what is running before carrying on.
 The CSI campaign started 17 November 23:17 UTC: four batches of about 2 h.
 
 **How the coordinator works.**
@@ -51,11 +53,20 @@ The CSI campaign started 17 November 23:17 UTC: four batches of about 2 h.
    budget. Update the board after each batch.
 3. Deferred: the BRG paper cases from k = 15 to 30, only after the CSI
    campaign and only if still wanted.
-4. Waiting on the user: a deadline, and the start of the BEM-side
-   coordinator. The solver lock then passes to it. Its inputs are the
-   [solver handover](brg_adaptation/03_adapt_bem_to_brg_data/results.md)
-   and `results/brg/tg002_shapes/2026-11-17/data_request.json`.
-5. Open questions: MR-CSI against the paper's Figure 5; BRG's gap to the
+4. The BEM side is live since 18 November, 00:15 GMT: a second coordinator
+   (pane `w2:p1`) with its own agents, working from
+   [coordinate_bem_side.md](coordinate_bem_side.md). It holds the solver
+   lock and may edit the BEM rows and the lock paragraph of this file, so
+   re-read this file before each edit and commit it by path.
+   - It takes from this side: the
+     [solver handover](brg_adaptation/03_adapt_bem_to_brg_data/results.md),
+     `results/brg/tg002_shapes/2026-11-17/data_request.json`, and the
+     hashed CSI data files.
+   - This side owes it: BRG reruns on its frozen plane-wave data, only
+     where the fields differ from the provisional data.
+   - The machine is shared with it. Keep the 14 GB memory guard.
+5. Still waiting on the user: a deadline.
+6. Open questions: MR-CSI against the paper's Figure 5; BRG's gap to the
    paper's Figure 1; U1 and U5 below.
 
 ## Status board
