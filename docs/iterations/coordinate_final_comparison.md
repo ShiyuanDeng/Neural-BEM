@@ -7,8 +7,9 @@ settings, assumptions and unknowns, and it sets how subagents share the work.
 The coordinator (the main session) owns this file. Subagents never edit it.
 They report back, and the coordinator updates the status board and the cards.
 
-Last updated: 18 November 2026, 01:00 UTC (user: simulated CSI cases use 1 to
-3 GHz only; BRG curvature limit).
+Last updated: 18 November 2026, 01:40 UTC (user: hold the 1 to 3 GHz CSI
+launch and review batch 1 first; no stop for a time limit; BRG completion
+run started).
 
 ## Restart notes (18 November 2026)
 
@@ -73,10 +74,11 @@ BEM side shares the CPU, so about 2.4 to 2.9 h per batch.
 2. CSI campaign: the user cut the simulated cases to 1, 2 and 3 GHz
    (18 November 00:55 UTC, see the CSI card). Batch 1 of the old
    eight-frequency campaign ends near 02:00 UTC and stays as a side result;
-   its launcher then exits by itself and nothing resumes it. The `csi`
-   agent then starts CSI activity 05: all ten shapes at 1 to 3 GHz, with
-   the time limit read from a file. Check its PID, its measured seconds
-   per iteration and the batch-1 push. Update the board after each batch.
+   its launcher then exits by itself and nothing resumes it. **On hold
+   (user, 01:36 UTC):** no CSI fit is launched after batch 1. Review the
+   batch-1 results with the user first; the user then chooses four or five
+   frequencies for the remaining cases. `csi` prepares a review pack and
+   keeps the launcher's frequency list as one setting.
 3. Deferred: the BRG paper cases from k = 15 to 30, only after the CSI
    campaign and only if still wanted.
 4. The BEM side is live since 18 November, 00:15 GMT: a second coordinator
@@ -101,8 +103,8 @@ BEM side shares the CPU, so about 2.4 to 2.9 h per batch.
 |---|---|---|---|---|
 | Our BEM (default) | [evaluate_our_method](evaluate_our_method/) | [01](evaluate_our_method/01_measure_clean_and_noisy_recovery/results.md), [02](evaluate_our_method/02_run_ablations/results.md), run 17 Nov | TG-002 done. BEM side started 18 Nov: GPU table path, six BRG paper cases, CSI adapter | Status in [coordinate_bem_side.md](coordinate_bem_side.md) |
 | GauGal | [evaluate_our_method](evaluate_our_method/) | [03](evaluate_our_method/03_record_untuned_gaugal_reference/results.md), run 17 Nov | TG-002 untuned reference done | Stage 2 role open (U1) |
-| BRG | [brg_adaptation](brg_adaptation/) | [01 results](brg_adaptation/01_run_published_examples/results.md), [02 plan](brg_adaptation/02_rebuild_paper_examples/plan.md) | 01 done 17 Nov. [02](brg_adaptation/02_rebuild_paper_examples/results.md) done to k = 15 (six cases). [03](brg_adaptation/03_adapt_bem_to_brg_data/results.md): adapter done, 1 of 6 fits run, stopped for handover. [04](brg_adaptation/04_run_brg_on_tg002_shapes/plan.md) (BRG on TG-002 shapes): baseline half started 18 Nov 00:40 | `brg` agent (Codex, astra, high effort): finish the 20 cases (10 scored by 00:40 UTC: circle and star recovered; kite, peanut and asymmetric not). Then activity 05: the same cases without the curvature limit. Provisional data; no BEM work |
-| CSI family | [csi_adaptation](csi_adaptation/) | [01 results](csi_adaptation/01_run_published_examples/results.md) | 01, [02](csi_adaptation/02_run_fresnel_dielectric_cylinder/results.md) and [03](csi_adaptation/03_prepare_simulated_tg002_cases/results.md) done 17 Nov. [04](csi_adaptation/04_run_simulated_tg002_cases/plan.md) (10 simulated cases, MF-CC-CSI) started 18 Nov 00:10 | `csi` agent (Codex, sol, high effort): let batch 1 of 04 finish as a side result (eight frequencies; circle, kite, peanut). Then activity 05: all ten shapes at 1, 2 and 3 GHz, three fits at a time; push after each batch |
+| BRG | [brg_adaptation](brg_adaptation/) | [01 results](brg_adaptation/01_run_published_examples/results.md), [02 plan](brg_adaptation/02_rebuild_paper_examples/plan.md) | 01 done 17 Nov. [02](brg_adaptation/02_rebuild_paper_examples/results.md) done to k = 15 (six cases). [03](brg_adaptation/03_adapt_bem_to_brg_data/results.md): adapter done, 1 of 6 fits run, stopped for handover. [04](brg_adaptation/04_run_brg_on_tg002_shapes/plan.md) (BRG on TG-002 shapes): baseline half started 18 Nov 00:40 | `brg` agent (Codex, astra, high effort): 13 of 20 cases complete by 01:34 UTC (circle and star recovered; asymmetric, kite, peanut, hook and c_shape at contrast 4 not). The old queue cut `c_shape__c0.5` at its 1 h cap and dropped six cases. A completion run with no time cap started 01:35 UTC (supervisor PID 821706): that case from its saved state, then the six. Then activity 05: the same 20 without the curvature limit. Provisional data; no BEM work |
+| CSI family | [csi_adaptation](csi_adaptation/) | [01 results](csi_adaptation/01_run_published_examples/results.md) | 01, [02](csi_adaptation/02_run_fresnel_dielectric_cylinder/results.md) and [03](csi_adaptation/03_prepare_simulated_tg002_cases/results.md) done 17 Nov. [04](csi_adaptation/04_run_simulated_tg002_cases/plan.md) (10 simulated cases, MF-CC-CSI) started 18 Nov 00:10 | `csi` agent (Codex, sol, high effort): let batch 1 of 04 finish (eight frequencies; circle, kite, peanut), then send a review pack. Nothing launches until the user has reviewed it and chosen the frequencies. Meanwhile it generates the other seven tables for the BEM side |
 
 **Setup checked on 17 November 2026:** the user made the MaxwellFDFD link and
 signed in to MATLAB (online licensing). `matlab -batch` runs, the C compiler
@@ -147,7 +149,7 @@ one of six fits run). It stops there.
 | A. TG-002 (Stage 1) | 10 shapes at contrasts 0.5 and 4 (20 cases); contrast 13.3 for BEM only | BEM default, GauGal untuned | Done. No claims (user: claims "should wait until we see how baselines perform in stage 2") |
 | B1. BRG on TG-002 shapes (main BRG table) | 10 shapes at contrasts 0.5 and 4, with BRG-style plane-wave data | BRG, BEM with known contrast; BEM with recovered contrast as an extra row | BRG: running on provisional data (activity 04); a second row without the curvature limit follows (activity 05). BEM: not started (BEM side) |
 | B2. BRG paper cases | Paper examples 1–3, six runs | BRG; BEM with known contrast up to about k = 10 | BRG: done to k = 15. BEM: 1 of 6 fits run; the rest go to the BEM side |
-| C. CSI cases | Fresnel `dielTM_dec8f` (1 scene), plus the 10 TG-002 shapes at contrast 4 simulated in the Fresnel layout, at 1, 2 and 3 GHz | Measured scene: MF-CC-CSI, MR-CSI, CSI. Simulated scenes: MF-CC-CSI only, for now. BEM with recovered contrast on both | CSI: measured scene done. Simulated scenes: 1, 2 and 3 GHz only, for both methods (user, 18 November; the data above 3 GHz is up to 5.9% from the exact solution). CSI rerun at 1 to 3 GHz starts after batch 1 of the old campaign. BEM: not started (BEM side) |
+| C. CSI cases | Fresnel `dielTM_dec8f` (1 scene), plus the 10 TG-002 shapes at contrast 4 simulated in the Fresnel layout, on a reduced band the user will choose | Measured scene: MF-CC-CSI, MR-CSI, CSI. Simulated scenes: MF-CC-CSI only, for now. BEM with recovered contrast on both | CSI: measured scene done. Simulated scenes: a reduced band for both methods, because the data above 3 GHz is up to 5.9% from the exact solution. The user first said 1 to 3 GHz, then put that launch on hold: review batch 1 (eight frequencies) with the user, who then chooses four or five frequencies. BEM: not started (BEM side) |
 
 Rules for every table:
 - Their code and published settings are not changed. Our method is adapted to
@@ -461,6 +463,14 @@ Rules for every table:
   - Cost of the cut: 3 GHz in vacuum is a 100 mm wavelength outside and
     50 mm inside. TG-002's top frequency gives 49 mm and 24 mm. Both
     methods get the same, coarser data.
+  - **On hold (user, 18 November 01:36 UTC):** "Let the current
+    eight-frequency batch finish. Hold the automatic 1-3 GHz launch.
+    Review those results with me before choosing four or five frequencies
+    for the remaining cases." So nothing launches after batch 1. The
+    frequency list is open again and the BEM side has been told.
+  - Tables for the BEM side (its request, 01:30 UTC): `csi` generates the
+    other seven simulated tables now, with the unchanged generator, under
+    `results/csi/tg002/2026-11-18_low_band_data/<shape>/forward/`.
 
 ## Who decides
 
