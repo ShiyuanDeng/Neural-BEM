@@ -56,7 +56,7 @@ The CSI campaign started 17 November 23:17 UTC: four batches of about 2 h.
    [solver handover](brg_adaptation/03_adapt_bem_to_brg_data/results.md)
    and `results/brg/tg002_shapes/2026-11-17/data_request.json`.
 5. Open questions: MR-CSI against the paper's Figure 5; BRG's gap to the
-   paper's Figure 1; U1, U4 and U5 below.
+   paper's Figure 1; U1 and U5 below.
 
 ## Status board
 
@@ -395,8 +395,10 @@ feedbacks. remember the big picture: to generate comparison with my bem."
 - **U3.** Decided by the coordinator, 17 November: keep protocol version 1
   for CSI images (half the peak, with the peak's sign; 0.3 and 0.7 kept as
   sensitivity scores). Raw arrays are saved, so a recount needs no rerun.
-- **U4.** Simulated CSI cases: generated with their FDFD forward, our BEM
-  forward, or both, cross-checked?
+- **U4.** Decided by the coordinator, 17 November: the simulated CSI
+  cases use their own forward, on a finer grid (0.625 mm) than the
+  inversion (1.25 mm). The BEM side later checks the same hashed data files
+  with our forward on each true shape.
 - **U5.** Success cut-off for tables B and C: keep area error ≤5%, or report
   the raw error only, as the BRG paper does?
 - **U6.** Decided by the coordinator, 17 November: BRG and CSI runs may
