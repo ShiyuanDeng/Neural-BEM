@@ -1,4 +1,5 @@
 """Write the provisional baseline report from saved receipts, without solver calls."""
+import datetime
 import json
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[3];BASE=ROOT/'results/brg/tg002_shapes/2026-11-17';DOC=ROOT/'docs/iterations/brg_adaptation/04_run_brg_on_tg002_shapes'
@@ -18,6 +19,7 @@ def main():
 ## Status and ownership
 
 Campaign started {state['started']}; {len(details)}/20 cases have saved scores.
+Queue state: `{state['status']}`; last update {state.get('ended',state.get('updated','not recorded'))}.
 All data and results here are **provisional BRG-forward data**. The BEM side
 owns generating and freezing the shared plane-wave data. These are TG-002
 shapes with BRG-style observations, not the sealed TG-002 measurements.
@@ -84,12 +86,27 @@ promise for thin strokes or deep concavities. No case is rerun to tune it.
 '''
     if len(details)>1:
         aggregate=sum(d[3] for d in details)
-        text+=f"Completed-case aggregate wall time: {aggregate/60:.2f} min across {len(details)} cases. A running-mean projection for all 20 is {aggregate/len(details)*20/60:.2f} min before parallelism; the still-unrun difficult shapes make this uncertain.\n\n"
+        text+=f"Completed-case aggregate wall time: {aggregate/60:.2f} min across {len(details)} cases.\n"
+        if len(details)<len(state['cases']):
+            text+=f"A running-mean projection for all 20 is {aggregate/len(details)*20/60:.2f} min before parallelism; the still-unrun difficult shapes make this uncertain.\n"
+        text+='\n'
+    if state.get('ended'):
+        elapsed=(datetime.datetime.fromisoformat(state['ended'])-datetime.datetime.fromisoformat(state['started'])).total_seconds()
+        text+=f"Actual queue elapsed time: {elapsed/60:.2f} min; ended {state['ended']}. The campaign limit was 240 min.\n\n"
+        if state.get('stop_reason'):text+=f"Queue stop reason: {state['stop_reason']}. Unfinished cases remain unfinished.\n\n"
     resources=BASE/'resources.jsonl'
     if resources.exists():
         samples=[json.loads(l) for l in resources.read_text().splitlines()]
         text+=f"Memory: minimum observed available {min(s['available_gib'] for s in samples):.2f} GiB; maximum active BRG workers {max(len(s['active']) for s in samples)}. The required reserve is 14 GB. Start/end CSI/MATLAB overlap is retained in each attempt.\n\n"
     text+='## Checks, failures and evidence\n\n'
+    checks=[]
+    for case,m,attempts,w in details:
+        p=BASE/case/'saved_output_check.json'
+        if p.exists():checks.append(json.loads(p.read_text()))
+    if checks:
+        issues=[f"{c['case']}: {issue}" for c in checks for issue in c['issues']]
+        text+=f"Saved-output checks cover {len(checks)}/{len(details)} scored cases. They read existing curves and histories, file counts, receipts, logs and manifest sizes; no inversion or scoring was repeated. Each receipt is saved as `saved_output_check.json` beside its metrics.\n\n"
+        text+=('Issues: '+'; '.join(issues) if issues else 'No saved-output check failed.')+'\n\n'
     for case,m,attempts,w in details:
         text+=f"- {case}: maximum data-geometry resampling point error {m['geometry_resampling_max_error']:.6g} BRG units; [metrics](../../../../results/brg/tg002_shapes/2026-11-17/{case}/metrics.json), [curve](figures/{case}.png).\n"
         for a in attempts:

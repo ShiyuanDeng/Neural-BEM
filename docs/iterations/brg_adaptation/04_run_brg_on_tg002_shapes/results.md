@@ -174,7 +174,8 @@ The shared checkout can contain CSI/coordinator changes: do not stage them.
 
 ## Status and ownership
 
-Campaign started 2026-11-17T23:41:28.138975+00:00; 9/20 cases have saved scores.
+Campaign started 2026-11-17T23:41:28.138975+00:00; 10/20 cases have saved scores.
+Queue state: `ready_after_receipt_repair`; last update 2026-11-18T00:36:36.502792+00:00.
 All data and results here are **provisional BRG-forward data**. The BEM side
 owns generating and freezing the shared plane-wave data. These are TG-002
 shapes with BRG-style observations, not the sealed TG-002 measurements.
@@ -232,6 +233,7 @@ This final-curve evaluation has its own time column. No BEM solve is involved.
 | peanut__c0.5 | complete | 37/37 | 0.11768157 | 0.116288 | 15.86 | 491.09 | 15.21 | 2.17 | 530.36 |
 | peanut__c4 | complete | 37/37 | 0.50390252 | 1.30272 | 15.69 | 682.95 | 20.67 | 2.38 | 728.08 |
 | star__c0.5 | complete | 37/37 | 0.0025279893 | 2.80675e-05 | 30.05 | 265.72 | 32.25 | 2.27 | 336.76 |
+| star__c4 | complete | 37/37 | 0.00039247399 | 3.11609e-06 | 30.22 | 744.63 | 33.56 | 2.38 | 817.77 |
 
 ## Timed pilot and forecast
 
@@ -245,11 +247,16 @@ inverse 239.14 min and residual checks
 257.27 min before parallelism. This is a one-shape estimate, not a
 promise for thin strokes or deep concavities. No case is rerun to tune it.
 
-Completed-case aggregate wall time: 67.49 min across 9 cases. A running-mean projection for all 20 is 149.99 min before parallelism; the still-unrun difficult shapes make this uncertain.
+Completed-case aggregate wall time: 81.12 min across 10 cases.
+A running-mean projection for all 20 is 162.25 min before parallelism; the still-unrun difficult shapes make this uncertain.
 
 Memory: minimum observed available 18.99 GiB; maximum active BRG workers 2. The required reserve is 14 GB. Start/end CSI/MATLAB overlap is retained in each attempt.
 
 ## Checks, failures and evidence
+
+Saved-output checks cover 10/10 scored cases. They read existing curves and histories, file counts, receipts, logs and manifest sizes; no inversion or scoring was repeated. Each receipt is saved as `saved_output_check.json` beside its metrics.
+
+No saved-output check failed.
 
 - asymmetric__c4: maximum data-geometry resampling point error 1.66371e-15 BRG units; [metrics](../../../../results/brg/tg002_shapes/2026-11-17/asymmetric__c4/metrics.json), [curve](figures/asymmetric__c4.png).
   Wrapper failure: Python 3.10 lacks hashlib.file_digest; MATLAB and scoring completed. Receipt repaired with streaming SHA-256; no numerical rerun. See `supervisor_failure.log` in this case folder.
@@ -261,6 +268,7 @@ Memory: minimum observed available 18.99 GiB; maximum active BRG workers 2. The 
 - peanut__c0.5: maximum data-geometry resampling point error 1.73888e-15 BRG units; [metrics](../../../../results/brg/tg002_shapes/2026-11-17/peanut__c0.5/metrics.json), [curve](figures/peanut__c0.5.png).
 - peanut__c4: maximum data-geometry resampling point error 1.73888e-15 BRG units; [metrics](../../../../results/brg/tg002_shapes/2026-11-17/peanut__c4/metrics.json), [curve](figures/peanut__c4.png).
 - star__c0.5: maximum data-geometry resampling point error 2.33477e-15 BRG units; [metrics](../../../../results/brg/tg002_shapes/2026-11-17/star__c0.5/metrics.json), [curve](figures/star__c0.5.png).
+- star__c4: maximum data-geometry resampling point error 2.33477e-15 BRG units; [metrics](../../../../results/brg/tg002_shapes/2026-11-17/star__c4/metrics.json), [curve](figures/star__c4.png).
 
 The frozen-input geometry checks verify source hashes, agreement with the
 benchmark's scene definitions, positive orientation, closure, simple curves,
