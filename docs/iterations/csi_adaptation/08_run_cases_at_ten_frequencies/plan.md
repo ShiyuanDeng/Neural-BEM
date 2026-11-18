@@ -1,6 +1,6 @@
 # Run MF-CC-CSI at ten frequencies
 
-Plan written 18 November 2026, 12:20 UTC, by the baseline coordinator,
+Plan written 18 November 2026, 11:56 UTC, by the baseline coordinator,
 before any fit.
 
 ## Why
@@ -59,7 +59,7 @@ and the three shapes added.
 
 ## Checks before any fit
 
-Done by the coordinator on 18 November 12:05 UTC, saved in
+Done by the coordinator on 18 November 11:56 UTC, saved in
 `results/csi/tg002/2026-11-18_ten_frequency/checks/table_checks.json`:
 
 - Each table's SHA-256 equals its `.sha256` file.
