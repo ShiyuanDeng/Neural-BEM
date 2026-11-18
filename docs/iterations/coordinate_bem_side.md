@@ -33,6 +33,85 @@ monitor's ceilings are all 0 (07:48). The clean timed GPU pass waits only
 for the user's go.
 A later restart begins at [Start here](#start-here) too.
 
+**State, 18 November 2026, 11:35 UTC:** a new piece of work is open, the
+[wiggle check](#wiggle-check-opened-18-november-1125-utc). Read that section
+first; the rest of this file is the finished overnight work.
+
+## Wiggle check (opened 18 November, 11:25 UTC)
+
+**Question.** The BEM outlines of the five-frequency pass (table C,
+simulated; Figure 3 of the
+[final report](final_comparison_report.md)) are wiggly, with 1 to 6% area
+error. Is that because five frequencies are too few, or because the CSI
+tables carry a grid error that the fit follows?
+
+**The user's words** (this pane, about 11:00 to 11:20 UTC):
+
+- "in C sim comparison, is it true that BEM have zigzaggy boundaries, i
+  suspect itsbecause we feed it too litle frequencies (only 5), and plan to
+  investigate on this by having a 10-frequencis test run. first discuss
+  with me"
+- "okay, now you as the coordinator, use two subagents here in split herdr
+  panes, to investigate those two simultaneously.
+  docs/iterations/adapt_bem_to_baseline_data. and for your questions:
+  0.25-2.5 with 0.25 steps yes. bem only for now. after you are done you can
+  talk to baseline side coordinator and brief him to do csi fit."
+- Staffing, asked once before launch: "Codex, full access". Then: "for
+  monitoring tasks ues sol medium. for harder code writing use astra high".
+
+**The two tests**, four shapes each (circle, star, kite, hook), BEM only:
+
+| Activity | Change from activity 07 | Agent | Pane | Model |
+|---|---|---|---|---|
+| [08: CSI tables at ten frequencies](adapt_bem_to_baseline_data/08_fit_csi_tables_at_ten_frequencies/plan.md) | The frequency list: 0.25 to 2.5 GHz in 0.25 GHz steps. Same CSI forward | `bem-ten` | `w2:pB`, bottom right | Codex `gpt-6.1-sol`, medium, full access |
+| [09: tables from our own forward](adapt_bem_to_baseline_data/09_fit_tables_from_our_forward/plan.md) | The data source: our forward in the same Fresnel layout, same five frequencies | `bem-own` | `w2:pA`, top right | Codex `gpt-6-astra`, high, full access |
+
+The starting evidence (read from the saved fits, no new run) is in the
+activity 08 plan. The criteria for reading the result are fixed in both
+plans.
+
+**Launch log.** 11:31 UTC, from pane `w2:p1`: split right, then down;
+`codex -m gpt-6-astra -c model_reasoning_effort="high" --dangerously-bypass-approvals-and-sandbox`
+and
+`codex -m gpt-6.1-sol -c model_reasoning_effort="medium" --dangerously-bypass-approvals-and-sandbox`.
+Briefed 11:33. Watchers: `agent wait bem-own` and `agent wait bem-ten` in
+background shells of the coordinator; a restart must re-arm them.
+
+**Coordinator's decisions (11:25 UTC, before any result):**
+
+- Four shapes per test: circle (control), star, kite, hook. Their
+  activity 07 errors span 0.97 to 3.80%.
+- `bem-ten` makes the ten-frequency tables itself with the baseline side's
+  unchanged generator, in a new folder
+  `results/csi/tg002/2026-11-18_ten_frequency_data/`, all ten shapes. No
+  existing baseline file or table is edited. The proof is byte-equal rows at
+  the five old frequencies. The baseline coordinator is told when the BEM
+  work is done, as the user said.
+- Ten-stage ladder by the unchanged rule; quotas 1000, eight times 375,
+  4000 (the rule of activity 07). `bem-ten` sends the dry plan before any
+  fit. A band the policy refuses, or a frequency above 1%, comes to the
+  coordinator and then to the user.
+- Our-forward tables must be accurate to 1e-6 by doubling, from the nodal
+  reference solver if it can take the layout without a solver edit.
+- The wrapper files `csi_fit.py`, `csi_data.py` and `csi_forward_check.py`
+  stay unedited, so the two agents share no file. Each drives them from its
+  own thin runner. No solver edit by either agent.
+- The overnight ceilings in `results/csi/resource_policy.json` (all 0 since
+  07:48) ended with the overnight queue. The new fits follow the memory
+  rule only: 16.5 GiB available to start, at most two fits per agent. At
+  11:19 the machine was idle with 39 GiB available.
+- No fit runs before the coordinator has seen each agent's checks.
+
+**Review stops.** `bem-ten`: after the circle table (reports, does not
+wait); before any fit (waits for a go). `bem-own`: before the first fit
+(waits for a go).
+
+**Next, in order:** review the checks; give the go; read both `results.md`;
+decide whether a ten-frequency run on our own data is needed (only if
+activity 09 leaves a shape above 0.5%); write the answer for the user;
+then brief the baseline coordinator (`w1:p1`) for the CSI fit at ten
+frequencies; close both panes once their paths are clean.
+
 ## Start here
 
 For the coordinator who picks this up, in pane `w2:p1`.
