@@ -81,16 +81,23 @@ its table is frozen and checks 1 to 3 passed for it.
 
 | Name | Pane | Model | Job | Activity |
 |---|---|---|---|---|
-| `csi-data` | to be opened | Codex `gpt-6-astra`, high | Prepare, check and freeze the ten five-frequency tables. No fit | `csi_adaptation/06_prepare_five_frequency_data` |
-| `csi` | `w1:p8` | Codex `gpt-6.1-sol`, high, full access | Launch and watch the seven MF-CC-CSI fits; score and report | `csi_adaptation/07_run_seven_cases_at_five_frequencies` |
-| `bem-watch` | to be opened | Codex `gpt-6.1-sol`, high | Watch the BEM side's checks and ten fits, read only. Confirm by hash that both methods read the same tables | None; it reports to the coordinator |
+| `csi-data` | `w1:p9`, middle right | Codex `gpt-6-astra`, high, full access | Prepare, check and freeze the ten five-frequency tables. No fit | `csi_adaptation/06_prepare_five_frequency_data` |
+| `csi` | `w1:p8`, top right | Codex `gpt-6.1-sol`, high, full access | Launch and watch the seven MF-CC-CSI fits; score and report | `csi_adaptation/07_run_seven_cases_at_five_frequencies` |
+| `bem-watch` | `w1:pA`, bottom right | Codex `gpt-6.1-sol`, high, full access | Watch the BEM side's checks and ten fits, read only. Confirm by hash that both methods read the same tables | None; it reports to the coordinator |
 
 - `csi` reads first: `AGENTS.md`, this file, then the
   [CSI handoff note](csi_adaptation/05_run_simulated_tg002_cases_at_1_to_3_ghz/handoff.md).
   That note's hold and its frequency question are answered by the plan
   above.
-- A Codex pane started from scratch begins in the default sandbox, where
-  MATLAB and git do not work. Only the user grants full access.
+- Full access: the coordinator asked once at launch, and the user chose
+  "Full access for both" for `csi-data` and `bem-watch` (03:55 UTC). That
+  covers this launch only. A Codex pane started without the flag begins in
+  the default sandbox, where MATLAB and git do not work.
+- Each agent's brief is its first message in its pane. `csi-data` reports
+  the circle's checks first, then "frozen" with the commit. `csi` reports
+  "ready" with its launch command and waits for the coordinator's go.
+  `bem-watch` reports when the BEM side's folder appears, when the ten
+  checks are in, and when the ten fits are in.
 
 **Peers.**
 - The BEM coordinator, pane `w2:p1`, with `bem-csi-run` (`w2:p8`) for the
@@ -100,9 +107,22 @@ its table is frozen and checks 1 to 3 passed for it.
   02:10 UTC). It allocates workers across both sides every 10 minutes,
   with a 14 GiB floor plus a 2 GiB margin. It sets how many jobs run, not
   what they compute. The coordinator adds no resource loop of its own.
+  Its ceilings for new launches are in `results/csi/resource_policy.json`
+  (first set 03:51 UTC, commit `c03ed283c`): one MATLAB data job, two
+  MF-CC-CSI fits, one BEM GPU job across B1 and the simulated cases. The
+  CSI launchers re-read the file before each launch. Its pane has no
+  Herdr access, so it cannot send notices: read the file, and pass BEM
+  ceilings on to the BEM coordinator.
 
 **Progress** (update this list at each step):
-- 03:55 UTC: plan recorded here. Nothing launched yet.
+- 03:50 UTC: plan recorded here and pushed (`f3c41d0a9`).
+- 03:52 UTC: plan sent to the BEM coordinator and the resource monitor.
+  `csi` briefed: prepare the launcher for the seven fits, then wait.
+- 03:57 UTC: `csi-data` and `bem-watch` opened and briefed. `csi-data`
+  starts with the circle.
+- Next: `csi-data` reports the circle's checks; then the ten frozen
+  tables. Tell the BEM coordinator the hashes. When a shape's checks pass,
+  release it to `csi`.
 
 **Estimates, scaled and not measured.** Re-time after the first 100
 iterations.
