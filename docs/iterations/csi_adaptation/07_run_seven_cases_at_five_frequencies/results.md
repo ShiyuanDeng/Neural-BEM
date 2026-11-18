@@ -1,6 +1,6 @@
 # Seven MF-CC-CSI fits at five frequencies
 
-Updated 2026-11-18T06:51:22+00:00; state: running.
+Updated 2026-11-18T06:56:58+00:00; state: running.
 
 Frequencies: 0.5, 1, 1.5, 2, 2.5 GHz. Seven shapes at permittivity 4.
 2048 iterations; 166 by 166 cells at 1.25 mm; native back-propagation; eight threads.
@@ -43,6 +43,13 @@ hook: completed, 2026-11-18T06:46:17+00:00. [Evidence](../../../../results/csi/t
 | cross | 2048 | 11.970 | 12.550 / 39.278 | 3.8255 | 0.1123 | 4923.65 |
 
 cross: completed, 2026-11-18T06:51:22+00:00. [Evidence](../../../../results/csi/tg002/2026-11-18_five_frequency/cross/outcome.json).
+
+| cog | 256 | 17.302 | 36.748 / 22.926 | 3.3694 | 0.2778 | 619.05 |
+| cog | 512 | 16.035 | 26.926 / 22.041 | 3.5300 | 0.1223 | 1233.29 |
+| cog | 1024 | 14.969 | 20.565 / 19.104 | 3.6317 | 0.0435 | 2460.76 |
+| cog | 2048 | 13.294 | 16.542 / 16.256 | 3.7089 | 0.0202 | 4871.88 |
+
+cog: completed, 2026-11-18T06:56:57+00:00. [Evidence](../../../../results/csi/tg002/2026-11-18_five_frequency/cog/outcome.json).
 
 
 Each data.json records the exact shared input path, SHA-256 and coordinator release.
