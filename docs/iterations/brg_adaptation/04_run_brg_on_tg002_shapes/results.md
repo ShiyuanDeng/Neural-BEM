@@ -174,7 +174,7 @@ The shared checkout can contain CSI/coordinator changes: do not stage them.
 
 ## Status and ownership
 
-Campaign started 2026-11-17T23:41:28.138975+00:00; 7/20 cases have saved scores.
+Campaign started 2026-11-17T23:41:28.138975+00:00; 8/20 cases have saved scores.
 All data and results here are **provisional BRG-forward data**. The BEM side
 owns generating and freezing the shared plane-wave data. These are TG-002
 shapes with BRG-style observations, not the sealed TG-002 measurements.
@@ -230,6 +230,7 @@ This final-curve evaluation has its own time column. No BEM solve is involved.
 | kite__c0.5 | complete | 37/37 | 0.47527995 | 0.390121 | 13.07 | 205.36 | 8.88 | 2.35 | 235.83 |
 | kite__c4 | complete | 37/37 | 0.46463161 | 0.861585 | 13.12 | 739.62 | 10.54 | 2.32 | 771.82 |
 | peanut__c0.5 | complete | 37/37 | 0.11768157 | 0.116288 | 15.86 | 491.09 | 15.21 | 2.17 | 530.36 |
+| star__c0.5 | complete | 37/37 | 0.0025279893 | 2.80675e-05 | 30.05 | 265.72 | 32.25 | 2.27 | 336.76 |
 
 ## Timed pilot and forecast
 
@@ -243,9 +244,9 @@ inverse 239.14 min and residual checks
 257.27 min before parallelism. This is a one-shape estimate, not a
 promise for thin strokes or deep concavities. No case is rerun to tune it.
 
-Completed-case aggregate wall time: 49.75 min across 7 cases. A running-mean projection for all 20 is 142.13 min before parallelism; the still-unrun difficult shapes make this uncertain.
+Completed-case aggregate wall time: 55.36 min across 8 cases. A running-mean projection for all 20 is 138.40 min before parallelism; the still-unrun difficult shapes make this uncertain.
 
-Memory: minimum observed available 21.18 GiB; maximum active BRG workers 2. The required reserve is 14 GB. Start/end CSI/MATLAB overlap is retained in each attempt.
+Memory: minimum observed available 20.78 GiB; maximum active BRG workers 2. The required reserve is 14 GB. Start/end CSI/MATLAB overlap is retained in each attempt.
 
 ## Checks, failures and evidence
 
@@ -257,6 +258,7 @@ Memory: minimum observed available 21.18 GiB; maximum active BRG workers 2. The 
 - kite__c0.5: maximum data-geometry resampling point error 1.80062e-15 BRG units; [metrics](../../../../results/brg/tg002_shapes/2026-11-17/kite__c0.5/metrics.json), [curve](figures/kite__c0.5.png).
 - kite__c4: maximum data-geometry resampling point error 1.80062e-15 BRG units; [metrics](../../../../results/brg/tg002_shapes/2026-11-17/kite__c4/metrics.json), [curve](figures/kite__c4.png).
 - peanut__c0.5: maximum data-geometry resampling point error 1.73888e-15 BRG units; [metrics](../../../../results/brg/tg002_shapes/2026-11-17/peanut__c0.5/metrics.json), [curve](figures/peanut__c0.5.png).
+- star__c0.5: maximum data-geometry resampling point error 2.33477e-15 BRG units; [metrics](../../../../results/brg/tg002_shapes/2026-11-17/star__c0.5/metrics.json), [curve](figures/star__c0.5.png).
 
 The frozen-input geometry checks verify source hashes, agreement with the
 benchmark's scene definitions, positive orientation, closure, simple curves,
