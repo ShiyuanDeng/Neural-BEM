@@ -1,8 +1,9 @@
 # BRG paper-case BEM: reported GPU pass
 
 The four-case GPU pass is complete, 18 November 2026. Glider_033 and both
-stars reached k=15; glider_10 retained k=12 after a series refusal entering
-15. Both cavities are skipped by the user, with no reported GPU score.
+stars reached k=15. Glider_10 is a failed fit at k=12, with a later series
+refusal entering 15; it is not a series-limit skip. Both cavities are
+skipped by the user, with no reported GPU score.
 K=192 and all scientific settings remain fixed. The CPU early look and
 original forward checks below are retained as history.
 
@@ -316,3 +317,172 @@ difference are handed to the coordinator.
 [Queue record](../../../../results/bem/baseline_data/brg_paper/2026-11-18/gpu_pass.json),
 [skip record](../../../../results/bem/baseline_data/brg_paper/2026-11-18/gpu_skips.json)
 and [GPU progress](gpu_pass_progress.md).
+
+## Coordinator follow-up checks, 18 November 2026
+
+The coordinator accepts the three completed k=15 results and classifies
+glider_10 as a **failed fit**, not a series-limit skip. Its k=12 residual
+0.7302 and area error 14.0568% already show failure; the subsequent
+refusal entering 15 is caused by the bad fitted curve. This classification
+supersedes the earlier pending-decision note; numerical scores stay intact.
+
+Checks only were authorized, with a 20-minute total limit from 01:24:50
+UTC. No fit, fit rerun, setting change, solver edit or baseline edit was
+made. The requested stop condition was met at the third isolated check,
+unit disk k=15: native-basis B7 difference exceeds 1e-10. Numerical checks
+stopped immediately; the three true-curve checks were not run.
+
+### A. Glider eta 10, saved stage endpoints
+
+Residual is the saved maximum relative field residual across active
+frequencies. Work is cumulative at the last accepted callback, before
+its next derivative rebuild, so it can be below full stage/end-of-fit
+work. Every score and wave radius below comes from saved accepted
+coefficients only, using unedited comparison scoring. True wave radius
+is **1.278**. There is no accepted state at k=15.
+
+| Stage k | Residual at last acceptance | Area error, % | Wave radius | Cumulative accepted work |
+|---|---:|---:|---:|---:|
+| 1 | 0.0469832 | 16.4165 | 1.05367237 | 45 |
+| 1.25 | 0.100937 | 16.1534 | 1.17460505 | 100 |
+| 1.5 | 0.0847259 | 14.8831 | 1.18598233 | 147 |
+| 1.75 | 0.573109 | 14.9732 | 1.17865838 | 330 |
+| 2 | 0.569763 | 19.6779 | 1.24397901 | 579 |
+| 2.5 | 0.53147 | 18.6338 | 1.35086862 | 878 |
+| 3 | 0.50364 | 19.7186 | 1.53283838 | 1171 |
+| 3.5 | 0.523759 | 16.5443 | 1.55265855 | 2258 |
+| 4 | 0.537064 | 14.8207 | 1.57922651 | 2671 |
+| 5 | 0.562548 | 16.5973 | 1.54785918 | 3140 |
+| 6 | 0.581192 | 15.4965 | 1.61252617 | 3645 |
+| 7 | 0.63533 | 15.2993 | 1.63195816 | 4196 |
+| 8 | 0.610591 | 15.1426 | 1.66630629 | 4793 |
+| 10 | 0.683118 | 14.7867 | 1.67096863 | 5436 |
+| 12 | 0.730212 | 14.0568 | 1.68189098 | 6125 |
+
+The saved endpoints never approach the truth closely: the first stage
+already has 16.42% area error. The marked residual break is k=1.75,
+where the residual rises from 0.08473 at k=1.5 to 0.57311. Later stages
+retain roughly 14–20% area errors. The radius reaches 1.68189 at k=12;
+the refusal at k=15 is a consequence of this bad fit, not its first failure.
+
+[Raw per-stage endpoint table](../../../../results/bem/baseline_data/brg_paper/2026-11-18/followup_checks/glider_10_stage_endpoints.json).
+
+### B1. CPU/CUDA forward and B7 checks
+
+K_trace=192, series_loss=1e-6, eta=0.33, table mode and one frequency
+thread. Update band and storage follow the fixed stage rule (M=3/7/45,
+K_geometry=8/16/92). Relative differences use the CPU complex-array
+Frobenius norm as denominator. Fixed-basis B7 uses identical CPU-prepared
+B6 directions on both physics states. Native-basis B7 uses each device
+'s own slider-prepared directions, as in the original fits.
+
+| Shape | k | Prediction difference | B7, identical B6 directions | B7, native B6 directions | B6 direction difference |
+|---|---:|---:|---:|---:|---:|
+| Unit disk | 1 | 8.76139e-16 | 4.86153e-16 | 6.02108e-14 | 1.12312e-13 |
+| Unit disk | 2.5 | 6.84266e-15 | 6.62255e-15 | 1.71086e-12 | 1.76527e-12 |
+| Unit disk | 15 | 1.06377e-13 | 1.04886e-13 | 1.18561e-10 | 9.82882e-11 |
+
+**Stop finding:** native-basis B7 differs by **1.18561e-10** at k=15,
+above the coordinator's 1e-10 limit. With fixed directions, B7 differs
+by 1.04886e-13 and predictions by 1.06377e-13. The above-limit component
+therefore enters through the device-dependent B6 direction preparation,
+not the isolated fixed-direction B7/forward comparison. All three
+true-glider checks remain unrun under the explicit stop rule.
+
+In the A1–C12 chain, the forward comparison checks A1–A4; the identical
+direction comparison isolates B7, and the native comparison also includes
+B6. The selected slider path follows the execution device by default.
+[`SliderUpdate.prepare`](../../../../solvers/bem_inverse/geometry_update_methods/slider.py#L92)
+uses NumPy `lstsq` on CPU and
+[`_cuda_solve`](../../../../solvers/bem_inverse/geometry_update_methods/slider.py#L168)
+uses Torch `eigh` on CUDA. The nominal cutoff rule is the same; these are
+different dense numerical implementations. This is existing default
+device-follow behavior for slider, not a setting changed by this check.
+BRG table acquisition remains an explicit opt-in path. No code was fixed.
+
+[Physics/B7 checks and stop record](../../../../results/bem/baseline_data/brg_paper/2026-11-18/followup_checks/physics_comparison.json).
+
+### B2. First saved trajectory divergence
+
+The first accepted curve difference above 1e-10 is **k=1, iteration 3**,
+at relative difference **3.22927e-8** (maximum point difference
+3.11387e-8). Iterations 1 and 2 differ only by 3.78e-15 and 8.07e-15.
+At iteration 3 both use one accepted trial, no backtrack, damping
+9e-5 followed by 2.7e-5, and the same work: 7 at acceptance, 8 after
+linearization. Their residuals differ only in the last reported digits.
+Thus the first jump is not an accept/reject, damping or evaluation-count
+branch difference; numerical curve differences are amplified before a
+recorded discrete-decision change.
+
+| Saved state | Relative curve difference | CPU / GPU accepted work |
+|---|---:|---:|
+| k_1, iteration 1 | 3.77943e-15 | 3 / 3 |
+| k_1, iteration 2 | 8.06836e-15 | 5 / 5 |
+| k_1, iteration 3 | 3.22927e-08 | 7 / 7 |
+| k_1, iteration 4 | 1.18543e-07 | 9 / 9 |
+| k_1, iteration 6 | 1.09463e-06 | 13 / 13 |
+| k_1, iteration 8 | 3.77864e-05 | 17 / 17 |
+| k_1, iteration 10 | 0.0011823 | 21 / 21 |
+| k_1, iteration 22 | 0.000301098 | 45 / 45 |
+| k_2.5, iteration 0 | 0.0168956 | 522 / 402 |
+| k_2.5, iteration 7 | 0.0603138 | 606 / 618 |
+
+Differences grow non-monotonically within the first stage. All matched
+accepted-iteration decision signatures in the collected completed-stage
+records agree. By the k=2.5 entry, cumulative work differs (522 versus
+402), and by iteration 7 it is 606 versus 618. That later work divergence
+is distinct from the initial k=1 iteration-3 jump; unmatched terminal
+trials and the exact later branch were not investigated after the stop.
+
+The changed B6 numerical implementation is a concrete device-dependent
+component and accounts for the isolated native-Jacobian finding. It is
+**not yet a demonstrated cause** of the early 3.23e-8 jump or eventual
+6.03e-2 curve difference. No inverse replay or further probe was made
+after the stop condition.
+
+[Saved accepted-state growth and recorded decisions](../../../../results/bem/baseline_data/brg_paper/2026-11-18/followup_checks/accepted_trace_comparison.json).
+
+### B3. Configuration and control paths
+
+- Both passes use `frequency_threads=1`, the same input hashes, eta,
+  scientific operations, trace/storage profiles and solver source hashes.
+- Both have `preparation_device=follow`; effective B6 preparation is CPU
+  versus CUDA, with the two dense solves named above. This effective
+  implementation difference was not visible in the scientific-operation
+  equality check alone, but is explicit in saved update settings.
+- With one frequency thread,
+  [`ordered_calls`](../../../../solvers/bem_inverse/continuation/forward.py#L147)
+  returns deferred serial calls. No speculative frequency evaluations run.
+- Both set `stage_entry_reuse=False`; the default-path
+  [runner](../../../../solvers/bem_inverse/runner.py#L100) does not carry
+  stage entries in either run. This does not explain the early divergence.
+- The intentional wall limits are 120 s CPU and 3,600 s GPU; both use the
+  same ledger logic, with matching 13,412-unit caps. Neither wall limit
+  is active at the first divergence. CPU interruption explains its partial
+  endpoint, not the preceding iteration-3 jump. The GPU queue
+  reconfiguration/monitoring gap happened only in glider_10, not this
+  glider_033 comparison.
+
+The unchanged default C11/C12 path in
+[`fit_stage`](../../../../solvers/bem_inverse/fit_stage.py#L391) accepts
+lower-loss trials, then commits the curve, updates damping and rebuilds
+the derivative. The first-divergence records show the same choices on
+this path. No stopping, reuse or speculative-work setting was retuned.
+
+[Saved execution/update configurations](../../../../results/bem/baseline_data/brg_paper/2026-11-18/followup_checks/pass_configuration_comparison.json).
+
+### Follow-up limit and failure record
+
+The initial check wrapper called an unavailable `ModalMuller.close`
+after saving the passing k=1 row. This was a wrapper cleanup error,
+not a solver failure. Its exit status/log are retained. The wrapper was
+corrected to guard optional cleanup and continued only unfinished rows;
+the completed row was not recalculated. Initial and continuation worker
+process times were 2.814 s and 7.251 s. Peak worker RSS was 2.052 GiB;
+no memory guard stopped a check.
+
+The B1 threshold finding stopped numerical work well inside the
+20-minute budget. True-curve checks and a proof of the early trajectory
+amplification cause remain incomplete by instruction. All collected
+records and failed-wrapper evidence are retained; no fit, fit rerun,
+setting change or solver edit was made.

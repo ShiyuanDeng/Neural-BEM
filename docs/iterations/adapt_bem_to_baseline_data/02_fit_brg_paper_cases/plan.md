@@ -184,3 +184,32 @@ refused by the series limit before k=15, retain its last accepted endpoint
 and refusal, do not rerun, and report immediately to the coordinator for
 the same user decision. Queue changes apply between numerical fits;
 completed native fits are finalized without restarting them.
+
+## Follow-up checks, 18 November 2026: 20-minute total limit
+
+The coordinator accepts three reported results. Glider_10 remains a
+failed fit, not a series-limit skip: its k=12 residual and shape error
+were already large before the bad fitted curve refused k=15.
+
+Checks only: no fit, rerun, solver edit or setting change. From saved
+accepted glider_10 states, score each stage endpoint and record k,
+maximum active residual, area error, coefficient wave radius and work.
+For glider_033, compare CPU/CUDA forward predictions and B7 Jacobians at
+K=192, eta=0.33 and one frequency thread on the unit disk and true curve
+at k=1, 2.5 and 15. Keep B6 directions identical for the B7 physics
+comparison, and record any difference from native slider preparation.
+If any requested physics/B7 relative difference exceeds 1e-10, retain
+the check, stop and report immediately. No tolerance is changed.
+
+Compare saved glider_033 accepted states from the start to find the first
+curve difference above 1e-10 and its growth. Compare trial decisions,
+damping and charged evaluations there. Inspect execution settings,
+speculative work, wall-limit handling and stage-entry reuse from saved
+receipts and current matching solver source. Distinguish measured causes
+from unproved amplification mechanisms. No new inverse trajectory is run.
+
+Total limit: 20 minutes from 01:24:50 UTC, deadline 01:44:50 UTC.
+Owned check script: `experiments/bem_on_baseline_data/brg_followup_checks.py`.
+Evidence: `results/bem/baseline_data/brg_paper/2026-11-18/followup_checks/`.
+Write findings here in results.md, commit, push and stop. Solver changes
+and tuning reruns remain outside scope; diagnosis fix phases do not apply.
