@@ -62,8 +62,11 @@ def main():
     fig.colorbar(plot,ax=list(axes.flat[:-1]),label='Real susceptibility',shrink=.8)
     fig.savefig(figures/'final_seven_shapes.png',dpi=140);plt.close(fig)
     elapsed=campaign['wall_seconds'];hours=int(elapsed//3600);minutes=int(elapsed%3600//60)
+    best=min(rows,key=lambda row:row['area_error_percent'])
+    worst=max(rows,key=lambda row:row['area_error_percent'])
     lines=['# Seven MF-CC-CSI fits at five frequencies','',
            f"Run {campaign['started_utc']} to {campaign['finished_utc']}: seven outcomes in {hours}:{minutes:02d} wall time.",
+           f"All seven completed 2048 iterations. Half-peak area errors range from {best['area_error_percent']:.2f}% to {worst['area_error_percent']:.2f}%.",
            'All cases use 0.5, 1, 1.5, 2 and 2.5 GHz, 2048 iterations, the 166 by 166 grid at 1.25 mm,',
            'native back-propagation, one centred start and eight compute threads. No upstream numerical change.',
            'The worker ceiling came from the resource monitor before every launch. No fit stopped on time.','',
@@ -73,6 +76,8 @@ def main():
         lines.append(f"| {row['shape']} | {row['area_error_percent']:.3f} | {row['sensitivity_03_percent']:.3f} / {row['sensitivity_07_percent']:.3f} | {row['mean_permittivity']:.4f} | {row['relative_contrast_error_percent']:.3f} | {row['native_seconds']:.2f} | {row['wall_seconds']:.2f} |")
     lines += ['', '![Final seven shapes](figures/final_seven_shapes.png)', '',
               '## Findings and limits', '',
+              f"Star has the smallest main error ({best['area_error_percent']:.2f}%); aphex_twin has the largest ({worst['area_error_percent']:.2f}%).",
+              f"Mean permittivity is below truth 4 in every case, ranging from {min(r['mean_permittivity'] for r in rows):.3f} to {max(r['mean_permittivity'] for r in rows):.3f}.",
               'The table reports the fixed half-peak rule. The 0.3 and 0.7 scores show substantial threshold sensitivity;',
               'the saved arrays support further scoring without another fit. Mean permittivity is compared with truth 4.',
               'These are shared-machine times and do not establish isolated timing against BEM.',
@@ -99,10 +104,10 @@ def main():
     report=[f'Activity: csi_adaptation/07_run_seven_cases_at_five_frequencies, 18 November 2026',
             f'Runs: {len(rows)-len(failures)}/7; wall time {hours}:{minutes:02d}']
     report += [f"Result: {r['shape']} area error {r['area_error_percent']:.2f}%; native {r['native_seconds']:.0f} s" for r in rows]
-    report += ['Failures: no fit failures; first publication whitespace check fixed (checks.md).',
+    report += ['Failures: no fit failures; publication check fixed; log results/csi/tg002/2026-11-18_five_frequency/alerts.jsonl.',
                'Upstream patches: none new; reused output-only patch 0003.',
-               'Changes to our code: CSI launcher/watch/check files only; no BEM or scoring edits.',
-               'New unknowns: threshold sensitivity; isolated timings.',
+               'Changes to our code: CSI runner/check/report files only; no BEM or scoring edits.',
+               'New unknowns: none; threshold sensitivity and isolated timings remain.',
                'Proposed next activity: none; coordinator comparison; needs user decision: none']
     (c.ACT/'report.txt').write_text('\n'.join(report)+'\n')
     print('\n'.join(report))

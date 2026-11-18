@@ -63,3 +63,17 @@ its numerical text and its recorded SHA-256 are unchanged. The check then
 passed and star's push was confirmed (`a308d5217`). No fit was stopped;
 hook started after the successful push. Star's manifest was refreshed to
 include this metadata file. This is not an upstream numerical patch.
+
+Publication evidence: [saved alerts](../../../../results/csi/tg002/2026-11-18_five_frequency/alerts.jsonl)
+and [full launcher log, local](../../../../results/csi/tg002/2026-11-18_five_frequency/campaign_launcher.log).
+
+## Final saved-evidence report, 18 November 07:50 UTC
+
+All seven native returns were zero and every per-case finish check passed:
+2048 iterations, raw counts 256/512/1024/2048, finite saved arrays, the
+five-frequency list and the 2.5 GHz image reference. Per-case committed
+evidence is 0.32 to 0.60 MB; bulk remains local and hashed.
+`make_report.py` reads those saved outcomes, scores and raw arrays only.
+Its final image was rendered and checked: seven panels, correctly aligned
+true boundaries, half-peak contours, shared colour scale and readable labels.
+No additional forward or inverse run was used for this report.
