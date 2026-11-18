@@ -1,6 +1,6 @@
 """Score a BRG endpoint by importing the frozen comparison protocol."""
 from pathlib import Path
-import sys,time,json
+import sys,time,json,os
 from types import SimpleNamespace
 import numpy as np
 from scipy.io import loadmat
@@ -12,6 +12,12 @@ from experiments.comparison import scoring as Q
 from experiments.gaugal_comparison import tg002_data as D
 BASE=ROOT/'results/brg/tg002_no_curvature/2026-11-18'
 DOC=ROOT/'docs/iterations/brg_adaptation/05_run_brg_without_curvature_limit'
+ROW=os.environ.get('BRG_TG002_ROW','control')
+RUN_LABEL='brg/provisional_tg002_no_curvature_known'
+if ROW=='shipped':
+    BASE=ROOT/'results/brg/tg002_shapes/2026-11-17'
+    DOC=ROOT/'docs/iterations/brg_adaptation/04_run_brg_on_tg002_shapes'
+    RUN_LABEL='brg/provisional_tg002_known'
 
 
 def score_case(case):
@@ -29,7 +35,7 @@ def score_case(case):
         image=(eta-1)*D.fill_fraction(.05*curve.values(max(4096,2*curve.band+2)),*D.pixel_grid(201))
     fit=dict(representation='curve',final_curve=None if curve is None else portable(curve_record(curve)),contrast=eta,
              data_status='provisional BRG forward; frozen BEM-side data pending')
-    result=Q.score(SimpleNamespace(key='brg/provisional_tg002_no_curvature_known',noise=None),case,fit,dict(image=image),ROOT)
+    result=Q.score(SimpleNamespace(key=RUN_LABEL,noise=None),case,fit,dict(image=image),ROOT)
     residuals=read(out/'final_residuals.json') if (out/'final_residuals.json').exists() else []
     data=read(out/'data_summary.json') if (out/'data_summary.json').exists() else []
     attempts=[read(p) for p in sorted(out.glob('attempt_*.json'))]
@@ -38,7 +44,8 @@ def score_case(case):
         final_curve_residuals=[r['relative_residual'] for r in residuals],
         max_final_curve_residual=max((r['relative_residual'] for r in residuals),default=None),
         residual_over_limit=max((r['relative_residual']/.003 for r in residuals),default=None),
-        curvature='default; eps_curv unset',data_seconds=0.0,
+        curvature='shipped' if ROW=='shipped' else 'default; eps_curv unset',
+        data_seconds=sum(r['wall_seconds'] for r in data) if ROW=='shipped' else 0.0,
         reused_data_generation_seconds=sum(r['wall_seconds'] for r in data),inverse_seconds=sum(r['wall_seconds'] for r in rows),
         residual_check_seconds=sum(r['wall_seconds'] for r in residuals),matlab_process_seconds=sum(a.get('wall_seconds',0) for a in attempts),
         scoring_seconds=time.monotonic()-started,iterations=sum(r['iterations'] for r in rows),

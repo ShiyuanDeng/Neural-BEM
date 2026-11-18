@@ -18,6 +18,15 @@ SOURCE = ROOT/'results/brg/tg002_shapes/2026-11-17'
 BASE = ROOT/'results/brg/tg002_no_curvature/2026-11-18'
 UPSTREAM = Path.home()/'neural_bem_external/inverse-obstacle-scattering2d'
 PILOT = 'kite__c0.5'
+ROW = 'control'
+CASE_BASE = BASE
+
+def configure(row):
+    global ROW, BASE, CASE_BASE
+    ROW = row
+    BASE = ROOT/('results/brg/tg002_completion/2026-11-18' if row=='shipped' else 'results/brg/tg002_no_curvature/2026-11-18')
+    CASE_BASE = SOURCE if row=='shipped' else BASE
+
 
 
 def require_source_ended():
@@ -29,8 +38,55 @@ def require_source_ended():
     return state
 
 
+def preserve_cut_attempt(out):
+    for name in ['summary.json','metrics.json','fit.json','bulk_manifest.json',
+                 'saved_output_check.json','rejection_counts.json','settings.json']:
+        source=out/name
+        saved=out/(source.stem+'_after_attempt_01'+source.suffix)
+        if source.exists() and not saved.exists():
+            saved.write_bytes(source.read_bytes())
+    figures=ROOT/'docs/iterations/brg_adaptation/04_run_brg_on_tg002_shapes/figures'
+    image=figures/(out.name+'.png')
+    saved=figures/(out.name+'_after_attempt_01.png')
+    if image.exists() and not saved.exists():saved.write_bytes(image.read_bytes())
+
+
+def prepare_shipped(state):
+    assert not (BASE/'campaign.json').exists(), 'Do not reset the continuation queue.'
+    cut='c_shape__c0.5'
+    order=[cut]+[c for c in state['cases'] if not (SOURCE/c/'metrics.json').exists()]
+    expected=[f'{shape}__c{eta}' for shape in ['cross','cog','aphex_twin'] for eta in ['0.5','4']]
+    assert order==[cut]+expected, 'Unexpected incomplete cases; coordinator review needed.'
+    BASE.mkdir(parents=True,exist_ok=True);(BASE/'local').mkdir(exist_ok=True)
+    for case in order:(SOURCE/case/'local').mkdir(parents=True,exist_ok=True)
+    manifest=json.loads((SOURCE/cut/'bulk_manifest.json').read_text())
+    files=[f for f in manifest['files'] if Path(f['path']).name.startswith('data_') and f['path'].endswith('.mat')]
+    assert len(files)==37
+    geometry=SOURCE/'local/c_shape.mat'
+    write_json(SOURCE/cut/'data_reuse.json',dict(case=cut,source_activity='04 attempt 01',files=files,
+        geometry=dict(path=str(geometry.relative_to(ROOT)),sha256=file_sha256(geometry))))
+    verify_reuse(SOURCE/cut)
+    preserve_cut_attempt(SOURCE/cut)
+    write_json(BASE/'order.json',dict(cases=order,pilot=None,rule='resume the capped C-shape; then the six unstarted cases',
+        authority='Coordinator 18 November 01:24 UTC: continue saved state as attempt 02; shipped settings; no time cap'))
+    names=['run_tg002_control.py','run_tg002_control_case.m','score_tg002_control.py','check_tg002_outputs.py','log_tg002_rejections.py','tg002_geometry.m']
+    snapshots=BASE/'local/source_snapshot';snapshots.mkdir(exist_ok=True)
+    hashes={}
+    for name in names:
+        path=ROOT/'experiments/baselines/brg'/name
+        (snapshots/name).write_bytes(path.read_bytes());hashes[str(path.relative_to(ROOT))]=file_sha256(path)
+    write_json(BASE/'provenance.json',dict(prepared_at=now(),source_sha256=hashes,
+        original_campaign=state,only_control_change='remove wall-time cutoffs; inverse settings unchanged',
+        cut_case=cut,first_attempt_returncode=124,first_attempt_last_saved_frequency=34,
+        continuation_check=str((BASE/'saved_state_restart_check.json').relative_to(ROOT)),no_bem_run=True))
+    assert (BASE/'saved_state_restart_check.json').exists(), 'Check saved-state restart before launch.'
+    print('Prepared shipped-limit continuation:',order,'; no MATLAB launched.',flush=True)
+
+
 def prepare():
     state = require_source_ended()
+    if ROW == 'shipped':
+        return prepare_shipped(state)
     assert not (BASE/'campaign.json').exists(), 'Do not reset an existing campaign.'
     BASE.mkdir(parents=True, exist_ok=True)
     (BASE/'local').mkdir(exist_ok=True)
@@ -38,6 +94,7 @@ def prepare():
     stalled = []
     for case in state['cases']:
         metrics = json.loads((SOURCE/case/'metrics.json').read_text())
+        assert metrics['status']=='complete' and metrics['completed_frequencies']==37, 'Finish all 20 shipped-limit cases first.'
         assert len(json.loads((SOURCE/case/'data_summary.json').read_text())) == 37, 'All 37 original data files are required.'
         path = SOURCE/case/'rejection_counts.json'
         r = json.loads(path.read_text())
@@ -52,7 +109,7 @@ def prepare():
     order += [c for c in state['cases'] if c not in order and c not in circles]+circles
     assert len(order) == len(set(order)) == 20
     for case in order:
-        out = BASE/case
+        out = CASE_BASE/case
         (out/'local').mkdir(parents=True, exist_ok=True)
         manifest = json.loads((SOURCE/case/'bulk_manifest.json').read_text())
         files = [f for f in manifest['files'] if Path(f['path']).name.startswith('data_') and f['path'].endswith('.mat')]
@@ -93,27 +150,38 @@ def verify_reuse(out):
 
 
 def run_case(case):
-    out = BASE/case
+    out = CASE_BASE/case
     local = out/'local'
     with (local/'runner.lock').open('w') as lock:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        assert not list(out.glob('attempt_*.json')), 'Retries require another coordinator decision.'
+        attempts=sorted(out.glob('attempt_*.json'))
+        if attempts:
+            assert ROW=='shipped' and case=='c_shape__c0.5' and len(attempts)==1 and json.loads(attempts[0].read_text())['returncode']==124, 'Only the authorized cut-case continuation is allowed.'
+            preserve_cut_attempt(out)
+        number=len(attempts)+1
+        prior=sum(json.loads(p.read_text()).get('case_wall_seconds',0) for p in attempts)
         start = time.monotonic()
-        receipt = out/'attempt_01.json'
-        log = local/'matlab_01.log'
+        receipt = out/f'attempt_{number:02d}.json'
+        log = local/f'matlab_{number:02d}.log'
         command = ['matlab', '-batch', f"addpath('{ROOT}/experiments/baselines/brg'); run_tg002_control_case"]
         record = dict(case=case, started=now(), status='checking_data', target_seconds=3600, time_policy='record overruns; never stop on time',
-                      data_status='provisional', curvature='default', command=command,
+                      data_status='provisional', curvature='shipped' if ROW=='shipped' else 'default', command=command,
+                      prior_case_wall_seconds=prior, continuation_from_frequency=len(list(out.glob('frequency_*.mat'))),
                       log=str(log.relative_to(ROOT)), other_matlab_at_start=matlab_processes())
         write_json(receipt, record)
         code = 1
         try:
-            verify_reuse(out)
+            if (out/'data_reuse.json').exists():
+                verify_reuse(out)
+            else:
+                assert ROW=='shipped' and number==1, 'Control data must be reused by hash.'
             record['data_hash_check_seconds'] = time.monotonic()-start
             assert not (BASE/'STOP').exists(), 'STOP requested before MATLAB launch.'
             shape, eta = case.split('__c')
             env = os.environ.copy()
-            env.update(BRG_TG002_CASE=case, BRG_SHAPE=shape, BRG_ETA=eta, BRG_CURVATURE='default')
+            env.update(BRG_TG002_CASE=case, BRG_SHAPE=shape, BRG_ETA=eta,
+                       BRG_CURVATURE='shipped' if ROW=='shipped' else 'default', BRG_TG002_ROW=ROW,
+                       BRG_TG002_OUTPUT_BASE=str(CASE_BASE), BRG_TG002_STOP=str(BASE/'STOP'))
             with log.open('w') as stream:
                 process = subprocess.Popen(command, cwd=UPSTREAM, env=env, stdout=stream,
                                            stderr=subprocess.STDOUT, start_new_session=True)
@@ -124,12 +192,12 @@ def run_case(case):
                 record['wall_seconds'] = time.monotonic()-matlab_start
             record.update(returncode=code, ended=now(), other_matlab_at_end=matlab_processes())
             write_json(receipt, record)
-            (out/'progress_01.log').write_text('\n'.join(l for l in log.read_text(errors='replace').splitlines() if l.startswith('BRG '))+'\n')
-            with (local/'scoring.log').open('w') as stream:
+            (out/f'progress_{number:02d}.log').write_text('\n'.join(l for l in log.read_text(errors='replace').splitlines() if l.startswith('BRG '))+'\n')
+            with (local/f'scoring_{number:02d}.log').open('w') as stream:
                 score = subprocess.run([sys.executable, str(ROOT/'experiments/baselines/brg/score_tg002_control.py'), '--case', case],
-                    cwd=ROOT, stdout=stream, stderr=subprocess.STDOUT)
+                    cwd=ROOT, env=env, stdout=stream, stderr=subprocess.STDOUT)
             if score.returncode:
-                record['scoring_failure'] = 'See local/scoring.log'
+                record['scoring_failure'] = f'See local/scoring_{number:02d}.log'
                 code = code or score.returncode
             elif json.loads((out/'metrics.json').read_text())['status'] != 'complete':
                 code = code or 1
@@ -144,16 +212,18 @@ def run_case(case):
         for path in sorted(local.iterdir()):
             if path.is_file() and path.name != 'runner.lock':
                 manifest.append(dict(path=str(path.relative_to(ROOT)), bytes=path.stat().st_size, sha256=file_sha256(path)))
-        write_json(out/'bulk_manifest.json', dict(command='python experiments/baselines/brg/run_tg002_control.py --campaign --detach', files=manifest))
+        write_json(out/'bulk_manifest.json', dict(command='python experiments/baselines/brg/run_tg002_control.py --row '+ROW+' --campaign --detach', files=manifest))
         record.update(case_wall_seconds=time.monotonic()-start, case_ended=now(),
-                      case_target_exceeded=(time.monotonic()-start)>3600)
+                      case_target_exceeded=(prior+time.monotonic()-start)>3600,
+                      total_case_wall_seconds=prior+time.monotonic()-start)
         write_json(receipt, record)
         print(json.dumps(record), flush=True)
         return code
 
 
 def worker_reserve(case):
-    receipt = BASE/case/'attempt_01.json'
+    receipts=sorted((CASE_BASE/case).glob('attempt_*.json'))
+    receipt=receipts[-1] if receipts else CASE_BASE/case/'attempt_01.json'
     rss = 0
     if receipt.exists():
         pid = json.loads(receipt.read_text()).get('matlab_pid')
@@ -175,7 +245,7 @@ def campaign():
                      case_target_seconds=3600, queue_target_seconds=18000,
                      time_policy='targets only; never stop on elapsed time',
                      supervisor_pid=os.getpid(), active=[], pending=order.copy(), maximum_workers=2,
-                     pilot=PILOT, pilot_complete=False, reserve_gib=14,
+                     row=ROW, pilot=PILOT if ROW=='control' else None, pilot_complete=(ROW=='shipped'), reserve_gib=14,
                      case_target_exceeded={}, failed_cases=[],
                      stop_file=str((BASE/'STOP').relative_to(ROOT)))
         write_json(BASE/'campaign.json', state)
@@ -184,17 +254,18 @@ def campaign():
         stop_reason = None
         while pending or active:
             for case, process in list(active.items()):
-                elapsed = time.time()-launched[case]
+                receipts=sorted((CASE_BASE/case).glob('attempt_*.json'))
+                path=receipts[-1] if receipts else CASE_BASE/case/'attempt_01.json'
+                receipt=json.loads(path.read_text()) if path.exists() else {}
+                elapsed = time.time()-launched[case]+receipt.get('prior_case_wall_seconds',0)
                 if elapsed>3600 and case not in state['case_target_exceeded']:
                     state['case_target_exceeded'][case] = now()
                     print('TIME TARGET EXCEEDED', case, elapsed, 'seconds; continuing', flush=True)
                 if process.poll() is not None:
                     del active[case]
-                    path = BASE/case/'attempt_01.json'
-                    receipt = json.loads(path.read_text()) if path.exists() else {}
                     if process.returncode:
                         state['failed_cases'].append(dict(case=case, returncode=process.returncode))
-                    if case == PILOT:
+                    if ROW=='control' and case == PILOT:
                         state['pilot_complete'] = True
                         state['pilot_wall_seconds'] = receipt.get('case_wall_seconds',elapsed)
                         print('PILOT ENDED', state['pilot_wall_seconds'], 'seconds; return code',process.returncode,flush=True)
@@ -214,7 +285,7 @@ def campaign():
             if pending and not stop_reason and len(active)<2 and (state['pilot_complete'] or not active) and memory-reserve-4*1024**3>=14*1024**3:
                 case = pending.pop(0)
                 with (BASE/'local'/f'{case}_supervisor.log').open('w') as stream:
-                    active[case] = subprocess.Popen([sys.executable, str(Path(__file__).resolve()), '--case', case],
+                    active[case] = subprocess.Popen([sys.executable, str(Path(__file__).resolve()), '--row', ROW, '--case', case],
                         cwd=ROOT, stdout=stream, stderr=subprocess.STDOUT)
                 launched[case] = time.time()
             state.update(active=list(active), pending=pending.copy(), updated=now(),
@@ -231,11 +302,13 @@ def campaign():
 
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument('--row',choices=['shipped','control'],default='control')
     parser.add_argument('--prepare', action='store_true')
     parser.add_argument('--campaign', action='store_true')
     parser.add_argument('--detach', action='store_true')
     parser.add_argument('--case')
     args = parser.parse_args()
+    configure(args.row)
     if args.prepare:
         prepare()
     elif args.detach:
@@ -243,7 +316,7 @@ def main():
         require_source_ended()
         assert (BASE/'order.json').exists() and not (BASE/'campaign.json').exists()
         with (BASE/'local/launcher.log').open('a') as stream:
-            child = subprocess.Popen([sys.executable, str(Path(__file__).resolve()), '--campaign'], cwd=ROOT,
+            child = subprocess.Popen([sys.executable, str(Path(__file__).resolve()), '--row', ROW, '--campaign'], cwd=ROOT,
                 stdin=subprocess.DEVNULL, stdout=stream, stderr=subprocess.STDOUT, start_new_session=True)
         write_json(BASE/'launcher.json', dict(pid=child.pid, launched=now(), command='--campaign'))
         print('Detached control supervisor', child.pid, flush=True)

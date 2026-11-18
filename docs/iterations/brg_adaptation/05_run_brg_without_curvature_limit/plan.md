@@ -7,7 +7,10 @@ The coordinator authorized this control on 18 November 2026: "the same
 the public code's default; use the wrapper's curvature switch)."
 
 Activity 04 continues untouched until its existing queue ends by itself.
-Then this activity asks how much its recovery failures depend on the
+The coordinator subsequently authorized a no-time-cap completion of the
+shipped row after the old supervisor exits; see [04 continuation plan](../04_run_brg_on_tg002_shapes/continuation_plan.md).
+Only after all 20 shipped-limit cases finish does this activity ask how
+much its recovery failures depend on the
 shipped example driver's curvature limit. Keep both rows provisional.
 No BEM work, upstream patch, tuning or other setting change is authorized.
 
@@ -57,8 +60,8 @@ The user's 18 November 01:18 UTC correction supersedes the original hard
 caps: "the time limit isnt for you to cutoff agent, but something as a
 design requirement. do not stop running terminal ifi didnt say so. keep it
 as it is now". Activity 04's existing processes and loaded files stay
-untouched; report any cuts made by their existing code, without continuing
-or rerunning a cut case.
+untouched. Its later authorized continuation uses only new entry points
+after the old supervisor ends.
 
 For this unstarted activity, two workers and the 14 GiB start guard remain.
 One hour per case and five hours for the queue are reporting targets only.
@@ -87,9 +90,9 @@ Commands will use `/home/drdeng/miniconda3/envs/EMNerf/bin/python` with
 `OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1`.
 
 - `experiments/baselines/brg/log_tg002_rejections.py`: read existing logs only.
-- `experiments/baselines/brg/run_tg002_control.py --prepare`: freeze order,
+- `experiments/baselines/brg/run_tg002_control.py --row control --prepare`: freeze order,
   data provenance and the source snapshot without launching MATLAB.
-- `experiments/baselines/brg/run_tg002_control.py --campaign --detach`:
+- `experiments/baselines/brg/run_tg002_control.py --row control --campaign --detach`:
   start only after activity 04 ends normally.
 - `experiments/baselines/brg/report_tg002_control.py`: report saved outputs.
 
@@ -123,3 +126,11 @@ queue stopped only on the simulated user STOP and retained its unrun list.
 Static checks found no timeout keyword, deadline, signal or kill path in
 the new launcher and no elapsed-time stop in its MATLAB wrapper. No real
 process was launched or stopped by these checks.
+
+The user's final clarification at about 01:24 UTC applies: time alone is
+never a reason to stop; a stuck or faulty run may be stopped after telling
+the coordinator what happened, unless urgent. The memory guard may act as
+designed. The new runner conservatively delays starts under memory pressure
+and leaves active fits running; intervention on a fault is a separate call.
+The same new runner completes the shipped-limit row first with `--row shipped`,
+then executes this row with `--row control`; they never overlap.

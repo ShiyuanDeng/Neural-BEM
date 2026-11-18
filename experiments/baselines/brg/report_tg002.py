@@ -6,6 +6,14 @@ ROOT=Path(__file__).resolve().parents[3];BASE=ROOT/'results/brg/tg002_shapes/202
 
 def main():
     state=json.loads((BASE/'campaign.json').read_text());rows=[];details=[]
+    original_state=state.copy()
+    completion_base=ROOT/'results/brg/tg002_completion/2026-11-18'
+    completion_path=completion_base/'campaign.json'
+    if completion_path.exists():
+        completion=json.loads(completion_path.read_text())
+        state.update({k:v for k,v in completion.items() if k not in ['cases','started']})
+        if not completion.get('ended'):state.pop('ended',None)
+        if not completion.get('stop_reason'):state.pop('stop_reason',None)
     for case in state['cases']:
         p=BASE/case/'metrics.json'
         if not p.exists():continue
@@ -21,6 +29,7 @@ def main():
 
 Campaign started {state['started']}; {len(details)}/20 cases have saved scores.
 Queue state: `{state['status']}`; last update {state.get('ended',state.get('updated','not recorded'))}.
+Complete 37-frequency cases: {sum(m['status']=='complete' and m['completed_frequencies']==37 for _,m,_,_ in details)}/20.
 All data and results here are **provisional BRG-forward data**. The BEM side
 owns generating and freezing the shared plane-wave data. These are TG-002
 shapes with BRG-style observations, not the sealed TG-002 measurements.
@@ -99,11 +108,17 @@ promise for thin strokes or deep concavities. No case is rerun to tune it.
         text+='\n'
     if state.get('ended'):
         elapsed=(datetime.datetime.fromisoformat(state['ended'])-datetime.datetime.fromisoformat(state['started'])).total_seconds()
-        text+=f"Actual queue elapsed time: {elapsed/60:.2f} min; ended {state['ended']}. The campaign limit was 240 min.\n\n"
+        text+=f"Elapsed from the original start through latest queue end: {elapsed/60:.2f} min; ended {state['ended']}.\n\n"
+        if completion_path.exists():
+            text+=f"Original capped queue ended {original_state.get('ended','not recorded')}: {original_state.get('stop_reason','complete')}. The authorized continuation has no time cutoff; its times are reporting targets. Failed-attempt and interrupted-frequency work remain in case wall time.\n\n"
+        else:
+            text+='The original queue had a 240 min hard limit. The authorized follow-up uses time targets only.\n\n'
         if state.get('stop_reason'):text+=f"Queue stop reason: {state['stop_reason']}. Unfinished cases remain unfinished.\n\n"
     resources=BASE/'resources.jsonl'
     if resources.exists():
         samples=[json.loads(l) for l in resources.read_text().splitlines()]
+        continuation_resources=completion_base/'resources.jsonl'
+        if continuation_resources.exists():samples += [json.loads(l) for l in continuation_resources.read_text().splitlines()]
         text+=f"Memory: minimum observed available {min(s['available_gib'] for s in samples):.2f} GiB; maximum active BRG workers {max(len(s['active']) for s in samples)}. The required reserve is 14 GB. Start/end CSI/MATLAB overlap is retained in each attempt.\n\n"
     text+='## Frequency-ending rejection codes\n\n'
     text+='Counts below read the existing MATLAB logs only. Geometry/filter ier 2 means curvature rejection; ier 1 means self-intersection. The public routine resets a rejected update to the old curve and replaces its code by iteration ier -5 when the residual does not decrease. The filter columns count the selected method at the last iteration of a frequency ending with exit -1. The ier -5 column counts final iteration codes. These overlap; they are not separate groups. Full GN/SD codes and log hashes are in each case\'s `rejection_counts.json`.\n\n'

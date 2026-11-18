@@ -2,17 +2,17 @@ function run_tg002_control_case
 root=fileparts(fileparts(fileparts(fileparts(mfilename('fullpath')))));
 upstream=fullfile(getenv('HOME'),'neural_bem_external','inverse-obstacle-scattering2d');
 case_name=getenv('BRG_TG002_CASE'); eta=str2double(getenv('BRG_ETA'));
-curvature=getenv('BRG_CURVATURE'); assert(strcmp(curvature,'default'));
+curvature=getenv('BRG_CURVATURE'); assert(any(strcmp(curvature,{'shipped','default'})));
 shape=getenv('BRG_SHAPE'); limited=false;
 source_base=fullfile(root,'results','brg','tg002_shapes','2026-11-17');
-base=fullfile(root,'results','brg','tg002_no_curvature','2026-11-18');
+base=getenv('BRG_TG002_OUTPUT_BASE'); assert(~isempty(base));
 out=fullfile(base,case_name); local=fullfile(out,'local');
 data_dir=fullfile(source_base,case_name,'local');
 input=fullfile(source_base,'local',[shape '.mat']);
-stop_file=fullfile(base,'STOP');
+stop_file=getenv('BRG_TG002_STOP'); assert(~isempty(stop_file));
 cd(upstream); startup; cd(out); warning('off'); pause('off');
 set(groot,'defaultFigureVisible','off'); maxNumCompThreads(8);
-% Time is a reporting target, not a stop condition. Only user STOP ends early.
+% No elapsed-time stop. Only a user STOP ends early at a checkpoint.
 input_data=load(input,'ks'); ks=input_data.ks(:).'; nk=numel(ks);
 bc=struct('type','Transmission','invtype','o','q',sqrt(eta),'transa',[1;1],'transb',[1;1]);
 optim=struct('optim_type','min(gn,sd)','filter_type','gauss-conv','maxit',50,'eps_res',1e-5,'eps_upd',1e-5);
@@ -50,11 +50,25 @@ settings=struct('case',case_name,'shape',shape,'eta',eta,'curvature',curvature, 
     'source_boundary_clearance',clearance(source_index),'compute_threads',maxNumCompThreads,'matlab',version);
 write_json(fullfile(out,'settings.json'),settings); save(fullfile(out,'truth_curve.mat'),'truth_curve');
 data_records=cell(1,nk); inverse_records=cell(1,nk);
-% Read the hash-verified activity-04 observations. Never generate data here.
 for i=1:nk
     file=fullfile(data_dir,sprintf('data_%03d.mat',i));
-    assert(isfile(file),'Missing activity-04 data: %s',file);
-    loaded=load(file,'data_record'); data_records{i}=loaded.data_record;
+    if isfile(file), loaded=load(file,'data_record'); data_records{i}=loaded.data_record; continue; end
+    if isfile(stop_file), finish('coordinator_stop'); return; end
+    assert(strcmp(curvature,'shipped'),'Control row must reuse all data; generation forbidden.');
+    k=ks(i); nd=floor(10*k); nr=nd; if limited, nd=10; nr=200; end
+    [tr,td]=meshgrid((0:nr-1)*2*pi/nr,(0:nd-1)*2*pi/nd);
+    sensor=struct('tgt',10*[cos(tr(:))';sin(tr(:))'],'t_dir',td(:));
+    n=max(300,ceil(100*L*k/2/pi)); n=n+mod(n,2);
+    bc.transk=[sqrt(eta)*k k]; t=tic;
+    [src,geometry_check]=tg002_geometry(input,n); [mats,err]=rla.get_fw_mats(k,src,bc,sensor,data_opts);
+    fields=rla.compute_fields(k,src,mats,sensor,bc,data_opts);
+    measurement=struct('kh',k,'tgt',sensor.tgt,'t_dir',sensor.t_dir,'uscat_tgt',fields.uscat_tgt,'err_est',err);
+    data_record=struct('index',i,'k',k,'points',n,'directions',nd,'receivers',nr,'wall_seconds',toc(t),'err_est',err,'geometry_check',geometry_check);
+    tmp=[file '.tmp']; save(tmp,'measurement','data_record','-v7'); movefile(tmp,file,'f');
+    data_records{i}=data_record;
+    write_json(fullfile(out,'data_summary.json'),data_records(~cellfun(@isempty,data_records)));
+    fprintf('BRG DATA %s %d/%d k=%.2f n=%d seconds=%.3f err=%.6g\n',case_name,i,nk,k,n,data_record.wall_seconds,err);
+    clear src mats fields measurement;
 end
 % Required also when all data frequencies were loaded for a resumed run.
 write_json(fullfile(out,'data_summary.json'),data_records);

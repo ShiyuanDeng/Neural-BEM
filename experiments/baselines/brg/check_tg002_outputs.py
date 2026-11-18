@@ -58,13 +58,18 @@ def check_case(folder, data_folder=None):
 def main():
     parser=argparse.ArgumentParser()
     parser.add_argument('--base',type=Path,required=True)
+    parser.add_argument('--state-base',type=Path)
     parser.add_argument('--data-base',type=Path)
     args=parser.parse_args()
-    state=json.loads((args.base/'campaign.json').read_text())
+    state=json.loads(((args.state_base or args.base)/'campaign.json').read_text())
     for case in state['cases']:
         folder=args.base/case
-        if case in state['active'] or (folder/'saved_output_check.json').exists() or not (folder/'bulk_manifest.json').exists():
+        if case in state['active'] or not (folder/'bulk_manifest.json').exists():
             continue
+        receipt=json.loads(sorted(folder.glob('attempt_*.json'))[-1].read_text())
+        if 'case_wall_seconds' not in receipt:continue
+        saved=folder/'saved_output_check.json'
+        if saved.exists() and json.loads(saved.read_text())['case_wall_seconds']==receipt['case_wall_seconds']:continue
         if not (folder/'metrics.json').exists():
             print(case, 'missing score; inspect receipt before post-processing')
             continue
