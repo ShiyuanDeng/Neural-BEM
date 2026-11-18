@@ -1,10 +1,10 @@
 # Run the table path on the GPU: results
 
-18 November 2026. Owner: `bem-gpu`. In progress; solver lock retained.
+18 November 2026. Owner: `bem-gpu`. Complete; solver lock released after push.
 The coordinator approved the narrow guard removal and stale wording fixes.
 All three clean pre-edit references are complete. The approved solver edit
-was made at 00:27 UTC. All proofs pass. Solver remains dirty and awaits
-the coordinator's full-diff review before committing.
+was made at 00:27 UTC. All proofs pass. The coordinator approved the exact
+diff, and solver commit `3612f5195` is pushed. Solver status is clean.
 
 ## Clean CPU reference
 
@@ -27,9 +27,10 @@ and a SHA-256 manifest for the ignored NPZ array reference. Timings are indicati
 on the shared machine. The 4 GiB starting estimate remains conservative against
 the measured peak and leaves at least 16 GiB before subsequent launches.
 
-## Pending
+## Completion
 
-Only coordinator diff review, commit/push, and solver-lock release remain.
+Coordinator diff review passed. Commit `3612f5195` is pushed and the solver
+lock is free. Other agents' shared work remains untouched.
 
 ## First clean GPU reference
 
@@ -147,3 +148,28 @@ The three pre-edit reference commits are pushed: `59dd6b919`, `6a5258daa`,
 `78f084ca9`. Post-edit code and evidence are held uncommitted as requested.
 Solver lock is still held. No new unknowns; commit and release need the
 coordinator's diff review, not a new user decision.
+
+## Final handover
+
+The coordinator approved the full diff after reading the new test. Before
+committing, the current diff was checked byte for byte against the reviewed
+patch; it matched. Reused the passing checks above and ran `git diff --check`.
+Commit `3612f5195` contains the approved solver edit, README, chain, tests and
+post-edit evidence. Push succeeded; `git status --porcelain -- solvers/bem_inverse`
+was empty afterward. The preceding review-stop text records the state then.
+
+```text
+Activity: adapt_bem_to_baseline_data/01_run_table_path_on_gpu, 18 November 2026
+Runs: 5/5 default fits; 8 table checks; 2 suites; wall time 0:05
+Result: CPU and GPU defaults byte-identical before/after; GPU repeatability zero.
+Result: table errors <=1.64e-15 predictions, 6.28e-16 shape, 2.84e-13 material.
+Result: final CUDA-visible suite 121 passed, no skips; solver commit 3612f5195 pushed.
+Failures: none; all logs under results/bem/baseline_data/gpu_table_path/2026-11-18/.
+Upstream patches: none
+Changes to our code: approved table guard/wording, README/chain, tests, reference drivers.
+New unknowns: none for this activity.
+Proposed next activity: 05_lift_series_limit, written proposal only; needs user decision: implementation go/no-go.
+```
+
+**Solver lock free.** The follow-up proposal holds no solver lock and changes
+no solver code.
