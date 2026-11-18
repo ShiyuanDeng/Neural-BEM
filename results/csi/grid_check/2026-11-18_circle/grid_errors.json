@@ -1,0 +1,73 @@
+{
+  "utc": "2026-11-18T00:45:14.105017+00:00",
+  "rows": [
+    {
+      "cell_mm": 0.625,
+      "path": "/home/drdeng/Neural_SDF_BEM_AD_organised/results/csi/preparation/2026-11-17_generate/synthetic_input.txt",
+      "sha256": "34ed9276fb6680d01ff6e7a7c26c8d19fb70fe5df4dbe1a81de39e025924cefe",
+      "per_frequency": [
+        {
+          "frequency_GHz": 1,
+          "relative_L2_over_table": 0.0017232595783543327,
+          "relative_L2_over_exact": 0.0017237011167217104,
+          "copied_exact_vs_reference": 5.046781229413774e-15
+        },
+        {
+          "frequency_GHz": 2,
+          "relative_L2_over_table": 0.0012604901507210252,
+          "relative_L2_over_exact": 0.0012599061819734655,
+          "copied_exact_vs_reference": 8.932805806688506e-15
+        },
+        {
+          "frequency_GHz": 3,
+          "relative_L2_over_table": 0.003033867954927435,
+          "relative_L2_over_exact": 0.0030290265485391973,
+          "copied_exact_vs_reference": 1.3005185414215633e-14
+        },
+        {
+          "frequency_GHz": 4,
+          "relative_L2_over_table": 0.011395654727748191,
+          "relative_L2_over_exact": 0.011441203135338031,
+          "copied_exact_vs_reference": 5.116521265018107e-14
+        },
+        {
+          "frequency_GHz": 5,
+          "relative_L2_over_table": 0.008227529108052174,
+          "relative_L2_over_exact": 0.008216341753016628,
+          "copied_exact_vs_reference": 3.136117397834619e-14
+        },
+        {
+          "frequency_GHz": 6,
+          "relative_L2_over_table": 0.01678183275702194,
+          "relative_L2_over_exact": 0.016633192641222243,
+          "copied_exact_vs_reference": 3.8643221865094e-14
+        },
+        {
+          "frequency_GHz": 7,
+          "relative_L2_over_table": 0.022945504884929496,
+          "relative_L2_over_exact": 0.023099483545210592,
+          "copied_exact_vs_reference": 8.679457133211601e-14
+        },
+        {
+          "frequency_GHz": 8,
+          "relative_L2_over_table": 0.0591359374329643,
+          "relative_L2_over_exact": 0.05960307188234842,
+          "copied_exact_vs_reference": 2.073863029733977e-13
+        }
+      ]
+    }
+  ],
+  "observed_orders": [],
+  "boundary": "binary staircase on dual cells, then native mean_material_node four-cell average to primary Ez",
+  "reference_sha256": "d90b0debd3518cdba3ef1a2728c139dc93c7af3f46fa63dc9b33594a1770913c",
+  "report_sha256": "c610a5fa261b4f545802bbc5c10ba13d734329d2dcdc8cc3e140627dea4dced8",
+  "command": [
+    "env",
+    "PYTHONPATH=solvers:.",
+    "/home/drdeng/miniconda3/envs/EMNerf/bin/python",
+    "-B",
+    "-m",
+    "experiments.baselines.csi.circle_grid_check",
+    "--analyze"
+  ]
+}
