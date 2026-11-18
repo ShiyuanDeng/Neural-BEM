@@ -359,6 +359,13 @@ Rules for every table:
     limit. Every frequency still ends on a rejected step; the rejections
     are now for self-intersection (error code 1). So the kite failure is
     not caused by the curvature limit alone.
+  - Eight of 20 scored by 02:47 UTC (with the limit, then without):
+    asymmetric at contrast 0.5: 11.1% to 0.54%; peanut at 0.5: 11.8% to
+    0.69%; peanut at 4: 50.4% to 17.6%; c_shape at 4: 44.5% to 16.7%;
+    hook at 4: 52.2% to 18.5%; kite: 47.5% to 33.9% and 46.5% to 54.4%;
+    cross at 4: 24.6% to 24.0%.
+  - So the limit does hold BRG back on some shapes: two more cases come
+    under 5% without it. The table must show both rows.
 - **Our BEM on BRG data (activity 03, coordinator review 17 November):**
   - Our default forward builds its incident waves from a power series that
     it refuses to use beyond about k times object radius = 17. On BRG's
