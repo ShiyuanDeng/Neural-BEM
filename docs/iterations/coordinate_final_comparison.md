@@ -89,7 +89,7 @@ its table is frozen and checks 1 to 3 passed for it.
 | Name | Pane | Model | Job | Activity |
 |---|---|---|---|---|
 | `csi-data` | closed 07:48 UTC (was `w1:p9`) | Codex `gpt-6-astra`, high, full access | Done. It prepared, checked and froze the ten five-frequency tables. No fit | `csi_adaptation/06_prepare_five_frequency_data` |
-| `csi` | closed 07:53 UTC (was `w1:p8`) | Codex `gpt-6.1-sol`, high, full access | Done. It launched and watched the seven MF-CC-CSI fits, scored and reported them | `csi_adaptation/07_run_seven_cases_at_five_frequencies` |
+| `csi` | closed 07:52 UTC (was `w1:p8`) | Codex `gpt-6.1-sol`, high, full access | Done. It launched and watched the seven MF-CC-CSI fits, scored and reported them | `csi_adaptation/07_run_seven_cases_at_five_frequencies` |
 | `bem-watch` | closed 05:13 UTC (was `w1:pA`) | Codex `gpt-6.1-sol`, high | Done. It watched the BEM side's ten checks and ten fits, read only, and edited nothing | None |
 
 - `csi` reads first: `AGENTS.md`, this file, then the
@@ -208,7 +208,7 @@ its table is frozen and checks 1 to 3 passed for it.
   result-only git attribute fixed it and the driver hash is unchanged.
 - 07:52 UTC: the BEM coordinator checked the table C numbers against its
   own files (`3c3396a16`).
-- 07:53 UTC: `csi` pane closed. No agent pane is open on this side.
+- 07:52 UTC: `csi` pane closed. No agent pane is open on this side.
 - Agents send reports into this pane as text starting "From <name>".
 - Next: nothing is queued. Open points are under "Waiting on the user"
   and "Open for the coordinator".
