@@ -7,13 +7,62 @@ settings, assumptions and unknowns, and it sets how subagents share the work.
 The coordinator (the main session) owns this file. Subagents never edit it.
 They report back, and the coordinator updates the status board and the cards.
 
-Last updated: 18 November 2026, 00:40 (BRG paper cases done to k = 15; BRG on TG-002 shapes started).
+Last updated: 18 November 2026, 00:15 UTC (restart notes added; both campaigns running).
+
+## Restart notes (18 November 2026)
+
+On 18 November the user had every chat restarted, because the contexts had
+grown long. A fresh coordinator or agent starts here.
+
+**Agents.** Both run in Herdr panes beside the coordinator (pane `w1:p1`).
+
+| Name | Pane | Model | Reads first |
+|---|---|---|---|
+| `brg` | `w1:p7`, top right | Codex `gpt-6-astra`, high effort | `AGENTS.md`, this file, then "State at handoff" in [BRG 04 results](brg_adaptation/04_run_brg_on_tg002_shapes/results.md) |
+| `csi` | `w1:p8`, bottom right | Codex `gpt-6.1-sol`, high effort | `AGENTS.md`, this file, then "State at handoff" in [CSI 04 results](csi_adaptation/04_run_simulated_tg002_cases/results.md) |
+
+The user gave both panes full access. A pane started from scratch begins in
+Codex's default sandbox, where MATLAB and git do not work. Only the user
+grants full access; the coordinator does not.
+
+**Running, detached. Do not launch a second copy.**
+
+| Campaign | Launcher | State file | Stop |
+|---|---|---|---|
+| CSI, 10 simulated TG-002 cases | `python -m experiments.baselines.csi.campaign` (PID 708268 at 00:10 UTC) | `results/csi/tg002/2026-11-17_campaign/status.json` | Create `STOP` in that folder |
+| BRG on 20 TG-002 cases, provisional data | `experiments/baselines/brg/run_tg002.py --campaign` (PID 727204 at 00:10 UTC) | `results/brg/tg002_shapes/2026-11-17/campaign.json` | See "State at handoff" in BRG 04 results |
+
+Both launchers belong to no chat, so closing a pane does not stop them.
+The CSI campaign started 17 November 23:17 UTC: four batches of about 2 h.
+
+**How the coordinator works.**
+- It uses the Herdr skill: `herdr agent prompt <name> "..."` to instruct,
+  and `herdr agent wait <name>` in a background shell to be woken. While an
+  agent works, read its pane with `--source visible`.
+- It does not type into a pane while the user has a side thread open there.
+- It answers agents' questions itself (see "Who decides"), records each
+  call in "Coordinator decisions", and commits this file by path.
+- It leaves permission prompts and full access to the user.
+
+**Next for the coordinator.**
+1. BRG on TG-002 shapes: when the 20 cases finish, review the results and
+   update the board. The data is provisional until the BEM side freezes it.
+2. CSI campaign: after the first batch, check the real time against the 9 h
+   budget. Update the board after each batch.
+3. Deferred: the BRG paper cases from k = 15 to 30, only after the CSI
+   campaign and only if still wanted.
+4. Waiting on the user: a deadline, and the start of the BEM-side
+   coordinator. The solver lock then passes to it. Its inputs are the
+   [solver handover](brg_adaptation/03_adapt_bem_to_brg_data/results.md)
+   and `results/brg/tg002_shapes/2026-11-17/data_request.json`.
+5. Open questions: MR-CSI against the paper's Figure 5; BRG's gap to the
+   paper's Figure 1; U1, U4 and U5 below.
 
 ## Status board
 
 | Method | Investigation | Latest activity | State | Next step |
 |---|---|---|---|---|
-| Our BEM (default) | [evaluate_our_method](evaluate_our_method/) | [01](evaluate_our_method/01_measure_clean_and_noisy_recovery/results.md), [02](evaluate_our_method/02_run_ablations/results.md), run 17 Nov | TG-002 done | Extend for BRG and CSI data, later inside those investigations |
+| Our BEM (default) | [evaluate_our_method](evaluate_our_method/) | [01](evaluate_our_method/01_measure_clean_and_noisy_recovery/results.md), [02](evaluate_our_method/02_run_ablations/results.md), run 17 Nov | TG-002 done. BEM side started 18 Nov: GPU table path, six BRG paper cases, CSI adapter | Status in [coordinate_bem_side.md](coordinate_bem_side.md) |
 | GauGal | [evaluate_our_method](evaluate_our_method/) | [03](evaluate_our_method/03_record_untuned_gaugal_reference/results.md), run 17 Nov | TG-002 untuned reference done | Stage 2 role open (U1) |
 | BRG | [brg_adaptation](brg_adaptation/) | [01 results](brg_adaptation/01_run_published_examples/results.md), [02 plan](brg_adaptation/02_rebuild_paper_examples/plan.md) | 01 done 17 Nov. [02](brg_adaptation/02_rebuild_paper_examples/results.md) done to k = 15 (six cases). [03](brg_adaptation/03_adapt_bem_to_brg_data/results.md): adapter done, 1 of 6 fits run, stopped for handover. [04](brg_adaptation/04_run_brg_on_tg002_shapes/plan.md) (BRG on TG-002 shapes): baseline half started 18 Nov 00:40 | `brg` agent (Codex, astra, high effort): timed pilot, then the other 19 cases with BRG only; provisional data; no BEM work |
 | CSI family | [csi_adaptation](csi_adaptation/) | [01 results](csi_adaptation/01_run_published_examples/results.md) | 01, [02](csi_adaptation/02_run_fresnel_dielectric_cylinder/results.md) and [03](csi_adaptation/03_prepare_simulated_tg002_cases/results.md) done 17 Nov. [04](csi_adaptation/04_run_simulated_tg002_cases/plan.md) (10 simulated cases, MF-CC-CSI) started 18 Nov 00:10 | `csi` agent (Codex, sol, high effort): run 04 three fits at a time, about 8 h, 9 h budget; push after each batch |
@@ -24,12 +73,14 @@ is gcc 11, and the shipped `DGradient.mexa64` loads in R2026a. MATLAB starts
 with one compute thread on this CPU, so each wrapper sets and records its
 thread count.
 
-**Solver lock:** held by the BRG investigation (`brg` agent) since
-17 November 2026, 21:45, for
-[activity 03](brg_adaptation/03_adapt_bem_to_brg_data/results.md). Its
+**Solver lock:** held by the BEM side since 18 November 2026, 00:15 GMT
+(system clock); holder `bem-gpu`, for the GPU table path
+([coordinate_bem_side.md](coordinate_bem_side.md)). The user started the
+BEM side then. The BRG investigation (`brg` agent) held the lock from
+17 November, 21:45, for
+[activity 03](brg_adaptation/03_adapt_bem_to_brg_data/results.md); its
 solver edits are finished and frozen (commits `f81719a31`, `4dde44c96`).
-The lock passes to the BEM-side coordinator when the user starts it. Only
-one investigation may edit `solvers/bem_inverse/` at a time.
+Only one investigation may edit `solvers/bem_inverse/` at a time.
 
 **Split planned by the user (17 November, 23:15):** a second coordinator
 with two subagents will own the BEM side. This coordinator keeps the
@@ -43,7 +94,10 @@ baseline side.
 
 Only the frozen data files, the scoring in `experiments/comparison/` and
 the data notes cross that line. The user confirmed the data ownership with
-"yes". No new documents are created for the split until the user says so.
+"yes". The BEM side's plan is in
+[coordinate_bem_side.md](coordinate_bem_side.md): agreed with the user on
+18 November and started the same day (tables B2 and C; B1 held). It is a
+temporary second file, to be merged back.
 BEM-side work already done here: BRG activity 03 (adapter built and tested,
 one of six fits run). It stops there.
 
