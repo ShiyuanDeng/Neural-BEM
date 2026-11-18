@@ -106,3 +106,21 @@ Report: this activity's `results.md`; report images: `figures/`.
 Check evidence: `checks.md` and result-root `checks/`.
 Old launchers remain unlaunched. Edit only activity 07, CSI-owned launcher
 files, CSI results outside the data folder, and CSI patches if needed.
+
+## Coordinator go and delegated releases, 18 November 04:00 UTC
+
+The coordinator gave GO to launch with the empty queue and delegated
+per-shape releases to CSI. Launcher PID 977035 started at 04:00:52 UTC.
+Every minute the separate watcher checks the frozen manifest, passed data
+checks and matching sidecar hash, then the BEM adapter check's matching
+`frozen_sha256_verified`, true `summary.one_percent_rule`, and all five
+`mismatch.per_frequency` values at or below 1%. BEM files are read only.
+Missing checks mean wait; a failed check blocks that shape and is reported
+immediately. Releases record UTC, shape, table hash and all three check
+values in `releases.jsonl` and `releases.md` in this activity.
+
+The circle exact-series check has passed at the five frequencies:
+0.44%, 0.17%, 0.13%, 0.13%, 0.18% (coordinator-supplied values).
+This does not release any of the seven shapes by itself.
+The watcher's background loop checks the launcher PID and status file,
+reports iteration timings and outcomes, and never stops a fit on time.
