@@ -185,9 +185,6 @@ def run_checks():
         if out.exists():
             report.append(dict(case=case, passes=False, status='INCOMPLETE_CHECK_REQUIRES_REVIEW', checked=0))
             continue
-        if bem_jobs():
-            print('Capacity hold: another BEM command is active. No job disturbed.', flush=True)
-            break
         try:
             receipt = guarded([sys.executable, __file__, '_check', '--case', case, '--out', str(out)], out)
         except RuntimeError as error:
@@ -200,6 +197,9 @@ def run_checks():
         print('CASE', case, 'PASS' if result['passes'] else 'BLOCKED', result.get('failed_frequencies'), flush=True)
         report_checks(dict(cases=report))
         commit_owned(f'B1: retain forward checks for {case}')
+    recorded = {r['case'] for r in report}
+    report.extend(dict(case=r['case'], passes=False, status='CAPACITY_PENDING' if r['passes'] else 'INPUTS_PENDING', checked=0)
+                  for r in pre['cases'] if r['case'] not in recorded)
     record = dict(utc=now(), cases=report, planned_cases=20, passes=len(report)==20 and all(r['passes'] for r in report),
                   fits_started=0, review_stop='Report to coordinator; no automatic fit')
     write(BASE/'check_summary.json', record)
@@ -303,6 +303,10 @@ def score_endpoint(case, row, out):
                   host_peak_bytes=receipt['host_peak_bytes'], gpu_sampled_peak_bytes=receipt['gpu_sampled_peak_bytes'],
                   over_120_seconds=bool(seconds and seconds>120), over_1_hour=bool(seconds and seconds>3600),
                   reportable=receipt['reportable'], scoring_sha256=digest(ROOT/'experiments/comparison/scoring.py'))
+    if (out/'worker_end.json').exists():
+        peaks = json.loads((out/'worker_end.json').read_text())
+        metric['host_peak_bytes'] = max(metric['host_peak_bytes'], peaks['host_peak_bytes'])
+        metric.update({k: peaks[k] for k in ('gpu_peak_allocated_bytes', 'gpu_peak_reserved_bytes')})
     write(out/'metrics.json', metric)
     return metric
 

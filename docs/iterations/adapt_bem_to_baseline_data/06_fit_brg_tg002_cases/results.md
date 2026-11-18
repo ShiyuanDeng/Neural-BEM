@@ -6,6 +6,7 @@ Both fitting rows will read only the saved, hash-verified BRG observations.
 
 | Case | Checked / 37 | BRG relative maximum | Refinement maximum | Status |
 |---|---:|---:|---:|---|
+| circle__c0.5 | 37 | 3.449730949448483e-11 | 2.5084136253513013e-14 | PASS |
 
 Limits: BRG relative difference 0.01 at every frequency; refinement 1e-6.
 A failed or missing check blocks the case. No resolution or tolerance changed.
