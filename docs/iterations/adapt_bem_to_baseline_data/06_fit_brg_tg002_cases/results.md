@@ -19,6 +19,7 @@ Both fitting rows will read only the saved, hash-verified BRG observations.
 | c_shape__c0.5 | 37 | 7.395506330481163e-11 | 5.442516712441383e-14 | PASS |
 | c_shape__c4 | 37 | 1.6302641726884027e-11 | 1.1501106734337583e-13 | PASS |
 | hook__c0.5 | 37 | 2.694799908250825e-10 | 2.5983151346773448e-14 | PASS |
+| hook__c4 | 37 | 1.470589075456192e-11 | 1.688450230318075e-13 | PASS |
 
 Limits: BRG relative difference 0.01 at every frequency; refinement 1e-6.
 A failed or missing check blocks the case. No resolution or tolerance changed.
