@@ -1,0 +1,84 @@
+{
+  "started_utc": "2026-11-18T04:01:34Z",
+  "command": [
+    "matlab",
+    "-batch",
+    "run('/home/drdeng/Neural_SDF_BEM_AD_organised/experiments/baselines/csi/generate_five_frequency_data.m')"
+  ],
+  "environment": {
+    "CSI_REPO": "/home/drdeng/Neural_SDF_BEM_AD_organised",
+    "CSI_UPSTREAM": "/home/drdeng/neural_bem_external/CC-CSI",
+    "CSI_OUT": "/home/drdeng/Neural_SDF_BEM_AD_organised/results/csi/tg002/2026-11-18_five_frequency_data/asymmetric/generated",
+    "CSI_PARENT": "/home/drdeng/Neural_SDF_BEM_AD_organised/results/csi/tg002/2026-11-18_low_band_data/asymmetric/forward/synthetic_input.txt",
+    "CSI_GEOMETRY": "/home/drdeng/Neural_SDF_BEM_AD_organised/results/csi/tg002/2026-11-18_low_band_data/asymmetric/truth/geometry.mat",
+    "CSI_CASE": "tg002_asymmetric_c4_TM"
+  },
+  "matlab_pid": 979359,
+  "threads": 8,
+  "upstream_commit": "73a64e163da34e63fa33f8abe196b9004f45d342",
+  "capacity_before_launch": {
+    "utc": "2026-11-18T04:01:34Z",
+    "policy": {
+      "max_data_jobs": 1,
+      "max_csi_fits": 2,
+      "max_bem_fits": 2,
+      "updated": "2026-11-18T04:00:35Z",
+      "authority": "User delegated overnight resource management in this session; BEM coordinator w2:p1 requested one simulated-C fit beside B1 and confirmed CPU-only checks.",
+      "scope": "Initial ceilings for NEW launches only. Existing jobs continue unchanged. No elapsed-time stop or automatic interruption.",
+      "floor_gib": 14,
+      "margin_gib": 2,
+      "worker_reservation_gib": {
+        "matlab_data": 3,
+        "mf_cc_csi_fit": 6.6,
+        "bem_fit": 4,
+        "cpu_forward_check": 2
+      },
+      "memory_rule": "Before every launch, subtract the new worker reservation and outstanding growth reservations for active workers across both coordinators from current MemAvailable. Launch only if at least floor_gib + margin_gib remains. Count existing worker memory only through its outstanding growth, since current MemAvailable already excludes resident memory. Ceilings do not override this check.",
+      "bem_scope": "At most two BEM fits across B1 and simulated C; one simulated-C fit may run beside the active B1 fit. CPU forward checks do not consume a GPU-fit slot.",
+      "bem_application": "BEM coordinator confirmed its runner re-reads this file before every launch and applies the shared memory rule.",
+      "cpu_basis": {
+        "logical_cpus": 24,
+        "data_threads_per_job": 8,
+        "estimated_cores_per_csi_fit": 5,
+        "bem_frequency_threads": 4,
+        "initial_combined_core_allowance": 22
+      },
+      "sample": {
+        "observed_at_utc": "2026-11-18T03:50:48Z",
+        "available_host_gib": 37.01,
+        "host_load_1_5_15_min": [
+          1.4,
+          1.52,
+          2.08
+        ],
+        "gpu_memory_used_mib": 2897,
+        "gpu_memory_total_mib": 32607,
+        "gpu_utilization_percent": 94,
+        "active_bem_case": "aphex_twin__c4",
+        "active_bem_row": "known",
+        "active_bem_worker_pid": 898809,
+        "active_matlab_jobs": 0
+      },
+      "rationale": "CPU checks release both comparison rows, and must not wait for B1 GPU work. One additional short C fit is allowed alongside B1 under memory reservations; high GPU utilization alone is not a launch block.",
+      "recheck": "Detached resource monitoring is being prepared; new-launch ceilings only, no fit interruptions.",
+      "notification_status": "Coordinators confirmed they read this file. Pane notices are unavailable from this session; policy changes and monitor health are communicated through shared files.",
+      "max_cpu_checks": 1,
+      "cpu_check_scope": "Run the ten CPU-only forward checks one at a time as tables freeze; reserve 2 GiB and one CPU thread. Do not hold them for GPU availability."
+    },
+    "available_bytes": 36810260480,
+    "required_bytes": 20401094656.0,
+    "outstanding_growth_bytes": 0.0,
+    "workers": [],
+    "existing_data_jobs": 0
+  },
+  "nice": 10,
+  "time_stop": false,
+  "returncode": 0,
+  "finished_utc": "2026-11-18T04:02:02Z",
+  "wall_seconds": 27.67216983437538,
+  "cpu_seconds": 111.7,
+  "peak_rss_bytes": 1993388032,
+  "peak_family_rss_bytes": 2295357440,
+  "minimum_available_bytes": 35104804864,
+  "minimum_free_bytes": 17260118016
+}
