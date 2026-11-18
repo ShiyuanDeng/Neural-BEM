@@ -288,6 +288,9 @@ its table is frozen and checks 1 to 3 passed for it.
 - 16:59 UTC: `kite` done (`5421444b3`): 13.76%, all 2048 iterations,
   9793 s. `cog` started; `asymmetric` is at iteration 1691, `cross` at
   1633 (17:00 UTC). Four of ten are in, no failure, no alert.
+- 17:29 UTC: `asymmetric` done (`f76b15ba9`): 7.24%, all 2048
+  iterations, 9882 s; 6.67% at five frequencies. `c_shape` started;
+  `cross` is at iteration 2008, `cog` at 471. Five of ten are in.
 - Next: each fit as it ends (the launcher pushes it). Then `results.md`,
   the figure and the ten-frequency table. Ask the user only on a failed
   or stuck fit that needs a decision.
@@ -523,10 +526,10 @@ reported. BEM numbers are read from
 | hook | 2.44% | 4.0032 | 164 s | 16.22% | 9.0% / 43.6% | 3.88 | 8134 s |
 | circle | 0.17% | 4.0011 | 130 s | 3.46% | 10.7% / 18.5% | 3.82 | 10043 s |
 | kite | 3.21% | 4.0015 | 160 s | 13.76% | 12.8% / 39.6% | 3.81 | 9793 s |
-| asymmetric | 0.93% | 4.0019 | 55 s | running | | | |
+| asymmetric | 0.93% | 4.0019 | 55 s | 7.24% | 11.4% / 26.7% | 3.81 | 9882 s |
 | cross | 1.07% | 4.0009 | 47 s | running | | | |
 | cog | 1.45% | 4.0013 | 36 s | running | | | |
-| c_shape | 1.60% | 4.0028 | 75 s | queued | | | |
+| c_shape | 1.60% | 4.0028 | 75 s | running | | | |
 | peanut | 1.19% | 4.0018 | 86 s | queued | | | |
 | aphex_twin | 5.77% | 3.9981 | 268 s | queued | | | |
 
@@ -534,9 +537,10 @@ reported. BEM numbers are read from
   from its files): every fit completed its schedule, on the same table
   hashes. Mean 1.88%, median 1.32%. At five frequencies the same ten gave
   mean 2.71%, median 2.47%.
-- MF-CC-CSI, four of ten in (16:59 UTC): `hook` 16.22% against 16.52%
-  at five frequencies; `star` 6.60% against 3.72%; `circle` 3.46% and
-  `kite` 13.76% (neither run at five frequencies). Evidence:
+- MF-CC-CSI, five of ten in (17:29 UTC): `hook` 16.22% against 16.52%
+  at five frequencies; `star` 6.60% against 3.72%; `asymmetric` 7.24%
+  against 6.67%; `circle` 3.46% and `kite` 13.76% (neither run at five
+  frequencies). Evidence:
   `results/csi/tg002/2026-11-18_ten_frequency/<shape>/scores.json`.
 - BEM side's table beside five frequencies:
   [its activity 10](adapt_bem_to_baseline_data/10_fit_remaining_csi_tables_at_ten_frequencies/results.md).
