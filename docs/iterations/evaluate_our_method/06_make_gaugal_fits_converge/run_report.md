@@ -117,7 +117,7 @@ benchmarks. Exact-solve probes ran 14:40:27–14:44:42 UTC (4 min 15 s).
 
 ## Probe results
 
-Step 1: both retained cap-2000 probes completed ten iterations after the
+Step 1: cap-2000 probes both completed ten iterations after the
 23:00:47 resume. Raw times include pauses and GPU sharing; no time stop was used.
 The saved cap-100 runs have 80 iterations, so their solve shares are over a different trajectory.
 
