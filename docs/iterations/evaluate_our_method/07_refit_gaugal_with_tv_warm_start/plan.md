@@ -104,3 +104,9 @@ All 20 first-run case folders were restored whole with git mv to their
 original converged run, with hashes checked. The code agent is adding the
 new variant. Wait for the coordinator's go and commit before launching.
 Same case order, same numerical settings, one detached runner, no time stop.
+
+## Release
+
+Coordinator go on ecf3bddbb: launch the separate tvwarm run now in the
+fixed order above. The six lower-value jobs remain paused. No other case
+settings changed. The earlier launch refusal remains evidence only.

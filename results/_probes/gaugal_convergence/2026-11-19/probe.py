@@ -575,12 +575,12 @@ def run_tv_warm_start():
     shapes=['circle','kite','peanut','star','asymmetric','c_shape','hook','cross','cog','aphex_twin']
     cases=[shape+'__'+contrast for contrast in ('c0.5','c4') for shape in shapes]
     assert all((archive/c/'fit.json').exists() and not (destination/c).exists() for c in cases)
-    subprocess.run(['git','merge-base','--is-ancestor','94c39f4c0','HEAD'],cwd=ROOT,check=True)
+    subprocess.run(['git','merge-base','--is-ancestor','ecf3bddbb','HEAD'],cwd=ROOT,check=True)
     available=mem_available();gpu=subprocess.check_output(['nvidia-smi'],text=True)
     if available<14*1024**3: raise RuntimeError('14 GiB memory floor before TV warm-start launch')
     command=[sys.executable,'-u','-m','experiments.comparison','run','gaugal/tvwarm_clean_uc_fc','--cases',*cases]
     state=dict(state='launching',utc=now(),cases=cases,command=command,available_bytes=available,gpu=gpu,
-        fixed_numerical_commit='94c39f4c0',source_at_launch=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
+        fixed_numerical_commit='ecf3bddbb',source_at_launch=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
         monitor_pid=os.getpid(),paused_pids=[1895339,1895343,1903073,2035661,1899688,1899680],published=[])
     write(destination/'tv_warm_start_launch.json',state)
     def git(args):
@@ -595,9 +595,9 @@ def run_tv_warm_start():
     def update_report(rows,terminal):
         valid=[r for r in rows if r['outcome'] not in ('FAILED','EXCEPTION_PARTIAL')]
         passed=[r for r in valid if r['area_error']<=.05]
-        text=('# GauGal refit with TV warm start — native-run report\n\n19 November 2026, UTC. Fixed numerical code 94c39f4c0. '
+        text=('# GauGal refit with TV warm start — native-run report\n\n19 November 2026, UTC. TV fix 94c39f4c0; separate variant ecf3bddbb. '
               'One detached runner; circle c0.5 first, then the other nine c0.5 cases, then ten c4 cases. '
-              'Settings follow plan.md unchanged; there is no time stop.\n\n'
+              'Settings follow plan.md unchanged; there is no time stop. The earlier converged-name launch failed before any fit; its records remain in tv_warm_start_launch_failure.\n\n'
               'The first run is preserved whole under '
               '[converged_clean_uc_fc](../../../../results/gaugal/converged_clean_uc_fc/). '
               'Its circle c0.5 area value is the separately scored saved image of a FAILED fit. '
