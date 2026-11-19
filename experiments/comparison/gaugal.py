@@ -24,17 +24,31 @@ SETTINGS = dict(grid=51, sigma_scale=.7, lambda_scale=.5, step_size=.05, contras
 MAX_SECONDS = 400.
 OUTER_SECONDS = 600.     # the parent stops a hung child after this long
 FREQUENCIES = 19
+CONVERGENCE = dict(window_steps=50, relative_range=.01, tv_schedule_iterations=80)
+CONVERGED_SETTINGS = dict(SETTINGS, num_iter=3000)
 
 
 def settings(run):
-    if run.variant != 'default' or run.contrast != 'uc' or run.frequency != 'fs' or run.damped:
-        raise ValueError('GauGal runs here are default_<data>_uc_fs: untuned, unknown contrast, all frequencies at once.')
-    return dict(method='GauGal collocation, FISTA + TV, one coefficient vector over all frequencies',
+    if run.variant not in ('default', 'converged') or run.contrast != 'uc' or run.frequency != 'fs' or run.damped:
+        raise ValueError('Expected a default or converged GauGal run with unknown contrast and simultaneous real frequencies.')
+    config = dict(method='GauGal collocation, FISTA + TV, one coefficient vector over all frequencies',
                 adapter='experiments/gaugal_comparison/gaugal_arm.py', **SETTINGS,
                 max_seconds=MAX_SECONDS, outer_seconds=OUTER_SECONDS, frequencies=FREQUENCIES,
                 tuning='none here; settings are those GGB-002 chose on clean circle cases',
                 data='sealed TG-002 real catalog' if run.noise is None else f'results/_shared/noise/{run.data}/<case>.npz',
                 timing='fit_seconds is the optimization loop; setup_seconds builds the operators')
+
+    if run.variant == 'converged':
+        config.update(CONVERGED_SETTINGS, max_seconds=None, outer_seconds=None, convergence=CONVERGENCE,
+                      inner_solver='projected dense LU shared by forward and adjoint',
+                      inner_relative_residual_limit=1e-4,
+                      tuning='fixed mismatch plateau; original 80-step TV schedule then final weight')
+    return config
+
+
+def case_settings(run, arm):
+    values = CONVERGED_SETTINGS if run.variant == 'converged' else SETTINGS
+    return arm.settings(values['grid'], **{k: v for k, v in values.items() if k != 'grid'})
 
 
 def blind_case(run, case, root):
@@ -63,12 +77,27 @@ def record_from(case, run, fit, observed, outcome=None, detail=None):
                             linear_solves_unconverged=sum(r['unconverged'] for r in fit.get('linear_solves') or [])))
     arrays = dict(image=np.asarray(fit['image'], np.float32), coefficients=np.asarray(fit['coefficients']),
                   predicted=np.asarray(fit['predictions']))
+    if run.variant == 'converged':
+        record['hit_cap'] = fit.get('stop_reason') == 'iteration_limit'
+        record['convergence'] = CONVERGENCE
+        if outcome is None:
+            record['outcome'] = 'COMPLETED' if fit['stop_reason'] == 'mismatch_plateau' else 'STOPPED_EARLY'
+        # Lossless per-solve maxima over the 24 right-hand sides. Frequency order
+        # matches frequencies_hz; the last standalone solve predicts the endpoint.
+        if 'solve_residuals' in fit:
+            for kind in ('forward', 'adjoint', 'endpoint'):
+                arrays[f'{kind}_relative_residual'] = np.asarray([
+                    [s['final_rel'] for s in solves if s['kind'] == kind] for solves in fit['solve_residuals']])
+        record['history'] = fit['history']
     return record, arrays
 
 
 def fit_case(run, case, root, checkpoint_path=None):
     """Reconstruct one case. Returns (record for fit.json, arrays for fit.npz)."""
     started = perf_counter()
+    if run.variant == 'converged':
+        from .runs import commit
+        code_at_start = commit()
     try:
         from experiments.gaugal_comparison import gaugal_arm
         blind = blind_case(run, case, root)
@@ -85,10 +114,11 @@ def fit_case(run, case, root, checkpoint_path=None):
                                     optimize_seconds=state['optimize_seconds'])
                 temporary.replace(checkpoint_path)
 
-        chosen = gaugal_arm.settings(SETTINGS['grid'], **{k: v for k, v in SETTINGS.items() if k != 'grid'})
+        chosen = case_settings(run, gaugal_arm)
         try:
+            extra = dict(convergence=CONVERGENCE) if run.variant == 'converged' else {}
             fit = gaugal_arm.reconstruct(blind, chosen, frequencies=list(range(FREQUENCIES)), verbose=True,
-                                         max_seconds=MAX_SECONDS, checkpoint=checkpoint)
+                                         max_seconds=None if extra else MAX_SECONDS, checkpoint=checkpoint, **extra)
             record, arrays = record_from(case, run, fit, blind.observed)
         except Exception:
             if not last:
@@ -99,6 +129,8 @@ def fit_case(run, case, root, checkpoint_path=None):
         record, arrays = dict(case=case, scene=case.split('__')[0], family=run.family, run=run.name,
                               representation='image', outcome='WORKER_EXCEPTION',
                               detail=traceback.format_exc()), {}
+    if run.variant == 'converged':
+        record['code_at_start'] = code_at_start
     record['case_seconds'] = perf_counter()-started
     return record, arrays
 
@@ -107,12 +139,13 @@ def from_checkpoint(run, case, root, checkpoint_path, reason):
     """The last saved state of a child that was stopped from outside."""
     from experiments.gaugal_comparison import gaugal_arm
     base = dict(case=case, scene=case.split('__')[0], family=run.family, run=run.name, representation='image')
+    crashed = run.variant == 'converged'
     if not checkpoint_path.exists():
-        return dict(base, outcome='TIMEOUT', detail=reason), {}
+        return dict(base, outcome='WORKER_EXCEPTION' if crashed else 'TIMEOUT', detail=reason), {}
     with np.load(checkpoint_path) as saved:
         state = {k: saved[k] for k in saved.files}
-    chosen = gaugal_arm.settings(SETTINGS['grid'], **{k: v for k, v in SETTINGS.items() if k != 'grid'})
+    chosen = case_settings(run, gaugal_arm)
     fit = dict(state, frequencies=[int(i) for i in state['frequencies']], iterations=int(state['iterations']),
                build_seconds=float(state['build_seconds']), optimize_seconds=float(state['optimize_seconds']),
-               settings=asdict(chosen), history=[dict(iteration=int(state['iterations']))], stop_reason='outer_timeout')
-    return record_from(case, run, fit, blind_case(run, case, root).observed, outcome='TIMEOUT_PARTIAL', detail=reason)
+               settings=asdict(chosen), history=[dict(iteration=int(state['iterations']))], stop_reason='worker_exit' if crashed else 'outer_timeout')
+    return record_from(case, run, fit, blind_case(run, case, root).observed, outcome='EXCEPTION_PARTIAL' if crashed else 'TIMEOUT_PARTIAL', detail=reason)

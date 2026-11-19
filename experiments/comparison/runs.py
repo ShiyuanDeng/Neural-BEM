@@ -78,7 +78,7 @@ def parse(key):
     run = Run(family, *name.split('_'))
     if family not in FAMILIES:
         raise ValueError(f'Unknown family {family!r}; choose from {FAMILIES}')
-    if not re.fullmatch(r'default|nodal|fixedband\d+', run.variant):
+    if not (family == 'gaugal' and run.variant == 'converged') and not re.fullmatch(r'default|nodal|fixedband\d+', run.variant):
         raise ValueError(f'Unknown variant {run.variant!r}')
     if run.data not in ('clean', 'cleandamped') and run.noise is None:
         raise ValueError(f'Unknown data tag {run.data!r}')

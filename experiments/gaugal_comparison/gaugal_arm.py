@@ -15,13 +15,14 @@ Two things differ from GauGal's released driver, both agreed in the plan:
 
 Data are divided by the source strength, so the incident field is i H0 / 4.
 """
-from dataclasses import asdict
+from dataclasses import asdict, replace
 from time import perf_counter
 
 import numpy as np
 import torch
 from scipy.special import hankel1
 
+from gaugal.paper2d import collocation as operators
 from gaugal.paper2d.collocation import (collocation_forward_prop, collocation_gradient,
                                         collocation_sensor_forward, render_collocation_contrast)
 from gaugal.paper2d.reconstruct import paper_options
@@ -118,14 +119,58 @@ def forward(case, frequency_index, grid_size, *, sigma_scale=.35, pixels=PIXELS,
     return paired, seconds, stats
 
 
+def prepare_direct(collocation):
+    """Project the Green matrix once using the original pixel FFT in column blocks."""
+    n = collocation.num_basis
+    green = torch.empty((n, n), dtype=collocation.dtype, device=collocation.device)
+    for start in range(0, n, 64):
+        end = min(start + 64, n)
+        columns = torch.zeros((end - start, n), dtype=collocation.dtype, device=collocation.device)
+        columns[:, start:end].fill_diagonal_(1)
+        green[:, start:end] = operators._k_forward(collocation, columns).T
+    by, bx = collocation.basis_y_weights, collocation.basis_x_weights
+    mass = torch.kron((by.T @ by).contiguous(), (bx.T @ bx).contiguous())
+    collocation.mass_matrix = collocation.domain_cell_area * mass
+    collocation.k_matrix = green
+
+
+def check_direct_solve(collocation, applied, rhs, kind, tolerance):
+    """Check the true equation with the original pixel operator, for every source."""
+    norms = torch.linalg.vector_norm(rhs, dim=1)
+    errors = torch.linalg.vector_norm(applied - rhs, dim=1)
+    relative = float(torch.max(errors / norms.clamp_min(torch.finfo(norms.dtype).tiny)))
+    collocation.linear_solve_stats.append(dict(kind=kind, final_rel=relative, converged=relative <= tolerance))
+    if not np.isfinite(relative) or relative > tolerance:
+        raise ArithmeticError(f'{kind} solve residual {relative:g} exceeds {tolerance:g}')
+
+
+def checked_gradient(model, collocation, coeff, u_warm, v_warm, opts):
+    gradient, u, v, prediction = collocation_gradient(model, collocation, coeff, u_warm, v_warm, opts)
+    applied = operators.collocation_a_forward(collocation, coeff, u)
+    check_direct_solve(collocation, applied, collocation.uinc, 'forward', opts.pcg_tol)
+    sensor_rhs = operators.collocation_sensor_adjoint(model, collocation, prediction - model.data)
+    rhs = operators._contrast_source_u_adjoint(collocation, coeff, sensor_rhs)
+    applied = operators.collocation_a_adjoint(collocation, coeff, v)
+    check_direct_solve(collocation, applied, rhs, 'adjoint', opts.pcg_tol)
+    return gradient, u, v, prediction
+
+
 def reconstruct(case, case_settings, *, frequencies=None, pixels=PIXELS, device='cuda',
-                controls=SolverControls(), verbose=False, max_seconds=None, checkpoint=None):
+                controls=SolverControls(), verbose=False, max_seconds=None, checkpoint=None, convergence=None):
     """GGB-002: one GauGal fit over several frequencies (FISTA + TV, shared coefficients)."""
     frequencies = list(range(len(case.frequencies_hz))) if frequencies is None else list(frequencies)
     opts = paper_options(case_settings, controls)
     start = perf_counter()
     models = [build_model(case, i, pixels, device) for i in frequencies]
     collocations = [build_synthetic_galerkin_model(m, opts) for m in models]
+    gradient = collocation_gradient
+    tv_opts = opts
+    if convergence:
+        for c in collocations:
+            prepare_direct(c)
+        opts = replace(opts, collocation_linear_solver='direct')
+        tv_opts = replace(opts, num_iter=convergence['tv_schedule_iterations'])
+        gradient = checked_gradient
     torch.cuda.synchronize()
     build_seconds = perf_counter()-start
     weights = [1./float(torch.linalg.vector_norm(m.data))**2 for m in models]
@@ -143,14 +188,14 @@ def reconstruct(case, case_settings, *, frequencies=None, pixels=PIXELS, device=
     stop_reason = 'iteration_limit'
     for it in range(1, opts.num_iter+1):
         with torch.no_grad():
-            lam = _lambda_value_for_iteration(base_lam, opts, it)
+            lam = _lambda_value_for_iteration(base_lam, tv_opts, it)
             projected = torch.clamp(momentum, min=LOWER, max=opts.contrast_max)
             grad = torch.zeros_like(coeff)
             misfit = 0.
             evaluated_predictions = []
             for j, (m, c, w) in enumerate(zip(models, collocations, weights)):
-                g, fields[j], adjoints[j], prediction = collocation_gradient(m, c, projected, fields[j],
-                                                                             adjoints[j], opts)
+                g, fields[j], adjoints[j], prediction = gradient(m, c, projected, fields[j],
+                                                                 adjoints[j], opts)
                 grad += w*g
                 misfit += w*float(torch.linalg.vector_norm(prediction-m.data))**2
                 evaluated_predictions.append(case.strength*torch.diagonal(prediction).cpu().numpy())
@@ -164,6 +209,14 @@ def reconstruct(case, case_settings, *, frequencies=None, pixels=PIXELS, device=
                     history=history+[dict(iteration=it, weighted_misfit=misfit, lam=lam)],
                     build_seconds=build_seconds, optimize_seconds=perf_counter()-start,
                     settings=asdict(case_settings), iterations=it, stop_reason='running'))
+            if convergence and it >= tv_opts.num_iter + convergence['window_steps']:
+                recent = [h['weighted_misfit'] for h in history[-convergence['window_steps']:]] + [misfit]
+                spread = max(recent)-min(recent)
+                if spread < convergence['relative_range']*recent[0] or max(recent) == 0:
+                    history.append(dict(iteration=it, weighted_misfit=misfit, lam=lam))
+                    coeff = projected
+                    stop_reason = 'mismatch_plateau'
+                    break
             candidate = projected-step*grad
             grid, tv_p, tv_q, _ = denoise_tv(candidate.reshape(first.grid_size, first.grid_size), lam*step,
                                              p0=tv_p, q0=tv_q, max_iter=_tv_max_iter_for_iteration(opts, it),
@@ -178,6 +231,8 @@ def reconstruct(case, case_settings, *, frequencies=None, pixels=PIXELS, device=
         history.append(dict(iteration=it, weighted_misfit=misfit, lam=lam))
         if verbose and (it == 1 or it % 10 == 0):
             print(f'[{case.case_id}] iter {it}: relative misfit^2 mean {misfit/len(frequencies):.3e}', flush=True)
+        if verbose and convergence and it == 20:
+            print(f'First 20 iterations: {(perf_counter()-start)/20:.5f} s/iteration', flush=True)
         if max_seconds is not None and perf_counter()-start >= max_seconds:
             stop_reason = 'time_limit'
             break
@@ -188,9 +243,12 @@ def reconstruct(case, case_settings, *, frequencies=None, pixels=PIXELS, device=
     with torch.no_grad():
         for m, c, u in zip(models, collocations, fields):
             u = collocation_forward_prop(c, final, u, opts)
+            if convergence:
+                check_direct_solve(c, operators.collocation_a_forward(c, final, u), c.uinc, 'endpoint', opts.pcg_tol)
             predictions.append(case.strength*torch.diagonal(collocation_sensor_forward(m, c, final, u)).cpu().numpy())
         image = render_collocation_contrast(models[0], first, final).cpu().numpy()
     return dict(coefficients=final.cpu().numpy(), image=image, predictions=np.array(predictions),
+                **(dict(solve_residuals=[c.linear_solve_stats for c in collocations]) if convergence else {}),
                 frequencies=frequencies, history=history, build_seconds=build_seconds,
                 optimize_seconds=optimize_seconds, settings=asdict(case_settings),
                 iterations=len(history), stop_reason=stop_reason,

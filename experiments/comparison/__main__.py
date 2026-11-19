@@ -82,7 +82,7 @@ def fit_child(run, case, root):
     command = [sys.executable, '-u', '-m', 'experiments.comparison', '--root', str(root), 'fit-case', run.key, case]
     failure = None
     try:
-        code = subprocess.run(command, cwd=R.ROOT, timeout=gaugal.OUTER_SECONDS).returncode
+        code = subprocess.run(command, cwd=R.ROOT, timeout=None if run.variant == 'converged' else gaugal.OUTER_SECONDS).returncode
         if code:
             failure = f'child exited with code {code}'
     except subprocess.TimeoutExpired:
