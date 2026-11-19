@@ -72,3 +72,27 @@ $P -m experiments.comparison.compare_clean_warmups warmup_long_wall600 CASE --wa
 $P -m experiments.comparison.compare_clean_warmups two_sided CASE --start two_sided
 $P -m experiments.comparison.compare_clean_warmups two_sided_long CASE --start two_sided --warmup-iterations 220 --warmup-quota 3000
 ```
+
+## Warm-up frequency control, 19 November 2026, 02:57 UTC (coordinator)
+
+`tg-misses` proposed one control: the same band-1 warm-up at 0.5 GHz, the default ladder's first frequency, instead of 0.25 GHz. It separates two readings of the rescue: the extra low frequency, or the band-1 stage itself. Approved and widened from `circle__c13.3` to all four rescued cases (`cog__c0.5`, `kite__c4`, `aphex_twin__c4`). Budget: four fits at the unchanged limits, after round two. Output: `results/bem/stage_scheduling/2026-11-19/clean_tg002/warmup_050/`.
+
+```sh
+$P -m experiments.comparison.check_warmup_frequency CASE
+```
+
+## Round three: the measured cylinder's remedy on TG-002, 19 November 2026, 03:06 UTC (coordinator)
+
+On the measured cylinder the fit that works settles a circle (band 1) on growing frequency sets and on the whole catalog, then runs the full-catalog stages only; re-running the low-frequency shape ladder after the circle stages destroys it ([measured plan](../../adapt_bem_to_baseline_data/11_test_measured_cylinder_schedule/plan.md)). TG-002 must say whether either form can be a common schedule.
+
+| Arm (output folder) | Stages | Cases |
+|---|---|---|
+| `circle_then_default` | band-1 stages on 0.25 GHz, on each default ladder set and on the whole catalog; then the unchanged default schedule | all 30 |
+| `circle_then_full` | the same band-1 stages; then the default full-catalog stages only (shape ladder dropped) | all 30 |
+
+Driver: `experiments/comparison/compare_clean_circle_ladders.py` (coordinator's code). A CPU self-test on `star__c4` at 02:58 to 03:01 (two threads, output not kept): `circle_then_default` reached 0.9% when the CPU run hit the wall; `circle_then_full` missed at 40%. Budget: 60 fits at the unchanged 120 s nominal limit, after round two and the frequency control. Pass rule unchanged (5% area). The comparison is against the plain warm-up (20/30) and the default (16/30).
+
+```sh
+$P -m experiments.comparison.compare_clean_circle_ladders circle_then_default CASE
+$P -m experiments.comparison.compare_clean_circle_ladders circle_then_full CASE
+```
