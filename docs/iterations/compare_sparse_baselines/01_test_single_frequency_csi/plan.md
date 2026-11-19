@@ -166,6 +166,15 @@ finish." The BEM coordinator expects its two fits
 go. The baseline coordinator sends the go or no-go after the first
 fit's iteration-64 forecast, by 05:45 at the latest.
 
+**Noisy pair: go at 03:15.** The clean circle fit reached iteration 64
+at 03:14:59, 24.95 s after launch, which projects 13 min 18 s per fit.
+So the two clean fits are expected by about 03:45 and the two noisy CSI
+fits by about 04:20. Both coordinators expect the pair before 07:00, so
+the user's condition holds. Order: the adapter prepares the `n1d0`
+inputs now (Python only) and runs their two table checks once the clean
+kite fit has released MATLAB. Then the noisy circle fit, then noisy
+kite. CSI gets no noise level: it runs the fixed 2,048 iterations.
+
 Check records: `checks/table_<case>__<data>/check.json` and
 `checks/forward_circle__c4__clean/check.json`, each with a top-level
 `passed`. `fit` refuses to start without them.
