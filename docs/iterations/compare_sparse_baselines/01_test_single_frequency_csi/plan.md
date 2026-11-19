@@ -44,14 +44,14 @@ check decides whether the route is right.
 
 BEM's saved single-frequency clean controls, same 24 readings:
 area error 41.11% on circle and 327.04% on kite.
-[Circle](../../../results/bem/default_clean_uc_sf0.5/circle__c4/score.json) ·
-[kite](../../../results/bem/default_clean_uc_sf0.5/kite__c4/score.json).
+[Circle](../../../../results/bem/default_clean_uc_sf0.5/circle__c4/score.json) ·
+[kite](../../../../results/bem/default_clean_uc_sf0.5/kite__c4/score.json).
 The BEM coordinator (`w4:p1`) owns the GPU and every BEM fit.
 
 Reported per case: area error at half peak, sensitivity at 0.3 and 0.7,
 material error, relative field residual over the 24 readings, runtime,
 failures. Scoring uses the frozen
-[scoring.py](../../../experiments/comparison/scoring.py), unchanged.
+[scoring.py](../../../../experiments/comparison/scoring.py), unchanged.
 
 ## Checks that must pass before any fit
 
