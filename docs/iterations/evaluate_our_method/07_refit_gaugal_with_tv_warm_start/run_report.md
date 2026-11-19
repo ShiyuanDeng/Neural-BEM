@@ -6,6 +6,8 @@ The first run is preserved whole under [converged_clean_uc_fc](../../../../resul
 
 | Case | Area error % | First run area % | Worst frequency residual | Final step | Restarts | Plateau stages | Outcome | Seconds | Start commit |
 |---|---:|---:|---:|---:|---:|---:|---|---:|---|
+| circle__c0.5 | 6.0992 | 4.6954 | 0.01329404 | 0.05 | 2 | 0 | STOPPED_EARLY | 630.913 | ecf3bddbb54d3f7099e87fd7a517b6ba60b0761b |
+| kite__c0.5 | 7.5008 | 7.5754 | 0.009110976 | 0.2 | 0 | 0 | STOPPED_EARLY | 629.974 | a8516124ca84435c49a5581298e440376b85cbb5 |
 
 Plateau stages count saved stage stop reasons containing plateau. STOPPED_EARLY/iteration_limit means the configured cap was reached, not outer convergence. Failed saved images are scored diagnostically and excluded from successful-fit counts. Worst frequency residual is an endpoint data residual; inner residuals are checked separately.
 
@@ -13,7 +15,7 @@ Lower-value probes and simultaneous-frequency fits were paused by the coordinato
 
 ```text
 Activity: evaluate_our_method/07_refit_gaugal_with_tv_warm_start, 2026-11-19
-Runs: 0/20 nonfailed, 0 failed, 20 pending; wall time 0:00:00
+Runs: 2/20 nonfailed, 0 failed, 18 pending; wall time 0:21:04
 Result: 0/20 planned cases have area <=5%; per-case results above
 Failures: none saved
 Upstream patches: none by native-run
