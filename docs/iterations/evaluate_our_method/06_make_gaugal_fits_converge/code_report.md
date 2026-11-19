@@ -1,4 +1,26 @@
-# GauGal converged variant
+# GauGal on the clean TG-002 kite
+
+**Only frequency continuation met the 5% area-error criterion on this case.**
+The exact simultaneous fit reduced field mismatch while leaving area error
+near 158%. Continuation reached 2.97% area error at its iteration caps.
+
+| Fit | Step | Iterations and stop | Area error | Material relative L2 | Endpoint weighted squared mismatch | Optimization time |
+|---|---:|---|---:|---:|---:|---:|
+| [Default, simultaneous](../../../../results/gaugal/default_clean_uc_fs/kite__c4/score.json) | 0.05 | 80, cap | 158.37% | 0.96934 | 13.5471 | 323.36 s |
+| [Converged, simultaneous](../../../../results/gaugal/converged_clean_uc_fs/kite__c4/score.json) | 0.05 | 578, plateau | 158.63% | 0.96478 | 10.1760 | 433.23 s |
+| [Converged, continuation](../../../../results/gaugal/converged_clean_uc_fc/kite__c4/score.json) | 0.20 | 6 × 1,000, every stage capped | 2.97% | 0.26189 | 0.019462 | 2,255.98 s including pause |
+
+The mismatch column uses the saved endpoint predictions across all 19 frequencies.
+In the default fit, 2,258 of 3,059 inner solves missed tolerance.
+Both dense-solve fits met tolerance on every solve.
+
+![Saved susceptibility images of the three clean kite fits with half-peak outlines and the true boundary](figures/kite_c4_three_fits.png)
+
+The images share a physical frame and susceptibility scale. The orange
+outline uses half the signed peak for each fit, as in scoring. The largest
+magnitude in the default image is negative, so its outline encloses troughs.
+
+## Checked field solves and the simultaneous stop rule
 
 The converged variant projects the fixed Green matrix with GauGal’s pixel
 FFT and computes the separable Gaussian mass matrix. GauGal’s dense LU
@@ -9,8 +31,8 @@ The relative residual limit is 1e-4 for every source. The frequency-by-
 iteration arrays in `fit.npz` retain the worst relative residual over
 the 24 sources for each forward, adjoint and endpoint solve.
 
-The 51-by-51 lattice, width 0.7, TV scale 0.5, step 0.05 and bounds
-−0.9 to 15 are unchanged. The original TV schedule runs through iteration
+The simultaneous variant keeps the 51-by-51 lattice, width 0.7, TV scale
+0.5, step 0.05 and bounds −0.9 to 15. The original TV schedule runs through iteration
 80 and holds its final weight thereafter.
 
 The fit stops when the range of 51 successive weighted squared mismatches
