@@ -66,8 +66,25 @@ failures. Scoring uses the frozen
    1.25 mm operators that `CSI.m` receives. A 0.625 mm value is recorded
    as extra evidence.
 
-If check 2 or 4 fails, the adapter agent sends the discrepancy to the
+5. Added at 03:10 after the first table check failed (see below): the
+   owned configuration equals the pinned reader on a layout that reader
+   accepts. Same ring, two receivers per source. `Phi`, `A`, the
+   incident field, the mask and the back-propagation start must agree
+   to about 1e-12 relative. Record:
+   `checks/equivalence_upstream/check.json`.
+
+If check 2, 4 or 5 fails, the adapter agent sends the discrepancy to the
 coordinator and all fits are held. The coordinator passes it to the user.
+
+**Change at 03:10.** Table check attempt 1 on circle failed at launch,
+before any numbers. The pinned `ReadFreData.m` (line 384) cannot take
+one receiver per source: `unique` returns a row and a size mismatch
+follows. The failure is kept in
+`checks/table_circle__c4__clean/`. The coordinator authorized an owned
+TM configuration built from the pinned `FDFDpars` and the upstream
+back-propagation equations, with no upstream file edited and `CSI.m`
+byte-identical. Check 5 shows the owned path still gives the native
+start. This adds one short MATLAB launch to the budget.
 
 ## Subagents
 
