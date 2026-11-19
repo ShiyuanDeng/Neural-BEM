@@ -319,6 +319,105 @@ def run_continuation():
     notify(f"Continuation runner ended with returncode {code}: {len(sent)}/19 case results saved; table at results/gaugal/converged_clean_uc_fc/continuation_table.json.")
 
 
+def publish_continuation():
+    """Publish completed, immutable case files in small batches; no GPU imports."""
+    import re
+    import numpy as np
+    destination=ROOT/'results/gaugal/converged_clean_uc_fc'
+    status_path=destination/'continuation_publish_state.json'
+    if status_path.exists():
+        raise RuntimeError('publisher already started; inspect its state before retrying')
+    cases=read(destination/'continuation_launch.json')['cases']
+    published=[]
+    for case in cases:
+        tracked=subprocess.run(['git','cat-file','-e',f'HEAD:results/gaugal/converged_clean_uc_fc/{case}/fit.npz'],cwd=ROOT,capture_output=True)
+        if tracked.returncode==0:
+            published.append(case)
+    state=dict(state='watching',started_utc=now(),pid=os.getpid(),published=published)
+    write(status_path,state)
+    def git(command):
+        last=None
+        for attempt in range(10):
+            result=subprocess.run(['git',*command],cwd=ROOT,text=True,capture_output=True)
+            with (destination/'continuation_publish.log').open('a') as log:
+                log.write(now()+' '+repr(command)+'\n'+result.stdout+result.stderr)
+            if result.returncode==0:
+                return result.stdout.strip()
+            last=result.stdout+result.stderr
+            if 'index.lock' not in last and 'another git process' not in last:
+                break
+            time.sleep(2)
+        raise RuntimeError(last)
+    try:
+        while True:
+            runner=read(destination/'continuation_state.json')
+            ready=[c for c in runner.get('completed',[]) if c not in published]
+            terminal=runner['state'] in ('completed','failed')
+            if len(ready)<2 and not (terminal and ready):
+                if terminal and not ready:
+                    state.update(state='completed',finished_utc=now(),published=published)
+                    write(status_path,state)
+                    notify(f"Continuation publishing complete: {len(published)}/19 requested cases committed and pushed. Paused probes and simultaneous-frequency fits were not resumed.")
+                    return
+                time.sleep(3)
+                continue
+            # Two cases are about 3 MB together, below the roughly 5 MB policy.
+            selected=ready[:2];paths=[];forced=[]
+            for case in selected:
+                folder=destination/case;fit=read(folder/'fit.json');scored=read(folder/'score.json')
+                checks=dict(passed=True,protocol=scored.get('protocol',{}).get('version'))
+                try:
+                    with np.load(folder/'fit.npz') as arrays:
+                        checks['finite_image']=bool(np.isfinite(arrays['image']).all())
+                        checks['predictions_shape']=list(arrays['predicted'].shape)
+                        checks['saved_inner_arrays_valid']=all(np.isfinite(arrays[k]).all() and float(arrays[k].max())<=1e-4 for k in arrays.files if k.endswith('_relative_residual'))
+                    stats=fit.get('linear_solves') or []
+                    checks['worst_inner_relative']=max((v['max_final_relative'] for v in stats),default=None)
+                    checks['unconverged']=sum(v['unconverged'] for v in stats)
+                    checks['final_frequency_count']=len(fit.get('frequencies_hz') or [])
+                    checks['iterations']=(fit.get('work') or {}).get('iterations')
+                    checks['passed']=bool(checks['finite_image'] and checks['predictions_shape']==[19,24] and checks['saved_inner_arrays_valid'] and stats and checks['worst_inner_relative']<=1e-4 and checks['unconverged']==0)
+                except Exception:
+                    checks.update(passed=False,failure=traceback.format_exc())
+                write(folder/'output_checks.json',checks)
+                write(folder/'manifest.json',{p.name:dict(bytes=p.stat().st_size,sha256=hashlib.sha256(p.read_bytes()).hexdigest()) for p in folder.iterdir() if p.is_file() and p.name!='manifest.json'})
+                paths.append(str(folder.relative_to(ROOT)))
+                if (folder/'fit.npz').exists():
+                    forced.append(str((folder/'fit.npz').relative_to(ROOT)))
+            rows=read(destination/'continuation_table.json')
+            lines=['| Case | Area error % | Final mismatch | Worst frequency residual | Seconds | Iterations | Stop |','|---|---:|---:|---:|---:|---:|---|']
+            for r in rows:
+                if r.get('area_error') is None or r.get('final_mismatch') is None:
+                    lines.append(f"| {r['case']} | null | null | {r.get('worst_frequency_residual')} | {r.get('seconds')} | {r.get('iterations')} | {r.get('stop_reason')} |")
+                else:
+                    lines.append(f"| {r['case']} | {100*r['area_error']:.4f} | {r['final_mismatch']:.7g} | {r['worst_frequency_residual']:.7g} | {r['seconds']:.3f} | {r['iterations']} | {r['stop_reason']} |")
+            (destination/'continuation_table.md').write_text('\n'.join(lines)+'\n')
+            report=ROOT/'docs/iterations/evaluate_our_method/06_make_gaugal_fits_converge/run_report.md'
+            text=report.read_text()
+            start=text.index('### Continuation results so far');end=text.index('### Continuation receives the GPU',start)
+            body='### Continuation results so far\n\n'+'\n'.join(lines)+'\n\nCircle ran under sharing. Peanut began about 26 seconds before the dedicated\nallocation; star and subsequent cases started fully under that allocation.\nCompleted case arrays and checks are committed in pairs. The named converged\nvariant may still stop at its fixed iteration cap; stop reasons are shown.\n\n'
+            text=text[:start]+body+text[end:]
+            fs_status=read(ROOT/'results/gaugal/converged_clean_uc_fs/low_contrast_state.json')
+            text=re.sub(r'Runs: .*',f"Runs: 2/4 probes and {len(fs_status.get('completed',[]))}/10 simultaneous cases completed (paused); {len(rows)}/19 continuation cases saved",text)
+            report.write_text(text)
+            paths += [str(report.relative_to(ROOT)),str((destination/'continuation_table.md').relative_to(ROOT)),str(Path(__file__).resolve().relative_to(ROOT))]
+            git(['add','--',*paths])
+            if forced:git(['add','-f','--',*forced])
+            git(['diff','--cached','--check','--',*paths])
+            git(['commit','-m','Record GauGal continuation batch: '+', '.join(selected),'--',*paths])
+            git(['push'])
+            commit=git(['rev-parse','HEAD'])
+            published.extend(selected)
+            state.update(published=published,last_commit=commit,last_publish_utc=now())
+            write(status_path,state)
+            notify('Continuation results pushed in '+commit[:9]+': '+', '.join(selected)+'. Arrays, output checks and report table included.')
+    except Exception:
+        state.update(state='failed',finished_utc=now(),failure=traceback.format_exc(),published=published)
+        write(status_path,state)
+        notify('Continuation publisher failed: '+state['failure'].splitlines()[-1]+'. Fits continue unchanged; completed files are retained.')
+        raise
+
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--worker',action='store_true')
@@ -327,6 +426,7 @@ def main():
     parser.add_argument('--run-low-contrast',action='store_true')
     parser.add_argument('--watch-gpu',action='store_true')
     parser.add_argument('--run-continuation',action='store_true')
+    parser.add_argument('--publish-continuation',action='store_true')
     parser.add_argument('--collect-step1',action='store_true')
     parser.add_argument('--label');parser.add_argument('--case')
     parser.add_argument('--cap',type=int);parser.add_argument('--step',type=float)
@@ -350,6 +450,8 @@ def main():
         return run_low_contrast()
     if args.run_continuation:
         return run_continuation()
+    if args.publish_continuation:
+        return publish_continuation()
     if args.step3_exact:
         path=BASE/'step3_controller.json'
         if path.exists():

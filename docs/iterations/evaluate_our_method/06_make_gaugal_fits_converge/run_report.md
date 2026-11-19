@@ -109,11 +109,13 @@ shared metrics.csv at completion, so the per-case JSON files are canonical.
 | circle__c4 | 2.3553 | 0.05059675 | 0.09237818 | 2146.573 | 6000 | iteration_limit |
 | peanut__c4 | 1.6270 | 0.02408453 | 0.05819941 | 648.559 | 6000 | iteration_limit |
 | star__c4 | 2.0065 | 0.04438225 | 0.07888992 | 630.612 | 6000 | iteration_limit |
+| asymmetric__c4 | 1.6539 | 0.03868516 | 0.06207142 | 630.356 | 6000 | iteration_limit |
+| c_shape__c4 | 3.0388 | 0.05541937 | 0.0808622 | 630.413 | 6000 | iteration_limit |
 
-Circle ran under GPU sharing. Peanut began about 26 seconds before the
-dedicated allocation and took 648.559 s. Star ran fully under the dedicated
-allocation and took 630.612 s (10m31s). Both have zero unconverged inner
-solves. Their completed arrays and checks are committed.
+Circle ran under sharing. Peanut began about 26 seconds before the dedicated
+allocation; star and subsequent cases started fully under that allocation.
+Completed case arrays and checks are committed in pairs. The named converged
+variant may still stop at its fixed iteration cap; stop reasons are shown.
 
 ### Continuation receives the GPU
 
@@ -158,7 +160,7 @@ Its first-case forecast is 48.63 minutes total and 43.77 minutes remaining;
 first_case_forecast.json records the numbers and GPU-sharing context.
 
 Activity: evaluate_our_method/06_make_gaugal_fits_converge, 2026-11-19
-Runs: 2/4 probes, 2/10 simultaneous cases, 3/19 new continuation cases completed; paused timings noted above
+Runs: 2/4 probes and 2/10 simultaneous cases completed (paused); 5/19 continuation cases saved
 Result: exact step 0.2: mismatch 19→10.1109053; 1.13543 s/iter; inner 7.48e-7
 Result: exact step 1.0: mismatch 19→10.0824825; 1.13678 s/iter; inner 1.08e-6
 Failures: none; affected fits resumed by coordinator after a 124-second user pause
