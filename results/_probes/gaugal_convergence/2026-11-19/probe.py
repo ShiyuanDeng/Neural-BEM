@@ -1,5 +1,6 @@
 """Six fixed GauGal convergence probes; no repository or upstream edits."""
 import argparse
+import fcntl
 import hashlib
 import json
 import os
@@ -319,14 +320,104 @@ def run_continuation():
     notify(f"Continuation runner ended with returncode {code}: {len(sent)}/19 case results saved; table at results/gaugal/converged_clean_uc_fc/continuation_table.json.")
 
 
+def continuation_row(folder):
+    fit=read(folder/'fit.json'); scored=read(folder/'score.json')
+    stages=fit.get('stages') or []; history=fit.get('history') or []
+    source=(fit.get('code_at_start') or {}).get('commit',fit.get('commit'))
+    # A recorded restart field is authoritative for the safeguarded implementation.
+    guarded=any('restarts' in stage for stage in stages)
+    if not guarded and source:
+        guarded=subprocess.run(['git','merge-base','--is-ancestor','c20b5dfeb',source],cwd=ROOT,capture_output=True).returncode==0
+    diverged=False
+    for stage in stages:
+        count=stage['frequency_count']
+        values=[h['weighted_misfit'] for h in history if h.get('frequency_count')==count]
+        initial=stage.get('initial_weighted_mismatch')
+        if initial is not None:
+            values.append(stage.get('final_weighted_mismatch',initial))
+            diverged |= any(not __import__('math').isfinite(v) or v>2*initial for v in values)
+    failed=fit.get('outcome') in ('FAILED','EXCEPTION_PARTIAL') or fit.get('stop_reason') in ('exception','restart_limit')
+    return dict(case=folder.name,area_error=scored.get('area_error'),
+        final_mismatch=history[-1].get('weighted_misfit') if history else None,
+        worst_frequency_residual=fit.get('maximum_residual'),seconds=fit.get('case_seconds'),
+        iterations=(fit.get('work') or {}).get('iterations'),stop_reason=fit.get('stop_reason'),
+        outcome=fit.get('outcome'),code_at_start=source,guarded=guarded,
+        final_step_size=stages[-1].get('step_size',fit.get('settings',{}).get('step_size',.2)) if stages else fit.get('settings',{}).get('step_size',.2),
+        restarts=sum(stage.get('restarts',0) for stage in stages),
+        old_failed=bool(folder.name.endswith('__c0.5') and not guarded and (failed or diverged)))
+
+
+def attach_continuation():
+    """Attach CPU reporting, then archive/retry old failures after the original CLI exits."""
+    import shutil
+    destination=ROOT/'results/gaugal/converged_clean_uc_fc'
+    state=read(destination/'continuation_state.json'); cases=state['cases']
+    state.update(monitor_pid=os.getpid(),reporting_revision='step-safeguard',state='running')
+    parent=1921378; retry=None
+    sent={c:read(destination/c/'fit.json').get('code_at_start') for c in state.get('completed',[])}
+    def alive(pid):
+        try:
+            return Path(f'/proc/{pid}/stat').read_text().split(') ',1)[1][0]!='Z'
+        except FileNotFoundError:
+            return False
+    while True:
+        rows=[]
+        for case in cases:
+            folder=destination/case
+            if not (folder/'fit.json').exists() or not (folder/'score.json').exists(): continue
+            row=continuation_row(folder);rows.append(row)
+            fingerprint=read(folder/'fit.json').get('code_at_start')
+            if case not in sent or sent[case]!=fingerprint:
+                notify(f"Continuation {case}: area {100*row['area_error']:.3f}%, final mismatch {row['final_mismatch']:.6g}, worst frequency residual {row['worst_frequency_residual']:.6g}, {row['seconds']:.1f} s; step {row['final_step_size']}, restarts {row['restarts']}; {row['iterations']} iterations, {row['stop_reason']}; code {row['code_at_start'][:9]}.")
+                sent[case]=fingerprint
+        write(destination/'continuation_table.json',rows)
+        state.update(utc=now(),completed=[r['case'] for r in rows],available_bytes=mem_available(),runner_pid=parent)
+        write(destination/'continuation_state.json',state)
+        if not alive(parent):
+            if retry is None:
+                failed=[r['case'] for r in rows if r['old_failed']]
+                if failed:
+                    archive=BASE/'failed_before_step_safeguard';archive.mkdir(exist_ok=True)
+                    moved=[]
+                    for case in failed:
+                        target=archive/case
+                        if target.exists(): raise RuntimeError(f'archive already exists: {target}')
+                        shutil.move(str(destination/case),str(target));moved.append(str(target.relative_to(ROOT)))
+                    write(archive/'archive.json',dict(utc=now(),cases=failed,original_runner_pid=1921378,
+                        original_runner_finished=True,reason='Old-code divergence; approved retry with c20b5dfeb safeguard'))
+                    moved.append(str((archive/'archive.json').relative_to(ROOT)))
+                    git_lock=(BASE/'publisher.lock').open('a');fcntl.flock(git_lock,fcntl.LOCK_EX)
+                    subprocess.run(['git','add','--',*moved],cwd=ROOT,check=True)
+                    for case in failed:
+                        subprocess.run(['git','add','-f','--',str((archive/case/'fit.npz').relative_to(ROOT))],cwd=ROOT,check=True)
+                    subprocess.run(['git','commit','-m','Preserve pre-safeguard GauGal failures','--',*moved],cwd=ROOT,check=True)
+                    subprocess.run(['git','push'],cwd=ROOT,check=True)
+                    fcntl.flock(git_lock,fcntl.LOCK_UN);git_lock.close()
+                    notify('Old-code failures archived and pushed: '+', '.join(failed)+'. Starting the approved safeguarded retry.')
+                    available=mem_available();gpu=subprocess.check_output(['nvidia-smi'],text=True)
+                    if available<14*1024**3: raise RuntimeError('14 GiB floor before approved retry')
+                    command=[sys.executable,'-u','-m','experiments.comparison','run','gaugal/converged_clean_uc_fc','--cases',*failed]
+                    log=(destination/'continuation_retry.log').open('x')
+                    retry=subprocess.Popen(command,cwd=ROOT,stdout=log,stderr=subprocess.STDOUT,start_new_session=True)
+                    parent=retry.pid
+                    write(destination/'continuation_retry_launch.json',dict(utc=now(),pid=parent,command=command,available_bytes=available,gpu=gpu,
+                        commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()))
+                    for case in failed: sent.pop(case,None)
+                    continue
+            state.update(state='completed',finished_utc=now(),returncode=retry.poll() if retry else None)
+            write(destination/'continuation_state.json',state)
+            notify(f"Continuation including approved retries ended: {len(rows)}/19 requested results saved. Other paused work remains paused.")
+            return
+        time.sleep(3)
+
+
 def publish_continuation():
     """Publish completed, immutable case files in small batches; no GPU imports."""
     import re
     import numpy as np
     destination=ROOT/'results/gaugal/converged_clean_uc_fc'
     status_path=destination/'continuation_publish_state.json'
-    if status_path.exists():
-        raise RuntimeError('publisher already started; inspect its state before retrying')
+    # Replacement CPU publisher resumes from committed evidence, never from case-name memory.
     cases=read(destination/'continuation_launch.json')['cases']
     published=[]
     for case in cases:
@@ -351,7 +442,7 @@ def publish_continuation():
     try:
         while True:
             runner=read(destination/'continuation_state.json')
-            ready=[c for c in runner.get('completed',[]) if c not in published]
+            ready=[c for c in runner.get('completed',[]) if c not in published and (destination/c/'score.json').exists() and not continuation_row(destination/c)['old_failed']]
             terminal=runner['state'] in ('completed','failed')
             if len(ready)<2 and not (terminal and ready):
                 if terminal and not ready:
@@ -370,12 +461,15 @@ def publish_continuation():
                     with np.load(folder/'fit.npz') as arrays:
                         checks['finite_image']=bool(np.isfinite(arrays['image']).all())
                         checks['predictions_shape']=list(arrays['predicted'].shape)
-                        checks['saved_inner_arrays_valid']=all(np.isfinite(arrays[k]).all() and float(arrays[k].max())<=1e-4 for k in arrays.files if k.endswith('_relative_residual'))
-                    stats=fit.get('linear_solves') or []
+                        checks['saved_inner_arrays_valid']=all(np.isfinite(arrays[k]).all() and float(arrays[k].max())<=1e-4 for k in arrays.files if k.endswith('_relative_residual') and '_rejected_' not in k)
+                    all_stats=fit.get('linear_solves') or []
+                    stats=[v for v in all_stats if 'rejected_attempt' not in v]
+                    checks['rejected_solve_groups']=len(all_stats)-len(stats)
                     checks['worst_inner_relative']=max((v['max_final_relative'] for v in stats),default=None)
                     checks['unconverged']=sum(v['unconverged'] for v in stats)
                     checks['final_frequency_count']=len(fit.get('frequencies_hz') or [])
                     checks['iterations']=(fit.get('work') or {}).get('iterations')
+                    checks['source_and_restarts']=continuation_row(folder)
                     checks['passed']=bool(checks['finite_image'] and checks['predictions_shape']==[19,24] and checks['saved_inner_arrays_valid'] and stats and checks['worst_inner_relative']<=1e-4 and checks['unconverged']==0)
                 except Exception:
                     checks.update(passed=False,failure=traceback.format_exc())
@@ -384,13 +478,13 @@ def publish_continuation():
                 paths.append(str(folder.relative_to(ROOT)))
                 if (folder/'fit.npz').exists():
                     forced.append(str((folder/'fit.npz').relative_to(ROOT)))
-            rows=read(destination/'continuation_table.json')
-            lines=['| Case | Area error % | Final mismatch | Worst frequency residual | Seconds | Iterations | Stop |','|---|---:|---:|---:|---:|---:|---|']
+            rows=[continuation_row(destination/c) for c in runner.get('completed',[]) if (destination/c/'score.json').exists() and not continuation_row(destination/c)['old_failed']]
+            lines=['| Case | Area error % | Final mismatch | Worst frequency residual | Seconds | Iterations | Stop | Final step | Restarts | Start commit |','|---|---:|---:|---:|---:|---:|---|---:|---:|---|']
             for r in rows:
                 if r.get('area_error') is None or r.get('final_mismatch') is None:
                     lines.append(f"| {r['case']} | null | null | {r.get('worst_frequency_residual')} | {r.get('seconds')} | {r.get('iterations')} | {r.get('stop_reason')} |")
                 else:
-                    lines.append(f"| {r['case']} | {100*r['area_error']:.4f} | {r['final_mismatch']:.7g} | {r['worst_frequency_residual']:.7g} | {r['seconds']:.3f} | {r['iterations']} | {r['stop_reason']} |")
+                    lines.append(f"| {r['case']} | {100*r['area_error']:.4f} | {r['final_mismatch']:.7g} | {r['worst_frequency_residual']:.7g} | {r['seconds']:.3f} | {r['iterations']} | {r['stop_reason']} | {r['final_step_size']} | {r['restarts']} | {r['code_at_start']} |")
             (destination/'continuation_table.md').write_text('\n'.join(lines)+'\n')
             report=ROOT/'docs/iterations/evaluate_our_method/06_make_gaugal_fits_converge/run_report.md'
             text=report.read_text()
@@ -401,12 +495,14 @@ def publish_continuation():
             text=re.sub(r'Runs: .*',f"Runs: 2/4 probes and {len(fs_status.get('completed',[]))}/10 simultaneous cases completed (paused); {len(rows)}/19 continuation cases saved",text)
             report.write_text(text)
             paths += [str(report.relative_to(ROOT)),str((destination/'continuation_table.md').relative_to(ROOT)),str(Path(__file__).resolve().relative_to(ROOT))]
+            git_lock=(BASE/'publisher.lock').open('a');fcntl.flock(git_lock,fcntl.LOCK_EX)
             git(['add','--',*paths])
             if forced:git(['add','-f','--',*forced])
             git(['diff','--cached','--check','--',*paths])
             git(['commit','-m','Record GauGal continuation batch: '+', '.join(selected),'--',*paths])
             git(['push'])
             commit=git(['rev-parse','HEAD'])
+            fcntl.flock(git_lock,fcntl.LOCK_UN);git_lock.close()
             published.extend(selected)
             state.update(published=published,last_commit=commit,last_publish_utc=now())
             write(status_path,state)
@@ -427,6 +523,7 @@ def main():
     parser.add_argument('--watch-gpu',action='store_true')
     parser.add_argument('--run-continuation',action='store_true')
     parser.add_argument('--publish-continuation',action='store_true')
+    parser.add_argument('--attach-continuation',action='store_true')
     parser.add_argument('--collect-step1',action='store_true')
     parser.add_argument('--label');parser.add_argument('--case')
     parser.add_argument('--cap',type=int);parser.add_argument('--step',type=float)
@@ -450,6 +547,8 @@ def main():
         return run_low_contrast()
     if args.run_continuation:
         return run_continuation()
+    if args.attach_continuation:
+        return attach_continuation()
     if args.publish_continuation:
         return publish_continuation()
     if args.step3_exact:

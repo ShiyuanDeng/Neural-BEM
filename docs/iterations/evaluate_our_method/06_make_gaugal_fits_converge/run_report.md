@@ -152,6 +152,34 @@ Raw case wall times and optimization times will include this pause;
 seconds-per-iteration values of the affected fits will also include it.
 The first-case forecast predates the pause and no longer predicts a finish.
 
+## Divergence safeguard and source records
+
+The first continuation circle__c0.5 ran on 30b35c8df9b272aa131c068d74558683d6da0893.
+Its 16-frequency stage diverged; the adjoint residual check later raised
+0.000107799 > 0.0001. Its failure stays intact until the initial runner ends.
+Then it is archived under failed_before_step_safeguard and refitted once,
+as authorized by the coordinator on 19 November at 17:42 UTC.
+
+Safeguard c20b5dfeb halves the step and restarts a stage if its weighted
+mismatch exceeds twice its starting value. Rejected attempts are retained;
+output checks distinguish rejected attempts from accepted checked solves.
+Unchanged fits where the safeguard never fires are bit-identical.
+
+The original kite__c0.5 ran on 3f253b79379925089204e4d317a57a4ec62200db.
+It completed all six stages with no divergence: every stage history's
+maximum/start ratio is 1.0 and all checked solves passed. Retain this fit:
+area error 7.57544%, final step 0.2, zero restarts, iteration_limit.
+The previously saved kite__c4 belongs to code agent's 2296ed11d variant.
+Each case's exact start commit, final step and restart count appear in the
+continuation table and in fit.json; commits made while a fit ran do not
+change its recorded start commit.
+
+The CLI parent alone was paused from 17:38:34 to 17:42:08 UTC; its child
+continued. Parent wall time includes that pause. At 17:55:31 UTC only the
+CPU reporter and publisher were replaced to record restart/source fields
+and publish approved retries. Numerical runner 1921378 was untouched.
+The other six paused processes remain paused for the coordinator.
+
 ## Evidence
 
 Probe root: results/_probes/gaugal_convergence/2026-11-19/.
@@ -167,7 +195,7 @@ Activity: evaluate_our_method/06_make_gaugal_fits_converge, 2026-11-19
 Runs: 2/4 probes and 2/10 simultaneous cases completed (paused); 9/19 continuation cases saved
 Result: exact step 0.2: mismatch 19→10.1109053; 1.13543 s/iter; inner 7.48e-7
 Result: exact step 1.0: mismatch 19→10.0824825; 1.13678 s/iter; inner 1.08e-6
-Failures: none; affected fits resumed by coordinator after a 124-second user pause
+Failures: old-code continuation circle__c0.5 diverged; preserved for the approved safeguarded retry
 Upstream patches: none
 Changes to our code: none; scratch script and result records only
 New unknowns: cap-2000 final solve statistics; contrast-0.5 campaign results
