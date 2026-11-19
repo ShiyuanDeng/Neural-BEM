@@ -6,6 +6,11 @@ Both arms run ``experiments.comparison.bem.policy`` unchanged, which is the defa
               repeat the saved experiment-side warm-up fit (``clean_tg002/warmup``) stage for stage.
   known       one change from ``recovered``: the true contrast is supplied and held, as in a ``kc`` run.
 
+A third arm is a diagnostic of the ``known`` arm's first stage, not a fit of the whole schedule:
+
+  known_warmup_long   the warm-up stage alone with the contrast supplied, its step cap raised from 44 to
+                      440 and its work quota from 600 to 6000. Reference: the ``known`` fit's warm-up exit.
+
 Truth enters after the fit, for scoring only; the ``known`` arm is given the true contrast and nothing else.
 """
 import argparse
@@ -24,9 +29,11 @@ from experiments.benchmark import campaign, scenes
 from experiments.comparison import bem
 from experiments.comparison.check_stage_stops import curve_region
 from experiments.comparison.compare_clean_schedules import OUT, area_score, stage_settings
+from experiments.comparison.compare_clean_warmups import Schedule as WarmupSchedule
 from experiments.comparison.runs import RESULTS, parse
 
-ARMS = dict(recovered='bem/default_clean_uc_fc', known='bem/default_clean_kc_fc')
+ARMS = dict(recovered='bem/default_clean_uc_fc', known='bem/default_clean_kc_fc',
+            known_warmup_long='bem/default_clean_kc_fc')
 KEYS = ('stage', 'M', 'K_geometry', 'nodes', 'accepted_steps', 'initial_loss', 'final_loss',
         'entry_contrast', 'contrast', 'seconds', 'outcome', 'stop', 'detail')
 
@@ -58,18 +65,20 @@ def against_reference(stages, reference):
 def run(arm, case):
     run_ = parse(ARMS[arm])
     row = campaign.row(case)
-    reference = OUT / 'warmup' / f'{case}.json'
+    reference = OUT / ('default_known' if arm == 'known_warmup_long' else 'warmup') / f'{case}.json'
     saved = read(reference)
     real, damped = bem.observations(run_, row, RESULTS)
     initial = curve_from(read(campaign.ROOT / row['initial']))
     solver = bem.solver(run_)
     truth = curve_region(curve_from(read(campaign.ROOT / row['truth'])))
-    if arm == 'known':
+    if arm != 'recovered':
         contrast, material = float(row['contrast']), None
     else:
         contrast, _ = bem.weak_start(initial, real[0], solver, bem.EXECUTION)
         material = MaterialUnknown()
     policy = bem.policy(run_)
+    if arm == 'known_warmup_long':      # the same band-1 stage on 0.25 GHz, alone, with a tenfold cap and quota
+        policy = WarmupSchedule(warmup_only=True, warmup_iterations=440, warmup_quota=6000, fit_seconds=bem.FIT_SECONDS)
     physics, forward = campaign._physics(solver, bem.EXECUTION)
     try:
         result = fit(Problem(initial, real, damped, contrast), solver=solver, execution=bem.EXECUTION,
@@ -85,7 +94,9 @@ def run(arm, case):
                 reference_area_error=saved['area_error'], reference_outcome=saved['outcome'],
                 real_data_sha256=digest(campaign.ROOT / row['data']), initial_sha256=digest(campaign.ROOT / row['initial']),
                 true_contrast=float(row['contrast']), start_contrast=contrast,
-                contrast_rule='supplied (true value), held' if arm == 'known' else 'weak estimate, then fitted',
+                contrast_rule='weak estimate, then fitted' if arm == 'recovered' else 'supplied (true value), held',
+                reference_first_stage={k: v for k, v in saved['stages'][0].items() if k not in ('curve', 'settings')},
+                reference_first_curve=saved['stages'][0]['curve'],
                 frequencies_hz=[o.frequency_hz for o in real], damping='real only',
                 policy=dict(type=type(policy).__name__, name=policy.name, version=policy.version,
                             warmup=policy.warmup, frequency_schedule=policy.frequency_schedule),
@@ -118,7 +129,7 @@ def main():
         raise
     write(path, {**header, **result})
     print(args.case, f'default_{args.arm}', result['outcome'], f'{result["area_error"]:.3%}',
-          f'(recovered-contrast warm-up arm {result["reference_area_error"]:.3%})',
+          f'(reference {result["reference_area_error"]:.3%})',
           f'contrast {result["contrast"]:.4g}', flush=True)
 
 

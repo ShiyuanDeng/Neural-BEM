@@ -63,3 +63,19 @@ done
 The ten `known` fits run from a detached launcher, `results/bem/stage_scheduling/2026-11-19/clean_tg002/logs/batch_10_known_contrast.sh`, with a state file beside it. Do not relaunch it while that file exists.
 
 Outputs: `results/bem/stage_scheduling/2026-11-19/clean_tg002/default_recovered/` and `.../default_known/`, one JSON per case. Driver: [`compare_clean_default_contrasts.py`](../../../../experiments/comparison/compare_clean_default_contrasts.py).
+
+## Added 14:06 UTC: was the supplied-contrast warm-up stopped early?
+
+The ten fits are in: one of ten recovers with the contrast supplied, the circle, as with recovered contrast. In six of the nine misses the warm-up stage ended on its 44-step cap with the loss still at 0.45 to 1.0 (kite, peanut, asymmetric, hook, cross, cog). "Early stops" is one of the user's two suspects, so this is checked before the result is written.
+
+**Test.** For those six, the warm-up stage alone with the contrast supplied, its step cap raised from 44 to 440 and its work quota from 600 to 6000. Nothing else changes. Reference: the same case's warm-up exit in the ten fits. It is a diagnostic of one stage, not a fit of the whole schedule, so it gives no recovery count.
+
+**Reading.** If the longer stage reaches the right place and size (centre within a few millimetres, radius near the equal-area radius), the cap is the cause for that case. If it stays where the 44-step stage ended, it is not.
+
+```bash
+for shape in kite peanut asymmetric hook cross cog; do
+  $P -m experiments.comparison.compare_clean_default_contrasts known_warmup_long ${shape}__c13.3
+done
+```
+
+Output: `.../clean_tg002/default_known_warmup_long/`. Six short stages, one at a time on the GPU; log and state in `logs/batch_11.*`.
