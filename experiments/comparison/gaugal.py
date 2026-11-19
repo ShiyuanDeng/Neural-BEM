@@ -49,7 +49,8 @@ def settings(run):
                       tuning='fixed mismatch plateau; original 80-step TV schedule then final weight')
     if run.variant == 'converged' and run.frequency == 'fc':
         config.update(CONTINUATION_SETTINGS, stage_frequency_counts=STAGE_COUNTS,
-                      stage_start='previous coefficients, fresh momentum and TV state',
+                      stage_start='previous coefficients, fresh momentum; warm stages seed the TV auxiliary '
+                                  'from the bounded first candidate gradient, with zero dual',
                       method='GauGal collocation, FISTA + TV, cumulative low-to-high frequency stages')
     return config
 

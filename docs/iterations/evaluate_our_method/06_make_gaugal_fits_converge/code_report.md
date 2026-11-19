@@ -68,8 +68,8 @@ the lowest 1, 2, 4, 8, 16 and 19 frequencies in order. Every stage uses
 step 0.2 and the same 51-value plateau test, with a 1,000-iteration cap.
 
 Only the previous stage’s endpoint coefficients initialize the next stage.
-Each stage restarts momentum, the TV variables and its 80-iteration TV
-schedule. The TV scale uses that stage’s frequency count. The fixed
+In the first 20-case clean run, each stage restarted momentum, both TV
+variables at zero and its 80-iteration TV schedule. The TV scale uses that stage’s frequency count. The fixed
 matrices are reused across stages.
 
 The case’s `stages.json` is written after each endpoint prediction. It
@@ -159,3 +159,21 @@ coefficients, image, predictions and mismatch history bit for bit.
 Controlled CPU checks exercised the strict threshold, nonfinite mismatch,
 solve failure, endpoint check, coefficient restart, step carry-forward and
 four-halving limit, including exhaustion before the first accepted stage.
+
+## TV initialization for the next 20-case run
+
+The first 20 clean continuation fits used the zero auxiliary reset, including
+safeguard retries. On the weak circle, the reset smoothed the incoming image
+even with the data gradient disabled. At step 0.05 the original 19-frequency
+stage raised the weighted squared mismatch from 0.0868484 to 0.3089984.
+
+For the new activity, each first update from accepted coefficients initializes
+the TV auxiliary with the periodic discrete gradient of the bounded candidate.
+The dual starts at zero. This also applies when a stage restarts with a smaller
+step. The first stage from zero retains GauGal’s original initialization.
+
+In a two-evaluation GPU replay from the saved 16-frequency circle endpoint,
+the corrected path lowered mismatch from 0.0868484 to 0.0738807 at step 0.05.
+A five-iteration, two-band CPU comparison against commit `5caf603cb` used a
+7-by-7 lattice. Cold continuation, simultaneous exact and default runs each
+reproduced their coefficients, images, predictions and histories bit for bit.

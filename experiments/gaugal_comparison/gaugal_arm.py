@@ -31,7 +31,7 @@ from gaugal.paper2d.reconstruct import paper_options
 from gaugal.paper2d.settings import PaperCaseSettings, SolverControls
 from gaugal.paper2d.solver import _lambda_value_for_iteration, _tv_max_iter_for_iteration
 from gaugal.paper2d.synthetic import SyntheticScatteringModel, build_synthetic_galerkin_model
-from gaugal.paper2d.tv import denoise_tv
+from gaugal.paper2d.tv import _forward_tv, denoise_tv
 
 from . import tg002_data as D
 
@@ -270,6 +270,9 @@ def reconstruct(case, case_settings, *, frequencies=None, pixels=PIXELS, device=
                     stop_reason = 'mismatch_plateau'
                     break
             candidate = projected-step*grad
+            if it == 1 and stage_attempt is not None and initial_coefficients is not None:
+                bounded = candidate.clamp(LOWER, opts.contrast_max)
+                tv_p = _forward_tv(bounded, first.grid_size, first.grid_size)
             grid, tv_p, tv_q, _ = denoise_tv(candidate.reshape(first.grid_size, first.grid_size), lam*step,
                                              p0=tv_p, q0=tv_q, max_iter=_tv_max_iter_for_iteration(opts, it),
                                              tol=opts.tv_tol, lower_bound=LOWER, upper_bound=opts.contrast_max)
