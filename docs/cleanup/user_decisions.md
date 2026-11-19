@@ -520,6 +520,16 @@ limits.
 **Status.** Implemented in the root `AGENTS.md` "Iterations" section; the
 separate file was removed.
 
+### D24. Show final reconstructions in the comparison report (2026-11-19)
+
+The user said the report had “too many developmental results” and asked to
+“show in figure, every methods performance on 1-2 cases. the masured cylinder
+case should be its own.”
+
+Keep the final report focused on one or two shared simulation examples per
+method, with full-set scores for context. Give the measured cylinder its own
+figure and section. Keep development details in the activity reports.
+
 ## Lessons from agent mistakes
 
 ### L1. Proposal built on half the facts

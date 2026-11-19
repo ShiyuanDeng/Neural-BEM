@@ -162,3 +162,12 @@ Preserved the exact combined plan and proposal under the original workspace's
 `docs/iterations/baseline_generation/`, with hashes in the legacy index. Removed
 the old active folder and updated README, decision-history and code pointers.
 The plans explicitly identify this as a reorganisation after execution.
+
+## Shorten the final comparison report, 2026-11-19
+
+Under D24, use saved final fits to show each method on shared simulation
+cases and give the measured cylinder a separate comparison.
+
+**Complete.** The [report](../iterations/final_comparison_report.md) shows
+the clean circle and kite across four measurement settings, followed by the four
+measured-cylinder fits. The activity reports retain the development evidence.

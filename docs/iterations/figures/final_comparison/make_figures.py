@@ -16,7 +16,7 @@ from experiments.baselines.csi.registered_metrics import score_field
 from experiments.bem_on_baseline_data.csi_data import LENGTH_M
 from experiments.benchmark import campaign
 from experiments.benchmark.scenes import LENGTH, SHAPES, truth_fixture
-from experiments.comparison.scoring import support_rings
+from experiments.comparison.scoring import region, support_rings
 
 OUT = Path(__file__).resolve().parent
 RESULTS = OUT.parents[3] / "results"
@@ -122,8 +122,7 @@ def bem_outline(folder):
     return LENGTH_M * curve.values(16384), read(folder / "metrics.json")["score"]["area_error"]
 
 
-def csi_outlines(data, values, truth, saved_error):
-    gx, gy = data["grid_x_primary_m"], data["grid_y_primary_m"]
+def csi_outlines(gx, gy, values, truth, saved_error):
     scores, image = score_field(values, (len(gx), len(gy)), gx, gy, truth, fractions=(.5,))
     assert np.isclose(scores[0]["area_error"], saved_error, atol=1e-7)
     return support_rings(image, .5)[0]
@@ -203,7 +202,8 @@ def plot_simulated():
         folder = CSI / "tg002/2026-11-18_five_frequency" / name
         data = loadmat(folder / "final_contrast.mat", simplify_cells=True)
         error = read(folder / "scores.json")["snapshots"][-1]["scores"][0]["area_error"]
-        rings = csi_outlines(data, data["snapshots"][-1], Polygon(np.c_[truth.real, truth.imag]), error)
+        rings = csi_outlines(data["grid_x_primary_m"], data["grid_y_primary_m"], data["snapshots"][-1],
+                             Polygon(np.c_[truth.real, truth.imag]), error)
         folder = BEM / "csi_five_frequency/2026-11-18" / f"{name}__c4/cuda/attempt_01"
         boundary, bem_error = bem_outline(folder)
         draw(ax, boundary, BLUE, lw=2.6)
@@ -232,6 +232,88 @@ def plot_simulated():
     plt.close(fig)
 
 
+def simulated_pairs(shape, truth):
+    case = f"{shape}__c4"
+    warmup = read(WARMUP / f"{case}.json")
+    warmed = LENGTH * curve_from(warmup["stages"][-1]["curve"]).values(16384)
+    folder = RESULTS / "gaugal/default_clean_uc_fs" / case
+    with np.load(folder / "fit.npz") as saved:
+        gaugal, _ = support_rings(saved["image"], .5)
+    yield (warmed, warmup["area_error"]), (gaugal, read(folder / "score.json")["area_error"])
+
+    def saved_curve(folder):
+        return LENGTH * curve_from(read(folder / "fit.json")["final_curve"]).values(16384)
+
+    bem = RESULTS / "bem/default_clean_uc_sf0.5" / case
+    csi = CSI / "native_tg002/2026-11-19/fits" / f"{case}__clean"
+    image = loadmat(csi / "final_image.mat", simplify_cells=True)
+    error = read(csi / "score.json")["area_error"]
+    rings = csi_outlines(image["x_m"], image["y_m"], image["chi_image"], truth, error)
+    yield (saved_curve(bem), read(bem / "score.json")["area_error"]), (rings, error)
+
+    bem = BEM / "brg_tg002/2026-11-18" / case / "known/attempt_01"
+    brg = RESULTS / "brg/tg002_shapes/2026-11-17" / case
+    yield ((saved_curve(bem), read(bem / "metrics.json")["area_error"]),
+           ([saved_curve(brg)], read(brg / "metrics.json")["area_error"]))
+
+    bem = BEM / "csi_ten_frequency/2026-11-18" / case / "cuda/attempt_01"
+    csi = CSI / "tg002/2026-11-18_ten_frequency" / shape
+    data = loadmat(csi / "final_contrast.mat", simplify_cells=True)
+    snapshot = read(csi / "scores.json")["snapshots"][-1]
+    assert data["counts"][-1] == snapshot["iterations"] == 2048
+    error = next(s["area_error"] for s in snapshot["scores"] if s["fraction"] == .5)
+    rings = csi_outlines(data["grid_x_primary_m"], data["grid_y_primary_m"], data["snapshots"][-1],
+                         truth, error)
+    yield bem_outline(bem), (rings, error)
+
+
+def plot_simulated_pairs():
+    columns = [("TG-002", "24 pairs · 19 frequencies", "GauGal"),
+               ("TG-002", "24 pairs · 0.5 GHz only", "Classical CSI"),
+               ("Plane waves", "BEM 19 frequencies · BRG 37", "BRG"),
+               ("Fresnel simulation", "10 frequencies · 0.25–2.5 GHz", "MF-CC-CSI")]
+    fig, axes = plt.subplots(2, 4, figsize=(11.3, 6.8))
+    fig.subplots_adjust(left=.09, right=.983, bottom=.14, top=.845, hspace=.42, wspace=.10)
+    for row, shape in enumerate(("circle", "kite")):
+        target = LENGTH * truth_fixture(shape).values(16384)
+        truth = Polygon(np.c_[target.real, target.imag])
+        pairs = list(simulated_pairs(shape, truth))
+        assert len(pairs) == len(columns)
+        for ax, column, (bem, baseline) in zip(axes[row], columns, pairs):
+            title, settings, method = column
+            if row == 0:
+                ax.set_title(title, fontsize=13, weight="bold", pad=22)
+                ax.text(.5, 1.035, settings, ha="center", color=MUTED, fontsize=9, transform=ax.transAxes)
+            for (rings, error), color, width in [(([bem[0]], bem[1]), BLUE, 3.8),
+                                                  (baseline, ORANGE, 1.9)]:
+                found, _ = region(rings)
+                plotted_error = found.symmetric_difference(truth).area / truth.area
+                assert np.isclose(plotted_error, error, atol=1e-6), (shape, method, plotted_error, error)
+                for ring in rings:
+                    assert np.max(np.abs(np.c_[ring.real, ring.imag])) < .105
+                    draw(ax, ring, color, lw=width)
+            draw(ax, target, INK, lw=1.15, ls=(0, (3, 3)))
+            ax.set(aspect="equal", xlim=(-105, 105), ylim=(-105, 105), xticks=[], yticks=[])
+            ax.set_facecolor("#f7f9fa")
+            for spine in ax.spines.values():
+                spine.set_color("#d9e1e4")
+            for y, name, error, color in [(-.10, "BEM", bem[1], BLUE), (-.21, method, baseline[1], ORANGE)]:
+                score = "<0.01%" if error < .0001 else f"{error:.2%}"
+                ax.text(.5, y, f"{name}  {score}", transform=ax.transAxes, ha="center", color=color, fontsize=10)
+        axes[row, 0].set_ylabel(shape.capitalize(), rotation=0, ha="right", va="center",
+                                fontsize=13, weight="bold", labelpad=10)
+    scale = axes[1, 2]
+    scale.plot([40, 90], [-87, -87], color=INK, lw=2)
+    scale.text(65, -78, "50 mm", ha="center", fontsize=9)
+    fig.suptitle("Final outlines on two clean shapes at contrast 4", y=.975, fontsize=16, weight="bold")
+    fig.legend(handles=[Line2D([], [], color=INK, ls="--", label="True boundary"),
+                        Line2D([], [], color=BLUE, lw=3.8, label="BEM"),
+                        Line2D([], [], color=ORANGE, lw=1.9, label="Comparison method")],
+               loc="lower center", bbox_to_anchor=(.5, .008), ncol=3, frameon=False)
+    fig.savefig(OUT / "simulated_circle_kite.png", dpi=175)
+    plt.close(fig)
+
+
 def plot_measured():
     registered = read(CSI / "preparation/2026-11-17_frame/registered_scores.json")
     geometry = registered["truth"]
@@ -239,21 +321,18 @@ def plot_measured():
     truth = Point(x,y).buffer(geometry["radius_mm"]/1000, quad_segs=4096)
     tx, ty = truth.exterior.xy
     reference = np.asarray(tx) + 1j*np.asarray(ty)
-    methods = []
-    for name, folder, color in [
-        ("BEM\ndefault", "csi_adapter/2026-11-18/first_fit", BLUE),
-        ("BEM\ncircle-first", "measured_schedule/2026-11-19/circle_ladder", TEAL),
-    ]:
-        curve, error = bem_outline(BEM / folder / "dielTM_dec8f/cuda/attempt_01")
-        methods.append((name, [curve], error, color))
+    folder = BEM / "measured_schedule/2026-11-19/circle_ladder/dielTM_dec8f/cuda/attempt_01"
+    curve, error = bem_outline(folder)
+    methods = [("BEM (circle-first)", [curve], error, BLUE)]
     data = loadmat(RESULTS.parent / registered["source"], simplify_cells=True)
     for i, row in enumerate(registered["methods"], 1):
         error = row["scores"][0]["area_error"]
-        rings = csi_outlines(data, data[f"chi{i}"][-1], truth, error)
+        rings = csi_outlines(data["grid_x_primary_m"], data["grid_y_primary_m"], data[f"chi{i}"][-1],
+                             truth, error)
         methods.append((row["method"] if row["method"] != "CSI" else "Classical CSI", rings, error, ORANGE))
-    fig, axes = plt.subplots(1, len(methods), figsize=(12, 3.95), sharey=True)
+    fig, axes = plt.subplots(1, len(methods), figsize=(9.8, 3.7), sharey=True)
     fig.subplots_adjust(left=.055, right=.985, bottom=.21, top=.75, wspace=.15)
-    fig.suptitle("Measured cylinder area error at the nominal position", weight="bold", fontsize=15)
+    fig.suptitle("Measured Fresnel cylinder · area error at the nominal position", weight="bold", fontsize=15)
     for ax, (name, rings, error, color) in zip(axes, methods):
         for ring in rings:
             points = ring*1000
@@ -279,4 +358,5 @@ if __name__ == "__main__":
     plot_recovery()
     plot_clean_bem()
     plot_simulated()
+    plot_simulated_pairs()
     plot_measured()

@@ -1,102 +1,31 @@
-# Shape recovery on simulated and measured data
+# Final shape recovery on simulated and measured data
 
-On the 30 clean TG-002 cases, adding a 0.25 GHz warm-up to our boundary element method (BEM) raised recovery from **16/30 to 20/30**. The same gain held on one 1% noise draw. On the measured cylinder, fitting a circle across frequencies before allowing shape changes brought BEM's nominal area error to **36.59%**, within the **34.22–38.47%** range of the three CSI methods.
+## Simulated shapes
 
-Area error is the missing area plus the extra area, as a percentage of true area. “Recovered” means 5% error or less. Runs took place on 17–19 November 2026.
+On the ten shapes simulated in the Fresnel layout, BEM recovered **9/10** and MF-CC-CSI recovered **1/10**, using a recovery threshold of **5% area error or less**. With just 24 readings at one frequency, both BEM and classical CSI missed the circle and kite. [Ten-shape comparison](csi_adaptation/08_run_cases_at_ten_frequencies/results.md) · [Single-frequency comparison](compare_sparse_baselines/01_test_single_frequency_csi/results.md)
 
-| Test | BEM | Baseline |
+![Final circle and kite outlines at contrast 4. Each panel overlays BEM, its comparison method and the true boundary. At 0.5 GHz alone, classical CSI has 50.07% kite area error and BEM has 327.04%.](figures/final_comparison/simulated_circle_kite.png)
+
+*Figure 1. Circle and kite have clean fits in all four comparisons. Compare methods within each column. Only the plane-wave pair received the true contrast. Percentages give missing plus extra area divided by true area. Image methods use the contour at half the signed peak, including every component. All panels share one scale.*
+
+| Clean data | BEM | Comparison method |
 |---|---|---|
-| A. Original TG-002, 20 clean cases at contrasts 0.5 and 4 | 16/20 recovered | Untuned GauGal recovered 0/20. [BEM results](evaluate_our_method/01_measure_clean_and_noisy_recovery/results.md) · [GauGal results](evaluate_our_method/03_record_untuned_gaugal_reference/results.md) |
-| B1. Same shapes and contrasts, BRG plane-wave data | Using 19 of BRG’s 37 frequencies, BEM recovered 18/20 with contrast supplied and 20/20 with contrast estimated. Both misses were on `aphex_twin`. | With contrast supplied, BRG recovered 7/20 with its curvature limit and 8/20 without it. [BEM scores](adapt_bem_to_baseline_data/06_fit_brg_tg002_cases/final_report.md) · [BRG scores](brg_adaptation/05_run_brg_without_curvature_limit/results.md) |
-| B2. Six BRG paper cases, up to wavenumber 15 | Below 1% on one glider and both star tests. The high-contrast glider stopped at wavenumber 12 with 14.1% error. Both cavities exceeded BEM’s numerical limit and were skipped. | Below 1% on both gliders and both star tests, including 0.004% on the high-contrast glider. Both cavity errors were about 134%. [BEM cases](adapt_bem_to_baseline_data/02_fit_brg_paper_cases/results.md) · [BRG cases](brg_adaptation/02_rebuild_paper_examples/results.md) |
-| C. Seven simulated shapes at contrast 4, same five frequencies from 0.5 to 2.5 GHz | 2.96% mean area error, 6/7 recovered | MF-CC-CSI had 13.08% mean error, 1/7 recovered. BEM had lower error on every shape at all three image thresholds tested. [Per-shape scores](coordinate_final_comparison.md#table-c-simulated-shapes-the-numbers-18-november-0750-utc) |
-| C. One measured Fresnel cylinder, 1–8 GHz | 67.85% area error with the default schedule, 36.59% with circle fitting across frequencies | MF-CC-CSI 35.12%, MF-MR-CSI 34.22%, classical CSI 38.47%. All scores use the nominal cylinder position. [Measured comparison](adapt_bem_to_baseline_data/11_test_measured_cylinder_schedule/results.md) |
+| TG-002 · 24 pairs, 19 frequencies, 30 cases | **20/30** recovered with the 0.25 GHz warm-up. By contrast, 10/10 at 0.5, 9/10 at 4 and 1/10 at 13.3. | Untuned GauGal **0/30**. [BEM results](investigate_bem_stage_scheduling/03_compare_schedule_effects/results.md) · [GauGal results](evaluate_our_method/03_record_untuned_gaugal_reference/results.md) |
+| TG-002 · same 24 pairs, 0.5 GHz alone, 2 cases | **0/2**. Lower error on the circle. | Classical CSI **0/2**. Lower error on the kite. [Scores](compare_sparse_baselines/01_test_single_frequency_csi/results.md) |
+| BRG plane waves · 20 cases at contrasts 0.5 and 4 | **18/20** with contrast supplied (shown), **20/20** with contrast estimated. BEM used 19 of the 37 frequencies. | BRG received the contrast. It recovered **7/20** with its shipped curvature limit (shown) and **8/20** without the limit. [BEM scores](adapt_bem_to_baseline_data/06_fit_brg_tg002_cases/final_report.md) · [BRG scores](brg_adaptation/05_run_brg_without_curvature_limit/results.md) |
+| Fresnel simulation · 1,764 pairs per frequency, 10 frequencies, 10 shapes at contrast 4 | **9/10**. Mean area error **1.88%**. Only Aphex Twin missed (5.77%). | MF-CC-CSI **1/10**. Mean **12.32%**. Only the circle passed (3.46%). [All ten paired scores](csi_adaptation/08_run_cases_at_ten_frequencies/results.md) |
+| Fresnel simulation · 5 frequencies, 7 shared shapes at contrast 4 | **6/7**. Mean area error **2.96%**. | MF-CC-CSI **1/7**. Mean **13.08%**. [Seven paired scores](coordinate_final_comparison.md#table-c-simulated-shapes-the-numbers-18-november-0750-utc) |
 
-![Per-case recovery on clean TG-002, one noisy TG-002 draw and clean BRG plane-wave data. A 0.25 GHz BEM warm-up adds four recoveries on each TG-002 data set.](figures/final_comparison/tg002_recovery.png)
+On one frozen 1% noise draw, BEM again recovered 20/30 native TG-002 cases. Untuned GauGal recovered 0/20 at the two contrasts tested with noise. [BEM noise results](investigate_bem_stage_scheduling/03_compare_schedule_effects/results.md) · [GauGal noise results](evaluate_our_method/03_record_untuned_gaugal_reference/results.md)
 
-*Figure 1. Each dot marks a recovery within 5% area error. BEM rises from 16/30 to 20/30 on both clean TG-002 and the frozen 1% noise draw. The GauGal and plane-wave comparisons shown here cover contrasts 0.5 and 4 (20 cases). On plane-wave data, BEM either receives or estimates the contrast, and BRG runs with or without its curvature limit.*
+On BRG’s own paper examples, both methods finished below 1% on the low-contrast glider and both star tests. BRG reached 0.004% on the high-contrast glider at wavenumber 15. BEM stopped at 12 with 14.1% error. BRG’s two cavity errors were about 134%, and BEM skipped both because of its numerical limit. [Paper-case BRG scores](brg_adaptation/02_rebuild_paper_examples/results.md) · [Paper-case BEM scores](adapt_bem_to_baseline_data/02_fit_brg_paper_cases/results.md#reported-gpu-pass-18-november-2026)
 
-## Classical CSI and BEM on the same 24 readings
+## Measured Fresnel cylinder
 
-At 0.5 GHz and contrast 4, BEM had the lower area error on the circle and classical CSI had the lower error on the kite. Both missed the 5% target in all four comparisons. On the clean circle, BEM fitted the readings to a 0.148% field residual while its area error was 41.11%. [Single-frequency comparison](compare_sparse_baselines/01_test_single_frequency_csi/results.md)
+On the measured cylinder, **MF-MR-CSI had the lowest nominal area error (34.22%)**. The other three fits ranged from 35.12% to 38.47%. All four used the same 1–8 GHz measurements and placed the cylinder centre about 4 mm from its approximate nominal position. [CSI scores](../../results/csi/preparation/2026-11-17_frame/registered_scores.json) · [BEM fit](adapt_bem_to_baseline_data/11_test_measured_cylinder_schedule/results.md)
 
-| Shape | BEM, clean | CSI, clean | BEM, 1% noise | CSI, 1% noise |
-|---|---:|---:|---:|---:|
-| Circle | 41.11% | 45.95% | 43.61% | 45.55% |
-| Kite | 327.04% | 50.07% | 329.24% | 50.29% |
+![Measured-cylinder outlines against the same nominal disk. Area error is 36.59% for circle-first BEM, 35.12% for MF-CC-CSI, 34.22% for MF-MR-CSI and 38.47% for classical CSI.](figures/final_comparison/measured_cylinder.png)
 
-The noisy columns use the same frozen draw. BEM received the noise level for stopping. CSI ran 2,048 iterations and its area was scored at half the image peak. [Settings and scores](compare_sparse_baselines/01_test_single_frequency_csi/results.md#noisy-comparisons-1-noise-draw-0)
+*Figure 2. Each solid outline is the final fit. Dashes mark the nominal disk of radius 15 mm centred at (0, 30) mm. The inner contour in the classical CSI panel is a hole in its half-peak region.* [Reference geometry](csi_adaptation/03_prepare_simulated_tg002_cases/frame.md)
 
-![Circle and kite at 0.5 GHz, clean and with 1% noise. The BEM kite extends beyond the target and the classical CSI half-peak region covers about half of it.](compare_sparse_baselines/01_test_single_frequency_csi/figures/csi_and_bem_native_0p5ghz.png)
-
-*Figure 2. The colour map shows CSI susceptibility, the gold line encloses the region at half peak, and the orange line is the BEM outline. White dashes mark the true boundary. Both methods used the same 24 readings in each panel.*
-
-## All 30 clean BEM fits
-
-`default_clean_uc_fc` recovered **16/30** by the 5% area rule. At contrast **0.5**, only the cog missed (**9/10**). At **4**, the kite, C-shape and Aphex Twin missed (**7/10**). At **13.3**, all ten missed (**0/10**). [Saved run](../../results/bem/default_clean_uc_fc/run.json)
-
-The real 0.25 GHz warm-up kept all 16 passes and recovered four more, giving **10/10, 9/10 and 1/10** at contrasts 0.5, 4 and 13.3. Longer step or time limits recovered zero additional cases in the matched tests. Widening the early shape bands gave 19/30, and the best measured-cylinder schedule recovered 6/30 on clean TG-002. [Schedule comparison](investigate_bem_stage_scheduling/03_compare_schedule_effects/results.md)
-
-![Paired default and warm-up outlines for all 30 clean cases. Bold score pairs identify the four cases recovered by adding the warm-up.](figures/final_comparison/default_clean_uc_fc.png)
-
-*Figure 3. Each panel shows default and warm-up area errors in that order, on a common physical scale. The four new recoveries are cog at 0.5, kite and Aphex Twin at 4, and circle at 13.3.*
-
-**Video.** Four contrast-4 fits stopped early. The kite and Aphex Twin grew large lobes outside the target. The C-shape also included extra area even though its final contrast was 3.91, close to 4. Cog passed at 2.00% area error before the time limit. The video shades extra area orange and missing area purple. [Watch the four fits (MP4)](figures/final_comparison/contrast_4_fit_history.mp4)
-
-![Three kite fits entering and leaving the first 0.5 GHz stage and at the end. The damped warm-up brings the outline close to the target. With contrast fixed at 4, the real-only fit centres the kite but leaves it much too large.](figures/final_comparison/contrast_4_kite_controls.png)
-
-*The kite started 30 mm off centre. The damped 0.25 GHz warm-up reduced that to 0.4 mm. Without a warm-up, the first 0.5 GHz fit moved the centre to 73.8 mm from the target when estimating contrast. Fixing contrast at 4 brought it within 2.1 mm, but the fitted area remained too large.*
-
-On real data at contrast 4, supplying the true contrast recovered 2/10 shapes, compared with 7/10 when estimating it. Restoring the damped warm-up and damped early stages recovered 10/10 while still estimating contrast. The starting contrast also came from damped data in that run, so the warm-up’s individual contribution remains open. [Run settings and scores](evaluate_our_method/02_run_ablations/results.md)
-
-**Early stage limits.** Eight of the 16 early stages on the four shapes in the video hit the 22-step limit. Raising it to 220 let all 16 run until they found no decreasing step. The same three shapes missed. Aphex Twin's fourth stage was still improving at step 22. Replaying it from the same outline to step 47 moved area error only from 196.85% to 196.63%. [Stage-by-stage results](evaluate_our_method/04_check_stage_stops_and_shape_bands/results.md) · [Aphex Twin replay](evaluate_our_method/05_extend_aphex_fourth_stage/results.md)
-
-![C-shape with the original and wider shape updates. The original fit fills in the opening. The wider fit traces the opening by the third stage.](evaluate_our_method/04_check_stage_stops_and_shape_bands/figures/c_shape_update_bands.png)
-
-*Adding two shape-update modes per early stage let BEM trace the opening of the C-shape. Its final area error fell from 43.78% to 0.07% at the same 22-step cap. Both runs stored the same number of curve coefficients.*
-
-Wider updates also improved cog from 2.00% to 0.04%. Kite and Aphex Twin still missed. By stage three, kite had 494% area error with both changes and 279% with wider updates alone. [Four-case comparison](evaluate_our_method/04_check_stage_stops_and_shape_bands/results.md)
-
-**Stage-by-stage trace.** C-shape's opening closed in the first stage. The original update band covered 99.5% of it there and the wider band 1.8%. Later stages moved towards the truth but each stopped after a small gain. Kite went wrong in its second stage under all four settings and Aphex Twin was far off from the start, both with a contrast estimate near 2. Neither limit explains those two misses. [Trace per shape](investigate_bem_stage_scheduling/01_trace_stage_stops_and_shape_bands/results.md)
-
-<details>
-<summary>Area error and estimated contrast for each fit</summary>
-
-Each cell gives area error / estimated contrast and links to the saved score.
-
-| Shape | True contrast 0.5 | True contrast 4 | True contrast 13.3 |
-|---|---:|---:|---:|
-| Circle | [&lt;0.01% / 0.5](../../results/bem/default_clean_uc_fc/circle__c0.5/score.json) | [&lt;0.01% / 4](../../results/bem/default_clean_uc_fc/circle__c4/score.json) | [231.38% / 1.615](../../results/bem/default_clean_uc_fc/circle__c13.3/score.json) |
-| Kite | [0.07% / 0.5](../../results/bem/default_clean_uc_fc/kite__c0.5/score.json) | [467.38% / 1.871](../../results/bem/default_clean_uc_fc/kite__c4/score.json) | [306.74% / 0.005634](../../results/bem/default_clean_uc_fc/kite__c13.3/score.json) |
-| Peanut | [0.01% / 0.5](../../results/bem/default_clean_uc_fc/peanut__c0.5/score.json) | [0.01% / 4](../../results/bem/default_clean_uc_fc/peanut__c4/score.json) | [161.07% / 0.0002251](../../results/bem/default_clean_uc_fc/peanut__c13.3/score.json) |
-| Star | [0.09% / 0.5](../../results/bem/default_clean_uc_fc/star__c0.5/score.json) | [0.02% / 4](../../results/bem/default_clean_uc_fc/star__c4/score.json) | [58.79% / 1.938](../../results/bem/default_clean_uc_fc/star__c13.3/score.json) |
-| Asymmetric | [0.04% / 0.5](../../results/bem/default_clean_uc_fc/asymmetric__c0.5/score.json) | [0.02% / 4](../../results/bem/default_clean_uc_fc/asymmetric__c4/score.json) | [186.30% / 0.3399](../../results/bem/default_clean_uc_fc/asymmetric__c13.3/score.json) |
-| C-shape | [0.01% / 0.5](../../results/bem/default_clean_uc_fc/c_shape__c0.5/score.json) | [43.78% / 3.913](../../results/bem/default_clean_uc_fc/c_shape__c4/score.json) | [85.96% / 8.721](../../results/bem/default_clean_uc_fc/c_shape__c13.3/score.json) |
-| Hook | [0.02% / 0.5](../../results/bem/default_clean_uc_fc/hook__c0.5/score.json) | [0.04% / 4](../../results/bem/default_clean_uc_fc/hook__c4/score.json) | [171.76% / 0.001538](../../results/bem/default_clean_uc_fc/hook__c13.3/score.json) |
-| Cross | [0.01% / 0.5](../../results/bem/default_clean_uc_fc/cross__c0.5/score.json) | [0.01% / 4](../../results/bem/default_clean_uc_fc/cross__c4/score.json) | [128.08% / 0.2057](../../results/bem/default_clean_uc_fc/cross__c13.3/score.json) |
-| Cog | [17.11% / 0.5115](../../results/bem/default_clean_uc_fc/cog__c0.5/score.json) | [2.00% / 4.002](../../results/bem/default_clean_uc_fc/cog__c4/score.json) | [72.89% / 0.3849](../../results/bem/default_clean_uc_fc/cog__c13.3/score.json) |
-| Aphex Twin | [0.94% / 0.4999](../../results/bem/default_clean_uc_fc/aphex_twin__c0.5/score.json) | [196.85% / 2.067](../../results/bem/default_clean_uc_fc/aphex_twin__c4/score.json) | [567.95% / 2.231](../../results/bem/default_clean_uc_fc/aphex_twin__c13.3/score.json) |
-
-</details>
-
-## Conclusions and limits
-
-**At contrast 13.3, the 17 November real-only BEM run recovered 0/10.** It estimated the starting contrast at 0.25 GHz, then fitted the shape at 0.5 GHz, adding 0.75, 1 and 1.25 GHz in turn. All ten clean fits reached the stage using all 19 real frequencies from 0.25 to 2.5 GHz in 0.125 GHz steps. There was no damped warm-up. [Run settings](../../results/bem/default_clean_uc_fc/run.json) · [Case scores](../../results/metrics.csv)
-
-The 4 October BEM run recovered **26/30 overall, including 8/10 at 13.3**, with contrast supplied. It used the same frequency band, a damped 0.25 GHz warm-up and damped early stages before switching to real data. The earlier runs used boundary and field checks. A later set of damped fits that estimated contrast also met those checks on 26/30 overall, including 7/10 at 13.3. The 17 November damped comparison covered only contrasts 0.5 and 4, so it cannot isolate the cause of the drop at 13.3. [October results](../../../Neural_SDF_BEM_AD/results/validation/cleaned_interfaces/PC-001/README.md) · [October schedule](../../../Neural_SDF_BEM_AD/results/validation/cleaned_interfaces/PC-001/M1/runs/circle__c13.3/plan.md) · [Later case scores](../../../Neural_SDF_BEM_AD/docs/iterations/gaugal_comparison/iteration_01/comparison.csv) · [November comparison](evaluate_our_method/02_run_ablations/results.md)
-
-With 1% noise, the 17 November BEM run still recovered 0/10 at contrast 13.3. At contrasts 0.5 and 4, it recovered 16, 17 and 17 of the same 20 cases across three draws. GauGal recovered 0/20 on the first draw with untuned settings. Only BEM used the noise level to decide when to stop. [BEM results](evaluate_our_method/01_measure_clean_and_noisy_recovery/results.md) · [GauGal settings](evaluate_our_method/03_record_untuned_gaugal_reference/results.md)
-
-**The simulations suit BEM’s assumptions.** Each object has one boundary and one material value. BEM fits both directly. CSI estimates an image, scored at half its peak. BEM recovered 9/10 shapes at five frequencies and estimated contrast within 0.14% of 4. CSI ran circle, kite and peanut only at eight frequencies, so the paired mean covers seven shapes. [Five-frequency results and separate eight-frequency scores](coordinate_final_comparison.md#table-c-simulated-shapes-the-numbers-18-november-0750-utc)
-
-![Seven simulated outlines with BEM, MF-CC-CSI and the true boundary overlaid. CSI misses parts of the cross, C-shape and hook.](figures/final_comparison/simulated_boundaries.png)
-
-*Figure 4. Area errors under each shape name are BEM first, then MF-CC-CSI. The dashed line is the true boundary. All panels use the same scale.*
-
-**On measured data, the default BEM outline pinched until every proposed move crossed it.** Fitting the circle as frequencies were added, then allowing shape changes using all eight frequencies, gave a radius of **15.28 mm** and relative permittivity **3.05**. The nominal values are 15 mm and 3 ± 0.3. Area error was **36.59%** at the nominal position and **3.72%** when the reference disk was placed at the centre estimated from the data. The CSI scores use the nominal position. [Cylinder comparison](adapt_bem_to_baseline_data/11_test_measured_cylinder_schedule/results.md) · [Reference geometry](csi_adaptation/03_prepare_simulated_tg002_cases/frame.md)
-
-![Five measured-cylinder reconstructions against the same nominal disk. BEM area error falls from 67.85% to 36.59% with circle fitting across frequencies. CSI errors range from 34.22% to 38.47%.](figures/final_comparison/measured_cylinder.png)
-
-*Figure 5. Each solid outline is scored against the same dashed nominal circle. The 3.72% BEM score quoted above uses a reference disk moved to the centre estimated from the data.*
-
-**Timing depends on hardware and load.** On the seven shared simulations, BEM took 47–247 seconds per fit on a GPU. MF-CC-CSI took 3,655–5,051 seconds on CPU threads, often with several fits running at once. These times describe this setup. [Run conditions](csi_adaptation/07_run_seven_cases_at_five_frequencies/results.md)
+For this cylinder, BEM fitted position, size and material as frequencies were added, then allowed finer shape changes. It estimated a radius of **15.28 mm** and relative permittivity **3.05** (nominal **3 ± 0.3**). This cylinder-specific schedule gave **36.59%** nominal error. The original BEM schedule gave **67.85%**. [Measured BEM comparison](adapt_bem_to_baseline_data/11_test_measured_cylinder_schedule/results.md)
