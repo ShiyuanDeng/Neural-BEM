@@ -115,6 +115,7 @@ shared metrics.csv at completion, so the per-case JSON files are canonical.
 | cross__c4 | 2.2969 | 0.02191643 | 0.06600618 | 630.151 | 6000 | iteration_limit | 0.2 | 0 | 80c80e9f7c371abbf9e1a1a0b4da5629c81398dd |
 | cog__c4 | 2.7969 | 0.0573101 | 0.07640187 | 630.201 | 6000 | iteration_limit | 0.2 | 0 | 80c80e9f7c371abbf9e1a1a0b4da5629c81398dd |
 | aphex_twin__c4 | 10.3182 | 0.03018323 | 0.05435177 | 630.264 | 6000 | iteration_limit | 0.2 | 0 | 30b35c8df9b272aa131c068d74558683d6da0893 |
+| circle__c0.5 | 4.6954 | 0.0009574062 | 0.02123799 | 400.504 | 5012 | restart_limit | 0.0125 | 4 | de5422c0d2b7119297fd83bf711e985c9e28e28f |
 | kite__c0.5 | 7.5754 | 0.0001649472 | 0.009103572 | 630.357 | 6000 | iteration_limit | 0.2 | 0 | 3f253b79379925089204e4d317a57a4ec62200db |
 | peanut__c0.5 | 5.4092 | 0.0002434953 | 0.01147618 | 631.557 | 6006 | iteration_limit | 0.1 | 1 | c20b5dfeb9d37959ae80d1eb52bede56ceb9e69a |
 | star__c0.5 | 8.0832 | 0.0002420903 | 0.007803367 | 625.495 | 5908 | iteration_limit | 0.2 | 0 | 48d100c6432ba6daaf8c163b73955261d3549498 |
@@ -123,6 +124,7 @@ shared metrics.csv at completion, so the per-case JSON files are canonical.
 | hook__c0.5 | 15.7241 | 9.369616e-05 | 0.006075481 | 630.029 | 6000 | iteration_limit | 0.2 | 0 | 435449a42f907a5d5f14fca9c33984d6823acf01 |
 | cross__c0.5 | 7.6708 | 0.000261668 | 0.009299555 | 630.033 | 6000 | iteration_limit | 0.2 | 0 | 435449a42f907a5d5f14fca9c33984d6823acf01 |
 | cog__c0.5 | 4.6665 | 0.0003090357 | 0.01454004 | 630.282 | 6000 | iteration_limit | 0.2 | 0 | 70eaecf1ea2ca0808316f8b4ac9d949a5933a61f |
+| aphex_twin__c0.5 | 17.0111 | 0.0004291036 | 0.01548247 | 630.069 | 6000 | iteration_limit | 0.2 | 0 | 70eaecf1ea2ca0808316f8b4ac9d949a5933a61f |
 
 Circle ran under sharing. Peanut began about 26 seconds before the dedicated
 allocation; star and subsequent cases started fully under that allocation.
@@ -200,7 +202,7 @@ Its first-case forecast is 48.63 minutes total and 43.77 minutes remaining;
 first_case_forecast.json records the numbers and GPU-sharing context.
 
 Activity: evaluate_our_method/06_make_gaugal_fits_converge, 2026-11-19
-Runs: 2/4 probes and 2/10 simultaneous cases completed (paused); 17/19 continuation cases saved
+Runs: 2/4 probes and 2/10 simultaneous cases completed (paused); 19/19 continuation cases saved
 Result: exact step 0.2: mismatch 19→10.1109053; 1.13543 s/iter; inner 7.48e-7
 Result: exact step 1.0: mismatch 19→10.0824825; 1.13678 s/iter; inner 1.08e-6
 Failures: old-code continuation circle__c0.5 diverged; preserved for the approved safeguarded retry
