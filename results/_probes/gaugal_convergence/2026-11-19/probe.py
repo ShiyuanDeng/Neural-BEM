@@ -562,6 +562,131 @@ def publish_continuation():
         raise
 
 
+def run_tv_warm_start():
+    """Activity 07: one fixed detached runner, CPU reports, two-case commits."""
+    import numpy as np
+    destination=ROOT/'results/gaugal/converged_clean_uc_fc'
+    archive=BASE/'continuation_before_tv_warm_start'
+    activity=ROOT/'docs/iterations/evaluate_our_method/07_refit_gaugal_with_tv_warm_start'
+    report=activity/'run_report.md'
+    state_path=destination/'tv_warm_start_state.json'
+    if state_path.exists(): raise RuntimeError('Activity 07 already launched; no silent rerun')
+    shapes=['circle','kite','peanut','star','asymmetric','c_shape','hook','cross','cog','aphex_twin']
+    cases=[shape+'__'+contrast for contrast in ('c0.5','c4') for shape in shapes]
+    assert all((archive/c/'fit.json').exists() and not (destination/c).exists() for c in cases)
+    subprocess.run(['git','merge-base','--is-ancestor','94c39f4c0','HEAD'],cwd=ROOT,check=True)
+    available=mem_available();gpu=subprocess.check_output(['nvidia-smi'],text=True)
+    if available<14*1024**3: raise RuntimeError('14 GiB memory floor before TV warm-start launch')
+    command=[sys.executable,'-u','-m','experiments.comparison','run','gaugal/converged_clean_uc_fc','--cases',*cases]
+    state=dict(state='launching',utc=now(),cases=cases,command=command,available_bytes=available,gpu=gpu,
+        fixed_numerical_commit='94c39f4c0',source_at_launch=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
+        monitor_pid=os.getpid(),paused_pids=[1895339,1895343,1903073,2035661,1899688,1899680],published=[])
+    write(destination/'tv_warm_start_launch.json',state)
+    def git(args):
+        for attempt in range(10):
+            result=subprocess.run(['git',*args],cwd=ROOT,text=True,capture_output=True)
+            with (destination/'tv_warm_start_publish.log').open('a') as log:
+                log.write(now()+' '+repr(args)+'\n'+result.stdout+result.stderr)
+            if result.returncode==0: return result.stdout.strip()
+            if 'index.lock' not in result.stderr: raise RuntimeError(result.stdout+result.stderr)
+            time.sleep(2)
+        raise RuntimeError(result.stderr)
+    def update_report(rows,terminal):
+        valid=[r for r in rows if r['outcome'] not in ('FAILED','EXCEPTION_PARTIAL')]
+        passed=[r for r in valid if r['area_error']<=.05]
+        text=('# GauGal refit with TV warm start — native-run report\n\n19 November 2026, UTC. Fixed numerical code 94c39f4c0. '
+              'One detached runner; circle c0.5 first, then the other nine c0.5 cases, then ten c4 cases. '
+              'Settings follow plan.md unchanged; there is no time stop.\n\n'
+              'The first run is preserved whole under '
+              '[continuation_before_tv_warm_start](../../../../results/_probes/gaugal_convergence/2026-11-19/continuation_before_tv_warm_start/). '
+              'Its circle c0.5 area value is the separately scored saved image of a FAILED fit. '
+              'Truth scores do not select steps or restarts.\n\n'
+              '| Case | Area error % | First run area % | Worst frequency residual | Final step | Restarts | Plateau stages | Outcome | Seconds | Start commit |\n'
+              '|---|---:|---:|---:|---:|---:|---:|---|---:|---|\n')
+        for r in rows:
+            text+=f"| {r['case']} | {100*r['area_error']:.4f} | {100*r['first_area_error']:.4f} | {r['worst_frequency_residual']:.7g} | {r['final_step_size']:g} | {r['restarts']} | {r['plateau_stages']} | {r['outcome']} | {r['seconds']:.3f} | {r['code_at_start']} |\n"
+        text+=('\nPlateau stages count saved stage stop reasons containing plateau. '
+               'STOPPED_EARLY/iteration_limit means the configured cap was reached, not outer convergence. '
+               'Failed saved images are scored diagnostically and excluded from successful-fit counts. '
+               'Worst frequency residual is an endpoint data residual; inner residuals are checked separately.\n\n'
+               'Lower-value probes and simultaneous-frequency fits were paused by the coordinator: '
+               'five PIDs at 19:23:14 UTC, star child 2035661 at 19:23:23 UTC. '
+               'They remain paused until the coordinator resumes them. '
+               'No prior activity pause is subtracted from raw case times.\n\n')
+        wall=time.monotonic()-started
+        text+=f"```text\nActivity: evaluate_our_method/07_refit_gaugal_with_tv_warm_start, 2026-11-19\nRuns: {len(valid)}/20 nonfailed, {len(rows)-len(valid)} failed, {20-len(rows)} pending; wall time {int(wall//3600)}:{int(wall%3600//60):02d}:{int(wall%60):02d}\nResult: {len(passed)}/20 planned cases have area <=5%; per-case results above\nFailures: "+(', '.join(r['case']+': '+str(r['stop_reason']) for r in rows if r not in valid) or 'none saved')+f"\nUpstream patches: none by native-run\nChanges to our code: none by native-run; scratch reporting helpers only\nNew unknowns: "+('none for this fixed clean pass' if terminal else 'remaining clean case results')+"\nProposed next activity: review with coordinator; needs user decision: none\n```\n"
+        report.write_text(text)
+    def publish(selected,rows,terminal=False):
+        paths=[];forced=[]
+        for case in selected:
+            folder=destination/case;fit=read(folder/'fit.json');all_stats=fit.get('linear_solves') or []
+            stats=[v for v in all_stats if 'rejected_attempt' not in v]
+            checks=dict(accepted_solve_groups=len(stats),rejected_solve_groups=len(all_stats)-len(stats),
+                worst_inner_relative=max((v['max_final_relative'] for v in stats),default=None),
+                unconverged=sum(v['unconverged'] for v in stats),outcome=fit['outcome'])
+            with np.load(folder/'fit.npz') as arrays:
+                checks.update(finite_image=bool(np.isfinite(arrays['image']).all()),predictions_shape=list(arrays['predicted'].shape),
+                    finite_predictions=bool(np.isfinite(arrays['predicted']).all()),
+                    accepted_inner_arrays_valid=all(np.isfinite(arrays[k]).all() and float(arrays[k].max())<=1e-4
+                        for k in arrays.files if k.endswith('_relative_residual') and '_rejected_' not in k))
+            checks['passed']=bool(checks['finite_image'] and checks['finite_predictions'] and checks['predictions_shape']==[19,24]
+                and checks['accepted_inner_arrays_valid'] and stats and checks['worst_inner_relative']<=1e-4 and checks['unconverged']==0)
+            write(folder/'output_checks.json',checks)
+            write(folder/'manifest.json',{p.name:dict(bytes=p.stat().st_size,sha256=hashlib.sha256(p.read_bytes()).hexdigest())
+                for p in folder.iterdir() if p.is_file() and p.name!='manifest.json'})
+            paths.append(str(folder.relative_to(ROOT)));forced.append(str((folder/'fit.npz').relative_to(ROOT)))
+        update_report(rows,terminal)
+        paths += [str(report.relative_to(ROOT)),str(Path(__file__).resolve().relative_to(ROOT)),str((activity/'plan.md').relative_to(ROOT)),
+                  str((destination/'tv_warm_start_launch.json').relative_to(ROOT)),str((destination/'tv_warm_start_table.json').relative_to(ROOT))]
+        if terminal:
+            paths += [str((destination/name).relative_to(ROOT)) for name in ('tv_warm_start_state.json','tv_warm_start_runner.log')]
+        lock=(BASE/'publisher.lock').open('a');fcntl.flock(lock,fcntl.LOCK_EX)
+        try:
+            git(['add','--',*paths])
+            if forced: git(['add','-f','--',*forced])
+            git(['diff','--cached','--check','--',*paths])
+            git(['commit','-m','Record GauGal TV warm-start '+('final report' if terminal else 'batch: '+', '.join(selected)),'--',*paths])
+            git(['push']);commit=git(['rev-parse','HEAD'])
+            print('Shared post-push status:\n'+git(['status','--short']),flush=True)
+        finally:
+            fcntl.flock(lock,fcntl.LOCK_UN);lock.close()
+        state['published'].extend(selected);state['last_publish_commit']=commit;write(state_path,state)
+        notify('TV warm-start results pushed in '+commit[:9]+': '+(', '.join(selected) if selected else 'final report')+'.')
+    started=time.monotonic();sent=set()
+    with (destination/'tv_warm_start_runner.log').open('x') as log:
+        process=subprocess.Popen(command,cwd=ROOT,stdout=log,stderr=subprocess.STDOUT,start_new_session=True)
+        state.update(state='running',started_utc=now(),runner_pid=process.pid);write(state_path,state)
+        update_report([],False)
+        notify(f"Activity 07 launched {state['started_utc']}: runner {process.pid}, monitor {os.getpid()}, one fixed 20-case CLI; circle__c0.5 first. Whole first-run folders archived and pushed; six lower-value jobs remain paused.")
+        while True:
+            rows=[]
+            for case in cases:
+                folder=destination/case
+                if not (folder/'fit.json').exists() or not (folder/'score.json').exists(): continue
+                row=continuation_row(folder);fit=read(folder/'fit.json')
+                row.update(first_area_error=read(archive/case/'score.json')['area_error'],
+                    plateau_stages=sum('plateau' in str(stage.get('stop_reason','')) for stage in fit.get('stages') or []))
+                rows.append(row)
+                if case not in sent:
+                    notify(f"TV warm-start {case}: area {100*row['area_error']:.3f}% (first {100*row['first_area_error']:.3f}%), worst frequency residual {row['worst_frequency_residual']:.6g}; step {row['final_step_size']}, restarts {row['restarts']}, plateau stages {row['plateau_stages']}/6; {row['outcome']}, {row['seconds']:.1f} s; code {row['code_at_start'][:9]}.")
+                    sent.add(case)
+            write(destination/'tv_warm_start_table.json',rows)
+            state.update(utc=now(),saved=[r['case'] for r in rows],available_bytes=mem_available(),wall_seconds=time.monotonic()-started)
+            write(state_path,state)
+            ready=[r['case'] for r in rows if r['case'] not in state['published']]
+            if len(ready)>=2: publish(ready[:2],rows)
+            rc=process.poll()
+            if rc is not None:
+                # Rescan if the CLI wrote its last score between this scan and exit.
+                if {r['case'] for r in rows}!={c for c in cases if (destination/c/'score.json').exists()}: continue
+                state.update(state='completed' if rc==0 else 'failed',returncode=rc,finished_utc=now());write(state_path,state)
+                ready=[r['case'] for r in rows if r['case'] not in state['published']]
+                publish(ready,rows,True)
+                notify(f"Activity 07 ended: {len(rows)}/20 saved; {sum(r['outcome'] not in ('FAILED','EXCEPTION_PARTIAL') for r in rows)} nonfailed. Report pushed; lower-value jobs remain paused for coordinator.")
+                return
+            time.sleep(3)
+
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--worker',action='store_true')
@@ -572,6 +697,7 @@ def main():
     parser.add_argument('--run-continuation',action='store_true')
     parser.add_argument('--publish-continuation',action='store_true')
     parser.add_argument('--attach-continuation',action='store_true')
+    parser.add_argument('--run-tv-warm-start',action='store_true')
     parser.add_argument('--collect-step1',action='store_true')
     parser.add_argument('--label');parser.add_argument('--case')
     parser.add_argument('--cap',type=int);parser.add_argument('--step',type=float)
@@ -595,6 +721,8 @@ def main():
         return run_low_contrast()
     if args.run_continuation:
         return run_continuation()
+    if args.run_tv_warm_start:
+        return run_tv_warm_start()
     if args.attach_continuation:
         return attach_continuation()
     if args.publish_continuation:

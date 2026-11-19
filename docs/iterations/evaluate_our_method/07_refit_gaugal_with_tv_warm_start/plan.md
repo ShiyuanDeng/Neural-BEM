@@ -73,3 +73,22 @@ $PY -m experiments.comparison run gaugal/converged_clean_uc_fc --cases circle__c
 
 `native-adapter` writes the fix. `native-run` moves the first run, launches
 the refit detached and reports one line per case.
+
+## Native-run launch details
+
+Coordinator go: code 94c39f4c0. The one scratch controller is the existing
+`results/_probes/gaugal_convergence/2026-11-19/probe.py`, mode
+`--run-tv-warm-start`. It starts one detached CLI, reports each saved case,
+and commits/pushes every two cases by exact path. It never changes settings
+or reruns a failed case. Preflight requires 14 GiB MemAvailable and records
+nvidia-smi. The six lower-value jobs remain paused; no automatic resume.
+
+Exact order: circle__c0.5, kite__c0.5, peanut__c0.5, star__c0.5,
+asymmetric__c0.5, c_shape__c0.5, hook__c0.5, cross__c0.5, cog__c0.5,
+aphex_twin__c0.5, circle__c4, kite__c4, peanut__c4, star__c4, asymmetric__c4,
+c_shape__c4, hook__c4, cross__c4, cog__c4, aphex_twin__c4.
+
+Native-run writes `run_report.md` in this activity, as the coordinator
+requested. Launch/state/log/table files have the `tv_warm_start_` prefix
+under `results/gaugal/converged_clean_uc_fc/`. Small fit.npz arrays are
+force-added; checkpoints stay whole locally with SHA-256 manifests.
