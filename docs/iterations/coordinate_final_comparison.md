@@ -627,6 +627,14 @@ reported. BEM numbers are read from
   as in protocol version 1.
 - **Results so far:** 0/20 on 1% noise draw 0, and 0/30 on the imported clean
   fits.
+- **Cause and fix, 19 November:** the 0/20 is a search trap from fitting all
+  frequencies at once, not the early stop. Run `gaugal/tvwarm_clean_uc_fc`
+  adds exact inner solves and six low-to-high frequency stages, with the
+  lattice, width and TV weight unchanged. It recovers 10/20 clean cases:
+  9/10 at contrast 4 and 1/10 at contrast 0.5. About 614 s per case.
+  [Diagnosis](evaluate_our_method/06_make_gaugal_fits_converge/results.md) ·
+  [final count](evaluate_our_method/07_refit_gaugal_with_tv_warm_start/results.md).
+  Not run: noisy data, contrast 13.3, a finer lattice.
 - **Timing:** about 1 s per case on its native cylinder cases at 0.4 GHz;
   median 328 s on TG-002.
 - **Assumptions:** these are reference results, chosen on clean circles and
@@ -634,7 +642,8 @@ reported. BEM numbers are read from
 - **Unknowns:**
   - Its role in Stage 2 (U1).
   - Whether its adapter can take plane waves or Fresnel line-source tables.
-  - Why TG-002 takes so much longer than its native cases.
+  - Answered 19 November: TG-002 was slow because 69–92% of the inner
+    solves hit their iteration cap.
 
 ### BRG (Borges–Rachh–Greengard)
 

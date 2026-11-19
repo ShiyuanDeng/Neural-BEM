@@ -11,6 +11,10 @@ Plans and results for 17 November 2026:
   ([results](../../docs/iterations/evaluate_our_method/02_run_ablations/results.md)).
 - [Untuned GauGal reference](../../docs/iterations/evaluate_our_method/03_record_untuned_gaugal_reference/plan.md)
   ([results](../../docs/iterations/evaluate_our_method/03_record_untuned_gaugal_reference/results.md)).
+- [Why GauGal got 0/20, and frequency continuation](../../docs/iterations/evaluate_our_method/06_make_gaugal_fits_converge/plan.md)
+  ([results](../../docs/iterations/evaluate_our_method/06_make_gaugal_fits_converge/results.md)), 19 November 2026.
+- [GauGal refit with the TV warm start](../../docs/iterations/evaluate_our_method/07_refit_gaugal_with_tv_warm_start/plan.md)
+  ([results](../../docs/iterations/evaluate_our_method/07_refit_gaugal_with_tv_warm_start/results.md)), 19 November 2026.
 
 Scoring rules: the docstring of [scoring.py](scoring.py). Noise rule: [noise.py](noise.py).
 
@@ -45,6 +49,11 @@ $PY -m experiments.comparison run bem/default_clean_uc_sf1.5
 $PY -m experiments.comparison run bem/default_clean_uc_sf2
 $PY -m experiments.comparison import-gaugal-2026-11-02          # saved clean GauGal fits, no refit
 $PY -m experiments.comparison run gaugal/default_n1d0_uc_fs      # run 9, last, about 2 hours
+
+# Added 19 November 2026: GauGal with exact inner solves (see the two plans below)
+$PY -m experiments.comparison run gaugal/converged_clean_uc_fs   # all frequencies at once, to a plateau
+$PY -m experiments.comparison run gaugal/converged_clean_uc_fc   # six frequency stages, first run
+$PY -m experiments.comparison run gaugal/tvwarm_clean_uc_fc      # six stages, TV warm start: 10/20, about 3.5 hours
 ```
 
 - Each `run` picks its planned cases, skips fits already saved, scores each fit and rebuilds
@@ -70,7 +79,7 @@ $PY -m experiments.comparison run gaugal/default_n1d0_uc_fs      # run 9, last, 
 | [runs.py](runs.py) | Run names, the planned run table, the storage layout |
 | [noise.py](noise.py) | The noise rule and the saved noisy data |
 | [bem.py](bem.py) | Our method: one fit, no truth files opened |
-| [gaugal.py](gaugal.py) | GauGal with the saved 2 November 2026 run setting, untuned |
+| [gaugal.py](gaugal.py) | GauGal: `default` is the saved 2 November 2026 setting, untuned; `converged` and `tvwarm` add exact solves and frequency stages |
 | [scoring.py](scoring.py) | Every truth-based score; the only reader of truth files |
 | [forward_check.py](forward_check.py) | Run 10: one sealed field against RegPy's operators |
 | [test_comparison.py](test_comparison.py) | Names, noise rule and scoring on shapes with known answers |
