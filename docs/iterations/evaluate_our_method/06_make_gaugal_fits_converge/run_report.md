@@ -75,10 +75,14 @@ is 14 GiB. All times come from date -u.
 Probe root: results/_probes/gaugal_convergence/2026-11-19/.
 The one scratch script is probe.py. Each fit keeps its state, mismatch log,
 fit record, final arrays and output checks. Completed probe folders have
-SHA-256 manifests. The final campaign table will be added here after the run.
+SHA-256 manifests. The final campaign table will be added here after the run. The first case
+completed at about 14:51 UTC: circle__c0.5, 364 iterations, mismatch_plateau,
+final weighted mismatch 5.8761999, area error 76.2861%, case time 291.806 s.
+Its first-case forecast is 48.63 minutes total and 43.77 minutes remaining;
+first_case_forecast.json records the numbers and GPU-sharing context.
 
 Activity: evaluate_our_method/06_make_gaugal_fits_converge, 2026-11-19
-Runs: 2/4 probes completed; 0/10 campaign cases completed; wall time pending
+Runs: 2/4 probes completed; 1/10 campaign cases completed; wall time pending
 Result: exact step 0.2: mismatch 19→10.1109053; 1.13543 s/iter; inner 7.48e-7
 Result: exact step 1.0: mismatch 19→10.0824825; 1.13678 s/iter; inner 1.08e-6
 Failures: none recorded; Step 1 still running; Step 2 skipped by instruction
