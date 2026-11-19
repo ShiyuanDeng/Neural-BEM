@@ -104,17 +104,19 @@ shared metrics.csv at completion, so the per-case JSON files are canonical.
 
 ### Continuation results so far
 
-| Case | Area error % | Final mismatch | Worst frequency residual | Seconds | Iterations | Stop |
-|---|---:|---:|---:|---:|---:|---|
-| circle__c4 | 2.3553 | 0.05059675 | 0.09237818 | 2146.573 | 6000 | iteration_limit |
-| peanut__c4 | 1.6270 | 0.02408453 | 0.05819941 | 648.559 | 6000 | iteration_limit |
-| star__c4 | 2.0065 | 0.04438225 | 0.07888992 | 630.612 | 6000 | iteration_limit |
-| asymmetric__c4 | 1.6539 | 0.03868516 | 0.06207142 | 630.356 | 6000 | iteration_limit |
-| c_shape__c4 | 3.0388 | 0.05541937 | 0.0808622 | 630.413 | 6000 | iteration_limit |
-| hook__c4 | 2.5535 | 0.06809981 | 0.1052707 | 630.270 | 6000 | iteration_limit |
-| cross__c4 | 2.2969 | 0.02191643 | 0.06600618 | 630.151 | 6000 | iteration_limit |
-| cog__c4 | 2.7969 | 0.0573101 | 0.07640187 | 630.201 | 6000 | iteration_limit |
-| aphex_twin__c4 | 10.3182 | 0.03018323 | 0.05435177 | 630.264 | 6000 | iteration_limit |
+| Case | Area error % | Final mismatch | Worst frequency residual | Seconds | Iterations | Stop | Final step | Restarts | Start commit |
+|---|---:|---:|---:|---:|---:|---|---:|---:|---|
+| circle__c4 | 2.3553 | 0.05059675 | 0.09237818 | 2146.573 | 6000 | iteration_limit | 0.2 | 0 | effe8c70fbd280f6668dce610c6368dfc73a8a4c |
+| peanut__c4 | 1.6270 | 0.02408453 | 0.05819941 | 648.559 | 6000 | iteration_limit | 0.2 | 0 | 31c1fe1bbc6e47a3f4e6f9124d122467d0a92a52 |
+| star__c4 | 2.0065 | 0.04438225 | 0.07888992 | 630.612 | 6000 | iteration_limit | 0.2 | 0 | 7771dcbe86f6274bc15fe81114f9150d69549164 |
+| asymmetric__c4 | 1.6539 | 0.03868516 | 0.06207142 | 630.356 | 6000 | iteration_limit | 0.2 | 0 | 7771dcbe86f6274bc15fe81114f9150d69549164 |
+| c_shape__c4 | 3.0388 | 0.05541937 | 0.0808622 | 630.413 | 6000 | iteration_limit | 0.2 | 0 | 9ec4a62d9fdb2b76c4f3b759c2a6ec770fcf3303 |
+| hook__c4 | 2.5535 | 0.06809981 | 0.1052707 | 630.270 | 6000 | iteration_limit | 0.2 | 0 | 9ec4a62d9fdb2b76c4f3b759c2a6ec770fcf3303 |
+| cross__c4 | 2.2969 | 0.02191643 | 0.06600618 | 630.151 | 6000 | iteration_limit | 0.2 | 0 | 80c80e9f7c371abbf9e1a1a0b4da5629c81398dd |
+| cog__c4 | 2.7969 | 0.0573101 | 0.07640187 | 630.201 | 6000 | iteration_limit | 0.2 | 0 | 80c80e9f7c371abbf9e1a1a0b4da5629c81398dd |
+| aphex_twin__c4 | 10.3182 | 0.03018323 | 0.05435177 | 630.264 | 6000 | iteration_limit | 0.2 | 0 | 30b35c8df9b272aa131c068d74558683d6da0893 |
+| kite__c0.5 | 7.5754 | 0.0001649472 | 0.009103572 | 630.357 | 6000 | iteration_limit | 0.2 | 0 | 3f253b79379925089204e4d317a57a4ec62200db |
+| peanut__c0.5 | 5.4092 | 0.0002434953 | 0.01147618 | 631.557 | 6006 | iteration_limit | 0.1 | 1 | c20b5dfeb9d37959ae80d1eb52bede56ceb9e69a |
 
 Circle ran under sharing. Peanut began about 26 seconds before the dedicated
 allocation; star and subsequent cases started fully under that allocation.
@@ -192,7 +194,7 @@ Its first-case forecast is 48.63 minutes total and 43.77 minutes remaining;
 first_case_forecast.json records the numbers and GPU-sharing context.
 
 Activity: evaluate_our_method/06_make_gaugal_fits_converge, 2026-11-19
-Runs: 2/4 probes and 2/10 simultaneous cases completed (paused); 9/19 continuation cases saved
+Runs: 2/4 probes and 2/10 simultaneous cases completed (paused); 11/19 continuation cases saved
 Result: exact step 0.2: mismatch 19→10.1109053; 1.13543 s/iter; inner 7.48e-7
 Result: exact step 1.0: mismatch 19→10.0824825; 1.13678 s/iter; inner 1.08e-6
 Failures: old-code continuation circle__c0.5 diverged; preserved for the approved safeguarded retry
