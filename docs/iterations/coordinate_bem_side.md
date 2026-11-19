@@ -72,10 +72,52 @@ relaunch a batch whose state file exists.
 
 | Batch | Started (UTC) | What | State file |
 |---|---|---|---|
-| TG batch 01 | 02:28 | Warm-up on the 13 remaining misses, then `longer_stage asymmetric__c13.3`, `longer_wall c_shape__c13.3` | `results/bem/stage_scheduling/2026-11-19/clean_tg002/logs/batch_01.state` |
+| TG batch 01 | 02:28, done 02:47 | Warm-up on the 13 remaining misses, then `longer_stage asymmetric__c13.3`, `longer_wall c_shape__c13.3` | `results/bem/stage_scheduling/2026-11-19/clean_tg002/logs/batch_01.state` |
+| Batch 02 | 02:47 | Warm-up on the 15 remaining passes (controls), one at a time; then the two measured fits side by side (`warmup` as `attempt_02`, `first_cap`) | `.../logs/batch_02.state` |
+| Batch 03 | queued behind 02 | Round two on the nine contrast-13.3 misses: `two_sided`, `warmup_long`, `two_sided_long`, `warmup_long_wall600` (18 fits) | `.../logs/batch_03.state` |
 
 **Watchers a restart must re-arm:** `herdr agent wait tg-misses`,
-`herdr agent wait cylinder`, and a loop on "BATCH DONE" in the state file.
+`herdr agent wait cylinder`, and a loop on "BATCH DONE" in the newest state
+file. Each batch script waits for the one before it, so none needs a
+relaunch.
+
+**Findings so far (02:50 UTC).** Sources: the two activity folders.
+
+- **Missing warm-up: confirmed for four misses.** The default real-only
+  ladder starts at 0.5 GHz and never fits 0.25 GHz alone. Adding a band-1
+  fit at 0.25 GHz recovers `cog__c0.5` (17.1% to 0.30%), `kite__c4` (467%
+  to 0.10%), `aphex_twin__c4` (197% to 0.22%) and `circle__c13.3` (231% to
+  0.00%). Ten misses remain: `c_shape__c4` and nine at contrast 13.3.
+- **Early stops, TG-002: not shown.** `longer_stage asymmetric__c13.3`
+  187% (was 186%); `longer_wall c_shape__c13.3` 85% (was 86%).
+- **Contrast 13.3 after the warm-up.** Six start on the wrong side of the
+  background (weak estimate 0.485 or clipped at 0.05) and the warm-up drives
+  the contrast to zero. Three start on the right side, but the warm-up ends
+  on its 44-step cap with loss 0.37 to 0.47. Round two tests both.
+- **Measured cylinder: the fit pinched itself.** At the end of ladder stage
+  three the outline has a 41 nm neck; every later trial is a genuine
+  crossing and is refused. The fit used 894 of 13,412 units. Its end point
+  lies on a slope towards the best circle (15.3 mm, 3.05, loss 0.0375),
+  not in a separate minimum.
+- **Measured cylinder: 1 GHz alone does not fix size and material.** Along
+  the 1 GHz valley the loss changes by 3% while the radius changes sixfold.
+  The stopped warm-up run went to permittivity 32.6.
+- **Stored contrast is the relative permittivity** (no added one); the
+  `cylinder` agent corrected my brief on this.
+
+**Coordinator's decisions since launch.**
+
+- 02:35: the TG-002 circle loss maps moved from `tg-misses` to `cylinder`,
+  which had the tool ready. `tg-misses` also made its own slices; the two
+  agree.
+- 02:47: round two written into the activity 02 plan before running. The
+  two-sided start is a diagnostic only; whether a two-branch contrast start
+  fits "one centred start, no grid search" is the user's call.
+- 02:49: `cylinder` writes a second measured driver (band-1 stages on the
+  cumulative ladder before any shape detail). I run it after batch 03 or
+  beside it, since measured fits have no binding wall limit.
+- The Codex supervisor in `w3:p1` showed as working again at 02:47; it has
+  the user's machine-monitoring role. I have not prompted it.
 
 **State, 18 November 2026, 07:51 GMT:** a fresh coordinator took over at
 02:03, after the user restarted the chat ("you have a lot of context so i
