@@ -9,18 +9,20 @@ It is a temporary second file. The user: "i would prefer to use one
 coordination file, but temporarily to avoid the current coordination file
 being too long you can have a new one". Merge it back when the work is done.
 
-**Latest state: 19 November 2026, 13:50 UTC.** The user answered point 1
+**Latest state: 19 November 2026, 14:07 UTC.** The user answered point 1
 of the overnight investigation: the warm-up is now part of the default
-method. A follow-up batch of ten fits runs (batch 10). Read "After the
-user's answer" and then the "Final state" block of
+method. The follow-up test (contrast supplied at 13.3) is done. Nothing
+runs and no watcher is armed. Read "After the user's answer" and then the
+"Final state" block of
 [Failure investigation](#failure-investigation-opened-19-november-0221-utc).
 
 ## Failure investigation (opened 19 November, 02:21 UTC)
 
-**After the user's answer, 19 November, 13:50 UTC.** The user in this
-pane, after the close-out below: "yes default with warm up. also have you
-tested to supply material contrast in the 10 c13.3 cases". Activity:
-[adopt the warm-up, supply the contrast](investigate_bem_stage_scheduling/04_adopt_warmup_and_supply_contrast/plan.md).
+**After the user's answer, 19 November, 13:46 to 14:07 UTC.** The user in
+this pane, after the close-out below: "yes default with warm up. also have
+you tested to supply material contrast in the 10 c13.3 cases". Activity:
+[adopt the warm-up, supply the contrast](investigate_bem_stage_scheduling/04_adopt_warmup_and_supply_contrast/results.md)
+([plan](investigate_bem_stage_scheduling/04_adopt_warmup_and_supply_contrast/plan.md)).
 
 - **Default changed** (commit `08200b1ab`): `RealOnlyPolicy` runs one
   band-1 stage on the lowest real frequency before the ladder.
@@ -32,13 +34,19 @@ tested to supply material contrast in the 10 c13.3 cases". Activity:
   saved fits; the user decides (point 2 below). Saved `results/bem/default_*`
   tables are from the old default and stay; re-running them is the user's
   call.
-- **Supplied contrast at 13.3: not tested before.** Saved known-contrast
-  fits cover 0.5 and 4 only (9/10 and 2/10, old default). Batch 10 runs the
-  ten 13.3 cases with the contrast supplied, started 13:47, state file
-  `results/bem/stage_scheduling/2026-11-19/clean_tg002/logs/batch_10.state`.
-  Do not relaunch it. A restart re-arms one watcher: a loop on "BATCH
-  DONE" in that file.
-- Point 1 of the list below is settled. Points 2 to 7 still wait.
+- **Supplied contrast at 13.3: not tested before, tested now.** Saved
+  known-contrast fits cover 0.5 and 4 only (9/10 and 2/10, old default).
+  Batch 10 (13:47 to 14:03, state file `.../logs/batch_10.state`, done):
+  1/10 recovers, the circle, as with recovered contrast; seven of the
+  other nine get worse. With the contrast held, the warm-up finds the
+  right disk for the circle and the star only.
+- **Early stop ruled out there.** Batch 11 (14:04 to 14:05): the six
+  warm-ups that ended on the 44-step cap, run alone with a 440-step cap,
+  end at the same loss and place.
+- **Reading:** at 13.3 the obstacle is the path from the one centred
+  start, not the contrast estimate. Point 3 of the list below stands.
+- Point 1 of the list below is settled. Points 2 to 7 still wait, plus
+  the three coordinator's choices above.
 
 **Final state, 19 November, 06:50 UTC: answered; nothing runs.** Every
 launcher's state file ends in "BATCH DONE", the GPU is free, no watcher is
