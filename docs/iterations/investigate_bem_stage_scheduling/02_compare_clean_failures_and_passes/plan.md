@@ -97,7 +97,7 @@ $P -m experiments.comparison.compare_clean_circle_ladders circle_then_default CA
 $P -m experiments.comparison.compare_clean_circle_ladders circle_then_full CASE
 ```
 
-## Round four: bands capped at the measured frontier, 19 November 2026, 03:20 UTC (coordinator)
+## Round four: bands capped at the measured frontier, 19 November 2026, 03:17 UTC (coordinator)
 
 **Why.** `cylinder` measured the solver's own observable frontier at each stage's frequencies ([note](stage_frontiers.md)). On the small measured cylinder it is 2, 3, 4, 5 on the ladder and 8 on the whole catalog, against default bands 3, 6, 9, 12 and 11 to 37. On the TG-002 contrast-4 truths it is above every ladder band. So the default releases shape detail the measured data cannot see, and not on TG-002. One rule may then serve both: cap each stage's band at the frontier measured when the stage is entered.
 
@@ -117,7 +117,7 @@ $P -m experiments.comparison.compare_clean_frontier_caps frontier_capped CASE
 $P -m experiments.comparison.compare_clean_frontier_caps frontier_measured CASE
 ```
 
-## Disk-start diagnostic, 19 November 2026, 03:20 UTC (coordinator)
+## Disk-start diagnostic, 19 November 2026, 03:17 UTC (coordinator)
 
 `tg-misses` found that a truth-free search over exact disks on the real 0.25 GHz data gives a close start for four of the nine contrast-13.3 misses (kite, star, cross, cog) and a wrong one for five. Approved as a diagnostic on those four: the disk start, then the same warm-up and ladder. The user's default is localization `none` and no grid search, so this tests the cause (the start), not a proposed default. Budget: four fits. Driver: `experiments/comparison/check_localized_real_warmup.py` (the agent's).
 

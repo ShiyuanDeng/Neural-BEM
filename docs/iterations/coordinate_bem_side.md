@@ -74,7 +74,14 @@ relaunch a batch whose state file exists.
 |---|---|---|---|
 | TG batch 01 | 02:28, done 02:47 | Warm-up on the 13 remaining misses, then `longer_stage asymmetric__c13.3`, `longer_wall c_shape__c13.3` | `results/bem/stage_scheduling/2026-11-19/clean_tg002/logs/batch_01.state` |
 | Batch 02 | 02:47 | Warm-up on the 15 remaining passes (controls), one at a time; then the two measured fits side by side (`warmup` as `attempt_02`, `first_cap`) | `.../logs/batch_02.state` |
-| Batch 03 | queued behind 02 | Round two on the nine contrast-13.3 misses: `two_sided`, `warmup_long`, `two_sided_long`, `warmup_long_wall600` (18 fits) | `.../logs/batch_03.state` |
+| Batch 02b | 02:52 | Measured `circle_ladder` (done 03:06) and `circle_then_ladder`, beside batch 02's measured pair | `.../logs/batch_02b.state` |
+| Batch 02c | 03:17 | Measured `frontier_capped` and `frontier_measured` | `.../logs/batch_02c.state` |
+| Batch N1 | after every measured fit | For the baseline coordinator: `bem/default_n1d0_uc_sf0.5`, `circle__c4` and `kite__c4` | `.../logs/batch_n1.state` |
+| Batch 03 | after N1 | Round two on the nine contrast-13.3 misses: `two_sided`, `warmup_long`, `two_sided_long`, `warmup_long_wall600` (18 fits) | `.../logs/batch_03.state` |
+| Batch 04 | after 03 | 0.5 GHz warm-up control on the four rescued cases | `.../logs/batch_04.state` |
+| Batch 06 | after 04 | Round four: `frontier_capped` on all 30, `frontier_measured` on four | `.../logs/batch_06.state` |
+| Batch 07 | after 06 | Disk-start diagnostic on cog, kite, star, cross at 13.3 | `.../logs/batch_07.state` |
+| Batch 05 | after 07 | Round three: `circle_then_default` and `circle_then_full` on all 30 | `.../logs/batch_05.state` |
 
 **Watchers a restart must re-arm:** `herdr agent wait tg-misses`,
 `herdr agent wait cylinder`, and a loop on "BATCH DONE" in the newest state
@@ -118,6 +125,39 @@ relaunch.
   beside it, since measured fits have no binding wall limit.
 - The Codex supervisor in `w3:p1` showed as working again at 02:47; it has
   the user's machine-monitoring role. I have not prompted it.
+- 03:03: round three planned (the measured remedy on TG-002).
+- 03:12: **solver change approved**: the runner's frontier operation may
+  name the observation it measures at (one line, default path unchanged,
+  commit `f1f5c79d6`). It lets an experiment-side schedule cap each stage's
+  band at the frontier measured on entry. Reason: the `cylinder` agent's
+  frontier table (measured cylinder 2, 3, 4, 5 and 8 against default bands
+  3, 6, 9, 12 and 11 to 37; TG-002 truths above every ladder band). Check:
+  the uncapped control repeats the saved warm-up fit of `kite__c4` exactly.
+- 03:17: queue re-ordered (table above); launchers 03 to 05 were killed
+  while still waiting and relaunched with new gates. Wall-limited TG-002
+  fits still run alone.
+
+**Peer: baseline coordinator, pane `w5:p1`** (Claude; its messages arrive
+here as pasted text marked "not from the user"). It tests classical CSI on
+the native 24 pairs at 0.5 GHz
+([plan](compare_sparse_baselines/01_test_single_frequency_csi/plan.md)).
+
+- 03:06: I answered its memory question: reserve 8 GiB for growth of my
+  jobs until 07:00 UTC.
+- 03:16: it sent a go for two noisy BEM fits, `bem/default_n1d0_uc_sf0.5`
+  for `circle__c4` and `kite__c4`. The user's words, as it quotes them from
+  its first prompt (I could not read that prompt myself, its pane was
+  busy): "Add the same two cases with the frozen 1% noise draw 0 only if
+  both coordinators expect the paired results to finish." Queued as batch
+  N1. I owe it: the two score paths, the relative field residual over the
+  24 readings and the runtime of each. I told it that the BEM fit on a
+  noisy draw is given the per-frequency noise level (weights and
+  discrepancy stop), which its CSI side is not.
+
+**Measured cylinder, 03:10.** `circle_ladder` finished: area error against
+nominal 36.6% (saved fit 67.9%; the three CSI methods 34.2 to 38.5%),
+radius 15.28 mm, permittivity 3.052, loss 0.0375. Most of the remaining
+area error is the 4.3 mm offset between the fitted and the nominal centre.
 
 **State, 18 November 2026, 07:51 GMT:** a fresh coordinator took over at
 02:03, after the user restarted the chat ("you have a lot of context so i
