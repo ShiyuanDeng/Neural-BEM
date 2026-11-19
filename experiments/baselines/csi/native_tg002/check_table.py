@@ -17,7 +17,7 @@ def utc():
     return subprocess.check_output(['date', '-u', '+%FT%TZ'], text=True).strip()
 
 
-def launch_check(run_dir, case, data, kind, matlab_function, prepare=None):
+def launch_check(run_dir, case, data, kind, matlab_function, prepare=None, record_name=None):
     """Record the guarded MATLAB launch and the metrics beside its log."""
     inputs = (run_dir / 'inputs' / f'{case}__{data}').resolve()
     frozen = read(inputs/'inputs.json')
@@ -26,7 +26,7 @@ def launch_check(run_dir, case, data, kind, matlab_function, prepare=None):
             raise ValueError(f'frozen {name} changed')
     if pins() != frozen['upstream']:
         raise ValueError('upstream checkout changed since inputs were frozen')
-    folder = (run_dir / 'checks' / f'{kind}_{case}__{data}').resolve()
+    folder = (run_dir / 'checks' / (record_name or f'{kind}_{case}__{data}')).resolve()
     folder.mkdir(parents=True, exist_ok=True)
     if (folder/'launch.json').exists():
         raise FileExistsError(f'check already launched at {folder}')
