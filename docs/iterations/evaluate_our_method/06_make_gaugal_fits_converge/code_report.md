@@ -72,3 +72,9 @@ GauGal fits on the RTX 5090. GPU load changed later in the run.
 The clean kite worker loaded commit `86232abe1` with a clean code tree.
 [Fit record](../../../../results/gaugal/converged_clean_uc_fs/kite__c4/fit.json)
 · [Frozen score](../../../../results/gaugal/converged_clean_uc_fs/kite__c4/score.json)
+
+The coordinator paused the continuing clean kite GPU worker at 15:16:53
+UTC on 19 November so the BEM fits could finish first. The first five
+stages had ended. The final 19-frequency stage was in progress, so its
+reported wall time and the whole continuation fit time include the pause.
+The simultaneous kite had already completed.
