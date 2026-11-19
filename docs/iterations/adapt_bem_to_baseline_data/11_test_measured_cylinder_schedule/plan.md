@@ -35,3 +35,11 @@ $P experiments/bem_on_baseline_data/csi_measured_schedule.py first_cap
 ```
 
 The script writes under `results/bem/baseline_data/measured_schedule/2026-11-19/{warmup,first_cap}/dielTM_dec8f/cuda/attempt_01/`. Keep the manifest, fit, stage and trial records, curve, score and residuals. Write the comparisons in [results.md](results.md).
+
+## Coordinator's changes, 19 November 2026, 02:28 UTC
+
+The first team (Codex tasks outside Herdr) was stopped by the user at 02:20 UTC, 86 s into the warm-up fit. Its partial output stays as `warmup/dielTM_dec8f/cuda/attempt_01` (three stages saved, no score). The user named Claude in Herdr pane `w4:p1` as coordinator and asked for two subagents in Herdr. The choices below are the coordinator's.
+
+- **Reruns.** The warm-up fit is run again in full as `attempt_02`; `first_cap` as planned. The coordinator runs both from pane `w4:p1`, because the agents are sandboxed without a GPU.
+- **What the stopped run already shows.** The 1 GHz warm-up drove the contrast from 1.09 to 32.6 in 44 steps while loss fell to 0.0860; the original first stage reached 0.0909 at contrast 1.73. Two very different circles fit 1 GHz about equally. So add a loss map: measured-data loss of an exact circle over radius and permittivity, for the frequency sets of each stage (1; 1–2; 1–3; 1–4; 1–8 GHz), with the paths of the original fit, the warm-up fit and the first-cap fit drawn on it. CPU only.
+- **Refused trials.** In the saved fit all 763 refused trials checked so far say `self_intersection`, including steps of 7 nm. Item 3 of the comparisons is therefore sharpened: decide whether the accepted stage-three curve itself fails the slider's intersection check, which accepted step introduced that, and whether the crossing is real on a fine grid. `tg-misses` (GPT-6.2-Astra, high) does this part, because the same check runs on TG-002; `cylinder` (GPT-6.1-Sol, medium) owns the loss map, the fit comparison and `results.md`.

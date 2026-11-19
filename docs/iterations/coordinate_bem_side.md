@@ -9,6 +9,74 @@ It is a temporary second file. The user: "i would prefer to use one
 coordination file, but temporarily to avoid the current coordination file
 being too long you can have a new one". Merge it back when the work is done.
 
+**Latest state: 19 November 2026.** The overnight failure investigation is
+live. Read [Failure investigation](#failure-investigation-opened-19-november-0221-utc)
+first; everything below it is finished work.
+
+## Failure investigation (opened 19 November, 02:21 UTC)
+
+**The user's words.** In this pane (`w4:p1`, workspace "bem failure
+investigaiton"), 02:21 UTC: "you are the coordinator: i have two tasks for
+you to investigate overnight: failure of bem in 14/30 cases; and failure of
+bem in measured data case from csi." Then: "open two subagents here in herdr,
+based on task difficulty use astra and sol accordingly". Earlier, to the
+Codex supervisor in pane `w3:p1` (02:10): "my biggest suspects of these bem
+failures are about schedules, for examples missing warming up, early stops,
+let them know this." and "open the coordinators and give them full access".
+
+**What happened before.** The Codex supervisor in `w3:p1` first started a
+coordinator and two investigators as Codex tasks outside Herdr. They wrote
+three plans, the 30-case inventory and one warm-up control (commits
+`22d374410` to `963e62cce`), and started the measured warm-up fit. The user
+stopped all of it at 02:20 ("jsut stop whatever you ran") and opened this
+pane as coordinator. The supervisor also added the Herdr rule to `AGENTS.md`
+at the user's request; that edit is its own and was uncommitted at 02:30.
+
+**Activities.**
+
+| Activity | What | Owner |
+|---|---|---|
+| [Clean misses and passes](investigate_bem_stage_scheduling/02_compare_clean_failures_and_passes/plan.md) | 14 misses against 16 passes; warm-up, longer stage, longer wall; refused trials; "large and weak" fits | `tg-misses` |
+| [Measured cylinder schedule](adapt_bem_to_baseline_data/11_test_measured_cylinder_schedule/plan.md) | Warm-up and first-cap fits on `dielTM_dec8f`; loss map over radius and permittivity | `cylinder` |
+| [Joint comparison](investigate_bem_stage_scheduling/03_compare_schedule_effects/plan.md) | The joint answer; holds both briefs | coordinator |
+
+**Agents** (both in this tab, split to the right of the coordinator):
+
+| Agent | Pane | Launch | Task | State |
+|---|---|---|---|---|
+| `tg-misses` | `w4:p2` | `codex -m gpt-6.2-astra -c model_reasoning_effort="high" -s workspace-write -a never` | [Brief](investigate_bem_stage_scheduling/03_compare_schedule_effects/brief_tg_misses.md): refused trials, "large and weak" fits, scoring the matched tests | briefed 02:29 |
+| `cylinder` | `w4:p3` | `codex -m gpt-6.1-sol -c model_reasoning_effort="medium" -s workspace-write -a never` | [Brief](investigate_bem_stage_scheduling/03_compare_schedule_effects/brief_cylinder.md): loss map, stage table, comparing the measured fits | briefed 02:29 |
+
+**Coordinator's decisions.**
+
+- **Difficulty.** The mechanisms (why trials are refused, why fits end large
+  and weak, all 30 cases) are the hard part: Astra, high. The measured loss
+  map and fit comparison adapt an existing script: Sol, medium.
+- **Sandbox.** My full-access launch was refused by this session's
+  permission mode; the user's full-access words were given in the other
+  pane. Both agents run sandboxed with prompts off. They have no GPU, and
+  `tg-misses` has no network. So the coordinator runs every GPU fit and
+  makes every commit. The user was told at 02:24: saying "full access" here
+  lets me restart them that way.
+- **Reuse.** The stopped team's three plans and two drivers are kept and
+  extended (no `results.md` existed, so the plans were edited in place).
+- **Warm-up on all 14 misses**, not five; passes as controls if it helps.
+- **Third suspect** added to the user's two: the fits end "large and weak"
+  (outline too large, contrast too low) on TG-002 misses and on the measured
+  cylinder alike.
+- **GPU order.** TG-002 fits run one at a time, alone, because their 120 s
+  wall limit can decide a result. Measured fits follow.
+
+**Runs.** Launchers are detached (`setsid nohup`), with a state file; do not
+relaunch a batch whose state file exists.
+
+| Batch | Started (UTC) | What | State file |
+|---|---|---|---|
+| TG batch 01 | 02:28 | Warm-up on the 13 remaining misses, then `longer_stage asymmetric__c13.3`, `longer_wall c_shape__c13.3` | `results/bem/stage_scheduling/2026-11-19/clean_tg002/logs/batch_01.state` |
+
+**Watchers a restart must re-arm:** `herdr agent wait tg-misses`,
+`herdr agent wait cylinder`, and a loop on "BATCH DONE" in the state file.
+
 **State, 18 November 2026, 07:51 GMT:** a fresh coordinator took over at
 02:03, after the user restarted the chat ("you have a lot of context so i
 plan to start you fresh"). Table B1: all 40 fits are done (04:09) and all 20 data
