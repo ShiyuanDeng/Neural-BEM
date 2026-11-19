@@ -565,8 +565,9 @@ def publish_continuation():
 def run_tv_warm_start():
     """Activity 07: one fixed detached runner, CPU reports, two-case commits."""
     import numpy as np
-    destination=ROOT/'results/gaugal/converged_clean_uc_fc'
-    archive=BASE/'continuation_before_tv_warm_start'
+    destination=ROOT/'results/gaugal/tvwarm_clean_uc_fc'
+    destination.mkdir(parents=True,exist_ok=True)
+    archive=ROOT/'results/gaugal/converged_clean_uc_fc'
     activity=ROOT/'docs/iterations/evaluate_our_method/07_refit_gaugal_with_tv_warm_start'
     report=activity/'run_report.md'
     state_path=destination/'tv_warm_start_state.json'
@@ -577,7 +578,7 @@ def run_tv_warm_start():
     subprocess.run(['git','merge-base','--is-ancestor','94c39f4c0','HEAD'],cwd=ROOT,check=True)
     available=mem_available();gpu=subprocess.check_output(['nvidia-smi'],text=True)
     if available<14*1024**3: raise RuntimeError('14 GiB memory floor before TV warm-start launch')
-    command=[sys.executable,'-u','-m','experiments.comparison','run','gaugal/converged_clean_uc_fc','--cases',*cases]
+    command=[sys.executable,'-u','-m','experiments.comparison','run','gaugal/tvwarm_clean_uc_fc','--cases',*cases]
     state=dict(state='launching',utc=now(),cases=cases,command=command,available_bytes=available,gpu=gpu,
         fixed_numerical_commit='94c39f4c0',source_at_launch=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
         monitor_pid=os.getpid(),paused_pids=[1895339,1895343,1903073,2035661,1899688,1899680],published=[])
@@ -598,7 +599,7 @@ def run_tv_warm_start():
               'One detached runner; circle c0.5 first, then the other nine c0.5 cases, then ten c4 cases. '
               'Settings follow plan.md unchanged; there is no time stop.\n\n'
               'The first run is preserved whole under '
-              '[continuation_before_tv_warm_start](../../../../results/_probes/gaugal_convergence/2026-11-19/continuation_before_tv_warm_start/). '
+              '[converged_clean_uc_fc](../../../../results/gaugal/converged_clean_uc_fc/). '
               'Its circle c0.5 area value is the separately scored saved image of a FAILED fit. '
               'Truth scores do not select steps or restarts.\n\n'
               '| Case | Area error % | First run area % | Worst frequency residual | Final step | Restarts | Plateau stages | Outcome | Seconds | Start commit |\n'
@@ -657,7 +658,7 @@ def run_tv_warm_start():
         process=subprocess.Popen(command,cwd=ROOT,stdout=log,stderr=subprocess.STDOUT,start_new_session=True)
         state.update(state='running',started_utc=now(),runner_pid=process.pid);write(state_path,state)
         update_report([],False)
-        notify(f"Activity 07 launched {state['started_utc']}: runner {process.pid}, monitor {os.getpid()}, one fixed 20-case CLI; circle__c0.5 first. Whole first-run folders archived and pushed; six lower-value jobs remain paused.")
+        notify(f"Activity 07 launched {state['started_utc']}: runner {process.pid}, monitor {os.getpid()}, one fixed 20-case CLI; circle__c0.5 first. Whole first-run folders retained in their original run folder; six lower-value jobs remain paused.")
         while True:
             rows=[]
             for case in cases:

@@ -61,12 +61,12 @@ lower-value jobs from activity 06 are paused again for the duration.
 
 ```bash
 PY=/home/drdeng/miniconda3/envs/EMNerf/bin/python
-$PY -m experiments.comparison run gaugal/converged_clean_uc_fc --cases circle__c0.5 <nine other c0.5> <ten c4>
+$PY -m experiments.comparison run gaugal/tvwarm_clean_uc_fc --cases circle__c0.5 <nine other c0.5> <ten c4>
 ```
 
-- The first run's 20 case folders move to
-  `results/_probes/gaugal_convergence/2026-11-19/continuation_before_tv_warm_start/`.
-- New fits and scores: `results/gaugal/converged_clean_uc_fc/`.
+- The first run's 20 whole case folders remain in
+  `results/gaugal/converged_clean_uc_fc/` (coordinator correction after launch refusal).
+- New fits and scores: `results/gaugal/tvwarm_clean_uc_fc/`.
 - Report: `results.md` in this folder.
 
 ## Who
@@ -90,5 +90,17 @@ c_shape__c4, hook__c4, cross__c4, cog__c4, aphex_twin__c4.
 
 Native-run writes `run_report.md` in this activity, as the coordinator
 requested. Launch/state/log/table files have the `tv_warm_start_` prefix
-under `results/gaugal/converged_clean_uc_fc/`. Small fit.npz arrays are
+under `results/gaugal/tvwarm_clean_uc_fc/`. Small fit.npz arrays are
 force-added; checkpoints stay whole locally with SHA-256 manifests.
+
+## Launch correction, before any fit
+
+The first CLI launch at 19:26:09 UTC failed because the old run.json
+settings differ after the TV warm-start fix. No fit ran; this is a launch
+failure, not a 0/20 benchmark result. The original run.json was unchanged.
+
+The coordinator changed the run name to `gaugal/tvwarm_clean_uc_fc`.
+All 20 first-run case folders were restored whole with git mv to their
+original converged run, with hashes checked. The code agent is adding the
+new variant. Wait for the coordinator's go and commit before launching.
+Same case order, same numerical settings, one detached runner, no time stop.
