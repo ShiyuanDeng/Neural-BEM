@@ -102,6 +102,19 @@ the code agent's saved kite__c4 and shared run.json are not staged here.
 The two run folders have separate case files; both CLIs write the derived
 shared metrics.csv at completion, so the per-case JSON files are canonical.
 
+### Continuation results so far
+
+| Case | Area error % | Final mismatch | Worst frequency residual | Seconds | Iterations | Stop |
+|---|---:|---:|---:|---:|---:|---|
+| circle__c4 | 2.3553 | 0.05059675 | 0.09237818 | 2146.573 | 6000 | iteration_limit |
+| peanut__c4 | 1.6270 | 0.02408453 | 0.05819941 | 648.559 | 6000 | iteration_limit |
+| star__c4 | 2.0065 | 0.04438225 | 0.07888992 | 630.612 | 6000 | iteration_limit |
+
+Circle ran under GPU sharing. Peanut began about 26 seconds before the
+dedicated allocation and took 648.559 s. Star ran fully under the dedicated
+allocation and took 630.612 s (10m31s). Both have zero unconverged inner
+solves. Their completed arrays and checks are committed.
+
 ### Continuation receives the GPU
 
 At 16:04:26 UTC the coordinator paused the two cap-2000 probes, their
@@ -145,7 +158,7 @@ Its first-case forecast is 48.63 minutes total and 43.77 minutes remaining;
 first_case_forecast.json records the numbers and GPU-sharing context.
 
 Activity: evaluate_our_method/06_make_gaugal_fits_converge, 2026-11-19
-Runs: 2/4 probes completed; 2/10 campaign cases completed; wall time pending
+Runs: 2/4 probes, 2/10 simultaneous cases, 3/19 new continuation cases completed; paused timings noted above
 Result: exact step 0.2: mismatch 19→10.1109053; 1.13543 s/iter; inner 7.48e-7
 Result: exact step 1.0: mismatch 19→10.0824825; 1.13678 s/iter; inner 1.08e-6
 Failures: none; affected fits resumed by coordinator after a 124-second user pause
