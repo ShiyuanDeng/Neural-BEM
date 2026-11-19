@@ -27,14 +27,15 @@ OUTER_SECONDS = 600.     # the parent stops a hung child after this long
 FREQUENCIES = 19
 CONVERGENCE = dict(window_steps=50, relative_range=.01, tv_schedule_iterations=80)
 CONVERGED_SETTINGS = dict(SETTINGS, num_iter=3000)
+EXACT_VARIANTS = ('converged', 'tvwarm')
 STAGE_COUNTS = (1, 2, 4, 8, 16, 19)
 CONTINUATION_SETTINGS = dict(CONVERGED_SETTINGS, step_size=.2, num_iter=1000)
 
 
 def settings(run):
-    schedules = ('fs', 'fc') if run.variant == 'converged' else ('fs',)
-    if run.variant not in ('default', 'converged') or run.contrast != 'uc' or run.frequency not in schedules or run.damped:
-        raise ValueError('Expected a default or converged GauGal run with unknown contrast and simultaneous real frequencies.')
+    schedules = {'default': ('fs',), 'converged': ('fs', 'fc'), 'tvwarm': ('fc',)}
+    if run.frequency not in schedules.get(run.variant, ()) or run.contrast != 'uc' or run.damped:
+        raise ValueError(f'Unsupported GauGal run {run.key!r}')
     config = dict(method='GauGal collocation, FISTA + TV, one coefficient vector over all frequencies',
                 adapter='experiments/gaugal_comparison/gaugal_arm.py', **SETTINGS,
                 max_seconds=MAX_SECONDS, outer_seconds=OUTER_SECONDS, frequencies=FREQUENCIES,
@@ -42,22 +43,24 @@ def settings(run):
                 data='sealed TG-002 real catalog' if run.noise is None else f'results/_shared/noise/{run.data}/<case>.npz',
                 timing='fit_seconds is the optimization loop; setup_seconds builds the operators')
 
-    if run.variant == 'converged':
+    if run.variant in EXACT_VARIANTS:
         config.update(CONVERGED_SETTINGS, max_seconds=None, outer_seconds=None, convergence=CONVERGENCE,
                       inner_solver='projected dense LU shared by forward and adjoint',
                       inner_relative_residual_limit=1e-4,
                       tuning='fixed mismatch plateau; original 80-step TV schedule then final weight')
-    if run.variant == 'converged' and run.frequency == 'fc':
-        config.update(CONTINUATION_SETTINGS, stage_frequency_counts=STAGE_COUNTS,
-                      stage_start='previous coefficients, fresh momentum; warm stages seed the TV auxiliary '
-                                  'from the bounded first candidate gradient, with zero dual',
+    if run.variant in EXACT_VARIANTS and run.frequency == 'fc':
+        config.update(CONTINUATION_SETTINGS, stage_frequency_counts=list(STAGE_COUNTS),
+                      stage_start='previous coefficients, fresh momentum and TV state',
                       method='GauGal collocation, FISTA + TV, cumulative low-to-high frequency stages')
+        if run.variant == 'tvwarm':
+            config['stage_start'] = ('previous coefficients, fresh momentum; warm stages seed the TV auxiliary '
+                                     'from the bounded first candidate gradient, with zero dual')
     return config
 
 
 def case_settings(run, arm):
-    values = CONVERGED_SETTINGS if run.variant == 'converged' else SETTINGS
-    if run.variant == 'converged' and run.frequency == 'fc':
+    values = CONVERGED_SETTINGS if run.variant in EXACT_VARIANTS else SETTINGS
+    if run.variant in EXACT_VARIANTS and run.frequency == 'fc':
         values = CONTINUATION_SETTINGS
     return arm.settings(values['grid'], **{k: v for k, v in values.items() if k != 'grid'})
 
@@ -88,7 +91,7 @@ def record_from(case, run, fit, observed, outcome=None, detail=None):
                             linear_solves_unconverged=sum(r['unconverged'] for r in fit.get('linear_solves') or [])))
     arrays = dict(image=np.asarray(fit['image'], np.float32), coefficients=np.asarray(fit['coefficients']),
                   predicted=np.asarray(fit['predictions'])) if used else {}
-    if run.variant == 'converged':
+    if run.variant in EXACT_VARIANTS:
         record['hit_cap'] = fit.get('stop_reason') == 'iteration_limit'
         record['convergence'] = CONVERGENCE
         if outcome is None:
@@ -113,7 +116,7 @@ def record_from(case, run, fit, observed, outcome=None, detail=None):
 def fit_case(run, case, root, checkpoint_path=None):
     """Reconstruct one case. Returns (record for fit.json, arrays for fit.npz)."""
     started = perf_counter()
-    if run.variant == 'converged':
+    if run.variant in EXACT_VARIANTS:
         from .runs import commit
         code_at_start = commit()
     try:
@@ -134,7 +137,7 @@ def fit_case(run, case, root, checkpoint_path=None):
 
         chosen = case_settings(run, gaugal_arm)
         try:
-            if run.variant == 'converged' and run.frequency == 'fc':
+            if run.variant in EXACT_VARIANTS and run.frequency == 'fc':
                 def stage_finished(stages):
                     write(run.folder(root)/case/'stages.json', stages)
                     stage = stages[-1]
@@ -143,9 +146,9 @@ def fit_case(run, case, root, checkpoint_path=None):
                           f"restarts {stage['restarts']}", flush=True)
 
                 fit = gaugal_arm.reconstruct_continuation(blind, chosen, STAGE_COUNTS, CONVERGENCE,
-                                                          checkpoint, stage_finished)
+                                                          checkpoint, stage_finished, warm_start_tv=run.variant == 'tvwarm')
             else:
-                extra = dict(convergence=CONVERGENCE) if run.variant == 'converged' else {}
+                extra = dict(convergence=CONVERGENCE) if run.variant in EXACT_VARIANTS else {}
                 fit = gaugal_arm.reconstruct(blind, chosen, frequencies=list(range(FREQUENCIES)), verbose=True,
                                              max_seconds=None if extra else MAX_SECONDS, checkpoint=checkpoint, **extra)
             record, arrays = record_from(case, run, fit, blind.observed)
@@ -158,7 +161,7 @@ def fit_case(run, case, root, checkpoint_path=None):
         record, arrays = dict(case=case, scene=case.split('__')[0], family=run.family, run=run.name,
                               representation='image', outcome='WORKER_EXCEPTION',
                               detail=traceback.format_exc()), {}
-    if run.variant == 'converged':
+    if run.variant in EXACT_VARIANTS:
         record['code_at_start'] = code_at_start
     record['case_seconds'] = perf_counter()-started
     return record, arrays
@@ -168,7 +171,7 @@ def from_checkpoint(run, case, root, checkpoint_path, reason):
     """The last saved state of a child that was stopped from outside."""
     from experiments.gaugal_comparison import gaugal_arm
     base = dict(case=case, scene=case.split('__')[0], family=run.family, run=run.name, representation='image')
-    crashed = run.variant == 'converged'
+    crashed = run.variant in EXACT_VARIANTS
     if not checkpoint_path.exists():
         return dict(base, outcome='WORKER_EXCEPTION' if crashed else 'TIMEOUT', detail=reason), {}
     with np.load(checkpoint_path) as saved:

@@ -183,7 +183,7 @@ def checked_gradient(model, collocation, coeff, u_warm, v_warm, opts):
 
 def reconstruct(case, case_settings, *, frequencies=None, pixels=PIXELS, device='cuda',
                 controls=SolverControls(), verbose=False, max_seconds=None, checkpoint=None, convergence=None,
-                initial_coefficients=None, operator_cache=None, stage_attempt=None):
+                initial_coefficients=None, operator_cache=None, stage_attempt=None, warm_start_tv=False):
     """GGB-002: one GauGal fit over several frequencies (FISTA + TV, shared coefficients)."""
     frequencies = list(range(len(case.frequencies_hz))) if frequencies is None else list(frequencies)
     opts = paper_options(case_settings, controls)
@@ -270,7 +270,7 @@ def reconstruct(case, case_settings, *, frequencies=None, pixels=PIXELS, device=
                     stop_reason = 'mismatch_plateau'
                     break
             candidate = projected-step*grad
-            if it == 1 and stage_attempt is not None and initial_coefficients is not None:
+            if warm_start_tv and it == 1 and initial_coefficients is not None:
                 bounded = candidate.clamp(LOWER, opts.contrast_max)
                 tv_p = _forward_tv(bounded, first.grid_size, first.grid_size)
             grid, tv_p, tv_q, _ = denoise_tv(candidate.reshape(first.grid_size, first.grid_size), lam*step,
@@ -318,7 +318,8 @@ def reconstruct(case, case_settings, *, frequencies=None, pixels=PIXELS, device=
                     for i, c in zip(frequencies, collocations)])
 
 
-def reconstruct_continuation(case, case_settings, counts, convergence, checkpoint, stage_finished):
+def reconstruct_continuation(case, case_settings, counts, convergence, checkpoint, stage_finished, *,
+                             warm_start_tv=False):
     """Transfer accepted coefficients and retain step reductions across stages."""
     cache = {}
     stages, history, linear_solves, residual_arrays = [], [], [], {}
@@ -340,7 +341,7 @@ def reconstruct_continuation(case, case_settings, counts, convergence, checkpoin
             try:
                 candidate = reconstruct(case, case_settings, frequencies=range(count), convergence=convergence,
                                         checkpoint=checkpoint, verbose=True, initial_coefficients=initial,
-                                        operator_cache=cache, stage_attempt=attempt)
+                                        operator_cache=cache, stage_attempt=attempt, warm_start_tv=warm_start_tv)
                 residual = D.relative_error(candidate['predictions'], case.observed[:count])
                 final_mismatch = float(np.sum(residual**2))
                 attempt.check(final_mismatch)

@@ -167,7 +167,8 @@ safeguard retries. On the weak circle, the reset smoothed the incoming image
 even with the data gradient disabled. At step 0.05 the original 19-frequency
 stage raised the weighted squared mismatch from 0.0868484 to 0.3089984.
 
-For the new activity, each first update from accepted coefficients initializes
+The original `gaugal/converged_<data>_uc_fc` resets the TV auxiliary to zero.
+In `gaugal/tvwarm_<data>_uc_fc`, each first update from accepted coefficients initializes
 the TV auxiliary with the periodic discrete gradient of the bounded candidate.
 The dual starts at zero. This also applies when a stage restarts with a smaller
 step. The first stage from zero retains GauGal’s original initialization.
