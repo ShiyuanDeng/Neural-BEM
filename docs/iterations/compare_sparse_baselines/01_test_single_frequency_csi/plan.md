@@ -27,6 +27,14 @@ Background: [verify_baseline_claims.md](../../verify_baseline_claims.md).
 | Truth in the fit | none; `epsinv` is passed empty | coordinator |
 | Optional | same two cases with the frozen 1% noise draw 0 | user, conditional |
 
+| Field unit inside CSI | measured and incident fields divided by the known 1e-6 source strength | coordinator, 03:07 |
+
+Field unit: the division is fixed and exact, with no fit, and predictions
+return to native units by conjugation and the same factor. `CSI.m` adds
+machine epsilon to some denominators, so its state normaliser would
+depend on the unit otherwise. The earlier CSI runs also used unit-source
+fields. The adapter proposed it; the round trip covers it.
+
 The background wavenumber must equal the native one for permittivity 6.
 The adapter may reach it through the native material argument or through
 the exact equivalent frequency in vacuum. It records which. The forward
@@ -79,8 +87,10 @@ It launches no fit until the coordinator says the checks passed.
 - 8 GiB limit for the MATLAB process family, enforced by the launcher.
 - Before each launch read live memory. Launch only if
   `MemAvailable - 8 GiB - expected growth of other jobs >= 16 GiB`.
-- Expected growth of other jobs: the figure the BEM coordinator gives.
-  Until it answers, count each of its Python fit processes up to 4 GiB.
+- Expected growth of other jobs: 8 GiB until 07:00, given by the BEM
+  coordinator at 03:06. So a launch needs `MemAvailable >= 32 GiB`.
+  Its TG-002 fits have a 120 s wall limit that can decide a result, so
+  MATLAB stays at eight threads or fewer.
 - The sample and the decision are saved with each launch.
 - No stop on time. A memory-guard stop or a faulty run is a recorded
   failure. Failures are kept, committed and not silently rerun.
@@ -129,6 +139,17 @@ iteration 64.
 | Clean fits | 2, circle first | circle done by 05:00, kite by 05:45 |
 | Scores and commits | none | by 06:15 |
 | Optional noisy fits | 2 | decide at 05:45; finish by 07:00 |
+
+Noisy pair, the user's words: "Add the same two cases with the frozen
+1% noise draw 0 only if both coordinators expect the paired results to
+finish." The BEM coordinator expects its two fits
+(`bem/default_n1d0_uc_sf0.5`) scored and pushed within 30 minutes of a
+go. The baseline coordinator sends the go or no-go after the first
+fit's iteration-64 forecast, by 05:45 at the latest.
+
+Check records: `checks/table_<case>__<data>/check.json` and
+`checks/forward_circle__c4__clean/check.json`, each with a top-level
+`passed`. `fit` refuses to start without them.
 
 At most four CSI fits tonight. Fit time on this data is unmeasured;
 the iteration-64 forecast of the first fit sets the real schedule.
