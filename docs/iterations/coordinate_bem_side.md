@@ -9,14 +9,40 @@ It is a temporary second file. The user: "i would prefer to use one
 coordination file, but temporarily to avoid the current coordination file
 being too long you can have a new one". Merge it back when the work is done.
 
-**Latest state: 19 November 2026, 14:07 UTC.** The user answered point 1
+**Latest state: 19 November 2026, 15:19 UTC.** The user answered point 1
 of the overnight investigation: the warm-up is now part of the default
-method. The follow-up test (contrast supplied at 13.3) is done. Nothing
-runs and no watcher is armed. Read "After the user's answer" and then the
-"Final state" block of
+method. Two follow-up tests are done: contrast supplied at 13.3, and the
+four original misses at 0.5 and 4 under the new default (19/20). Nothing
+of this side runs and no watcher is armed. Read "Rerun of the four
+original misses", "After the user's answer" and then the "Final state"
+block of
 [Failure investigation](#failure-investigation-opened-19-november-0221-utc).
 
 ## Failure investigation (opened 19 November, 02:21 UTC)
+
+**Rerun of the four original misses, 19 November, 15:15 to 15:19 UTC.**
+The user in this pane, reading row A of the final comparison report: "A.
+Original TG-002, 20 clean cases at contrasts 0.5 and 4 16/20 recovered,
+this is before warmup?? if so add warmup and quickly rerun the 4 failure
+cases". Activity:
+[rerun the original misses](investigate_bem_stage_scheduling/05_rerun_original_misses_under_default/results.md)
+([plan](investigate_bem_stage_scheduling/05_rerun_original_misses_under_default/plan.md)).
+
+- **Answer:** yes, 16/20 is the 17 November default without warm-up. The
+  four misses: `cog__c0.5`, `kite__c4`, `c_shape__c4`, `aphex_twin__c4`.
+- **Batch 12** (15:15:51 to 15:18:28, state file `.../logs/batch_12.state`,
+  done, all exit 0): the three not yet run through the new default.
+  `kite__c4` had run at 13:46.
+- **Result: 3/4 recover, so 19/20.** `cog__c0.5` 0.300%, `kite__c4`
+  0.098%, `aphex_twin__c4` 0.223%; `c_shape__c4` 43.97%, numerical
+  failure at band 31, as without the warm-up. All four repeat last night's
+  warm-up fits exactly (outline difference 0.0 in every stage).
+- **GPU sharing.** `w5:p1` had four GauGal fits running. It paused them
+  at 15:16:53 on the user's order and was told to resume at 15:18. No BEM
+  fit ended on the wall, so only the seconds differ.
+- **Not done:** row A of `final_comparison_report.md` (not this side's
+  file) and the saved table `results/bem/default_clean_uc_fc` are
+  unchanged. Points 2 to 7 below still wait.
 
 **After the user's answer, 19 November, 13:46 to 14:07 UTC.** The user in
 this pane, after the close-out below: "yes default with warm up. also have
