@@ -2,7 +2,9 @@
 
 Prepared 19 November 2026, UTC. Coordinator released the clean fits with
 “checks passed, go” at 03:14 UTC. Circle launched at 03:14:34 UTC and finished at 03:24:49 UTC.
-Kite follows after circle scoring, commit and push. No noisy fits are released.
+Kite launched at 03:25:57 UTC after circle scoring, commit and push.
+The coordinator released the noisy circle/kite pair at 03:37 UTC, to follow
+the clean kite score, commit and push, in that order.
 
 The owned wrapper calls the byte-identical pinned `CSI.m`, passes `epsinv`
 empty, keeps its native start, and requests 2,048 iterations. Its returned
@@ -75,11 +77,34 @@ Bulk `snapshots.mat` stays local with its SHA-256 in the per-fit manifest.
 [State](../../../../results/csi/native_tg002/2026-11-19/fits/circle__c4__clean/state.json) ·
 [Manifest](../../../../results/csi/native_tg002/2026-11-19/fits/circle__c4__clean/manifest.json).
 
+## Clean kite result
+
+Launch 03:25:57 UTC; finish 03:36:19 UTC. All 2,048 iterations completed,
+without failures. Wall time 622.278 s; native CSI time 616.837 s; sampled peak
+process-family RSS 1.595 GiB, within the enforced 8 GiB scope.
+
+| Area error at 0.5 | At 0.3 | At 0.7 | Material L2 | Native field residual |
+|---:|---:|---:|---:|---:|
+| 50.0675% | 38.0403% | 70.8261% | 0.6357027 | 12.4490% |
+
+CSI's own printed final data cost is 1.40e-5; state cost is 4.62e-4.
+The half-peak image has one component. All 33 returned snapshots are finite;
+the last snapshot equals the image used for the independent prediction.
+[Score](../../../../results/csi/native_tg002/2026-11-19/fits/kite__c4__clean/score.json) ·
+[State](../../../../results/csi/native_tg002/2026-11-19/fits/kite__c4__clean/state.json) ·
+[Manifest](../../../../results/csi/native_tg002/2026-11-19/fits/kite__c4__clean/manifest.json).
+
+For the clean circle, saved BEM has lower area, material and field errors.
+For the clean kite, CSI has lower errors on all three measures. These are
+one-start results on the same 24 readings, with no tuning or reruns.
+All MAT files remain local under the existing CSI ignore rule; their sizes
+and SHA-256 values are retained in each manifest.
+
 Activity: compare_sparse_baselines/01_test_single_frequency_csi (runs), 2026-11-19
-Runs: 1/2; wall time 0:10
-Result: circle area 45.9455%, 44.0099%, 61.3256%; material 0.8257722; field 24.0092%; runtime 615.548 s
+Runs: 2/4; wall time 0:20
+Result: clean circle area 45.9455%, material 0.8257722, field 24.0092%; clean kite area 50.0675%, material 0.6357027, field 12.4490%
 Failures: none; initial check-only correctly refused missing adapter check records
 Upstream patches: none
 Changes to our code: native_tg002/fit.py, native_fit.m, score.py
-New unknowns: fit runtime and peak memory
-Proposed next activity: run clean kite after circle commit and push
+New unknowns: paired 1% noise results
+Proposed next activity: run noisy circle, then noisy kite, after clean kite push
