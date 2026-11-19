@@ -28,26 +28,26 @@ HEAD at save time. Full hashes remain in each linked fit.json.
 
 | Case | Area error % | Old default area % | Worst frequency residual | Final step | Restarts | Outcome | Seconds | Start commit |
 |---|---:|---:|---:|---:|---:|---|---:|---|
-| [circle__c4](../../../../results/_probes/gaugal_convergence/2026-11-19/continuation_before_tv_warm_start/circle__c4/fit.json) | 2.3553 | 110.8518 | 0.09237818 | 0.2 | 0 | STOPPED_EARLY | 2146.573 | `effe8c70f` |
-| [kite__c4](../../../../results/_probes/gaugal_convergence/2026-11-19/continuation_before_tv_warm_start/kite__c4/fit.json) | 2.9655 | 158.3706 | 0.05678632 | 0.2 | 0 | STOPPED_EARLY | 2277.691 | `2296ed11d` |
-| [peanut__c4](../../../../results/_probes/gaugal_convergence/2026-11-19/continuation_before_tv_warm_start/peanut__c4/fit.json) | 1.6270 | 223.6909 | 0.05819941 | 0.2 | 0 | STOPPED_EARLY | 648.559 | `31c1fe1bb` |
-| [star__c4](../../../../results/_probes/gaugal_convergence/2026-11-19/continuation_before_tv_warm_start/star__c4/fit.json) | 2.0065 | 100.3113 | 0.07888992 | 0.2 | 0 | STOPPED_EARLY | 630.612 | `7771dcbe8` |
-| [asymmetric__c4](../../../../results/_probes/gaugal_convergence/2026-11-19/continuation_before_tv_warm_start/asymmetric__c4/fit.json) | 1.6539 | 144.7204 | 0.06207142 | 0.2 | 0 | STOPPED_EARLY | 630.356 | `7771dcbe8` |
-| [c_shape__c4](../../../../results/_probes/gaugal_convergence/2026-11-19/continuation_before_tv_warm_start/c_shape__c4/fit.json) | 3.0388 | 125.0262 | 0.0808622 | 0.2 | 0 | STOPPED_EARLY | 630.413 | `9ec4a62d9` |
-| [hook__c4](../../../../results/_probes/gaugal_convergence/2026-11-19/continuation_before_tv_warm_start/hook__c4/fit.json) | 2.5535 | 116.5453 | 0.1052707 | 0.2 | 0 | STOPPED_EARLY | 630.270 | `9ec4a62d9` |
-| [cross__c4](../../../../results/_probes/gaugal_convergence/2026-11-19/continuation_before_tv_warm_start/cross__c4/fit.json) | 2.2969 | 132.2944 | 0.06600618 | 0.2 | 0 | STOPPED_EARLY | 630.151 | `80c80e9f7` |
-| [cog__c4](../../../../results/_probes/gaugal_convergence/2026-11-19/continuation_before_tv_warm_start/cog__c4/fit.json) | 2.7969 | 125.7538 | 0.07640187 | 0.2 | 0 | STOPPED_EARLY | 630.201 | `80c80e9f7` |
-| [aphex_twin__c4](../../../../results/_probes/gaugal_convergence/2026-11-19/continuation_before_tv_warm_start/aphex_twin__c4/fit.json) | 10.3182 | 85.8133 | 0.05435177 | 0.2 | 0 | STOPPED_EARLY | 630.264 | `30b35c8df` |
-| [circle__c0.5](../../../../results/_probes/gaugal_convergence/2026-11-19/continuation_before_tv_warm_start/circle__c0.5/fit.json) | 4.6954 (saved image only) | 71.4668 | 0.02123799 | 0.0125 | 4 | FAILED | 400.504 | `de5422c0d` |
-| [kite__c0.5](../../../../results/_probes/gaugal_convergence/2026-11-19/continuation_before_tv_warm_start/kite__c0.5/fit.json) | 7.5754 | 11.5070 | 0.009103572 | 0.2 | 0 | STOPPED_EARLY | 630.357 | `3f253b793` |
-| [peanut__c0.5](../../../../results/_probes/gaugal_convergence/2026-11-19/continuation_before_tv_warm_start/peanut__c0.5/fit.json) | 5.4092 | 9.2589 | 0.01147618 | 0.1 | 1 | STOPPED_EARLY | 631.557 | `c20b5dfeb` |
-| [star__c0.5](../../../../results/_probes/gaugal_convergence/2026-11-19/continuation_before_tv_warm_start/star__c0.5/fit.json) | 8.0832 | 10.0898 | 0.007803367 | 0.2 | 0 | STOPPED_EARLY | 625.495 | `48d100c64` |
-| [asymmetric__c0.5](../../../../results/_probes/gaugal_convergence/2026-11-19/continuation_before_tv_warm_start/asymmetric__c0.5/fit.json) | 5.4953 | 7.1753 | 0.0111977 | 0.2 | 0 | STOPPED_EARLY | 630.126 | `3df5a127c` |
-| [c_shape__c0.5](../../../../results/_probes/gaugal_convergence/2026-11-19/continuation_before_tv_warm_start/c_shape__c0.5/fit.json) | 9.2058 | 10.0233 | 0.01182608 | 0.2 | 0 | STOPPED_EARLY | 630.050 | `3df5a127c` |
-| [hook__c0.5](../../../../results/_probes/gaugal_convergence/2026-11-19/continuation_before_tv_warm_start/hook__c0.5/fit.json) | 15.7241 | 8.5012 | 0.006075481 | 0.2 | 0 | STOPPED_EARLY | 630.029 | `435449a42` |
-| [cross__c0.5](../../../../results/_probes/gaugal_convergence/2026-11-19/continuation_before_tv_warm_start/cross__c0.5/fit.json) | 7.6708 | 9.8214 | 0.009299555 | 0.2 | 0 | STOPPED_EARLY | 630.033 | `435449a42` |
-| [cog__c0.5](../../../../results/_probes/gaugal_convergence/2026-11-19/continuation_before_tv_warm_start/cog__c0.5/fit.json) | 4.6665 | 9.0794 | 0.01454004 | 0.2 | 0 | STOPPED_EARLY | 630.282 | `70eaecf1e` |
-| [aphex_twin__c0.5](../../../../results/_probes/gaugal_convergence/2026-11-19/continuation_before_tv_warm_start/aphex_twin__c0.5/fit.json) | 17.0111 | 22.0714 | 0.01548247 | 0.2 | 0 | STOPPED_EARLY | 630.069 | `70eaecf1e` |
+| [circle__c4](../../../../results/gaugal/converged_clean_uc_fc/circle__c4/fit.json) | 2.3553 | 110.8518 | 0.09237818 | 0.2 | 0 | STOPPED_EARLY | 2146.573 | `effe8c70f` |
+| [kite__c4](../../../../results/gaugal/converged_clean_uc_fc/kite__c4/fit.json) | 2.9655 | 158.3706 | 0.05678632 | 0.2 | 0 | STOPPED_EARLY | 2277.691 | `2296ed11d` |
+| [peanut__c4](../../../../results/gaugal/converged_clean_uc_fc/peanut__c4/fit.json) | 1.6270 | 223.6909 | 0.05819941 | 0.2 | 0 | STOPPED_EARLY | 648.559 | `31c1fe1bb` |
+| [star__c4](../../../../results/gaugal/converged_clean_uc_fc/star__c4/fit.json) | 2.0065 | 100.3113 | 0.07888992 | 0.2 | 0 | STOPPED_EARLY | 630.612 | `7771dcbe8` |
+| [asymmetric__c4](../../../../results/gaugal/converged_clean_uc_fc/asymmetric__c4/fit.json) | 1.6539 | 144.7204 | 0.06207142 | 0.2 | 0 | STOPPED_EARLY | 630.356 | `7771dcbe8` |
+| [c_shape__c4](../../../../results/gaugal/converged_clean_uc_fc/c_shape__c4/fit.json) | 3.0388 | 125.0262 | 0.0808622 | 0.2 | 0 | STOPPED_EARLY | 630.413 | `9ec4a62d9` |
+| [hook__c4](../../../../results/gaugal/converged_clean_uc_fc/hook__c4/fit.json) | 2.5535 | 116.5453 | 0.1052707 | 0.2 | 0 | STOPPED_EARLY | 630.270 | `9ec4a62d9` |
+| [cross__c4](../../../../results/gaugal/converged_clean_uc_fc/cross__c4/fit.json) | 2.2969 | 132.2944 | 0.06600618 | 0.2 | 0 | STOPPED_EARLY | 630.151 | `80c80e9f7` |
+| [cog__c4](../../../../results/gaugal/converged_clean_uc_fc/cog__c4/fit.json) | 2.7969 | 125.7538 | 0.07640187 | 0.2 | 0 | STOPPED_EARLY | 630.201 | `80c80e9f7` |
+| [aphex_twin__c4](../../../../results/gaugal/converged_clean_uc_fc/aphex_twin__c4/fit.json) | 10.3182 | 85.8133 | 0.05435177 | 0.2 | 0 | STOPPED_EARLY | 630.264 | `30b35c8df` |
+| [circle__c0.5](../../../../results/gaugal/converged_clean_uc_fc/circle__c0.5/fit.json) | 4.6954 (saved image only) | 71.4668 | 0.02123799 | 0.0125 | 4 | FAILED | 400.504 | `de5422c0d` |
+| [kite__c0.5](../../../../results/gaugal/converged_clean_uc_fc/kite__c0.5/fit.json) | 7.5754 | 11.5070 | 0.009103572 | 0.2 | 0 | STOPPED_EARLY | 630.357 | `3f253b793` |
+| [peanut__c0.5](../../../../results/gaugal/converged_clean_uc_fc/peanut__c0.5/fit.json) | 5.4092 | 9.2589 | 0.01147618 | 0.1 | 1 | STOPPED_EARLY | 631.557 | `c20b5dfeb` |
+| [star__c0.5](../../../../results/gaugal/converged_clean_uc_fc/star__c0.5/fit.json) | 8.0832 | 10.0898 | 0.007803367 | 0.2 | 0 | STOPPED_EARLY | 625.495 | `48d100c64` |
+| [asymmetric__c0.5](../../../../results/gaugal/converged_clean_uc_fc/asymmetric__c0.5/fit.json) | 5.4953 | 7.1753 | 0.0111977 | 0.2 | 0 | STOPPED_EARLY | 630.126 | `3df5a127c` |
+| [c_shape__c0.5](../../../../results/gaugal/converged_clean_uc_fc/c_shape__c0.5/fit.json) | 9.2058 | 10.0233 | 0.01182608 | 0.2 | 0 | STOPPED_EARLY | 630.050 | `3df5a127c` |
+| [hook__c0.5](../../../../results/gaugal/converged_clean_uc_fc/hook__c0.5/fit.json) | 15.7241 | 8.5012 | 0.006075481 | 0.2 | 0 | STOPPED_EARLY | 630.029 | `435449a42` |
+| [cross__c0.5](../../../../results/gaugal/converged_clean_uc_fc/cross__c0.5/fit.json) | 7.6708 | 9.8214 | 0.009299555 | 0.2 | 0 | STOPPED_EARLY | 630.033 | `435449a42` |
+| [cog__c0.5](../../../../results/gaugal/converged_clean_uc_fc/cog__c0.5/fit.json) | 4.6665 | 9.0794 | 0.01454004 | 0.2 | 0 | STOPPED_EARLY | 630.282 | `70eaecf1e` |
+| [aphex_twin__c0.5](../../../../results/gaugal/converged_clean_uc_fc/aphex_twin__c0.5/fit.json) | 17.0111 | 22.0714 | 0.01548247 | 0.2 | 0 | STOPPED_EARLY | 630.069 | `70eaecf1e` |
 
 Worst frequency residual is the saved endpoint data residual, distinct from
 an inner solve residual. For failed circle__c0.5 it covers only the last
@@ -83,16 +83,16 @@ The fit returned its last accepted 16-frequency image. That image's
 separate score is 4.6954%; its weighted mismatch is 0.0009574062 and
 its worst frequency residual is 0.02123799. It is not a completed fit.
 
-See [stage attempts](../../../../results/_probes/gaugal_convergence/2026-11-19/continuation_before_tv_warm_start/circle__c0.5/stages.json) and
-[saved-image score](../../../../results/_probes/gaugal_convergence/2026-11-19/continuation_before_tv_warm_start/circle__c0.5/score.json). The saved predictions have
+See [stage attempts](../../../../results/gaugal/converged_clean_uc_fc/circle__c0.5/stages.json) and
+[saved-image score](../../../../results/gaugal/converged_clean_uc_fc/circle__c0.5/score.json). The saved predictions have
 16 frequency rows, so the all-19-frequency output check is false as expected.
 
 After the first pass the coordinator reported the code agent's finding: each stage
 after the first reset the TV auxiliary to zero on a non-flat image, smearing
 the stage start and causing false circle rejections. This first pass is
 therefore evidence of that implementation. Activity 07 will refit all 20
-with the fixed code only after the coordinator's go. No first-pass result
-is silently replaced, and the failed circle is not counted as recovered.
+with the fixed code only after the coordinator's go. Activity 07 uses a separate tvwarm run folder; no first-pass result
+is replaced, and the failed circle is not counted as recovered.
 
 ## Pauses and timings
 
@@ -167,7 +167,7 @@ At 19:23:14 UTC the coordinator paused probes 1895339/1895343, collector
 
 ## Evidence and activity report
 
-[Continuation run](../../../../results/_probes/gaugal_convergence/2026-11-19/continuation_before_tv_warm_start),
+[Continuation run](../../../../results/gaugal/converged_clean_uc_fc),
 [old defaults](../../../../results/gaugal/default_clean_uc_fs),
 [probe evidence](../../../../results/_probes/gaugal_convergence/2026-11-19),
 and [closed continuation pause](../../../../results/_probes/gaugal_convergence/2026-11-19/pause_for_continuation.json).
