@@ -190,6 +190,14 @@ CPU reporter and publisher were replaced to record restart/source fields
 and publish approved retries. Numerical runner 1921378 was untouched.
 The other six paused processes remain paused for the coordinator.
 
+## Continuation completion summary
+
+Finished 19/19 requested cases, plus saved kite__c4. Area error <=5%: c4 9/10; c0.5 2/10. Area is reported only after fitting; it never selected a step or a restart.
+
+Archived old-code failures: circle__c0.5. The approved retries use the same fixed CLI variant and the committed safeguard. Cap-2000 probes and the simultaneous-frequency campaign remain paused for the coordinator.
+
+Saved kite__c4 source: 2296ed11dc020d7486d27702226c86134f3a0c02; final step 0.2; restarts 0.
+
 ## Evidence
 
 Probe root: results/_probes/gaugal_convergence/2026-11-19/.
@@ -202,11 +210,10 @@ Its first-case forecast is 48.63 minutes total and 43.77 minutes remaining;
 first_case_forecast.json records the numbers and GPU-sharing context.
 
 Activity: evaluate_our_method/06_make_gaugal_fits_converge, 2026-11-19
-Runs: 2/4 probes and 2/10 simultaneous cases completed (paused); 19/19 continuation cases saved
-Result: exact step 0.2: mismatch 19→10.1109053; 1.13543 s/iter; inner 7.48e-7
-Result: exact step 1.0: mismatch 19→10.0824825; 1.13678 s/iter; inner 1.08e-6
-Failures: old-code continuation circle__c0.5 diverged; preserved for the approved safeguarded retry
+Runs: 2/4 probes and 2/10 simultaneous cases completed (paused); 19/19 continuation cases completed plus saved kite__c4
+Result: continuation results and exact case start commits are recorded above; all approved retries finished
+Failures: original circle__c0.5 divergence retained outside canonical run; retry results recorded above
 Upstream patches: none
 Changes to our code: none; scratch script and result records only
-New unknowns: cap-2000 final solve statistics; contrast-0.5 campaign results
-Proposed next activity: finish retained probes, ten simultaneous and 19 continuation cases; needs user decision: none
+New unknowns: paused cap-2000 probe statistics and remaining simultaneous-frequency results
+Proposed next activity: coordinator decides when to resume retained paused work; needs user decision: resume timing
