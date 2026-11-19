@@ -15,6 +15,7 @@ import traceback
 
 import numpy as np
 
+from bem_inverse.io import write
 from experiments.benchmark import scenes as S
 from experiments.gaugal_comparison import tg002_data as D
 
@@ -26,10 +27,13 @@ OUTER_SECONDS = 600.     # the parent stops a hung child after this long
 FREQUENCIES = 19
 CONVERGENCE = dict(window_steps=50, relative_range=.01, tv_schedule_iterations=80)
 CONVERGED_SETTINGS = dict(SETTINGS, num_iter=3000)
+STAGE_COUNTS = (1, 2, 4, 8, 16, 19)
+CONTINUATION_SETTINGS = dict(CONVERGED_SETTINGS, step_size=.2, num_iter=1000)
 
 
 def settings(run):
-    if run.variant not in ('default', 'converged') or run.contrast != 'uc' or run.frequency != 'fs' or run.damped:
+    schedules = ('fs', 'fc') if run.variant == 'converged' else ('fs',)
+    if run.variant not in ('default', 'converged') or run.contrast != 'uc' or run.frequency not in schedules or run.damped:
         raise ValueError('Expected a default or converged GauGal run with unknown contrast and simultaneous real frequencies.')
     config = dict(method='GauGal collocation, FISTA + TV, one coefficient vector over all frequencies',
                 adapter='experiments/gaugal_comparison/gaugal_arm.py', **SETTINGS,
@@ -43,11 +47,17 @@ def settings(run):
                       inner_solver='projected dense LU shared by forward and adjoint',
                       inner_relative_residual_limit=1e-4,
                       tuning='fixed mismatch plateau; original 80-step TV schedule then final weight')
+    if run.variant == 'converged' and run.frequency == 'fc':
+        config.update(CONTINUATION_SETTINGS, stage_frequency_counts=STAGE_COUNTS,
+                      stage_start='previous coefficients, fresh momentum and TV state',
+                      method='GauGal collocation, FISTA + TV, cumulative low-to-high frequency stages')
     return config
 
 
 def case_settings(run, arm):
     values = CONVERGED_SETTINGS if run.variant == 'converged' else SETTINGS
+    if run.variant == 'converged' and run.frequency == 'fc':
+        values = CONTINUATION_SETTINGS
     return arm.settings(values['grid'], **{k: v for k, v in values.items() if k != 'grid'})
 
 
@@ -88,6 +98,10 @@ def record_from(case, run, fit, observed, outcome=None, detail=None):
             for kind in ('forward', 'adjoint', 'endpoint'):
                 arrays[f'{kind}_relative_residual'] = np.asarray([
                     [s['final_rel'] for s in solves if s['kind'] == kind] for solves in fit['solve_residuals']])
+        if 'stages' in fit:
+            record['stages'] = fit['stages']
+            record['hit_cap'] = any(stage['hit_cap'] for stage in fit['stages'])
+            arrays.update(fit['solve_arrays'])
         record['history'] = fit['history']
     return record, arrays
 
@@ -116,9 +130,19 @@ def fit_case(run, case, root, checkpoint_path=None):
 
         chosen = case_settings(run, gaugal_arm)
         try:
-            extra = dict(convergence=CONVERGENCE) if run.variant == 'converged' else {}
-            fit = gaugal_arm.reconstruct(blind, chosen, frequencies=list(range(FREQUENCIES)), verbose=True,
-                                         max_seconds=None if extra else MAX_SECONDS, checkpoint=checkpoint, **extra)
+            if run.variant == 'converged' and run.frequency == 'fc':
+                def stage_finished(stages):
+                    write(run.folder(root)/case/'stages.json', stages)
+                    stage = stages[-1]
+                    print(f"STAGE {stage['frequency_count']}: {stage['stop_reason']} at {stage['iterations']}, "
+                          f"weighted mismatch {stage['final_weighted_mismatch']:.6g}", flush=True)
+
+                fit = gaugal_arm.reconstruct_continuation(blind, chosen, STAGE_COUNTS, CONVERGENCE,
+                                                          checkpoint, stage_finished)
+            else:
+                extra = dict(convergence=CONVERGENCE) if run.variant == 'converged' else {}
+                fit = gaugal_arm.reconstruct(blind, chosen, frequencies=list(range(FREQUENCIES)), verbose=True,
+                                             max_seconds=None if extra else MAX_SECONDS, checkpoint=checkpoint, **extra)
             record, arrays = record_from(case, run, fit, blind.observed)
         except Exception:
             if not last:

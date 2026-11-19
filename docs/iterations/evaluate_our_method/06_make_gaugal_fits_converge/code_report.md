@@ -38,3 +38,18 @@ uses the original BiCGStab gradient, TV schedule and time limits.
 
 The GauGal-only parser change admits the new run name through the normal
 comparison CLI. The BEM parser continued to reject `converged`.
+
+## Cumulative frequency continuation
+
+The coordinator fixed this follow-up before the continuation run. It uses
+the lowest 1, 2, 4, 8, 16 and 19 frequencies in order. Every stage uses
+step 0.2 and the same 51-value plateau test, with a 1,000-iteration cap.
+
+Only the previous stage’s endpoint coefficients initialize the next stage.
+Each stage restarts momentum, the TV variables and its 80-iteration TV
+schedule. The TV scale uses that stage’s frequency count. The fixed
+matrices are reused across stages.
+
+The case’s `stages.json` is written after each endpoint prediction. It
+records starting and final mismatch, per-frequency field residuals,
+iterations, elapsed time, stop reason and cap status.

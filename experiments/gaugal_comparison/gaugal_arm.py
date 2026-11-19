@@ -156,18 +156,33 @@ def checked_gradient(model, collocation, coeff, u_warm, v_warm, opts):
 
 
 def reconstruct(case, case_settings, *, frequencies=None, pixels=PIXELS, device='cuda',
-                controls=SolverControls(), verbose=False, max_seconds=None, checkpoint=None, convergence=None):
+                controls=SolverControls(), verbose=False, max_seconds=None, checkpoint=None, convergence=None,
+                initial_coefficients=None, operator_cache=None):
     """GGB-002: one GauGal fit over several frequencies (FISTA + TV, shared coefficients)."""
     frequencies = list(range(len(case.frequencies_hz))) if frequencies is None else list(frequencies)
     opts = paper_options(case_settings, controls)
     start = perf_counter()
-    models = [build_model(case, i, pixels, device) for i in frequencies]
-    collocations = [build_synthetic_galerkin_model(m, opts) for m in models]
+    if operator_cache is None:
+        models = [build_model(case, i, pixels, device) for i in frequencies]
+        collocations = [build_synthetic_galerkin_model(m, opts) for m in models]
+    else:
+        # Cache only fixed operators. Each stage starts with fresh fields,
+        # momentum, TV dual variables and solve records.
+        for i in frequencies:
+            if i not in operator_cache:
+                model = build_model(case, i, pixels, device)
+                collocation = build_synthetic_galerkin_model(model, opts)
+                prepare_direct(collocation)
+                operator_cache[i] = (model, collocation)
+        models, collocations = zip(*(operator_cache[i] for i in frequencies))
+        for c in collocations:
+            c.linear_solve_stats = []
     gradient = collocation_gradient
     tv_opts = opts
     if convergence:
-        for c in collocations:
-            prepare_direct(c)
+        if operator_cache is None:
+            for c in collocations:
+                prepare_direct(c)
         opts = replace(opts, collocation_linear_solver='direct')
         tv_opts = replace(opts, num_iter=convergence['tv_schedule_iterations'])
         gradient = checked_gradient
@@ -176,6 +191,10 @@ def reconstruct(case, case_settings, *, frequencies=None, pixels=PIXELS, device=
     weights = [1./float(torch.linalg.vector_norm(m.data))**2 for m in models]
     first = collocations[0]
     coeff = torch.zeros(first.num_basis, device=device, dtype=first.real_dtype)
+    if initial_coefficients is not None:
+        coeff = torch.as_tensor(initial_coefficients, device=device, dtype=first.real_dtype)
+        if coeff.shape != (first.num_basis,) or not bool(torch.isfinite(coeff).all()):
+            raise ValueError('Invalid starting coefficient vector')
     momentum, q = coeff.clone(), 1.
     fields = [c.uinc.clone() for c in collocations]
     adjoints = [torch.zeros_like(c.uinc) for c in collocations]
@@ -257,3 +276,38 @@ def reconstruct(case, case_settings, *, frequencies=None, pixels=PIXELS, device=
                     unconverged=sum(not bool(s.get('converged', 0)) for s in c.linear_solve_stats),
                     max_final_relative=max((s.get('final_rel', 0.) for s in c.linear_solve_stats), default=0.))
                     for i, c in zip(frequencies, collocations)])
+
+
+def reconstruct_continuation(case, case_settings, counts, convergence, checkpoint, stage_finished):
+    """Fit cumulative bands in order, transferring only the image coefficients."""
+    cache = {}
+    stages, history, linear_solves, residual_arrays = [], [], [], {}
+    build_seconds = optimize_seconds = 0.
+    initial = None
+    for count in counts:
+        fit = reconstruct(case, case_settings, frequencies=range(count), convergence=convergence,
+                          checkpoint=checkpoint, verbose=True, initial_coefficients=initial,
+                          operator_cache=cache)
+        initial = fit['coefficients']
+        residual = D.relative_error(fit['predictions'], case.observed[:count])
+        stage = dict(frequency_count=count, frequencies_hz=case.frequencies_hz[:count].tolist(),
+                     iterations=fit['iterations'], stop_reason=fit['stop_reason'],
+                     hit_cap=fit['stop_reason'] == 'iteration_limit',
+                     initial_weighted_mismatch=fit['history'][0]['weighted_misfit'] if fit['history'] else None,
+                     final_weighted_mismatch=float(np.sum(residual**2)), residual=residual.tolist(),
+                     setup_seconds=fit['build_seconds'], fit_seconds=fit['optimize_seconds'])
+        stages.append(stage)
+        stage_finished(stages)
+        build_seconds += fit['build_seconds']
+        optimize_seconds += fit['optimize_seconds']
+        history.extend(dict(row, frequency_count=count) for row in fit['history'])
+        linear_solves.extend(dict(row, frequency_count=count) for row in fit['linear_solves'])
+        for kind in ('forward', 'adjoint', 'endpoint'):
+            residual_arrays[f'stage_{count}_{kind}_relative_residual'] = np.asarray([
+                [s['final_rel'] for s in solves if s['kind'] == kind] for solves in fit['solve_residuals']])
+        if fit['stop_reason'] not in ('iteration_limit', 'mismatch_plateau'):
+            break
+    fit.pop('solve_residuals')
+    fit.update(stages=stages, history=history, linear_solves=linear_solves, solve_arrays=residual_arrays,
+               iterations=len(history), build_seconds=build_seconds, optimize_seconds=optimize_seconds)
+    return fit
