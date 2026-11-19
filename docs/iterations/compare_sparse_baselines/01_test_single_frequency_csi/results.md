@@ -69,7 +69,13 @@ BEM fits (`bem/default_n1d0_uc_sf0.5`) were run by the BEM coordinator
 and their records appeared at 04:07. The circle fit stopped at the
 noise level after its first stage (five accepted steps, 0.2 s of
 fitting): its 1.04% residual is below the 1.11% realized noise. The
-kite fit ran its whole schedule and did not reach the noise level.
+kite fit ran its whole schedule and did not reach the noise level; both
+of its stages ended on the 22-step cap. The two fits ran alone on the
+machine from 04:06:08 to 04:07:11 and are pushed as `b09d50556`.
+Recovered contrasts: 3.075 on circle and 0.0107 on kite, against a true 4.
+The BEM coordinator notes that its `fit.json` lists eight uncommitted
+code paths at run time. They are other agents' analysis scripts, not on
+the default fit path; the solver was committed.
 
 Noise information each method gets: CSI gets none and runs the fixed
 2,048 iterations. The BEM fit is told the per-frequency noise standard
@@ -164,6 +170,22 @@ match the 0.5 GHz column of the BEM noise files bit for bit.
   65 mm circle and fits one curve and one contrast.
 - It says nothing about the default 19-frequency BEM method. That needs
   a matched multifrequency comparison.
+
+## Limitations
+
+- Two shapes, one contrast, one frequency, one noise draw.
+- The noisy comparison is not symmetric in what each method knows. BEM
+  is told the noise level and stops there; CSI is told nothing.
+- CSI's image is scored on a 1.25 mm grid resampled to the scoring
+  grid. The true circle scores 0.69% through that path, so this floor
+  is small against the errors here.
+- The circle image has three small pieces in the corners of the image
+  domain. The protocol keeps every piece; they add 3.4% to its error.
+- Open: why the forward error stays at 0.64% on the finer grid, and why
+  CSI's own data cost (about 1.5e-5) is so far below the field residual
+  of its image solved forward (12% to 24%).
+- BEM runtimes are GPU fits; CSI runtimes are one CPU worker with eight
+  threads. They are not a like-for-like speed comparison.
 
 ## Evidence
 
