@@ -6,24 +6,26 @@ The warm-up passed 10/10 cases at contrast 0.5, 9/10 at 4 and 1/10 at 13.3. Amon
 
 **Round two recovered one more case.** For kite at 13.3, changing the warm-up start from 0.485 to 1.515 lowered final error from 315.98% to 0.0901%. Five other two-sided tests kept the weak start. Longer warm-ups and a longer wall yielded no further passes. [Round-two endpoints](../../../../results/bem/stage_scheduling/2026-11-19/clean_tg002/round_two_endpoints.csv)
 
+**The frequency control kept one of four rescues.** Only cog at contrast 0.5 passed with either warm-up frequency. At contrast 13.3, all four close disk starts lowered final area error. Only kite passed. [Frequency control](#warm-up-frequency-control) · [Four disk-start fits](#what-happened-after-starting-the-fit-at-the-selected-disk)
+
 ## What explains each of the 14 misses?
 
 Errors measure missing plus excess area as a percentage of true area at the end of the full fit. **Matched test** identifies the effect of the named change on final error. **Observation only** marks a possible cause of the final miss. A rejected mirror was tested through warm-up only. Background contrast is 1. [Paired endpoint scores](../../../../results/bem/stage_scheduling/2026-11-19/clean_tg002/matched_endpoints.csv)
 
 | Case | Original error | Warm-up error | Cause and strength of evidence | Evidence |
 |---|---:|---:|---|---|
-| `cog__c0.5` | 17.11% | 0.30% | **Matched test.** Missing warm-up. Adding the 0.25 GHz band-one stage recovered the case. | [Fit record](../../../../results/bem/stage_scheduling/2026-11-19/clean_tg002/warmup/cog__c0.5.json) |
-| `kite__c4` | 467.38% | 0.10% | **Matched test.** Missing warm-up. Adding the 0.25 GHz band-one stage recovered the case. | [Fit record](../../../../results/bem/stage_scheduling/2026-11-19/clean_tg002/warmup/kite__c4.json) |
+| `cog__c0.5` | 17.11% | 0.30% | **Matched test.** Adding a band-one stage recovered cog at both tested frequencies. At 0.5 GHz the final error was 0.30%. | [Fit record](../../../../results/bem/stage_scheduling/2026-11-19/clean_tg002/warmup/cog__c0.5.json) · [Frequency control](../../../../results/bem/stage_scheduling/2026-11-19/clean_tg002/warmup_050/cog__c0.5.json) |
+| `kite__c4` | 467.38% | 0.10% | **Matched test.** The 0.25 GHz band-one warm-up recovered the case. Changing only its frequency to 0.5 GHz gave 936.41% error. | [Fit record](../../../../results/bem/stage_scheduling/2026-11-19/clean_tg002/warmup/kite__c4.json) · [Frequency control](../../../../results/bem/stage_scheduling/2026-11-19/clean_tg002/warmup_050/kite__c4.json) |
 | `c_shape__c4` | 43.78% | 43.97% | **Matched test.** The narrow stage-one band closed the opening. Widening the four early bands together preserved it and gave 0.07% final error. | [Matched band test](../01_trace_stage_stops_and_shape_bands/shape_bands.md) |
-| `aphex_twin__c4` | 196.85% | 0.22% | **Matched test.** Missing warm-up. Adding the 0.25 GHz band-one stage recovered the case. | [Fit record](../../../../results/bem/stage_scheduling/2026-11-19/clean_tg002/warmup/aphex_twin__c4.json) |
-| `circle__c13.3` | 231.38% | <0.001% | **Matched test.** Missing warm-up. Adding the 0.25 GHz band-one stage recovered the case. | [Fit record](../../../../results/bem/stage_scheduling/2026-11-19/clean_tg002/warmup/circle__c13.3.json) |
-| `kite__c13.3` | 306.74% | 315.98% | **Matched test.** Wrong-side start. The mirror at 1.515 won the warm-up loss comparison and the same ladder recovered the case at 0.0901%. | [Round-two fit](../../../../results/bem/stage_scheduling/2026-11-19/clean_tg002/two_sided/kite__c13.3.json) |
+| `aphex_twin__c4` | 196.85% | 0.22% | **Matched test.** The 0.25 GHz band-one warm-up recovered the case. Changing only its frequency to 0.5 GHz gave 571.42% error. | [Fit record](../../../../results/bem/stage_scheduling/2026-11-19/clean_tg002/warmup/aphex_twin__c4.json) · [Frequency control](../../../../results/bem/stage_scheduling/2026-11-19/clean_tg002/warmup_050/aphex_twin__c4.json) |
+| `circle__c13.3` | 231.38% | <0.001% | **Matched test.** The 0.25 GHz band-one warm-up recovered the case. Changing only its frequency to 0.5 GHz gave 148.64% error. | [Fit record](../../../../results/bem/stage_scheduling/2026-11-19/clean_tg002/warmup/circle__c13.3.json) · [Frequency control](../../../../results/bem/stage_scheduling/2026-11-19/clean_tg002/warmup_050/circle__c13.3.json) |
+| `kite__c13.3` | 306.74% | 315.98% | **Matched test.** The wrong-side start mattered. Both the mirrored start and the selected disk recovered kite at 0.0901%. | [Round-two fit](../../../../results/bem/stage_scheduling/2026-11-19/clean_tg002/two_sided/kite__c13.3.json) · [Disk-start fit](../../../../results/bem/stage_scheduling/2026-11-19/clean_tg002/localized_real_warmup/kite__c13.3.json) |
 | `peanut__c13.3` | 161.07% | 149.53% | **Observation only.** The weak start is below background. The mirror stalled after seven steps at higher loss. The matched selection repeated the 149.53% miss. | [Round-two fit](../../../../results/bem/stage_scheduling/2026-11-19/clean_tg002/two_sided/peanut__c13.3.json) |
 | `asymmetric__c13.3` | 186.30% | 185.50% | **Observation only.** The mirror crossed below background and stalled after 12 steps. The matched selection kept the weak start at both caps. | [Round-two fit](../../../../results/bem/stage_scheduling/2026-11-19/clean_tg002/two_sided/asymmetric__c13.3.json) |
 | `hook__c13.3` | 171.76% | 578.88% | **Observation only.** The mirror stalled after 14 steps at loss 0.403, above the weak side’s 0.211. The matched selection kept the weak start. | [Round-two fit](../../../../results/bem/stage_scheduling/2026-11-19/clean_tg002/two_sided/hook__c13.3.json) |
-| `cross__c13.3` | 128.08% | 154.24% | **Observation only.** The mirror used all 44 and then all 220 steps. Its loss stayed above the weak side’s at both caps, so both fits kept the weak start. | [Round-two fit](../../../../results/bem/stage_scheduling/2026-11-19/clean_tg002/two_sided_long/cross__c13.3.json) |
-| `cog__c13.3` | 72.89% | 74.46% | **Observation only.** The mirror crossed below background and stalled after nine steps. The matched selection kept the weak start at both caps. | [Round-two fit](../../../../results/bem/stage_scheduling/2026-11-19/clean_tg002/two_sided/cog__c13.3.json) |
-| `star__c13.3` | 58.79% | 80.16% | **Matched test.** The 44-step cap cut off a moving warm-up. Extending it drove contrast to 2,079 and worsened final error to 98.61%. The cause of the remaining miss is open. | [Round-two fit](../../../../results/bem/stage_scheduling/2026-11-19/clean_tg002/warmup_long_wall600/star__c13.3.json) |
+| `cross__c13.3` | 128.08% | 154.24% | **Matched test.** The mirrored warm-up hit both caps and lost to the weak side. The selected disk cut the error to 30.99% before the wall limit. | [Round-two fit](../../../../results/bem/stage_scheduling/2026-11-19/clean_tg002/two_sided_long/cross__c13.3.json) · [Disk-start fit](../../../../results/bem/stage_scheduling/2026-11-19/clean_tg002/localized_real_warmup/cross__c13.3.json) |
+| `cog__c13.3` | 72.89% | 74.46% | **Matched test.** The mirrored start lost to the weak side. The selected disk put contrast near truth and improved the endpoint to 43.20%, still a miss after the full schedule. | [Round-two fit](../../../../results/bem/stage_scheduling/2026-11-19/clean_tg002/two_sided/cog__c13.3.json) · [Disk-start fit](../../../../results/bem/stage_scheduling/2026-11-19/clean_tg002/localized_real_warmup/cog__c13.3.json) |
+| `star__c13.3` | 58.79% | 80.16% | **Matched test.** Extending the capped weak-start warm-up worsened error to 98.61%. The selected disk missed at 30.57%. | [Round-two fit](../../../../results/bem/stage_scheduling/2026-11-19/clean_tg002/warmup_long_wall600/star__c13.3.json) · [Disk-start fit](../../../../results/bem/stage_scheduling/2026-11-19/clean_tg002/localized_real_warmup/star__c13.3.json) |
 | `c_shape__c13.3` | 85.96% | 114.86% | **Matched test.** Extending the capped warm-up drove contrast to 6,674. Error fell to 100.62%. At 600 s the schedule finished at essentially the same error. | [Round-two fit](../../../../results/bem/stage_scheduling/2026-11-19/clean_tg002/warmup_long_wall600/c_shape__c13.3.json) |
 | `aphex_twin__c13.3` | 567.95% | 106.56% | **Matched test.** The warm-up stayed at its 16-step local minimum (contrast 7.80) under both caps. The 600 s wall still left 105.84% error. | [Round-two fit](../../../../results/bem/stage_scheduling/2026-11-19/clean_tg002/warmup_long_wall600/aphex_twin__c13.3.json) · [Curvature](../../../../results/bem/stage_scheduling/2026-11-19/clean_tg002/../real_disk_starts/warmup_curvature.json) |
 
@@ -125,22 +127,26 @@ At the second-stage entry for contrast 13.3, the nearest equal-area disk on the 
 
 The measured cylinder reaches a 41 nm neck. Two refused steps demonstrably put one side through the other. Only two of 80 clean miss stages tried moves and refused every one before candidate physics. Circle and star at 13.3 account for both. None of 170 pass stages did so. The original TG-002 files omit refusal reasons. [Refusal counts, reconstruction and figure](trial_refusals.md)
 
-## Limits and one further comparison
+## Warm-up controls and their limits
 
 The matched warm-up tests the added stage as a whole. It changes the first frequency, first update band and amount of work spent before the ladder. In round one, only asymmetric and C-shape received matched cap and wall extensions. Across the originals the 14 misses had 39 capped stages out of 80, while the 16 passes had seven out of 170. Nine misses ended on a physics failure and five on time. Counting stop labels alone cannot assign a cause. [All original stops](../../../../results/bem/stage_scheduling/2026-11-19/clean_tg002/original_stages.csv)
 
-The coordinator approved changing only the successful warm-up frequency from 0.25 to 0.5 GHz for all four rescued cases (cog at 0.5, kite and Aphex Twin at 4, circle at 13.3). Passing would show that the same restricted first stage can rescue that case at the default first frequency. A miss would show that the first frequency matters for this controlled pair. Each of the four fits has a nominal 120 s limit and 13,412 units. [Proposed driver](../../../../experiments/comparison/check_warmup_frequency.py)
+### Warm-up frequency control
 
-```sh
-PYTHONPATH=solvers:. OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 OMP_NUM_THREADS=1 \
-  /home/drdeng/miniconda3/envs/EMNerf/bin/python -m experiments.comparison.check_warmup_frequency circle__c13.3
-```
+**Only cog at contrast 0.5 recovered with the 0.5 GHz warm-up.** Kite and Aphex Twin at contrast 4, and circle at 13.3, required 0.25 GHz in this matched pair. For cog, adding a band-one stage at the ladder’s existing first frequency was sufficient. The plain ladder missed at 17.11%.
 
-The driver would write `results/bem/stage_scheduling/2026-11-19/clean_tg002/warmup_050/circle__c13.3.json`.
+| Case | 0.25 GHz warm-up, final error | 0.5 GHz warm-up, final error | Contrast at 0.5 GHz warm-up exit | Final contrast |
+|---|---:|---:|---:|---:|
+| [Circle](../../../../results/bem/stage_scheduling/2026-11-19/clean_tg002/warmup_050/circle__c13.3.json) at 13.3 | <0.001% | **148.64%** | 3.163 | 1.944 |
+| [Kite](../../../../results/bem/stage_scheduling/2026-11-19/clean_tg002/warmup_050/kite__c4.json) at 4 | 0.10% | **936.41%** | 1.562 | 1.626 |
+| [Aphex Twin](../../../../results/bem/stage_scheduling/2026-11-19/clean_tg002/warmup_050/aphex_twin__c4.json) at 4 | 0.22% | **571.42%** | 1.194 | 1.635 |
+| [Cog](../../../../results/bem/stage_scheduling/2026-11-19/clean_tg002/warmup_050/cog__c0.5.json) at 0.5 | 0.30% | **0.30%** | 0.514 | 0.500 |
+
+The three failed runs already had 162% to 920% area error at warm-up exit and all ended on a forward-solver failure at the first full-catalog stage. The four comparisons used the same initial curve, weak contrast estimate, one-frequency weight, band, storage and step allowance. Only the warm-up observation and its wavenumber changed. The common ladder stage settings and the fit limits matched. [Frequency-control driver](../../../../experiments/comparison/check_warmup_frequency.py)
 
 ## Test real-data disk starts and band-one stopping
 
-**A truth-free 0.25 GHz disk search found a close start for four of the nine remaining contrast-13.3 misses (kite, star, cross and cog).** In all four, the selected centre is within 1.3 mm, the radius within 10% of the equal-area radius, and the material within 15% of 13.3. The other five show why fitting one frequency can favour the wrong material or position. These are starting disks. Recovery requires running the warm-up and ladder from them.
+**A truth-free 0.25 GHz disk search found a close start for four of the nine remaining contrast-13.3 misses (kite, star, cross and cog).** In all four, the selected centre is within 1.3 mm, the radius within 10% of the equal-area radius, and the material within 15% of 13.3. The other five show why fitting one frequency can favour the wrong material or position. The subsequent matched fits recovered 1 of those four cases. [Disk-start endpoints](#what-happened-after-starting-the-fit-at-the-selected-disk)
 
 ### What the localizer can return
 
@@ -220,14 +226,22 @@ On 19 November 2026 the fixed-material diagnostic evaluated 111 × 111 centres a
 
 A second mesh used 15,132,825 predictions and took another 38.42 s as a check. Across all 30 winners the two meshes differed by at most 0.00032 mm in radius, 0.0013 in contrast, and 1.1 × 10⁻¹¹ in loss. A post-selection descent seeded at the equal-area truth found no lower solution among the nine. The finite search covers the stated parameter range. It cannot establish global optimality beyond it. [Mesh-check starts](../../../../results/bem/stage_scheduling/2026-11-19/real_disk_starts/mesh_check/joint_starts.json) · [Numerical checks](../../../../results/bem/stage_scheduling/2026-11-19/real_disk_starts/disk_checks.json)
 
-**Matched arm for the coordinator.** On cog at 13.3 the truth-free disk gives radius 46.61 mm, contrast 13.186 and centre error 0.0013 mm. The control starts at 65 mm, contrast 0.05 and misses. The command below changes only the initial disk and material before the same 0.25 GHz warm-up and real ladder. The 120 s wall and 13,412-unit fit limits remain in force. The separate CPU search cost is recorded outside those limits. This diagnostic leaves adoption to the user. [Matched-arm driver](../../../../experiments/comparison/check_localized_real_warmup.py)
+### What happened after starting the fit at the selected disk?
 
-```sh
-PYTHONPATH=solvers:. OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 OMP_NUM_THREADS=1 \
-  /home/drdeng/miniconda3/envs/EMNerf/bin/python -m experiments.comparison.check_localized_real_warmup cog__c13.3
-```
+**Only kite recovered from the selected disk.** Each disk had already passed the radius and material checks. The test changed centre, radius and starting contrast together, then ran the same 0.25 GHz warm-up and ladder.
 
-Output is `results/bem/stage_scheduling/2026-11-19/clean_tg002/localized_real_warmup/cog__c13.3.json`.
+| Case | Plain warm-up, final error | Disk at warm-up exit, error | After first ladder stage | Disk start, final error | Final contrast | Fit stop |
+|---|---:|---:|---:|---:|---:|---|
+| [Cog](../../../../results/bem/stage_scheduling/2026-11-19/clean_tg002/localized_real_warmup/cog__c13.3.json) | 74.46% | 17.17% | 22.60% | **43.20%** | 21.717 | Completed |
+| [Kite](../../../../results/bem/stage_scheduling/2026-11-19/clean_tg002/localized_real_warmup/kite__c13.3.json) | 315.98% | 43.53% | 14.78% | **0.09%** | 13.300 | Completed |
+| [Star](../../../../results/bem/stage_scheduling/2026-11-19/clean_tg002/localized_real_warmup/star__c13.3.json) | 80.16% | 31.23% | 129.98% | **30.57%** | 17.944 | Completed |
+| [Cross](../../../../results/bem/stage_scheduling/2026-11-19/clean_tg002/localized_real_warmup/cross__c13.3.json) | 154.24% | 31.84% | 31.97% | **30.99%** | 8.864 | Wall limit |
+
+Kite first passed at ladder stage three and finished at the same 0.0901% error as the mirrored start. Cog’s disk fit the warm-up observation at loss 6.5 × 10⁻¹¹. Its area error rose from 17.17% at warm-up exit to 40.93% after the four ladder stages and 43.20% after the complete schedule, at contrast 21.72.
+
+Star’s first ladder stage raised area error from 31.23% to 129.98%. The completed fit brought it back to 30.57%. Cross reached 21.80% at the second ladder exit, then finished at 30.99% when the fit hit its wall at 124.45 s. All four disks took zero accepted warm-up steps.
+
+All eight final scores were recomputed from the saved outlines. The disk fits used the same sealed data, stage settings and 120 s / 13,412-unit limits as their warm-up controls. The shared disk search took 51.56 s across 30 cases outside those limits. This is a diagnostic. The user’s default remains one centred start, localization `none`, and no grid search. [Eight matched endpoints](../../../../results/bem/stage_scheduling/2026-11-19/clean_tg002/warmup_frequency_and_disk_endpoints.csv) · [Disk-start driver](../../../../experiments/comparison/check_localized_real_warmup.py)
 
 **C-shape at contrast 4.** Its warm-up changes final area error from 43.78% to 43.97%. The earlier matched comparison already showed how the first narrow shape band closed the opening, covering 99.47% of it, while the wider early bands left 1.76% covered and recovered the shape at 0.07% final error without warm-up. That answers this case. Changing the default band schedule for other shapes would be a separate question. [Earlier band comparison](../01_trace_stage_stops_and_shape_bands/results.md)
 
