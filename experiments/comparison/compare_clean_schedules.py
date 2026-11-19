@@ -9,7 +9,7 @@ import traceback
 
 import numpy as np
 
-from bem_inverse.io import curve_from, digest, read, write
+from bem_inverse.io import curve_from, digest, portable, read, write
 from bem_inverse.material import MaterialUnknown
 from bem_inverse.problem import Problem
 from bem_inverse.real_only_policy import RealOnlyPolicy
@@ -86,7 +86,7 @@ def inventory():
 
 
 def stage_settings(decisions):
-    return {event['operation']['label']: event['operation']['stage'] for event in decisions
+    return {event['operation']['label']: portable(event['operation']['stage']) for event in decisions
             if event['reason'] == 'resolved stage entered'}
 
 
