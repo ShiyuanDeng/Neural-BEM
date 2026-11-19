@@ -64,7 +64,7 @@ The ten `known` fits run from a detached launcher, `results/bem/stage_scheduling
 
 Outputs: `results/bem/stage_scheduling/2026-11-19/clean_tg002/default_recovered/` and `.../default_known/`, one JSON per case. Driver: [`compare_clean_default_contrasts.py`](../../../../experiments/comparison/compare_clean_default_contrasts.py).
 
-## Added 14:06 UTC: was the supplied-contrast warm-up stopped early?
+## Added 14:04 UTC: was the supplied-contrast warm-up stopped early?
 
 The ten fits are in: one of ten recovers with the contrast supplied, the circle, as with recovered contrast. In six of the nine misses the warm-up stage ended on its 44-step cap with the loss still at 0.45 to 1.0 (kite, peanut, asymmetric, hook, cross, cog). "Early stops" is one of the user's two suspects, so this is checked before the result is written.
 
