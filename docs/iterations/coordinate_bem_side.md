@@ -9,7 +9,7 @@ It is a temporary second file. The user: "i would prefer to use one
 coordination file, but temporarily to avoid the current coordination file
 being too long you can have a new one". Merge it back when the work is done.
 
-**Latest state: 19 November 2026, 07:00 UTC.** The overnight failure
+**Latest state: 19 November 2026, 06:50 UTC.** The overnight failure
 investigation is answered. Nothing of the BEM side runs and no watcher is
 armed. Read the "Final state" block of
 [Failure investigation](#failure-investigation-opened-19-november-0221-utc)
@@ -17,9 +17,11 @@ first: counts, report links and what waits for the user.
 
 ## Failure investigation (opened 19 November, 02:21 UTC)
 
-**Final state, 19 November, 07:00 UTC: answered; nothing runs.** Every
+**Final state, 19 November, 06:50 UTC: answered; nothing runs.** Every
 launcher's state file ends in "BATCH DONE", the GPU is free, no watcher is
-armed and both agent panes are closed. The supervisor (`w3:p1`, 05:41) asked
+armed and both agent panes are closed (06:49; `codex resume` reopens them:
+`tg-misses` session `01a1f19e-37a3-77e0-b671-d11f11cbb048`, `cylinder`
+session `01a1f19e-7447-7452-8ff4-1e887d7903df`). The supervisor (`w3:p1`, 05:41) asked
 that rounds three and five be the last batches and that new experimental
 questions wait for the user. None was started.
 
@@ -99,8 +101,8 @@ at the user's request; that edit is its own and was uncommitted at 02:30.
 
 | Agent | Pane | Launch | Task | State |
 |---|---|---|---|---|
-| `tg-misses` | `w4:p2` | `codex -m gpt-6.2-astra -c model_reasoning_effort="high" -s workspace-write -a never` | [Brief](investigate_bem_stage_scheduling/03_compare_schedule_effects/brief_tg_misses.md): refused trials, "large and weak" fits, scoring the matched tests | done; pane closed 19 November |
-| `cylinder` | `w4:p3` | `codex -m gpt-6.1-sol -c model_reasoning_effort="medium" -s workspace-write -a never` | [Brief](investigate_bem_stage_scheduling/03_compare_schedule_effects/brief_cylinder.md): loss map, stage table, comparing the measured fits | done; pane closed 19 November |
+| `tg-misses` | `w4:p2` | `codex -m gpt-6.2-astra -c model_reasoning_effort="high" -s workspace-write -a never` | [Brief](investigate_bem_stage_scheduling/03_compare_schedule_effects/brief_tg_misses.md): refused trials, "large and weak" fits, scoring the matched tests | done; pane closed 19 November, 06:49 |
+| `cylinder` | `w4:p3` | `codex -m gpt-6.1-sol -c model_reasoning_effort="medium" -s workspace-write -a never` | [Brief](investigate_bem_stage_scheduling/03_compare_schedule_effects/brief_cylinder.md): loss map, stage table, comparing the measured fits | done; pane closed 19 November, 06:49 |
 
 **Coordinator's decisions.**
 
