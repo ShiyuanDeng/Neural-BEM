@@ -1,8 +1,8 @@
 #!/bin/bash
-# Coordinator batch 03, 19 November 2026: round two on the contrast-13.3 misses. Waits for batch 02.
+# Coordinator batch 03, 19 November 2026: round two on the contrast-13.3 misses. Waits for batches 02 and 02b (all four measured fits).
 cd /home/drdeng/Neural_SDF_BEM_AD_organised || exit 1
 L=results/bem/stage_scheduling/2026-11-19/clean_tg002/logs
-until grep -q "BATCH DONE" $L/batch_02.state 2>/dev/null; do sleep 10; done
+until grep -q "BATCH DONE" $L/batch_02.state 2>/dev/null && grep -q "BATCH DONE" $L/batch_02b.state 2>/dev/null; do sleep 10; done
 export PYTHONPATH=solvers:. OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 OMP_NUM_THREADS=1
 P=/home/drdeng/miniconda3/envs/EMNerf/bin/python
 one() { tag=$1; c=$2; shift 2

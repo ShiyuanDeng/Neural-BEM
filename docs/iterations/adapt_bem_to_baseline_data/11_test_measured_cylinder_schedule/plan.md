@@ -43,3 +43,20 @@ The first team (Codex tasks outside Herdr) was stopped by the user at 02:20 UTC,
 - **Reruns.** The warm-up fit is run again in full as `attempt_02`; `first_cap` as planned. The coordinator runs both from pane `w4:p1`, because the agents are sandboxed without a GPU.
 - **What the stopped run already shows.** The 1 GHz warm-up drove the contrast from 1.09 to 32.6 in 44 steps while loss fell to 0.0860; the original first stage reached 0.0909 at contrast 1.73. Two very different circles fit 1 GHz about equally. So add a loss map: measured-data loss of an exact circle over radius and permittivity, for the frequency sets of each stage (1; 1–2; 1–3; 1–4; 1–8 GHz), with the paths of the original fit, the warm-up fit and the first-cap fit drawn on it. CPU only.
 - **Refused trials.** In the saved fit all 763 refused trials checked so far say `self_intersection`, including steps of 7 nm. Item 3 of the comparisons is therefore sharpened: decide whether the accepted stage-three curve itself fails the slider's intersection check, which accepted step introduced that, and whether the crossing is real on a fine grid. `tg-misses` (GPT-6.2-Astra, high) does this part, because the same check runs on TG-002; `cylinder` (GPT-6.1-Sol, medium) owns the loss map, the fit comparison and `results.md`.
+
+## Round two: settle circle-scale geometry before shape release
+
+19 November 2026. These two variants are the coordinator's choice. Question: if radius, place and material are settled on several frequencies before shape detail is released, does the fit reach the best-circle region (15.3 mm, permittivity 3.05, loss 0.0375) and stay near it? Band 1 with storage 4 is the existing low-detail warm-up parameterization, not a constraint to an exact disk.
+
+Both variants start with five real-data stages: `circle_1_real` on 1 GHz, `circle_2_real` on 1–2, `circle_3_real` on 1–3, `circle_4_real` on 1–4, and `circle_full_real` on all eight frequencies. Each uses update band 1, storage band 4, quota 600 and 44 iterations. `circle_ladder` replaces the original four ladder stages, then keeps the original full-catalog stages, cleanup and frontier verbatim. `circle_then_ladder` prepends the five stages to every original operation verbatim.
+
+Budget: two additional CUDA fits, run by the coordinator, each capped at the saved 3,600 s and 13,412 total work units. The added stage quotas do not raise that global cap. Keep the measured input, centred start, weak material estimate, slider, modal Müller, fitted material and other settings unchanged. Compare circle-stage exits and final results with the saved control and best circle: measured loss, radius, centre, permittivity and nominal area error; distinguish arrival near the circle from staying there after shape release.
+
+```bash
+/home/drdeng/miniconda3/envs/EMNerf/bin/python experiments/bem_on_baseline_data/csi_measured_warmups.py circle_ladder
+/home/drdeng/miniconda3/envs/EMNerf/bin/python experiments/bem_on_baseline_data/csi_measured_warmups.py circle_then_ladder
+```
+
+Outputs: `results/bem/baseline_data/measured_schedule/2026-11-19/{circle_ladder,circle_then_ladder}/dielTM_dec8f/cuda/attempt_01/`, through the existing wrapper's attempt handling. Keep manifests, fits, stage/trial records, scores and failures; the coordinator commits them. Write comparisons in `results.md`.
+
+Dry check, with no fit or forward solve: `/home/drdeng/miniconda3/envs/EMNerf/bin/python experiments/bem_on_baseline_data/csi_measured_warmups.py --dry-check`. It passed for both variants: input hash, original operation records, retained operation records, five added stage settings and saved global limits all match. It prints labels, frequencies, update/storage bands, quotas and iteration caps.

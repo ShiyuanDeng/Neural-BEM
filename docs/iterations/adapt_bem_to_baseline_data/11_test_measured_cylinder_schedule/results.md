@@ -4,6 +4,8 @@
 
 The saved result does not establish that the data prefer a 19 mm, low-permittivity cylinder. At the fixed best-circle centre, that radius and material lie on a descending slope toward the 15.27 mm, permittivity 3.05 circle. One-frequency data do have a nearly flat radius–material valley, so a 1 GHz warm-up alone does not identify the nominal cylinder. Whether either schedule change improves the maintained fit remains pending.
 
+The [trial replay](../../investigate_bem_stage_scheduling/02_compare_clean_failures_and_passes/trial_refusals.md) now explains the saved stop: ladder stage three left a 41 nm neck; later proposed moves crossed the outline. Full stage one eventually narrowed its neck to 1.53 nm. Accepted curves remain simple, while the two reconstructed refused trials genuinely cross. The outline could no longer take the proposed moves, even though the exact-circle slice still descends toward the best circle.
+
 ## Loss-map measurements
 
 The map fixes the centre at (1.9393, 26.1912) mm, uses the measured rows and the exact circle series, divides each frequency's residual by its observed-data norm, and averages frequency losses equally (B5). It is an analysis outside the default fitting path, replacing A1–A4 only for an exact circle. [Analysis script](../../../../experiments/bem_on_baseline_data/csi_cylinder_loss_map.py), [series](../../../../experiments/bem_on_baseline_data/csi_forward_check.py#L96), [chain](../../../reference/inverse_information_chain.md#b5-predicted-data--observations--normalized-real-residual).
@@ -20,7 +22,7 @@ At radius 19.0453 mm and permittivity 2.1937, the fixed-centre all-frequency cir
 
 ![Exact-circle loss maps and saved stage paths](figures/circle_loss_map.png)
 
-[Compressed grid](../../../../results/bem/baseline_data/measured_schedule/2026-11-19/analysis/circle_loss_grid.npz) (about 1.2 MB), [numbers, checks and stage paths](../../../../results/bem/baseline_data/measured_schedule/2026-11-19/analysis/circle_loss_summary.json). Markers show stage exit area-equivalent radius and stored material; they do not imply that the stage centre or its noncircular shape equals the map's fixed circle. The JSON includes each exit centre and whether polygon repair was needed.
+The compressed grid is local and Git-ignored; rebuild it with `/home/drdeng/miniconda3/envs/EMNerf/bin/python experiments/bem_on_baseline_data/csi_cylinder_loss_map.py` (omit `--reuse-grid` to rebuild). [Local compressed grid](../../../../results/bem/baseline_data/measured_schedule/2026-11-19/analysis/circle_loss_grid.npz) (about 1.2 MB), [numbers, checks and stage paths](../../../../results/bem/baseline_data/measured_schedule/2026-11-19/analysis/circle_loss_summary.json). Markers show stage exit area-equivalent radius and stored material; they do not imply that the stage centre or its noncircular shape equals the map's fixed circle. The JSON includes each exit centre and whether polygon repair was needed.
 
 ## Saved-fit stage measurements
 
