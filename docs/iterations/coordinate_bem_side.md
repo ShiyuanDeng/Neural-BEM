@@ -9,13 +9,36 @@ It is a temporary second file. The user: "i would prefer to use one
 coordination file, but temporarily to avoid the current coordination file
 being too long you can have a new one". Merge it back when the work is done.
 
-**Latest state: 19 November 2026, 06:50 UTC.** The overnight failure
-investigation is answered. Nothing of the BEM side runs and no watcher is
-armed. Read the "Final state" block of
-[Failure investigation](#failure-investigation-opened-19-november-0221-utc)
-first: counts, report links and what waits for the user.
+**Latest state: 19 November 2026, 13:50 UTC.** The user answered point 1
+of the overnight investigation: the warm-up is now part of the default
+method. A follow-up batch of ten fits runs (batch 10). Read "After the
+user's answer" and then the "Final state" block of
+[Failure investigation](#failure-investigation-opened-19-november-0221-utc).
 
 ## Failure investigation (opened 19 November, 02:21 UTC)
+
+**After the user's answer, 19 November, 13:50 UTC.** The user in this
+pane, after the close-out below: "yes default with warm up. also have you
+tested to supply material contrast in the 10 c13.3 cases". Activity:
+[adopt the warm-up, supply the contrast](investigate_bem_stage_scheduling/04_adopt_warmup_and_supply_contrast/plan.md).
+
+- **Default changed** (commit `08200b1ab`): `RealOnlyPolicy` runs one
+  band-1 stage on the lowest real frequency before the ladder.
+  `warmup=False` is the 17 November schedule. `AGENTS.md` now names the
+  warm-up in the default method. Check passed 13:47: the default repeats
+  the saved warm-up fits of `kite__c4` and `circle__c13.3` exactly.
+- **Coordinator's choices.** `simultaneous` and `single` schedules: no
+  warm-up (untested). `CsiPolicy` and `B1Policy`: `warmup=False`, as their
+  saved fits; the user decides (point 2 below). Saved `results/bem/default_*`
+  tables are from the old default and stay; re-running them is the user's
+  call.
+- **Supplied contrast at 13.3: not tested before.** Saved known-contrast
+  fits cover 0.5 and 4 only (9/10 and 2/10, old default). Batch 10 runs the
+  ten 13.3 cases with the contrast supplied, started 13:47, state file
+  `results/bem/stage_scheduling/2026-11-19/clean_tg002/logs/batch_10.state`.
+  Do not relaunch it. A restart re-arms one watcher: a loop on "BATCH
+  DONE" in that file.
+- Point 1 of the list below is settled. Points 2 to 7 still wait.
 
 **Final state, 19 November, 06:50 UTC: answered; nothing runs.** Every
 launcher's state file ends in "BATCH DONE", the GPU is free, no watcher is
