@@ -70,16 +70,37 @@ low_contrast_state.json. The monitor sends the first-case timing and forecast
 as soon as fit.json appears. No time stop is imposed; the host-memory floor
 is 14 GiB. All times come from date -u.
 
+## Continuation campaign
+
+The coordinator released the committed continuation variant (2296ed11d)
+after its saved kite__c4 result: 2.97% area error. Native-run did not refit
+that case and does not own its result files.
+
+One detached continuation runner started at 15:28:12 UTC, alongside the
+contrast-0.5 simultaneous-frequency runner. Its explicit list is the nine
+remaining __c4 cases, then the ten __c0.5 cases. Settings are unchanged:
+step 0.2, stage frequency counts 1, 2, 4, 8, 16, 19, with 1,000 iterations
+per stage (6,000 maximum per case), the existing TV rule and inner checks.
+There is no time stop. The first launch passed the 14 GiB host-memory check.
+
+Each completed case sends its area error, final weighted mismatch, worst
+frequency residual and raw seconds through Herdr. continuation_table.json
+records those rows. Commits use only native-run's completed case paths;
+the code agent's saved kite__c4 and shared run.json are not staged here.
+The two run folders have separate case files; both CLIs write the derived
+shared metrics.csv at completion, so the per-case JSON files are canonical.
+
 ## User pause for BEM priority
 
 The coordinator paused all four GauGal GPU processes with SIGSTOP at
-15:16:53 UTC: PIDs 1895339, 1895343, 1900300 and 1902305. They are paused,
-not failed or stuck. No GPU work is launched or resumed by native-run.
+15:16:53 UTC: PIDs 1895339, 1895343, 1900300 and 1902305. They were paused,
+not failed or stuck. Native-run launched no GPU work during the pause.
 
 Native-run also paused its CPU controllers (1903073, 1899680, 1899688)
 to prevent a memory guard from killing a paused fit or a runner from
-launching another fit. They must resume only after the coordinator's go.
-The read-only GPU sampler remains active. pause.json records the details.
+launching another fit. The coordinator resumed the four fits and three controllers with SIGCONT
+at 15:18:57 UTC. The read-only GPU sampler stayed active. pause.json records
+the 124-second pause and BEM GPU sharing from 15:15:51 UTC.
 
 Raw case wall times and optimization times will include this pause;
 seconds-per-iteration values of the affected fits will also include it.
@@ -100,8 +121,8 @@ Activity: evaluate_our_method/06_make_gaugal_fits_converge, 2026-11-19
 Runs: 2/4 probes completed; 1/10 campaign cases completed; wall time pending
 Result: exact step 0.2: mismatch 19→10.1109053; 1.13543 s/iter; inner 7.48e-7
 Result: exact step 1.0: mismatch 19→10.0824825; 1.13678 s/iter; inner 1.08e-6
-Failures: none; live Step 1 and campaign fits paused by user at 15:16:53 UTC
+Failures: none; affected fits resumed by coordinator after a 124-second user pause
 Upstream patches: none
 Changes to our code: none; scratch script and result records only
 New unknowns: cap-2000 final solve statistics; contrast-0.5 campaign results
-Proposed next activity: wait for coordinator to resume GauGal after BEM; needs user decision: coordinator resume
+Proposed next activity: finish retained probes, ten simultaneous and 19 continuation cases; needs user decision: none

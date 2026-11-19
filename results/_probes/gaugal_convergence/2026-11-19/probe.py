@@ -259,6 +259,66 @@ def run_low_contrast():
     notify('Contrast-0.5 campaign ended. '+'; '.join(f"{r['case']}: area {100*r['area_error']:.2f}%, mismatch {r['final_mismatch']:.4g}, iterations {r['iterations']}, {r['stop_reason']}" if r.get('area_error') is not None and r.get('final_mismatch') is not None else f"{r['case']}: {r}" for r in rows)+'. Table saved; preparing commit and push.')
 
 
+def run_continuation():
+    from experiments.comparison import runs as R
+    destination=ROOT/'results/gaugal/converged_clean_uc_fc'
+    cases=[c for c in R.CASES_20 if c.endswith('__c4') and c!='kite__c4']
+    cases += [c for c in R.CASES_20 if c.endswith('__c0.5')]
+    assert len(cases)==19 and 'kite__c4' not in cases
+    assert (destination/'kite__c4/score.json').exists()
+    state_path=destination/'continuation_state.json'
+    if state_path.exists():
+        raise RuntimeError('continuation runner already attempted; no silent rerun')
+    command=[sys.executable,'-u','-m','experiments.comparison','run','gaugal/converged_clean_uc_fc','--cases',*cases]
+    available=mem_available();gpu=subprocess.check_output(['nvidia-smi'],text=True)
+    state=dict(state='preflight',utc=now(),cases=cases,command=command,
+               available_bytes=available,gpu=gpu,runner_count=1,settings='unchanged committed continuation variant',
+               code_commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip())
+    write(destination/'continuation_launch.json',state)
+    if available<14*1024**3:
+        raise RuntimeError('less than 14 GiB available before continuation launch')
+    sent=set();started=time.monotonic()
+    with (destination/'continuation_runner.log').open('x') as log:
+        process=subprocess.Popen(command,cwd=ROOT,stdout=log,stderr=subprocess.STDOUT,start_new_session=True)
+        state.update(state='running',started_utc=now(),runner_pid=process.pid,monitor_pid=os.getpid())
+        write(state_path,state)
+        while True:
+            rows=[]
+            for case in cases:
+                folder=destination/case
+                if not (folder/'fit.json').exists() or not (folder/'score.json').exists():
+                    continue
+                fit=read(folder/'fit.json');scored=read(folder/'score.json');history=fit.get('history') or []
+                row=dict(case=case,area_error=scored.get('area_error'),
+                         final_mismatch=history[-1].get('weighted_misfit') if history else None,
+                         worst_frequency_residual=fit.get('maximum_residual'),seconds=fit.get('case_seconds'),
+                         iterations=(fit.get('work') or {}).get('iterations'),stop_reason=fit.get('stop_reason'),
+                         outcome=fit.get('outcome'))
+                rows.append(row)
+                if case not in sent:
+                    if row['area_error'] is not None and row['final_mismatch'] is not None:
+                        notify(f"Continuation {case}: area {100*row['area_error']:.3f}%, final mismatch {row['final_mismatch']:.6g}, worst frequency residual {row['worst_frequency_residual']:.6g}, {row['seconds']:.1f} s; {row['iterations']} iterations, {row['stop_reason']}.")
+                    else:
+                        notify(f"Continuation {case}: {row}; see saved fit/score, no rerun.")
+                    sent.add(case)
+            write(destination/'continuation_table.json',rows)
+            state.update(utc=now(),completed=[r['case'] for r in rows],available_bytes=mem_available(),wall_seconds=time.monotonic()-started)
+            write(state_path,state)
+            code=process.poll()
+            if code is not None:
+                break
+            if state['available_bytes']<14*1024**3:
+                os.killpg(process.pid,signal.SIGKILL);process.wait()
+                state.update(state='failed',failure='14 GiB host-memory floor crossed',finished_utc=now())
+                write(state_path,state)
+                notify('Continuation stopped at the 14 GiB memory floor; results kept.')
+                return
+            time.sleep(2)
+    state.update(state='completed' if code==0 else 'failed',returncode=code,finished_utc=now())
+    write(state_path,state)
+    notify(f"Continuation runner ended with returncode {code}: {len(sent)}/19 case results saved; table at results/gaugal/converged_clean_uc_fc/continuation_table.json.")
+
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--worker',action='store_true')
@@ -266,6 +326,7 @@ def main():
     parser.add_argument('--step3-exact',action='store_true')
     parser.add_argument('--run-low-contrast',action='store_true')
     parser.add_argument('--watch-gpu',action='store_true')
+    parser.add_argument('--run-continuation',action='store_true')
     parser.add_argument('--collect-step1',action='store_true')
     parser.add_argument('--label');parser.add_argument('--case')
     parser.add_argument('--cap',type=int);parser.add_argument('--step',type=float)
@@ -287,6 +348,8 @@ def main():
         return worker(args)
     if args.run_low_contrast:
         return run_low_contrast()
+    if args.run_continuation:
+        return run_continuation()
     if args.step3_exact:
         path=BASE/'step3_controller.json'
         if path.exists():
