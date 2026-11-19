@@ -39,8 +39,8 @@ variant and its saved 0/20 are unchanged.
 
 **The old fits were unfinished and slow.** All 50 saved fits stopped at
 80 iterations, and 69–92% of their inner solves hit the 100-iteration cap.
-With the cap at 2,000 one evaluation took 130 s, and ten iterations had not
-finished after an hour. A dense solve of the 2,601 unknowns is exact
+Raising the cap to 2,000 did not cure it: 91–93% of solves still failed
+(worst residual 3%), and one evaluation took 130 s. The solver stagnates. A dense solve of the 2,601 unknowns is exact
 (worst residual 3.6e-6); a six-stage fit of 6,000 steps takes about 614 s
 with the GPU alone.
 
@@ -149,7 +149,8 @@ solves on lattice 101 would take about 60 times longer.
 ## Not done
 
 - The noisy draw was not run.
-- The remaining eight contrast-0.5 fits without continuation were unfinished.
+- The remaining contrast-0.5 fits without continuation were still running;
+  see the [run report](run_report.md) for their results.
 - Contrast 13.3 was not run.
 
 ## Evidence
