@@ -97,8 +97,9 @@ the last snapshot equals the image used for the independent prediction.
 For the clean circle, saved BEM has lower area, material and field errors.
 For the clean kite, CSI has lower errors on all three measures. These are
 one-start results on the same 24 readings, with no tuning or reruns.
-All MAT files remain local under the existing CSI ignore rule; their sizes
-and SHA-256 values are retained in each manifest.
+Compact `final_image.mat` and `prediction.mat` are force-added to Git,
+as requested by the coordinator. Bulk `snapshots.mat` stays local; its size
+and SHA-256 are retained in each manifest.
 
 Activity: compare_sparse_baselines/01_test_single_frequency_csi (runs), 2026-11-19
 Runs: 2/4; wall time 0:20
