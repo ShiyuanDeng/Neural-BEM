@@ -132,3 +132,11 @@ $P -m experiments.comparison.check_localized_real_warmup CASE
 The coordinator requested a CPU diagnostic on peanut, asymmetric, C-shape, hook and Aphex Twin at 13.3. Repeat the bounded joint disk search twice, adding 0.375 or 0.5 GHz to 0.25 GHz. Use one common disk across frequencies and equal B5 weights. Repeat on the independent mesh from Task 4. Save the selected starts before scoring radius (within 10%) and contrast (within 15%). Compare the measured ring responses at 0.25 GHz to explain the original selections. Budget two meshes, five cases, two frequency pairs, at most four CPU threads. Run `$P -m experiments.comparison.compare_real_disk_frequencies` with BLAS/OpenMP limited to two threads. Outputs go to `results/bem/stage_scheduling/2026-11-19/real_disk_frequency_pairs/`.
 
 The first two meshes disagreed on Aphex Twin with 0.5 GHz. Check that ranking with a third mesh (57 × 57 centres, 61 radii, 201 contrasts), refining up to 50 local minima plus previous observation-only minima. Compare all five cases on this mesh to check for other changes of rank.
+
+## Warm-up under noise, 19 November 2026, 03:37 UTC (coordinator)
+
+The clean result (16/30 to 20/30, every pass kept) rests on one data set. The saved default fits on the first 1% noise draw also recover 16/30, with the same contrast-4 misses. Run the same warm-up on that frozen draw, all 30 cases, to see whether the effect repeats under noise. The fit keeps the declared noise level it had in the saved run (loss weights and the discrepancy stop). Driver: `experiments/comparison/compare_noisy_warmups.py` (coordinator's code). A self-test on `kite__c4` at 03:36 (output not kept, four measured fits were sharing the machine) returned 0.73% against the saved 336.8%. Budget: 30 fits at the unchanged limits, after the disk-start diagnostic. Output: `results/bem/stage_scheduling/2026-11-19/noisy_tg002/warmup_n1d0/`.
+
+```sh
+$P -m experiments.comparison.compare_noisy_warmups CASE --draw 0
+```

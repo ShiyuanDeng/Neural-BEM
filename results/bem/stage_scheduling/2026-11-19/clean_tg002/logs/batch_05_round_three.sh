@@ -1,9 +1,9 @@
 #!/bin/bash
 # Coordinator batch 05, 19 November 2026: round three, circle stages on several frequency sets, all 30 clean cases.
-# Waits for batch 07 (order: 03, 04, 06, 07, 05).
+# Waits for batch 08 (order: 03, 04, 07, 08, 05).
 cd /home/drdeng/Neural_SDF_BEM_AD_organised || exit 1
 L=results/bem/stage_scheduling/2026-11-19/clean_tg002/logs
-until grep -q "BATCH DONE" $L/batch_07.state 2>/dev/null; do sleep 10; done
+until grep -q "BATCH DONE" $L/batch_08.state 2>/dev/null; do sleep 10; done
 export PYTHONPATH=solvers:. OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 OMP_NUM_THREADS=1
 P=/home/drdeng/miniconda3/envs/EMNerf/bin/python
 for arm in circle_then_default circle_then_full; do
