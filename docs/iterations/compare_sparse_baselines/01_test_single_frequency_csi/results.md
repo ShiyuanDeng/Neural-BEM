@@ -1,8 +1,9 @@
 # Results: classical CSI on the native 24-pair data at 0.5 GHz
 
 19 November 2026. Times are UTC. Plan: [plan.md](plan.md).
-Status at 03:40: both clean comparisons are done. The noisy pair is
-running; its rows are filled in below when it ends.
+Status at 04:00: all four CSI fits are done and the MATLAB slot is
+released. Both clean comparisons are complete. The two noisy BEM fits
+are still with the BEM coordinator.
 
 ## Answer
 
@@ -48,11 +49,25 @@ alone, solved forward, does not.
 
 ## Noisy comparisons (1% noise, draw 0)
 
-Pending. CSI fits: circle launched 03:37:51, then kite. BEM fits
-(`bem/default_n1d0_uc_sf0.5`): queued by the BEM coordinator, expected
-by about 04:10. CSI gets no noise level and runs 2,048 iterations. The
-BEM fit is told the per-frequency noise standard deviation; it uses it
-to weight the loss and to stop at the noise level.
+Both methods read the same frozen draw. The residual is against the
+noisy readings.
+
+| Case | Method | Area error at half peak | At 0.3 | At 0.7 | Material error | Field residual, 24 readings | Runtime |
+|---|---|---:|---:|---:|---:|---:|---:|
+| `circle__c4` | Classical CSI | 45.55% | 43.72% | 61.03% | 0.826 | 23.98% | 611.9 s |
+| `circle__c4` | BEM | pending | curve | curve | pending | pending | pending |
+| `kite__c4` | Classical CSI | 50.29% | 37.99% | 70.97% | 0.636 | 12.58% | 613.2 s |
+| `kite__c4` | BEM | pending | curve | curve | pending | pending | pending |
+
+Clean-to-noisy change for CSI: circle 45.95% to 45.55%, kite 50.07% to
+50.29%. The 1% noise barely moves the CSI images.
+
+BEM fits (`bem/default_n1d0_uc_sf0.5`): queued by the BEM coordinator
+at 03:16, expected by about 04:10. Its rows are pending.
+
+Noise information each method gets: CSI gets none and runs the fixed
+2,048 iterations. The BEM fit is told the per-frequency noise standard
+deviation; it uses it to weight the loss and to stop at the noise level.
 
 ## Checks that passed before any fit
 
@@ -114,6 +129,8 @@ match the 0.5 GHz column of the BEM noise files bit for bit.
 |---|---|---|---:|---:|
 | Clean circle | 03:14:34 | 03:24:49 | 615.5 s | 1.60 GiB |
 | Clean kite | 03:25:57 | 03:36:19 | 622.3 s | 1.60 GiB |
+| Noisy circle | 03:37:51 | 03:48:02 | 611.9 s | 1.59 GiB |
+| Noisy kite | 03:49:03 | 03:59:16 | 613.2 s | 1.58 GiB |
 
 - Iteration 64 of the circle fit came 24.95 s after launch. The linear
   forecast was 798 s; the fit took 616 s.
