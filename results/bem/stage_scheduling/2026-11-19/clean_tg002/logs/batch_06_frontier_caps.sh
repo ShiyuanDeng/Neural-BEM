@@ -1,4 +1,7 @@
 #!/bin/bash
+# WITHDRAWN 19 November 2026, 03:35 UTC, before it started: the measured-cylinder fit with the same rule failed,
+# so the rule is not a candidate common default and the 30-case run has no decision left to inform.
+exit 0
 # Coordinator batch 06, 19 November 2026: round four, frontier-capped bands on all 30 clean cases, then four controls.
 # Waits for batch 04.
 cd /home/drdeng/Neural_SDF_BEM_AD_organised || exit 1

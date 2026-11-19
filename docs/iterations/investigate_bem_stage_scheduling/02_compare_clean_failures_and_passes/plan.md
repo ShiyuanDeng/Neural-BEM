@@ -117,6 +117,8 @@ $P -m experiments.comparison.compare_clean_frontier_caps frontier_capped CASE
 $P -m experiments.comparison.compare_clean_frontier_caps frontier_measured CASE
 ```
 
+**Round four withdrawn, 03:35 UTC (coordinator).** The measured-cylinder fit with the same rule failed at 03:29 (area error 87%, forward-solver failure at the fourth ladder stage; [measured plan](../../adapt_bem_to_baseline_data/11_test_measured_cylinder_schedule/plan.md)). The frontier measured on the way was 1, 1, 3 and 10 at the four ladder stages: on a small, strong outline the 1% rule lets shape detail through that the noisy data cannot fix. The rule is therefore not a candidate common default, and the 30-case run was removed from the queue before it started. What stands from this round: the `kite__c4` test (capped 0.29%, control identical to the warm-up arm) and the runner hook, which stays default-preserving.
+
 ## Disk-start diagnostic, 19 November 2026, 03:17 UTC (coordinator)
 
 `tg-misses` found that a truth-free search over exact disks on the real 0.25 GHz data gives a close start for four of the nine contrast-13.3 misses (kite, star, cross, cog) and a wrong one for five. Approved as a diagnostic on those four: the disk start, then the same warm-up and ladder. The user's default is localization `none` and no grid search, so this tests the cause (the start), not a proposed default. Budget: four fits. Driver: `experiments/comparison/check_localized_real_warmup.py` (the agent's).
@@ -124,3 +126,9 @@ $P -m experiments.comparison.compare_clean_frontier_caps frontier_measured CASE
 ```sh
 $P -m experiments.comparison.check_localized_real_warmup CASE
 ```
+
+### Check a second real frequency on the five missed disk starts
+
+The coordinator requested a CPU diagnostic on peanut, asymmetric, C-shape, hook and Aphex Twin at 13.3. Repeat the bounded joint disk search twice, adding 0.375 or 0.5 GHz to 0.25 GHz. Use one common disk across frequencies and equal B5 weights. Repeat on the independent mesh from Task 4. Save the selected starts before scoring radius (within 10%) and contrast (within 15%). Compare the measured ring responses at 0.25 GHz to explain the original selections. Budget two meshes, five cases, two frequency pairs, at most four CPU threads. Run `$P -m experiments.comparison.compare_real_disk_frequencies` with BLAS/OpenMP limited to two threads. Outputs go to `results/bem/stage_scheduling/2026-11-19/real_disk_frequency_pairs/`.
+
+The first two meshes disagreed on Aphex Twin with 0.5 GHz. Check that ranking with a third mesh (57 × 57 centres, 61 radii, 201 contrasts), refining up to 50 local minima plus previous observation-only minima. Compare all five cases on this mesh to check for other changes of rank.
