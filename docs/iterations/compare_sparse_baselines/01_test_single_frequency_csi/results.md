@@ -1,15 +1,15 @@
 # Results: classical CSI on the native 24-pair data at 0.5 GHz
 
 19 November 2026. Times are UTC. Plan: [plan.md](plan.md).
-Status at 04:00: all four CSI fits are done and the MATLAB slot is
-released. Both clean comparisons are complete. The two noisy BEM fits
-are still with the BEM coordinator.
+Status at 04:08: complete. Four CSI fits and both paired BEM rows are
+in. The MATLAB slot is released.
 
 ## Answer
 
 On the exact 24 readings our BEM saw at 0.5 GHz, neither method recovers
 either shape at the 5% area limit. On the circle the two are close: CSI
 45.9%, BEM 41.1%. On the kite CSI is far lower: 50.1% against 327.0%.
+The frozen 1% noise draw changes every area error by under three points.
 
 ![Images and curves](figures/csi_and_bem_native_0p5ghz.png)
 
@@ -55,15 +55,21 @@ noisy readings.
 | Case | Method | Area error at half peak | At 0.3 | At 0.7 | Material error | Field residual, 24 readings | Runtime |
 |---|---|---:|---:|---:|---:|---:|---:|
 | `circle__c4` | Classical CSI | 45.55% | 43.72% | 61.03% | 0.826 | 23.98% | 611.9 s |
-| `circle__c4` | BEM | pending | curve | curve | pending | pending | pending |
+| `circle__c4` | BEM | 43.61% | curve | curve | 0.543 | 1.04% | 0.6 s |
 | `kite__c4` | Classical CSI | 50.29% | 37.99% | 70.97% | 0.636 | 12.58% | 613.2 s |
-| `kite__c4` | BEM | pending | curve | curve | pending | pending | pending |
+| `kite__c4` | BEM | 329.24% | curve | curve | 1.462 | 18.09% | 58.3 s |
 
 Clean-to-noisy change for CSI: circle 45.95% to 45.55%, kite 50.07% to
 50.29%. The 1% noise barely moves the CSI images.
 
-BEM fits (`bem/default_n1d0_uc_sf0.5`): queued by the BEM coordinator
-at 03:16, expected by about 04:10. Its rows are pending.
+Clean-to-noisy change for BEM: circle 41.11% to 43.61%, kite 327.04%
+to 329.24%. The ranking of the two methods is the same as on clean data.
+
+BEM fits (`bem/default_n1d0_uc_sf0.5`) were run by the BEM coordinator
+and their records appeared at 04:07. The circle fit stopped at the
+noise level after its first stage (five accepted steps, 0.2 s of
+fitting): its 1.04% residual is below the 1.11% realized noise. The
+kite fit ran its whole schedule and did not reach the noise level.
 
 Noise information each method gets: CSI gets none and runs the fixed
 2,048 iterations. The BEM fit is told the per-frequency noise standard
@@ -166,9 +172,15 @@ match the 0.5 GHz column of the BEM noise files bit for bit.
 - CSI scores:
   [circle](../../../../results/csi/native_tg002/2026-11-19/fits/circle__c4__clean/score.json) ·
   [kite](../../../../results/csi/native_tg002/2026-11-19/fits/kite__c4__clean/score.json).
-- BEM controls:
+- CSI noisy scores:
+  [circle](../../../../results/csi/native_tg002/2026-11-19/fits/circle__c4__n1d0/score.json) ·
+  [kite](../../../../results/csi/native_tg002/2026-11-19/fits/kite__c4__n1d0/score.json).
+- BEM clean controls:
   [circle](../../../../results/bem/default_clean_uc_sf0.5/circle__c4/score.json) ·
   [kite](../../../../results/bem/default_clean_uc_sf0.5/kite__c4/score.json).
+- BEM noisy fits, committed by the BEM coordinator:
+  [circle](../../../../results/bem/default_n1d0_uc_sf0.5/circle__c4/score.json) ·
+  [kite](../../../../results/bem/default_n1d0_uc_sf0.5/kite__c4/score.json).
 - Reports: [adapter](adapter_report.md) · [runs](run_report.md).
 - Code: `experiments/baselines/csi/native_tg002/`. Figure script:
   [make_figures.py](make_figures.py).
