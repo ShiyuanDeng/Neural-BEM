@@ -102,6 +102,21 @@ the code agent's saved kite__c4 and shared run.json are not staged here.
 The two run folders have separate case files; both CLIs write the derived
 shared metrics.csv at completion, so the per-case JSON files are canonical.
 
+### Continuation receives the GPU
+
+At 16:04:26 UTC the coordinator paused the two cap-2000 probes, their
+collector and the simultaneous-frequency peanut__c0.5 run with its parent
+and monitor. Nothing was killed. These jobs stay paused until the
+coordinator resumes them after continuation finishes; their raw times
+include the open pause. pause_for_continuation.json records the PIDs.
+
+The continuation runner is untouched and now has the GPU compute slot.
+The first circle__c4 finished under sharing: area error 2.35526%, final
+weighted mismatch 0.0505968, worst frequency residual 0.0923782, 2146.573 s,
+6,000 iterations, iteration_limit, zero unconverged checked inner solves.
+Subsequent per-case timings will note the new allocation. Peanut__c4 started
+just before the allocation and can include a short shared interval.
+
 ## User pause for BEM priority
 
 The coordinator paused all four GauGal GPU processes with SIGSTOP at
