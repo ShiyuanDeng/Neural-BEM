@@ -221,7 +221,7 @@ def attempt_dir(base, case, device):
     return base/f'attempt_{number:02d}', None
 
 
-def run(case, device, out_root):
+def run(case, device, out_root, *, policy_factory=policy_for):
     base = Path(out_root).resolve()/case/device
     out, finished = attempt_dir(base, case, device)
     if finished is not None:
@@ -240,7 +240,7 @@ def run(case, device, out_root):
     source['sha256_checked_against_frozen_file'] = name == 'simulated'   # checked in main() before any attempt
     execution = Execution(device=device, frequency_threads=THREADS[device])
     context = ModalMuller(execution, ModalSettings(table_mode=True))
-    policy = policy_for(real, device)
+    policy = policy_factory(real, device)
     initial = FourierCurve.circle(START_RADIUS_M/D.LENGTH_M, 0j)
     contrast, start = weak_start(context, initial, real[0])
     problem = Problem(initial, real, None, contrast, length_unit_m=D.LENGTH_M, origin_m=0j, bounds_m=BOUNDS_M)
