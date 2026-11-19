@@ -43,3 +43,32 @@ The first team (Codex tasks outside Herdr) was stopped by the user at 02:20 UTC,
 - **Refused trials.** In the measured fit every trial after stage three was refused as a self-intersection, down to steps of a few nanometres. Count stage exits where every trial was refused, by reason, in the 14 misses and the 16 passes, and find what makes the check refuse an almost unchanged curve.
 - **Who runs what.** The agents are sandboxed (no GPU, no push), so the coordinator runs every GPU fit from pane `w4:p1`, one at a time, and commits by path. `tg-misses` (GPT-6.2-Astra, high) owns this activity's analysis and `results.md`.
 - **Budget.** 13 more warm-up fits, the two planned cap and wall fits, and up to 15 warm-up controls on the passes: at most 30 fits at the unchanged 120 s nominal limit (240 s for the wall test). Follow-up fits beyond that need a new plan entry first.
+
+## Round two, 19 November 2026, 02:47 UTC (coordinator)
+
+First results of the warm-up on the misses (batch 01): it recovers `cog__c0.5`, `kite__c4`, `aphex_twin__c4` and `circle__c13.3`. It does not recover `c_shape__c4` (the known stage-one band cause) or the other nine contrast-13.3 cases. Those nine split in two groups in the saved stages:
+
+- **Start on the wrong side of the background.** The weak estimate is below one for kite (0.485) and clipped at 0.05 for peanut, asymmetric, hook, cross and cog. The warm-up then drives the stored contrast to zero.
+- **Warm-up cut at its cap.** Star, C-shape and Aphex Twin start above one and move towards 13.3 (12.3, 27.1, ...), but the warm-up ends at its 44-step cap with loss 0.37 to 0.47, and the fit later ends on the 120 s wall.
+
+Round two tests those two readings, each arm changing one thing relative to the warm-up arm. Driver: `experiments/comparison/compare_clean_warmups.py` (coordinator's code; the first driver is untouched).
+
+| Arm (output folder) | Change | Cases |
+|---|---|---|
+| `warmup_long` | warm-up cap 44 → 220 steps, quota 600 → 3,000 units | star, C-shape, Aphex Twin at 13.3 |
+| `warmup_long_wall600` | the same, and nominal wall 120 → 600 s | the same three |
+| `two_sided` | warm up from the weak estimate s and from its mirror image 2 − s (same strength, other side of the background); keep the side with the lower 0.25 GHz loss at the end of the warm-up | kite, peanut, asymmetric, hook, cross, cog at 13.3 |
+| `two_sided_long` | two-sided and the longer warm-up | the same six |
+
+The two-sided choice uses the fit's own loss only. It is a diagnostic of the start, not a proposed default: the user's rule is one centred start and no grid search, and whether a two-branch contrast start fits that rule is the user's call. The two extra warm-ups are outside the 13,412-unit budget and are recorded with their work.
+
+Budget: 18 fits, 120 s nominal (600 s for three). One CPU self-test of the driver ran on `hook__c13.3` from 02:44 to 02:47 (two threads, output not kept as a result): the dense-side warm-up stalled at loss 0.40 after 14 steps, so the wrong side (0.21) was chosen and the fit failed as before. A first self-test at about 02:43 used the GPU for 16 s by mistake while `longer_stage asymmetric__c13.3` ran; that fit ends on iteration caps, not on time.
+
+Commands, from the checkout root with the batch 01 environment:
+
+```sh
+$P -m experiments.comparison.compare_clean_warmups warmup_long CASE --warmup-iterations 220 --warmup-quota 3000
+$P -m experiments.comparison.compare_clean_warmups warmup_long_wall600 CASE --warmup-iterations 220 --warmup-quota 3000 --seconds 600
+$P -m experiments.comparison.compare_clean_warmups two_sided CASE --start two_sided
+$P -m experiments.comparison.compare_clean_warmups two_sided_long CASE --start two_sided --warmup-iterations 220 --warmup-quota 3000
+```
