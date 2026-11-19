@@ -35,6 +35,7 @@ class Schedule(RealOnlyPolicy):
     warmup_iterations: int = 44
     warmup_quota: int = 600
     warmup_only: bool = False
+    warmup: bool = False      # built on the 17 November default; the default's own warm-up came later
 
     def operations(self, problem, physics):
         low = next(o for o in problem.real if o.frequency_hz == .25e9)

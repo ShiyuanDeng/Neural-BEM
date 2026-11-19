@@ -36,7 +36,7 @@ For every agent, in progress updates and final answers:
 - Use only the TG-002 benchmark (`experiments/benchmark/README.md`): one
   centred start, no grid search.
 - Default method: `modal_muller` + `slider`, real data only, recovered
-  contrast, no warm-up, localization `none`.
+  contrast, band-1 warm-up on the lowest frequency, localization `none`.
 - Runtime first: reuse saved evidence and keep tests to what the question
   needs. Validate rigorously only when asked.
 

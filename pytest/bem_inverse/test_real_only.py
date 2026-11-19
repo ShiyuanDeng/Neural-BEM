@@ -48,7 +48,7 @@ def test_absent_damped_catalog_is_explicit_and_refused_where_it_is_needed():
         RealOnlyPolicy().operations(replace(problem, damped=damped), physics)
 
 
-def test_default_schedule_is_the_old_one_on_real_data_without_warmup():
+def test_default_schedule_is_the_old_one_on_real_data_with_a_real_warmup():
     problem = real_only()
     physics = ModalMuller(Execution(device='cpu'))
     operations = RealOnlyPolicy().operations(problem, physics)
@@ -58,8 +58,14 @@ def test_default_schedule_is_the_old_one_on_real_data_without_warmup():
     new = [o for o in operations if o.kind == 'fit']
     # Old order: warm-up, four damped ladder stages, the real return, six full-catalog stages.
     assert [(o.stage.update_modes, o.stage.curve_modes, o.stage.quota, o.stage.iterations) for o in new] == \
-           [(o.stage.update_modes, o.stage.curve_modes, o.stage.quota, o.stage.iterations) for o in old[1:5]+old[6:]]
-    assert [o.label for o in new[:4]] == [f'ladder_{i}_real' for i in (1, 2, 3, 4)]
+           [(o.stage.update_modes, o.stage.curve_modes, o.stage.quota, o.stage.iterations) for o in old[:5]+old[6:]]
+    assert [o.label for o in new[:5]] == ['warmup_real']+[f'ladder_{i}_real' for i in (1, 2, 3, 4)]
+    assert [obs.frequency_hz for obs in new[0].stage.observations] == [.25e9]     # the lowest of the catalog
+    assert (new[0].stage.update_modes, new[0].stage.curve_modes, new[0].stage.quota, new[0].stage.iterations) == \
+           (1, 4, 600, 44)
+    # warmup=False is the 17 November schedule: the same stages without the first.
+    plain = [o for o in RealOnlyPolicy(warmup=False).operations(problem, physics) if o.kind == 'fit']
+    assert [o.record() for o in plain] == [o.record() for o in new[1:]]
     assert all(complex(obs.wavenumber).imag == 0 for o in new for obs in o.stage.observations)
     assert operations[-1].kind == 'frontier'
     assert [o.label for o in operations if o.kind == 'cleanup'] == ['full_4_M25_cleanup']
@@ -70,9 +76,10 @@ def test_default_schedule_is_the_old_one_on_real_data_without_warmup():
 def test_variants_change_one_thing():
     problem = real_only()
     default = stages(RealOnlyPolicy(), problem)
-    assert stages(RealOnlyPolicy(frequency_schedule='simultaneous'), problem) == default[4:]
+    assert stages(RealOnlyPolicy(frequency_schedule='simultaneous'), problem) == default[5:]     # no warm-up, no ladder
+    assert stages(RealOnlyPolicy(frequency_schedule='simultaneous', warmup=False), problem) == default[5:]
     fixed = stages(RealOnlyPolicy(fixed_band=37), problem)
-    assert [s[2] for s in fixed] == [37]*10 and [s[3] for s in fixed] == [76]*4+[192]*6
+    assert [s[2] for s in fixed] == [37]*11 and [s[3] for s in fixed] == [76]*5+[192]*6
     assert [(s[1], s[4]) for s in fixed] == [(s[1], s[4]) for s in default]
     physics = ModalMuller(Execution(device='cpu'))
     assert RealOnlyPolicy(fixed_band=37).operations(problem, physics)[-1].kind == 'fit'

@@ -33,8 +33,12 @@ def fit_limit():
 
 @dataclass(frozen=True)
 class B1Policy(RealOnlyPolicy):
-    """Inherit every stage/tail rule; only use frequency blocks for ragged data."""
+    """Inherit every stage/tail rule; only use frequency blocks for ragged data.
+
+    No warm-up, as in the saved B1 fits (the default gained one on 19 November 2026).
+    """
     fit_seconds: float = float('inf')
+    warmup: bool = False
 
     def _fit(self, *args, **kwargs):
         operation = super()._fit(*args, **kwargs)
@@ -87,7 +91,7 @@ def prepare():
     if example:
         p, _ = make_problem(example, 4.)
         physics = context()
-        baseline, adapted = RealOnlyPolicy(), B1Policy()
+        baseline, adapted = RealOnlyPolicy(warmup=False), B1Policy()
         for original, changed in ((baseline.operations(p, physics), adapted.operations(p, physics)),
                                   (baseline.tail(p, physics, 95), adapted.tail(p, physics, 95))):
             assert len(original)==len(changed)

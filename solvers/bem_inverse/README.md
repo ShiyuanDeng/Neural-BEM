@@ -70,9 +70,10 @@ an independent endpoint audit belongs to the caller. The TG-002 campaign runs
 `fit` returns, then scores against truth.
 
 A problem with real-frequency data only passes `damped=None` and runs under
-[`RealOnlyPolicy`](real_only_policy.py) (17 November 2026 run): no localization, no warm-up and
-no damped stage. `CumulativePolicy` and disk localization refuse such a problem,
-and `RealOnlyPolicy` refuses a problem that carries a damped catalog.
+[`RealOnlyPolicy`](real_only_policy.py): no localization and no damped stage. Its ladder opens
+with a warm-up, one band-1 stage on the lowest real frequency (default since 19 November 2026;
+`warmup=False` gives the 17 November schedule). `CumulativePolicy` and disk localization refuse
+such a problem, and `RealOnlyPolicy` refuses a problem that carries a damped catalog.
 
 ```python
 from bem_inverse.real_only_policy import RealOnlyPolicy
@@ -81,7 +82,7 @@ result = fit(problem, solver="modal_muller", physics=physics, forward_solve=forw
              geometry_update="slider", policy=RealOnlyPolicy())
 ```
 
-`RealOnlyPolicy(frequency_schedule="simultaneous")` skips the frequency ladder,
+`RealOnlyPolicy(frequency_schedule="simultaneous")` skips the frequency ladder and its warm-up,
 `"single"` takes a one-frequency catalog, and `fixed_band=37` holds the shape band.
 
 To select a complete named recipe instead of individual slots:

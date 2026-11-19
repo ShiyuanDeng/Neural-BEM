@@ -32,6 +32,7 @@ CASES = ("kite__c4", "c_shape__c4", "aphex_twin__c4", "cog__c4")
 @dataclass(frozen=True)
 class EarlyStagePolicy(RealOnlyPolicy):
     arm: str = "reference"
+    warmup: bool = False      # built on the 17 November default; the default's own warm-up came later
 
     def operations(self, problem, physics):
         operations = []

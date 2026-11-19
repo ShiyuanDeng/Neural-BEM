@@ -31,6 +31,7 @@ ARMS = ('circle_then_default', 'circle_then_full')
 @dataclass(frozen=True)
 class Schedule(RealOnlyPolicy):
     arm: str = 'circle_then_default'
+    warmup: bool = False      # built on the 17 November default; the default's own warm-up came later
 
     def operations(self, problem, physics):
         default = list(super().operations(problem, physics))

@@ -1,20 +1,30 @@
-"""The real-only schedule used for baseline generation on 17 November 2026.
+"""The real-only schedule: the default method on real-frequency data.
 
 It refuses a ``Problem`` that carries a damped catalog, so no stage can read one.
-There is no localization and no warm-up: the first fit stage starts from the
-prescribed curve. Frequencies, shape bands, storage bands and work quotas are
-those of ``CumulativePolicy``, with real observations in place of damped ones
-and without its "return to real data" stage, which would repeat the last
-ladder stage.
+There is no localization: the first fit stage starts from the prescribed curve.
+Frequencies, shape bands, storage bands and work quotas are those of
+``CumulativePolicy``, with real observations in place of damped ones and
+without its "return to real data" stage, which would repeat the last ladder
+stage.
+
+The frequency ladder opens with a warm-up (default since 19 November 2026; the
+17 November baseline runs had none): one stage on the lowest real frequency of
+the catalog alone, with update band 1 and storage band 4, 600 work units and 44
+steps, as the damped warm-up of ``CumulativePolicy``. On the prescribed circle
+band 1 moves and scales the circle and nothing else; an unknown contrast is
+fitted with it. ``warmup=False`` gives the 17 November schedule. The global work
+and wall limits do not change.
 
 | ``frequency_schedule`` | Stages |
 |---|---|
-| ``continuation`` (default) | ladder 0.5, +0.75, +1.0, +1.25 GHz; then the whole catalog at bands 11..37; then the measured tail |
+| ``continuation`` (default) | warm-up on the lowest frequency; ladder 0.5, +0.75, +1.0, +1.25 GHz; then the whole catalog at bands 11..37; then the measured tail |
 | ``simultaneous`` | no ladder: the whole catalog at bands 11..37 from the start; then the measured tail |
 | ``single`` | a one-frequency catalog: one ladder stage, then the frontier is measured there and bands 11, 15, ... are released while the last band is below it |
 
-``fixed_band`` holds the shape band at one value in every stage and drops the
-frontier and tail. Stage count, frequencies, quotas and iteration caps stay the
+The ``simultaneous`` and ``single`` schedules have no ladder and no warm-up.
+
+``fixed_band`` holds the shape band at one value in every stage, the warm-up
+included, and drops the frontier and tail. Stage count, frequencies, quotas and iteration caps stay the
 same, so only the band differs from the adaptive schedule.
 """
 from dataclasses import dataclass
@@ -29,9 +39,10 @@ SCHEDULES = ('continuation', 'simultaneous', 'single')
 @dataclass(frozen=True)
 class RealOnlyPolicy(CumulativePolicy):
     name: str = 'real_only'
-    version: str = '1.0.0'
+    version: str = '1.1.0'
     frequency_schedule: str = 'continuation'
     fixed_band: object = None
+    warmup: bool = True
 
     def __post_init__(self):
         super().__post_init__()
@@ -91,6 +102,12 @@ class RealOnlyPolicy(CumulativePolicy):
         if self.frequency_schedule == 'continuation':
             if not all(f in real for f in self.prefix_frequencies_hz):
                 raise ValueError(f'{self.name} requires real frequencies {self.prefix_frequencies_hz}')
+            if self.warmup:
+                lowest = min(problem.real, key=lambda o: o.frequency_hz)
+                band = self.fixed_band or 1
+                operations.append(self._fit(problem, physics, 'warmup_real', (lowest,), band, 2*band+2, 600, 44,
+                    purpose='Warm up the prescribed curve on the lowest real frequency; '
+                            +('M fixed' if self.fixed_band else 'M=1')+', K_geometry=2*M+2'))
             for number, quota in enumerate(self.prefix_quotas, 1):
                 obs = tuple(real[f] for f in self.prefix_frequencies_hz[:number])
                 band = self._ladder_band(obs)
@@ -124,7 +141,9 @@ class RealOnlyPolicy(CumulativePolicy):
         plan = super().plan(problem, physics)
         plan['changes_from_DF'] = [
             'real observations only; a problem with a damped catalog is refused',
-            'no localization and no 0.25 GHz warm-up; the first stage starts from the prescribed curve',
+            'no localization; the first stage starts from the prescribed curve',
+            ('warm-up on the lowest real frequency before the ladder (continuation schedule only)'
+             if self.warmup else 'no warm-up'),
             f'frequency schedule: {self.frequency_schedule}; fixed shape band: {self.fixed_band}',
             'declared-noise whitening, discrepancy stop and recurrent cleanup as in CumulativePolicy']
         return plan

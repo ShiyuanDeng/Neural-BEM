@@ -83,8 +83,14 @@ def ladder(frequencies_hz):
 
 @dataclass(frozen=True)
 class CsiPolicy(RealOnlyPolicy):
-    """RealOnlyPolicy with the CSI ladder and frequency-block stages; nothing else changes."""
+    """RealOnlyPolicy with the CSI ladder and frequency-block stages; nothing else changes.
+
+    No warm-up, as in every saved CSI fit. The default's warm-up (19 November 2026) was tested on
+    TG-002; on the measured cylinder a warm-up on the lowest frequency alone made the fit worse
+    (adapt_bem_to_baseline_data/11_test_measured_cylinder_schedule). The user decides this wrapper's rule.
+    """
     name: str = 'real_only_csi'
+    warmup: bool = False
 
     def _fit(self, *args, **kwargs):
         operation = super()._fit(*args, **kwargs)
