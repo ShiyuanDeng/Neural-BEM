@@ -53,3 +53,22 @@ matrices are reused across stages.
 The case’s `stages.json` is written after each endpoint prediction. It
 records starting and final mismatch, per-frequency field residuals,
 iterations, elapsed time, stop reason and cap status.
+
+## Clean kite with all 19 frequencies together
+
+The fit reached its mismatch plateau at iteration 578. The last 51
+weighted squared mismatches spanned 0.99947% of the first. Mismatch
+fell from 19.0000 to 10.1760. Per-frequency relative field errors still
+ranged from 42.01% to 105.84%. The final shape area error was 158.63%.
+
+All 21,983 forward, adjoint and endpoint solves passed. The largest
+relative residual over any source was 6.34e-7. This puts the remaining
+data mismatch well above the observed linear-solver error.
+
+Optimization took 433.23 s, or 0.750 s/iteration overall; setup took
+18.66 s. The first 20 iterations took 0.571 s/iteration with two other
+GauGal fits on the RTX 5090. GPU load changed later in the run.
+
+The clean kite worker loaded commit `86232abe1` with a clean code tree.
+[Fit record](../../../../results/gaugal/converged_clean_uc_fs/kite__c4/fit.json)
+· [Frozen score](../../../../results/gaugal/converged_clean_uc_fs/kite__c4/score.json)
