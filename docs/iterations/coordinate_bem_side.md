@@ -154,6 +154,35 @@ the native 24 pairs at 0.5 GHz
   noisy draw is given the per-frequency noise level (weights and
   discrepancy stop), which its CSI side is not.
 
+**State, 04:08 UTC.** All measured fits are done and committed
+(`4ea06630b`, `b09d50556`). The noisy pair for the baseline coordinator ran
+04:06 to 04:07, alone, and its scores were sent to `w5:p1` at 04:08
+(`circle__c4` 43.6%, stops at the noise level; `kite__c4` 329%). Round two
+(batch 03) started 04:07; batches 04, 07, 08 and 05 follow by themselves.
+Batch 06 (frontier caps on all 30) was withdrawn at 03:35 before it started.
+
+- **Measured, scores against nominal:** saved fit 67.9%; `first_cap`
+  46.1%; `circle_ladder` 36.6% (3.7% with the reference disk at the fitted
+  centre; radius 15.28 mm, permittivity 3.05); `warmup` (1 GHz only) 95%;
+  `frontier_capped` 87%; `circle_then_ladder` ended on its wall after the
+  shape ladder undid the circle. CSI on the same target: 34.2 to 38.5%.
+- **Frontier cap: negative.** On the cylinder the frontier measured on the
+  way was 1, 1, 3, 10; band 3 on 1 to 3 GHz already drove the fit to a
+  small strong object. The runner hook stays (default-preserving).
+- **Stopped by the coordinator, 04:00:** the measured control
+  `frontier_measured`, once its five completed stages matched the `warmup`
+  fit exactly. Its next stage is the one where `warmup` hit the wall, which
+  cannot repeat exactly. Not a time-limit stop: its question was answered.
+- **Supervisor, pane `w3:p1`** (Codex), 03:40: checks both teams every 30
+  minutes; the GPU stays with this queue; noisy pair first, wall-timed fits
+  one at a time; leave final counts, limits and report paths in this pane.
+  Acknowledged 03:42.
+- **Review:** `tg-misses` reviewed the frontier mixin; four defects in the
+  opt-in schedule, all fixed (`5019cfcdb`); default path confirmed unchanged.
+- **Added 03:37:** warm-up on the first 1% noise draw, all 30 (batch 08).
+- **First round-two result, 04:07:** `kite__c13.3` with the two-sided start
+  recovers (0.09%, contrast 13.3).
+
 **Measured cylinder, 03:10.** `circle_ladder` finished: area error against
 nominal 36.6% (saved fit 67.9%; the three CSI methods 34.2 to 38.5%),
 radius 15.28 mm, permittivity 3.052, loss 0.0375. Most of the remaining
