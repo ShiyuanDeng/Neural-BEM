@@ -82,16 +82,26 @@ same frozen draw as BEM. Both saved 24-reading vectors matched the
 | [Circle](../../../../results/csi/native_tg002/2026-11-19/inputs/circle__c4__n1d0/inputs.json) | `3d23d3a9f8d9168c32af5341eaf5a4a8c6b42a390a5a2973926b00b099652aba` | `a5bdb06134d39785b93e05c82ee959963b28b9fdcfa5bfcd50cdb527cef283fa` |
 | [Kite](../../../../results/csi/native_tg002/2026-11-19/inputs/kite__c4__n1d0/inputs.json) | `355ca4155e95cf0ab6fd17e02fa906ecf0bbcc3d3c3b94379bcb95d512c738ff` | `0c813d0254631c13677ae4a5b5bcddd0972a88b8836811699aa80b5bb4d72997` |
 
-The noisy table checks wait for the clean kite fit to finish and its
-MATLAB process to exit.
+The clean kite fit completed at 03:36:19 UTC. The noisy checks launched
+at 03:36:20 and 03:36:27 UTC. Both launch records show zero MATLAB
+processes and more than 32 GiB available.
+
+| Noisy input | Relative round-trip error | Pair order | Mask / normalizer / residual | Result |
+|---|---:|---|---:|---|
+| [Circle](../../../../results/csi/native_tg002/2026-11-19/checks/table_circle__c4__n1d0/check.json) | 2.8762256725e-16 | Exact | 24 / 24 / 24 | Passed |
+| [Kite](../../../../results/csi/native_tg002/2026-11-19/checks/table_kite__c4__n1d0/check.json) | 5.8031564510e-16 | Exact | 24 / 24 / 24 | Passed |
+
+The coordinator received both passing results after the checks were
+pushed. The second check finished at 03:36:32 UTC.
 
 ```text
 Activity: compare_sparse_baselines/01_test_single_frequency_csi (adapter), 2026-11-19
-Runs: 4/4 final checks passed; 5 MATLAB launches including attempt 1; wall time 0:09
-Result: reading SHA-256 prefixes fc5e08b34869 and 307b755b35dd; round trips 3.48e-16 and 4.87e-16; 24 readings each; forward 0.64293% and 0.66058%
+Runs: 6/6 final checks passed; 7 MATLAB launches including attempt 1; wall time 0:32 including the wait
+Result: clean circle/kite round trips 3.48e-16 / 4.87e-16; noisy 2.88e-16 / 5.80e-16; 24 readings each
+        Noisy reading SHA-256 prefixes a5bdb06134d3 / 0c813d025463; clean circle forward 0.64293% / 0.66058%
 Failures: first circle table attempt stopped at ReadFreData.m:384; table_circle__c4__clean/attempt_01/matlab.log
 Upstream patches: none
 Changes to our code: inputs.py, native_configuration.m, native_ring_tm.m, native_predict.m and the table, equivalence and forward checks
-New unknowns: final CSI image accuracy on the sparse data
-Proposed next activity: coordinator releases the clean circle and kite fits
+New unknowns: effect of the frozen noise draw on CSI image accuracy
+Proposed next activity: run agent fits the checked noisy circle and kite on coordinator release
 ```
