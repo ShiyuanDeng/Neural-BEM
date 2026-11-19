@@ -154,8 +154,9 @@ solves on lattice 101 would take about 60 times longer.
 
 ## Evidence
 
-- First continuation run, moved when activity 07 started:
-  [continuation_before_tv_warm_start](../../../../results/_probes/gaugal_convergence/2026-11-19/continuation_before_tv_warm_start/).
+- This continuation run, the 20 fits in the table:
+  [converged_clean_uc_fc](../../../../results/gaugal/converged_clean_uc_fc/).
+  Activity 07's refit has its own run, `gaugal/tvwarm_clean_uc_fc`.
 - Fits without continuation:
   [converged_clean_uc_fs](../../../../results/gaugal/converged_clean_uc_fs/).
 - Probes: [gaugal_convergence](../../../../results/_probes/gaugal_convergence/2026-11-19/).
