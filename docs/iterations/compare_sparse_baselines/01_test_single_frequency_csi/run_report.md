@@ -1,128 +1,123 @@
-# Native CSI preparation and runs
+# Native classical CSI on the 24-pair TG-002 data
 
-Prepared 19 November 2026, UTC. Coordinator released the clean fits with
-“checks passed, go” at 03:14 UTC. Circle launched at 03:14:34 UTC and finished at 03:24:49 UTC.
-Kite launched at 03:25:57 UTC after circle scoring, commit and push.
-The coordinator released the noisy circle/kite pair at 03:37 UTC, to follow
-the clean kite score, commit and push, in that order.
+Updated 2026-11-19T04:00:43Z. All four approved fits completed without failures.
+The two clean runs were released by “checks passed, go”; the noisy pair
+was released separately after the clean kite fit. No fit was rerun.
 
-The owned wrapper calls the byte-identical pinned `CSI.m`, passes `epsinv`
-empty, keeps its native start, and requests 2,048 iterations. Its returned
-64-step images are saved without patching upstream. The log supplies separate
-CSI data and state costs. The independent final-image prediction supplies
-the 24-reading native field residual.
+## Fixed settings
 
-The detached launcher uses `setsid nohup`, eight threads and CPU only.
-A systemd user scope with `MemoryMax=8G` worked during preparation. The
-launcher uses it when available, with a family RSS watcher as fallback.
-There is no time stop. Existing output folders cannot be reused.
+Pinned classical `CSI.m` at `73a64e1`, unchanged. One native back-propagation
+start per case, no tuning, 2,048 iterations, 166 by 166 cells at 1.25 mm.
+The solver receives `epsinv=[]`; truth is opened only for checks and scoring.
 
-The BEM coordinator supplied 8 GiB expected growth. Therefore launch requires
-32 GiB available and no process named MATLAB. The sample is saved before
-launch. Input hashes, adapter check hashes, solver hash, resources, state,
-iteration-64 forecast and output hashes are retained per fit.
+One real 0.5 GHz frequency, exactly 24 sealed source/receiver pairs.
+Background permittivity 6, interior 24: the true relative susceptibility
+is 3 and the true material ratio is 4. `n1d0` uses the frozen 1% draw 0.
 
-Preparation checks passed: 31.99 GiB refusal, 32 GiB acceptance, refusal with
-an existing MATLAB, missing-check refusal, 24-reading residual normalisation,
-cost-log parsing, and pinned solver byte identity. A separate synthetic
-circle image gave 0.8956% area error through the scoring path. This is a
-smoke check; it does not replace either required adapter-fixture self-test.
-Evidence: `results/csi/native_tg002/2026-11-19/checks/launcher_preparation.json`.
+## Scores
 
-The required two self-tests are implemented in `score.py --self-test`.
-They use the adapter's `truth_1.25mm.mat`, including its dual-cell average
-image, without generating another truth raster. The area check requires
-less than 2% error, allowing the inverse-grid sampling error. The prediction
-check calls `native_predict` again and requires agreement with the adapter's
-coarse residual and saved predictions within 1e-10 in sealed-field norm.
-They passed at 03:13:47 UTC: half-peak area error 0.689719%, material L2
-0.0616660, field residual 0.642927675%, and zero prediction difference
-from the adapter. Evidence: `checks/run_self_tests/check.json`.
+Area errors use the frozen signed-peak scoring path, without registration.
+Material L2 uses real susceptibility on the shared 201 by 201 grid.
+Field residual is the independent `native_predict` result over all 24
+readings, divided by their observed norm, in native source units.
+No gain or phase is fitted. Noisy residuals use the noisy observations.
 
-Additional preparation commands, with the plan's PY, RUN and PYTHONPATH:
+| Case | Data | Area % at 0.5 | At 0.3 | At 0.7 | Material L2 | Field residual % | Wall s |
+|---|---|---:|---:|---:|---:|---:|---:|
+| circle__c4 | clean | 45.9455 | 44.0099 | 61.3256 | 0.8257722 | 24.0092 | 615.548 |
+| kite__c4 | clean | 50.0675 | 38.0403 | 70.8261 | 0.6357027 | 12.4490 | 622.278 |
+| circle__c4 | n1d0 | 45.5519 | 43.7198 | 61.0339 | 0.8255296 | 23.9848 | 611.885 |
+| kite__c4 | n1d0 | 50.2917 | 37.9909 | 70.9716 | 0.6361037 | 12.5809 | 613.176 |
 
-```bash
-$PY -m experiments.baselines.csi.native_tg002.score --run-dir $RUN --self-test
-$PY -m experiments.baselines.csi.native_tg002.fit --case circle__c4 --data clean --run-dir $RUN --check-only
-```
+CSI’s own printed costs are separate quantities. The data cost uses its
+optimised contrast sources; the independent residual predicts again from
+the saved image. Small CSI data costs here coexist with larger field residuals.
 
-These commands start no inverse fit. The first uses one bounded MATLAB
-configuration and prediction once the adapter checks have passed.
+| Case | Data | CSI data cost | CSI state cost | CSI total cost |
+|---|---|---:|---:|---:|
+| circle__c4 | clean | 1.59e-05 | 0.000941 | 0.00095648 |
+| kite__c4 | clean | 1.4e-05 | 0.000462 | 0.00047644 |
+| circle__c4 | n1d0 | 1.59e-05 | 0.00094 | 0.00095634 |
+| kite__c4 | n1d0 | 1.42e-05 | 0.000471 | 0.00048473 |
 
-Saved BEM rows were copied without rerunning BEM to `checks/bem_rows.json`:
+## UTC times and resources
 
-| Case | Area error | Material L2 | Field residual | Runtime seconds |
+Times come from `date -u`. Fits ran sequentially, on CPU, with eight threads.
+Before each launch: no MATLAB process, at least 32 GiB available.
+This reserves 8 GiB for CSI, 8 GiB expected BEM growth and 16 GiB free.
+Each MATLAB family ran inside a systemd user scope with `MemoryMax=8G`
+and `MemorySwapMax=0`. There was no time stop. Memory peaks below are
+sampled process-family RSS, not an exact kernel peak.
+
+| Case | Data | Launch UTC | Finish UTC | Native CSI s | Peak RSS GiB |
+|---|---|---|---|---:|---:|
+| circle__c4 | clean | 03:14:34 | 03:24:49 | 610.310 | 1.600 |
+| kite__c4 | clean | 03:25:57 | 03:36:19 | 616.837 | 1.595 |
+| circle__c4 | n1d0 | 03:37:51 | 03:48:02 | 606.510 | 1.592 |
+| kite__c4 | n1d0 | 03:49:03 | 03:59:16 | 608.240 | 1.584 |
+
+Total fit wall time: 2462.887 s (0:41:02).
+The first circle reached iteration 64 at 03:14:59 UTC: elapsed 24.950 s,
+projected total 798.411 s and finish 03:27:52 UTC. This initial forecast
+included configuration time. The actual circle finished at 03:24:49 UTC.
+The forecast, each finish and each score push were sent to `w5:p1` with Herdr.
+
+## Checks
+
+Preparation checks passed: solver byte identity, memory threshold boundaries,
+existing-MATLAB refusal, missing-check refusal, 24-reading normalisation
+and cost-log parsing. `checks/launcher_preparation.json` records them.
+
+The adapter’s true dual-cell circle image passed both scoring self-tests:
+half-peak area error 0.689719%, material L2 0.0616660, field residual
+0.642927675%. Re-running `native_predict` gave exactly the saved 24
+predictions and adapter residual. See `checks/run_self_tests/check.json`.
+
+Each fit’s output check found all 33 returned snapshots finite: iterations
+64 through 2,048 and CSI’s duplicate final entry. The final snapshot equals
+the final image, which equals the image used by the independent predictor.
+
+## Saved BEM comparison
+
+Copied from the two saved clean BEM score/fit files, without rerunning BEM.
+`checks/bem_rows.json` includes their original paths and hashes.
+
+| Case | Area % at 0.5 | Material L2 | Field residual % | Wall s |
 |---|---:|---:|---:|---:|
-| circle__c4 | 0.4110773 | 0.5316405 | 0.001480697 | 16.8278 |
-| kite__c4 | 3.2704430 | 1.4633784 | 0.220062010 | 99.0265 |
-
-## Clean circle result
-
-Launch 03:14:34 UTC; finish 03:24:49 UTC. All 2,048 iterations completed,
-without failures. Wall time 615.548 s; native CSI time 610.310 s; sampled peak
-process-family RSS 1.600 GiB, within the enforced 8 GiB scope.
-
-| Area error at 0.5 | At 0.3 | At 0.7 | Material L2 | Native field residual |
-|---:|---:|---:|---:|---:|
-| 45.9455% | 44.0099% | 61.3256% | 0.8257722 | 24.0092% |
-
-CSI's own printed final data cost is 1.59e-5; state cost is 9.41e-4.
-They are separate from the independent field residual. The final image has
-four half-peak components. No fitted registration or gain was used.
-
-All 33 returned snapshots are finite (64 through 2,048, plus CSI's duplicate
-final entry). The last snapshot equals the final image used by the predictor.
-Bulk `snapshots.mat` stays local with its SHA-256 in the per-fit manifest.
-[Score](../../../../results/csi/native_tg002/2026-11-19/fits/circle__c4__clean/score.json) ·
-[State](../../../../results/csi/native_tg002/2026-11-19/fits/circle__c4__clean/state.json) ·
-[Manifest](../../../../results/csi/native_tg002/2026-11-19/fits/circle__c4__clean/manifest.json).
-
-## Clean kite result
-
-Launch 03:25:57 UTC; finish 03:36:19 UTC. All 2,048 iterations completed,
-without failures. Wall time 622.278 s; native CSI time 616.837 s; sampled peak
-process-family RSS 1.595 GiB, within the enforced 8 GiB scope.
-
-| Area error at 0.5 | At 0.3 | At 0.7 | Material L2 | Native field residual |
-|---:|---:|---:|---:|---:|
-| 50.0675% | 38.0403% | 70.8261% | 0.6357027 | 12.4490% |
-
-CSI's own printed final data cost is 1.40e-5; state cost is 4.62e-4.
-The half-peak image has one component. All 33 returned snapshots are finite;
-the last snapshot equals the image used for the independent prediction.
-[Score](../../../../results/csi/native_tg002/2026-11-19/fits/kite__c4__clean/score.json) ·
-[State](../../../../results/csi/native_tg002/2026-11-19/fits/kite__c4__clean/state.json) ·
-[Manifest](../../../../results/csi/native_tg002/2026-11-19/fits/kite__c4__clean/manifest.json).
+| circle__c4 | 41.1077 | 0.5316405 | 0.1481 | 16.828 |
+| kite__c4 | 327.0443 | 1.4633784 | 22.0062 | 99.026 |
 
 For the clean circle, saved BEM has lower area, material and field errors.
-For the clean kite, CSI has lower errors on all three measures. These are
-one-start results on the same 24 readings, with no tuning or reruns.
-Compact `final_image.mat` and `prediction.mat` are force-added to Git,
-as requested by the coordinator. Bulk `snapshots.mat` stays local; its size
-and SHA-256 are retained in each manifest.
+For the clean kite, CSI has lower errors on all three measures.
+For this one frozen noise draw, CSI’s half-peak area error changes by
+-0.394 percentage points on circle and +0.224 points on kite.
+The field residuals remain about 24% on circle and 12.5% on kite.
 
-## Noisy circle result
+## Evidence and retained files
 
-Frozen 1% noise draw 0. Launch 03:37:51 UTC; finish 03:48:02 UTC.
-All 2,048 iterations completed without failures. Wall time 611.885 s;
-native CSI time 606.510 s; sampled peak process-family RSS 1.592 GiB.
+Raw root: `results/csi/native_tg002/2026-11-19/`. Each fit saves its score,
+cost history, MATLAB log, resource samples, launch decision, timing, input
+hashes, output checks and manifest. Compact `final_image.mat` and
+`prediction.mat` are force-added to Git as requested by the coordinator.
+Bulk `snapshots.mat` stays local with its size and SHA-256 in the manifest.
 
-| Area error at 0.5 | At 0.3 | At 0.7 | Material L2 | Native field residual |
-|---:|---:|---:|---:|---:|
-| 45.5519% | 43.7198% | 61.0339% | 0.8255296 | 23.9848% |
+- circle__c4, clean: [score](../../../../results/csi/native_tg002/2026-11-19/fits/circle__c4__clean/score.json), [state](../../../../results/csi/native_tg002/2026-11-19/fits/circle__c4__clean/state.json), [manifest](../../../../results/csi/native_tg002/2026-11-19/fits/circle__c4__clean/manifest.json).
+- kite__c4, clean: [score](../../../../results/csi/native_tg002/2026-11-19/fits/kite__c4__clean/score.json), [state](../../../../results/csi/native_tg002/2026-11-19/fits/kite__c4__clean/state.json), [manifest](../../../../results/csi/native_tg002/2026-11-19/fits/kite__c4__clean/manifest.json).
+- circle__c4, n1d0: [score](../../../../results/csi/native_tg002/2026-11-19/fits/circle__c4__n1d0/score.json), [state](../../../../results/csi/native_tg002/2026-11-19/fits/circle__c4__n1d0/state.json), [manifest](../../../../results/csi/native_tg002/2026-11-19/fits/circle__c4__n1d0/manifest.json).
+- kite__c4, n1d0: [score](../../../../results/csi/native_tg002/2026-11-19/fits/kite__c4__n1d0/score.json), [state](../../../../results/csi/native_tg002/2026-11-19/fits/kite__c4__n1d0/state.json), [manifest](../../../../results/csi/native_tg002/2026-11-19/fits/kite__c4__n1d0/manifest.json).
 
-The residual uses the frozen noisy observations in the denominator.
-CSI's printed final data/state costs are 1.59e-5 and 9.40e-4. All 33
-snapshots are finite, and the final image and prediction image agree exactly.
-[Score](../../../../results/csi/native_tg002/2026-11-19/fits/circle__c4__n1d0/score.json) ·
-[State](../../../../results/csi/native_tg002/2026-11-19/fits/circle__c4__n1d0/state.json) ·
-[Manifest](../../../../results/csi/native_tg002/2026-11-19/fits/circle__c4__n1d0/manifest.json).
+Owned code: `experiments/baselines/csi/native_tg002/fit.py`, `native_fit.m`,
+and `score.py`. The adapter’s files, the pinned solver, frozen scoring
+and BEM code were not edited by native-run.
 
 Activity: compare_sparse_baselines/01_test_single_frequency_csi (runs), 2026-11-19
-Runs: 3/4; wall time 0:30
-Result: clean circle area 45.9455%, material 0.8257722, field 24.0092%; clean kite area 50.0675%, material 0.6357027, field 12.4490%
-Failures: none; initial check-only correctly refused missing adapter check records
+Runs: 4/4; wall time 0:41 (sum of fit wall times)
+Result: circle__c4 clean: area 0.5/0.3/0.7 45.9455%/44.0099%/61.3256%; material 0.8257722; field 24.0092%; runtime 615.548 s
+Result: kite__c4 clean: area 0.5/0.3/0.7 50.0675%/38.0403%/70.8261%; material 0.6357027; field 12.4490%; runtime 622.278 s
+Result: circle__c4 n1d0: area 0.5/0.3/0.7 45.5519%/43.7198%/61.0339%; material 0.8255296; field 23.9848%; runtime 611.885 s
+Result: kite__c4 n1d0: area 0.5/0.3/0.7 50.2917%/37.9909%/70.9716%; material 0.6361037; field 12.5809%; runtime 613.176 s
+Failures: none; no retries or memory stops
 Upstream patches: none
 Changes to our code: native_tg002/fit.py, native_fit.m, score.py
-New unknowns: noisy kite result
-Proposed next activity: run noisy kite after noisy circle push
+New unknowns: cause of the large gap between CSI data cost and independent field residual
+Proposed next activity: coordinator reviews the four-case comparison; no further fits started
