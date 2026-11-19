@@ -70,6 +70,21 @@ low_contrast_state.json. The monitor sends the first-case timing and forecast
 as soon as fit.json appears. No time stop is imposed; the host-memory floor
 is 14 GiB. All times come from date -u.
 
+## User pause for BEM priority
+
+The coordinator paused all four GauGal GPU processes with SIGSTOP at
+15:16:53 UTC: PIDs 1895339, 1895343, 1900300 and 1902305. They are paused,
+not failed or stuck. No GPU work is launched or resumed by native-run.
+
+Native-run also paused its CPU controllers (1903073, 1899680, 1899688)
+to prevent a memory guard from killing a paused fit or a runner from
+launching another fit. They must resume only after the coordinator's go.
+The read-only GPU sampler remains active. pause.json records the details.
+
+Raw case wall times and optimization times will include this pause;
+seconds-per-iteration values of the affected fits will also include it.
+The first-case forecast predates the pause and no longer predicts a finish.
+
 ## Evidence
 
 Probe root: results/_probes/gaugal_convergence/2026-11-19/.
@@ -85,8 +100,8 @@ Activity: evaluate_our_method/06_make_gaugal_fits_converge, 2026-11-19
 Runs: 2/4 probes completed; 1/10 campaign cases completed; wall time pending
 Result: exact step 0.2: mismatch 19→10.1109053; 1.13543 s/iter; inner 7.48e-7
 Result: exact step 1.0: mismatch 19→10.0824825; 1.13678 s/iter; inner 1.08e-6
-Failures: none recorded; Step 1 still running; Step 2 skipped by instruction
+Failures: none; live Step 1 and campaign fits paused by user at 15:16:53 UTC
 Upstream patches: none
 Changes to our code: none; scratch script and result records only
 New unknowns: cap-2000 final solve statistics; contrast-0.5 campaign results
-Proposed next activity: finish the current probes and ten-case run; needs user decision: none
+Proposed next activity: wait for coordinator to resume GauGal after BEM; needs user decision: coordinator resume

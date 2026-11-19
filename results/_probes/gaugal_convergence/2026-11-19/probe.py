@@ -265,11 +265,24 @@ def main():
     parser.add_argument('--exact',action='store_true')
     parser.add_argument('--step3-exact',action='store_true')
     parser.add_argument('--run-low-contrast',action='store_true')
+    parser.add_argument('--watch-gpu',action='store_true')
     parser.add_argument('--collect-step1',action='store_true')
     parser.add_argument('--label');parser.add_argument('--case')
     parser.add_argument('--cap',type=int);parser.add_argument('--step',type=float)
     parser.add_argument('--iterations',type=int)
     args=parser.parse_args()
+    if args.watch_gpu:
+        destination=ROOT/'results/gaugal/converged_clean_uc_fs'
+        with (destination/'gpu_samples.jsonl').open('a') as output:
+            while True:
+                status=read(destination/'low_contrast_state.json')
+                sample=dict(utc=now(),available_bytes=mem_available(),
+                            gpu=subprocess.check_output(['nvidia-smi','--query-gpu=memory.used,memory.free,utilization.gpu','--format=csv,noheader'],text=True).strip())
+                output.write(json.dumps(sample)+'\n');output.flush()
+                if status['state'] in ('completed','failed'):
+                    break
+                time.sleep(2)
+        return
     if args.worker:
         return worker(args)
     if args.run_low_contrast:
@@ -299,7 +312,7 @@ def main():
         raise RuntimeError('Step 2 cancelled; Step 3 waits for exact-solve commit and coordinator instruction')
     state=read(BASE/'controller.json')
     state.update(state='step1_collecting',controller_replaced_utc=now(),pid=os.getpid(),
-                 step2='skipped by coordinator',step3='hold for exact-solve commit')
+                 step2='skipped by coordinator',step3='completed; low-contrast campaign active')
     write(BASE/'controller.json',state)
     cases=['kite__c4','kite__c0.5']
     while True:
@@ -326,10 +339,10 @@ def main():
         comparison.append(dict(case=case,cap2000=measured,saved_cap100=reference))
         lines.append(f"{case}: cap2000 {100*measured['unconverged_share']:.1f}% unconverged, worst {measured['worst_final_relative']:.3g}, {measured['seconds_per_iteration']:.2f}s/iter; saved cap100 {100*reference['unconverged_share']:.1f}%, worst {reference['worst_final_relative']:.3g}, {reference['seconds_per_iteration']:.2f}s/iter")
     write(BASE/'step1.json',comparison)
-    notify('Step 1 done. '+'; '.join(lines)+'. Step 2 skipped; Step 3 held for exact-solve commit.')
+    notify('Step 1 done. '+'; '.join(lines)+'. Step 2 skipped; Step 3 exact probes already completed and committed; low-contrast campaign active.')
     for case in cases:
         score('step1_'+case)
-    state.update(state='step1_completed_step3_held',finished_step1_utc=now())
+    state.update(state='step1_completed',finished_step1_utc=now())
     write(BASE/'controller.json',state)
 
 
