@@ -44,36 +44,68 @@ class CircleLoss:
         return .5*(np.einsum('ne,nm,me->e',z.conj(),self.gram,z).real-2*np.einsum('ne,n->e',z.conj(),self.cross).real+1)
 
 def paths():
-    from shapely.geometry import Polygon
-    sources={'saved':BASE/'first_fit/dielTM_dec8f/cuda/attempt_01/fit.json'}
-    schedule=OUT.parent
-    sources.update({'stopped warm-up':schedule/'warmup/dielTM_dec8f/cuda/attempt_01/local/fit_result.json',
-                    'warm-up':schedule/'warmup/dielTM_dec8f/cuda/attempt_02/fit.json',
-                    'first cap':schedule/'first_cap/dielTM_dec8f/cuda/attempt_01/fit.json'})
+    from csi_measured_comparison import discover_attempts, read_optional, stage_records, geometry
     result={}
-    for label,p in sources.items():
-        if not p.exists():
-            if label!='stopped warm-up':continue
-            files=list(p.parent.glob('*.json'));stages=[]
-            for f in files:
-                j=json.loads(f.read_text())
-                if isinstance(j,dict) and 'accepted_steps' in j and 'curve' in j:stages.append(j)
-            stages.sort(key=lambda s: (0 if s['stage'].startswith('warmup') else 1,s['stage']))
-        else:stages=json.loads(p.read_text())['stages']
+    names={'warmup':'warm-up','first_cap':'first cap','circle_ladder':'circle ladder',
+           'circle_then_ladder':'circle then ladder','saved':'saved',
+           'frontier_capped':'frontier capped','frontier_measured':'frontier measured'}
+    for variant,folder in discover_attempts(OUT.parent):
+        fit=read_optional(folder/'fit.json')
+        stages=stage_records(folder,fit)
+        if not stages:
+            continue
+        label=names[variant]
+        if variant=='warmup' and folder.name=='attempt_01':
+            label='stopped warm-up'
+        elif variant!='saved':
+            label+=f' ({folder.name})'
         points=[]
-        for s in stages:
-            z=curve_from(s['curve']).values(16384)*C.D.LENGTH_M*1000
-            poly=Polygon(np.c_[z.real,z.imag]); repaired=not poly.is_valid
-            if repaired:poly=poly.buffer(0)
-            points.append(dict(stage=s['stage'],radius_mm=float(np.sqrt(poly.area/np.pi)),
-                               permittivity=s['contrast'],centre_mm=[poly.centroid.x,poly.centroid.y],
-                               area_repaired=repaired))
+        for stage in stages:
+            shape=geometry(stage['curve'],stage['contrast'])
+            points.append(dict(stage=stage['stage'],radius_mm=shape['equivalent_radius_mm'],
+                               permittivity=stage['contrast'],centre_mm=shape['centre_mm'],
+                               area_repaired=bool(shape['repaired_ring'])))
         result[label]=points
     return result
+
+
+def render_map(record,radii,eps,grids,counts,best):
+    fig,axes=plt.subplots(1,5,figsize=(19,4.6),sharex=True,sharey=True,layout='constrained')
+    points=[p for pts in record['paths'].values() for p in pts]
+    upper=max(40.,max((p['permittivity'] for p in points),default=40.)*1.12)
+    left=min(2.,min((p['radius_mm'] for p in points),default=2.)*.9)
+    colors=['#0072b2','#00bbbb','#00a020','#cc00aa','#d55e00','#669900','#9966cc','#aa3377','#555555']
+    for ax,n,g in zip(axes,counts,grids):
+        if upper>40:
+            ax.axhspan(40,upper,color='#eeeeee',zorder=0)
+        if left<2:
+            ax.axvspan(left,2,color='#eeeeee',zorder=0)
+        im=ax.pcolormesh(radii,eps,g.T,norm=LogNorm(.035,2),cmap='magma',shading='auto',rasterized=True)
+        ax.contour(radii,eps,g.T,levels=[.04,.06,.08,.1,.15,.25,.5],colors='grey',linewidths=.5)
+        for index,(label,pts) in enumerate(record['paths'].items()):
+            color=colors[index%len(colors)]
+            ax.plot([65]+[p['radius_mm'] for p in pts],[1.0931033143341842]+[p['permittivity'] for p in pts],'.-',color=color,lw=1,label=label,alpha=.9)
+        for r,e,marker,color,label in [(65,1.0931033143341842,'s','black','start'),(15,3,'+','deepskyblue','nominal'),(best['radius_mm'],best['permittivity'],'*','lime','best circle')]:
+            ax.plot(r,e,marker,color=color,ms=9,label=label)
+        ax.set(title='1 GHz' if n==1 else f'1–{n} GHz',xlabel='Equivalent radius (mm)',yscale='log',xlim=(left,70),ylim=(1.05,upper))
+    axes[0].set_ylabel('Relative permittivity');axes[-1].legend(fontsize=6,loc='upper right')
+    fig.colorbar(im,ax=axes,label='Half mean squared relative residual',shrink=.8)
+    fig.suptitle('Measured cylinder: exact-circle loss at fixed best-circle centre\nPaths show stage exit area and material; centres and noncircular shapes vary. Grey: outside computed grid.',fontsize=11)
+    fig.savefig(DOC/'figures/circle_loss_map.png',dpi=160);plt.close(fig)
 
 def main():
     OUT.mkdir(parents=True,exist_ok=True);(DOC/'figures').mkdir(exist_ok=True)
     info=json.loads((BASE/'cylinder_info/cylinder_info.json').read_text())
+    if '--render-only' in sys.argv:
+        record=json.loads((OUT/'circle_loss_summary.json').read_text())
+        with np.load(OUT/'circle_loss_grid.npz') as saved:
+            radii=saved['radius_mm'];eps=saved['permittivity'];grids=saved['loss'];counts=saved['frequency_counts']
+        record['paths']=paths()
+        record['paths_updated_provenance']=provenance()
+        render_map(record,radii,eps,grids,counts,info['least_squares']['from_bem_fit']['end'])
+        (OUT/'circle_loss_summary.json').write_text(json.dumps(record,indent=2)+'\n')
+        print('Rendered paths:',', '.join(record['paths']))
+        return
     real,_,source=C.D.observations(C.D.MEASURED)
     best=info['least_squares']['from_bem_fit']['end'];centre=[best['x_mm'],best['y_mm']]
     models=[CircleLoss(o,centre) for o in real]
@@ -120,20 +152,7 @@ def main():
                 local_descent_end=descent.x.tolist(),local_descent_loss=descent.fun),paths=paths(),
                 limits='All maps fix centre at the best exact-circle centre. Stage markers use area-equivalent radius; their centres and noncircular shapes vary. Thus marker height is not the saved stage loss.')
     (OUT/'circle_loss_summary.json').write_text(json.dumps(record,indent=2)+'\n')
-    fig,axes=plt.subplots(1,5,figsize=(19,4.6),sharex=True,sharey=True,layout='constrained')
-    colors=['#0072b2','#00bbbb','#00a020','#cc00aa']
-    for ax,n,g in zip(axes,counts,grids):
-        im=ax.pcolormesh(radii,eps,g.T,norm=LogNorm(.035,2),cmap='magma',shading='auto',rasterized=True)
-        ax.contour(radii,eps,g.T,levels=[.04,.06,.08,.1,.15,.25,.5],colors='grey',linewidths=.5)
-        for (label,pts),color in zip(record['paths'].items(),colors):
-            ax.plot([65]+[p['radius_mm'] for p in pts],[1.0931033143341842]+[p['permittivity'] for p in pts],'.-',color=color,lw=1,label=label)
-        for r,e,marker,color,label in [(65,1.0931033143341842,'s','black','start'),(15,3,'+','deepskyblue','nominal'),(best['radius_mm'],best['permittivity'],'*','lime','best circle')]:
-            ax.plot(r,e,marker,color=color,ms=9,label=label)
-        ax.set(title='1 GHz' if n==1 else f'1–{n} GHz',xlabel='Equivalent radius (mm)',yscale='log',xlim=(2,70),ylim=(1.05,40))
-    axes[0].set_ylabel('Relative permittivity');axes[-1].legend(fontsize=7,loc='upper right')
-    fig.colorbar(im,ax=axes,label='Half mean squared relative residual',shrink=.8)
-    fig.suptitle('Measured cylinder: exact-circle loss at fixed best-circle centre\nPaths show stage exit area and material; centres and noncircular shapes vary',fontsize=11)
-    fig.savefig(DOC/'figures/circle_loss_map.png',dpi=160);plt.close(fig)
+    render_map(record,radii,eps,grids,counts,best)
     print(json.dumps({k:record[k] for k in ['checks','valley_1GHz','minima','endpoint_at_map_centre']},indent=2))
 
 if __name__=='__main__':main()
