@@ -73,8 +73,43 @@ The clean kite worker loaded commit `86232abe1` with a clean code tree.
 [Fit record](../../../../results/gaugal/converged_clean_uc_fs/kite__c4/fit.json)
 · [Frozen score](../../../../results/gaugal/converged_clean_uc_fs/kite__c4/score.json)
 
-The coordinator paused the continuing clean kite GPU worker at 15:16:53
-UTC on 19 November so the BEM fits could finish first. The first five
-stages had ended. The final 19-frequency stage was in progress, so its
-reported wall time and the whole continuation fit time include the pause.
-The simultaneous kite had already completed.
+## Clean kite with frequency continuation
+
+The final 19-frequency stage shared the GPU with BEM from 15:15:51 UTC
+on 19 November. The coordinator paused GauGal from 15:16:53 until
+15:18:57 UTC. Final-stage and total wall times include those 124 seconds.
+The first five stages and the simultaneous fit finished before the pause.
+
+**Clean kite area error fell to 2.9655% with continuation and step 0.2.**
+The simultaneous fit at step 0.05 scored 158.63%. The continuation fit
+met the 5% area criterion. All six stages reached the 1,000-iteration cap.
+
+| Frequencies | Initial weighted squared mismatch | Endpoint weighted squared mismatch | Field residual range at endpoint |
+|---:|---:|---:|---:|
+| 1 | 1.0000 | 0.0017594 | 4.19% |
+| 2 | 0.40222 | 0.030255 | 8.05–15.42% |
+| 4 | 2.7871 | 0.0087947 | 1.96–7.10% |
+| 8 | 2.1130 | 0.010958 | 1.00–6.28% |
+| 16 | 5.5973 | 0.035273 | 1.00–6.95% |
+| 19 | 1.4920 | 0.019462 | 0.93–5.68% |
+
+Final field residuals in percent follow the catalog from 0.25 to 2.5 GHz
+in 0.125 GHz steps.
+
+| GHz | 0.25 | 0.375 | 0.5 | 0.625 | 0.75 | 0.875 | 1.0 | 1.125 | 1.25 | 1.375 |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Error % | 0.931 | 1.225 | 2.290 | 3.150 | 2.658 | 2.505 | 2.662 | 3.064 | 2.732 | 2.729 |
+
+| GHz | 1.5 | 1.625 | 1.75 | 1.875 | 2.0 | 2.125 | 2.25 | 2.375 | 2.5 |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Error % | 2.689 | 3.237 | 2.548 | 3.231 | 3.255 | 3.583 | 4.413 | 5.679 | 4.751 |
+
+All 100,050 linear solves passed, with a worst relative residual of
+3.63e-6. Material-field relative L2 error was 0.26189. Setup took
+19.26 s. Optimization took 2,255.98 s, or 2,131.98 s after subtracting
+the recorded pause. Other GPU jobs shared parts of that time.
+
+The worker started at code commit `2296ed11d`, with a clean code tree.
+[Stage records](../../../../results/gaugal/converged_clean_uc_fc/kite__c4/stages.json)
+· [Fit](../../../../results/gaugal/converged_clean_uc_fc/kite__c4/fit.json)
+· [Frozen score](../../../../results/gaugal/converged_clean_uc_fc/kite__c4/score.json)
