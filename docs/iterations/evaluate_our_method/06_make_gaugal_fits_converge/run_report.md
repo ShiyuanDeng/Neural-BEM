@@ -117,18 +117,20 @@ benchmarks. Exact-solve probes ran 14:40:27–14:44:42 UTC (4 min 15 s).
 
 ## Probe results
 
-Step 1: cap-2000, two clean kite cases, ten outer iterations, step 0.05,
-all 19 frequencies, no time stop. Started 14:36:03 UTC; both processes were
-resumed at 19:19:41 and paused again at 19:23:14. Only iteration 1 is checkpointed so far:
-mismatch 19.0, optimization time 130.220 s each. This is not a completed
-probe and gives no final inner-solve share or residual maximum.
+Step 1: both retained cap-2000 probes completed ten iterations after the
+23:00:47 resume. Raw times include pauses and GPU sharing; no time stop was used.
+The saved cap-100 runs have 80 iterations, so their solve shares are over a different trajectory.
 
-Saved cap-100 references, for comparison when the probes finish:
+| Case | Cap | Iterations | Unconverged inner solves % | Worst inner residual | Raw seconds/iteration | Area error % |
+|---|---:|---:|---:|---:|---:|---:|
+| kite__c4 | 2000 | 10 | 90.7268 | 0.03036324 | 1706.407 | 108.3943 |
+| kite__c4 reference | 100 | 80 | 73.8150 | 0.03924051 | 4.042 | — |
+| kite__c0.5 | 2000 | 10 | 93.2331 | 0.03233052 | 1716.529 | 58.1964 |
+| kite__c0.5 reference | 100 | 80 | 71.4613 | 0.5299407 | 3.971 | — |
 
-| Case | Saved iterations | Unconverged inner solves % | Worst final inner relative residual | Optimization seconds/iteration |
-|---|---:|---:|---:|---:|
-| kite__c4 | 80 | 73.815 | 0.03924051 | 4.042 |
-| kite__c0.5 | 80 | 71.461 | 0.5299407 | 3.971 |
+Mismatch fell from 19 to 17.8972393 (c4) and 10.9146399 (c0.5).
+Increasing the cap to 2,000 did not make the old inner solves converge.
+The existing exact-solve probes above and below are separate numerical paths.
 
 Step 2: cancelled by the coordinator; nothing launched.
 
@@ -183,7 +185,7 @@ Runs: continuation 19/20 nonfailed, 1 FAILED; wall time 3:50:17 including retry 
 Result: c4 9/10 area <=5%; c0.5 1/9 nonfailed area <=5%; total 10/20 planned, old default 0/20
 Result: circle__c0.5 FAILED after safeguard; saved-image score 4.6954% reported separately
 Result: exact step probes 0.2/1.0 ended at mismatch 10.1109053/10.0824825 after 200 iterations each
-Result: cap-2000 probes pending; simultaneous campaign 3/10 saved; six jobs resumed 23:00:47 after activity 07; results pending
+Result: cap-2000 probes finished; simultaneous campaign 3/10 saved; six jobs resumed 23:00:47 after activity 07; results pending
 Failures: old circle adjoint exception archived; safeguarded circle restart_limit kept in canonical run
 Upstream patches: none by native-run
 Changes to our code: none by native-run; scratch reporting helpers and saved evidence only
