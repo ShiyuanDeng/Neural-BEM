@@ -9,11 +9,66 @@ It is a temporary second file. The user: "i would prefer to use one
 coordination file, but temporarily to avoid the current coordination file
 being too long you can have a new one". Merge it back when the work is done.
 
-**Latest state: 19 November 2026.** The overnight failure investigation is
-live. Read [Failure investigation](#failure-investigation-opened-19-november-0221-utc)
-first; everything below it is finished work.
+**Latest state: 19 November 2026, 07:00 UTC.** The overnight failure
+investigation is answered. Nothing of the BEM side runs and no watcher is
+armed. Read the "Final state" block of
+[Failure investigation](#failure-investigation-opened-19-november-0221-utc)
+first: counts, report links and what waits for the user.
 
 ## Failure investigation (opened 19 November, 02:21 UTC)
+
+**Final state, 19 November, 07:00 UTC: answered; nothing runs.** Every
+launcher's state file ends in "BATCH DONE", the GPU is free, no watcher is
+armed and both agent panes are closed. The supervisor (`w3:p1`, 05:41) asked
+that rounds three and five be the last batches and that new experimental
+questions wait for the user. None was started.
+
+Reports:
+[joint answer](investigate_bem_stage_scheduling/03_compare_schedule_effects/results.md) ·
+[clean TG-002](investigate_bem_stage_scheduling/02_compare_clean_failures_and_passes/results.md) ·
+[measured cylinder](adapt_bem_to_baseline_data/11_test_measured_cylinder_schedule/results.md).
+
+- **Missing warm-up: yes, in part.** A band-1 fit at 0.25 GHz before the
+  unchanged schedule takes clean TG-002 from 16/30 to 20/30 and the first 1%
+  noise draw from 16/30 to 20/30; no pass lost in either.
+- **Early stops: yes on the measured cylinder, not shown on TG-002.** The
+  cylinder's outline pinched after stage three and froze with 894 of 13,412
+  units used. Longer stages, warm-ups and walls recovered nothing on TG-002.
+- **Not explained by either:** nine of ten cases at contrast 13.3 (wrong
+  size and material at the lowest frequency) and `c_shape__c4` (first shape
+  stage too narrow).
+
+| Clean TG-002 schedule | 0.5 | 4 | 13.3 | All |
+|---|---:|---:|---:|---:|
+| Default (saved 17 November) | 9 | 7 | 0 | 16/30 |
+| + band-1 warm-up at 0.25 GHz | 10 | 9 | 1 | 20/30 |
+| The same on 1% noise, draw 0 (saved default 16/30) | 10 | 9 | 1 | 20/30 |
+| Warm-up, more band-1 stages, then the default | 10 | 7 | 1 | 18/30 |
+| The same band-1 stages, then full-catalog stages only | 3 | 2 | 1 | 6/30 |
+| Warm-up, then ladder bands two wider | 9 | 9 | 1 | 19/30 |
+
+Measured cylinder, area error against the nominal disk: saved fit 67.9%;
+best schedule (`circle_ladder`) 36.6%, or 3.7% with the disk at the fitted
+centre; the three CSI methods 34.2 to 38.5%. Fits run: 178 on TG-002, six on
+the cylinder (one a stopped control), two for the baseline coordinator.
+
+**Waiting on the user.** No fit is queued for any of these.
+
+1. Add the 0.25 GHz band-1 warm-up to the default? `AGENTS.md` names "no
+   warm-up" as the default, so this changes the default method.
+2. After the warm-up the two datasets want different schedules. TG-002
+   needs the low-frequency shape ladder (6/30 without it); the cylinder is
+   destroyed by it (60.7% against 36.6%). One rule, or two wrappers?
+3. Contrast 13.3: the two remedies that helped (mirrored start, disk
+   search) try more than one start. Does "one centred start, no grid
+   search" allow that?
+4. Wider early bands recover `c_shape__c4` and lose both Aphex Twin
+   recoveries (8.9% and 9.1%). A band rule that serves both is a new test.
+5. The noise check is one draw of three. Draws 1 and 2 are 60 more fits.
+6. Full access for agents launched from this pane was refused by the
+   permission mode; both ran sandboxed and the coordinator ran every fit.
+7. Not mine and left alone: the supervisor's uncommitted edit of
+   `AGENTS.md`, and the untracked `docs/iterations/verify_baseline_claims.md`.
 
 **The user's words.** In this pane (`w4:p1`, workspace "bem failure
 investigaiton"), 02:21 UTC: "you are the coordinator: i have two tasks for
@@ -44,8 +99,8 @@ at the user's request; that edit is its own and was uncommitted at 02:30.
 
 | Agent | Pane | Launch | Task | State |
 |---|---|---|---|---|
-| `tg-misses` | `w4:p2` | `codex -m gpt-6.2-astra -c model_reasoning_effort="high" -s workspace-write -a never` | [Brief](investigate_bem_stage_scheduling/03_compare_schedule_effects/brief_tg_misses.md): refused trials, "large and weak" fits, scoring the matched tests | briefed 02:29 |
-| `cylinder` | `w4:p3` | `codex -m gpt-6.1-sol -c model_reasoning_effort="medium" -s workspace-write -a never` | [Brief](investigate_bem_stage_scheduling/03_compare_schedule_effects/brief_cylinder.md): loss map, stage table, comparing the measured fits | briefed 02:29 |
+| `tg-misses` | `w4:p2` | `codex -m gpt-6.2-astra -c model_reasoning_effort="high" -s workspace-write -a never` | [Brief](investigate_bem_stage_scheduling/03_compare_schedule_effects/brief_tg_misses.md): refused trials, "large and weak" fits, scoring the matched tests | done; pane closed 19 November |
+| `cylinder` | `w4:p3` | `codex -m gpt-6.1-sol -c model_reasoning_effort="medium" -s workspace-write -a never` | [Brief](investigate_bem_stage_scheduling/03_compare_schedule_effects/brief_cylinder.md): loss map, stage table, comparing the measured fits | done; pane closed 19 November |
 
 **Coordinator's decisions.**
 
@@ -79,14 +134,18 @@ relaunch a batch whose state file exists.
 | Batch N1 | after every measured fit | For the baseline coordinator: `bem/default_n1d0_uc_sf0.5`, `circle__c4` and `kite__c4` | `.../logs/batch_n1.state` |
 | Batch 03 | after N1 | Round two on the nine contrast-13.3 misses: `two_sided`, `warmup_long`, `two_sided_long`, `warmup_long_wall600` (18 fits) | `.../logs/batch_03.state` |
 | Batch 04 | after 03 | 0.5 GHz warm-up control on the four rescued cases | `.../logs/batch_04.state` |
-| Batch 06 | after 04 | Round four: `frontier_capped` on all 30, `frontier_measured` on four | `.../logs/batch_06.state` |
-| Batch 07 | after 06 | Disk-start diagnostic on cog, kite, star, cross at 13.3 | `.../logs/batch_07.state` |
-| Batch 05 | after 07 | Round three: `circle_then_default` and `circle_then_full` on all 30 | `.../logs/batch_05.state` |
+| Batch 06 | never run | Round four: `frontier_capped` on all 30, `frontier_measured` on four. Withdrawn 03:35 after the rule failed on the cylinder | none |
+| Batch 07 | 04:49, done 04:55 | Disk-start diagnostic on cog, kite, star, cross at 13.3 | `.../logs/batch_07.state` |
+| Batch 08 | 04:55, done 05:15 | Warm-up on 1% noise draw 0, all 30 | `.../logs/batch_08.state` |
+| Batch 05 | 05:15, done 06:13 | Round three: `circle_then_default` and `circle_then_full` on all 30 | `.../logs/batch_05.state` |
+| Batch 09 | 06:13, done 06:43 | Round five: `warmup_wide` on all 30 | `.../logs/batch_09.state` |
 
-**Watchers a restart must re-arm:** `herdr agent wait tg-misses`,
-`herdr agent wait cylinder`, and a loop on "BATCH DONE" in the newest state
-file. Each batch script waits for the one before it, so none needs a
-relaunch.
+Actual times of the rows above that say "after": N1 04:06 to 04:07, batch 03
+04:07 to 04:47, batch 04 04:47 to 04:49. All state files end in "BATCH DONE".
+
+**Watchers:** none is needed any more. During the night they were
+`herdr agent wait` on each agent and a loop on "BATCH DONE" in the newest
+state file.
 
 **Findings so far (02:50 UTC).** Sources: the two activity folders.
 
@@ -1006,6 +1065,9 @@ data convention is in doubt.
 
 ## Waiting on the user
 
+- **Failure investigation, 19 November.** Seven points, listed in the
+  "Final state" block of
+  [Failure investigation](#failure-investigation-opened-19-november-0221-utc).
 - **Time limits on the older BEM passes.** For B1 and the five-frequency
   pass it is settled: elapsed-time targets are reports, not stops. Still
   unsaid: whether the 120 s cut on the CPU cross-checks of tables B2 and C
