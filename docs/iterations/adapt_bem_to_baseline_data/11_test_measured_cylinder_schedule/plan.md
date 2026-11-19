@@ -60,3 +60,21 @@ Budget: two additional CUDA fits, run by the coordinator, each capped at the sav
 Outputs: `results/bem/baseline_data/measured_schedule/2026-11-19/{circle_ladder,circle_then_ladder}/dielTM_dec8f/cuda/attempt_01/`, through the existing wrapper's attempt handling. Keep manifests, fits, stage/trial records, scores and failures; the coordinator commits them. Write comparisons in `results.md`.
 
 Dry check, with no fit or forward solve: `/home/drdeng/miniconda3/envs/EMNerf/bin/python experiments/bem_on_baseline_data/csi_measured_warmups.py --dry-check`. It passed for both variants: input hash, original operation records, retained operation records, five added stage settings and saved global limits all match. It prints labels, frequencies, update/storage bands, quotas and iteration caps.
+
+## Round three: bands capped at the measured frontier, 19 November 2026, 03:20 UTC (coordinator)
+
+Round two showed that the band-1 stages on growing frequency sets reach the best circle and that the default low-frequency shape ladder then destroys it. The [frontier measurements](../../investigate_bem_stage_scheduling/02_compare_clean_failures_and_passes/stage_frontiers.md) say why: at the best circle the data support bands 2, 3, 4, 5 on the ladder and 8 on the whole catalog, against default bands 3, 6, 9, 12 and 11 to 37.
+
+Test a rule that could also serve TG-002: keep the 1 GHz warm-up and every original stage, but cap each stage's band at the frontier measured when the stage is entered (current outline, that stage's highest frequency, the policy's 1% threshold; at least band 1). Reference: the `warmup` variant. Driver: `experiments/bem_on_baseline_data/csi_measured_frontier_caps.py` (coordinator's code; mixin in `experiments/comparison/frontier_capped.py`). It needs the one-line runner change recorded in the [TG-002 plan](../../investigate_bem_stage_scheduling/02_compare_clean_failures_and_passes/plan.md); the default path is unchanged. A dry check without a fit showed the expected queue: warm-up, then one measurement before each stage, ragged data kept, limits 13,412 units and 3,600 s.
+
+| Variant | What |
+|---|---|
+| `frontier_capped` | bands capped |
+| `frontier_measured` | control: the same measurements, no band changed; should repeat the `warmup` variant |
+
+Budget: two fits. Compare with the saved fit, the `warmup` and `circle_ladder` variants and the best circle (15.27 mm, 3.05, loss 0.0375).
+
+```bash
+/home/drdeng/miniconda3/envs/EMNerf/bin/python experiments/bem_on_baseline_data/csi_measured_frontier_caps.py frontier_capped
+/home/drdeng/miniconda3/envs/EMNerf/bin/python experiments/bem_on_baseline_data/csi_measured_frontier_caps.py frontier_measured
+```

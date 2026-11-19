@@ -96,3 +96,31 @@ Driver: `experiments/comparison/compare_clean_circle_ladders.py` (coordinator's 
 $P -m experiments.comparison.compare_clean_circle_ladders circle_then_default CASE
 $P -m experiments.comparison.compare_clean_circle_ladders circle_then_full CASE
 ```
+
+## Round four: bands capped at the measured frontier, 19 November 2026, 03:20 UTC (coordinator)
+
+**Why.** `cylinder` measured the solver's own observable frontier at each stage's frequencies ([note](stage_frontiers.md)). On the small measured cylinder it is 2, 3, 4, 5 on the ladder and 8 on the whole catalog, against default bands 3, 6, 9, 12 and 11 to 37. On the TG-002 contrast-4 truths it is above every ladder band. So the default releases shape detail the measured data cannot see, and not on TG-002. One rule may then serve both: cap each stage's band at the frontier measured when the stage is entered.
+
+**Change.** Reference arm: the 0.25 GHz warm-up schedule. Before each later stage the runner measures the frontier at the current outline and contrast, at that stage's highest frequency, with the policy's own threshold (1%), and the stage runs with band max(1, min(default, frontier)). Storage follows the default formula. Stages, order, data, quotas, caps and limits are unchanged. Each measurement costs two work units. Code: [mixin](../../../../experiments/comparison/frontier_capped.py), [TG-002 driver](../../../../experiments/comparison/compare_clean_frontier_caps.py).
+
+**Solver change, approved by the coordinator.** One line in [`runner.py`](../../../../solvers/bem_inverse/runner.py): a frontier operation may name the real observation it measures at (`details['observation_index']`); without that key it measures at the highest real frequency as before. The default path is unchanged. Check: the `frontier_measured` control (measurements made, no band changed) reproduced the saved warm-up fit of `kite__c4` stage for stage at 03:13 (same steps, losses and contrasts; 20 more work units). The capped arm changed only its last two stages there (bands 31 and 37 to 26) and returned 0.29% (warm-up arm 0.10%).
+
+| Arm (output folder) | What | Cases |
+|---|---|---|
+| `frontier_capped` | bands capped | all 30 |
+| `frontier_measured` | control, no band changed | `circle__c4`, `kite__c4`, `star__c13.3`, `aphex_twin__c0.5` |
+
+Budget: 34 fits at the unchanged 120 s nominal limit, after round three. Reading: the capped arm must keep the warm-up arm's 20 recoveries to be a candidate default; the measured cylinder's result is in the measured activity.
+
+```sh
+$P -m experiments.comparison.compare_clean_frontier_caps frontier_capped CASE
+$P -m experiments.comparison.compare_clean_frontier_caps frontier_measured CASE
+```
+
+## Disk-start diagnostic, 19 November 2026, 03:20 UTC (coordinator)
+
+`tg-misses` found that a truth-free search over exact disks on the real 0.25 GHz data gives a close start for four of the nine contrast-13.3 misses (kite, star, cross, cog) and a wrong one for five. Approved as a diagnostic on those four: the disk start, then the same warm-up and ladder. The user's default is localization `none` and no grid search, so this tests the cause (the start), not a proposed default. Budget: four fits. Driver: `experiments/comparison/check_localized_real_warmup.py` (the agent's).
+
+```sh
+$P -m experiments.comparison.check_localized_real_warmup CASE
+```

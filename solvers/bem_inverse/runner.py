@@ -244,9 +244,11 @@ def fit(problem, *, solver='nodal_kress', execution=None, policy=None, output=No
                     ledger.reserve(2)
                     # Frontier: one refined solve at the highest real frequency, then its
                     # paired-Jacobian column profile. A charged diagnostic, never free work.
+                    # A policy may name another real observation in ``details['observation_index']``.
                     resolution = physics.resolution_profile(curve.band)['refined']
+                    measured_at = problem.real[(op.details or {}).get('observation_index', -1)]
                     with ledger.calls(lambda o: forward_solve(curve, o, contrast_now, resolution),
-                                      (problem.real[-1],), 'solve', 'frontier', threads=1) as calls:
+                                      (measured_at,), 'solve', 'frontier', threads=1) as calls:
                         state = calls[0]()
                     with ledger.calls(lambda s: physics.observable_frontier(s, policy.frontier_top,
                                                                             policy.frontier_threshold),
