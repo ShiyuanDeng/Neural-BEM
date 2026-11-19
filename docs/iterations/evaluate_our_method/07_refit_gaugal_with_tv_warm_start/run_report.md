@@ -33,11 +33,11 @@ Lower-value probes and simultaneous-frequency fits were paused by the coordinato
 
 ```text
 Activity: evaluate_our_method/07_refit_gaugal_with_tv_warm_start, 2026-11-19
-Runs: 20/20 nonfailed, 0 failed, 0 pending; wall time 3:30:26
+Runs: 20/20 nonfailed, 0 failed, 0 pending; wall time 3:30:30
 Result: 10/20 planned cases have area <=5%; per-case results above
 Failures: none saved
 Upstream patches: none by native-run
 Changes to our code: none by native-run; scratch reporting helpers only
-New unknowns: remaining clean case results
+New unknowns: none for this fixed clean pass
 Proposed next activity: review with coordinator; needs user decision: none
 ```
