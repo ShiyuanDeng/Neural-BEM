@@ -163,7 +163,10 @@ No noisy cases or simultaneous-frequency c4 cases were launched here.
 At 19:23:14 UTC the coordinator paused probes 1895339/1895343, collector
 1903073, CLI 1899688 and monitor 1899680 for activity 07. Peanut child
 1921897 had ended. Its successor star child 2035661 was paused at
-19:23:23 UTC. These six jobs stay paused until the coordinator resumes them.
+19:23:23 UTC. The coordinator resumed these six jobs with SIGCONT at 23:00:47 UTC.
+The second pause lasted 13,053 seconds (3 h 37 min 33 s), or 13,044 seconds
+for star child 2035661. Raw timings include both long pauses. The existing
+runs now continue without a time stop; no further numerical work is launched.
 
 ## Evidence and activity report
 
@@ -180,7 +183,7 @@ Runs: continuation 19/20 nonfailed, 1 FAILED; wall time 3:50:17 including retry 
 Result: c4 9/10 area <=5%; c0.5 1/9 nonfailed area <=5%; total 10/20 planned, old default 0/20
 Result: circle__c0.5 FAILED after safeguard; saved-image score 4.6954% reported separately
 Result: exact step probes 0.2/1.0 ended at mismatch 10.1109053/10.0824825 after 200 iterations each
-Result: cap-2000 probes pending; simultaneous campaign 3/10 saved; six jobs paused again for activity 07
+Result: cap-2000 probes pending; simultaneous campaign 3/10 saved; six jobs resumed 23:00:47 after activity 07; results pending
 Failures: old circle adjoint exception archived; safeguarded circle restart_limit kept in canonical run
 Upstream patches: none by native-run
 Changes to our code: none by native-run; scratch reporting helpers and saved evidence only

@@ -688,6 +688,121 @@ def run_tv_warm_start():
             time.sleep(3)
 
 
+def finish_activity06():
+    """CPU-only collector/publisher; never launches, signals or reruns numerical work."""
+    import numpy as np
+    fs=ROOT/'results/gaugal/converged_clean_uc_fs'
+    report=ROOT/'docs/iterations/evaluate_our_method/06_make_gaugal_fits_converge/run_report.md'
+    state_path=BASE/'finish_activity06_state.json'
+    if state_path.exists(): raise RuntimeError('Activity 06 finisher already exists')
+    state=dict(state='waiting',pid=os.getpid(),started_utc=now(),numerical_launches=0)
+    write(state_path,state)
+    while True:
+        probes=[read(BASE/('step1_'+c)/'state.json') for c in ('kite__c4','kite__c0.5')]
+        campaign=read(fs/'low_contrast_state.json')
+        probes_done=all(v['state'] in ('completed','failed') for v in probes)
+        # The existing collector scores after the workers end; wait for its files.
+        scored=all(v['state']=='failed' or (BASE/('step1_'+v['case'])/'score.json').exists() for v in probes)
+        if probes_done and scored and campaign['state'] in ('completed','failed'): break
+        state.update(utc=now(),probe_states=[v['state'] for v in probes],simultaneous_state=campaign['state'],
+                     simultaneous_saved=campaign.get('completed',[]))
+        write(state_path,state);time.sleep(10)
+    fs_cases=campaign['cases'];folders=[BASE/('step1_'+v['case']) for v in probes]
+    folders += [fs/c for c in fs_cases if (fs/c/'fit.json').exists()]
+    # Check saved artifacts only; do not rerun a forward solve or touch settings.
+    for folder in folders:
+        fit_path=folder/'fit.json'
+        if not fit_path.exists(): continue
+        fit=read(fit_path);checks=dict(outcome=fit.get('outcome'),stop_reason=fit.get('stop_reason'))
+        if (folder/'fit.npz').exists():
+            with np.load(folder/'fit.npz') as arrays:
+                checks.update(finite_image=bool(np.isfinite(arrays['image']).all()),
+                    finite_predictions=bool(np.isfinite(arrays['predicted']).all()),predictions_shape=list(arrays['predicted'].shape))
+            checks['saved_arrays_valid']=checks['finite_image'] and checks['finite_predictions'] and checks['predictions_shape']==[19,24]
+        stats=fit.get('linear_solves') or []
+        checks.update(worst_inner_relative=max((v.get('max_final_relative',0.) for v in stats),default=None),
+                      unconverged=sum(v.get('unconverged',0) for v in stats))
+        write(folder/'output_checks.json',checks)
+        write(folder/'manifest.json',{p.name:dict(bytes=p.stat().st_size,sha256=hashlib.sha256(p.read_bytes()).hexdigest())
+              for p in folder.iterdir() if p.is_file() and p.name!='manifest.json'})
+    # Reuse the collector's measured summaries and saved cap-100 reference.
+    text=report.read_text()
+    start=text.index('Step 1: cap-2000');end=text.index('Step 2:',start)
+    lines=['Step 1: the two existing cap-2000 probes ended without a time stop.',
+        'Raw optimization seconds include pauses and GPU sharing; they are not standalone speeds.', '',
+        '| Case | Cap | Iterations | Unconverged inner solves % | Worst inner residual | Seconds/iteration | Area error % |',
+        '|---|---:|---:|---:|---:|---:|---:|']
+    measured=[]
+    for v in probes:
+        case=v['case'];folder=BASE/('step1_'+case)
+        if v['state']=='failed':
+            lines.append(f"| {case} | 2000 | failed | — | — | — | — |")
+            continue
+        m=summary_fit('step1_'+case);ref=saved(case);area=read(folder/'score.json')['area_error'];measured.append(m)
+        lines.append(f"| {case} | 2000 | {m['iterations']} | {100*m['unconverged_share']:.4f} | {m['worst_final_relative']:.7g} | {m['seconds_per_iteration']:.3f} | {100*area:.4f} |")
+        lines.append(f"| {case} reference | 100 | {ref['iterations']} | {100*ref['unconverged_share']:.4f} | {ref['worst_final_relative']:.7g} | {ref['seconds_per_iteration']:.3f} | — |")
+    lines+=['','Probe state files retain start/finish UTC times, and pause_for_tv_warm_start.json',
+            'closes the second pause. Cap-2000 solve failures are reported, not hidden by array checks.','']
+    text=text[:start]+'\n'.join(lines)+'\n'+text[end:]
+    start=text.index('## Simultaneous-frequency campaign');end=text.index('## Evidence and activity report',start)
+    rows=[]
+    lines=['## Completed simultaneous-frequency campaign','',
+        'The original one-runner ten-case c0.5 campaign ended. No case was relaunched.',
+        'Raw case seconds include pauses when they affected that child; parent campaign',
+        'wall time includes both complete pauses. Truth scoring did not select settings.','',
+        '| Case | Area error % | Final mismatch | Worst frequency residual | Iterations | Stop | Outcome | Raw seconds |',
+        '|---|---:|---:|---:|---:|---|---|---:|']
+    for case in fs_cases:
+        folder=fs/case
+        if not (folder/'fit.json').exists():
+            lines.append(f"| {case} | — | — | — | — | missing | FAILED | — |")
+            continue
+        f=read(folder/'fit.json');q=read(folder/'score.json');h=f.get('history') or []
+        row=dict(case=case,area=q['area_error'],outcome=f['outcome']);rows.append(row)
+        mismatch=f"{h[-1]['weighted_misfit']:.7g}" if h else 'missing'
+        lines.append(f"| {case} | {100*q['area_error']:.4f} | {mismatch} | {f['maximum_residual']:.7g} | {f['work']['iterations']} | {f['stop_reason']} | {f['outcome']} | {f['case_seconds']:.3f} |")
+    valid=[r for r in rows if r['outcome'] not in ('FAILED','EXCEPTION_PARTIAL')]
+    recovered=sum(r['area']<=.05 for r in valid)
+    lines += ['',f"Area <=5%: {recovered}/10 planned cases; {len(valid)}/10 nonfailed fits.",
+        f"Campaign UTC: {campaign.get('started_utc')} to {campaign.get('finished_utc')}; raw wall {campaign.get('wall_seconds',0):.3f} seconds.",
+        'The 19:23:14–23:00:47 pause is 13,053 seconds for the probes and controllers;',
+        'star child 2035661 was paused from 19:23:23, for 13,044 seconds. Nothing new launched.','']
+    text=text[:start]+'\n'.join(lines)+'\n'+text[end:]
+    marker=text.index('```text\nActivity:')
+    failures=[v['case'] for v in probes if v['state']=='failed']
+    block=(f"```text\nActivity: evaluate_our_method/06_make_gaugal_fits_converge, 2026-11-19; follow-up closed {now()}\n"
+        f"Runs: {len(measured)}/2 cap-2000 probes ended; 2/2 exact probes ended; {len(rows)}/10 simultaneous cases saved; continuation 19/20 nonfailed and 1 FAILED\n"
+        f"Result: simultaneous c0.5 {recovered}/10 area <=5%; first continuation 9/10 c4 and 1/9 nonfailed c0.5\n"
+        "Result: cap-2000 and exact-probe measurements are in the tables; paused raw timings are retained\n"
+        "Failures: old continuation circle exception and safeguarded circle restart_limit retained; probe failures: "+(', '.join(failures) or 'none')+"\n"
+        "Upstream patches: none by native-run\nChanges to our code: none by native-run; scratch collectors only\n"
+        "New unknowns: none for the completed authorized runs\nProposed next activity: coordinator review; needs user decision: none\n```\n")
+    report.write_text(text[:marker]+block)
+    def commit(paths,message,forced=()):
+        relative=[str(p.relative_to(ROOT)) for p in paths if p.exists()]
+        subprocess.run(['git','add','--',*relative],cwd=ROOT,check=True)
+        if forced: subprocess.run(['git','add','-f','--',*[str(p.relative_to(ROOT)) for p in forced]],cwd=ROOT,check=True)
+        subprocess.run(['git','diff','--cached','--check','--',*relative],cwd=ROOT,check=True)
+        subprocess.run(['git','commit','-m',message,'--',*relative],cwd=ROOT,check=True)
+        subprocess.run(['git','push'],cwd=ROOT,check=True)
+        print(subprocess.check_output(['git','status','--short'],cwd=ROOT,text=True),flush=True)
+    lock=(BASE/'publisher.lock').open('a');fcntl.flock(lock,fcntl.LOCK_EX)
+    try:
+        # Small pairs keep each result commit below the established size limit.
+        for i in range(0,len(folders),2):
+            selected=folders[i:i+2]
+            commit(selected,'Record completed GauGal retained runs: '+', '.join(p.name for p in selected),
+                   [p/'fit.npz' for p in selected if (p/'fit.npz').exists()])
+        state.update(state='completed',finished_utc=now());write(state_path,state)
+        evidence=[report,Path(__file__).resolve(),state_path,BASE/'controller.json',BASE/'step1.json',
+            BASE/'pause_for_tv_warm_start.json',fs/'low_contrast_state.json',fs/'low_contrast_table.json',fs/'low_contrast_table.md',fs/'low_contrast_runner.log']
+        commit(evidence,'Finalize activity 06 retained probe and simultaneous results')
+    finally:
+        fcntl.flock(lock,fcntl.LOCK_UN);lock.close()
+    revision=subprocess.check_output(['git','rev-parse','--short','HEAD'],cwd=ROOT,text=True).strip()
+    notify(f"Retained runs ended: {len(measured)}/2 cap-2000 probes and {len(rows)}/10 simultaneous cases saved.\nActivity 06 report updated; simultaneous area <=5%: {recovered}/10.\nCommitted by path and pushed {revision}; nothing new launched.")
+
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--worker',action='store_true')
@@ -699,6 +814,7 @@ def main():
     parser.add_argument('--publish-continuation',action='store_true')
     parser.add_argument('--attach-continuation',action='store_true')
     parser.add_argument('--run-tv-warm-start',action='store_true')
+    parser.add_argument('--finish-activity06',action='store_true')
     parser.add_argument('--collect-step1',action='store_true')
     parser.add_argument('--label');parser.add_argument('--case')
     parser.add_argument('--cap',type=int);parser.add_argument('--step',type=float)
@@ -722,6 +838,8 @@ def main():
         return run_low_contrast()
     if args.run_continuation:
         return run_continuation()
+    if args.finish_activity06:
+        return finish_activity06()
     if args.run_tv_warm_start:
         return run_tv_warm_start()
     if args.attach_continuation:
