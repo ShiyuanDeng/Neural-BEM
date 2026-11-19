@@ -530,6 +530,11 @@ Keep the final report focused on one or two shared simulation examples per
 method, with full-set scores for context. Give the measured cylinder its own
 figure and section. Keep development details in the activity reports.
 
+The user clarified, “keep the table 1 from before, where it lists comparison
+A, B1, B2 ... and describes their settings.” Keep that table first, use its
+labels and order for the report sections, and show each section’s scores in
+its own figure.
+
 ## Lessons from agent mistakes
 
 ### L1. Proposal built on half the facts

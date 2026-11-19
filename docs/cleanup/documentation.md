@@ -168,6 +168,6 @@ The plans explicitly identify this as a reorganisation after execution.
 Under D24, use saved final fits to show each method on shared simulation
 cases and give the measured cylinder a separate comparison.
 
-**Complete.** The [report](../iterations/final_comparison_report.md) shows
-the clean circle and kite across four measurement settings, followed by the four
-measured-cylinder fits. The activity reports retain the development evidence.
+**Complete.** The [report](../iterations/final_comparison_report.md) opens with the
+original Table 1. Sections A, B1, B2 and the two C sections follow its order.
+Each has figures with case scores. The measured cylinder has its own figure.

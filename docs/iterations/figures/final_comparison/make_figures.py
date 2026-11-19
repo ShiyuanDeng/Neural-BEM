@@ -321,16 +321,18 @@ def plot_measured():
     truth = Point(x,y).buffer(geometry["radius_mm"]/1000, quad_segs=4096)
     tx, ty = truth.exterior.xy
     reference = np.asarray(tx) + 1j*np.asarray(ty)
-    folder = BEM / "measured_schedule/2026-11-19/circle_ladder/dielTM_dec8f/cuda/attempt_01"
-    curve, error = bem_outline(folder)
-    methods = [("BEM (circle-first)", [curve], error, BLUE)]
+    methods = []
+    for name, folder in [("BEM (original)", "csi_adapter/2026-11-18/first_fit"),
+                         ("BEM (circle-first)", "measured_schedule/2026-11-19/circle_ladder")]:
+        curve, error = bem_outline(BEM / folder / "dielTM_dec8f/cuda/attempt_01")
+        methods.append((name, [curve], error, BLUE))
     data = loadmat(RESULTS.parent / registered["source"], simplify_cells=True)
     for i, row in enumerate(registered["methods"], 1):
         error = row["scores"][0]["area_error"]
         rings = csi_outlines(data["grid_x_primary_m"], data["grid_y_primary_m"], data[f"chi{i}"][-1],
                              truth, error)
         methods.append((row["method"] if row["method"] != "CSI" else "Classical CSI", rings, error, ORANGE))
-    fig, axes = plt.subplots(1, len(methods), figsize=(9.8, 3.7), sharey=True)
+    fig, axes = plt.subplots(1, len(methods), figsize=(11.4, 3.7), sharey=True)
     fig.subplots_adjust(left=.055, right=.985, bottom=.21, top=.75, wspace=.15)
     fig.suptitle("Measured Fresnel cylinder · area error at the nominal position", weight="bold", fontsize=15)
     for ax, (name, rings, error, color) in zip(axes, methods):
