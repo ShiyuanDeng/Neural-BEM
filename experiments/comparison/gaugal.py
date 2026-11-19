@@ -74,19 +74,19 @@ def blind_case(run, case, root):
 def record_from(case, run, fit, observed, outcome=None, detail=None):
     """(fit.json record, fit.npz arrays) from the adapter's result or last checkpoint."""
     used = list(fit['frequencies'])
-    residual = D.relative_error(np.asarray(fit['predictions']), observed[used])
+    residual = D.relative_error(np.asarray(fit['predictions']), observed[used]) if used else np.array([])
     record = dict(case=case, scene=case.split('__')[0], family=run.family, run=run.name, representation='image',
                   outcome=outcome or ('COMPLETED' if fit.get('stop_reason') == 'iteration_limit' else 'STOPPED_EARLY'),
                   stop_reason=fit.get('stop_reason'), detail=detail, settings=fit['settings'],
                   frequencies_hz=[float(D.ci.FREQUENCIES[i]) for i in used], residual=residual,
-                  maximum_residual=float(residual.max()), fit_seconds=fit['optimize_seconds'],
+                  maximum_residual=float(residual.max()) if used else None, fit_seconds=fit['optimize_seconds'],
                   setup_seconds=fit['build_seconds'], history=fit['history'][::10]+fit['history'][-1:],
                   linear_solves=fit.get('linear_solves'),
                   work=dict(iterations=fit.get('iterations', len(fit['history'])),
                             linear_solve_calls=sum(r['calls'] for r in fit.get('linear_solves') or []),
                             linear_solves_unconverged=sum(r['unconverged'] for r in fit.get('linear_solves') or [])))
     arrays = dict(image=np.asarray(fit['image'], np.float32), coefficients=np.asarray(fit['coefficients']),
-                  predicted=np.asarray(fit['predictions']))
+                  predicted=np.asarray(fit['predictions'])) if used else {}
     if run.variant == 'converged':
         record['hit_cap'] = fit.get('stop_reason') == 'iteration_limit'
         record['convergence'] = CONVERGENCE
@@ -100,6 +100,9 @@ def record_from(case, run, fit, observed, outcome=None, detail=None):
                     [s['final_rel'] for s in solves if s['kind'] == kind] for solves in fit['solve_residuals']])
         if 'stages' in fit:
             record['stages'] = fit['stages']
+            if fit['stop_reason'] == 'restart_limit':
+                record.update(outcome='FAILED', detail='Four step halvings used; continuation stage rejected.')
+
             record['hit_cap'] = any(stage['hit_cap'] for stage in fit['stages'])
             arrays.update(fit['solve_arrays'])
         record['history'] = fit['history']
@@ -135,7 +138,8 @@ def fit_case(run, case, root, checkpoint_path=None):
                     write(run.folder(root)/case/'stages.json', stages)
                     stage = stages[-1]
                     print(f"STAGE {stage['frequency_count']}: {stage['stop_reason']} at {stage['iterations']}, "
-                          f"weighted mismatch {stage['final_weighted_mismatch']:.6g}", flush=True)
+                          f"weighted mismatch {stage['final_weighted_mismatch']}, step {stage['step_size']:g}, "
+                          f"restarts {stage['restarts']}", flush=True)
 
                 fit = gaugal_arm.reconstruct_continuation(blind, chosen, STAGE_COUNTS, CONVERGENCE,
                                                           checkpoint, stage_finished)

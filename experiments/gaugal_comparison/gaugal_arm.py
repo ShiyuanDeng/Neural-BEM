@@ -15,7 +15,9 @@ Two things differ from GauGal's released driver, both agreed in the plan:
 
 Data are divided by the source strength, so the incident field is i H0 / 4.
 """
-from dataclasses import asdict, replace
+from __future__ import annotations
+
+from dataclasses import asdict, dataclass, replace
 from time import perf_counter
 
 import numpy as np
@@ -134,6 +136,30 @@ def prepare_direct(collocation):
     collocation.k_matrix = green
 
 
+class SolveResidualError(ArithmeticError):
+    """A checked forward, adjoint or endpoint equation failed its tolerance."""
+
+
+class StageDivergence(ArithmeticError):
+    """A continuation attempt violated its mismatch or finiteness limit."""
+
+
+@dataclass
+class StageAttempt:
+    iteration: int = 0
+    first_mismatch: float | None = None
+    mismatch: float | None = None
+
+    def check(self, value):
+        self.mismatch = value
+        if not np.isfinite(value):
+            raise StageDivergence('nonfinite weighted mismatch')
+        if self.first_mismatch is None:
+            self.first_mismatch = value
+        elif value > 2 * self.first_mismatch:
+            raise StageDivergence('weighted mismatch exceeded twice its stage start')
+
+
 def check_direct_solve(collocation, applied, rhs, kind, tolerance):
     """Check the true equation with the original pixel operator, for every source."""
     norms = torch.linalg.vector_norm(rhs, dim=1)
@@ -141,7 +167,7 @@ def check_direct_solve(collocation, applied, rhs, kind, tolerance):
     relative = float(torch.max(errors / norms.clamp_min(torch.finfo(norms.dtype).tiny)))
     collocation.linear_solve_stats.append(dict(kind=kind, final_rel=relative, converged=relative <= tolerance))
     if not np.isfinite(relative) or relative > tolerance:
-        raise ArithmeticError(f'{kind} solve residual {relative:g} exceeds {tolerance:g}')
+        raise SolveResidualError(f'{kind} solve residual {relative:g} exceeds {tolerance:g}')
 
 
 def checked_gradient(model, collocation, coeff, u_warm, v_warm, opts):
@@ -157,7 +183,7 @@ def checked_gradient(model, collocation, coeff, u_warm, v_warm, opts):
 
 def reconstruct(case, case_settings, *, frequencies=None, pixels=PIXELS, device='cuda',
                 controls=SolverControls(), verbose=False, max_seconds=None, checkpoint=None, convergence=None,
-                initial_coefficients=None, operator_cache=None):
+                initial_coefficients=None, operator_cache=None, stage_attempt=None):
     """GGB-002: one GauGal fit over several frequencies (FISTA + TV, shared coefficients)."""
     frequencies = list(range(len(case.frequencies_hz))) if frequencies is None else list(frequencies)
     opts = paper_options(case_settings, controls)
@@ -206,6 +232,9 @@ def reconstruct(case, case_settings, *, frequencies=None, pixels=PIXELS, device=
     start = perf_counter()
     stop_reason = 'iteration_limit'
     for it in range(1, opts.num_iter+1):
+        if stage_attempt is not None:
+            stage_attempt.iteration = it
+            stage_attempt.mismatch = None
         with torch.no_grad():
             lam = _lambda_value_for_iteration(base_lam, tv_opts, it)
             projected = torch.clamp(momentum, min=LOWER, max=opts.contrast_max)
@@ -218,7 +247,11 @@ def reconstruct(case, case_settings, *, frequencies=None, pixels=PIXELS, device=
                 grad += w*g
                 misfit += w*float(torch.linalg.vector_norm(prediction-m.data))**2
                 evaluated_predictions.append(case.strength*torch.diagonal(prediction).cpu().numpy())
+            if stage_attempt is not None:
+                stage_attempt.check(misfit)
             if not np.isfinite(misfit) or not bool(torch.isfinite(grad).all()):
+                if stage_attempt is not None:
+                    raise StageDivergence('nonfinite gradient')
                 stop_reason = 'nonfinite_gradient'
                 break
             if checkpoint is not None and (it == 1 or it % 10 == 0):
@@ -242,6 +275,8 @@ def reconstruct(case, case_settings, *, frequencies=None, pixels=PIXELS, device=
                                              tol=opts.tv_tol, lower_bound=LOWER, upper_bound=opts.contrast_max)
             following = grid.reshape(-1)
             if not bool(torch.isfinite(following).all()):
+                if stage_attempt is not None:
+                    raise StageDivergence('nonfinite update')
                 stop_reason = 'nonfinite_update'
                 break
             q_next = .5*(1.+(1.+4.*q*q)**.5)
@@ -259,6 +294,8 @@ def reconstruct(case, case_settings, *, frequencies=None, pixels=PIXELS, device=
     optimize_seconds = perf_counter()-start
     final = torch.clamp(coeff, min=LOWER, max=opts.contrast_max)
     predictions = []
+    if stage_attempt is not None:
+        stage_attempt.mismatch = None  # The endpoint mismatch is known only after every solve.
     with torch.no_grad():
         for m, c, u in zip(models, collocations, fields):
             u = collocation_forward_prop(c, final, u, opts)
@@ -279,22 +316,78 @@ def reconstruct(case, case_settings, *, frequencies=None, pixels=PIXELS, device=
 
 
 def reconstruct_continuation(case, case_settings, counts, convergence, checkpoint, stage_finished):
-    """Fit cumulative bands in order, transferring only the image coefficients."""
+    """Transfer accepted coefficients and retain step reductions across stages."""
     cache = {}
     stages, history, linear_solves, residual_arrays = [], [], [], {}
     build_seconds = optimize_seconds = 0.
+    rejected_iterations = halvings = 0
+    max_halvings = 4
     initial = None
+    fit = None
     for count in counts:
-        fit = reconstruct(case, case_settings, frequencies=range(count), convergence=convergence,
-                          checkpoint=checkpoint, verbose=True, initial_coefficients=initial,
-                          operator_cache=cache)
-        initial = fit['coefficients']
-        residual = D.relative_error(fit['predictions'], case.observed[:count])
+        rejected = []
         stage = dict(frequency_count=count, frequencies_hz=case.frequencies_hz[:count].tolist(),
-                     iterations=fit['iterations'], stop_reason=fit['stop_reason'],
+                     restarts=0, rejected_attempts=rejected)
+        while True:
+            attempt = StageAttempt()
+            step = case_settings.step_size
+            stage['step_size'] = step
+            stage.pop('next_step_size', None)
+            started = perf_counter()
+            try:
+                candidate = reconstruct(case, case_settings, frequencies=range(count), convergence=convergence,
+                                        checkpoint=checkpoint, verbose=True, initial_coefficients=initial,
+                                        operator_cache=cache, stage_attempt=attempt)
+                residual = D.relative_error(candidate['predictions'], case.observed[:count])
+                final_mismatch = float(np.sum(residual**2))
+                attempt.check(final_mismatch)
+                break
+            except (StageDivergence, SolveResidualError, torch.linalg.LinAlgError) as exc:
+                if attempt.iteration == 0:
+                    raise  # Setup errors cannot be corrected by a smaller optimization step.
+                elapsed = perf_counter() - started
+                optimize_seconds += elapsed
+                rejected_iterations += attempt.iteration
+                rejected.append(dict(step_size=step, iteration=attempt.iteration, reason=str(exc),
+                                     initial_weighted_mismatch=attempt.first_mismatch,
+                                     weighted_mismatch=attempt.mismatch, seconds=elapsed))
+                # A failed solve can leave some frequencies with one fewer evaluation.
+                for j in range(count):
+                    stats = cache[j][1].linear_solve_stats
+                    linear_solves.append(dict(frequency_hz=float(case.frequencies_hz[j]), frequency_count=count,
+                                              rejected_attempt=len(rejected), calls=len(stats),
+                                              unconverged=sum(not s['converged'] for s in stats),
+                                              max_final_relative=max((s['final_rel'] for s in stats), default=0.)))
+                    for kind in ('forward', 'adjoint', 'endpoint'):
+                        key = f'stage_{count}_rejected_{len(rejected)}_freq_{j}_{kind}_relative_residual'
+                        residual_arrays[key] = np.asarray([s['final_rel'] for s in stats if s['kind'] == kind])
+                exhausted = halvings == max_halvings
+                stage.update(iterations=attempt.iteration, hit_cap=False,
+                             initial_weighted_mismatch=attempt.first_mismatch, final_weighted_mismatch=attempt.mismatch,
+                             stop_reason='restart_limit' if exhausted else 'restarting')
+                if not exhausted:
+                    halvings += 1
+                    stage['restarts'] += 1
+                    case_settings = replace(case_settings, step_size=step / 2)
+                    stage['next_step_size'] = case_settings.step_size
+                stage_finished(stages + [stage])
+                if exhausted:
+                    break
+
+        if stage.get('stop_reason') == 'restart_limit':
+            stages.append(stage)
+            if fit is None:
+                # No accepted stage exists. Preserve failed work without reporting a rejected image.
+                fit = dict(frequencies=[], history=[], settings=asdict(case_settings))
+            fit['stop_reason'] = 'restart_limit'
+            break
+
+        fit = candidate
+        initial = fit['coefficients']
+        stage.update(iterations=fit['iterations'], stop_reason=fit['stop_reason'],
                      hit_cap=fit['stop_reason'] == 'iteration_limit',
                      initial_weighted_mismatch=fit['history'][0]['weighted_misfit'] if fit['history'] else None,
-                     final_weighted_mismatch=float(np.sum(residual**2)), residual=residual.tolist(),
+                     final_weighted_mismatch=final_mismatch, residual=residual.tolist(),
                      setup_seconds=fit['build_seconds'], fit_seconds=fit['optimize_seconds'])
         stages.append(stage)
         stage_finished(stages)
@@ -307,7 +400,7 @@ def reconstruct_continuation(case, case_settings, counts, convergence, checkpoin
                 [s['final_rel'] for s in solves if s['kind'] == kind] for solves in fit['solve_residuals']])
         if fit['stop_reason'] not in ('iteration_limit', 'mismatch_plateau'):
             break
-    fit.pop('solve_residuals')
+    fit.pop('solve_residuals', None)
     fit.update(stages=stages, history=history, linear_solves=linear_solves, solve_arrays=residual_arrays,
-               iterations=len(history), build_seconds=build_seconds, optimize_seconds=optimize_seconds)
+               iterations=len(history)+rejected_iterations, build_seconds=build_seconds, optimize_seconds=optimize_seconds)
     return fit

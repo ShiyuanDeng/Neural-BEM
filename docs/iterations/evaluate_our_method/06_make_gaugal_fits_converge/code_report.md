@@ -135,3 +135,27 @@ The worker started at code commit `2296ed11d`, with a clean code tree.
 [Stage records](../../../../results/gaugal/converged_clean_uc_fc/kite__c4/stages.json)
 · [Fit](../../../../results/gaugal/converged_clean_uc_fc/kite__c4/fit.json)
 · [Frozen score](../../../../results/gaugal/converged_clean_uc_fc/kite__c4/score.json)
+
+## Restart rule for cumulative stages
+
+The failed weak-contrast circle reached weighted mismatch 86.36 from
+6.614 during the 16-frequency stage. Its 19-frequency adjoint later missed
+the linear tolerance. The coordinator fixed the following rule before the rerun.
+
+A nonfinite mismatch, a mismatch strictly above twice the stage’s initial
+value, or a failed linear solve rejects the attempt. The adapter halves the
+step and restarts from the last accepted stage’s coefficients with fresh
+momentum and TV variables. Later stages inherit the reduced step.
+
+The four halvings are shared across the whole fit. Another trigger after
+the fourth halving records a failed fit. Each stage records its step,
+restart count and rejected attempts in both stage and fit records.
+
+CPU replay of all 60 saved contrast-4 stages found a maximum mismatch
+ratio of 1.407234. All saved endpoint solve checks had passed. On a
+five-iteration, two-frequency CPU check, enabling the rule preserved the
+coefficients, image, predictions and mismatch history bit for bit.
+
+Controlled CPU checks exercised the strict threshold, nonfinite mismatch,
+solve failure, endpoint check, coefficient restart, step carry-forward and
+four-halving limit, including exhaustion before the first accepted stage.
