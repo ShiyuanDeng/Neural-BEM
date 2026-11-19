@@ -1,0 +1,309 @@
+{
+  "case": "dielTM_dec8f",
+  "device": "cuda",
+  "input": {
+    "path": "/home/drdeng/neural_bem_external/CC-CSI/FresnelData/The_first_opus/dielTM_dec8f.txt",
+    "sha256": "e5c56f595f28e674fe93793587dc4c53af0b5c4ee2571043d61f88e6218f0acd",
+    "rows_used": {
+      "frequencies_ghz": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0,
+        7.0,
+        8.0
+      ],
+      "row_count": 14112,
+      "rows_0based": [
+        {
+          "start": 0,
+          "stop": 14104,
+          "step": 8,
+          "count": 1764
+        },
+        {
+          "start": 1,
+          "stop": 14105,
+          "step": 8,
+          "count": 1764
+        },
+        {
+          "start": 2,
+          "stop": 14106,
+          "step": 8,
+          "count": 1764
+        },
+        {
+          "start": 3,
+          "stop": 14107,
+          "step": 8,
+          "count": 1764
+        },
+        {
+          "start": 4,
+          "stop": 14108,
+          "step": 8,
+          "count": 1764
+        },
+        {
+          "start": 5,
+          "stop": 14109,
+          "step": 8,
+          "count": 1764
+        },
+        {
+          "start": 6,
+          "stop": 14110,
+          "step": 8,
+          "count": 1764
+        },
+        {
+          "start": 7,
+          "stop": 14111,
+          "step": 8,
+          "count": 1764
+        }
+      ],
+      "rows_sha256": "bdb738f41b77284f4e11117f36d23dac9afcf77113496685e80c311b8bad0140"
+    },
+    "sha256_checked_against_frozen_file": false
+  },
+  "provenance": {
+    "utc": "2026-11-19T03:17:29+00:00",
+    "commit": "f1f5c79d68e772dd45955d78ce98df332f1767b1",
+    "solver_source": "checkout solvers/",
+    "solver_snapshot_commit": null,
+    "checkout_solver_dirty": false,
+    "solver_used_dirty": false,
+    "command": "/home/drdeng/miniconda3/envs/EMNerf/bin/python experiments/bem_on_baseline_data/csi_measured_frontier_caps.py frontier_capped",
+    "memory_available_gib": 32.095909118652344,
+    "load_average": [
+      9.99951171875,
+      6.78173828125,
+      4.97021484375
+    ],
+    "matlab_processes": 5
+  },
+  "settings": {
+    "solver": "modal_muller",
+    "geometry_update": "slider",
+    "localization": "none",
+    "start": "centred 65 mm circle",
+    "data": "real only, no noise level declared",
+    "material": {
+      "name": "log_contrast_finite_difference",
+      "log_step_bound": 0.25,
+      "derivative_step": 1e-06,
+      "held_stages": []
+    },
+    "contrast_start": {
+      "rule": "weak",
+      "epsilon": 0.001,
+      "frequency_hz": 1000000000.0,
+      "nodes": 512,
+      "estimated_susceptibility": 0.09310331433418423,
+      "clipped": false,
+      "seconds": 1.6454599788412452
+    },
+    "start_contrast": 1.0931033143341842,
+    "execution": {
+      "device": "cuda",
+      "frequency_threads": 4,
+      "acceleration": "spd016",
+      "geometry": "both",
+      "resolution": 512,
+      "nodal_geometry_reuse": "off",
+      "nodal_resolution_profile": "fixed",
+      "audit_frequency_batch": 1,
+      "validity_order": "certificate_first",
+      "stage_entry_reuse": false,
+      "preparation_device": "follow"
+    },
+    "modal_settings": {
+      "trace_minimum": 64,
+      "trace_step": 32,
+      "window_margin": 64,
+      "log_tolerance": 1e-16,
+      "radial_tolerance": 1e-15,
+      "graf_tolerance": 1e-16,
+      "series_loss": 1e-09,
+      "max_log_degree": null,
+      "cached_geometries": 4,
+      "coefficient_workspace": null,
+      "trace_cutoff": null,
+      "table_mode": true
+    },
+    "length_unit_m": 0.05,
+    "origin_m": 0.0,
+    "bounds_m": [
+      [
+        -0.3,
+        -0.3
+      ],
+      [
+        0.3,
+        0.3
+      ]
+    ],
+    "dataset": "measured",
+    "dataset_settings": {
+      "frequencies_ghz": null
+    },
+    "frequency_rule": "ladder: one frequency at a time, lowest first, up to max(3 GHz, top/2); then the default all-frequency stages on the whole list",
+    "ladder_hz": [
+      1000000000.0,
+      2000000000.0,
+      3000000000.0,
+      4000000000.0
+    ],
+    "policy": {
+      "policy": "real_only_csi",
+      "version": "1.0.0",
+      "fit_units": 13412,
+      "fit_seconds": 3600.0,
+      "definitions": {
+        "M": "normal shape update band",
+        "K_geometry": "Cartesian geometry storage band",
+        "K_trace": "backend-internal physics trace cutoff, never M or K_geometry",
+        "resolution": "backend-owned nodal/coefficient workspace profile"
+      },
+      "changes_from_DF": [
+        "real observations only; a problem with a damped catalog is refused",
+        "no localization; warm-up at the lowest measured frequency",
+        "frequency schedule: continuation; fixed shape band: None",
+        "declared-noise whitening, discrepancy stop and recurrent cleanup as in CumulativePolicy"
+      ],
+      "operations": [
+        {
+          "operation": "fit",
+          "label": "warmup_1GHz_real",
+          "purpose": "Narrow-band warm-up on the lowest measured frequency",
+          "entry": "previous operation completed or exhausted its stage quota",
+          "transition": "advance on normal/quota return; any hard/numerical failure ends the fit; full real catalog at declared noise discrepancy ends the fit",
+          "details": {
+            "accuracy_profile": {
+              "production": 512,
+              "refined": 768,
+              "kind": "modal_muller",
+              "nodal_resolution": null,
+              "token": "8*K_trace",
+              "K_trace": 64,
+              "K_trace_refined": 96,
+              "coefficient_workspace": {
+                "production": 128,
+                "refined": 160
+              },
+              "refinement": "raise K_trace by 32; raise coefficient window by 32; frontier and endpoint audit only"
+            },
+            "expected_noise_loss": 0.0,
+            "noise_threshold": null,
+            "weight_rule": "equal frequency weights",
+            "stopping": [
+              "loss tolerance",
+              "gradient infinity norm",
+              "relative step",
+              "iteration cap",
+              "stage quota",
+              "global work/time cap",
+              "numerical refusal"
+            ]
+          },
+          "stage": {
+            "label": "warmup_1GHz_real",
+            "weights": [
+              1.0
+            ],
+            "update_modes": 1,
+            "curve_modes": 4,
+            "nodes": 512,
+            "iterations": 44,
+            "quota": 600,
+            "resolution_kind": "modal",
+            "ragged_data": true,
+            "data_offsets": [
+              0,
+              1764
+            ],
+            "wavenumbers": [
+              1.0479225109758408
+            ],
+            "M": 1,
+            "K_geometry": 4,
+            "frequencies_hz": [
+              1000000000.0
+            ],
+            "damping": [
+              0.0
+            ]
+          },
+          "optimizer": {
+            "initial_damping": 0.001,
+            "damping_increase": 10.0,
+            "damping_decrease": 0.3,
+            "max_damping_trials": 5,
+            "max_backtracks": 7,
+            "gradient_tolerance": 1e-07,
+            "loss_tolerance": 1e-14,
+            "relative_step_tolerance": 1e-07,
+            "scaling_floor": 1.0,
+            "step_bounds_m": [
+              0.012,
+              0.018,
+              0.006
+            ],
+            "residual_floor": 1e-12,
+            "domain_box": [
+              [
+                -5.999999999999999,
+                -5.999999999999999
+              ],
+              [
+                5.999999999999999,
+                5.999999999999999
+              ]
+            ],
+            "step_control": "coefficient",
+            "physical_step_bound_m": 0.006,
+            "damping_rule": "schedule",
+            "hanke_ratio": 0.7,
+            "metric": "marquardt",
+            "detectability_factor": 2.5,
+            "log_model": false,
+            "reach_fraction": 0.0,
+            "damping_floor_relative": 1e-06,
+            "geometry_proposal_cap": 2000,
+            "progress_window": 5,
+            "minimum_relative_progress": 0.01,
+            "avoid_terminal_linearization": false,
+            "plain_progress_exit": false,
+            "record_diagnostics": false
+          },
+          "cleanup_band": null,
+          "geometry_update": "z + P_K[A(z+h*n)-A(z)], derivative of the complete trial",
+          "cleanup": "none"
+        },
+        {
+          "operation": "frontier",
+          "label": "frontier_before_ladder_1_real",
+          "purpose": "Measure the paired-Jacobian frontier at the current curve and this stage's highest frequency",
+          "entry": "previous stage returned",
+          "transition": "enter ladder_1_real with band min(default, frontier), at least 1",
+          "details": {
+            "observation_index": 0,
+            "frequency_hz": 1000000000.0,
+            "threshold": 0.01,
+            "top": 95,
+            "default_band": 3,
+            "cap": true
+          }
+        }
+      ],
+      "matched_comparison": {
+        "variant": "warmup",
+        "original": "results/bem/baseline_data/csi_adapter/2026-11-18/first_fit/dielTM_dec8f/cuda/attempt_01/manifest.json"
+      }
+    }
+  }
+}
