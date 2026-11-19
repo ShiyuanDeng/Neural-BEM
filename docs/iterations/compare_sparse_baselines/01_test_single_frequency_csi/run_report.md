@@ -101,11 +101,28 @@ Compact `final_image.mat` and `prediction.mat` are force-added to Git,
 as requested by the coordinator. Bulk `snapshots.mat` stays local; its size
 and SHA-256 are retained in each manifest.
 
+## Noisy circle result
+
+Frozen 1% noise draw 0. Launch 03:37:51 UTC; finish 03:48:02 UTC.
+All 2,048 iterations completed without failures. Wall time 611.885 s;
+native CSI time 606.510 s; sampled peak process-family RSS 1.592 GiB.
+
+| Area error at 0.5 | At 0.3 | At 0.7 | Material L2 | Native field residual |
+|---:|---:|---:|---:|---:|
+| 45.5519% | 43.7198% | 61.0339% | 0.8255296 | 23.9848% |
+
+The residual uses the frozen noisy observations in the denominator.
+CSI's printed final data/state costs are 1.59e-5 and 9.40e-4. All 33
+snapshots are finite, and the final image and prediction image agree exactly.
+[Score](../../../../results/csi/native_tg002/2026-11-19/fits/circle__c4__n1d0/score.json) ·
+[State](../../../../results/csi/native_tg002/2026-11-19/fits/circle__c4__n1d0/state.json) ·
+[Manifest](../../../../results/csi/native_tg002/2026-11-19/fits/circle__c4__n1d0/manifest.json).
+
 Activity: compare_sparse_baselines/01_test_single_frequency_csi (runs), 2026-11-19
-Runs: 2/4; wall time 0:20
+Runs: 3/4; wall time 0:30
 Result: clean circle area 45.9455%, material 0.8257722, field 24.0092%; clean kite area 50.0675%, material 0.6357027, field 12.4490%
 Failures: none; initial check-only correctly refused missing adapter check records
 Upstream patches: none
 Changes to our code: native_tg002/fit.py, native_fit.m, score.py
-New unknowns: paired 1% noise results
-Proposed next activity: run noisy circle, then noisy kite, after clean kite push
+New unknowns: noisy kite result
+Proposed next activity: run noisy kite after noisy circle push
