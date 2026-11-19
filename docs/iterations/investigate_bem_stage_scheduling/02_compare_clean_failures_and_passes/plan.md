@@ -140,3 +140,13 @@ The clean result (16/30 to 20/30, every pass kept) rests on one data set. The sa
 ```sh
 $P -m experiments.comparison.compare_noisy_warmups CASE --draw 0
 ```
+
+## Round five: warm-up with wider early bands, 19 November 2026, 05:16 UTC (coordinator)
+
+`c_shape__c4` is the one miss at contrasts 0.5 and 4 that the warm-up does not recover (44%). The [earlier activity](../01_trace_stage_stops_and_shape_bands/results.md) showed its cause by a matched test: the first stage at band 3 closes the opening, and ladder bands 5, 7, 9, 11 recover it (0.07%) without a warm-up. The [frontier measurements](stage_frontiers.md) agree: every tested TG-002 truth supports more than the default ladder bands. That activity left one question open: whether the wider ladder is safe on the other cases. Test it together with the warm-up, which is the arm that now recovers the other four.
+
+Arm `warmup_wide`: the warm-up arm with each ladder band two higher, built as the 18 November `wider` arm. All 30 cases, so the count needs no extrapolation. Budget: 30 fits at the unchanged limits, after round three. Driver: `experiments/comparison/compare_clean_wide_ladder.py` (coordinator's code). Reading: recovery of `c_shape__c4` with every warm-up pass kept would put contrasts 0.5 and 4 at 20/20; any lost pass counts against the wider ladder.
+
+```sh
+$P -m experiments.comparison.compare_clean_wide_ladder CASE
+```
