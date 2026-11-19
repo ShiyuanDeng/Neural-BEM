@@ -1,219 +1,189 @@
-# GauGal convergence probes and low-contrast clean runs
+# GauGal first continuation run — native-run report
 
-19 November 2026, UTC. Native-run owns the probe and run evidence only.
-No repository implementation, scoring or upstream file was edited by this agent.
+19 November 2026, UTC. This closes the first continuation pass; the two
+cap-2000 probes and the ten-case simultaneous-frequency campaign were resumed at 19:19:41 UTC and paused again for activity 07 at 19:23 UTC.
+No implementation, upstream source or scoring file was edited by native-run.
 
-## User/coordinator changes and current scope
+## Settings, scope and result counts
 
-The original Part 1 used two cap-2000 probes, two 15-minute iteration-count
-probes and two larger-step probes. The coordinator cancelled Step 2, retained
-the running Step 1 fits, and changed Step 3 to the committed exact-solve path
-at steps 0.2 and 1.0 for 200 iterations each, mismatch only.
+TG-002 clean data, one centred blind start, recovered contrast, lattice 51,
+width 0.7, TV scale 0.5, susceptibility bounds −0.9 to 15, protocol version 1.
+Continuation uses 1, 2, 4, 8, 16, then 19 real frequencies, step 0.2 initially,
+up to 1,000 iterations per stage. The committed mismatch stop rule and exact
+inner checks are fixed. Truth scores never selected settings or restarts.
 
-The coordinator then released only the ten clean contrast-0.5 campaign cases.
-No contrast-4 campaign case is launched by native-run. The code agent owns
-the step-0.05 contrast-4 check and its continuation work.
+There are **19 nonfailed fits out of 20 planned cases, and one FAILED fit**.
+The 19 nonfailed fits have saved outcome STOPPED_EARLY with iteration_limit;
+they reached the configured stage limits, not the outer convergence rule.
+Nine of ten contrast-4 fits and one of nine nonfailed contrast-0.5 fits have
+area error at most 5%: **10/20 planned cases**, versus 0/20 old defaults.
+Circle__c0.5 is excluded from both the nonfailed and successful-fit counts.
+Its saved image has a separate diagnostic score of 4.6954%.
 
-## Step 1: higher inner-iteration cap
+## All 20 first-pass continuation cases
 
-Started 14:36:03 UTC: clean kite__c4 and kite__c0.5, ten outer iterations,
-SolverControls(pcg_max_iter=2000). The two fits use the original numerical
-branch already imported before the exact-solve commit. They remain active.
-Their first mismatch evaluations each took about 130.22 optimization seconds.
-Final solver shares and residual maxima await their completion.
+Old default means the saved clean all-frequency 80-iteration reference,
+`gaugal/default_clean_uc_fs`. Commit is the source at child start, not the
+HEAD at save time. Full hashes remain in each linked fit.json.
 
-Both use the same blind input path as the comparison runner: lattice 51,
-width 0.7, TV scale 0.5, step 0.05, susceptibility bounds -0.9 to 15,
-all 19 real frequencies, no time stop. No truth is passed to reconstruction.
+| Case | Area error % | Old default area % | Worst frequency residual | Final step | Restarts | Outcome | Seconds | Start commit |
+|---|---:|---:|---:|---:|---:|---|---:|---|
+| [circle__c4](../../../../results/gaugal/converged_clean_uc_fc/circle__c4/fit.json) | 2.3553 | 110.8518 | 0.09237818 | 0.2 | 0 | STOPPED_EARLY | 2146.573 | `effe8c70f` |
+| [kite__c4](../../../../results/gaugal/converged_clean_uc_fc/kite__c4/fit.json) | 2.9655 | 158.3706 | 0.05678632 | 0.2 | 0 | STOPPED_EARLY | 2277.691 | `2296ed11d` |
+| [peanut__c4](../../../../results/gaugal/converged_clean_uc_fc/peanut__c4/fit.json) | 1.6270 | 223.6909 | 0.05819941 | 0.2 | 0 | STOPPED_EARLY | 648.559 | `31c1fe1bb` |
+| [star__c4](../../../../results/gaugal/converged_clean_uc_fc/star__c4/fit.json) | 2.0065 | 100.3113 | 0.07888992 | 0.2 | 0 | STOPPED_EARLY | 630.612 | `7771dcbe8` |
+| [asymmetric__c4](../../../../results/gaugal/converged_clean_uc_fc/asymmetric__c4/fit.json) | 1.6539 | 144.7204 | 0.06207142 | 0.2 | 0 | STOPPED_EARLY | 630.356 | `7771dcbe8` |
+| [c_shape__c4](../../../../results/gaugal/converged_clean_uc_fc/c_shape__c4/fit.json) | 3.0388 | 125.0262 | 0.0808622 | 0.2 | 0 | STOPPED_EARLY | 630.413 | `9ec4a62d9` |
+| [hook__c4](../../../../results/gaugal/converged_clean_uc_fc/hook__c4/fit.json) | 2.5535 | 116.5453 | 0.1052707 | 0.2 | 0 | STOPPED_EARLY | 630.270 | `9ec4a62d9` |
+| [cross__c4](../../../../results/gaugal/converged_clean_uc_fc/cross__c4/fit.json) | 2.2969 | 132.2944 | 0.06600618 | 0.2 | 0 | STOPPED_EARLY | 630.151 | `80c80e9f7` |
+| [cog__c4](../../../../results/gaugal/converged_clean_uc_fc/cog__c4/fit.json) | 2.7969 | 125.7538 | 0.07640187 | 0.2 | 0 | STOPPED_EARLY | 630.201 | `80c80e9f7` |
+| [aphex_twin__c4](../../../../results/gaugal/converged_clean_uc_fc/aphex_twin__c4/fit.json) | 10.3182 | 85.8133 | 0.05435177 | 0.2 | 0 | STOPPED_EARLY | 630.264 | `30b35c8df` |
+| [circle__c0.5](../../../../results/gaugal/converged_clean_uc_fc/circle__c0.5/fit.json) | 4.6954 (saved image only) | 71.4668 | 0.02123799 | 0.0125 | 4 | FAILED | 400.504 | `de5422c0d` |
+| [kite__c0.5](../../../../results/gaugal/converged_clean_uc_fc/kite__c0.5/fit.json) | 7.5754 | 11.5070 | 0.009103572 | 0.2 | 0 | STOPPED_EARLY | 630.357 | `3f253b793` |
+| [peanut__c0.5](../../../../results/gaugal/converged_clean_uc_fc/peanut__c0.5/fit.json) | 5.4092 | 9.2589 | 0.01147618 | 0.1 | 1 | STOPPED_EARLY | 631.557 | `c20b5dfeb` |
+| [star__c0.5](../../../../results/gaugal/converged_clean_uc_fc/star__c0.5/fit.json) | 8.0832 | 10.0898 | 0.007803367 | 0.2 | 0 | STOPPED_EARLY | 625.495 | `48d100c64` |
+| [asymmetric__c0.5](../../../../results/gaugal/converged_clean_uc_fc/asymmetric__c0.5/fit.json) | 5.4953 | 7.1753 | 0.0111977 | 0.2 | 0 | STOPPED_EARLY | 630.126 | `3df5a127c` |
+| [c_shape__c0.5](../../../../results/gaugal/converged_clean_uc_fc/c_shape__c0.5/fit.json) | 9.2058 | 10.0233 | 0.01182608 | 0.2 | 0 | STOPPED_EARLY | 630.050 | `3df5a127c` |
+| [hook__c0.5](../../../../results/gaugal/converged_clean_uc_fc/hook__c0.5/fit.json) | 15.7241 | 8.5012 | 0.006075481 | 0.2 | 0 | STOPPED_EARLY | 630.029 | `435449a42` |
+| [cross__c0.5](../../../../results/gaugal/converged_clean_uc_fc/cross__c0.5/fit.json) | 7.6708 | 9.8214 | 0.009299555 | 0.2 | 0 | STOPPED_EARLY | 630.033 | `435449a42` |
+| [cog__c0.5](../../../../results/gaugal/converged_clean_uc_fc/cog__c0.5/fit.json) | 4.6665 | 9.0794 | 0.01454004 | 0.2 | 0 | STOPPED_EARLY | 630.282 | `70eaecf1e` |
+| [aphex_twin__c0.5](../../../../results/gaugal/converged_clean_uc_fc/aphex_twin__c0.5/fit.json) | 17.0111 | 22.0714 | 0.01548247 | 0.2 | 0 | STOPPED_EARLY | 630.069 | `70eaecf1e` |
 
-## Step 2
+Worst frequency residual is the saved endpoint data residual, distinct from
+an inner solve residual. For failed circle__c0.5 it covers only the last
+accepted 16-frequency image; the other 19 rows cover all 19 frequencies.
+Final step for circle is the last attempted step, 0.0125; its saved image
+came from the accepted 16-frequency stage at step 0.05.
 
-Skipped by the coordinator to save time. No Step 2 fit launched.
+The code agent supplied kite__c4 on 2296ed11d; it was not refitted here.
+Other cases started on the commits shown. Safeguard c20b5dfeb halves a step
+and restarts a rejected stage; no-trigger fits stay bit-identical. Old-code
+kite__c0.5 is retained: every stage history maximum/start ratio is 1.0 and
+its checked solves passed. Peanut__c0.5 used one restart, ending at step 0.1.
 
-## Step 3: exact-solve step sizes
+## Circle__c0.5 before and after the safeguard
 
-Committed numerical code: 86232abe1. The scratch script calls reconstruct
-with convergence=CONVERGENCE and max_seconds=None. Settings are unchanged
-except step 0.2/1.0 and the 200-iteration limit. No truth score was computed
-for these probes. Decisions and reports use weighted mismatch only.
+Before: source `30b35c8df9b272aa131c068d74558683d6da0893`, outcome EXCEPTION_PARTIAL,
+stop exception, 510.340 s. The saved-image area error was
+82.3217%, mismatch 110.7481, worst frequency residual
+5.370532. The adjoint check raised 0.000107799 > 0.0001 after
+the 16-frequency stage ran away. The checkpoint's local iteration 480 is
+not the total updates across preceding stages.
 
-| Step | Iterations | Weighted mismatch: start → end | End minus value 19 steps earlier | Seconds/iteration | Worst inner relative residual | Stop |
-|---:|---:|---:|---:|---:|---:|---|
-| 0.2 | 200 | 19 → 10.1109053 | -0.1152054 | 1.13543 | 7.47928e-7 | iteration_limit |
-| 1.0 | 200 | 19 → 10.0824825 | -0.0599668 | 1.13678 | 1.08491e-6 | iteration_limit |
+The whole failure folder is preserved [here](../../../../results/_probes/gaugal_convergence/2026-11-19/failed_before_step_safeguard/circle__c0.5),
+including fit.json, score.json, arrays, logs and traceback. It was moved
+only after the original CLI finished the eight remaining weak cases.
 
-Both remain below the initial mismatch and are still falling over their last
-20 evaluations. Neither blows up. Step 1.0 has small intermediate rises;
-its final mismatch is only slightly below step 0.2. Neither reached the
-committed plateau rule before the 200-iteration limit.
+After: source `de5422c0d2b7119297fd83bf711e985c9e28e28f`, outcome **FAILED**,
+stop restart_limit, 400.504 s, 5012 total attempted updates.
+At 16 frequencies, steps 0.2 and 0.1 were rejected; step 0.05 completed.
+At 19 frequencies, steps 0.05, 0.025 and 0.0125 were rejected. Four allowed
+halvings were exhausted; there were five rejected attempts in total.
+The fit returned its last accepted 16-frequency image. That image's
+separate score is 4.6954%; its weighted mismatch is 0.0009574062 and
+its worst frequency residual is 0.02123799. It is not a completed fit.
 
-All 19 endpoint data residuals are saved in each fit.json. Their ranges are
-0.41549–1.05461 at step 0.2 and 0.35937–1.04984 at step 1.0. Inner residuals
-and observed-data residuals are separate quantities.
+See [stage attempts](../../../../results/gaugal/converged_clean_uc_fc/circle__c0.5/stages.json) and
+[saved-image score](../../../../results/gaugal/converged_clean_uc_fc/circle__c0.5/score.json). The saved predictions have
+16 frequency rows, so the all-19-frequency output check is false as expected.
 
-The scratch script copies each existing checked-solve residual after the
-check returns; it does not change the solve or gradient. All inner solves
-were converged, all final images finite and all prediction arrays 19 by 24.
-Every-20-iteration results were sent through Herdr until the coordinator
-requested results only. Each probe's fit.npz is kept for later review.
+After the first pass the coordinator reported the code agent's finding: each stage
+after the first reset the TV auxiliary to zero on a non-flat image, smearing
+the stage start and causing false circle rejections. This first pass is
+therefore evidence of that implementation. Activity 07 will refit all 20
+with the fixed code only after the coordinator's go. No first-pass result
+is silently replaced, and the failed circle is not counted as recovered.
 
-## Contrast-0.5 campaign
+## Pauses and timings
 
-A single detached runner was launched at about 14:46 UTC for the explicit
-ten __c0.5 cases in gaugal/converged_clean_uc_fs. The runner writes the shared
-metrics.csv directly without a lock, so two runners were not used. The
-existing matching run.json is read and not rewritten.
+- BEM GPU sharing began at 15:15:51 UTC. All four then-running GauGal fits
+  were paused at 15:16:53 and resumed at 15:18:57: 124 seconds. The affected
+  probe and simultaneous-frequency raw times include that pause.
+- From 16:04:26 to 19:19:41 UTC, the two cap-2000 probes and their collector,
+  plus the simultaneous-frequency peanut child, CLI and monitor, were
+  paused for continuation: 11,715 seconds (3 h 15 min 15 s). The coordinator
+  resumed all six with SIGCONT. Their wall/optimization times include it.
+- The continuation CLI parent alone was paused from 17:38:34 to 17:42:08:
+  214 seconds. Its kite child continued. Overall CLI wall includes it;
+  the child's case timer was not suspended.
+- Continuation circle__c4 shared the GPU. Peanut__c4 began about 26 seconds
+  before the dedicated allocation; star__c4 and subsequent cases ran alone.
+  Dedicated runs cost about 630 seconds per case; failures cost less.
 
-The command, GPU sample, memory sample, process IDs and live state are in
-results/gaugal/converged_clean_uc_fs/low_contrast_launch.json and
-low_contrast_state.json. The monitor sends the first-case timing and forecast
-as soon as fit.json appears. No time stop is imposed; the host-memory floor
-is 14 GiB. All times come from date -u.
+The first continuation CLI started 15:28:12 UTC; the final circle retry
+ended 19:18:29 UTC: 3 h 50 min 17 s elapsed, including the parent-only pause.
+Case seconds in the table are saved raw case times, not standalone speed
+benchmarks. Exact-solve probes ran 14:40:27–14:44:42 UTC (4 min 15 s).
 
-### First two simultaneous-frequency cases
+## Probe results
 
-| Case | Area error % | Final weighted mismatch | Iterations | Stop | Case seconds |
-|---|---:|---:|---:|---|---:|
-| circle__c0.5 | 76.2861 | 5.8761999 | 364 | mismatch_plateau | 291.806 |
-| kite__c0.5 | 9.9849 | 0.000223769 | 2802 | mismatch_plateau | 2282.942 |
+Step 1: cap-2000, two clean kite cases, ten outer iterations, step 0.05,
+all 19 frequencies, no time stop. Started 14:36:03 UTC; both processes were
+resumed at 19:19:41 and paused again at 19:23:14. Only iteration 1 is checkpointed so far:
+mismatch 19.0, optimization time 130.220 s each. This is not a completed
+probe and gives no final inner-solve share or residual maximum.
 
-Both have zero unconverged checked inner solves. Kite's raw time includes
-the 124-second pause and shared GPU use. Its worst endpoint frequency
-residual is 0.0101315. The first-case forecast is not representative of all
-cases; subsequent runtimes vary greatly. Settings remain fixed.
+Saved cap-100 references, for comparison when the probes finish:
 
-## Continuation campaign
+| Case | Saved iterations | Unconverged inner solves % | Worst final inner relative residual | Optimization seconds/iteration |
+|---|---:|---:|---:|---:|
+| kite__c4 | 80 | 73.815 | 0.03924051 | 4.042 |
+| kite__c0.5 | 80 | 71.461 | 0.5299407 | 3.971 |
 
-The coordinator released the committed continuation variant (2296ed11d)
-after its saved kite__c4 result: 2.97% area error. Native-run did not refit
-that case and does not own its result files.
+Step 2: cancelled by the coordinator; nothing launched.
 
-One detached continuation runner started at 15:28:12 UTC, alongside the
-contrast-0.5 simultaneous-frequency runner. Its explicit list is the nine
-remaining __c4 cases, then the ten __c0.5 cases. Settings are unchanged:
-step 0.2, stage frequency counts 1, 2, 4, 8, 16, 19, with 1,000 iterations
-per stage (6,000 maximum per case), the existing TV rule and inner checks.
-There is no time stop. The first launch passed the 14 GiB host-memory check.
+Step 3: exact-solve code 86232abe1, clean kite__c4, 200 iterations per
+step, convergence=CONVERGENCE, max_seconds=None. Mismatch only; no truth
+scores were computed for these probes.
 
-Each completed case sends its area error, final weighted mismatch, worst
-frequency residual and raw seconds through Herdr. continuation_table.json
-records those rows. Commits use only native-run's completed case paths;
-the code agent's saved kite__c4 and shared run.json are not staged here.
-The two run folders have separate case files; both CLIs write the derived
-shared metrics.csv at completion, so the per-case JSON files are canonical.
+| Step | Iterations | Weighted mismatch start → end | Seconds/iteration | Worst checked inner residual | Stop |
+|---:|---:|---:|---:|---:|---|
+| 0.2 | 200 | 19 → 10.1109053 | 1.13543 | 7.47928e-7 | iteration_limit |
+| 1.0 | 200 | 19 → 10.0824825 | 1.13678 | 1.08491e-6 | iteration_limit |
 
-### Continuation results so far
+Both mismatches still fell over the last 20 evaluations. Step 1.0 had small
+intermediate rises; neither blew up or reached the plateau rule. All checked
+inner solves converged; images and 19-by-24 predictions were finite.
 
-| Case | Area error % | Final mismatch | Worst frequency residual | Seconds | Iterations | Stop | Final step | Restarts | Start commit |
-|---|---:|---:|---:|---:|---:|---|---:|---:|---|
-| circle__c4 | 2.3553 | 0.05059675 | 0.09237818 | 2146.573 | 6000 | iteration_limit | 0.2 | 0 | effe8c70fbd280f6668dce610c6368dfc73a8a4c |
-| peanut__c4 | 1.6270 | 0.02408453 | 0.05819941 | 648.559 | 6000 | iteration_limit | 0.2 | 0 | 31c1fe1bbc6e47a3f4e6f9124d122467d0a92a52 |
-| star__c4 | 2.0065 | 0.04438225 | 0.07888992 | 630.612 | 6000 | iteration_limit | 0.2 | 0 | 7771dcbe86f6274bc15fe81114f9150d69549164 |
-| asymmetric__c4 | 1.6539 | 0.03868516 | 0.06207142 | 630.356 | 6000 | iteration_limit | 0.2 | 0 | 7771dcbe86f6274bc15fe81114f9150d69549164 |
-| c_shape__c4 | 3.0388 | 0.05541937 | 0.0808622 | 630.413 | 6000 | iteration_limit | 0.2 | 0 | 9ec4a62d9fdb2b76c4f3b759c2a6ec770fcf3303 |
-| hook__c4 | 2.5535 | 0.06809981 | 0.1052707 | 630.270 | 6000 | iteration_limit | 0.2 | 0 | 9ec4a62d9fdb2b76c4f3b759c2a6ec770fcf3303 |
-| cross__c4 | 2.2969 | 0.02191643 | 0.06600618 | 630.151 | 6000 | iteration_limit | 0.2 | 0 | 80c80e9f7c371abbf9e1a1a0b4da5629c81398dd |
-| cog__c4 | 2.7969 | 0.0573101 | 0.07640187 | 630.201 | 6000 | iteration_limit | 0.2 | 0 | 80c80e9f7c371abbf9e1a1a0b4da5629c81398dd |
-| aphex_twin__c4 | 10.3182 | 0.03018323 | 0.05435177 | 630.264 | 6000 | iteration_limit | 0.2 | 0 | 30b35c8df9b272aa131c068d74558683d6da0893 |
-| circle__c0.5 | 4.6954 | 0.0009574062 | 0.02123799 | 400.504 | 5012 | restart_limit | 0.0125 | 4 | de5422c0d2b7119297fd83bf711e985c9e28e28f |
-| kite__c0.5 | 7.5754 | 0.0001649472 | 0.009103572 | 630.357 | 6000 | iteration_limit | 0.2 | 0 | 3f253b79379925089204e4d317a57a4ec62200db |
-| peanut__c0.5 | 5.4092 | 0.0002434953 | 0.01147618 | 631.557 | 6006 | iteration_limit | 0.1 | 1 | c20b5dfeb9d37959ae80d1eb52bede56ceb9e69a |
-| star__c0.5 | 8.0832 | 0.0002420903 | 0.007803367 | 625.495 | 5908 | iteration_limit | 0.2 | 0 | 48d100c6432ba6daaf8c163b73955261d3549498 |
-| asymmetric__c0.5 | 5.4953 | 0.0002798454 | 0.0111977 | 630.126 | 6000 | iteration_limit | 0.2 | 0 | 3df5a127c5cb5932196d94ab3e9779126164b1fd |
-| c_shape__c0.5 | 9.2058 | 0.0004376154 | 0.01182608 | 630.050 | 6000 | iteration_limit | 0.2 | 0 | 3df5a127c5cb5932196d94ab3e9779126164b1fd |
-| hook__c0.5 | 15.7241 | 9.369616e-05 | 0.006075481 | 630.029 | 6000 | iteration_limit | 0.2 | 0 | 435449a42f907a5d5f14fca9c33984d6823acf01 |
-| cross__c0.5 | 7.6708 | 0.000261668 | 0.009299555 | 630.033 | 6000 | iteration_limit | 0.2 | 0 | 435449a42f907a5d5f14fca9c33984d6823acf01 |
-| cog__c0.5 | 4.6665 | 0.0003090357 | 0.01454004 | 630.282 | 6000 | iteration_limit | 0.2 | 0 | 70eaecf1ea2ca0808316f8b4ac9d949a5933a61f |
-| aphex_twin__c0.5 | 17.0111 | 0.0004291036 | 0.01548247 | 630.069 | 6000 | iteration_limit | 0.2 | 0 | 70eaecf1ea2ca0808316f8b4ac9d949a5933a61f |
+## Simultaneous-frequency campaign still running
 
-Circle ran under sharing. Peanut began about 26 seconds before the dedicated
-allocation; star and subsequent cases started fully under that allocation.
-Completed case arrays and checks are committed in pairs. The named converged
-variant may still stop at its fixed iteration cap; stop reasons are shown.
+One detached runner owns the ten clean c0.5 cases; two runners were avoided
+because metrics.csv is shared without a lock. The first completed circle
+used 364 iterations, mismatch_plateau, area 76.2861%, mismatch 5.8761999,
+291.806 s. Kite used 2,802 iterations, mismatch_plateau, area 9.9849%,
+mismatch 0.000223769, 2,282.942 s including the 124-second BEM pause.
+Both had zero unconverged checked inner solves. Peanut was paused mid-fit
+and resumed at 19:19:41. It then finished; star became the active child.
+The first-case forecast is no longer applicable.
+Peanut's saved result: area 5.7253%, worst frequency residual
+0.009207558, 3000 iterations, iteration_limit,
+14024.226 raw seconds including the long pause.
+No noisy cases or simultaneous-frequency c4 cases were launched here.
 
-### Continuation receives the GPU
+At 19:23:14 UTC the coordinator paused probes 1895339/1895343, collector
+1903073, CLI 1899688 and monitor 1899680 for activity 07. Peanut child
+1921897 had ended. Its successor star child 2035661 was paused at
+19:23:23 UTC. These six jobs stay paused until the coordinator resumes them.
 
-At 16:04:26 UTC the coordinator paused the two cap-2000 probes, their
-collector and the simultaneous-frequency peanut__c0.5 run with its parent
-and monitor. Nothing was killed. These jobs stay paused until the
-coordinator resumes them after continuation finishes; their raw times
-include the open pause. pause_for_continuation.json records the PIDs.
+## Evidence and activity report
 
-The continuation runner is untouched and now has the GPU compute slot.
-The first circle__c4 finished under sharing: area error 2.35526%, final
-weighted mismatch 0.0505968, worst frequency residual 0.0923782, 2146.573 s,
-6,000 iterations, iteration_limit, zero unconverged checked inner solves.
-Subsequent per-case timings will note the new allocation. Peanut__c4 started
-just before the allocation and can include a short shared interval.
+[Continuation run](../../../../results/gaugal/converged_clean_uc_fc),
+[old defaults](../../../../results/gaugal/default_clean_uc_fs),
+[probe evidence](../../../../results/_probes/gaugal_convergence/2026-11-19),
+and [closed continuation pause](../../../../results/_probes/gaugal_convergence/2026-11-19/pause_for_continuation.json).
+Per-case JSON and arrays are canonical; shared metrics.csv is derived.
+Completed arrays, checks and source commits were pushed in case batches.
 
-## User pause for BEM priority
-
-The coordinator paused all four GauGal GPU processes with SIGSTOP at
-15:16:53 UTC: PIDs 1895339, 1895343, 1900300 and 1902305. They were paused,
-not failed or stuck. Native-run launched no GPU work during the pause.
-
-Native-run also paused its CPU controllers (1903073, 1899680, 1899688)
-to prevent a memory guard from killing a paused fit or a runner from
-launching another fit. The coordinator resumed the four fits and three controllers with SIGCONT
-at 15:18:57 UTC. The read-only GPU sampler stayed active. pause.json records
-the 124-second pause and BEM GPU sharing from 15:15:51 UTC.
-
-Raw case wall times and optimization times will include this pause;
-seconds-per-iteration values of the affected fits will also include it.
-The first-case forecast predates the pause and no longer predicts a finish.
-
-## Divergence safeguard and source records
-
-The first continuation circle__c0.5 ran on 30b35c8df9b272aa131c068d74558683d6da0893.
-Its 16-frequency stage diverged; the adjoint residual check later raised
-0.000107799 > 0.0001. Its failure stays intact until the initial runner ends.
-Then it is archived under failed_before_step_safeguard and refitted once,
-as authorized by the coordinator on 19 November at 17:42 UTC.
-
-Safeguard c20b5dfeb halves the step and restarts a stage if its weighted
-mismatch exceeds twice its starting value. Rejected attempts are retained;
-output checks distinguish rejected attempts from accepted checked solves.
-Unchanged fits where the safeguard never fires are bit-identical.
-
-The original kite__c0.5 ran on 3f253b79379925089204e4d317a57a4ec62200db.
-It completed all six stages with no divergence: every stage history's
-maximum/start ratio is 1.0 and all checked solves passed. Retain this fit:
-area error 7.57544%, final step 0.2, zero restarts, iteration_limit.
-The previously saved kite__c4 belongs to code agent's 2296ed11d variant.
-Each case's exact start commit, final step and restart count appear in the
-continuation table and in fit.json; commits made while a fit ran do not
-change its recorded start commit.
-
-The CLI parent alone was paused from 17:38:34 to 17:42:08 UTC; its child
-continued. Parent wall time includes that pause. At 17:55:31 UTC only the
-CPU reporter and publisher were replaced to record restart/source fields
-and publish approved retries. Numerical runner 1921378 was untouched.
-The other six paused processes remain paused for the coordinator.
-
-## Continuation completion summary
-
-Finished 19/19 requested cases, plus saved kite__c4. Area error <=5%: c4 9/10; c0.5 2/10. Area is reported only after fitting; it never selected a step or a restart.
-
-Archived old-code failures: circle__c0.5. The approved retries use the same fixed CLI variant and the committed safeguard. Cap-2000 probes and the simultaneous-frequency campaign remain paused for the coordinator.
-
-Saved kite__c4 source: 2296ed11dc020d7486d27702226c86134f3a0c02; final step 0.2; restarts 0.
-
-## Evidence
-
-Probe root: results/_probes/gaugal_convergence/2026-11-19/.
-The one scratch script is probe.py. Each fit keeps its state, mismatch log,
-fit record, final arrays and output checks. Completed probe folders have
-SHA-256 manifests. The final campaign table will be added here after the run. The first case
-completed at about 14:51 UTC: circle__c0.5, 364 iterations, mismatch_plateau,
-final weighted mismatch 5.8761999, area error 76.2861%, case time 291.806 s.
-Its first-case forecast is 48.63 minutes total and 43.77 minutes remaining;
-first_case_forecast.json records the numbers and GPU-sharing context.
-
+```text
 Activity: evaluate_our_method/06_make_gaugal_fits_converge, 2026-11-19
-Runs: 2/4 probes and 2/10 simultaneous cases completed (paused); 19/19 continuation cases completed plus saved kite__c4
-Result: continuation results and exact case start commits are recorded above; all approved retries finished
-Failures: original circle__c0.5 divergence retained outside canonical run; retry results recorded above
-Upstream patches: none
-Changes to our code: none; scratch script and result records only
-New unknowns: paused cap-2000 probe statistics and remaining simultaneous-frequency results
-Proposed next activity: coordinator decides when to resume retained paused work; needs user decision: resume timing
+Runs: continuation 19/20 nonfailed, 1 FAILED; wall time 3:50:17 including retry and parent pause
+Result: c4 9/10 area <=5%; c0.5 1/9 nonfailed area <=5%; total 10/20 planned, old default 0/20
+Result: circle__c0.5 FAILED after safeguard; saved-image score 4.6954% reported separately
+Result: exact step probes 0.2/1.0 ended at mismatch 10.1109053/10.0824825 after 200 iterations each
+Result: cap-2000 probes pending; simultaneous campaign 3/10 saved; six jobs paused again for activity 07
+Failures: old circle adjoint exception archived; safeguarded circle restart_limit kept in canonical run
+Upstream patches: none by native-run
+Changes to our code: none by native-run; scratch reporting helpers and saved evidence only
+New unknowns: cap-2000 final statistics; remaining simultaneous results; results after TV stage-start fix
+Proposed next activity: 07_refit_gaugal_with_tv_warm_start, all 20 clean cases; needs user decision: none; coordinator released activity 07 on code 94c39f4c0
+```
