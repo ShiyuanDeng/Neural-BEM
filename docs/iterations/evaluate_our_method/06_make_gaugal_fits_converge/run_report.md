@@ -70,6 +70,18 @@ low_contrast_state.json. The monitor sends the first-case timing and forecast
 as soon as fit.json appears. No time stop is imposed; the host-memory floor
 is 14 GiB. All times come from date -u.
 
+### First two simultaneous-frequency cases
+
+| Case | Area error % | Final weighted mismatch | Iterations | Stop | Case seconds |
+|---|---:|---:|---:|---|---:|
+| circle__c0.5 | 76.2861 | 5.8761999 | 364 | mismatch_plateau | 291.806 |
+| kite__c0.5 | 9.9849 | 0.000223769 | 2802 | mismatch_plateau | 2282.942 |
+
+Both have zero unconverged checked inner solves. Kite's raw time includes
+the 124-second pause and shared GPU use. Its worst endpoint frequency
+residual is 0.0101315. The first-case forecast is not representative of all
+cases; subsequent runtimes vary greatly. Settings remain fixed.
+
 ## Continuation campaign
 
 The coordinator released the committed continuation variant (2296ed11d)
@@ -118,7 +130,7 @@ Its first-case forecast is 48.63 minutes total and 43.77 minutes remaining;
 first_case_forecast.json records the numbers and GPU-sharing context.
 
 Activity: evaluate_our_method/06_make_gaugal_fits_converge, 2026-11-19
-Runs: 2/4 probes completed; 1/10 campaign cases completed; wall time pending
+Runs: 2/4 probes completed; 2/10 campaign cases completed; wall time pending
 Result: exact step 0.2: mismatch 19→10.1109053; 1.13543 s/iter; inner 7.48e-7
 Result: exact step 1.0: mismatch 19→10.0824825; 1.13678 s/iter; inner 1.08e-6
 Failures: none; affected fits resumed by coordinator after a 124-second user pause
