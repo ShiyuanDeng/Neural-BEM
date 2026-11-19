@@ -411,6 +411,53 @@ def attach_continuation():
         time.sleep(3)
 
 
+def finish_continuation_report(destination):
+    """Keep the final report and run-level evidence after all approved work ends."""
+    import re
+    rows=[continuation_row(destination/c) for c in read(destination/'continuation_launch.json')['cases']
+          if (destination/c/'score.json').exists()]
+    saved=continuation_row(destination/'kite__c4')
+    all_rows=rows+[saved]
+    report=ROOT/'docs/iterations/evaluate_our_method/06_make_gaugal_fits_converge/run_report.md'
+    text=report.read_text()
+    marker='## Continuation completion summary'
+    if marker not in text:
+        position=text.index('## Evidence')
+        counts={contrast:sum(r['area_error']<=.05 for r in all_rows if r['case'].endswith(contrast)) for contrast in ('__c4','__c0.5')}
+        archived=BASE/'failed_before_step_safeguard/archive.json'
+        failures=read(archived)['cases'] if archived.exists() else []
+        body=(marker+'\n\n'+f"Finished {len(rows)}/19 requested cases, plus saved kite__c4. "
+              f"Area error <=5%: c4 {counts['__c4']}/10; c0.5 {counts['__c0.5']}/10. "
+              "Area is reported only after fitting; it never selected a step or a restart.\n\n"
+              +f"Archived old-code failures: {', '.join(failures) or 'none'}. "
+              "The approved retries use the same fixed CLI variant and the committed safeguard. "
+              "Cap-2000 probes and the simultaneous-frequency campaign remain paused for the coordinator.\n\n"
+              +f"Saved kite__c4 source: {saved['code_at_start']}; final step {saved['final_step_size']}; restarts {saved['restarts']}.\n\n")
+        text=text[:position]+body+text[position:]
+    text=re.sub(r'Runs: .*',f'Runs: 2/4 probes and 2/10 simultaneous cases completed (paused); {len(rows)}/19 continuation cases completed plus saved kite__c4',text)
+    text=re.sub(r'Result: exact step 0.2:.*', 'Result: continuation results and exact case start commits are recorded above; all approved retries finished',text)
+    text=re.sub(r'Result: exact step 1.0:.*\n','',text)
+    text=re.sub(r'Failures: .*','Failures: original circle__c0.5 divergence retained outside canonical run; retry results recorded above',text)
+    text=re.sub(r'New unknowns: .*','New unknowns: paused cap-2000 probe statistics and remaining simultaneous-frequency results',text)
+    text=re.sub(r'Proposed next activity: .*','Proposed next activity: coordinator decides when to resume retained paused work; needs user decision: resume timing',text)
+    report.write_text(text)
+    evidence=[destination/name for name in ('continuation_launch.json','continuation_state.json','continuation_table.json',
+        'continuation_table.md','continuation_retry_launch.json','continuation_retry.log','continuation_runner.log',
+        'continuation_publish_state.json','exclusive_gpu_allocation.json','safeguard_hold.json')]
+    evidence+=[report,Path(__file__).resolve()]
+    paths=[str(p.relative_to(ROOT)) for p in evidence if p.exists()]
+    lock=(BASE/'publisher.lock').open('a');fcntl.flock(lock,fcntl.LOCK_EX)
+    try:
+        subprocess.run(['git','add','--',*paths],cwd=ROOT,check=True)
+        subprocess.run(['git','diff','--cached','--check','--',*paths],cwd=ROOT,check=True)
+        subprocess.run(['git','commit','-m','Summarize completed GauGal continuation and safeguarded retry','--',*paths],cwd=ROOT,check=True)
+        subprocess.run(['git','push'],cwd=ROOT,check=True)
+        status=subprocess.check_output(['git','status','--short'],cwd=ROOT,text=True)
+        print('Post-push status (shared/paused files may remain):\n'+status,flush=True)
+    finally:
+        fcntl.flock(lock,fcntl.LOCK_UN);lock.close()
+
+
 def publish_continuation():
     """Publish completed, immutable case files in small batches; no GPU imports."""
     import re
@@ -448,6 +495,7 @@ def publish_continuation():
                 if terminal and not ready:
                     state.update(state='completed',finished_utc=now(),published=published)
                     write(status_path,state)
+                    finish_continuation_report(destination)
                     notify(f"Continuation publishing complete: {len(published)}/19 requested cases committed and pushed. Paused probes and simultaneous-frequency fits were not resumed.")
                     return
                 time.sleep(3)
