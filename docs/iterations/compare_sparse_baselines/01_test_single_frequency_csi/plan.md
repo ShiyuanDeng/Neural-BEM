@@ -124,7 +124,9 @@ export PYTHONPATH=solvers:.
 # Assignment 1, native-adapter
 $PY -m experiments.baselines.csi.native_tg002.inputs --case circle__c4 --data clean --run-dir $RUN
 $PY -m experiments.baselines.csi.native_tg002.inputs --case kite__c4   --data clean --run-dir $RUN
-$PY -m experiments.baselines.csi.native_tg002.check_table --case circle__c4 --data clean --run-dir $RUN
+$PY -m experiments.baselines.csi.native_tg002.check_table --case circle__c4 --data clean --run-dir $RUN   # attempt 1 failed, kept as attempt_01
+$PY -m experiments.baselines.csi.native_tg002.check_equivalence --case circle__c4 --run-dir $RUN          # added 03:11, runs before the retry
+$PY -m experiments.baselines.csi.native_tg002.check_table --case circle__c4 --data clean --run-dir $RUN   # attempt 2
 $PY -m experiments.baselines.csi.native_tg002.check_table --case kite__c4   --data clean --run-dir $RUN
 $PY -m experiments.baselines.csi.native_tg002.check_forward --case circle__c4 --run-dir $RUN
 
