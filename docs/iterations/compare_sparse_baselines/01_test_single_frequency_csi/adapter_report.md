@@ -71,6 +71,20 @@ eight threads, and ran alone on CPU. The external checkouts received
 no changes. Existing edits to MR-CSI and its display script are recorded
 in the input receipts. The pinned classical `CSI.m` bytes matched.
 
+## Frozen 1% noise draw 0
+
+At 03:16 UTC the coordinator authorized the noisy pair. Python read the
+same frozen draw as BEM. Both saved 24-reading vectors matched the
+0.5 GHz column of the corresponding noise file bit for bit.
+
+| Case | SHA-256 of frozen noise file | SHA-256 of 24 native readings |
+|---|---|---|
+| [Circle](../../../../results/csi/native_tg002/2026-11-19/inputs/circle__c4__n1d0/inputs.json) | `3d23d3a9f8d9168c32af5341eaf5a4a8c6b42a390a5a2973926b00b099652aba` | `a5bdb06134d39785b93e05c82ee959963b28b9fdcfa5bfcd50cdb527cef283fa` |
+| [Kite](../../../../results/csi/native_tg002/2026-11-19/inputs/kite__c4__n1d0/inputs.json) | `355ca4155e95cf0ab6fd17e02fa906ecf0bbcc3d3c3b94379bcb95d512c738ff` | `0c813d0254631c13677ae4a5b5bcddd0972a88b8836811699aa80b5bb4d72997` |
+
+The noisy table checks wait for the clean kite fit to finish and its
+MATLAB process to exit.
+
 ```text
 Activity: compare_sparse_baselines/01_test_single_frequency_csi (adapter), 2026-11-19
 Runs: 4/4 final checks passed; 5 MATLAB launches including attempt 1; wall time 0:09

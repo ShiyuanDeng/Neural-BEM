@@ -1,0 +1,72 @@
+{
+  "case": "circle__c4",
+  "data": "n1d0",
+  "sealed": {
+    "path": "development_results/TG-002/inputs/circle/c4/observations.json",
+    "sha256": "320f132b652283aab198bca11a999e31dcc0092c780c780c2c3766548b8b9d32"
+  },
+  "noise": {
+    "path": "results/_shared/noise/n1d0/circle__c4.npz",
+    "sha256": "3d23d3a9f8d9168c32af5341eaf5a4a8c6b42a390a5a2973926b00b099652aba"
+  },
+  "sha256": {
+    "geometry.csv": "eeb017abf6879ebe4f1c977f6c7a9050c07352bddfafb84dc6ae839c8c4f1f9c",
+    "mask.csv": "f5a368f44e976680337b7770bc13bdb09ac08942c872ba2b9d25fa6e22323e5c",
+    "readings.csv": "0f840483653fcef862d30f3b7ec868c7cd93d6ae1b29bde1733fae7e9e6b49e8",
+    "table.csv": "2646ab49671d6cae45ae5eb06923787a649ac9c211346f216bf29d8802c0a027"
+  },
+  "native_readings_sha256": "a5bdb06134d39785b93e05c82ee959963b28b9fdcfa5bfcd50cdb527cef283fa",
+  "native_readings_encoding": "24 little-endian complex128 in sealed pair order",
+  "upstream": {
+    "cc-csi": {
+      "commit": "73a64e163da34e63fa33f8abe196b9004f45d342",
+      "dirty_status": [
+        " M functions/MR_CSI_Brent.m",
+        " M show_InitGuess.m"
+      ],
+      "CSI_m_sha256": "2f0d40aae645a2514613c8ddf6c19672061f62db4e20ef1706f0e889b01867fe"
+    },
+    "maxwellfdfd": {
+      "commit": "690ca8d534bddb5d287089deb7246e1a81f8bdd4",
+      "dirty_status": []
+    }
+  },
+  "frequency_hz": 500000000.0,
+  "k_background_per_m": 25.66875441776988,
+  "vacuum_equivalent_GHz": 1.224744871348682,
+  "exterior_relative_permittivity": 6,
+  "image_ratio": "1 + real(chi); chi is susceptibility relative to the exterior",
+  "source_strength": 1e-06,
+  "native_units_per_csi_unit": 1e-06,
+  "to_csi": "conj(native / source_strength)",
+  "to_native": "source_strength * conj(csi)",
+  "geometry_columns": [
+    "source_id",
+    "receiver_id",
+    "source_x_m",
+    "source_y_m",
+    "receiver_x_m",
+    "receiver_y_m"
+  ],
+  "geometry_origin": "ring centre",
+  "ring_radius_m": 0.3,
+  "offset_rad": 0.2,
+  "readings_columns": [
+    "pair_id",
+    "native_scattered_real",
+    "native_scattered_imag"
+  ],
+  "table_columns": [
+    "source_deg",
+    "receiver_deg",
+    "equivalent_GHz",
+    "total_real",
+    "total_imag",
+    "incident_real",
+    "incident_imag"
+  ],
+  "mask_axes": [
+    "receiver angle ascending",
+    "source in sealed order"
+  ]
+}
