@@ -119,6 +119,8 @@ shared metrics.csv at completion, so the per-case JSON files are canonical.
 | peanut__c0.5 | 5.4092 | 0.0002434953 | 0.01147618 | 631.557 | 6006 | iteration_limit | 0.1 | 1 | c20b5dfeb9d37959ae80d1eb52bede56ceb9e69a |
 | star__c0.5 | 8.0832 | 0.0002420903 | 0.007803367 | 625.495 | 5908 | iteration_limit | 0.2 | 0 | 48d100c6432ba6daaf8c163b73955261d3549498 |
 | asymmetric__c0.5 | 5.4953 | 0.0002798454 | 0.0111977 | 630.126 | 6000 | iteration_limit | 0.2 | 0 | 3df5a127c5cb5932196d94ab3e9779126164b1fd |
+| c_shape__c0.5 | 9.2058 | 0.0004376154 | 0.01182608 | 630.050 | 6000 | iteration_limit | 0.2 | 0 | 3df5a127c5cb5932196d94ab3e9779126164b1fd |
+| hook__c0.5 | 15.7241 | 9.369616e-05 | 0.006075481 | 630.029 | 6000 | iteration_limit | 0.2 | 0 | 435449a42f907a5d5f14fca9c33984d6823acf01 |
 
 Circle ran under sharing. Peanut began about 26 seconds before the dedicated
 allocation; star and subsequent cases started fully under that allocation.
@@ -196,7 +198,7 @@ Its first-case forecast is 48.63 minutes total and 43.77 minutes remaining;
 first_case_forecast.json records the numbers and GPU-sharing context.
 
 Activity: evaluate_our_method/06_make_gaugal_fits_converge, 2026-11-19
-Runs: 2/4 probes and 2/10 simultaneous cases completed (paused); 13/19 continuation cases saved
+Runs: 2/4 probes and 2/10 simultaneous cases completed (paused); 15/19 continuation cases saved
 Result: exact step 0.2: mismatch 19→10.1109053; 1.13543 s/iter; inner 7.48e-7
 Result: exact step 1.0: mismatch 19→10.0824825; 1.13678 s/iter; inner 1.08e-6
 Failures: old-code continuation circle__c0.5 diverged; preserved for the approved safeguarded retry
