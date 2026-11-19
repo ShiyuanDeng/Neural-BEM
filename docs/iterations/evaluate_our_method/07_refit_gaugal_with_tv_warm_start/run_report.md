@@ -20,6 +20,8 @@ The first run is preserved whole under [converged_clean_uc_fc](../../../../resul
 | kite__c4 | 3.0951 | 2.9655 | 0.05388925 | 0.2 | 0 | 0 | STOPPED_EARLY | 630.335 | a7d6974859b780eff580ef7890fa5d3e89e71b03 |
 | peanut__c4 | 1.7206 | 1.6270 | 0.05622402 | 0.2 | 0 | 0 | STOPPED_EARLY | 630.222 | a7d6974859b780eff580ef7890fa5d3e89e71b03 |
 | star__c4 | 2.2331 | 2.0065 | 0.07461919 | 0.2 | 0 | 0 | STOPPED_EARLY | 630.431 | 06e78152035c191c5255b16cdd3dc3a4f664468a |
+| asymmetric__c4 | 1.7117 | 1.6539 | 0.05837332 | 0.2 | 0 | 0 | STOPPED_EARLY | 630.290 | 06e78152035c191c5255b16cdd3dc3a4f664468a |
+| c_shape__c4 | 3.1543 | 3.0388 | 0.07753805 | 0.2 | 0 | 0 | STOPPED_EARLY | 630.177 | 78073ef7942d540617b5662c0c9c7d9efc8336d8 |
 
 Plateau stages count saved stage stop reasons containing plateau. STOPPED_EARLY/iteration_limit means the configured cap was reached, not outer convergence. Failed saved images are scored diagnostically and excluded from successful-fit counts. Worst frequency residual is an endpoint data residual; inner residuals are checked separately.
 
@@ -27,8 +29,8 @@ Lower-value probes and simultaneous-frequency fits were paused by the coordinato
 
 ```text
 Activity: evaluate_our_method/07_refit_gaugal_with_tv_warm_start, 2026-11-19
-Runs: 14/20 nonfailed, 0 failed, 6 pending; wall time 2:27:16
-Result: 5/20 planned cases have area <=5%; per-case results above
+Runs: 16/20 nonfailed, 0 failed, 4 pending; wall time 2:48:19
+Result: 7/20 planned cases have area <=5%; per-case results above
 Failures: none saved
 Upstream patches: none by native-run
 Changes to our code: none by native-run; scratch reporting helpers only
