@@ -1,6 +1,6 @@
 {
-  "state": "paused_for_continuation",
-  "utc": "2026-11-19T16:04:26Z",
+  "state": "failed",
+  "utc": "2026-11-20T00:20:34Z",
   "cases": [
     "circle__c0.5",
     "kite__c0.5",
@@ -32,7 +32,7 @@
     "cog__c0.5",
     "aphex_twin__c0.5"
   ],
-  "available_bytes": 37153927168,
+  "available_bytes": 42694045696,
   "gpu": "Thu Nov 19 14:46:26 2026       \n+-----------------------------------------------------------------------------------------+\n| NVIDIA-SMI 570.211.01             Driver Version: 570.211.01     CUDA Version: 12.8     |\n|-----------------------------------------+------------------------+----------------------+\n| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |\n| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |\n|                                         |                        |               MIG M. |\n|=========================================+========================+======================|\n|   0  NVIDIA GeForce RTX 5090        Off |   00000000:02:00.0  On |                  N/A |\n| 47%   69C    P1            384W /  575W |    8350MiB /  32607MiB |     94%      Default |\n|                                         |                        |                  N/A |\n+-----------------------------------------+------------------------+----------------------+\n                                                                                         \n+-----------------------------------------------------------------------------------------+\n| Processes:                                                                              |\n|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |\n|        ID   ID                                                               Usage      |\n|=========================================================================================|\n|    0   N/A  N/A            1406      G   /usr/lib/xorg/Xorg                      172MiB |\n|    0   N/A  N/A            2277      G   /usr/bin/gnome-shell                     18MiB |\n|    0   N/A  N/A            2673      G   .../teamviewer/tv_bin/TeamViewer         27MiB |\n|    0   N/A  N/A            3064      G   ...bin/snapd-desktop-integration         12MiB |\n|    0   N/A  N/A           60409      G   gnome-control-center                      8MiB |\n|    0   N/A  N/A          122347      G   ...rack-uuid=3190708988185955192         23MiB |\n|    0   N/A  N/A          162048      G   /usr/lib/zotero/zotero-bin                8MiB |\n|    0   N/A  N/A          283296      G   /usr/lib/xorg/Xorg                      215MiB |\n|    0   N/A  N/A          283958      G   /usr/bin/gnome-shell                     30MiB |\n|    0   N/A  N/A          285719      G   ...bin/snapd-desktop-integration         30MiB |\n|    0   N/A  N/A         1895339      C   ...conda3/envs/EMNerf/bin/python       1502MiB |\n|    0   N/A  N/A         1895343      C   ...conda3/envs/EMNerf/bin/python       1502MiB |\n|    0   N/A  N/A         1896692      C   ...conda3/envs/EMNerf/bin/python       4444MiB |\n|    0   N/A  N/A         2378552      G   .../teamviewer/tv_bin/TeamViewer         16MiB |\n|    0   N/A  N/A         2474570      G   ...rack-uuid=3190708988185955192         20MiB |\n|    0   N/A  N/A         2577620      G   ...rack-uuid=3190708988185955192         42MiB |\n|    0   N/A  N/A         4158961      G   ...rack-uuid=3190708988185955192         54MiB |\n+-----------------------------------------------------------------------------------------+\n",
   "runner_count": 1,
   "reason_one_runner": "metrics.csv is written directly without a lock; run.json exists and is read-only on matching settings",
@@ -41,9 +41,119 @@
   "monitor_pid": 1899680,
   "completed": [
     "circle__c0.5",
-    "kite__c0.5"
+    "kite__c0.5",
+    "peanut__c0.5",
+    "star__c0.5",
+    "asymmetric__c0.5",
+    "c_shape__c0.5",
+    "hook__c0.5",
+    "cross__c0.5",
+    "cog__c0.5",
+    "aphex_twin__c0.5"
   ],
-  "wall_seconds": 4679.519389736466,
-  "previous_state": "running",
-  "paused_utc": "2026-11-19T16:04:26Z"
+  "wall_seconds": 34447.02499335632,
+  "returncode": 1,
+  "finished_utc": "2026-11-20T00:20:34Z",
+  "rows": [
+    {
+      "case": "circle__c0.5",
+      "area_error": 0.7628608744265424,
+      "final_mismatch": 5.8761998702217895,
+      "iterations": 364,
+      "stop_reason": "mismatch_plateau",
+      "case_seconds": 291.80580344609916,
+      "outcome": "COMPLETED",
+      "worst_inner_relative": 4.7620528675906826e-07
+    },
+    {
+      "case": "kite__c0.5",
+      "area_error": 0.09984891967743349,
+      "final_mismatch": 0.00022376901868615166,
+      "iterations": 2802,
+      "stop_reason": "mismatch_plateau",
+      "case_seconds": 2282.942173860036,
+      "outcome": "COMPLETED",
+      "worst_inner_relative": 9.768446034286171e-07
+    },
+    {
+      "case": "peanut__c0.5",
+      "area_error": 0.05725336523192406,
+      "final_mismatch": 0.00019204881562337684,
+      "iterations": 3000,
+      "stop_reason": "iteration_limit",
+      "case_seconds": 14024.226369655691,
+      "outcome": "STOPPED_EARLY",
+      "worst_inner_relative": 7.525566161348252e-07
+    },
+    {
+      "case": "star__c0.5",
+      "area_error": 0.08529742855001425,
+      "final_mismatch": 0.00045016004944954197,
+      "iterations": 3000,
+      "stop_reason": "iteration_limit",
+      "case_seconds": 13806.389079709537,
+      "outcome": "STOPPED_EARLY",
+      "worst_inner_relative": 9.166553240902431e-07
+    },
+    {
+      "case": "asymmetric__c0.5",
+      "area_error": 0.06408918273317392,
+      "final_mismatch": 0.0004161847820332969,
+      "iterations": 3000,
+      "stop_reason": "iteration_limit",
+      "case_seconds": 713.0035876072943,
+      "outcome": "STOPPED_EARLY",
+      "worst_inner_relative": 1.0008446906795143e-06
+    },
+    {
+      "case": "c_shape__c0.5",
+      "area_error": 0.0986009997511986,
+      "final_mismatch": 0.00045796546810428966,
+      "iterations": 2580,
+      "stop_reason": "mismatch_plateau",
+      "case_seconds": 615.8152852384374,
+      "outcome": "COMPLETED",
+      "worst_inner_relative": 8.801426929494482e-07
+    },
+    {
+      "case": "hook__c0.5",
+      "area_error": 0.16791822194630576,
+      "final_mismatch": 0.0001663601902870445,
+      "iterations": 3000,
+      "stop_reason": "iteration_limit",
+      "case_seconds": 713.0778864212334,
+      "outcome": "STOPPED_EARLY",
+      "worst_inner_relative": 7.620868132107717e-07
+    },
+    {
+      "case": "cross__c0.5",
+      "area_error": 0.09027640530374843,
+      "final_mismatch": 0.00024288973804382005,
+      "iterations": 2700,
+      "stop_reason": "mismatch_plateau",
+      "case_seconds": 643.4911962337792,
+      "outcome": "COMPLETED",
+      "worst_inner_relative": 1.0443546898386558e-06
+    },
+    {
+      "case": "cog__c0.5",
+      "area_error": 0.057843653269225394,
+      "final_mismatch": 0.0004293242479828785,
+      "iterations": 3000,
+      "stop_reason": "iteration_limit",
+      "case_seconds": 713.1631208080798,
+      "outcome": "STOPPED_EARLY",
+      "worst_inner_relative": 1.0089198667628807e-06
+    },
+    {
+      "case": "aphex_twin__c0.5",
+      "area_error": 0.18605843558578222,
+      "final_mismatch": 0.0005319298437781467,
+      "iterations": 2639,
+      "stop_reason": "mismatch_plateau",
+      "case_seconds": 629.1889575170353,
+      "outcome": "COMPLETED",
+      "worst_inner_relative": 6.096254310250515e-07
+    }
+  ]
 }

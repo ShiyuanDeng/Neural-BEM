@@ -117,20 +117,18 @@ benchmarks. Exact-solve probes ran 14:40:27–14:44:42 UTC (4 min 15 s).
 
 ## Probe results
 
-Step 1: cap-2000 probes both completed ten iterations after the
-23:00:47 resume. Raw times include pauses and GPU sharing; no time stop was used.
-The saved cap-100 runs have 80 iterations, so their solve shares are over a different trajectory.
+Step 1: the two existing cap-2000 probes ended without a time stop.
+Raw optimization seconds include pauses and GPU sharing; they are not standalone speeds.
 
-| Case | Cap | Iterations | Unconverged inner solves % | Worst inner residual | Raw seconds/iteration | Area error % |
+| Case | Cap | Iterations | Unconverged inner solves % | Worst inner residual | Seconds/iteration | Area error % |
 |---|---:|---:|---:|---:|---:|---:|
 | kite__c4 | 2000 | 10 | 90.7268 | 0.03036324 | 1706.407 | 108.3943 |
 | kite__c4 reference | 100 | 80 | 73.8150 | 0.03924051 | 4.042 | — |
 | kite__c0.5 | 2000 | 10 | 93.2331 | 0.03233052 | 1716.529 | 58.1964 |
 | kite__c0.5 reference | 100 | 80 | 71.4613 | 0.5299407 | 3.971 | — |
 
-Mismatch fell from 19 to 17.8972393 (c4) and 10.9146399 (c0.5).
-Increasing the cap to 2,000 did not make the old inner solves converge.
-The existing exact-solve probes above and below are separate numerical paths.
+Probe state files retain start/finish UTC times, and pause_for_tv_warm_start.json
+closes the second pause. Cap-2000 solve failures are reported, not hidden by array checks.
 
 Step 2: cancelled by the coordinator; nothing launched.
 
@@ -147,28 +145,29 @@ Both mismatches still fell over the last 20 evaluations. Step 1.0 had small
 intermediate rises; neither blew up or reached the plateau rule. All checked
 inner solves converged; images and 19-by-24 predictions were finite.
 
-## Simultaneous-frequency campaign still running
+## Completed simultaneous-frequency campaign
 
-One detached runner owns the ten clean c0.5 cases; two runners were avoided
-because metrics.csv is shared without a lock. The first completed circle
-used 364 iterations, mismatch_plateau, area 76.2861%, mismatch 5.8761999,
-291.806 s. Kite used 2,802 iterations, mismatch_plateau, area 9.9849%,
-mismatch 0.000223769, 2,282.942 s including the 124-second BEM pause.
-Both had zero unconverged checked inner solves. Peanut was paused mid-fit
-and resumed at 19:19:41. It then finished; star became the active child.
-The first-case forecast is no longer applicable.
-Peanut's saved result: area 5.7253%, worst frequency residual
-0.009207558, 3000 iterations, iteration_limit,
-14024.226 raw seconds including the long pause.
-No noisy cases or simultaneous-frequency c4 cases were launched here.
+The original one-runner ten-case c0.5 campaign ended. No case was relaunched.
+Raw case seconds include pauses when they affected that child; parent campaign
+wall time includes both complete pauses. Truth scoring did not select settings.
 
-At 19:23:14 UTC the coordinator paused probes 1895339/1895343, collector
-1903073, CLI 1899688 and monitor 1899680 for activity 07. Peanut child
-1921897 had ended. Its successor star child 2035661 was paused at
-19:23:23 UTC. The coordinator resumed these six jobs with SIGCONT at 23:00:47 UTC.
-The second pause lasted 13,053 seconds (3 h 37 min 33 s), or 13,044 seconds
-for star child 2035661. Raw timings include both long pauses. The existing
-runs now continue without a time stop; no further numerical work is launched.
+| Case | Area error % | Final mismatch | Worst frequency residual | Iterations | Stop | Outcome | Raw seconds |
+|---|---:|---:|---:|---:|---|---|---:|
+| circle__c0.5 | 76.2861 | 5.8762 | 0.9217884 | 364 | mismatch_plateau | COMPLETED | 291.806 |
+| kite__c0.5 | 9.9849 | 0.000223769 | 0.01013155 | 2802 | mismatch_plateau | COMPLETED | 2282.942 |
+| peanut__c0.5 | 5.7253 | 0.0001920488 | 0.009207558 | 3000 | iteration_limit | STOPPED_EARLY | 14024.226 |
+| star__c0.5 | 8.5297 | 0.00045016 | 0.009671539 | 3000 | iteration_limit | STOPPED_EARLY | 13806.389 |
+| asymmetric__c0.5 | 6.4089 | 0.0004161848 | 0.01187163 | 3000 | iteration_limit | STOPPED_EARLY | 713.004 |
+| c_shape__c0.5 | 9.8601 | 0.0004579655 | 0.01281693 | 2580 | mismatch_plateau | COMPLETED | 615.815 |
+| hook__c0.5 | 16.7918 | 0.0001663602 | 0.006665858 | 3000 | iteration_limit | STOPPED_EARLY | 713.078 |
+| cross__c0.5 | 9.0276 | 0.0002428897 | 0.009148232 | 2700 | mismatch_plateau | COMPLETED | 643.491 |
+| cog__c0.5 | 5.7844 | 0.0004293242 | 0.01485781 | 3000 | iteration_limit | STOPPED_EARLY | 713.163 |
+| aphex_twin__c0.5 | 18.6058 | 0.0005319298 | 0.01726868 | 2639 | mismatch_plateau | COMPLETED | 629.189 |
+
+Area <=5%: 0/10 planned cases; 10/10 nonfailed fits.
+Campaign UTC: 2026-11-19T14:46:27Z to 2026-11-20T00:20:34Z; raw wall 34447.025 seconds.
+The 19:23:14–23:00:47 pause is 13,053 seconds for the probes and controllers;
+star child 2035661 was paused from 19:23:23, for 13,044 seconds. Nothing new launched.
 
 ## Evidence and activity report
 
@@ -180,15 +179,13 @@ Per-case JSON and arrays are canonical; shared metrics.csv is derived.
 Completed arrays, checks and source commits were pushed in case batches.
 
 ```text
-Activity: evaluate_our_method/06_make_gaugal_fits_converge, 2026-11-19
-Runs: continuation 19/20 nonfailed, 1 FAILED; wall time 3:50:17 including retry and parent pause
-Result: c4 9/10 area <=5%; c0.5 1/9 nonfailed area <=5%; total 10/20 planned, old default 0/20
-Result: circle__c0.5 FAILED after safeguard; saved-image score 4.6954% reported separately
-Result: exact step probes 0.2/1.0 ended at mismatch 10.1109053/10.0824825 after 200 iterations each
-Result: cap-2000 probes finished; simultaneous campaign 3/10 saved; six jobs resumed 23:00:47 after activity 07; results pending
-Failures: old circle adjoint exception archived; safeguarded circle restart_limit kept in canonical run
+Activity: evaluate_our_method/06_make_gaugal_fits_converge, 2026-11-19; follow-up closed 2026-11-20T00:20:37Z
+Runs: 2/2 cap-2000 probes ended; 2/2 exact probes ended; 10/10 simultaneous cases saved; continuation 19/20 nonfailed and 1 FAILED
+Result: simultaneous c0.5 0/10 area <=5%; first continuation 9/10 c4 and 1/9 nonfailed c0.5
+Result: cap-2000 and exact-probe measurements are in the tables; paused raw timings are retained
+Failures: old continuation circle exception and safeguarded circle restart_limit retained; probe failures: none
 Upstream patches: none by native-run
-Changes to our code: none by native-run; scratch reporting helpers and saved evidence only
-New unknowns: cap-2000 final statistics; remaining simultaneous results; results after TV stage-start fix
-Proposed next activity: 07_refit_gaugal_with_tv_warm_start, all 20 clean cases; needs user decision: none; coordinator released activity 07 on code 94c39f4c0
+Changes to our code: none by native-run; scratch collectors only
+New unknowns: none for the completed authorized runs
+Proposed next activity: coordinator review; needs user decision: none
 ```
