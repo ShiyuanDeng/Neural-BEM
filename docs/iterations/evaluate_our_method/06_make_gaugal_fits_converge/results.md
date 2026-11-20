@@ -66,8 +66,11 @@ trap of the search, not a limit of the image.
 [ablations](../02_run_ablations/results.md).
 
 **Finishing the fit does not help at contrast 0.5 either.** With all
-frequencies at once and exact solves, `kite__c0.5` reached a 1.0% residual
-and still scored 9.98%. `circle__c0.5` stalled at 76.3%.
+frequencies at once and exact solves, the ten contrast-0.5 cases recovered
+0/10 (run finished 20 November, 00:20 UTC). Nine fitted the data to 0.7–1.7%
+and scored 5.7–18.6%; the closest were `peanut` at 5.73% and `cog` at 5.78%.
+`circle__c0.5` stalled at a 92% residual and 76.3%. Five fits reached the
+plateau rule and five stopped at the 3,000-step cap.
 
 ## Continuation on the 20 clean cases
 
@@ -149,8 +152,6 @@ solves on lattice 101 would take about 60 times longer.
 ## Not done
 
 - The noisy draw was not run.
-- The remaining contrast-0.5 fits without continuation were still running;
-  see the [run report](run_report.md) for their results.
 - Contrast 13.3 was not run.
 
 ## Evidence
